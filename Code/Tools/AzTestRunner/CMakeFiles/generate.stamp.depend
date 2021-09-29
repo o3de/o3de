@@ -1,0 +1,8 @@
+# CMake generation dependency list for this directory.
+C:/Users/lesaelr/o3de/Code/Tools/AzTestRunner/CMakeLists.txt
+C:/Users/lesaelr/o3de/Code/Tools/AzTestRunner/Platform/Windows/platform_traits_windows.cmake
+C:/Users/lesaelr/o3de/Code/Tools/AzTestRunner/Platform/Windows/platform_windows.cmake
+C:/Users/lesaelr/o3de/Code/Tools/AzTestRunner/Platform/Windows/platform_windows_files.cmake
+C:/Users/lesaelr/o3de/Code/Tools/AzTestRunner/aztestrunner_files.cmake
+C:/Users/lesaelr/o3de/Code/Tools/AzTestRunner/aztestrunner_test_files.cmake
+C:/Users/lesaelr/o3de/cmake/Platform/Windows/LYTestWrappers_windows.cmake

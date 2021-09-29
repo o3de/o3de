@@ -1,0 +1,14 @@
+# CMake generation dependency list for this directory.
+C:/Users/lesaelr/.o3de/3rdParty/packages/poly2tri-7f0487a-rev1-windows/Findpoly2tri.cmake
+C:/Users/lesaelr/.o3de/3rdParty/packages/poly2tri-7f0487a-rev1-windows/PackageInfo.json
+C:/Users/lesaelr/.o3de/3rdParty/packages/v-hacd-2.3-1a49edf-rev1-windows/Findv-hacd.cmake
+C:/Users/lesaelr/.o3de/3rdParty/packages/v-hacd-2.3-1a49edf-rev1-windows/PackageInfo.json
+C:/Users/lesaelr/o3de/Gems/PhysX/Code/CMakeLists.txt
+C:/Users/lesaelr/o3de/Gems/PhysX/Code/Source/Platform/Windows/PAL_windows.cmake
+C:/Users/lesaelr/o3de/Gems/PhysX/Code/physx_editor_files.cmake
+C:/Users/lesaelr/o3de/Gems/PhysX/Code/physx_editor_shared_files.cmake
+C:/Users/lesaelr/o3de/Gems/PhysX/Code/physx_editor_tests_files.cmake
+C:/Users/lesaelr/o3de/Gems/PhysX/Code/physx_files.cmake
+C:/Users/lesaelr/o3de/Gems/PhysX/Code/physx_shared_files.cmake
+C:/Users/lesaelr/o3de/Gems/PhysX/Code/physx_tests_files.cmake
+C:/Users/lesaelr/o3de/cmake/Platform/Windows/LYTestWrappers_windows.cmake

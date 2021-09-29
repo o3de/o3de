@@ -1,0 +1,325 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneData\CMakeFiles\SceneData.dir\Unity\unity_5_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneData\CMakeFiles\SceneData.dir\Unity\unity_4_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneData\CMakeFiles\SceneData.dir\Unity\unity_3_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneData\CMakeFiles\SceneData.dir\Unity\unity_2_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneData\CMakeFiles\SceneData.dir\Unity\unity_1_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneData\CMakeFiles\SceneData.dir\Unity\unity_0_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneData\DllMain.cpp" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneData\ManifestMetaInfoHandler.cpp" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneData\SceneDataStandaloneAllocator.cpp" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneData\ReflectionRegistrar.cpp" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneData\Behaviors\BehaviorsMeshGroup.cpp">
+      <Filter>Behaviors</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneData\Behaviors\BehaviorsSkeletonGroup.cpp">
+      <Filter>Behaviors</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneData\Behaviors\BehaviorsSkinGroup.cpp">
+      <Filter>Behaviors</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneData\Behaviors\Registry.cpp">
+      <Filter>Behaviors</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneData\Behaviors\BehaviorsAnimationGroup.cpp">
+      <Filter>Behaviors</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneData\Behaviors\MeshAdvancedRule.cpp">
+      <Filter>Behaviors</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneData\Behaviors\MaterialRuleBehavior.cpp">
+      <Filter>Behaviors</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneData\Behaviors\LodRuleBehavior.cpp">
+      <Filter>Behaviors</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneData\Behaviors\BlendShapeRuleBehavior.cpp">
+      <Filter>Behaviors</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneData\Behaviors\SkinRuleBehavior.cpp">
+      <Filter>Behaviors</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneData\Behaviors\ScriptProcessorRuleBehavior.cpp">
+      <Filter>Behaviors</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneData\Groups\MeshGroup.cpp">
+      <Filter>Groups</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneData\Groups\SkeletonGroup.cpp">
+      <Filter>Groups</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneData\Groups\SkinGroup.cpp">
+      <Filter>Groups</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneData\Groups\AnimationGroup.cpp">
+      <Filter>Groups</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneData\ManifestBase\SceneNodeSelectionList.cpp">
+      <Filter>ManifestBase</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneData\Rules\BlendShapeRule.cpp">
+      <Filter>Rules</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneData\Rules\CommentRule.cpp">
+      <Filter>Rules</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneData\Rules\LodRule.cpp">
+      <Filter>Rules</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneData\Rules\CoordinateSystemRule.cpp">
+      <Filter>Rules</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneData\Rules\StaticMeshAdvancedRule.cpp">
+      <Filter>Rules</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneData\Rules\MaterialRule.cpp">
+      <Filter>Rules</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneData\Rules\ScriptProcessorRule.cpp">
+      <Filter>Rules</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneData\Rules\SkeletonProxyRule.cpp">
+      <Filter>Rules</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneData\Rules\SkinMeshAdvancedRule.cpp">
+      <Filter>Rules</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneData\Rules\SkinRule.cpp">
+      <Filter>Rules</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneData\Rules\TangentsRule.cpp">
+      <Filter>Rules</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneData\GraphData\MeshData.cpp">
+      <Filter>GraphData</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneData\GraphData\MeshVertexColorData.cpp">
+      <Filter>GraphData</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneData\GraphData\MeshVertexUVData.cpp">
+      <Filter>GraphData</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneData\GraphData\MeshVertexTangentData.cpp">
+      <Filter>GraphData</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneData\GraphData\MeshVertexBitangentData.cpp">
+      <Filter>GraphData</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneData\GraphData\MaterialData.cpp">
+      <Filter>GraphData</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneData\GraphData\TransformData.cpp">
+      <Filter>GraphData</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneData\GraphData\MeshDataPrimitiveUtils.cpp">
+      <Filter>GraphData</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneData\GraphData\BoneData.cpp">
+      <Filter>GraphData</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneData\GraphData\RootBoneData.cpp">
+      <Filter>GraphData</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneData\GraphData\SkinWeightData.cpp">
+      <Filter>GraphData</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneData\GraphData\AnimationData.cpp">
+      <Filter>GraphData</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneData\GraphData\BlendShapeData.cpp">
+      <Filter>GraphData</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneData\SceneDataConfiguration.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneData\ManifestMetaInfoHandler.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneData\SceneDataStandaloneAllocator.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneData\ReflectionRegistrar.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneData\Behaviors\Registry.h">
+      <Filter>Behaviors</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneData\Behaviors\MeshGroup.h">
+      <Filter>Behaviors</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneData\Behaviors\SkeletonGroup.h">
+      <Filter>Behaviors</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneData\Behaviors\SkinGroup.h">
+      <Filter>Behaviors</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneData\Behaviors\AnimationGroup.h">
+      <Filter>Behaviors</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneData\Behaviors\MeshAdvancedRule.h">
+      <Filter>Behaviors</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneData\Behaviors\MaterialRuleBehavior.h">
+      <Filter>Behaviors</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneData\Behaviors\LodRuleBehavior.h">
+      <Filter>Behaviors</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneData\Behaviors\BlendShapeRuleBehavior.h">
+      <Filter>Behaviors</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneData\Behaviors\SkinRuleBehavior.h">
+      <Filter>Behaviors</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneData\Behaviors\ScriptProcessorRuleBehavior.h">
+      <Filter>Behaviors</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneData\Groups\MeshGroup.h">
+      <Filter>Groups</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneData\Groups\SkeletonGroup.h">
+      <Filter>Groups</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneData\Groups\SkinGroup.h">
+      <Filter>Groups</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneData\Groups\AnimationGroup.h">
+      <Filter>Groups</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneData\ManifestBase\SceneNodeSelectionList.h">
+      <Filter>ManifestBase</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneData\Rules\BlendShapeRule.h">
+      <Filter>Rules</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneData\Rules\CommentRule.h">
+      <Filter>Rules</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneData\Rules\LodRule.h">
+      <Filter>Rules</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneData\Rules\CoordinateSystemRule.h">
+      <Filter>Rules</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneData\Rules\StaticMeshAdvancedRule.h">
+      <Filter>Rules</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneData\Rules\MaterialRule.h">
+      <Filter>Rules</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneData\Rules\ScriptProcessorRule.h">
+      <Filter>Rules</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneData\Rules\SkeletonProxyRule.h">
+      <Filter>Rules</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneData\Rules\SkinMeshAdvancedRule.h">
+      <Filter>Rules</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneData\Rules\SkinRule.h">
+      <Filter>Rules</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneData\Rules\TangentsRule.h">
+      <Filter>Rules</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneData\GraphData\MeshData.h">
+      <Filter>GraphData</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneData\GraphData\MeshVertexColorData.h">
+      <Filter>GraphData</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneData\GraphData\MeshVertexUVData.h">
+      <Filter>GraphData</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneData\GraphData\MeshVertexTangentData.h">
+      <Filter>GraphData</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneData\GraphData\MeshVertexBitangentData.h">
+      <Filter>GraphData</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneData\GraphData\MaterialData.h">
+      <Filter>GraphData</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneData\GraphData\TransformData.h">
+      <Filter>GraphData</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneData\GraphData\MeshDataPrimitiveUtils.h">
+      <Filter>GraphData</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneData\GraphData\BoneData.h">
+      <Filter>GraphData</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneData\GraphData\RootBoneData.h">
+      <Filter>GraphData</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneData\GraphData\SkinMeshData.h">
+      <Filter>GraphData</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneData\GraphData\SkinWeightData.h">
+      <Filter>GraphData</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneData\GraphData\AnimationData.h">
+      <Filter>GraphData</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneData\GraphData\BlendShapeData.h">
+      <Filter>GraphData</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\CMakeFiles\08b24365a84bd27d080f6dd51f42b933\SceneData_(CONFIG).stamp.rule">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneData\CMakeLists.txt">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneData\SceneData_files.cmake" />
+    <None Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneData\Platform\Windows\platform_windows_files.cmake">
+      <Filter>Platform\Windows</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\runtime_dependencies\debug\SceneData_debug.stamp">
+      <Filter>Generated Files</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\runtime_dependencies\profile\SceneData_profile.stamp">
+      <Filter>Generated Files</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\runtime_dependencies\release\SceneData_release.stamp">
+      <Filter>Generated Files</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Behaviors">
+      <UniqueIdentifier>{DC7C81BD-DB0E-3C4F-878B-D5A4DF4BC0D3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Generated Files">
+      <UniqueIdentifier>{FB9B7D8B-7F05-31D5-AA90-592248EDE1B3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GraphData">
+      <UniqueIdentifier>{55E44F5C-9E7C-3F6C-A688-E83136F3E1C6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Groups">
+      <UniqueIdentifier>{117DC714-3E16-3961-922A-67134159457F}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ManifestBase">
+      <UniqueIdentifier>{A743A625-5296-3777-8379-E999E5172DA5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Platform">
+      <UniqueIdentifier>{378A8D8C-6CA1-3F6B-A02B-1E9FF64C97B2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Platform\Windows">
+      <UniqueIdentifier>{63AEF2F6-51C7-306A-BFE8-A049C8C62EFB}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Rules">
+      <UniqueIdentifier>{50C30A09-3B0A-322C-9366-48B6E4975569}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

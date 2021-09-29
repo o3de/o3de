@@ -1,0 +1,5 @@
+# CMake generation dependency list for this directory.
+C:/Users/lesaelr/o3de/Gems/PhysX/Code/NumericalMethods/CMakeLists.txt
+C:/Users/lesaelr/o3de/Gems/PhysX/Code/NumericalMethods/numericalmethods_files.cmake
+C:/Users/lesaelr/o3de/Gems/PhysX/Code/NumericalMethods/numericalmethods_tests_files.cmake
+C:/Users/lesaelr/o3de/cmake/Platform/Windows/LYTestWrappers_windows.cmake

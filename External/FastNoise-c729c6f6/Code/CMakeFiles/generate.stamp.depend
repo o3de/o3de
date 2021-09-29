@@ -1,0 +1,8 @@
+# CMake generation dependency list for this directory.
+C:/Users/lesaelr/o3de/Gems/FastNoise/Code/CMakeLists.txt
+C:/Users/lesaelr/o3de/Gems/FastNoise/Code/fastnoise_editor_files.cmake
+C:/Users/lesaelr/o3de/Gems/FastNoise/Code/fastnoise_editor_shared_files.cmake
+C:/Users/lesaelr/o3de/Gems/FastNoise/Code/fastnoise_files.cmake
+C:/Users/lesaelr/o3de/Gems/FastNoise/Code/fastnoise_shared_files.cmake
+C:/Users/lesaelr/o3de/Gems/FastNoise/Code/fastnoise_tests_files.cmake
+C:/Users/lesaelr/o3de/cmake/Platform/Windows/LYTestWrappers_windows.cmake

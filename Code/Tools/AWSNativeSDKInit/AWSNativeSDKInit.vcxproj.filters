@@ -1,0 +1,74 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\AWSNativeSDKInit\CMakeFiles\AWSNativeSDKInit.dir\Unity\unity_0_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\AWSNativeSDKInit\source\AWSNativeSDKInit.cpp">
+      <Filter>source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\AWSNativeSDKInit\source\AWSMemoryInterface.cpp">
+      <Filter>source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\AWSNativeSDKInit\source\AWSLogSystemInterface.cpp">
+      <Filter>source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\AWSNativeSDKInit\source\Platform\Common\Default\AWSNativeSDKInit_Default.cpp">
+      <Filter>source\Platform\Windows\..\Common\Default</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\AWSNativeSDKInit\source\Platform\Common\Default\InitializeCerts_Null.cpp">
+      <Filter>source\Platform\Windows\..\Common\Default</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\AWSNativeSDKInit\include\AWSNativeSDKInit\AWSNativeSDKInit.h">
+      <Filter>include\AWSNativeSDKInit</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\AWSNativeSDKInit\include\AWSNativeSDKInit\AWSMemoryInterface.h">
+      <Filter>include\AWSNativeSDKInit</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\AWSNativeSDKInit\include\AWSNativeSDKInit\AWSLogSystemInterface.h">
+      <Filter>include\AWSNativeSDKInit</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Code\Tools\AWSNativeSDKInit\CMakeLists.txt">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="C:\Users\lesaelr\o3de\Code\Tools\AWSNativeSDKInit\aws_native_sdk_init_files.cmake" />
+    <None Include="C:\Users\lesaelr\o3de\Code\Tools\AWSNativeSDKInit\source\Platform\Windows\platform_windows_files.cmake">
+      <Filter>source\Platform\Windows</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Generated Files">
+      <UniqueIdentifier>{FB9B7D8B-7F05-31D5-AA90-592248EDE1B3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="include">
+      <UniqueIdentifier>{03DA67C8-C0FA-3C0C-84B5-293930617647}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="include\AWSNativeSDKInit">
+      <UniqueIdentifier>{09088339-40C5-3B53-A53A-F1DD55A31ADD}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="source">
+      <UniqueIdentifier>{688443FA-03E8-36C5-B319-1AA129228091}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="source\Platform">
+      <UniqueIdentifier>{F7C7FB88-6D75-32A9-8C8D-5751920507C1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="source\Platform\Windows">
+      <UniqueIdentifier>{326E8A7F-137E-3516-B2E5-9B4FAA258BFB}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="source\Platform\Windows\..">
+      <UniqueIdentifier>{8A000100-06E6-3FB2-BED6-9BDE480D1020}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="source\Platform\Windows\..\Common">
+      <UniqueIdentifier>{69270CD5-5F3E-3071-A54B-7FB6EF5F15E5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="source\Platform\Windows\..\Common\Default">
+      <UniqueIdentifier>{B40D07DF-D5EF-3DF0-815B-D98C924E0FCF}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

@@ -1,0 +1,52 @@
+{
+    "values": [
+        {
+            "$type": "ActorGroup",
+            "name": "BeveledCone",
+            "selectedRootBone": "RootNode",
+            "id": "{B13376AB-6126-579F-9772-CEA02BCE60B5}"
+        },
+        {
+            "$type": "{5B03C8E6-8CEE-4DA0-A7FA-CD88689DD45B} MeshGroup",
+            "id": "{88578A5F-B3CC-5EAC-89F0-53B4D7D058A0}",
+            "name": "BeveledCone",
+            "NodeSelectionList": {
+                "unselectedNodes": [
+                    "RootNode",
+                    "RootNode.Primitives_grp",
+                    "RootNode.Primitives_grp.transform",
+                    "RootNode.Primitives_grp.BeveledCone_1m",
+                    "RootNode.Primitives_grp.BeveledCone_1m.BeveledCone_1m_1",
+                    "RootNode.Primitives_grp.BeveledCone_1m.BeveledCone_1m_2",
+                    "RootNode.Primitives_grp.BeveledCone_1m.BeveledCone_1m_1.Tiled",
+                    "RootNode.Primitives_grp.BeveledCone_1m.BeveledCone_1m_1.Unwrapped",
+                    "RootNode.Primitives_grp.BeveledCone_1m.BeveledCone_1m_1.Default",
+                    "RootNode.Primitives_grp.BeveledCone_1m.BeveledCone_1m_2.Tiled",
+                    "RootNode.Primitives_grp.BeveledCone_1m.BeveledCone_1m_2.Unwrapped",
+                    "RootNode.Primitives_grp.BeveledCone_1m.BeveledCone_1m_2.Default"
+                ]
+            }
+        },
+        {
+            "$type": "{07B356B7-3635-40B5-878A-FAC4EFD5AD86} MeshGroup",
+            "name": "BeveledCone",
+            "nodeSelectionList": {
+                "selectedNodes": [
+                    "RootNode",
+                    "RootNode.Primitives_grp",
+                    "RootNode.Primitives_grp.BeveledCone_1m",
+                    "RootNode.Primitives_grp.BeveledCone_1m.BeveledCone_1m_1",
+                    "RootNode.Primitives_grp.BeveledCone_1m.BeveledCone_1m_2"
+                ]
+            },
+            "rules": {
+                "rules": [
+                    {
+                        "$type": "MaterialRule"
+                    }
+                ]
+            },
+            "id": "{491A1290-B798-5B99-861E-EF1C6B8A5E2F}"
+        }
+    ]
+}

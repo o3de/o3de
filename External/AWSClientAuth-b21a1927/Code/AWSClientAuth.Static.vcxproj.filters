@@ -1,0 +1,164 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\AWSClientAuth-b21a1927\Code\CMakeFiles\AWSClientAuth.Static.dir\Unity\unity_1_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\AWSClientAuth-b21a1927\Code\CMakeFiles\AWSClientAuth.Static.dir\Unity\unity_0_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\AWSClientAuth\Code\Source\AWSClientAuthSystemComponent.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\AWSClientAuth\Code\Source\Authentication\AuthenticationTokens.cpp">
+      <Filter>Source\Authentication</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\AWSClientAuth\Code\Source\Authentication\AuthenticationProviderInterface.cpp">
+      <Filter>Source\Authentication</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\AWSClientAuth\Code\Source\Authentication\AuthenticationProviderManager.cpp">
+      <Filter>Source\Authentication</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\AWSClientAuth\Code\Source\Authentication\AWSCognitoAuthenticationProvider.cpp">
+      <Filter>Source\Authentication</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\AWSClientAuth\Code\Source\Authentication\LWAAuthenticationProvider.cpp">
+      <Filter>Source\Authentication</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\AWSClientAuth\Code\Source\Authentication\GoogleAuthenticationProvider.cpp">
+      <Filter>Source\Authentication</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\AWSClientAuth\Code\Source\Authorization\ClientAuthAWSCredentials.cpp">
+      <Filter>Source\Authorization</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\AWSClientAuth\Code\Source\Authorization\AWSCognitoAuthorizationController.cpp">
+      <Filter>Source\Authorization</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\AWSClientAuth\Code\Source\Authorization\AWSClientAuthPersistentCognitoIdentityProvider.cpp">
+      <Filter>Source\Authorization</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\AWSClientAuth\Code\Source\UserManagement\AWSCognitoUserManagementController.cpp">
+      <Filter>Source\UserManagement</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\AWSClientAuth\Code\Include\Public\Authentication\AuthenticationProviderBus.h">
+      <Filter>Include\Public\Authentication</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\AWSClientAuth\Code\Include\Public\Authentication\AuthenticationTokens.h">
+      <Filter>Include\Public\Authentication</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\AWSClientAuth\Code\Include\Public\Authorization\AWSCognitoAuthorizationBus.h">
+      <Filter>Include\Public\Authorization</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\AWSClientAuth\Code\Include\Public\Authorization\ClientAuthAWSCredentials.h">
+      <Filter>Include\Public\Authorization</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\AWSClientAuth\Code\Include\Public\UserManagement\AWSCognitoUserManagementBus.h">
+      <Filter>Include\Public\UserManagement</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\AWSClientAuth\Code\Include\Private\AWSClientAuthSystemComponent.h">
+      <Filter>Include\Private</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\AWSClientAuth\Code\Include\Private\AWSClientAuthBus.h">
+      <Filter>Include\Private</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\AWSClientAuth\Code\Include\Private\AWSClientAuthResourceMappingConstants.h">
+      <Filter>Include\Private</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\AWSClientAuth\Code\Include\Private\Authentication\AuthenticationProviderTypes.h">
+      <Filter>Include\Private\Authentication</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\AWSClientAuth\Code\Include\Private\Authentication\AuthenticationProviderScriptCanvasBus.h">
+      <Filter>Include\Private\Authentication</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\AWSClientAuth\Code\Include\Private\Authentication\AuthenticationProviderManager.h">
+      <Filter>Include\Private\Authentication</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\AWSClientAuth\Code\Include\Private\Authentication\AuthenticationNotificationBusBehaviorHandler.h">
+      <Filter>Include\Private\Authentication</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\AWSClientAuth\Code\Include\Private\Authorization\AWSCognitoAuthorizationController.h">
+      <Filter>Include\Private\Authorization</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\AWSClientAuth\Code\Include\Private\Authorization\AWSClientAuthPersistentCognitoIdentityProvider.h">
+      <Filter>Include\Private\Authorization</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\AWSClientAuth\Code\Include\Private\Authorization\AWSCognitoAuthorizationNotificationBusBehaviorHandler.h">
+      <Filter>Include\Private\Authorization</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\AWSClientAuth\Code\Include\Private\UserManagement\AWSCognitoUserManagementController.h">
+      <Filter>Include\Private\UserManagement</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\AWSClientAuth\Code\Include\Private\UserManagement\UserManagementNotificationBusBehaviorHandler.h">
+      <Filter>Include\Private\UserManagement</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\AWSClientAuth\Code\Include\Private\Authentication\AuthenticationProviderInterface.h">
+      <Filter>Include\Private\Authentication</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\AWSClientAuth\Code\Include\Private\Authentication\OAuthConstants.h">
+      <Filter>Include\Private\Authentication</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\AWSClientAuth\Code\Include\Private\Authentication\AWSCognitoAuthenticationProvider.h">
+      <Filter>Include\Private\Authentication</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\AWSClientAuth\Code\Include\Private\Authentication\LWAAuthenticationProvider.h">
+      <Filter>Include\Private\Authentication</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\AWSClientAuth\Code\Include\Private\Authentication\GoogleAuthenticationProvider.h">
+      <Filter>Include\Private\Authentication</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Gems\AWSClientAuth\Code\CMakeLists.txt">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="C:\Users\lesaelr\o3de\Gems\AWSClientAuth\Code\awsclientauth_files.cmake" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Generated Files">
+      <UniqueIdentifier>{FB9B7D8B-7F05-31D5-AA90-592248EDE1B3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include">
+      <UniqueIdentifier>{E188105A-C8C4-34BB-9809-15E8410EF7F8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\Private">
+      <UniqueIdentifier>{9A706140-4A99-3FC5-8C68-4F65DF59576D}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\Private\Authentication">
+      <UniqueIdentifier>{568E3151-D8A8-3931-97A5-DB1C28BC3A8D}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\Private\Authorization">
+      <UniqueIdentifier>{76BAC497-006C-3FBC-8350-FF174AB7D5E3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\Private\UserManagement">
+      <UniqueIdentifier>{87C3696F-614F-351C-8B16-C6AEE8030E99}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\Public">
+      <UniqueIdentifier>{A5D8559D-92D8-3928-AC89-8904EB3661AA}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\Public\Authentication">
+      <UniqueIdentifier>{FD8A897D-64F3-3619-A617-47DD017F23F7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\Public\Authorization">
+      <UniqueIdentifier>{2715B2B5-3CAA-3935-83FD-F23C9957AA37}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\Public\UserManagement">
+      <UniqueIdentifier>{D25EE06B-37BA-39F1-A237-0074240B8D81}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source">
+      <UniqueIdentifier>{F3F0AD47-5F83-373B-A2BF-650D2E4FA3EA}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Authentication">
+      <UniqueIdentifier>{603E4525-EAA0-3C4C-88D6-346EFB15BF41}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Authorization">
+      <UniqueIdentifier>{EFBD30D2-8E94-3860-9422-DFAB7B3983E2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\UserManagement">
+      <UniqueIdentifier>{9DAB62B1-3207-3C4E-9D73-29E8B3C303D6}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

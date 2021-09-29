@@ -1,0 +1,12 @@
+# CMake generation dependency list for this directory.
+C:/Users/lesaelr/.o3de/3rdParty/packages/d3dx12-headers-rev1-windows/Findd3dx12.cmake
+C:/Users/lesaelr/.o3de/3rdParty/packages/d3dx12-headers-rev1-windows/PackageInfo.json
+C:/Users/lesaelr/o3de/Gems/Atom/RHI/DX12/Code/CMakeLists.txt
+C:/Users/lesaelr/o3de/Gems/Atom/RHI/DX12/Code/Source/Platform/Windows/PAL_windows.cmake
+C:/Users/lesaelr/o3de/Gems/Atom/RHI/DX12/Code/Source/Platform/Windows/platform_builders_windows_files.cmake
+C:/Users/lesaelr/o3de/Gems/Atom/RHI/DX12/Code/Source/Platform/Windows/platform_private_windows.cmake
+C:/Users/lesaelr/o3de/Gems/Atom/RHI/DX12/Code/Source/Platform/Windows/platform_private_windows_files.cmake
+C:/Users/lesaelr/o3de/Gems/Atom/RHI/DX12/Code/atom_rhi_dx12_builders_common_shared_files.cmake
+C:/Users/lesaelr/o3de/Gems/Atom/RHI/DX12/Code/atom_rhi_dx12_private_common_files.cmake
+C:/Users/lesaelr/o3de/Gems/Atom/RHI/DX12/Code/atom_rhi_dx12_private_common_shared_files.cmake
+C:/Users/lesaelr/o3de/Gems/Atom/RHI/DX12/Code/atom_rhi_dx12_reflect_common_files.cmake

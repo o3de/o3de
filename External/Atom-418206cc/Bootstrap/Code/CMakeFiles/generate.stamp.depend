@@ -1,0 +1,5 @@
+# CMake generation dependency list for this directory.
+C:/Users/lesaelr/o3de/Gems/Atom/Bootstrap/Code/CMakeLists.txt
+C:/Users/lesaelr/o3de/Gems/Atom/Bootstrap/Code/Source/Platform/Windows/bootstrap_windows_files.cmake
+C:/Users/lesaelr/o3de/Gems/Atom/Bootstrap/Code/bootstrap_files.cmake
+C:/Users/lesaelr/o3de/Gems/Atom/Bootstrap/Code/bootstrap_headers_files.cmake

@@ -1,0 +1,392 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\AssetProcessor\AssetProcessor.Static_autogen\mocs_compilation_debug.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\AssetProcessor\CMakeFiles\AssetProcessor.Static.dir\Unity\unity_5_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\AssetProcessor\CMakeFiles\AssetProcessor.Static.dir\Unity\unity_4_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\AssetProcessor\CMakeFiles\AssetProcessor.Static.dir\Unity\unity_3_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\AssetProcessor\CMakeFiles\AssetProcessor.Static.dir\Unity\unity_2_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\AssetProcessor\CMakeFiles\AssetProcessor.Static.dir\Unity\unity_1_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\AssetProcessor\CMakeFiles\AssetProcessor.Static.dir\Unity\unity_0_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\AssetProcessor\native\AssetDatabase\AssetDatabase.cpp">
+      <Filter>native\AssetDatabase</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\AssetProcessor\native\AssetManager\AssetCatalog.cpp">
+      <Filter>native\AssetManager</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\AssetProcessor\native\AssetManager\assetProcessorManager.cpp">
+      <Filter>native\AssetManager</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\AssetProcessor\native\AssetManager\AssetRequestHandler.cpp">
+      <Filter>native\AssetManager</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\AssetProcessor\native\AssetManager\assetScanFolderInfo.cpp">
+      <Filter>native\AssetManager</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\AssetProcessor\native\AssetManager\assetScanner.cpp">
+      <Filter>native\AssetManager</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\AssetProcessor\native\AssetManager\assetScannerWorker.cpp">
+      <Filter>native\AssetManager</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\AssetProcessor\native\AssetManager\FileStateCache.cpp">
+      <Filter>native\AssetManager</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\AssetProcessor\native\AssetManager\PathDependencyManager.cpp">
+      <Filter>native\AssetManager</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\AssetProcessor\native\AssetManager\SourceFileRelocator.cpp">
+      <Filter>native\AssetManager</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\AssetProcessor\native\AssetManager\ControlRequestHandler.cpp">
+      <Filter>native\AssetManager</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\AssetProcessor\native\connection\connection.cpp">
+      <Filter>native\connection</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\AssetProcessor\native\connection\connectionManager.cpp">
+      <Filter>native\connection</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\AssetProcessor\native\connection\connectionworker.cpp">
+      <Filter>native\connection</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\AssetProcessor\native\FileProcessor\FileProcessor.cpp">
+      <Filter>native\FileProcessor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\AssetProcessor\native\FileWatcher\FileWatcher.cpp">
+      <Filter>native\FileWatcher</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\AssetProcessor\native\InternalBuilders\SettingsRegistryBuilder.cpp">
+      <Filter>native\InternalBuilders</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\AssetProcessor\native\resourcecompiler\JobsModel.cpp">
+      <Filter>native\resourcecompiler</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\AssetProcessor\native\resourcecompiler\RCBuilder.cpp">
+      <Filter>native\resourcecompiler</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\AssetProcessor\native\resourcecompiler\RCCommon.cpp">
+      <Filter>native\resourcecompiler</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\AssetProcessor\native\resourcecompiler\rccontroller.cpp">
+      <Filter>native\resourcecompiler</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\AssetProcessor\native\resourcecompiler\rcjob.cpp">
+      <Filter>native\resourcecompiler</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\AssetProcessor\native\resourcecompiler\rcjoblistmodel.cpp">
+      <Filter>native\resourcecompiler</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\AssetProcessor\native\resourcecompiler\RCJobSortFilterProxyModel.cpp">
+      <Filter>native\resourcecompiler</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\AssetProcessor\native\resourcecompiler\RCQueueSortModel.cpp">
+      <Filter>native\resourcecompiler</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\AssetProcessor\native\shadercompiler\shadercompilerjob.cpp">
+      <Filter>native\shadercompiler</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\AssetProcessor\native\shadercompiler\shadercompilerManager.cpp">
+      <Filter>native\shadercompiler</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\AssetProcessor\native\shadercompiler\shadercompilerModel.cpp">
+      <Filter>native\shadercompiler</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\AssetProcessor\native\utilities\ApplicationManager.cpp">
+      <Filter>native\utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\AssetProcessor\native\utilities\ApplicationManagerBase.cpp">
+      <Filter>native\utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\AssetProcessor\native\utilities\ApplicationServer.cpp">
+      <Filter>native\utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\AssetProcessor\native\utilities\AssetBuilderInfo.cpp">
+      <Filter>native\utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\AssetProcessor\native\utilities\AssetServerHandler.cpp">
+      <Filter>native\utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\AssetProcessor\native\utilities\assetUtils.cpp">
+      <Filter>native\utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\AssetProcessor\native\utilities\BuilderConfigurationManager.cpp">
+      <Filter>native\utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\AssetProcessor\native\utilities\BuilderManager.cpp">
+      <Filter>native\utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\AssetProcessor\native\utilities\ByteArrayStream.cpp">
+      <Filter>native\utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\AssetProcessor\native\utilities\CommunicatorTracePrinter.cpp">
+      <Filter>native\utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\AssetProcessor\native\utilities\IniConfiguration.cpp">
+      <Filter>native\utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\AssetProcessor\native\utilities\JobDiagnosticTracker.cpp">
+      <Filter>native\utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\AssetProcessor\native\utilities\LineByLineDependencyScanner.cpp">
+      <Filter>native\utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\AssetProcessor\native\utilities\MissingDependencyScanner.cpp">
+      <Filter>native\utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\AssetProcessor\native\utilities\PlatformConfiguration.cpp">
+      <Filter>native\utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\AssetProcessor\native\utilities\ThreadHelper.cpp">
+      <Filter>native\utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\AssetProcessor\Platform\Windows\native\FileWatcher\FileWatcher_win.cpp">
+      <Filter>Platform\Windows\native\FileWatcher</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\AssetProcessor\AssetProcessor.Static_autogen\mocs_compilation_profile.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\AssetProcessor\AssetProcessor.Static_autogen\mocs_compilation_release.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\AssetProcessor\native\AssetDatabase\AssetDatabase.h">
+      <Filter>native\AssetDatabase</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\AssetProcessor\native\AssetManager\AssetCatalog.h">
+      <Filter>native\AssetManager</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\AssetProcessor\native\AssetManager\assetProcessorManager.h">
+      <Filter>native\AssetManager</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\AssetProcessor\native\AssetManager\AssetRequestHandler.h">
+      <Filter>native\AssetManager</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\AssetProcessor\native\AssetManager\assetScanFolderInfo.h">
+      <Filter>native\AssetManager</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\AssetProcessor\native\AssetManager\assetScanner.h">
+      <Filter>native\AssetManager</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\AssetProcessor\native\AssetManager\assetScannerWorker.h">
+      <Filter>native\AssetManager</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\AssetProcessor\native\AssetManager\FileStateCache.h">
+      <Filter>native\AssetManager</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\AssetProcessor\native\AssetManager\PathDependencyManager.h">
+      <Filter>native\AssetManager</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\AssetProcessor\native\AssetManager\SourceFileRelocator.h">
+      <Filter>native\AssetManager</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\AssetProcessor\native\AssetManager\ControlRequestHandler.h">
+      <Filter>native\AssetManager</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\AssetProcessor\native\assetprocessor.h">
+      <Filter>native</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\AssetProcessor\native\connection\connection.h">
+      <Filter>native\connection</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\AssetProcessor\native\connection\connectionManager.h">
+      <Filter>native\connection</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\AssetProcessor\native\connection\connectionMessages.h">
+      <Filter>native\connection</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\AssetProcessor\native\connection\connectionworker.h">
+      <Filter>native\connection</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\AssetProcessor\native\FileProcessor\FileProcessor.h">
+      <Filter>native\FileProcessor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\AssetProcessor\native\FileWatcher\FileWatcher.h">
+      <Filter>native\FileWatcher</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\AssetProcessor\native\FileWatcher\FileWatcherAPI.h">
+      <Filter>native\FileWatcher</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\AssetProcessor\native\InternalBuilders\SettingsRegistryBuilder.h">
+      <Filter>native\InternalBuilders</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\AssetProcessor\native\resourcecompiler\JobsModel.h">
+      <Filter>native\resourcecompiler</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\AssetProcessor\native\resourcecompiler\RCBuilder.h">
+      <Filter>native\resourcecompiler</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\AssetProcessor\native\resourcecompiler\RCCommon.h">
+      <Filter>native\resourcecompiler</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\AssetProcessor\native\resourcecompiler\rccontroller.h">
+      <Filter>native\resourcecompiler</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\AssetProcessor\native\resourcecompiler\rcjob.h">
+      <Filter>native\resourcecompiler</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\AssetProcessor\native\resourcecompiler\rcjoblistmodel.h">
+      <Filter>native\resourcecompiler</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\AssetProcessor\native\resourcecompiler\RCJobSortFilterProxyModel.h">
+      <Filter>native\resourcecompiler</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\AssetProcessor\native\resourcecompiler\RCQueueSortModel.h">
+      <Filter>native\resourcecompiler</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\AssetProcessor\native\shadercompiler\shadercompilerjob.h">
+      <Filter>native\shadercompiler</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\AssetProcessor\native\shadercompiler\shadercompilerManager.h">
+      <Filter>native\shadercompiler</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\AssetProcessor\native\shadercompiler\shadercompilerMessages.h">
+      <Filter>native\shadercompiler</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\AssetProcessor\native\shadercompiler\shadercompilerModel.h">
+      <Filter>native\shadercompiler</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\AssetProcessor\native\utilities\ApplicationManagerAPI.h">
+      <Filter>native\utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\AssetProcessor\native\utilities\ApplicationManager.h">
+      <Filter>native\utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\AssetProcessor\native\utilities\ApplicationManagerBase.h">
+      <Filter>native\utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\AssetProcessor\native\utilities\ApplicationServer.h">
+      <Filter>native\utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\AssetProcessor\native\utilities\AssetBuilderInfo.h">
+      <Filter>native\utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\AssetProcessor\native\utilities\AssetServerHandler.h">
+      <Filter>native\utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\AssetProcessor\native\utilities\AssetUtilEBusHelper.h">
+      <Filter>native\utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\AssetProcessor\native\utilities\assetUtils.h">
+      <Filter>native\utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\AssetProcessor\native\utilities\BuilderConfigurationBus.h">
+      <Filter>native\utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\AssetProcessor\native\utilities\BuilderConfigurationManager.h">
+      <Filter>native\utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\AssetProcessor\native\utilities\BuilderManager.h">
+      <Filter>native\utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\AssetProcessor\native\utilities\BuilderManager.inl">
+      <Filter>native\utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\AssetProcessor\native\utilities\ByteArrayStream.h">
+      <Filter>native\utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\AssetProcessor\native\utilities\CommunicatorTracePrinter.h">
+      <Filter>native\utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\AssetProcessor\native\utilities\IniConfiguration.h">
+      <Filter>native\utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\AssetProcessor\native\utilities\JobDiagnosticTracker.h">
+      <Filter>native\utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\AssetProcessor\native\utilities\LineByLineDependencyScanner.h">
+      <Filter>native\utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\AssetProcessor\native\utilities\MissingDependencyScanner.h">
+      <Filter>native\utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\AssetProcessor\native\utilities\PlatformConfiguration.h">
+      <Filter>native\utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\AssetProcessor\native\utilities\PotentialDependencies.h">
+      <Filter>native\utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\AssetProcessor\native\utilities\SpecializedDependencyScanner.h">
+      <Filter>native\utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\AssetProcessor\native\utilities\ThreadHelper.h">
+      <Filter>native\utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\AssetProcessor\Platform\Windows\native\resource.h">
+      <Filter>Platform\Windows\native</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Code\Tools\AssetProcessor\CMakeLists.txt">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="C:\Users\lesaelr\o3de\Code\Tools\AssetProcessor\assetprocessor_static_files.cmake" />
+    <None Include="C:\Users\lesaelr\o3de\Code\Tools\AssetProcessor\Platform\Windows\assetprocessor_windows_files.cmake">
+      <Filter>Platform\Windows</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Generated Files">
+      <UniqueIdentifier>{FB9B7D8B-7F05-31D5-AA90-592248EDE1B3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Platform">
+      <UniqueIdentifier>{378A8D8C-6CA1-3F6B-A02B-1E9FF64C97B2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Platform\Windows">
+      <UniqueIdentifier>{63AEF2F6-51C7-306A-BFE8-A049C8C62EFB}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Platform\Windows\native">
+      <UniqueIdentifier>{E5AB7D67-EDA2-3EE4-A77D-3BE2F338D50E}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Platform\Windows\native\FileWatcher">
+      <UniqueIdentifier>{3AF6749D-9D9C-384E-B902-9547F74501B9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="native">
+      <UniqueIdentifier>{44F5BA4E-D071-3C12-A808-4236220F55B2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="native\AssetDatabase">
+      <UniqueIdentifier>{823A3D64-AAA6-311A-8765-540D2FE057DC}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="native\AssetManager">
+      <UniqueIdentifier>{B23D79D4-DDDA-3C99-A488-0192F27E10DF}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="native\FileProcessor">
+      <UniqueIdentifier>{F79326CD-0B3A-3911-A1BA-41F03F1AD2FD}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="native\FileWatcher">
+      <UniqueIdentifier>{41CDF998-3FDD-3C74-9231-234AF2C99CA8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="native\InternalBuilders">
+      <UniqueIdentifier>{993F5B97-89AE-3DEA-9CF2-0B19A35DD83F}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="native\connection">
+      <UniqueIdentifier>{34486198-B414-3F02-B8D9-EFF5CEFBDFE7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="native\resourcecompiler">
+      <UniqueIdentifier>{C2193737-4C7A-3996-A0EE-A6EC0763E0DE}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="native\shadercompiler">
+      <UniqueIdentifier>{54CA876A-3057-3E0C-97A8-35C57855EA90}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="native\utilities">
+      <UniqueIdentifier>{DAFD0334-3ED7-303B-A209-D936EC8A3D91}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

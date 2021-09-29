@@ -1,0 +1,239 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\WhiteBox-371c67b0\Code\CMakeFiles\WhiteBox.Editor.Static.dir\Unity\unity_2_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\WhiteBox-371c67b0\Code\CMakeFiles\WhiteBox.Editor.Static.dir\Unity\unity_1_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\WhiteBox-371c67b0\Code\CMakeFiles\WhiteBox.Editor.Static.dir\Unity\unity_0_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\WhiteBox\Code\Source\EditorWhiteBoxComponent.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\WhiteBox\Code\Source\EditorWhiteBoxComponentMode.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\WhiteBox\Code\Source\EditorWhiteBoxComponentModeTypes.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\WhiteBox\Code\Source\WhiteBoxToolApiReflection.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\WhiteBox\Code\Source\Core\WhiteBoxToolApi.cpp">
+      <Filter>Source\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\WhiteBox\Code\Source\Components\EditorWhiteBoxColliderComponent.cpp">
+      <Filter>Source\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\WhiteBox\Code\Source\Util\WhiteBoxTextureUtil.cpp">
+      <Filter>Source\Util</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\WhiteBox\Code\Source\Util\WhiteBoxEditorUtil.cpp">
+      <Filter>Source\Util</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\WhiteBox\Code\Source\Viewport\WhiteBoxEdgeScaleModifier.cpp">
+      <Filter>Source\Viewport</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\WhiteBox\Code\Source\Viewport\WhiteBoxEdgeTranslationModifier.cpp">
+      <Filter>Source\Viewport</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\WhiteBox\Code\Source\Viewport\WhiteBoxPolygonScaleModifier.cpp">
+      <Filter>Source\Viewport</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\WhiteBox\Code\Source\Viewport\WhiteBoxPolygonTranslationModifier.cpp">
+      <Filter>Source\Viewport</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\WhiteBox\Code\Source\Viewport\WhiteBoxManipulatorViews.cpp">
+      <Filter>Source\Viewport</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\WhiteBox\Code\Source\Viewport\WhiteBoxManipulatorBounds.cpp">
+      <Filter>Source\Viewport</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\WhiteBox\Code\Source\Viewport\WhiteBoxModifierUtil.cpp">
+      <Filter>Source\Viewport</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\WhiteBox\Code\Source\Viewport\WhiteBoxViewportConstants.cpp">
+      <Filter>Source\Viewport</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\WhiteBox\Code\Source\Viewport\WhiteBoxVertexTranslationModifier.cpp">
+      <Filter>Source\Viewport</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\WhiteBox\Code\Source\Asset\EditorWhiteBoxMeshAsset.cpp">
+      <Filter>Source\Asset</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\WhiteBox\Code\Source\Asset\WhiteBoxMeshAssetHandler.cpp">
+      <Filter>Source\Asset</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\WhiteBox\Code\Source\Asset\WhiteBoxMeshAssetUndoCommand.cpp">
+      <Filter>Source\Asset</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\WhiteBox\Code\Source\SubComponentModes\EditorWhiteBoxEdgeRestoreMode.cpp">
+      <Filter>Source\SubComponentModes</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\WhiteBox\Code\Source\SubComponentModes\EditorWhiteBoxDefaultMode.cpp">
+      <Filter>Source\SubComponentModes</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\WhiteBox\Code\Source\SubComponentModes\EditorWhiteBoxComponentModeCommon.cpp">
+      <Filter>Source\SubComponentModes</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\WhiteBox\Code\Source\EditorWhiteBoxSystemComponent.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\WhiteBox\Code\Include\WhiteBox\EditorWhiteBoxBus.h">
+      <Filter>Include\WhiteBox</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\WhiteBox\Code\Include\WhiteBox\EditorWhiteBoxComponentBus.h">
+      <Filter>Include\WhiteBox</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\WhiteBox\Code\Include\WhiteBox\WhiteBoxToolApi.h">
+      <Filter>Include\WhiteBox</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\WhiteBox\Code\Include\WhiteBox\EditorWhiteBoxColliderBus.h">
+      <Filter>Include\WhiteBox</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\WhiteBox\Code\Source\EditorWhiteBoxComponent.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\WhiteBox\Code\Source\EditorWhiteBoxComponentMode.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\WhiteBox\Code\Source\EditorWhiteBoxComponentModeBus.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\WhiteBox\Code\Source\EditorWhiteBoxComponentModeTypes.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\WhiteBox\Code\Source\EditorWhiteBoxEdgeModifierBus.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\WhiteBox\Code\Source\EditorWhiteBoxPolygonModifierBus.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\WhiteBox\Code\Source\EditorWhiteBoxDefaultShapeTypes.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\WhiteBox\Code\Source\WhiteBoxToolApiReflection.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\WhiteBox\Code\Source\Components\EditorWhiteBoxColliderComponent.h">
+      <Filter>Source\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\WhiteBox\Code\Source\Util\WhiteBoxTextureUtil.h">
+      <Filter>Source\Util</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\WhiteBox\Code\Source\Util\WhiteBoxEditorUtil.h">
+      <Filter>Source\Util</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\WhiteBox\Code\Source\Viewport\WhiteBoxEdgeScaleModifier.h">
+      <Filter>Source\Viewport</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\WhiteBox\Code\Source\Viewport\WhiteBoxEdgeTranslationModifier.h">
+      <Filter>Source\Viewport</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\WhiteBox\Code\Source\Viewport\WhiteBoxPolygonScaleModifier.h">
+      <Filter>Source\Viewport</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\WhiteBox\Code\Source\Viewport\WhiteBoxPolygonTranslationModifier.h">
+      <Filter>Source\Viewport</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\WhiteBox\Code\Source\Viewport\WhiteBoxManipulatorViews.h">
+      <Filter>Source\Viewport</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\WhiteBox\Code\Source\Viewport\WhiteBoxManipulatorBounds.h">
+      <Filter>Source\Viewport</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\WhiteBox\Code\Source\Viewport\WhiteBoxModifierUtil.h">
+      <Filter>Source\Viewport</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\WhiteBox\Code\Source\Viewport\WhiteBoxViewportConstants.h">
+      <Filter>Source\Viewport</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\WhiteBox\Code\Source\Viewport\WhiteBoxVertexTranslationModifier.h">
+      <Filter>Source\Viewport</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\WhiteBox\Code\Source\Asset\EditorWhiteBoxMeshAsset.h">
+      <Filter>Source\Asset</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\WhiteBox\Code\Source\Asset\WhiteBoxMeshAsset.h">
+      <Filter>Source\Asset</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\WhiteBox\Code\Source\Asset\WhiteBoxMeshAssetHandler.h">
+      <Filter>Source\Asset</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\WhiteBox\Code\Source\Asset\WhiteBoxMeshAssetUndoCommand.h">
+      <Filter>Source\Asset</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\WhiteBox\Code\Source\Asset\WhiteBoxMeshAssetBus.h">
+      <Filter>Source\Asset</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\WhiteBox\Code\Source\SubComponentModes\EditorWhiteBoxEdgeRestoreMode.h">
+      <Filter>Source\SubComponentModes</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\WhiteBox\Code\Source\SubComponentModes\EditorWhiteBoxDefaultMode.h">
+      <Filter>Source\SubComponentModes</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\WhiteBox\Code\Source\SubComponentModes\EditorWhiteBoxDefaultModeBus.h">
+      <Filter>Source\SubComponentModes</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\WhiteBox\Code\Source\SubComponentModes\EditorWhiteBoxComponentModeCommon.h">
+      <Filter>Source\SubComponentModes</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\WhiteBox\Code\Source\EditorWhiteBoxSystemComponent.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Gems\WhiteBox\Code\CMakeLists.txt">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="C:\Users\lesaelr\o3de\Gems\WhiteBox\Code\whitebox_editor_supported_files.cmake" />
+    <None Include="C:\Users\lesaelr\o3de\Gems\WhiteBox\Code\Source\Platform\Windows\platform_windows_tools.cmake">
+      <Filter>Source\Platform\Windows</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Generated Files">
+      <UniqueIdentifier>{FB9B7D8B-7F05-31D5-AA90-592248EDE1B3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include">
+      <UniqueIdentifier>{E188105A-C8C4-34BB-9809-15E8410EF7F8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\WhiteBox">
+      <UniqueIdentifier>{F1CC44E7-1712-3119-9E77-7F868BC76372}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source">
+      <UniqueIdentifier>{F3F0AD47-5F83-373B-A2BF-650D2E4FA3EA}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Asset">
+      <UniqueIdentifier>{37CD2F28-6F60-3C97-B57D-CD7695411F52}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Components">
+      <UniqueIdentifier>{914C6B5F-184E-399E-8506-2B79CE7A1426}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Core">
+      <UniqueIdentifier>{97988CE4-5157-3D84-BBCA-77F75B97C463}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Platform">
+      <UniqueIdentifier>{4FB794FF-EAE9-3B82-95CC-6241BAD0E3AC}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Platform\Windows">
+      <UniqueIdentifier>{2D0E7154-D797-393D-A7EB-8527ACAFB2BF}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\SubComponentModes">
+      <UniqueIdentifier>{8F49D0F2-6C44-32A9-9211-FE4FF4D6177B}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Util">
+      <UniqueIdentifier>{791EC76A-600E-3D3A-B1A2-552A6F8192CA}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Viewport">
+      <UniqueIdentifier>{A6745BEC-6C83-38E2-893A-2EFB926CCA22}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

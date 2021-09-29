@@ -1,0 +1,77 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\CMakeFiles\AzQtComponents.Tests.dir\Unity\unity_0_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\AzQtComponents\Tests\AzQtComponentTests.cpp">
+      <Filter>AzQtComponents\Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\AzQtComponents\Tests\ColorControllerTests.cpp">
+      <Filter>AzQtComponents\Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\AzQtComponents\Tests\FloatToStringConversionTests.cpp">
+      <Filter>AzQtComponents\Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\AzQtComponents\Tests\HexParsingTests.cpp">
+      <Filter>AzQtComponents\Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\AzQtComponents\Tests\StyleSheetCacheTests.cpp">
+      <Filter>AzQtComponents\Tests</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\CMakeFiles\08b24365a84bd27d080f6dd51f42b933\AzQtComponents.Tests_(CONFIG).stamp.rule">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\CMakeLists.txt">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\AzQtComponents\Tests\qrc1.qrc">
+      <Filter>AzQtComponents\Tests</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\AzQtComponents\Tests\qrc2.qrc">
+      <Filter>AzQtComponents\Tests</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\AzQtComponents\Tests\qrc1\sheet1.qss">
+      <Filter>AzQtComponents\Tests\qrc1</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\AzQtComponents\Tests\qrc1\sheet2.qss">
+      <Filter>AzQtComponents\Tests\qrc1</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\AzQtComponents\Tests\qrc2\sheet1.qss">
+      <Filter>AzQtComponents\Tests\qrc2</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\AzQtComponents\azqtcomponents_testing_files.cmake">
+      <Filter>AzQtComponents</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\runtime_dependencies\debug\AzQtComponents.Tests_debug.stamp">
+      <Filter>Generated Files</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\runtime_dependencies\profile\AzQtComponents.Tests_profile.stamp">
+      <Filter>Generated Files</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\runtime_dependencies\release\AzQtComponents.Tests_release.stamp">
+      <Filter>Generated Files</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="AzQtComponents">
+      <UniqueIdentifier>{9E6694A1-33EA-34DD-A3F7-6FDBBD75AD17}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzQtComponents\Tests">
+      <UniqueIdentifier>{7DB58C27-9099-365B-934A-B38C74D51ACD}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzQtComponents\Tests\qrc1">
+      <UniqueIdentifier>{1EDD2D47-9C38-37D9-A18F-187C3C5CB629}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzQtComponents\Tests\qrc2">
+      <UniqueIdentifier>{761FD63F-7300-3D99-8689-AE3E0E1C0622}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Generated Files">
+      <UniqueIdentifier>{FB9B7D8B-7F05-31D5-AA90-592248EDE1B3}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

@@ -1,0 +1,10 @@
+# CMake generation dependency list for this directory.
+C:/Program Files/CMake/share/cmake-3.21/Modules/CMakeParseArguments.cmake
+C:/Users/lesaelr/.o3de/3rdParty/packages/Crashpad-0.8.0-rev1-windows/FindCrashpad.cmake
+C:/Users/lesaelr/.o3de/3rdParty/packages/Crashpad-0.8.0-rev1-windows/PackageInfo.json
+C:/Users/lesaelr/o3de/Code/Tools/CrashHandler/CMakeLists.txt
+C:/Users/lesaelr/o3de/Code/Tools/CrashHandler/Platform/Windows/PAL_windows.cmake
+C:/Users/lesaelr/o3de/Code/Tools/CrashHandler/Platform/Windows/crash_handler_windows_files.cmake
+C:/Users/lesaelr/o3de/Code/Tools/CrashHandler/Platform/Windows/platform_windows_files.cmake
+C:/Users/lesaelr/o3de/Code/Tools/CrashHandler/crash_handler_files.cmake
+C:/Users/lesaelr/o3de/Code/Tools/CrashHandler/crash_uploader_support_files.cmake

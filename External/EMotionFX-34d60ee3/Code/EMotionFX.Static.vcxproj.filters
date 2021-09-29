@@ -1,0 +1,56 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\EMotionFX-34d60ee3\Code\CMakeFiles\EMotionFX.Static.dir\Unity\unity_0_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Source\Integration\System\SystemComponent.cpp">
+      <Filter>Source\Integration\System</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Source\Integration\System\PipelineComponent.cpp">
+      <Filter>Source\Integration\System</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Include\Integration\AnimationBus.h">
+      <Filter>Include\Integration</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Include\Integration\MotionExtractionBus.h">
+      <Filter>Include\Integration</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Source\Integration\System\SystemComponent.h">
+      <Filter>Source\Integration\System</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Source\Integration\System\PipelineComponent.h">
+      <Filter>Source\Integration\System</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\CMakeLists.txt">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\emotionfx_files.cmake" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Generated Files">
+      <UniqueIdentifier>{FB9B7D8B-7F05-31D5-AA90-592248EDE1B3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include">
+      <UniqueIdentifier>{E188105A-C8C4-34BB-9809-15E8410EF7F8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\Integration">
+      <UniqueIdentifier>{1100EF9A-15DE-3F07-BC02-A870E3AA87BB}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source">
+      <UniqueIdentifier>{F3F0AD47-5F83-373B-A2BF-650D2E4FA3EA}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Integration">
+      <UniqueIdentifier>{654CB93B-058D-3291-AF1E-27E1F8C8A0AE}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Integration\System">
+      <UniqueIdentifier>{9DD90D99-43AE-3B4B-8092-DDF213F3DA80}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

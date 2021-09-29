@@ -1,0 +1,41 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\LyShine-4e09d22a\Code\CMakeFiles\LyShine.Builders.Static.dir\Unity\unity_0_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Pipeline\LyShineBuilder\LyShineBuilderComponent.cpp">
+      <Filter>Pipeline\LyShineBuilder</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Pipeline\LyShineBuilder\UiCanvasBuilderWorker.cpp">
+      <Filter>Pipeline\LyShineBuilder</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Pipeline\LyShineBuilder\LyShineBuilderComponent.h">
+      <Filter>Pipeline\LyShineBuilder</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Pipeline\LyShineBuilder\UiCanvasBuilderWorker.h">
+      <Filter>Pipeline\LyShineBuilder</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\CMakeLists.txt">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\lyshine_editor_builder_files.cmake" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Generated Files">
+      <UniqueIdentifier>{FB9B7D8B-7F05-31D5-AA90-592248EDE1B3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Pipeline">
+      <UniqueIdentifier>{393F87FD-B1D7-3F13-8AA9-F6A672D97084}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Pipeline\LyShineBuilder">
+      <UniqueIdentifier>{2A821ADF-AFA1-3C14-B731-74145F42FDC9}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

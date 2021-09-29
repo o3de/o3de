@@ -1,0 +1,6 @@
+# CMake generation dependency list for this directory.
+C:/Users/lesaelr/o3de/Gems/Achievements/Code/CMakeLists.txt
+C:/Users/lesaelr/o3de/Gems/Achievements/Code/Source/Platform/Windows/platform_windows.cmake
+C:/Users/lesaelr/o3de/Gems/Achievements/Code/Source/Platform/Windows/platform_windows_files.cmake
+C:/Users/lesaelr/o3de/Gems/Achievements/Code/achievements_files.cmake
+C:/Users/lesaelr/o3de/Gems/Achievements/Code/achievements_shared_files.cmake

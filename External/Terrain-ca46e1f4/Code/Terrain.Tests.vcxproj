@@ -1,0 +1,462 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <PreferredToolArchitecture>x64</PreferredToolArchitecture>
+  </PropertyGroup>
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="debug|x64">
+      <Configuration>debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="profile|x64">
+      <Configuration>profile</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="release|x64">
+      <Configuration>release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{B8C18485-9180-3830-88CA-56C29BD98233}</ProjectGuid>
+    <WindowsTargetPlatformVersion>10.0.19041.0</WindowsTargetPlatformVersion>
+    <Keyword>Win32Proj</Keyword>
+    <Platform>x64</Platform>
+    <ProjectName>Terrain.Tests</ProjectName>
+    <VCProjectUpgraderObjectName>NoUpgrade</VCProjectUpgraderObjectName>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='debug|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v142</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='profile|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v142</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='release|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v142</PlatformToolset>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets">
+    <Import Project="C:\Users\lesaelr\o3de\cmake\Platform\Common\MSVC\TestProject.props" Condition="exists('C:\Users\lesaelr\o3de\cmake\Platform\Common\MSVC\TestProject.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>10.0.20506.1</_ProjectFileVersion>
+    <LocalDebuggerCommand Condition="'$(Configuration)|$(Platform)'=='debug|x64'">C:/Users/lesaelr/o3de/bin/debug/AzTestRunner.exe</LocalDebuggerCommand>
+    <LocalDebuggerCommandArguments Condition="'$(Configuration)|$(Platform)'=='debug|x64'">C:/Users/lesaelr/o3de/bin/debug/Terrain.Tests.dll AzRunUnitTests --gtest_output=xml:C:/Users/lesaelr/o3de/Testing/Gtest/Gem_Terrain.Tests.xml</LocalDebuggerCommandArguments>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='debug|x64'">C:\Users\lesaelr\o3de\bin\debug\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='debug|x64'">Terrain.Tests.dir\debug\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='debug|x64'">Terrain.Tests</TargetName>
+    <TargetExt Condition="'$(Configuration)|$(Platform)'=='debug|x64'">.dll</TargetExt>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='debug|x64'">false</LinkIncremental>
+    <GenerateManifest Condition="'$(Configuration)|$(Platform)'=='debug|x64'">true</GenerateManifest>
+    <LocalDebuggerCommand Condition="'$(Configuration)|$(Platform)'=='profile|x64'">C:/Users/lesaelr/o3de/bin/profile/AzTestRunner.exe</LocalDebuggerCommand>
+    <LocalDebuggerCommandArguments Condition="'$(Configuration)|$(Platform)'=='profile|x64'">C:/Users/lesaelr/o3de/bin/profile/Terrain.Tests.dll AzRunUnitTests --gtest_output=xml:C:/Users/lesaelr/o3de/Testing/Gtest/Gem_Terrain.Tests.xml</LocalDebuggerCommandArguments>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='profile|x64'">C:\Users\lesaelr\o3de\bin\profile\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='profile|x64'">Terrain.Tests.dir\profile\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='profile|x64'">Terrain.Tests</TargetName>
+    <TargetExt Condition="'$(Configuration)|$(Platform)'=='profile|x64'">.dll</TargetExt>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='profile|x64'">false</LinkIncremental>
+    <GenerateManifest Condition="'$(Configuration)|$(Platform)'=='profile|x64'">true</GenerateManifest>
+    <LocalDebuggerCommand Condition="'$(Configuration)|$(Platform)'=='release|x64'">C:/Users/lesaelr/o3de/bin/release/AzTestRunner.exe</LocalDebuggerCommand>
+    <LocalDebuggerCommandArguments Condition="'$(Configuration)|$(Platform)'=='release|x64'">C:/Users/lesaelr/o3de/bin/release/Terrain.Tests.dll AzRunUnitTests --gtest_output=xml:C:/Users/lesaelr/o3de/Testing/Gtest/Gem_Terrain.Tests.xml</LocalDebuggerCommandArguments>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='release|x64'">C:\Users\lesaelr\o3de\bin\release\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='release|x64'">Terrain.Tests.dir\release\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='release|x64'">Terrain.Tests</TargetName>
+    <TargetExt Condition="'$(Configuration)|$(Platform)'=='release|x64'">.dll</TargetExt>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='release|x64'">false</LinkIncremental>
+    <GenerateManifest Condition="'$(Configuration)|$(Platform)'=='release|x64'">true</GenerateManifest>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='debug|x64'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>C:\Users\lesaelr\o3de\Gems\Terrain\Code\Tests;C:\Users\lesaelr\o3de\Gems\Terrain\Code\Source;C:\Users\lesaelr\o3de\Code\Framework\AzTest\.;C:\Users\lesaelr\o3de\Code\Framework\AzTest\AzTest\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzCore\.;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Common;C:\Users\lesaelr\o3de\Code\Framework\AzFramework\.;C:\Users\lesaelr\o3de\Code\Framework\AzFramework\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\GridMate\.;C:\Users\lesaelr\o3de\Code\Framework\GridMate\Platform\Windows;C:\Users\lesaelr\o3de\Gems\LmbrCentral\Code\Mocks;C:\Users\lesaelr\o3de\Gems\Terrain\Code\Mocks;C:\Users\lesaelr\o3de\Gems\Terrain\Code\Include;C:\Users\lesaelr\o3de\Gems\GradientSignal\Code\Include;C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Include;C:\Users\lesaelr\o3de\Gems\SurfaceData\Code\Include;C:\Users\lesaelr\o3de\Gems\LmbrCentral\Code\include;C:\Users\lesaelr\o3de\Gems\Atom\RPI\Code\Include;C:\Users\lesaelr\o3de\Gems\Atom\RPI\Code\External;C:\Users\lesaelr\o3de\Gems\Atom\RHI\Code\Include;C:\Users\lesaelr\o3de\Gems\Atom\Utils\Code\Include;C:\Users\lesaelr\o3de\Code\Framework\AtomCore\.;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalOptions>%(AdditionalOptions) /Zc:__cplusplus /Zc:lambda /favor:AMD64 /bigobj /RTCsu /experimental:external /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/googletest-1.8.1-rev4-windows/googletest/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/googlebenchmark-1.5.0-rev2-windows/googlebenchmark/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/Lua-5.3.5-rev5-windows/lua/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/RapidJSON-1.1.0-rev1-multiplatform/RapidJSON/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/RapidXML-1.13-rev1-multiplatform/RapidXML/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/zlib-1.2.11-rev2-windows/zlib/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/zstd-1.35-multiplatform/zstd/lib /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/cityhash-1.1-multiplatform/cityhash/src /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/OpenSSL-1.1.1b-rev2-windows/OpenSSL/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/lz4-1.9.3-vcpkg-rev4-windows/lz4/lz4/include</AdditionalOptions>
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <BufferSecurityCheck>true</BufferSecurityCheck>
+      <CallingConvention>Cdecl</CallingConvention>
+      <ConformanceMode>true</ConformanceMode>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <DiagnosticsFormat>Caret</DiagnosticsFormat>
+      <DisableSpecificWarnings>4201</DisableSpecificWarnings>
+      <ExceptionHandling>
+      </ExceptionHandling>
+      <ExternalWarningLevel>TurnOffAllWarnings</ExternalWarningLevel>
+      <FloatingPointModel>Fast</FloatingPointModel>
+      <ForceConformanceInForLoopScope>true</ForceConformanceInForLoopScope>
+      <InlineFunctionExpansion>Disabled</InlineFunctionExpansion>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <Optimization>Disabled</Optimization>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <TreatSpecificWarningsAsErrors>4263;4264;4265;4266;4296;4426;4437;4774;4777;5031;5032;5233</TreatSpecificWarningsAsErrors>
+      <TreatWarningAsError>true</TreatWarningAsError>
+      <UseFullPaths>false</UseFullPaths>
+      <WarningLevel>Level4</WarningLevel>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);_HAS_EXCEPTIONS=0;_DEBUG;AZ_DEBUG_BUILD=1;AZ_ENABLE_TRACING;AZ_ENABLE_DEBUG_TOOLS;AZ_BUILD_CONFIGURATION_TYPE="debug";_ENABLE_EXTENDED_ALIGNED_STORAGE;_WIN32;WIN32;_WIN64;WIN64;NOMINMAX;HAVE_BENCHMARK;OPENSSL_ENABLED;CMAKE_INTDIR="debug";Terrain_Tests_EXPORTS</PreprocessorDefinitions>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);_DEBUG;_HAS_EXCEPTIONS=0;AZ_DEBUG_BUILD=1;AZ_ENABLE_TRACING;AZ_ENABLE_DEBUG_TOOLS;AZ_BUILD_CONFIGURATION_TYPE=\"debug\";_ENABLE_EXTENDED_ALIGNED_STORAGE;_WIN32;WIN32;_WIN64;WIN64;NOMINMAX;HAVE_BENCHMARK;OPENSSL_ENABLED;CMAKE_INTDIR=\"debug\";Terrain_Tests_EXPORTS</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>C:\Users\lesaelr\o3de\Gems\Terrain\Code\Tests;C:\Users\lesaelr\o3de\Gems\Terrain\Code\Source;C:\Users\lesaelr\o3de\Code\Framework\AzTest\.;C:\Users\lesaelr\o3de\Code\Framework\AzTest\AzTest\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzCore\.;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Common;C:\Users\lesaelr\o3de\Code\Framework\AzFramework\.;C:\Users\lesaelr\o3de\Code\Framework\AzFramework\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\GridMate\.;C:\Users\lesaelr\o3de\Code\Framework\GridMate\Platform\Windows;C:\Users\lesaelr\o3de\Gems\LmbrCentral\Code\Mocks;C:\Users\lesaelr\o3de\Gems\Terrain\Code\Mocks;C:\Users\lesaelr\o3de\Gems\Terrain\Code\Include;C:\Users\lesaelr\o3de\Gems\GradientSignal\Code\Include;C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Include;C:\Users\lesaelr\o3de\Gems\SurfaceData\Code\Include;C:\Users\lesaelr\o3de\Gems\LmbrCentral\Code\include;C:\Users\lesaelr\o3de\Gems\Atom\RPI\Code\Include;C:\Users\lesaelr\o3de\Gems\Atom\RPI\Code\External;C:\Users\lesaelr\o3de\Gems\Atom\RHI\Code\Include;C:\Users\lesaelr\o3de\Gems\Atom\Utils\Code\Include;C:\Users\lesaelr\o3de\Code\Framework\AtomCore\.;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+    </ResourceCompile>
+    <Midl>
+      <AdditionalIncludeDirectories>C:\Users\lesaelr\o3de\Gems\Terrain\Code\Tests;C:\Users\lesaelr\o3de\Gems\Terrain\Code\Source;C:\Users\lesaelr\o3de\Code\Framework\AzTest\.;C:\Users\lesaelr\o3de\Code\Framework\AzTest\AzTest\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzCore\.;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Common;C:\Users\lesaelr\o3de\Code\Framework\AzFramework\.;C:\Users\lesaelr\o3de\Code\Framework\AzFramework\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\GridMate\.;C:\Users\lesaelr\o3de\Code\Framework\GridMate\Platform\Windows;C:\Users\lesaelr\o3de\Gems\LmbrCentral\Code\Mocks;C:\Users\lesaelr\o3de\Gems\Terrain\Code\Mocks;C:\Users\lesaelr\o3de\Gems\Terrain\Code\Include;C:\Users\lesaelr\o3de\Gems\GradientSignal\Code\Include;C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Include;C:\Users\lesaelr\o3de\Gems\SurfaceData\Code\Include;C:\Users\lesaelr\o3de\Gems\LmbrCentral\Code\include;C:\Users\lesaelr\o3de\Gems\Atom\RPI\Code\Include;C:\Users\lesaelr\o3de\Gems\Atom\RPI\Code\External;C:\Users\lesaelr\o3de\Gems\Atom\RHI\Code\Include;C:\Users\lesaelr\o3de\Gems\Atom\Utils\Code\Include;C:\Users\lesaelr\o3de\Code\Framework\AtomCore\.;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+    <Link>
+      <AdditionalDependencies>..\..\..\lib\debug\AzTest.lib;..\..\..\lib\debug\AzFramework.lib;..\..\..\lib\debug\Terrain.Static.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\googletest-1.8.1-rev4-windows\googletest\lib\gmockd.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\googletest-1.8.1-rev4-windows\googletest\lib\gtestd.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\googlebenchmark-1.5.0-rev2-windows\googlebenchmark\lib\Debug\benchmark.lib;Shlwapi.lib;..\..\..\lib\debug\Atom_RPI.Public.lib;..\..\..\lib\debug\Atom_Utils.Static.lib;..\..\..\lib\debug\Atom_RHI.Public.lib;..\..\..\lib\debug\Atom_RHI.Reflect.lib;..\..\..\lib\debug\AzFramework.lib;..\..\..\lib\debug\GridMate.lib;ws2_32.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\OpenSSL-1.1.1b-rev2-windows\OpenSSL\debug\lib\libssl.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\OpenSSL-1.1.1b-rev2-windows\OpenSSL\debug\lib\libcrypto.lib;crypt32.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\lz4-1.9.3-vcpkg-rev4-windows\lz4\lz4\lib\..\debug\lib\lz4d.lib;..\..\..\lib\debug\AtomCore.lib;..\..\..\lib\debug\AzCore.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\zlib-1.2.11-rev2-windows\zlib\lib\zlibstaticd.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\zstd-1.35-multiplatform\zstd\bin\win-x64-vc140\debug\zstd.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\Lua-5.3.5-rev5-windows\lua\lib\debug\lualib.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\cityhash-1.1-multiplatform\cityhash\build\win_x64\vc140\debug\cityhash.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;advapi32.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalOptions>%(AdditionalOptions) /machine:x64 /IGNORE:4099 /ignore:4099</AdditionalOptions>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <ImportLibrary>C:/Users/lesaelr/o3de/lib/debug/Terrain.Tests.lib</ImportLibrary>
+      <ProgramDataBaseFile>C:/Users/lesaelr/o3de/bin/debug/Terrain.Tests.pdb</ProgramDataBaseFile>
+      <SubSystem>Console</SubSystem>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <TargetMachine>MachineX64</TargetMachine>
+    </Link>
+    <ProjectReference>
+      <LinkLibraryDependencies>false</LinkLibraryDependencies>
+    </ProjectReference>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='profile|x64'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>C:\Users\lesaelr\o3de\Gems\Terrain\Code\Tests;C:\Users\lesaelr\o3de\Gems\Terrain\Code\Source;C:\Users\lesaelr\o3de\Code\Framework\AzTest\.;C:\Users\lesaelr\o3de\Code\Framework\AzTest\AzTest\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzCore\.;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Common;C:\Users\lesaelr\o3de\Code\Framework\AzFramework\.;C:\Users\lesaelr\o3de\Code\Framework\AzFramework\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\GridMate\.;C:\Users\lesaelr\o3de\Code\Framework\GridMate\Platform\Windows;C:\Users\lesaelr\o3de\Gems\LmbrCentral\Code\Mocks;C:\Users\lesaelr\o3de\Gems\Terrain\Code\Mocks;C:\Users\lesaelr\o3de\Gems\Terrain\Code\Include;C:\Users\lesaelr\o3de\Gems\GradientSignal\Code\Include;C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Include;C:\Users\lesaelr\o3de\Gems\SurfaceData\Code\Include;C:\Users\lesaelr\o3de\Gems\LmbrCentral\Code\include;C:\Users\lesaelr\o3de\Gems\Atom\RPI\Code\Include;C:\Users\lesaelr\o3de\Gems\Atom\RPI\Code\External;C:\Users\lesaelr\o3de\Gems\Atom\RHI\Code\Include;C:\Users\lesaelr\o3de\Gems\Atom\Utils\Code\Include;C:\Users\lesaelr\o3de\Code\Framework\AtomCore\.;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalOptions>%(AdditionalOptions) /Zc:__cplusplus /Zc:lambda /favor:AMD64 /bigobj /experimental:external /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/googletest-1.8.1-rev4-windows/googletest/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/googlebenchmark-1.5.0-rev2-windows/googlebenchmark/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/Lua-5.3.5-rev5-windows/lua/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/RapidJSON-1.1.0-rev1-multiplatform/RapidJSON/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/RapidXML-1.13-rev1-multiplatform/RapidXML/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/zlib-1.2.11-rev2-windows/zlib/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/zstd-1.35-multiplatform/zstd/lib /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/cityhash-1.1-multiplatform/cityhash/src /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/OpenSSL-1.1.1b-rev2-windows/OpenSSL/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/lz4-1.9.3-vcpkg-rev4-windows/lz4/lz4/include</AdditionalOptions>
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <CallingConvention>Cdecl</CallingConvention>
+      <ConformanceMode>true</ConformanceMode>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <DiagnosticsFormat>Caret</DiagnosticsFormat>
+      <DisableSpecificWarnings>4201</DisableSpecificWarnings>
+      <ExceptionHandling>
+      </ExceptionHandling>
+      <ExternalWarningLevel>TurnOffAllWarnings</ExternalWarningLevel>
+      <FloatingPointModel>Fast</FloatingPointModel>
+      <ForceConformanceInForLoopScope>true</ForceConformanceInForLoopScope>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <Optimization>MaxSpeed</Optimization>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <RemoveUnreferencedCodeData>true</RemoveUnreferencedCodeData>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <StringPooling>true</StringPooling>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <TreatSpecificWarningsAsErrors>4263;4264;4265;4266;4296;4426;4437;4774;4777;5031;5032;5233</TreatSpecificWarningsAsErrors>
+      <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
+      <TreatWarningAsError>true</TreatWarningAsError>
+      <UseFullPaths>false</UseFullPaths>
+      <WarningLevel>Level4</WarningLevel>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);_HAS_EXCEPTIONS=0;_PROFILE;PROFILE;NDEBUG;AZ_ENABLE_TRACING;AZ_ENABLE_DEBUG_TOOLS;AZ_BUILD_CONFIGURATION_TYPE="profile";_ENABLE_EXTENDED_ALIGNED_STORAGE;_WIN32;WIN32;_WIN64;WIN64;NOMINMAX;HAVE_BENCHMARK;OPENSSL_ENABLED;CMAKE_INTDIR="profile";Terrain_Tests_EXPORTS</PreprocessorDefinitions>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);_HAS_EXCEPTIONS=0;_PROFILE;PROFILE;NDEBUG;AZ_ENABLE_TRACING;AZ_ENABLE_DEBUG_TOOLS;AZ_BUILD_CONFIGURATION_TYPE=\"profile\";_ENABLE_EXTENDED_ALIGNED_STORAGE;_WIN32;WIN32;_WIN64;WIN64;NOMINMAX;HAVE_BENCHMARK;OPENSSL_ENABLED;CMAKE_INTDIR=\"profile\";Terrain_Tests_EXPORTS</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>C:\Users\lesaelr\o3de\Gems\Terrain\Code\Tests;C:\Users\lesaelr\o3de\Gems\Terrain\Code\Source;C:\Users\lesaelr\o3de\Code\Framework\AzTest\.;C:\Users\lesaelr\o3de\Code\Framework\AzTest\AzTest\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzCore\.;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Common;C:\Users\lesaelr\o3de\Code\Framework\AzFramework\.;C:\Users\lesaelr\o3de\Code\Framework\AzFramework\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\GridMate\.;C:\Users\lesaelr\o3de\Code\Framework\GridMate\Platform\Windows;C:\Users\lesaelr\o3de\Gems\LmbrCentral\Code\Mocks;C:\Users\lesaelr\o3de\Gems\Terrain\Code\Mocks;C:\Users\lesaelr\o3de\Gems\Terrain\Code\Include;C:\Users\lesaelr\o3de\Gems\GradientSignal\Code\Include;C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Include;C:\Users\lesaelr\o3de\Gems\SurfaceData\Code\Include;C:\Users\lesaelr\o3de\Gems\LmbrCentral\Code\include;C:\Users\lesaelr\o3de\Gems\Atom\RPI\Code\Include;C:\Users\lesaelr\o3de\Gems\Atom\RPI\Code\External;C:\Users\lesaelr\o3de\Gems\Atom\RHI\Code\Include;C:\Users\lesaelr\o3de\Gems\Atom\Utils\Code\Include;C:\Users\lesaelr\o3de\Code\Framework\AtomCore\.;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+    </ResourceCompile>
+    <Midl>
+      <AdditionalIncludeDirectories>C:\Users\lesaelr\o3de\Gems\Terrain\Code\Tests;C:\Users\lesaelr\o3de\Gems\Terrain\Code\Source;C:\Users\lesaelr\o3de\Code\Framework\AzTest\.;C:\Users\lesaelr\o3de\Code\Framework\AzTest\AzTest\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzCore\.;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Common;C:\Users\lesaelr\o3de\Code\Framework\AzFramework\.;C:\Users\lesaelr\o3de\Code\Framework\AzFramework\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\GridMate\.;C:\Users\lesaelr\o3de\Code\Framework\GridMate\Platform\Windows;C:\Users\lesaelr\o3de\Gems\LmbrCentral\Code\Mocks;C:\Users\lesaelr\o3de\Gems\Terrain\Code\Mocks;C:\Users\lesaelr\o3de\Gems\Terrain\Code\Include;C:\Users\lesaelr\o3de\Gems\GradientSignal\Code\Include;C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Include;C:\Users\lesaelr\o3de\Gems\SurfaceData\Code\Include;C:\Users\lesaelr\o3de\Gems\LmbrCentral\Code\include;C:\Users\lesaelr\o3de\Gems\Atom\RPI\Code\Include;C:\Users\lesaelr\o3de\Gems\Atom\RPI\Code\External;C:\Users\lesaelr\o3de\Gems\Atom\RHI\Code\Include;C:\Users\lesaelr\o3de\Gems\Atom\Utils\Code\Include;C:\Users\lesaelr\o3de\Code\Framework\AtomCore\.;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+    <Link>
+      <AdditionalDependencies>..\..\..\lib\profile\AzTest.lib;..\..\..\lib\profile\AzFramework.lib;..\..\..\lib\profile\Terrain.Static.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\googletest-1.8.1-rev4-windows\googletest\lib\gmock.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\googletest-1.8.1-rev4-windows\googletest\lib\gtest.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\googlebenchmark-1.5.0-rev2-windows\googlebenchmark\lib\Release\benchmark.lib;Shlwapi.lib;..\..\..\lib\profile\Atom_RPI.Public.lib;..\..\..\lib\profile\Atom_Utils.Static.lib;..\..\..\lib\profile\Atom_RHI.Public.lib;..\..\..\lib\profile\Atom_RHI.Reflect.lib;..\..\..\lib\profile\AzFramework.lib;..\..\..\lib\profile\GridMate.lib;ws2_32.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\OpenSSL-1.1.1b-rev2-windows\OpenSSL\lib\libssl.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\OpenSSL-1.1.1b-rev2-windows\OpenSSL\lib\libcrypto.lib;crypt32.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\lz4-1.9.3-vcpkg-rev4-windows\lz4\lz4\lib\lz4.lib;..\..\..\lib\profile\AtomCore.lib;..\..\..\lib\profile\AzCore.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\zlib-1.2.11-rev2-windows\zlib\lib\zlibstatic.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\zstd-1.35-multiplatform\zstd\bin\win-x64-vc140\release\zstd.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\Lua-5.3.5-rev5-windows\lua\lib\release\lualib.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\cityhash-1.1-multiplatform\cityhash\build\win_x64\vc140\release\cityhash.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;advapi32.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalOptions>%(AdditionalOptions) /machine:x64 /IGNORE:4099 /ignore:4099</AdditionalOptions>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <ImportLibrary>C:/Users/lesaelr/o3de/lib/profile/Terrain.Tests.lib</ImportLibrary>
+      <OptimizeReferences>true</OptimizeReferences>
+      <ProgramDataBaseFile>C:/Users/lesaelr/o3de/bin/profile/Terrain.Tests.pdb</ProgramDataBaseFile>
+      <SubSystem>Console</SubSystem>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <TargetMachine>MachineX64</TargetMachine>
+    </Link>
+    <ProjectReference>
+      <LinkLibraryDependencies>false</LinkLibraryDependencies>
+    </ProjectReference>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='release|x64'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>C:\Users\lesaelr\o3de\Gems\Terrain\Code\Tests;C:\Users\lesaelr\o3de\Gems\Terrain\Code\Source;C:\Users\lesaelr\o3de\Code\Framework\AzTest\.;C:\Users\lesaelr\o3de\Code\Framework\AzTest\AzTest\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzCore\.;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Common;C:\Users\lesaelr\o3de\Code\Framework\AzFramework\.;C:\Users\lesaelr\o3de\Code\Framework\AzFramework\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\GridMate\.;C:\Users\lesaelr\o3de\Code\Framework\GridMate\Platform\Windows;C:\Users\lesaelr\o3de\Gems\LmbrCentral\Code\Mocks;C:\Users\lesaelr\o3de\Gems\Terrain\Code\Mocks;C:\Users\lesaelr\o3de\Gems\Terrain\Code\Include;C:\Users\lesaelr\o3de\Gems\GradientSignal\Code\Include;C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Include;C:\Users\lesaelr\o3de\Gems\SurfaceData\Code\Include;C:\Users\lesaelr\o3de\Gems\LmbrCentral\Code\include;C:\Users\lesaelr\o3de\Gems\Atom\RPI\Code\Include;C:\Users\lesaelr\o3de\Gems\Atom\RPI\Code\External;C:\Users\lesaelr\o3de\Gems\Atom\RHI\Code\Include;C:\Users\lesaelr\o3de\Gems\Atom\Utils\Code\Include;C:\Users\lesaelr\o3de\Code\Framework\AtomCore\.;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalOptions>%(AdditionalOptions) /Zc:__cplusplus /Zc:lambda /favor:AMD64 /bigobj /experimental:external /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/googletest-1.8.1-rev4-windows/googletest/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/googlebenchmark-1.5.0-rev2-windows/googlebenchmark/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/Lua-5.3.5-rev5-windows/lua/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/RapidJSON-1.1.0-rev1-multiplatform/RapidJSON/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/RapidXML-1.13-rev1-multiplatform/RapidXML/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/zlib-1.2.11-rev2-windows/zlib/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/zstd-1.35-multiplatform/zstd/lib /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/cityhash-1.1-multiplatform/cityhash/src /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/OpenSSL-1.1.1b-rev2-windows/OpenSSL/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/lz4-1.9.3-vcpkg-rev4-windows/lz4/lz4/include</AdditionalOptions>
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <CallingConvention>Cdecl</CallingConvention>
+      <ConformanceMode>true</ConformanceMode>
+      <DiagnosticsFormat>Caret</DiagnosticsFormat>
+      <DisableSpecificWarnings>4201</DisableSpecificWarnings>
+      <ExceptionHandling>
+      </ExceptionHandling>
+      <ExternalWarningLevel>TurnOffAllWarnings</ExternalWarningLevel>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <FloatingPointModel>Fast</FloatingPointModel>
+      <ForceConformanceInForLoopScope>true</ForceConformanceInForLoopScope>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <OmitFramePointers>true</OmitFramePointers>
+      <Optimization>Full</Optimization>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <TreatSpecificWarningsAsErrors>4263;4264;4265;4266;4296;4426;4437;4774;4777;5031;5032;5233</TreatSpecificWarningsAsErrors>
+      <TreatWarningAsError>true</TreatWarningAsError>
+      <UseFullPaths>false</UseFullPaths>
+      <WarningLevel>Level4</WarningLevel>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);_HAS_EXCEPTIONS=0;_RELEASE;RELEASE;NDEBUG;AZ_BUILD_CONFIGURATION_TYPE="release";_ENABLE_EXTENDED_ALIGNED_STORAGE;_WIN32;WIN32;_WIN64;WIN64;NOMINMAX;HAVE_BENCHMARK;OPENSSL_ENABLED;CMAKE_INTDIR="release";Terrain_Tests_EXPORTS</PreprocessorDefinitions>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+      <DebugInformationFormat>
+      </DebugInformationFormat>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);_HAS_EXCEPTIONS=0;_RELEASE;RELEASE;NDEBUG;AZ_BUILD_CONFIGURATION_TYPE=\"release\";_ENABLE_EXTENDED_ALIGNED_STORAGE;_WIN32;WIN32;_WIN64;WIN64;NOMINMAX;HAVE_BENCHMARK;OPENSSL_ENABLED;CMAKE_INTDIR=\"release\";Terrain_Tests_EXPORTS</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>C:\Users\lesaelr\o3de\Gems\Terrain\Code\Tests;C:\Users\lesaelr\o3de\Gems\Terrain\Code\Source;C:\Users\lesaelr\o3de\Code\Framework\AzTest\.;C:\Users\lesaelr\o3de\Code\Framework\AzTest\AzTest\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzCore\.;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Common;C:\Users\lesaelr\o3de\Code\Framework\AzFramework\.;C:\Users\lesaelr\o3de\Code\Framework\AzFramework\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\GridMate\.;C:\Users\lesaelr\o3de\Code\Framework\GridMate\Platform\Windows;C:\Users\lesaelr\o3de\Gems\LmbrCentral\Code\Mocks;C:\Users\lesaelr\o3de\Gems\Terrain\Code\Mocks;C:\Users\lesaelr\o3de\Gems\Terrain\Code\Include;C:\Users\lesaelr\o3de\Gems\GradientSignal\Code\Include;C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Include;C:\Users\lesaelr\o3de\Gems\SurfaceData\Code\Include;C:\Users\lesaelr\o3de\Gems\LmbrCentral\Code\include;C:\Users\lesaelr\o3de\Gems\Atom\RPI\Code\Include;C:\Users\lesaelr\o3de\Gems\Atom\RPI\Code\External;C:\Users\lesaelr\o3de\Gems\Atom\RHI\Code\Include;C:\Users\lesaelr\o3de\Gems\Atom\Utils\Code\Include;C:\Users\lesaelr\o3de\Code\Framework\AtomCore\.;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+    </ResourceCompile>
+    <Midl>
+      <AdditionalIncludeDirectories>C:\Users\lesaelr\o3de\Gems\Terrain\Code\Tests;C:\Users\lesaelr\o3de\Gems\Terrain\Code\Source;C:\Users\lesaelr\o3de\Code\Framework\AzTest\.;C:\Users\lesaelr\o3de\Code\Framework\AzTest\AzTest\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzCore\.;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Common;C:\Users\lesaelr\o3de\Code\Framework\AzFramework\.;C:\Users\lesaelr\o3de\Code\Framework\AzFramework\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\GridMate\.;C:\Users\lesaelr\o3de\Code\Framework\GridMate\Platform\Windows;C:\Users\lesaelr\o3de\Gems\LmbrCentral\Code\Mocks;C:\Users\lesaelr\o3de\Gems\Terrain\Code\Mocks;C:\Users\lesaelr\o3de\Gems\Terrain\Code\Include;C:\Users\lesaelr\o3de\Gems\GradientSignal\Code\Include;C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Include;C:\Users\lesaelr\o3de\Gems\SurfaceData\Code\Include;C:\Users\lesaelr\o3de\Gems\LmbrCentral\Code\include;C:\Users\lesaelr\o3de\Gems\Atom\RPI\Code\Include;C:\Users\lesaelr\o3de\Gems\Atom\RPI\Code\External;C:\Users\lesaelr\o3de\Gems\Atom\RHI\Code\Include;C:\Users\lesaelr\o3de\Gems\Atom\Utils\Code\Include;C:\Users\lesaelr\o3de\Code\Framework\AtomCore\.;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+    <Link>
+      <AdditionalDependencies>..\..\..\lib\release\AzTest.lib;..\..\..\lib\release\AzFramework.lib;..\..\..\lib\release\Terrain.Static.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\googletest-1.8.1-rev4-windows\googletest\lib\gmock.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\googletest-1.8.1-rev4-windows\googletest\lib\gtest.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\googlebenchmark-1.5.0-rev2-windows\googlebenchmark\lib\Release\benchmark.lib;Shlwapi.lib;..\..\..\lib\release\Atom_RPI.Public.lib;..\..\..\lib\release\Atom_Utils.Static.lib;..\..\..\lib\release\Atom_RHI.Public.lib;..\..\..\lib\release\Atom_RHI.Reflect.lib;..\..\..\lib\release\AzFramework.lib;..\..\..\lib\release\GridMate.lib;ws2_32.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\OpenSSL-1.1.1b-rev2-windows\OpenSSL\lib\libssl.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\OpenSSL-1.1.1b-rev2-windows\OpenSSL\lib\libcrypto.lib;crypt32.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\lz4-1.9.3-vcpkg-rev4-windows\lz4\lz4\lib\lz4.lib;..\..\..\lib\release\AtomCore.lib;..\..\..\lib\release\AzCore.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\zlib-1.2.11-rev2-windows\zlib\lib\zlibstatic.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\zstd-1.35-multiplatform\zstd\bin\win-x64-vc140\release\zstd.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\Lua-5.3.5-rev5-windows\lua\lib\release\lualib.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\cityhash-1.1-multiplatform\cityhash\build\win_x64\vc140\release\cityhash.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;advapi32.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalOptions>%(AdditionalOptions) /machine:x64 /IGNORE:4099 /ignore:4099</AdditionalOptions>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
+      <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <ImportLibrary>C:/Users/lesaelr/o3de/lib/release/Terrain.Tests.lib</ImportLibrary>
+      <OptimizeReferences>true</OptimizeReferences>
+      <ProgramDataBaseFile>C:/Users/lesaelr/o3de/bin/release/Terrain.Tests.pdb</ProgramDataBaseFile>
+      <SubSystem>Console</SubSystem>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <TargetMachine>MachineX64</TargetMachine>
+    </Link>
+    <ProjectReference>
+      <LinkLibraryDependencies>false</LinkLibraryDependencies>
+    </ProjectReference>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\CMakeFiles\08b24365a84bd27d080f6dd51f42b933\Terrain.Tests_(CONFIG).stamp.rule">
+      <Message Condition="'$(Configuration)|$(Platform)'=='debug|x64'">Copying Terrain.Tests runtime dependencies to output...</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='debug|x64'">setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -P C:/Users/lesaelr/o3de/runtime_dependencies/debug/Terrain.Tests.cmake
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='debug|x64'">C:\Users\lesaelr\o3de\bin\debug\AzTestRunner.exe;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='debug|x64'">C:\Users\lesaelr\o3de\runtime_dependencies\debug\Terrain.Tests_debug.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='debug|x64'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='profile|x64'">Copying Terrain.Tests runtime dependencies to output...</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='profile|x64'">setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -P C:/Users/lesaelr/o3de/runtime_dependencies/profile/Terrain.Tests.cmake
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='profile|x64'">C:\Users\lesaelr\o3de\bin\profile\AzTestRunner.exe;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='profile|x64'">C:\Users\lesaelr\o3de\runtime_dependencies\profile\Terrain.Tests_profile.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='profile|x64'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='release|x64'">Copying Terrain.Tests runtime dependencies to output...</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='release|x64'">setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -P C:/Users/lesaelr/o3de/runtime_dependencies/release/Terrain.Tests.cmake
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='release|x64'">C:\Users\lesaelr\o3de\bin\release\AzTestRunner.exe;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='release|x64'">C:\Users\lesaelr\o3de\runtime_dependencies\release\Terrain.Tests_release.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='release|x64'">false</LinkObjects>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Gems\Terrain\Code\CMakeLists.txt">
+      <UseUtf8Encoding>Always</UseUtf8Encoding>
+      <Message Condition="'$(Configuration)|$(Platform)'=='debug|x64'">Building Custom Rule C:/Users/lesaelr/o3de/Gems/Terrain/Code/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='debug|x64'">setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SC:/Users/lesaelr/o3de -BC:/Users/lesaelr/o3de --check-stamp-file C:/Users/lesaelr/o3de/External/Terrain-ca46e1f4/Code/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='debug|x64'">C:\Users\lesaelr\o3de\Gems\Terrain\Code\terrain_editor_shared_files.cmake;C:\Users\lesaelr\o3de\Gems\Terrain\Code\terrain_editor_tests_files.cmake;C:\Users\lesaelr\o3de\Gems\Terrain\Code\terrain_files.cmake;C:\Users\lesaelr\o3de\Gems\Terrain\Code\terrain_mocks_files.cmake;C:\Users\lesaelr\o3de\Gems\Terrain\Code\terrain_shared_files.cmake;C:\Users\lesaelr\o3de\Gems\Terrain\Code\terrain_tests_files.cmake;C:\Users\lesaelr\o3de\cmake\Platform\Windows\LYTestWrappers_windows.cmake;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='debug|x64'">C:\Users\lesaelr\o3de\External\Terrain-ca46e1f4\Code\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='debug|x64'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='profile|x64'">Building Custom Rule C:/Users/lesaelr/o3de/Gems/Terrain/Code/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='profile|x64'">setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SC:/Users/lesaelr/o3de -BC:/Users/lesaelr/o3de --check-stamp-file C:/Users/lesaelr/o3de/External/Terrain-ca46e1f4/Code/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='profile|x64'">C:\Users\lesaelr\o3de\Gems\Terrain\Code\terrain_editor_shared_files.cmake;C:\Users\lesaelr\o3de\Gems\Terrain\Code\terrain_editor_tests_files.cmake;C:\Users\lesaelr\o3de\Gems\Terrain\Code\terrain_files.cmake;C:\Users\lesaelr\o3de\Gems\Terrain\Code\terrain_mocks_files.cmake;C:\Users\lesaelr\o3de\Gems\Terrain\Code\terrain_shared_files.cmake;C:\Users\lesaelr\o3de\Gems\Terrain\Code\terrain_tests_files.cmake;C:\Users\lesaelr\o3de\cmake\Platform\Windows\LYTestWrappers_windows.cmake;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='profile|x64'">C:\Users\lesaelr\o3de\External\Terrain-ca46e1f4\Code\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='profile|x64'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='release|x64'">Building Custom Rule C:/Users/lesaelr/o3de/Gems/Terrain/Code/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='release|x64'">setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SC:/Users/lesaelr/o3de -BC:/Users/lesaelr/o3de --check-stamp-file C:/Users/lesaelr/o3de/External/Terrain-ca46e1f4/Code/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='release|x64'">C:\Users\lesaelr\o3de\Gems\Terrain\Code\terrain_editor_shared_files.cmake;C:\Users\lesaelr\o3de\Gems\Terrain\Code\terrain_editor_tests_files.cmake;C:\Users\lesaelr\o3de\Gems\Terrain\Code\terrain_files.cmake;C:\Users\lesaelr\o3de\Gems\Terrain\Code\terrain_mocks_files.cmake;C:\Users\lesaelr\o3de\Gems\Terrain\Code\terrain_shared_files.cmake;C:\Users\lesaelr\o3de\Gems\Terrain\Code\terrain_tests_files.cmake;C:\Users\lesaelr\o3de\cmake\Platform\Windows\LYTestWrappers_windows.cmake;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='release|x64'">C:\Users\lesaelr\o3de\External\Terrain-ca46e1f4\Code\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='release|x64'">false</LinkObjects>
+    </CustomBuild>
+  </ItemGroup>
+  <PropertyGroup>
+    <EnableUnitySupport>true</EnableUnitySupport>
+  </PropertyGroup>
+  <ItemGroup>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\Terrain-ca46e1f4\Code\CMakeFiles\Terrain.Tests.dir\Unity\unity_1_cxx.cxx" IncludeInUnityFile="false" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/Terrain-ca46e1f4/Code/CMakeFiles/Terrain.Tests.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\Terrain-ca46e1f4\Code\CMakeFiles\Terrain.Tests.dir\Unity\unity_0_cxx.cxx" IncludeInUnityFile="false" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/Terrain-ca46e1f4/Code/CMakeFiles/Terrain.Tests.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Terrain\Code\Source\Components\TerrainHeightGradientListComponent.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/Terrain-ca46e1f4/Code/CMakeFiles/Terrain.Tests.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Terrain\Code\Source\Components\TerrainHeightGradientListComponent.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Terrain\Code\Source\Components\TerrainLayerSpawnerComponent.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/Terrain-ca46e1f4/Code/CMakeFiles/Terrain.Tests.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Terrain\Code\Source\Components\TerrainLayerSpawnerComponent.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Terrain\Code\Source\Components\TerrainSurfaceDataSystemComponent.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/Terrain-ca46e1f4/Code/CMakeFiles/Terrain.Tests.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Terrain\Code\Source\Components\TerrainSurfaceDataSystemComponent.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Terrain\Code\Source\Components\TerrainSystemComponent.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/Terrain-ca46e1f4/Code/CMakeFiles/Terrain.Tests.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Terrain\Code\Source\Components\TerrainSystemComponent.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Terrain\Code\Source\Components\TerrainWorldComponent.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/Terrain-ca46e1f4/Code/CMakeFiles/Terrain.Tests.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Terrain\Code\Source\Components\TerrainWorldComponent.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Terrain\Code\Source\Components\TerrainWorldDebuggerComponent.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/Terrain-ca46e1f4/Code/CMakeFiles/Terrain.Tests.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Terrain\Code\Source\Components\TerrainWorldDebuggerComponent.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Terrain\Code\Source\TerrainRenderer\TerrainFeatureProcessor.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/Terrain-ca46e1f4/Code/CMakeFiles/Terrain.Tests.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Terrain\Code\Source\TerrainRenderer\TerrainFeatureProcessor.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Terrain\Code\Source\TerrainSystem\TerrainSystem.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/Terrain-ca46e1f4/Code/CMakeFiles/Terrain.Tests.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Terrain\Code\Source\TerrainSystem\TerrainSystem.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Terrain\Code\Source\TerrainSystem\TerrainSystemBus.h" />
+    <None Include="C:\Users\lesaelr\o3de\Gems\Terrain\Code\terrain_files.cmake">
+    </None>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Terrain\Code\Tests\TerrainTest.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/Terrain-ca46e1f4/Code/CMakeFiles/Terrain.Tests.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Terrain\Code\Tests\TerrainSystemTest.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/Terrain-ca46e1f4/Code/CMakeFiles/Terrain.Tests.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Terrain\Code\Tests\LayerSpawnerTests.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/Terrain-ca46e1f4/Code/CMakeFiles/Terrain.Tests.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Terrain\Code\Tests\MockAxisAlignedBoxShapeComponent.h" />
+    <None Include="C:\Users\lesaelr\o3de\Gems\Terrain\Code\terrain_tests_files.cmake">
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\runtime_dependencies\debug\Terrain.Tests_debug.stamp">
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\runtime_dependencies\profile\Terrain.Tests_profile.stamp">
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\runtime_dependencies\release\Terrain.Tests_release.stamp">
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\ZERO_CHECK.vcxproj">
+      <Project>{CDE32B4E-8490-3FC5-A3F2-976A0A5DE45E}</Project>
+      <Name>ZERO_CHECK</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\Code\Framework\AtomCore\AtomCore.vcxproj">
+      <Project>{6D55F49F-9D52-3893-81A0-A8698549AB69}</Project>
+      <Name>AtomCore</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\External\Atom-418206cc\RHI\Code\Atom_RHI.Public.vcxproj">
+      <Project>{2E32222C-434D-3353-967C-88B4AA98F8F8}</Project>
+      <Name>Atom_RHI.Public</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\External\Atom-418206cc\RHI\Code\Atom_RHI.Reflect.vcxproj">
+      <Project>{34A5B279-91CB-334A-9CD9-0B3CFB872F2C}</Project>
+      <Name>Atom_RHI.Reflect</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\External\Atom-418206cc\RPI\Code\Atom_RPI.Public.vcxproj">
+      <Project>{ABB218FB-FD4C-33F6-B91D-28BD20400532}</Project>
+      <Name>Atom_RPI.Public</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\External\Atom-418206cc\Utils\Code\Atom_Utils.Static.vcxproj">
+      <Project>{094C724A-A8F2-33E3-8B7F-A0D452CB43A0}</Project>
+      <Name>Atom_Utils.Static</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore.vcxproj">
+      <Project>{8AC0D8DF-6487-39C7-A5F3-F77355B1ACD9}</Project>
+      <Name>AzCore</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework.vcxproj">
+      <Project>{E4BA859A-1109-3DBC-887D-DBC80D0DD65A}</Project>
+      <Name>AzFramework</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\Code\Framework\AzTest\AzTest.vcxproj">
+      <Project>{95261DE1-D32C-3935-98F1-4D1BF1D97218}</Project>
+      <Name>AzTest</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\Code\Tools\AzTestRunner\AzTestRunner.vcxproj">
+      <Project>{968B32CB-A1B3-3E25-9F97-5BCF47C8BDF1}</Project>
+      <Name>AzTestRunner</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate.vcxproj">
+      <Project>{FE67A854-57A6-3513-BAEF-9A7AC0A253E8}</Project>
+      <Name>GridMate</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\External\Atom-418206cc\Asset\ImageProcessingAtom\Code\ImageProcessingAtom.Headers.vcxproj">
+      <Project>{62B1360E-FD7A-353B-9244-924616994820}</Project>
+      <Name>ImageProcessingAtom.Headers</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\External\LmbrCentral-1931088b\Code\LmbrCentral.Mocks.vcxproj">
+      <Project>{F6D45328-7C2D-3E54-B7EF-743106FF2263}</Project>
+      <Name>LmbrCentral.Mocks</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\External\Terrain-ca46e1f4\Code\Terrain.Mocks.vcxproj">
+      <Project>{6F8389BB-55A3-3E6E-A2FF-FE71D7CACF8E}</Project>
+      <Name>Terrain.Mocks</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\External\Terrain-ca46e1f4\Code\Terrain.Static.vcxproj">
+      <Project>{B333005F-0F95-36BA-AE77-7C7AC9D13FDF}</Project>
+      <Name>Terrain.Static</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

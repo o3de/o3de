@@ -1,0 +1,158 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneCore\CMakeFiles\SceneCore.Tests.dir\Unity\unity_2_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneCore\CMakeFiles\SceneCore.Tests.dir\Unity\unity_1_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneCore\CMakeFiles\SceneCore.Tests.dir\Unity\unity_0_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneCore\Tests\TestsMain.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneCore\Tests\Containers\SceneTests.cpp">
+      <Filter>Tests\Containers</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneCore\Tests\Containers\SceneBehaviorTests.cpp">
+      <Filter>Tests\Containers</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneCore\Tests\Containers\SceneGraphTests.cpp">
+      <Filter>Tests\Containers</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneCore\Tests\Containers\SceneManifestTests.cpp">
+      <Filter>Tests\Containers</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneCore\Tests\Events\AssetImporterRequestTests.cpp">
+      <Filter>Tests\Events</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneCore\Tests\Containers\Views\IteratorConformityTests.cpp">
+      <Filter>Tests\Containers\Views</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneCore\Tests\Containers\Views\ConvertIteratorTests.cpp">
+      <Filter>Tests\Containers\Views</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneCore\Tests\Containers\Views\FilterIteratorTests.cpp">
+      <Filter>Tests\Containers\Views</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneCore\Tests\Containers\Views\PairIteratorTests.cpp">
+      <Filter>Tests\Containers\Views</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneCore\Tests\Containers\Views\SceneGraphUpwardsIteratorTests.cpp">
+      <Filter>Tests\Containers\Views</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneCore\Tests\Containers\Views\SceneGraphChildIteratorTests.cpp">
+      <Filter>Tests\Containers\Views</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneCore\Tests\Containers\Views\SceneGraphDownwardsIteratorTests.cpp">
+      <Filter>Tests\Containers\Views</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneCore\Tests\Containers\Utilities\FiltersTests.cpp">
+      <Filter>Tests\Containers\Utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneCore\Tests\Utilities\SceneGraphSelectorTests.cpp">
+      <Filter>Tests\Utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneCore\Tests\Utilities\PatternMatcherTests.cpp">
+      <Filter>Tests\Utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneCore\Tests\Export\MaterialIOTests.cpp">
+      <Filter>Tests\Export</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneCore\Mocks\Containers\MockScene.h">
+      <Filter>Mocks\Containers</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneCore\Mocks\DataTypes\GraphData\MockIMeshData.h">
+      <Filter>Mocks\DataTypes\GraphData</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneCore\Mocks\DataTypes\MockIGraphObject.h">
+      <Filter>Mocks\DataTypes</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneCore\Mocks\DataTypes\Groups\MockIGroup.h">
+      <Filter>Mocks\DataTypes\Groups</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneCore\Mocks\DataTypes\Groups\MockIMeshGroup.h">
+      <Filter>Mocks\DataTypes\Groups</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneCore\Mocks\DataTypes\ManifestBase\MockISceneNodeSelectionList.h">
+      <Filter>Mocks\DataTypes\ManifestBase</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneCore\Mocks\Events\MockAssetImportRequest.h">
+      <Filter>Mocks\Events</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneCore\Tests\Containers\Views\IteratorTestsBase.h">
+      <Filter>Tests\Containers\Views</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\CMakeFiles\08b24365a84bd27d080f6dd51f42b933\SceneCore.Tests_(CONFIG).stamp.rule">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneCore\CMakeLists.txt">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneCore\scenecore_testing_files.cmake" />
+    <None Include="C:\Users\lesaelr\o3de\runtime_dependencies\debug\SceneCore.Tests_debug.stamp">
+      <Filter>Generated Files</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\runtime_dependencies\profile\SceneCore.Tests_profile.stamp">
+      <Filter>Generated Files</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\runtime_dependencies\release\SceneCore.Tests_release.stamp">
+      <Filter>Generated Files</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Generated Files">
+      <UniqueIdentifier>{FB9B7D8B-7F05-31D5-AA90-592248EDE1B3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Mocks">
+      <UniqueIdentifier>{61BCE2AA-93AF-3819-8FDA-24960A3E649A}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Mocks\Containers">
+      <UniqueIdentifier>{1B4FBDD5-DDEF-3FE7-8D97-3926E900DCA8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Mocks\DataTypes">
+      <UniqueIdentifier>{104E7B93-87F9-34C3-8E78-047DBAD4BC2F}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Mocks\DataTypes\GraphData">
+      <UniqueIdentifier>{E9D03CC2-B47A-3CFE-B6AC-6FE19ECEF943}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Mocks\DataTypes\Groups">
+      <UniqueIdentifier>{07B618F1-B596-3CC0-A699-224EF92F7973}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Mocks\DataTypes\ManifestBase">
+      <UniqueIdentifier>{4FB1BB82-4E1A-39D3-8DCE-C00DA57AA981}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Mocks\Events">
+      <UniqueIdentifier>{6F5B0EF9-36FC-3ADE-85F4-31CAFDB4DAD6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Tests">
+      <UniqueIdentifier>{042E9197-689D-3636-8A35-28EBCAA2BD47}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Tests\Containers">
+      <UniqueIdentifier>{0D0B83E2-1FB4-3F03-897D-2D2E0461B968}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Tests\Containers\Utilities">
+      <UniqueIdentifier>{A79FC1AA-0465-32DC-BE90-609DE80A668F}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Tests\Containers\Views">
+      <UniqueIdentifier>{F06F3639-4EC8-33F7-8F7E-05DC5F81C59D}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Tests\Events">
+      <UniqueIdentifier>{4978E9C9-47FA-3C49-996B-081A67C92CEB}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Tests\Export">
+      <UniqueIdentifier>{C4BE7CF1-1E77-3FF0-B705-5B6707359218}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Tests\Utilities">
+      <UniqueIdentifier>{F120318E-F727-3657-A461-5715851D5229}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

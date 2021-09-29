@@ -1,0 +1,6 @@
+# CMake generation dependency list for this directory.
+C:/Users/lesaelr/.o3de/3rdParty/packages/assimp-5.0.1-rev11-multiplatform/Findassimplib.cmake
+C:/Users/lesaelr/.o3de/3rdParty/packages/assimp-5.0.1-rev11-multiplatform/PackageInfo.json
+C:/Users/lesaelr/.o3de/3rdParty/packages/assimp-5.0.1-rev11-multiplatform/assimp/port/PyAssimp/setup.py
+C:/Users/lesaelr/o3de/Code/Tools/SceneAPI/SDKWrapper/CMakeLists.txt
+C:/Users/lesaelr/o3de/Code/Tools/SceneAPI/SDKWrapper/sdkwrapper_files.cmake

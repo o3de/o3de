@@ -1,0 +1,3135 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\CMakeFiles\AzCore.dir\Unity\unity_28_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\CMakeFiles\AzCore.dir\Unity\unity_27_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\CMakeFiles\AzCore.dir\Unity\unity_26_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\CMakeFiles\AzCore.dir\Unity\unity_25_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\CMakeFiles\AzCore.dir\Unity\unity_24_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\CMakeFiles\AzCore.dir\Unity\unity_23_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\CMakeFiles\AzCore.dir\Unity\unity_22_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\CMakeFiles\AzCore.dir\Unity\unity_21_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\CMakeFiles\AzCore.dir\Unity\unity_20_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\CMakeFiles\AzCore.dir\Unity\unity_19_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\CMakeFiles\AzCore.dir\Unity\unity_18_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\CMakeFiles\AzCore.dir\Unity\unity_17_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\CMakeFiles\AzCore.dir\Unity\unity_16_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\CMakeFiles\AzCore.dir\Unity\unity_15_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\CMakeFiles\AzCore.dir\Unity\unity_14_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\CMakeFiles\AzCore.dir\Unity\unity_13_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\CMakeFiles\AzCore.dir\Unity\unity_12_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\CMakeFiles\AzCore.dir\Unity\unity_11_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\CMakeFiles\AzCore.dir\Unity\unity_10_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\CMakeFiles\AzCore.dir\Unity\unity_9_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\CMakeFiles\AzCore.dir\Unity\unity_8_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\CMakeFiles\AzCore.dir\Unity\unity_7_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\CMakeFiles\AzCore.dir\Unity\unity_6_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\CMakeFiles\AzCore.dir\Unity\unity_5_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\CMakeFiles\AzCore.dir\Unity\unity_4_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\CMakeFiles\AzCore.dir\Unity\unity_3_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\CMakeFiles\AzCore.dir\Unity\unity_2_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\CMakeFiles\AzCore.dir\Unity\unity_1_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\CMakeFiles\AzCore.dir\Unity\unity_0_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Platform.cpp">
+      <Filter>AzCore</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\AzCoreModule.cpp">
+      <Filter>AzCore</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Asset\AssetCommon.cpp">
+      <Filter>AzCore\Asset</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Asset\AssetContainer.cpp">
+      <Filter>AzCore\Asset</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Asset\AssetDataStream.cpp">
+      <Filter>AzCore\Asset</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Asset\AssetJsonSerializer.cpp">
+      <Filter>AzCore\Asset</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Asset\AssetManager.cpp">
+      <Filter>AzCore\Asset</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Asset\AssetManagerComponent.cpp">
+      <Filter>AzCore\Asset</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Asset\AssetSerializer.cpp">
+      <Filter>AzCore\Asset</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Component\Component.cpp">
+      <Filter>AzCore\Component</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Component\ComponentApplication.cpp">
+      <Filter>AzCore\Component</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Component\ComponentBus.cpp">
+      <Filter>AzCore\Component</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Component\Entity.cpp">
+      <Filter>AzCore\Component</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Component\EntityIdSerializer.cpp">
+      <Filter>AzCore\Component</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Component\EntitySerializer.cpp">
+      <Filter>AzCore\Component</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Component\EntityUtils.cpp">
+      <Filter>AzCore\Component</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Component\NamedEntityId.cpp">
+      <Filter>AzCore\Component</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Component\NonUniformScaleBus.cpp">
+      <Filter>AzCore\Component</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Console\Console.cpp">
+      <Filter>AzCore\Console</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Console\ConsoleFunctor.cpp">
+      <Filter>AzCore\Console</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Console\LoggerSystemComponent.cpp">
+      <Filter>AzCore\Console</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Slice\SliceAsset.cpp">
+      <Filter>AzCore\Slice</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Slice\SliceAssetHandler.cpp">
+      <Filter>AzCore\Slice</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Slice\SliceComponent.cpp">
+      <Filter>AzCore\Slice</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Slice\SliceSystemComponent.cpp">
+      <Filter>AzCore\Slice</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Slice\SliceMetadataInfoComponent.cpp">
+      <Filter>AzCore\Slice</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Compression\compression.cpp">
+      <Filter>AzCore\Compression</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Compression\zstd_compression.cpp">
+      <Filter>AzCore\Compression</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Debug\AssetTracking.cpp">
+      <Filter>AzCore\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Debug\Budget.cpp">
+      <Filter>AzCore\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Debug\BudgetTracker.cpp">
+      <Filter>AzCore\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Debug\LocalFileEventLogger.cpp">
+      <Filter>AzCore\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Debug\Profiler.cpp">
+      <Filter>AzCore\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Debug\EventTrace.cpp">
+      <Filter>AzCore\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Debug\EventTraceDriller.cpp">
+      <Filter>AzCore\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Debug\Trace.cpp">
+      <Filter>AzCore\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Debug\TraceMessagesDriller.cpp">
+      <Filter>AzCore\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Debug\TraceReflection.cpp">
+      <Filter>AzCore\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Driller\Driller.cpp">
+      <Filter>AzCore\Driller</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Driller\DrillerBus.cpp">
+      <Filter>AzCore\Driller</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Driller\Stream.cpp">
+      <Filter>AzCore\Driller</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\EBus\EBusEnvironment.cpp">
+      <Filter>AzCore\EBus</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\EBus\EventSchedulerSystemComponent.cpp">
+      <Filter>AzCore\EBus</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\EBus\ScheduledEvent.cpp">
+      <Filter>AzCore\EBus</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\EBus\ScheduledEventHandle.cpp">
+      <Filter>AzCore\EBus</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\IO\CompressionBus.cpp">
+      <Filter>AzCore\IO</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\IO\Compressor.cpp">
+      <Filter>AzCore\IO</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\IO\CompressorStream.cpp">
+      <Filter>AzCore\IO</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\IO\CompressorZLib.cpp">
+      <Filter>AzCore\IO</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\IO\CompressorZStd.cpp">
+      <Filter>AzCore\IO</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\IO\FileIO.cpp">
+      <Filter>AzCore\IO</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\IO\IOUtils.cpp">
+      <Filter>AzCore\IO</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\IO\IStreamerTypes.cpp">
+      <Filter>AzCore\IO</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\IO\GenericStreams.cpp">
+      <Filter>AzCore\IO</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\IO\Path\Path.cpp">
+      <Filter>AzCore\IO\Path</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\IO\SystemFile.cpp">
+      <Filter>AzCore\IO</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\IO\Streamer\BlockCache.cpp">
+      <Filter>AzCore\IO\Streamer</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\IO\Streamer\DedicatedCache.cpp">
+      <Filter>AzCore\IO\Streamer</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\IO\Streamer\FileRange.cpp">
+      <Filter>AzCore\IO\Streamer</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\IO\Streamer\FileRequest.cpp">
+      <Filter>AzCore\IO\Streamer</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\IO\Streamer\FullFileDecompressor.cpp">
+      <Filter>AzCore\IO\Streamer</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\IO\Streamer\ReadSplitter.cpp">
+      <Filter>AzCore\IO\Streamer</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\IO\Streamer\RequestPath.cpp">
+      <Filter>AzCore\IO\Streamer</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\IO\Streamer\Scheduler.cpp">
+      <Filter>AzCore\IO\Streamer</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\IO\Streamer\Statistics.cpp">
+      <Filter>AzCore\IO\Streamer</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\IO\Streamer\StorageDrive.cpp">
+      <Filter>AzCore\IO\Streamer</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\IO\Streamer\StreamerConfiguration.cpp">
+      <Filter>AzCore\IO\Streamer</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\IO\Streamer\Streamer.cpp">
+      <Filter>AzCore\IO\Streamer</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\IO\Streamer\StreamerContext.cpp">
+      <Filter>AzCore\IO\Streamer</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\IO\Streamer\StreamerComponent.cpp">
+      <Filter>AzCore\IO\Streamer</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\IO\Streamer\StreamStackEntry.cpp">
+      <Filter>AzCore\IO\Streamer</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\IPC\SharedMemory.cpp">
+      <Filter>AzCore\IPC</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Jobs\Internal\JobManagerBase.cpp">
+      <Filter>AzCore\Jobs\Internal</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Jobs\Internal\JobManagerWorkStealing.cpp">
+      <Filter>AzCore\Jobs\Internal</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Jobs\Job.cpp">
+      <Filter>AzCore\Jobs</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Jobs\JobContext.cpp">
+      <Filter>AzCore\Jobs</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Jobs\JobManager.cpp">
+      <Filter>AzCore\Jobs</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Jobs\JobManagerComponent.cpp">
+      <Filter>AzCore\Jobs</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Math\Aabb.cpp">
+      <Filter>AzCore\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Math\Color.cpp">
+      <Filter>AzCore\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Math\ColorSerializer.cpp">
+      <Filter>AzCore\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Math\Crc.cpp">
+      <Filter>AzCore\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Math\Frustum.cpp">
+      <Filter>AzCore\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Math\Geometry2DUtils.cpp">
+      <Filter>AzCore\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Math\IntersectSegment.cpp">
+      <Filter>AzCore\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Math\MathReflection.cpp">
+      <Filter>AzCore\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Math\MathScriptHelpers.cpp">
+      <Filter>AzCore\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Math\MathUtils.cpp">
+      <Filter>AzCore\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Math\MathMatrixSerializer.cpp">
+      <Filter>AzCore\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Math\MathVectorSerializer.cpp">
+      <Filter>AzCore\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Math\Matrix3x3.cpp">
+      <Filter>AzCore\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Math\Matrix3x4.cpp">
+      <Filter>AzCore\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Math\Matrix4x4.cpp">
+      <Filter>AzCore\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Math\MatrixUtils.cpp">
+      <Filter>AzCore\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Math\Obb.cpp">
+      <Filter>AzCore\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Math\Plane.cpp">
+      <Filter>AzCore\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Math\PolygonPrism.cpp">
+      <Filter>AzCore\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Math\Quaternion.cpp">
+      <Filter>AzCore\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Math\Sfmt.cpp">
+      <Filter>AzCore\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Math\Spline.cpp">
+      <Filter>AzCore\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Math\Transform.cpp">
+      <Filter>AzCore\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Math\TransformSerializer.cpp">
+      <Filter>AzCore\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Math\Uuid.cpp">
+      <Filter>AzCore\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Math\UuidSerializer.cpp">
+      <Filter>AzCore\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Math\Vector2.cpp">
+      <Filter>AzCore\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Math\Vector3.cpp">
+      <Filter>AzCore\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Math\Vector4.cpp">
+      <Filter>AzCore\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Math\VertexContainer.cpp">
+      <Filter>AzCore\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Math\ToString.cpp">
+      <Filter>AzCore\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Memory\AllocationRecords.cpp">
+      <Filter>AzCore\Memory</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Memory\AllocatorBase.cpp">
+      <Filter>AzCore\Memory</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Memory\AllocatorManager.cpp">
+      <Filter>AzCore\Memory</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Memory\AllocatorOverrideShim.cpp">
+      <Filter>AzCore\Memory</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Memory\BestFitExternalMapAllocator.cpp">
+      <Filter>AzCore\Memory</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Memory\BestFitExternalMapSchema.cpp">
+      <Filter>AzCore\Memory</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Memory\HphaSchema.cpp">
+      <Filter>AzCore\Memory</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Memory\IAllocator.cpp">
+      <Filter>AzCore\Memory</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Memory\MallocSchema.cpp">
+      <Filter>AzCore\Memory</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Memory\Memory.cpp">
+      <Filter>AzCore\Memory</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Memory\MemoryComponent.cpp">
+      <Filter>AzCore\Memory</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Memory\MemoryDriller.cpp">
+      <Filter>AzCore\Memory</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Memory\OSAllocator.cpp">
+      <Filter>AzCore\Memory</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Memory\OverrunDetectionAllocator.cpp">
+      <Filter>AzCore\Memory</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Memory\PoolSchema.cpp">
+      <Filter>AzCore\Memory</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Memory\SystemAllocator.cpp">
+      <Filter>AzCore\Memory</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Module\DynamicModuleHandle.cpp">
+      <Filter>AzCore\Module</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Module\Environment.cpp">
+      <Filter>AzCore\Module</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Module\Module.cpp">
+      <Filter>AzCore\Module</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Module\ModuleManager.cpp">
+      <Filter>AzCore\Module</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Module\Internal\ModuleManagerSearchPathTool.cpp">
+      <Filter>AzCore\Module\Internal</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\NativeUI\NativeUISystemComponent.cpp">
+      <Filter>AzCore\NativeUI</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Name\Name.cpp">
+      <Filter>AzCore\Name</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Name\NameDictionary.cpp">
+      <Filter>AzCore\Name</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Name\NameJsonSerializer.cpp">
+      <Filter>AzCore\Name</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Name\NameSerializer.cpp">
+      <Filter>AzCore\Name</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Name\Internal\NameData.cpp">
+      <Filter>AzCore\Name\Internal</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\RTTI\ReflectContext.cpp">
+      <Filter>AzCore\RTTI</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\RTTI\ReflectionManager.cpp">
+      <Filter>AzCore\RTTI</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\RTTI\AzStdOnDemandReflectionSpecializations.cpp">
+      <Filter>AzCore\RTTI</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\RTTI\BehaviorContext.cpp">
+      <Filter>AzCore\RTTI</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\RTTI\BehaviorContextUtilities.cpp">
+      <Filter>AzCore\RTTI</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Script\ScriptAsset.cpp">
+      <Filter>AzCore\Script</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Script\ScriptContext.cpp">
+      <Filter>AzCore\Script</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Script\ScriptContextDebug.cpp">
+      <Filter>AzCore\Script</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Script\ScriptSystemComponent.cpp">
+      <Filter>AzCore\Script</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Script\ScriptTimePoint.cpp">
+      <Filter>AzCore\Script</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Script\ScriptProperty.cpp">
+      <Filter>AzCore\Script</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Script\ScriptPropertySerializer.cpp">
+      <Filter>AzCore\Script</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Script\ScriptPropertyTable.cpp">
+      <Filter>AzCore\Script</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Script\ScriptDebug.cpp">
+      <Filter>AzCore\Script</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\ScriptCanvas\ScriptCanvasOnDemandNames.cpp">
+      <Filter>AzCore\ScriptCanvas</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Serialization\DataOverlayProviderMsgs.cpp">
+      <Filter>AzCore\Serialization</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Serialization\DynamicSerializableField.cpp">
+      <Filter>AzCore\Serialization</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Serialization\EditContext.cpp">
+      <Filter>AzCore\Serialization</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Serialization\SerializationUtils.cpp">
+      <Filter>AzCore\Serialization</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Serialization\ObjectStream.cpp">
+      <Filter>AzCore\Serialization</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Serialization\SerializeContext.cpp">
+      <Filter>AzCore\Serialization</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Serialization\SerializeContextEnum.cpp">
+      <Filter>AzCore\Serialization</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Serialization\DataPatch.cpp">
+      <Filter>AzCore\Serialization</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Serialization\DataPatchUpgradeManager.cpp">
+      <Filter>AzCore\Serialization</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Serialization\Json\ArraySerializer.cpp">
+      <Filter>AzCore\Serialization\Json</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Serialization\Json\BaseJsonSerializer.cpp">
+      <Filter>AzCore\Serialization\Json</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Serialization\Json\BasicContainerSerializer.cpp">
+      <Filter>AzCore\Serialization\Json</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Serialization\Json\BoolSerializer.cpp">
+      <Filter>AzCore\Serialization\Json</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Serialization\Json\ByteStreamSerializer.cpp">
+      <Filter>AzCore\Serialization\Json</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Serialization\Json\DoubleSerializer.cpp">
+      <Filter>AzCore\Serialization\Json</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Serialization\Json\IntSerializer.cpp">
+      <Filter>AzCore\Serialization\Json</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Serialization\Json\JsonDeserializer.cpp">
+      <Filter>AzCore\Serialization\Json</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Serialization\Json\JsonMerger.cpp">
+      <Filter>AzCore\Serialization\Json</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Serialization\Json\JsonSerialization.cpp">
+      <Filter>AzCore\Serialization\Json</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Serialization\Json\JsonSerializationResult.cpp">
+      <Filter>AzCore\Serialization\Json</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Serialization\Json\JsonSerializer.cpp">
+      <Filter>AzCore\Serialization\Json</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Serialization\Json\JsonSystemComponent.cpp">
+      <Filter>AzCore\Serialization\Json</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Serialization\Json\JsonUtils.cpp">
+      <Filter>AzCore\Serialization\Json</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Serialization\Json\MapSerializer.cpp">
+      <Filter>AzCore\Serialization\Json</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Serialization\Json\RegistrationContext.cpp">
+      <Filter>AzCore\Serialization\Json</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Serialization\Json\SmartPointerSerializer.cpp">
+      <Filter>AzCore\Serialization\Json</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Serialization\Json\StackedString.cpp">
+      <Filter>AzCore\Serialization\Json</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Serialization\Json\StringSerializer.cpp">
+      <Filter>AzCore\Serialization\Json</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Serialization\Json\TupleSerializer.cpp">
+      <Filter>AzCore\Serialization\Json</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Serialization\Json\UnorderedSetSerializer.cpp">
+      <Filter>AzCore\Serialization\Json</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Serialization\Json\UnsupportedTypesSerializer.cpp">
+      <Filter>AzCore\Serialization\Json</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Settings\CommandLine.cpp">
+      <Filter>AzCore\Settings</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Settings\SettingsRegistry.cpp">
+      <Filter>AzCore\Settings</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Settings\SettingsRegistryConsoleUtils.cpp">
+      <Filter>AzCore\Settings</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Settings\SettingsRegistryImpl.cpp">
+      <Filter>AzCore\Settings</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Settings\SettingsRegistryMergeUtils.cpp">
+      <Filter>AzCore\Settings</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Settings\SettingsRegistryScriptUtils.cpp">
+      <Filter>AzCore\Settings</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\State\HSM.cpp">
+      <Filter>AzCore\State</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Statistics\RunningStatistic.cpp">
+      <Filter>AzCore\Statistics</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Statistics\StatisticalProfilerProxySystemComponent.cpp">
+      <Filter>AzCore\Statistics</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\StringFunc\StringFunc.cpp">
+      <Filter>AzCore\StringFunc</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\UserSettings\UserSettings.cpp">
+      <Filter>AzCore\UserSettings</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\UserSettings\UserSettingsComponent.cpp">
+      <Filter>AzCore\UserSettings</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\UserSettings\UserSettingsProvider.cpp">
+      <Filter>AzCore\UserSettings</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Utils\TypeHash.cpp">
+      <Filter>AzCore\Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Utils\Utils.cpp">
+      <Filter>AzCore\Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Memory\HeapSchema.cpp">
+      <Filter>AzCore\Memory</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\PlatformId\PlatformDefaults.cpp">
+      <Filter>AzCore\PlatformId</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\PlatformId\PlatformId.cpp">
+      <Filter>AzCore\PlatformId</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Socket\AzSocket.cpp">
+      <Filter>AzCore\Socket</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Task\Internal\Task.cpp">
+      <Filter>AzCore\Task\Internal</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Task\TaskExecutor.cpp">
+      <Filter>AzCore\Task</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Task\TaskGraph.cpp">
+      <Filter>AzCore\Task</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Time\TimeSystemComponent.cpp">
+      <Filter>AzCore\Time</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\allocator.cpp">
+      <Filter>AzCore\std</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\hash.cpp">
+      <Filter>AzCore\std</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\string\alphanum.cpp">
+      <Filter>AzCore\std\string</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\string\memorytoascii.cpp">
+      <Filter>AzCore\std\string</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\string\regex.cpp">
+      <Filter>AzCore\std\string</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\string\string.cpp">
+      <Filter>AzCore\std\string</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Common\WinAPI\AzCore\std\parallel\internal\thread_WinAPI.cpp">
+      <Filter>Platform\Windows\..\Common\WinAPI\AzCore\std\parallel\internal</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Windows\AzCore\std\parallel\internal\thread_Windows.cpp">
+      <Filter>Platform\Windows\AzCore\std\parallel\internal</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Windows\AzCore\Debug\StackTracer_Windows.cpp">
+      <Filter>Platform\Windows\AzCore\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Common\WinAPI\AzCore\Debug\Trace_WinAPI.cpp">
+      <Filter>Platform\Windows\..\Common\WinAPI\AzCore\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Common\WinAPI\AzCore\IO\Streamer\StreamerContext_WinAPI.cpp">
+      <Filter>Platform\Windows\..\Common\WinAPI\AzCore\IO\Streamer</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Common\WinAPI\AzCore\IO\SystemFile_WinAPI.cpp">
+      <Filter>Platform\Windows\..\Common\WinAPI\AzCore\IO</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Windows\AzCore\IO\Streamer\StorageDrive_Windows.cpp">
+      <Filter>Platform\Windows\AzCore\IO\Streamer</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Windows\AzCore\IO\Streamer\StorageDriveConfig_Windows.cpp">
+      <Filter>Platform\Windows\AzCore\IO\Streamer</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Windows\AzCore\IO\Streamer\StreamerConfiguration_Windows.cpp">
+      <Filter>Platform\Windows\AzCore\IO\Streamer</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Windows\AzCore\IPC\SharedMemory_Windows.cpp">
+      <Filter>Platform\Windows\AzCore\IPC</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Windows\AzCore\Memory\HeapSchema_Windows.cpp">
+      <Filter>Platform\Windows\AzCore\Memory</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Windows\AzCore\Math\Random_Windows.cpp">
+      <Filter>Platform\Windows\AzCore\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Windows\AzCore\Module\Internal\ModuleManagerSearchPathTool_Windows.cpp">
+      <Filter>Platform\Windows\AzCore\Module\Internal</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Common\WinAPI\AzCore\Module\DynamicModuleHandle_WinAPI.cpp">
+      <Filter>Platform\Windows\..\Common\WinAPI\AzCore\Module</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Windows\AzCore\NativeUI\NativeUISystemComponent_Windows.cpp">
+      <Filter>Platform\Windows\AzCore\NativeUI</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Windows\AzCore\Platform_Windows.cpp">
+      <Filter>Platform\Windows\AzCore</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Common\WinAPI\AzCore\Socket\AzSocket_WinAPI.cpp">
+      <Filter>Platform\Windows\..\Common\WinAPI\AzCore\Socket</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Windows\AzCore\std\time_Windows.cpp">
+      <Filter>Platform\Windows\AzCore\std</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Common\WinAPI\AzCore\Utils\Utils_WinAPI.cpp">
+      <Filter>Platform\Windows\..\Common\WinAPI\AzCore\Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Windows\AzCore\Utils\Utils_Windows.cpp">
+      <Filter>Platform\Windows\AzCore\Utils</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\base.h">
+      <Filter>AzCore</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Docs.h">
+      <Filter>AzCore</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Platform.h">
+      <Filter>AzCore</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\PlatformDef.h">
+      <Filter>AzCore</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\PlatformIncl.h">
+      <Filter>AzCore</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\AzCoreModule.h">
+      <Filter>AzCore</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Asset\AssetCommon.h">
+      <Filter>AzCore\Asset</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Asset\AssetContainer.h">
+      <Filter>AzCore\Asset</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Asset\AssetDataStream.h">
+      <Filter>AzCore\Asset</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Asset\AssetJsonSerializer.h">
+      <Filter>AzCore\Asset</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Asset\AssetManager.h">
+      <Filter>AzCore\Asset</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Asset\AssetManager_private.h">
+      <Filter>AzCore\Asset</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Asset\AssetManagerBus.h">
+      <Filter>AzCore\Asset</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Asset\AssetManagerComponent.h">
+      <Filter>AzCore\Asset</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Asset\AssetSerializer.h">
+      <Filter>AzCore\Asset</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Asset\AssetTypeInfoBus.h">
+      <Filter>AzCore\Asset</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Asset\AssetInternal\WeakAsset.h">
+      <Filter>AzCore\Asset\AssetInternal</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Casting\lossy_cast.h">
+      <Filter>AzCore\Casting</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Casting\numeric_cast.h">
+      <Filter>AzCore\Casting</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Casting\numeric_cast_internal.h">
+      <Filter>AzCore\Casting</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Component\Component.h">
+      <Filter>AzCore\Component</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Component\ComponentApplication.h">
+      <Filter>AzCore\Component</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Component\ComponentApplicationBus.h">
+      <Filter>AzCore\Component</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Component\ComponentBus.h">
+      <Filter>AzCore\Component</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Component\ComponentExport.h">
+      <Filter>AzCore\Component</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Component\Entity.h">
+      <Filter>AzCore\Component</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Component\EntityBus.h">
+      <Filter>AzCore\Component</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Component\EntityId.h">
+      <Filter>AzCore\Component</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Component\EntityIdSerializer.h">
+      <Filter>AzCore\Component</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Component\EntitySerializer.h">
+      <Filter>AzCore\Component</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Component\EntityUtils.h">
+      <Filter>AzCore\Component</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Component\NamedEntityId.h">
+      <Filter>AzCore\Component</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Component\NonUniformScaleBus.h">
+      <Filter>AzCore\Component</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Component\TickBus.h">
+      <Filter>AzCore\Component</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Component\TransformBus.h">
+      <Filter>AzCore\Component</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Console\Console.h">
+      <Filter>AzCore\Console</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Console\ConsoleDataWrapper.h">
+      <Filter>AzCore\Console</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Console\ConsoleDataWrapper.inl">
+      <Filter>AzCore\Console</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Console\ConsoleFunctor.h">
+      <Filter>AzCore\Console</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Console\ConsoleFunctor.inl">
+      <Filter>AzCore\Console</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Console\ConsoleTypeHelpers.h">
+      <Filter>AzCore\Console</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Console\ConsoleTypeHelpers.inl">
+      <Filter>AzCore\Console</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Console\IConsole.h">
+      <Filter>AzCore\Console</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Console\IConsoleTypes.h">
+      <Filter>AzCore\Console</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Console\ILogger.h">
+      <Filter>AzCore\Console</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Console\LoggerSystemComponent.h">
+      <Filter>AzCore\Console</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Slice\SliceAsset.h">
+      <Filter>AzCore\Slice</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Slice\SliceAssetHandler.h">
+      <Filter>AzCore\Slice</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Slice\SliceBus.h">
+      <Filter>AzCore\Slice</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Slice\SliceComponent.h">
+      <Filter>AzCore\Slice</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Slice\SliceSystemComponent.h">
+      <Filter>AzCore\Slice</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Slice\SliceMetadataInfoBus.h">
+      <Filter>AzCore\Slice</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Slice\SliceMetadataInfoComponent.h">
+      <Filter>AzCore\Slice</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Compression\Compression.h">
+      <Filter>AzCore\Compression</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Compression\zstd_compression.h">
+      <Filter>AzCore\Compression</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Debug\AssetTracking.h">
+      <Filter>AzCore\Debug</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Debug\AssetTrackingTypesImpl.h">
+      <Filter>AzCore\Debug</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Debug\AssetTrackingTypes.h">
+      <Filter>AzCore\Debug</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Debug\Budget.h">
+      <Filter>AzCore\Debug</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Debug\BudgetTracker.h">
+      <Filter>AzCore\Debug</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Debug\LocalFileEventLogger.h">
+      <Filter>AzCore\Debug</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Debug\IEventLogger.h">
+      <Filter>AzCore\Debug</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Debug\MemoryProfiler.h">
+      <Filter>AzCore\Debug</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Debug\Profiler.inl">
+      <Filter>AzCore\Debug</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Debug\Profiler.h">
+      <Filter>AzCore\Debug</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Debug\ProfilerBus.h">
+      <Filter>AzCore\Debug</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Debug\StackTracer.h">
+      <Filter>AzCore\Debug</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Debug\EventTrace.h">
+      <Filter>AzCore\Debug</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Debug\EventTraceDriller.h">
+      <Filter>AzCore\Debug</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Debug\EventTraceDrillerBus.h">
+      <Filter>AzCore\Debug</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Debug\Timer.h">
+      <Filter>AzCore\Debug</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Debug\Trace.h">
+      <Filter>AzCore\Debug</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Debug\TraceMessageBus.h">
+      <Filter>AzCore\Debug</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Debug\TraceMessagesDriller.h">
+      <Filter>AzCore\Debug</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Debug\TraceMessagesDrillerBus.h">
+      <Filter>AzCore\Debug</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Debug\TraceReflection.h">
+      <Filter>AzCore\Debug</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Driller\DefaultStringPool.h">
+      <Filter>AzCore\Driller</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Driller\Driller.h">
+      <Filter>AzCore\Driller</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Driller\DrillerBus.h">
+      <Filter>AzCore\Driller</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Driller\DrillerRootHandler.h">
+      <Filter>AzCore\Driller</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Driller\Stream.h">
+      <Filter>AzCore\Driller</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\EBus\BusImpl.h">
+      <Filter>AzCore\EBus</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\EBus\EBus.h">
+      <Filter>AzCore\EBus</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\EBus\Environment.h">
+      <Filter>AzCore\EBus</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\EBus\Event.h">
+      <Filter>AzCore\EBus</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\EBus\Event.inl">
+      <Filter>AzCore\EBus</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\EBus\EventSchedulerSystemComponent.h">
+      <Filter>AzCore\EBus</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\EBus\IEventScheduler.h">
+      <Filter>AzCore\EBus</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\EBus\OrderedEvent.h">
+      <Filter>AzCore\EBus</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\EBus\OrderedEvent.inl">
+      <Filter>AzCore\EBus</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\EBus\Policies.h">
+      <Filter>AzCore\EBus</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\EBus\Results.h">
+      <Filter>AzCore\EBus</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\EBus\ScheduledEvent.h">
+      <Filter>AzCore\EBus</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\EBus\ScheduledEventHandle.h">
+      <Filter>AzCore\EBus</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\EBus\Internal\BusContainer.h">
+      <Filter>AzCore\EBus\Internal</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\EBus\Internal\CallstackEntry.h">
+      <Filter>AzCore\EBus\Internal</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\EBus\Internal\Debug.h">
+      <Filter>AzCore\EBus\Internal</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\EBus\Internal\Handlers.h">
+      <Filter>AzCore\EBus\Internal</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\EBus\Internal\StoragePolicies.h">
+      <Filter>AzCore\EBus\Internal</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Interface\Interface.h">
+      <Filter>AzCore\Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\IO\ByteContainerStream.h">
+      <Filter>AzCore\IO</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\IO\CompressionBus.h">
+      <Filter>AzCore\IO</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\IO\Compressor.h">
+      <Filter>AzCore\IO</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\IO\CompressorStream.h">
+      <Filter>AzCore\IO</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\IO\CompressorZLib.h">
+      <Filter>AzCore\IO</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\IO\CompressorZStd.h">
+      <Filter>AzCore\IO</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\IO\FileIO.h">
+      <Filter>AzCore\IO</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\IO\FileIOEventBus.h">
+      <Filter>AzCore\IO</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\IO\IOUtils.h">
+      <Filter>AzCore\IO</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\IO\IStreamer.h">
+      <Filter>AzCore\IO</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\IO\IStreamerTypes.h">
+      <Filter>AzCore\IO</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\IO\IStreamerTypes.inl">
+      <Filter>AzCore\IO</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\IO\GenericStreams.h">
+      <Filter>AzCore\IO</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\IO\Path\Path.h">
+      <Filter>AzCore\IO\Path</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\IO\Path\Path.inl">
+      <Filter>AzCore\IO\Path</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\IO\Path\PathIterable.inl">
+      <Filter>AzCore\IO\Path</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\IO\Path\PathParser.inl">
+      <Filter>AzCore\IO\Path</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\IO\Path\Path_fwd.h">
+      <Filter>AzCore\IO\Path</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\IO\SystemFile.h">
+      <Filter>AzCore\IO</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\IO\TextStreamWriters.h">
+      <Filter>AzCore\IO</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\IO\Streamer\BlockCache.h">
+      <Filter>AzCore\IO\Streamer</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\IO\Streamer\DedicatedCache.h">
+      <Filter>AzCore\IO\Streamer</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\IO\Streamer\FileRange.h">
+      <Filter>AzCore\IO\Streamer</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\IO\Streamer\FileRequest.h">
+      <Filter>AzCore\IO\Streamer</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\IO\Streamer\FileRequest.inl">
+      <Filter>AzCore\IO\Streamer</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\IO\Streamer\FullFileDecompressor.h">
+      <Filter>AzCore\IO\Streamer</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\IO\Streamer\ReadSplitter.h">
+      <Filter>AzCore\IO\Streamer</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\IO\Streamer\RequestPath.h">
+      <Filter>AzCore\IO\Streamer</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\IO\Streamer\Scheduler.h">
+      <Filter>AzCore\IO\Streamer</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\IO\Streamer\Statistics.h">
+      <Filter>AzCore\IO\Streamer</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\IO\Streamer\StorageDrive.h">
+      <Filter>AzCore\IO\Streamer</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\IO\Streamer\StreamerConfiguration.h">
+      <Filter>AzCore\IO\Streamer</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\IO\Streamer\Streamer.h">
+      <Filter>AzCore\IO\Streamer</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\IO\Streamer\StreamerContext.h">
+      <Filter>AzCore\IO\Streamer</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\IO\Streamer\StreamerComponent.h">
+      <Filter>AzCore\IO\Streamer</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\IO\Streamer\StreamStackEntry.h">
+      <Filter>AzCore\IO\Streamer</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\IPC\SharedMemory.h">
+      <Filter>AzCore\IPC</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Jobs\Algorithms.h">
+      <Filter>AzCore\Jobs</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Jobs\Internal\JobManagerBase.h">
+      <Filter>AzCore\Jobs\Internal</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Jobs\Internal\JobManagerWorkStealing.h">
+      <Filter>AzCore\Jobs\Internal</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Jobs\Internal\JobNotify.h">
+      <Filter>AzCore\Jobs\Internal</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Jobs\Job.h">
+      <Filter>AzCore\Jobs</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Jobs\JobCancelGroup.h">
+      <Filter>AzCore\Jobs</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Jobs\JobCompletion.h">
+      <Filter>AzCore\Jobs</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Jobs\JobCompletionSpin.h">
+      <Filter>AzCore\Jobs</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Jobs\JobContext.h">
+      <Filter>AzCore\Jobs</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Jobs\JobEmpty.h">
+      <Filter>AzCore\Jobs</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Jobs\JobFunction.h">
+      <Filter>AzCore\Jobs</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Jobs\JobManager.h">
+      <Filter>AzCore\Jobs</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Jobs\JobManagerBus.h">
+      <Filter>AzCore\Jobs</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Jobs\JobManagerComponent.h">
+      <Filter>AzCore\Jobs</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Jobs\JobManagerDesc.h">
+      <Filter>AzCore\Jobs</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Jobs\LegacyJobExecutor.h">
+      <Filter>AzCore\Jobs</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Jobs\MultipleDependentJob.h">
+      <Filter>AzCore\Jobs</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Jobs\task_group.h">
+      <Filter>AzCore\Jobs</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Math\Aabb.h">
+      <Filter>AzCore\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Math\Aabb.inl">
+      <Filter>AzCore\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Math\Color.h">
+      <Filter>AzCore\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Math\Color.inl">
+      <Filter>AzCore\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Math\ColorSerializer.h">
+      <Filter>AzCore\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Math\Crc.inl">
+      <Filter>AzCore\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Math\Crc.h">
+      <Filter>AzCore\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Math\DocsMath.h">
+      <Filter>AzCore\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Math\Frustum.h">
+      <Filter>AzCore\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Math\Frustum.inl">
+      <Filter>AzCore\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Math\Geometry2DUtils.h">
+      <Filter>AzCore\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Math\Guid.h">
+      <Filter>AzCore\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Math\Internal\MathTypes.h">
+      <Filter>AzCore\Math\Internal</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Math\Internal\SimdMathVec1_neon.inl">
+      <Filter>AzCore\Math\Internal</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Math\Internal\SimdMathVec1_scalar.inl">
+      <Filter>AzCore\Math\Internal</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Math\Internal\SimdMathVec1_sse.inl">
+      <Filter>AzCore\Math\Internal</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Math\Internal\SimdMathVec2_neon.inl">
+      <Filter>AzCore\Math\Internal</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Math\Internal\SimdMathVec2_scalar.inl">
+      <Filter>AzCore\Math\Internal</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Math\Internal\SimdMathVec2_sse.inl">
+      <Filter>AzCore\Math\Internal</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Math\Internal\SimdMathVec3_neon.inl">
+      <Filter>AzCore\Math\Internal</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Math\Internal\SimdMathVec3_scalar.inl">
+      <Filter>AzCore\Math\Internal</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Math\Internal\SimdMathVec3_sse.inl">
+      <Filter>AzCore\Math\Internal</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Math\Internal\SimdMathVec4_neon.inl">
+      <Filter>AzCore\Math\Internal</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Math\Internal\SimdMathVec4_scalar.inl">
+      <Filter>AzCore\Math\Internal</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Math\Internal\SimdMathVec4_sse.inl">
+      <Filter>AzCore\Math\Internal</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Math\Internal\SimdMathCommon_neon.inl">
+      <Filter>AzCore\Math\Internal</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Math\Internal\SimdMathCommon_neonDouble.inl">
+      <Filter>AzCore\Math\Internal</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Math\Internal\SimdMathCommon_neonQuad.inl">
+      <Filter>AzCore\Math\Internal</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Math\Internal\SimdMathCommon_simd.inl">
+      <Filter>AzCore\Math\Internal</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Math\Internal\SimdMathCommon_sse.inl">
+      <Filter>AzCore\Math\Internal</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Math\Internal\VectorConversions.inl">
+      <Filter>AzCore\Math\Internal</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Math\Internal\VertexContainer.inl">
+      <Filter>AzCore\Math\Internal</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Math\InterpolationSample.h">
+      <Filter>AzCore\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Math\IntersectPoint.h">
+      <Filter>AzCore\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Math\IntersectSegment.h">
+      <Filter>AzCore\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Math\MathIntrinsics.h">
+      <Filter>AzCore\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Math\MathReflection.h">
+      <Filter>AzCore\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Math\MathScriptHelpers.h">
+      <Filter>AzCore\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Math\MathUtils.h">
+      <Filter>AzCore\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Math\MathMatrixSerializer.h">
+      <Filter>AzCore\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Math\MathVectorSerializer.h">
+      <Filter>AzCore\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Math\Matrix3x3.h">
+      <Filter>AzCore\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Math\Matrix3x3.inl">
+      <Filter>AzCore\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Math\Matrix3x4.h">
+      <Filter>AzCore\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Math\Matrix3x4.inl">
+      <Filter>AzCore\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Math\Matrix4x4.h">
+      <Filter>AzCore\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Math\Matrix4x4.inl">
+      <Filter>AzCore\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Math\MatrixUtils.h">
+      <Filter>AzCore\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Math\Obb.h">
+      <Filter>AzCore\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Math\Obb.inl">
+      <Filter>AzCore\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Math\Plane.h">
+      <Filter>AzCore\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Math\Plane.inl">
+      <Filter>AzCore\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Math\PolygonPrism.h">
+      <Filter>AzCore\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Math\Quaternion.inl">
+      <Filter>AzCore\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Math\Quaternion.h">
+      <Filter>AzCore\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Math\Random.h">
+      <Filter>AzCore\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Math\Sfmt.h">
+      <Filter>AzCore\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Math\ShapeIntersection.h">
+      <Filter>AzCore\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Math\ShapeIntersection.inl">
+      <Filter>AzCore\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Math\SimdMath.h">
+      <Filter>AzCore\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Math\SimdMathVec1.h">
+      <Filter>AzCore\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Math\SimdMathVec2.h">
+      <Filter>AzCore\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Math\SimdMathVec3.h">
+      <Filter>AzCore\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Math\SimdMathVec4.h">
+      <Filter>AzCore\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Math\Sha1.h">
+      <Filter>AzCore\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Math\Spline.h">
+      <Filter>AzCore\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Math\Sphere.h">
+      <Filter>AzCore\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Math\Sphere.inl">
+      <Filter>AzCore\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Math\Transform.h">
+      <Filter>AzCore\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Math\Transform.inl">
+      <Filter>AzCore\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Math\TransformSerializer.h">
+      <Filter>AzCore\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Math\Uuid.h">
+      <Filter>AzCore\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Math\UuidSerializer.h">
+      <Filter>AzCore\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Math\Vector2.h">
+      <Filter>AzCore\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Math\Vector2.inl">
+      <Filter>AzCore\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Math\Vector3.h">
+      <Filter>AzCore\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Math\Vector3.inl">
+      <Filter>AzCore\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Math\Vector4.h">
+      <Filter>AzCore\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Math\Vector4.inl">
+      <Filter>AzCore\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Math\VectorConversions.h">
+      <Filter>AzCore\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Math\VertexContainer.h">
+      <Filter>AzCore\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Math\VertexContainerInterface.h">
+      <Filter>AzCore\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Math\PackedVector3.h">
+      <Filter>AzCore\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Math\ToString.h">
+      <Filter>AzCore\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Memory\AllocationRecords.h">
+      <Filter>AzCore\Memory</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Memory\AllocatorBase.h">
+      <Filter>AzCore\Memory</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Memory\AllocatorManager.h">
+      <Filter>AzCore\Memory</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Memory\AllocatorOverrideShim.h">
+      <Filter>AzCore\Memory</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Memory\AllocatorWrapper.h">
+      <Filter>AzCore\Memory</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Memory\AllocatorScope.h">
+      <Filter>AzCore\Memory</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Memory\BestFitExternalMapAllocator.h">
+      <Filter>AzCore\Memory</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Memory\BestFitExternalMapSchema.h">
+      <Filter>AzCore\Memory</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Memory\Config.h">
+      <Filter>AzCore\Memory</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Memory\dlmalloc.inl">
+      <Filter>AzCore\Memory</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Memory\HeapSchema.h">
+      <Filter>AzCore\Memory</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Memory\HphaSchema.h">
+      <Filter>AzCore\Memory</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Memory\IAllocator.h">
+      <Filter>AzCore\Memory</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Memory\MallocSchema.h">
+      <Filter>AzCore\Memory</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Memory\Memory.h">
+      <Filter>AzCore\Memory</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Memory\MemoryComponent.h">
+      <Filter>AzCore\Memory</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Memory\MemoryDriller.h">
+      <Filter>AzCore\Memory</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Memory\MemoryDrillerBus.h">
+      <Filter>AzCore\Memory</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Memory\nedmalloc.inl">
+      <Filter>AzCore\Memory</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Memory\NewAndDelete.inl">
+      <Filter>AzCore\Memory</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Memory\OSAllocator.h">
+      <Filter>AzCore\Memory</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Memory\OverrunDetectionAllocator.h">
+      <Filter>AzCore\Memory</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Memory\PlatformMemoryInstrumentation.h">
+      <Filter>AzCore\Memory</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Memory\PoolAllocator.h">
+      <Filter>AzCore\Memory</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Memory\PoolSchema.h">
+      <Filter>AzCore\Memory</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Memory\SimpleSchemaAllocator.h">
+      <Filter>AzCore\Memory</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Memory\SystemAllocator.h">
+      <Filter>AzCore\Memory</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Module\DynamicModuleHandle.h">
+      <Filter>AzCore\Module</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Module\Environment.h">
+      <Filter>AzCore\Module</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Module\Module.h">
+      <Filter>AzCore\Module</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Module\ModuleManagerBus.h">
+      <Filter>AzCore\Module</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Module\ModuleManager.h">
+      <Filter>AzCore\Module</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Module\Internal\ModuleManagerSearchPathTool.h">
+      <Filter>AzCore\Module\Internal</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\NativeUI\NativeUISystemComponent.h">
+      <Filter>AzCore\NativeUI</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\NativeUI\NativeUIRequests.h">
+      <Filter>AzCore\NativeUI</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Name\Name.h">
+      <Filter>AzCore\Name</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Name\NameDictionary.h">
+      <Filter>AzCore\Name</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Name\NameJsonSerializer.h">
+      <Filter>AzCore\Name</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Name\NameSerializer.h">
+      <Filter>AzCore\Name</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Name\Internal\NameData.h">
+      <Filter>AzCore\Name\Internal</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Outcome\Outcome.h">
+      <Filter>AzCore\Outcome</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Outcome\Internal\OutcomeStorage.h">
+      <Filter>AzCore\Outcome\Internal</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Outcome\Internal\OutcomeImpl.h">
+      <Filter>AzCore\Outcome\Internal</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Preprocessor\CodeGen.h">
+      <Filter>AzCore\Preprocessor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Preprocessor\Enum.h">
+      <Filter>AzCore\Preprocessor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Preprocessor\EnumReflectUtils.h">
+      <Filter>AzCore\Preprocessor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Preprocessor\Sequences.h">
+      <Filter>AzCore\Preprocessor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\RTTI\RTTI.h">
+      <Filter>AzCore\RTTI</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\RTTI\TypeInfo.h">
+      <Filter>AzCore\RTTI</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\RTTI\TypeInfoSimple.h">
+      <Filter>AzCore\RTTI</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\RTTI\ReflectContext.h">
+      <Filter>AzCore\RTTI</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\RTTI\ReflectionManager.h">
+      <Filter>AzCore\RTTI</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\RTTI\AttributeReader.h">
+      <Filter>AzCore\RTTI</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\RTTI\AzStdOnDemandPrettyName.inl">
+      <Filter>AzCore\RTTI</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\RTTI\AzStdOnDemandReflection.inl">
+      <Filter>AzCore\RTTI</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\RTTI\AzStdOnDemandReflectionLuaFunctions.inl">
+      <Filter>AzCore\RTTI</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\RTTI\BehaviorContext.h">
+      <Filter>AzCore\RTTI</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\RTTI\BehaviorContextUtilities.h">
+      <Filter>AzCore\RTTI</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\RTTI\BehaviorObjectSignals.h">
+      <Filter>AzCore\RTTI</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\RTTI\TypeSafeIntegral.h">
+      <Filter>AzCore\RTTI</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Script\ScriptAsset.h">
+      <Filter>AzCore\Script</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Script\ScriptContext.h">
+      <Filter>AzCore\Script</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Script\ScriptContextAttributes.h">
+      <Filter>AzCore\Script</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Script\ScriptContextDebug.h">
+      <Filter>AzCore\Script</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Script\ScriptSystemBus.h">
+      <Filter>AzCore\Script</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Script\ScriptSystemComponent.h">
+      <Filter>AzCore\Script</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Script\ScriptTimePoint.h">
+      <Filter>AzCore\Script</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Script\ScriptProperty.h">
+      <Filter>AzCore\Script</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Script\ScriptPropertySerializer.h">
+      <Filter>AzCore\Script</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Script\ScriptPropertyTable.h">
+      <Filter>AzCore\Script</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Script\ScriptPropertyWatcherBus.h">
+      <Filter>AzCore\Script</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Script\ScriptDebug.h">
+      <Filter>AzCore\Script</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\ScriptCanvas\ScriptCanvasAttributes.h">
+      <Filter>AzCore\ScriptCanvas</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\ScriptCanvas\ScriptCanvasOnDemandNames.h">
+      <Filter>AzCore\ScriptCanvas</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Serialization\DataOverlay.h">
+      <Filter>AzCore\Serialization</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Serialization\DataOverlayInstanceMsgs.h">
+      <Filter>AzCore\Serialization</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Serialization\DataOverlayProviderMsgs.h">
+      <Filter>AzCore\Serialization</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Serialization\AZStdContainers.inl">
+      <Filter>AzCore\Serialization</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Serialization\AZStdAnyDataContainer.inl">
+      <Filter>AzCore\Serialization</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Serialization\DynamicSerializableField.h">
+      <Filter>AzCore\Serialization</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Serialization\EditContext.h">
+      <Filter>AzCore\Serialization</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Serialization\EditContext.inl">
+      <Filter>AzCore\Serialization</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Serialization\EditContextConstants.inl">
+      <Filter>AzCore\Serialization</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Serialization\IdUtils.inl">
+      <Filter>AzCore\Serialization</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Serialization\IdUtils.h">
+      <Filter>AzCore\Serialization</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Serialization\Utils.h">
+      <Filter>AzCore\Serialization</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Serialization\ObjectStream.h">
+      <Filter>AzCore\Serialization</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Serialization\SerializeContext.h">
+      <Filter>AzCore\Serialization</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Serialization\SerializeContextEnum.inl">
+      <Filter>AzCore\Serialization</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Serialization\DataPatch.h">
+      <Filter>AzCore\Serialization</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Serialization\DataPatchBus.h">
+      <Filter>AzCore\Serialization</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Serialization\DataPatchUpgradeManager.h">
+      <Filter>AzCore\Serialization</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Serialization\Json\ArraySerializer.h">
+      <Filter>AzCore\Serialization\Json</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Serialization\Json\BaseJsonSerializer.h">
+      <Filter>AzCore\Serialization\Json</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Serialization\Json\BasicContainerSerializer.h">
+      <Filter>AzCore\Serialization\Json</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Serialization\Json\BoolSerializer.h">
+      <Filter>AzCore\Serialization\Json</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Serialization\Json\ByteStreamSerializer.h">
+      <Filter>AzCore\Serialization\Json</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Serialization\Json\CastingHelpers.h">
+      <Filter>AzCore\Serialization\Json</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Serialization\Json\DoubleSerializer.h">
+      <Filter>AzCore\Serialization\Json</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Serialization\Json\IntSerializer.h">
+      <Filter>AzCore\Serialization\Json</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Serialization\Json\JsonDeserializer.h">
+      <Filter>AzCore\Serialization\Json</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Serialization\Json\JsonMerger.h">
+      <Filter>AzCore\Serialization\Json</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Serialization\Json\JsonSerialization.h">
+      <Filter>AzCore\Serialization\Json</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Serialization\Json\JsonSerializationMetadata.h">
+      <Filter>AzCore\Serialization\Json</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Serialization\Json\JsonSerializationMetadata.inl">
+      <Filter>AzCore\Serialization\Json</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Serialization\Json\JsonSerializationResult.h">
+      <Filter>AzCore\Serialization\Json</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Serialization\Json\JsonSerializationSettings.h">
+      <Filter>AzCore\Serialization\Json</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Serialization\Json\JsonSerializer.h">
+      <Filter>AzCore\Serialization\Json</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Serialization\Json\JsonStringConversionUtils.h">
+      <Filter>AzCore\Serialization\Json</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Serialization\Json\JsonSystemComponent.h">
+      <Filter>AzCore\Serialization\Json</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Serialization\Json\JsonUtils.h">
+      <Filter>AzCore\Serialization\Json</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Serialization\Json\MapSerializer.h">
+      <Filter>AzCore\Serialization\Json</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Serialization\Json\RegistrationContext.h">
+      <Filter>AzCore\Serialization\Json</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Serialization\Json\SmartPointerSerializer.h">
+      <Filter>AzCore\Serialization\Json</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Serialization\Json\StackedString.h">
+      <Filter>AzCore\Serialization\Json</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Serialization\Json\StringSerializer.h">
+      <Filter>AzCore\Serialization\Json</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Serialization\Json\TupleSerializer.h">
+      <Filter>AzCore\Serialization\Json</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Serialization\Json\UnorderedSetSerializer.h">
+      <Filter>AzCore\Serialization\Json</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Serialization\Json\UnsupportedTypesSerializer.h">
+      <Filter>AzCore\Serialization\Json</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Serialization\std\VariantReflection.inl">
+      <Filter>AzCore\Serialization\std</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Settings\CommandLine.h">
+      <Filter>AzCore\Settings</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Settings\SettingsRegistry.h">
+      <Filter>AzCore\Settings</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Settings\SettingsRegistryConsoleUtils.h">
+      <Filter>AzCore\Settings</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Settings\SettingsRegistryImpl.h">
+      <Filter>AzCore\Settings</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Settings\SettingsRegistryMergeUtils.h">
+      <Filter>AzCore\Settings</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Settings\SettingsRegistryScriptUtils.h">
+      <Filter>AzCore\Settings</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\State\HSM.h">
+      <Filter>AzCore\State</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Statistics\NamedRunningStatistic.h">
+      <Filter>AzCore\Statistics</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Statistics\RunningStatistic.h">
+      <Filter>AzCore\Statistics</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Statistics\StatisticalProfiler.h">
+      <Filter>AzCore\Statistics</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Statistics\StatisticalProfilerProxy.h">
+      <Filter>AzCore\Statistics</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Statistics\StatisticalProfilerProxySystemComponent.h">
+      <Filter>AzCore\Statistics</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Statistics\StatisticsManager.h">
+      <Filter>AzCore\Statistics</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\StringFunc\StringFunc.h">
+      <Filter>AzCore\StringFunc</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\UserSettings\UserSettings.h">
+      <Filter>AzCore\UserSettings</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\UserSettings\UserSettingsComponent.h">
+      <Filter>AzCore\UserSettings</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\UserSettings\UserSettingsProvider.h">
+      <Filter>AzCore\UserSettings</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\XML\rapidxml.h">
+      <Filter>AzCore\XML</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\XML\rapidxml_iterators.h">
+      <Filter>AzCore\XML</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\XML\rapidxml_print.h">
+      <Filter>AzCore\XML</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\XML\rapidxml_utils.h">
+      <Filter>AzCore\XML</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\JSON\allocators.h">
+      <Filter>AzCore\JSON</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\JSON\cursorstreamwrapper.h">
+      <Filter>AzCore\JSON</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\JSON\document.h">
+      <Filter>AzCore\JSON</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\JSON\encodedstream.h">
+      <Filter>AzCore\JSON</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\JSON\encodings.h">
+      <Filter>AzCore\JSON</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\JSON\filereadstream.h">
+      <Filter>AzCore\JSON</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\JSON\filewritestream.h">
+      <Filter>AzCore\JSON</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\JSON\fwd.h">
+      <Filter>AzCore\JSON</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\JSON\istreamwrapper.h">
+      <Filter>AzCore\JSON</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\JSON\memorybuffer.h">
+      <Filter>AzCore\JSON</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\JSON\memorystream.h">
+      <Filter>AzCore\JSON</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\JSON\ostreamwrapper.h">
+      <Filter>AzCore\JSON</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\JSON\pointer.h">
+      <Filter>AzCore\JSON</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\JSON\prettywriter.h">
+      <Filter>AzCore\JSON</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\JSON\rapidjson.h">
+      <Filter>AzCore\JSON</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\JSON\reader.h">
+      <Filter>AzCore\JSON</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\JSON\schema.h">
+      <Filter>AzCore\JSON</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\JSON\stream.h">
+      <Filter>AzCore\JSON</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\JSON\stringbuffer.h">
+      <Filter>AzCore\JSON</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\JSON\writer.h">
+      <Filter>AzCore\JSON</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\JSON\error\en.h">
+      <Filter>AzCore\JSON\error</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\JSON\error\error.h">
+      <Filter>AzCore\JSON\error</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Utils\TypeHash.h">
+      <Filter>AzCore\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Utils\Utils.h">
+      <Filter>AzCore\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Script\lua\lua.h">
+      <Filter>AzCore\Script\lua</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\PlatformId\PlatformDefaults.h">
+      <Filter>AzCore\PlatformId</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\PlatformId\PlatformId.h">
+      <Filter>AzCore\PlatformId</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Socket\AzSocket_fwd.h">
+      <Filter>AzCore\Socket</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Socket\AzSocket.h">
+      <Filter>AzCore\Socket</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Task\Internal\Task.inl">
+      <Filter>AzCore\Task\Internal</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Task\Internal\Task.h">
+      <Filter>AzCore\Task\Internal</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Task\Internal\TaskConfig.h">
+      <Filter>AzCore\Task\Internal</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Task\TaskDescriptor.h">
+      <Filter>AzCore\Task</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Task\TaskExecutor.h">
+      <Filter>AzCore\Task</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Task\TaskGraph.h">
+      <Filter>AzCore\Task</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Task\TaskGraph.inl">
+      <Filter>AzCore\Task</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Threading\ThreadSafeDeque.h">
+      <Filter>AzCore\Threading</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Threading\ThreadSafeDeque.inl">
+      <Filter>AzCore\Threading</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Threading\ThreadSafeObject.h">
+      <Filter>AzCore\Threading</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Threading\ThreadSafeObject.inl">
+      <Filter>AzCore\Threading</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Time\ITime.h">
+      <Filter>AzCore\Time</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\Time\TimeSystemComponent.h">
+      <Filter>AzCore\Time</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\algorithm.h">
+      <Filter>AzCore\std</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\allocator.h">
+      <Filter>AzCore\std</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\allocator_ref.h">
+      <Filter>AzCore\std</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\allocator_stack.h">
+      <Filter>AzCore\std</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\allocator_static.h">
+      <Filter>AzCore\std</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\allocator_traits.h">
+      <Filter>AzCore\std</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\any.h">
+      <Filter>AzCore\std</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\base.h">
+      <Filter>AzCore\std</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\config.h">
+      <Filter>AzCore\std</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\createdestroy.h">
+      <Filter>AzCore\std</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\docs.h">
+      <Filter>AzCore\std</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\exceptions.h">
+      <Filter>AzCore\std</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\functional.h">
+      <Filter>AzCore\std</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\functional_basic.h">
+      <Filter>AzCore\std</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\hash.h">
+      <Filter>AzCore\std</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\hash_table.h">
+      <Filter>AzCore\std</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\iterator.h">
+      <Filter>AzCore\std</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\limits.h">
+      <Filter>AzCore\std</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\numeric.h">
+      <Filter>AzCore\std</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\math.h">
+      <Filter>AzCore\std</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\optional.h">
+      <Filter>AzCore\std</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\ratio.h">
+      <Filter>AzCore\std</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\reference_wrapper.h">
+      <Filter>AzCore\std</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\sort.h">
+      <Filter>AzCore\std</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\time.h">
+      <Filter>AzCore\std</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\tuple.h">
+      <Filter>AzCore\std</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\utils.h">
+      <Filter>AzCore\std</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\bind\bind.h">
+      <Filter>AzCore\std\bind</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\bind\mem_fn.h">
+      <Filter>AzCore\std\bind</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\chrono\chrono.h">
+      <Filter>AzCore\std\chrono</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\chrono\clocks.h">
+      <Filter>AzCore\std\chrono</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\chrono\types.h">
+      <Filter>AzCore\std\chrono</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\containers\array.h">
+      <Filter>AzCore\std\containers</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\containers\bitset.h">
+      <Filter>AzCore\std\containers</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\containers\compressed_pair.h">
+      <Filter>AzCore\std\containers</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\containers\compressed_pair.inl">
+      <Filter>AzCore\std\containers</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\containers\deque.h">
+      <Filter>AzCore\std\containers</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\containers\fixed_forward_list.h">
+      <Filter>AzCore\std\containers</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\containers\fixed_list.h">
+      <Filter>AzCore\std\containers</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\containers\fixed_unordered_map.h">
+      <Filter>AzCore\std\containers</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\containers\fixed_unordered_set.h">
+      <Filter>AzCore\std\containers</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\containers\fixed_vector.h">
+      <Filter>AzCore\std\containers</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\containers\forward_list.h">
+      <Filter>AzCore\std\containers</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\containers\intrusive_list.h">
+      <Filter>AzCore\std\containers</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\containers\intrusive_set.h">
+      <Filter>AzCore\std\containers</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\containers\intrusive_slist.h">
+      <Filter>AzCore\std\containers</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\containers\list.h">
+      <Filter>AzCore\std\containers</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\containers\map.h">
+      <Filter>AzCore\std\containers</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\containers\node_handle.h">
+      <Filter>AzCore\std\containers</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\containers\queue.h">
+      <Filter>AzCore\std\containers</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\containers\rbtree.h">
+      <Filter>AzCore\std\containers</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\containers\ring_buffer.h">
+      <Filter>AzCore\std\containers</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\containers\set.h">
+      <Filter>AzCore\std\containers</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\containers\stack.h">
+      <Filter>AzCore\std\containers</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\containers\unordered_map.h">
+      <Filter>AzCore\std\containers</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\containers\unordered_set.h">
+      <Filter>AzCore\std\containers</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\containers\variant.h">
+      <Filter>AzCore\std\containers</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\containers\variant.inl">
+      <Filter>AzCore\std\containers</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\containers\variant_impl.h">
+      <Filter>AzCore\std\containers</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\containers\vector.h">
+      <Filter>AzCore\std\containers</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\parallel\allocator_concurrent_static.h">
+      <Filter>AzCore\std\parallel</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\parallel\atomic.h">
+      <Filter>AzCore\std\parallel</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\parallel\binary_semaphore.h">
+      <Filter>AzCore\std\parallel</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\parallel\combinable.h">
+      <Filter>AzCore\std\parallel</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\parallel\condition_variable.h">
+      <Filter>AzCore\std\parallel</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\parallel\conditional_variable.h">
+      <Filter>AzCore\std\parallel</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\parallel\config.h">
+      <Filter>AzCore\std\parallel</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\parallel\exponential_backoff.h">
+      <Filter>AzCore\std\parallel</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\parallel\lock.h">
+      <Filter>AzCore\std\parallel</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\parallel\mutex.h">
+      <Filter>AzCore\std\parallel</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\parallel\semaphore.h">
+      <Filter>AzCore\std\parallel</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\parallel\scoped_lock.h">
+      <Filter>AzCore\std\parallel</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\parallel\shared_spin_mutex.h">
+      <Filter>AzCore\std\parallel</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\parallel\shared_mutex.h">
+      <Filter>AzCore\std\parallel</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\parallel\spin_mutex.h">
+      <Filter>AzCore\std\parallel</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\parallel\thread.h">
+      <Filter>AzCore\std\parallel</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\parallel\threadbus.h">
+      <Filter>AzCore\std\parallel</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\parallel\containers\concurrent_fixed_unordered_map.h">
+      <Filter>AzCore\std\parallel\containers</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\parallel\containers\concurrent_fixed_unordered_set.h">
+      <Filter>AzCore\std\parallel\containers</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\parallel\containers\concurrent_unordered_map.h">
+      <Filter>AzCore\std\parallel\containers</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\parallel\containers\concurrent_unordered_set.h">
+      <Filter>AzCore\std\parallel\containers</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\parallel\containers\concurrent_vector.h">
+      <Filter>AzCore\std\parallel\containers</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\parallel\containers\lock_free_intrusive_stack.h">
+      <Filter>AzCore\std\parallel\containers</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\parallel\containers\lock_free_intrusive_stamped_stack.h">
+      <Filter>AzCore\std\parallel\containers</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\parallel\containers\lock_free_queue.h">
+      <Filter>AzCore\std\parallel\containers</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\parallel\containers\lock_free_stack.h">
+      <Filter>AzCore\std\parallel\containers</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\parallel\containers\lock_free_stamped_queue.h">
+      <Filter>AzCore\std\parallel\containers</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\parallel\containers\lock_free_stamped_stack.h">
+      <Filter>AzCore\std\parallel\containers</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\parallel\containers\internal\concurrent_hash_table.h">
+      <Filter>AzCore\std\parallel\containers\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\delegate\delegate.h">
+      <Filter>AzCore\std\delegate</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\delegate\delegate_bind.h">
+      <Filter>AzCore\std\delegate</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\delegate\delegate_fwd.h">
+      <Filter>AzCore\std\delegate</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\function\function_base.h">
+      <Filter>AzCore\std\function</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\function\function_fwd.h">
+      <Filter>AzCore\std\function</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\function\function_template.h">
+      <Filter>AzCore\std\function</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\function\identity.h">
+      <Filter>AzCore\std\function</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\function\invoke.h">
+      <Filter>AzCore\std\function</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\smart_ptr\checked_delete.h">
+      <Filter>AzCore\std\smart_ptr</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\smart_ptr\enable_shared_from_this.h">
+      <Filter>AzCore\std\smart_ptr</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\smart_ptr\enable_shared_from_this2.h">
+      <Filter>AzCore\std\smart_ptr</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\smart_ptr\intrusive_refcount.h">
+      <Filter>AzCore\std\smart_ptr</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\smart_ptr\intrusive_base.h">
+      <Filter>AzCore\std\smart_ptr</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\smart_ptr\intrusive_ptr.h">
+      <Filter>AzCore\std\smart_ptr</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\smart_ptr\make_shared.h">
+      <Filter>AzCore\std\smart_ptr</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\smart_ptr\scoped_array.h">
+      <Filter>AzCore\std\smart_ptr</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\smart_ptr\scoped_ptr.h">
+      <Filter>AzCore\std\smart_ptr</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\smart_ptr\shared_array.h">
+      <Filter>AzCore\std\smart_ptr</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\smart_ptr\shared_count.h">
+      <Filter>AzCore\std\smart_ptr</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\smart_ptr\shared_ptr.h">
+      <Filter>AzCore\std\smart_ptr</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\smart_ptr\sp_convertible.h">
+      <Filter>AzCore\std\smart_ptr</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\smart_ptr\unique_ptr.h">
+      <Filter>AzCore\std\smart_ptr</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\smart_ptr\weak_ptr.h">
+      <Filter>AzCore\std\smart_ptr</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\string\alphanum.h">
+      <Filter>AzCore\std\string</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\string\conversions.h">
+      <Filter>AzCore\std\string</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\string\fixed_string.h">
+      <Filter>AzCore\std\string</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\string\fixed_string.inl">
+      <Filter>AzCore\std\string</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\string\memorytoascii.h">
+      <Filter>AzCore\std\string</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\string\regex.h">
+      <Filter>AzCore\std\string</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\string\string.h">
+      <Filter>AzCore\std\string</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\string\string_view.h">
+      <Filter>AzCore\std\string</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\string\osstring.h">
+      <Filter>AzCore\std\string</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\string\tokenize.h">
+      <Filter>AzCore\std\string</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\string\utf8\core.h">
+      <Filter>AzCore\std\string\utf8</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\string\utf8\unchecked.h">
+      <Filter>AzCore\std\string\utf8</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\string\wildcard.h">
+      <Filter>AzCore\std\string</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\typetraits\add_const.h">
+      <Filter>AzCore\std\typetraits</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\typetraits\add_cv.h">
+      <Filter>AzCore\std\typetraits</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\typetraits\add_pointer.h">
+      <Filter>AzCore\std\typetraits</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\typetraits\add_reference.h">
+      <Filter>AzCore\std\typetraits</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\typetraits\add_volatile.h">
+      <Filter>AzCore\std\typetraits</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\typetraits\aligned_storage.h">
+      <Filter>AzCore\std\typetraits</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\typetraits\alignment_of.h">
+      <Filter>AzCore\std\typetraits</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\typetraits\config.h">
+      <Filter>AzCore\std\typetraits</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\typetraits\common_type.h">
+      <Filter>AzCore\std\typetraits</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\typetraits\conjunction.h">
+      <Filter>AzCore\std\typetraits</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\typetraits\disjunction.h">
+      <Filter>AzCore\std\typetraits</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\typetraits\extent.h">
+      <Filter>AzCore\std\typetraits</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\typetraits\function_traits.h">
+      <Filter>AzCore\std\typetraits</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\typetraits\has_virtual_destructor.h">
+      <Filter>AzCore\std\typetraits</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\typetraits\integral_constant.h">
+      <Filter>AzCore\std\typetraits</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\typetraits\intrinsics.h">
+      <Filter>AzCore\std\typetraits</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\typetraits\invoke_traits.h">
+      <Filter>AzCore\std\typetraits</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\typetraits\is_abstract.h">
+      <Filter>AzCore\std\typetraits</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\typetraits\is_arithmetic.h">
+      <Filter>AzCore\std\typetraits</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\typetraits\is_array.h">
+      <Filter>AzCore\std\typetraits</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\typetraits\is_assignable.h">
+      <Filter>AzCore\std\typetraits</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\typetraits\is_base_of.h">
+      <Filter>AzCore\std\typetraits</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\typetraits\is_class.h">
+      <Filter>AzCore\std\typetraits</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\typetraits\is_compound.h">
+      <Filter>AzCore\std\typetraits</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\typetraits\is_constructible.h">
+      <Filter>AzCore\std\typetraits</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\typetraits\is_const.h">
+      <Filter>AzCore\std\typetraits</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\typetraits\is_convertible.h">
+      <Filter>AzCore\std\typetraits</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\typetraits\is_destructible.h">
+      <Filter>AzCore\std\typetraits</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\typetraits\is_empty.h">
+      <Filter>AzCore\std\typetraits</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\typetraits\is_enum.h">
+      <Filter>AzCore\std\typetraits</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\typetraits\is_floating_point.h">
+      <Filter>AzCore\std\typetraits</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\typetraits\is_function.h">
+      <Filter>AzCore\std\typetraits</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\typetraits\is_fundamental.h">
+      <Filter>AzCore\std\typetraits</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\typetraits\is_integral.h">
+      <Filter>AzCore\std\typetraits</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\typetraits\is_lvalue_reference.h">
+      <Filter>AzCore\std\typetraits</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\typetraits\is_member_function_pointer.h">
+      <Filter>AzCore\std\typetraits</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\typetraits\is_member_object_pointer.h">
+      <Filter>AzCore\std\typetraits</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\typetraits\is_member_pointer.h">
+      <Filter>AzCore\std\typetraits</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\typetraits\is_object.h">
+      <Filter>AzCore\std\typetraits</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\typetraits\is_pod.h">
+      <Filter>AzCore\std\typetraits</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\typetraits\is_pointer.h">
+      <Filter>AzCore\std\typetraits</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\typetraits\is_polymorphic.h">
+      <Filter>AzCore\std\typetraits</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\typetraits\is_reference.h">
+      <Filter>AzCore\std\typetraits</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\typetraits\is_rvalue_reference.h">
+      <Filter>AzCore\std\typetraits</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\typetraits\is_same.h">
+      <Filter>AzCore\std\typetraits</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\typetraits\is_scalar.h">
+      <Filter>AzCore\std\typetraits</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\typetraits\is_signed.h">
+      <Filter>AzCore\std\typetraits</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\typetraits\is_swappable.h">
+      <Filter>AzCore\std\typetraits</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\typetraits\is_trivial.h">
+      <Filter>AzCore\std\typetraits</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\typetraits\is_trivially_copyable.h">
+      <Filter>AzCore\std\typetraits</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\typetraits\is_union.h">
+      <Filter>AzCore\std\typetraits</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\typetraits\is_unsigned.h">
+      <Filter>AzCore\std\typetraits</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\typetraits\is_void.h">
+      <Filter>AzCore\std\typetraits</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\typetraits\is_volatile.h">
+      <Filter>AzCore\std\typetraits</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\typetraits\negation.h">
+      <Filter>AzCore\std\typetraits</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\typetraits\rank.h">
+      <Filter>AzCore\std\typetraits</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\typetraits\remove_all_extents.h">
+      <Filter>AzCore\std\typetraits</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\typetraits\remove_const.h">
+      <Filter>AzCore\std\typetraits</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\typetraits\remove_cv.h">
+      <Filter>AzCore\std\typetraits</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\typetraits\remove_cvref.h">
+      <Filter>AzCore\std\typetraits</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\typetraits\remove_extent.h">
+      <Filter>AzCore\std\typetraits</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\typetraits\remove_pointer.h">
+      <Filter>AzCore\std\typetraits</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\typetraits\remove_reference.h">
+      <Filter>AzCore\std\typetraits</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\typetraits\remove_volatile.h">
+      <Filter>AzCore\std\typetraits</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\typetraits\static_storage.h">
+      <Filter>AzCore\std\typetraits</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\typetraits\typetraits.h">
+      <Filter>AzCore\std\typetraits</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\typetraits\type_id.h">
+      <Filter>AzCore\std\typetraits</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\typetraits\type_identity.h">
+      <Filter>AzCore\std\typetraits</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\typetraits\underlying_type.h">
+      <Filter>AzCore\std\typetraits</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\typetraits\decay.h">
+      <Filter>AzCore\std\typetraits</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\typetraits\conditional.h">
+      <Filter>AzCore\std\typetraits</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\typetraits\has_member_function.h">
+      <Filter>AzCore\std\typetraits</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\typetraits\void_t.h">
+      <Filter>AzCore\std\typetraits</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\typetraits\internal\type_sequence_traits.h">
+      <Filter>AzCore\std\typetraits\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\typetraits\internal\is_template_copy_constructible.h">
+      <Filter>AzCore\std\typetraits\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Windows\AzCore\AzCore_Traits_Platform.h">
+      <Filter>Platform\Windows\AzCore</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Windows\AzCore\AzCore_Traits_Windows.h">
+      <Filter>Platform\Windows\AzCore</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Windows\AzCore\base_Platform.h">
+      <Filter>Platform\Windows\AzCore</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Windows\AzCore\base_Windows.h">
+      <Filter>Platform\Windows\AzCore</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Windows\AzCore\PlatformId\PlatformId_Platform.h">
+      <Filter>Platform\Windows\AzCore\PlatformId</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Windows\AzCore\PlatformId\PlatformId_Windows.h">
+      <Filter>Platform\Windows\AzCore\PlatformId</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Common\WinAPI\AzCore\std\parallel\internal\condition_variable_WinAPI.h">
+      <Filter>Platform\Windows\..\Common\WinAPI\AzCore\std\parallel\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Common\WinAPI\AzCore\std\parallel\internal\mutex_WinAPI.h">
+      <Filter>Platform\Windows\..\Common\WinAPI\AzCore\std\parallel\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Common\WinAPI\AzCore\std\parallel\internal\semaphore_WinAPI.h">
+      <Filter>Platform\Windows\..\Common\WinAPI\AzCore\std\parallel\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Common\WinAPI\AzCore\std\parallel\internal\thread_WinAPI.h">
+      <Filter>Platform\Windows\..\Common\WinAPI\AzCore\std\parallel\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Windows\AzCore\std\parallel\internal\condition_variable_Platform.h">
+      <Filter>Platform\Windows\AzCore\std\parallel\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Windows\AzCore\std\parallel\internal\mutex_Platform.h">
+      <Filter>Platform\Windows\AzCore\std\parallel\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Windows\AzCore\std\parallel\internal\semaphore_Platform.h">
+      <Filter>Platform\Windows\AzCore\std\parallel\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Windows\AzCore\std\parallel\internal\thread_Platform.h">
+      <Filter>Platform\Windows\AzCore\std\parallel\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Common\WinAPI\AzCore\std\parallel\config_WinAPI.h">
+      <Filter>Platform\Windows\..\Common\WinAPI\AzCore\std\parallel</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Windows\AzCore\std\parallel\config_Platform.h">
+      <Filter>Platform\Windows\AzCore\std\parallel</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Windows\AzCore\std\string\fixed_string_Platform.inl">
+      <Filter>Platform\Windows\AzCore\std\string</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Common\MSVC\AzCore\std\string\fixed_string_MSVC.inl">
+      <Filter>Platform\Windows\..\Common\MSVC\AzCore\std\string</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Common\WinAPI\AzCore\IO\Streamer\StreamerContext_WinAPI.h">
+      <Filter>Platform\Windows\..\Common\WinAPI\AzCore\IO\Streamer</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Common\WinAPI\AzCore\IO\SystemFile_WinAPI.h">
+      <Filter>Platform\Windows\..\Common\WinAPI\AzCore\IO</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Windows\AzCore\IO\SystemFile_Platform.h">
+      <Filter>Platform\Windows\AzCore\IO</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Windows\AzCore\IO\Streamer\StorageDrive_Windows.h">
+      <Filter>Platform\Windows\AzCore\IO\Streamer</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Windows\AzCore\IO\Streamer\StorageDriveConfig_Windows.h">
+      <Filter>Platform\Windows\AzCore\IO\Streamer</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Windows\AzCore\IO\Streamer\StreamerConfiguration_Windows.h">
+      <Filter>Platform\Windows\AzCore\IO\Streamer</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Windows\AzCore\IO\Streamer\StreamerContext_Platform.h">
+      <Filter>Platform\Windows\AzCore\IO\Streamer</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Windows\AzCore\IPC\SharedMemory_Platform.h">
+      <Filter>Platform\Windows\AzCore\IPC</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Windows\AzCore\IPC\SharedMemory_Windows.h">
+      <Filter>Platform\Windows\AzCore\IPC</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Common\WinAPI\AzCore\Memory\OSAllocator_WinAPI.h">
+      <Filter>Platform\Windows\..\Common\WinAPI\AzCore\Memory</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Common\WinAPI\AzCore\Memory\OverrunDetectionAllocator_WinAPI.h">
+      <Filter>Platform\Windows\..\Common\WinAPI\AzCore\Memory</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Windows\AzCore\Memory\OSAllocator_Platform.h">
+      <Filter>Platform\Windows\AzCore\Memory</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Windows\AzCore\Memory\OverrunDetectionAllocator_Platform.h">
+      <Filter>Platform\Windows\AzCore\Memory</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Windows\AzCore\Math\Random_Platform.h">
+      <Filter>Platform\Windows\AzCore\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Windows\AzCore\Math\Random_Windows.h">
+      <Filter>Platform\Windows\AzCore\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Windows\AzCore\Math\Internal\MathTypes_Windows.h">
+      <Filter>Platform\Windows\AzCore\Math\Internal</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Windows\AzCore\PlatformIncl_Platform.h">
+      <Filter>Platform\Windows\AzCore</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Windows\AzCore\PlatformIncl_Windows.h">
+      <Filter>Platform\Windows\AzCore</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Common\WinAPI\AzCore\Socket\AzSocket_fwd_WinAPI.h">
+      <Filter>Platform\Windows\..\Common\WinAPI\AzCore\Socket</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Common\WinAPI\AzCore\Socket\AzSocket_WinAPI.h">
+      <Filter>Platform\Windows\..\Common\WinAPI\AzCore\Socket</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Windows\AzCore\Socket\AzSocket_Platform.h">
+      <Filter>Platform\Windows\AzCore\Socket</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Windows\AzCore\Socket\AzSocket_fwd_Platform.h">
+      <Filter>Platform\Windows\AzCore\Socket</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Windows\AzCore\Socket\AzSocket_fwd_Windows.h">
+      <Filter>Platform\Windows\AzCore\Socket</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\CMakeLists.txt">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <Natvis Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Common\VisualStudio\AzCore\Natvis\azcore.natvis">
+      <Filter>Platform\Windows\..\Common\VisualStudio\AzCore\Natvis</Filter>
+    </Natvis>
+    <Natvis Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Common\VisualStudio\AzCore\Natvis\rapidjson.natvis">
+      <Filter>Platform\Windows\..\Common\VisualStudio\AzCore\Natvis</Filter>
+    </Natvis>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\azcore_files.cmake">
+      <Filter>AzCore</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\azstd_files.cmake">
+      <Filter>AzCore\std</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Common\VisualStudio\AzCore\Natvis\azcore.natstepfilter">
+      <Filter>Platform\Windows\..\Common\VisualStudio\AzCore\Natvis</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Common\VisualStudio\AzCore\Natvis\azcore.natjmc">
+      <Filter>Platform\Windows\..\Common\VisualStudio\AzCore\Natvis</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Windows\platform_windows_files.cmake">
+      <Filter>Platform\Windows</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Windows\platform_windows.cmake">
+      <Filter>Platform\Windows</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="AzCore">
+      <UniqueIdentifier>{D95D01FB-523F-3F9E-91CA-D1BA8036F892}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzCore\Asset">
+      <UniqueIdentifier>{AACE2CCA-73CC-3965-A7C2-7076A47316F9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzCore\Asset\AssetInternal">
+      <UniqueIdentifier>{9A8C50D3-74CC-397D-8280-D85EC8A7CF38}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzCore\Casting">
+      <UniqueIdentifier>{0910BE7A-5421-3B8B-9593-DB4C266A332B}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzCore\Component">
+      <UniqueIdentifier>{E2C8EA61-B302-3649-B23D-D6979B7FBDBF}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzCore\Compression">
+      <UniqueIdentifier>{E31558F6-D322-3E0A-928E-AF17D2E4E0EC}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzCore\Console">
+      <UniqueIdentifier>{296EB3FF-B8DA-38C6-864C-52DAF2DF97EF}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzCore\Debug">
+      <UniqueIdentifier>{9EFD4D7B-96E3-31D0-AAD9-ED11F3E8FBA1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzCore\Driller">
+      <UniqueIdentifier>{F8CBFB6E-ACF6-3060-B69D-A33DB0A70461}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzCore\EBus">
+      <UniqueIdentifier>{9ACCB1EA-1D4B-3995-B718-9877A030AF83}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzCore\EBus\Internal">
+      <UniqueIdentifier>{C23774C5-D80A-3196-8271-DDCCE594FC0B}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzCore\IO">
+      <UniqueIdentifier>{4ABF57D0-67E1-323E-B6EE-3B9CCB2BC6AB}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzCore\IO\Path">
+      <UniqueIdentifier>{29040B6E-D5F7-3C95-951D-467157433992}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzCore\IO\Streamer">
+      <UniqueIdentifier>{EC5299EE-AEC6-369E-BB3B-9BBC96418C25}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzCore\IPC">
+      <UniqueIdentifier>{AE92E102-D2C8-3075-82F9-CD2893DE4E08}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzCore\Interface">
+      <UniqueIdentifier>{89838D5C-7A61-3965-91AC-816A7B352BF3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzCore\JSON">
+      <UniqueIdentifier>{440A1AC4-3720-3B48-9FBD-B40C21179854}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzCore\JSON\error">
+      <UniqueIdentifier>{E8BCB7A1-6685-3279-B689-9116060E88E4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzCore\Jobs">
+      <UniqueIdentifier>{A72DBB7C-DF47-388C-BAC9-25F8DA701D38}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzCore\Jobs\Internal">
+      <UniqueIdentifier>{77B25ACD-C3BB-353F-80D3-52E46A5921F0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzCore\Math">
+      <UniqueIdentifier>{03190323-B662-30E3-A4AD-D409E22DD46F}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzCore\Math\Internal">
+      <UniqueIdentifier>{DFCE9B0E-514D-33D0-A86C-B55DE5CAC7EF}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzCore\Memory">
+      <UniqueIdentifier>{D9C7C15D-C38A-313E-A7EF-9609A0694B5D}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzCore\Module">
+      <UniqueIdentifier>{9D6AB088-BCE5-360E-8B1B-15AE91E4BA5C}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzCore\Module\Internal">
+      <UniqueIdentifier>{BE844A20-811C-3D55-9982-7895CED0FE04}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzCore\Name">
+      <UniqueIdentifier>{E5E681C5-60BD-3579-B5CD-B6B29C1C52F7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzCore\Name\Internal">
+      <UniqueIdentifier>{3A26DCEC-B950-3959-9F9B-B19E87B6EB63}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzCore\NativeUI">
+      <UniqueIdentifier>{2FC48513-081C-3A3D-9109-37300E2B0091}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzCore\Outcome">
+      <UniqueIdentifier>{8730F626-5074-3705-96C4-2311E8263900}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzCore\Outcome\Internal">
+      <UniqueIdentifier>{57CC26F8-3674-3081-B5FF-B682CC264721}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzCore\PlatformId">
+      <UniqueIdentifier>{E97B23B7-CC0B-33F0-BFDA-AD9D24335190}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzCore\Preprocessor">
+      <UniqueIdentifier>{1210FA91-DB36-33CA-B834-672AF85BBAEE}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzCore\RTTI">
+      <UniqueIdentifier>{2F981DA9-F084-3A17-B5D8-2C18FE20B2FD}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzCore\Script">
+      <UniqueIdentifier>{77ECF94C-74CD-3AA7-B30D-86F69E046E07}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzCore\ScriptCanvas">
+      <UniqueIdentifier>{68831D1B-B1F0-35F5-BB4F-2406EDA91F0D}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzCore\Script\lua">
+      <UniqueIdentifier>{65B4C178-040C-3AB9-B7B9-47AE5DADF138}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzCore\Serialization">
+      <UniqueIdentifier>{4F25E901-D584-3F83-BD82-8032BA41D57F}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzCore\Serialization\Json">
+      <UniqueIdentifier>{329C15E4-4F01-3579-906A-EB33C309C331}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzCore\Serialization\std">
+      <UniqueIdentifier>{B3491556-1BA2-3CD4-AB61-EB23263D23E0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzCore\Settings">
+      <UniqueIdentifier>{A4846F5E-B5AB-37DC-9410-E83876BC447F}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzCore\Slice">
+      <UniqueIdentifier>{7B300896-42B9-3F05-923F-5A588799664D}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzCore\Socket">
+      <UniqueIdentifier>{07935AD2-6C51-3BEA-86DD-C259F695E9E2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzCore\State">
+      <UniqueIdentifier>{C7CEC2F1-9E65-32CA-80EB-AE2552C2DF38}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzCore\Statistics">
+      <UniqueIdentifier>{5F8E5242-ABA9-3FEB-8089-2DC267E97A0D}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzCore\StringFunc">
+      <UniqueIdentifier>{1B3F5CAA-15D4-3954-9DB3-E0FC28F52F5A}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzCore\Task">
+      <UniqueIdentifier>{3D9ECB0A-FD6B-3D42-88EB-27265379E330}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzCore\Task\Internal">
+      <UniqueIdentifier>{5FFC96A2-B77A-321D-B104-E581522CC8F6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzCore\Threading">
+      <UniqueIdentifier>{CCC81FAE-2682-3E51-A0C0-5D1245D779A0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzCore\Time">
+      <UniqueIdentifier>{00876CC4-A646-3184-8581-D86AF402B887}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzCore\UserSettings">
+      <UniqueIdentifier>{ABB1BBB5-6796-3908-9357-A4A82C75290D}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzCore\Utils">
+      <UniqueIdentifier>{4FB0C049-145F-396E-8E7B-5BFF621E2407}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzCore\XML">
+      <UniqueIdentifier>{6B79C824-7821-3184-BE91-D3F0FCBA0C72}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzCore\std">
+      <UniqueIdentifier>{ECF37AB9-182A-3B28-B36F-21651F0BA43C}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzCore\std\bind">
+      <UniqueIdentifier>{46225964-3698-39DF-B238-852F4C336BDE}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzCore\std\chrono">
+      <UniqueIdentifier>{4E449144-3D78-3B4F-8718-3C0BB1AB0A30}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzCore\std\containers">
+      <UniqueIdentifier>{F097B4C7-2165-3301-8A06-E6B015237318}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzCore\std\delegate">
+      <UniqueIdentifier>{370B0323-FA8C-3ABA-9AB3-07E8524C1479}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzCore\std\function">
+      <UniqueIdentifier>{02F07D9B-1195-309B-8D16-82DD46C2D52A}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzCore\std\parallel">
+      <UniqueIdentifier>{7D061469-908F-3DC8-9B4D-E87E252A375F}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzCore\std\parallel\containers">
+      <UniqueIdentifier>{3E3B7BFD-3540-3F2C-B1B2-BAC51D88FD41}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzCore\std\parallel\containers\internal">
+      <UniqueIdentifier>{BB1183DA-6EDA-39FD-814B-5B4BDF75DA8A}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzCore\std\smart_ptr">
+      <UniqueIdentifier>{0586344F-4E7C-3D40-908C-9CD76FCAB25D}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzCore\std\string">
+      <UniqueIdentifier>{FECB0B00-054B-3ECA-8FF2-893D623F0744}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzCore\std\string\utf8">
+      <UniqueIdentifier>{4E283BE7-6FA5-30C5-A605-3BEFB96987F6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzCore\std\typetraits">
+      <UniqueIdentifier>{B28B3CE6-4490-3979-990B-F4C7685F38B0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzCore\std\typetraits\internal">
+      <UniqueIdentifier>{B27A3CB8-D8F0-35C1-A8AA-E242E18E33B9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Generated Files">
+      <UniqueIdentifier>{FB9B7D8B-7F05-31D5-AA90-592248EDE1B3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Platform">
+      <UniqueIdentifier>{378A8D8C-6CA1-3F6B-A02B-1E9FF64C97B2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Platform\Windows">
+      <UniqueIdentifier>{63AEF2F6-51C7-306A-BFE8-A049C8C62EFB}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Platform\Windows\..">
+      <UniqueIdentifier>{C2D7F6B4-9216-3C2D-9F9A-76D34821E4A4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Platform\Windows\..\Common">
+      <UniqueIdentifier>{905836E8-0C7C-3AC8-B31E-AD197AA2F2EA}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Platform\Windows\..\Common\MSVC">
+      <UniqueIdentifier>{EBDCE860-E8A0-30B5-BCCE-E641F9870575}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Platform\Windows\..\Common\MSVC\AzCore">
+      <UniqueIdentifier>{DA68CD15-4AD8-32E0-B0BC-13159896D762}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Platform\Windows\..\Common\MSVC\AzCore\std">
+      <UniqueIdentifier>{DA14E540-267C-38B7-B3B1-6443FC17C71D}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Platform\Windows\..\Common\MSVC\AzCore\std\string">
+      <UniqueIdentifier>{61DFA7FD-3D59-3D50-88AE-1FA4DDAD4DA8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Platform\Windows\..\Common\VisualStudio">
+      <UniqueIdentifier>{2B2C3778-49DF-3E02-B4E7-712C97B1740E}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Platform\Windows\..\Common\VisualStudio\AzCore">
+      <UniqueIdentifier>{2E606C75-7524-3B26-98F4-9AA85226EBD9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Platform\Windows\..\Common\VisualStudio\AzCore\Natvis">
+      <UniqueIdentifier>{B1C0682C-4219-3992-B904-BF7862B9AEC6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Platform\Windows\..\Common\WinAPI">
+      <UniqueIdentifier>{1168C645-1E7D-354D-A1D3-60D4294B95F3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Platform\Windows\..\Common\WinAPI\AzCore">
+      <UniqueIdentifier>{5968E119-3E34-3D2E-93AB-C798C1926E44}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Platform\Windows\..\Common\WinAPI\AzCore\Debug">
+      <UniqueIdentifier>{723389D2-8736-3E6E-9DB7-657EE29A8757}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Platform\Windows\..\Common\WinAPI\AzCore\IO">
+      <UniqueIdentifier>{1E348D1B-46F7-3A6B-86E4-794FE8FA8F00}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Platform\Windows\..\Common\WinAPI\AzCore\IO\Streamer">
+      <UniqueIdentifier>{01FD7560-282A-3ED8-8EDF-8BC90B9A6CAD}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Platform\Windows\..\Common\WinAPI\AzCore\Memory">
+      <UniqueIdentifier>{9450AAC1-7D18-33D5-A8D9-00BE5F9BB714}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Platform\Windows\..\Common\WinAPI\AzCore\Module">
+      <UniqueIdentifier>{25B7E8E4-E049-3848-9E98-FFC9BDDB10C2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Platform\Windows\..\Common\WinAPI\AzCore\Socket">
+      <UniqueIdentifier>{108059CC-8389-3758-A15C-906C8C8B41CC}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Platform\Windows\..\Common\WinAPI\AzCore\Utils">
+      <UniqueIdentifier>{365D6889-E40B-321D-8CDD-D7FC02CC5D70}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Platform\Windows\..\Common\WinAPI\AzCore\std">
+      <UniqueIdentifier>{39C0F9D2-C42A-3105-A6FF-CD6F115D0F54}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Platform\Windows\..\Common\WinAPI\AzCore\std\parallel">
+      <UniqueIdentifier>{F6A77630-92C6-3A81-A5D3-A4B8647278F3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Platform\Windows\..\Common\WinAPI\AzCore\std\parallel\internal">
+      <UniqueIdentifier>{521CE7C4-9C58-3A53-838E-FB1FF713D903}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Platform\Windows\AzCore">
+      <UniqueIdentifier>{F7253C77-41E9-341F-A448-8586F90E9EC5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Platform\Windows\AzCore\Debug">
+      <UniqueIdentifier>{0ADDAC18-CCC0-3347-9EBC-5B1E9E493E06}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Platform\Windows\AzCore\IO">
+      <UniqueIdentifier>{DCD4D618-557B-3CE2-90DC-3F715814A1AE}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Platform\Windows\AzCore\IO\Streamer">
+      <UniqueIdentifier>{B4100023-DB07-3CBA-976B-2C92FEFF9303}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Platform\Windows\AzCore\IPC">
+      <UniqueIdentifier>{CB25BD32-004B-31EB-8810-0CC6DE1AA3C3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Platform\Windows\AzCore\Math">
+      <UniqueIdentifier>{DC269777-0B60-3FDD-9F25-A87C9438B61D}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Platform\Windows\AzCore\Math\Internal">
+      <UniqueIdentifier>{5CC80BD1-57E6-398A-B612-2C1ECF758650}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Platform\Windows\AzCore\Memory">
+      <UniqueIdentifier>{A3AF624D-9F48-3FE7-B5E1-B72FB2668042}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Platform\Windows\AzCore\Module">
+      <UniqueIdentifier>{5955CD94-AFD6-3561-ABCB-9610705D5BC7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Platform\Windows\AzCore\Module\Internal">
+      <UniqueIdentifier>{63E88BA3-5BB5-3E5D-849C-82DD78D02D3E}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Platform\Windows\AzCore\NativeUI">
+      <UniqueIdentifier>{E3648C18-460D-3B1B-B69B-CD5BD17EE3A7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Platform\Windows\AzCore\PlatformId">
+      <UniqueIdentifier>{28E2D938-16F0-348A-AF40-98C6E34A0F39}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Platform\Windows\AzCore\Socket">
+      <UniqueIdentifier>{27700243-8DDD-3E79-AE6D-FE5CF76B1CE7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Platform\Windows\AzCore\Utils">
+      <UniqueIdentifier>{FE5ABB09-AEED-37E7-96C5-2FE8214C2A95}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Platform\Windows\AzCore\std">
+      <UniqueIdentifier>{D19C4245-D721-3AC4-B1DC-4E5E8CC96F30}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Platform\Windows\AzCore\std\parallel">
+      <UniqueIdentifier>{697E4343-EDA1-3C16-80D1-2501E3E59478}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Platform\Windows\AzCore\std\parallel\internal">
+      <UniqueIdentifier>{F4723256-F818-3339-B3E6-E6C529440982}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Platform\Windows\AzCore\std\string">
+      <UniqueIdentifier>{12FC869A-E16D-3788-8358-89BB49BDC729}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

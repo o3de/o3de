@@ -1,0 +1,6 @@
+# CMake generation dependency list for this directory.
+C:/Users/lesaelr/o3de/Gems/ExpressionEvaluation/Code/CMakeLists.txt
+C:/Users/lesaelr/o3de/Gems/ExpressionEvaluation/Code/expressionevaluation_files.cmake
+C:/Users/lesaelr/o3de/Gems/ExpressionEvaluation/Code/expressionevaluation_shared_files.cmake
+C:/Users/lesaelr/o3de/Gems/ExpressionEvaluation/Code/expressionevaluation_tests_files.cmake
+C:/Users/lesaelr/o3de/cmake/Platform/Windows/LYTestWrappers_windows.cmake

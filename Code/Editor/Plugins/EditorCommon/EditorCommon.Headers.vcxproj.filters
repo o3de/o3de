@@ -1,0 +1,66 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Code\Editor\Plugins\EditorCommon\CMakeLists.txt">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\Plugins\EditorCommon\EditorCommon.h" />
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\Plugins\EditorCommon\EditorCommon.cpp" />
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\Plugins\EditorCommon\EditorCommon.rc" />
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\Plugins\EditorCommon\EditorCommonAPI.h" />
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\Plugins\EditorCommon\ActionOutput.h" />
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\Plugins\EditorCommon\ActionOutput.cpp" />
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\Plugins\EditorCommon\UiEditorDLLBus.h" />
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\Plugins\EditorCommon\DockTitleBarWidget.cpp" />
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\Plugins\EditorCommon\DockTitleBarWidget.h" />
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\Plugins\EditorCommon\SaveUtilities\AsyncSaveRunner.h">
+      <Filter>SaveUtilities</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\Plugins\EditorCommon\SaveUtilities\AsyncSaveRunner.cpp">
+      <Filter>SaveUtilities</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\Plugins\EditorCommon\AxisHelper.cpp" />
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\Plugins\EditorCommon\DisplayContext.cpp" />
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\Plugins\EditorCommon\DeepFilterProxyModel.cpp" />
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\Plugins\EditorCommon\DeepFilterProxyModel.h" />
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\Plugins\EditorCommon\Resource.h" />
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\Plugins\EditorCommon\DrawingPrimitives\Ruler.cpp">
+      <Filter>DrawingPrimitives</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\Plugins\EditorCommon\DrawingPrimitives\Ruler.h">
+      <Filter>DrawingPrimitives</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\Plugins\EditorCommon\DrawingPrimitives\TimeSlider.cpp">
+      <Filter>DrawingPrimitives</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\Plugins\EditorCommon\DrawingPrimitives\TimeSlider.h">
+      <Filter>DrawingPrimitives</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\Plugins\EditorCommon\WinWidget\WinWidget.h">
+      <Filter>WinWidget</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\Plugins\EditorCommon\WinWidget\WinWidgetManager.h">
+      <Filter>WinWidget</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\Plugins\EditorCommon\WinWidget\WinWidgetManager.cpp">
+      <Filter>WinWidget</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\Plugins\EditorCommon\editorcommon_files.cmake" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="DrawingPrimitives">
+      <UniqueIdentifier>{253B7159-7DB2-33C8-B778-2067238FE369}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Generated Files">
+      <UniqueIdentifier>{FB9B7D8B-7F05-31D5-AA90-592248EDE1B3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="SaveUtilities">
+      <UniqueIdentifier>{E6628A70-CDDC-3C7C-B062-546B4C96A4AD}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="WinWidget">
+      <UniqueIdentifier>{2D78185B-FC09-3438-BD71-859C0692DDC2}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

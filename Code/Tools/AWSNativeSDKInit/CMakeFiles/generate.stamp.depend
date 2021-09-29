@@ -1,0 +1,4 @@
+# CMake generation dependency list for this directory.
+C:/Users/lesaelr/o3de/Code/Tools/AWSNativeSDKInit/CMakeLists.txt
+C:/Users/lesaelr/o3de/Code/Tools/AWSNativeSDKInit/aws_native_sdk_init_files.cmake
+C:/Users/lesaelr/o3de/Code/Tools/AWSNativeSDKInit/source/Platform/Windows/platform_windows_files.cmake

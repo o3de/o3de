@@ -1,0 +1,275 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\AWSCore-48b9dca4\Code\CMakeFiles\AWSCore.Static.dir\Unity\unity_2_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\AWSCore-48b9dca4\Code\CMakeFiles\AWSCore.Static.dir\Unity\unity_1_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\AWSCore-48b9dca4\Code\CMakeFiles\AWSCore.Static.dir\Unity\unity_0_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\AWSCore\Code\Source\AWSCoreSystemComponent.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\AWSCore\Code\Source\Configuration\AWSCoreConfiguration.cpp">
+      <Filter>Source\Configuration</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\AWSCore\Code\Source\Credential\AWSCredentialManager.cpp">
+      <Filter>Source\Credential</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\AWSCore\Code\Source\Credential\AWSCVarCredentialHandler.cpp">
+      <Filter>Source\Credential</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\AWSCore\Code\Source\Credential\AWSDefaultCredentialHandler.cpp">
+      <Filter>Source\Credential</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\AWSCore\Code\Source\Framework\AWSApiJob.cpp">
+      <Filter>Source\Framework</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\AWSCore\Code\Source\Framework\AWSApiJobConfig.cpp">
+      <Filter>Source\Framework</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\AWSCore\Code\Source\Framework\Error.cpp">
+      <Filter>Source\Framework</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\AWSCore\Code\Source\Framework\HttpRequestJob.cpp">
+      <Filter>Source\Framework</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\AWSCore\Code\Source\Framework\HttpRequestJobConfig.cpp">
+      <Filter>Source\Framework</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\AWSCore\Code\Source\Framework\JsonObjectHandler.cpp">
+      <Filter>Source\Framework</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\AWSCore\Code\Source\Framework\MultipartFormData.cpp">
+      <Filter>Source\Framework</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\AWSCore\Code\Source\Framework\RequestBuilder.cpp">
+      <Filter>Source\Framework</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\AWSCore\Code\Source\Framework\ServiceJob.cpp">
+      <Filter>Source\Framework</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\AWSCore\Code\Source\Framework\ServiceJobConfig.cpp">
+      <Filter>Source\Framework</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\AWSCore\Code\Source\ResourceMapping\AWSResourceMappingManager.cpp">
+      <Filter>Source\ResourceMapping</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\AWSCore\Code\Source\ResourceMapping\AWSResourceMappingUtils.cpp">
+      <Filter>Source\ResourceMapping</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\AWSCore\Code\Source\ScriptCanvas\AWSScriptBehaviorDynamoDB.cpp">
+      <Filter>Source\ScriptCanvas</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\AWSCore\Code\Source\ScriptCanvas\AWSScriptBehaviorLambda.cpp">
+      <Filter>Source\ScriptCanvas</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\AWSCore\Code\Source\ScriptCanvas\AWSScriptBehaviorS3.cpp">
+      <Filter>Source\ScriptCanvas</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\AWSCore\Code\Source\ScriptCanvas\AWSScriptBehaviorsComponent.cpp">
+      <Filter>Source\ScriptCanvas</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\AWSCore\Code\Source\Framework\Platform\Common\GetCertsPath_Null.cpp">
+      <Filter>Source\Framework\Platform\Windows\..\Common</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\AWSCore\Code\Include\Public\AWSCoreBus.h">
+      <Filter>Include\Public</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\AWSCore\Code\Include\Public\Credential\AWSCredentialBus.h">
+      <Filter>Include\Public\Credential</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\AWSCore\Code\Include\Public\Framework\AWSApiClientJob.h">
+      <Filter>Include\Public\Framework</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\AWSCore\Code\Include\Public\Framework\AWSApiClientJobConfig.h">
+      <Filter>Include\Public\Framework</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\AWSCore\Code\Include\Public\Framework\AWSApiJob.h">
+      <Filter>Include\Public\Framework</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\AWSCore\Code\Include\Public\Framework\AWSApiJobConfig.h">
+      <Filter>Include\Public\Framework</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\AWSCore\Code\Include\Public\Framework\AWSApiRequestJob.h">
+      <Filter>Include\Public\Framework</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\AWSCore\Code\Include\Public\Framework\AWSApiRequestJobConfig.h">
+      <Filter>Include\Public\Framework</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\AWSCore\Code\Include\Public\Framework\Error.h">
+      <Filter>Include\Public\Framework</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\AWSCore\Code\Include\Public\Framework\HttpClientComponent.h">
+      <Filter>Include\Public\Framework</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\AWSCore\Code\Include\Public\Framework\HttpRequestJob.h">
+      <Filter>Include\Public\Framework</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\AWSCore\Code\Include\Public\Framework\HttpRequestJobConfig.h">
+      <Filter>Include\Public\Framework</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\AWSCore\Code\Include\Public\Framework\JobExecuter.h">
+      <Filter>Include\Public\Framework</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\AWSCore\Code\Include\Public\Framework\JsonObjectHandler.h">
+      <Filter>Include\Public\Framework</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\AWSCore\Code\Include\Public\Framework\JsonWriter.h">
+      <Filter>Include\Public\Framework</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\AWSCore\Code\Include\Public\Framework\MultipartFormData.h">
+      <Filter>Include\Public\Framework</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\AWSCore\Code\Include\Public\Framework\RequestBuilder.h">
+      <Filter>Include\Public\Framework</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\AWSCore\Code\Include\Public\Framework\ServiceClientJob.h">
+      <Filter>Include\Public\Framework</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\AWSCore\Code\Include\Public\Framework\ServiceClientJobConfig.h">
+      <Filter>Include\Public\Framework</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\AWSCore\Code\Include\Public\Framework\ServiceJob.h">
+      <Filter>Include\Public\Framework</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\AWSCore\Code\Include\Public\Framework\ServiceJobConfig.h">
+      <Filter>Include\Public\Framework</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\AWSCore\Code\Include\Public\Framework\ServiceJobUtil.h">
+      <Filter>Include\Public\Framework</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\AWSCore\Code\Include\Public\Framework\ServiceRequestJob.h">
+      <Filter>Include\Public\Framework</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\AWSCore\Code\Include\Public\Framework\ServiceRequestJobConfig.h">
+      <Filter>Include\Public\Framework</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\AWSCore\Code\Include\Public\Framework\Util.h">
+      <Filter>Include\Public\Framework</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\AWSCore\Code\Include\Public\ResourceMapping\AWSResourceMappingBus.h">
+      <Filter>Include\Public\ResourceMapping</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\AWSCore\Code\Include\Public\ScriptCanvas\AWSScriptBehaviorDynamoDB.h">
+      <Filter>Include\Public\ScriptCanvas</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\AWSCore\Code\Include\Public\ScriptCanvas\AWSScriptBehaviorLambda.h">
+      <Filter>Include\Public\ScriptCanvas</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\AWSCore\Code\Include\Public\ScriptCanvas\AWSScriptBehaviorS3.h">
+      <Filter>Include\Public\ScriptCanvas</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\AWSCore\Code\Include\Public\ScriptCanvas\AWSScriptBehaviorsComponent.h">
+      <Filter>Include\Public\ScriptCanvas</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\AWSCore\Code\Include\Private\AWSCoreInternalBus.h">
+      <Filter>Include\Private</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\AWSCore\Code\Include\Private\AWSCoreSystemComponent.h">
+      <Filter>Include\Private</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\AWSCore\Code\Include\Private\Configuration\AWSCoreConfiguration.h">
+      <Filter>Include\Private\Configuration</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\AWSCore\Code\Include\Private\Credential\AWSCredentialManager.h">
+      <Filter>Include\Private\Credential</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\AWSCore\Code\Include\Private\Credential\AWSCVarCredentialHandler.h">
+      <Filter>Include\Private\Credential</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\AWSCore\Code\Include\Private\Credential\AWSDefaultCredentialHandler.h">
+      <Filter>Include\Private\Credential</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\AWSCore\Code\Include\Private\ResourceMapping\AWSResourceMappingConstants.h">
+      <Filter>Include\Private\ResourceMapping</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\AWSCore\Code\Include\Private\ResourceMapping\AWSResourceMappingManager.h">
+      <Filter>Include\Private\ResourceMapping</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\AWSCore\Code\Include\Private\ResourceMapping\AWSResourceMappingUtils.h">
+      <Filter>Include\Private\ResourceMapping</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Gems\AWSCore\Code\CMakeLists.txt">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="C:\Users\lesaelr\o3de\Gems\AWSCore\Code\awscore_files.cmake" />
+    <None Include="C:\Users\lesaelr\o3de\Gems\AWSCore\Code\Source\Framework\Platform\Windows\platform_windows_files.cmake">
+      <Filter>Source\Framework\Platform\Windows</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Generated Files">
+      <UniqueIdentifier>{FB9B7D8B-7F05-31D5-AA90-592248EDE1B3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include">
+      <UniqueIdentifier>{E188105A-C8C4-34BB-9809-15E8410EF7F8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\Private">
+      <UniqueIdentifier>{9A706140-4A99-3FC5-8C68-4F65DF59576D}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\Private\Configuration">
+      <UniqueIdentifier>{0107E304-6B82-3922-8FE1-130F10184BAC}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\Private\Credential">
+      <UniqueIdentifier>{20B9B5FE-7ED1-3B15-9556-1B58A5ED2001}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\Private\ResourceMapping">
+      <UniqueIdentifier>{4AB927FD-C780-3C14-9684-6A2383D62BA8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\Public">
+      <UniqueIdentifier>{A5D8559D-92D8-3928-AC89-8904EB3661AA}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\Public\Credential">
+      <UniqueIdentifier>{D35E76CE-D2D7-35FE-BF61-C6F24AD6947A}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\Public\Framework">
+      <UniqueIdentifier>{F258B842-A900-3081-9B49-33AB4AE8F961}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\Public\ResourceMapping">
+      <UniqueIdentifier>{87677563-E701-31F4-A90A-7FF7A5DD1A32}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\Public\ScriptCanvas">
+      <UniqueIdentifier>{304C602A-31CB-3FCB-8D22-07E39F2F86F7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source">
+      <UniqueIdentifier>{F3F0AD47-5F83-373B-A2BF-650D2E4FA3EA}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Configuration">
+      <UniqueIdentifier>{33ADD97E-1C3D-3D79-BEF8-E9E1B0F8F7B3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Credential">
+      <UniqueIdentifier>{0C3BE129-0D5A-3B0B-8631-86949A9E1D43}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Framework">
+      <UniqueIdentifier>{22AEDEAC-757E-343B-94E9-178A1AA74305}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Framework\Platform">
+      <UniqueIdentifier>{DD65FD18-3252-3658-9248-6AF1DE16455C}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Framework\Platform\Windows">
+      <UniqueIdentifier>{73561B8C-D598-3AE3-8D28-FCF369CF9216}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Framework\Platform\Windows\..">
+      <UniqueIdentifier>{0D589E5A-8EC9-3E2D-8F47-7EAFB90D7B9F}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Framework\Platform\Windows\..\Common">
+      <UniqueIdentifier>{8BC9A053-64E6-33E2-ABE7-20AC9F9390B4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\ResourceMapping">
+      <UniqueIdentifier>{7F2E85AE-E4B0-3306-86F8-B098DD25DED5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\ScriptCanvas">
+      <UniqueIdentifier>{441B58C0-1001-33C9-B5BE-4D5BD63CC272}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

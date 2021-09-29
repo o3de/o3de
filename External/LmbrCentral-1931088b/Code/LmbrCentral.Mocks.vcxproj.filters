@@ -1,0 +1,28 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Gems\LmbrCentral\Code\CMakeLists.txt">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="C:\Users\lesaelr\o3de\Gems\LmbrCentral\Code\Mocks\LmbrCentral\Shape\MockShapes.h">
+      <Filter>Mocks\LmbrCentral\Shape</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\LmbrCentral\Code\lmbrcentral_mocks_files.cmake" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Generated Files">
+      <UniqueIdentifier>{FB9B7D8B-7F05-31D5-AA90-592248EDE1B3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Mocks">
+      <UniqueIdentifier>{61BCE2AA-93AF-3819-8FDA-24960A3E649A}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Mocks\LmbrCentral">
+      <UniqueIdentifier>{2FCDF539-52B7-3719-8F01-F1E39C6D891E}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Mocks\LmbrCentral\Shape">
+      <UniqueIdentifier>{FBC73582-B393-3DBC-8A7F-5F434A76209C}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

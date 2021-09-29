@@ -1,0 +1,59 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\CrashHandler\Support\CMakeFiles\CrashSupport.dir\Unity\unity_0_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\CrashHandler\Support\src\CrashSupport.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\CrashHandler\Support\platform\win\CrashSupport_win.cpp">
+      <Filter>Platform\Windows\..\..\Platform\win</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\CrashHandler\Support\include\CrashSupport.h">
+      <Filter>include</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Code\Tools\CrashHandler\Support\CMakeLists.txt">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="C:\Users\lesaelr\o3de\Code\Tools\CrashHandler\Support\crash_handler_support_files.cmake" />
+    <None Include="C:\Users\lesaelr\o3de\Code\Tools\CrashHandler\Support\platform\Windows\crash_handler_support_windows_files.cmake">
+      <Filter>Platform\Windows</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Generated Files">
+      <UniqueIdentifier>{FB9B7D8B-7F05-31D5-AA90-592248EDE1B3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Platform">
+      <UniqueIdentifier>{378A8D8C-6CA1-3F6B-A02B-1E9FF64C97B2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Platform\Windows">
+      <UniqueIdentifier>{63AEF2F6-51C7-306A-BFE8-A049C8C62EFB}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Platform\Windows\..">
+      <UniqueIdentifier>{C2D7F6B4-9216-3C2D-9F9A-76D34821E4A4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Platform\Windows\..\..">
+      <UniqueIdentifier>{B3F0A8C7-D94B-3D2F-84F1-951E63018888}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Platform\Windows\..\..\Platform">
+      <UniqueIdentifier>{4E0C9E23-83BB-3161-9A35-EC7866789B7B}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Platform\Windows\..\..\Platform\win">
+      <UniqueIdentifier>{C93AD256-45F1-3401-BF03-302259E85DAB}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="include">
+      <UniqueIdentifier>{03DA67C8-C0FA-3C0C-84B5-293930617647}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src">
+      <UniqueIdentifier>{7D693984-3FC0-3DC4-84D2-128C9A2E3839}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

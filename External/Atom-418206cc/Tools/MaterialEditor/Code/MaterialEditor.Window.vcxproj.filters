@@ -1,0 +1,233 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\Atom-418206cc\Tools\MaterialEditor\Code\MaterialEditor.Window_autogen\mocs_compilation_debug.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\Atom-418206cc\Tools\MaterialEditor\Code\CMakeFiles\MaterialEditor.Window.dir\Unity\unity_2_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\Atom-418206cc\Tools\MaterialEditor\Code\CMakeFiles\MaterialEditor.Window.dir\Unity\unity_1_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\Atom-418206cc\Tools\MaterialEditor\Code\CMakeFiles\MaterialEditor.Window.dir\Unity\unity_0_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Tools\MaterialEditor\Code\Source\Window\MaterialEditorBrowserInteractions.cpp">
+      <Filter>Source\Window</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Tools\MaterialEditor\Code\Source\Window\MaterialEditorWindow.cpp">
+      <Filter>Source\Window</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Tools\MaterialEditor\Code\Source\Window\MaterialEditorWindowModule.cpp">
+      <Filter>Source\Window</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Tools\MaterialEditor\Code\Source\Window\MaterialEditorWindowSettings.cpp">
+      <Filter>Source\Window</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Tools\MaterialEditor\Code\Source\Window\MaterialBrowserWidget.cpp">
+      <Filter>Source\Window</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Tools\MaterialEditor\Code\Source\Window\MaterialEditorWindowComponent.cpp">
+      <Filter>Source\Window</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Tools\MaterialEditor\Code\Source\Window\SettingsDialog\SettingsDialog.cpp">
+      <Filter>Source\Window\SettingsDialog</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Tools\MaterialEditor\Code\Source\Window\SettingsDialog\SettingsWidget.cpp">
+      <Filter>Source\Window\SettingsDialog</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Tools\MaterialEditor\Code\Source\Window\CreateMaterialDialog\CreateMaterialDialog.cpp">
+      <Filter>Source\Window\CreateMaterialDialog</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Tools\MaterialEditor\Code\Source\Window\PresetBrowserDialogs\PresetBrowserDialog.cpp">
+      <Filter>Source\Window\PresetBrowserDialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Tools\MaterialEditor\Code\Source\Window\PresetBrowserDialogs\LightingPresetBrowserDialog.cpp">
+      <Filter>Source\Window\PresetBrowserDialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Tools\MaterialEditor\Code\Source\Window\PresetBrowserDialogs\ModelPresetBrowserDialog.cpp">
+      <Filter>Source\Window\PresetBrowserDialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Tools\MaterialEditor\Code\Source\Window\PerformanceMonitor\PerformanceMonitorWidget.cpp">
+      <Filter>Source\Window\PerformanceMonitor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Tools\MaterialEditor\Code\Source\Window\ToolBar\MaterialEditorToolBar.cpp">
+      <Filter>Source\Window\ToolBar</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Tools\MaterialEditor\Code\Source\Window\ToolBar\ModelPresetComboBox.cpp">
+      <Filter>Source\Window\ToolBar</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Tools\MaterialEditor\Code\Source\Window\ToolBar\LightingPresetComboBox.cpp">
+      <Filter>Source\Window\ToolBar</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Tools\MaterialEditor\Code\Source\Window\MaterialInspector\MaterialInspector.cpp">
+      <Filter>Source\Window\MaterialInspector</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Tools\MaterialEditor\Code\Source\Window\ViewportSettingsInspector\ViewportSettingsInspector.cpp">
+      <Filter>Source\Window\ViewportSettingsInspector</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Tools\MaterialEditor\Code\Source\Window\HelpDialog\HelpDialog.cpp">
+      <Filter>Source\Window\HelpDialog</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\Atom-418206cc\Tools\MaterialEditor\Code\MaterialEditor.Window_autogen\L6L7XOLXOZ\qrc_MaterialEditor.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\Atom-418206cc\Tools\MaterialEditor\Code\MaterialEditor.Window_autogen\mocs_compilation_profile.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\Atom-418206cc\Tools\MaterialEditor\Code\MaterialEditor.Window_autogen\mocs_compilation_release.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Tools\MaterialEditor\Code\Include\Atom\Window\MaterialEditorWindowModule.h">
+      <Filter>Include\Atom\Window</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Tools\MaterialEditor\Code\Include\Atom\Window\MaterialEditorWindowSettings.h">
+      <Filter>Include\Atom\Window</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Tools\MaterialEditor\Code\Source\Window\MaterialEditorBrowserInteractions.h">
+      <Filter>Source\Window</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Tools\MaterialEditor\Code\Source\Window\MaterialEditorWindow.h">
+      <Filter>Source\Window</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Tools\MaterialEditor\Code\Source\Window\MaterialBrowserWidget.h">
+      <Filter>Source\Window</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Tools\MaterialEditor\Code\Source\Window\MaterialEditorWindowComponent.h">
+      <Filter>Source\Window</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Tools\MaterialEditor\Code\Source\Window\SettingsDialog\SettingsDialog.h">
+      <Filter>Source\Window\SettingsDialog</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Tools\MaterialEditor\Code\Source\Window\SettingsDialog\SettingsWidget.h">
+      <Filter>Source\Window\SettingsDialog</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Tools\MaterialEditor\Code\Source\Window\CreateMaterialDialog\CreateMaterialDialog.h">
+      <Filter>Source\Window\CreateMaterialDialog</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Tools\MaterialEditor\Code\Source\Window\PresetBrowserDialogs\PresetBrowserDialog.h">
+      <Filter>Source\Window\PresetBrowserDialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Tools\MaterialEditor\Code\Source\Window\PresetBrowserDialogs\LightingPresetBrowserDialog.h">
+      <Filter>Source\Window\PresetBrowserDialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Tools\MaterialEditor\Code\Source\Window\PresetBrowserDialogs\ModelPresetBrowserDialog.h">
+      <Filter>Source\Window\PresetBrowserDialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Tools\MaterialEditor\Code\Source\Window\PerformanceMonitor\PerformanceMonitorWidget.h">
+      <Filter>Source\Window\PerformanceMonitor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Tools\MaterialEditor\Code\Source\Window\ToolBar\MaterialEditorToolBar.h">
+      <Filter>Source\Window\ToolBar</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Tools\MaterialEditor\Code\Source\Window\ToolBar\ModelPresetComboBox.h">
+      <Filter>Source\Window\ToolBar</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Tools\MaterialEditor\Code\Source\Window\ToolBar\LightingPresetComboBox.h">
+      <Filter>Source\Window\ToolBar</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Tools\MaterialEditor\Code\Source\Window\MaterialInspector\MaterialInspector.h">
+      <Filter>Source\Window\MaterialInspector</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Tools\MaterialEditor\Code\Source\Window\ViewportSettingsInspector\ViewportSettingsInspector.h">
+      <Filter>Source\Window\ViewportSettingsInspector</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Tools\MaterialEditor\Code\Source\Window\HelpDialog\HelpDialog.h">
+      <Filter>Source\Window\HelpDialog</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\External\Atom-418206cc\Tools\MaterialEditor\Code\MaterialEditor.Window_autogen\include\Source\Window\ui_MaterialBrowserWidget.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\External\Atom-418206cc\Tools\MaterialEditor\Code\MaterialEditor.Window_autogen\include\Source\Window\CreateMaterialDialog\ui_CreateMaterialDialog.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\External\Atom-418206cc\Tools\MaterialEditor\Code\MaterialEditor.Window_autogen\include\Source\Window\PresetBrowserDialogs\ui_PresetBrowserDialog.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\External\Atom-418206cc\Tools\MaterialEditor\Code\MaterialEditor.Window_autogen\include\Source\Window\PerformanceMonitor\ui_PerformanceMonitorWidget.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\External\Atom-418206cc\Tools\MaterialEditor\Code\MaterialEditor.Window_autogen\include\Source\Window\HelpDialog\ui_HelpDialog.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Gems\Atom\Tools\MaterialEditor\Code\Source\Window\MaterialBrowserWidget.ui">
+      <Filter>Source\Window</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Gems\Atom\Tools\MaterialEditor\Code\Source\Window\CreateMaterialDialog\CreateMaterialDialog.ui">
+      <Filter>Source\Window\CreateMaterialDialog</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Gems\Atom\Tools\MaterialEditor\Code\Source\Window\PresetBrowserDialogs\PresetBrowserDialog.ui">
+      <Filter>Source\Window\PresetBrowserDialogs</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Gems\Atom\Tools\MaterialEditor\Code\Source\Window\PerformanceMonitor\PerformanceMonitorWidget.ui">
+      <Filter>Source\Window\PerformanceMonitor</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Gems\Atom\Tools\MaterialEditor\Code\Source\Window\HelpDialog\HelpDialog.ui">
+      <Filter>Source\Window\HelpDialog</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\CMakeFiles\b40fe035abded99c9a24fea431fd96df\qrc_MaterialEditor.cpp.rule">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Gems\Atom\Tools\MaterialEditor\Code\CMakeLists.txt">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Tools\MaterialEditor\Code\Source\Window\MaterialEditor.qrc">
+      <Filter>Source\Window</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Tools\MaterialEditor\Code\Source\Window\MaterialEditor.qss">
+      <Filter>Source\Window</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Tools\MaterialEditor\Code\materialeditorwindow_files.cmake" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Generated Files">
+      <UniqueIdentifier>{FB9B7D8B-7F05-31D5-AA90-592248EDE1B3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include">
+      <UniqueIdentifier>{E188105A-C8C4-34BB-9809-15E8410EF7F8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\Atom">
+      <UniqueIdentifier>{D3FF6349-761F-30FE-A9A9-4A8D0DE47ADF}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\Atom\Window">
+      <UniqueIdentifier>{2E151F53-754E-3472-8012-88B94D462636}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source">
+      <UniqueIdentifier>{F3F0AD47-5F83-373B-A2BF-650D2E4FA3EA}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Window">
+      <UniqueIdentifier>{AEDB39B3-EA7E-3C59-A4A3-F141A3E30CDA}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Window\CreateMaterialDialog">
+      <UniqueIdentifier>{2CBBDB13-23DD-3CFF-89BA-CAC6D73E8AFA}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Window\HelpDialog">
+      <UniqueIdentifier>{E59EEB0A-3677-304F-BF41-D162F75F67C4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Window\MaterialInspector">
+      <UniqueIdentifier>{2E738845-EE27-3373-8497-C61C1EA55CE9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Window\PerformanceMonitor">
+      <UniqueIdentifier>{93A7FDDA-9C2B-31CD-8744-7F6E210DA9A4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Window\PresetBrowserDialogs">
+      <UniqueIdentifier>{37434445-855A-34BA-8D32-B0FA1C45844F}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Window\SettingsDialog">
+      <UniqueIdentifier>{6607E2FD-22A9-34C1-AC52-5C8EBCEC73DE}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Window\ToolBar">
+      <UniqueIdentifier>{A692D646-19F2-34B0-AE51-F7A80712FD02}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Window\ViewportSettingsInspector">
+      <UniqueIdentifier>{1E08995B-4F89-31E0-93CA-DCE4B725E404}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

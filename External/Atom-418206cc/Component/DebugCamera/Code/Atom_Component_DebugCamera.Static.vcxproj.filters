@@ -1,0 +1,77 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\Atom-418206cc\Component\DebugCamera\Code\CMakeFiles\Atom_Component_DebugCamera.Static.dir\Unity\unity_0_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Component\DebugCamera\Code\Source\ArcBallControllerComponent.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Component\DebugCamera\Code\Source\CameraComponent.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Component\DebugCamera\Code\Source\CameraControllerComponent.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Component\DebugCamera\Code\Source\DebugCameraUtils.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Component\DebugCamera\Code\Source\NoClipControllerComponent.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Component\DebugCamera\Code\Include\Atom\Component\DebugCamera\ArcBallControllerBus.h">
+      <Filter>Include\Atom\Component\DebugCamera</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Component\DebugCamera\Code\Include\Atom\Component\DebugCamera\ArcBallControllerComponent.h">
+      <Filter>Include\Atom\Component\DebugCamera</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Component\DebugCamera\Code\Include\Atom\Component\DebugCamera\CameraComponent.h">
+      <Filter>Include\Atom\Component\DebugCamera</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Component\DebugCamera\Code\Include\Atom\Component\DebugCamera\CameraControllerBus.h">
+      <Filter>Include\Atom\Component\DebugCamera</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Component\DebugCamera\Code\Include\Atom\Component\DebugCamera\CameraControllerComponent.h">
+      <Filter>Include\Atom\Component\DebugCamera</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Component\DebugCamera\Code\Include\Atom\Component\DebugCamera\NoClipControllerBus.h">
+      <Filter>Include\Atom\Component\DebugCamera</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Component\DebugCamera\Code\Include\Atom\Component\DebugCamera\NoClipControllerComponent.h">
+      <Filter>Include\Atom\Component\DebugCamera</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Component\DebugCamera\Code\Source\DebugCameraUtils.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Gems\Atom\Component\DebugCamera\Code\CMakeLists.txt">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Component\DebugCamera\Code\atom_component_debugcamera_files.cmake" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Generated Files">
+      <UniqueIdentifier>{FB9B7D8B-7F05-31D5-AA90-592248EDE1B3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include">
+      <UniqueIdentifier>{E188105A-C8C4-34BB-9809-15E8410EF7F8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\Atom">
+      <UniqueIdentifier>{D3FF6349-761F-30FE-A9A9-4A8D0DE47ADF}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\Atom\Component">
+      <UniqueIdentifier>{9500780C-242B-3B66-B5C5-9F147B33FA37}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\Atom\Component\DebugCamera">
+      <UniqueIdentifier>{EE310365-F8F6-3BA1-9391-624B3902DC9D}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source">
+      <UniqueIdentifier>{F3F0AD47-5F83-373B-A2BF-650D2E4FA3EA}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

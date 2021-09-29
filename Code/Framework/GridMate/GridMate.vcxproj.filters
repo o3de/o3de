@@ -1,0 +1,499 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\CMakeFiles\GridMate.dir\Unity\unity_4_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\CMakeFiles\GridMate.dir\Unity\unity_3_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\CMakeFiles\GridMate.dir\Unity\unity_2_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\CMakeFiles\GridMate.dir\Unity\unity_1_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\CMakeFiles\GridMate.dir\Unity\unity_0_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\GridMate.cpp">
+      <Filter>GridMate</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Carrier\Carrier.cpp">
+      <Filter>GridMate\Carrier</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Carrier\DefaultHandshake.cpp">
+      <Filter>GridMate\Carrier</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Carrier\DefaultSimulator.cpp">
+      <Filter>GridMate\Carrier</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Carrier\DefaultTrafficControl.cpp">
+      <Filter>GridMate\Carrier</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Carrier\SocketDriver.cpp">
+      <Filter>GridMate\Carrier</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Carrier\StreamSocketDriver.cpp">
+      <Filter>GridMate\Carrier</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Drillers\CarrierDriller.cpp">
+      <Filter>GridMate\Drillers</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Drillers\ReplicaDriller.cpp">
+      <Filter>GridMate\Drillers</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Drillers\SessionDriller.cpp">
+      <Filter>GridMate\Drillers</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Replica\DataSet.cpp">
+      <Filter>GridMate\Replica</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Replica\MigrationSequence.cpp">
+      <Filter>GridMate\Replica</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Replica\RemoteProcedureCall.cpp">
+      <Filter>GridMate\Replica</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Replica\Replica.cpp">
+      <Filter>GridMate\Replica</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Replica\ReplicaChunk.cpp">
+      <Filter>GridMate\Replica</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Replica\ReplicaChunkDescriptor.cpp">
+      <Filter>GridMate\Replica</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Replica\ReplicaMgr.cpp">
+      <Filter>GridMate\Replica</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Replica\ReplicaStatus.cpp">
+      <Filter>GridMate\Replica</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Replica\ReplicaTarget.cpp">
+      <Filter>GridMate\Replica</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Replica\SystemReplicas.cpp">
+      <Filter>GridMate\Replica</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Replica\Tasks\ReplicaMarshalTasks.cpp">
+      <Filter>GridMate\Replica\Tasks</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Replica\Tasks\ReplicaUpdateTasks.cpp">
+      <Filter>GridMate\Replica\Tasks</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Replica\Tasks\ReplicaProcessPolicy.cpp">
+      <Filter>GridMate\Replica\Tasks</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Replica\Interest\BitmaskInterestHandler.cpp">
+      <Filter>GridMate\Replica\Interest</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Replica\Interest\InterestManager.cpp">
+      <Filter>GridMate\Replica\Interest</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Serialize\Buffer.cpp">
+      <Filter>GridMate\Serialize</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Serialize\CompressionMarshal.cpp">
+      <Filter>GridMate\Serialize</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Session\LANSession.cpp">
+      <Filter>GridMate\Session</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Session\Session.cpp">
+      <Filter>GridMate\Session</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Carrier\SecureSocketDriver.cpp">
+      <Filter>GridMate\Carrier</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Carrier\StreamSecureSocketDriver.cpp">
+      <Filter>GridMate\Carrier</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\Platform\Common\WinAPI\GridMate\Carrier\SocketDriver_WinAPI.cpp">
+      <Filter>Platform\Windows\..\Common\WinAPI\GridMate\Carrier</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\Platform\Common\WinAPI\GridMate\Carrier\Utils_WinAPI.cpp">
+      <Filter>Platform\Windows\..\Common\WinAPI\GridMate\Carrier</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\Platform\Windows\GridMate\Carrier\Utils_Windows.cpp">
+      <Filter>Platform\Windows\GridMate\Carrier</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\Platform\Windows\GridMate\Session\LANSession_Windows.cpp">
+      <Filter>Platform\Windows\GridMate\Session</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\BuildInfo.h">
+      <Filter>GridMate</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\EBus.h">
+      <Filter>GridMate</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Docs.h">
+      <Filter>GridMate</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\GridMate.h">
+      <Filter>GridMate</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\GridMateEventsBus.h">
+      <Filter>GridMate</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\GridMateService.h">
+      <Filter>GridMate</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\MathUtils.h">
+      <Filter>GridMate</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Memory.h">
+      <Filter>GridMate</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Types.h">
+      <Filter>GridMate</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Version.h">
+      <Filter>GridMate</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Carrier\Carrier.h">
+      <Filter>GridMate\Carrier</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Carrier\Compressor.h">
+      <Filter>GridMate\Carrier</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Carrier\Cripter.h">
+      <Filter>GridMate\Carrier</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Carrier\DefaultHandshake.h">
+      <Filter>GridMate\Carrier</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Carrier\DefaultSimulator.h">
+      <Filter>GridMate\Carrier</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Carrier\DefaultTrafficControl.h">
+      <Filter>GridMate\Carrier</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Carrier\Driver.h">
+      <Filter>GridMate\Carrier</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Carrier\DriverEvents.h">
+      <Filter>GridMate\Carrier</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Carrier\Handshake.h">
+      <Filter>GridMate\Carrier</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Carrier\Simulator.h">
+      <Filter>GridMate\Carrier</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Carrier\SocketDriver.h">
+      <Filter>GridMate\Carrier</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Carrier\StreamSocketDriver.h">
+      <Filter>GridMate\Carrier</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Carrier\TrafficControl.h">
+      <Filter>GridMate\Carrier</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Carrier\Utils.h">
+      <Filter>GridMate\Carrier</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Containers\list.h">
+      <Filter>GridMate\Containers</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Containers\queue.h">
+      <Filter>GridMate\Containers</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Containers\set.h">
+      <Filter>GridMate\Containers</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Containers\slist.h">
+      <Filter>GridMate\Containers</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Containers\unordered_map.h">
+      <Filter>GridMate\Containers</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Containers\unordered_set.h">
+      <Filter>GridMate\Containers</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Containers\vector.h">
+      <Filter>GridMate\Containers</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Drillers\CarrierDriller.h">
+      <Filter>GridMate\Drillers</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Drillers\ReplicaDriller.h">
+      <Filter>GridMate\Drillers</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Drillers\SessionDriller.h">
+      <Filter>GridMate\Drillers</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Online\OnlineUtilityThread.h">
+      <Filter>GridMate\Online</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Online\UserServiceTypes.h">
+      <Filter>GridMate\Online</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Replica\BasicHostChunkDescriptor.h">
+      <Filter>GridMate\Replica</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Replica\DeltaCompressedDataSet.h">
+      <Filter>GridMate\Replica</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Replica\DataSet.h">
+      <Filter>GridMate\Replica</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Replica\Interpolators.h">
+      <Filter>GridMate\Replica</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Replica\MigrationSequence.h">
+      <Filter>GridMate\Replica</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Replica\RemoteProcedureCall.h">
+      <Filter>GridMate\Replica</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Replica\Replica.h">
+      <Filter>GridMate\Replica</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Replica\ReplicaChunk.h">
+      <Filter>GridMate\Replica</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Replica\ReplicaChunkDescriptor.h">
+      <Filter>GridMate\Replica</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Replica\ReplicaChunkInterface.h">
+      <Filter>GridMate\Replica</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Replica\ReplicaCommon.h">
+      <Filter>GridMate\Replica</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Replica\ReplicaDefs.h">
+      <Filter>GridMate\Replica</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Replica\ReplicaDrillerEvents.h">
+      <Filter>GridMate\Replica</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Replica\ReplicaFunctions.h">
+      <Filter>GridMate\Replica</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Replica\ReplicaFunctions.inl">
+      <Filter>GridMate\Replica</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Replica\ReplicaInline.inl">
+      <Filter>GridMate\Replica</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Replica\ReplicaMgr.h">
+      <Filter>GridMate\Replica</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Replica\ReplicaStatus.h">
+      <Filter>GridMate\Replica</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Replica\ReplicaStatusInterface.h">
+      <Filter>GridMate\Replica</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Replica\ReplicaTarget.h">
+      <Filter>GridMate\Replica</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Replica\ReplicaUtils.h">
+      <Filter>GridMate\Replica</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Replica\SystemReplicas.h">
+      <Filter>GridMate\Replica</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Replica\Throttles.h">
+      <Filter>GridMate\Replica</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Replica\Tasks\ReplicaMarshalTasks.h">
+      <Filter>GridMate\Replica\Tasks</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Replica\Tasks\ReplicaTask.h">
+      <Filter>GridMate\Replica\Tasks</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Replica\Tasks\ReplicaTaskManager.h">
+      <Filter>GridMate\Replica\Tasks</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Replica\Tasks\ReplicaUpdateTasks.h">
+      <Filter>GridMate\Replica\Tasks</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Replica\Tasks\ReplicaProcessPolicy.h">
+      <Filter>GridMate\Replica\Tasks</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Replica\Tasks\ReplicaPriorityPolicy.h">
+      <Filter>GridMate\Replica\Tasks</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Replica\Interest\BitmaskInterestHandler.h">
+      <Filter>GridMate\Replica\Interest</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Replica\Interest\InterestDefs.h">
+      <Filter>GridMate\Replica\Interest</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Replica\Interest\InterestManager.h">
+      <Filter>GridMate\Replica\Interest</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Replica\Interest\InterestQueryResult.h">
+      <Filter>GridMate\Replica\Interest</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Replica\Interest\RulesHandler.h">
+      <Filter>GridMate\Replica\Interest</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Serialize\Buffer.h">
+      <Filter>GridMate\Serialize</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Serialize\PackedSize.h">
+      <Filter>GridMate\Serialize</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Serialize\CompressionMarshal.h">
+      <Filter>GridMate\Serialize</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Serialize\ContainerMarshal.h">
+      <Filter>GridMate\Serialize</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Serialize\DataMarshal.h">
+      <Filter>GridMate\Serialize</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Serialize\MarshalerTypes.h">
+      <Filter>GridMate\Serialize</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Serialize\MathMarshal.h">
+      <Filter>GridMate\Serialize</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Serialize\UtilityMarshal.h">
+      <Filter>GridMate\Serialize</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Serialize\UuidMarshal.h">
+      <Filter>GridMate\Serialize</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Session\LANSession.h">
+      <Filter>GridMate\Session</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Session\LANSessionServiceTypes.h">
+      <Filter>GridMate\Session</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Session\LANSessionServiceBus.h">
+      <Filter>GridMate\Session</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Session\Session.h">
+      <Filter>GridMate\Session</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Session\SessionServiceBus.h">
+      <Filter>GridMate\Session</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\VoiceChat\VoiceChatServiceBus.h">
+      <Filter>GridMate\VoiceChat</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Carrier\SecureSocketDriver.h">
+      <Filter>GridMate\Carrier</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Carrier\StreamSecureSocketDriver.h">
+      <Filter>GridMate\Carrier</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\Platform\Windows\GridMate\Carrier\SocketDriver_Platform.h">
+      <Filter>Platform\Windows\GridMate\Carrier</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\Platform\Windows\GridMate\Carrier\SocketDriver_Windows.h">
+      <Filter>Platform\Windows\GridMate\Carrier</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\Platform\Windows\GridMate\Session\Session_Platform.h">
+      <Filter>Platform\Windows\GridMate\Session</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\Platform\Windows\GridMate\Session\Session_Windows.h">
+      <Filter>Platform\Windows\GridMate\Session</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\Platform\Windows\GridMate_Traits_Platform.h">
+      <Filter>Platform\Windows</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\Platform\Windows\GridMate_Traits_Windows.h">
+      <Filter>Platform\Windows</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\CMakeLists.txt">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\gridmate_files.cmake">
+      <Filter>GridMate</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\gridmate_ssl_files.cmake">
+      <Filter>GridMate</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\Platform\Windows\platform_windows_files.cmake">
+      <Filter>Platform\Windows</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\Platform\Windows\platform_windows.cmake">
+      <Filter>Platform\Windows</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\Platform\Common\gridmate_msvc.cmake">
+      <Filter>Platform\Common</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Generated Files">
+      <UniqueIdentifier>{FB9B7D8B-7F05-31D5-AA90-592248EDE1B3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GridMate">
+      <UniqueIdentifier>{A566342A-2613-369F-9266-B4BF8EB984CB}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GridMate\Carrier">
+      <UniqueIdentifier>{0251A879-98AF-3006-B679-91CB4BBC1BC5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GridMate\Containers">
+      <UniqueIdentifier>{9C012AC4-C32F-37B4-9B02-68EA3777D5D8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GridMate\Drillers">
+      <UniqueIdentifier>{7DC97388-76B5-3540-952E-10FFECE137C6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GridMate\Online">
+      <UniqueIdentifier>{4257588C-C375-33B2-A52A-8B9A83649A6F}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GridMate\Replica">
+      <UniqueIdentifier>{DD2BBEE8-6E58-3528-83CD-55DD710DC238}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GridMate\Replica\Interest">
+      <UniqueIdentifier>{BBA7C0DF-B365-3088-9FDE-4679CAAFDEB0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GridMate\Replica\Tasks">
+      <UniqueIdentifier>{0D085311-69AE-375D-BF14-A3451AB42EEF}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GridMate\Serialize">
+      <UniqueIdentifier>{43328979-CA63-32DF-ADEA-4D00E8AC5C7F}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GridMate\Session">
+      <UniqueIdentifier>{A7252771-6E12-31FB-BB10-0BD58DA0080D}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GridMate\VoiceChat">
+      <UniqueIdentifier>{7F35CF49-1E89-3EF6-81E9-B8EF6083DD6A}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Platform">
+      <UniqueIdentifier>{378A8D8C-6CA1-3F6B-A02B-1E9FF64C97B2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Platform\Common">
+      <UniqueIdentifier>{0EAED895-BF71-3C34-B697-D34AC533F377}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Platform\Windows">
+      <UniqueIdentifier>{63AEF2F6-51C7-306A-BFE8-A049C8C62EFB}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Platform\Windows\..">
+      <UniqueIdentifier>{C2D7F6B4-9216-3C2D-9F9A-76D34821E4A4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Platform\Windows\..\Common">
+      <UniqueIdentifier>{905836E8-0C7C-3AC8-B31E-AD197AA2F2EA}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Platform\Windows\..\Common\WinAPI">
+      <UniqueIdentifier>{1168C645-1E7D-354D-A1D3-60D4294B95F3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Platform\Windows\..\Common\WinAPI\GridMate">
+      <UniqueIdentifier>{25BF9F6F-FFB1-3728-96DE-47530DD9DB3C}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Platform\Windows\..\Common\WinAPI\GridMate\Carrier">
+      <UniqueIdentifier>{630ACC72-986E-3611-8172-42FA93DFBC3B}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Platform\Windows\GridMate">
+      <UniqueIdentifier>{CF0F9944-4E62-3393-87D9-A18A83F364F6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Platform\Windows\GridMate\Carrier">
+      <UniqueIdentifier>{57CF84BB-29FB-30AF-9289-40F810CF5D73}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Platform\Windows\GridMate\Session">
+      <UniqueIdentifier>{B9D84DDB-D2E3-3D01-94D8-B613D9DB0222}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

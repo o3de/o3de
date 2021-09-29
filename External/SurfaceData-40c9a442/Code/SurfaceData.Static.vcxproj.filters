@@ -1,0 +1,92 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\SurfaceData-40c9a442\Code\CMakeFiles\SurfaceData.Static.dir\Unity\unity_0_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\SurfaceData\Code\Source\SurfaceDataSystemComponent.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\SurfaceData\Code\Source\SurfaceTag.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\SurfaceData\Code\Source\Components\SurfaceDataColliderComponent.cpp">
+      <Filter>Source\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\SurfaceData\Code\Source\Components\SurfaceDataShapeComponent.cpp">
+      <Filter>Source\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\SurfaceData\Code\Source\SurfaceDataUtility.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\SurfaceData\Code\Include\SurfaceData\SurfaceDataConstants.h">
+      <Filter>Include\SurfaceData</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\SurfaceData\Code\Include\SurfaceData\SurfaceDataTypes.h">
+      <Filter>Include\SurfaceData</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\SurfaceData\Code\Include\SurfaceData\SurfaceDataSystemRequestBus.h">
+      <Filter>Include\SurfaceData</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\SurfaceData\Code\Include\SurfaceData\SurfaceDataSystemNotificationBus.h">
+      <Filter>Include\SurfaceData</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\SurfaceData\Code\Include\SurfaceData\SurfaceDataTagEnumeratorRequestBus.h">
+      <Filter>Include\SurfaceData</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\SurfaceData\Code\Include\SurfaceData\SurfaceDataTagProviderRequestBus.h">
+      <Filter>Include\SurfaceData</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\SurfaceData\Code\Include\SurfaceData\SurfaceDataProviderRequestBus.h">
+      <Filter>Include\SurfaceData</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\SurfaceData\Code\Include\SurfaceData\SurfaceDataModifierRequestBus.h">
+      <Filter>Include\SurfaceData</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\SurfaceData\Code\Include\SurfaceData\SurfaceTag.h">
+      <Filter>Include\SurfaceData</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\SurfaceData\Code\Include\SurfaceData\Utility\SurfaceDataUtility.h">
+      <Filter>Include\SurfaceData\Utility</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\SurfaceData\Code\Source\SurfaceDataSystemComponent.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\SurfaceData\Code\Source\Components\SurfaceDataColliderComponent.h">
+      <Filter>Source\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\SurfaceData\Code\Source\Components\SurfaceDataShapeComponent.h">
+      <Filter>Source\Components</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Gems\SurfaceData\Code\CMakeLists.txt">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="C:\Users\lesaelr\o3de\Gems\SurfaceData\Code\surfacedata_files.cmake" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Generated Files">
+      <UniqueIdentifier>{FB9B7D8B-7F05-31D5-AA90-592248EDE1B3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include">
+      <UniqueIdentifier>{E188105A-C8C4-34BB-9809-15E8410EF7F8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\SurfaceData">
+      <UniqueIdentifier>{35FC499A-F96F-3F8A-8B97-A5A22AC2974C}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\SurfaceData\Utility">
+      <UniqueIdentifier>{D7F603F6-2E70-3DB1-8A2A-806A24ABD4DE}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source">
+      <UniqueIdentifier>{F3F0AD47-5F83-373B-A2BF-650D2E4FA3EA}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Components">
+      <UniqueIdentifier>{914C6B5F-184E-399E-8506-2B79CE7A1426}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

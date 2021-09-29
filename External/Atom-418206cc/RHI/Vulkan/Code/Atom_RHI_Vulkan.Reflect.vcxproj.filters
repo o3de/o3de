@@ -1,0 +1,80 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\Atom-418206cc\RHI\Vulkan\Code\CMakeFiles\Atom_RHI_Vulkan.Reflect.dir\Unity\unity_0_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\RHI\Vulkan\Code\Source\RHI.Reflect\BufferPoolDescriptor.cpp">
+      <Filter>Source\RHI.Reflect</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\RHI\Vulkan\Code\Source\RHI.Reflect\ImagePoolDescriptor.cpp">
+      <Filter>Source\RHI.Reflect</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\RHI\Vulkan\Code\Source\RHI.Reflect\ShaderStageFunction.cpp">
+      <Filter>Source\RHI.Reflect</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\RHI\Vulkan\Code\Source\RHI.Reflect\ReflectSystemComponent.cpp">
+      <Filter>Source\RHI.Reflect</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\RHI\Vulkan\Code\Source\RHI.Reflect\PlatformLimitsDescriptor.cpp">
+      <Filter>Source\RHI.Reflect</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\RHI\Vulkan\Code\Include\Atom\RHI.Reflect\Vulkan\BufferPoolDescriptor.h">
+      <Filter>Include\Atom\RHI.Reflect\Vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\RHI\Vulkan\Code\Include\Atom\RHI.Reflect\Vulkan\ImagePoolDescriptor.h">
+      <Filter>Include\Atom\RHI.Reflect\Vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\RHI\Vulkan\Code\Include\Atom\RHI.Reflect\Vulkan\ShaderStageFunction.h">
+      <Filter>Include\Atom\RHI.Reflect\Vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\RHI\Vulkan\Code\Include\Atom\RHI.Reflect\Vulkan\ReflectSystemComponent.h">
+      <Filter>Include\Atom\RHI.Reflect\Vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\RHI\Vulkan\Code\Include\Atom\RHI.Reflect\Vulkan\PlatformLimitsDescriptor.h">
+      <Filter>Include\Atom\RHI.Reflect\Vulkan</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Gems\Atom\RHI\Vulkan\Code\CMakeLists.txt">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\RHI\Vulkan\Code\atom_rhi_vulkan_reflect_common_files.cmake" />
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\RHI\Vulkan\Code\Source\Platform\Windows\platform_reflect_windows_files.cmake">
+      <Filter>Source\Platform\Windows</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Generated Files">
+      <UniqueIdentifier>{FB9B7D8B-7F05-31D5-AA90-592248EDE1B3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include">
+      <UniqueIdentifier>{E188105A-C8C4-34BB-9809-15E8410EF7F8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\Atom">
+      <UniqueIdentifier>{D3FF6349-761F-30FE-A9A9-4A8D0DE47ADF}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\Atom\RHI.Reflect">
+      <UniqueIdentifier>{FA92D33D-A888-30FF-915B-A042ABAAD713}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\Atom\RHI.Reflect\Vulkan">
+      <UniqueIdentifier>{1B97F294-38E5-335D-9625-1B1851028FE6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source">
+      <UniqueIdentifier>{F3F0AD47-5F83-373B-A2BF-650D2E4FA3EA}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Platform">
+      <UniqueIdentifier>{4FB794FF-EAE9-3B82-95CC-6241BAD0E3AC}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Platform\Windows">
+      <UniqueIdentifier>{2D0E7154-D797-393D-A7EB-8527ACAFB2BF}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\RHI.Reflect">
+      <UniqueIdentifier>{ABC79B0F-887C-3686-9657-A1D3CCE3EFA9}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

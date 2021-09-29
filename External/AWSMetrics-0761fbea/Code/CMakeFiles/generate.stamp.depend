@@ -1,0 +1,6 @@
+# CMake generation dependency list for this directory.
+C:/Users/lesaelr/o3de/Gems/AWSMetrics/Code/CMakeLists.txt
+C:/Users/lesaelr/o3de/Gems/AWSMetrics/Code/awsmetrics_files.cmake
+C:/Users/lesaelr/o3de/Gems/AWSMetrics/Code/awsmetrics_shared_files.cmake
+C:/Users/lesaelr/o3de/Gems/AWSMetrics/Code/awsmetrics_tests_files.cmake
+C:/Users/lesaelr/o3de/cmake/Platform/Windows/LYTestWrappers_windows.cmake

@@ -1,0 +1,146 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\ScriptEvents-f79e6fca\Code\CMakeFiles\ScriptEvents.Static.dir\Unity\unity_1_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\ScriptEvents-f79e6fca\Code\CMakeFiles\ScriptEvents.Static.dir\Unity\unity_0_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptEvents\Code\Source\ScriptEventsSystemComponent.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptEvents\Code\Include\ScriptEvents\ScriptEventsAsset.cpp">
+      <Filter>Include\ScriptEvents</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptEvents\Code\Include\ScriptEvents\ScriptEventRegistration.cpp">
+      <Filter>Include\ScriptEvents</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptEvents\Code\Include\ScriptEvents\ScriptEventDefinition.cpp">
+      <Filter>Include\ScriptEvents</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptEvents\Code\Include\ScriptEvents\ScriptEvent.cpp">
+      <Filter>Include\ScriptEvents</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptEvents\Code\Include\ScriptEvents\ScriptEventSystem.cpp">
+      <Filter>Include\ScriptEvents</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptEvents\Code\Include\ScriptEvents\ScriptEventTypes.cpp">
+      <Filter>Include\ScriptEvents</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptEvents\Code\Include\ScriptEvents\Internal\VersionedProperty.cpp">
+      <Filter>Include\ScriptEvents\Internal</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptEvents\Code\Include\ScriptEvents\Internal\BehaviorContextBinding\DefaultEventHandler.cpp">
+      <Filter>Include\ScriptEvents\Internal\BehaviorContextBinding</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptEvents\Code\Include\ScriptEvents\Internal\BehaviorContextBinding\ScriptEventMethod.cpp">
+      <Filter>Include\ScriptEvents\Internal\BehaviorContextBinding</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptEvents\Code\Include\ScriptEvents\Internal\BehaviorContextBinding\ScriptEventBroadcast.cpp">
+      <Filter>Include\ScriptEvents\Internal\BehaviorContextBinding</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptEvents\Code\Include\ScriptEvents\Internal\BehaviorContextBinding\ScriptEventBinding.cpp">
+      <Filter>Include\ScriptEvents\Internal\BehaviorContextBinding</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptEvents\Code\Include\ScriptEvents\Components\ScriptEventReferencesComponent.cpp">
+      <Filter>Include\ScriptEvents\Components</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptEvents\Code\Source\ScriptEventsSystemComponent.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptEvents\Code\Include\ScriptEvents\ScriptEventsGem.h">
+      <Filter>Include\ScriptEvents</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptEvents\Code\Include\ScriptEvents\ScriptEventsAsset.h">
+      <Filter>Include\ScriptEvents</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptEvents\Code\Include\ScriptEvents\ScriptEventsAssetRef.h">
+      <Filter>Include\ScriptEvents</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptEvents\Code\Include\ScriptEvents\ScriptEventsBus.h">
+      <Filter>Include\ScriptEvents</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptEvents\Code\Include\ScriptEvents\ScriptEventRegistration.h">
+      <Filter>Include\ScriptEvents</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptEvents\Code\Include\ScriptEvents\ScriptEventFundamentalTypes.h">
+      <Filter>Include\ScriptEvents</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptEvents\Code\Include\ScriptEvents\ScriptEventDefinition.h">
+      <Filter>Include\ScriptEvents</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptEvents\Code\Include\ScriptEvents\ScriptEvent.h">
+      <Filter>Include\ScriptEvents</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptEvents\Code\Include\ScriptEvents\ScriptEventMethod.h">
+      <Filter>Include\ScriptEvents</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptEvents\Code\Include\ScriptEvents\ScriptEventParameter.h">
+      <Filter>Include\ScriptEvents</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptEvents\Code\Include\ScriptEvents\ScriptEventSystem.h">
+      <Filter>Include\ScriptEvents</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptEvents\Code\Include\ScriptEvents\ScriptEventTypes.h">
+      <Filter>Include\ScriptEvents</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptEvents\Code\Include\ScriptEvents\Internal\VersionedProperty.h">
+      <Filter>Include\ScriptEvents\Internal</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptEvents\Code\Include\ScriptEvents\Internal\BehaviorContextBinding\BehaviorContextFactoryMethods.h">
+      <Filter>Include\ScriptEvents\Internal\BehaviorContextBinding</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptEvents\Code\Include\ScriptEvents\Internal\BehaviorContextBinding\DefaultEventHandler.h">
+      <Filter>Include\ScriptEvents\Internal\BehaviorContextBinding</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptEvents\Code\Include\ScriptEvents\Internal\BehaviorContextBinding\ScriptEventMethod.h">
+      <Filter>Include\ScriptEvents\Internal\BehaviorContextBinding</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptEvents\Code\Include\ScriptEvents\Internal\BehaviorContextBinding\ScriptEventBroadcast.h">
+      <Filter>Include\ScriptEvents\Internal\BehaviorContextBinding</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptEvents\Code\Include\ScriptEvents\Internal\BehaviorContextBinding\ScriptEventsBindingBus.h">
+      <Filter>Include\ScriptEvents\Internal\BehaviorContextBinding</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptEvents\Code\Include\ScriptEvents\Internal\BehaviorContextBinding\ScriptEventBinding.h">
+      <Filter>Include\ScriptEvents\Internal\BehaviorContextBinding</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptEvents\Code\Include\ScriptEvents\Components\ScriptEventReferencesComponent.h">
+      <Filter>Include\ScriptEvents\Components</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Gems\ScriptEvents\Code\CMakeLists.txt">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="C:\Users\lesaelr\o3de\Gems\ScriptEvents\Code\scriptevents_common_files.cmake" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Generated Files">
+      <UniqueIdentifier>{FB9B7D8B-7F05-31D5-AA90-592248EDE1B3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include">
+      <UniqueIdentifier>{E188105A-C8C4-34BB-9809-15E8410EF7F8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\ScriptEvents">
+      <UniqueIdentifier>{421814FB-036F-38D8-B492-171F3227DF95}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\ScriptEvents\Components">
+      <UniqueIdentifier>{F9972D49-26A1-3E53-898F-B1D0F1D815B2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\ScriptEvents\Internal">
+      <UniqueIdentifier>{7FB353F3-8C5A-3C29-939F-9C26C7636BE5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\ScriptEvents\Internal\BehaviorContextBinding">
+      <UniqueIdentifier>{0A512ECA-3887-3060-BC54-73BC325642D1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source">
+      <UniqueIdentifier>{F3F0AD47-5F83-373B-A2BF-650D2E4FA3EA}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

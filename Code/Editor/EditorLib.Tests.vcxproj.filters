@@ -1,0 +1,100 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\EditorLib.Tests_autogen\mocs_compilation_debug.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\CMakeFiles\EditorLib.Tests.dir\Unity\unity_1_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\CMakeFiles\EditorLib.Tests.dir\Unity\unity_0_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\Lib\Tests\test_ClickableLabel.cpp">
+      <Filter>Lib\Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\Lib\Tests\test_CryEditPythonBindings.cpp">
+      <Filter>Lib\Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\Lib\Tests\test_CryEditDocPythonBindings.cpp">
+      <Filter>Lib\Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\Lib\Tests\test_EditorPythonBindings.cpp">
+      <Filter>Lib\Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\Lib\Tests\test_EditorUtils.cpp">
+      <Filter>Lib\Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\Lib\Tests\test_Main.cpp">
+      <Filter>Lib\Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\Lib\Tests\test_MainWindowPythonBindings.cpp">
+      <Filter>Lib\Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\Lib\Tests\test_ObjectManagerPythonBindings.cpp">
+      <Filter>Lib\Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\Lib\Tests\test_TrackViewPythonBindings.cpp">
+      <Filter>Lib\Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\Lib\Tests\test_ViewPanePythonBindings.cpp">
+      <Filter>Lib\Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\Lib\Tests\test_ViewportTitleDlgPythonBindings.cpp">
+      <Filter>Lib\Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\Lib\Tests\test_DisplaySettingsPythonBindings.cpp">
+      <Filter>Lib\Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\Lib\Tests\test_ViewportManipulatorController.cpp">
+      <Filter>Lib\Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\Lib\Tests\test_ModularViewportCameraController.cpp">
+      <Filter>Lib\Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\DisplaySettingsPythonFuncs.cpp" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\EditorLib.Tests_autogen\mocs_compilation_profile.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\EditorLib.Tests_autogen\mocs_compilation_release.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Lib\Tests\IEditorMock.h">
+      <Filter>Lib\Tests</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\DisplaySettingsPythonFuncs.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\CMakeFiles\08b24365a84bd27d080f6dd51f42b933\EditorLib.Tests_(CONFIG).stamp.rule">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Code\Editor\CMakeLists.txt">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\editor_lib_test_files.cmake" />
+    <None Include="C:\Users\lesaelr\o3de\runtime_dependencies\debug\EditorLib.Tests_debug.stamp">
+      <Filter>Generated Files</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\runtime_dependencies\profile\EditorLib.Tests_profile.stamp">
+      <Filter>Generated Files</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\runtime_dependencies\release\EditorLib.Tests_release.stamp">
+      <Filter>Generated Files</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Generated Files">
+      <UniqueIdentifier>{FB9B7D8B-7F05-31D5-AA90-592248EDE1B3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Lib">
+      <UniqueIdentifier>{A8F9DC9A-D305-3659-AF30-B2F6A9937B51}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Lib\Tests">
+      <UniqueIdentifier>{ED754328-C83B-326B-BE1E-7603463AC5C3}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

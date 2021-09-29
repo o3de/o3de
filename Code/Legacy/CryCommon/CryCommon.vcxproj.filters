@@ -1,0 +1,442 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\CMakeFiles\CryCommon.dir\Unity\unity_0_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\LegacyAllocator.cpp" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\CryLibrary.cpp" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\platform_impl.cpp" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\WinBase.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\IAudioInterfacesCommonData.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\IAudioSystem.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\ICmdLine.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\IConsole.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\IEntityRenderState.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\IFont.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\IFunctorBase.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\IGem.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\IIndexedMesh.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\ILevelSystem.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\ILocalizationManager.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\LocalizationManagerBus.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\LocalizationManagerBus.inl" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\ILog.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\IMaterial.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\IMiniLog.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\IMovieSystem.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\IProcess.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\IRenderAuxGeom.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\IRenderer.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\ISerialize.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\IShader.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\ISplines.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\IStatObj.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\StatObjBus.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\ISystem.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\ITexture.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\ITimer.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\IValidator.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\IViewSystem.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\IWindowMessageHandler.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\IXml.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\MicrophoneBus.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\HMDBus.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\VRCommon.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\INavigationSystem.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\IMNM.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\SerializationTypes.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\CryEndian.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\CryRandomInternal.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\Random.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\LCGRandom.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\BaseTypes.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\AnimKey.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\CryAssert.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\CryFile.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\CryListenerSet.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\CryLegacyAllocator.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\CryPath.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\CrySystemBus.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\CryVersion.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\LegacyAllocator.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\MiniQueue.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\MultiThread_Containers.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\NullAudioSystem.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\PNoise3.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\ProjectDefines.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\Range.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\ScopedVariableSetter.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\SerializeFwd.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\SimpleSerialize.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\smartptr.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\StlUtils.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\Timer.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\TimeValue.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\VectorMap.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\VertexFormats.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\XMLBinaryHeaders.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\MainThreadRenderRequestBus.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\Cry_Matrix33.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\Cry_Matrix34.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\Cry_Matrix44.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\Cry_Vector4.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\Cry_Camera.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\Cry_Color.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\Cry_Geo.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\Cry_GeoDistance.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\Cry_GeoIntersect.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\Cry_Math.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\Cry_Quat.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\Cry_ValidNumber.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\Cry_Vector2.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\Cry_Vector3.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\CryHalf.inl" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\MathConversion.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\AndroidSpecific.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\AppleSpecific.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\CryAssert_Android.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\CryAssert_impl.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\CryAssert_iOS.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\CryAssert_Linux.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\CryAssert_Mac.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\CryLibrary.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\Linux32Specific.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\Linux64Specific.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\Linux_Win32Wrapper.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\LinuxSpecific.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\LoadScreenBus.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\MacSpecific.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\platform.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\Win32specific.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\Win64specific.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\LyShine\IDraw2d.h">
+      <Filter>LyShine</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\LyShine\ILyShine.h">
+      <Filter>LyShine</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\LyShine\ISprite.h">
+      <Filter>LyShine</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\LyShine\IRenderGraph.h">
+      <Filter>LyShine</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\LyShine\UiAssetTypes.h">
+      <Filter>LyShine</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\LyShine\UiComponentTypes.h">
+      <Filter>LyShine</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\LyShine\UiBase.h">
+      <Filter>LyShine</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\LyShine\UiEntityContext.h">
+      <Filter>LyShine</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\LyShine\UiLayoutCellBase.h">
+      <Filter>LyShine</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\LyShine\UiSerializeHelpers.h">
+      <Filter>LyShine</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\LyShine\Animation\IUiAnimation.h">
+      <Filter>LyShine\Animation</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\LyShine\Bus\UiAnimateEntityBus.h">
+      <Filter>LyShine\Bus</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\LyShine\Bus\UiAnimationBus.h">
+      <Filter>LyShine\Bus</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\LyShine\Bus\UiButtonBus.h">
+      <Filter>LyShine\Bus</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\LyShine\Bus\UiCanvasBus.h">
+      <Filter>LyShine\Bus</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\LyShine\Bus\UiCanvasManagerBus.h">
+      <Filter>LyShine\Bus</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\LyShine\Bus\UiCanvasUpdateNotificationBus.h">
+      <Filter>LyShine\Bus</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\LyShine\Bus\UiCheckboxBus.h">
+      <Filter>LyShine\Bus</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\LyShine\Bus\UiCursorBus.h">
+      <Filter>LyShine\Bus</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\LyShine\Bus\UiDraggableBus.h">
+      <Filter>LyShine\Bus</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\LyShine\Bus\UiDropdownBus.h">
+      <Filter>LyShine\Bus</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\LyShine\Bus\UiDropdownOptionBus.h">
+      <Filter>LyShine\Bus</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\LyShine\Bus\UiDropTargetBus.h">
+      <Filter>LyShine\Bus</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\LyShine\Bus\UiDynamicLayoutBus.h">
+      <Filter>LyShine\Bus</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\LyShine\Bus\UiDynamicScrollBoxBus.h">
+      <Filter>LyShine\Bus</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\LyShine\Bus\UiEditorBus.h">
+      <Filter>LyShine\Bus</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\LyShine\Bus\UiEditorCanvasBus.h">
+      <Filter>LyShine\Bus</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\LyShine\Bus\UiEditorChangeNotificationBus.h">
+      <Filter>LyShine\Bus</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\LyShine\Bus\UiElementBus.h">
+      <Filter>LyShine\Bus</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\LyShine\Bus\UiEntityContextBus.h">
+      <Filter>LyShine\Bus</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\LyShine\Bus\UiFaderBus.h">
+      <Filter>LyShine\Bus</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\LyShine\Bus\UiFlipbookAnimationBus.h">
+      <Filter>LyShine\Bus</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\LyShine\Bus\UiGameEntityContextBus.h">
+      <Filter>LyShine\Bus</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\LyShine\Bus\UiImageBus.h">
+      <Filter>LyShine\Bus</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\LyShine\Bus\UiImageSequenceBus.h">
+      <Filter>LyShine\Bus</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\LyShine\Bus\UiIndexableImageBus.h">
+      <Filter>LyShine\Bus</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\LyShine\Bus\UiInitializationBus.h">
+      <Filter>LyShine\Bus</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\LyShine\Bus\UiInteractableActionsBus.h">
+      <Filter>LyShine\Bus</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\LyShine\Bus\UiInteractableBus.h">
+      <Filter>LyShine\Bus</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\LyShine\Bus\UiInteractableStatesBus.h">
+      <Filter>LyShine\Bus</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\LyShine\Bus\UiInteractionMaskBus.h">
+      <Filter>LyShine\Bus</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\LyShine\Bus\UiLayoutBus.h">
+      <Filter>LyShine\Bus</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\LyShine\Bus\UiLayoutCellBus.h">
+      <Filter>LyShine\Bus</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\LyShine\Bus\UiLayoutCellDefaultBus.h">
+      <Filter>LyShine\Bus</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\LyShine\Bus\UiLayoutColumnBus.h">
+      <Filter>LyShine\Bus</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\LyShine\Bus\UiLayoutControllerBus.h">
+      <Filter>LyShine\Bus</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\LyShine\Bus\UiLayoutFitterBus.h">
+      <Filter>LyShine\Bus</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\LyShine\Bus\UiLayoutGridBus.h">
+      <Filter>LyShine\Bus</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\LyShine\Bus\UiLayoutManagerBus.h">
+      <Filter>LyShine\Bus</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\LyShine\Bus\UiLayoutRowBus.h">
+      <Filter>LyShine\Bus</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\LyShine\Bus\UiMarkupButtonBus.h">
+      <Filter>LyShine\Bus</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\LyShine\Bus\UiMaskBus.h">
+      <Filter>LyShine\Bus</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\LyShine\Bus\UiNavigationBus.h">
+      <Filter>LyShine\Bus</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\LyShine\Bus\UiParticleEmitterBus.h">
+      <Filter>LyShine\Bus</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\LyShine\Bus\UiRadioButtonBus.h">
+      <Filter>LyShine\Bus</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\LyShine\Bus\UiRadioButtonCommunicationBus.h">
+      <Filter>LyShine\Bus</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\LyShine\Bus\UiRadioButtonGroupBus.h">
+      <Filter>LyShine\Bus</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\LyShine\Bus\UiRadioButtonGroupCommunicationBus.h">
+      <Filter>LyShine\Bus</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\LyShine\Bus\UiRenderBus.h">
+      <Filter>LyShine\Bus</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\LyShine\Bus\UiRenderControlBus.h">
+      <Filter>LyShine\Bus</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\LyShine\Bus\UiScrollableBus.h">
+      <Filter>LyShine\Bus</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\LyShine\Bus\UiScrollBarBus.h">
+      <Filter>LyShine\Bus</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\LyShine\Bus\UiScrollBoxBus.h">
+      <Filter>LyShine\Bus</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\LyShine\Bus\UiScrollerBus.h">
+      <Filter>LyShine\Bus</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\LyShine\Bus\UiSliderBus.h">
+      <Filter>LyShine\Bus</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\LyShine\Bus\UiSpawnerBus.h">
+      <Filter>LyShine\Bus</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\LyShine\Bus\UiSystemBus.h">
+      <Filter>LyShine\Bus</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\LyShine\Bus\UiTextBus.h">
+      <Filter>LyShine\Bus</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\LyShine\Bus\UiTextInputBus.h">
+      <Filter>LyShine\Bus</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\LyShine\Bus\UiTooltipBus.h">
+      <Filter>LyShine\Bus</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\LyShine\Bus\UiTooltipDataPopulatorBus.h">
+      <Filter>LyShine\Bus</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\LyShine\Bus\UiTooltipDisplayBus.h">
+      <Filter>LyShine\Bus</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\LyShine\Bus\UiTransform2dBus.h">
+      <Filter>LyShine\Bus</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\LyShine\Bus\UiTransformBus.h">
+      <Filter>LyShine\Bus</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\LyShine\Bus\UiVisualBus.h">
+      <Filter>LyShine\Bus</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\LyShine\Bus\Sprite\UiSpriteBus.h">
+      <Filter>LyShine\Bus\Sprite</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\LyShine\Bus\World\UiCanvasOnMeshBus.h">
+      <Filter>LyShine\Bus\World</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\LyShine\Bus\World\UiCanvasRefBus.h">
+      <Filter>LyShine\Bus\World</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\LyShine\Bus\Tools\UiSystemToolsBus.h">
+      <Filter>LyShine\Bus\Tools</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\Maestro\Bus\EditorSequenceAgentComponentBus.h">
+      <Filter>Maestro\Bus</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\Maestro\Bus\EditorSequenceBus.h">
+      <Filter>Maestro\Bus</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\Maestro\Bus\EditorSequenceComponentBus.h">
+      <Filter>Maestro\Bus</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\Maestro\Bus\SequenceComponentBus.h">
+      <Filter>Maestro\Bus</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\Maestro\Bus\SequenceAgentComponentBus.h">
+      <Filter>Maestro\Bus</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\Maestro\Types\AnimNodeType.h">
+      <Filter>Maestro\Types</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\Maestro\Types\AnimParamType.h">
+      <Filter>Maestro\Types</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\Maestro\Types\AnimValue.h">
+      <Filter>Maestro\Types</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\Maestro\Types\AnimValueType.h">
+      <Filter>Maestro\Types</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\Maestro\Types\AssetBlendKey.h">
+      <Filter>Maestro\Types</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\Maestro\Types\AssetBlends.h">
+      <Filter>Maestro\Types</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\Maestro\Types\SequenceType.h">
+      <Filter>Maestro\Types</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\StaticInstance.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\CMakeLists.txt">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\crycommon_files.cmake" />
+    <None Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\Platform\Windows\crycommon_windows_files.cmake">
+      <Filter>Platform\Windows</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\Platform\Windows\crycommon_windows.cmake">
+      <Filter>Platform\Windows</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Generated Files">
+      <UniqueIdentifier>{FB9B7D8B-7F05-31D5-AA90-592248EDE1B3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="LyShine">
+      <UniqueIdentifier>{EA253260-8EBD-301F-9614-BA0B6405B363}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="LyShine\Animation">
+      <UniqueIdentifier>{94F9663F-48ED-3C36-9268-5AD860361A82}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="LyShine\Bus">
+      <UniqueIdentifier>{515909B2-70C6-38D7-87D4-61BD686C23E4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="LyShine\Bus\Sprite">
+      <UniqueIdentifier>{BCDE1A43-E9A7-37AF-82FA-73459D6333DA}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="LyShine\Bus\Tools">
+      <UniqueIdentifier>{B446A1AD-0FFE-37CC-A9C1-45CFE4F346B7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="LyShine\Bus\World">
+      <UniqueIdentifier>{449D994C-23A1-3DD7-B1CC-D34EF9B12BE2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Maestro">
+      <UniqueIdentifier>{D4338F19-8B97-3E88-B93B-ED6DCD2B16F8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Maestro\Bus">
+      <UniqueIdentifier>{F75D7EFD-D4B1-35D3-85A8-B1775AE8A372}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Maestro\Types">
+      <UniqueIdentifier>{4954F4D3-1CD5-3F39-A1B3-FA1616C79CA3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Platform">
+      <UniqueIdentifier>{378A8D8C-6CA1-3F6B-A02B-1E9FF64C97B2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Platform\Windows">
+      <UniqueIdentifier>{63AEF2F6-51C7-306A-BFE8-A049C8C62EFB}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

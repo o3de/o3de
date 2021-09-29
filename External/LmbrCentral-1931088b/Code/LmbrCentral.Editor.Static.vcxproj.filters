@@ -1,0 +1,491 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\LmbrCentral-1931088b\Code\CMakeFiles\LmbrCentral.Editor.Static.dir\Unity\unity_7_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\LmbrCentral-1931088b\Code\CMakeFiles\LmbrCentral.Editor.Static.dir\Unity\unity_6_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\LmbrCentral-1931088b\Code\CMakeFiles\LmbrCentral.Editor.Static.dir\Unity\unity_5_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\LmbrCentral-1931088b\Code\CMakeFiles\LmbrCentral.Editor.Static.dir\Unity\unity_4_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\LmbrCentral-1931088b\Code\CMakeFiles\LmbrCentral.Editor.Static.dir\Unity\unity_3_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\LmbrCentral-1931088b\Code\CMakeFiles\LmbrCentral.Editor.Static.dir\Unity\unity_2_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\LmbrCentral-1931088b\Code\CMakeFiles\LmbrCentral.Editor.Static.dir\Unity\unity_1_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\LmbrCentral-1931088b\Code\CMakeFiles\LmbrCentral.Editor.Static.dir\Unity\unity_0_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LmbrCentral\Code\Source\Audio\EditorAudioAreaEnvironmentComponent.cpp">
+      <Filter>Source\Audio</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LmbrCentral\Code\Source\Audio\EditorAudioEnvironmentComponent.cpp">
+      <Filter>Source\Audio</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LmbrCentral\Code\Source\Audio\EditorAudioListenerComponent.cpp">
+      <Filter>Source\Audio</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LmbrCentral\Code\Source\Audio\EditorAudioMultiPositionComponent.cpp">
+      <Filter>Source\Audio</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LmbrCentral\Code\Source\Audio\EditorAudioPreloadComponent.cpp">
+      <Filter>Source\Audio</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LmbrCentral\Code\Source\Audio\EditorAudioRtpcComponent.cpp">
+      <Filter>Source\Audio</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LmbrCentral\Code\Source\Audio\EditorAudioSwitchComponent.cpp">
+      <Filter>Source\Audio</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LmbrCentral\Code\Source\Audio\EditorAudioTriggerComponent.cpp">
+      <Filter>Source\Audio</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LmbrCentral\Code\Source\Builders\BenchmarkAssetBuilder\BenchmarkAssetBuilderComponent.cpp">
+      <Filter>Source\Builders\BenchmarkAssetBuilder</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LmbrCentral\Code\Source\Builders\BenchmarkAssetBuilder\BenchmarkAssetBuilderWorker.cpp">
+      <Filter>Source\Builders\BenchmarkAssetBuilder</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LmbrCentral\Code\Source\Scripting\EditorLookAtComponent.cpp">
+      <Filter>Source\Scripting</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LmbrCentral\Code\Source\Scripting\EditorRandomTimedSpawnerComponent.cpp">
+      <Filter>Source\Scripting</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LmbrCentral\Code\Source\Scripting\EditorSpawnerComponent.cpp">
+      <Filter>Source\Scripting</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LmbrCentral\Code\Source\Scripting\EditorTagComponent.cpp">
+      <Filter>Source\Scripting</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LmbrCentral\Code\Source\Shape\EditorBaseShapeComponent.cpp">
+      <Filter>Source\Shape</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LmbrCentral\Code\Source\Shape\EditorSphereShapeComponent.cpp">
+      <Filter>Source\Shape</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LmbrCentral\Code\Source\Shape\EditorDiskShapeComponent.cpp">
+      <Filter>Source\Shape</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LmbrCentral\Code\Source\Shape\EditorBoxShapeComponent.cpp">
+      <Filter>Source\Shape</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LmbrCentral\Code\Source\Shape\EditorAxisAlignedBoxShapeComponent.cpp">
+      <Filter>Source\Shape</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LmbrCentral\Code\Source\Shape\EditorCylinderShapeComponent.cpp">
+      <Filter>Source\Shape</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LmbrCentral\Code\Source\Shape\EditorCapsuleShapeComponent.cpp">
+      <Filter>Source\Shape</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LmbrCentral\Code\Source\Shape\EditorCompoundShapeComponent.cpp">
+      <Filter>Source\Shape</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LmbrCentral\Code\Source\Shape\EditorQuadShapeComponent.cpp">
+      <Filter>Source\Shape</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LmbrCentral\Code\Source\Shape\EditorSplineComponent.cpp">
+      <Filter>Source\Shape</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LmbrCentral\Code\Source\Shape\EditorSplineComponentMode.cpp">
+      <Filter>Source\Shape</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LmbrCentral\Code\Source\Shape\EditorTubeShapeComponent.cpp">
+      <Filter>Source\Shape</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LmbrCentral\Code\Source\Shape\EditorTubeShapeComponentMode.cpp">
+      <Filter>Source\Shape</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LmbrCentral\Code\Source\Shape\EditorPolygonPrismShapeComponent.cpp">
+      <Filter>Source\Shape</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LmbrCentral\Code\Source\Shape\EditorPolygonPrismShapeComponentMode.cpp">
+      <Filter>Source\Shape</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LmbrCentral\Code\Source\Shape\EditorShapeComponentConverters.cpp">
+      <Filter>Source\Shape</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LmbrCentral\Code\Source\Ai\EditorNavigationSeedComponent.cpp">
+      <Filter>Source\Ai</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LmbrCentral\Code\Source\Ai\EditorNavigationAreaComponent.cpp">
+      <Filter>Source\Ai</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LmbrCentral\Code\Source\Ai\EditorNavigationUtil.cpp">
+      <Filter>Source\Ai</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LmbrCentral\Code\Source\Editor\EditorCommentComponent.cpp">
+      <Filter>Source\Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LmbrCentral\Code\Source\Ai\NavigationComponent.cpp">
+      <Filter>Source\Ai</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LmbrCentral\Code\Source\Scripting\SpawnerComponent.cpp">
+      <Filter>Source\Scripting</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LmbrCentral\Code\Source\Shape\TubeShape.cpp">
+      <Filter>Source\Shape</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LmbrCentral\Code\Source\Builders\CopyDependencyBuilder\CopyDependencyBuilderComponent.cpp">
+      <Filter>Source\Builders\CopyDependencyBuilder</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LmbrCentral\Code\Source\Builders\CopyDependencyBuilder\CopyDependencyBuilderWorker.cpp">
+      <Filter>Source\Builders\CopyDependencyBuilder</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LmbrCentral\Code\Source\Builders\CopyDependencyBuilder\CfgBuilderWorker\CfgBuilderWorker.cpp">
+      <Filter>Source\Builders\CopyDependencyBuilder\CfgBuilderWorker</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LmbrCentral\Code\Source\Builders\CopyDependencyBuilder\EmfxWorkspaceBuilderWorker\EmfxWorkspaceBuilderWorker.cpp">
+      <Filter>Source\Builders\CopyDependencyBuilder\EmfxWorkspaceBuilderWorker</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LmbrCentral\Code\Source\Builders\CopyDependencyBuilder\FontBuilderWorker\FontBuilderWorker.cpp">
+      <Filter>Source\Builders\CopyDependencyBuilder\FontBuilderWorker</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LmbrCentral\Code\Source\Builders\CopyDependencyBuilder\SchemaBuilderWorker\SchemaBuilderWorker.cpp">
+      <Filter>Source\Builders\CopyDependencyBuilder\SchemaBuilderWorker</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LmbrCentral\Code\Source\Builders\CopyDependencyBuilder\SchemaBuilderWorker\SchemaUtils.cpp">
+      <Filter>Source\Builders\CopyDependencyBuilder\SchemaBuilderWorker</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LmbrCentral\Code\Source\Builders\CopyDependencyBuilder\XmlBuilderWorker\XmlBuilderWorker.cpp">
+      <Filter>Source\Builders\CopyDependencyBuilder\XmlBuilderWorker</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LmbrCentral\Code\Source\Builders\CopyDependencyBuilder\XmlFormattedAssetBuilderWorker.cpp">
+      <Filter>Source\Builders\CopyDependencyBuilder</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LmbrCentral\Code\Source\Builders\DependencyBuilder\DependencyBuilderComponent.cpp">
+      <Filter>Source\Builders\DependencyBuilder</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LmbrCentral\Code\Source\Builders\DependencyBuilder\DependencyBuilderWorker.cpp">
+      <Filter>Source\Builders\DependencyBuilder</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LmbrCentral\Code\Source\Builders\DependencyBuilder\SeedBuilderWorker\SeedBuilderWorker.cpp">
+      <Filter>Source\Builders\DependencyBuilder\SeedBuilderWorker</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LmbrCentral\Code\Source\Builders\LevelBuilder\LevelBuilderComponent.cpp">
+      <Filter>Source\Builders\LevelBuilder</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LmbrCentral\Code\Source\Builders\LevelBuilder\LevelBuilderWorker.cpp">
+      <Filter>Source\Builders\LevelBuilder</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LmbrCentral\Code\Source\Builders\MaterialBuilder\MaterialBuilderComponent.cpp">
+      <Filter>Source\Builders\MaterialBuilder</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LmbrCentral\Code\Source\Builders\SliceBuilder\SliceBuilderComponent.cpp">
+      <Filter>Source\Builders\SliceBuilder</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LmbrCentral\Code\Source\Builders\SliceBuilder\SliceBuilderWorker.cpp">
+      <Filter>Source\Builders\SliceBuilder</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LmbrCentral\Code\Source\Builders\TranslationBuilder\TranslationBuilderComponent.cpp">
+      <Filter>Source\Builders\TranslationBuilder</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LmbrCentral\Code\Source\Builders\LuaBuilder\LuaBuilderComponent.cpp">
+      <Filter>Source\Builders\LuaBuilder</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LmbrCentral\Code\Source\Builders\LuaBuilder\LuaBuilderWorker.cpp">
+      <Filter>Source\Builders\LuaBuilder</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LmbrCentral\Code\Source\Builders\LuaBuilder\LuaHelpers.cpp">
+      <Filter>Source\Builders\LuaBuilder</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LmbrCentral\Code\include\LmbrCentral\Rendering\EditorCameraCorrectionBus.h">
+      <Filter>include\LmbrCentral\Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LmbrCentral\Code\include\LmbrCentral\Rendering\EditorLightComponentBus.h">
+      <Filter>include\LmbrCentral\Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LmbrCentral\Code\include\LmbrCentral\Shape\EditorPolygonPrismShapeComponentBus.h">
+      <Filter>include\LmbrCentral\Shape</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LmbrCentral\Code\include\LmbrCentral\Shape\EditorSplineComponentBus.h">
+      <Filter>include\LmbrCentral\Shape</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LmbrCentral\Code\include\LmbrCentral\Shape\EditorTubeShapeComponentBus.h">
+      <Filter>include\LmbrCentral\Shape</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LmbrCentral\Code\include\LmbrCentral\Component\EditorWrappedComponentBase.h">
+      <Filter>include\LmbrCentral\Component</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LmbrCentral\Code\include\LmbrCentral\Component\EditorWrappedComponentBase.inl">
+      <Filter>include\LmbrCentral\Component</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LmbrCentral\Code\Source\Audio\EditorAudioAreaEnvironmentComponent.h">
+      <Filter>Source\Audio</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LmbrCentral\Code\Source\Audio\EditorAudioEnvironmentComponent.h">
+      <Filter>Source\Audio</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LmbrCentral\Code\Source\Audio\EditorAudioListenerComponent.h">
+      <Filter>Source\Audio</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LmbrCentral\Code\Source\Audio\EditorAudioMultiPositionComponent.h">
+      <Filter>Source\Audio</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LmbrCentral\Code\Source\Audio\EditorAudioPreloadComponent.h">
+      <Filter>Source\Audio</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LmbrCentral\Code\Source\Audio\EditorAudioRtpcComponent.h">
+      <Filter>Source\Audio</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LmbrCentral\Code\Source\Audio\EditorAudioSwitchComponent.h">
+      <Filter>Source\Audio</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LmbrCentral\Code\Source\Audio\EditorAudioTriggerComponent.h">
+      <Filter>Source\Audio</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LmbrCentral\Code\Source\Builders\BenchmarkAssetBuilder\BenchmarkAssetBuilderComponent.h">
+      <Filter>Source\Builders\BenchmarkAssetBuilder</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LmbrCentral\Code\Source\Builders\BenchmarkAssetBuilder\BenchmarkAssetBuilderWorker.h">
+      <Filter>Source\Builders\BenchmarkAssetBuilder</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LmbrCentral\Code\Source\Scripting\EditorLookAtComponent.h">
+      <Filter>Source\Scripting</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LmbrCentral\Code\Source\Scripting\EditorRandomTimedSpawnerComponent.h">
+      <Filter>Source\Scripting</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LmbrCentral\Code\Source\Scripting\EditorSpawnerComponent.h">
+      <Filter>Source\Scripting</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LmbrCentral\Code\Source\Scripting\EditorTagComponent.h">
+      <Filter>Source\Scripting</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LmbrCentral\Code\Source\Shape\EditorBaseShapeComponent.h">
+      <Filter>Source\Shape</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LmbrCentral\Code\Source\Shape\EditorSphereShapeComponent.h">
+      <Filter>Source\Shape</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LmbrCentral\Code\Source\Shape\EditorDiskShapeComponent.h">
+      <Filter>Source\Shape</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LmbrCentral\Code\Source\Shape\EditorBoxShapeComponent.h">
+      <Filter>Source\Shape</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LmbrCentral\Code\Source\Shape\EditorAxisAlignedBoxShapeComponent.h">
+      <Filter>Source\Shape</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LmbrCentral\Code\Source\Shape\EditorCylinderShapeComponent.h">
+      <Filter>Source\Shape</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LmbrCentral\Code\Source\Shape\EditorCapsuleShapeComponent.h">
+      <Filter>Source\Shape</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LmbrCentral\Code\Source\Shape\EditorCompoundShapeComponent.h">
+      <Filter>Source\Shape</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LmbrCentral\Code\Source\Shape\EditorQuadShapeComponent.h">
+      <Filter>Source\Shape</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LmbrCentral\Code\Source\Shape\EditorSplineComponent.h">
+      <Filter>Source\Shape</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LmbrCentral\Code\Source\Shape\EditorSplineComponentMode.h">
+      <Filter>Source\Shape</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LmbrCentral\Code\Source\Shape\EditorTubeShapeComponent.h">
+      <Filter>Source\Shape</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LmbrCentral\Code\Source\Shape\EditorTubeShapeComponentMode.h">
+      <Filter>Source\Shape</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LmbrCentral\Code\Source\Shape\EditorPolygonPrismShapeComponent.h">
+      <Filter>Source\Shape</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LmbrCentral\Code\Source\Shape\EditorPolygonPrismShapeComponentMode.h">
+      <Filter>Source\Shape</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LmbrCentral\Code\Source\Shape\EditorShapeComponentConverters.h">
+      <Filter>Source\Shape</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LmbrCentral\Code\Source\Ai\EditorNavigationSeedComponent.h">
+      <Filter>Source\Ai</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LmbrCentral\Code\Source\Ai\EditorNavigationAreaComponent.h">
+      <Filter>Source\Ai</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LmbrCentral\Code\Source\Ai\EditorNavigationUtil.h">
+      <Filter>Source\Ai</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LmbrCentral\Code\Source\Editor\EditorCommentComponent.h">
+      <Filter>Source\Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LmbrCentral\Code\Source\Ai\NavigationComponent.h">
+      <Filter>Source\Ai</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LmbrCentral\Code\Source\Scripting\SpawnerComponent.h">
+      <Filter>Source\Scripting</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LmbrCentral\Code\Source\Shape\TubeShape.h">
+      <Filter>Source\Shape</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LmbrCentral\Code\Source\Builders\CopyDependencyBuilder\CopyDependencyBuilderComponent.h">
+      <Filter>Source\Builders\CopyDependencyBuilder</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LmbrCentral\Code\Source\Builders\CopyDependencyBuilder\CopyDependencyBuilderWorker.h">
+      <Filter>Source\Builders\CopyDependencyBuilder</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LmbrCentral\Code\Source\Builders\CopyDependencyBuilder\CfgBuilderWorker\CfgBuilderWorker.h">
+      <Filter>Source\Builders\CopyDependencyBuilder\CfgBuilderWorker</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LmbrCentral\Code\Source\Builders\CopyDependencyBuilder\EmfxWorkspaceBuilderWorker\EmfxWorkspaceBuilderWorker.h">
+      <Filter>Source\Builders\CopyDependencyBuilder\EmfxWorkspaceBuilderWorker</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LmbrCentral\Code\Source\Builders\CopyDependencyBuilder\FontBuilderWorker\FontBuilderWorker.h">
+      <Filter>Source\Builders\CopyDependencyBuilder\FontBuilderWorker</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LmbrCentral\Code\Source\Builders\CopyDependencyBuilder\SchemaBuilderWorker\SchemaBuilderWorker.h">
+      <Filter>Source\Builders\CopyDependencyBuilder\SchemaBuilderWorker</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LmbrCentral\Code\Source\Builders\CopyDependencyBuilder\SchemaBuilderWorker\SchemaUtils.h">
+      <Filter>Source\Builders\CopyDependencyBuilder\SchemaBuilderWorker</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LmbrCentral\Code\Source\Builders\CopyDependencyBuilder\XmlBuilderWorker\XmlBuilderWorker.h">
+      <Filter>Source\Builders\CopyDependencyBuilder\XmlBuilderWorker</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LmbrCentral\Code\Source\Builders\CopyDependencyBuilder\XmlFormattedAssetBuilderWorker.h">
+      <Filter>Source\Builders\CopyDependencyBuilder</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LmbrCentral\Code\Source\Builders\DependencyBuilder\DependencyBuilderComponent.h">
+      <Filter>Source\Builders\DependencyBuilder</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LmbrCentral\Code\Source\Builders\DependencyBuilder\DependencyBuilderWorker.h">
+      <Filter>Source\Builders\DependencyBuilder</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LmbrCentral\Code\Source\Builders\DependencyBuilder\SeedBuilderWorker\SeedBuilderWorker.h">
+      <Filter>Source\Builders\DependencyBuilder\SeedBuilderWorker</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LmbrCentral\Code\Source\Builders\LevelBuilder\LevelBuilderComponent.h">
+      <Filter>Source\Builders\LevelBuilder</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LmbrCentral\Code\Source\Builders\LevelBuilder\LevelBuilderWorker.h">
+      <Filter>Source\Builders\LevelBuilder</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LmbrCentral\Code\Source\Builders\MaterialBuilder\MaterialBuilderComponent.h">
+      <Filter>Source\Builders\MaterialBuilder</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LmbrCentral\Code\Source\Builders\SliceBuilder\SliceBuilderComponent.h">
+      <Filter>Source\Builders\SliceBuilder</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LmbrCentral\Code\Source\Builders\SliceBuilder\SliceBuilderWorker.h">
+      <Filter>Source\Builders\SliceBuilder</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LmbrCentral\Code\Source\Builders\TranslationBuilder\TranslationBuilderComponent.h">
+      <Filter>Source\Builders\TranslationBuilder</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LmbrCentral\Code\Source\Builders\LuaBuilder\LuaBuilderComponent.h">
+      <Filter>Source\Builders\LuaBuilder</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LmbrCentral\Code\Source\Builders\LuaBuilder\LuaBuilderWorker.h">
+      <Filter>Source\Builders\LuaBuilder</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LmbrCentral\Code\Source\Builders\LuaBuilder\LuaHelpers.h">
+      <Filter>Source\Builders\LuaBuilder</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Gems\LmbrCentral\Code\CMakeLists.txt">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="C:\Users\lesaelr\o3de\Gems\LmbrCentral\Code\lmbrcentral_editor_files.cmake" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Generated Files">
+      <UniqueIdentifier>{FB9B7D8B-7F05-31D5-AA90-592248EDE1B3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source">
+      <UniqueIdentifier>{F3F0AD47-5F83-373B-A2BF-650D2E4FA3EA}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Ai">
+      <UniqueIdentifier>{2D5B1B1E-40AC-3AC8-88E4-35B5EBCD33DE}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Audio">
+      <UniqueIdentifier>{CFE34CF5-19DC-314B-9963-8289C571E76A}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Builders">
+      <UniqueIdentifier>{02355A00-F015-3FFE-9E94-7F8D74E781E6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Builders\BenchmarkAssetBuilder">
+      <UniqueIdentifier>{E0B87288-6658-3F27-AEC2-8ED0F3434998}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Builders\CopyDependencyBuilder">
+      <UniqueIdentifier>{CE077247-59DB-3EA9-B550-DE1C455BB18E}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Builders\CopyDependencyBuilder\CfgBuilderWorker">
+      <UniqueIdentifier>{7C5DC2F9-FF81-39F9-A5F7-9CDFF42B6A9B}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Builders\CopyDependencyBuilder\EmfxWorkspaceBuilderWorker">
+      <UniqueIdentifier>{2F78CB0C-25D4-31E3-84E0-EE41C63D1E0A}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Builders\CopyDependencyBuilder\FontBuilderWorker">
+      <UniqueIdentifier>{F2D9DEDE-D566-3142-A4E5-56134D373FA8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Builders\CopyDependencyBuilder\SchemaBuilderWorker">
+      <UniqueIdentifier>{08692BCD-4265-31BC-8410-2DCCACD66A8D}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Builders\CopyDependencyBuilder\XmlBuilderWorker">
+      <UniqueIdentifier>{A2C894A4-2F3B-32BB-943E-2C4CFD382109}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Builders\DependencyBuilder">
+      <UniqueIdentifier>{4838B734-1ED6-3DD3-A993-16E195529FDF}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Builders\DependencyBuilder\SeedBuilderWorker">
+      <UniqueIdentifier>{1697BE59-E6C5-3FFC-988F-80FFBEA36CCB}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Builders\LevelBuilder">
+      <UniqueIdentifier>{6A789268-9073-3AF9-A790-BA463C4AEAB5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Builders\LuaBuilder">
+      <UniqueIdentifier>{BF2AE8A1-AFEA-3731-9B37-365121F26AD9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Builders\MaterialBuilder">
+      <UniqueIdentifier>{5EF93561-361E-3DF7-B889-F48617AD8621}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Builders\SliceBuilder">
+      <UniqueIdentifier>{1CA50939-157E-31C7-80B1-2FB81CC120B4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Builders\TranslationBuilder">
+      <UniqueIdentifier>{14623C31-5E36-30FD-9B9A-7D4E46C596D7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Editor">
+      <UniqueIdentifier>{32FCFB28-A730-3475-B9AE-03974723A74B}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Scripting">
+      <UniqueIdentifier>{CAE3084B-DDBD-3331-83BA-3A77E02E1C4B}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Shape">
+      <UniqueIdentifier>{68E2CDEA-19E4-3554-B133-9A10D7F47C10}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="include">
+      <UniqueIdentifier>{03DA67C8-C0FA-3C0C-84B5-293930617647}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="include\LmbrCentral">
+      <UniqueIdentifier>{C5276D19-4BDF-39C1-B66A-4D6E93A68637}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="include\LmbrCentral\Component">
+      <UniqueIdentifier>{A5FE7684-8C09-3038-98DD-B993CABBBC79}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="include\LmbrCentral\Rendering">
+      <UniqueIdentifier>{BB12650B-C3F8-34F1-AF19-9178FB4FBD89}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="include\LmbrCentral\Shape">
+      <UniqueIdentifier>{2196BBB1-0C28-3670-888F-806F5CA4DA62}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

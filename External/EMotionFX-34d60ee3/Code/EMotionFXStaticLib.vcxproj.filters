@@ -1,0 +1,2060 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\EMotionFX-34d60ee3\Code\CMakeFiles\EMotionFXStaticLib.dir\Unity\unity_33_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\EMotionFX-34d60ee3\Code\CMakeFiles\EMotionFXStaticLib.dir\Unity\unity_32_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\EMotionFX-34d60ee3\Code\CMakeFiles\EMotionFXStaticLib.dir\Unity\unity_31_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\EMotionFX-34d60ee3\Code\CMakeFiles\EMotionFXStaticLib.dir\Unity\unity_30_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\EMotionFX-34d60ee3\Code\CMakeFiles\EMotionFXStaticLib.dir\Unity\unity_29_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\EMotionFX-34d60ee3\Code\CMakeFiles\EMotionFXStaticLib.dir\Unity\unity_28_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\EMotionFX-34d60ee3\Code\CMakeFiles\EMotionFXStaticLib.dir\Unity\unity_27_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\EMotionFX-34d60ee3\Code\CMakeFiles\EMotionFXStaticLib.dir\Unity\unity_26_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\EMotionFX-34d60ee3\Code\CMakeFiles\EMotionFXStaticLib.dir\Unity\unity_25_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\EMotionFX-34d60ee3\Code\CMakeFiles\EMotionFXStaticLib.dir\Unity\unity_24_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\EMotionFX-34d60ee3\Code\CMakeFiles\EMotionFXStaticLib.dir\Unity\unity_23_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\EMotionFX-34d60ee3\Code\CMakeFiles\EMotionFXStaticLib.dir\Unity\unity_22_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\EMotionFX-34d60ee3\Code\CMakeFiles\EMotionFXStaticLib.dir\Unity\unity_21_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\EMotionFX-34d60ee3\Code\CMakeFiles\EMotionFXStaticLib.dir\Unity\unity_20_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\EMotionFX-34d60ee3\Code\CMakeFiles\EMotionFXStaticLib.dir\Unity\unity_19_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\EMotionFX-34d60ee3\Code\CMakeFiles\EMotionFXStaticLib.dir\Unity\unity_18_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\EMotionFX-34d60ee3\Code\CMakeFiles\EMotionFXStaticLib.dir\Unity\unity_17_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\EMotionFX-34d60ee3\Code\CMakeFiles\EMotionFXStaticLib.dir\Unity\unity_16_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\EMotionFX-34d60ee3\Code\CMakeFiles\EMotionFXStaticLib.dir\Unity\unity_15_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\EMotionFX-34d60ee3\Code\CMakeFiles\EMotionFXStaticLib.dir\Unity\unity_14_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\EMotionFX-34d60ee3\Code\CMakeFiles\EMotionFXStaticLib.dir\Unity\unity_13_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\EMotionFX-34d60ee3\Code\CMakeFiles\EMotionFXStaticLib.dir\Unity\unity_12_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\EMotionFX-34d60ee3\Code\CMakeFiles\EMotionFXStaticLib.dir\Unity\unity_11_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\EMotionFX-34d60ee3\Code\CMakeFiles\EMotionFXStaticLib.dir\Unity\unity_10_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\EMotionFX-34d60ee3\Code\CMakeFiles\EMotionFXStaticLib.dir\Unity\unity_9_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\EMotionFX-34d60ee3\Code\CMakeFiles\EMotionFXStaticLib.dir\Unity\unity_8_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\EMotionFX-34d60ee3\Code\CMakeFiles\EMotionFXStaticLib.dir\Unity\unity_7_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\EMotionFX-34d60ee3\Code\CMakeFiles\EMotionFXStaticLib.dir\Unity\unity_6_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\EMotionFX-34d60ee3\Code\CMakeFiles\EMotionFXStaticLib.dir\Unity\unity_5_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\EMotionFX-34d60ee3\Code\CMakeFiles\EMotionFXStaticLib.dir\Unity\unity_4_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\EMotionFX-34d60ee3\Code\CMakeFiles\EMotionFXStaticLib.dir\Unity\unity_3_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\EMotionFX-34d60ee3\Code\CMakeFiles\EMotionFXStaticLib.dir\Unity\unity_2_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\EMotionFX-34d60ee3\Code\CMakeFiles\EMotionFXStaticLib.dir\Unity\unity_1_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\EMotionFX-34d60ee3\Code\CMakeFiles\EMotionFXStaticLib.dir\Unity\unity_0_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Source\Integration\Assets\ActorAsset.cpp">
+      <Filter>Source\Integration\Assets</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Source\Integration\Assets\MotionAsset.cpp">
+      <Filter>Source\Integration\Assets</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Source\Integration\Assets\MotionSetAsset.cpp">
+      <Filter>Source\Integration\Assets</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Source\Integration\Assets\AnimGraphAsset.cpp">
+      <Filter>Source\Integration\Assets</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Source\Integration\Components\ActorComponent.cpp">
+      <Filter>Source\Integration\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Source\Integration\Components\AnimAudioComponent.cpp">
+      <Filter>Source\Integration\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Source\Integration\Components\AnimGraphComponent.cpp">
+      <Filter>Source\Integration\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Source\Integration\Components\SimpleMotionComponent.cpp">
+      <Filter>Source\Integration\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Source\Integration\Components\SimpleLODComponent.cpp">
+      <Filter>Source\Integration\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Source\Integration\Rendering\RenderBackend.cpp">
+      <Filter>Source\Integration\Rendering</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Source\Integration\Rendering\RenderActor.cpp">
+      <Filter>Source\Integration\Rendering</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Source\Integration\Rendering\RenderActorInstance.cpp">
+      <Filter>Source\Integration\Rendering</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Source\Integration\Rendering\RenderBackendManager.cpp">
+      <Filter>Source\Integration\Rendering</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\Algorithms.cpp">
+      <Filter>MCore\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\Attribute.cpp">
+      <Filter>MCore\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\AttributeAllocator.cpp">
+      <Filter>MCore\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\AttributeBool.cpp">
+      <Filter>MCore\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\AttributeCreateFunctions.cpp">
+      <Filter>MCore\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\AttributeFactory.cpp">
+      <Filter>MCore\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\AttributeFloat.cpp">
+      <Filter>MCore\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\AttributeInt32.cpp">
+      <Filter>MCore\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\BoundingSphere.cpp">
+      <Filter>MCore\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\Color.cpp">
+      <Filter>MCore\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\Command.cpp">
+      <Filter>MCore\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\CommandGroup.cpp">
+      <Filter>MCore\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\CommandLine.cpp">
+      <Filter>MCore\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\MCoreCommandManager.cpp">
+      <Filter>MCore\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\CommandSyntax.cpp">
+      <Filter>MCore\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\DelaunayTriangulator.cpp">
+      <Filter>MCore\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\DiskFile.cpp">
+      <Filter>MCore\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\Distance.cpp">
+      <Filter>MCore\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\DualQuaternion.cpp">
+      <Filter>MCore\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\FastMath.cpp">
+      <Filter>MCore\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\FileSystem.cpp">
+      <Filter>MCore\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\IDGenerator.cpp">
+      <Filter>MCore\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\LogManager.cpp">
+      <Filter>MCore\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\Matrix4.cpp">
+      <Filter>MCore\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\MCoreSystem.cpp">
+      <Filter>MCore\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\MemoryFile.cpp">
+      <Filter>MCore\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\MemoryManager.cpp">
+      <Filter>MCore\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\MemoryObject.cpp">
+      <Filter>MCore\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\MemoryTracker.cpp">
+      <Filter>MCore\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\PlaneEq.cpp">
+      <Filter>MCore\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\Random.cpp">
+      <Filter>MCore\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\Ray.cpp">
+      <Filter>MCore\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\StaticAllocator.cpp">
+      <Filter>MCore\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\StringConversions.cpp">
+      <Filter>MCore\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\StringIdPool.cpp">
+      <Filter>MCore\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\ReflectionSerializer.cpp">
+      <Filter>MCore\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\Actor.cpp">
+      <Filter>EMotionFX\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\ActorInstance.cpp">
+      <Filter>EMotionFX\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\ActorManager.cpp">
+      <Filter>EMotionFX\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\Allocators.cpp">
+      <Filter>EMotionFX\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\Attachment.cpp">
+      <Filter>EMotionFX\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\AttachmentNode.cpp">
+      <Filter>EMotionFX\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\AttachmentSkin.cpp">
+      <Filter>EMotionFX\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BaseObject.cpp">
+      <Filter>EMotionFX\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\ConstraintTransformRotationAngles.cpp">
+      <Filter>EMotionFX\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\DebugDraw.cpp">
+      <Filter>EMotionFX\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\DualQuatSkinDeformer.cpp">
+      <Filter>EMotionFX\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\EMotionFXManager.cpp">
+      <Filter>EMotionFX\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\EMotionFXAllocatorInitializer.cpp">
+      <Filter>EMotionFX\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\Material.cpp">
+      <Filter>EMotionFX\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\Mesh.cpp">
+      <Filter>EMotionFX\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\MeshDeformer.cpp">
+      <Filter>EMotionFX\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\MeshDeformerStack.cpp">
+      <Filter>EMotionFX\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\MorphMeshDeformer.cpp">
+      <Filter>EMotionFX\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\MorphSetup.cpp">
+      <Filter>EMotionFX\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\MorphSetupInstance.cpp">
+      <Filter>EMotionFX\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\MorphTarget.cpp">
+      <Filter>EMotionFX\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\MorphTargetStandard.cpp">
+      <Filter>EMotionFX\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\Motion.cpp">
+      <Filter>EMotionFX\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\MotionInstance.cpp">
+      <Filter>EMotionFX\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\MotionInstancePool.cpp">
+      <Filter>EMotionFX\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\MotionLayerSystem.cpp">
+      <Filter>EMotionFX\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\MotionManager.cpp">
+      <Filter>EMotionFX\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\MotionQueue.cpp">
+      <Filter>EMotionFX\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\MotionSet.cpp">
+      <Filter>EMotionFX\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\MotionSystem.cpp">
+      <Filter>EMotionFX\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\MultiThreadScheduler.cpp">
+      <Filter>EMotionFX\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\Node.cpp">
+      <Filter>EMotionFX\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\NodeGroup.cpp">
+      <Filter>EMotionFX\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\NodeMap.cpp">
+      <Filter>EMotionFX\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\ObjectId.cpp">
+      <Filter>EMotionFX\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\PhysicsSetup.cpp">
+      <Filter>EMotionFX\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\Pose.cpp">
+      <Filter>EMotionFX\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\PoseData.cpp">
+      <Filter>EMotionFX\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\PoseDataFactory.cpp">
+      <Filter>EMotionFX\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\PoseDataRagdoll.cpp">
+      <Filter>EMotionFX\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\RagdollInstance.cpp">
+      <Filter>EMotionFX\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\RagdollVelocityEvaluators.cpp">
+      <Filter>EMotionFX\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\Recorder.cpp">
+      <Filter>EMotionFX\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\RepositioningLayerPass.cpp">
+      <Filter>EMotionFX\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\SimulatedObjectSetup.cpp">
+      <Filter>EMotionFX\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\SingleThreadScheduler.cpp">
+      <Filter>EMotionFX\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\Skeleton.cpp">
+      <Filter>EMotionFX\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\SkinningInfoVertexAttributeLayer.cpp">
+      <Filter>EMotionFX\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\SoftSkinDeformer.cpp">
+      <Filter>EMotionFX\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\SoftSkinManager.cpp">
+      <Filter>EMotionFX\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\SpringSolver.cpp">
+      <Filter>EMotionFX\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\StandardMaterial.cpp">
+      <Filter>EMotionFX\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\SubMesh.cpp">
+      <Filter>EMotionFX\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\ThreadData.cpp">
+      <Filter>EMotionFX\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\Transform.cpp">
+      <Filter>EMotionFX\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\TransformData.cpp">
+      <Filter>EMotionFX\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\TriggerActionSetup.cpp">
+      <Filter>EMotionFX\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\VertexAttributeLayer.cpp">
+      <Filter>EMotionFX\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\VertexAttributeLayerAbstractData.cpp">
+      <Filter>EMotionFX\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\AnimGraph.cpp">
+      <Filter>EMotionFX\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\AnimGraphAttributeTypes.cpp">
+      <Filter>EMotionFX\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\AnimGraphBindPoseNode.cpp">
+      <Filter>EMotionFX\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\AnimGraphEntryNode.cpp">
+      <Filter>EMotionFX\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\AnimGraphEventBuffer.cpp">
+      <Filter>EMotionFX\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\AnimGraphExitNode.cpp">
+      <Filter>EMotionFX\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\AnimGraphGameControllerSettings.cpp">
+      <Filter>EMotionFX\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\AnimGraphHubNode.cpp">
+      <Filter>EMotionFX\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\AnimGraphInstance.cpp">
+      <Filter>EMotionFX\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\AnimGraphManager.cpp">
+      <Filter>EMotionFX\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\AnimGraphMotionNode.cpp">
+      <Filter>EMotionFX\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\AnimGraphNetworkSerializer.cpp">
+      <Filter>EMotionFX\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\AnimGraphNode.cpp">
+      <Filter>EMotionFX\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\AnimGraphNodeData.cpp">
+      <Filter>EMotionFX\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\AnimGraphNodeGroup.cpp">
+      <Filter>EMotionFX\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\AnimGraphObject.cpp">
+      <Filter>EMotionFX\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\AnimGraphObjectData.cpp">
+      <Filter>EMotionFX\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\AnimGraphObjectFactory.cpp">
+      <Filter>EMotionFX\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\AnimGraphPose.cpp">
+      <Filter>EMotionFX\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\AnimGraphPosePool.cpp">
+      <Filter>EMotionFX\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\AnimGraphRefCountedDataPool.cpp">
+      <Filter>EMotionFX\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\AnimGraphReferenceNode.cpp">
+      <Filter>EMotionFX\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\AnimGraphStateMachine.cpp">
+      <Filter>EMotionFX\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\AnimGraphStateTransition.cpp">
+      <Filter>EMotionFX\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\AnimGraphSnapshot.cpp">
+      <Filter>EMotionFX\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\AnimGraphSyncTrack.cpp">
+      <Filter>EMotionFX\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendTree.cpp">
+      <Filter>EMotionFX\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendTreeAccumTransformNode.cpp">
+      <Filter>EMotionFX\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendTreeBlend2Node.cpp">
+      <Filter>EMotionFX\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendTreeBlend2NodeBase.cpp">
+      <Filter>EMotionFX\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendTreeBlend2AdditiveNode.cpp">
+      <Filter>EMotionFX\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendTreeBlend2LegacyNode.cpp">
+      <Filter>EMotionFX\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendTreeBlendNNode.cpp">
+      <Filter>EMotionFX\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendTreeBoolLogicNode.cpp">
+      <Filter>EMotionFX\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendTreeConnection.cpp">
+      <Filter>EMotionFX\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendTreeDirectionToWeightNode.cpp">
+      <Filter>EMotionFX\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendTreeFinalNode.cpp">
+      <Filter>EMotionFX\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendTreeFloatConditionNode.cpp">
+      <Filter>EMotionFX\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendTreeFloatConstantNode.cpp">
+      <Filter>EMotionFX\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendTreeFloatMath1Node.cpp">
+      <Filter>EMotionFX\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendTreeFloatMath2Node.cpp">
+      <Filter>EMotionFX\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendTreeFloatSwitchNode.cpp">
+      <Filter>EMotionFX\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendTreeFootIKNode.cpp">
+      <Filter>EMotionFX\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendTreeGetTransformNode.cpp">
+      <Filter>EMotionFX\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendTreeLookAtNode.cpp">
+      <Filter>EMotionFX\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendTreeMaskNode.cpp">
+      <Filter>EMotionFX\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendTreeMaskLegacyNode.cpp">
+      <Filter>EMotionFX\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendTreeMirrorPoseNode.cpp">
+      <Filter>EMotionFX\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendTreeMorphTargetNode.cpp">
+      <Filter>EMotionFX\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendTreeMotionFrameNode.cpp">
+      <Filter>EMotionFX\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendTreeParameterNode.cpp">
+      <Filter>EMotionFX\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendTreePoseSubtractNode.cpp">
+      <Filter>EMotionFX\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendTreePoseSwitchNode.cpp">
+      <Filter>EMotionFX\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendTreeRagdollNode.cpp">
+      <Filter>EMotionFX\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendTreeRagdollStrengthModifierNode.cpp">
+      <Filter>EMotionFX\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendTreeRangeRemapperNode.cpp">
+      <Filter>EMotionFX\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendTreeSimulatedObjectNode.cpp">
+      <Filter>EMotionFX\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendTreeSmoothingNode.cpp">
+      <Filter>EMotionFX\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendTreeTransformNode.cpp">
+      <Filter>EMotionFX\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendTreeTwoLinkIKNode.cpp">
+      <Filter>EMotionFX\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendTreeSetTransformNode.cpp">
+      <Filter>EMotionFX\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendTreeVector2ComposeNode.cpp">
+      <Filter>EMotionFX\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendTreeVector2DecomposeNode.cpp">
+      <Filter>EMotionFX\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendTreeVector3ComposeNode.cpp">
+      <Filter>EMotionFX\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendTreeVector3DecomposeNode.cpp">
+      <Filter>EMotionFX\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendTreeVector3Math1Node.cpp">
+      <Filter>EMotionFX\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendTreeVector3Math2Node.cpp">
+      <Filter>EMotionFX\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendTreeVector4ComposeNode.cpp">
+      <Filter>EMotionFX\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendTreeVector4DecomposeNode.cpp">
+      <Filter>EMotionFX\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendTreeRaycastNode.cpp">
+      <Filter>EMotionFX\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendTreeRotationMath2Node.cpp">
+      <Filter>EMotionFX\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendTreeRotationLimitNode.cpp">
+      <Filter>EMotionFX\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendSpaceParamEvaluator.cpp">
+      <Filter>EMotionFX\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendSpaceManager.cpp">
+      <Filter>EMotionFX\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendSpaceNode.cpp">
+      <Filter>EMotionFX\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendSpace1DNode.cpp">
+      <Filter>EMotionFX\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendSpace2DNode.cpp">
+      <Filter>EMotionFX\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\ObjectAffectedByParameterChanges.cpp">
+      <Filter>EMotionFX\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\TransformSpace.cpp">
+      <Filter>EMotionFX\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\AnimGraphMotionCondition.cpp">
+      <Filter>EMotionFX\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\AnimGraphParameterCondition.cpp">
+      <Filter>EMotionFX\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\AnimGraphPlayTimeCondition.cpp">
+      <Filter>EMotionFX\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\AnimGraphStateCondition.cpp">
+      <Filter>EMotionFX\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\AnimGraphTagCondition.cpp">
+      <Filter>EMotionFX\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\AnimGraphTimeCondition.cpp">
+      <Filter>EMotionFX\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\AnimGraphTransitionCondition.cpp">
+      <Filter>EMotionFX\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\AnimGraphTriggerAction.cpp">
+      <Filter>EMotionFX\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\AnimGraphParameterAction.cpp">
+      <Filter>EMotionFX\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\AnimGraphVector2Condition.cpp">
+      <Filter>EMotionFX\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\AnimGraphFollowerParameterAction.cpp">
+      <Filter>EMotionFX\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\AnimGraphSymbolicFollowerParameterAction.cpp">
+      <Filter>EMotionFX\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\Event.cpp">
+      <Filter>EMotionFX\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\EventData.cpp">
+      <Filter>EMotionFX\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\EventDataFootIK.cpp">
+      <Filter>EMotionFX\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\EventDataSyncable.cpp">
+      <Filter>EMotionFX\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\EventHandler.cpp">
+      <Filter>EMotionFX\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\EventManager.cpp">
+      <Filter>EMotionFX\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\MotionData\MotionData.cpp">
+      <Filter>EMotionFX\Source\MotionData</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\MotionData\MotionDataFactory.cpp">
+      <Filter>EMotionFX\Source\MotionData</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\MotionData\NonUniformMotionData.cpp">
+      <Filter>EMotionFX\Source\MotionData</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\MotionData\UniformMotionData.cpp">
+      <Filter>EMotionFX\Source\MotionData</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\MotionEvent.cpp">
+      <Filter>EMotionFX\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\MotionEventTable.cpp">
+      <Filter>EMotionFX\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\MotionEventTrack.cpp">
+      <Filter>EMotionFX\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\TwoStringEventData.cpp">
+      <Filter>EMotionFX\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\Importer\ChunkProcessors.cpp">
+      <Filter>EMotionFX\Source\Importer</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\Importer\Importer.cpp">
+      <Filter>EMotionFX\Source\Importer</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\Parameter\BoolParameter.cpp">
+      <Filter>EMotionFX\Source\Parameter</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\Parameter\ColorParameter.cpp">
+      <Filter>EMotionFX\Source\Parameter</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\Parameter\FloatParameter.cpp">
+      <Filter>EMotionFX\Source\Parameter</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\Parameter\FloatSliderParameter.cpp">
+      <Filter>EMotionFX\Source\Parameter</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\Parameter\FloatSpinnerParameter.cpp">
+      <Filter>EMotionFX\Source\Parameter</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\Parameter\GroupParameter.cpp">
+      <Filter>EMotionFX\Source\Parameter</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\Parameter\IntParameter.cpp">
+      <Filter>EMotionFX\Source\Parameter</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\Parameter\IntSliderParameter.cpp">
+      <Filter>EMotionFX\Source\Parameter</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\Parameter\IntSpinnerParameter.cpp">
+      <Filter>EMotionFX\Source\Parameter</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\Parameter\Parameter.cpp">
+      <Filter>EMotionFX\Source\Parameter</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\Parameter\ParameterFactory.cpp">
+      <Filter>EMotionFX\Source\Parameter</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\Parameter\RotationParameter.cpp">
+      <Filter>EMotionFX\Source\Parameter</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\Parameter\StringParameter.cpp">
+      <Filter>EMotionFX\Source\Parameter</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\Parameter\TagParameter.cpp">
+      <Filter>EMotionFX\Source\Parameter</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\Parameter\ValueParameter.cpp">
+      <Filter>EMotionFX\Source\Parameter</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\Parameter\Vector2Parameter.cpp">
+      <Filter>EMotionFX\Source\Parameter</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\Parameter\Vector3GizmoParameter.cpp">
+      <Filter>EMotionFX\Source\Parameter</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\Parameter\Vector3Parameter.cpp">
+      <Filter>EMotionFX\Source\Parameter</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\Parameter\Vector4Parameter.cpp">
+      <Filter>EMotionFX\Source\Parameter</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\CommandSystem\Source\ActorCommands.cpp">
+      <Filter>EMotionFX\CommandSystem\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\CommandSystem\Source\ActorInstanceCommands.cpp">
+      <Filter>EMotionFX\CommandSystem\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\CommandSystem\Source\AttachmentCommands.cpp">
+      <Filter>EMotionFX\CommandSystem\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\CommandSystem\Source\AnimGraphCommands.cpp">
+      <Filter>EMotionFX\CommandSystem\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\CommandSystem\Source\AnimGraphConditionCommands.cpp">
+      <Filter>EMotionFX\CommandSystem\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\CommandSystem\Source\AnimGraphConnectionCommands.cpp">
+      <Filter>EMotionFX\CommandSystem\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\CommandSystem\Source\AnimGraphCopyPasteData.cpp">
+      <Filter>EMotionFX\CommandSystem\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\CommandSystem\Source\AnimGraphNodeCommands.cpp">
+      <Filter>EMotionFX\CommandSystem\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\CommandSystem\Source\AnimGraphNodeGroupCommands.cpp">
+      <Filter>EMotionFX\CommandSystem\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\CommandSystem\Source\AnimGraphParameterCommands.cpp">
+      <Filter>EMotionFX\CommandSystem\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\CommandSystem\Source\AnimGraphGroupParameterCommands.cpp">
+      <Filter>EMotionFX\CommandSystem\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\CommandSystem\Source\AnimGraphTriggerActionCommands.cpp">
+      <Filter>EMotionFX\CommandSystem\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\CommandSystem\Source\CommandManager.cpp">
+      <Filter>EMotionFX\CommandSystem\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\CommandSystem\Source\ColliderCommands.cpp">
+      <Filter>EMotionFX\CommandSystem\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\CommandSystem\Source\ImporterCommands.cpp">
+      <Filter>EMotionFX\CommandSystem\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\CommandSystem\Source\MetaData.cpp">
+      <Filter>EMotionFX\CommandSystem\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\CommandSystem\Source\MiscCommands.cpp">
+      <Filter>EMotionFX\CommandSystem\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\CommandSystem\Source\MorphTargetCommands.cpp">
+      <Filter>EMotionFX\CommandSystem\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\CommandSystem\Source\MotionCommands.cpp">
+      <Filter>EMotionFX\CommandSystem\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\CommandSystem\Source\MotionEventCommands.cpp">
+      <Filter>EMotionFX\CommandSystem\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\CommandSystem\Source\MotionSetCommands.cpp">
+      <Filter>EMotionFX\CommandSystem\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\CommandSystem\Source\NodeGroupCommands.cpp">
+      <Filter>EMotionFX\CommandSystem\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\CommandSystem\Source\ParameterMixins.cpp">
+      <Filter>EMotionFX\CommandSystem\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\CommandSystem\Source\RagdollCommands.cpp">
+      <Filter>EMotionFX\CommandSystem\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\CommandSystem\Source\SelectionCommands.cpp">
+      <Filter>EMotionFX\CommandSystem\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\CommandSystem\Source\SelectionList.cpp">
+      <Filter>EMotionFX\CommandSystem\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\CommandSystem\Source\SimulatedObjectCommands.cpp">
+      <Filter>EMotionFX\CommandSystem\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Exporters\ExporterLib\Exporter\EndianConversion.cpp">
+      <Filter>EMotionFX\Exporters\ExporterLib\Exporter</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Exporters\ExporterLib\Exporter\ExporterActor.cpp">
+      <Filter>EMotionFX\Exporters\ExporterLib\Exporter</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Exporters\ExporterLib\Exporter\ExporterFileProcessor.cpp">
+      <Filter>EMotionFX\Exporters\ExporterLib\Exporter</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Exporters\ExporterLib\Exporter\FileHeaderExport.cpp">
+      <Filter>EMotionFX\Exporters\ExporterLib\Exporter</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Exporters\ExporterLib\Exporter\MorphTargetExport.cpp">
+      <Filter>EMotionFX\Exporters\ExporterLib\Exporter</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Exporters\ExporterLib\Exporter\MotionEventExport.cpp">
+      <Filter>EMotionFX\Exporters\ExporterLib\Exporter</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Exporters\ExporterLib\Exporter\NodeExport.cpp">
+      <Filter>EMotionFX\Exporters\ExporterLib\Exporter</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Exporters\ExporterLib\Exporter\SkeletalMotionExport.cpp">
+      <Filter>EMotionFX\Exporters\ExporterLib\Exporter</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Exporters\ExporterLib\Exporter\StringExport.cpp">
+      <Filter>EMotionFX\Exporters\ExporterLib\Exporter</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Platform\Common\WinAPI\MCore\Source\DiskFile_WinAPI.cpp">
+      <Filter>Platform\Windows\..\Common\WinAPI\MCore\Source</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Include\Integration\AnimationBus.h">
+      <Filter>Include\Integration</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Include\Integration\ActorComponentBus.h">
+      <Filter>Include\Integration</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Include\Integration\AnimGraphComponentBus.h">
+      <Filter>Include\Integration</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Include\Integration\AnimAudioComponentBus.h">
+      <Filter>Include\Integration</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Include\Integration\EditorSimpleMotionComponentBus.h">
+      <Filter>Include\Integration</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Include\Integration\SimpleMotionComponentBus.h">
+      <Filter>Include\Integration</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Include\Integration\AnimGraphNetworkingBus.h">
+      <Filter>Include\Integration</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Source\Integration\System\SystemCommon.h">
+      <Filter>Source\Integration\System</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Source\Integration\Assets\AssetCommon.h">
+      <Filter>Source\Integration\Assets</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Source\Integration\Assets\ActorAsset.h">
+      <Filter>Source\Integration\Assets</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Source\Integration\Assets\MotionAsset.h">
+      <Filter>Source\Integration\Assets</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Source\Integration\Assets\MotionSetAsset.h">
+      <Filter>Source\Integration\Assets</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Source\Integration\Assets\AnimGraphAsset.h">
+      <Filter>Source\Integration\Assets</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Source\Integration\Components\ActorComponent.h">
+      <Filter>Source\Integration\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Source\Integration\Components\AnimAudioComponent.h">
+      <Filter>Source\Integration\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Source\Integration\Components\AnimGraphComponent.h">
+      <Filter>Source\Integration\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Source\Integration\Components\SimpleMotionComponent.h">
+      <Filter>Source\Integration\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Source\Integration\Components\SimpleLODComponent.h">
+      <Filter>Source\Integration\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Source\Integration\Rendering\RenderBackend.h">
+      <Filter>Source\Integration\Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Source\Integration\Rendering\RenderActor.h">
+      <Filter>Source\Integration\Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Source\Integration\Rendering\RenderActorInstance.h">
+      <Filter>Source\Integration\Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Source\Integration\Rendering\RenderBackendManager.h">
+      <Filter>Source\Integration\Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\AABB.h">
+      <Filter>MCore\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\Algorithms.h">
+      <Filter>MCore\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\Algorithms.inl">
+      <Filter>MCore\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\Array2D.h">
+      <Filter>MCore\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\Array2D.inl">
+      <Filter>MCore\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\Attribute.h">
+      <Filter>MCore\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\AttributeAllocator.h">
+      <Filter>MCore\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\AttributeBool.h">
+      <Filter>MCore\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\AttributeColor.h">
+      <Filter>MCore\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\AttributeFactory.h">
+      <Filter>MCore\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\AttributeFloat.h">
+      <Filter>MCore\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\AttributeInt32.h">
+      <Filter>MCore\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\AttributePointer.h">
+      <Filter>MCore\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\AttributeQuaternion.h">
+      <Filter>MCore\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\AttributeString.h">
+      <Filter>MCore\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\AttributeVector2.h">
+      <Filter>MCore\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\AttributeVector3.h">
+      <Filter>MCore\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\AttributeVector4.h">
+      <Filter>MCore\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\AzCoreConversions.h">
+      <Filter>MCore\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\BoundingSphere.h">
+      <Filter>MCore\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\Color.h">
+      <Filter>MCore\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\Command.h">
+      <Filter>MCore\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\CommandGroup.h">
+      <Filter>MCore\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\CommandLine.h">
+      <Filter>MCore\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\MCoreCommandManager.h">
+      <Filter>MCore\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\CommandManagerCallback.h">
+      <Filter>MCore\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\CommandSyntax.h">
+      <Filter>MCore\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\Compare.h">
+      <Filter>MCore\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\Compare.inl">
+      <Filter>MCore\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\CompressedFloat.h">
+      <Filter>MCore\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\CompressedFloat.inl">
+      <Filter>MCore\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\CompressedQuaternion.h">
+      <Filter>MCore\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\CompressedQuaternion.inl">
+      <Filter>MCore\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\CompressedVector.h">
+      <Filter>MCore\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\CompressedVector.inl">
+      <Filter>MCore\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\Config.h">
+      <Filter>MCore\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\DelaunayTriangulator.h">
+      <Filter>MCore\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\DiskFile.h">
+      <Filter>MCore\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\Distance.h">
+      <Filter>MCore\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\DualQuaternion.h">
+      <Filter>MCore\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\DualQuaternion.inl">
+      <Filter>MCore\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\Endian.h">
+      <Filter>MCore\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\Endian.inl">
+      <Filter>MCore\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\FastMath.h">
+      <Filter>MCore\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\FastMath.inl">
+      <Filter>MCore\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\File.h">
+      <Filter>MCore\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\FileSystem.h">
+      <Filter>MCore\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\IDGenerator.h">
+      <Filter>MCore\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\LogManager.h">
+      <Filter>MCore\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\Macros.h">
+      <Filter>MCore\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\Matrix4.h">
+      <Filter>MCore\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\Matrix4.inl">
+      <Filter>MCore\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\MCoreSystem.h">
+      <Filter>MCore\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\MemoryCategoriesCore.h">
+      <Filter>MCore\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\MemoryFile.h">
+      <Filter>MCore\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\MemoryManager.h">
+      <Filter>MCore\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\MemoryObject.h">
+      <Filter>MCore\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\MemoryTracker.h">
+      <Filter>MCore\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\MultiThreadManager.h">
+      <Filter>MCore\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\PlaneEq.h">
+      <Filter>MCore\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\PlaneEq.inl">
+      <Filter>MCore\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\Random.h">
+      <Filter>MCore\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\Ray.h">
+      <Filter>MCore\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\StaticAllocator.h">
+      <Filter>MCore\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\StaticString.h">
+      <Filter>MCore\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\StandardHeaders.h">
+      <Filter>MCore\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\Stream.h">
+      <Filter>MCore\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\StringConversions.h">
+      <Filter>MCore\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\StringIdPool.h">
+      <Filter>MCore\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\ReflectionSerializer.h">
+      <Filter>MCore\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\TriangleListOptimizer.h">
+      <Filter>MCore\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\Vector.h">
+      <Filter>MCore\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\Actor.h">
+      <Filter>EMotionFX\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\ActorBus.h">
+      <Filter>EMotionFX\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\ActorInstance.h">
+      <Filter>EMotionFX\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\ActorInstanceBus.h">
+      <Filter>EMotionFX\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\ActorManager.h">
+      <Filter>EMotionFX\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\ActorUpdateScheduler.h">
+      <Filter>EMotionFX\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\Algorithms.h">
+      <Filter>EMotionFX\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\Allocators.h">
+      <Filter>EMotionFX\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\Attachment.h">
+      <Filter>EMotionFX\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\AttachmentNode.h">
+      <Filter>EMotionFX\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\AttachmentSkin.h">
+      <Filter>EMotionFX\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\AutoRegisteredActor.h">
+      <Filter>EMotionFX\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BaseObject.h">
+      <Filter>EMotionFX\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\CompressedKeyFrames.h">
+      <Filter>EMotionFX\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\Constraint.h">
+      <Filter>EMotionFX\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\ConstraintTransform.h">
+      <Filter>EMotionFX\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\ConstraintTransformRotationAngles.h">
+      <Filter>EMotionFX\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\DebugDraw.h">
+      <Filter>EMotionFX\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\DualQuatSkinDeformer.h">
+      <Filter>EMotionFX\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\EMotionFX.h">
+      <Filter>EMotionFX\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\EMotionFXConfig.h">
+      <Filter>EMotionFX\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\EMotionFXManager.h">
+      <Filter>EMotionFX\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\EMotionFXAllocatorInitializer.h">
+      <Filter>EMotionFX\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\KeyFrame.h">
+      <Filter>EMotionFX\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\KeyFrame.inl">
+      <Filter>EMotionFX\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\KeyFrameFinder.h">
+      <Filter>EMotionFX\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\KeyFrameFinder.inl">
+      <Filter>EMotionFX\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\KeyTrackLinearDynamic.h">
+      <Filter>EMotionFX\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\KeyTrackLinearDynamic.inl">
+      <Filter>EMotionFX\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\LayerPass.h">
+      <Filter>EMotionFX\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\Material.h">
+      <Filter>EMotionFX\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\MemoryCategories.h">
+      <Filter>EMotionFX\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\Mesh.h">
+      <Filter>EMotionFX\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\Mesh.inl">
+      <Filter>EMotionFX\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\MeshDeformer.h">
+      <Filter>EMotionFX\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\MeshDeformerStack.h">
+      <Filter>EMotionFX\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\MorphMeshDeformer.h">
+      <Filter>EMotionFX\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\MorphSetup.h">
+      <Filter>EMotionFX\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\MorphSetupInstance.h">
+      <Filter>EMotionFX\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\MorphTarget.h">
+      <Filter>EMotionFX\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\MorphTargetStandard.h">
+      <Filter>EMotionFX\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\Motion.h">
+      <Filter>EMotionFX\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\MotionInstance.h">
+      <Filter>EMotionFX\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\MotionInstancePool.h">
+      <Filter>EMotionFX\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\MotionLayerSystem.h">
+      <Filter>EMotionFX\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\MotionManager.h">
+      <Filter>EMotionFX\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\MotionQueue.h">
+      <Filter>EMotionFX\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\MotionSet.h">
+      <Filter>EMotionFX\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\MotionSystem.h">
+      <Filter>EMotionFX\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\MultiThreadScheduler.h">
+      <Filter>EMotionFX\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\Node.h">
+      <Filter>EMotionFX\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\NodeAttribute.h">
+      <Filter>EMotionFX\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\NodeGroup.h">
+      <Filter>EMotionFX\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\NodeMap.h">
+      <Filter>EMotionFX\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\ObjectId.h">
+      <Filter>EMotionFX\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\PlayBackInfo.h">
+      <Filter>EMotionFX\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\PhysicsSetup.h">
+      <Filter>EMotionFX\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\Pose.h">
+      <Filter>EMotionFX\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\PoseData.h">
+      <Filter>EMotionFX\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\PoseDataFactory.h">
+      <Filter>EMotionFX\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\PoseDataRagdoll.h">
+      <Filter>EMotionFX\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\RagdollInstance.h">
+      <Filter>EMotionFX\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\RagdollVelocityEvaluators.h">
+      <Filter>EMotionFX\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\Recorder.h">
+      <Filter>EMotionFX\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\RecorderBus.h">
+      <Filter>EMotionFX\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\RepositioningLayerPass.h">
+      <Filter>EMotionFX\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\SimulatedObjectBus.h">
+      <Filter>EMotionFX\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\SimulatedObjectSetup.h">
+      <Filter>EMotionFX\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\SingleThreadScheduler.h">
+      <Filter>EMotionFX\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\Skeleton.h">
+      <Filter>EMotionFX\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\SkinningInfoVertexAttributeLayer.h">
+      <Filter>EMotionFX\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\SoftSkinDeformer.h">
+      <Filter>EMotionFX\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\SoftSkinManager.h">
+      <Filter>EMotionFX\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\SpringSolver.h">
+      <Filter>EMotionFX\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\StandardMaterial.h">
+      <Filter>EMotionFX\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\SubMesh.h">
+      <Filter>EMotionFX\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\ThreadData.h">
+      <Filter>EMotionFX\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\Transform.h">
+      <Filter>EMotionFX\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\TransformData.h">
+      <Filter>EMotionFX\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\TriggerActionSetup.h">
+      <Filter>EMotionFX\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\VertexAttributeLayer.h">
+      <Filter>EMotionFX\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\VertexAttributeLayerAbstractData.h">
+      <Filter>EMotionFX\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\AnimGraph.h">
+      <Filter>EMotionFX\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\AnimGraphBus.h">
+      <Filter>EMotionFX\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\AnimGraphAttributeTypes.h">
+      <Filter>EMotionFX\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\AnimGraphBindPoseNode.h">
+      <Filter>EMotionFX\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\AnimGraphEntryNode.h">
+      <Filter>EMotionFX\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\AnimGraphEventBuffer.h">
+      <Filter>EMotionFX\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\AnimGraphExitNode.h">
+      <Filter>EMotionFX\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\AnimGraphGameControllerSettings.h">
+      <Filter>EMotionFX\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\AnimGraphHubNode.h">
+      <Filter>EMotionFX\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\AnimGraphInstance.h">
+      <Filter>EMotionFX\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\AnimGraphManager.h">
+      <Filter>EMotionFX\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\AnimGraphMotionNode.h">
+      <Filter>EMotionFX\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\AnimGraphNetworkSerializer.h">
+      <Filter>EMotionFX\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\AnimGraphNode.h">
+      <Filter>EMotionFX\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\AnimGraphNodeData.h">
+      <Filter>EMotionFX\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\AnimGraphNodeGroup.h">
+      <Filter>EMotionFX\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\AnimGraphObject.h">
+      <Filter>EMotionFX\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\AnimGraphObjectData.h">
+      <Filter>EMotionFX\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\AnimGraphObjectFactory.h">
+      <Filter>EMotionFX\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\AnimGraphObjectIds.h">
+      <Filter>EMotionFX\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\AnimGraphPose.h">
+      <Filter>EMotionFX\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\AnimGraphPosePool.h">
+      <Filter>EMotionFX\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\AnimGraphRefCountedData.h">
+      <Filter>EMotionFX\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\AnimGraphRefCountedDataPool.h">
+      <Filter>EMotionFX\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\AnimGraphReferenceNode.h">
+      <Filter>EMotionFX\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\AnimGraphStateMachine.h">
+      <Filter>EMotionFX\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\AnimGraphStateTransition.h">
+      <Filter>EMotionFX\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\AnimGraphSnapshot.h">
+      <Filter>EMotionFX\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\AnimGraphSyncTrack.h">
+      <Filter>EMotionFX\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendTree.h">
+      <Filter>EMotionFX\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendTreeAccumTransformNode.h">
+      <Filter>EMotionFX\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendTreeBlend2Node.h">
+      <Filter>EMotionFX\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendTreeBlend2NodeBase.h">
+      <Filter>EMotionFX\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendTreeBlend2AdditiveNode.h">
+      <Filter>EMotionFX\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendTreeBlend2LegacyNode.h">
+      <Filter>EMotionFX\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendTreeBlendNNode.h">
+      <Filter>EMotionFX\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendTreeBoolLogicNode.h">
+      <Filter>EMotionFX\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendTreeConnection.h">
+      <Filter>EMotionFX\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendTreeDirectionToWeightNode.h">
+      <Filter>EMotionFX\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendTreeFinalNode.h">
+      <Filter>EMotionFX\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendTreeFloatConditionNode.h">
+      <Filter>EMotionFX\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendTreeFloatConstantNode.h">
+      <Filter>EMotionFX\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendTreeFloatMath1Node.h">
+      <Filter>EMotionFX\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendTreeFloatMath2Node.h">
+      <Filter>EMotionFX\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendTreeFloatSwitchNode.h">
+      <Filter>EMotionFX\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendTreeFootIKNode.h">
+      <Filter>EMotionFX\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendTreeGetTransformNode.h">
+      <Filter>EMotionFX\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendTreeLookAtNode.h">
+      <Filter>EMotionFX\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendTreeMaskNode.h">
+      <Filter>EMotionFX\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendTreeMaskLegacyNode.h">
+      <Filter>EMotionFX\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendTreeMirrorPoseNode.h">
+      <Filter>EMotionFX\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendTreeMorphTargetNode.h">
+      <Filter>EMotionFX\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendTreeMotionFrameNode.h">
+      <Filter>EMotionFX\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendTreeParameterNode.h">
+      <Filter>EMotionFX\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendTreePoseSubtractNode.h">
+      <Filter>EMotionFX\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendTreePoseSwitchNode.h">
+      <Filter>EMotionFX\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendTreeRagdollNode.h">
+      <Filter>EMotionFX\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendTreeRagdollStrengthModifierNode.h">
+      <Filter>EMotionFX\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendTreeRangeRemapperNode.h">
+      <Filter>EMotionFX\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendTreeSimulatedObjectNode.h">
+      <Filter>EMotionFX\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendTreeSmoothingNode.h">
+      <Filter>EMotionFX\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendTreeTransformNode.h">
+      <Filter>EMotionFX\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendTreeTwoLinkIKNode.h">
+      <Filter>EMotionFX\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendTreeSetTransformNode.h">
+      <Filter>EMotionFX\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendTreeVector2ComposeNode.h">
+      <Filter>EMotionFX\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendTreeVector2DecomposeNode.h">
+      <Filter>EMotionFX\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendTreeVector3ComposeNode.h">
+      <Filter>EMotionFX\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendTreeVector3DecomposeNode.h">
+      <Filter>EMotionFX\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendTreeVector3Math1Node.h">
+      <Filter>EMotionFX\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendTreeVector3Math2Node.h">
+      <Filter>EMotionFX\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendTreeVector4ComposeNode.h">
+      <Filter>EMotionFX\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendTreeVector4DecomposeNode.h">
+      <Filter>EMotionFX\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendTreeRaycastNode.h">
+      <Filter>EMotionFX\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendTreeRotationMath2Node.h">
+      <Filter>EMotionFX\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendTreeRotationLimitNode.h">
+      <Filter>EMotionFX\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendSpaceParamEvaluator.h">
+      <Filter>EMotionFX\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendSpaceManager.h">
+      <Filter>EMotionFX\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendSpaceNode.h">
+      <Filter>EMotionFX\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendSpace1DNode.h">
+      <Filter>EMotionFX\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendSpace2DNode.h">
+      <Filter>EMotionFX\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\ObjectAffectedByParameterChanges.h">
+      <Filter>EMotionFX\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\TransformSpace.h">
+      <Filter>EMotionFX\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\AnimGraphMotionCondition.h">
+      <Filter>EMotionFX\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\AnimGraphParameterCondition.h">
+      <Filter>EMotionFX\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\AnimGraphPlayTimeCondition.h">
+      <Filter>EMotionFX\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\AnimGraphStateCondition.h">
+      <Filter>EMotionFX\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\AnimGraphTagCondition.h">
+      <Filter>EMotionFX\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\AnimGraphTimeCondition.h">
+      <Filter>EMotionFX\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\AnimGraphTransitionCondition.h">
+      <Filter>EMotionFX\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\AnimGraphTriggerAction.h">
+      <Filter>EMotionFX\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\AnimGraphParameterAction.h">
+      <Filter>EMotionFX\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\AnimGraphVector2Condition.h">
+      <Filter>EMotionFX\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\AnimGraphFollowerParameterAction.h">
+      <Filter>EMotionFX\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\AnimGraphSymbolicFollowerParameterAction.h">
+      <Filter>EMotionFX\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\Event.h">
+      <Filter>EMotionFX\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\EventData.h">
+      <Filter>EMotionFX\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\EventDataFootIK.h">
+      <Filter>EMotionFX\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\EventDataSyncable.h">
+      <Filter>EMotionFX\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\EventHandler.h">
+      <Filter>EMotionFX\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\EventInfo.h">
+      <Filter>EMotionFX\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\EventManager.h">
+      <Filter>EMotionFX\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\MotionData\MotionData.h">
+      <Filter>EMotionFX\Source\MotionData</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\MotionData\MotionDataFactory.h">
+      <Filter>EMotionFX\Source\MotionData</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\MotionData\NonUniformMotionData.h">
+      <Filter>EMotionFX\Source\MotionData</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\MotionData\UniformMotionData.h">
+      <Filter>EMotionFX\Source\MotionData</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\MotionEvent.h">
+      <Filter>EMotionFX\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\MotionEventTable.h">
+      <Filter>EMotionFX\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\MotionEventTrack.h">
+      <Filter>EMotionFX\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\TwoStringEventData.h">
+      <Filter>EMotionFX\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\Importer\ChunkProcessors.h">
+      <Filter>EMotionFX\Source\Importer</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\Importer\Importer.h">
+      <Filter>EMotionFX\Source\Importer</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\Importer\NodeMapFileFormat.h">
+      <Filter>EMotionFX\Source\Importer</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\Importer\SharedFileFormatStructs.h">
+      <Filter>EMotionFX\Source\Importer</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\Importer\ActorFileFormat.h">
+      <Filter>EMotionFX\Source\Importer</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\Importer\MotionFileFormat.h">
+      <Filter>EMotionFX\Source\Importer</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\Parameter\BoolParameter.h">
+      <Filter>EMotionFX\Source\Parameter</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\Parameter\ColorParameter.h">
+      <Filter>EMotionFX\Source\Parameter</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\Parameter\DefaultValueParameter.h">
+      <Filter>EMotionFX\Source\Parameter</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\Parameter\FloatParameter.h">
+      <Filter>EMotionFX\Source\Parameter</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\Parameter\FloatSliderParameter.h">
+      <Filter>EMotionFX\Source\Parameter</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\Parameter\FloatSpinnerParameter.h">
+      <Filter>EMotionFX\Source\Parameter</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\Parameter\GroupParameter.h">
+      <Filter>EMotionFX\Source\Parameter</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\Parameter\IntParameter.h">
+      <Filter>EMotionFX\Source\Parameter</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\Parameter\IntSliderParameter.h">
+      <Filter>EMotionFX\Source\Parameter</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\Parameter\IntSpinnerParameter.h">
+      <Filter>EMotionFX\Source\Parameter</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\Parameter\Parameter.h">
+      <Filter>EMotionFX\Source\Parameter</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\Parameter\ParameterFactory.h">
+      <Filter>EMotionFX\Source\Parameter</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\Parameter\RangedValueParameter.h">
+      <Filter>EMotionFX\Source\Parameter</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\Parameter\RotationParameter.h">
+      <Filter>EMotionFX\Source\Parameter</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\Parameter\StringParameter.h">
+      <Filter>EMotionFX\Source\Parameter</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\Parameter\TagParameter.h">
+      <Filter>EMotionFX\Source\Parameter</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\Parameter\ValueParameter.h">
+      <Filter>EMotionFX\Source\Parameter</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\Parameter\Vector2Parameter.h">
+      <Filter>EMotionFX\Source\Parameter</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\Parameter\Vector3GizmoParameter.h">
+      <Filter>EMotionFX\Source\Parameter</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\Parameter\Vector3Parameter.h">
+      <Filter>EMotionFX\Source\Parameter</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\Parameter\Vector4Parameter.h">
+      <Filter>EMotionFX\Source\Parameter</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\CommandSystem\Source\ActorCommands.h">
+      <Filter>EMotionFX\CommandSystem\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\CommandSystem\Source\ActorInstanceCommands.h">
+      <Filter>EMotionFX\CommandSystem\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\CommandSystem\Source\AttachmentCommands.h">
+      <Filter>EMotionFX\CommandSystem\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\CommandSystem\Source\AnimGraphCommands.h">
+      <Filter>EMotionFX\CommandSystem\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\CommandSystem\Source\AnimGraphConditionCommands.h">
+      <Filter>EMotionFX\CommandSystem\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\CommandSystem\Source\AnimGraphConnectionCommands.h">
+      <Filter>EMotionFX\CommandSystem\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\CommandSystem\Source\AnimGraphCopyPasteData.h">
+      <Filter>EMotionFX\CommandSystem\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\CommandSystem\Source\AnimGraphNodeCommands.h">
+      <Filter>EMotionFX\CommandSystem\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\CommandSystem\Source\AnimGraphNodeGroupCommands.h">
+      <Filter>EMotionFX\CommandSystem\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\CommandSystem\Source\AnimGraphParameterCommands.h">
+      <Filter>EMotionFX\CommandSystem\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\CommandSystem\Source\AnimGraphGroupParameterCommands.h">
+      <Filter>EMotionFX\CommandSystem\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\CommandSystem\Source\AnimGraphTriggerActionCommands.h">
+      <Filter>EMotionFX\CommandSystem\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\CommandSystem\Source\CommandManager.h">
+      <Filter>EMotionFX\CommandSystem\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\CommandSystem\Source\ColliderCommands.h">
+      <Filter>EMotionFX\CommandSystem\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\CommandSystem\Source\CommandSystemConfig.h">
+      <Filter>EMotionFX\CommandSystem\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\CommandSystem\Source\ImporterCommands.h">
+      <Filter>EMotionFX\CommandSystem\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\CommandSystem\Source\MetaData.h">
+      <Filter>EMotionFX\CommandSystem\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\CommandSystem\Source\MiscCommands.h">
+      <Filter>EMotionFX\CommandSystem\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\CommandSystem\Source\MorphTargetCommands.h">
+      <Filter>EMotionFX\CommandSystem\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\CommandSystem\Source\MotionCommands.h">
+      <Filter>EMotionFX\CommandSystem\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\CommandSystem\Source\MotionEventCommands.h">
+      <Filter>EMotionFX\CommandSystem\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\CommandSystem\Source\MotionSetCommands.h">
+      <Filter>EMotionFX\CommandSystem\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\CommandSystem\Source\NodeGroupCommands.h">
+      <Filter>EMotionFX\CommandSystem\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\CommandSystem\Source\ParameterMixins.h">
+      <Filter>EMotionFX\CommandSystem\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\CommandSystem\Source\RagdollCommands.h">
+      <Filter>EMotionFX\CommandSystem\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\CommandSystem\Source\SelectionCommands.h">
+      <Filter>EMotionFX\CommandSystem\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\CommandSystem\Source\SelectionList.h">
+      <Filter>EMotionFX\CommandSystem\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\CommandSystem\Source\SimulatedObjectCommands.h">
+      <Filter>EMotionFX\CommandSystem\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Exporters\ExporterLib\Exporter\Exporter.h">
+      <Filter>EMotionFX\Exporters\ExporterLib\Exporter</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Exporters\ExporterLib\Exporter\ExporterFileProcessor.h">
+      <Filter>EMotionFX\Exporters\ExporterLib\Exporter</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\CMakeLists.txt">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\emotionfx_shared_files.cmake" />
+    <None Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\mcore_files.cmake">
+      <Filter>MCore</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\emotionfx_files.cmake">
+      <Filter>EMotionFX</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\CommandSystem\commandsystem_files.cmake">
+      <Filter>EMotionFX\CommandSystem</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Exporters\ExporterLib\exporterlib_files.cmake">
+      <Filter>EMotionFX\Exporters\ExporterLib</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Platform\Windows\platform_windows_files.cmake">
+      <Filter>Platform\Windows</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Platform\Windows\platform_windows.cmake">
+      <Filter>Platform\Windows</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="EMotionFX">
+      <UniqueIdentifier>{186157EA-ECE0-3F46-AF3A-9EE025D366C7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="EMotionFX\CommandSystem">
+      <UniqueIdentifier>{1EADF771-0896-36BF-94C5-E1E81682B5E7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="EMotionFX\CommandSystem\Source">
+      <UniqueIdentifier>{48A8C99E-5C95-3F83-8975-CCE2E54969E1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="EMotionFX\Exporters">
+      <UniqueIdentifier>{9B762EAC-B242-3450-876B-D22294AF82B7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="EMotionFX\Exporters\ExporterLib">
+      <UniqueIdentifier>{30194E93-5300-35AE-B7FB-1F3DE6A16BDB}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="EMotionFX\Exporters\ExporterLib\Exporter">
+      <UniqueIdentifier>{DD22B23D-180C-30C1-8FA4-814699B9B2FA}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="EMotionFX\Source">
+      <UniqueIdentifier>{1C4D3BB6-7FC6-361C-95E2-C55F83EBBC98}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="EMotionFX\Source\Importer">
+      <UniqueIdentifier>{A3C92FEC-5E6B-372F-8F82-57F48157A7A9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="EMotionFX\Source\MotionData">
+      <UniqueIdentifier>{518A6CC0-465A-3BAC-80D0-FE3494F0CC35}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="EMotionFX\Source\Parameter">
+      <UniqueIdentifier>{D15670DC-38E1-33D5-B67D-4C3214D27BA9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Generated Files">
+      <UniqueIdentifier>{FB9B7D8B-7F05-31D5-AA90-592248EDE1B3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include">
+      <UniqueIdentifier>{E188105A-C8C4-34BB-9809-15E8410EF7F8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\Integration">
+      <UniqueIdentifier>{1100EF9A-15DE-3F07-BC02-A870E3AA87BB}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="MCore">
+      <UniqueIdentifier>{6C45943B-1DE7-328D-A063-11862F194ED0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="MCore\Source">
+      <UniqueIdentifier>{DA792298-E832-3F61-82E1-BB5D684C8037}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Platform">
+      <UniqueIdentifier>{378A8D8C-6CA1-3F6B-A02B-1E9FF64C97B2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Platform\Windows">
+      <UniqueIdentifier>{63AEF2F6-51C7-306A-BFE8-A049C8C62EFB}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Platform\Windows\..">
+      <UniqueIdentifier>{C2D7F6B4-9216-3C2D-9F9A-76D34821E4A4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Platform\Windows\..\Common">
+      <UniqueIdentifier>{905836E8-0C7C-3AC8-B31E-AD197AA2F2EA}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Platform\Windows\..\Common\WinAPI">
+      <UniqueIdentifier>{1168C645-1E7D-354D-A1D3-60D4294B95F3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Platform\Windows\..\Common\WinAPI\MCore">
+      <UniqueIdentifier>{F22719B9-E6FF-3315-B20D-C3209C6F02D8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Platform\Windows\..\Common\WinAPI\MCore\Source">
+      <UniqueIdentifier>{8B4C11E9-BA15-3989-9F9A-F0B0BBA0813B}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source">
+      <UniqueIdentifier>{F3F0AD47-5F83-373B-A2BF-650D2E4FA3EA}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Integration">
+      <UniqueIdentifier>{654CB93B-058D-3291-AF1E-27E1F8C8A0AE}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Integration\Assets">
+      <UniqueIdentifier>{352B161D-BD7B-3BC7-AB3B-2F5F4AB3F360}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Integration\Components">
+      <UniqueIdentifier>{E3343CEF-9641-3E54-9E67-4B806FC3D575}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Integration\Rendering">
+      <UniqueIdentifier>{B1953EBE-D512-3E1D-81A0-FEAF593DAA7B}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Integration\System">
+      <UniqueIdentifier>{9DD90D99-43AE-3B4B-8092-DDF213F3DA80}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

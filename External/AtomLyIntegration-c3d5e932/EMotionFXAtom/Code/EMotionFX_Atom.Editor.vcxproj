@@ -1,0 +1,439 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <PreferredToolArchitecture>x64</PreferredToolArchitecture>
+  </PropertyGroup>
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="debug|x64">
+      <Configuration>debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="profile|x64">
+      <Configuration>profile</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="release|x64">
+      <Configuration>release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{7C1A1683-BC05-301A-98F9-9C63D17FADA0}</ProjectGuid>
+    <WindowsTargetPlatformVersion>10.0.19041.0</WindowsTargetPlatformVersion>
+    <Keyword>Win32Proj</Keyword>
+    <Platform>x64</Platform>
+    <ProjectName>EMotionFX_Atom.Editor</ProjectName>
+    <VCProjectUpgraderObjectName>NoUpgrade</VCProjectUpgraderObjectName>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='debug|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v142</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='profile|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v142</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='release|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v142</PlatformToolset>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>10.0.20506.1</_ProjectFileVersion>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='debug|x64'">C:\Users\lesaelr\o3de\bin\debug\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='debug|x64'">EMotionFX_Atom.Editor.dir\debug\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='debug|x64'">EMotionFX_Atom.Editor</TargetName>
+    <TargetExt Condition="'$(Configuration)|$(Platform)'=='debug|x64'">.dll</TargetExt>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='debug|x64'">false</LinkIncremental>
+    <GenerateManifest Condition="'$(Configuration)|$(Platform)'=='debug|x64'">true</GenerateManifest>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='profile|x64'">C:\Users\lesaelr\o3de\bin\profile\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='profile|x64'">EMotionFX_Atom.Editor.dir\profile\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='profile|x64'">EMotionFX_Atom.Editor</TargetName>
+    <TargetExt Condition="'$(Configuration)|$(Platform)'=='profile|x64'">.dll</TargetExt>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='profile|x64'">false</LinkIncremental>
+    <GenerateManifest Condition="'$(Configuration)|$(Platform)'=='profile|x64'">true</GenerateManifest>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='release|x64'">C:\Users\lesaelr\o3de\bin\release\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='release|x64'">EMotionFX_Atom.Editor.dir\release\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='release|x64'">EMotionFX_Atom.Editor</TargetName>
+    <TargetExt Condition="'$(Configuration)|$(Platform)'=='release|x64'">.dll</TargetExt>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='release|x64'">false</LinkIncremental>
+    <GenerateManifest Condition="'$(Configuration)|$(Platform)'=='release|x64'">true</GenerateManifest>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='debug|x64'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\EMotionFXAtom\Code\Source;C:\Users\lesaelr\o3de\Code\Framework\AzCore\.;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalOptions>%(AdditionalOptions) /Zc:__cplusplus /Zc:lambda /favor:AMD64 /bigobj /RTCsu /experimental:external /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/Lua-5.3.5-rev5-windows/lua/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/RapidJSON-1.1.0-rev1-multiplatform/RapidJSON/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/RapidXML-1.13-rev1-multiplatform/RapidXML/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/zlib-1.2.11-rev2-windows/zlib/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/zstd-1.35-multiplatform/zstd/lib /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/cityhash-1.1-multiplatform/cityhash/src</AdditionalOptions>
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <BufferSecurityCheck>true</BufferSecurityCheck>
+      <CallingConvention>Cdecl</CallingConvention>
+      <ConformanceMode>true</ConformanceMode>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <DiagnosticsFormat>Caret</DiagnosticsFormat>
+      <DisableSpecificWarnings>4201</DisableSpecificWarnings>
+      <ExceptionHandling>
+      </ExceptionHandling>
+      <ExternalWarningLevel>TurnOffAllWarnings</ExternalWarningLevel>
+      <FloatingPointModel>Fast</FloatingPointModel>
+      <ForceConformanceInForLoopScope>true</ForceConformanceInForLoopScope>
+      <InlineFunctionExpansion>Disabled</InlineFunctionExpansion>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <Optimization>Disabled</Optimization>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <TreatSpecificWarningsAsErrors>4263;4264;4265;4266;4296;4426;4437;4774;4777;5031;5032;5233</TreatSpecificWarningsAsErrors>
+      <TreatWarningAsError>true</TreatWarningAsError>
+      <UseFullPaths>false</UseFullPaths>
+      <WarningLevel>Level4</WarningLevel>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);_HAS_EXCEPTIONS=0;_DEBUG;AZ_DEBUG_BUILD=1;AZ_ENABLE_TRACING;AZ_ENABLE_DEBUG_TOOLS;AZ_BUILD_CONFIGURATION_TYPE="debug";_ENABLE_EXTENDED_ALIGNED_STORAGE;_WIN32;WIN32;_WIN64;WIN64;NOMINMAX;CMAKE_INTDIR="debug";EMotionFX_Atom_Editor_EXPORTS</PreprocessorDefinitions>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);_DEBUG;_HAS_EXCEPTIONS=0;AZ_DEBUG_BUILD=1;AZ_ENABLE_TRACING;AZ_ENABLE_DEBUG_TOOLS;AZ_BUILD_CONFIGURATION_TYPE=\"debug\";_ENABLE_EXTENDED_ALIGNED_STORAGE;_WIN32;WIN32;_WIN64;WIN64;NOMINMAX;CMAKE_INTDIR=\"debug\";EMotionFX_Atom_Editor_EXPORTS</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\EMotionFXAtom\Code\Source;C:\Users\lesaelr\o3de\Code\Framework\AzCore\.;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+    </ResourceCompile>
+    <Midl>
+      <AdditionalIncludeDirectories>C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\EMotionFXAtom\Code\Source;C:\Users\lesaelr\o3de\Code\Framework\AzCore\.;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+    <Link>
+      <AdditionalDependencies>..\..\..\..\lib\debug\AzCore.lib;..\..\..\..\lib\debug\EMotionFX_Atom.Static.lib;..\..\..\..\lib\debug\EMotionFXStaticLib.lib;..\..\..\..\lib\debug\CryCommon.lib;..\..\..\..\lib\debug\Atom_Feature_Common.Static.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\openimageio-2.1.16.0-rev2-windows\OpenImageIO\2.1.16.0\win_x64\lib\OpenColorIO.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\openimageio-2.1.16.0-rev2-windows\OpenImageIO\2.1.16.0\win_x64\lib\OpenImageIO_Util.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\openimageio-2.1.16.0-rev2-windows\OpenImageIO\2.1.16.0\win_x64\lib\OpenImageIO.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\ilmbase-2.3.0-rev4-multiplatform\ilmbase\lib\Windows\Debug\IlmImfUtil-2_3_s_d.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\ilmbase-2.3.0-rev4-multiplatform\ilmbase\lib\Windows\Debug\IlmImf-2_3_s_d.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\ilmbase-2.3.0-rev4-multiplatform\ilmbase\lib\Windows\Debug\Half-2_3_s_d.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\ilmbase-2.3.0-rev4-multiplatform\ilmbase\lib\Windows\Debug\Iex-2_3_s_d.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\ilmbase-2.3.0-rev4-multiplatform\ilmbase\lib\Windows\Debug\IexMath-2_3_s_d.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\ilmbase-2.3.0-rev4-multiplatform\ilmbase\lib\Windows\Debug\IlmThread-2_3_s_d.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\ilmbase-2.3.0-rev4-multiplatform\ilmbase\lib\Windows\Debug\Imath-2_3_s_d.lib;..\..\..\..\lib\debug\ImGui.imguilib.lib;..\..\..\..\lib\debug\Atom_Feature_Common.Public.lib;..\..\..\..\lib\debug\Atom_Utils.Static.lib;..\..\..\..\lib\debug\Atom_RPI.Public.lib;..\..\..\..\lib\debug\Atom_RHI.Public.lib;..\..\..\..\lib\debug\Atom_RHI.Reflect.lib;..\..\..\..\lib\debug\AtomCore.lib;..\..\..\..\lib\debug\AzFramework.lib;..\..\..\..\lib\debug\GridMate.lib;..\..\..\..\lib\debug\AzCore.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\Lua-5.3.5-rev5-windows\lua\lib\debug\lualib.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\zlib-1.2.11-rev2-windows\zlib\lib\zlibstaticd.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\zstd-1.35-multiplatform\zstd\bin\win-x64-vc140\debug\zstd.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\cityhash-1.1-multiplatform\cityhash\build\win_x64\vc140\debug\cityhash.lib;ws2_32.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\OpenSSL-1.1.1b-rev2-windows\OpenSSL\debug\lib\libssl.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\OpenSSL-1.1.1b-rev2-windows\OpenSSL\debug\lib\libcrypto.lib;crypt32.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\lz4-1.9.3-vcpkg-rev4-windows\lz4\lz4\lib\..\debug\lib\lz4d.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;advapi32.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalOptions>%(AdditionalOptions) /machine:x64 /IGNORE:4099</AdditionalOptions>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <ImportLibrary>C:/Users/lesaelr/o3de/lib/debug/EMotionFX_Atom.Editor.lib</ImportLibrary>
+      <ProgramDataBaseFile>C:/Users/lesaelr/o3de/bin/debug/EMotionFX_Atom.Editor.pdb</ProgramDataBaseFile>
+      <SubSystem>Console</SubSystem>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <TargetMachine>MachineX64</TargetMachine>
+    </Link>
+    <ProjectReference>
+      <LinkLibraryDependencies>false</LinkLibraryDependencies>
+    </ProjectReference>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='profile|x64'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\EMotionFXAtom\Code\Source;C:\Users\lesaelr\o3de\Code\Framework\AzCore\.;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalOptions>%(AdditionalOptions) /Zc:__cplusplus /Zc:lambda /favor:AMD64 /bigobj /experimental:external /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/Lua-5.3.5-rev5-windows/lua/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/RapidJSON-1.1.0-rev1-multiplatform/RapidJSON/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/RapidXML-1.13-rev1-multiplatform/RapidXML/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/zlib-1.2.11-rev2-windows/zlib/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/zstd-1.35-multiplatform/zstd/lib /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/cityhash-1.1-multiplatform/cityhash/src</AdditionalOptions>
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <CallingConvention>Cdecl</CallingConvention>
+      <ConformanceMode>true</ConformanceMode>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <DiagnosticsFormat>Caret</DiagnosticsFormat>
+      <DisableSpecificWarnings>4201</DisableSpecificWarnings>
+      <ExceptionHandling>
+      </ExceptionHandling>
+      <ExternalWarningLevel>TurnOffAllWarnings</ExternalWarningLevel>
+      <FloatingPointModel>Fast</FloatingPointModel>
+      <ForceConformanceInForLoopScope>true</ForceConformanceInForLoopScope>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <Optimization>MaxSpeed</Optimization>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <RemoveUnreferencedCodeData>true</RemoveUnreferencedCodeData>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <StringPooling>true</StringPooling>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <TreatSpecificWarningsAsErrors>4263;4264;4265;4266;4296;4426;4437;4774;4777;5031;5032;5233</TreatSpecificWarningsAsErrors>
+      <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
+      <TreatWarningAsError>true</TreatWarningAsError>
+      <UseFullPaths>false</UseFullPaths>
+      <WarningLevel>Level4</WarningLevel>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);_HAS_EXCEPTIONS=0;_PROFILE;PROFILE;NDEBUG;AZ_ENABLE_TRACING;AZ_ENABLE_DEBUG_TOOLS;AZ_BUILD_CONFIGURATION_TYPE="profile";_ENABLE_EXTENDED_ALIGNED_STORAGE;_WIN32;WIN32;_WIN64;WIN64;NOMINMAX;CMAKE_INTDIR="profile";EMotionFX_Atom_Editor_EXPORTS</PreprocessorDefinitions>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);_HAS_EXCEPTIONS=0;_PROFILE;PROFILE;NDEBUG;AZ_ENABLE_TRACING;AZ_ENABLE_DEBUG_TOOLS;AZ_BUILD_CONFIGURATION_TYPE=\"profile\";_ENABLE_EXTENDED_ALIGNED_STORAGE;_WIN32;WIN32;_WIN64;WIN64;NOMINMAX;CMAKE_INTDIR=\"profile\";EMotionFX_Atom_Editor_EXPORTS</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\EMotionFXAtom\Code\Source;C:\Users\lesaelr\o3de\Code\Framework\AzCore\.;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+    </ResourceCompile>
+    <Midl>
+      <AdditionalIncludeDirectories>C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\EMotionFXAtom\Code\Source;C:\Users\lesaelr\o3de\Code\Framework\AzCore\.;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+    <Link>
+      <AdditionalDependencies>..\..\..\..\lib\profile\AzCore.lib;..\..\..\..\lib\profile\EMotionFX_Atom.Static.lib;..\..\..\..\lib\profile\EMotionFXStaticLib.lib;..\..\..\..\lib\profile\CryCommon.lib;..\..\..\..\lib\profile\Atom_Feature_Common.Static.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\openimageio-2.1.16.0-rev2-windows\OpenImageIO\2.1.16.0\win_x64\lib\OpenColorIO.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\openimageio-2.1.16.0-rev2-windows\OpenImageIO\2.1.16.0\win_x64\lib\OpenImageIO_Util.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\openimageio-2.1.16.0-rev2-windows\OpenImageIO\2.1.16.0\win_x64\lib\OpenImageIO.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\ilmbase-2.3.0-rev4-multiplatform\ilmbase\lib\Windows\Release\IlmImfUtil-2_3_s.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\ilmbase-2.3.0-rev4-multiplatform\ilmbase\lib\Windows\Release\IlmImf-2_3_s.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\ilmbase-2.3.0-rev4-multiplatform\ilmbase\lib\Windows\Release\Half-2_3_s.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\ilmbase-2.3.0-rev4-multiplatform\ilmbase\lib\Windows\Release\Iex-2_3_s.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\ilmbase-2.3.0-rev4-multiplatform\ilmbase\lib\Windows\Release\IexMath-2_3_s.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\ilmbase-2.3.0-rev4-multiplatform\ilmbase\lib\Windows\Release\IlmThread-2_3_s.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\ilmbase-2.3.0-rev4-multiplatform\ilmbase\lib\Windows\Release\Imath-2_3_s.lib;..\..\..\..\lib\profile\ImGui.imguilib.lib;..\..\..\..\lib\profile\Atom_Feature_Common.Public.lib;..\..\..\..\lib\profile\Atom_Utils.Static.lib;..\..\..\..\lib\profile\Atom_RPI.Public.lib;..\..\..\..\lib\profile\Atom_RHI.Public.lib;..\..\..\..\lib\profile\Atom_RHI.Reflect.lib;..\..\..\..\lib\profile\AtomCore.lib;..\..\..\..\lib\profile\AzFramework.lib;..\..\..\..\lib\profile\GridMate.lib;..\..\..\..\lib\profile\AzCore.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\Lua-5.3.5-rev5-windows\lua\lib\release\lualib.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\zlib-1.2.11-rev2-windows\zlib\lib\zlibstatic.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\zstd-1.35-multiplatform\zstd\bin\win-x64-vc140\release\zstd.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\cityhash-1.1-multiplatform\cityhash\build\win_x64\vc140\release\cityhash.lib;ws2_32.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\OpenSSL-1.1.1b-rev2-windows\OpenSSL\lib\libssl.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\OpenSSL-1.1.1b-rev2-windows\OpenSSL\lib\libcrypto.lib;crypt32.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\lz4-1.9.3-vcpkg-rev4-windows\lz4\lz4\lib\lz4.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;advapi32.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalOptions>%(AdditionalOptions) /machine:x64 /IGNORE:4099</AdditionalOptions>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <ImportLibrary>C:/Users/lesaelr/o3de/lib/profile/EMotionFX_Atom.Editor.lib</ImportLibrary>
+      <OptimizeReferences>true</OptimizeReferences>
+      <ProgramDataBaseFile>C:/Users/lesaelr/o3de/bin/profile/EMotionFX_Atom.Editor.pdb</ProgramDataBaseFile>
+      <SubSystem>Console</SubSystem>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <TargetMachine>MachineX64</TargetMachine>
+    </Link>
+    <ProjectReference>
+      <LinkLibraryDependencies>false</LinkLibraryDependencies>
+    </ProjectReference>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='release|x64'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\EMotionFXAtom\Code\Source;C:\Users\lesaelr\o3de\Code\Framework\AzCore\.;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalOptions>%(AdditionalOptions) /Zc:__cplusplus /Zc:lambda /favor:AMD64 /bigobj /experimental:external /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/Lua-5.3.5-rev5-windows/lua/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/RapidJSON-1.1.0-rev1-multiplatform/RapidJSON/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/RapidXML-1.13-rev1-multiplatform/RapidXML/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/zlib-1.2.11-rev2-windows/zlib/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/zstd-1.35-multiplatform/zstd/lib /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/cityhash-1.1-multiplatform/cityhash/src</AdditionalOptions>
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <CallingConvention>Cdecl</CallingConvention>
+      <ConformanceMode>true</ConformanceMode>
+      <DiagnosticsFormat>Caret</DiagnosticsFormat>
+      <DisableSpecificWarnings>4201</DisableSpecificWarnings>
+      <ExceptionHandling>
+      </ExceptionHandling>
+      <ExternalWarningLevel>TurnOffAllWarnings</ExternalWarningLevel>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <FloatingPointModel>Fast</FloatingPointModel>
+      <ForceConformanceInForLoopScope>true</ForceConformanceInForLoopScope>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <OmitFramePointers>true</OmitFramePointers>
+      <Optimization>Full</Optimization>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <TreatSpecificWarningsAsErrors>4263;4264;4265;4266;4296;4426;4437;4774;4777;5031;5032;5233</TreatSpecificWarningsAsErrors>
+      <TreatWarningAsError>true</TreatWarningAsError>
+      <UseFullPaths>false</UseFullPaths>
+      <WarningLevel>Level4</WarningLevel>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);_HAS_EXCEPTIONS=0;_RELEASE;RELEASE;NDEBUG;AZ_BUILD_CONFIGURATION_TYPE="release";_ENABLE_EXTENDED_ALIGNED_STORAGE;_WIN32;WIN32;_WIN64;WIN64;NOMINMAX;CMAKE_INTDIR="release";EMotionFX_Atom_Editor_EXPORTS</PreprocessorDefinitions>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+      <DebugInformationFormat>
+      </DebugInformationFormat>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);_HAS_EXCEPTIONS=0;_RELEASE;RELEASE;NDEBUG;AZ_BUILD_CONFIGURATION_TYPE=\"release\";_ENABLE_EXTENDED_ALIGNED_STORAGE;_WIN32;WIN32;_WIN64;WIN64;NOMINMAX;CMAKE_INTDIR=\"release\";EMotionFX_Atom_Editor_EXPORTS</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\EMotionFXAtom\Code\Source;C:\Users\lesaelr\o3de\Code\Framework\AzCore\.;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+    </ResourceCompile>
+    <Midl>
+      <AdditionalIncludeDirectories>C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\EMotionFXAtom\Code\Source;C:\Users\lesaelr\o3de\Code\Framework\AzCore\.;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+    <Link>
+      <AdditionalDependencies>..\..\..\..\lib\release\AzCore.lib;..\..\..\..\lib\release\EMotionFX_Atom.Static.lib;..\..\..\..\lib\release\EMotionFXStaticLib.lib;..\..\..\..\lib\release\CryCommon.lib;..\..\..\..\lib\release\Atom_Feature_Common.Static.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\openimageio-2.1.16.0-rev2-windows\OpenImageIO\2.1.16.0\win_x64\lib\OpenColorIO.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\openimageio-2.1.16.0-rev2-windows\OpenImageIO\2.1.16.0\win_x64\lib\OpenImageIO_Util.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\openimageio-2.1.16.0-rev2-windows\OpenImageIO\2.1.16.0\win_x64\lib\OpenImageIO.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\ilmbase-2.3.0-rev4-multiplatform\ilmbase\lib\Windows\Release\IlmImfUtil-2_3_s.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\ilmbase-2.3.0-rev4-multiplatform\ilmbase\lib\Windows\Release\IlmImf-2_3_s.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\ilmbase-2.3.0-rev4-multiplatform\ilmbase\lib\Windows\Release\Half-2_3_s.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\ilmbase-2.3.0-rev4-multiplatform\ilmbase\lib\Windows\Release\Iex-2_3_s.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\ilmbase-2.3.0-rev4-multiplatform\ilmbase\lib\Windows\Release\IexMath-2_3_s.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\ilmbase-2.3.0-rev4-multiplatform\ilmbase\lib\Windows\Release\IlmThread-2_3_s.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\ilmbase-2.3.0-rev4-multiplatform\ilmbase\lib\Windows\Release\Imath-2_3_s.lib;..\..\..\..\lib\release\ImGui.imguilib.lib;..\..\..\..\lib\release\Atom_Feature_Common.Public.lib;..\..\..\..\lib\release\Atom_Utils.Static.lib;..\..\..\..\lib\release\Atom_RPI.Public.lib;..\..\..\..\lib\release\Atom_RHI.Public.lib;..\..\..\..\lib\release\Atom_RHI.Reflect.lib;..\..\..\..\lib\release\AtomCore.lib;..\..\..\..\lib\release\AzFramework.lib;..\..\..\..\lib\release\GridMate.lib;..\..\..\..\lib\release\AzCore.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\Lua-5.3.5-rev5-windows\lua\lib\release\lualib.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\zlib-1.2.11-rev2-windows\zlib\lib\zlibstatic.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\zstd-1.35-multiplatform\zstd\bin\win-x64-vc140\release\zstd.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\cityhash-1.1-multiplatform\cityhash\build\win_x64\vc140\release\cityhash.lib;ws2_32.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\OpenSSL-1.1.1b-rev2-windows\OpenSSL\lib\libssl.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\OpenSSL-1.1.1b-rev2-windows\OpenSSL\lib\libcrypto.lib;crypt32.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\lz4-1.9.3-vcpkg-rev4-windows\lz4\lz4\lib\lz4.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;advapi32.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalOptions>%(AdditionalOptions) /machine:x64 /IGNORE:4099</AdditionalOptions>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
+      <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <ImportLibrary>C:/Users/lesaelr/o3de/lib/release/EMotionFX_Atom.Editor.lib</ImportLibrary>
+      <OptimizeReferences>true</OptimizeReferences>
+      <ProgramDataBaseFile>C:/Users/lesaelr/o3de/bin/release/EMotionFX_Atom.Editor.pdb</ProgramDataBaseFile>
+      <SubSystem>Console</SubSystem>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <TargetMachine>MachineX64</TargetMachine>
+    </Link>
+    <ProjectReference>
+      <LinkLibraryDependencies>false</LinkLibraryDependencies>
+    </ProjectReference>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\CMakeFiles\08b24365a84bd27d080f6dd51f42b933\EMotionFX_Atom.Editor_(CONFIG).stamp.rule">
+      <Message Condition="'$(Configuration)|$(Platform)'=='debug|x64'">Copying EMotionFX_Atom.Editor runtime dependencies to output...</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='debug|x64'">setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -P C:/Users/lesaelr/o3de/runtime_dependencies/debug/EMotionFX_Atom.Editor.cmake
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='debug|x64'">C:\Users\lesaelr\.o3de\3rdParty\packages\openimageio-2.1.16.0-rev2-windows\OpenImageIO\2.1.16.0\win_x64\bin\boost_filesystem-vc141-mt-x64-1_73.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\openimageio-2.1.16.0-rev2-windows\OpenImageIO\2.1.16.0\win_x64\bin\boost_thread-vc141-mt-x64-1_73.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\openimageio-2.1.16.0-rev2-windows\OpenImageIO\2.1.16.0\win_x64\bin\Half-2_5.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\openimageio-2.1.16.0-rev2-windows\OpenImageIO\2.1.16.0\win_x64\bin\heif.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\openimageio-2.1.16.0-rev2-windows\OpenImageIO\2.1.16.0\win_x64\bin\Iex-2_5.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\openimageio-2.1.16.0-rev2-windows\OpenImageIO\2.1.16.0\win_x64\bin\IlmImf-2_5.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\openimageio-2.1.16.0-rev2-windows\OpenImageIO\2.1.16.0\win_x64\bin\IlmThread-2_5.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\openimageio-2.1.16.0-rev2-windows\OpenImageIO\2.1.16.0\win_x64\bin\Imath-2_5.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\openimageio-2.1.16.0-rev2-windows\OpenImageIO\2.1.16.0\win_x64\bin\jpeg62.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\openimageio-2.1.16.0-rev2-windows\OpenImageIO\2.1.16.0\win_x64\bin\lzma.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\openimageio-2.1.16.0-rev2-windows\OpenImageIO\2.1.16.0\win_x64\bin\libpng16.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\openimageio-2.1.16.0-rev2-windows\OpenImageIO\2.1.16.0\win_x64\bin\tiff.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\openimageio-2.1.16.0-rev2-windows\OpenImageIO\2.1.16.0\win_x64\bin\zlib1.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\openimageio-2.1.16.0-rev2-windows\OpenImageIO\2.1.16.0\win_x64\bin\yaml-cpp.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\openimageio-2.1.16.0-rev2-windows\OpenImageIO\2.1.16.0\win_x64\bin\OpenColorIO.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\openimageio-2.1.16.0-rev2-windows\OpenImageIO\2.1.16.0\win_x64\bin\OpenImageIO.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\openimageio-2.1.16.0-rev2-windows\OpenImageIO\2.1.16.0\win_x64\bin\OpenImageIO.pyd;C:\Users\lesaelr\.o3de\3rdParty\packages\openimageio-2.1.16.0-rev2-windows\OpenImageIO\2.1.16.0\win_x64\bin\OpenImageIO_Util.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\openimageio-2.1.16.0-rev2-windows\OpenImageIO\2.1.16.0\win_x64\bin\iconvert.exe;C:\Users\lesaelr\.o3de\3rdParty\packages\openimageio-2.1.16.0-rev2-windows\OpenImageIO\2.1.16.0\win_x64\bin\idiff.exe;C:\Users\lesaelr\.o3de\3rdParty\packages\openimageio-2.1.16.0-rev2-windows\OpenImageIO\2.1.16.0\win_x64\bin\igrep.exe;C:\Users\lesaelr\.o3de\3rdParty\packages\openimageio-2.1.16.0-rev2-windows\OpenImageIO\2.1.16.0\win_x64\bin\iinfo.exe;C:\Users\lesaelr\.o3de\3rdParty\packages\openimageio-2.1.16.0-rev2-windows\OpenImageIO\2.1.16.0\win_x64\bin\maketx.exe;C:\Users\lesaelr\.o3de\3rdParty\packages\openimageio-2.1.16.0-rev2-windows\OpenImageIO\2.1.16.0\win_x64\bin\oiiotool.exe;C:\Users\lesaelr\o3de\bin\debug\ImGui.imguilib.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_ar.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_bg.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_ca.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_cs.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_da.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_de.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_en.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_es.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_fa.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_fi.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_fr.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_gd.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_gl.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_he.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_ar.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_bg.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_ca.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_cs.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_da.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_de.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_en.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_es.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_fr.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_gl.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_hu.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_it.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_ja.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_ko.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_pl.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_ru.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_sk.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_sl.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_tr.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_uk.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_zh_CN.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_zh_TW.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_hu.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_it.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_ja.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_ko.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_lt.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_lv.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_pl.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_pt.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_ru.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_sk.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_sl.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_sv.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_tr.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_uk.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_zh_CN.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_zh_TW.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\bin\Qt5Cored.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\plugins\iconengines\qsvgicond.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\plugins\imageformats\qgifd.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\plugins\imageformats\qicnsd.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\plugins\imageformats\qicod.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\plugins\imageformats\qjpegd.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\plugins\imageformats\qsvgd.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\plugins\imageformats\qtgad.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\plugins\imageformats\qtiffd.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\plugins\imageformats\qwbmpd.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\plugins\imageformats\qwebpd.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\plugins\platforms\qminimald.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\plugins\platforms\qwindowsd.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\bin\Qt5Guid.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\plugins\styles\qwindowsvistastyled.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\bin\Qt5Widgetsd.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\bin\Qt5OpenGLd.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\bin\Qt5Svgd.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\bin\Qt5Xmld.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\bin\lrelease.exe;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\bin\Qt5Core.dll;C:\Users\lesaelr\o3de\bin\debug\LmbrCentral.Editor.dll;C:\Users\lesaelr\o3de\bin\debug\EMotionFX.Editor.dll;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='debug|x64'">C:\Users\lesaelr\o3de\runtime_dependencies\debug\EMotionFX_Atom.Editor_debug.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='debug|x64'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='profile|x64'">Copying EMotionFX_Atom.Editor runtime dependencies to output...</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='profile|x64'">setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -P C:/Users/lesaelr/o3de/runtime_dependencies/profile/EMotionFX_Atom.Editor.cmake
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='profile|x64'">C:\Users\lesaelr\.o3de\3rdParty\packages\openimageio-2.1.16.0-rev2-windows\OpenImageIO\2.1.16.0\win_x64\bin\boost_filesystem-vc141-mt-x64-1_73.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\openimageio-2.1.16.0-rev2-windows\OpenImageIO\2.1.16.0\win_x64\bin\boost_thread-vc141-mt-x64-1_73.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\openimageio-2.1.16.0-rev2-windows\OpenImageIO\2.1.16.0\win_x64\bin\Half-2_5.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\openimageio-2.1.16.0-rev2-windows\OpenImageIO\2.1.16.0\win_x64\bin\heif.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\openimageio-2.1.16.0-rev2-windows\OpenImageIO\2.1.16.0\win_x64\bin\Iex-2_5.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\openimageio-2.1.16.0-rev2-windows\OpenImageIO\2.1.16.0\win_x64\bin\IlmImf-2_5.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\openimageio-2.1.16.0-rev2-windows\OpenImageIO\2.1.16.0\win_x64\bin\IlmThread-2_5.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\openimageio-2.1.16.0-rev2-windows\OpenImageIO\2.1.16.0\win_x64\bin\Imath-2_5.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\openimageio-2.1.16.0-rev2-windows\OpenImageIO\2.1.16.0\win_x64\bin\jpeg62.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\openimageio-2.1.16.0-rev2-windows\OpenImageIO\2.1.16.0\win_x64\bin\lzma.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\openimageio-2.1.16.0-rev2-windows\OpenImageIO\2.1.16.0\win_x64\bin\libpng16.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\openimageio-2.1.16.0-rev2-windows\OpenImageIO\2.1.16.0\win_x64\bin\tiff.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\openimageio-2.1.16.0-rev2-windows\OpenImageIO\2.1.16.0\win_x64\bin\zlib1.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\openimageio-2.1.16.0-rev2-windows\OpenImageIO\2.1.16.0\win_x64\bin\yaml-cpp.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\openimageio-2.1.16.0-rev2-windows\OpenImageIO\2.1.16.0\win_x64\bin\OpenColorIO.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\openimageio-2.1.16.0-rev2-windows\OpenImageIO\2.1.16.0\win_x64\bin\OpenImageIO.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\openimageio-2.1.16.0-rev2-windows\OpenImageIO\2.1.16.0\win_x64\bin\OpenImageIO.pyd;C:\Users\lesaelr\.o3de\3rdParty\packages\openimageio-2.1.16.0-rev2-windows\OpenImageIO\2.1.16.0\win_x64\bin\OpenImageIO_Util.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\openimageio-2.1.16.0-rev2-windows\OpenImageIO\2.1.16.0\win_x64\bin\iconvert.exe;C:\Users\lesaelr\.o3de\3rdParty\packages\openimageio-2.1.16.0-rev2-windows\OpenImageIO\2.1.16.0\win_x64\bin\idiff.exe;C:\Users\lesaelr\.o3de\3rdParty\packages\openimageio-2.1.16.0-rev2-windows\OpenImageIO\2.1.16.0\win_x64\bin\igrep.exe;C:\Users\lesaelr\.o3de\3rdParty\packages\openimageio-2.1.16.0-rev2-windows\OpenImageIO\2.1.16.0\win_x64\bin\iinfo.exe;C:\Users\lesaelr\.o3de\3rdParty\packages\openimageio-2.1.16.0-rev2-windows\OpenImageIO\2.1.16.0\win_x64\bin\maketx.exe;C:\Users\lesaelr\.o3de\3rdParty\packages\openimageio-2.1.16.0-rev2-windows\OpenImageIO\2.1.16.0\win_x64\bin\oiiotool.exe;C:\Users\lesaelr\o3de\bin\profile\ImGui.imguilib.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_ar.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_bg.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_ca.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_cs.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_da.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_de.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_en.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_es.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_fa.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_fi.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_fr.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_gd.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_gl.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_he.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_ar.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_bg.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_ca.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_cs.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_da.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_de.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_en.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_es.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_fr.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_gl.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_hu.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_it.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_ja.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_ko.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_pl.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_ru.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_sk.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_sl.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_tr.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_uk.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_zh_CN.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_zh_TW.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_hu.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_it.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_ja.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_ko.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_lt.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_lv.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_pl.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_pt.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_ru.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_sk.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_sl.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_sv.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_tr.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_uk.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_zh_CN.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_zh_TW.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\bin\Qt5Core.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\plugins\iconengines\qsvgicon.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\plugins\imageformats\qgif.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\plugins\imageformats\qicns.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\plugins\imageformats\qico.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\plugins\imageformats\qjpeg.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\plugins\imageformats\qsvg.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\plugins\imageformats\qtga.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\plugins\imageformats\qtiff.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\plugins\imageformats\qwbmp.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\plugins\imageformats\qwebp.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\plugins\platforms\qminimal.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\plugins\platforms\qwindows.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\bin\Qt5Gui.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\plugins\styles\qwindowsvistastyle.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\bin\Qt5Widgets.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\bin\Qt5OpenGL.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\bin\Qt5Svg.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\bin\Qt5Xml.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\bin\lrelease.exe;C:\Users\lesaelr\o3de\bin\profile\LmbrCentral.Editor.dll;C:\Users\lesaelr\o3de\bin\profile\EMotionFX.Editor.dll;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='profile|x64'">C:\Users\lesaelr\o3de\runtime_dependencies\profile\EMotionFX_Atom.Editor_profile.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='profile|x64'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='release|x64'">Copying EMotionFX_Atom.Editor runtime dependencies to output...</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='release|x64'">setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -P C:/Users/lesaelr/o3de/runtime_dependencies/release/EMotionFX_Atom.Editor.cmake
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='release|x64'">C:\Users\lesaelr\.o3de\3rdParty\packages\openimageio-2.1.16.0-rev2-windows\OpenImageIO\2.1.16.0\win_x64\bin\boost_filesystem-vc141-mt-x64-1_73.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\openimageio-2.1.16.0-rev2-windows\OpenImageIO\2.1.16.0\win_x64\bin\boost_thread-vc141-mt-x64-1_73.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\openimageio-2.1.16.0-rev2-windows\OpenImageIO\2.1.16.0\win_x64\bin\Half-2_5.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\openimageio-2.1.16.0-rev2-windows\OpenImageIO\2.1.16.0\win_x64\bin\heif.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\openimageio-2.1.16.0-rev2-windows\OpenImageIO\2.1.16.0\win_x64\bin\Iex-2_5.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\openimageio-2.1.16.0-rev2-windows\OpenImageIO\2.1.16.0\win_x64\bin\IlmImf-2_5.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\openimageio-2.1.16.0-rev2-windows\OpenImageIO\2.1.16.0\win_x64\bin\IlmThread-2_5.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\openimageio-2.1.16.0-rev2-windows\OpenImageIO\2.1.16.0\win_x64\bin\Imath-2_5.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\openimageio-2.1.16.0-rev2-windows\OpenImageIO\2.1.16.0\win_x64\bin\jpeg62.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\openimageio-2.1.16.0-rev2-windows\OpenImageIO\2.1.16.0\win_x64\bin\lzma.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\openimageio-2.1.16.0-rev2-windows\OpenImageIO\2.1.16.0\win_x64\bin\libpng16.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\openimageio-2.1.16.0-rev2-windows\OpenImageIO\2.1.16.0\win_x64\bin\tiff.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\openimageio-2.1.16.0-rev2-windows\OpenImageIO\2.1.16.0\win_x64\bin\zlib1.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\openimageio-2.1.16.0-rev2-windows\OpenImageIO\2.1.16.0\win_x64\bin\yaml-cpp.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\openimageio-2.1.16.0-rev2-windows\OpenImageIO\2.1.16.0\win_x64\bin\OpenColorIO.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\openimageio-2.1.16.0-rev2-windows\OpenImageIO\2.1.16.0\win_x64\bin\OpenImageIO.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\openimageio-2.1.16.0-rev2-windows\OpenImageIO\2.1.16.0\win_x64\bin\OpenImageIO.pyd;C:\Users\lesaelr\.o3de\3rdParty\packages\openimageio-2.1.16.0-rev2-windows\OpenImageIO\2.1.16.0\win_x64\bin\OpenImageIO_Util.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\openimageio-2.1.16.0-rev2-windows\OpenImageIO\2.1.16.0\win_x64\bin\iconvert.exe;C:\Users\lesaelr\.o3de\3rdParty\packages\openimageio-2.1.16.0-rev2-windows\OpenImageIO\2.1.16.0\win_x64\bin\idiff.exe;C:\Users\lesaelr\.o3de\3rdParty\packages\openimageio-2.1.16.0-rev2-windows\OpenImageIO\2.1.16.0\win_x64\bin\igrep.exe;C:\Users\lesaelr\.o3de\3rdParty\packages\openimageio-2.1.16.0-rev2-windows\OpenImageIO\2.1.16.0\win_x64\bin\iinfo.exe;C:\Users\lesaelr\.o3de\3rdParty\packages\openimageio-2.1.16.0-rev2-windows\OpenImageIO\2.1.16.0\win_x64\bin\maketx.exe;C:\Users\lesaelr\.o3de\3rdParty\packages\openimageio-2.1.16.0-rev2-windows\OpenImageIO\2.1.16.0\win_x64\bin\oiiotool.exe;C:\Users\lesaelr\o3de\bin\release\ImGui.imguilib.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_ar.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_bg.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_ca.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_cs.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_da.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_de.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_en.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_es.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_fa.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_fi.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_fr.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_gd.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_gl.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_he.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_ar.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_bg.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_ca.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_cs.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_da.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_de.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_en.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_es.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_fr.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_gl.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_hu.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_it.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_ja.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_ko.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_pl.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_ru.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_sk.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_sl.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_tr.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_uk.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_zh_CN.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_zh_TW.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_hu.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_it.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_ja.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_ko.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_lt.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_lv.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_pl.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_pt.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_ru.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_sk.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_sl.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_sv.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_tr.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_uk.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_zh_CN.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_zh_TW.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\bin\Qt5Core.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\plugins\iconengines\qsvgicon.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\plugins\imageformats\qgif.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\plugins\imageformats\qicns.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\plugins\imageformats\qico.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\plugins\imageformats\qjpeg.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\plugins\imageformats\qsvg.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\plugins\imageformats\qtga.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\plugins\imageformats\qtiff.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\plugins\imageformats\qwbmp.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\plugins\imageformats\qwebp.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\plugins\platforms\qminimal.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\plugins\platforms\qwindows.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\bin\Qt5Gui.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\plugins\styles\qwindowsvistastyle.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\bin\Qt5Widgets.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\bin\Qt5OpenGL.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\bin\Qt5Svg.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\bin\Qt5Xml.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\bin\lrelease.exe;C:\Users\lesaelr\o3de\bin\release\LmbrCentral.Editor.dll;C:\Users\lesaelr\o3de\bin\release\EMotionFX.Editor.dll;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='release|x64'">C:\Users\lesaelr\o3de\runtime_dependencies\release\EMotionFX_Atom.Editor_release.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='release|x64'">false</LinkObjects>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\EMotionFXAtom\Code\CMakeLists.txt">
+      <UseUtf8Encoding>Always</UseUtf8Encoding>
+      <Message Condition="'$(Configuration)|$(Platform)'=='debug|x64'">Building Custom Rule C:/Users/lesaelr/o3de/Gems/AtomLyIntegration/EMotionFXAtom/Code/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='debug|x64'">setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SC:/Users/lesaelr/o3de -BC:/Users/lesaelr/o3de --check-stamp-file C:/Users/lesaelr/o3de/External/AtomLyIntegration-c3d5e932/EMotionFXAtom/Code/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='debug|x64'">C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\EMotionFXAtom\Code\emotionfx_atom_editor_files.cmake;C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\EMotionFXAtom\Code\emotionfx_atom_files.cmake;C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\EMotionFXAtom\Code\emotionfxatom_shared_files.cmake;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='debug|x64'">C:\Users\lesaelr\o3de\External\AtomLyIntegration-c3d5e932\EMotionFXAtom\Code\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='debug|x64'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='profile|x64'">Building Custom Rule C:/Users/lesaelr/o3de/Gems/AtomLyIntegration/EMotionFXAtom/Code/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='profile|x64'">setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SC:/Users/lesaelr/o3de -BC:/Users/lesaelr/o3de --check-stamp-file C:/Users/lesaelr/o3de/External/AtomLyIntegration-c3d5e932/EMotionFXAtom/Code/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='profile|x64'">C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\EMotionFXAtom\Code\emotionfx_atom_editor_files.cmake;C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\EMotionFXAtom\Code\emotionfx_atom_files.cmake;C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\EMotionFXAtom\Code\emotionfxatom_shared_files.cmake;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='profile|x64'">C:\Users\lesaelr\o3de\External\AtomLyIntegration-c3d5e932\EMotionFXAtom\Code\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='profile|x64'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='release|x64'">Building Custom Rule C:/Users/lesaelr/o3de/Gems/AtomLyIntegration/EMotionFXAtom/Code/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='release|x64'">setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SC:/Users/lesaelr/o3de -BC:/Users/lesaelr/o3de --check-stamp-file C:/Users/lesaelr/o3de/External/AtomLyIntegration-c3d5e932/EMotionFXAtom/Code/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='release|x64'">C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\EMotionFXAtom\Code\emotionfx_atom_editor_files.cmake;C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\EMotionFXAtom\Code\emotionfx_atom_files.cmake;C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\EMotionFXAtom\Code\emotionfxatom_shared_files.cmake;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='release|x64'">C:\Users\lesaelr\o3de\External\AtomLyIntegration-c3d5e932\EMotionFXAtom\Code\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='release|x64'">false</LinkObjects>
+    </CustomBuild>
+  </ItemGroup>
+  <PropertyGroup>
+    <EnableUnitySupport>true</EnableUnitySupport>
+  </PropertyGroup>
+  <ItemGroup>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\AtomLyIntegration-c3d5e932\EMotionFXAtom\Code\CMakeFiles\EMotionFX_Atom.Editor.dir\Unity\unity_0_cxx.cxx" IncludeInUnityFile="false" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/AtomLyIntegration-c3d5e932/EMotionFXAtom/Code/CMakeFiles/EMotionFX_Atom.Editor.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\EMotionFXAtom\Code\Source\ActorModule.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/AtomLyIntegration-c3d5e932/EMotionFXAtom/Code/CMakeFiles/EMotionFX_Atom.Editor.dir/Unity" />
+    <None Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\EMotionFXAtom\Code\emotionfx_atom_editor_files.cmake">
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\runtime_dependencies\debug\EMotionFX_Atom.Editor_debug.stamp">
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\runtime_dependencies\profile\EMotionFX_Atom.Editor_profile.stamp">
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\runtime_dependencies\release\EMotionFX_Atom.Editor_release.stamp">
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\ZERO_CHECK.vcxproj">
+      <Project>{CDE32B4E-8490-3FC5-A3F2-976A0A5DE45E}</Project>
+      <Name>ZERO_CHECK</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\Code\Framework\AtomCore\AtomCore.vcxproj">
+      <Project>{6D55F49F-9D52-3893-81A0-A8698549AB69}</Project>
+      <Name>AtomCore</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\External\AtomLyIntegration-c3d5e932\CommonFeatures\Code\AtomLyIntegration_CommonFeatures.Public.vcxproj">
+      <Project>{617943C8-9D54-3E05-B08F-79A600BDD733}</Project>
+      <Name>AtomLyIntegration_CommonFeatures.Public</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\External\Atom-418206cc\Feature\Common\Code\Atom_Feature_Common.Public.vcxproj">
+      <Project>{D8CA174F-38B6-3076-82BE-72BE91AC1156}</Project>
+      <Name>Atom_Feature_Common.Public</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\External\Atom-418206cc\Feature\Common\Code\Atom_Feature_Common.Static.vcxproj">
+      <Project>{CE0590C2-3826-3A5B-8115-940C53E08751}</Project>
+      <Name>Atom_Feature_Common.Static</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\External\Atom-418206cc\RHI\Code\Atom_RHI.Public.vcxproj">
+      <Project>{2E32222C-434D-3353-967C-88B4AA98F8F8}</Project>
+      <Name>Atom_RHI.Public</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\External\Atom-418206cc\RHI\Code\Atom_RHI.Reflect.vcxproj">
+      <Project>{34A5B279-91CB-334A-9CD9-0B3CFB872F2C}</Project>
+      <Name>Atom_RHI.Reflect</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\External\Atom-418206cc\RPI\Code\Atom_RPI.Public.vcxproj">
+      <Project>{ABB218FB-FD4C-33F6-B91D-28BD20400532}</Project>
+      <Name>Atom_RPI.Public</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\External\Atom-418206cc\Utils\Code\Atom_Utils.Static.vcxproj">
+      <Project>{094C724A-A8F2-33E3-8B7F-A0D452CB43A0}</Project>
+      <Name>Atom_Utils.Static</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore.vcxproj">
+      <Project>{8AC0D8DF-6487-39C7-A5F3-F77355B1ACD9}</Project>
+      <Name>AzCore</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework.vcxproj">
+      <Project>{E4BA859A-1109-3DBC-887D-DBC80D0DD65A}</Project>
+      <Name>AzFramework</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\CryCommon.vcxproj">
+      <Project>{CA3B5D54-5095-3557-9270-FD4F882B4C66}</Project>
+      <Name>CryCommon</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\External\EMotionFX-34d60ee3\Code\EMotionFX.Editor.vcxproj">
+      <Project>{4E161E26-B0EC-372B-B34A-00CE947A1E53}</Project>
+      <Name>EMotionFX.Editor</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\External\EMotionFX-34d60ee3\Code\EMotionFXStaticLib.vcxproj">
+      <Project>{C3EEEEA5-78C3-33F2-8E25-E88BB964A847}</Project>
+      <Name>EMotionFXStaticLib</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\External\AtomLyIntegration-c3d5e932\EMotionFXAtom\Code\EMotionFX_Atom.Static.vcxproj">
+      <Project>{2517B28D-BDD9-3DF7-96C8-2D1ACBFB4687}</Project>
+      <Name>EMotionFX_Atom.Static</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate.vcxproj">
+      <Project>{FE67A854-57A6-3513-BAEF-9A7AC0A253E8}</Project>
+      <Name>GridMate</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\External\ImGui-c4b4abc8\Code\ImGui.imguilib.vcxproj">
+      <Project>{086CEC53-5862-3BF8-BB13-55497936C6BC}</Project>
+      <Name>ImGui.imguilib</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

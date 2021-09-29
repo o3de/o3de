@@ -1,0 +1,82 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AtomCore\CMakeFiles\AtomCore.dir\Unity\unity_0_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AtomCore\AtomCore\Instance\InstanceId.cpp">
+      <Filter>AtomCore\Instance</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AtomCore\AtomCore\Instance\InstanceData.cpp">
+      <Filter>AtomCore\Instance</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AtomCore\AtomCore\Instance\Instance.h">
+      <Filter>AtomCore\Instance</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AtomCore\AtomCore\Instance\InstanceId.h">
+      <Filter>AtomCore\Instance</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AtomCore\AtomCore\Instance\InstanceData.h">
+      <Filter>AtomCore\Instance</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AtomCore\AtomCore\Instance\InstanceDatabase.h">
+      <Filter>AtomCore\Instance</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AtomCore\AtomCore\std\containers\array_view.h">
+      <Filter>AtomCore\std\containers</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AtomCore\AtomCore\std\containers\fixed_vector_set.h">
+      <Filter>AtomCore\std\containers</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AtomCore\AtomCore\std\containers\lru_cache.h">
+      <Filter>AtomCore\std\containers</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AtomCore\AtomCore\std\containers\vector_set.h">
+      <Filter>AtomCore\std\containers</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AtomCore\AtomCore\std\containers\vector_set_base.h">
+      <Filter>AtomCore\std\containers</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AtomCore\AtomCore\std\parallel\concurrency_checker.h">
+      <Filter>AtomCore\std\parallel</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AtomCore\AtomCore\Utils\ScopedValue.h">
+      <Filter>AtomCore\Utils</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Code\Framework\AtomCore\CMakeLists.txt">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="C:\Users\lesaelr\o3de\Code\Framework\AtomCore\AtomCore\atomcore_files.cmake">
+      <Filter>AtomCore</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="AtomCore">
+      <UniqueIdentifier>{E2AAC6AA-3B54-319C-9E6E-7B6DFC594BD6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AtomCore\Instance">
+      <UniqueIdentifier>{7704240A-7B3A-3380-86CA-63F4EE31247E}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AtomCore\Utils">
+      <UniqueIdentifier>{0915D8FF-66F5-3110-BAE8-8AB1C9F22162}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AtomCore\std">
+      <UniqueIdentifier>{C55158F5-3E20-33F7-BAB7-D8BA55027804}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AtomCore\std\containers">
+      <UniqueIdentifier>{41802842-4579-3539-80F3-B50C1410CA8D}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AtomCore\std\parallel">
+      <UniqueIdentifier>{0E2BBAA0-6A00-3767-B752-7ED41F6EE585}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Generated Files">
+      <UniqueIdentifier>{FB9B7D8B-7F05-31D5-AA90-592248EDE1B3}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

@@ -1,0 +1,27 @@
+# CMake generation dependency list for this directory.
+C:/Users/lesaelr/.o3de/3rdParty/packages/Lua-5.3.5-rev5-windows/FindLua.cmake
+C:/Users/lesaelr/.o3de/3rdParty/packages/Lua-5.3.5-rev5-windows/PackageInfo.json
+C:/Users/lesaelr/.o3de/3rdParty/packages/RapidXML-1.13-rev1-multiplatform/FindRapidXML.cmake
+C:/Users/lesaelr/.o3de/3rdParty/packages/RapidXML-1.13-rev1-multiplatform/PackageInfo.json
+C:/Users/lesaelr/.o3de/3rdParty/packages/cityhash-1.1-multiplatform/Findcityhash.cmake
+C:/Users/lesaelr/.o3de/3rdParty/packages/cityhash-1.1-multiplatform/PackageInfo.json
+C:/Users/lesaelr/.o3de/3rdParty/packages/googlebenchmark-1.5.0-rev2-windows/FindGoogleBenchmark.cmake
+C:/Users/lesaelr/.o3de/3rdParty/packages/googlebenchmark-1.5.0-rev2-windows/PackageInfo.json
+C:/Users/lesaelr/.o3de/3rdParty/packages/googletest-1.8.1-rev4-windows/Findgoogletest.cmake
+C:/Users/lesaelr/.o3de/3rdParty/packages/googletest-1.8.1-rev4-windows/PackageInfo.json
+C:/Users/lesaelr/.o3de/3rdParty/packages/zlib-1.2.11-rev2-windows/Findzlib.cmake
+C:/Users/lesaelr/.o3de/3rdParty/packages/zlib-1.2.11-rev2-windows/PackageInfo.json
+C:/Users/lesaelr/.o3de/3rdParty/packages/zstd-1.35-multiplatform/Findzstd.cmake
+C:/Users/lesaelr/.o3de/3rdParty/packages/zstd-1.35-multiplatform/PackageInfo.json
+C:/Users/lesaelr/o3de/Code/Framework/AzCore/AzCore/azcore_files.cmake
+C:/Users/lesaelr/o3de/Code/Framework/AzCore/AzCore/azcoretestcommon_files.cmake
+C:/Users/lesaelr/o3de/Code/Framework/AzCore/AzCore/std/azstd_files.cmake
+C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeLists.txt
+C:/Users/lesaelr/o3de/Code/Framework/AzCore/Platform/Windows/platform_windows.cmake
+C:/Users/lesaelr/o3de/Code/Framework/AzCore/Platform/Windows/platform_windows_files.cmake
+C:/Users/lesaelr/o3de/Code/Framework/AzCore/Tests/Platform/Windows/platform_windows.cmake
+C:/Users/lesaelr/o3de/Code/Framework/AzCore/Tests/Platform/Windows/platform_windows_files.cmake
+C:/Users/lesaelr/o3de/Code/Framework/AzCore/Tests/azcoretestdll_files.cmake
+C:/Users/lesaelr/o3de/Code/Framework/AzCore/Tests/azcoretests_files.cmake
+C:/Users/lesaelr/o3de/Code/Framework/AzCore/Tests/aztestshared_files.cmake
+C:/Users/lesaelr/o3de/cmake/Platform/Windows/LYTestWrappers_windows.cmake

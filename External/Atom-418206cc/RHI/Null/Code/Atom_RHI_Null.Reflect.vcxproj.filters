@@ -1,0 +1,62 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\Atom-418206cc\RHI\Null\Code\CMakeFiles\Atom_RHI_Null.Reflect.dir\Unity\unity_0_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\RHI\Null\Code\Source\RHI.Reflect\PipelineLayoutDescriptor.cpp">
+      <Filter>Source\RHI.Reflect</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\RHI\Null\Code\Source\RHI.Reflect\ReflectSystemComponent.cpp">
+      <Filter>Source\RHI.Reflect</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\RHI\Null\Code\Source\RHI.Reflect\ShaderStageFunction.cpp">
+      <Filter>Source\RHI.Reflect</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\RHI\Null\Code\Include\Atom\RHI.Reflect\Null\Base.h">
+      <Filter>Include\Atom\RHI.Reflect\Null</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\RHI\Null\Code\Include\Atom\RHI.Reflect\Null\PipelineLayoutDescriptor.h">
+      <Filter>Include\Atom\RHI.Reflect\Null</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\RHI\Null\Code\Include\Atom\RHI.Reflect\Null\ReflectSystemComponent.h">
+      <Filter>Include\Atom\RHI.Reflect\Null</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\RHI\Null\Code\Include\Atom\RHI.Reflect\Null\ShaderStageFunction.h">
+      <Filter>Include\Atom\RHI.Reflect\Null</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Gems\Atom\RHI\Null\Code\CMakeLists.txt">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\RHI\Null\Code\atom_rhi_null_reflect_common_files.cmake" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Generated Files">
+      <UniqueIdentifier>{FB9B7D8B-7F05-31D5-AA90-592248EDE1B3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include">
+      <UniqueIdentifier>{E188105A-C8C4-34BB-9809-15E8410EF7F8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\Atom">
+      <UniqueIdentifier>{D3FF6349-761F-30FE-A9A9-4A8D0DE47ADF}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\Atom\RHI.Reflect">
+      <UniqueIdentifier>{FA92D33D-A888-30FF-915B-A042ABAAD713}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\Atom\RHI.Reflect\Null">
+      <UniqueIdentifier>{E3209196-5463-3AB6-906A-CC853E773D76}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source">
+      <UniqueIdentifier>{F3F0AD47-5F83-373B-A2BF-650D2E4FA3EA}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\RHI.Reflect">
+      <UniqueIdentifier>{ABC79B0F-887C-3686-9657-A1D3CCE3EFA9}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

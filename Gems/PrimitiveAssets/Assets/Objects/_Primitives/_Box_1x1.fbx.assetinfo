@@ -8,9 +8,12 @@
                 "selectedNodes": [
                     "RootNode._Box_1x1",
                     "RootNode._Box_1x1.mesh0_root_0_",
-                    "RootNode._Box_1x1.mesh0_root_0_.transform",
-                    "RootNode._Box_1x1.mesh0_root_0_.UVSet0",
-                    "RootNode._Box_1x1.mesh0_root_0_._Box_1x1__1__MiddleGrey"
+                    "RootNode._Box_1x1.mesh0_root_0_.mesh0_root_0__1",
+                    "RootNode._Box_1x1.mesh0_root_0_.mesh0_root_0__2",
+                    "RootNode._Box_1x1.mesh0_root_0_.mesh0_root_0__1.UVSet0",
+                    "RootNode._Box_1x1.mesh0_root_0_.mesh0_root_0__1._Box_1x1__1__MiddleGrey__physNone",
+                    "RootNode._Box_1x1.mesh0_root_0_.mesh0_root_0__2.UVSet0",
+                    "RootNode._Box_1x1.mesh0_root_0_.mesh0_root_0__2._Box_1x1__1__MiddleGrey__physNone"
                 ],
                 "unselectedNodes": [
                     "RootNode"
@@ -19,7 +22,13 @@
             "export method": 2,
             "PrimitiveAssetParams": {
                 "PrimitiveShapeTarget": 2
-            }
+            },
+            "MaterialSlots": [
+                "_Box_1x1__1__MiddleGrey__physNone"
+            ],
+            "PhysicsMaterials": [
+                "<Default Physics Material>"
+            ]
         },
         {
             "$type": "{07B356B7-3635-40B5-878A-FAC4EFD5AD86} MeshGroup",
@@ -29,9 +38,12 @@
                     "RootNode",
                     "RootNode._Box_1x1",
                     "RootNode._Box_1x1.mesh0_root_0_",
-                    "RootNode._Box_1x1.mesh0_root_0_.transform",
-                    "RootNode._Box_1x1.mesh0_root_0_.UVSet0",
-                    "RootNode._Box_1x1.mesh0_root_0_._Box_1x1__1__MiddleGrey"
+                    "RootNode._Box_1x1.mesh0_root_0_.mesh0_root_0__1",
+                    "RootNode._Box_1x1.mesh0_root_0_.mesh0_root_0__2",
+                    "RootNode._Box_1x1.mesh0_root_0_.mesh0_root_0__1.UVSet0",
+                    "RootNode._Box_1x1.mesh0_root_0_.mesh0_root_0__1._Box_1x1__1__MiddleGrey__physNone",
+                    "RootNode._Box_1x1.mesh0_root_0_.mesh0_root_0__2.UVSet0",
+                    "RootNode._Box_1x1.mesh0_root_0_.mesh0_root_0__2._Box_1x1__1__MiddleGrey__physNone"
                 ]
             },
             "rules": {

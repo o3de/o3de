@@ -1,0 +1,518 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <PreferredToolArchitecture>x64</PreferredToolArchitecture>
+  </PropertyGroup>
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="debug|x64">
+      <Configuration>debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="profile|x64">
+      <Configuration>profile</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="release|x64">
+      <Configuration>release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{B4364316-D369-3063-A976-9ECFCD5020F5}</ProjectGuid>
+    <WindowsTargetPlatformVersion>10.0.19041.0</WindowsTargetPlatformVersion>
+    <Keyword>Win32Proj</Keyword>
+    <Platform>x64</Platform>
+    <ProjectName>NvCloth.Editor.Tests</ProjectName>
+    <VCProjectUpgraderObjectName>NoUpgrade</VCProjectUpgraderObjectName>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='debug|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v142</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='profile|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v142</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='release|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v142</PlatformToolset>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets">
+    <Import Project="C:\Users\lesaelr\o3de\cmake\Platform\Common\MSVC\TestProject.props" Condition="exists('C:\Users\lesaelr\o3de\cmake\Platform\Common\MSVC\TestProject.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>10.0.20506.1</_ProjectFileVersion>
+    <LocalDebuggerCommand Condition="'$(Configuration)|$(Platform)'=='debug|x64'">C:/Users/lesaelr/o3de/bin/debug/AzTestRunner.exe</LocalDebuggerCommand>
+    <LocalDebuggerCommandArguments Condition="'$(Configuration)|$(Platform)'=='debug|x64'">C:/Users/lesaelr/o3de/bin/debug/NvCloth.Editor.Tests.Gem.dll AzRunUnitTests --gtest_output=xml:C:/Users/lesaelr/o3de/Testing/Gtest/Gem_NvCloth.Editor.Tests.xml</LocalDebuggerCommandArguments>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='debug|x64'">C:\Users\lesaelr\o3de\bin\debug\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='debug|x64'">NvCloth.Editor.Tests.dir\debug\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='debug|x64'">NvCloth.Editor.Tests.Gem</TargetName>
+    <TargetExt Condition="'$(Configuration)|$(Platform)'=='debug|x64'">.dll</TargetExt>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='debug|x64'">false</LinkIncremental>
+    <GenerateManifest Condition="'$(Configuration)|$(Platform)'=='debug|x64'">true</GenerateManifest>
+    <LocalDebuggerCommand Condition="'$(Configuration)|$(Platform)'=='profile|x64'">C:/Users/lesaelr/o3de/bin/profile/AzTestRunner.exe</LocalDebuggerCommand>
+    <LocalDebuggerCommandArguments Condition="'$(Configuration)|$(Platform)'=='profile|x64'">C:/Users/lesaelr/o3de/bin/profile/NvCloth.Editor.Tests.Gem.dll AzRunUnitTests --gtest_output=xml:C:/Users/lesaelr/o3de/Testing/Gtest/Gem_NvCloth.Editor.Tests.xml</LocalDebuggerCommandArguments>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='profile|x64'">C:\Users\lesaelr\o3de\bin\profile\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='profile|x64'">NvCloth.Editor.Tests.dir\profile\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='profile|x64'">NvCloth.Editor.Tests.Gem</TargetName>
+    <TargetExt Condition="'$(Configuration)|$(Platform)'=='profile|x64'">.dll</TargetExt>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='profile|x64'">false</LinkIncremental>
+    <GenerateManifest Condition="'$(Configuration)|$(Platform)'=='profile|x64'">true</GenerateManifest>
+    <LocalDebuggerCommand Condition="'$(Configuration)|$(Platform)'=='release|x64'">C:/Users/lesaelr/o3de/bin/release/AzTestRunner.exe</LocalDebuggerCommand>
+    <LocalDebuggerCommandArguments Condition="'$(Configuration)|$(Platform)'=='release|x64'">C:/Users/lesaelr/o3de/bin/release/NvCloth.Editor.Tests.Gem.dll AzRunUnitTests --gtest_output=xml:C:/Users/lesaelr/o3de/Testing/Gtest/Gem_NvCloth.Editor.Tests.xml</LocalDebuggerCommandArguments>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='release|x64'">C:\Users\lesaelr\o3de\bin\release\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='release|x64'">NvCloth.Editor.Tests.dir\release\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='release|x64'">NvCloth.Editor.Tests.Gem</TargetName>
+    <TargetExt Condition="'$(Configuration)|$(Platform)'=='release|x64'">.dll</TargetExt>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='release|x64'">false</LinkIncremental>
+    <GenerateManifest Condition="'$(Configuration)|$(Platform)'=='release|x64'">true</GenerateManifest>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='debug|x64'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>C:\Users\lesaelr\o3de\Gems\NvCloth\Code\Include;C:\Users\lesaelr\o3de\Gems\NvCloth\Code\Tests;C:\Users\lesaelr\o3de\Gems\NvCloth\Code\Source;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests;C:\Users\lesaelr\o3de\Code\Framework\AzTest\.;C:\Users\lesaelr\o3de\Code\Framework\AzTest\AzTest\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzCore\.;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Common;C:\Users\lesaelr\o3de\Code\Framework\AzFramework\.;C:\Users\lesaelr\o3de\Code\Framework\AzFramework\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\GridMate\.;C:\Users\lesaelr\o3de\Code\Framework\GridMate\Platform\Windows;C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Include;C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Include;C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\3rdParty\ACES;C:\Users\lesaelr\o3de\Gems\Atom\RPI\Code\Include;C:\Users\lesaelr\o3de\Gems\Atom\RPI\Code\External;C:\Users\lesaelr\o3de\Gems\Atom\RHI\Code\Include;C:\Users\lesaelr\o3de\Gems\Atom\Utils\Code\Include;C:\Users\lesaelr\o3de\Code\Framework\AtomCore\.;C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\.;C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework;C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\.;C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneCore\..\..;C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\.;C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Include;C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Source;C:\Users\lesaelr\o3de\Gems\LmbrCentral\Code\include;C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\.;C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\..;C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\Platform\Windows;C:\Users\lesaelr\o3de\Code\Tools\AssetProcessor\AssetBuilderSDK\.;C:\Users\lesaelr\o3de\Code\Framework\GFxFramework\GFxFramework\..;C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneData\..\..;C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneUI\..\..;C:\Users\lesaelr\o3de\Code\Editor\Include;C:\Users\lesaelr\o3de\Code\Editor\.;C:\Users\lesaelr\o3de\Code\Editor\..;C:\Users\lesaelr\o3de\Code\Editor\Plugins\EditorCommon\.;C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Tests;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalOptions>%(AdditionalOptions) /Zc:__cplusplus /Zc:lambda /favor:AMD64 /bigobj /RTCsu /experimental:external /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/googletest-1.8.1-rev4-windows/googletest/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/googlebenchmark-1.5.0-rev2-windows/googlebenchmark/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/Lua-5.3.5-rev5-windows/lua/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/RapidJSON-1.1.0-rev1-multiplatform/RapidJSON/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/RapidXML-1.13-rev1-multiplatform/RapidXML/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/zlib-1.2.11-rev2-windows/zlib/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/zstd-1.35-multiplatform/zstd/lib /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/cityhash-1.1-multiplatform/cityhash/src /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/NvCloth-v1.1.6-4-gd243404-pr58-rev1-windows/NvCloth/NvCloth/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/NvCloth-v1.1.6-4-gd243404-pr58-rev1-windows/NvCloth/NvCloth/extensions/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/NvCloth-v1.1.6-4-gd243404-pr58-rev1-windows/NvCloth/PxShared/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/OpenSSL-1.1.1b-rev2-windows/OpenSSL/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/lz4-1.9.3-vcpkg-rev4-windows/lz4/lz4/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/qt-5.15.2-rev4-windows/qt/include/ /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/qt-5.15.2-rev4-windows/qt/include/QtCore /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/qt-5.15.2-rev4-windows/qt/.//mkspecs/win32-msvc /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/qt-5.15.2-rev4-windows/qt/include/QtGui /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/qt-5.15.2-rev4-windows/qt/include//QtANGLE /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/qt-5.15.2-rev4-windows/qt/include/QtGui/5.15.1 /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/qt-5.15.2-rev4-windows/qt/include/QtGui/5.15.1/QtGui /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/qt-5.15.2-rev4-windows/qt/include/QtCore/5.15.1 /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/qt-5.15.2-rev4-windows/qt/include/QtCore/5.15.1/QtCore /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/qt-5.15.2-rev4-windows/qt/include/QtWidgets /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/qt-5.15.2-rev4-windows/qt/include/QtWidgets/5.15.1 /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/qt-5.15.2-rev4-windows/qt/include/QtWidgets/5.15.1/QtWidgets /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/qt-5.15.2-rev4-windows/qt/include/QtSvg /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/qt-5.15.2-rev4-windows/qt/include/QtXml /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/qt-5.15.2-rev4-windows/qt/include/QtOpenGL</AdditionalOptions>
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <BufferSecurityCheck>true</BufferSecurityCheck>
+      <CallingConvention>Cdecl</CallingConvention>
+      <ConformanceMode>true</ConformanceMode>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <DiagnosticsFormat>Caret</DiagnosticsFormat>
+      <DisableSpecificWarnings>4201</DisableSpecificWarnings>
+      <ExceptionHandling>
+      </ExceptionHandling>
+      <ExternalWarningLevel>TurnOffAllWarnings</ExternalWarningLevel>
+      <FloatingPointModel>Fast</FloatingPointModel>
+      <ForceConformanceInForLoopScope>true</ForceConformanceInForLoopScope>
+      <InlineFunctionExpansion>Disabled</InlineFunctionExpansion>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <Optimization>Disabled</Optimization>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <TreatSpecificWarningsAsErrors>4263;4264;4265;4266;4296;4426;4437;4774;4777;5031;5032;5233</TreatSpecificWarningsAsErrors>
+      <TreatWarningAsError>true</TreatWarningAsError>
+      <UseFullPaths>false</UseFullPaths>
+      <WarningLevel>Level4</WarningLevel>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);NVCLOTH_EDITOR;_HAS_EXCEPTIONS=0;_DEBUG;AZ_DEBUG_BUILD=1;AZ_ENABLE_TRACING;AZ_ENABLE_DEBUG_TOOLS;AZ_BUILD_CONFIGURATION_TYPE="debug";_ENABLE_EXTENDED_ALIGNED_STORAGE;_WIN32;WIN32;_WIN64;WIN64;NOMINMAX;HAVE_BENCHMARK;NV_CLOTH_IMPORT=;PX_CALL_CONV=;OPENSSL_ENABLED;QT_CORE_LIB;QT_GUI_LIB;QT_WIDGETS_LIB;QT_SVG_LIB;QT_XML_LIB;EMFX_EMSTUDIOLYEMBEDDED;EMOTIONFXANIMATION_EDITOR;EMFX_DEVELOPMENT_BUILD;QT_OPENGL_LIB;CMAKE_INTDIR="debug";NvCloth_Editor_Tests_EXPORTS</PreprocessorDefinitions>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);_DEBUG;NVCLOTH_EDITOR;_HAS_EXCEPTIONS=0;AZ_DEBUG_BUILD=1;AZ_ENABLE_TRACING;AZ_ENABLE_DEBUG_TOOLS;AZ_BUILD_CONFIGURATION_TYPE=\"debug\";_ENABLE_EXTENDED_ALIGNED_STORAGE;_WIN32;WIN32;_WIN64;WIN64;NOMINMAX;HAVE_BENCHMARK;NV_CLOTH_IMPORT=;PX_CALL_CONV=;OPENSSL_ENABLED;QT_CORE_LIB;QT_GUI_LIB;QT_WIDGETS_LIB;QT_SVG_LIB;QT_XML_LIB;EMFX_EMSTUDIOLYEMBEDDED;EMOTIONFXANIMATION_EDITOR;EMFX_DEVELOPMENT_BUILD;QT_OPENGL_LIB;CMAKE_INTDIR=\"debug\";NvCloth_Editor_Tests_EXPORTS</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>C:\Users\lesaelr\o3de\Gems\NvCloth\Code\Include;C:\Users\lesaelr\o3de\Gems\NvCloth\Code\Tests;C:\Users\lesaelr\o3de\Gems\NvCloth\Code\Source;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests;C:\Users\lesaelr\o3de\Code\Framework\AzTest\.;C:\Users\lesaelr\o3de\Code\Framework\AzTest\AzTest\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzCore\.;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Common;C:\Users\lesaelr\o3de\Code\Framework\AzFramework\.;C:\Users\lesaelr\o3de\Code\Framework\AzFramework\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\GridMate\.;C:\Users\lesaelr\o3de\Code\Framework\GridMate\Platform\Windows;C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Include;C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Include;C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\3rdParty\ACES;C:\Users\lesaelr\o3de\Gems\Atom\RPI\Code\Include;C:\Users\lesaelr\o3de\Gems\Atom\RPI\Code\External;C:\Users\lesaelr\o3de\Gems\Atom\RHI\Code\Include;C:\Users\lesaelr\o3de\Gems\Atom\Utils\Code\Include;C:\Users\lesaelr\o3de\Code\Framework\AtomCore\.;C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\.;C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework;C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\.;C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneCore\..\..;C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\.;C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Include;C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Source;C:\Users\lesaelr\o3de\Gems\LmbrCentral\Code\include;C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\.;C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\..;C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\Platform\Windows;C:\Users\lesaelr\o3de\Code\Tools\AssetProcessor\AssetBuilderSDK\.;C:\Users\lesaelr\o3de\Code\Framework\GFxFramework\GFxFramework\..;C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneData\..\..;C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneUI\..\..;C:\Users\lesaelr\o3de\Code\Editor\Include;C:\Users\lesaelr\o3de\Code\Editor\.;C:\Users\lesaelr\o3de\Code\Editor\..;C:\Users\lesaelr\o3de\Code\Editor\Plugins\EditorCommon\.;C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Tests;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+    </ResourceCompile>
+    <Midl>
+      <AdditionalIncludeDirectories>C:\Users\lesaelr\o3de\Gems\NvCloth\Code\Include;C:\Users\lesaelr\o3de\Gems\NvCloth\Code\Tests;C:\Users\lesaelr\o3de\Gems\NvCloth\Code\Source;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests;C:\Users\lesaelr\o3de\Code\Framework\AzTest\.;C:\Users\lesaelr\o3de\Code\Framework\AzTest\AzTest\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzCore\.;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Common;C:\Users\lesaelr\o3de\Code\Framework\AzFramework\.;C:\Users\lesaelr\o3de\Code\Framework\AzFramework\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\GridMate\.;C:\Users\lesaelr\o3de\Code\Framework\GridMate\Platform\Windows;C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Include;C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Include;C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\3rdParty\ACES;C:\Users\lesaelr\o3de\Gems\Atom\RPI\Code\Include;C:\Users\lesaelr\o3de\Gems\Atom\RPI\Code\External;C:\Users\lesaelr\o3de\Gems\Atom\RHI\Code\Include;C:\Users\lesaelr\o3de\Gems\Atom\Utils\Code\Include;C:\Users\lesaelr\o3de\Code\Framework\AtomCore\.;C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\.;C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework;C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\.;C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneCore\..\..;C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\.;C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Include;C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Source;C:\Users\lesaelr\o3de\Gems\LmbrCentral\Code\include;C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\.;C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\..;C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\Platform\Windows;C:\Users\lesaelr\o3de\Code\Tools\AssetProcessor\AssetBuilderSDK\.;C:\Users\lesaelr\o3de\Code\Framework\GFxFramework\GFxFramework\..;C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneData\..\..;C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneUI\..\..;C:\Users\lesaelr\o3de\Code\Editor\Include;C:\Users\lesaelr\o3de\Code\Editor\.;C:\Users\lesaelr\o3de\Code\Editor\..;C:\Users\lesaelr\o3de\Code\Editor\Plugins\EditorCommon\.;C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Tests;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+    <Link>
+      <AdditionalDependencies>..\..\..\lib\debug\AzTestShared.lib;..\..\..\lib\debug\AzTest.lib;..\..\..\lib\debug\AzToolsFrameworkTestCommon.lib;..\..\..\lib\debug\NvCloth.Editor.Static.lib;..\..\..\lib\debug\EMotionFX.Editor.Static.lib;..\..\..\lib\debug\EMotionFX.Tests.Static.lib;..\..\..\lib\debug\AzTestShared.lib;..\..\..\lib\debug\AzTest.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\googletest-1.8.1-rev4-windows\googletest\lib\gtestd.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\googletest-1.8.1-rev4-windows\googletest\lib\gmockd.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\googlebenchmark-1.5.0-rev2-windows\googlebenchmark\lib\Debug\benchmark.lib;Shlwapi.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\Qt5Testd.lib;..\..\..\lib\debug\NvCloth.Static.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\NvCloth-v1.1.6-4-gd243404-pr58-rev1-windows\NvCloth\NvCloth\lib\vc141win64-cmake\NvClothDEBUG_x64.lib;..\..\..\lib\debug\Atom_Feature_Common.Public.lib;..\..\..\lib\debug\Atom_Utils.Static.lib;dinput8.lib;dxguid.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\Qt5OpenGLd.lib;..\..\..\lib\debug\AssetBuilderSDK.lib;..\..\..\lib\debug\GFxFramework.lib;..\..\..\lib\debug\AzToolsFramework.lib;..\..\..\lib\debug\AzQtComponents.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\Qt5Svgd.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\Qt5Xmld.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\SQLite-3.32.2-rev3-multiplatform\SQLite\build\win_x64\vc140\debug\sqlite.lib;..\..\..\lib\debug\SceneUI.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\Qt5Widgetsd.lib;..\..\..\lib\debug\SceneData.lib;..\..\..\lib\debug\SceneCore.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\Qt5Guid.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\Qt5Cored.lib;opengl32.lib;..\..\..\lib\debug\EMotionFX.Static.lib;..\..\..\lib\debug\EMotionFXStaticLib.lib;..\..\..\lib\debug\CryCommon.lib;..\..\..\lib\debug\Atom_RPI.Public.lib;..\..\..\lib\debug\Atom_RHI.Public.lib;..\..\..\lib\debug\Atom_RHI.Reflect.lib;..\..\..\lib\debug\AzFramework.lib;..\..\..\lib\debug\GridMate.lib;ws2_32.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\OpenSSL-1.1.1b-rev2-windows\OpenSSL\debug\lib\libssl.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\OpenSSL-1.1.1b-rev2-windows\OpenSSL\debug\lib\libcrypto.lib;crypt32.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\lz4-1.9.3-vcpkg-rev4-windows\lz4\lz4\lib\..\debug\lib\lz4d.lib;..\..\..\lib\debug\AtomCore.lib;..\..\..\lib\debug\AzCore.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\Lua-5.3.5-rev5-windows\lua\lib\debug\lualib.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\zlib-1.2.11-rev2-windows\zlib\lib\zlibstaticd.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\zstd-1.35-multiplatform\zstd\bin\win-x64-vc140\debug\zstd.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\cityhash-1.1-multiplatform\cityhash\build\win_x64\vc140\debug\cityhash.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;advapi32.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalOptions>%(AdditionalOptions) /machine:x64 /IGNORE:4099 /ignore:4099</AdditionalOptions>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <ImportLibrary>C:/Users/lesaelr/o3de/lib/debug/NvCloth.Editor.Tests.Gem.lib</ImportLibrary>
+      <ProgramDataBaseFile>C:/Users/lesaelr/o3de/bin/debug/NvCloth.Editor.Tests.Gem.pdb</ProgramDataBaseFile>
+      <SubSystem>Console</SubSystem>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <TargetMachine>MachineX64</TargetMachine>
+    </Link>
+    <ProjectReference>
+      <LinkLibraryDependencies>false</LinkLibraryDependencies>
+    </ProjectReference>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='profile|x64'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>C:\Users\lesaelr\o3de\Gems\NvCloth\Code\Include;C:\Users\lesaelr\o3de\Gems\NvCloth\Code\Tests;C:\Users\lesaelr\o3de\Gems\NvCloth\Code\Source;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests;C:\Users\lesaelr\o3de\Code\Framework\AzTest\.;C:\Users\lesaelr\o3de\Code\Framework\AzTest\AzTest\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzCore\.;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Common;C:\Users\lesaelr\o3de\Code\Framework\AzFramework\.;C:\Users\lesaelr\o3de\Code\Framework\AzFramework\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\GridMate\.;C:\Users\lesaelr\o3de\Code\Framework\GridMate\Platform\Windows;C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Include;C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Include;C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\3rdParty\ACES;C:\Users\lesaelr\o3de\Gems\Atom\RPI\Code\Include;C:\Users\lesaelr\o3de\Gems\Atom\RPI\Code\External;C:\Users\lesaelr\o3de\Gems\Atom\RHI\Code\Include;C:\Users\lesaelr\o3de\Gems\Atom\Utils\Code\Include;C:\Users\lesaelr\o3de\Code\Framework\AtomCore\.;C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\.;C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework;C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\.;C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneCore\..\..;C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\.;C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Include;C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Source;C:\Users\lesaelr\o3de\Gems\LmbrCentral\Code\include;C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\.;C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\..;C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\Platform\Windows;C:\Users\lesaelr\o3de\Code\Tools\AssetProcessor\AssetBuilderSDK\.;C:\Users\lesaelr\o3de\Code\Framework\GFxFramework\GFxFramework\..;C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneData\..\..;C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneUI\..\..;C:\Users\lesaelr\o3de\Code\Editor\Include;C:\Users\lesaelr\o3de\Code\Editor\.;C:\Users\lesaelr\o3de\Code\Editor\..;C:\Users\lesaelr\o3de\Code\Editor\Plugins\EditorCommon\.;C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Tests;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalOptions>%(AdditionalOptions) /Zc:__cplusplus /Zc:lambda /favor:AMD64 /bigobj /experimental:external /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/googletest-1.8.1-rev4-windows/googletest/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/googlebenchmark-1.5.0-rev2-windows/googlebenchmark/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/Lua-5.3.5-rev5-windows/lua/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/RapidJSON-1.1.0-rev1-multiplatform/RapidJSON/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/RapidXML-1.13-rev1-multiplatform/RapidXML/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/zlib-1.2.11-rev2-windows/zlib/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/zstd-1.35-multiplatform/zstd/lib /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/cityhash-1.1-multiplatform/cityhash/src /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/NvCloth-v1.1.6-4-gd243404-pr58-rev1-windows/NvCloth/NvCloth/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/NvCloth-v1.1.6-4-gd243404-pr58-rev1-windows/NvCloth/NvCloth/extensions/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/NvCloth-v1.1.6-4-gd243404-pr58-rev1-windows/NvCloth/PxShared/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/OpenSSL-1.1.1b-rev2-windows/OpenSSL/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/lz4-1.9.3-vcpkg-rev4-windows/lz4/lz4/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/qt-5.15.2-rev4-windows/qt/include/ /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/qt-5.15.2-rev4-windows/qt/include/QtCore /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/qt-5.15.2-rev4-windows/qt/.//mkspecs/win32-msvc /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/qt-5.15.2-rev4-windows/qt/include/QtGui /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/qt-5.15.2-rev4-windows/qt/include//QtANGLE /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/qt-5.15.2-rev4-windows/qt/include/QtGui/5.15.1 /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/qt-5.15.2-rev4-windows/qt/include/QtGui/5.15.1/QtGui /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/qt-5.15.2-rev4-windows/qt/include/QtCore/5.15.1 /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/qt-5.15.2-rev4-windows/qt/include/QtCore/5.15.1/QtCore /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/qt-5.15.2-rev4-windows/qt/include/QtWidgets /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/qt-5.15.2-rev4-windows/qt/include/QtWidgets/5.15.1 /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/qt-5.15.2-rev4-windows/qt/include/QtWidgets/5.15.1/QtWidgets /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/qt-5.15.2-rev4-windows/qt/include/QtSvg /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/qt-5.15.2-rev4-windows/qt/include/QtXml /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/qt-5.15.2-rev4-windows/qt/include/QtOpenGL</AdditionalOptions>
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <CallingConvention>Cdecl</CallingConvention>
+      <ConformanceMode>true</ConformanceMode>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <DiagnosticsFormat>Caret</DiagnosticsFormat>
+      <DisableSpecificWarnings>4201</DisableSpecificWarnings>
+      <ExceptionHandling>
+      </ExceptionHandling>
+      <ExternalWarningLevel>TurnOffAllWarnings</ExternalWarningLevel>
+      <FloatingPointModel>Fast</FloatingPointModel>
+      <ForceConformanceInForLoopScope>true</ForceConformanceInForLoopScope>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <Optimization>MaxSpeed</Optimization>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <RemoveUnreferencedCodeData>true</RemoveUnreferencedCodeData>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <StringPooling>true</StringPooling>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <TreatSpecificWarningsAsErrors>4263;4264;4265;4266;4296;4426;4437;4774;4777;5031;5032;5233</TreatSpecificWarningsAsErrors>
+      <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
+      <TreatWarningAsError>true</TreatWarningAsError>
+      <UseFullPaths>false</UseFullPaths>
+      <WarningLevel>Level4</WarningLevel>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);NVCLOTH_EDITOR;_HAS_EXCEPTIONS=0;_PROFILE;PROFILE;NDEBUG;AZ_ENABLE_TRACING;AZ_ENABLE_DEBUG_TOOLS;AZ_BUILD_CONFIGURATION_TYPE="profile";_ENABLE_EXTENDED_ALIGNED_STORAGE;_WIN32;WIN32;_WIN64;WIN64;NOMINMAX;HAVE_BENCHMARK;NV_CLOTH_IMPORT=;PX_CALL_CONV=;OPENSSL_ENABLED;QT_CORE_LIB;QT_NO_DEBUG;QT_GUI_LIB;QT_WIDGETS_LIB;QT_SVG_LIB;QT_XML_LIB;EMFX_EMSTUDIOLYEMBEDDED;EMOTIONFXANIMATION_EDITOR;EMFX_DEVELOPMENT_BUILD;QT_OPENGL_LIB;CMAKE_INTDIR="profile";NvCloth_Editor_Tests_EXPORTS</PreprocessorDefinitions>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);NVCLOTH_EDITOR;_HAS_EXCEPTIONS=0;_PROFILE;PROFILE;NDEBUG;AZ_ENABLE_TRACING;AZ_ENABLE_DEBUG_TOOLS;AZ_BUILD_CONFIGURATION_TYPE=\"profile\";_ENABLE_EXTENDED_ALIGNED_STORAGE;_WIN32;WIN32;_WIN64;WIN64;NOMINMAX;HAVE_BENCHMARK;NV_CLOTH_IMPORT=;PX_CALL_CONV=;OPENSSL_ENABLED;QT_CORE_LIB;QT_NO_DEBUG;QT_GUI_LIB;QT_WIDGETS_LIB;QT_SVG_LIB;QT_XML_LIB;EMFX_EMSTUDIOLYEMBEDDED;EMOTIONFXANIMATION_EDITOR;EMFX_DEVELOPMENT_BUILD;QT_OPENGL_LIB;CMAKE_INTDIR=\"profile\";NvCloth_Editor_Tests_EXPORTS</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>C:\Users\lesaelr\o3de\Gems\NvCloth\Code\Include;C:\Users\lesaelr\o3de\Gems\NvCloth\Code\Tests;C:\Users\lesaelr\o3de\Gems\NvCloth\Code\Source;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests;C:\Users\lesaelr\o3de\Code\Framework\AzTest\.;C:\Users\lesaelr\o3de\Code\Framework\AzTest\AzTest\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzCore\.;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Common;C:\Users\lesaelr\o3de\Code\Framework\AzFramework\.;C:\Users\lesaelr\o3de\Code\Framework\AzFramework\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\GridMate\.;C:\Users\lesaelr\o3de\Code\Framework\GridMate\Platform\Windows;C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Include;C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Include;C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\3rdParty\ACES;C:\Users\lesaelr\o3de\Gems\Atom\RPI\Code\Include;C:\Users\lesaelr\o3de\Gems\Atom\RPI\Code\External;C:\Users\lesaelr\o3de\Gems\Atom\RHI\Code\Include;C:\Users\lesaelr\o3de\Gems\Atom\Utils\Code\Include;C:\Users\lesaelr\o3de\Code\Framework\AtomCore\.;C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\.;C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework;C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\.;C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneCore\..\..;C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\.;C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Include;C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Source;C:\Users\lesaelr\o3de\Gems\LmbrCentral\Code\include;C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\.;C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\..;C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\Platform\Windows;C:\Users\lesaelr\o3de\Code\Tools\AssetProcessor\AssetBuilderSDK\.;C:\Users\lesaelr\o3de\Code\Framework\GFxFramework\GFxFramework\..;C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneData\..\..;C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneUI\..\..;C:\Users\lesaelr\o3de\Code\Editor\Include;C:\Users\lesaelr\o3de\Code\Editor\.;C:\Users\lesaelr\o3de\Code\Editor\..;C:\Users\lesaelr\o3de\Code\Editor\Plugins\EditorCommon\.;C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Tests;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+    </ResourceCompile>
+    <Midl>
+      <AdditionalIncludeDirectories>C:\Users\lesaelr\o3de\Gems\NvCloth\Code\Include;C:\Users\lesaelr\o3de\Gems\NvCloth\Code\Tests;C:\Users\lesaelr\o3de\Gems\NvCloth\Code\Source;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests;C:\Users\lesaelr\o3de\Code\Framework\AzTest\.;C:\Users\lesaelr\o3de\Code\Framework\AzTest\AzTest\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzCore\.;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Common;C:\Users\lesaelr\o3de\Code\Framework\AzFramework\.;C:\Users\lesaelr\o3de\Code\Framework\AzFramework\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\GridMate\.;C:\Users\lesaelr\o3de\Code\Framework\GridMate\Platform\Windows;C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Include;C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Include;C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\3rdParty\ACES;C:\Users\lesaelr\o3de\Gems\Atom\RPI\Code\Include;C:\Users\lesaelr\o3de\Gems\Atom\RPI\Code\External;C:\Users\lesaelr\o3de\Gems\Atom\RHI\Code\Include;C:\Users\lesaelr\o3de\Gems\Atom\Utils\Code\Include;C:\Users\lesaelr\o3de\Code\Framework\AtomCore\.;C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\.;C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework;C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\.;C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneCore\..\..;C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\.;C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Include;C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Source;C:\Users\lesaelr\o3de\Gems\LmbrCentral\Code\include;C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\.;C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\..;C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\Platform\Windows;C:\Users\lesaelr\o3de\Code\Tools\AssetProcessor\AssetBuilderSDK\.;C:\Users\lesaelr\o3de\Code\Framework\GFxFramework\GFxFramework\..;C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneData\..\..;C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneUI\..\..;C:\Users\lesaelr\o3de\Code\Editor\Include;C:\Users\lesaelr\o3de\Code\Editor\.;C:\Users\lesaelr\o3de\Code\Editor\..;C:\Users\lesaelr\o3de\Code\Editor\Plugins\EditorCommon\.;C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Tests;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+    <Link>
+      <AdditionalDependencies>..\..\..\lib\profile\AzTestShared.lib;..\..\..\lib\profile\AzTest.lib;..\..\..\lib\profile\AzToolsFrameworkTestCommon.lib;..\..\..\lib\profile\NvCloth.Editor.Static.lib;..\..\..\lib\profile\EMotionFX.Editor.Static.lib;..\..\..\lib\profile\EMotionFX.Tests.Static.lib;..\..\..\lib\profile\AzTestShared.lib;..\..\..\lib\profile\AzTest.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\googletest-1.8.1-rev4-windows\googletest\lib\gtest.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\googletest-1.8.1-rev4-windows\googletest\lib\gmock.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\googlebenchmark-1.5.0-rev2-windows\googlebenchmark\lib\Release\benchmark.lib;Shlwapi.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\Qt5Test.lib;..\..\..\lib\profile\NvCloth.Static.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\NvCloth-v1.1.6-4-gd243404-pr58-rev1-windows\NvCloth\NvCloth\lib\vc141win64-cmake\NvClothPROFILE_x64.lib;..\..\..\lib\profile\Atom_Feature_Common.Public.lib;..\..\..\lib\profile\Atom_Utils.Static.lib;dinput8.lib;dxguid.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\Qt5OpenGL.lib;..\..\..\lib\profile\AssetBuilderSDK.lib;..\..\..\lib\profile\GFxFramework.lib;..\..\..\lib\profile\AzToolsFramework.lib;..\..\..\lib\profile\AzQtComponents.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\Qt5Svg.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\Qt5Xml.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\SQLite-3.32.2-rev3-multiplatform\SQLite\build\win_x64\vc140\release\sqlite.lib;..\..\..\lib\profile\SceneUI.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\Qt5Widgets.lib;..\..\..\lib\profile\SceneData.lib;..\..\..\lib\profile\SceneCore.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\Qt5Gui.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\Qt5Core.lib;opengl32.lib;..\..\..\lib\profile\EMotionFX.Static.lib;..\..\..\lib\profile\EMotionFXStaticLib.lib;..\..\..\lib\profile\CryCommon.lib;..\..\..\lib\profile\Atom_RPI.Public.lib;..\..\..\lib\profile\Atom_RHI.Public.lib;..\..\..\lib\profile\Atom_RHI.Reflect.lib;..\..\..\lib\profile\AzFramework.lib;..\..\..\lib\profile\GridMate.lib;ws2_32.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\OpenSSL-1.1.1b-rev2-windows\OpenSSL\lib\libssl.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\OpenSSL-1.1.1b-rev2-windows\OpenSSL\lib\libcrypto.lib;crypt32.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\lz4-1.9.3-vcpkg-rev4-windows\lz4\lz4\lib\lz4.lib;..\..\..\lib\profile\AtomCore.lib;..\..\..\lib\profile\AzCore.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\Lua-5.3.5-rev5-windows\lua\lib\release\lualib.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\zlib-1.2.11-rev2-windows\zlib\lib\zlibstatic.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\zstd-1.35-multiplatform\zstd\bin\win-x64-vc140\release\zstd.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\cityhash-1.1-multiplatform\cityhash\build\win_x64\vc140\release\cityhash.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;advapi32.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalOptions>%(AdditionalOptions) /machine:x64 /IGNORE:4099 /ignore:4099</AdditionalOptions>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <ImportLibrary>C:/Users/lesaelr/o3de/lib/profile/NvCloth.Editor.Tests.Gem.lib</ImportLibrary>
+      <OptimizeReferences>true</OptimizeReferences>
+      <ProgramDataBaseFile>C:/Users/lesaelr/o3de/bin/profile/NvCloth.Editor.Tests.Gem.pdb</ProgramDataBaseFile>
+      <SubSystem>Console</SubSystem>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <TargetMachine>MachineX64</TargetMachine>
+    </Link>
+    <ProjectReference>
+      <LinkLibraryDependencies>false</LinkLibraryDependencies>
+    </ProjectReference>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='release|x64'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>C:\Users\lesaelr\o3de\Gems\NvCloth\Code\Include;C:\Users\lesaelr\o3de\Gems\NvCloth\Code\Tests;C:\Users\lesaelr\o3de\Gems\NvCloth\Code\Source;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests;C:\Users\lesaelr\o3de\Code\Framework\AzTest\.;C:\Users\lesaelr\o3de\Code\Framework\AzTest\AzTest\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzCore\.;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Common;C:\Users\lesaelr\o3de\Code\Framework\AzFramework\.;C:\Users\lesaelr\o3de\Code\Framework\AzFramework\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\GridMate\.;C:\Users\lesaelr\o3de\Code\Framework\GridMate\Platform\Windows;C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Include;C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Include;C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\3rdParty\ACES;C:\Users\lesaelr\o3de\Gems\Atom\RPI\Code\Include;C:\Users\lesaelr\o3de\Gems\Atom\RPI\Code\External;C:\Users\lesaelr\o3de\Gems\Atom\RHI\Code\Include;C:\Users\lesaelr\o3de\Gems\Atom\Utils\Code\Include;C:\Users\lesaelr\o3de\Code\Framework\AtomCore\.;C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\.;C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework;C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\.;C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneCore\..\..;C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\.;C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Include;C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Source;C:\Users\lesaelr\o3de\Gems\LmbrCentral\Code\include;C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\.;C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\..;C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\Platform\Windows;C:\Users\lesaelr\o3de\Code\Tools\AssetProcessor\AssetBuilderSDK\.;C:\Users\lesaelr\o3de\Code\Framework\GFxFramework\GFxFramework\..;C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneData\..\..;C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneUI\..\..;C:\Users\lesaelr\o3de\Code\Editor\Include;C:\Users\lesaelr\o3de\Code\Editor\.;C:\Users\lesaelr\o3de\Code\Editor\..;C:\Users\lesaelr\o3de\Code\Editor\Plugins\EditorCommon\.;C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Tests;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalOptions>%(AdditionalOptions) /Zc:__cplusplus /Zc:lambda /favor:AMD64 /bigobj /experimental:external /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/googletest-1.8.1-rev4-windows/googletest/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/googlebenchmark-1.5.0-rev2-windows/googlebenchmark/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/Lua-5.3.5-rev5-windows/lua/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/RapidJSON-1.1.0-rev1-multiplatform/RapidJSON/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/RapidXML-1.13-rev1-multiplatform/RapidXML/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/zlib-1.2.11-rev2-windows/zlib/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/zstd-1.35-multiplatform/zstd/lib /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/cityhash-1.1-multiplatform/cityhash/src /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/NvCloth-v1.1.6-4-gd243404-pr58-rev1-windows/NvCloth/NvCloth/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/NvCloth-v1.1.6-4-gd243404-pr58-rev1-windows/NvCloth/NvCloth/extensions/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/NvCloth-v1.1.6-4-gd243404-pr58-rev1-windows/NvCloth/PxShared/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/OpenSSL-1.1.1b-rev2-windows/OpenSSL/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/lz4-1.9.3-vcpkg-rev4-windows/lz4/lz4/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/qt-5.15.2-rev4-windows/qt/include/ /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/qt-5.15.2-rev4-windows/qt/include/QtCore /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/qt-5.15.2-rev4-windows/qt/.//mkspecs/win32-msvc /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/qt-5.15.2-rev4-windows/qt/include/QtGui /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/qt-5.15.2-rev4-windows/qt/include//QtANGLE /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/qt-5.15.2-rev4-windows/qt/include/QtGui/5.15.1 /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/qt-5.15.2-rev4-windows/qt/include/QtGui/5.15.1/QtGui /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/qt-5.15.2-rev4-windows/qt/include/QtCore/5.15.1 /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/qt-5.15.2-rev4-windows/qt/include/QtCore/5.15.1/QtCore /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/qt-5.15.2-rev4-windows/qt/include/QtWidgets /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/qt-5.15.2-rev4-windows/qt/include/QtWidgets/5.15.1 /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/qt-5.15.2-rev4-windows/qt/include/QtWidgets/5.15.1/QtWidgets /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/qt-5.15.2-rev4-windows/qt/include/QtSvg /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/qt-5.15.2-rev4-windows/qt/include/QtXml /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/qt-5.15.2-rev4-windows/qt/include/QtOpenGL</AdditionalOptions>
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <CallingConvention>Cdecl</CallingConvention>
+      <ConformanceMode>true</ConformanceMode>
+      <DiagnosticsFormat>Caret</DiagnosticsFormat>
+      <DisableSpecificWarnings>4201</DisableSpecificWarnings>
+      <ExceptionHandling>
+      </ExceptionHandling>
+      <ExternalWarningLevel>TurnOffAllWarnings</ExternalWarningLevel>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <FloatingPointModel>Fast</FloatingPointModel>
+      <ForceConformanceInForLoopScope>true</ForceConformanceInForLoopScope>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <OmitFramePointers>true</OmitFramePointers>
+      <Optimization>Full</Optimization>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <TreatSpecificWarningsAsErrors>4263;4264;4265;4266;4296;4426;4437;4774;4777;5031;5032;5233</TreatSpecificWarningsAsErrors>
+      <TreatWarningAsError>true</TreatWarningAsError>
+      <UseFullPaths>false</UseFullPaths>
+      <WarningLevel>Level4</WarningLevel>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);NVCLOTH_EDITOR;_HAS_EXCEPTIONS=0;_RELEASE;RELEASE;NDEBUG;AZ_BUILD_CONFIGURATION_TYPE="release";_ENABLE_EXTENDED_ALIGNED_STORAGE;_WIN32;WIN32;_WIN64;WIN64;NOMINMAX;HAVE_BENCHMARK;NV_CLOTH_IMPORT=;PX_CALL_CONV=;OPENSSL_ENABLED;QT_CORE_LIB;QT_NO_DEBUG;QT_GUI_LIB;QT_WIDGETS_LIB;QT_SVG_LIB;QT_XML_LIB;EMFX_EMSTUDIOLYEMBEDDED;EMOTIONFXANIMATION_EDITOR;EMFX_DEVELOPMENT_BUILD;QT_OPENGL_LIB;CMAKE_INTDIR="release";NvCloth_Editor_Tests_EXPORTS</PreprocessorDefinitions>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+      <DebugInformationFormat>
+      </DebugInformationFormat>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);NVCLOTH_EDITOR;_HAS_EXCEPTIONS=0;_RELEASE;RELEASE;NDEBUG;AZ_BUILD_CONFIGURATION_TYPE=\"release\";_ENABLE_EXTENDED_ALIGNED_STORAGE;_WIN32;WIN32;_WIN64;WIN64;NOMINMAX;HAVE_BENCHMARK;NV_CLOTH_IMPORT=;PX_CALL_CONV=;OPENSSL_ENABLED;QT_CORE_LIB;QT_NO_DEBUG;QT_GUI_LIB;QT_WIDGETS_LIB;QT_SVG_LIB;QT_XML_LIB;EMFX_EMSTUDIOLYEMBEDDED;EMOTIONFXANIMATION_EDITOR;EMFX_DEVELOPMENT_BUILD;QT_OPENGL_LIB;CMAKE_INTDIR=\"release\";NvCloth_Editor_Tests_EXPORTS</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>C:\Users\lesaelr\o3de\Gems\NvCloth\Code\Include;C:\Users\lesaelr\o3de\Gems\NvCloth\Code\Tests;C:\Users\lesaelr\o3de\Gems\NvCloth\Code\Source;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests;C:\Users\lesaelr\o3de\Code\Framework\AzTest\.;C:\Users\lesaelr\o3de\Code\Framework\AzTest\AzTest\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzCore\.;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Common;C:\Users\lesaelr\o3de\Code\Framework\AzFramework\.;C:\Users\lesaelr\o3de\Code\Framework\AzFramework\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\GridMate\.;C:\Users\lesaelr\o3de\Code\Framework\GridMate\Platform\Windows;C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Include;C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Include;C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\3rdParty\ACES;C:\Users\lesaelr\o3de\Gems\Atom\RPI\Code\Include;C:\Users\lesaelr\o3de\Gems\Atom\RPI\Code\External;C:\Users\lesaelr\o3de\Gems\Atom\RHI\Code\Include;C:\Users\lesaelr\o3de\Gems\Atom\Utils\Code\Include;C:\Users\lesaelr\o3de\Code\Framework\AtomCore\.;C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\.;C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework;C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\.;C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneCore\..\..;C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\.;C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Include;C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Source;C:\Users\lesaelr\o3de\Gems\LmbrCentral\Code\include;C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\.;C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\..;C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\Platform\Windows;C:\Users\lesaelr\o3de\Code\Tools\AssetProcessor\AssetBuilderSDK\.;C:\Users\lesaelr\o3de\Code\Framework\GFxFramework\GFxFramework\..;C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneData\..\..;C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneUI\..\..;C:\Users\lesaelr\o3de\Code\Editor\Include;C:\Users\lesaelr\o3de\Code\Editor\.;C:\Users\lesaelr\o3de\Code\Editor\..;C:\Users\lesaelr\o3de\Code\Editor\Plugins\EditorCommon\.;C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Tests;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+    </ResourceCompile>
+    <Midl>
+      <AdditionalIncludeDirectories>C:\Users\lesaelr\o3de\Gems\NvCloth\Code\Include;C:\Users\lesaelr\o3de\Gems\NvCloth\Code\Tests;C:\Users\lesaelr\o3de\Gems\NvCloth\Code\Source;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests;C:\Users\lesaelr\o3de\Code\Framework\AzTest\.;C:\Users\lesaelr\o3de\Code\Framework\AzTest\AzTest\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzCore\.;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Common;C:\Users\lesaelr\o3de\Code\Framework\AzFramework\.;C:\Users\lesaelr\o3de\Code\Framework\AzFramework\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\GridMate\.;C:\Users\lesaelr\o3de\Code\Framework\GridMate\Platform\Windows;C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Include;C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Include;C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\3rdParty\ACES;C:\Users\lesaelr\o3de\Gems\Atom\RPI\Code\Include;C:\Users\lesaelr\o3de\Gems\Atom\RPI\Code\External;C:\Users\lesaelr\o3de\Gems\Atom\RHI\Code\Include;C:\Users\lesaelr\o3de\Gems\Atom\Utils\Code\Include;C:\Users\lesaelr\o3de\Code\Framework\AtomCore\.;C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\.;C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework;C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\.;C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneCore\..\..;C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\.;C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Include;C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Source;C:\Users\lesaelr\o3de\Gems\LmbrCentral\Code\include;C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\.;C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\..;C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\Platform\Windows;C:\Users\lesaelr\o3de\Code\Tools\AssetProcessor\AssetBuilderSDK\.;C:\Users\lesaelr\o3de\Code\Framework\GFxFramework\GFxFramework\..;C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneData\..\..;C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneUI\..\..;C:\Users\lesaelr\o3de\Code\Editor\Include;C:\Users\lesaelr\o3de\Code\Editor\.;C:\Users\lesaelr\o3de\Code\Editor\..;C:\Users\lesaelr\o3de\Code\Editor\Plugins\EditorCommon\.;C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Tests;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+    <Link>
+      <AdditionalDependencies>..\..\..\lib\release\AzTestShared.lib;..\..\..\lib\release\AzTest.lib;..\..\..\lib\release\AzToolsFrameworkTestCommon.lib;..\..\..\lib\release\NvCloth.Editor.Static.lib;..\..\..\lib\release\EMotionFX.Editor.Static.lib;..\..\..\lib\release\EMotionFX.Tests.Static.lib;..\..\..\lib\release\AzTestShared.lib;..\..\..\lib\release\AzTest.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\googletest-1.8.1-rev4-windows\googletest\lib\gtest.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\googletest-1.8.1-rev4-windows\googletest\lib\gmock.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\googlebenchmark-1.5.0-rev2-windows\googlebenchmark\lib\Release\benchmark.lib;Shlwapi.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\Qt5Test.lib;..\..\..\lib\release\NvCloth.Static.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\NvCloth-v1.1.6-4-gd243404-pr58-rev1-windows\NvCloth\NvCloth\lib\vc141win64-cmake\NvCloth_x64.lib;..\..\..\lib\release\Atom_Feature_Common.Public.lib;..\..\..\lib\release\Atom_Utils.Static.lib;dinput8.lib;dxguid.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\Qt5OpenGL.lib;..\..\..\lib\release\AssetBuilderSDK.lib;..\..\..\lib\release\GFxFramework.lib;..\..\..\lib\release\AzToolsFramework.lib;..\..\..\lib\release\AzQtComponents.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\Qt5Svg.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\Qt5Xml.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\SQLite-3.32.2-rev3-multiplatform\SQLite\build\win_x64\vc140\release\sqlite.lib;..\..\..\lib\release\SceneUI.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\Qt5Widgets.lib;..\..\..\lib\release\SceneData.lib;..\..\..\lib\release\SceneCore.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\Qt5Gui.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\Qt5Core.lib;opengl32.lib;..\..\..\lib\release\EMotionFX.Static.lib;..\..\..\lib\release\EMotionFXStaticLib.lib;..\..\..\lib\release\CryCommon.lib;..\..\..\lib\release\Atom_RPI.Public.lib;..\..\..\lib\release\Atom_RHI.Public.lib;..\..\..\lib\release\Atom_RHI.Reflect.lib;..\..\..\lib\release\AzFramework.lib;..\..\..\lib\release\GridMate.lib;ws2_32.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\OpenSSL-1.1.1b-rev2-windows\OpenSSL\lib\libssl.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\OpenSSL-1.1.1b-rev2-windows\OpenSSL\lib\libcrypto.lib;crypt32.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\lz4-1.9.3-vcpkg-rev4-windows\lz4\lz4\lib\lz4.lib;..\..\..\lib\release\AtomCore.lib;..\..\..\lib\release\AzCore.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\Lua-5.3.5-rev5-windows\lua\lib\release\lualib.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\zlib-1.2.11-rev2-windows\zlib\lib\zlibstatic.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\zstd-1.35-multiplatform\zstd\bin\win-x64-vc140\release\zstd.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\cityhash-1.1-multiplatform\cityhash\build\win_x64\vc140\release\cityhash.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;advapi32.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalOptions>%(AdditionalOptions) /machine:x64 /IGNORE:4099 /ignore:4099</AdditionalOptions>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
+      <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <ImportLibrary>C:/Users/lesaelr/o3de/lib/release/NvCloth.Editor.Tests.Gem.lib</ImportLibrary>
+      <OptimizeReferences>true</OptimizeReferences>
+      <ProgramDataBaseFile>C:/Users/lesaelr/o3de/bin/release/NvCloth.Editor.Tests.Gem.pdb</ProgramDataBaseFile>
+      <SubSystem>Console</SubSystem>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <TargetMachine>MachineX64</TargetMachine>
+    </Link>
+    <ProjectReference>
+      <LinkLibraryDependencies>false</LinkLibraryDependencies>
+    </ProjectReference>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\CMakeFiles\08b24365a84bd27d080f6dd51f42b933\NvCloth.Editor.Tests_(CONFIG).stamp.rule">
+      <Message Condition="'$(Configuration)|$(Platform)'=='debug|x64'">Copying NvCloth.Editor.Tests runtime dependencies to output...</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='debug|x64'">setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -P C:/Users/lesaelr/o3de/runtime_dependencies/debug/NvCloth.Editor.Tests.cmake
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='debug|x64'">C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_ar.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_bg.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_ca.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_cs.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_da.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_de.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_en.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_es.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_fa.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_fi.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_fr.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_gd.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_gl.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_he.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_ar.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_bg.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_ca.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_cs.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_da.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_de.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_en.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_es.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_fr.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_gl.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_hu.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_it.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_ja.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_ko.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_pl.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_ru.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_sk.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_sl.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_tr.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_uk.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_zh_CN.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_zh_TW.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_hu.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_it.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_ja.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_ko.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_lt.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_lv.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_pl.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_pt.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_ru.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_sk.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_sl.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_sv.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_tr.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_uk.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_zh_CN.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_zh_TW.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\bin\Qt5Cored.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\bin\Qt5Testd.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\plugins\iconengines\qsvgicond.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\plugins\imageformats\qgifd.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\plugins\imageformats\qicnsd.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\plugins\imageformats\qicod.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\plugins\imageformats\qjpegd.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\plugins\imageformats\qsvgd.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\plugins\imageformats\qtgad.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\plugins\imageformats\qtiffd.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\plugins\imageformats\qwbmpd.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\plugins\imageformats\qwebpd.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\plugins\platforms\qminimald.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\plugins\platforms\qwindowsd.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\bin\Qt5Guid.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\plugins\styles\qwindowsvistastyled.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\bin\Qt5Widgetsd.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\bin\Qt5Svgd.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\bin\Qt5Xmld.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\bin\Qt5OpenGLd.dll;C:\Users\lesaelr\o3de\bin\debug\AzTestRunner.exe;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\bin\lrelease.exe;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\bin\Qt5Core.dll;C:\Users\lesaelr\o3de\bin\debug\LmbrCentral.Editor.dll;C:\Users\lesaelr\o3de\bin\debug\EMotionFX.Editor.dll;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='debug|x64'">C:\Users\lesaelr\o3de\runtime_dependencies\debug\NvCloth.Editor.Tests_debug.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='debug|x64'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='profile|x64'">Copying NvCloth.Editor.Tests runtime dependencies to output...</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='profile|x64'">setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -P C:/Users/lesaelr/o3de/runtime_dependencies/profile/NvCloth.Editor.Tests.cmake
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='profile|x64'">C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_ar.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_bg.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_ca.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_cs.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_da.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_de.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_en.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_es.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_fa.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_fi.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_fr.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_gd.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_gl.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_he.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_ar.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_bg.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_ca.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_cs.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_da.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_de.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_en.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_es.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_fr.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_gl.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_hu.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_it.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_ja.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_ko.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_pl.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_ru.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_sk.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_sl.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_tr.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_uk.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_zh_CN.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_zh_TW.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_hu.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_it.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_ja.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_ko.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_lt.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_lv.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_pl.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_pt.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_ru.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_sk.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_sl.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_sv.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_tr.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_uk.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_zh_CN.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_zh_TW.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\bin\Qt5Core.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\bin\Qt5Test.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\plugins\iconengines\qsvgicon.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\plugins\imageformats\qgif.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\plugins\imageformats\qicns.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\plugins\imageformats\qico.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\plugins\imageformats\qjpeg.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\plugins\imageformats\qsvg.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\plugins\imageformats\qtga.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\plugins\imageformats\qtiff.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\plugins\imageformats\qwbmp.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\plugins\imageformats\qwebp.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\plugins\platforms\qminimal.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\plugins\platforms\qwindows.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\bin\Qt5Gui.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\plugins\styles\qwindowsvistastyle.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\bin\Qt5Widgets.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\bin\Qt5Svg.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\bin\Qt5Xml.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\bin\Qt5OpenGL.dll;C:\Users\lesaelr\o3de\bin\profile\AzTestRunner.exe;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\bin\lrelease.exe;C:\Users\lesaelr\o3de\bin\profile\LmbrCentral.Editor.dll;C:\Users\lesaelr\o3de\bin\profile\EMotionFX.Editor.dll;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='profile|x64'">C:\Users\lesaelr\o3de\runtime_dependencies\profile\NvCloth.Editor.Tests_profile.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='profile|x64'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='release|x64'">Copying NvCloth.Editor.Tests runtime dependencies to output...</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='release|x64'">setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -P C:/Users/lesaelr/o3de/runtime_dependencies/release/NvCloth.Editor.Tests.cmake
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='release|x64'">C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_ar.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_bg.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_ca.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_cs.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_da.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_de.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_en.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_es.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_fa.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_fi.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_fr.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_gd.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_gl.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_he.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_ar.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_bg.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_ca.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_cs.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_da.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_de.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_en.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_es.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_fr.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_gl.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_hu.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_it.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_ja.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_ko.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_pl.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_ru.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_sk.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_sl.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_tr.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_uk.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_zh_CN.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_zh_TW.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_hu.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_it.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_ja.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_ko.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_lt.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_lv.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_pl.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_pt.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_ru.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_sk.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_sl.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_sv.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_tr.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_uk.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_zh_CN.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_zh_TW.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\bin\Qt5Core.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\bin\Qt5Test.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\plugins\iconengines\qsvgicon.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\plugins\imageformats\qgif.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\plugins\imageformats\qicns.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\plugins\imageformats\qico.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\plugins\imageformats\qjpeg.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\plugins\imageformats\qsvg.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\plugins\imageformats\qtga.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\plugins\imageformats\qtiff.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\plugins\imageformats\qwbmp.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\plugins\imageformats\qwebp.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\plugins\platforms\qminimal.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\plugins\platforms\qwindows.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\bin\Qt5Gui.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\plugins\styles\qwindowsvistastyle.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\bin\Qt5Widgets.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\bin\Qt5Svg.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\bin\Qt5Xml.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\bin\Qt5OpenGL.dll;C:\Users\lesaelr\o3de\bin\release\AzTestRunner.exe;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\bin\lrelease.exe;C:\Users\lesaelr\o3de\bin\release\LmbrCentral.Editor.dll;C:\Users\lesaelr\o3de\bin\release\EMotionFX.Editor.dll;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='release|x64'">C:\Users\lesaelr\o3de\runtime_dependencies\release\NvCloth.Editor.Tests_release.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='release|x64'">false</LinkObjects>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Gems\NvCloth\Code\CMakeLists.txt">
+      <UseUtf8Encoding>Always</UseUtf8Encoding>
+      <Message Condition="'$(Configuration)|$(Platform)'=='debug|x64'">Building Custom Rule C:/Users/lesaelr/o3de/Gems/NvCloth/Code/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='debug|x64'">setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SC:/Users/lesaelr/o3de -BC:/Users/lesaelr/o3de --check-stamp-file C:/Users/lesaelr/o3de/External/NvCloth-2c209df5/Code/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='debug|x64'">C:\Users\lesaelr\.o3de\3rdParty\packages\NvCloth-v1.1.6-4-gd243404-pr58-rev1-windows\FindNvCloth.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\NvCloth-v1.1.6-4-gd243404-pr58-rev1-windows\PackageInfo.json;C:\Users\lesaelr\o3de\Gems\NvCloth\Code\Platform\Windows\PAL_windows.cmake;C:\Users\lesaelr\o3de\Gems\NvCloth\Code\nvcloth_editor_files.cmake;C:\Users\lesaelr\o3de\Gems\NvCloth\Code\nvcloth_editor_shared_files.cmake;C:\Users\lesaelr\o3de\Gems\NvCloth\Code\nvcloth_editor_tests_files.cmake;C:\Users\lesaelr\o3de\Gems\NvCloth\Code\nvcloth_files.cmake;C:\Users\lesaelr\o3de\Gems\NvCloth\Code\nvcloth_shared_files.cmake;C:\Users\lesaelr\o3de\Gems\NvCloth\Code\nvcloth_tests_files.cmake;C:\Users\lesaelr\o3de\cmake\Platform\Windows\LYTestWrappers_windows.cmake;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='debug|x64'">C:\Users\lesaelr\o3de\External\NvCloth-2c209df5\Code\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='debug|x64'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='profile|x64'">Building Custom Rule C:/Users/lesaelr/o3de/Gems/NvCloth/Code/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='profile|x64'">setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SC:/Users/lesaelr/o3de -BC:/Users/lesaelr/o3de --check-stamp-file C:/Users/lesaelr/o3de/External/NvCloth-2c209df5/Code/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='profile|x64'">C:\Users\lesaelr\.o3de\3rdParty\packages\NvCloth-v1.1.6-4-gd243404-pr58-rev1-windows\FindNvCloth.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\NvCloth-v1.1.6-4-gd243404-pr58-rev1-windows\PackageInfo.json;C:\Users\lesaelr\o3de\Gems\NvCloth\Code\Platform\Windows\PAL_windows.cmake;C:\Users\lesaelr\o3de\Gems\NvCloth\Code\nvcloth_editor_files.cmake;C:\Users\lesaelr\o3de\Gems\NvCloth\Code\nvcloth_editor_shared_files.cmake;C:\Users\lesaelr\o3de\Gems\NvCloth\Code\nvcloth_editor_tests_files.cmake;C:\Users\lesaelr\o3de\Gems\NvCloth\Code\nvcloth_files.cmake;C:\Users\lesaelr\o3de\Gems\NvCloth\Code\nvcloth_shared_files.cmake;C:\Users\lesaelr\o3de\Gems\NvCloth\Code\nvcloth_tests_files.cmake;C:\Users\lesaelr\o3de\cmake\Platform\Windows\LYTestWrappers_windows.cmake;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='profile|x64'">C:\Users\lesaelr\o3de\External\NvCloth-2c209df5\Code\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='profile|x64'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='release|x64'">Building Custom Rule C:/Users/lesaelr/o3de/Gems/NvCloth/Code/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='release|x64'">setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SC:/Users/lesaelr/o3de -BC:/Users/lesaelr/o3de --check-stamp-file C:/Users/lesaelr/o3de/External/NvCloth-2c209df5/Code/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='release|x64'">C:\Users\lesaelr\.o3de\3rdParty\packages\NvCloth-v1.1.6-4-gd243404-pr58-rev1-windows\FindNvCloth.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\NvCloth-v1.1.6-4-gd243404-pr58-rev1-windows\PackageInfo.json;C:\Users\lesaelr\o3de\Gems\NvCloth\Code\Platform\Windows\PAL_windows.cmake;C:\Users\lesaelr\o3de\Gems\NvCloth\Code\nvcloth_editor_files.cmake;C:\Users\lesaelr\o3de\Gems\NvCloth\Code\nvcloth_editor_shared_files.cmake;C:\Users\lesaelr\o3de\Gems\NvCloth\Code\nvcloth_editor_tests_files.cmake;C:\Users\lesaelr\o3de\Gems\NvCloth\Code\nvcloth_files.cmake;C:\Users\lesaelr\o3de\Gems\NvCloth\Code\nvcloth_shared_files.cmake;C:\Users\lesaelr\o3de\Gems\NvCloth\Code\nvcloth_tests_files.cmake;C:\Users\lesaelr\o3de\cmake\Platform\Windows\LYTestWrappers_windows.cmake;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='release|x64'">C:\Users\lesaelr\o3de\External\NvCloth-2c209df5\Code\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='release|x64'">false</LinkObjects>
+    </CustomBuild>
+  </ItemGroup>
+  <PropertyGroup>
+    <EnableUnitySupport>true</EnableUnitySupport>
+  </PropertyGroup>
+  <ItemGroup>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\NvCloth-2c209df5\Code\CMakeFiles\NvCloth.Editor.Tests.dir\Unity\unity_0_cxx.cxx" IncludeInUnityFile="false" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/NvCloth-2c209df5/Code/CMakeFiles/NvCloth.Editor.Tests.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\NvCloth\Code\Tests\NvClothEditorTestEnvironment.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/NvCloth-2c209df5/Code/CMakeFiles/NvCloth.Editor.Tests.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\NvCloth\Code\Tests\UnitTestHelper.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\NvCloth\Code\Tests\UnitTestHelper.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/NvCloth-2c209df5/Code/CMakeFiles/NvCloth.Editor.Tests.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\NvCloth\Code\Tests\ActorHelper.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\NvCloth\Code\Tests\ActorHelper.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/NvCloth-2c209df5/Code/CMakeFiles/NvCloth.Editor.Tests.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\NvCloth\Code\Tests\TriangleInputHelper.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\NvCloth\Code\Tests\TriangleInputHelper.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/NvCloth-2c209df5/Code/CMakeFiles/NvCloth.Editor.Tests.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\NvCloth\Code\Tests\MeshVertexColorDataStub.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\NvCloth\Code\Tests\Components\EditorClothComponentTest.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/NvCloth-2c209df5/Code/CMakeFiles/NvCloth.Editor.Tests.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\NvCloth\Code\Tests\Pipeline\SceneAPIExt\ClothRuleTest.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/NvCloth-2c209df5/Code/CMakeFiles/NvCloth.Editor.Tests.dir/Unity" />
+    <None Include="C:\Users\lesaelr\o3de\Gems\NvCloth\Code\nvcloth_editor_tests_files.cmake">
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\runtime_dependencies\debug\NvCloth.Editor.Tests_debug.stamp">
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\runtime_dependencies\profile\NvCloth.Editor.Tests_profile.stamp">
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\runtime_dependencies\release\NvCloth.Editor.Tests_release.stamp">
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\ZERO_CHECK.vcxproj">
+      <Project>{CDE32B4E-8490-3FC5-A3F2-976A0A5DE45E}</Project>
+      <Name>ZERO_CHECK</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\Code\Tools\AssetProcessor\AssetBuilderSDK\AssetBuilderSDK.vcxproj">
+      <Project>{536A868B-DCA5-3AD8-857F-7EE8BD8C6DFE}</Project>
+      <Name>AssetBuilderSDK</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\Code\Framework\AtomCore\AtomCore.vcxproj">
+      <Project>{6D55F49F-9D52-3893-81A0-A8698549AB69}</Project>
+      <Name>AtomCore</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\External\AtomLyIntegration-c3d5e932\CommonFeatures\Code\AtomLyIntegration_CommonFeatures.Public.vcxproj">
+      <Project>{617943C8-9D54-3E05-B08F-79A600BDD733}</Project>
+      <Name>AtomLyIntegration_CommonFeatures.Public</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\External\Atom-418206cc\Feature\Common\Code\Atom_Feature_Common.Public.vcxproj">
+      <Project>{D8CA174F-38B6-3076-82BE-72BE91AC1156}</Project>
+      <Name>Atom_Feature_Common.Public</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\External\Atom-418206cc\RHI\Code\Atom_RHI.Public.vcxproj">
+      <Project>{2E32222C-434D-3353-967C-88B4AA98F8F8}</Project>
+      <Name>Atom_RHI.Public</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\External\Atom-418206cc\RHI\Code\Atom_RHI.Reflect.vcxproj">
+      <Project>{34A5B279-91CB-334A-9CD9-0B3CFB872F2C}</Project>
+      <Name>Atom_RHI.Reflect</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\External\Atom-418206cc\RPI\Code\Atom_RPI.Public.vcxproj">
+      <Project>{ABB218FB-FD4C-33F6-B91D-28BD20400532}</Project>
+      <Name>Atom_RPI.Public</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\External\Atom-418206cc\Utils\Code\Atom_Utils.Static.vcxproj">
+      <Project>{094C724A-A8F2-33E3-8B7F-A0D452CB43A0}</Project>
+      <Name>Atom_Utils.Static</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore.vcxproj">
+      <Project>{8AC0D8DF-6487-39C7-A5F3-F77355B1ACD9}</Project>
+      <Name>AzCore</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework.vcxproj">
+      <Project>{E4BA859A-1109-3DBC-887D-DBC80D0DD65A}</Project>
+      <Name>AzFramework</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\AzQtComponents.vcxproj">
+      <Project>{9CADCCDF-9B80-353B-85C8-F3054FA0C0DF}</Project>
+      <Name>AzQtComponents</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\Code\Framework\AzTest\AzTest.vcxproj">
+      <Project>{95261DE1-D32C-3935-98F1-4D1BF1D97218}</Project>
+      <Name>AzTest</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\Code\Tools\AzTestRunner\AzTestRunner.vcxproj">
+      <Project>{968B32CB-A1B3-3E25-9F97-5BCF47C8BDF1}</Project>
+      <Name>AzTestRunner</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzTestShared.vcxproj">
+      <Project>{1AC8C16C-5239-344F-B0B8-3A991B590589}</Project>
+      <Name>AzTestShared</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework.vcxproj">
+      <Project>{7F75A175-5A41-381A-9555-72F870CC937B}</Project>
+      <Name>AzToolsFramework</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFrameworkTestCommon.vcxproj">
+      <Project>{20391631-7A94-3D65-B85D-67842C6F5BEF}</Project>
+      <Name>AzToolsFrameworkTestCommon</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\CryCommon.vcxproj">
+      <Project>{CA3B5D54-5095-3557-9270-FD4F882B4C66}</Project>
+      <Name>CryCommon</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\External\EMotionFX-34d60ee3\Code\EMotionFX.Editor.vcxproj">
+      <Project>{4E161E26-B0EC-372B-B34A-00CE947A1E53}</Project>
+      <Name>EMotionFX.Editor</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\External\EMotionFX-34d60ee3\Code\EMotionFX.Editor.Static.vcxproj">
+      <Project>{2113F838-7A56-32A7-8F26-32B339FDBE53}</Project>
+      <Name>EMotionFX.Editor.Static</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\External\EMotionFX-34d60ee3\Code\EMotionFX.Static.vcxproj">
+      <Project>{960EDF0D-1BAD-3130-A96F-3F5F1BC883FD}</Project>
+      <Name>EMotionFX.Static</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\External\EMotionFX-34d60ee3\Code\EMotionFX.Tests.Static.vcxproj">
+      <Project>{F3C8B278-1854-39C0-8316-44B483F01A69}</Project>
+      <Name>EMotionFX.Tests.Static</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\External\EMotionFX-34d60ee3\Code\EMotionFXStaticLib.vcxproj">
+      <Project>{C3EEEEA5-78C3-33F2-8E25-E88BB964A847}</Project>
+      <Name>EMotionFXStaticLib</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\Code\Editor\Editor.Headers.vcxproj">
+      <Project>{2D6A63C9-F622-3897-871E-0B6093D2D6F9}</Project>
+      <Name>Editor.Headers</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\Code\Editor\Plugins\EditorCommon\EditorCommon.Headers.vcxproj">
+      <Project>{1019131B-1EB1-3F02-A8DA-4EC4D6779045}</Project>
+      <Name>EditorCommon.Headers</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\Code\Framework\GFxFramework\GFxFramework\GFxFramework.vcxproj">
+      <Project>{23FDFB01-F165-33E8-89FA-50283EB06A67}</Project>
+      <Name>GFxFramework</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate.vcxproj">
+      <Project>{FE67A854-57A6-3513-BAEF-9A7AC0A253E8}</Project>
+      <Name>GridMate</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\External\NvCloth-2c209df5\Code\NvCloth.Editor.Static.vcxproj">
+      <Project>{1AB47B4A-61AF-32A6-B045-84CF3BC2CB42}</Project>
+      <Name>NvCloth.Editor.Static</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\External\NvCloth-2c209df5\Code\NvCloth.Static.vcxproj">
+      <Project>{44FD8E3D-7124-37D9-A2E1-1487EAD905FF}</Project>
+      <Name>NvCloth.Static</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneCore\SceneCore.vcxproj">
+      <Project>{31119784-F11E-3046-8B9B-CE9ECA49640F}</Project>
+      <Name>SceneCore</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneData\SceneData.vcxproj">
+      <Project>{92C8C59E-8F7D-349F-A855-683C9CB1895E}</Project>
+      <Name>SceneData</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneUI\SceneUI.vcxproj">
+      <Project>{D412B42F-CCBC-3F03-87CD-7CCF4B5F105E}</Project>
+      <Name>SceneUI</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

@@ -1,0 +1,7 @@
+# CMake generation dependency list for this directory.
+C:/Users/lesaelr/o3de/Gems/HttpRequestor/Code/CMakeLists.txt
+C:/Users/lesaelr/o3de/Gems/HttpRequestor/Code/Source/Platform/Windows/httprequestor_windows.cmake
+C:/Users/lesaelr/o3de/Gems/HttpRequestor/Code/httprequestor_files.cmake
+C:/Users/lesaelr/o3de/Gems/HttpRequestor/Code/httprequestor_shared_files.cmake
+C:/Users/lesaelr/o3de/Gems/HttpRequestor/Code/httprequestor_tests_files.cmake
+C:/Users/lesaelr/o3de/cmake/Platform/Windows/LYTestWrappers_windows.cmake

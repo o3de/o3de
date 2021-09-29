@@ -1,0 +1,165 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneBuilder\CMakeFiles\SceneBuilder.Static.dir\Unity\unity_2_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneBuilder\CMakeFiles\SceneBuilder.Static.dir\Unity\unity_1_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneBuilder\CMakeFiles\SceneBuilder.Static.dir\Unity\unity_0_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneBuilder\SceneImportRequestHandler.cpp" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneBuilder\SceneImporter.cpp" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneBuilder\SceneSystem.cpp" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneBuilder\ImportContexts\ImportContexts.cpp">
+      <Filter>ImportContexts</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneBuilder\ImportContexts\AssImpImportContexts.cpp">
+      <Filter>ImportContexts</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneBuilder\Importers\Utilities\AssImpMeshImporterUtilities.cpp">
+      <Filter>Importers\Utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneBuilder\Importers\Utilities\RenamedNodesMap.cpp">
+      <Filter>Importers\Utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneBuilder\Importers\AssImpAnimationImporter.cpp">
+      <Filter>Importers</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneBuilder\Importers\AssImpBitangentStreamImporter.cpp">
+      <Filter>Importers</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneBuilder\Importers\AssImpBlendShapeImporter.cpp">
+      <Filter>Importers</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneBuilder\Importers\AssImpBoneImporter.cpp">
+      <Filter>Importers</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneBuilder\Importers\AssImpColorStreamImporter.cpp">
+      <Filter>Importers</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneBuilder\Importers\AssImpImporterUtilities.cpp">
+      <Filter>Importers</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneBuilder\Importers\AssImpMaterialImporter.cpp">
+      <Filter>Importers</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneBuilder\Importers\AssImpMeshImporter.cpp">
+      <Filter>Importers</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneBuilder\Importers\AssImpSkinImporter.cpp">
+      <Filter>Importers</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneBuilder\Importers\AssImpSkinWeightsImporter.cpp">
+      <Filter>Importers</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneBuilder\Importers\AssImpTangentStreamImporter.cpp">
+      <Filter>Importers</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneBuilder\Importers\AssImpTransformImporter.cpp">
+      <Filter>Importers</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneBuilder\Importers\AssImpUvMapImporter.cpp">
+      <Filter>Importers</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneBuilder\Importers\ImporterUtilities.cpp">
+      <Filter>Importers</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneBuilder\SceneBuilderConfiguration.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneBuilder\SceneImportRequestHandler.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneBuilder\SceneImporter.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneBuilder\SceneSystem.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneBuilder\ImportContexts\ImportContexts.h">
+      <Filter>ImportContexts</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneBuilder\ImportContexts\AssImpImportContexts.h">
+      <Filter>ImportContexts</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneBuilder\Importers\Utilities\AssImpMeshImporterUtilities.h">
+      <Filter>Importers\Utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneBuilder\Importers\Utilities\RenamedNodesMap.h">
+      <Filter>Importers\Utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneBuilder\Importers\AssImpAnimationImporter.h">
+      <Filter>Importers</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneBuilder\Importers\AssImpBitangentStreamImporter.h">
+      <Filter>Importers</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneBuilder\Importers\AssImpBlendShapeImporter.h">
+      <Filter>Importers</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneBuilder\Importers\AssImpBoneImporter.h">
+      <Filter>Importers</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneBuilder\Importers\AssImpColorStreamImporter.h">
+      <Filter>Importers</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneBuilder\Importers\AssImpImporterUtilities.h">
+      <Filter>Importers</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneBuilder\Importers\AssImpMaterialImporter.h">
+      <Filter>Importers</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneBuilder\Importers\AssImpMeshImporter.h">
+      <Filter>Importers</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneBuilder\Importers\AssImpSkinImporter.h">
+      <Filter>Importers</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneBuilder\Importers\AssImpSkinWeightsImporter.h">
+      <Filter>Importers</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneBuilder\Importers\AssImpTangentStreamImporter.h">
+      <Filter>Importers</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneBuilder\Importers\AssImpTransformImporter.h">
+      <Filter>Importers</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneBuilder\Importers\AssImpUvMapImporter.h">
+      <Filter>Importers</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneBuilder\Importers\ImporterUtilities.h">
+      <Filter>Importers</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneBuilder\Importers\ImporterUtilities.inl">
+      <Filter>Importers</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneBuilder\CMakeLists.txt">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneBuilder\scenebuilder_files.cmake" />
+    <None Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneBuilder\Platform\Windows\platform_windows_files.cmake">
+      <Filter>Platform\Windows</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Generated Files">
+      <UniqueIdentifier>{FB9B7D8B-7F05-31D5-AA90-592248EDE1B3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ImportContexts">
+      <UniqueIdentifier>{9CF0D3E4-DF31-32E4-817E-8D71F5A4F1DD}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Importers">
+      <UniqueIdentifier>{B65E6B7B-7F2E-32C4-B574-7A45020C2B3B}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Importers\Utilities">
+      <UniqueIdentifier>{CBF26E03-CA04-368E-97D5-95D3A1D1C58A}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Platform">
+      <UniqueIdentifier>{378A8D8C-6CA1-3F6B-A02B-1E9FF64C97B2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Platform\Windows">
+      <UniqueIdentifier>{63AEF2F6-51C7-306A-BFE8-A049C8C62EFB}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

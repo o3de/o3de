@@ -1,0 +1,11 @@
+# CMake generation dependency list for this directory.
+C:/Users/lesaelr/.o3de/3rdParty/packages/lz4-1.9.3-vcpkg-rev4-windows/Findlz4.cmake
+C:/Users/lesaelr/.o3de/3rdParty/packages/lz4-1.9.3-vcpkg-rev4-windows/PackageInfo.json
+C:/Users/lesaelr/o3de/Code/Framework/AzFramework/AzFramework/azframework_files.cmake
+C:/Users/lesaelr/o3de/Code/Framework/AzFramework/CMakeLists.txt
+C:/Users/lesaelr/o3de/Code/Framework/AzFramework/Platform/Windows/platform_windows.cmake
+C:/Users/lesaelr/o3de/Code/Framework/AzFramework/Platform/Windows/platform_windows_files.cmake
+C:/Users/lesaelr/o3de/Code/Framework/AzFramework/Tests/framework_shared_tests_files.cmake
+C:/Users/lesaelr/o3de/Code/Framework/AzFramework/Tests/frameworktests_files.cmake
+C:/Users/lesaelr/o3de/Code/Framework/AzFramework/Tests/process_launch_test_files.cmake
+C:/Users/lesaelr/o3de/cmake/Platform/Windows/LYTestWrappers_windows.cmake

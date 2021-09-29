@@ -1,0 +1,28 @@
+{
+	"BUILD_DIR" : "C:/Users/lesaelr/o3de/External/AtomLyIntegration-c3d5e932/CommonFeatures/Code/AtomLyIntegration_CommonFeatures.Editor_autogen",
+	"CMAKE_BINARY_DIR" : "C:/Users/lesaelr/o3de",
+	"CMAKE_CURRENT_BINARY_DIR" : "C:/Users/lesaelr/o3de/External/AtomLyIntegration-c3d5e932/CommonFeatures/Code",
+	"CMAKE_CURRENT_SOURCE_DIR" : "C:/Users/lesaelr/o3de/Gems/AtomLyIntegration/CommonFeatures/Code",
+	"CMAKE_SOURCE_DIR" : "C:/Users/lesaelr/o3de",
+	"INCLUDE_DIR" : "C:/Users/lesaelr/o3de/External/AtomLyIntegration-c3d5e932/CommonFeatures/Code/AtomLyIntegration_CommonFeatures.Editor_autogen/include",
+	"INCLUDE_DIR_debug" : "C:/Users/lesaelr/o3de/External/AtomLyIntegration-c3d5e932/CommonFeatures/Code/AtomLyIntegration_CommonFeatures.Editor_autogen/include_debug",
+	"INCLUDE_DIR_profile" : "C:/Users/lesaelr/o3de/External/AtomLyIntegration-c3d5e932/CommonFeatures/Code/AtomLyIntegration_CommonFeatures.Editor_autogen/include_profile",
+	"INCLUDE_DIR_release" : "C:/Users/lesaelr/o3de/External/AtomLyIntegration-c3d5e932/CommonFeatures/Code/AtomLyIntegration_CommonFeatures.Editor_autogen/include_release",
+	"INPUTS" : 
+	[
+		"C:/Users/lesaelr/o3de/Gems/AtomLyIntegration/CommonFeatures/Code/Resources/Icons/materialtype.svg"
+	],
+	"LOCK_FILE" : "C:/Users/lesaelr/o3de/External/AtomLyIntegration-c3d5e932/CommonFeatures/Code/CMakeFiles/AtomLyIntegration_CommonFeatures.Editor_autogen.dir/AutoRcc_AtomLyIntegrationResources_S5YYZ2ZCNV_Lock.lock",
+	"MULTI_CONFIG" : true,
+	"OPTIONS" : [ "-name", "AtomLyIntegrationResources" ],
+	"OUTPUT_CHECKSUM" : "S5YYZ2ZCNV",
+	"OUTPUT_NAME" : "qrc_AtomLyIntegrationResources.cpp",
+	"RCC_EXECUTABLE" : "C:/Users/lesaelr/.o3de/3rdParty/packages/qt-5.15.2-rev4-windows/qt/bin/rcc.exe",
+	"RCC_LIST_OPTIONS" : [ "--list" ],
+	"SETTINGS_FILE" : "C:/Users/lesaelr/o3de/External/AtomLyIntegration-c3d5e932/CommonFeatures/Code/CMakeFiles/AtomLyIntegration_CommonFeatures.Editor_autogen.dir/AutoRcc_AtomLyIntegrationResources_S5YYZ2ZCNV_Used.txt",
+	"SETTINGS_FILE_debug" : "C:/Users/lesaelr/o3de/External/AtomLyIntegration-c3d5e932/CommonFeatures/Code/CMakeFiles/AtomLyIntegration_CommonFeatures.Editor_autogen.dir/AutoRcc_AtomLyIntegrationResources_S5YYZ2ZCNV_Used_debug.txt",
+	"SETTINGS_FILE_profile" : "C:/Users/lesaelr/o3de/External/AtomLyIntegration-c3d5e932/CommonFeatures/Code/CMakeFiles/AtomLyIntegration_CommonFeatures.Editor_autogen.dir/AutoRcc_AtomLyIntegrationResources_S5YYZ2ZCNV_Used_profile.txt",
+	"SETTINGS_FILE_release" : "C:/Users/lesaelr/o3de/External/AtomLyIntegration-c3d5e932/CommonFeatures/Code/CMakeFiles/AtomLyIntegration_CommonFeatures.Editor_autogen.dir/AutoRcc_AtomLyIntegrationResources_S5YYZ2ZCNV_Used_release.txt",
+	"SOURCE" : "C:/Users/lesaelr/o3de/Gems/AtomLyIntegration/CommonFeatures/Code/Resources/AtomLyIntegrationResources.qrc",
+	"VERBOSITY" : 0
+}

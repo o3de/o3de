@@ -1,0 +1,20 @@
+# CMake generation dependency list for this directory.
+C:/Users/lesaelr/.o3de/3rdParty/packages/ISPCTexComp-36b80aa-rev1-windows/FindISPCTexComp.cmake
+C:/Users/lesaelr/.o3de/3rdParty/packages/ISPCTexComp-36b80aa-rev1-windows/PackageInfo.json
+C:/Users/lesaelr/.o3de/3rdParty/packages/PVRTexTool-4.24.0-rev4-multiplatform/FindPVRTexTool.cmake
+C:/Users/lesaelr/.o3de/3rdParty/packages/PVRTexTool-4.24.0-rev4-multiplatform/PackageInfo.json
+C:/Users/lesaelr/.o3de/3rdParty/packages/astc-encoder-3.2-rev1-windows/Findastc-encoder.cmake
+C:/Users/lesaelr/.o3de/3rdParty/packages/astc-encoder-3.2-rev1-windows/PackageInfo.json
+C:/Users/lesaelr/.o3de/3rdParty/packages/etc2comp-9cd0f9cae0-rev1-windows/Findetc2comp.cmake
+C:/Users/lesaelr/.o3de/3rdParty/packages/etc2comp-9cd0f9cae0-rev1-windows/PackageInfo.json
+C:/Users/lesaelr/.o3de/3rdParty/packages/ilmbase-2.3.0-rev4-multiplatform/Findilmbase.cmake
+C:/Users/lesaelr/.o3de/3rdParty/packages/ilmbase-2.3.0-rev4-multiplatform/PackageInfo.json
+C:/Users/lesaelr/o3de/Gems/Atom/Asset/ImageProcessingAtom/Code/CMakeLists.txt
+C:/Users/lesaelr/o3de/Gems/Atom/Asset/ImageProcessingAtom/Code/Source/Platform/Common/msvc/imageprocessingatom_editor_static_msvc.cmake
+C:/Users/lesaelr/o3de/Gems/Atom/Asset/ImageProcessingAtom/Code/Source/Platform/Windows/platform_windows.cmake
+C:/Users/lesaelr/o3de/Gems/Atom/Asset/ImageProcessingAtom/Code/Source/Platform/Windows/platform_windows_files.cmake
+C:/Users/lesaelr/o3de/Gems/Atom/Asset/ImageProcessingAtom/Code/imageprocessing_files.cmake
+C:/Users/lesaelr/o3de/Gems/Atom/Asset/ImageProcessingAtom/Code/imageprocessing_tests_files.cmake
+C:/Users/lesaelr/o3de/Gems/Atom/Asset/ImageProcessingAtom/Code/imageprocessingatom_headers_files.cmake
+C:/Users/lesaelr/o3de/Gems/Atom/Asset/ImageProcessingAtom/Code/imageprocessingatom_shared_files.cmake
+C:/Users/lesaelr/o3de/cmake/Platform/Windows/LYTestWrappers_windows.cmake

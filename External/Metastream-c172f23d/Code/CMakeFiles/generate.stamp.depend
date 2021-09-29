@@ -1,0 +1,9 @@
+# CMake generation dependency list for this directory.
+C:/Users/lesaelr/o3de/Gems/Metastream/Code/CMakeLists.txt
+C:/Users/lesaelr/o3de/Gems/Metastream/Code/Source/Platform/Common/MSVC/metastream_msvc.cmake
+C:/Users/lesaelr/o3de/Gems/Metastream/Code/Source/Platform/Windows/metastream_windows.cmake
+C:/Users/lesaelr/o3de/Gems/Metastream/Code/Source/Platform/Windows/platform_windows_files.cmake
+C:/Users/lesaelr/o3de/Gems/Metastream/Code/metastream_files.cmake
+C:/Users/lesaelr/o3de/Gems/Metastream/Code/metastream_shared_files.cmake
+C:/Users/lesaelr/o3de/Gems/Metastream/Code/metastream_tests_files.cmake
+C:/Users/lesaelr/o3de/cmake/Platform/Windows/LYTestWrappers_windows.cmake

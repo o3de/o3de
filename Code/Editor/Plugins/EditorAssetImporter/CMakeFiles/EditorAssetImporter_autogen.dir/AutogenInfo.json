@@ -1,0 +1,284 @@
+{
+	"BUILD_DIR" : "C:/Users/lesaelr/o3de/Code/Editor/Plugins/EditorAssetImporter/EditorAssetImporter_autogen",
+	"CMAKE_BINARY_DIR" : "C:/Users/lesaelr/o3de",
+	"CMAKE_CURRENT_BINARY_DIR" : "C:/Users/lesaelr/o3de/Code/Editor/Plugins/EditorAssetImporter",
+	"CMAKE_CURRENT_SOURCE_DIR" : "C:/Users/lesaelr/o3de/Code/Editor/Plugins/EditorAssetImporter",
+	"CMAKE_EXECUTABLE" : "C:/Program Files/CMake/bin/cmake.exe",
+	"CMAKE_LIST_FILES" : 
+	[
+		"C:/Users/lesaelr/o3de/Code/Editor/Plugins/EditorAssetImporter/CMakeLists.txt",
+		"C:/Users/lesaelr/o3de/Code/Editor/Plugins/EditorAssetImporter/editorassetimporter_files.cmake"
+	],
+	"CMAKE_SOURCE_DIR" : "C:/Users/lesaelr/o3de",
+	"DEP_FILE" : "",
+	"DEP_FILE_RULE_NAME" : "",
+	"HEADERS" : 
+	[
+		[
+			"C:/Users/lesaelr/o3de/Code/Editor/Plugins/EditorAssetImporter/AssetBrowserContextProvider.h",
+			"Mu",
+			"EWIEGA46WW/moc_AssetBrowserContextProvider.cpp",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Code/Editor/Plugins/EditorAssetImporter/AssetImporterDocument.h",
+			"Mu",
+			"EWIEGA46WW/moc_AssetImporterDocument.cpp",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Code/Editor/Plugins/EditorAssetImporter/AssetImporterPlugin.h",
+			"Mu",
+			"EWIEGA46WW/moc_AssetImporterPlugin.cpp",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Code/Editor/Plugins/EditorAssetImporter/AssetImporterWindow.h",
+			"Mu",
+			"EWIEGA46WW/moc_AssetImporterWindow.cpp",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Code/Editor/Plugins/EditorAssetImporter/ImporterRootDisplay.h",
+			"Mu",
+			"EWIEGA46WW/moc_ImporterRootDisplay.cpp",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Code/Editor/Plugins/EditorAssetImporter/SceneSerializationHandler.h",
+			"Mu",
+			"EWIEGA46WW/moc_SceneSerializationHandler.cpp",
+			null
+		]
+	],
+	"HEADER_EXTENSIONS" : [ "h", "hh", "h++", "hm", "hpp", "hxx", "in", "txx" ],
+	"INCLUDE_DIR" : "C:/Users/lesaelr/o3de/Code/Editor/Plugins/EditorAssetImporter/EditorAssetImporter_autogen/include",
+	"INCLUDE_DIR_debug" : "C:/Users/lesaelr/o3de/Code/Editor/Plugins/EditorAssetImporter/EditorAssetImporter_autogen/include_debug",
+	"INCLUDE_DIR_profile" : "C:/Users/lesaelr/o3de/Code/Editor/Plugins/EditorAssetImporter/EditorAssetImporter_autogen/include_profile",
+	"INCLUDE_DIR_release" : "C:/Users/lesaelr/o3de/Code/Editor/Plugins/EditorAssetImporter/EditorAssetImporter_autogen/include_release",
+	"MOC_COMPILATION_FILE" : "C:/Users/lesaelr/o3de/Code/Editor/Plugins/EditorAssetImporter/EditorAssetImporter_autogen/mocs_compilation.cpp",
+	"MOC_COMPILATION_FILE_debug" : "C:/Users/lesaelr/o3de/Code/Editor/Plugins/EditorAssetImporter/EditorAssetImporter_autogen/mocs_compilation_debug.cpp",
+	"MOC_COMPILATION_FILE_profile" : "C:/Users/lesaelr/o3de/Code/Editor/Plugins/EditorAssetImporter/EditorAssetImporter_autogen/mocs_compilation_profile.cpp",
+	"MOC_COMPILATION_FILE_release" : "C:/Users/lesaelr/o3de/Code/Editor/Plugins/EditorAssetImporter/EditorAssetImporter_autogen/mocs_compilation_release.cpp",
+	"MOC_DEFINITIONS" : 
+	[
+		"AWS_CUSTOM_MEMORY_MANAGEMENT",
+		"EDITOR",
+		"EDITOR_COMMON_IMPORTS",
+		"EditorAssetImporter_EXPORTS",
+		"NOMINMAX",
+		"OPENSSL_ENABLED",
+		"PLATFORM_SUPPORTS_AWS_NATIVE_SDK",
+		"PLUGIN_EXPORTS",
+		"QT_CORE_LIB",
+		"QT_GUI_LIB",
+		"QT_NETWORK_LIB",
+		"QT_NO_DEBUG",
+		"QT_SVG_LIB",
+		"QT_WIDGETS_LIB",
+		"QT_XML_LIB",
+		"SANDBOX_IMPORTS",
+		"USE_IMPORT_EXPORT",
+		"WIN32",
+		"WIN64",
+		"_ENABLE_EXTENDED_ALIGNED_STORAGE",
+		"_HAS_EXCEPTIONS=0",
+		"_WIN32",
+		"_WIN64"
+	],
+	"MOC_DEFINITIONS_debug" : 
+	[
+		"AWS_CUSTOM_MEMORY_MANAGEMENT",
+		"AZ_BUILD_CONFIGURATION_TYPE=\"debug\"",
+		"AZ_DEBUG_BUILD=1",
+		"AZ_ENABLE_DEBUG_TOOLS",
+		"AZ_ENABLE_TRACING",
+		"EDITOR",
+		"EDITOR_COMMON_IMPORTS",
+		"EditorAssetImporter_EXPORTS",
+		"NOMINMAX",
+		"OPENSSL_ENABLED",
+		"PLATFORM_SUPPORTS_AWS_NATIVE_SDK",
+		"PLUGIN_EXPORTS",
+		"QT_CORE_LIB",
+		"QT_GUI_LIB",
+		"QT_NETWORK_LIB",
+		"QT_SVG_LIB",
+		"QT_WIDGETS_LIB",
+		"QT_XML_LIB",
+		"SANDBOX_IMPORTS",
+		"USE_IMPORT_EXPORT",
+		"WIN32",
+		"WIN64",
+		"_DEBUG",
+		"_ENABLE_EXTENDED_ALIGNED_STORAGE",
+		"_HAS_EXCEPTIONS=0",
+		"_WIN32",
+		"_WIN64"
+	],
+	"MOC_DEFINITIONS_profile" : 
+	[
+		"AWS_CUSTOM_MEMORY_MANAGEMENT",
+		"AZ_BUILD_CONFIGURATION_TYPE=\"profile\"",
+		"AZ_ENABLE_DEBUG_TOOLS",
+		"AZ_ENABLE_TRACING",
+		"EDITOR",
+		"EDITOR_COMMON_IMPORTS",
+		"EditorAssetImporter_EXPORTS",
+		"NDEBUG",
+		"NOMINMAX",
+		"OPENSSL_ENABLED",
+		"PLATFORM_SUPPORTS_AWS_NATIVE_SDK",
+		"PLUGIN_EXPORTS",
+		"PROFILE",
+		"QT_CORE_LIB",
+		"QT_GUI_LIB",
+		"QT_NETWORK_LIB",
+		"QT_NO_DEBUG",
+		"QT_SVG_LIB",
+		"QT_WIDGETS_LIB",
+		"QT_XML_LIB",
+		"SANDBOX_IMPORTS",
+		"USE_IMPORT_EXPORT",
+		"WIN32",
+		"WIN64",
+		"_ENABLE_EXTENDED_ALIGNED_STORAGE",
+		"_HAS_EXCEPTIONS=0",
+		"_PROFILE",
+		"_WIN32",
+		"_WIN64"
+	],
+	"MOC_DEFINITIONS_release" : 
+	[
+		"AWS_CUSTOM_MEMORY_MANAGEMENT",
+		"AZ_BUILD_CONFIGURATION_TYPE=\"release\"",
+		"EDITOR",
+		"EDITOR_COMMON_IMPORTS",
+		"EditorAssetImporter_EXPORTS",
+		"NDEBUG",
+		"NOMINMAX",
+		"OPENSSL_ENABLED",
+		"PLATFORM_SUPPORTS_AWS_NATIVE_SDK",
+		"PLUGIN_EXPORTS",
+		"QT_CORE_LIB",
+		"QT_GUI_LIB",
+		"QT_NETWORK_LIB",
+		"QT_NO_DEBUG",
+		"QT_SVG_LIB",
+		"QT_WIDGETS_LIB",
+		"QT_XML_LIB",
+		"RELEASE",
+		"SANDBOX_IMPORTS",
+		"USE_IMPORT_EXPORT",
+		"WIN32",
+		"WIN64",
+		"_ENABLE_EXTENDED_ALIGNED_STORAGE",
+		"_HAS_EXCEPTIONS=0",
+		"_RELEASE",
+		"_WIN32",
+		"_WIN64"
+	],
+	"MOC_DEPEND_FILTERS" : 
+	[
+		[
+			"Q_PLUGIN_METADATA",
+			"[\n][ \t]*Q_PLUGIN_METADATA[ \t]*\\([^\\)]*FILE[ \t]*\"([^\"]+)\""
+		]
+	],
+	"MOC_INCLUDES" : 
+	[
+		"C:/Users/lesaelr/o3de/Code/Editor/Plugins/EditorAssetImporter",
+		"C:/Users/lesaelr/o3de/Code/Editor/Plugins/EditorAssetImporter/EditorAssetImporter_autogen/include",
+		"C:/Users/lesaelr/o3de/Code/Framework/AzCore",
+		"C:/Users/lesaelr/o3de/Code/Framework/AzCore/Platform/Windows",
+		"C:/Users/lesaelr/o3de/Code/Framework/AzCore/Platform/Common",
+		"C:/Users/lesaelr/o3de/Code/Framework/AzToolsFramework",
+		"C:/Users/lesaelr/o3de/Code/Framework/AzToolsFramework/AzToolsFramework",
+		"C:/Users/lesaelr/o3de/Code/Framework/AzToolsFramework/Platform/Windows",
+		"C:/Users/lesaelr/o3de/Code/Framework/AzFramework",
+		"C:/Users/lesaelr/o3de/Code/Framework/AzFramework/Platform/Windows",
+		"C:/Users/lesaelr/o3de/Code/Framework/GridMate",
+		"C:/Users/lesaelr/o3de/Code/Framework/GridMate/Platform/Windows",
+		"C:/Users/lesaelr/o3de/Code/Framework/AzQtComponents",
+		"C:/Users/lesaelr/o3de/Code/Tools",
+		"C:/Users/lesaelr/o3de/Code/Tools",
+		"C:/Users/lesaelr/o3de/Code/Tools",
+		"C:/Users/lesaelr/o3de/Code/Framework/GFxFramework",
+		"C:/Users/lesaelr/o3de/Code/Legacy/CryCommon",
+		"C:/Users/lesaelr/o3de/Code/Legacy",
+		"C:/Users/lesaelr/o3de/Code/Legacy/CryCommon/Platform/Windows",
+		"C:/Users/lesaelr/o3de/Code/Editor/Include",
+		"C:/Users/lesaelr/o3de/Code/Editor",
+		"C:/Users/lesaelr/o3de/Code",
+		"C:/Users/lesaelr/o3de/Code/Editor/Plugins/EditorCommon"
+	],
+	"MOC_MACRO_NAMES" : [ "Q_OBJECT", "Q_GADGET", "Q_NAMESPACE", "Q_NAMESPACE_EXPORT" ],
+	"MOC_OPTIONS" : [],
+	"MOC_PATH_PREFIX" : false,
+	"MOC_PREDEFS_CMD" : [],
+	"MOC_PREDEFS_FILE" : "",
+	"MOC_RELAXED_MODE" : false,
+	"MOC_SKIP" : 
+	[
+		"C:/Users/lesaelr/o3de/Code/Editor/Plugins/EditorAssetImporter/EditorAssetImporter_autogen/include/ui_AssetImporterWindow.h",
+		"C:/Users/lesaelr/o3de/Code/Editor/Plugins/EditorAssetImporter/EditorAssetImporter_autogen/include/ui_ImporterRootDisplay.h"
+	],
+	"MULTI_CONFIG" : true,
+	"PARALLEL" : 6,
+	"PARSE_CACHE_FILE" : "C:/Users/lesaelr/o3de/Code/Editor/Plugins/EditorAssetImporter/CMakeFiles/EditorAssetImporter_autogen.dir/ParseCache.txt",
+	"PARSE_CACHE_FILE_debug" : "C:/Users/lesaelr/o3de/Code/Editor/Plugins/EditorAssetImporter/CMakeFiles/EditorAssetImporter_autogen.dir/ParseCache_debug.txt",
+	"PARSE_CACHE_FILE_profile" : "C:/Users/lesaelr/o3de/Code/Editor/Plugins/EditorAssetImporter/CMakeFiles/EditorAssetImporter_autogen.dir/ParseCache_profile.txt",
+	"PARSE_CACHE_FILE_release" : "C:/Users/lesaelr/o3de/Code/Editor/Plugins/EditorAssetImporter/CMakeFiles/EditorAssetImporter_autogen.dir/ParseCache_release.txt",
+	"QT_MOC_EXECUTABLE" : "C:/Users/lesaelr/.o3de/3rdParty/packages/qt-5.15.2-rev4-windows/qt/bin/moc.exe",
+	"QT_UIC_EXECUTABLE" : "",
+	"QT_VERSION_MAJOR" : 5,
+	"QT_VERSION_MINOR" : 15,
+	"SETTINGS_FILE" : "C:/Users/lesaelr/o3de/Code/Editor/Plugins/EditorAssetImporter/CMakeFiles/EditorAssetImporter_autogen.dir/AutogenUsed.txt",
+	"SETTINGS_FILE_debug" : "C:/Users/lesaelr/o3de/Code/Editor/Plugins/EditorAssetImporter/CMakeFiles/EditorAssetImporter_autogen.dir/AutogenUsed_debug.txt",
+	"SETTINGS_FILE_profile" : "C:/Users/lesaelr/o3de/Code/Editor/Plugins/EditorAssetImporter/CMakeFiles/EditorAssetImporter_autogen.dir/AutogenUsed_profile.txt",
+	"SETTINGS_FILE_release" : "C:/Users/lesaelr/o3de/Code/Editor/Plugins/EditorAssetImporter/CMakeFiles/EditorAssetImporter_autogen.dir/AutogenUsed_release.txt",
+	"SOURCES" : 
+	[
+		[
+			"C:/Users/lesaelr/o3de/Code/Editor/Plugins/EditorAssetImporter/AssetBrowserContextProvider.cpp",
+			"Mu",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Code/Editor/Plugins/EditorAssetImporter/AssetImporterDocument.cpp",
+			"Mu",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Code/Editor/Plugins/EditorAssetImporter/AssetImporterPlugin.cpp",
+			"Mu",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Code/Editor/Plugins/EditorAssetImporter/AssetImporterWindow.cpp",
+			"Mu",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Code/Editor/Plugins/EditorAssetImporter/CMakeFiles/EditorAssetImporter.dir/Unity/unity_0_cxx.cxx",
+			"Mu",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Code/Editor/Plugins/EditorAssetImporter/ImporterRootDisplay.cpp",
+			"Mu",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Code/Editor/Plugins/EditorAssetImporter/Main.cpp",
+			"Mu",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Code/Editor/Plugins/EditorAssetImporter/SceneSerializationHandler.cpp",
+			"Mu",
+			null
+		]
+	],
+	"VERBOSITY" : 0
+}

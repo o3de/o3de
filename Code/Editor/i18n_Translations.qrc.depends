@@ -1,0 +1,6 @@
+<RCC>
+    <qresource prefix="/Translations">
+        <file>editor_en-us.qm</file>
+        <file>assetbrowser_en-us.qm</file>
+    </qresource>
+</RCC>

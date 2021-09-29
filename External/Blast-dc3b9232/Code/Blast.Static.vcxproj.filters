@@ -1,0 +1,173 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\Blast-dc3b9232\Code\CMakeFiles\Blast.Static.dir\Unity\unity_1_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\Blast-dc3b9232\Code\CMakeFiles\Blast.Static.dir\Unity\unity_0_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Blast\Code\Source\Actor\BlastActorFactory.cpp">
+      <Filter>Source\Actor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Blast\Code\Source\Actor\BlastActorImpl.cpp">
+      <Filter>Source\Actor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Blast\Code\Source\Actor\EntityProvider.cpp">
+      <Filter>Source\Actor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Blast\Code\Source\Actor\ShapesProvider.cpp">
+      <Filter>Source\Actor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Blast\Code\Source\Asset\BlastAsset.cpp">
+      <Filter>Source\Asset</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Blast\Code\Source\Asset\BlastAssetHandler.cpp">
+      <Filter>Source\Asset</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Blast\Code\Source\Asset\BlastChunksAsset.cpp">
+      <Filter>Source\Asset</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Blast\Code\Source\Components\BlastFamilyComponent.cpp">
+      <Filter>Source\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Blast\Code\Source\Components\BlastFamilyComponentNotificationBusHandler.cpp">
+      <Filter>Source\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Blast\Code\Source\Components\BlastMeshDataComponent.cpp">
+      <Filter>Source\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Blast\Code\Source\Components\BlastSystemComponent.cpp">
+      <Filter>Source\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Blast\Code\Source\Family\ActorRenderManager.cpp">
+      <Filter>Source\Family</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Blast\Code\Source\Family\ActorTracker.cpp">
+      <Filter>Source\Family</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Blast\Code\Source\Family\BlastFamilyImpl.cpp">
+      <Filter>Source\Family</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Blast\Code\Source\Family\DamageManager.cpp">
+      <Filter>Source\Family</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Blast\Code\Source\Common\BlastMaterial.cpp">
+      <Filter>Source\Common</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Blast\Code\Include\Blast\BlastActor.h">
+      <Filter>Include\Blast</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Blast\Code\Include\Blast\BlastActorData.h">
+      <Filter>Include\Blast</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Blast\Code\Include\Blast\BlastFamilyComponentBus.h">
+      <Filter>Include\Blast</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Blast\Code\Include\Blast\BlastMaterial.h">
+      <Filter>Include\Blast</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Blast\Code\Include\Blast\BlastSystemBus.h">
+      <Filter>Include\Blast</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Blast\Code\Include\Blast\BlastDebug.h">
+      <Filter>Include\Blast</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Blast\Code\Source\Actor\BlastActorDesc.h">
+      <Filter>Source\Actor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Blast\Code\Source\Actor\BlastActorFactory.h">
+      <Filter>Source\Actor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Blast\Code\Source\Actor\BlastActorImpl.h">
+      <Filter>Source\Actor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Blast\Code\Source\Actor\EntityProvider.h">
+      <Filter>Source\Actor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Blast\Code\Source\Actor\ShapesProvider.h">
+      <Filter>Source\Actor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Blast\Code\Source\Asset\BlastAsset.h">
+      <Filter>Source\Asset</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Blast\Code\Source\Asset\BlastAssetHandler.h">
+      <Filter>Source\Asset</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Blast\Code\Source\Asset\BlastChunksAsset.h">
+      <Filter>Source\Asset</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Blast\Code\Source\Components\BlastFamilyComponent.h">
+      <Filter>Source\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Blast\Code\Source\Components\BlastFamilyComponentNotificationBusHandler.h">
+      <Filter>Source\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Blast\Code\Source\Components\BlastMeshDataComponent.h">
+      <Filter>Source\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Blast\Code\Source\Components\BlastSystemComponent.h">
+      <Filter>Source\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Blast\Code\Source\Family\ActorRenderManager.h">
+      <Filter>Source\Family</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Blast\Code\Source\Family\ActorTracker.h">
+      <Filter>Source\Family</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Blast\Code\Source\Family\BlastFamily.h">
+      <Filter>Source\Family</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Blast\Code\Source\Family\BlastFamilyImpl.h">
+      <Filter>Source\Family</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Blast\Code\Source\Family\DamageManager.h">
+      <Filter>Source\Family</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Blast\Code\Source\Common\BlastInterfaces.h">
+      <Filter>Source\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Blast\Code\Source\Common\Utils.h">
+      <Filter>Source\Common</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Gems\Blast\Code\CMakeLists.txt">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Blast\Code\blast_files.cmake" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Generated Files">
+      <UniqueIdentifier>{FB9B7D8B-7F05-31D5-AA90-592248EDE1B3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include">
+      <UniqueIdentifier>{E188105A-C8C4-34BB-9809-15E8410EF7F8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\Blast">
+      <UniqueIdentifier>{7202DCDF-9D97-3798-9BB4-1C6CF8069A5E}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source">
+      <UniqueIdentifier>{F3F0AD47-5F83-373B-A2BF-650D2E4FA3EA}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Actor">
+      <UniqueIdentifier>{8524026B-DCFD-32BE-BB58-412F9B5F94BD}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Asset">
+      <UniqueIdentifier>{37CD2F28-6F60-3C97-B57D-CD7695411F52}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Common">
+      <UniqueIdentifier>{A666DE74-E315-30B4-80AB-52C074A5A0A1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Components">
+      <UniqueIdentifier>{914C6B5F-184E-399E-8506-2B79CE7A1426}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Family">
+      <UniqueIdentifier>{E1AE47B0-3EF9-3452-9032-A30F3266C4E0}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

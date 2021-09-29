@@ -1,0 +1,6 @@
+# CMake generation dependency list for this directory.
+C:/Users/lesaelr/o3de/Code/Legacy/CryCommon/CMakeLists.txt
+C:/Users/lesaelr/o3de/Code/Legacy/CryCommon/Platform/Windows/crycommon_windows.cmake
+C:/Users/lesaelr/o3de/Code/Legacy/CryCommon/Platform/Windows/crycommon_windows_files.cmake
+C:/Users/lesaelr/o3de/Code/Legacy/CryCommon/crycommon_files.cmake
+C:/Users/lesaelr/o3de/Code/Legacy/CryCommon/crycommon_testing_files.cmake

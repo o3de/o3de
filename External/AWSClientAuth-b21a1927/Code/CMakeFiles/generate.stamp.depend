@@ -1,0 +1,6 @@
+# CMake generation dependency list for this directory.
+C:/Users/lesaelr/o3de/Gems/AWSClientAuth/Code/CMakeLists.txt
+C:/Users/lesaelr/o3de/Gems/AWSClientAuth/Code/awsclientauth_files.cmake
+C:/Users/lesaelr/o3de/Gems/AWSClientAuth/Code/awsclientauth_shared_files.cmake
+C:/Users/lesaelr/o3de/Gems/AWSClientAuth/Code/awsclientauth_test_files.cmake
+C:/Users/lesaelr/o3de/cmake/Platform/Windows/LYTestWrappers_windows.cmake

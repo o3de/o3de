@@ -1,0 +1,66 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\Plugins\EditorAssetImporter\EditorAssetImporter_autogen\mocs_compilation_debug.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\Plugins\EditorAssetImporter\CMakeFiles\EditorAssetImporter.dir\Unity\unity_0_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\Plugins\EditorAssetImporter\AssetImporterWindow.cpp" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\Plugins\EditorAssetImporter\AssetImporterPlugin.cpp" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\Plugins\EditorAssetImporter\AssetImporterDocument.cpp" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\Plugins\EditorAssetImporter\ImporterRootDisplay.cpp" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\Plugins\EditorAssetImporter\AssetBrowserContextProvider.cpp" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\Plugins\EditorAssetImporter\SceneSerializationHandler.cpp" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\Plugins\EditorAssetImporter\Main.cpp" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\Plugins\EditorAssetImporter\EditorAssetImporter_autogen\mocs_compilation_profile.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\Plugins\EditorAssetImporter\EditorAssetImporter_autogen\mocs_compilation_release.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Plugins\EditorAssetImporter\AssetImporterWindow.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Plugins\EditorAssetImporter\AssetImporterPlugin.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Plugins\EditorAssetImporter\AssetImporterDocument.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Plugins\EditorAssetImporter\ImporterRootDisplay.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Plugins\EditorAssetImporter\AssetBrowserContextProvider.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Plugins\EditorAssetImporter\SceneSerializationHandler.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Plugins\EditorAssetImporter\EditorAssetImporter_autogen\include\ui_AssetImporterWindow.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Plugins\EditorAssetImporter\EditorAssetImporter_autogen\include\ui_ImporterRootDisplay.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Code\Editor\Plugins\EditorAssetImporter\AssetImporterWindow.ui" />
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Code\Editor\Plugins\EditorAssetImporter\ImporterRootDisplay.ui" />
+    <CustomBuild Include="C:\Users\lesaelr\o3de\CMakeFiles\08b24365a84bd27d080f6dd51f42b933\EditorAssetImporter_(CONFIG).stamp.rule">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Code\Editor\Plugins\EditorAssetImporter\CMakeLists.txt">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\Plugins\EditorAssetImporter\AssetImporter.qrc" />
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\Plugins\EditorAssetImporter\editorassetimporter_files.cmake" />
+    <None Include="C:\Users\lesaelr\o3de\runtime_dependencies\debug\EditorAssetImporter_debug.stamp">
+      <Filter>Generated Files</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\runtime_dependencies\profile\EditorAssetImporter_profile.stamp">
+      <Filter>Generated Files</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\runtime_dependencies\release\EditorAssetImporter_release.stamp">
+      <Filter>Generated Files</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Generated Files">
+      <UniqueIdentifier>{FB9B7D8B-7F05-31D5-AA90-592248EDE1B3}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

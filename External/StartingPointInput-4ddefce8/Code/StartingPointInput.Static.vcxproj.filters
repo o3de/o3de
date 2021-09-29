@@ -1,0 +1,128 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\StartingPointInput-4ddefce8\Code\CMakeFiles\StartingPointInput.Static.dir\Unity\unity_0_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\StartingPointInput\Code\Source\InputConfigurationComponent.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\StartingPointInput\Code\Source\InputEventMap.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\StartingPointInput\Code\Source\InputLibrary.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\StartingPointInput\Code\Source\InputHandlerNodeable.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\StartingPointInput-4ddefce8\Code\Azcg\Generated\Source\InputNode.generated.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\StartingPointInput-4ddefce8\Code\Azcg\Generated\Source\InputHandlerNodeable.generated.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\StartingPointInput\Code\Include\StartingPointInput\InputEventRequestBus.h">
+      <Filter>Include\StartingPointInput</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\StartingPointInput\Code\Include\StartingPointInput\InputEventNotificationBus.h">
+      <Filter>Include\StartingPointInput</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\StartingPointInput\Code\Source\InputConfigurationComponent.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\StartingPointInput\Code\Source\InputEventBindings.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\StartingPointInput\Code\Source\InputEventGroup.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\StartingPointInput\Code\Source\InputEventMap.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\StartingPointInput\Code\Source\InputLibrary.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\StartingPointInput\Code\Source\InputNode.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\StartingPointInput\Code\Source\InputHandlerNodeable.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\External\StartingPointInput-4ddefce8\Code\Azcg\Generated\Source\InputNode.generated.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\External\StartingPointInput-4ddefce8\Code\Azcg\Generated\Source\InputHandlerNodeable.generated.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\CMakeFiles\862e9de5e0f59a53728b39d64bbe9f2c\InputNode.generated.h.rule">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Gems\StartingPointInput\Code\CMakeLists.txt">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="C:\Users\lesaelr\o3de\Gems\StartingPointInput\Code\startingpointinput_files.cmake" />
+    <None Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\AutoGen\ScriptCanvasGrammar_Header.jinja">
+      <Filter>..\..\ScriptCanvas\Code\Include\ScriptCanvas\AutoGen</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\AutoGen\ScriptCanvasGrammar_Source.jinja">
+      <Filter>..\..\ScriptCanvas\Code\Include\ScriptCanvas\AutoGen</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\AutoGen\ScriptCanvasNodeable_Header.jinja">
+      <Filter>..\..\ScriptCanvas\Code\Include\ScriptCanvas\AutoGen</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\AutoGen\ScriptCanvasNodeable_Source.jinja">
+      <Filter>..\..\ScriptCanvas\Code\Include\ScriptCanvas\AutoGen</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\StartingPointInput\Code\startingpointinput_autogen_files.cmake" />
+  </ItemGroup>
+  <ItemGroup>
+    <XML Include="C:\Users\lesaelr\o3de\Gems\StartingPointInput\Code\Source\InputHandlerNodeable.ScriptCanvasNodeable.xml">
+      <Filter>Source</Filter>
+    </XML>
+    <XML Include="C:\Users\lesaelr\o3de\Gems\StartingPointInput\Code\Source\InputNode.ScriptCanvasGrammar.xml">
+      <Filter>Source</Filter>
+    </XML>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="..">
+      <UniqueIdentifier>{B62B6BD3-6D53-356A-92E7-D4477019628D}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="..\..">
+      <UniqueIdentifier>{EF225BAE-B93D-3FC9-9DC6-002B77DE8B58}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="..\..\ScriptCanvas">
+      <UniqueIdentifier>{E24756C7-4570-342B-A80B-D20A7AD4638F}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="..\..\ScriptCanvas\Code">
+      <UniqueIdentifier>{7E63EA85-8995-3A8F-BBE3-39588FC83B5D}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="..\..\ScriptCanvas\Code\Include">
+      <UniqueIdentifier>{92FCDE3F-0945-32F5-973B-56E93B3E66A6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="..\..\ScriptCanvas\Code\Include\ScriptCanvas">
+      <UniqueIdentifier>{42F07BE0-1110-37AE-8A0B-C971AE59DE40}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="..\..\ScriptCanvas\Code\Include\ScriptCanvas\AutoGen">
+      <UniqueIdentifier>{B7BF4936-2B69-39FB-B5A2-A3F8DC7509B8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Generated Files">
+      <UniqueIdentifier>{FB9B7D8B-7F05-31D5-AA90-592248EDE1B3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include">
+      <UniqueIdentifier>{E188105A-C8C4-34BB-9809-15E8410EF7F8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\StartingPointInput">
+      <UniqueIdentifier>{3971E8D6-EF9D-395B-B536-8A613DA70C46}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source">
+      <UniqueIdentifier>{F3F0AD47-5F83-373B-A2BF-650D2E4FA3EA}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

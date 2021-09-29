@@ -1,0 +1,137 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\WhiteBox-371c67b0\Code\CMakeFiles\WhiteBox.Static.dir\Unity\unity_1_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\WhiteBox-371c67b0\Code\CMakeFiles\WhiteBox.Static.dir\Unity\unity_0_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\WhiteBox\Code\Source\WhiteBoxAllocator.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\WhiteBox\Code\Source\WhiteBoxComponent.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\WhiteBox\Code\Source\WhiteBoxSystemComponent.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\WhiteBox\Code\Source\Components\WhiteBoxColliderComponent.cpp">
+      <Filter>Source\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\WhiteBox\Code\Source\Components\WhiteBoxColliderConfiguration.cpp">
+      <Filter>Source\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\WhiteBox\Code\Source\Rendering\WhiteBoxRenderMeshInterface.cpp">
+      <Filter>Source\Rendering</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\WhiteBox\Code\Source\Rendering\WhiteBoxRenderData.cpp">
+      <Filter>Source\Rendering</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\WhiteBox\Code\Source\Rendering\WhiteBoxMaterial.cpp">
+      <Filter>Source\Rendering</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\WhiteBox\Code\Source\Rendering\WhiteBoxNullRenderMesh.cpp">
+      <Filter>Source\Rendering</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\WhiteBox\Code\Source\Rendering\Atom\WhiteBoxMeshAtomData.cpp">
+      <Filter>Source\Rendering\Atom</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\WhiteBox\Code\Source\Rendering\Atom\TangentSpaceHelper.cpp">
+      <Filter>Source\Rendering\Atom</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\WhiteBox\Code\Source\Rendering\Atom\WhiteBoxAtomRenderMesh.cpp">
+      <Filter>Source\Rendering\Atom</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\WhiteBox\Code\Source\Util\WhiteBoxMathUtil.cpp">
+      <Filter>Source\Util</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\WhiteBox\Code\Include\WhiteBox\WhiteBoxBus.h">
+      <Filter>Include\WhiteBox</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\WhiteBox\Code\Source\WhiteBoxAllocator.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\WhiteBox\Code\Source\WhiteBoxComponent.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\WhiteBox\Code\Source\WhiteBoxSystemComponent.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\WhiteBox\Code\Source\Components\WhiteBoxColliderComponent.h">
+      <Filter>Source\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\WhiteBox\Code\Source\Components\WhiteBoxColliderConfiguration.h">
+      <Filter>Source\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\WhiteBox\Code\Source\Rendering\WhiteBoxRenderMeshInterface.h">
+      <Filter>Source\Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\WhiteBox\Code\Source\Rendering\WhiteBoxRenderData.h">
+      <Filter>Source\Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\WhiteBox\Code\Source\Rendering\WhiteBoxMaterial.h">
+      <Filter>Source\Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\WhiteBox\Code\Source\Rendering\WhiteBoxNullRenderMesh.h">
+      <Filter>Source\Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\WhiteBox\Code\Source\Rendering\Atom\WhiteBoxMeshAtomData.h">
+      <Filter>Source\Rendering\Atom</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\WhiteBox\Code\Source\Rendering\Atom\PackedFloat2.h">
+      <Filter>Source\Rendering\Atom</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\WhiteBox\Code\Source\Rendering\Atom\TangentSpaceHelper.h">
+      <Filter>Source\Rendering\Atom</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\WhiteBox\Code\Source\Rendering\Atom\WhiteBoxAtomRenderMesh.h">
+      <Filter>Source\Rendering\Atom</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\WhiteBox\Code\Source\Rendering\Atom\WhiteBoxAttributeBuffer.h">
+      <Filter>Source\Rendering\Atom</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\WhiteBox\Code\Source\Rendering\Atom\WhiteBoxBuffer.h">
+      <Filter>Source\Rendering\Atom</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\WhiteBox\Code\Source\Util\WhiteBoxMathUtil.h">
+      <Filter>Source\Util</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Gems\WhiteBox\Code\CMakeLists.txt">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="C:\Users\lesaelr\o3de\Gems\WhiteBox\Code\whitebox_supported_files.cmake" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Generated Files">
+      <UniqueIdentifier>{FB9B7D8B-7F05-31D5-AA90-592248EDE1B3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include">
+      <UniqueIdentifier>{E188105A-C8C4-34BB-9809-15E8410EF7F8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\WhiteBox">
+      <UniqueIdentifier>{F1CC44E7-1712-3119-9E77-7F868BC76372}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source">
+      <UniqueIdentifier>{F3F0AD47-5F83-373B-A2BF-650D2E4FA3EA}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Components">
+      <UniqueIdentifier>{914C6B5F-184E-399E-8506-2B79CE7A1426}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Rendering">
+      <UniqueIdentifier>{3ADB9DD4-47E6-3886-B446-92B62DD272BF}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Rendering\Atom">
+      <UniqueIdentifier>{3664C524-5132-353E-934F-BC402C300AF0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Util">
+      <UniqueIdentifier>{791EC76A-600E-3D3A-B1A2-552A6F8192CA}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

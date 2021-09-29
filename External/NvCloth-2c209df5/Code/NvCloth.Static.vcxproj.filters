@@ -1,0 +1,170 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\NvCloth-2c209df5\Code\CMakeFiles\NvCloth.Static.dir\Unity\unity_1_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\NvCloth-2c209df5\Code\CMakeFiles\NvCloth.Static.dir\Unity\unity_0_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\NvCloth\Code\Source\Components\ClothComponent.cpp">
+      <Filter>Source\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\NvCloth\Code\Source\Components\ClothConfiguration.cpp">
+      <Filter>Source\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\NvCloth\Code\Source\Components\ClothComponentMesh\ClothComponentMesh.cpp">
+      <Filter>Source\Components\ClothComponentMesh</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\NvCloth\Code\Source\Components\ClothComponentMesh\ClothConstraints.cpp">
+      <Filter>Source\Components\ClothComponentMesh</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\NvCloth\Code\Source\Components\ClothComponentMesh\ActorClothColliders.cpp">
+      <Filter>Source\Components\ClothComponentMesh</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\NvCloth\Code\Source\Components\ClothComponentMesh\ActorClothSkinning.cpp">
+      <Filter>Source\Components\ClothComponentMesh</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\NvCloth\Code\Source\Components\ClothComponentMesh\ClothDebugDisplay.cpp">
+      <Filter>Source\Components\ClothComponentMesh</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\NvCloth\Code\Source\System\SystemComponent.cpp">
+      <Filter>Source\System</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\NvCloth\Code\Source\System\Factory.cpp">
+      <Filter>Source\System</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\NvCloth\Code\Source\System\Solver.cpp">
+      <Filter>Source\System</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\NvCloth\Code\Source\System\Cloth.cpp">
+      <Filter>Source\System</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\NvCloth\Code\Source\System\FabricCooker.cpp">
+      <Filter>Source\System</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\NvCloth\Code\Source\System\TangentSpaceHelper.cpp">
+      <Filter>Source\System</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\NvCloth\Code\Source\System\NvTypes.cpp">
+      <Filter>Source\System</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\NvCloth\Code\Source\Utils\AssetHelper.cpp">
+      <Filter>Source\Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\NvCloth\Code\Source\Utils\MeshAssetHelper.cpp">
+      <Filter>Source\Utils</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\NvCloth\Code\Include\NvCloth\IClothSystem.h">
+      <Filter>Include\NvCloth</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\NvCloth\Code\Include\NvCloth\ISolver.h">
+      <Filter>Include\NvCloth</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\NvCloth\Code\Include\NvCloth\ICloth.h">
+      <Filter>Include\NvCloth</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\NvCloth\Code\Include\NvCloth\IClothConfigurator.h">
+      <Filter>Include\NvCloth</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\NvCloth\Code\Include\NvCloth\IFabricCooker.h">
+      <Filter>Include\NvCloth</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\NvCloth\Code\Include\NvCloth\ITangentSpaceHelper.h">
+      <Filter>Include\NvCloth</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\NvCloth\Code\Include\NvCloth\Types.h">
+      <Filter>Include\NvCloth</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\NvCloth\Code\Source\Components\ClothComponent.h">
+      <Filter>Source\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\NvCloth\Code\Source\Components\ClothConfiguration.h">
+      <Filter>Source\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\NvCloth\Code\Source\Components\ClothComponentMesh\ClothComponentMesh.h">
+      <Filter>Source\Components\ClothComponentMesh</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\NvCloth\Code\Source\Components\ClothComponentMesh\ClothConstraints.h">
+      <Filter>Source\Components\ClothComponentMesh</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\NvCloth\Code\Source\Components\ClothComponentMesh\ActorClothColliders.h">
+      <Filter>Source\Components\ClothComponentMesh</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\NvCloth\Code\Source\Components\ClothComponentMesh\ActorClothSkinning.h">
+      <Filter>Source\Components\ClothComponentMesh</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\NvCloth\Code\Source\Components\ClothComponentMesh\ClothDebugDisplay.h">
+      <Filter>Source\Components\ClothComponentMesh</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\NvCloth\Code\Source\System\SystemComponent.h">
+      <Filter>Source\System</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\NvCloth\Code\Source\System\Factory.h">
+      <Filter>Source\System</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\NvCloth\Code\Source\System\Solver.h">
+      <Filter>Source\System</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\NvCloth\Code\Source\System\Cloth.h">
+      <Filter>Source\System</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\NvCloth\Code\Source\System\Fabric.h">
+      <Filter>Source\System</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\NvCloth\Code\Source\System\FabricCooker.h">
+      <Filter>Source\System</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\NvCloth\Code\Source\System\TangentSpaceHelper.h">
+      <Filter>Source\System</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\NvCloth\Code\Source\System\NvTypes.h">
+      <Filter>Source\System</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\NvCloth\Code\Source\Utils\Allocators.h">
+      <Filter>Source\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\NvCloth\Code\Source\Utils\AssetHelper.h">
+      <Filter>Source\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\NvCloth\Code\Source\Utils\MeshAssetHelper.h">
+      <Filter>Source\Utils</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Gems\NvCloth\Code\CMakeLists.txt">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="C:\Users\lesaelr\o3de\Gems\NvCloth\Code\nvcloth_files.cmake" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Generated Files">
+      <UniqueIdentifier>{FB9B7D8B-7F05-31D5-AA90-592248EDE1B3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include">
+      <UniqueIdentifier>{E188105A-C8C4-34BB-9809-15E8410EF7F8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\NvCloth">
+      <UniqueIdentifier>{3F5E2C90-EF9A-3031-96DD-B37B09B0AB70}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source">
+      <UniqueIdentifier>{F3F0AD47-5F83-373B-A2BF-650D2E4FA3EA}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Components">
+      <UniqueIdentifier>{914C6B5F-184E-399E-8506-2B79CE7A1426}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Components\ClothComponentMesh">
+      <UniqueIdentifier>{3CB2C171-6511-3C03-BA6B-4C9033750010}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\System">
+      <UniqueIdentifier>{4DA47873-6877-390C-B637-7CF9E1E8CF23}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Utils">
+      <UniqueIdentifier>{486E47BA-D6A3-3218-BB54-9CC9C06A2B4B}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

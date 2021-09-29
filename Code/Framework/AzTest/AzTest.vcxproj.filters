@@ -1,0 +1,91 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzTest\CMakeFiles\AzTest.dir\Unity\unity_0_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzTest\AzTest\AzTest.cpp">
+      <Filter>AzTest</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzTest\AzTest\ColorizedOutput.cpp">
+      <Filter>AzTest</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzTest\AzTest\Utils.cpp">
+      <Filter>AzTest</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzTest\AzTest\GemTestEnvironment.cpp">
+      <Filter>AzTest</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzTest\AzTest\Platform\Common\WinAPI\AzTest\ColorizedOutput_WinAPI.cpp">
+      <Filter>AzTest\Platform\Windows\..\Common\WinAPI\AzTest</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzTest\AzTest\Platform\Windows\Platform_Windows.cpp">
+      <Filter>AzTest\Platform\Windows</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzTest\AzTest\Platform\Windows\ScopedAutoTempDirectory_Windows.cpp">
+      <Filter>AzTest\Platform\Windows</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzTest\AzTest\AzTest.h">
+      <Filter>AzTest</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzTest\AzTest\Platform.h">
+      <Filter>AzTest</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzTest\AzTest\Utils.h">
+      <Filter>AzTest</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzTest\AzTest\GemTestEnvironment.h">
+      <Filter>AzTest</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzTest\AzTest\Platform\Windows\AzTest_Traits_Platform.h">
+      <Filter>AzTest\Platform\Windows</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzTest\AzTest\Platform\Windows\AzTest_Traits_Windows.h">
+      <Filter>AzTest\Platform\Windows</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Code\Framework\AzTest\CMakeLists.txt">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="C:\Users\lesaelr\o3de\Code\Framework\AzTest\AzTest\aztest_files.cmake">
+      <Filter>AzTest</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Framework\AzTest\AzTest\Platform\Windows\platform_windows_files.cmake">
+      <Filter>AzTest\Platform\Windows</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Framework\AzTest\AzTest\Platform\Windows\platform_windows.cmake">
+      <Filter>AzTest\Platform\Windows</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="AzTest">
+      <UniqueIdentifier>{EA0B15C0-0B89-3B1D-B104-F3F89732BEF3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzTest\Platform">
+      <UniqueIdentifier>{603F7310-E9D4-34B1-80B1-AE50AC073275}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzTest\Platform\Windows">
+      <UniqueIdentifier>{8F8BE748-C3A3-3F72-9163-1DFC18BF5220}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzTest\Platform\Windows\..">
+      <UniqueIdentifier>{58CC44E8-FE09-30A5-8F65-BA681E7C65F0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzTest\Platform\Windows\..\Common">
+      <UniqueIdentifier>{6B9CE813-D0C1-3533-B81B-C99EA9C11F29}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzTest\Platform\Windows\..\Common\WinAPI">
+      <UniqueIdentifier>{B13880BC-BBD4-3BCA-A02D-E67CC4AE0577}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzTest\Platform\Windows\..\Common\WinAPI\AzTest">
+      <UniqueIdentifier>{6022F986-C038-3960-B985-56F2E9D2E34C}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Generated Files">
+      <UniqueIdentifier>{FB9B7D8B-7F05-31D5-AA90-592248EDE1B3}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

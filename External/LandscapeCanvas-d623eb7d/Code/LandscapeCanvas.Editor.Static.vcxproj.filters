@@ -1,0 +1,431 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\LandscapeCanvas-d623eb7d\Code\LandscapeCanvas.Editor.Static_autogen\mocs_compilation_debug.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\LandscapeCanvas-d623eb7d\Code\CMakeFiles\LandscapeCanvas.Editor.Static.dir\Unity\unity_6_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\LandscapeCanvas-d623eb7d\Code\CMakeFiles\LandscapeCanvas.Editor.Static.dir\Unity\unity_5_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\LandscapeCanvas-d623eb7d\Code\CMakeFiles\LandscapeCanvas.Editor.Static.dir\Unity\unity_4_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\LandscapeCanvas-d623eb7d\Code\CMakeFiles\LandscapeCanvas.Editor.Static.dir\Unity\unity_3_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\LandscapeCanvas-d623eb7d\Code\CMakeFiles\LandscapeCanvas.Editor.Static.dir\Unity\unity_2_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\LandscapeCanvas-d623eb7d\Code\CMakeFiles\LandscapeCanvas.Editor.Static.dir\Unity\unity_1_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\LandscapeCanvas-d623eb7d\Code\CMakeFiles\LandscapeCanvas.Editor.Static.dir\Unity\unity_0_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LandscapeCanvas\Code\Source\LandscapeCanvasSystemComponent.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LandscapeCanvas\Code\Source\Editor\MainWindow.cpp">
+      <Filter>Source\Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LandscapeCanvas\Code\Source\Editor\Core\DataTypes.cpp">
+      <Filter>Source\Editor\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LandscapeCanvas\Code\Source\Editor\Core\GraphContext.cpp">
+      <Filter>Source\Editor\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LandscapeCanvas\Code\Source\Editor\Menus\LayerExtenderContextMenu.cpp">
+      <Filter>Source\Editor\Menus</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LandscapeCanvas\Code\Source\Editor\Menus\NodeContextMenu.cpp">
+      <Filter>Source\Editor\Menus</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LandscapeCanvas\Code\Source\Editor\Menus\SceneContextMenuActions.cpp">
+      <Filter>Source\Editor\Menus</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LandscapeCanvas\Code\Source\Editor\Nodes\BaseNode.cpp">
+      <Filter>Source\Editor\Nodes</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LandscapeCanvas\Code\Source\Editor\Nodes\Areas\AreaBlenderNode.cpp">
+      <Filter>Source\Editor\Nodes\Areas</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LandscapeCanvas\Code\Source\Editor\Nodes\Areas\BaseAreaNode.cpp">
+      <Filter>Source\Editor\Nodes\Areas</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LandscapeCanvas\Code\Source\Editor\Nodes\Areas\BlockerAreaNode.cpp">
+      <Filter>Source\Editor\Nodes\Areas</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LandscapeCanvas\Code\Source\Editor\Nodes\Areas\MeshBlockerAreaNode.cpp">
+      <Filter>Source\Editor\Nodes\Areas</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LandscapeCanvas\Code\Source\Editor\Nodes\Areas\SpawnerAreaNode.cpp">
+      <Filter>Source\Editor\Nodes\Areas</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LandscapeCanvas\Code\Source\Editor\Nodes\AreaFilters\AltitudeFilterNode.cpp">
+      <Filter>Source\Editor\Nodes\AreaFilters</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LandscapeCanvas\Code\Source\Editor\Nodes\AreaFilters\BaseAreaFilterNode.cpp">
+      <Filter>Source\Editor\Nodes\AreaFilters</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LandscapeCanvas\Code\Source\Editor\Nodes\AreaFilters\DistanceBetweenFilterNode.cpp">
+      <Filter>Source\Editor\Nodes\AreaFilters</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LandscapeCanvas\Code\Source\Editor\Nodes\AreaFilters\DistributionFilterNode.cpp">
+      <Filter>Source\Editor\Nodes\AreaFilters</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LandscapeCanvas\Code\Source\Editor\Nodes\AreaFilters\ShapeIntersectionFilterNode.cpp">
+      <Filter>Source\Editor\Nodes\AreaFilters</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LandscapeCanvas\Code\Source\Editor\Nodes\AreaFilters\SlopeFilterNode.cpp">
+      <Filter>Source\Editor\Nodes\AreaFilters</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LandscapeCanvas\Code\Source\Editor\Nodes\AreaFilters\SurfaceMaskDepthFilterNode.cpp">
+      <Filter>Source\Editor\Nodes\AreaFilters</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LandscapeCanvas\Code\Source\Editor\Nodes\AreaFilters\SurfaceMaskFilterNode.cpp">
+      <Filter>Source\Editor\Nodes\AreaFilters</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LandscapeCanvas\Code\Source\Editor\Nodes\AreaModifiers\BaseAreaModifierNode.cpp">
+      <Filter>Source\Editor\Nodes\AreaModifiers</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LandscapeCanvas\Code\Source\Editor\Nodes\AreaModifiers\PositionModifierNode.cpp">
+      <Filter>Source\Editor\Nodes\AreaModifiers</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LandscapeCanvas\Code\Source\Editor\Nodes\AreaModifiers\RotationModifierNode.cpp">
+      <Filter>Source\Editor\Nodes\AreaModifiers</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LandscapeCanvas\Code\Source\Editor\Nodes\AreaModifiers\ScaleModifierNode.cpp">
+      <Filter>Source\Editor\Nodes\AreaModifiers</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LandscapeCanvas\Code\Source\Editor\Nodes\AreaModifiers\SlopeAlignmentModifierNode.cpp">
+      <Filter>Source\Editor\Nodes\AreaModifiers</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LandscapeCanvas\Code\Source\Editor\Nodes\AreaSelectors\AssetWeightSelectorNode.cpp">
+      <Filter>Source\Editor\Nodes\AreaSelectors</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LandscapeCanvas\Code\Source\Editor\Nodes\Gradients\AltitudeGradientNode.cpp">
+      <Filter>Source\Editor\Nodes\Gradients</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LandscapeCanvas\Code\Source\Editor\Nodes\Gradients\BaseGradientNode.cpp">
+      <Filter>Source\Editor\Nodes\Gradients</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LandscapeCanvas\Code\Source\Editor\Nodes\Gradients\ConstantGradientNode.cpp">
+      <Filter>Source\Editor\Nodes\Gradients</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LandscapeCanvas\Code\Source\Editor\Nodes\Gradients\FastNoiseGradientNode.cpp">
+      <Filter>Source\Editor\Nodes\Gradients</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LandscapeCanvas\Code\Source\Editor\Nodes\Gradients\ImageGradientNode.cpp">
+      <Filter>Source\Editor\Nodes\Gradients</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LandscapeCanvas\Code\Source\Editor\Nodes\Gradients\PerlinNoiseGradientNode.cpp">
+      <Filter>Source\Editor\Nodes\Gradients</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LandscapeCanvas\Code\Source\Editor\Nodes\Gradients\RandomNoiseGradientNode.cpp">
+      <Filter>Source\Editor\Nodes\Gradients</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LandscapeCanvas\Code\Source\Editor\Nodes\Gradients\ShapeAreaFalloffGradientNode.cpp">
+      <Filter>Source\Editor\Nodes\Gradients</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LandscapeCanvas\Code\Source\Editor\Nodes\Gradients\SlopeGradientNode.cpp">
+      <Filter>Source\Editor\Nodes\Gradients</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LandscapeCanvas\Code\Source\Editor\Nodes\Gradients\SurfaceMaskGradientNode.cpp">
+      <Filter>Source\Editor\Nodes\Gradients</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LandscapeCanvas\Code\Source\Editor\Nodes\GradientModifiers\BaseGradientModifierNode.cpp">
+      <Filter>Source\Editor\Nodes\GradientModifiers</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LandscapeCanvas\Code\Source\Editor\Nodes\GradientModifiers\DitherGradientModifierNode.cpp">
+      <Filter>Source\Editor\Nodes\GradientModifiers</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LandscapeCanvas\Code\Source\Editor\Nodes\GradientModifiers\GradientMixerNode.cpp">
+      <Filter>Source\Editor\Nodes\GradientModifiers</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LandscapeCanvas\Code\Source\Editor\Nodes\GradientModifiers\InvertGradientModifierNode.cpp">
+      <Filter>Source\Editor\Nodes\GradientModifiers</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LandscapeCanvas\Code\Source\Editor\Nodes\GradientModifiers\LevelsGradientModifierNode.cpp">
+      <Filter>Source\Editor\Nodes\GradientModifiers</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LandscapeCanvas\Code\Source\Editor\Nodes\GradientModifiers\PosterizeGradientModifierNode.cpp">
+      <Filter>Source\Editor\Nodes\GradientModifiers</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LandscapeCanvas\Code\Source\Editor\Nodes\GradientModifiers\SmoothStepGradientModifierNode.cpp">
+      <Filter>Source\Editor\Nodes\GradientModifiers</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LandscapeCanvas\Code\Source\Editor\Nodes\GradientModifiers\ThresholdGradientModifierNode.cpp">
+      <Filter>Source\Editor\Nodes\GradientModifiers</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LandscapeCanvas\Code\Source\Editor\Nodes\Shapes\BaseShapeNode.cpp">
+      <Filter>Source\Editor\Nodes\Shapes</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LandscapeCanvas\Code\Source\Editor\Nodes\Shapes\BoxShapeNode.cpp">
+      <Filter>Source\Editor\Nodes\Shapes</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LandscapeCanvas\Code\Source\Editor\Nodes\Shapes\CapsuleShapeNode.cpp">
+      <Filter>Source\Editor\Nodes\Shapes</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LandscapeCanvas\Code\Source\Editor\Nodes\Shapes\CompoundShapeNode.cpp">
+      <Filter>Source\Editor\Nodes\Shapes</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LandscapeCanvas\Code\Source\Editor\Nodes\Shapes\CylinderShapeNode.cpp">
+      <Filter>Source\Editor\Nodes\Shapes</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LandscapeCanvas\Code\Source\Editor\Nodes\Shapes\DiskShapeNode.cpp">
+      <Filter>Source\Editor\Nodes\Shapes</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LandscapeCanvas\Code\Source\Editor\Nodes\Shapes\PolygonPrismShapeNode.cpp">
+      <Filter>Source\Editor\Nodes\Shapes</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LandscapeCanvas\Code\Source\Editor\Nodes\Shapes\SphereShapeNode.cpp">
+      <Filter>Source\Editor\Nodes\Shapes</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LandscapeCanvas\Code\Source\Editor\Nodes\Shapes\TubeShapeNode.cpp">
+      <Filter>Source\Editor\Nodes\Shapes</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LandscapeCanvas\Code\Source\Editor\Nodes\UI\GradientPreviewThumbnailItem.cpp">
+      <Filter>Source\Editor\Nodes\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\LandscapeCanvas-d623eb7d\Code\LandscapeCanvas.Editor.Static_autogen\mocs_compilation_profile.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\LandscapeCanvas-d623eb7d\Code\LandscapeCanvas.Editor.Static_autogen\mocs_compilation_release.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LandscapeCanvas\Code\Include\LandscapeCanvas\LandscapeCanvasBus.h">
+      <Filter>Include\LandscapeCanvas</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LandscapeCanvas\Code\Source\LandscapeCanvasSystemComponent.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LandscapeCanvas\Code\Source\Editor\MainWindow.h">
+      <Filter>Source\Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LandscapeCanvas\Code\Source\Editor\Core\Core.h">
+      <Filter>Source\Editor\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LandscapeCanvas\Code\Source\Editor\Core\DataTypes.h">
+      <Filter>Source\Editor\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LandscapeCanvas\Code\Source\Editor\Core\GraphContext.h">
+      <Filter>Source\Editor\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LandscapeCanvas\Code\Source\Editor\Menus\LayerExtenderContextMenu.h">
+      <Filter>Source\Editor\Menus</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LandscapeCanvas\Code\Source\Editor\Menus\NodeContextMenu.h">
+      <Filter>Source\Editor\Menus</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LandscapeCanvas\Code\Source\Editor\Menus\SceneContextMenuActions.h">
+      <Filter>Source\Editor\Menus</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LandscapeCanvas\Code\Source\Editor\Nodes\BaseNode.h">
+      <Filter>Source\Editor\Nodes</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LandscapeCanvas\Code\Source\Editor\Nodes\Areas\AreaBlenderNode.h">
+      <Filter>Source\Editor\Nodes\Areas</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LandscapeCanvas\Code\Source\Editor\Nodes\Areas\BaseAreaNode.h">
+      <Filter>Source\Editor\Nodes\Areas</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LandscapeCanvas\Code\Source\Editor\Nodes\Areas\BlockerAreaNode.h">
+      <Filter>Source\Editor\Nodes\Areas</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LandscapeCanvas\Code\Source\Editor\Nodes\Areas\MeshBlockerAreaNode.h">
+      <Filter>Source\Editor\Nodes\Areas</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LandscapeCanvas\Code\Source\Editor\Nodes\Areas\SpawnerAreaNode.h">
+      <Filter>Source\Editor\Nodes\Areas</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LandscapeCanvas\Code\Source\Editor\Nodes\AreaFilters\AltitudeFilterNode.h">
+      <Filter>Source\Editor\Nodes\AreaFilters</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LandscapeCanvas\Code\Source\Editor\Nodes\AreaFilters\BaseAreaFilterNode.h">
+      <Filter>Source\Editor\Nodes\AreaFilters</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LandscapeCanvas\Code\Source\Editor\Nodes\AreaFilters\DistanceBetweenFilterNode.h">
+      <Filter>Source\Editor\Nodes\AreaFilters</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LandscapeCanvas\Code\Source\Editor\Nodes\AreaFilters\DistributionFilterNode.h">
+      <Filter>Source\Editor\Nodes\AreaFilters</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LandscapeCanvas\Code\Source\Editor\Nodes\AreaFilters\ShapeIntersectionFilterNode.h">
+      <Filter>Source\Editor\Nodes\AreaFilters</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LandscapeCanvas\Code\Source\Editor\Nodes\AreaFilters\SlopeFilterNode.h">
+      <Filter>Source\Editor\Nodes\AreaFilters</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LandscapeCanvas\Code\Source\Editor\Nodes\AreaFilters\SurfaceMaskDepthFilterNode.h">
+      <Filter>Source\Editor\Nodes\AreaFilters</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LandscapeCanvas\Code\Source\Editor\Nodes\AreaFilters\SurfaceMaskFilterNode.h">
+      <Filter>Source\Editor\Nodes\AreaFilters</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LandscapeCanvas\Code\Source\Editor\Nodes\AreaModifiers\BaseAreaModifierNode.h">
+      <Filter>Source\Editor\Nodes\AreaModifiers</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LandscapeCanvas\Code\Source\Editor\Nodes\AreaModifiers\PositionModifierNode.h">
+      <Filter>Source\Editor\Nodes\AreaModifiers</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LandscapeCanvas\Code\Source\Editor\Nodes\AreaModifiers\RotationModifierNode.h">
+      <Filter>Source\Editor\Nodes\AreaModifiers</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LandscapeCanvas\Code\Source\Editor\Nodes\AreaModifiers\ScaleModifierNode.h">
+      <Filter>Source\Editor\Nodes\AreaModifiers</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LandscapeCanvas\Code\Source\Editor\Nodes\AreaModifiers\SlopeAlignmentModifierNode.h">
+      <Filter>Source\Editor\Nodes\AreaModifiers</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LandscapeCanvas\Code\Source\Editor\Nodes\AreaSelectors\AssetWeightSelectorNode.h">
+      <Filter>Source\Editor\Nodes\AreaSelectors</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LandscapeCanvas\Code\Source\Editor\Nodes\Gradients\AltitudeGradientNode.h">
+      <Filter>Source\Editor\Nodes\Gradients</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LandscapeCanvas\Code\Source\Editor\Nodes\Gradients\BaseGradientNode.h">
+      <Filter>Source\Editor\Nodes\Gradients</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LandscapeCanvas\Code\Source\Editor\Nodes\Gradients\ConstantGradientNode.h">
+      <Filter>Source\Editor\Nodes\Gradients</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LandscapeCanvas\Code\Source\Editor\Nodes\Gradients\FastNoiseGradientNode.h">
+      <Filter>Source\Editor\Nodes\Gradients</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LandscapeCanvas\Code\Source\Editor\Nodes\Gradients\ImageGradientNode.h">
+      <Filter>Source\Editor\Nodes\Gradients</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LandscapeCanvas\Code\Source\Editor\Nodes\Gradients\PerlinNoiseGradientNode.h">
+      <Filter>Source\Editor\Nodes\Gradients</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LandscapeCanvas\Code\Source\Editor\Nodes\Gradients\RandomNoiseGradientNode.h">
+      <Filter>Source\Editor\Nodes\Gradients</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LandscapeCanvas\Code\Source\Editor\Nodes\Gradients\ShapeAreaFalloffGradientNode.h">
+      <Filter>Source\Editor\Nodes\Gradients</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LandscapeCanvas\Code\Source\Editor\Nodes\Gradients\SlopeGradientNode.h">
+      <Filter>Source\Editor\Nodes\Gradients</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LandscapeCanvas\Code\Source\Editor\Nodes\Gradients\SurfaceMaskGradientNode.h">
+      <Filter>Source\Editor\Nodes\Gradients</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LandscapeCanvas\Code\Source\Editor\Nodes\GradientModifiers\BaseGradientModifierNode.h">
+      <Filter>Source\Editor\Nodes\GradientModifiers</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LandscapeCanvas\Code\Source\Editor\Nodes\GradientModifiers\DitherGradientModifierNode.h">
+      <Filter>Source\Editor\Nodes\GradientModifiers</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LandscapeCanvas\Code\Source\Editor\Nodes\GradientModifiers\GradientMixerNode.h">
+      <Filter>Source\Editor\Nodes\GradientModifiers</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LandscapeCanvas\Code\Source\Editor\Nodes\GradientModifiers\InvertGradientModifierNode.h">
+      <Filter>Source\Editor\Nodes\GradientModifiers</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LandscapeCanvas\Code\Source\Editor\Nodes\GradientModifiers\LevelsGradientModifierNode.h">
+      <Filter>Source\Editor\Nodes\GradientModifiers</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LandscapeCanvas\Code\Source\Editor\Nodes\GradientModifiers\PosterizeGradientModifierNode.h">
+      <Filter>Source\Editor\Nodes\GradientModifiers</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LandscapeCanvas\Code\Source\Editor\Nodes\GradientModifiers\SmoothStepGradientModifierNode.h">
+      <Filter>Source\Editor\Nodes\GradientModifiers</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LandscapeCanvas\Code\Source\Editor\Nodes\GradientModifiers\ThresholdGradientModifierNode.h">
+      <Filter>Source\Editor\Nodes\GradientModifiers</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LandscapeCanvas\Code\Source\Editor\Nodes\Shapes\BaseShapeNode.h">
+      <Filter>Source\Editor\Nodes\Shapes</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LandscapeCanvas\Code\Source\Editor\Nodes\Shapes\BoxShapeNode.h">
+      <Filter>Source\Editor\Nodes\Shapes</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LandscapeCanvas\Code\Source\Editor\Nodes\Shapes\CapsuleShapeNode.h">
+      <Filter>Source\Editor\Nodes\Shapes</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LandscapeCanvas\Code\Source\Editor\Nodes\Shapes\CompoundShapeNode.h">
+      <Filter>Source\Editor\Nodes\Shapes</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LandscapeCanvas\Code\Source\Editor\Nodes\Shapes\CylinderShapeNode.h">
+      <Filter>Source\Editor\Nodes\Shapes</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LandscapeCanvas\Code\Source\Editor\Nodes\Shapes\DiskShapeNode.h">
+      <Filter>Source\Editor\Nodes\Shapes</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LandscapeCanvas\Code\Source\Editor\Nodes\Shapes\PolygonPrismShapeNode.h">
+      <Filter>Source\Editor\Nodes\Shapes</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LandscapeCanvas\Code\Source\Editor\Nodes\Shapes\SphereShapeNode.h">
+      <Filter>Source\Editor\Nodes\Shapes</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LandscapeCanvas\Code\Source\Editor\Nodes\Shapes\TubeShapeNode.h">
+      <Filter>Source\Editor\Nodes\Shapes</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LandscapeCanvas\Code\Source\Editor\Nodes\UI\GradientPreviewThumbnailItem.h">
+      <Filter>Source\Editor\Nodes\UI</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Gems\LandscapeCanvas\Code\CMakeLists.txt">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="C:\Users\lesaelr\o3de\Gems\LandscapeCanvas\Code\landscapecanvas_editor_static_files.cmake" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Generated Files">
+      <UniqueIdentifier>{FB9B7D8B-7F05-31D5-AA90-592248EDE1B3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include">
+      <UniqueIdentifier>{E188105A-C8C4-34BB-9809-15E8410EF7F8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\LandscapeCanvas">
+      <UniqueIdentifier>{C41C43DD-0D3E-3EBE-8D21-2A796D8EC24D}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source">
+      <UniqueIdentifier>{F3F0AD47-5F83-373B-A2BF-650D2E4FA3EA}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Editor">
+      <UniqueIdentifier>{32FCFB28-A730-3475-B9AE-03974723A74B}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Editor\Core">
+      <UniqueIdentifier>{DCBD0903-0F91-38AD-80CB-4B4B625B9F8D}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Editor\Menus">
+      <UniqueIdentifier>{078957DF-103B-361B-BF25-97049C31E5EB}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Editor\Nodes">
+      <UniqueIdentifier>{3FF7EEA5-13D7-3986-BC53-F5F9A240B886}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Editor\Nodes\AreaFilters">
+      <UniqueIdentifier>{56AB739C-5F18-3FEE-8876-8695B4458333}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Editor\Nodes\AreaModifiers">
+      <UniqueIdentifier>{D7A8B777-F5B2-396E-A03B-72C0C9A340FF}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Editor\Nodes\AreaSelectors">
+      <UniqueIdentifier>{4FAE19A3-1EF8-3ACC-9924-11833E1204FF}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Editor\Nodes\Areas">
+      <UniqueIdentifier>{8665194D-7385-39C5-AA40-0C6676F2A318}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Editor\Nodes\GradientModifiers">
+      <UniqueIdentifier>{1EC18120-6FC4-3137-A382-E8C32AD95CBE}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Editor\Nodes\Gradients">
+      <UniqueIdentifier>{9CB12B2E-2939-328A-8530-D0FADE571F84}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Editor\Nodes\Shapes">
+      <UniqueIdentifier>{F20BB3B6-AA72-344E-AFDA-FAC3797E7401}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Editor\Nodes\UI">
+      <UniqueIdentifier>{3EEE31F4-B006-3614-9A2F-BD579E918E0A}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

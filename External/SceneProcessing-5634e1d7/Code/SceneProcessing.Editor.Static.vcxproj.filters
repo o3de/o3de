@@ -1,0 +1,197 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\SceneProcessing-5634e1d7\Code\SceneProcessing.Editor.Static_autogen\mocs_compilation_debug.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\SceneProcessing-5634e1d7\Code\CMakeFiles\SceneProcessing.Editor.Static.dir\Unity\unity_2_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\SceneProcessing-5634e1d7\Code\CMakeFiles\SceneProcessing.Editor.Static.dir\Unity\unity_1_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\SceneProcessing-5634e1d7\Code\CMakeFiles\SceneProcessing.Editor.Static.dir\Unity\unity_0_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\SceneProcessing\Code\Source\Config\Components\SceneProcessingConfigSystemComponent.cpp">
+      <Filter>Source\Config\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\SceneProcessing\Code\Source\Config\Components\SoftNameBehavior.cpp">
+      <Filter>Source\Config\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\SceneProcessing\Code\Source\Generation\Components\TangentGenerator\TangentGenerateComponent.cpp">
+      <Filter>Source\Generation\Components\TangentGenerator</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\SceneProcessing\Code\Source\Generation\Components\TangentGenerator\TangentPreExportComponent.cpp">
+      <Filter>Source\Generation\Components\TangentGenerator</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\SceneProcessing\Code\Source\Generation\Components\TangentGenerator\TangentGenerators\MikkTGenerator.cpp">
+      <Filter>Source\Generation\Components\TangentGenerator\TangentGenerators</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\SceneProcessing\Code\Source\Generation\Components\TangentGenerator\TangentGenerators\BlendShapeMikkTGenerator.cpp">
+      <Filter>Source\Generation\Components\TangentGenerator\TangentGenerators</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\SceneProcessing\Code\Source\Generation\Components\MeshOptimizer\MeshBuilder.cpp">
+      <Filter>Source\Generation\Components\MeshOptimizer</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\SceneProcessing\Code\Source\Generation\Components\MeshOptimizer\MeshBuilderSkinningInfo.cpp">
+      <Filter>Source\Generation\Components\MeshOptimizer</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\SceneProcessing\Code\Source\Generation\Components\MeshOptimizer\MeshBuilderSubMesh.cpp">
+      <Filter>Source\Generation\Components\MeshOptimizer</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\SceneProcessing\Code\Source\Generation\Components\MeshOptimizer\MeshBuilderVertexAttributeLayers.cpp">
+      <Filter>Source\Generation\Components\MeshOptimizer</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\SceneProcessing\Code\Source\Generation\Components\MeshOptimizer\MeshOptimizerComponent.cpp">
+      <Filter>Source\Generation\Components\MeshOptimizer</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\SceneProcessing\Code\Source\Config\SettingsObjects\SoftNameSetting.cpp">
+      <Filter>Source\Config\SettingsObjects</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\SceneProcessing\Code\Source\Config\SettingsObjects\NodeSoftNameSetting.cpp">
+      <Filter>Source\Config\SettingsObjects</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\SceneProcessing\Code\Source\Config\SettingsObjects\FileSoftNameSetting.cpp">
+      <Filter>Source\Config\SettingsObjects</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\SceneProcessing\Code\Source\Config\Widgets\GraphTypeSelector.cpp">
+      <Filter>Source\Config\Widgets</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\SceneProcessing\Code\Source\SceneBuilder\SceneBuilderComponent.cpp">
+      <Filter>Source\SceneBuilder</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\SceneProcessing\Code\Source\SceneBuilder\SceneBuilderWorker.cpp">
+      <Filter>Source\SceneBuilder</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\SceneProcessing\Code\Source\SceneBuilder\SceneSerializationHandler.cpp">
+      <Filter>Source\SceneBuilder</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\SceneProcessing\Code\Source\SceneBuilder\TraceMessageHook.cpp">
+      <Filter>Source\SceneBuilder</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\SceneProcessing-5634e1d7\Code\SceneProcessing.Editor.Static_autogen\mocs_compilation_profile.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\SceneProcessing-5634e1d7\Code\SceneProcessing.Editor.Static_autogen\mocs_compilation_release.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\SceneProcessing\Code\Include\Config\SceneProcessingConfigBus.h">
+      <Filter>Include\Config</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\SceneProcessing\Code\Source\Config\Components\SceneProcessingConfigSystemComponent.h">
+      <Filter>Source\Config\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\SceneProcessing\Code\Source\Config\Components\SoftNameBehavior.h">
+      <Filter>Source\Config\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\SceneProcessing\Code\Source\Generation\Components\TangentGenerator\TangentGenerateComponent.h">
+      <Filter>Source\Generation\Components\TangentGenerator</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\SceneProcessing\Code\Source\Generation\Components\TangentGenerator\TangentPreExportComponent.h">
+      <Filter>Source\Generation\Components\TangentGenerator</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\SceneProcessing\Code\Source\Generation\Components\TangentGenerator\TangentGenerators\MikkTGenerator.h">
+      <Filter>Source\Generation\Components\TangentGenerator\TangentGenerators</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\SceneProcessing\Code\Source\Generation\Components\TangentGenerator\TangentGenerators\BlendShapeMikkTGenerator.h">
+      <Filter>Source\Generation\Components\TangentGenerator\TangentGenerators</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\SceneProcessing\Code\Source\Generation\Components\MeshOptimizer\MeshBuilder.h">
+      <Filter>Source\Generation\Components\MeshOptimizer</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\SceneProcessing\Code\Source\Generation\Components\MeshOptimizer\MeshBuilderInvalidIndex.h">
+      <Filter>Source\Generation\Components\MeshOptimizer</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\SceneProcessing\Code\Source\Generation\Components\MeshOptimizer\MeshBuilderSkinningInfo.h">
+      <Filter>Source\Generation\Components\MeshOptimizer</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\SceneProcessing\Code\Source\Generation\Components\MeshOptimizer\MeshBuilderSubMesh.h">
+      <Filter>Source\Generation\Components\MeshOptimizer</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\SceneProcessing\Code\Source\Generation\Components\MeshOptimizer\MeshBuilderVertexAttributeLayers.h">
+      <Filter>Source\Generation\Components\MeshOptimizer</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\SceneProcessing\Code\Source\Generation\Components\MeshOptimizer\MeshOptimizerComponent.h">
+      <Filter>Source\Generation\Components\MeshOptimizer</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\SceneProcessing\Code\Source\Config\SettingsObjects\SoftNameSetting.h">
+      <Filter>Source\Config\SettingsObjects</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\SceneProcessing\Code\Source\Config\SettingsObjects\NodeSoftNameSetting.h">
+      <Filter>Source\Config\SettingsObjects</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\SceneProcessing\Code\Source\Config\SettingsObjects\FileSoftNameSetting.h">
+      <Filter>Source\Config\SettingsObjects</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\SceneProcessing\Code\Source\Config\Widgets\GraphTypeSelector.h">
+      <Filter>Source\Config\Widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\SceneProcessing\Code\Source\SceneBuilder\SceneBuilderComponent.h">
+      <Filter>Source\SceneBuilder</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\SceneProcessing\Code\Source\SceneBuilder\SceneBuilderWorker.h">
+      <Filter>Source\SceneBuilder</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\SceneProcessing\Code\Source\SceneBuilder\SceneSerializationHandler.h">
+      <Filter>Source\SceneBuilder</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\SceneProcessing\Code\Source\SceneBuilder\TraceMessageHook.h">
+      <Filter>Source\SceneBuilder</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Gems\SceneProcessing\Code\CMakeLists.txt">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="C:\Users\lesaelr\o3de\Gems\SceneProcessing\Code\sceneprocessing_editor_static_files.cmake" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Generated Files">
+      <UniqueIdentifier>{FB9B7D8B-7F05-31D5-AA90-592248EDE1B3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include">
+      <UniqueIdentifier>{E188105A-C8C4-34BB-9809-15E8410EF7F8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\Config">
+      <UniqueIdentifier>{73ADB8CD-AA8A-362B-9A45-282ECDF3BE85}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source">
+      <UniqueIdentifier>{F3F0AD47-5F83-373B-A2BF-650D2E4FA3EA}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Config">
+      <UniqueIdentifier>{F5435C2F-53FA-3C9D-BA5D-CC253DFF9D44}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Config\Components">
+      <UniqueIdentifier>{3422F36C-F55C-3251-A32D-AC3526FC7A5A}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Config\SettingsObjects">
+      <UniqueIdentifier>{747A813F-2824-3362-B317-2CE46612021D}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Config\Widgets">
+      <UniqueIdentifier>{2D92ED29-1F64-3F46-9CF1-463CEA9B3057}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Generation">
+      <UniqueIdentifier>{7685229F-23AB-3222-87A4-A00E3E3216F3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Generation\Components">
+      <UniqueIdentifier>{87348559-7F1E-36EE-AAC7-163E925FB5EA}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Generation\Components\MeshOptimizer">
+      <UniqueIdentifier>{76A37A81-5C34-393E-B8FE-48B8C9D8F39F}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Generation\Components\TangentGenerator">
+      <UniqueIdentifier>{71A8E530-A390-3EAC-9476-71FEFE66449D}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Generation\Components\TangentGenerator\TangentGenerators">
+      <UniqueIdentifier>{0E9A77F6-EB93-3B32-816D-D4C5CF3BAC9E}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\SceneBuilder">
+      <UniqueIdentifier>{8E99BC80-4416-3E6A-BCE2-CC4D04AE8D5F}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

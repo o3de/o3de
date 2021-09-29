@@ -1,0 +1,363 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\Standalone\LuaIDE_autogen\mocs_compilation_debug.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\Standalone\CMakeFiles\LuaIDE.dir\Unity\unity_3_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\Standalone\CMakeFiles\LuaIDE.dir\Unity\unity_2_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\Standalone\CMakeFiles\LuaIDE.dir\Unity\unity_1_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\Standalone\CMakeFiles\LuaIDE.dir\Unity\unity_0_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\Standalone\Source\StandaloneToolsApplication.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\Standalone\Source\Telemetry\TelemetryComponent.cpp">
+      <Filter>Source\Telemetry</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\Standalone\Source\Telemetry\TelemetryEvent.cpp">
+      <Filter>Source\Telemetry</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\Standalone\Source\LuaIDEApplication.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\Standalone\Source\AssetDatabaseLocationListener.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\Standalone\Source\Editor\LuaEditor.cpp">
+      <Filter>Source\Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\Standalone\Source\LUA\BreakpointPanel.cpp">
+      <Filter>Source\LUA</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\Standalone\Source\LUA\ClassReferenceFilter.cpp">
+      <Filter>Source\LUA</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\Standalone\Source\LUA\ClassReferencePanel.cpp">
+      <Filter>Source\LUA</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\Standalone\Source\LUA\DebugAttachmentButton.cpp">
+      <Filter>Source\LUA</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\Standalone\Source\LUA\LUABreakpointTrackerMessages.cpp">
+      <Filter>Source\LUA</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\Standalone\Source\LUA\LUADebuggerComponent.cpp">
+      <Filter>Source\LUA</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\Standalone\Source\LUA\LUAEditorBreakpointWidget.cpp">
+      <Filter>Source\LUA</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\Standalone\Source\LUA\LUAEditorContext.cpp">
+      <Filter>Source\LUA</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\Standalone\Source\LUA\LUAEditorFindDialog.cpp">
+      <Filter>Source\LUA</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\Standalone\Source\LUA\LUAEditorSettingsDialog.cpp">
+      <Filter>Source\LUA</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\Standalone\Source\LUA\LUAEditorFindResults.cpp">
+      <Filter>Source\LUA</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\Standalone\Source\LUA\LUAEditorFoldingWidget.cpp">
+      <Filter>Source\LUA</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\Standalone\Source\LUA\LUAEditorGoToLineDialog.cpp">
+      <Filter>Source\LUA</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\Standalone\Source\LUA\LUAEditorMainWindow.cpp">
+      <Filter>Source\LUA</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\Standalone\Source\LUA\LUAEditorPlainTextEdit.cpp">
+      <Filter>Source\LUA</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\Standalone\Source\LUA\LUAEditorStyleMessages.cpp">
+      <Filter>Source\LUA</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\Standalone\Source\LUA\LUAEditorSyntaxHighlighter.cpp">
+      <Filter>Source\LUA</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\Standalone\Source\LUA\LUAEditorView.cpp">
+      <Filter>Source\LUA</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\Standalone\Source\LUA\LUATargetContextTrackerMessages.cpp">
+      <Filter>Source\LUA</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\Standalone\Source\LUA\StackPanel.cpp">
+      <Filter>Source\LUA</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\Standalone\Source\LUA\TargetContextButton.cpp">
+      <Filter>Source\LUA</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\Standalone\Source\LUA\WatchesPanel.cpp">
+      <Filter>Source\LUA</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\Standalone\Source\LUA\CodeCompletion\LUACompleter.cpp">
+      <Filter>Source\LUA\CodeCompletion</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\Standalone\Source\LUA\CodeCompletion\LUACompletionModel.cpp">
+      <Filter>Source\LUA\CodeCompletion</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\Standalone\Platform\Windows\Source\StandaloneApplication_Windows.cpp">
+      <Filter>Platform\Windows\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\Standalone\LuaIDE_autogen\mocs_compilation_profile.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\Standalone\LuaIDE_autogen\mocs_compilation_release.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\Standalone\targetver.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\Standalone\Source\StandaloneToolsApplication.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\Standalone\Source\Editor\Resource.h">
+      <Filter>Source\Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\Standalone\Source\Editor\targetver.h">
+      <Filter>Source\Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\Standalone\Source\Telemetry\TelemetryBus.h">
+      <Filter>Source\Telemetry</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\Standalone\Source\Telemetry\TelemetryComponent.h">
+      <Filter>Source\Telemetry</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\Standalone\Source\Telemetry\TelemetryEvent.h">
+      <Filter>Source\Telemetry</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\Standalone\Source\LuaIDEApplication.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\Standalone\Source\AssetDatabaseLocationListener.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\Standalone\Source\Editor\LuaEditor.h">
+      <Filter>Source\Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\Standalone\Source\LUA\BasicScriptChecker.h">
+      <Filter>Source\LUA</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\Standalone\Source\LUA\BreakpointPanel.hxx">
+      <Filter>Source\LUA</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\Standalone\Source\LUA\ClassReferenceFilter.hxx">
+      <Filter>Source\LUA</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\Standalone\Source\LUA\ClassReferencePanel.hxx">
+      <Filter>Source\LUA</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\Standalone\Source\LUA\DebugAttachmentButton.hxx">
+      <Filter>Source\LUA</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\Standalone\Source\LUA\LUABreakpointTrackerMessages.h">
+      <Filter>Source\LUA</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\Standalone\Source\LUA\LUAContextControlMessages.h">
+      <Filter>Source\LUA</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\Standalone\Source\LUA\LUADebuggerComponent.h">
+      <Filter>Source\LUA</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\Standalone\Source\LUA\LUADebuggerMessages.h">
+      <Filter>Source\LUA</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\Standalone\Source\LUA\LUAEditorBlockState.h">
+      <Filter>Source\LUA</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\Standalone\Source\LUA\LUAEditorBreakpointWidget.hxx">
+      <Filter>Source\LUA</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\Standalone\Source\LUA\LUAEditorContext.h">
+      <Filter>Source\LUA</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\Standalone\Source\LUA\LUAEditorContextInterface.h">
+      <Filter>Source\LUA</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\Standalone\Source\LUA\LUAEditorContextMessages.h">
+      <Filter>Source\LUA</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\Standalone\Source\LUA\LUAEditorDebuggerMessages.h">
+      <Filter>Source\LUA</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\Standalone\Source\LUA\LUAEditorFindDialog.hxx">
+      <Filter>Source\LUA</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\Standalone\Source\LUA\LUAEditorSettingsDialog.hxx">
+      <Filter>Source\LUA</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\Standalone\Source\LUA\LUAEditorFindResults.hxx">
+      <Filter>Source\LUA</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\Standalone\Source\LUA\LUAEditorFoldingWidget.hxx">
+      <Filter>Source\LUA</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\Standalone\Source\LUA\LUAEditorGoToLineDialog.hxx">
+      <Filter>Source\LUA</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\Standalone\Source\LUA\LUAEditorMainWindow.hxx">
+      <Filter>Source\LUA</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\Standalone\Source\LUA\LUAEditorPlainTextEdit.hxx">
+      <Filter>Source\LUA</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\Standalone\Source\LUA\LUAEditorStyleMessages.h">
+      <Filter>Source\LUA</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\Standalone\Source\LUA\LUAEditorSyntaxHighlighter.hxx">
+      <Filter>Source\LUA</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\Standalone\Source\LUA\LUAEditorView.hxx">
+      <Filter>Source\LUA</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\Standalone\Source\LUA\LUAEditorViewMessages.h">
+      <Filter>Source\LUA</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\Standalone\Source\LUA\LUALocalsTrackerMessages.h">
+      <Filter>Source\LUA</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\Standalone\Source\LUA\LUAStackTrackerMessages.h">
+      <Filter>Source\LUA</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\Standalone\Source\LUA\LUATargetContextTrackerMessages.h">
+      <Filter>Source\LUA</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\Standalone\Source\LUA\LUAWatchesDebuggerMessages.h">
+      <Filter>Source\LUA</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\Standalone\Source\LUA\ScriptCheckerAPI.h">
+      <Filter>Source\LUA</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\Standalone\Source\LUA\StackPanel.hxx">
+      <Filter>Source\LUA</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\Standalone\Source\LUA\TargetContextButton.hxx">
+      <Filter>Source\LUA</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\Standalone\Source\LUA\WatchesPanel.hxx">
+      <Filter>Source\LUA</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\Standalone\Source\LUA\CodeCompletion\LUACompleter.hxx">
+      <Filter>Source\LUA\CodeCompletion</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\Standalone\Source\LUA\CodeCompletion\LUACompletionModel.hxx">
+      <Filter>Source\LUA\CodeCompletion</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\Standalone\LuaIDE_autogen\include\Source\LUA\ui_LUAEditorFindDialog.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\Standalone\LuaIDE_autogen\include\Source\LUA\ui_LUAEditorSettingsDialog.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\Standalone\LuaIDE_autogen\include\Source\LUA\ui_LUAEditorFindResults.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\Standalone\LuaIDE_autogen\include\Source\LUA\ui_LUAEditorGoToLineDialog.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\Standalone\LuaIDE_autogen\include\Source\LUA\ui_LUAEditorMainWindow.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\Standalone\LuaIDE_autogen\include\Source\LUA\ui_LUAEditorView.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Code\Tools\Standalone\Source\LUA\LUAEditorFindDialog.ui">
+      <Filter>Source\LUA</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Code\Tools\Standalone\Source\LUA\LUAEditorSettingsDialog.ui">
+      <Filter>Source\LUA</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Code\Tools\Standalone\Source\LUA\LUAEditorFindResults.ui">
+      <Filter>Source\LUA</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Code\Tools\Standalone\Source\LUA\LUAEditorGoToLineDialog.ui">
+      <Filter>Source\LUA</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Code\Tools\Standalone\Source\LUA\LUAEditorMainWindow.ui">
+      <Filter>Source\LUA</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Code\Tools\Standalone\Source\LUA\LUAEditorView.ui">
+      <Filter>Source\LUA</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\CMakeFiles\08b24365a84bd27d080f6dd51f42b933\LuaIDE_(CONFIG).stamp.rule">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Code\Tools\Standalone\CMakeLists.txt">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="C:\Users\lesaelr\o3de\Code\Tools\Standalone\standalone_tools_files.cmake" />
+    <None Include="C:\Users\lesaelr\o3de\Code\Tools\Standalone\lua_ide_files.cmake" />
+    <None Include="C:\Users\lesaelr\o3de\Code\Tools\Standalone\Platform\Windows\lua_ide_windows_files.cmake">
+      <Filter>Platform\Windows</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\runtime_dependencies\debug\LuaIDE_debug.stamp">
+      <Filter>Generated Files</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\runtime_dependencies\profile\LuaIDE_profile.stamp">
+      <Filter>Generated Files</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\runtime_dependencies\release\LuaIDE_release.stamp">
+      <Filter>Generated Files</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="C:\Users\lesaelr\o3de\Code\Tools\Standalone\Source\Editor\LuaEditor.rc">
+      <Filter>Platform\Windows\..\..\Source\Editor</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Generated Files">
+      <UniqueIdentifier>{FB9B7D8B-7F05-31D5-AA90-592248EDE1B3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Platform">
+      <UniqueIdentifier>{378A8D8C-6CA1-3F6B-A02B-1E9FF64C97B2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Platform\Windows">
+      <UniqueIdentifier>{63AEF2F6-51C7-306A-BFE8-A049C8C62EFB}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Platform\Windows\..">
+      <UniqueIdentifier>{C2D7F6B4-9216-3C2D-9F9A-76D34821E4A4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Platform\Windows\..\..">
+      <UniqueIdentifier>{B3F0A8C7-D94B-3D2F-84F1-951E63018888}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Platform\Windows\..\..\Source">
+      <UniqueIdentifier>{87984CB1-80EE-3AB6-8A83-F47463BB9F88}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Platform\Windows\..\..\Source\Editor">
+      <UniqueIdentifier>{54BA2E6B-765A-3023-9C2C-61BCBF8CA936}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Platform\Windows\Source">
+      <UniqueIdentifier>{CFED0AF8-D8B8-31ED-868A-BE409213EEE5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source">
+      <UniqueIdentifier>{F3F0AD47-5F83-373B-A2BF-650D2E4FA3EA}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Editor">
+      <UniqueIdentifier>{32FCFB28-A730-3475-B9AE-03974723A74B}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\LUA">
+      <UniqueIdentifier>{738CE0FF-A2B7-3B7F-BC2E-32DD81534708}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\LUA\CodeCompletion">
+      <UniqueIdentifier>{7A73A6A8-C1D5-39E5-9F7A-862EBADF7126}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Telemetry">
+      <UniqueIdentifier>{05DA6593-266A-3A1E-8ADA-4DB2E97F1C7E}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

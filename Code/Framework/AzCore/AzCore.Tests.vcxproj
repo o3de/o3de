@@ -1,0 +1,634 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <PreferredToolArchitecture>x64</PreferredToolArchitecture>
+  </PropertyGroup>
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="debug|x64">
+      <Configuration>debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="profile|x64">
+      <Configuration>profile</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="release|x64">
+      <Configuration>release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{9BAE3499-A677-3ADA-8FF5-ABB50095B120}</ProjectGuid>
+    <WindowsTargetPlatformVersion>10.0.19041.0</WindowsTargetPlatformVersion>
+    <Keyword>Win32Proj</Keyword>
+    <Platform>x64</Platform>
+    <ProjectName>AzCore.Tests</ProjectName>
+    <VCProjectUpgraderObjectName>NoUpgrade</VCProjectUpgraderObjectName>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='debug|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v142</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='profile|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v142</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='release|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v142</PlatformToolset>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets">
+    <Import Project="C:\Users\lesaelr\o3de\cmake\Platform\Common\MSVC\TestProject.props" Condition="exists('C:\Users\lesaelr\o3de\cmake\Platform\Common\MSVC\TestProject.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>10.0.20506.1</_ProjectFileVersion>
+    <LocalDebuggerCommand Condition="'$(Configuration)|$(Platform)'=='debug|x64'">C:/Users/lesaelr/o3de/bin/debug/AzTestRunner.exe</LocalDebuggerCommand>
+    <LocalDebuggerCommandArguments Condition="'$(Configuration)|$(Platform)'=='debug|x64'">C:/Users/lesaelr/o3de/bin/debug/AzCore.Tests.dll AzRunUnitTests --gtest_output=xml:C:/Users/lesaelr/o3de/Testing/Gtest/AZ_AzCore.Tests.xml</LocalDebuggerCommandArguments>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='debug|x64'">C:\Users\lesaelr\o3de\bin\debug\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='debug|x64'">AzCore.Tests.dir\debug\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='debug|x64'">AzCore.Tests</TargetName>
+    <TargetExt Condition="'$(Configuration)|$(Platform)'=='debug|x64'">.dll</TargetExt>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='debug|x64'">false</LinkIncremental>
+    <GenerateManifest Condition="'$(Configuration)|$(Platform)'=='debug|x64'">true</GenerateManifest>
+    <LocalDebuggerCommand Condition="'$(Configuration)|$(Platform)'=='profile|x64'">C:/Users/lesaelr/o3de/bin/profile/AzTestRunner.exe</LocalDebuggerCommand>
+    <LocalDebuggerCommandArguments Condition="'$(Configuration)|$(Platform)'=='profile|x64'">C:/Users/lesaelr/o3de/bin/profile/AzCore.Tests.dll AzRunUnitTests --gtest_output=xml:C:/Users/lesaelr/o3de/Testing/Gtest/AZ_AzCore.Tests.xml</LocalDebuggerCommandArguments>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='profile|x64'">C:\Users\lesaelr\o3de\bin\profile\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='profile|x64'">AzCore.Tests.dir\profile\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='profile|x64'">AzCore.Tests</TargetName>
+    <TargetExt Condition="'$(Configuration)|$(Platform)'=='profile|x64'">.dll</TargetExt>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='profile|x64'">false</LinkIncremental>
+    <GenerateManifest Condition="'$(Configuration)|$(Platform)'=='profile|x64'">true</GenerateManifest>
+    <LocalDebuggerCommand Condition="'$(Configuration)|$(Platform)'=='release|x64'">C:/Users/lesaelr/o3de/bin/release/AzTestRunner.exe</LocalDebuggerCommand>
+    <LocalDebuggerCommandArguments Condition="'$(Configuration)|$(Platform)'=='release|x64'">C:/Users/lesaelr/o3de/bin/release/AzCore.Tests.dll AzRunUnitTests --gtest_output=xml:C:/Users/lesaelr/o3de/Testing/Gtest/AZ_AzCore.Tests.xml</LocalDebuggerCommandArguments>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='release|x64'">C:\Users\lesaelr\o3de\bin\release\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='release|x64'">AzCore.Tests.dir\release\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='release|x64'">AzCore.Tests</TargetName>
+    <TargetExt Condition="'$(Configuration)|$(Platform)'=='release|x64'">.dll</TargetExt>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='release|x64'">false</LinkIncremental>
+    <GenerateManifest Condition="'$(Configuration)|$(Platform)'=='release|x64'">true</GenerateManifest>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='debug|x64'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests;C:\Users\lesaelr\o3de\Code\Framework\AzCore\.;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Common;C:\Users\lesaelr\o3de\Code\Framework\AzTest\.;C:\Users\lesaelr\o3de\Code\Framework\AzTest\AzTest\Platform\Windows;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalOptions>%(AdditionalOptions) /Zc:__cplusplus /Zc:lambda /favor:AMD64 /bigobj /RTCsu /experimental:external /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/Lua-5.3.5-rev5-windows/lua/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/RapidJSON-1.1.0-rev1-multiplatform/RapidJSON/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/RapidXML-1.13-rev1-multiplatform/RapidXML/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/zlib-1.2.11-rev2-windows/zlib/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/zstd-1.35-multiplatform/zstd/lib /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/cityhash-1.1-multiplatform/cityhash/src /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/googletest-1.8.1-rev4-windows/googletest/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/googlebenchmark-1.5.0-rev2-windows/googlebenchmark/include</AdditionalOptions>
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <BufferSecurityCheck>true</BufferSecurityCheck>
+      <CallingConvention>Cdecl</CallingConvention>
+      <ConformanceMode>true</ConformanceMode>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <DiagnosticsFormat>Caret</DiagnosticsFormat>
+      <DisableSpecificWarnings>4201</DisableSpecificWarnings>
+      <ExceptionHandling>
+      </ExceptionHandling>
+      <ExternalWarningLevel>TurnOffAllWarnings</ExternalWarningLevel>
+      <FloatingPointModel>Fast</FloatingPointModel>
+      <ForceConformanceInForLoopScope>true</ForceConformanceInForLoopScope>
+      <InlineFunctionExpansion>Disabled</InlineFunctionExpansion>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <Optimization>Disabled</Optimization>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <TreatSpecificWarningsAsErrors>4263;4264;4265;4266;4296;4426;4437;4774;4777;5031;5032;5233</TreatSpecificWarningsAsErrors>
+      <TreatWarningAsError>true</TreatWarningAsError>
+      <UseFullPaths>false</UseFullPaths>
+      <WarningLevel>Level4</WarningLevel>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);AZ_NUMERICCAST_ENABLED;_HAS_EXCEPTIONS=0;_DEBUG;AZ_DEBUG_BUILD=1;AZ_ENABLE_TRACING;AZ_ENABLE_DEBUG_TOOLS;AZ_BUILD_CONFIGURATION_TYPE="debug";_ENABLE_EXTENDED_ALIGNED_STORAGE;_WIN32;WIN32;_WIN64;WIN64;NOMINMAX;HAVE_BENCHMARK;CMAKE_INTDIR="debug";AzCore_Tests_EXPORTS</PreprocessorDefinitions>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);_DEBUG;AZ_NUMERICCAST_ENABLED;_HAS_EXCEPTIONS=0;AZ_DEBUG_BUILD=1;AZ_ENABLE_TRACING;AZ_ENABLE_DEBUG_TOOLS;AZ_BUILD_CONFIGURATION_TYPE=\"debug\";_ENABLE_EXTENDED_ALIGNED_STORAGE;_WIN32;WIN32;_WIN64;WIN64;NOMINMAX;HAVE_BENCHMARK;CMAKE_INTDIR=\"debug\";AzCore_Tests_EXPORTS</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests;C:\Users\lesaelr\o3de\Code\Framework\AzCore\.;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Common;C:\Users\lesaelr\o3de\Code\Framework\AzTest\.;C:\Users\lesaelr\o3de\Code\Framework\AzTest\AzTest\Platform\Windows;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+    </ResourceCompile>
+    <Midl>
+      <AdditionalIncludeDirectories>C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests;C:\Users\lesaelr\o3de\Code\Framework\AzCore\.;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Common;C:\Users\lesaelr\o3de\Code\Framework\AzTest\.;C:\Users\lesaelr\o3de\Code\Framework\AzTest\AzTest\Platform\Windows;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+    <Link>
+      <AdditionalDependencies>..\..\..\lib\debug\AzCore.lib;..\..\..\lib\debug\AzCoreTestCommon.lib;..\..\..\lib\debug\AzTestShared.lib;..\..\..\lib\debug\AzTest.lib;..\..\..\lib\debug\AzCore.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\Lua-5.3.5-rev5-windows\lua\lib\debug\lualib.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\zlib-1.2.11-rev2-windows\zlib\lib\zlibstaticd.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\zstd-1.35-multiplatform\zstd\bin\win-x64-vc140\debug\zstd.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\cityhash-1.1-multiplatform\cityhash\build\win_x64\vc140\debug\cityhash.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\googletest-1.8.1-rev4-windows\googletest\lib\gmockd.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\googlebenchmark-1.5.0-rev2-windows\googlebenchmark\lib\Debug\benchmark.lib;Shlwapi.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\googletest-1.8.1-rev4-windows\googletest\lib\gtestd.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;advapi32.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalOptions>%(AdditionalOptions) /machine:x64 /IGNORE:4099 /ignore:4099</AdditionalOptions>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <ImportLibrary>C:/Users/lesaelr/o3de/lib/debug/AzCore.Tests.lib</ImportLibrary>
+      <ProgramDataBaseFile>C:/Users/lesaelr/o3de/bin/debug/AzCore.Tests.pdb</ProgramDataBaseFile>
+      <SubSystem>Console</SubSystem>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <TargetMachine>MachineX64</TargetMachine>
+    </Link>
+    <ProjectReference>
+      <LinkLibraryDependencies>false</LinkLibraryDependencies>
+    </ProjectReference>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='profile|x64'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests;C:\Users\lesaelr\o3de\Code\Framework\AzCore\.;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Common;C:\Users\lesaelr\o3de\Code\Framework\AzTest\.;C:\Users\lesaelr\o3de\Code\Framework\AzTest\AzTest\Platform\Windows;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalOptions>%(AdditionalOptions) /Zc:__cplusplus /Zc:lambda /favor:AMD64 /bigobj /experimental:external /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/Lua-5.3.5-rev5-windows/lua/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/RapidJSON-1.1.0-rev1-multiplatform/RapidJSON/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/RapidXML-1.13-rev1-multiplatform/RapidXML/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/zlib-1.2.11-rev2-windows/zlib/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/zstd-1.35-multiplatform/zstd/lib /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/cityhash-1.1-multiplatform/cityhash/src /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/googletest-1.8.1-rev4-windows/googletest/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/googlebenchmark-1.5.0-rev2-windows/googlebenchmark/include</AdditionalOptions>
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <CallingConvention>Cdecl</CallingConvention>
+      <ConformanceMode>true</ConformanceMode>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <DiagnosticsFormat>Caret</DiagnosticsFormat>
+      <DisableSpecificWarnings>4201</DisableSpecificWarnings>
+      <ExceptionHandling>
+      </ExceptionHandling>
+      <ExternalWarningLevel>TurnOffAllWarnings</ExternalWarningLevel>
+      <FloatingPointModel>Fast</FloatingPointModel>
+      <ForceConformanceInForLoopScope>true</ForceConformanceInForLoopScope>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <Optimization>MaxSpeed</Optimization>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <RemoveUnreferencedCodeData>true</RemoveUnreferencedCodeData>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <StringPooling>true</StringPooling>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <TreatSpecificWarningsAsErrors>4263;4264;4265;4266;4296;4426;4437;4774;4777;5031;5032;5233</TreatSpecificWarningsAsErrors>
+      <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
+      <TreatWarningAsError>true</TreatWarningAsError>
+      <UseFullPaths>false</UseFullPaths>
+      <WarningLevel>Level4</WarningLevel>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);AZ_NUMERICCAST_ENABLED;_HAS_EXCEPTIONS=0;_PROFILE;PROFILE;NDEBUG;AZ_ENABLE_TRACING;AZ_ENABLE_DEBUG_TOOLS;AZ_BUILD_CONFIGURATION_TYPE="profile";_ENABLE_EXTENDED_ALIGNED_STORAGE;_WIN32;WIN32;_WIN64;WIN64;NOMINMAX;HAVE_BENCHMARK;CMAKE_INTDIR="profile";AzCore_Tests_EXPORTS</PreprocessorDefinitions>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);AZ_NUMERICCAST_ENABLED;_HAS_EXCEPTIONS=0;_PROFILE;PROFILE;NDEBUG;AZ_ENABLE_TRACING;AZ_ENABLE_DEBUG_TOOLS;AZ_BUILD_CONFIGURATION_TYPE=\"profile\";_ENABLE_EXTENDED_ALIGNED_STORAGE;_WIN32;WIN32;_WIN64;WIN64;NOMINMAX;HAVE_BENCHMARK;CMAKE_INTDIR=\"profile\";AzCore_Tests_EXPORTS</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests;C:\Users\lesaelr\o3de\Code\Framework\AzCore\.;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Common;C:\Users\lesaelr\o3de\Code\Framework\AzTest\.;C:\Users\lesaelr\o3de\Code\Framework\AzTest\AzTest\Platform\Windows;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+    </ResourceCompile>
+    <Midl>
+      <AdditionalIncludeDirectories>C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests;C:\Users\lesaelr\o3de\Code\Framework\AzCore\.;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Common;C:\Users\lesaelr\o3de\Code\Framework\AzTest\.;C:\Users\lesaelr\o3de\Code\Framework\AzTest\AzTest\Platform\Windows;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+    <Link>
+      <AdditionalDependencies>..\..\..\lib\profile\AzCore.lib;..\..\..\lib\profile\AzCoreTestCommon.lib;..\..\..\lib\profile\AzTestShared.lib;..\..\..\lib\profile\AzTest.lib;..\..\..\lib\profile\AzCore.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\Lua-5.3.5-rev5-windows\lua\lib\release\lualib.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\zlib-1.2.11-rev2-windows\zlib\lib\zlibstatic.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\zstd-1.35-multiplatform\zstd\bin\win-x64-vc140\release\zstd.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\cityhash-1.1-multiplatform\cityhash\build\win_x64\vc140\release\cityhash.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\googletest-1.8.1-rev4-windows\googletest\lib\gmock.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\googlebenchmark-1.5.0-rev2-windows\googlebenchmark\lib\Release\benchmark.lib;Shlwapi.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\googletest-1.8.1-rev4-windows\googletest\lib\gtest.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;advapi32.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalOptions>%(AdditionalOptions) /machine:x64 /IGNORE:4099 /ignore:4099</AdditionalOptions>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <ImportLibrary>C:/Users/lesaelr/o3de/lib/profile/AzCore.Tests.lib</ImportLibrary>
+      <OptimizeReferences>true</OptimizeReferences>
+      <ProgramDataBaseFile>C:/Users/lesaelr/o3de/bin/profile/AzCore.Tests.pdb</ProgramDataBaseFile>
+      <SubSystem>Console</SubSystem>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <TargetMachine>MachineX64</TargetMachine>
+    </Link>
+    <ProjectReference>
+      <LinkLibraryDependencies>false</LinkLibraryDependencies>
+    </ProjectReference>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='release|x64'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests;C:\Users\lesaelr\o3de\Code\Framework\AzCore\.;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Common;C:\Users\lesaelr\o3de\Code\Framework\AzTest\.;C:\Users\lesaelr\o3de\Code\Framework\AzTest\AzTest\Platform\Windows;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalOptions>%(AdditionalOptions) /Zc:__cplusplus /Zc:lambda /favor:AMD64 /bigobj /experimental:external /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/Lua-5.3.5-rev5-windows/lua/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/RapidJSON-1.1.0-rev1-multiplatform/RapidJSON/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/RapidXML-1.13-rev1-multiplatform/RapidXML/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/zlib-1.2.11-rev2-windows/zlib/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/zstd-1.35-multiplatform/zstd/lib /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/cityhash-1.1-multiplatform/cityhash/src /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/googletest-1.8.1-rev4-windows/googletest/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/googlebenchmark-1.5.0-rev2-windows/googlebenchmark/include</AdditionalOptions>
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <CallingConvention>Cdecl</CallingConvention>
+      <ConformanceMode>true</ConformanceMode>
+      <DiagnosticsFormat>Caret</DiagnosticsFormat>
+      <DisableSpecificWarnings>4201</DisableSpecificWarnings>
+      <ExceptionHandling>
+      </ExceptionHandling>
+      <ExternalWarningLevel>TurnOffAllWarnings</ExternalWarningLevel>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <FloatingPointModel>Fast</FloatingPointModel>
+      <ForceConformanceInForLoopScope>true</ForceConformanceInForLoopScope>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <OmitFramePointers>true</OmitFramePointers>
+      <Optimization>Full</Optimization>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <TreatSpecificWarningsAsErrors>4263;4264;4265;4266;4296;4426;4437;4774;4777;5031;5032;5233</TreatSpecificWarningsAsErrors>
+      <TreatWarningAsError>true</TreatWarningAsError>
+      <UseFullPaths>false</UseFullPaths>
+      <WarningLevel>Level4</WarningLevel>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);AZ_NUMERICCAST_ENABLED;_HAS_EXCEPTIONS=0;_RELEASE;RELEASE;NDEBUG;AZ_BUILD_CONFIGURATION_TYPE="release";_ENABLE_EXTENDED_ALIGNED_STORAGE;_WIN32;WIN32;_WIN64;WIN64;NOMINMAX;HAVE_BENCHMARK;CMAKE_INTDIR="release";AzCore_Tests_EXPORTS</PreprocessorDefinitions>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+      <DebugInformationFormat>
+      </DebugInformationFormat>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);AZ_NUMERICCAST_ENABLED;_HAS_EXCEPTIONS=0;_RELEASE;RELEASE;NDEBUG;AZ_BUILD_CONFIGURATION_TYPE=\"release\";_ENABLE_EXTENDED_ALIGNED_STORAGE;_WIN32;WIN32;_WIN64;WIN64;NOMINMAX;HAVE_BENCHMARK;CMAKE_INTDIR=\"release\";AzCore_Tests_EXPORTS</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests;C:\Users\lesaelr\o3de\Code\Framework\AzCore\.;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Common;C:\Users\lesaelr\o3de\Code\Framework\AzTest\.;C:\Users\lesaelr\o3de\Code\Framework\AzTest\AzTest\Platform\Windows;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+    </ResourceCompile>
+    <Midl>
+      <AdditionalIncludeDirectories>C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests;C:\Users\lesaelr\o3de\Code\Framework\AzCore\.;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Common;C:\Users\lesaelr\o3de\Code\Framework\AzTest\.;C:\Users\lesaelr\o3de\Code\Framework\AzTest\AzTest\Platform\Windows;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+    <Link>
+      <AdditionalDependencies>..\..\..\lib\release\AzCore.lib;..\..\..\lib\release\AzCoreTestCommon.lib;..\..\..\lib\release\AzTestShared.lib;..\..\..\lib\release\AzTest.lib;..\..\..\lib\release\AzCore.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\Lua-5.3.5-rev5-windows\lua\lib\release\lualib.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\zlib-1.2.11-rev2-windows\zlib\lib\zlibstatic.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\zstd-1.35-multiplatform\zstd\bin\win-x64-vc140\release\zstd.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\cityhash-1.1-multiplatform\cityhash\build\win_x64\vc140\release\cityhash.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\googletest-1.8.1-rev4-windows\googletest\lib\gmock.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\googlebenchmark-1.5.0-rev2-windows\googlebenchmark\lib\Release\benchmark.lib;Shlwapi.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\googletest-1.8.1-rev4-windows\googletest\lib\gtest.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;advapi32.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalOptions>%(AdditionalOptions) /machine:x64 /IGNORE:4099 /ignore:4099</AdditionalOptions>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
+      <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <ImportLibrary>C:/Users/lesaelr/o3de/lib/release/AzCore.Tests.lib</ImportLibrary>
+      <OptimizeReferences>true</OptimizeReferences>
+      <ProgramDataBaseFile>C:/Users/lesaelr/o3de/bin/release/AzCore.Tests.pdb</ProgramDataBaseFile>
+      <SubSystem>Console</SubSystem>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <TargetMachine>MachineX64</TargetMachine>
+    </Link>
+    <ProjectReference>
+      <LinkLibraryDependencies>false</LinkLibraryDependencies>
+    </ProjectReference>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\CMakeFiles\08b24365a84bd27d080f6dd51f42b933\AzCore.Tests_(CONFIG).stamp.rule">
+      <Message Condition="'$(Configuration)|$(Platform)'=='debug|x64'">Copying AzCore.Tests runtime dependencies to output...</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='debug|x64'">setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -P C:/Users/lesaelr/o3de/runtime_dependencies/debug/AzCore.Tests.cmake
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='debug|x64'">C:\Users\lesaelr\o3de\bin\debug\AzCoreTestDLL.dll;C:\Users\lesaelr\o3de\bin\debug\AzTestRunner.exe;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='debug|x64'">C:\Users\lesaelr\o3de\runtime_dependencies\debug\AzCore.Tests_debug.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='debug|x64'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='profile|x64'">Copying AzCore.Tests runtime dependencies to output...</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='profile|x64'">setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -P C:/Users/lesaelr/o3de/runtime_dependencies/profile/AzCore.Tests.cmake
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='profile|x64'">C:\Users\lesaelr\o3de\bin\profile\AzCoreTestDLL.dll;C:\Users\lesaelr\o3de\bin\profile\AzTestRunner.exe;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='profile|x64'">C:\Users\lesaelr\o3de\runtime_dependencies\profile\AzCore.Tests_profile.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='profile|x64'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='release|x64'">Copying AzCore.Tests runtime dependencies to output...</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='release|x64'">setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -P C:/Users/lesaelr/o3de/runtime_dependencies/release/AzCore.Tests.cmake
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='release|x64'">C:\Users\lesaelr\o3de\bin\release\AzCoreTestDLL.dll;C:\Users\lesaelr\o3de\bin\release\AzTestRunner.exe;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='release|x64'">C:\Users\lesaelr\o3de\runtime_dependencies\release\AzCore.Tests_release.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='release|x64'">false</LinkObjects>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\CMakeLists.txt">
+      <UseUtf8Encoding>Always</UseUtf8Encoding>
+      <Message Condition="'$(Configuration)|$(Platform)'=='debug|x64'">Building Custom Rule C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='debug|x64'">setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SC:/Users/lesaelr/o3de -BC:/Users/lesaelr/o3de --check-stamp-file C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='debug|x64'">C:\Users\lesaelr\.o3de\3rdParty\packages\Lua-5.3.5-rev5-windows\FindLua.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\Lua-5.3.5-rev5-windows\PackageInfo.json;C:\Users\lesaelr\.o3de\3rdParty\packages\RapidXML-1.13-rev1-multiplatform\FindRapidXML.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\RapidXML-1.13-rev1-multiplatform\PackageInfo.json;C:\Users\lesaelr\.o3de\3rdParty\packages\cityhash-1.1-multiplatform\Findcityhash.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\cityhash-1.1-multiplatform\PackageInfo.json;C:\Users\lesaelr\.o3de\3rdParty\packages\googlebenchmark-1.5.0-rev2-windows\FindGoogleBenchmark.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\googlebenchmark-1.5.0-rev2-windows\PackageInfo.json;C:\Users\lesaelr\.o3de\3rdParty\packages\googletest-1.8.1-rev4-windows\Findgoogletest.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\googletest-1.8.1-rev4-windows\PackageInfo.json;C:\Users\lesaelr\.o3de\3rdParty\packages\zlib-1.2.11-rev2-windows\Findzlib.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\zlib-1.2.11-rev2-windows\PackageInfo.json;C:\Users\lesaelr\.o3de\3rdParty\packages\zstd-1.35-multiplatform\Findzstd.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\zstd-1.35-multiplatform\PackageInfo.json;C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\azcore_files.cmake;C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\azcoretestcommon_files.cmake;C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\azstd_files.cmake;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Windows\platform_windows.cmake;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Windows\platform_windows_files.cmake;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Platform\Windows\platform_windows.cmake;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Platform\Windows\platform_windows_files.cmake;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\azcoretestdll_files.cmake;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\azcoretests_files.cmake;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\aztestshared_files.cmake;C:\Users\lesaelr\o3de\cmake\Platform\Windows\LYTestWrappers_windows.cmake;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='debug|x64'">C:\Users\lesaelr\o3de\Code\Framework\AzCore\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='debug|x64'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='profile|x64'">Building Custom Rule C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='profile|x64'">setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SC:/Users/lesaelr/o3de -BC:/Users/lesaelr/o3de --check-stamp-file C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='profile|x64'">C:\Users\lesaelr\.o3de\3rdParty\packages\Lua-5.3.5-rev5-windows\FindLua.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\Lua-5.3.5-rev5-windows\PackageInfo.json;C:\Users\lesaelr\.o3de\3rdParty\packages\RapidXML-1.13-rev1-multiplatform\FindRapidXML.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\RapidXML-1.13-rev1-multiplatform\PackageInfo.json;C:\Users\lesaelr\.o3de\3rdParty\packages\cityhash-1.1-multiplatform\Findcityhash.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\cityhash-1.1-multiplatform\PackageInfo.json;C:\Users\lesaelr\.o3de\3rdParty\packages\googlebenchmark-1.5.0-rev2-windows\FindGoogleBenchmark.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\googlebenchmark-1.5.0-rev2-windows\PackageInfo.json;C:\Users\lesaelr\.o3de\3rdParty\packages\googletest-1.8.1-rev4-windows\Findgoogletest.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\googletest-1.8.1-rev4-windows\PackageInfo.json;C:\Users\lesaelr\.o3de\3rdParty\packages\zlib-1.2.11-rev2-windows\Findzlib.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\zlib-1.2.11-rev2-windows\PackageInfo.json;C:\Users\lesaelr\.o3de\3rdParty\packages\zstd-1.35-multiplatform\Findzstd.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\zstd-1.35-multiplatform\PackageInfo.json;C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\azcore_files.cmake;C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\azcoretestcommon_files.cmake;C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\azstd_files.cmake;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Windows\platform_windows.cmake;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Windows\platform_windows_files.cmake;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Platform\Windows\platform_windows.cmake;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Platform\Windows\platform_windows_files.cmake;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\azcoretestdll_files.cmake;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\azcoretests_files.cmake;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\aztestshared_files.cmake;C:\Users\lesaelr\o3de\cmake\Platform\Windows\LYTestWrappers_windows.cmake;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='profile|x64'">C:\Users\lesaelr\o3de\Code\Framework\AzCore\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='profile|x64'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='release|x64'">Building Custom Rule C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='release|x64'">setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SC:/Users/lesaelr/o3de -BC:/Users/lesaelr/o3de --check-stamp-file C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='release|x64'">C:\Users\lesaelr\.o3de\3rdParty\packages\Lua-5.3.5-rev5-windows\FindLua.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\Lua-5.3.5-rev5-windows\PackageInfo.json;C:\Users\lesaelr\.o3de\3rdParty\packages\RapidXML-1.13-rev1-multiplatform\FindRapidXML.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\RapidXML-1.13-rev1-multiplatform\PackageInfo.json;C:\Users\lesaelr\.o3de\3rdParty\packages\cityhash-1.1-multiplatform\Findcityhash.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\cityhash-1.1-multiplatform\PackageInfo.json;C:\Users\lesaelr\.o3de\3rdParty\packages\googlebenchmark-1.5.0-rev2-windows\FindGoogleBenchmark.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\googlebenchmark-1.5.0-rev2-windows\PackageInfo.json;C:\Users\lesaelr\.o3de\3rdParty\packages\googletest-1.8.1-rev4-windows\Findgoogletest.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\googletest-1.8.1-rev4-windows\PackageInfo.json;C:\Users\lesaelr\.o3de\3rdParty\packages\zlib-1.2.11-rev2-windows\Findzlib.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\zlib-1.2.11-rev2-windows\PackageInfo.json;C:\Users\lesaelr\.o3de\3rdParty\packages\zstd-1.35-multiplatform\Findzstd.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\zstd-1.35-multiplatform\PackageInfo.json;C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\azcore_files.cmake;C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\azcoretestcommon_files.cmake;C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\std\azstd_files.cmake;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Windows\platform_windows.cmake;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Windows\platform_windows_files.cmake;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Platform\Windows\platform_windows.cmake;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Platform\Windows\platform_windows_files.cmake;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\azcoretestdll_files.cmake;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\azcoretests_files.cmake;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\aztestshared_files.cmake;C:\Users\lesaelr\o3de\cmake\Platform\Windows\LYTestWrappers_windows.cmake;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='release|x64'">C:\Users\lesaelr\o3de\Code\Framework\AzCore\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='release|x64'">false</LinkObjects>
+    </CustomBuild>
+  </ItemGroup>
+  <PropertyGroup>
+    <EnableUnitySupport>true</EnableUnitySupport>
+  </PropertyGroup>
+  <ItemGroup>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\CMakeFiles\AzCore.Tests.dir\Unity\unity_21_cxx.cxx" IncludeInUnityFile="false" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeFiles/AzCore.Tests.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\CMakeFiles\AzCore.Tests.dir\Unity\unity_20_cxx.cxx" IncludeInUnityFile="false" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeFiles/AzCore.Tests.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\CMakeFiles\AzCore.Tests.dir\Unity\unity_19_cxx.cxx" IncludeInUnityFile="false" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeFiles/AzCore.Tests.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\CMakeFiles\AzCore.Tests.dir\Unity\unity_18_cxx.cxx" IncludeInUnityFile="false" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeFiles/AzCore.Tests.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\CMakeFiles\AzCore.Tests.dir\Unity\unity_17_cxx.cxx" IncludeInUnityFile="false" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeFiles/AzCore.Tests.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\CMakeFiles\AzCore.Tests.dir\Unity\unity_16_cxx.cxx" IncludeInUnityFile="false" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeFiles/AzCore.Tests.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\CMakeFiles\AzCore.Tests.dir\Unity\unity_15_cxx.cxx" IncludeInUnityFile="false" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeFiles/AzCore.Tests.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\CMakeFiles\AzCore.Tests.dir\Unity\unity_14_cxx.cxx" IncludeInUnityFile="false" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeFiles/AzCore.Tests.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\CMakeFiles\AzCore.Tests.dir\Unity\unity_13_cxx.cxx" IncludeInUnityFile="false" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeFiles/AzCore.Tests.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\CMakeFiles\AzCore.Tests.dir\Unity\unity_12_cxx.cxx" IncludeInUnityFile="false" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeFiles/AzCore.Tests.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\CMakeFiles\AzCore.Tests.dir\Unity\unity_11_cxx.cxx" IncludeInUnityFile="false" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeFiles/AzCore.Tests.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\CMakeFiles\AzCore.Tests.dir\Unity\unity_10_cxx.cxx" IncludeInUnityFile="false" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeFiles/AzCore.Tests.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\CMakeFiles\AzCore.Tests.dir\Unity\unity_9_cxx.cxx" IncludeInUnityFile="false" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeFiles/AzCore.Tests.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\CMakeFiles\AzCore.Tests.dir\Unity\unity_8_cxx.cxx" IncludeInUnityFile="false" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeFiles/AzCore.Tests.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\CMakeFiles\AzCore.Tests.dir\Unity\unity_7_cxx.cxx" IncludeInUnityFile="false" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeFiles/AzCore.Tests.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\CMakeFiles\AzCore.Tests.dir\Unity\unity_6_cxx.cxx" IncludeInUnityFile="false" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeFiles/AzCore.Tests.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\CMakeFiles\AzCore.Tests.dir\Unity\unity_5_cxx.cxx" IncludeInUnityFile="false" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeFiles/AzCore.Tests.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\CMakeFiles\AzCore.Tests.dir\Unity\unity_4_cxx.cxx" IncludeInUnityFile="false" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeFiles/AzCore.Tests.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\CMakeFiles\AzCore.Tests.dir\Unity\unity_3_cxx.cxx" IncludeInUnityFile="false" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeFiles/AzCore.Tests.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\CMakeFiles\AzCore.Tests.dir\Unity\unity_2_cxx.cxx" IncludeInUnityFile="false" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeFiles/AzCore.Tests.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\CMakeFiles\AzCore.Tests.dir\Unity\unity_1_cxx.cxx" IncludeInUnityFile="false" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeFiles/AzCore.Tests.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\CMakeFiles\AzCore.Tests.dir\Unity\unity_0_cxx.cxx" IncludeInUnityFile="false" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeFiles/AzCore.Tests.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Main.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeFiles/AzCore.Tests.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Asset\AssetCommon.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeFiles/AzCore.Tests.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Asset\AssetDataStreamTests.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeFiles/AzCore.Tests.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Asset\AssetManagerLoadingTests.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeFiles/AzCore.Tests.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Asset\AssetManagerStreamingTests.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeFiles/AzCore.Tests.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Asset\BaseAssetManagerTest.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeFiles/AzCore.Tests.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Asset\BaseAssetManagerTest.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Asset\MockLoadAssetCatalogAndHandler.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Asset\TestAssetTypes.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\AssetJsonSerializerTests.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeFiles/AzCore.Tests.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\EBus\ScheduledEventTests.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeFiles/AzCore.Tests.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\AssetManager.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeFiles/AzCore.Tests.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\TestCatalog.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\TestCatalog.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeFiles/AzCore.Tests.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\AssetSerializerTests.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeFiles/AzCore.Tests.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\BehaviorContext.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeFiles/AzCore.Tests.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\BehaviorContextFixture.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Components.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeFiles/AzCore.Tests.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Console\LoggerSystemComponentTests.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeFiles/AzCore.Tests.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Console\ConsoleTests.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeFiles/AzCore.Tests.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Debug.cpp">
+      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='debug|x64'">%(PreprocessorDefinitions);AZCORETEST_DLL_NAME="AzCore.Tests.dll"</PreprocessorDefinitions>
+      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='profile|x64'">%(PreprocessorDefinitions);AZCORETEST_DLL_NAME="AzCore.Tests.dll"</PreprocessorDefinitions>
+      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='release|x64'">%(PreprocessorDefinitions);AZCORETEST_DLL_NAME="AzCore.Tests.dll"</PreprocessorDefinitions>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\DLL.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeFiles/AzCore.Tests.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\EBus.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeFiles/AzCore.Tests.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\EntityIdTests.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeFiles/AzCore.Tests.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\EntityTests.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeFiles/AzCore.Tests.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\EnumTests.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeFiles/AzCore.Tests.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\EventTests.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeFiles/AzCore.Tests.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\FileIOBaseTestTypes.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Geometry2DUtils.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeFiles/AzCore.Tests.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Interface.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeFiles/AzCore.Tests.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\IO\Path\PathTests.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeFiles/AzCore.Tests.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\IPC.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeFiles/AzCore.Tests.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Jobs.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeFiles/AzCore.Tests.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\JSON.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeFiles/AzCore.Tests.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\FixedWidthIntegers.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeFiles/AzCore.Tests.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\GenericStreamMock.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\GenericStreamTests.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeFiles/AzCore.Tests.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Memory.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeFiles/AzCore.Tests.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Module.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeFiles/AzCore.Tests.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\ModuleTestBus.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\OrderedEventBenchmarks.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeFiles/AzCore.Tests.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\OrderedEventTests.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeFiles/AzCore.Tests.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Outcome.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeFiles/AzCore.Tests.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Patching.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeFiles/AzCore.Tests.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\RemappableId.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeFiles/AzCore.Tests.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Rtti.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeFiles/AzCore.Tests.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Script.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeFiles/AzCore.Tests.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\ScriptMath.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeFiles/AzCore.Tests.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Serialization.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeFiles/AzCore.Tests.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\SerializeContextFixture.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Slice.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeFiles/AzCore.Tests.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\State.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeFiles/AzCore.Tests.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Statistics.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeFiles/AzCore.Tests.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\StreamerTests.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeFiles/AzCore.Tests.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\StringFunc.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeFiles/AzCore.Tests.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\SystemFile.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeFiles/AzCore.Tests.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\TaskTests.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeFiles/AzCore.Tests.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\TickBusTest.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeFiles/AzCore.Tests.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\UUIDTests.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeFiles/AzCore.Tests.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\XML.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeFiles/AzCore.Tests.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Debug\AssetTracking.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeFiles/AzCore.Tests.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Debug\LocalFileEventLoggerTests.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeFiles/AzCore.Tests.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Debug\Trace.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeFiles/AzCore.Tests.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Name\NameJsonSerializerTests.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeFiles/AzCore.Tests.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Name\NameTests.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeFiles/AzCore.Tests.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\RTTI\TypeSafeIntegralTests.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeFiles/AzCore.Tests.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\SettingsRegistryTests.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeFiles/AzCore.Tests.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\SettingsRegistryMergeUtilsTests.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeFiles/AzCore.Tests.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Settings\CommandLineTests.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeFiles/AzCore.Tests.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Settings\SettingsRegistryConsoleUtilsTests.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeFiles/AzCore.Tests.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Settings\SettingsRegistryScriptUtilsTests.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeFiles/AzCore.Tests.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Streamer\BlockCacheTests.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeFiles/AzCore.Tests.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Streamer\DedicatedCacheTests.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeFiles/AzCore.Tests.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Streamer\FullDecompressorTests.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeFiles/AzCore.Tests.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Streamer\IStreamerMock.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Streamer\IStreamerTypesMock.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Streamer\ReadSplitterTests.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeFiles/AzCore.Tests.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Streamer\SchedulerTests.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeFiles/AzCore.Tests.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Streamer\StreamStackEntryConformityTests.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Streamer\StreamStackEntryMock.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Streamer\StreamStackEntryTests.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeFiles/AzCore.Tests.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Serialization\Json\ArraySerializerTests.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeFiles/AzCore.Tests.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Serialization\Json\BaseJsonSerializerFixture.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Serialization\Json\BaseJsonSerializerTests.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeFiles/AzCore.Tests.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Serialization\Json\BasicContainerSerializerTests.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeFiles/AzCore.Tests.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Serialization\Json\BoolSerializerTests.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeFiles/AzCore.Tests.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Serialization\Json\ByteStreamSerializerTests.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeFiles/AzCore.Tests.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Serialization\Json\ColorSerializerTests.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeFiles/AzCore.Tests.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Serialization\Json\DoubleSerializerTests.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeFiles/AzCore.Tests.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Serialization\Json\IntSerializerTests.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeFiles/AzCore.Tests.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Serialization\Json\JsonRegistrationContextTests.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeFiles/AzCore.Tests.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Serialization\Json\JsonSerializationMetadataTests.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeFiles/AzCore.Tests.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Serialization\Json\JsonSerializationResultTests.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeFiles/AzCore.Tests.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Serialization\Json\JsonSerializationTests.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Serialization\Json\JsonSerializationTests.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeFiles/AzCore.Tests.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Serialization\Json\JsonSerializationUtilsTests.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeFiles/AzCore.Tests.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Serialization\Json\JsonSerializerConformityTests.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Serialization\Json\JsonSerializerMock.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Serialization\Json\MapSerializerTests.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeFiles/AzCore.Tests.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Serialization\Json\MathVectorSerializerTests.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeFiles/AzCore.Tests.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Serialization\Json\MathMatrixSerializerTests.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeFiles/AzCore.Tests.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Serialization\Json\SmartPointerSerializerTests.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeFiles/AzCore.Tests.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Serialization\Json\StringSerializerTests.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeFiles/AzCore.Tests.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Serialization\Json\TestCases.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Serialization\Json\TestCases_Base.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Serialization\Json\TestCases_Base.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeFiles/AzCore.Tests.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Serialization\Json\TestCases_Classes.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Serialization\Json\TestCases_Classes.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeFiles/AzCore.Tests.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Serialization\Json\TestCases_Compare.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeFiles/AzCore.Tests.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Serialization\Json\TestCases_Enum.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeFiles/AzCore.Tests.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Serialization\Json\TestCases_Patching.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeFiles/AzCore.Tests.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Serialization\Json\TestCases_Pointers.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Serialization\Json\TestCases_Pointers.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeFiles/AzCore.Tests.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Serialization\Json\TestCases_TypeId.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeFiles/AzCore.Tests.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Serialization\Json\TransformSerializerTests.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeFiles/AzCore.Tests.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Serialization\Json\TupleSerializerTests.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeFiles/AzCore.Tests.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Serialization\Json\UnorderedSetSerializerTests.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeFiles/AzCore.Tests.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Serialization\Json\UnsupportedTypesSerializerTests.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeFiles/AzCore.Tests.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Serialization\Json\UuidSerializerTests.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeFiles/AzCore.Tests.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Math\AabbTests.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeFiles/AzCore.Tests.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Math\ColorTests.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeFiles/AzCore.Tests.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Math\CrcTests.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeFiles/AzCore.Tests.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Math\CrcTestsCompileTimeLiterals.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Math\FrustumTests.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeFiles/AzCore.Tests.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Math\FrustumPerformanceTests.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeFiles/AzCore.Tests.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Math\IntersectionTests.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeFiles/AzCore.Tests.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Math\MathIntrinsicsTests.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeFiles/AzCore.Tests.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Math\MathUtilsTests.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeFiles/AzCore.Tests.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Math\Matrix3x3PerformanceTests.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeFiles/AzCore.Tests.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Math\Matrix3x3Tests.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeFiles/AzCore.Tests.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Math\Matrix3x4PerformanceTests.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeFiles/AzCore.Tests.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Math\Matrix3x4Tests.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeFiles/AzCore.Tests.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Math\Matrix4x4PerformanceTests.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeFiles/AzCore.Tests.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Math\Matrix4x4Tests.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeFiles/AzCore.Tests.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Math\MatrixUtilsTests.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeFiles/AzCore.Tests.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Math\MathTestData.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Math\ObbPerformanceTests.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeFiles/AzCore.Tests.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Math\ObbTests.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeFiles/AzCore.Tests.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Math\PlanePerformanceTests.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeFiles/AzCore.Tests.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Math\PlaneTests.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeFiles/AzCore.Tests.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Math\QuaternionPerformanceTests.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeFiles/AzCore.Tests.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Math\QuaternionTests.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeFiles/AzCore.Tests.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Math\RandomTests.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeFiles/AzCore.Tests.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Math\ShapeIntersectionPerformanceTests.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeFiles/AzCore.Tests.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Math\ShapeIntersectionTests.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeFiles/AzCore.Tests.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Math\SfmtTests.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeFiles/AzCore.Tests.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Math\SimdMathTests.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeFiles/AzCore.Tests.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Math\SphereTests.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeFiles/AzCore.Tests.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Math\SplineTests.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeFiles/AzCore.Tests.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Math\TransformPerformanceTests.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeFiles/AzCore.Tests.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Math\TransformTests.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeFiles/AzCore.Tests.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Math\Vector2PerformanceTests.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeFiles/AzCore.Tests.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Math\Vector2Tests.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeFiles/AzCore.Tests.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Math\Vector3PerformanceTests.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeFiles/AzCore.Tests.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Math\Vector3Tests.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeFiles/AzCore.Tests.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Math\Vector4PerformanceTests.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeFiles/AzCore.Tests.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Math\Vector4Tests.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeFiles/AzCore.Tests.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Memory\AllocatorManager.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeFiles/AzCore.Tests.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Memory\HphaSchema.cpp" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Memory\HphaSchemaErrorDetection.cpp" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Memory\LeakDetection.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeFiles/AzCore.Tests.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Memory\MallocSchema.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeFiles/AzCore.Tests.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\AZStd\Algorithms.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeFiles/AzCore.Tests.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\AZStd\Allocators.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeFiles/AzCore.Tests.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\AZStd\Atomics.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeFiles/AzCore.Tests.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\AZStd\Any.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeFiles/AzCore.Tests.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\AZStd\Bitset.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeFiles/AzCore.Tests.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\AZStd\CreateDestroy.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeFiles/AzCore.Tests.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\AZStd\ConcurrentAllocators.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeFiles/AzCore.Tests.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\AZStd\ConcurrentContainers.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeFiles/AzCore.Tests.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\AZStd\ChronoTests.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeFiles/AzCore.Tests.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\AZStd\DequeAndSimilar.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeFiles/AzCore.Tests.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\AZStd\Examples.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeFiles/AzCore.Tests.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\AZStd\FunctionalBasic.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeFiles/AzCore.Tests.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\AZStd\FunctorsBind.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeFiles/AzCore.Tests.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\AZStd\Hashed.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeFiles/AzCore.Tests.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\AZStd\Invoke.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeFiles/AzCore.Tests.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\AZStd\Iterators.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeFiles/AzCore.Tests.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\AZStd\Lists.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeFiles/AzCore.Tests.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\AZStd\ListsFixed.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeFiles/AzCore.Tests.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\AZStd\ListsIntrusive.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeFiles/AzCore.Tests.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\AZStd\LockFreeQueues.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeFiles/AzCore.Tests.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\AZStd\LockFreeStacks.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeFiles/AzCore.Tests.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\AZStd\LockTests.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeFiles/AzCore.Tests.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\AZStd\Numeric.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeFiles/AzCore.Tests.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\AZStd\Ordered.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeFiles/AzCore.Tests.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\AZStd\Optional.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeFiles/AzCore.Tests.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\AZStd\Pair.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeFiles/AzCore.Tests.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\AZStd\Parallel.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeFiles/AzCore.Tests.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\AZStd\ScopedLockTests.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeFiles/AzCore.Tests.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\AZStd\SetsIntrusive.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeFiles/AzCore.Tests.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\AZStd\SmartPtr.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeFiles/AzCore.Tests.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\AZStd\String.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeFiles/AzCore.Tests.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\AZStd\TypeTraits.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeFiles/AzCore.Tests.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\AZStd\Tuple.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeFiles/AzCore.Tests.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\AZStd\UserTypes.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\AZStd\Variant.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeFiles/AzCore.Tests.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\AZStd\VariantSerialization.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeFiles/AzCore.Tests.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\AZStd\VectorAndArray.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeFiles/AzCore.Tests.dir/Unity" />
+    <None Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\azcoretests_files.cmake">
+    </None>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Platform\Common\WinAPI\Tests\UtilsTests_WinAPI.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeFiles/AzCore.Tests.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Platform\Windows\Tests\IO\Streamer\StorageDriveTests_Windows.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeFiles/AzCore.Tests.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Platform\Windows\Tests\Memory\OverrunDetectionAllocator_Windows.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeFiles/AzCore.Tests.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Platform\Windows\Tests\Serialization_Windows.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzCore/CMakeFiles/AzCore.Tests.dir/Unity" />
+    <None Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Platform\Windows\platform_windows_files.cmake">
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Platform\Windows\platform_windows.cmake">
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\runtime_dependencies\debug\AzCore.Tests_debug.stamp">
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\runtime_dependencies\profile\AzCore.Tests_profile.stamp">
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\runtime_dependencies\release\AzCore.Tests_release.stamp">
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\ZERO_CHECK.vcxproj">
+      <Project>{CDE32B4E-8490-3FC5-A3F2-976A0A5DE45E}</Project>
+      <Name>ZERO_CHECK</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore.vcxproj">
+      <Project>{8AC0D8DF-6487-39C7-A5F3-F77355B1ACD9}</Project>
+      <Name>AzCore</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCoreTestCommon.vcxproj">
+      <Project>{725AFCC2-CE32-3828-985C-11F9698D407A}</Project>
+      <Name>AzCoreTestCommon</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCoreTestDLL.vcxproj">
+      <Project>{C0D7B499-8CA9-3795-ADC1-601F8B2A56C3}</Project>
+      <Name>AzCoreTestDLL</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\Code\Framework\AzTest\AzTest.vcxproj">
+      <Project>{95261DE1-D32C-3935-98F1-4D1BF1D97218}</Project>
+      <Name>AzTest</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\Code\Tools\AzTestRunner\AzTestRunner.vcxproj">
+      <Project>{968B32CB-A1B3-3E25-9F97-5BCF47C8BDF1}</Project>
+      <Name>AzTestRunner</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzTestShared.vcxproj">
+      <Project>{1AC8C16C-5239-344F-B0B8-3A991B590589}</Project>
+      <Name>AzTestShared</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

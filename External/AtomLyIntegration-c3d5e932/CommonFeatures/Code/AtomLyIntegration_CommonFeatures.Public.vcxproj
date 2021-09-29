@@ -1,0 +1,225 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <PreferredToolArchitecture>x64</PreferredToolArchitecture>
+  </PropertyGroup>
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="debug|x64">
+      <Configuration>debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="profile|x64">
+      <Configuration>profile</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="release|x64">
+      <Configuration>release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{617943C8-9D54-3E05-B08F-79A600BDD733}</ProjectGuid>
+    <WindowsTargetPlatformVersion>10.0.19041.0</WindowsTargetPlatformVersion>
+    <Keyword>Win32Proj</Keyword>
+    <Platform>x64</Platform>
+    <ProjectName>AtomLyIntegration_CommonFeatures.Public</ProjectName>
+    <VCProjectUpgraderObjectName>NoUpgrade</VCProjectUpgraderObjectName>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='debug|x64'" Label="Configuration">
+    <ConfigurationType>Utility</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v142</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='profile|x64'" Label="Configuration">
+    <ConfigurationType>Utility</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v142</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='release|x64'" Label="Configuration">
+    <ConfigurationType>Utility</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v142</PlatformToolset>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='debug|x64'" />
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='profile|x64'" />
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='release|x64'" />
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\CMakeLists.txt">
+      <UseUtf8Encoding>Always</UseUtf8Encoding>
+      <Message Condition="'$(Configuration)|$(Platform)'=='debug|x64'">Building Custom Rule C:/Users/lesaelr/o3de/Gems/AtomLyIntegration/CommonFeatures/Code/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='debug|x64'">setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SC:/Users/lesaelr/o3de -BC:/Users/lesaelr/o3de --check-stamp-file C:/Users/lesaelr/o3de/External/AtomLyIntegration-c3d5e932/CommonFeatures/Code/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='debug|x64'">C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Resources\AtomLyIntegrationResources.qrc;C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Source\Platform\Windows\platform_windows_files.cmake;C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\atomlyintegration_commonfeatures_editor_files.cmake;C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\atomlyintegration_commonfeatures_files.cmake;C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\atomlyintegration_commonfeatures_public_files.cmake;C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\atomlyintegration_commonfeatures_shared_files.cmake;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='debug|x64'">C:\Users\lesaelr\o3de\External\AtomLyIntegration-c3d5e932\CommonFeatures\Code\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='debug|x64'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='profile|x64'">Building Custom Rule C:/Users/lesaelr/o3de/Gems/AtomLyIntegration/CommonFeatures/Code/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='profile|x64'">setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SC:/Users/lesaelr/o3de -BC:/Users/lesaelr/o3de --check-stamp-file C:/Users/lesaelr/o3de/External/AtomLyIntegration-c3d5e932/CommonFeatures/Code/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='profile|x64'">C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Resources\AtomLyIntegrationResources.qrc;C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Source\Platform\Windows\platform_windows_files.cmake;C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\atomlyintegration_commonfeatures_editor_files.cmake;C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\atomlyintegration_commonfeatures_files.cmake;C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\atomlyintegration_commonfeatures_public_files.cmake;C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\atomlyintegration_commonfeatures_shared_files.cmake;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='profile|x64'">C:\Users\lesaelr\o3de\External\AtomLyIntegration-c3d5e932\CommonFeatures\Code\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='profile|x64'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='release|x64'">Building Custom Rule C:/Users/lesaelr/o3de/Gems/AtomLyIntegration/CommonFeatures/Code/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='release|x64'">setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SC:/Users/lesaelr/o3de -BC:/Users/lesaelr/o3de --check-stamp-file C:/Users/lesaelr/o3de/External/AtomLyIntegration-c3d5e932/CommonFeatures/Code/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='release|x64'">C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Resources\AtomLyIntegrationResources.qrc;C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Source\Platform\Windows\platform_windows_files.cmake;C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\atomlyintegration_commonfeatures_editor_files.cmake;C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\atomlyintegration_commonfeatures_files.cmake;C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\atomlyintegration_commonfeatures_public_files.cmake;C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\atomlyintegration_commonfeatures_shared_files.cmake;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='release|x64'">C:\Users\lesaelr\o3de\External\AtomLyIntegration-c3d5e932\CommonFeatures\Code\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='release|x64'">false</LinkObjects>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Include\AtomLyIntegration\CommonFeatures\CoreLights\AreaLightBus.h">
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Include\AtomLyIntegration\CommonFeatures\CoreLights\AreaLightComponentConfig.h">
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Include\AtomLyIntegration\CommonFeatures\CoreLights\CoreLightsConstants.h">
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Include\AtomLyIntegration\CommonFeatures\CoreLights\DirectionalLightBus.h">
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Include\AtomLyIntegration\CommonFeatures\CoreLights\DirectionalLightComponentConfig.h">
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Include\AtomLyIntegration\CommonFeatures\Decals\DecalBus.h">
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Include\AtomLyIntegration\CommonFeatures\Decals\DecalComponentConfig.h">
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Include\AtomLyIntegration\CommonFeatures\Decals\DecalConstants.h">
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Include\AtomLyIntegration\CommonFeatures\Grid\GridComponentBus.h">
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Include\AtomLyIntegration\CommonFeatures\Grid\GridComponentConfig.h">
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Include\AtomLyIntegration\CommonFeatures\Grid\GridComponentConstants.h">
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Include\AtomLyIntegration\CommonFeatures\ImageBasedLights\ImageBasedLightComponentBus.h">
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Include\AtomLyIntegration\CommonFeatures\ImageBasedLights\ImageBasedLightComponentConfig.h">
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Include\AtomLyIntegration\CommonFeatures\ImageBasedLights\ImageBasedLightComponentConstants.h">
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Include\AtomLyIntegration\CommonFeatures\Material\MaterialComponentBus.h">
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Include\AtomLyIntegration\CommonFeatures\Material\MaterialComponentConfig.h">
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Include\AtomLyIntegration\CommonFeatures\Material\MaterialComponentConstants.h">
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Include\AtomLyIntegration\CommonFeatures\Mesh\MeshComponentBus.h">
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Include\AtomLyIntegration\CommonFeatures\Mesh\MeshComponentConstants.h">
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Include\AtomLyIntegration\CommonFeatures\PostProcess\PostFxLayerBus.h">
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Include\AtomLyIntegration\CommonFeatures\PostProcess\PostFxLayerComponentConfig.h">
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Include\AtomLyIntegration\CommonFeatures\PostProcess\PostFxLayerComponentConstants.h">
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Include\AtomLyIntegration\CommonFeatures\PostProcess\Bloom\BloomBus.h">
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Include\AtomLyIntegration\CommonFeatures\PostProcess\Bloom\BloomComponentConfig.h">
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Include\AtomLyIntegration\CommonFeatures\PostProcess\DepthOfField\DepthOfFieldBus.h">
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Include\AtomLyIntegration\CommonFeatures\PostProcess\DepthOfField\DepthOfFieldComponentConfig.h">
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Include\AtomLyIntegration\CommonFeatures\PostProcess\DisplayMapper\DisplayMapperComponentBus.h">
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Include\AtomLyIntegration\CommonFeatures\PostProcess\DisplayMapper\DisplayMapperComponentConfig.h">
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Include\AtomLyIntegration\CommonFeatures\PostProcess\DisplayMapper\DisplayMapperComponentConstants.h">
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Include\AtomLyIntegration\CommonFeatures\PostProcess\ExposureControl\ExposureControlBus.h">
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Include\AtomLyIntegration\CommonFeatures\PostProcess\ExposureControl\ExposureControlComponentConfig.h">
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Include\AtomLyIntegration\CommonFeatures\PostProcess\ExposureControl\ExposureControlComponentConstants.h">
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Include\AtomLyIntegration\CommonFeatures\PostProcess\ColorGrading\HDRColorGradingBus.h">
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Include\AtomLyIntegration\CommonFeatures\PostProcess\ColorGrading\HDRColorGradingComponentConfig.h">
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Include\AtomLyIntegration\CommonFeatures\PostProcess\Ssao\SsaoBus.h">
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Include\AtomLyIntegration\CommonFeatures\PostProcess\Ssao\SsaoComponentConfiguration.h">
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Include\AtomLyIntegration\CommonFeatures\PostProcess\LookModification\LookModificationBus.h">
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Include\AtomLyIntegration\CommonFeatures\PostProcess\LookModification\LookModificationComponentConfig.h">
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Include\AtomLyIntegration\CommonFeatures\PostProcess\LookModification\LookModificationComponentConstants.h">
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Include\AtomLyIntegration\CommonFeatures\PostProcess\PostFxWeightRequestBus.h">
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Include\AtomLyIntegration\CommonFeatures\PostProcess\PostFxLayerCategoriesProviderRequestBus.h">
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Include\AtomLyIntegration\CommonFeatures\PostProcess\RadiusWeightModifier\RadiusWeightModifierComponentConfig.h">
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Include\AtomLyIntegration\CommonFeatures\PostProcess\RadiusWeightModifier\RadiusWeightModifierComponentConstants.h">
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Include\AtomLyIntegration\CommonFeatures\PostProcess\ShapeWeightModifier\ShapeWeightModifierComponentConfig.h">
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Include\AtomLyIntegration\CommonFeatures\PostProcess\ShapeWeightModifier\ShapeWeightModifierComponentConstants.h">
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Include\AtomLyIntegration\CommonFeatures\PostProcess\GradientWeightModifier\GradientWeightModifierComponentConfig.h">
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Include\AtomLyIntegration\CommonFeatures\PostProcess\GradientWeightModifier\GradientWeightModifierComponentConstants.h">
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Include\AtomLyIntegration\CommonFeatures\ScreenSpace\DeferredFogComponentConfig.h">
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Include\AtomLyIntegration\CommonFeatures\ScreenSpace\DeferredFogBus.h">
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Include\AtomLyIntegration\CommonFeatures\SkyBox\HDRiSkyboxBus.h">
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Include\AtomLyIntegration\CommonFeatures\SkyBox\HDRiSkyboxComponentConfig.h">
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Include\AtomLyIntegration\CommonFeatures\SkyBox\PhysicalSkyBus.h">
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Include\AtomLyIntegration\CommonFeatures\SkyBox\PhysicalSkyComponentConfig.h">
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Include\AtomLyIntegration\CommonFeatures\Scripting\EntityReferenceRequestBus.h">
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Include\AtomLyIntegration\CommonFeatures\Scripting\EntityReferenceConstants.h">
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Include\AtomLyIntegration\CommonFeatures\Scripting\EntityReferenceComponentConfig.h">
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\atomlyintegration_commonfeatures_public_files.cmake">
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\ZERO_CHECK.vcxproj">
+      <Project>{CDE32B4E-8490-3FC5-A3F2-976A0A5DE45E}</Project>
+      <Name>ZERO_CHECK</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

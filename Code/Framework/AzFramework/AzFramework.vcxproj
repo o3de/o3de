@@ -1,0 +1,744 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <PreferredToolArchitecture>x64</PreferredToolArchitecture>
+  </PropertyGroup>
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="debug|x64">
+      <Configuration>debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="profile|x64">
+      <Configuration>profile</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="release|x64">
+      <Configuration>release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{E4BA859A-1109-3DBC-887D-DBC80D0DD65A}</ProjectGuid>
+    <WindowsTargetPlatformVersion>10.0.19041.0</WindowsTargetPlatformVersion>
+    <Keyword>Win32Proj</Keyword>
+    <Platform>x64</Platform>
+    <ProjectName>AzFramework</ProjectName>
+    <VCProjectUpgraderObjectName>NoUpgrade</VCProjectUpgraderObjectName>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='debug|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v142</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='profile|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v142</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='release|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v142</PlatformToolset>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>10.0.20506.1</_ProjectFileVersion>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='debug|x64'">C:\Users\lesaelr\o3de\lib\debug\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='debug|x64'">AzFramework.dir\debug\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='debug|x64'">AzFramework</TargetName>
+    <TargetExt Condition="'$(Configuration)|$(Platform)'=='debug|x64'">.lib</TargetExt>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='profile|x64'">C:\Users\lesaelr\o3de\lib\profile\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='profile|x64'">AzFramework.dir\profile\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='profile|x64'">AzFramework</TargetName>
+    <TargetExt Condition="'$(Configuration)|$(Platform)'=='profile|x64'">.lib</TargetExt>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='release|x64'">C:\Users\lesaelr\o3de\lib\release\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='release|x64'">AzFramework.dir\release\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='release|x64'">AzFramework</TargetName>
+    <TargetExt Condition="'$(Configuration)|$(Platform)'=='release|x64'">.lib</TargetExt>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='debug|x64'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>C:\Users\lesaelr\o3de\Code\Framework\AzFramework\.;C:\Users\lesaelr\o3de\Code\Framework\AzFramework\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzFramework\Platform\Common;C:\Users\lesaelr\o3de\Code\Framework\AzCore\.;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Common;C:\Users\lesaelr\o3de\Code\Framework\GridMate\.;C:\Users\lesaelr\o3de\Code\Framework\GridMate\Platform\Windows;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalOptions>%(AdditionalOptions) /Zc:__cplusplus /Zc:lambda /favor:AMD64 /bigobj /RTCsu /experimental:external /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/Lua-5.3.5-rev5-windows/lua/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/RapidJSON-1.1.0-rev1-multiplatform/RapidJSON/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/RapidXML-1.13-rev1-multiplatform/RapidXML/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/zlib-1.2.11-rev2-windows/zlib/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/zstd-1.35-multiplatform/zstd/lib /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/cityhash-1.1-multiplatform/cityhash/src /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/OpenSSL-1.1.1b-rev2-windows/OpenSSL/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/lz4-1.9.3-vcpkg-rev4-windows/lz4/lz4/include</AdditionalOptions>
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <BufferSecurityCheck>true</BufferSecurityCheck>
+      <CallingConvention>Cdecl</CallingConvention>
+      <ConformanceMode>true</ConformanceMode>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <DiagnosticsFormat>Caret</DiagnosticsFormat>
+      <DisableSpecificWarnings>4201</DisableSpecificWarnings>
+      <ExceptionHandling>
+      </ExceptionHandling>
+      <ExternalWarningLevel>TurnOffAllWarnings</ExternalWarningLevel>
+      <FloatingPointModel>Fast</FloatingPointModel>
+      <ForceConformanceInForLoopScope>true</ForceConformanceInForLoopScope>
+      <InlineFunctionExpansion>Disabled</InlineFunctionExpansion>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <Optimization>Disabled</Optimization>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <TreatSpecificWarningsAsErrors>4263;4264;4265;4266;4296;4426;4437;4774;4777;5031;5032;5233</TreatSpecificWarningsAsErrors>
+      <TreatWarningAsError>true</TreatWarningAsError>
+      <UseFullPaths>false</UseFullPaths>
+      <WarningLevel>Level4</WarningLevel>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);_HAS_EXCEPTIONS=0;_DEBUG;AZ_DEBUG_BUILD=1;AZ_ENABLE_TRACING;AZ_ENABLE_DEBUG_TOOLS;AZ_BUILD_CONFIGURATION_TYPE="debug";_ENABLE_EXTENDED_ALIGNED_STORAGE;_WIN32;WIN32;_WIN64;WIN64;NOMINMAX;OPENSSL_ENABLED;CMAKE_INTDIR="debug"</PreprocessorDefinitions>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);_DEBUG;_HAS_EXCEPTIONS=0;AZ_DEBUG_BUILD=1;AZ_ENABLE_TRACING;AZ_ENABLE_DEBUG_TOOLS;AZ_BUILD_CONFIGURATION_TYPE=\"debug\";_ENABLE_EXTENDED_ALIGNED_STORAGE;_WIN32;WIN32;_WIN64;WIN64;NOMINMAX;OPENSSL_ENABLED;CMAKE_INTDIR=\"debug\"</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>C:\Users\lesaelr\o3de\Code\Framework\AzFramework\.;C:\Users\lesaelr\o3de\Code\Framework\AzFramework\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzFramework\Platform\Common;C:\Users\lesaelr\o3de\Code\Framework\AzCore\.;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Common;C:\Users\lesaelr\o3de\Code\Framework\GridMate\.;C:\Users\lesaelr\o3de\Code\Framework\GridMate\Platform\Windows;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+    </ResourceCompile>
+    <Midl>
+      <AdditionalIncludeDirectories>C:\Users\lesaelr\o3de\Code\Framework\AzFramework\.;C:\Users\lesaelr\o3de\Code\Framework\AzFramework\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzFramework\Platform\Common;C:\Users\lesaelr\o3de\Code\Framework\AzCore\.;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Common;C:\Users\lesaelr\o3de\Code\Framework\GridMate\.;C:\Users\lesaelr\o3de\Code\Framework\GridMate\Platform\Windows;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+    <Lib>
+      <AdditionalOptions>%(AdditionalOptions) /machine:x64 /IGNORE:4099</AdditionalOptions>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <TargetMachine>MachineX64</TargetMachine>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='profile|x64'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>C:\Users\lesaelr\o3de\Code\Framework\AzFramework\.;C:\Users\lesaelr\o3de\Code\Framework\AzFramework\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzFramework\Platform\Common;C:\Users\lesaelr\o3de\Code\Framework\AzCore\.;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Common;C:\Users\lesaelr\o3de\Code\Framework\GridMate\.;C:\Users\lesaelr\o3de\Code\Framework\GridMate\Platform\Windows;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalOptions>%(AdditionalOptions) /Zc:__cplusplus /Zc:lambda /favor:AMD64 /bigobj /experimental:external /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/Lua-5.3.5-rev5-windows/lua/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/RapidJSON-1.1.0-rev1-multiplatform/RapidJSON/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/RapidXML-1.13-rev1-multiplatform/RapidXML/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/zlib-1.2.11-rev2-windows/zlib/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/zstd-1.35-multiplatform/zstd/lib /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/cityhash-1.1-multiplatform/cityhash/src /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/OpenSSL-1.1.1b-rev2-windows/OpenSSL/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/lz4-1.9.3-vcpkg-rev4-windows/lz4/lz4/include</AdditionalOptions>
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <CallingConvention>Cdecl</CallingConvention>
+      <ConformanceMode>true</ConformanceMode>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <DiagnosticsFormat>Caret</DiagnosticsFormat>
+      <DisableSpecificWarnings>4201</DisableSpecificWarnings>
+      <ExceptionHandling>
+      </ExceptionHandling>
+      <ExternalWarningLevel>TurnOffAllWarnings</ExternalWarningLevel>
+      <FloatingPointModel>Fast</FloatingPointModel>
+      <ForceConformanceInForLoopScope>true</ForceConformanceInForLoopScope>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <Optimization>MaxSpeed</Optimization>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <RemoveUnreferencedCodeData>true</RemoveUnreferencedCodeData>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <StringPooling>true</StringPooling>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <TreatSpecificWarningsAsErrors>4263;4264;4265;4266;4296;4426;4437;4774;4777;5031;5032;5233</TreatSpecificWarningsAsErrors>
+      <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
+      <TreatWarningAsError>true</TreatWarningAsError>
+      <UseFullPaths>false</UseFullPaths>
+      <WarningLevel>Level4</WarningLevel>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);_HAS_EXCEPTIONS=0;_PROFILE;PROFILE;NDEBUG;AZ_ENABLE_TRACING;AZ_ENABLE_DEBUG_TOOLS;AZ_BUILD_CONFIGURATION_TYPE="profile";_ENABLE_EXTENDED_ALIGNED_STORAGE;_WIN32;WIN32;_WIN64;WIN64;NOMINMAX;OPENSSL_ENABLED;CMAKE_INTDIR="profile"</PreprocessorDefinitions>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);_HAS_EXCEPTIONS=0;_PROFILE;PROFILE;NDEBUG;AZ_ENABLE_TRACING;AZ_ENABLE_DEBUG_TOOLS;AZ_BUILD_CONFIGURATION_TYPE=\"profile\";_ENABLE_EXTENDED_ALIGNED_STORAGE;_WIN32;WIN32;_WIN64;WIN64;NOMINMAX;OPENSSL_ENABLED;CMAKE_INTDIR=\"profile\"</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>C:\Users\lesaelr\o3de\Code\Framework\AzFramework\.;C:\Users\lesaelr\o3de\Code\Framework\AzFramework\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzFramework\Platform\Common;C:\Users\lesaelr\o3de\Code\Framework\AzCore\.;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Common;C:\Users\lesaelr\o3de\Code\Framework\GridMate\.;C:\Users\lesaelr\o3de\Code\Framework\GridMate\Platform\Windows;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+    </ResourceCompile>
+    <Midl>
+      <AdditionalIncludeDirectories>C:\Users\lesaelr\o3de\Code\Framework\AzFramework\.;C:\Users\lesaelr\o3de\Code\Framework\AzFramework\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzFramework\Platform\Common;C:\Users\lesaelr\o3de\Code\Framework\AzCore\.;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Common;C:\Users\lesaelr\o3de\Code\Framework\GridMate\.;C:\Users\lesaelr\o3de\Code\Framework\GridMate\Platform\Windows;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+    <Lib>
+      <AdditionalOptions>%(AdditionalOptions) /machine:x64 /IGNORE:4099</AdditionalOptions>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <TargetMachine>MachineX64</TargetMachine>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='release|x64'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>C:\Users\lesaelr\o3de\Code\Framework\AzFramework\.;C:\Users\lesaelr\o3de\Code\Framework\AzFramework\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzFramework\Platform\Common;C:\Users\lesaelr\o3de\Code\Framework\AzCore\.;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Common;C:\Users\lesaelr\o3de\Code\Framework\GridMate\.;C:\Users\lesaelr\o3de\Code\Framework\GridMate\Platform\Windows;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalOptions>%(AdditionalOptions) /Zc:__cplusplus /Zc:lambda /favor:AMD64 /bigobj /experimental:external /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/Lua-5.3.5-rev5-windows/lua/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/RapidJSON-1.1.0-rev1-multiplatform/RapidJSON/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/RapidXML-1.13-rev1-multiplatform/RapidXML/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/zlib-1.2.11-rev2-windows/zlib/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/zstd-1.35-multiplatform/zstd/lib /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/cityhash-1.1-multiplatform/cityhash/src /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/OpenSSL-1.1.1b-rev2-windows/OpenSSL/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/lz4-1.9.3-vcpkg-rev4-windows/lz4/lz4/include</AdditionalOptions>
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <CallingConvention>Cdecl</CallingConvention>
+      <ConformanceMode>true</ConformanceMode>
+      <DiagnosticsFormat>Caret</DiagnosticsFormat>
+      <DisableSpecificWarnings>4201</DisableSpecificWarnings>
+      <ExceptionHandling>
+      </ExceptionHandling>
+      <ExternalWarningLevel>TurnOffAllWarnings</ExternalWarningLevel>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <FloatingPointModel>Fast</FloatingPointModel>
+      <ForceConformanceInForLoopScope>true</ForceConformanceInForLoopScope>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <OmitFramePointers>true</OmitFramePointers>
+      <Optimization>Full</Optimization>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <TreatSpecificWarningsAsErrors>4263;4264;4265;4266;4296;4426;4437;4774;4777;5031;5032;5233</TreatSpecificWarningsAsErrors>
+      <TreatWarningAsError>true</TreatWarningAsError>
+      <UseFullPaths>false</UseFullPaths>
+      <WarningLevel>Level4</WarningLevel>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);_HAS_EXCEPTIONS=0;_RELEASE;RELEASE;NDEBUG;AZ_BUILD_CONFIGURATION_TYPE="release";_ENABLE_EXTENDED_ALIGNED_STORAGE;_WIN32;WIN32;_WIN64;WIN64;NOMINMAX;OPENSSL_ENABLED;CMAKE_INTDIR="release"</PreprocessorDefinitions>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+      <DebugInformationFormat>
+      </DebugInformationFormat>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);_HAS_EXCEPTIONS=0;_RELEASE;RELEASE;NDEBUG;AZ_BUILD_CONFIGURATION_TYPE=\"release\";_ENABLE_EXTENDED_ALIGNED_STORAGE;_WIN32;WIN32;_WIN64;WIN64;NOMINMAX;OPENSSL_ENABLED;CMAKE_INTDIR=\"release\"</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>C:\Users\lesaelr\o3de\Code\Framework\AzFramework\.;C:\Users\lesaelr\o3de\Code\Framework\AzFramework\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzFramework\Platform\Common;C:\Users\lesaelr\o3de\Code\Framework\AzCore\.;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Common;C:\Users\lesaelr\o3de\Code\Framework\GridMate\.;C:\Users\lesaelr\o3de\Code\Framework\GridMate\Platform\Windows;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+    </ResourceCompile>
+    <Midl>
+      <AdditionalIncludeDirectories>C:\Users\lesaelr\o3de\Code\Framework\AzFramework\.;C:\Users\lesaelr\o3de\Code\Framework\AzFramework\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzFramework\Platform\Common;C:\Users\lesaelr\o3de\Code\Framework\AzCore\.;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Common;C:\Users\lesaelr\o3de\Code\Framework\GridMate\.;C:\Users\lesaelr\o3de\Code\Framework\GridMate\Platform\Windows;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+    <Lib>
+      <AdditionalOptions>%(AdditionalOptions) /machine:x64 /IGNORE:4099</AdditionalOptions>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <TargetMachine>MachineX64</TargetMachine>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\CMakeLists.txt">
+      <UseUtf8Encoding>Always</UseUtf8Encoding>
+      <Message Condition="'$(Configuration)|$(Platform)'=='debug|x64'">Building Custom Rule C:/Users/lesaelr/o3de/Code/Framework/AzFramework/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='debug|x64'">setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SC:/Users/lesaelr/o3de -BC:/Users/lesaelr/o3de --check-stamp-file C:/Users/lesaelr/o3de/Code/Framework/AzFramework/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='debug|x64'">C:\Users\lesaelr\.o3de\3rdParty\packages\lz4-1.9.3-vcpkg-rev4-windows\Findlz4.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\lz4-1.9.3-vcpkg-rev4-windows\PackageInfo.json;C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\azframework_files.cmake;C:\Users\lesaelr\o3de\Code\Framework\AzFramework\Platform\Windows\platform_windows.cmake;C:\Users\lesaelr\o3de\Code\Framework\AzFramework\Platform\Windows\platform_windows_files.cmake;C:\Users\lesaelr\o3de\Code\Framework\AzFramework\Tests\framework_shared_tests_files.cmake;C:\Users\lesaelr\o3de\Code\Framework\AzFramework\Tests\frameworktests_files.cmake;C:\Users\lesaelr\o3de\Code\Framework\AzFramework\Tests\process_launch_test_files.cmake;C:\Users\lesaelr\o3de\cmake\Platform\Windows\LYTestWrappers_windows.cmake;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='debug|x64'">C:\Users\lesaelr\o3de\Code\Framework\AzFramework\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='debug|x64'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='profile|x64'">Building Custom Rule C:/Users/lesaelr/o3de/Code/Framework/AzFramework/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='profile|x64'">setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SC:/Users/lesaelr/o3de -BC:/Users/lesaelr/o3de --check-stamp-file C:/Users/lesaelr/o3de/Code/Framework/AzFramework/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='profile|x64'">C:\Users\lesaelr\.o3de\3rdParty\packages\lz4-1.9.3-vcpkg-rev4-windows\Findlz4.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\lz4-1.9.3-vcpkg-rev4-windows\PackageInfo.json;C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\azframework_files.cmake;C:\Users\lesaelr\o3de\Code\Framework\AzFramework\Platform\Windows\platform_windows.cmake;C:\Users\lesaelr\o3de\Code\Framework\AzFramework\Platform\Windows\platform_windows_files.cmake;C:\Users\lesaelr\o3de\Code\Framework\AzFramework\Tests\framework_shared_tests_files.cmake;C:\Users\lesaelr\o3de\Code\Framework\AzFramework\Tests\frameworktests_files.cmake;C:\Users\lesaelr\o3de\Code\Framework\AzFramework\Tests\process_launch_test_files.cmake;C:\Users\lesaelr\o3de\cmake\Platform\Windows\LYTestWrappers_windows.cmake;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='profile|x64'">C:\Users\lesaelr\o3de\Code\Framework\AzFramework\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='profile|x64'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='release|x64'">Building Custom Rule C:/Users/lesaelr/o3de/Code/Framework/AzFramework/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='release|x64'">setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SC:/Users/lesaelr/o3de -BC:/Users/lesaelr/o3de --check-stamp-file C:/Users/lesaelr/o3de/Code/Framework/AzFramework/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='release|x64'">C:\Users\lesaelr\.o3de\3rdParty\packages\lz4-1.9.3-vcpkg-rev4-windows\Findlz4.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\lz4-1.9.3-vcpkg-rev4-windows\PackageInfo.json;C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\azframework_files.cmake;C:\Users\lesaelr\o3de\Code\Framework\AzFramework\Platform\Windows\platform_windows.cmake;C:\Users\lesaelr\o3de\Code\Framework\AzFramework\Platform\Windows\platform_windows_files.cmake;C:\Users\lesaelr\o3de\Code\Framework\AzFramework\Tests\framework_shared_tests_files.cmake;C:\Users\lesaelr\o3de\Code\Framework\AzFramework\Tests\frameworktests_files.cmake;C:\Users\lesaelr\o3de\Code\Framework\AzFramework\Tests\process_launch_test_files.cmake;C:\Users\lesaelr\o3de\cmake\Platform\Windows\LYTestWrappers_windows.cmake;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='release|x64'">C:\Users\lesaelr\o3de\Code\Framework\AzFramework\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='release|x64'">false</LinkObjects>
+    </CustomBuild>
+  </ItemGroup>
+  <PropertyGroup>
+    <EnableUnitySupport>true</EnableUnitySupport>
+  </PropertyGroup>
+  <ItemGroup>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\CMakeFiles\AzFramework.dir\Unity\unity_21_cxx.cxx" IncludeInUnityFile="false" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzFramework/CMakeFiles/AzFramework.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\CMakeFiles\AzFramework.dir\Unity\unity_20_cxx.cxx" IncludeInUnityFile="false" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzFramework/CMakeFiles/AzFramework.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\CMakeFiles\AzFramework.dir\Unity\unity_19_cxx.cxx" IncludeInUnityFile="false" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzFramework/CMakeFiles/AzFramework.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\CMakeFiles\AzFramework.dir\Unity\unity_18_cxx.cxx" IncludeInUnityFile="false" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzFramework/CMakeFiles/AzFramework.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\CMakeFiles\AzFramework.dir\Unity\unity_17_cxx.cxx" IncludeInUnityFile="false" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzFramework/CMakeFiles/AzFramework.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\CMakeFiles\AzFramework.dir\Unity\unity_16_cxx.cxx" IncludeInUnityFile="false" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzFramework/CMakeFiles/AzFramework.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\CMakeFiles\AzFramework.dir\Unity\unity_15_cxx.cxx" IncludeInUnityFile="false" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzFramework/CMakeFiles/AzFramework.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\CMakeFiles\AzFramework.dir\Unity\unity_14_cxx.cxx" IncludeInUnityFile="false" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzFramework/CMakeFiles/AzFramework.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\CMakeFiles\AzFramework.dir\Unity\unity_13_cxx.cxx" IncludeInUnityFile="false" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzFramework/CMakeFiles/AzFramework.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\CMakeFiles\AzFramework.dir\Unity\unity_12_cxx.cxx" IncludeInUnityFile="false" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzFramework/CMakeFiles/AzFramework.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\CMakeFiles\AzFramework.dir\Unity\unity_11_cxx.cxx" IncludeInUnityFile="false" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzFramework/CMakeFiles/AzFramework.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\CMakeFiles\AzFramework.dir\Unity\unity_10_cxx.cxx" IncludeInUnityFile="false" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzFramework/CMakeFiles/AzFramework.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\CMakeFiles\AzFramework.dir\Unity\unity_9_cxx.cxx" IncludeInUnityFile="false" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzFramework/CMakeFiles/AzFramework.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\CMakeFiles\AzFramework.dir\Unity\unity_8_cxx.cxx" IncludeInUnityFile="false" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzFramework/CMakeFiles/AzFramework.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\CMakeFiles\AzFramework.dir\Unity\unity_7_cxx.cxx" IncludeInUnityFile="false" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzFramework/CMakeFiles/AzFramework.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\CMakeFiles\AzFramework.dir\Unity\unity_6_cxx.cxx" IncludeInUnityFile="false" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzFramework/CMakeFiles/AzFramework.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\CMakeFiles\AzFramework.dir\Unity\unity_5_cxx.cxx" IncludeInUnityFile="false" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzFramework/CMakeFiles/AzFramework.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\CMakeFiles\AzFramework.dir\Unity\unity_4_cxx.cxx" IncludeInUnityFile="false" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzFramework/CMakeFiles/AzFramework.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\CMakeFiles\AzFramework.dir\Unity\unity_3_cxx.cxx" IncludeInUnityFile="false" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzFramework/CMakeFiles/AzFramework.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\CMakeFiles\AzFramework.dir\Unity\unity_2_cxx.cxx" IncludeInUnityFile="false" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzFramework/CMakeFiles/AzFramework.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\CMakeFiles\AzFramework.dir\Unity\unity_1_cxx.cxx" IncludeInUnityFile="false" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzFramework/CMakeFiles/AzFramework.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\CMakeFiles\AzFramework.dir\Unity\unity_0_cxx.cxx" IncludeInUnityFile="false" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzFramework/CMakeFiles/AzFramework.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Asset\AssetSystemComponentHelper.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzFramework/CMakeFiles/AzFramework.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\AzFrameworkModule.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\AzFrameworkModule.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzFramework/CMakeFiles/AzFramework.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\API\ApplicationAPI.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Application\Application.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzFramework/CMakeFiles/AzFramework.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Application\Application.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Archive\Archive.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzFramework/CMakeFiles/AzFramework.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Archive\Archive.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Archive\ArchiveBus.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Archive\ArchiveFileIO.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzFramework/CMakeFiles/AzFramework.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Archive\ArchiveFileIO.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Archive\ArchiveFindData.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzFramework/CMakeFiles/AzFramework.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Archive\ArchiveFindData.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Archive\ArchiveVars.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Archive\Codec.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Archive\IArchive.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Archive\INestedArchive.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Archive\MissingFileReport.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Archive\MissingFileReport.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzFramework/CMakeFiles/AzFramework.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Archive\NestedArchive.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzFramework/CMakeFiles/AzFramework.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Archive\NestedArchive.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Archive\ZipDirCache.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzFramework/CMakeFiles/AzFramework.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Archive\ZipDirCacheFactory.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzFramework/CMakeFiles/AzFramework.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Archive\ZipDirFind.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzFramework/CMakeFiles/AzFramework.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Archive\ZipDirList.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzFramework/CMakeFiles/AzFramework.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Archive\ZipDirStructures.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzFramework/CMakeFiles/AzFramework.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Archive\ZipDirTree.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzFramework/CMakeFiles/AzFramework.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Archive\ZipDirCache.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Archive\ZipDirCacheFactory.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Archive\ZipDirFind.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Archive\ZipDirList.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Archive\ZipDirStructures.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Archive\ZipDirTree.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Archive\ZipFileFormat.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Asset\SimpleAsset.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzFramework/CMakeFiles/AzFramework.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Asset\SimpleAsset.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Asset\AssetCatalogBus.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Asset\AssetSystemBus.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Asset\AssetSystemTypes.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Asset\AssetCatalog.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Asset\AssetCatalog.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzFramework/CMakeFiles/AzFramework.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Asset\AssetCatalogComponent.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Asset\AssetCatalogComponent.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzFramework/CMakeFiles/AzFramework.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Asset\AssetProcessorMessages.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzFramework/CMakeFiles/AzFramework.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Asset\AssetProcessorMessages.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Asset\AssetRegistry.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Asset\AssetRegistry.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzFramework/CMakeFiles/AzFramework.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Asset\AssetSeedList.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzFramework/CMakeFiles/AzFramework.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Asset\AssetSeedList.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Asset\AssetSystemComponent.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzFramework/CMakeFiles/AzFramework.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Asset\AssetSystemComponent.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Asset\CfgFileAsset.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Asset\GenericAssetHandler.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Asset\AssetBundleManifest.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzFramework/CMakeFiles/AzFramework.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Asset\AssetBundleManifest.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Asset\CustomAssetTypeComponent.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzFramework/CMakeFiles/AzFramework.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Asset\CustomAssetTypeComponent.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Asset\FileTagAsset.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzFramework/CMakeFiles/AzFramework.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Asset\FileTagAsset.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Asset\NetworkAssetNotification_private.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Asset\XmlSchemaAsset.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzFramework/CMakeFiles/AzFramework.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Asset\XmlSchemaAsset.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Asset\Benchmark\BenchmarkAsset.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzFramework/CMakeFiles/AzFramework.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Asset\Benchmark\BenchmarkAsset.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Asset\Benchmark\BenchmarkCommands.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzFramework/CMakeFiles/AzFramework.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Asset\Benchmark\BenchmarkCommands.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Asset\Benchmark\BenchmarkSettingsAsset.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzFramework/CMakeFiles/AzFramework.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Asset\Benchmark\BenchmarkSettingsAsset.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\CommandLine\CommandLine.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\CommandLine\CommandRegistrationBus.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Debug\DebugCameraBus.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Viewport\ViewportBus.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Viewport\ViewportBus.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzFramework/CMakeFiles/AzFramework.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Viewport\ViewportColors.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Viewport\ViewportColors.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzFramework/CMakeFiles/AzFramework.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Viewport\ViewportConstants.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Viewport\ViewportConstants.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzFramework/CMakeFiles/AzFramework.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Viewport\MultiViewportController.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Viewport\MultiViewportController.inl" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Viewport\SingleViewportController.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzFramework/CMakeFiles/AzFramework.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Viewport\SingleViewportController.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Viewport\ViewportControllerInterface.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Viewport\ViewportControllerList.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzFramework/CMakeFiles/AzFramework.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Viewport\ViewportControllerList.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Viewport\ViewportId.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Viewport\ViewportScreen.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Viewport\ViewportScreen.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzFramework/CMakeFiles/AzFramework.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Viewport\ScreenGeometry.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Viewport\ScreenGeometry.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzFramework/CMakeFiles/AzFramework.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Viewport\CameraState.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Viewport\CameraState.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzFramework/CMakeFiles/AzFramework.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Viewport\CameraInput.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Viewport\CameraInput.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzFramework/CMakeFiles/AzFramework.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Viewport\ClickDetector.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Viewport\ClickDetector.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzFramework/CMakeFiles/AzFramework.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Viewport\CursorState.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Viewport\DisplayContextRequestBus.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Entity\BehaviorEntity.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzFramework/CMakeFiles/AzFramework.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Entity\BehaviorEntity.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Entity\GameEntityContextComponent.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzFramework/CMakeFiles/AzFramework.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Entity\GameEntityContextComponent.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Entity\GameEntityContextBus.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Entity\EntityContext.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzFramework/CMakeFiles/AzFramework.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Entity\EntityContext.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Entity\EntityContextBus.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Entity\EntityDebugDisplayBus.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Entity\EntityOwnershipService.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Entity\EntityOwnershipServiceBus.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Entity\SliceEntityOwnershipServiceBus.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Entity\SliceEntityOwnershipService.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Entity\SliceEntityOwnershipService.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzFramework/CMakeFiles/AzFramework.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Entity\SliceGameEntityOwnershipService.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Entity\SliceGameEntityOwnershipService.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzFramework/CMakeFiles/AzFramework.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Entity\SliceGameEntityOwnershipServiceBus.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Entity\PrefabEntityOwnershipService.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Entity\PrefabEntityOwnershipService.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzFramework/CMakeFiles/AzFramework.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Components\ComponentAdapter.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Components\ComponentAdapter.inl" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Components\ComponentAdapterHelpers.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Components\EditorEntityEvents.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Components\TransformComponent.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzFramework/CMakeFiles/AzFramework.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Components\TransformComponent.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Components\CameraBus.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Components\ConsoleBus.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Components\ConsoleBus.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzFramework/CMakeFiles/AzFramework.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Components\DeprecatedComponentsBus.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Components\AzFrameworkConfigurationSystemComponent.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Components\AzFrameworkConfigurationSystemComponent.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzFramework/CMakeFiles/AzFramework.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Components\NonUniformScaleComponent.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Components\NonUniformScaleComponent.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzFramework/CMakeFiles/AzFramework.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\FileFunc\FileFunc.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\FileFunc\FileFunc.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzFramework/CMakeFiles/AzFramework.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Font\FontInterface.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Gem\GemInfo.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzFramework/CMakeFiles/AzFramework.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Gem\GemInfo.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\StringFunc\StringFunc.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\InGameUI\UiFrameworkBus.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\IO\LocalFileIO.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzFramework/CMakeFiles/AzFramework.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\IO\LocalFileIO.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\IO\FileOperations.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\IO\FileOperations.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzFramework/CMakeFiles/AzFramework.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\IO\RemoteFileIO.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzFramework/CMakeFiles/AzFramework.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\IO\RemoteFileIO.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\IO\RemoteStorageDrive.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\IO\RemoteStorageDrive.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzFramework/CMakeFiles/AzFramework.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Math\InterpolationSample.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Metrics\MetricsPlainTextNameRegistration.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Network\AssetProcessorConnection.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzFramework/CMakeFiles/AzFramework.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Network\AssetProcessorConnection.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Network\SocketConnection.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzFramework/CMakeFiles/AzFramework.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Network\SocketConnection.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Logging\LogFile.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzFramework/CMakeFiles/AzFramework.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Logging\LogFile.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Logging\LoggingComponent.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzFramework/CMakeFiles/AzFramework.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Logging\LoggingComponent.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Logging\StartupLogSinkReporter.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzFramework/CMakeFiles/AzFramework.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Logging\StartupLogSinkReporter.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Logging\MissingAssetLogger.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzFramework/CMakeFiles/AzFramework.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Logging\MissingAssetLogger.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Logging\MissingAssetNotificationBus.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Scene\Scene.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Scene\Scene.inl" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Scene\Scene.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzFramework/CMakeFiles/AzFramework.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Scene\SceneSystemComponent.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Scene\SceneSystemComponent.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzFramework/CMakeFiles/AzFramework.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Scene\SceneSystemInterface.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Script\ScriptComponent.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Script\ScriptComponent.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzFramework/CMakeFiles/AzFramework.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Script\ScriptDebugAgentBus.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Script\ScriptDebugMsgReflection.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzFramework/CMakeFiles/AzFramework.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Script\ScriptDebugMsgReflection.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Script\ScriptRemoteDebugging.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzFramework/CMakeFiles/AzFramework.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Script\ScriptRemoteDebugging.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Session\ISessionHandlingRequests.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Session\ISessionRequests.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzFramework/CMakeFiles/AzFramework.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Session\ISessionRequests.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Session\SessionConfig.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzFramework/CMakeFiles/AzFramework.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Session\SessionConfig.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Session\SessionNotifications.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\StreamingInstall\StreamingInstall.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\StreamingInstall\StreamingInstall.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzFramework/CMakeFiles/AzFramework.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\StreamingInstall\StreamingInstallRequests.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\StreamingInstall\StreamingInstallNotifications.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Physics\Collision\CollisionEvents.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Physics\Collision\CollisionEvents.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzFramework/CMakeFiles/AzFramework.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Physics\Collision\CollisionLayers.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Physics\Collision\CollisionLayers.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzFramework/CMakeFiles/AzFramework.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Physics\Collision\CollisionGroups.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Physics\Collision\CollisionGroups.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzFramework/CMakeFiles/AzFramework.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Physics\Common\PhysicsJoint.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Physics\Common\PhysicsJoint.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzFramework/CMakeFiles/AzFramework.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Physics\Common\PhysicsSceneQueries.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Physics\Common\PhysicsSceneQueries.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzFramework/CMakeFiles/AzFramework.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Physics\Common\PhysicsEvents.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Physics\Common\PhysicsSimulatedBody.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Physics\Common\PhysicsSimulatedBody.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzFramework/CMakeFiles/AzFramework.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Physics\Common\PhysicsSimulatedBodyAutomation.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Physics\Common\PhysicsSimulatedBodyAutomation.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzFramework/CMakeFiles/AzFramework.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Physics\Common\PhysicsSimulatedBodyEvents.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Physics\Common\PhysicsSimulatedBodyEvents.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzFramework/CMakeFiles/AzFramework.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Physics\Common\PhysicsTypes.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Physics\Components\SimulatedBodyComponentBus.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Physics\Configuration\JointConfiguration.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Physics\Configuration\JointConfiguration.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzFramework/CMakeFiles/AzFramework.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Physics\Configuration\CollisionConfiguration.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Physics\Configuration\CollisionConfiguration.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzFramework/CMakeFiles/AzFramework.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Physics\Configuration\RigidBodyConfiguration.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Physics\Configuration\RigidBodyConfiguration.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzFramework/CMakeFiles/AzFramework.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Physics\Configuration\StaticRigidBodyConfiguration.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Physics\Configuration\StaticRigidBodyConfiguration.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzFramework/CMakeFiles/AzFramework.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Physics\Configuration\SceneConfiguration.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Physics\Configuration\SceneConfiguration.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzFramework/CMakeFiles/AzFramework.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Physics\Configuration\SimulatedBodyConfiguration.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Physics\Configuration\SimulatedBodyConfiguration.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzFramework/CMakeFiles/AzFramework.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Physics\Configuration\SystemConfiguration.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Physics\Configuration\SystemConfiguration.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzFramework/CMakeFiles/AzFramework.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Physics\SimulatedBodies\RigidBody.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Physics\SimulatedBodies\RigidBody.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzFramework/CMakeFiles/AzFramework.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Physics\SimulatedBodies\StaticRigidBody.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Physics\SimulatedBodies\StaticRigidBody.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzFramework/CMakeFiles/AzFramework.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Physics\PhysicsSystem.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Physics\PhysicsSystem.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzFramework/CMakeFiles/AzFramework.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Physics\PhysicsScene.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzFramework/CMakeFiles/AzFramework.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Physics\PhysicsScene.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Physics\AnimationConfiguration.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzFramework/CMakeFiles/AzFramework.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Physics\AnimationConfiguration.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Physics\Character.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzFramework/CMakeFiles/AzFramework.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Physics\Character.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Physics\CollisionBus.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Physics\CollisionBus.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzFramework/CMakeFiles/AzFramework.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Physics\Material.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzFramework/CMakeFiles/AzFramework.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Physics\Material.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Physics\NameConstants.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzFramework/CMakeFiles/AzFramework.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Physics\NameConstants.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Physics\RigidBodyBus.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Physics\Shape.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzFramework/CMakeFiles/AzFramework.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Physics\Shape.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Physics\ShapeConfiguration.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Physics\ShapeConfiguration.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzFramework/CMakeFiles/AzFramework.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Physics\SystemBus.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Physics\ColliderComponentBus.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Physics\RagdollPhysicsBus.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Physics\CharacterPhysicsDataBus.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Physics\CharacterBus.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Physics\Ragdoll.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzFramework/CMakeFiles/AzFramework.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Physics\Ragdoll.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Physics\Utils.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Physics\Utils.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzFramework/CMakeFiles/AzFramework.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Physics\ClassConverters.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzFramework/CMakeFiles/AzFramework.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Physics\ClassConverters.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Physics\MaterialBus.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Physics\WindBus.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Process\ProcessCommunicator.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzFramework/CMakeFiles/AzFramework.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Process\ProcessCommunicator.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Process\ProcessWatcher.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzFramework/CMakeFiles/AzFramework.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Process\ProcessWatcher.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Process\ProcessCommon_fwd.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\ProjectManager\ProjectManager.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\ProjectManager\ProjectManager.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzFramework/CMakeFiles/AzFramework.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Render\GameIntersectorComponent.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Render\GameIntersectorComponent.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzFramework/CMakeFiles/AzFramework.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Render\GeometryIntersectionBus.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Render\GeometryIntersectionStructures.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Render\Intersector.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzFramework/CMakeFiles/AzFramework.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Render\Intersector.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Render\IntersectorInterface.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Spawnable\RootSpawnableInterface.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Spawnable\Spawnable.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzFramework/CMakeFiles/AzFramework.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Spawnable\Spawnable.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Spawnable\SpawnableAssetHandler.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Spawnable\SpawnableAssetHandler.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzFramework/CMakeFiles/AzFramework.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Spawnable\SpawnableEntitiesContainer.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Spawnable\SpawnableEntitiesContainer.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzFramework/CMakeFiles/AzFramework.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Spawnable\SpawnableEntitiesInterface.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Spawnable\SpawnableEntitiesInterface.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzFramework/CMakeFiles/AzFramework.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Spawnable\SpawnableEntitiesManager.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Spawnable\SpawnableEntitiesManager.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzFramework/CMakeFiles/AzFramework.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Spawnable\SpawnableMetaData.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzFramework/CMakeFiles/AzFramework.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Spawnable\SpawnableMetaData.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Spawnable\SpawnableMonitor.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Spawnable\SpawnableMonitor.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzFramework/CMakeFiles/AzFramework.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Spawnable\SpawnableSystemComponent.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Spawnable\SpawnableSystemComponent.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzFramework/CMakeFiles/AzFramework.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Terrain\TerrainDataRequestBus.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Terrain\TerrainDataRequestBus.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzFramework/CMakeFiles/AzFramework.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Thermal\ThermalInfo.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Platform\PlatformDefaults.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Windowing\WindowBus.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Windowing\NativeWindow.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzFramework/CMakeFiles/AzFramework.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Windowing\NativeWindow.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Input\Buses\Notifications\InputChannelNotificationBus.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Input\Buses\Notifications\InputDeviceNotificationBus.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Input\Buses\Notifications\InputSystemNotificationBus.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Input\Buses\Notifications\InputTextNotificationBus.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Input\Buses\Requests\InputChannelRequestBus.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Input\Buses\Requests\InputDeviceRequestBus.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Input\Buses\Requests\InputHapticFeedbackRequestBus.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Input\Buses\Requests\InputLightBarRequestBus.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Input\Buses\Requests\InputMotionSensorRequestBus.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Input\Buses\Requests\InputSystemRequestBus.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Input\Buses\Requests\InputSystemCursorRequestBus.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Input\Buses\Requests\InputTextEntryRequestBus.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Input\Channels\InputChannel.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzFramework/CMakeFiles/AzFramework.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Input\Channels\InputChannel.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Input\Channels\InputChannelAnalog.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzFramework/CMakeFiles/AzFramework.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Input\Channels\InputChannelAnalog.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Input\Channels\InputChannelAnalogWithPosition2D.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzFramework/CMakeFiles/AzFramework.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Input\Channels\InputChannelAnalogWithPosition2D.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Input\Channels\InputChannelAxis1D.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzFramework/CMakeFiles/AzFramework.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Input\Channels\InputChannelAxis1D.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Input\Channels\InputChannelAxis2D.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzFramework/CMakeFiles/AzFramework.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Input\Channels\InputChannelAxis2D.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Input\Channels\InputChannelAxis3D.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzFramework/CMakeFiles/AzFramework.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Input\Channels\InputChannelAxis3D.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Input\Channels\InputChannelDelta.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzFramework/CMakeFiles/AzFramework.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Input\Channels\InputChannelDelta.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Input\Channels\InputChannelDeltaWithSharedPosition2D.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzFramework/CMakeFiles/AzFramework.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Input\Channels\InputChannelDeltaWithSharedPosition2D.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Input\Channels\InputChannelDigital.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzFramework/CMakeFiles/AzFramework.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Input\Channels\InputChannelDigital.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Input\Channels\InputChannelDigitalWithPosition2D.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzFramework/CMakeFiles/AzFramework.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Input\Channels\InputChannelDigitalWithPosition2D.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Input\Channels\InputChannelDigitalWithSharedModifierKeyStates.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzFramework/CMakeFiles/AzFramework.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Input\Channels\InputChannelDigitalWithSharedModifierKeyStates.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Input\Channels\InputChannelDigitalWithSharedPosition2D.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzFramework/CMakeFiles/AzFramework.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Input\Channels\InputChannelDigitalWithSharedPosition2D.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Input\Channels\InputChannelId.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzFramework/CMakeFiles/AzFramework.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Input\Channels\InputChannelId.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Input\Channels\InputChannelQuaternion.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzFramework/CMakeFiles/AzFramework.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Input\Channels\InputChannelQuaternion.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Input\Contexts\InputContext.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzFramework/CMakeFiles/AzFramework.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Input\Contexts\InputContext.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Input\Contexts\InputContextComponent.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzFramework/CMakeFiles/AzFramework.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Input\Contexts\InputContextComponent.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Input\Devices\InputDevice.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzFramework/CMakeFiles/AzFramework.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Input\Devices\InputDevice.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Input\Devices\InputDeviceId.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzFramework/CMakeFiles/AzFramework.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Input\Devices\InputDeviceId.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Input\Devices\Gamepad\InputDeviceGamepad.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzFramework/CMakeFiles/AzFramework.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Input\Devices\Gamepad\InputDeviceGamepad.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Input\Devices\Keyboard\InputDeviceKeyboard.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzFramework/CMakeFiles/AzFramework.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Input\Devices\Keyboard\InputDeviceKeyboard.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Input\Devices\Keyboard\InputDeviceKeyboardWindowsScanCodes.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Input\Devices\Motion\InputDeviceMotion.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzFramework/CMakeFiles/AzFramework.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Input\Devices\Motion\InputDeviceMotion.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Input\Devices\Mouse\InputDeviceMouse.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzFramework/CMakeFiles/AzFramework.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Input\Devices\Mouse\InputDeviceMouse.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Input\Devices\VirtualKeyboard\InputDeviceVirtualKeyboard.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzFramework/CMakeFiles/AzFramework.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Input\Devices\VirtualKeyboard\InputDeviceVirtualKeyboard.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Input\Devices\Touch\InputDeviceTouch.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzFramework/CMakeFiles/AzFramework.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Input\Devices\Touch\InputDeviceTouch.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Input\Events\InputChannelEventFilter.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzFramework/CMakeFiles/AzFramework.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Input\Events\InputChannelEventFilter.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Input\Events\InputChannelEventListener.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzFramework/CMakeFiles/AzFramework.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Input\Events\InputChannelEventListener.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Input\Events\InputChannelEventSink.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzFramework/CMakeFiles/AzFramework.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Input\Events\InputChannelEventSink.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Input\Events\InputTextEventListener.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzFramework/CMakeFiles/AzFramework.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Input\Events\InputTextEventListener.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Input\Mappings\InputMapping.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzFramework/CMakeFiles/AzFramework.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Input\Mappings\InputMapping.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Input\Mappings\InputMappingAnd.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzFramework/CMakeFiles/AzFramework.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Input\Mappings\InputMappingAnd.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Input\Mappings\InputMappingOr.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzFramework/CMakeFiles/AzFramework.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Input\Mappings\InputMappingOr.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Input\System\InputSystemComponent.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzFramework/CMakeFiles/AzFramework.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Input\System\InputSystemComponent.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Input\User\LocalUserId.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Input\Utils\AdjustAnalogInputForDeadZone.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Input\Utils\IsAnyKeyOrButton.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Input\Utils\ProcessRawInputEventQueues.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\TargetManagement\NeighborhoodAPI.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzFramework/CMakeFiles/AzFramework.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\TargetManagement\NeighborhoodAPI.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\TargetManagement\TargetManagementAPI.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\TargetManagement\TargetManagementComponent.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzFramework/CMakeFiles/AzFramework.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\TargetManagement\TargetManagementComponent.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\FileTag\FileTag.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\FileTag\FileTag.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzFramework/CMakeFiles/AzFramework.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\FileTag\FileTagBus.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\FileTag\FileTagComponent.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\FileTag\FileTagComponent.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzFramework/CMakeFiles/AzFramework.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\UnitTest\FrameworkTestTypes.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\UnitTest\TestDebugDisplayRequests.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\UnitTest\TestDebugDisplayRequests.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzFramework/CMakeFiles/AzFramework.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Slice\SliceEntityBus.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Slice\SliceInstantiationBus.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Slice\SliceInstantiationTicket.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Slice\SliceInstantiationTicket.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzFramework/CMakeFiles/AzFramework.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Visibility\IVisibilitySystem.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Visibility\OctreeSystemComponent.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Visibility\OctreeSystemComponent.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzFramework/CMakeFiles/AzFramework.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Visibility\BoundsBus.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Visibility\BoundsBus.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzFramework/CMakeFiles/AzFramework.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Visibility\VisibilityDebug.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Visibility\VisibilityDebug.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzFramework/CMakeFiles/AzFramework.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Visibility\EntityBoundsUnionBus.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Visibility\EntityVisibilityBoundsUnionSystem.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Visibility\EntityVisibilityBoundsUnionSystem.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzFramework/CMakeFiles/AzFramework.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Visibility\EntityVisibilityQuery.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Visibility\EntityVisibilityQuery.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzFramework/CMakeFiles/AzFramework.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Dependency\Dependency.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Dependency\Dependency.inl" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Dependency\Version.h" />
+    <None Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\azframework_files.cmake">
+    </None>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\Platform\Windows\AzFramework\AzFramework_Traits_Platform.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\Platform\Windows\AzFramework\AzFramework_Traits_Windows.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\Platform\Windows\AzFramework\API\ApplicationAPI_Platform.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\Platform\Windows\AzFramework\API\ApplicationAPI_Windows.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\Platform\Windows\AzFramework\Application\Application_Windows.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzFramework/CMakeFiles/AzFramework.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\Platform\Windows\AzFramework\Asset\AssetSystemComponentHelper_Windows.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzFramework/CMakeFiles/AzFramework.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\Platform\Windows\AzFramework\Process\ProcessWatcher_Win.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzFramework/CMakeFiles/AzFramework.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\Platform\Windows\AzFramework\Process\ProcessCommon.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\Platform\Windows\AzFramework\Process\ProcessCommunicator_Win.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzFramework/CMakeFiles/AzFramework.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\Platform\Common\WinAPI\AzFramework\IO\LocalFileIO_WinAPI.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzFramework/CMakeFiles/AzFramework.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\Platform\Windows\AzFramework\IO\LocalFileIO_Windows.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzFramework/CMakeFiles/AzFramework.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\Platform\Common\Unimplemented\AzFramework\StreamingInstall\StreamingInstall_Unimplemented.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzFramework/CMakeFiles/AzFramework.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\Platform\Windows\AzFramework\TargetManagement\TargetManagementComponent_Windows.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzFramework/CMakeFiles/AzFramework.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\Platform\Windows\AzFramework\Windowing\NativeWindow_Windows.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzFramework/CMakeFiles/AzFramework.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\Platform\Windows\AzFramework\Input\Buses\Notifications\RawInputNotificationBus_Platform.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\Platform\Windows\AzFramework\Input\Buses\Notifications\RawInputNotificationBus_Windows.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\Platform\Windows\AzFramework\Input\Devices\Gamepad\InputDeviceGamepad_Windows.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzFramework/CMakeFiles/AzFramework.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\Platform\Windows\AzFramework\Input\Devices\Keyboard\InputDeviceKeyboard_Windows.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzFramework/CMakeFiles/AzFramework.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\Platform\Common\WinAPI\AzFramework\Input\Devices\Keyboard\InputDeviceKeyboard_WinAPI.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\Platform\Common\Unimplemented\AzFramework\Input\Devices\Motion\InputDeviceMotion_Unimplemented.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzFramework/CMakeFiles/AzFramework.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\Platform\Windows\AzFramework\Input\Devices\Mouse\InputDeviceMouse_Windows.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzFramework/CMakeFiles/AzFramework.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\Platform\Common\Unimplemented\AzFramework\Input\Devices\Touch\InputDeviceTouch_Unimplemented.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzFramework/CMakeFiles/AzFramework.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\Platform\Windows\AzFramework\Input\User\LocalUserId_Platform.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\Platform\Common\Default\AzFramework\Input\User\LocalUserId_Default.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\Platform\Common\Unimplemented\AzFramework\Input\Devices\VirtualKeyboard\InputDeviceVirtualKeyboard_Unimplemented.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/AzFramework/CMakeFiles/AzFramework.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\Platform\Windows\AzFramework\Archive\ArchiveVars_Platform.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\Platform\Windows\AzFramework\Archive\ArchiveVars_Windows.h" />
+    <None Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\Platform\Windows\platform_windows_files.cmake">
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\Platform\Windows\platform_windows.cmake">
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\ZERO_CHECK.vcxproj">
+      <Project>{CDE32B4E-8490-3FC5-A3F2-976A0A5DE45E}</Project>
+      <Name>ZERO_CHECK</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore.vcxproj">
+      <Project>{8AC0D8DF-6487-39C7-A5F3-F77355B1ACD9}</Project>
+      <Name>AzCore</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate.vcxproj">
+      <Project>{FE67A854-57A6-3513-BAEF-9A7AC0A253E8}</Project>
+      <Name>GridMate</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

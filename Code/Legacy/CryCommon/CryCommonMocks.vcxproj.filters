@@ -1,0 +1,46 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\CMakeLists.txt">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\Mocks\IAudioSystemMock.h">
+      <Filter>Mocks</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\Mocks\IConsoleMock.h">
+      <Filter>Mocks</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\Mocks\ICryPakMock.h">
+      <Filter>Mocks</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\Mocks\ILogMock.h">
+      <Filter>Mocks</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\Mocks\ISystemMock.h">
+      <Filter>Mocks</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\Mocks\ITimerMock.h">
+      <Filter>Mocks</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\Mocks\ICVarMock.h">
+      <Filter>Mocks</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\Mocks\ITextureMock.h">
+      <Filter>Mocks</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\Mocks\IRemoteConsoleMock.h">
+      <Filter>Mocks</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\crycommon_testing_files.cmake" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Generated Files">
+      <UniqueIdentifier>{FB9B7D8B-7F05-31D5-AA90-592248EDE1B3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Mocks">
+      <UniqueIdentifier>{61BCE2AA-93AF-3819-8FDA-24960A3E649A}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

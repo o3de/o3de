@@ -1,0 +1,9 @@
+# CMake generation dependency list for this directory.
+C:/Users/lesaelr/o3de/Gems/GradientSignal/Code/CMakeLists.txt
+C:/Users/lesaelr/o3de/Gems/GradientSignal/Code/gradientsignal_editor_files.cmake
+C:/Users/lesaelr/o3de/Gems/GradientSignal/Code/gradientsignal_editor_shared_files.cmake
+C:/Users/lesaelr/o3de/Gems/GradientSignal/Code/gradientsignal_editor_tests_files.cmake
+C:/Users/lesaelr/o3de/Gems/GradientSignal/Code/gradientsignal_files.cmake
+C:/Users/lesaelr/o3de/Gems/GradientSignal/Code/gradientsignal_shared_files.cmake
+C:/Users/lesaelr/o3de/Gems/GradientSignal/Code/gradientsignal_tests_files.cmake
+C:/Users/lesaelr/o3de/cmake/Platform/Windows/LYTestWrappers_windows.cmake

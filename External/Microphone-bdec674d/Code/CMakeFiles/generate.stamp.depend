@@ -1,0 +1,8 @@
+# CMake generation dependency list for this directory.
+C:/Users/lesaelr/.o3de/3rdParty/packages/libsamplerate-0.2.1-rev2-windows/Findlibsamplerate.cmake
+C:/Users/lesaelr/.o3de/3rdParty/packages/libsamplerate-0.2.1-rev2-windows/PackageInfo.json
+C:/Users/lesaelr/o3de/Gems/Microphone/Code/CMakeLists.txt
+C:/Users/lesaelr/o3de/Gems/Microphone/Code/Source/Platform/Windows/platform_windows.cmake
+C:/Users/lesaelr/o3de/Gems/Microphone/Code/Source/Platform/Windows/platform_windows_files.cmake
+C:/Users/lesaelr/o3de/Gems/Microphone/Code/microphone_files.cmake
+C:/Users/lesaelr/o3de/Gems/Microphone/Code/microphone_shared_files.cmake

@@ -1,0 +1,41 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\CrashHandler\CMakeFiles\CrashUploaderSupport.dir\Unity\unity_0_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\CrashHandler\Uploader\src\CrashUploader.cpp">
+      <Filter>Uploader\src</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\CrashHandler\Uploader\include\Uploader\CrashUploader.h">
+      <Filter>Uploader\include\Uploader</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Code\Tools\CrashHandler\CMakeLists.txt">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="C:\Users\lesaelr\o3de\Code\Tools\CrashHandler\crash_uploader_support_files.cmake" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Generated Files">
+      <UniqueIdentifier>{FB9B7D8B-7F05-31D5-AA90-592248EDE1B3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Uploader">
+      <UniqueIdentifier>{7C2D4605-C54D-31E9-90F2-11092D6CAC8D}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Uploader\include">
+      <UniqueIdentifier>{A88434B3-DEDE-34C9-95BC-E7B78506657A}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Uploader\include\Uploader">
+      <UniqueIdentifier>{4B768C32-AF10-33F2-8808-1903FC17D9E7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Uploader\src">
+      <UniqueIdentifier>{4D87FFC9-8107-3468-968F-DB0FDF27FFBF}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

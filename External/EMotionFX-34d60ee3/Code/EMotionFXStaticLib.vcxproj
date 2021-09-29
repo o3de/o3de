@@ -1,0 +1,971 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <PreferredToolArchitecture>x64</PreferredToolArchitecture>
+  </PropertyGroup>
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="debug|x64">
+      <Configuration>debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="profile|x64">
+      <Configuration>profile</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="release|x64">
+      <Configuration>release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{C3EEEEA5-78C3-33F2-8E25-E88BB964A847}</ProjectGuid>
+    <WindowsTargetPlatformVersion>10.0.19041.0</WindowsTargetPlatformVersion>
+    <Keyword>Win32Proj</Keyword>
+    <Platform>x64</Platform>
+    <ProjectName>EMotionFXStaticLib</ProjectName>
+    <VCProjectUpgraderObjectName>NoUpgrade</VCProjectUpgraderObjectName>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='debug|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v142</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='profile|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v142</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='release|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v142</PlatformToolset>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>10.0.20506.1</_ProjectFileVersion>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='debug|x64'">C:\Users\lesaelr\o3de\lib\debug\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='debug|x64'">EMotionFXStaticLib.dir\debug\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='debug|x64'">EMotionFXStaticLib</TargetName>
+    <TargetExt Condition="'$(Configuration)|$(Platform)'=='debug|x64'">.lib</TargetExt>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='profile|x64'">C:\Users\lesaelr\o3de\lib\profile\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='profile|x64'">EMotionFXStaticLib.dir\profile\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='profile|x64'">EMotionFXStaticLib</TargetName>
+    <TargetExt Condition="'$(Configuration)|$(Platform)'=='profile|x64'">.lib</TargetExt>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='release|x64'">C:\Users\lesaelr\o3de\lib\release\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='release|x64'">EMotionFXStaticLib.dir\release\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='release|x64'">EMotionFXStaticLib</TargetName>
+    <TargetExt Condition="'$(Configuration)|$(Platform)'=='release|x64'">.lib</TargetExt>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='debug|x64'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\.;C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Include;C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Source;C:\Users\lesaelr\o3de\Gems\LmbrCentral\Code\include;C:\Users\lesaelr\o3de\Code\Framework\AzCore\.;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Common;C:\Users\lesaelr\o3de\Code\Framework\AzFramework\.;C:\Users\lesaelr\o3de\Code\Framework\AzFramework\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\GridMate\.;C:\Users\lesaelr\o3de\Code\Framework\GridMate\Platform\Windows;C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\.;C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\..;C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AtomCore\.;C:\Users\lesaelr\o3de\Gems\Atom\RPI\Code\Include;C:\Users\lesaelr\o3de\Gems\Atom\RPI\Code\External;C:\Users\lesaelr\o3de\Gems\Atom\RHI\Code\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalOptions>%(AdditionalOptions) /Zc:__cplusplus /Zc:lambda /favor:AMD64 /bigobj /RTCsu /experimental:external /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/Lua-5.3.5-rev5-windows/lua/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/RapidJSON-1.1.0-rev1-multiplatform/RapidJSON/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/RapidXML-1.13-rev1-multiplatform/RapidXML/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/zlib-1.2.11-rev2-windows/zlib/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/zstd-1.35-multiplatform/zstd/lib /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/cityhash-1.1-multiplatform/cityhash/src /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/OpenSSL-1.1.1b-rev2-windows/OpenSSL/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/lz4-1.9.3-vcpkg-rev4-windows/lz4/lz4/include</AdditionalOptions>
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <BufferSecurityCheck>true</BufferSecurityCheck>
+      <CallingConvention>Cdecl</CallingConvention>
+      <ConformanceMode>true</ConformanceMode>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <DiagnosticsFormat>Caret</DiagnosticsFormat>
+      <DisableSpecificWarnings>4201</DisableSpecificWarnings>
+      <ExceptionHandling>
+      </ExceptionHandling>
+      <ExternalWarningLevel>TurnOffAllWarnings</ExternalWarningLevel>
+      <FloatingPointModel>Fast</FloatingPointModel>
+      <ForceConformanceInForLoopScope>true</ForceConformanceInForLoopScope>
+      <InlineFunctionExpansion>Disabled</InlineFunctionExpansion>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <Optimization>Disabled</Optimization>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <TreatSpecificWarningsAsErrors>4263;4264;4265;4266;4296;4426;4437;4774;4777;5031;5032;5233</TreatSpecificWarningsAsErrors>
+      <TreatWarningAsError>true</TreatWarningAsError>
+      <UseFullPaths>false</UseFullPaths>
+      <WarningLevel>Level4</WarningLevel>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);EMFX_DEVELOPMENT_BUILD;_HAS_EXCEPTIONS=0;_DEBUG;AZ_DEBUG_BUILD=1;AZ_ENABLE_TRACING;AZ_ENABLE_DEBUG_TOOLS;AZ_BUILD_CONFIGURATION_TYPE="debug";_ENABLE_EXTENDED_ALIGNED_STORAGE;_WIN32;WIN32;_WIN64;WIN64;NOMINMAX;OPENSSL_ENABLED;CMAKE_INTDIR="debug"</PreprocessorDefinitions>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);_DEBUG;EMFX_DEVELOPMENT_BUILD;_HAS_EXCEPTIONS=0;AZ_DEBUG_BUILD=1;AZ_ENABLE_TRACING;AZ_ENABLE_DEBUG_TOOLS;AZ_BUILD_CONFIGURATION_TYPE=\"debug\";_ENABLE_EXTENDED_ALIGNED_STORAGE;_WIN32;WIN32;_WIN64;WIN64;NOMINMAX;OPENSSL_ENABLED;CMAKE_INTDIR=\"debug\"</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\.;C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Include;C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Source;C:\Users\lesaelr\o3de\Gems\LmbrCentral\Code\include;C:\Users\lesaelr\o3de\Code\Framework\AzCore\.;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Common;C:\Users\lesaelr\o3de\Code\Framework\AzFramework\.;C:\Users\lesaelr\o3de\Code\Framework\AzFramework\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\GridMate\.;C:\Users\lesaelr\o3de\Code\Framework\GridMate\Platform\Windows;C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\.;C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\..;C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AtomCore\.;C:\Users\lesaelr\o3de\Gems\Atom\RPI\Code\Include;C:\Users\lesaelr\o3de\Gems\Atom\RPI\Code\External;C:\Users\lesaelr\o3de\Gems\Atom\RHI\Code\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+    </ResourceCompile>
+    <Midl>
+      <AdditionalIncludeDirectories>C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\.;C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Include;C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Source;C:\Users\lesaelr\o3de\Gems\LmbrCentral\Code\include;C:\Users\lesaelr\o3de\Code\Framework\AzCore\.;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Common;C:\Users\lesaelr\o3de\Code\Framework\AzFramework\.;C:\Users\lesaelr\o3de\Code\Framework\AzFramework\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\GridMate\.;C:\Users\lesaelr\o3de\Code\Framework\GridMate\Platform\Windows;C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\.;C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\..;C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AtomCore\.;C:\Users\lesaelr\o3de\Gems\Atom\RPI\Code\Include;C:\Users\lesaelr\o3de\Gems\Atom\RPI\Code\External;C:\Users\lesaelr\o3de\Gems\Atom\RHI\Code\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+    <Lib>
+      <AdditionalOptions>%(AdditionalOptions) /machine:x64 /IGNORE:4099</AdditionalOptions>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <TargetMachine>MachineX64</TargetMachine>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='profile|x64'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\.;C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Include;C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Source;C:\Users\lesaelr\o3de\Gems\LmbrCentral\Code\include;C:\Users\lesaelr\o3de\Code\Framework\AzCore\.;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Common;C:\Users\lesaelr\o3de\Code\Framework\AzFramework\.;C:\Users\lesaelr\o3de\Code\Framework\AzFramework\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\GridMate\.;C:\Users\lesaelr\o3de\Code\Framework\GridMate\Platform\Windows;C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\.;C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\..;C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AtomCore\.;C:\Users\lesaelr\o3de\Gems\Atom\RPI\Code\Include;C:\Users\lesaelr\o3de\Gems\Atom\RPI\Code\External;C:\Users\lesaelr\o3de\Gems\Atom\RHI\Code\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalOptions>%(AdditionalOptions) /Zc:__cplusplus /Zc:lambda /favor:AMD64 /bigobj /experimental:external /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/Lua-5.3.5-rev5-windows/lua/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/RapidJSON-1.1.0-rev1-multiplatform/RapidJSON/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/RapidXML-1.13-rev1-multiplatform/RapidXML/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/zlib-1.2.11-rev2-windows/zlib/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/zstd-1.35-multiplatform/zstd/lib /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/cityhash-1.1-multiplatform/cityhash/src /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/OpenSSL-1.1.1b-rev2-windows/OpenSSL/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/lz4-1.9.3-vcpkg-rev4-windows/lz4/lz4/include</AdditionalOptions>
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <CallingConvention>Cdecl</CallingConvention>
+      <ConformanceMode>true</ConformanceMode>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <DiagnosticsFormat>Caret</DiagnosticsFormat>
+      <DisableSpecificWarnings>4201</DisableSpecificWarnings>
+      <ExceptionHandling>
+      </ExceptionHandling>
+      <ExternalWarningLevel>TurnOffAllWarnings</ExternalWarningLevel>
+      <FloatingPointModel>Fast</FloatingPointModel>
+      <ForceConformanceInForLoopScope>true</ForceConformanceInForLoopScope>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <Optimization>MaxSpeed</Optimization>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <RemoveUnreferencedCodeData>true</RemoveUnreferencedCodeData>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <StringPooling>true</StringPooling>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <TreatSpecificWarningsAsErrors>4263;4264;4265;4266;4296;4426;4437;4774;4777;5031;5032;5233</TreatSpecificWarningsAsErrors>
+      <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
+      <TreatWarningAsError>true</TreatWarningAsError>
+      <UseFullPaths>false</UseFullPaths>
+      <WarningLevel>Level4</WarningLevel>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);EMFX_DEVELOPMENT_BUILD;_HAS_EXCEPTIONS=0;_PROFILE;PROFILE;NDEBUG;AZ_ENABLE_TRACING;AZ_ENABLE_DEBUG_TOOLS;AZ_BUILD_CONFIGURATION_TYPE="profile";_ENABLE_EXTENDED_ALIGNED_STORAGE;_WIN32;WIN32;_WIN64;WIN64;NOMINMAX;OPENSSL_ENABLED;CMAKE_INTDIR="profile"</PreprocessorDefinitions>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);EMFX_DEVELOPMENT_BUILD;_HAS_EXCEPTIONS=0;_PROFILE;PROFILE;NDEBUG;AZ_ENABLE_TRACING;AZ_ENABLE_DEBUG_TOOLS;AZ_BUILD_CONFIGURATION_TYPE=\"profile\";_ENABLE_EXTENDED_ALIGNED_STORAGE;_WIN32;WIN32;_WIN64;WIN64;NOMINMAX;OPENSSL_ENABLED;CMAKE_INTDIR=\"profile\"</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\.;C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Include;C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Source;C:\Users\lesaelr\o3de\Gems\LmbrCentral\Code\include;C:\Users\lesaelr\o3de\Code\Framework\AzCore\.;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Common;C:\Users\lesaelr\o3de\Code\Framework\AzFramework\.;C:\Users\lesaelr\o3de\Code\Framework\AzFramework\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\GridMate\.;C:\Users\lesaelr\o3de\Code\Framework\GridMate\Platform\Windows;C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\.;C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\..;C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AtomCore\.;C:\Users\lesaelr\o3de\Gems\Atom\RPI\Code\Include;C:\Users\lesaelr\o3de\Gems\Atom\RPI\Code\External;C:\Users\lesaelr\o3de\Gems\Atom\RHI\Code\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+    </ResourceCompile>
+    <Midl>
+      <AdditionalIncludeDirectories>C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\.;C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Include;C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Source;C:\Users\lesaelr\o3de\Gems\LmbrCentral\Code\include;C:\Users\lesaelr\o3de\Code\Framework\AzCore\.;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Common;C:\Users\lesaelr\o3de\Code\Framework\AzFramework\.;C:\Users\lesaelr\o3de\Code\Framework\AzFramework\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\GridMate\.;C:\Users\lesaelr\o3de\Code\Framework\GridMate\Platform\Windows;C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\.;C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\..;C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AtomCore\.;C:\Users\lesaelr\o3de\Gems\Atom\RPI\Code\Include;C:\Users\lesaelr\o3de\Gems\Atom\RPI\Code\External;C:\Users\lesaelr\o3de\Gems\Atom\RHI\Code\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+    <Lib>
+      <AdditionalOptions>%(AdditionalOptions) /machine:x64 /IGNORE:4099</AdditionalOptions>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <TargetMachine>MachineX64</TargetMachine>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='release|x64'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\.;C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Include;C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Source;C:\Users\lesaelr\o3de\Gems\LmbrCentral\Code\include;C:\Users\lesaelr\o3de\Code\Framework\AzCore\.;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Common;C:\Users\lesaelr\o3de\Code\Framework\AzFramework\.;C:\Users\lesaelr\o3de\Code\Framework\AzFramework\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\GridMate\.;C:\Users\lesaelr\o3de\Code\Framework\GridMate\Platform\Windows;C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\.;C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\..;C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AtomCore\.;C:\Users\lesaelr\o3de\Gems\Atom\RPI\Code\Include;C:\Users\lesaelr\o3de\Gems\Atom\RPI\Code\External;C:\Users\lesaelr\o3de\Gems\Atom\RHI\Code\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalOptions>%(AdditionalOptions) /Zc:__cplusplus /Zc:lambda /favor:AMD64 /bigobj /experimental:external /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/Lua-5.3.5-rev5-windows/lua/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/RapidJSON-1.1.0-rev1-multiplatform/RapidJSON/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/RapidXML-1.13-rev1-multiplatform/RapidXML/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/zlib-1.2.11-rev2-windows/zlib/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/zstd-1.35-multiplatform/zstd/lib /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/cityhash-1.1-multiplatform/cityhash/src /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/OpenSSL-1.1.1b-rev2-windows/OpenSSL/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/lz4-1.9.3-vcpkg-rev4-windows/lz4/lz4/include</AdditionalOptions>
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <CallingConvention>Cdecl</CallingConvention>
+      <ConformanceMode>true</ConformanceMode>
+      <DiagnosticsFormat>Caret</DiagnosticsFormat>
+      <DisableSpecificWarnings>4201</DisableSpecificWarnings>
+      <ExceptionHandling>
+      </ExceptionHandling>
+      <ExternalWarningLevel>TurnOffAllWarnings</ExternalWarningLevel>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <FloatingPointModel>Fast</FloatingPointModel>
+      <ForceConformanceInForLoopScope>true</ForceConformanceInForLoopScope>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <OmitFramePointers>true</OmitFramePointers>
+      <Optimization>Full</Optimization>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <TreatSpecificWarningsAsErrors>4263;4264;4265;4266;4296;4426;4437;4774;4777;5031;5032;5233</TreatSpecificWarningsAsErrors>
+      <TreatWarningAsError>true</TreatWarningAsError>
+      <UseFullPaths>false</UseFullPaths>
+      <WarningLevel>Level4</WarningLevel>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);EMFX_DEVELOPMENT_BUILD;_HAS_EXCEPTIONS=0;_RELEASE;RELEASE;NDEBUG;AZ_BUILD_CONFIGURATION_TYPE="release";_ENABLE_EXTENDED_ALIGNED_STORAGE;_WIN32;WIN32;_WIN64;WIN64;NOMINMAX;OPENSSL_ENABLED;CMAKE_INTDIR="release"</PreprocessorDefinitions>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+      <DebugInformationFormat>
+      </DebugInformationFormat>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);EMFX_DEVELOPMENT_BUILD;_HAS_EXCEPTIONS=0;_RELEASE;RELEASE;NDEBUG;AZ_BUILD_CONFIGURATION_TYPE=\"release\";_ENABLE_EXTENDED_ALIGNED_STORAGE;_WIN32;WIN32;_WIN64;WIN64;NOMINMAX;OPENSSL_ENABLED;CMAKE_INTDIR=\"release\"</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\.;C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Include;C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Source;C:\Users\lesaelr\o3de\Gems\LmbrCentral\Code\include;C:\Users\lesaelr\o3de\Code\Framework\AzCore\.;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Common;C:\Users\lesaelr\o3de\Code\Framework\AzFramework\.;C:\Users\lesaelr\o3de\Code\Framework\AzFramework\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\GridMate\.;C:\Users\lesaelr\o3de\Code\Framework\GridMate\Platform\Windows;C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\.;C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\..;C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AtomCore\.;C:\Users\lesaelr\o3de\Gems\Atom\RPI\Code\Include;C:\Users\lesaelr\o3de\Gems\Atom\RPI\Code\External;C:\Users\lesaelr\o3de\Gems\Atom\RHI\Code\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+    </ResourceCompile>
+    <Midl>
+      <AdditionalIncludeDirectories>C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\.;C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Include;C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Source;C:\Users\lesaelr\o3de\Gems\LmbrCentral\Code\include;C:\Users\lesaelr\o3de\Code\Framework\AzCore\.;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Common;C:\Users\lesaelr\o3de\Code\Framework\AzFramework\.;C:\Users\lesaelr\o3de\Code\Framework\AzFramework\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\GridMate\.;C:\Users\lesaelr\o3de\Code\Framework\GridMate\Platform\Windows;C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\.;C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\..;C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AtomCore\.;C:\Users\lesaelr\o3de\Gems\Atom\RPI\Code\Include;C:\Users\lesaelr\o3de\Gems\Atom\RPI\Code\External;C:\Users\lesaelr\o3de\Gems\Atom\RHI\Code\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+    <Lib>
+      <AdditionalOptions>%(AdditionalOptions) /machine:x64 /IGNORE:4099</AdditionalOptions>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <TargetMachine>MachineX64</TargetMachine>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\CMakeLists.txt">
+      <UseUtf8Encoding>Always</UseUtf8Encoding>
+      <Message Condition="'$(Configuration)|$(Platform)'=='debug|x64'">Building Custom Rule C:/Users/lesaelr/o3de/Gems/EMotionFX/Code/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='debug|x64'">setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SC:/Users/lesaelr/o3de -BC:/Users/lesaelr/o3de --check-stamp-file C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='debug|x64'">C:\Program Files\CMake\share\cmake-3.21\Modules\FindOpenGL.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\FindPackageHandleStandardArgs.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\FindPackageMessage.cmake;C:\Users\lesaelr\o3de\Gems\EMotionFX\Assets\Editor\Images\Icons\Resources.qrc;C:\Users\lesaelr\o3de\Gems\EMotionFX\Assets\Editor\Layouts\Layouts.qrc;C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\CommandSystem\commandsystem_files.cmake;C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Exporters\ExporterLib\exporterlib_files.cmake;C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Pipeline\EMotionFXBuilder\emotionfxbuilder_files.cmake;C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Pipeline\RCExt\rc_ext_files.cmake;C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Pipeline\SceneAPIExt\sceneapi_ext_files.cmake;C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Rendering\rendering_files.cmake;C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Tools\EMotionStudio\EMStudioSDK\emstudiosdk_files.cmake;C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Tools\EMotionStudio\Plugins\RenderPlugins\renderplugins_files.cmake;C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Tools\EMotionStudio\Plugins\StandardPlugins\standardplugins_files.cmake;C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\emotionfx_files.cmake;C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Editor\Platform\Windows\platform_windows.cmake;C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Editor\Platform\Windows\platform_windows_files.cmake;C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\mcore_files.cmake;C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MysticQt\mysticqt_files.cmake;C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Platform\Windows\platform_windows.cmake;C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Platform\Windows\platform_windows_files.cmake;C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Source\Integration\System\emotionfx_module_files.cmake;C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\emotionfx_editor_files.cmake;C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\emotionfx_editor_tests_files.cmake;C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\emotionfx_files.cmake;C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\emotionfx_shared_files.cmake;C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\emotionfx_shared_tests_files.cmake;C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\emotionfx_tests_files.cmake;C:\Users\lesaelr\o3de\cmake\3rdParty\FindOpenGLInterface.cmake;C:\Users\lesaelr\o3de\cmake\Platform\Windows\LYTestWrappers_windows.cmake;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='debug|x64'">C:\Users\lesaelr\o3de\External\EMotionFX-34d60ee3\Code\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='debug|x64'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='profile|x64'">Building Custom Rule C:/Users/lesaelr/o3de/Gems/EMotionFX/Code/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='profile|x64'">setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SC:/Users/lesaelr/o3de -BC:/Users/lesaelr/o3de --check-stamp-file C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='profile|x64'">C:\Program Files\CMake\share\cmake-3.21\Modules\FindOpenGL.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\FindPackageHandleStandardArgs.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\FindPackageMessage.cmake;C:\Users\lesaelr\o3de\Gems\EMotionFX\Assets\Editor\Images\Icons\Resources.qrc;C:\Users\lesaelr\o3de\Gems\EMotionFX\Assets\Editor\Layouts\Layouts.qrc;C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\CommandSystem\commandsystem_files.cmake;C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Exporters\ExporterLib\exporterlib_files.cmake;C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Pipeline\EMotionFXBuilder\emotionfxbuilder_files.cmake;C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Pipeline\RCExt\rc_ext_files.cmake;C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Pipeline\SceneAPIExt\sceneapi_ext_files.cmake;C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Rendering\rendering_files.cmake;C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Tools\EMotionStudio\EMStudioSDK\emstudiosdk_files.cmake;C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Tools\EMotionStudio\Plugins\RenderPlugins\renderplugins_files.cmake;C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Tools\EMotionStudio\Plugins\StandardPlugins\standardplugins_files.cmake;C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\emotionfx_files.cmake;C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Editor\Platform\Windows\platform_windows.cmake;C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Editor\Platform\Windows\platform_windows_files.cmake;C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\mcore_files.cmake;C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MysticQt\mysticqt_files.cmake;C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Platform\Windows\platform_windows.cmake;C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Platform\Windows\platform_windows_files.cmake;C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Source\Integration\System\emotionfx_module_files.cmake;C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\emotionfx_editor_files.cmake;C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\emotionfx_editor_tests_files.cmake;C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\emotionfx_files.cmake;C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\emotionfx_shared_files.cmake;C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\emotionfx_shared_tests_files.cmake;C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\emotionfx_tests_files.cmake;C:\Users\lesaelr\o3de\cmake\3rdParty\FindOpenGLInterface.cmake;C:\Users\lesaelr\o3de\cmake\Platform\Windows\LYTestWrappers_windows.cmake;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='profile|x64'">C:\Users\lesaelr\o3de\External\EMotionFX-34d60ee3\Code\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='profile|x64'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='release|x64'">Building Custom Rule C:/Users/lesaelr/o3de/Gems/EMotionFX/Code/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='release|x64'">setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SC:/Users/lesaelr/o3de -BC:/Users/lesaelr/o3de --check-stamp-file C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='release|x64'">C:\Program Files\CMake\share\cmake-3.21\Modules\FindOpenGL.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\FindPackageHandleStandardArgs.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\FindPackageMessage.cmake;C:\Users\lesaelr\o3de\Gems\EMotionFX\Assets\Editor\Images\Icons\Resources.qrc;C:\Users\lesaelr\o3de\Gems\EMotionFX\Assets\Editor\Layouts\Layouts.qrc;C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\CommandSystem\commandsystem_files.cmake;C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Exporters\ExporterLib\exporterlib_files.cmake;C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Pipeline\EMotionFXBuilder\emotionfxbuilder_files.cmake;C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Pipeline\RCExt\rc_ext_files.cmake;C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Pipeline\SceneAPIExt\sceneapi_ext_files.cmake;C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Rendering\rendering_files.cmake;C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Tools\EMotionStudio\EMStudioSDK\emstudiosdk_files.cmake;C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Tools\EMotionStudio\Plugins\RenderPlugins\renderplugins_files.cmake;C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Tools\EMotionStudio\Plugins\StandardPlugins\standardplugins_files.cmake;C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\emotionfx_files.cmake;C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Editor\Platform\Windows\platform_windows.cmake;C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Editor\Platform\Windows\platform_windows_files.cmake;C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\mcore_files.cmake;C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MysticQt\mysticqt_files.cmake;C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Platform\Windows\platform_windows.cmake;C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Platform\Windows\platform_windows_files.cmake;C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Source\Integration\System\emotionfx_module_files.cmake;C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\emotionfx_editor_files.cmake;C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\emotionfx_editor_tests_files.cmake;C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\emotionfx_files.cmake;C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\emotionfx_shared_files.cmake;C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\emotionfx_shared_tests_files.cmake;C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\emotionfx_tests_files.cmake;C:\Users\lesaelr\o3de\cmake\3rdParty\FindOpenGLInterface.cmake;C:\Users\lesaelr\o3de\cmake\Platform\Windows\LYTestWrappers_windows.cmake;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='release|x64'">C:\Users\lesaelr\o3de\External\EMotionFX-34d60ee3\Code\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='release|x64'">false</LinkObjects>
+    </CustomBuild>
+  </ItemGroup>
+  <PropertyGroup>
+    <EnableUnitySupport>true</EnableUnitySupport>
+  </PropertyGroup>
+  <ItemGroup>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\EMotionFX-34d60ee3\Code\CMakeFiles\EMotionFXStaticLib.dir\Unity\unity_33_cxx.cxx" IncludeInUnityFile="false" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\EMotionFX-34d60ee3\Code\CMakeFiles\EMotionFXStaticLib.dir\Unity\unity_32_cxx.cxx" IncludeInUnityFile="false" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\EMotionFX-34d60ee3\Code\CMakeFiles\EMotionFXStaticLib.dir\Unity\unity_31_cxx.cxx" IncludeInUnityFile="false" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\EMotionFX-34d60ee3\Code\CMakeFiles\EMotionFXStaticLib.dir\Unity\unity_30_cxx.cxx" IncludeInUnityFile="false" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\EMotionFX-34d60ee3\Code\CMakeFiles\EMotionFXStaticLib.dir\Unity\unity_29_cxx.cxx" IncludeInUnityFile="false" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\EMotionFX-34d60ee3\Code\CMakeFiles\EMotionFXStaticLib.dir\Unity\unity_28_cxx.cxx" IncludeInUnityFile="false" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\EMotionFX-34d60ee3\Code\CMakeFiles\EMotionFXStaticLib.dir\Unity\unity_27_cxx.cxx" IncludeInUnityFile="false" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\EMotionFX-34d60ee3\Code\CMakeFiles\EMotionFXStaticLib.dir\Unity\unity_26_cxx.cxx" IncludeInUnityFile="false" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\EMotionFX-34d60ee3\Code\CMakeFiles\EMotionFXStaticLib.dir\Unity\unity_25_cxx.cxx" IncludeInUnityFile="false" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\EMotionFX-34d60ee3\Code\CMakeFiles\EMotionFXStaticLib.dir\Unity\unity_24_cxx.cxx" IncludeInUnityFile="false" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\EMotionFX-34d60ee3\Code\CMakeFiles\EMotionFXStaticLib.dir\Unity\unity_23_cxx.cxx" IncludeInUnityFile="false" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\EMotionFX-34d60ee3\Code\CMakeFiles\EMotionFXStaticLib.dir\Unity\unity_22_cxx.cxx" IncludeInUnityFile="false" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\EMotionFX-34d60ee3\Code\CMakeFiles\EMotionFXStaticLib.dir\Unity\unity_21_cxx.cxx" IncludeInUnityFile="false" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\EMotionFX-34d60ee3\Code\CMakeFiles\EMotionFXStaticLib.dir\Unity\unity_20_cxx.cxx" IncludeInUnityFile="false" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\EMotionFX-34d60ee3\Code\CMakeFiles\EMotionFXStaticLib.dir\Unity\unity_19_cxx.cxx" IncludeInUnityFile="false" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\EMotionFX-34d60ee3\Code\CMakeFiles\EMotionFXStaticLib.dir\Unity\unity_18_cxx.cxx" IncludeInUnityFile="false" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\EMotionFX-34d60ee3\Code\CMakeFiles\EMotionFXStaticLib.dir\Unity\unity_17_cxx.cxx" IncludeInUnityFile="false" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\EMotionFX-34d60ee3\Code\CMakeFiles\EMotionFXStaticLib.dir\Unity\unity_16_cxx.cxx" IncludeInUnityFile="false" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\EMotionFX-34d60ee3\Code\CMakeFiles\EMotionFXStaticLib.dir\Unity\unity_15_cxx.cxx" IncludeInUnityFile="false" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\EMotionFX-34d60ee3\Code\CMakeFiles\EMotionFXStaticLib.dir\Unity\unity_14_cxx.cxx" IncludeInUnityFile="false" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\EMotionFX-34d60ee3\Code\CMakeFiles\EMotionFXStaticLib.dir\Unity\unity_13_cxx.cxx" IncludeInUnityFile="false" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\EMotionFX-34d60ee3\Code\CMakeFiles\EMotionFXStaticLib.dir\Unity\unity_12_cxx.cxx" IncludeInUnityFile="false" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\EMotionFX-34d60ee3\Code\CMakeFiles\EMotionFXStaticLib.dir\Unity\unity_11_cxx.cxx" IncludeInUnityFile="false" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\EMotionFX-34d60ee3\Code\CMakeFiles\EMotionFXStaticLib.dir\Unity\unity_10_cxx.cxx" IncludeInUnityFile="false" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\EMotionFX-34d60ee3\Code\CMakeFiles\EMotionFXStaticLib.dir\Unity\unity_9_cxx.cxx" IncludeInUnityFile="false" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\EMotionFX-34d60ee3\Code\CMakeFiles\EMotionFXStaticLib.dir\Unity\unity_8_cxx.cxx" IncludeInUnityFile="false" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\EMotionFX-34d60ee3\Code\CMakeFiles\EMotionFXStaticLib.dir\Unity\unity_7_cxx.cxx" IncludeInUnityFile="false" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\EMotionFX-34d60ee3\Code\CMakeFiles\EMotionFXStaticLib.dir\Unity\unity_6_cxx.cxx" IncludeInUnityFile="false" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\EMotionFX-34d60ee3\Code\CMakeFiles\EMotionFXStaticLib.dir\Unity\unity_5_cxx.cxx" IncludeInUnityFile="false" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\EMotionFX-34d60ee3\Code\CMakeFiles\EMotionFXStaticLib.dir\Unity\unity_4_cxx.cxx" IncludeInUnityFile="false" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\EMotionFX-34d60ee3\Code\CMakeFiles\EMotionFXStaticLib.dir\Unity\unity_3_cxx.cxx" IncludeInUnityFile="false" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\EMotionFX-34d60ee3\Code\CMakeFiles\EMotionFXStaticLib.dir\Unity\unity_2_cxx.cxx" IncludeInUnityFile="false" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\EMotionFX-34d60ee3\Code\CMakeFiles\EMotionFXStaticLib.dir\Unity\unity_1_cxx.cxx" IncludeInUnityFile="false" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\EMotionFX-34d60ee3\Code\CMakeFiles\EMotionFXStaticLib.dir\Unity\unity_0_cxx.cxx" IncludeInUnityFile="false" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Include\Integration\AnimationBus.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Include\Integration\ActorComponentBus.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Include\Integration\AnimGraphComponentBus.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Include\Integration\AnimAudioComponentBus.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Include\Integration\EditorSimpleMotionComponentBus.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Include\Integration\SimpleMotionComponentBus.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Include\Integration\AnimGraphNetworkingBus.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Source\Integration\System\SystemCommon.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Source\Integration\Assets\AssetCommon.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Source\Integration\Assets\ActorAsset.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Source\Integration\Assets\ActorAsset.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Source\Integration\Assets\MotionAsset.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Source\Integration\Assets\MotionAsset.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Source\Integration\Assets\MotionSetAsset.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Source\Integration\Assets\MotionSetAsset.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Source\Integration\Assets\AnimGraphAsset.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Source\Integration\Assets\AnimGraphAsset.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Source\Integration\Components\ActorComponent.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Source\Integration\Components\ActorComponent.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Source\Integration\Components\AnimAudioComponent.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Source\Integration\Components\AnimAudioComponent.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Source\Integration\Components\AnimGraphComponent.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Source\Integration\Components\AnimGraphComponent.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Source\Integration\Components\SimpleMotionComponent.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Source\Integration\Components\SimpleMotionComponent.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Source\Integration\Components\SimpleLODComponent.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Source\Integration\Components\SimpleLODComponent.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Source\Integration\Rendering\RenderBackend.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Source\Integration\Rendering\RenderBackend.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Source\Integration\Rendering\RenderActor.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Source\Integration\Rendering\RenderActor.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Source\Integration\Rendering\RenderActorInstance.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Source\Integration\Rendering\RenderActorInstance.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Source\Integration\Rendering\RenderBackendManager.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Source\Integration\Rendering\RenderBackendManager.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <None Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\emotionfx_shared_files.cmake">
+    </None>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\AABB.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\Algorithms.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\Algorithms.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\Algorithms.inl" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\Array2D.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\Array2D.inl" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\Attribute.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\Attribute.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\AttributeAllocator.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\AttributeAllocator.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\AttributeBool.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\AttributeBool.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\AttributeColor.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\AttributeCreateFunctions.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\AttributeFactory.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\AttributeFactory.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\AttributeFloat.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\AttributeFloat.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\AttributeInt32.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\AttributeInt32.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\AttributePointer.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\AttributeQuaternion.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\AttributeString.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\AttributeVector2.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\AttributeVector3.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\AttributeVector4.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\AzCoreConversions.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\BoundingSphere.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\BoundingSphere.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\Color.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\Color.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\Command.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\Command.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\CommandGroup.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\CommandGroup.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\CommandLine.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\CommandLine.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\MCoreCommandManager.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\MCoreCommandManager.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\CommandManagerCallback.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\CommandSyntax.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\CommandSyntax.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\Compare.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\Compare.inl" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\CompressedFloat.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\CompressedFloat.inl" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\CompressedQuaternion.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\CompressedQuaternion.inl" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\CompressedVector.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\CompressedVector.inl" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\Config.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\DelaunayTriangulator.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\DelaunayTriangulator.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\DiskFile.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\DiskFile.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\Distance.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\Distance.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\DualQuaternion.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\DualQuaternion.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\DualQuaternion.inl" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\Endian.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\Endian.inl" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\FastMath.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\FastMath.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\FastMath.inl" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\File.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\FileSystem.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\FileSystem.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\IDGenerator.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\IDGenerator.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\LogManager.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\LogManager.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\Macros.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\Matrix4.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\Matrix4.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\Matrix4.inl" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\MCoreSystem.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\MCoreSystem.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\MemoryCategoriesCore.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\MemoryFile.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\MemoryFile.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\MemoryManager.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\MemoryManager.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\MemoryObject.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\MemoryObject.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\MemoryTracker.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\MemoryTracker.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\MultiThreadManager.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\PlaneEq.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\PlaneEq.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\PlaneEq.inl" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\Random.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\Random.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\Ray.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\Ray.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\StaticAllocator.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\StaticAllocator.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\StaticString.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\StandardHeaders.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\Stream.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\StringConversions.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\StringConversions.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\StringIdPool.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\StringIdPool.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\ReflectionSerializer.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\ReflectionSerializer.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\TriangleListOptimizer.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\Source\Vector.h" />
+    <None Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\MCore\mcore_files.cmake">
+    </None>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\Actor.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\Actor.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\ActorBus.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\ActorInstance.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\ActorInstance.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\ActorInstanceBus.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\ActorManager.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\ActorManager.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\ActorUpdateScheduler.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\Algorithms.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\Allocators.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\Allocators.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\Attachment.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\Attachment.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\AttachmentNode.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\AttachmentNode.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\AttachmentSkin.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\AttachmentSkin.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\AutoRegisteredActor.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BaseObject.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BaseObject.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\CompressedKeyFrames.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\Constraint.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\ConstraintTransform.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\ConstraintTransformRotationAngles.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\ConstraintTransformRotationAngles.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\DebugDraw.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\DebugDraw.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\DualQuatSkinDeformer.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\DualQuatSkinDeformer.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\EMotionFX.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\EMotionFXConfig.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\EMotionFXManager.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\EMotionFXManager.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\EMotionFXAllocatorInitializer.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\EMotionFXAllocatorInitializer.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\KeyFrame.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\KeyFrame.inl" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\KeyFrameFinder.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\KeyFrameFinder.inl" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\KeyTrackLinearDynamic.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\KeyTrackLinearDynamic.inl" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\LayerPass.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\Material.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\Material.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\MemoryCategories.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\Mesh.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\Mesh.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\Mesh.inl" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\MeshDeformer.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\MeshDeformer.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\MeshDeformerStack.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\MeshDeformerStack.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\MorphMeshDeformer.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\MorphMeshDeformer.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\MorphSetup.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\MorphSetup.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\MorphSetupInstance.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\MorphSetupInstance.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\MorphTarget.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\MorphTarget.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\MorphTargetStandard.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\MorphTargetStandard.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\Motion.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\Motion.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\MotionInstance.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\MotionInstance.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\MotionInstancePool.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\MotionInstancePool.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\MotionLayerSystem.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\MotionLayerSystem.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\MotionManager.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\MotionManager.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\MotionQueue.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\MotionQueue.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\MotionSet.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\MotionSet.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\MotionSystem.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\MotionSystem.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\MultiThreadScheduler.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\MultiThreadScheduler.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\Node.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\Node.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\NodeAttribute.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\NodeGroup.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\NodeGroup.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\NodeMap.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\NodeMap.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\ObjectId.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\ObjectId.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\PlayBackInfo.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\PhysicsSetup.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\PhysicsSetup.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\Pose.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\Pose.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\PoseData.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\PoseData.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\PoseDataFactory.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\PoseDataFactory.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\PoseDataRagdoll.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\PoseDataRagdoll.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\RagdollInstance.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\RagdollInstance.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\RagdollVelocityEvaluators.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\RagdollVelocityEvaluators.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\Recorder.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\Recorder.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\RecorderBus.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\RepositioningLayerPass.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\RepositioningLayerPass.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\SimulatedObjectBus.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\SimulatedObjectSetup.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\SimulatedObjectSetup.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\SingleThreadScheduler.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\SingleThreadScheduler.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\Skeleton.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\Skeleton.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\SkinningInfoVertexAttributeLayer.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\SkinningInfoVertexAttributeLayer.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\SoftSkinDeformer.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\SoftSkinDeformer.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\SoftSkinManager.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\SoftSkinManager.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\SpringSolver.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\SpringSolver.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\StandardMaterial.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\StandardMaterial.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\SubMesh.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\SubMesh.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\ThreadData.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\ThreadData.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\Transform.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\Transform.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\TransformData.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\TransformData.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\TriggerActionSetup.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\TriggerActionSetup.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\VertexAttributeLayer.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\VertexAttributeLayer.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\VertexAttributeLayerAbstractData.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\VertexAttributeLayerAbstractData.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\AnimGraph.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\AnimGraph.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\AnimGraphBus.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\AnimGraphAttributeTypes.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\AnimGraphAttributeTypes.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\AnimGraphBindPoseNode.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\AnimGraphBindPoseNode.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\AnimGraphEntryNode.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\AnimGraphEntryNode.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\AnimGraphEventBuffer.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\AnimGraphEventBuffer.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\AnimGraphExitNode.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\AnimGraphExitNode.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\AnimGraphGameControllerSettings.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\AnimGraphGameControllerSettings.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\AnimGraphHubNode.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\AnimGraphHubNode.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\AnimGraphInstance.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\AnimGraphInstance.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\AnimGraphManager.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\AnimGraphManager.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\AnimGraphMotionNode.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\AnimGraphMotionNode.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\AnimGraphNetworkSerializer.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\AnimGraphNetworkSerializer.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\AnimGraphNode.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\AnimGraphNode.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\AnimGraphNodeData.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\AnimGraphNodeData.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\AnimGraphNodeGroup.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\AnimGraphNodeGroup.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\AnimGraphObject.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\AnimGraphObject.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\AnimGraphObjectData.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\AnimGraphObjectData.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\AnimGraphObjectFactory.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\AnimGraphObjectFactory.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\AnimGraphObjectIds.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\AnimGraphPose.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\AnimGraphPose.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\AnimGraphPosePool.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\AnimGraphPosePool.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\AnimGraphRefCountedData.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\AnimGraphRefCountedDataPool.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\AnimGraphRefCountedDataPool.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\AnimGraphReferenceNode.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\AnimGraphReferenceNode.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\AnimGraphStateMachine.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\AnimGraphStateMachine.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\AnimGraphStateTransition.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\AnimGraphStateTransition.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\AnimGraphSnapshot.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\AnimGraphSnapshot.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\AnimGraphSyncTrack.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\AnimGraphSyncTrack.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendTree.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendTree.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendTreeAccumTransformNode.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendTreeAccumTransformNode.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendTreeBlend2Node.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendTreeBlend2Node.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendTreeBlend2NodeBase.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendTreeBlend2NodeBase.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendTreeBlend2AdditiveNode.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendTreeBlend2AdditiveNode.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendTreeBlend2LegacyNode.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendTreeBlend2LegacyNode.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendTreeBlendNNode.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendTreeBlendNNode.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendTreeBoolLogicNode.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendTreeBoolLogicNode.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendTreeConnection.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendTreeConnection.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendTreeDirectionToWeightNode.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendTreeDirectionToWeightNode.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendTreeFinalNode.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendTreeFinalNode.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendTreeFloatConditionNode.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendTreeFloatConditionNode.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendTreeFloatConstantNode.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendTreeFloatConstantNode.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendTreeFloatMath1Node.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendTreeFloatMath1Node.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendTreeFloatMath2Node.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendTreeFloatMath2Node.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendTreeFloatSwitchNode.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendTreeFloatSwitchNode.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendTreeFootIKNode.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendTreeFootIKNode.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendTreeGetTransformNode.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendTreeGetTransformNode.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendTreeLookAtNode.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendTreeLookAtNode.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendTreeMaskNode.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendTreeMaskNode.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendTreeMaskLegacyNode.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendTreeMaskLegacyNode.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendTreeMirrorPoseNode.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendTreeMirrorPoseNode.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendTreeMorphTargetNode.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendTreeMorphTargetNode.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendTreeMotionFrameNode.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendTreeMotionFrameNode.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendTreeParameterNode.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendTreeParameterNode.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendTreePoseSubtractNode.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendTreePoseSubtractNode.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendTreePoseSwitchNode.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendTreePoseSwitchNode.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendTreeRagdollNode.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendTreeRagdollNode.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendTreeRagdollStrengthModifierNode.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendTreeRagdollStrengthModifierNode.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendTreeRangeRemapperNode.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendTreeRangeRemapperNode.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendTreeSimulatedObjectNode.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendTreeSimulatedObjectNode.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendTreeSmoothingNode.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendTreeSmoothingNode.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendTreeTransformNode.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendTreeTransformNode.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendTreeTwoLinkIKNode.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendTreeTwoLinkIKNode.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendTreeSetTransformNode.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendTreeSetTransformNode.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendTreeVector2ComposeNode.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendTreeVector2ComposeNode.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendTreeVector2DecomposeNode.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendTreeVector2DecomposeNode.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendTreeVector3ComposeNode.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendTreeVector3ComposeNode.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendTreeVector3DecomposeNode.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendTreeVector3DecomposeNode.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendTreeVector3Math1Node.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendTreeVector3Math1Node.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendTreeVector3Math2Node.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendTreeVector3Math2Node.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendTreeVector4ComposeNode.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendTreeVector4ComposeNode.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendTreeVector4DecomposeNode.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendTreeVector4DecomposeNode.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendTreeRaycastNode.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendTreeRaycastNode.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendTreeRotationMath2Node.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendTreeRotationMath2Node.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendTreeRotationLimitNode.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendTreeRotationLimitNode.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendSpaceParamEvaluator.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendSpaceParamEvaluator.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendSpaceManager.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendSpaceManager.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendSpaceNode.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendSpaceNode.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendSpace1DNode.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendSpace1DNode.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendSpace2DNode.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\BlendSpace2DNode.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\ObjectAffectedByParameterChanges.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\ObjectAffectedByParameterChanges.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\TransformSpace.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\TransformSpace.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\AnimGraphMotionCondition.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\AnimGraphMotionCondition.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\AnimGraphParameterCondition.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\AnimGraphParameterCondition.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\AnimGraphPlayTimeCondition.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\AnimGraphPlayTimeCondition.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\AnimGraphStateCondition.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\AnimGraphStateCondition.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\AnimGraphTagCondition.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\AnimGraphTagCondition.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\AnimGraphTimeCondition.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\AnimGraphTimeCondition.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\AnimGraphTransitionCondition.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\AnimGraphTransitionCondition.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\AnimGraphTriggerAction.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\AnimGraphTriggerAction.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\AnimGraphParameterAction.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\AnimGraphParameterAction.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\AnimGraphVector2Condition.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\AnimGraphVector2Condition.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\AnimGraphFollowerParameterAction.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\AnimGraphFollowerParameterAction.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\AnimGraphSymbolicFollowerParameterAction.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\AnimGraphSymbolicFollowerParameterAction.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\Event.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\Event.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\EventData.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\EventData.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\EventDataFootIK.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\EventDataFootIK.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\EventDataSyncable.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\EventDataSyncable.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\EventHandler.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\EventHandler.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\EventInfo.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\EventManager.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\EventManager.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\MotionData\MotionData.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\MotionData\MotionData.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\MotionData\MotionDataFactory.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\MotionData\MotionDataFactory.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\MotionData\NonUniformMotionData.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\MotionData\NonUniformMotionData.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\MotionData\UniformMotionData.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\MotionData\UniformMotionData.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\MotionEvent.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\MotionEvent.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\MotionEventTable.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\MotionEventTable.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\MotionEventTrack.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\MotionEventTrack.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\TwoStringEventData.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\TwoStringEventData.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\Importer\ChunkProcessors.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\Importer\ChunkProcessors.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\Importer\Importer.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\Importer\Importer.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\Importer\NodeMapFileFormat.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\Importer\SharedFileFormatStructs.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\Importer\ActorFileFormat.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\Importer\MotionFileFormat.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\Parameter\BoolParameter.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\Parameter\BoolParameter.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\Parameter\ColorParameter.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\Parameter\ColorParameter.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\Parameter\DefaultValueParameter.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\Parameter\FloatParameter.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\Parameter\FloatParameter.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\Parameter\FloatSliderParameter.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\Parameter\FloatSliderParameter.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\Parameter\FloatSpinnerParameter.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\Parameter\FloatSpinnerParameter.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\Parameter\GroupParameter.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\Parameter\GroupParameter.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\Parameter\IntParameter.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\Parameter\IntParameter.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\Parameter\IntSliderParameter.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\Parameter\IntSliderParameter.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\Parameter\IntSpinnerParameter.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\Parameter\IntSpinnerParameter.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\Parameter\Parameter.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\Parameter\Parameter.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\Parameter\ParameterFactory.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\Parameter\ParameterFactory.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\Parameter\RangedValueParameter.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\Parameter\RotationParameter.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\Parameter\RotationParameter.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\Parameter\StringParameter.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\Parameter\StringParameter.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\Parameter\TagParameter.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\Parameter\TagParameter.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\Parameter\ValueParameter.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\Parameter\ValueParameter.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\Parameter\Vector2Parameter.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\Parameter\Vector2Parameter.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\Parameter\Vector3GizmoParameter.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\Parameter\Vector3GizmoParameter.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\Parameter\Vector3Parameter.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\Parameter\Vector3Parameter.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\Parameter\Vector4Parameter.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Source\Parameter\Vector4Parameter.h" />
+    <None Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\emotionfx_files.cmake">
+    </None>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\CommandSystem\Source\ActorCommands.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\CommandSystem\Source\ActorCommands.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\CommandSystem\Source\ActorInstanceCommands.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\CommandSystem\Source\ActorInstanceCommands.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\CommandSystem\Source\AttachmentCommands.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\CommandSystem\Source\AttachmentCommands.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\CommandSystem\Source\AnimGraphCommands.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\CommandSystem\Source\AnimGraphCommands.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\CommandSystem\Source\AnimGraphConditionCommands.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\CommandSystem\Source\AnimGraphConditionCommands.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\CommandSystem\Source\AnimGraphConnectionCommands.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\CommandSystem\Source\AnimGraphConnectionCommands.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\CommandSystem\Source\AnimGraphCopyPasteData.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\CommandSystem\Source\AnimGraphCopyPasteData.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\CommandSystem\Source\AnimGraphNodeCommands.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\CommandSystem\Source\AnimGraphNodeCommands.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\CommandSystem\Source\AnimGraphNodeGroupCommands.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\CommandSystem\Source\AnimGraphNodeGroupCommands.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\CommandSystem\Source\AnimGraphParameterCommands.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\CommandSystem\Source\AnimGraphParameterCommands.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\CommandSystem\Source\AnimGraphGroupParameterCommands.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\CommandSystem\Source\AnimGraphGroupParameterCommands.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\CommandSystem\Source\AnimGraphTriggerActionCommands.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\CommandSystem\Source\AnimGraphTriggerActionCommands.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\CommandSystem\Source\CommandManager.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\CommandSystem\Source\CommandManager.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\CommandSystem\Source\ColliderCommands.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\CommandSystem\Source\ColliderCommands.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\CommandSystem\Source\CommandSystemConfig.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\CommandSystem\Source\ImporterCommands.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\CommandSystem\Source\ImporterCommands.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\CommandSystem\Source\MetaData.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\CommandSystem\Source\MetaData.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\CommandSystem\Source\MiscCommands.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\CommandSystem\Source\MiscCommands.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\CommandSystem\Source\MorphTargetCommands.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\CommandSystem\Source\MorphTargetCommands.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\CommandSystem\Source\MotionCommands.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\CommandSystem\Source\MotionCommands.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\CommandSystem\Source\MotionEventCommands.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\CommandSystem\Source\MotionEventCommands.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\CommandSystem\Source\MotionSetCommands.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\CommandSystem\Source\MotionSetCommands.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\CommandSystem\Source\NodeGroupCommands.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\CommandSystem\Source\NodeGroupCommands.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\CommandSystem\Source\ParameterMixins.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\CommandSystem\Source\ParameterMixins.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\CommandSystem\Source\RagdollCommands.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\CommandSystem\Source\RagdollCommands.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\CommandSystem\Source\SelectionCommands.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\CommandSystem\Source\SelectionCommands.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\CommandSystem\Source\SelectionList.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\CommandSystem\Source\SelectionList.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\CommandSystem\Source\SimulatedObjectCommands.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\CommandSystem\Source\SimulatedObjectCommands.h" />
+    <None Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\CommandSystem\commandsystem_files.cmake">
+    </None>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Exporters\ExporterLib\Exporter\EndianConversion.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Exporters\ExporterLib\Exporter\Exporter.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Exporters\ExporterLib\Exporter\ExporterActor.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Exporters\ExporterLib\Exporter\ExporterFileProcessor.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Exporters\ExporterLib\Exporter\ExporterFileProcessor.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Exporters\ExporterLib\Exporter\FileHeaderExport.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Exporters\ExporterLib\Exporter\MorphTargetExport.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Exporters\ExporterLib\Exporter\MotionEventExport.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Exporters\ExporterLib\Exporter\NodeExport.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Exporters\ExporterLib\Exporter\SkeletalMotionExport.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Exporters\ExporterLib\Exporter\StringExport.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <None Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\EMotionFX\Exporters\ExporterLib\exporterlib_files.cmake">
+    </None>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Platform\Common\WinAPI\MCore\Source\DiskFile_WinAPI.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFXStaticLib.dir/Unity" />
+    <None Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Platform\Windows\platform_windows_files.cmake">
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Platform\Windows\platform_windows.cmake">
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\ZERO_CHECK.vcxproj">
+      <Project>{CDE32B4E-8490-3FC5-A3F2-976A0A5DE45E}</Project>
+      <Name>ZERO_CHECK</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\Code\Framework\AtomCore\AtomCore.vcxproj">
+      <Project>{6D55F49F-9D52-3893-81A0-A8698549AB69}</Project>
+      <Name>AtomCore</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\External\Atom-418206cc\RHI\Code\Atom_RHI.Public.vcxproj">
+      <Project>{2E32222C-434D-3353-967C-88B4AA98F8F8}</Project>
+      <Name>Atom_RHI.Public</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\External\Atom-418206cc\RHI\Code\Atom_RHI.Reflect.vcxproj">
+      <Project>{34A5B279-91CB-334A-9CD9-0B3CFB872F2C}</Project>
+      <Name>Atom_RHI.Reflect</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\External\Atom-418206cc\RPI\Code\Atom_RPI.Public.vcxproj">
+      <Project>{ABB218FB-FD4C-33F6-B91D-28BD20400532}</Project>
+      <Name>Atom_RPI.Public</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore.vcxproj">
+      <Project>{8AC0D8DF-6487-39C7-A5F3-F77355B1ACD9}</Project>
+      <Name>AzCore</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework.vcxproj">
+      <Project>{E4BA859A-1109-3DBC-887D-DBC80D0DD65A}</Project>
+      <Name>AzFramework</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\CryCommon.vcxproj">
+      <Project>{CA3B5D54-5095-3557-9270-FD4F882B4C66}</Project>
+      <Name>CryCommon</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate.vcxproj">
+      <Project>{FE67A854-57A6-3513-BAEF-9A7AC0A253E8}</Project>
+      <Name>GridMate</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

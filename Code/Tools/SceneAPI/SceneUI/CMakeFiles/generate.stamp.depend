@@ -1,0 +1,6 @@
+# CMake generation dependency list for this directory.
+C:/Users/lesaelr/o3de/Code/Tools/SceneAPI/SceneUI/CMakeLists.txt
+C:/Users/lesaelr/o3de/Code/Tools/SceneAPI/SceneUI/SceneUI.qrc
+C:/Users/lesaelr/o3de/Code/Tools/SceneAPI/SceneUI/SceneUI_files.cmake
+C:/Users/lesaelr/o3de/Code/Tools/SceneAPI/SceneUI/SceneUI_testing_files.cmake
+C:/Users/lesaelr/o3de/cmake/Platform/Windows/LYTestWrappers_windows.cmake

@@ -1,0 +1,5 @@
+# CMake generation dependency list for this directory.
+C:/Users/lesaelr/o3de/Code/Tools/Standalone/CMakeLists.txt
+C:/Users/lesaelr/o3de/Code/Tools/Standalone/Platform/Windows/lua_ide_windows_files.cmake
+C:/Users/lesaelr/o3de/Code/Tools/Standalone/lua_ide_files.cmake
+C:/Users/lesaelr/o3de/Code/Tools/Standalone/standalone_tools_files.cmake

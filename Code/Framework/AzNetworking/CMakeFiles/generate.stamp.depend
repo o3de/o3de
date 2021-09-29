@@ -1,0 +1,9 @@
+# CMake generation dependency list for this directory.
+C:/Users/lesaelr/.o3de/3rdParty/packages/OpenSSL-1.1.1b-rev2-windows/FindOpenSSL.cmake
+C:/Users/lesaelr/.o3de/3rdParty/packages/OpenSSL-1.1.1b-rev2-windows/PackageInfo.json
+C:/Users/lesaelr/o3de/Code/Framework/AzNetworking/AzNetworking/aznetworking_files.cmake
+C:/Users/lesaelr/o3de/Code/Framework/AzNetworking/CMakeLists.txt
+C:/Users/lesaelr/o3de/Code/Framework/AzNetworking/Platform/Windows/platform_windows.cmake
+C:/Users/lesaelr/o3de/Code/Framework/AzNetworking/Platform/Windows/platform_windows_files.cmake
+C:/Users/lesaelr/o3de/Code/Framework/AzNetworking/Tests/aznetworkingtests_files.cmake
+C:/Users/lesaelr/o3de/cmake/Platform/Windows/LYTestWrappers_windows.cmake

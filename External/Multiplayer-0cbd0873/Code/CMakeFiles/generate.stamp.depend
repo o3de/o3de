@@ -1,0 +1,11 @@
+# CMake generation dependency list for this directory.
+C:/Users/lesaelr/o3de/Gems/Multiplayer/Code/CMakeLists.txt
+C:/Users/lesaelr/o3de/Gems/Multiplayer/Code/multiplayer_autogen_files.cmake
+C:/Users/lesaelr/o3de/Gems/Multiplayer/Code/multiplayer_debug_files.cmake
+C:/Users/lesaelr/o3de/Gems/Multiplayer/Code/multiplayer_editor_shared_files.cmake
+C:/Users/lesaelr/o3de/Gems/Multiplayer/Code/multiplayer_files.cmake
+C:/Users/lesaelr/o3de/Gems/Multiplayer/Code/multiplayer_shared_files.cmake
+C:/Users/lesaelr/o3de/Gems/Multiplayer/Code/multiplayer_tests_files.cmake
+C:/Users/lesaelr/o3de/Gems/Multiplayer/Code/multiplayer_tools_files.cmake
+C:/Users/lesaelr/o3de/Gems/Multiplayer/Code/multiplayer_tools_tests_files.cmake
+C:/Users/lesaelr/o3de/cmake/Platform/Windows/LYTestWrappers_windows.cmake

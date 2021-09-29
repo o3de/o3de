@@ -1,0 +1,194 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\GradientSignal-ae8ccb00\Code\CMakeFiles\GradientSignal.Editor.Static.dir\Unity\unity_2_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\GradientSignal-ae8ccb00\Code\CMakeFiles\GradientSignal.Editor.Static.dir\Unity\unity_1_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\GradientSignal-ae8ccb00\Code\CMakeFiles\GradientSignal.Editor.Static.dir\Unity\unity_0_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GradientSignal\Code\Source\UI\GradientPreviewDataWidget.cpp">
+      <Filter>Source\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GradientSignal\Code\Source\UI\GradientPreviewWidget.cpp">
+      <Filter>Source\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GradientSignal\Code\Source\Editor\EditorImageProcessingSystemComponent.cpp">
+      <Filter>Source\Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GradientSignal\Code\Source\Editor\EditorConstantGradientComponent.cpp">
+      <Filter>Source\Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GradientSignal\Code\Source\Editor\EditorDitherGradientComponent.cpp">
+      <Filter>Source\Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GradientSignal\Code\Source\Editor\EditorGradientComponentBase.cpp">
+      <Filter>Source\Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GradientSignal\Code\Source\Editor\EditorGradientSurfaceDataComponent.cpp">
+      <Filter>Source\Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GradientSignal\Code\Source\Editor\EditorGradientTransformComponent.cpp">
+      <Filter>Source\Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GradientSignal\Code\Source\Editor\EditorImageBuilderComponent.cpp">
+      <Filter>Source\Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GradientSignal\Code\Source\Editor\EditorImageGradientComponent.cpp">
+      <Filter>Source\Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GradientSignal\Code\Source\Editor\EditorInvertGradientComponent.cpp">
+      <Filter>Source\Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GradientSignal\Code\Source\Editor\EditorLevelsGradientComponent.cpp">
+      <Filter>Source\Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GradientSignal\Code\Source\Editor\EditorMixedGradientComponent.cpp">
+      <Filter>Source\Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GradientSignal\Code\Source\Editor\EditorPerlinGradientComponent.cpp">
+      <Filter>Source\Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GradientSignal\Code\Source\Editor\EditorPosterizeGradientComponent.cpp">
+      <Filter>Source\Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GradientSignal\Code\Source\Editor\EditorRandomGradientComponent.cpp">
+      <Filter>Source\Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GradientSignal\Code\Source\Editor\EditorReferenceGradientComponent.cpp">
+      <Filter>Source\Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GradientSignal\Code\Source\Editor\EditorShapeAreaFalloffGradientComponent.cpp">
+      <Filter>Source\Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GradientSignal\Code\Source\Editor\EditorSmoothStepGradientComponent.cpp">
+      <Filter>Source\Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GradientSignal\Code\Source\Editor\EditorSurfaceAltitudeGradientComponent.cpp">
+      <Filter>Source\Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GradientSignal\Code\Source\Editor\EditorSurfaceMaskGradientComponent.cpp">
+      <Filter>Source\Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GradientSignal\Code\Source\Editor\EditorSurfaceSlopeGradientComponent.cpp">
+      <Filter>Source\Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GradientSignal\Code\Source\Editor\EditorThresholdGradientComponent.cpp">
+      <Filter>Source\Editor</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GradientSignal\Code\Include\GradientSignal\Editor\EditorGradientComponentBase.h">
+      <Filter>Include\GradientSignal\Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GradientSignal\Code\Include\GradientSignal\Editor\EditorGradientComponentBase.inl">
+      <Filter>Include\GradientSignal\Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GradientSignal\Code\Include\GradientSignal\Editor\EditorGradientPreviewRenderer.h">
+      <Filter>Include\GradientSignal\Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GradientSignal\Code\Include\GradientSignal\Editor\EditorGradientTypeIds.h">
+      <Filter>Include\GradientSignal\Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GradientSignal\Code\Source\UI\GradientPreviewDataWidget.h">
+      <Filter>Source\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GradientSignal\Code\Source\UI\GradientPreviewWidget.h">
+      <Filter>Source\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GradientSignal\Code\Source\Editor\EditorImageProcessingSystemComponent.h">
+      <Filter>Source\Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GradientSignal\Code\Source\Editor\EditorConstantGradientComponent.h">
+      <Filter>Source\Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GradientSignal\Code\Source\Editor\EditorDitherGradientComponent.h">
+      <Filter>Source\Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GradientSignal\Code\Source\Editor\EditorGradientSurfaceDataComponent.h">
+      <Filter>Source\Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GradientSignal\Code\Source\Editor\EditorGradientTransformComponent.h">
+      <Filter>Source\Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GradientSignal\Code\Source\Editor\EditorImageBuilderComponent.h">
+      <Filter>Source\Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GradientSignal\Code\Source\Editor\EditorImageGradientComponent.h">
+      <Filter>Source\Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GradientSignal\Code\Source\Editor\EditorInvertGradientComponent.h">
+      <Filter>Source\Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GradientSignal\Code\Source\Editor\EditorLevelsGradientComponent.h">
+      <Filter>Source\Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GradientSignal\Code\Source\Editor\EditorMixedGradientComponent.h">
+      <Filter>Source\Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GradientSignal\Code\Source\Editor\EditorPerlinGradientComponent.h">
+      <Filter>Source\Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GradientSignal\Code\Source\Editor\EditorPosterizeGradientComponent.h">
+      <Filter>Source\Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GradientSignal\Code\Source\Editor\EditorRandomGradientComponent.h">
+      <Filter>Source\Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GradientSignal\Code\Source\Editor\EditorReferenceGradientComponent.h">
+      <Filter>Source\Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GradientSignal\Code\Source\Editor\EditorShapeAreaFalloffGradientComponent.h">
+      <Filter>Source\Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GradientSignal\Code\Source\Editor\EditorSmoothStepGradientComponent.h">
+      <Filter>Source\Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GradientSignal\Code\Source\Editor\EditorSurfaceAltitudeGradientComponent.h">
+      <Filter>Source\Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GradientSignal\Code\Source\Editor\EditorSurfaceMaskGradientComponent.h">
+      <Filter>Source\Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GradientSignal\Code\Source\Editor\EditorSurfaceSlopeGradientComponent.h">
+      <Filter>Source\Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GradientSignal\Code\Source\Editor\EditorThresholdGradientComponent.h">
+      <Filter>Source\Editor</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Gems\GradientSignal\Code\CMakeLists.txt">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="C:\Users\lesaelr\o3de\Gems\GradientSignal\Code\gradientsignal_editor_files.cmake" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Generated Files">
+      <UniqueIdentifier>{FB9B7D8B-7F05-31D5-AA90-592248EDE1B3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include">
+      <UniqueIdentifier>{E188105A-C8C4-34BB-9809-15E8410EF7F8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\GradientSignal">
+      <UniqueIdentifier>{E97EE16F-62CC-3482-81D1-F1DEA6B2FFE1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\GradientSignal\Editor">
+      <UniqueIdentifier>{B0B0564B-C2C0-363D-AD41-7A041B4246AC}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source">
+      <UniqueIdentifier>{F3F0AD47-5F83-373B-A2BF-650D2E4FA3EA}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Editor">
+      <UniqueIdentifier>{32FCFB28-A730-3475-B9AE-03974723A74B}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\UI">
+      <UniqueIdentifier>{CE437753-321E-3916-BDB7-65EF44FE4954}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

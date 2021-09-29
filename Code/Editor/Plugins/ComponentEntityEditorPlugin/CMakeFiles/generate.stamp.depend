@@ -1,0 +1,6 @@
+# CMake generation dependency list for this directory.
+C:/Users/lesaelr/o3de/Code/Editor/Plugins/ComponentEntityEditorPlugin/CMakeLists.txt
+C:/Users/lesaelr/o3de/Code/Editor/Plugins/ComponentEntityEditorPlugin/UI/Outliner/resources.qrc
+C:/Users/lesaelr/o3de/Code/Editor/Plugins/ComponentEntityEditorPlugin/componententityeditorplugin_files.cmake
+C:/Users/lesaelr/o3de/Code/Editor/Plugins/ComponentEntityEditorPlugin/componententityeditorplugin_test_files.cmake
+C:/Users/lesaelr/o3de/cmake/Platform/Windows/LYTestWrappers_windows.cmake

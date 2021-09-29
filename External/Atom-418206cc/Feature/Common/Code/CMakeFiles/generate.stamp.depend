@@ -1,0 +1,16 @@
+# CMake generation dependency list for this directory.
+C:/Users/lesaelr/o3de/Gems/Atom/Feature/Common/Assets/atom_feature_common_asset_files.cmake
+C:/Users/lesaelr/o3de/Gems/Atom/Feature/Common/Code/CMakeLists.txt
+C:/Users/lesaelr/o3de/Gems/Atom/Feature/Common/Code/Source/Platform/Common/MSVC/atom_feature_common_msvc.cmake
+C:/Users/lesaelr/o3de/Gems/Atom/Feature/Common/Code/Source/Platform/Windows/platform_windows.cmake
+C:/Users/lesaelr/o3de/Gems/Atom/Feature/Common/Code/Source/Platform/Windows/platform_windows_files.cmake
+C:/Users/lesaelr/o3de/Gems/Atom/Feature/Common/Code/Source/Platform/Windows/runtime_dependencies_clients.cmake
+C:/Users/lesaelr/o3de/Gems/Atom/Feature/Common/Code/Source/Platform/Windows/runtime_dependencies_tools.cmake
+C:/Users/lesaelr/o3de/Gems/Atom/Feature/Common/Code/atom_feature_common_builders_files.cmake
+C:/Users/lesaelr/o3de/Gems/Atom/Feature/Common/Code/atom_feature_common_editor_files.cmake
+C:/Users/lesaelr/o3de/Gems/Atom/Feature/Common/Code/atom_feature_common_files.cmake
+C:/Users/lesaelr/o3de/Gems/Atom/Feature/Common/Code/atom_feature_common_public_files.cmake
+C:/Users/lesaelr/o3de/Gems/Atom/Feature/Common/Code/atom_feature_common_shared_files.cmake
+C:/Users/lesaelr/o3de/Gems/Atom/Feature/Common/Code/atom_feature_common_staticlibrary_files.cmake
+C:/Users/lesaelr/o3de/Gems/Atom/Feature/Common/Code/atom_feature_common_tests_files.cmake
+C:/Users/lesaelr/o3de/cmake/Platform/Windows/LYTestWrappers_windows.cmake

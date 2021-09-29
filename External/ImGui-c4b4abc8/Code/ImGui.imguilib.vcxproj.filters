@@ -1,0 +1,92 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\ImGui-c4b4abc8\Code\CMakeFiles\ImGui.imguilib.dir\Unity\unity_0_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ImGui\External\ImGui\v1.82\imgui\imgui.cpp">
+      <Filter>..\External\ImGui\v1.82\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ImGui\External\ImGui\v1.82\imgui\imgui_draw.cpp">
+      <Filter>..\External\ImGui\v1.82\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ImGui\External\ImGui\v1.82\imgui\imgui_tables.cpp">
+      <Filter>..\External\ImGui\v1.82\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ImGui\External\ImGui\v1.82\imgui\imgui_widgets.cpp">
+      <Filter>..\External\ImGui\v1.82\imgui</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ImGui\External\ImGui\v1.82\imgui\imconfig.h">
+      <Filter>..\External\ImGui\v1.82\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ImGui\External\ImGui\v1.82\imgui\imgui.h">
+      <Filter>..\External\ImGui\v1.82\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ImGui\External\ImGui\v1.82\imgui\imgui_internal.h">
+      <Filter>..\External\ImGui\v1.82\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ImGui\External\ImGui\v1.82\imgui\imgui_user.h">
+      <Filter>..\External\ImGui\v1.82\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ImGui\External\ImGui\v1.82\imgui\imgui_user.inl">
+      <Filter>..\External\ImGui\v1.82\imgui</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\CMakeFiles\08b24365a84bd27d080f6dd51f42b933\ImGui.imguilib_(CONFIG).stamp.rule">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Gems\ImGui\Code\CMakeLists.txt">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="C:\Users\lesaelr\o3de\Gems\ImGui\Code\imgui_lib_files.cmake" />
+    <None Include="C:\Users\lesaelr\o3de\Gems\ImGui\Code\Source\Platform\Windows\platform_windows_files.cmake">
+      <Filter>Source\Platform\Windows</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\ImGui\Code\Source\Platform\Windows\imgui_windows.cmake">
+      <Filter>Source\Platform\Windows</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\runtime_dependencies\debug\ImGui.imguilib_debug.stamp">
+      <Filter>Generated Files</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\runtime_dependencies\profile\ImGui.imguilib_profile.stamp">
+      <Filter>Generated Files</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\runtime_dependencies\release\ImGui.imguilib_release.stamp">
+      <Filter>Generated Files</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="..">
+      <UniqueIdentifier>{B62B6BD3-6D53-356A-92E7-D4477019628D}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="..\External">
+      <UniqueIdentifier>{6CCAE8E3-934F-341C-AE0C-D09FCA84D5AE}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="..\External\ImGui">
+      <UniqueIdentifier>{F3C6BFB7-2D02-36CD-ACB0-8672F16EEA53}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="..\External\ImGui\v1.82">
+      <UniqueIdentifier>{E5596138-EB7F-332F-814D-E88A900FF67C}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="..\External\ImGui\v1.82\imgui">
+      <UniqueIdentifier>{F482FA12-E191-3C12-B8A0-A11BD703F5AF}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Generated Files">
+      <UniqueIdentifier>{FB9B7D8B-7F05-31D5-AA90-592248EDE1B3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source">
+      <UniqueIdentifier>{F3F0AD47-5F83-373B-A2BF-650D2E4FA3EA}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Platform">
+      <UniqueIdentifier>{4FB794FF-EAE9-3B82-95CC-6241BAD0E3AC}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Platform\Windows">
+      <UniqueIdentifier>{2D0E7154-D797-393D-A7EB-8527ACAFB2BF}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

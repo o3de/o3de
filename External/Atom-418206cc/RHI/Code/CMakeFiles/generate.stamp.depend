@@ -1,0 +1,12 @@
+# CMake generation dependency list for this directory.
+C:/Users/lesaelr/o3de/Gems/Atom/RHI/Code/CMakeLists.txt
+C:/Users/lesaelr/o3de/Gems/Atom/RHI/Code/Platform/Windows/AtomRHITests_traits_windows.cmake
+C:/Users/lesaelr/o3de/Gems/Atom/RHI/Code/Source/Platform/Windows/platform_private_windows_files.cmake
+C:/Users/lesaelr/o3de/Gems/Atom/RHI/Code/Source/Platform/Windows/platform_windows_files.cmake
+C:/Users/lesaelr/o3de/Gems/Atom/RHI/Code/atom_rhi_edit_files.cmake
+C:/Users/lesaelr/o3de/Gems/Atom/RHI/Code/atom_rhi_private_files.cmake
+C:/Users/lesaelr/o3de/Gems/Atom/RHI/Code/atom_rhi_private_shared_files.cmake
+C:/Users/lesaelr/o3de/Gems/Atom/RHI/Code/atom_rhi_public_files.cmake
+C:/Users/lesaelr/o3de/Gems/Atom/RHI/Code/atom_rhi_reflect_files.cmake
+C:/Users/lesaelr/o3de/Gems/Atom/RHI/Code/atom_rhi_tests_files.cmake
+C:/Users/lesaelr/o3de/cmake/Platform/Windows/LYTestWrappers_windows.cmake

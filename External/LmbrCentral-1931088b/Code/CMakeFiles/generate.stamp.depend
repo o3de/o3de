@@ -1,0 +1,12 @@
+# CMake generation dependency list for this directory.
+C:/Users/lesaelr/o3de/Gems/LmbrCentral/Code/CMakeLists.txt
+C:/Users/lesaelr/o3de/Gems/LmbrCentral/Code/Platform/Windows/lrelease_windows.cmake
+C:/Users/lesaelr/o3de/Gems/LmbrCentral/Code/Platform/Windows/platform_windows_files.cmake
+C:/Users/lesaelr/o3de/Gems/LmbrCentral/Code/lmbrcentral_editor_files.cmake
+C:/Users/lesaelr/o3de/Gems/LmbrCentral/Code/lmbrcentral_editor_shared_files.cmake
+C:/Users/lesaelr/o3de/Gems/LmbrCentral/Code/lmbrcentral_editor_tests_files.cmake
+C:/Users/lesaelr/o3de/Gems/LmbrCentral/Code/lmbrcentral_files.cmake
+C:/Users/lesaelr/o3de/Gems/LmbrCentral/Code/lmbrcentral_mocks_files.cmake
+C:/Users/lesaelr/o3de/Gems/LmbrCentral/Code/lmbrcentral_shared_files.cmake
+C:/Users/lesaelr/o3de/Gems/LmbrCentral/Code/lmbrcentral_tests_files.cmake
+C:/Users/lesaelr/o3de/cmake/Platform/Windows/LYTestWrappers_windows.cmake

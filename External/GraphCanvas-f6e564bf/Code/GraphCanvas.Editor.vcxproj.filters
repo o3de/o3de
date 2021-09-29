@@ -1,0 +1,572 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\GraphCanvas-f6e564bf\Code\GraphCanvas.Editor_autogen\mocs_compilation_debug.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\GraphCanvas-f6e564bf\Code\CMakeFiles\GraphCanvas.Editor.dir\Unity\unity_8_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\GraphCanvas-f6e564bf\Code\CMakeFiles\GraphCanvas.Editor.dir\Unity\unity_7_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\GraphCanvas-f6e564bf\Code\CMakeFiles\GraphCanvas.Editor.dir\Unity\unity_6_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\GraphCanvas-f6e564bf\Code\CMakeFiles\GraphCanvas.Editor.dir\Unity\unity_5_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\GraphCanvas-f6e564bf\Code\CMakeFiles\GraphCanvas.Editor.dir\Unity\unity_4_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\GraphCanvas-f6e564bf\Code\CMakeFiles\GraphCanvas.Editor.dir\Unity\unity_3_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\GraphCanvas-f6e564bf\Code\CMakeFiles\GraphCanvas.Editor.dir\Unity\unity_2_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\GraphCanvas-f6e564bf\Code\CMakeFiles\GraphCanvas.Editor.dir\Unity\unity_1_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\GraphCanvas-f6e564bf\Code\CMakeFiles\GraphCanvas.Editor.dir\Unity\unity_0_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\Source\GraphCanvas.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\Source\GraphCanvasEditorModule.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\Source\tools.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\Source\Components\BookmarkManagerComponent.cpp">
+      <Filter>Source\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\Source\Components\GeometryComponent.cpp">
+      <Filter>Source\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\Source\Components\GridComponent.cpp">
+      <Filter>Source\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\Source\Components\GridVisualComponent.cpp">
+      <Filter>Source\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\Source\Components\LayerControllerComponent.cpp">
+      <Filter>Source\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\Source\Components\PersistentIdComponent.cpp">
+      <Filter>Source\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\Source\Components\SceneComponent.cpp">
+      <Filter>Source\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\Source\Components\SceneMemberComponent.cpp">
+      <Filter>Source\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\Source\Components\StylingComponent.cpp">
+      <Filter>Source\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\Source\Components\BookmarkAnchor\BookmarkAnchorComponent.cpp">
+      <Filter>Source\Components\BookmarkAnchor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\Source\Components\BookmarkAnchor\BookmarkAnchorVisualComponent.cpp">
+      <Filter>Source\Components\BookmarkAnchor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\Source\Components\Connections\ConnectionComponent.cpp">
+      <Filter>Source\Components\Connections</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\Source\Components\Connections\ConnectionLayerControllerComponent.cpp">
+      <Filter>Source\Components\Connections</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\Source\Components\Connections\ConnectionVisualComponent.cpp">
+      <Filter>Source\Components\Connections</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\Source\Components\Connections\DataConnections\DataConnectionComponent.cpp">
+      <Filter>Source\Components\Connections\DataConnections</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\Source\Components\Connections\DataConnections\DataConnectionGraphicsItem.cpp">
+      <Filter>Source\Components\Connections\DataConnections</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\Source\Components\Connections\DataConnections\DataConnectionVisualComponent.cpp">
+      <Filter>Source\Components\Connections\DataConnections</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\Source\Components\NodePropertyDisplays\AssetIdNodePropertyDisplay.cpp">
+      <Filter>Source\Components\NodePropertyDisplays</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\Source\Components\NodePropertyDisplays\BooleanNodePropertyDisplay.cpp">
+      <Filter>Source\Components\NodePropertyDisplays</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\Source\Components\NodePropertyDisplays\ComboBoxNodePropertyDisplay.cpp">
+      <Filter>Source\Components\NodePropertyDisplays</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\Source\Components\NodePropertyDisplays\NumericNodePropertyDisplay.cpp">
+      <Filter>Source\Components\NodePropertyDisplays</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\Source\Components\NodePropertyDisplays\EntityIdNodePropertyDisplay.cpp">
+      <Filter>Source\Components\NodePropertyDisplays</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\Source\Components\NodePropertyDisplays\ReadOnlyNodePropertyDisplay.cpp">
+      <Filter>Source\Components\NodePropertyDisplays</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\Source\Components\NodePropertyDisplays\StringNodePropertyDisplay.cpp">
+      <Filter>Source\Components\NodePropertyDisplays</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\Source\Components\NodePropertyDisplays\VectorNodePropertyDisplay.cpp">
+      <Filter>Source\Components\NodePropertyDisplays</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\Source\Components\Nodes\NodeComponent.cpp">
+      <Filter>Source\Components\Nodes</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\Source\Components\Nodes\NodeFrameGraphicsWidget.cpp">
+      <Filter>Source\Components\Nodes</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\Source\Components\Nodes\Comment\CommentNodeFrameComponent.cpp">
+      <Filter>Source\Components\Nodes\Comment</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\Source\Components\Nodes\Comment\CommentNodeLayoutComponent.cpp">
+      <Filter>Source\Components\Nodes\Comment</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\Source\Components\Nodes\Comment\CommentNodeTextComponent.cpp">
+      <Filter>Source\Components\Nodes\Comment</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\Source\Components\Nodes\Comment\CommentTextGraphicsWidget.cpp">
+      <Filter>Source\Components\Nodes\Comment</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\Source\Components\Nodes\General\GeneralNodeFrameComponent.cpp">
+      <Filter>Source\Components\Nodes\General</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\Source\Components\Nodes\General\GeneralNodeLayoutComponent.cpp">
+      <Filter>Source\Components\Nodes\General</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\Source\Components\Nodes\General\GeneralNodeTitleComponent.cpp">
+      <Filter>Source\Components\Nodes\General</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\Source\Components\Nodes\General\GeneralSlotLayoutComponent.cpp">
+      <Filter>Source\Components\Nodes\General</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\Source\Components\Nodes\Group\CollapsedNodeGroupComponent.cpp">
+      <Filter>Source\Components\Nodes\Group</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\Source\Components\Nodes\Group\NodeGroupFrameComponent.cpp">
+      <Filter>Source\Components\Nodes\Group</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\Source\Components\Nodes\Group\NodeGroupLayoutComponent.cpp">
+      <Filter>Source\Components\Nodes\Group</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\Source\Components\Nodes\Wrapper\WrapperNodeLayoutComponent.cpp">
+      <Filter>Source\Components\Nodes\Wrapper</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\Source\Components\Slots\SlotComponent.cpp">
+      <Filter>Source\Components\Slots</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\Source\Components\Slots\SlotConnectionFilterComponent.cpp">
+      <Filter>Source\Components\Slots</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\Source\Components\Slots\SlotConnectionPin.cpp">
+      <Filter>Source\Components\Slots</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\Source\Components\Slots\SlotLayoutComponent.cpp">
+      <Filter>Source\Components\Slots</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\Source\Components\Slots\Data\DataSlotComponent.cpp">
+      <Filter>Source\Components\Slots\Data</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\Source\Components\Slots\Data\DataSlotConnectionPin.cpp">
+      <Filter>Source\Components\Slots\Data</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\Source\Components\Slots\Data\DataSlotLayoutComponent.cpp">
+      <Filter>Source\Components\Slots\Data</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\Source\Components\Slots\Default\DefaultSlotLayoutComponent.cpp">
+      <Filter>Source\Components\Slots\Default</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\Source\Components\Slots\Execution\ExecutionSlotComponent.cpp">
+      <Filter>Source\Components\Slots\Execution</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\Source\Components\Slots\Execution\ExecutionSlotConnectionPin.cpp">
+      <Filter>Source\Components\Slots\Execution</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\Source\Components\Slots\Execution\ExecutionSlotLayoutComponent.cpp">
+      <Filter>Source\Components\Slots\Execution</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\Source\Components\Slots\Extender\ExtenderSlotComponent.cpp">
+      <Filter>Source\Components\Slots\Extender</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\Source\Components\Slots\Extender\ExtenderSlotConnectionPin.cpp">
+      <Filter>Source\Components\Slots\Extender</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\Source\Components\Slots\Extender\ExtenderSlotLayoutComponent.cpp">
+      <Filter>Source\Components\Slots\Extender</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\Source\Components\Slots\Property\PropertySlotComponent.cpp">
+      <Filter>Source\Components\Slots\Property</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\Source\Components\Slots\Property\PropertySlotLayoutComponent.cpp">
+      <Filter>Source\Components\Slots\Property</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\Source\Widgets\GraphCanvasCheckBox.cpp">
+      <Filter>Source\Widgets</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\Source\Widgets\GraphCanvasComboBox.cpp">
+      <Filter>Source\Widgets</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\Source\Widgets\GraphCanvasLabel.cpp">
+      <Filter>Source\Widgets</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\Source\Widgets\NodePropertyDisplayWidget.cpp">
+      <Filter>Source\Widgets</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\Source\Translation\TranslationAsset.cpp">
+      <Filter>Source\Translation</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\Source\Translation\TranslationBuilder.cpp">
+      <Filter>Source\Translation</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\Source\Translation\TranslationDatabase.cpp">
+      <Filter>Source\Translation</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\Source\Translation\TranslationSerializer.cpp">
+      <Filter>Source\Translation</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\GraphCanvas-f6e564bf\Code\GraphCanvas.Editor_autogen\mocs_compilation_profile.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\GraphCanvas-f6e564bf\Code\GraphCanvas.Editor_autogen\mocs_compilation_release.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\Include\GraphCanvas\Widgets\RootGraphicsItem.h">
+      <Filter>Include\GraphCanvas\Widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\Include\GraphCanvas\tools.h">
+      <Filter>Include\GraphCanvas</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\Include\GraphCanvas\Components\Connections\ConnectionFilters\ConnectionFilterBus.h">
+      <Filter>Include\GraphCanvas\Components\Connections\ConnectionFilters</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\Include\GraphCanvas\Components\Connections\ConnectionFilters\ConnectionFilters.h">
+      <Filter>Include\GraphCanvas\Components\Connections\ConnectionFilters</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\Include\GraphCanvas\Components\Connections\ConnectionFilters\DataConnectionFilters.h">
+      <Filter>Include\GraphCanvas\Components\Connections\ConnectionFilters</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\Source\GraphCanvas.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\Source\GraphCanvasModule.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\Source\Components\BookmarkManagerComponent.h">
+      <Filter>Source\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\Source\Components\GeometryComponent.h">
+      <Filter>Source\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\Source\Components\GridComponent.h">
+      <Filter>Source\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\Source\Components\GridVisualComponent.h">
+      <Filter>Source\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\Source\Components\LayerControllerComponent.h">
+      <Filter>Source\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\Source\Components\PersistentIdComponent.h">
+      <Filter>Source\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\Source\Components\SceneComponent.h">
+      <Filter>Source\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\Source\Components\SceneMemberComponent.h">
+      <Filter>Source\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\Source\Components\StylingComponent.h">
+      <Filter>Source\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\Source\Components\BookmarkAnchor\BookmarkAnchorComponent.h">
+      <Filter>Source\Components\BookmarkAnchor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\Source\Components\BookmarkAnchor\BookmarkAnchorLayerControllerComponent.h">
+      <Filter>Source\Components\BookmarkAnchor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\Source\Components\BookmarkAnchor\BookmarkAnchorVisualComponent.h">
+      <Filter>Source\Components\BookmarkAnchor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\Source\Components\Connections\ConnectionComponent.h">
+      <Filter>Source\Components\Connections</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\Source\Components\Connections\ConnectionLayerControllerComponent.h">
+      <Filter>Source\Components\Connections</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\Source\Components\Connections\ConnectionVisualComponent.h">
+      <Filter>Source\Components\Connections</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\Source\Components\Connections\DataConnections\DataConnectionComponent.h">
+      <Filter>Source\Components\Connections\DataConnections</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\Source\Components\Connections\DataConnections\DataConnectionGraphicsItem.h">
+      <Filter>Source\Components\Connections\DataConnections</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\Source\Components\Connections\DataConnections\DataConnectionVisualComponent.h">
+      <Filter>Source\Components\Connections\DataConnections</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\Source\Components\NodePropertyDisplays\AssetIdNodePropertyDisplay.h">
+      <Filter>Source\Components\NodePropertyDisplays</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\Source\Components\NodePropertyDisplays\BooleanNodePropertyDisplay.h">
+      <Filter>Source\Components\NodePropertyDisplays</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\Source\Components\NodePropertyDisplays\ComboBoxNodePropertyDisplay.h">
+      <Filter>Source\Components\NodePropertyDisplays</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\Source\Components\NodePropertyDisplays\NumericNodePropertyDisplay.h">
+      <Filter>Source\Components\NodePropertyDisplays</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\Source\Components\NodePropertyDisplays\EntityIdNodePropertyDisplay.h">
+      <Filter>Source\Components\NodePropertyDisplays</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\Source\Components\NodePropertyDisplays\ReadOnlyNodePropertyDisplay.h">
+      <Filter>Source\Components\NodePropertyDisplays</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\Source\Components\NodePropertyDisplays\StringNodePropertyDisplay.h">
+      <Filter>Source\Components\NodePropertyDisplays</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\Source\Components\NodePropertyDisplays\VectorNodePropertyDisplay.h">
+      <Filter>Source\Components\NodePropertyDisplays</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\Source\Components\Nodes\NodeComponent.h">
+      <Filter>Source\Components\Nodes</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\Source\Components\Nodes\NodeFrameGraphicsWidget.h">
+      <Filter>Source\Components\Nodes</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\Source\Components\Nodes\NodeLayerControllerComponent.h">
+      <Filter>Source\Components\Nodes</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\Source\Components\Nodes\NodeLayoutComponent.h">
+      <Filter>Source\Components\Nodes</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\Source\Components\Nodes\Comment\CommentLayerControllerComponent.h">
+      <Filter>Source\Components\Nodes\Comment</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\Source\Components\Nodes\Comment\CommentNodeFrameComponent.h">
+      <Filter>Source\Components\Nodes\Comment</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\Source\Components\Nodes\Comment\CommentNodeLayoutComponent.h">
+      <Filter>Source\Components\Nodes\Comment</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\Source\Components\Nodes\Comment\CommentNodeTextComponent.h">
+      <Filter>Source\Components\Nodes\Comment</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\Source\Components\Nodes\Comment\CommentTextGraphicsWidget.h">
+      <Filter>Source\Components\Nodes\Comment</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\Source\Components\Nodes\General\GeneralNodeFrameComponent.h">
+      <Filter>Source\Components\Nodes\General</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\Source\Components\Nodes\General\GeneralNodeLayoutComponent.h">
+      <Filter>Source\Components\Nodes\General</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\Source\Components\Nodes\General\GeneralNodeTitleComponent.h">
+      <Filter>Source\Components\Nodes\General</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\Source\Components\Nodes\General\GeneralSlotLayoutComponent.h">
+      <Filter>Source\Components\Nodes\General</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\Source\Components\Nodes\Group\CollapsedNodeGroupComponent.h">
+      <Filter>Source\Components\Nodes\Group</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\Source\Components\Nodes\Group\NodeGroupFrameComponent.h">
+      <Filter>Source\Components\Nodes\Group</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\Source\Components\Nodes\Group\NodeGroupLayerControllerComponent.h">
+      <Filter>Source\Components\Nodes\Group</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\Source\Components\Nodes\Group\NodeGroupLayoutComponent.h">
+      <Filter>Source\Components\Nodes\Group</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\Source\Components\Nodes\Wrapper\WrapperNodeLayoutComponent.h">
+      <Filter>Source\Components\Nodes\Wrapper</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\Source\Components\Slots\SlotComponent.h">
+      <Filter>Source\Components\Slots</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\Source\Components\Slots\SlotConnectionFilterComponent.h">
+      <Filter>Source\Components\Slots</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\Source\Components\Slots\SlotConnectionPin.h">
+      <Filter>Source\Components\Slots</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\Source\Components\Slots\SlotLayoutComponent.h">
+      <Filter>Source\Components\Slots</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\Source\Components\Slots\SlotLayoutItem.h">
+      <Filter>Source\Components\Slots</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\Source\Components\Slots\Data\DataSlotComponent.h">
+      <Filter>Source\Components\Slots\Data</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\Source\Components\Slots\Data\DataSlotConnectionPin.h">
+      <Filter>Source\Components\Slots\Data</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\Source\Components\Slots\Data\DataSlotLayoutComponent.h">
+      <Filter>Source\Components\Slots\Data</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\Source\Components\Slots\Default\DefaultSlotLayoutComponent.h">
+      <Filter>Source\Components\Slots\Default</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\Source\Components\Slots\Execution\ExecutionSlotComponent.h">
+      <Filter>Source\Components\Slots\Execution</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\Source\Components\Slots\Execution\ExecutionSlotConnectionPin.h">
+      <Filter>Source\Components\Slots\Execution</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\Source\Components\Slots\Execution\ExecutionSlotLayoutComponent.h">
+      <Filter>Source\Components\Slots\Execution</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\Source\Components\Slots\Extender\ExtenderSlotComponent.h">
+      <Filter>Source\Components\Slots\Extender</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\Source\Components\Slots\Extender\ExtenderSlotConnectionPin.h">
+      <Filter>Source\Components\Slots\Extender</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\Source\Components\Slots\Extender\ExtenderSlotLayoutComponent.h">
+      <Filter>Source\Components\Slots\Extender</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\Source\Components\Slots\Property\PropertySlotComponent.h">
+      <Filter>Source\Components\Slots\Property</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\Source\Components\Slots\Property\PropertySlotLayoutComponent.h">
+      <Filter>Source\Components\Slots\Property</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\Source\Widgets\GraphCanvasCheckBox.h">
+      <Filter>Source\Widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\Source\Widgets\GraphCanvasComboBox.h">
+      <Filter>Source\Widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\Source\Widgets\GraphCanvasLabel.h">
+      <Filter>Source\Widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\Source\Widgets\NodePropertyDisplayWidget.h">
+      <Filter>Source\Widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\Source\Translation\TranslationAsset.h">
+      <Filter>Source\Translation</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\Source\Translation\TranslationBuilder.h">
+      <Filter>Source\Translation</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\Source\Translation\TranslationBus.h">
+      <Filter>Source\Translation</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\Source\Translation\TranslationDatabase.h">
+      <Filter>Source\Translation</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\Source\Translation\TranslationSerializer.h">
+      <Filter>Source\Translation</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\CMakeFiles\08b24365a84bd27d080f6dd51f42b933\GraphCanvas.Editor_(CONFIG).stamp.rule">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\CMakeLists.txt">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\graphcanvas_files.cmake" />
+    <None Include="C:\Users\lesaelr\o3de\runtime_dependencies\debug\GraphCanvas.Editor_debug.stamp">
+      <Filter>Generated Files</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\runtime_dependencies\profile\GraphCanvas.Editor_profile.stamp">
+      <Filter>Generated Files</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\runtime_dependencies\release\GraphCanvas.Editor_release.stamp">
+      <Filter>Generated Files</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Generated Files">
+      <UniqueIdentifier>{FB9B7D8B-7F05-31D5-AA90-592248EDE1B3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include">
+      <UniqueIdentifier>{E188105A-C8C4-34BB-9809-15E8410EF7F8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\GraphCanvas">
+      <UniqueIdentifier>{62F0ABCF-BCEE-3DF5-AE34-488CFBAD33EE}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\GraphCanvas\Components">
+      <UniqueIdentifier>{2ACF1137-C9C4-3F3E-9EAF-B7A8E2DC9A65}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\GraphCanvas\Components\Connections">
+      <UniqueIdentifier>{BF401C4F-1E53-34AE-B81B-CEB6685F4558}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\GraphCanvas\Components\Connections\ConnectionFilters">
+      <UniqueIdentifier>{59D754E7-7277-3B26-839C-C38555900B85}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\GraphCanvas\Widgets">
+      <UniqueIdentifier>{01635066-12F9-3C0F-93BC-E0F34EC6AA93}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source">
+      <UniqueIdentifier>{F3F0AD47-5F83-373B-A2BF-650D2E4FA3EA}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Components">
+      <UniqueIdentifier>{914C6B5F-184E-399E-8506-2B79CE7A1426}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Components\BookmarkAnchor">
+      <UniqueIdentifier>{BC5397D7-BE1E-33BF-9EF0-0C878DDB503A}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Components\Connections">
+      <UniqueIdentifier>{2BC6276B-020E-39C6-9ADD-0DBB40DD396C}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Components\Connections\DataConnections">
+      <UniqueIdentifier>{2627ADD4-2BDF-32EF-89C5-CBFA895DEE51}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Components\NodePropertyDisplays">
+      <UniqueIdentifier>{4762C4EA-5111-327D-9CCF-2474AA15D31E}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Components\Nodes">
+      <UniqueIdentifier>{6506E664-13EB-3A29-931E-13860C4916B2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Components\Nodes\Comment">
+      <UniqueIdentifier>{7465E719-2F42-3330-A665-233490FEEA44}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Components\Nodes\General">
+      <UniqueIdentifier>{8D16A6A3-4E20-3591-A8C2-D5480381761F}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Components\Nodes\Group">
+      <UniqueIdentifier>{C2212F17-3A82-3EEF-B4FB-5E485E8D2F4E}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Components\Nodes\Wrapper">
+      <UniqueIdentifier>{40951591-7C79-38B8-9334-DBCA4B987A6A}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Components\Slots">
+      <UniqueIdentifier>{4ABAE3F2-125B-382A-867B-A42F3FD5CCF0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Components\Slots\Data">
+      <UniqueIdentifier>{46C163EF-2A8F-3844-8646-336446548307}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Components\Slots\Default">
+      <UniqueIdentifier>{99513565-4AEC-3E8F-A845-20BAD843971A}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Components\Slots\Execution">
+      <UniqueIdentifier>{C4A98610-A1AD-37D9-B7B8-E27E2DBE09A0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Components\Slots\Extender">
+      <UniqueIdentifier>{4FECD700-066B-3D5B-B4C3-FDBD822C6DF7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Components\Slots\Property">
+      <UniqueIdentifier>{8F8A0E72-F450-3551-A062-7C58CC3ADCE2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Translation">
+      <UniqueIdentifier>{01AFF8D5-2219-327B-A7C3-4C80BD38303F}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Widgets">
+      <UniqueIdentifier>{70DF98A7-E967-3130-8A92-59B24BF978E5}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

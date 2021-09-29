@@ -1,0 +1,6 @@
+# CMake generation dependency list for this directory.
+C:/Users/lesaelr/o3de/Gems/Prefab/PrefabBuilder/CMakeLists.txt
+C:/Users/lesaelr/o3de/Gems/Prefab/PrefabBuilder/prefabbuilder_files.cmake
+C:/Users/lesaelr/o3de/Gems/Prefab/PrefabBuilder/prefabbuilder_module_files.cmake
+C:/Users/lesaelr/o3de/Gems/Prefab/PrefabBuilder/prefabbuilder_tests_files.cmake
+C:/Users/lesaelr/o3de/cmake/Platform/Windows/LYTestWrappers_windows.cmake

@@ -1,0 +1,9 @@
+# CMake generation dependency list for this directory.
+C:/Users/lesaelr/o3de/Gems/PythonAssetBuilder/Code/CMakeLists.txt
+C:/Users/lesaelr/o3de/Gems/PythonAssetBuilder/Code/Source/Platform/Common/MSVC/pythonassetbuilder_static_msvc.cmake
+C:/Users/lesaelr/o3de/Gems/PythonAssetBuilder/Code/Source/Platform/Common/MSVC/pythonassetbuilder_tests_msvc.cmake
+C:/Users/lesaelr/o3de/Gems/PythonAssetBuilder/Code/pythonassetbuilder_common_files.cmake
+C:/Users/lesaelr/o3de/Gems/PythonAssetBuilder/Code/pythonassetbuilder_editor_files.cmake
+C:/Users/lesaelr/o3de/Gems/PythonAssetBuilder/Code/pythonassetbuilder_shared_files.cmake
+C:/Users/lesaelr/o3de/Gems/PythonAssetBuilder/Code/pythonassetbuilder_tests_files.cmake
+C:/Users/lesaelr/o3de/cmake/Platform/Windows/LYTestWrappers_windows.cmake

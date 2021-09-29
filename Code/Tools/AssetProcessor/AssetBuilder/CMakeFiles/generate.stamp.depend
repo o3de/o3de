@@ -1,0 +1,4 @@
+# CMake generation dependency list for this directory.
+C:/Users/lesaelr/o3de/Code/Tools/AssetProcessor/AssetBuilder/CMakeLists.txt
+C:/Users/lesaelr/o3de/Code/Tools/AssetProcessor/AssetBuilder/Platform/Windows/asset_builder_windows_files.cmake
+C:/Users/lesaelr/o3de/Code/Tools/AssetProcessor/AssetBuilder/asset_builder_files.cmake

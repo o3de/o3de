@@ -1,0 +1,458 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\PhysX-777cc257\Code\PhysX.Editor.Static_autogen\mocs_compilation_debug.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\PhysX-777cc257\Code\CMakeFiles\PhysX.Editor.Static.dir\Unity\unity_7_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\PhysX-777cc257\Code\CMakeFiles\PhysX.Editor.Static.dir\Unity\unity_6_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\PhysX-777cc257\Code\CMakeFiles\PhysX.Editor.Static.dir\Unity\unity_5_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\PhysX-777cc257\Code\CMakeFiles\PhysX.Editor.Static.dir\Unity\unity_4_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\PhysX-777cc257\Code\CMakeFiles\PhysX.Editor.Static.dir\Unity\unity_3_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\PhysX-777cc257\Code\CMakeFiles\PhysX.Editor.Static.dir\Unity\unity_2_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\PhysX-777cc257\Code\CMakeFiles\PhysX.Editor.Static.dir\Unity\unity_1_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\PhysX-777cc257\Code\CMakeFiles\PhysX.Editor.Static.dir\Unity\unity_0_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Source\ComponentDescriptors.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Source\EditorComponentDescriptors.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Source\EditorRigidBodyComponent.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Source\EditorColliderComponent.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Source\EditorShapeColliderComponent.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Source\EditorForceRegionComponent.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Source\EditorBallJointComponent.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Source\EditorFixedJointComponent.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Source\EditorHingeJointComponent.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Source\EditorJointComponent.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Source\Pipeline\MeshExporter.cpp">
+      <Filter>Source\Pipeline</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Source\Pipeline\MeshGroup.cpp">
+      <Filter>Source\Pipeline</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Source\Pipeline\MeshBehavior.cpp">
+      <Filter>Source\Pipeline</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Source\Pipeline\PrimitiveShapeFitter\PrimitiveShapeFitter.cpp">
+      <Filter>Source\Pipeline\PrimitiveShapeFitter</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Source\Pipeline\PrimitiveShapeFitter\AbstractShapeParameterization.cpp">
+      <Filter>Source\Pipeline\PrimitiveShapeFitter</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Source\Pipeline\PrimitiveShapeFitter\Utils.cpp">
+      <Filter>Source\Pipeline\PrimitiveShapeFitter</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Source\PhysXCharacters\Components\EditorCharacterControllerComponent.cpp">
+      <Filter>Source\PhysXCharacters\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Source\PhysXCharacters\Components\EditorCharacterGameplayComponent.cpp">
+      <Filter>Source\PhysXCharacters\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Editor\ConfigurationWidget.cpp">
+      <Filter>Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Editor\EditorWindow.cpp">
+      <Filter>Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Editor\SettingsWidget.cpp">
+      <Filter>Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Editor\CollisionLayersWidget.cpp">
+      <Filter>Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Editor\CollisionLayerWidget.cpp">
+      <Filter>Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Editor\CollisionGroupWidget.cpp">
+      <Filter>Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Editor\CollisionGroupsWidget.cpp">
+      <Filter>Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Editor\CollisionFilteringWidget.cpp">
+      <Filter>Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Editor\PropertyTypes.cpp">
+      <Filter>Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Editor\MaterialIdWidget.cpp">
+      <Filter>Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Editor\EditorClassConverters.cpp">
+      <Filter>Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Editor\PvdWidget.cpp">
+      <Filter>Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Editor\DocumentationLinkWidget.cpp">
+      <Filter>Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Editor\InertiaPropertyHandler.cpp">
+      <Filter>Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Editor\ConfigStringLineEditCtrl.cpp">
+      <Filter>Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Editor\UniqueStringContainer.cpp">
+      <Filter>Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Editor\ComboBoxEditButtonPair.cpp">
+      <Filter>Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Editor\ColliderComponentMode.cpp">
+      <Filter>Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Editor\ColliderOffsetMode.cpp">
+      <Filter>Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Editor\ColliderBoxMode.cpp">
+      <Filter>Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Editor\ColliderRotationMode.cpp">
+      <Filter>Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Editor\ColliderSphereMode.cpp">
+      <Filter>Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Editor\ColliderCapsuleMode.cpp">
+      <Filter>Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Editor\ColliderAssetScaleMode.cpp">
+      <Filter>Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Editor\DebugDraw.cpp">
+      <Filter>Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Editor\PolygonPrismMeshUtils.cpp">
+      <Filter>Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Editor\EditorJointComponentMode.cpp">
+      <Filter>Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Editor\EditorJointConfiguration.cpp">
+      <Filter>Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Editor\EditorJointTypeDrawer.cpp">
+      <Filter>Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Editor\EditorSubComponentModeAngleCone.cpp">
+      <Filter>Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Editor\EditorSubComponentModeAnglePair.cpp">
+      <Filter>Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Editor\EditorSubComponentModeBase.cpp">
+      <Filter>Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Editor\EditorSubComponentModeLinear.cpp">
+      <Filter>Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Editor\EditorSubComponentModeRotation.cpp">
+      <Filter>Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Editor\EditorSubComponentModeSnap.cpp">
+      <Filter>Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Editor\EditorSubComponentModeSnapPosition.cpp">
+      <Filter>Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Editor\EditorSubComponentModeSnapRotation.cpp">
+      <Filter>Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Editor\EditorSubComponentModeVec3.cpp">
+      <Filter>Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Editor\EditorViewportEntityPicker.cpp">
+      <Filter>Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Editor\Source\Components\EditorSystemComponent.cpp">
+      <Filter>Editor\Source\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Editor\Source\Configuration\PhysXEditorSettingsRegistryManager.cpp">
+      <Filter>Editor\Source\Configuration</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\PhysX-777cc257\Code\PhysX.Editor.Static_autogen\mocs_compilation_profile.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\PhysX-777cc257\Code\PhysX.Editor.Static_autogen\mocs_compilation_release.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Include\PhysX\EditorColliderComponentRequestBus.h">
+      <Filter>Include\PhysX</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Include\PhysX\EditorJointBus.h">
+      <Filter>Include\PhysX</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Source\ComponentDescriptors.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Source\EditorComponentDescriptors.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Source\EditorRigidBodyComponent.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Source\EditorColliderComponent.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Source\EditorShapeColliderComponent.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Source\EditorForceRegionComponent.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Source\EditorBallJointComponent.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Source\EditorFixedJointComponent.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Source\EditorHingeJointComponent.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Source\EditorJointComponent.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Source\Pipeline\MeshExporter.h">
+      <Filter>Source\Pipeline</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Source\Pipeline\MeshGroup.h">
+      <Filter>Source\Pipeline</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Source\Pipeline\MeshBehavior.h">
+      <Filter>Source\Pipeline</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Source\Pipeline\PrimitiveShapeFitter\PrimitiveShapeFitter.h">
+      <Filter>Source\Pipeline\PrimitiveShapeFitter</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Source\Pipeline\PrimitiveShapeFitter\AbstractShapeParameterization.h">
+      <Filter>Source\Pipeline\PrimitiveShapeFitter</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Source\Pipeline\PrimitiveShapeFitter\Utils.h">
+      <Filter>Source\Pipeline\PrimitiveShapeFitter</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Source\PhysXCharacters\Components\EditorCharacterControllerComponent.h">
+      <Filter>Source\PhysXCharacters\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Source\PhysXCharacters\Components\EditorCharacterGameplayComponent.h">
+      <Filter>Source\PhysXCharacters\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Editor\ConfigurationWidget.h">
+      <Filter>Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Editor\EditorWindow.h">
+      <Filter>Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Editor\SettingsWidget.h">
+      <Filter>Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Editor\CollisionLayersWidget.h">
+      <Filter>Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Editor\CollisionLayerWidget.h">
+      <Filter>Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Editor\CollisionGroupWidget.h">
+      <Filter>Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Editor\CollisionGroupsWidget.h">
+      <Filter>Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Editor\CollisionFilteringWidget.h">
+      <Filter>Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Editor\PropertyTypes.h">
+      <Filter>Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Editor\MaterialIdWidget.h">
+      <Filter>Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Editor\EditorClassConverters.h">
+      <Filter>Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Editor\PvdWidget.h">
+      <Filter>Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Editor\DocumentationLinkWidget.h">
+      <Filter>Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Editor\InertiaPropertyHandler.h">
+      <Filter>Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Editor\ConfigStringLineEditCtrl.h">
+      <Filter>Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Editor\UniqueStringContainer.h">
+      <Filter>Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Editor\ComboBoxEditButtonPair.h">
+      <Filter>Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Editor\ColliderComponentMode.h">
+      <Filter>Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Editor\ColliderSubComponentMode.h">
+      <Filter>Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Editor\ColliderOffsetMode.h">
+      <Filter>Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Editor\ColliderBoxMode.h">
+      <Filter>Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Editor\ColliderRotationMode.h">
+      <Filter>Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Editor\ColliderSphereMode.h">
+      <Filter>Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Editor\ColliderCapsuleMode.h">
+      <Filter>Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Editor\ColliderAssetScaleMode.h">
+      <Filter>Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Editor\DebugDraw.h">
+      <Filter>Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Editor\PolygonPrismMeshUtils.h">
+      <Filter>Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Editor\EditorJointComponentMode.h">
+      <Filter>Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Editor\EditorJointConfiguration.h">
+      <Filter>Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Editor\EditorJointTypeDrawer.h">
+      <Filter>Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Editor\EditorJointTypeDrawerBus.h">
+      <Filter>Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Editor\EditorSubComponentModeAngleCone.h">
+      <Filter>Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Editor\EditorSubComponentModeAnglePair.h">
+      <Filter>Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Editor\EditorSubComponentModeBase.h">
+      <Filter>Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Editor\EditorSubComponentModeLinear.h">
+      <Filter>Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Editor\EditorSubComponentModeRotation.h">
+      <Filter>Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Editor\EditorSubComponentModeSnap.h">
+      <Filter>Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Editor\EditorSubComponentModeSnapPosition.h">
+      <Filter>Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Editor\EditorSubComponentModeSnapRotation.h">
+      <Filter>Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Editor\EditorSubComponentModeVec3.h">
+      <Filter>Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Editor\EditorViewportEntityPicker.h">
+      <Filter>Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Editor\Source\Components\EditorSystemComponent.h">
+      <Filter>Editor\Source\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Editor\Source\Configuration\PhysXEditorSettingsRegistryManager.h">
+      <Filter>Editor\Source\Configuration</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\External\PhysX-777cc257\Code\PhysX.Editor.Static_autogen\include\Editor\ui_EditorWindow.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Editor\EditorWindow.ui">
+      <Filter>Editor</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\CMakeLists.txt">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\physx_editor_files.cmake" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Editor">
+      <UniqueIdentifier>{AB7AD22B-4C45-3CDD-8A3C-7A5D74862736}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Editor\Source">
+      <UniqueIdentifier>{A8979465-D2E3-3D39-875C-29D924046239}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Editor\Source\Components">
+      <UniqueIdentifier>{83914014-60CA-3A26-BCAE-CD5027AB7901}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Editor\Source\Configuration">
+      <UniqueIdentifier>{FA7035A5-CEA1-3256-AB81-1942C777E56C}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Generated Files">
+      <UniqueIdentifier>{FB9B7D8B-7F05-31D5-AA90-592248EDE1B3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include">
+      <UniqueIdentifier>{E188105A-C8C4-34BB-9809-15E8410EF7F8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\PhysX">
+      <UniqueIdentifier>{B4820FB8-4526-333E-8510-D888CD8DF9DF}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source">
+      <UniqueIdentifier>{F3F0AD47-5F83-373B-A2BF-650D2E4FA3EA}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\PhysXCharacters">
+      <UniqueIdentifier>{F4E24B45-DB22-375C-8DFD-A65FE9FB445E}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\PhysXCharacters\Components">
+      <UniqueIdentifier>{13C2D1B9-A62B-360E-9FEF-565FB0A23AD9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Pipeline">
+      <UniqueIdentifier>{5FFC77F1-6D46-3907-9866-437683B107D9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Pipeline\PrimitiveShapeFitter">
+      <UniqueIdentifier>{C1B2337E-777B-3000-8D57-0980DE497331}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

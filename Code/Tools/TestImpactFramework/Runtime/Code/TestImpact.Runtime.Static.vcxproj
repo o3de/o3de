@@ -1,0 +1,424 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <PreferredToolArchitecture>x64</PreferredToolArchitecture>
+  </PropertyGroup>
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="debug|x64">
+      <Configuration>debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="profile|x64">
+      <Configuration>profile</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="release|x64">
+      <Configuration>release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{CD63A0B6-9D4A-32D1-8789-986B8960FC61}</ProjectGuid>
+    <WindowsTargetPlatformVersion>10.0.19041.0</WindowsTargetPlatformVersion>
+    <Keyword>Win32Proj</Keyword>
+    <Platform>x64</Platform>
+    <ProjectName>TestImpact.Runtime.Static</ProjectName>
+    <VCProjectUpgraderObjectName>NoUpgrade</VCProjectUpgraderObjectName>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='debug|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v142</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='profile|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v142</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='release|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v142</PlatformToolset>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>10.0.20506.1</_ProjectFileVersion>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='debug|x64'">C:\Users\lesaelr\o3de\lib\debug\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='debug|x64'">TestImpact.Runtime.Static.dir\debug\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='debug|x64'">TestImpact.Runtime.Static</TargetName>
+    <TargetExt Condition="'$(Configuration)|$(Platform)'=='debug|x64'">.lib</TargetExt>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='profile|x64'">C:\Users\lesaelr\o3de\lib\profile\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='profile|x64'">TestImpact.Runtime.Static.dir\profile\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='profile|x64'">TestImpact.Runtime.Static</TargetName>
+    <TargetExt Condition="'$(Configuration)|$(Platform)'=='profile|x64'">.lib</TargetExt>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='release|x64'">C:\Users\lesaelr\o3de\lib\release\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='release|x64'">TestImpact.Runtime.Static.dir\release\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='release|x64'">TestImpact.Runtime.Static</TargetName>
+    <TargetExt Condition="'$(Configuration)|$(Platform)'=='release|x64'">.lib</TargetExt>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='debug|x64'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source;C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Include;C:\Users\lesaelr\o3de\Code\Framework\AzCore\.;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalOptions>%(AdditionalOptions) /Zc:__cplusplus /Zc:lambda /favor:AMD64 /bigobj /RTCsu /experimental:external /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/Lua-5.3.5-rev5-windows/lua/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/RapidJSON-1.1.0-rev1-multiplatform/RapidJSON/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/RapidXML-1.13-rev1-multiplatform/RapidXML/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/zlib-1.2.11-rev2-windows/zlib/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/zstd-1.35-multiplatform/zstd/lib /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/cityhash-1.1-multiplatform/cityhash/src</AdditionalOptions>
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <BufferSecurityCheck>true</BufferSecurityCheck>
+      <CallingConvention>Cdecl</CallingConvention>
+      <ConformanceMode>true</ConformanceMode>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <DiagnosticsFormat>Caret</DiagnosticsFormat>
+      <DisableSpecificWarnings>4201</DisableSpecificWarnings>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <ExternalWarningLevel>TurnOffAllWarnings</ExternalWarningLevel>
+      <FloatingPointModel>Fast</FloatingPointModel>
+      <ForceConformanceInForLoopScope>true</ForceConformanceInForLoopScope>
+      <InlineFunctionExpansion>Disabled</InlineFunctionExpansion>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <Optimization>Disabled</Optimization>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <TreatSpecificWarningsAsErrors>4263;4264;4265;4266;4296;4426;4437;4774;4777;5031;5032;5233</TreatSpecificWarningsAsErrors>
+      <TreatWarningAsError>true</TreatWarningAsError>
+      <UseFullPaths>false</UseFullPaths>
+      <WarningLevel>Level4</WarningLevel>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);_HAS_EXCEPTIONS=0;_DEBUG;AZ_DEBUG_BUILD=1;AZ_ENABLE_TRACING;AZ_ENABLE_DEBUG_TOOLS;AZ_BUILD_CONFIGURATION_TYPE="debug";_ENABLE_EXTENDED_ALIGNED_STORAGE;_WIN32;WIN32;_WIN64;WIN64;NOMINMAX;CMAKE_INTDIR="debug"</PreprocessorDefinitions>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);_DEBUG;_HAS_EXCEPTIONS=0;AZ_DEBUG_BUILD=1;AZ_ENABLE_TRACING;AZ_ENABLE_DEBUG_TOOLS;AZ_BUILD_CONFIGURATION_TYPE=\"debug\";_ENABLE_EXTENDED_ALIGNED_STORAGE;_WIN32;WIN32;_WIN64;WIN64;NOMINMAX;CMAKE_INTDIR=\"debug\"</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source;C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Include;C:\Users\lesaelr\o3de\Code\Framework\AzCore\.;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+    </ResourceCompile>
+    <Midl>
+      <AdditionalIncludeDirectories>C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source;C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Include;C:\Users\lesaelr\o3de\Code\Framework\AzCore\.;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+    <Lib>
+      <AdditionalOptions>%(AdditionalOptions) /machine:x64 /IGNORE:4099</AdditionalOptions>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <TargetMachine>MachineX64</TargetMachine>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='profile|x64'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source;C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Include;C:\Users\lesaelr\o3de\Code\Framework\AzCore\.;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalOptions>%(AdditionalOptions) /Zc:__cplusplus /Zc:lambda /favor:AMD64 /bigobj /experimental:external /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/Lua-5.3.5-rev5-windows/lua/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/RapidJSON-1.1.0-rev1-multiplatform/RapidJSON/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/RapidXML-1.13-rev1-multiplatform/RapidXML/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/zlib-1.2.11-rev2-windows/zlib/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/zstd-1.35-multiplatform/zstd/lib /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/cityhash-1.1-multiplatform/cityhash/src</AdditionalOptions>
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <CallingConvention>Cdecl</CallingConvention>
+      <ConformanceMode>true</ConformanceMode>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <DiagnosticsFormat>Caret</DiagnosticsFormat>
+      <DisableSpecificWarnings>4201</DisableSpecificWarnings>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <ExternalWarningLevel>TurnOffAllWarnings</ExternalWarningLevel>
+      <FloatingPointModel>Fast</FloatingPointModel>
+      <ForceConformanceInForLoopScope>true</ForceConformanceInForLoopScope>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <Optimization>MaxSpeed</Optimization>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <RemoveUnreferencedCodeData>true</RemoveUnreferencedCodeData>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <StringPooling>true</StringPooling>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <TreatSpecificWarningsAsErrors>4263;4264;4265;4266;4296;4426;4437;4774;4777;5031;5032;5233</TreatSpecificWarningsAsErrors>
+      <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
+      <TreatWarningAsError>true</TreatWarningAsError>
+      <UseFullPaths>false</UseFullPaths>
+      <WarningLevel>Level4</WarningLevel>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);_HAS_EXCEPTIONS=0;_PROFILE;PROFILE;NDEBUG;AZ_ENABLE_TRACING;AZ_ENABLE_DEBUG_TOOLS;AZ_BUILD_CONFIGURATION_TYPE="profile";_ENABLE_EXTENDED_ALIGNED_STORAGE;_WIN32;WIN32;_WIN64;WIN64;NOMINMAX;CMAKE_INTDIR="profile"</PreprocessorDefinitions>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);_HAS_EXCEPTIONS=0;_PROFILE;PROFILE;NDEBUG;AZ_ENABLE_TRACING;AZ_ENABLE_DEBUG_TOOLS;AZ_BUILD_CONFIGURATION_TYPE=\"profile\";_ENABLE_EXTENDED_ALIGNED_STORAGE;_WIN32;WIN32;_WIN64;WIN64;NOMINMAX;CMAKE_INTDIR=\"profile\"</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source;C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Include;C:\Users\lesaelr\o3de\Code\Framework\AzCore\.;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+    </ResourceCompile>
+    <Midl>
+      <AdditionalIncludeDirectories>C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source;C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Include;C:\Users\lesaelr\o3de\Code\Framework\AzCore\.;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+    <Lib>
+      <AdditionalOptions>%(AdditionalOptions) /machine:x64 /IGNORE:4099</AdditionalOptions>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <TargetMachine>MachineX64</TargetMachine>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='release|x64'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source;C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Include;C:\Users\lesaelr\o3de\Code\Framework\AzCore\.;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalOptions>%(AdditionalOptions) /Zc:__cplusplus /Zc:lambda /favor:AMD64 /bigobj /experimental:external /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/Lua-5.3.5-rev5-windows/lua/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/RapidJSON-1.1.0-rev1-multiplatform/RapidJSON/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/RapidXML-1.13-rev1-multiplatform/RapidXML/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/zlib-1.2.11-rev2-windows/zlib/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/zstd-1.35-multiplatform/zstd/lib /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/cityhash-1.1-multiplatform/cityhash/src</AdditionalOptions>
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <CallingConvention>Cdecl</CallingConvention>
+      <ConformanceMode>true</ConformanceMode>
+      <DiagnosticsFormat>Caret</DiagnosticsFormat>
+      <DisableSpecificWarnings>4201</DisableSpecificWarnings>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <ExternalWarningLevel>TurnOffAllWarnings</ExternalWarningLevel>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <FloatingPointModel>Fast</FloatingPointModel>
+      <ForceConformanceInForLoopScope>true</ForceConformanceInForLoopScope>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <OmitFramePointers>true</OmitFramePointers>
+      <Optimization>Full</Optimization>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <TreatSpecificWarningsAsErrors>4263;4264;4265;4266;4296;4426;4437;4774;4777;5031;5032;5233</TreatSpecificWarningsAsErrors>
+      <TreatWarningAsError>true</TreatWarningAsError>
+      <UseFullPaths>false</UseFullPaths>
+      <WarningLevel>Level4</WarningLevel>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);_HAS_EXCEPTIONS=0;_RELEASE;RELEASE;NDEBUG;AZ_BUILD_CONFIGURATION_TYPE="release";_ENABLE_EXTENDED_ALIGNED_STORAGE;_WIN32;WIN32;_WIN64;WIN64;NOMINMAX;CMAKE_INTDIR="release"</PreprocessorDefinitions>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+      <DebugInformationFormat>
+      </DebugInformationFormat>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);_HAS_EXCEPTIONS=0;_RELEASE;RELEASE;NDEBUG;AZ_BUILD_CONFIGURATION_TYPE=\"release\";_ENABLE_EXTENDED_ALIGNED_STORAGE;_WIN32;WIN32;_WIN64;WIN64;NOMINMAX;CMAKE_INTDIR=\"release\"</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source;C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Include;C:\Users\lesaelr\o3de\Code\Framework\AzCore\.;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+    </ResourceCompile>
+    <Midl>
+      <AdditionalIncludeDirectories>C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source;C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Include;C:\Users\lesaelr\o3de\Code\Framework\AzCore\.;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+    <Lib>
+      <AdditionalOptions>%(AdditionalOptions) /machine:x64 /IGNORE:4099</AdditionalOptions>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <TargetMachine>MachineX64</TargetMachine>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\CMakeLists.txt">
+      <UseUtf8Encoding>Always</UseUtf8Encoding>
+      <Message Condition="'$(Configuration)|$(Platform)'=='debug|x64'">Building Custom Rule C:/Users/lesaelr/o3de/Code/Tools/TestImpactFramework/Runtime/Code/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='debug|x64'">setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SC:/Users/lesaelr/o3de -BC:/Users/lesaelr/o3de --check-stamp-file C:/Users/lesaelr/o3de/Code/Tools/TestImpactFramework/Runtime/Code/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='debug|x64'">C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\Platform\Common\MSVC\testimpactframework_msvc.cmake;C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\Platform\Windows\platform_windows_files.cmake;C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\testimpactframework_runtime_files.cmake;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='debug|x64'">C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='debug|x64'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='profile|x64'">Building Custom Rule C:/Users/lesaelr/o3de/Code/Tools/TestImpactFramework/Runtime/Code/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='profile|x64'">setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SC:/Users/lesaelr/o3de -BC:/Users/lesaelr/o3de --check-stamp-file C:/Users/lesaelr/o3de/Code/Tools/TestImpactFramework/Runtime/Code/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='profile|x64'">C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\Platform\Common\MSVC\testimpactframework_msvc.cmake;C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\Platform\Windows\platform_windows_files.cmake;C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\testimpactframework_runtime_files.cmake;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='profile|x64'">C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='profile|x64'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='release|x64'">Building Custom Rule C:/Users/lesaelr/o3de/Code/Tools/TestImpactFramework/Runtime/Code/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='release|x64'">setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SC:/Users/lesaelr/o3de -BC:/Users/lesaelr/o3de --check-stamp-file C:/Users/lesaelr/o3de/Code/Tools/TestImpactFramework/Runtime/Code/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='release|x64'">C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\Platform\Common\MSVC\testimpactframework_msvc.cmake;C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\Platform\Windows\platform_windows_files.cmake;C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\testimpactframework_runtime_files.cmake;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='release|x64'">C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='release|x64'">false</LinkObjects>
+    </CustomBuild>
+  </ItemGroup>
+  <PropertyGroup>
+    <EnableUnitySupport>true</EnableUnitySupport>
+  </PropertyGroup>
+  <ItemGroup>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\CMakeFiles\TestImpact.Runtime.Static.dir\Unity\unity_6_cxx.cxx" IncludeInUnityFile="false" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Tools/TestImpactFramework/Runtime/Code/CMakeFiles/TestImpact.Runtime.Static.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\CMakeFiles\TestImpact.Runtime.Static.dir\Unity\unity_5_cxx.cxx" IncludeInUnityFile="false" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Tools/TestImpactFramework/Runtime/Code/CMakeFiles/TestImpact.Runtime.Static.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\CMakeFiles\TestImpact.Runtime.Static.dir\Unity\unity_4_cxx.cxx" IncludeInUnityFile="false" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Tools/TestImpactFramework/Runtime/Code/CMakeFiles/TestImpact.Runtime.Static.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\CMakeFiles\TestImpact.Runtime.Static.dir\Unity\unity_3_cxx.cxx" IncludeInUnityFile="false" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Tools/TestImpactFramework/Runtime/Code/CMakeFiles/TestImpact.Runtime.Static.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\CMakeFiles\TestImpact.Runtime.Static.dir\Unity\unity_2_cxx.cxx" IncludeInUnityFile="false" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Tools/TestImpactFramework/Runtime/Code/CMakeFiles/TestImpact.Runtime.Static.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\CMakeFiles\TestImpact.Runtime.Static.dir\Unity\unity_1_cxx.cxx" IncludeInUnityFile="false" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Tools/TestImpactFramework/Runtime/Code/CMakeFiles/TestImpact.Runtime.Static.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\CMakeFiles\TestImpact.Runtime.Static.dir\Unity\unity_0_cxx.cxx" IncludeInUnityFile="false" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Tools/TestImpactFramework/Runtime/Code/CMakeFiles/TestImpact.Runtime.Static.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Include\TestImpactFramework\TestImpactException.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Include\TestImpactFramework\TestImpactRepoPath.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Include\TestImpactFramework\TestImpactRuntime.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Include\TestImpactFramework\TestImpactRuntimeException.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Include\TestImpactFramework\TestImpactConfiguration.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Include\TestImpactFramework\TestImpactConfigurationException.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Include\TestImpactFramework\TestImpactChangeList.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Include\TestImpactFramework\TestImpactChangeListSerializer.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Include\TestImpactFramework\TestImpactChangeListException.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Include\TestImpactFramework\TestImpactPolicy.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Include\TestImpactFramework\TestImpactTestSequence.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Include\TestImpactFramework\TestImpactClientTestSelection.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Include\TestImpactFramework\TestImpactClientTestRun.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Include\TestImpactFramework\TestImpactClientSequenceReport.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Include\TestImpactFramework\TestImpactUtils.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Include\TestImpactFramework\TestImpactClientSequenceReportSerializer.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Include\TestImpactFramework\TestImpactSequenceReportException.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\Artifact\TestImpactArtifactException.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\Artifact\Factory\TestImpactBuildTargetDescriptorFactory.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Tools/TestImpactFramework/Runtime/Code/CMakeFiles/TestImpact.Runtime.Static.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\Artifact\Factory\TestImpactBuildTargetDescriptorFactory.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\Artifact\Factory\TestImpactTestEnumerationSuiteFactory.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Tools/TestImpactFramework/Runtime/Code/CMakeFiles/TestImpact.Runtime.Static.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\Artifact\Factory\TestImpactTestEnumerationSuiteFactory.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\Artifact\Factory\TestImpactTestRunSuiteFactory.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Tools/TestImpactFramework/Runtime/Code/CMakeFiles/TestImpact.Runtime.Static.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\Artifact\Factory\TestImpactTestRunSuiteFactory.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\Artifact\Factory\TestImpactTestTargetMetaMapFactory.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Tools/TestImpactFramework/Runtime/Code/CMakeFiles/TestImpact.Runtime.Static.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\Artifact\Factory\TestImpactTestTargetMetaMapFactory.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\Artifact\Factory\TestImpactModuleCoverageFactory.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Tools/TestImpactFramework/Runtime/Code/CMakeFiles/TestImpact.Runtime.Static.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\Artifact\Factory\TestImpactModuleCoverageFactory.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\Artifact\Static\TestImpactBuildTargetDescriptor.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Tools/TestImpactFramework/Runtime/Code/CMakeFiles/TestImpact.Runtime.Static.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\Artifact\Static\TestImpactBuildTargetDescriptor.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\Artifact\Static\TestImpactTargetDescriptorCompiler.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Tools/TestImpactFramework/Runtime/Code/CMakeFiles/TestImpact.Runtime.Static.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\Artifact\Static\TestImpactTargetDescriptorCompiler.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\Artifact\Static\TestImpactProductionTargetDescriptor.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Tools/TestImpactFramework/Runtime/Code/CMakeFiles/TestImpact.Runtime.Static.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\Artifact\Static\TestImpactProductionTargetDescriptor.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\Artifact\Static\TestImpactTestTargetMeta.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\Artifact\Static\TestImpactTestTargetDescriptor.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Tools/TestImpactFramework/Runtime/Code/CMakeFiles/TestImpact.Runtime.Static.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\Artifact\Static\TestImpactTestTargetDescriptor.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\Artifact\Static\TestImpactDependencyGraphData.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\Artifact\Dynamic\TestImpactTestEnumerationSuite.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\Artifact\Dynamic\TestImpactTestRunSuite.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\Artifact\Dynamic\TestImpactTestSuite.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\Artifact\Dynamic\TestImpactCoverage.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\Process\TestImpactProcess.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Tools/TestImpactFramework/Runtime/Code/CMakeFiles/TestImpact.Runtime.Static.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\Process\TestImpactProcess.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\Process\TestImpactProcessException.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\Process\TestImpactProcessInfo.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Tools/TestImpactFramework/Runtime/Code/CMakeFiles/TestImpact.Runtime.Static.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\Process\TestImpactProcessInfo.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\Process\TestImpactProcessLauncher.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\Process\JobRunner\TestImpactProcessJob.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\Process\JobRunner\TestImpactProcessJobInfo.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\Process\JobRunner\TestImpactProcessJobMeta.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Tools/TestImpactFramework/Runtime/Code/CMakeFiles/TestImpact.Runtime.Static.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\Process\JobRunner\TestImpactProcessJobMeta.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\Process\JobRunner\TestImpactProcessJobRunner.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\Process\Scheduler\TestImpactProcessScheduler.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Tools/TestImpactFramework/Runtime/Code/CMakeFiles/TestImpact.Runtime.Static.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\Process\Scheduler\TestImpactProcessScheduler.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\Dependency\TestImpactDynamicDependencyMap.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Tools/TestImpactFramework/Runtime/Code/CMakeFiles/TestImpact.Runtime.Static.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\Dependency\TestImpactDynamicDependencyMap.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\Dependency\TestImpactChangeDependencyList.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Tools/TestImpactFramework/Runtime/Code/CMakeFiles/TestImpact.Runtime.Static.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\Dependency\TestImpactChangeDependencyList.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\Dependency\TestImpactDependencyException.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\Dependency\TestImpactSourceDependency.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\Dependency\TestImpactSourceDependency.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Tools/TestImpactFramework/Runtime/Code/CMakeFiles/TestImpact.Runtime.Static.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\Dependency\TestImpactTestSelectorAndPrioritizer.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\Dependency\TestImpactTestSelectorAndPrioritizer.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Tools/TestImpactFramework/Runtime/Code/CMakeFiles/TestImpact.Runtime.Static.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\Dependency\TestImpactSourceCoveringTestsList.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\Dependency\TestImpactSourceCoveringTestsList.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Tools/TestImpactFramework/Runtime/Code/CMakeFiles/TestImpact.Runtime.Static.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\Dependency\TestImpactSourceCoveringTestsSerializer.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Tools/TestImpactFramework/Runtime/Code/CMakeFiles/TestImpact.Runtime.Static.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\Dependency\TestImpactSourceCoveringTestsSerializer.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\Target\TestImpactBuildTarget.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Tools/TestImpactFramework/Runtime/Code/CMakeFiles/TestImpact.Runtime.Static.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\Target\TestImpactBuildTarget.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\Target\TestImpactBuildTargetList.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\Target\TestImpactProductionTarget.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Tools/TestImpactFramework/Runtime/Code/CMakeFiles/TestImpact.Runtime.Static.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\Target\TestImpactProductionTarget.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\Target\TestImpactProductionTargetList.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\Target\TestImpactTargetException.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\Target\TestImpactTestTarget.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Tools/TestImpactFramework/Runtime/Code/CMakeFiles/TestImpact.Runtime.Static.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\Target\TestImpactTestTarget.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\Target\TestImpactTestTargetList.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\TestEngine\Enumeration\TestImpactTestEnumeration.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\TestEngine\Enumeration\TestImpactTestEnumerationSerializer.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Tools/TestImpactFramework/Runtime/Code/CMakeFiles/TestImpact.Runtime.Static.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\TestEngine\Enumeration\TestImpactTestEnumerationSerializer.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\TestEngine\Enumeration\TestImpactTestEnumerator.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Tools/TestImpactFramework/Runtime/Code/CMakeFiles/TestImpact.Runtime.Static.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\TestEngine\Enumeration\TestImpactTestEnumerator.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\TestEngine\Run\TestImpactTestRunSerializer.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Tools/TestImpactFramework/Runtime/Code/CMakeFiles/TestImpact.Runtime.Static.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\TestEngine\Run\TestImpactTestRunSerializer.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\TestEngine\Run\TestImpactTestRunner.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Tools/TestImpactFramework/Runtime/Code/CMakeFiles/TestImpact.Runtime.Static.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\TestEngine\Run\TestImpactTestRunner.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\TestEngine\Run\TestImpactInstrumentedTestRunner.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Tools/TestImpactFramework/Runtime/Code/CMakeFiles/TestImpact.Runtime.Static.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\TestEngine\Run\TestImpactInstrumentedTestRunner.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\TestEngine\Run\TestImpactTestRun.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Tools/TestImpactFramework/Runtime/Code/CMakeFiles/TestImpact.Runtime.Static.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\TestEngine\Run\TestImpactTestRun.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\TestEngine\Run\TestImpactTestRunJobData.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Tools/TestImpactFramework/Runtime/Code/CMakeFiles/TestImpact.Runtime.Static.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\TestEngine\Run\TestImpactTestRunJobData.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\TestEngine\Run\TestImpactTestCoverage.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Tools/TestImpactFramework/Runtime/Code/CMakeFiles/TestImpact.Runtime.Static.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\TestEngine\Run\TestImpactTestCoverage.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\TestEngine\JobRunner\TestImpactTestJobRunner.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\TestEngine\JobRunner\TestImpactTestJobInfoGenerator.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Tools/TestImpactFramework/Runtime/Code/CMakeFiles/TestImpact.Runtime.Static.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\TestEngine\JobRunner\TestImpactTestJobInfoGenerator.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\TestEngine\JobRunner\TestImpactTestTargetExtension.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\TestEngine\TestImpactTestEngineJobFailure.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Tools/TestImpactFramework/Runtime/Code/CMakeFiles/TestImpact.Runtime.Static.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\TestEngine\TestImpactTestEngineJobFailure.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\TestEngine\TestImpactTestSuiteContainer.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\TestEngine\TestImpactTestEngine.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Tools/TestImpactFramework/Runtime/Code/CMakeFiles/TestImpact.Runtime.Static.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\TestEngine\TestImpactTestEngine.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\TestEngine\TestImpactTestEngineJob.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Tools/TestImpactFramework/Runtime/Code/CMakeFiles/TestImpact.Runtime.Static.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\TestEngine\TestImpactTestEngineJob.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\TestEngine\TestImpactTestEngineEnumeration.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Tools/TestImpactFramework/Runtime/Code/CMakeFiles/TestImpact.Runtime.Static.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\TestEngine\TestImpactTestEngineEnumeration.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\TestEngine\TestImpactTestEngineRegularRun.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Tools/TestImpactFramework/Runtime/Code/CMakeFiles/TestImpact.Runtime.Static.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\TestEngine\TestImpactTestEngineRegularRun.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\TestEngine\TestImpactTestEngineInstrumentedRun.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Tools/TestImpactFramework/Runtime/Code/CMakeFiles/TestImpact.Runtime.Static.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\TestEngine\TestImpactTestEngineInstrumentedRun.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\TestEngine\TestImpactTestEngineException.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\TestImpactException.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Tools/TestImpactFramework/Runtime/Code/CMakeFiles/TestImpact.Runtime.Static.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\TestImpactRuntime.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Tools/TestImpactFramework/Runtime/Code/CMakeFiles/TestImpact.Runtime.Static.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\TestImpactRuntimeUtils.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Tools/TestImpactFramework/Runtime/Code/CMakeFiles/TestImpact.Runtime.Static.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\TestImpactRuntimeUtils.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\TestImpactClientTestSelection.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Tools/TestImpactFramework/Runtime/Code/CMakeFiles/TestImpact.Runtime.Static.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\TestImpactClientTestRun.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Tools/TestImpactFramework/Runtime/Code/CMakeFiles/TestImpact.Runtime.Static.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\TestImpactClientSequenceReport.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Tools/TestImpactFramework/Runtime/Code/CMakeFiles/TestImpact.Runtime.Static.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\TestImpactChangeListSerializer.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Tools/TestImpactFramework/Runtime/Code/CMakeFiles/TestImpact.Runtime.Static.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\TestImpactClientSequenceReportSerializer.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Tools/TestImpactFramework/Runtime/Code/CMakeFiles/TestImpact.Runtime.Static.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\TestImpactRepoPath.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Tools/TestImpactFramework/Runtime/Code/CMakeFiles/TestImpact.Runtime.Static.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\TestImpactUtils.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Tools/TestImpactFramework/Runtime/Code/CMakeFiles/TestImpact.Runtime.Static.dir/Unity" />
+    <None Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\testimpactframework_runtime_files.cmake">
+    </None>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\Platform\Windows\Process\TestImpactWin32_ProcessLauncher.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Tools/TestImpactFramework/Runtime/Code/CMakeFiles/TestImpact.Runtime.Static.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\Platform\Windows\Process\TestImpactWin32_Process.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Tools/TestImpactFramework/Runtime/Code/CMakeFiles/TestImpact.Runtime.Static.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\Platform\Windows\Process\TestImpactWin32_Process.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\Platform\Windows\Process\TestImpactWin32_Handle.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\Platform\Windows\Process\TestImpactWin32_Pipe.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Tools/TestImpactFramework/Runtime/Code/CMakeFiles/TestImpact.Runtime.Static.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\Platform\Windows\Process\TestImpactWin32_Pipe.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\Platform\Windows\TestEngine\JobRunner\TestImpactWin32_TestTargetExtension.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Tools/TestImpactFramework/Runtime/Code/CMakeFiles/TestImpact.Runtime.Static.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\Platform\Windows\TestEngine\TestImpactWin32_TestEngineJobFailure.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Tools/TestImpactFramework/Runtime/Code/CMakeFiles/TestImpact.Runtime.Static.dir/Unity" />
+    <None Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\Platform\Windows\platform_windows_files.cmake">
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\Platform\Common\MSVC\testimpactframework_msvc.cmake">
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\ZERO_CHECK.vcxproj">
+      <Project>{CDE32B4E-8490-3FC5-A3F2-976A0A5DE45E}</Project>
+      <Name>ZERO_CHECK</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore.vcxproj">
+      <Project>{8AC0D8DF-6487-39C7-A5F3-F77355B1ACD9}</Project>
+      <Name>AzCore</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

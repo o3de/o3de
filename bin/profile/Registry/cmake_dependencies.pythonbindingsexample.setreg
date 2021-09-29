@@ -1,0 +1,13 @@
+{
+    "Amazon":
+    {
+        "Gems":
+        {
+            "EditorPythonBindings.Editor":
+            {
+                "Modules":["EditorPythonBindings.Editor.dll"],
+                "SourcePaths":["Gems/EditorPythonBindings"]
+            }
+        }
+    }
+}

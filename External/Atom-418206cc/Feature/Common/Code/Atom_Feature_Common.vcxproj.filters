@@ -1,0 +1,1602 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\CommonModule.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\CMakeFiles\08b24365a84bd27d080f6dd51f42b933\Atom_Feature_Common_(CONFIG).stamp.rule">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\CMakeLists.txt">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\atom_feature_common_shared_files.cmake" />
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Materials\ReflectionProbe\ReflectionProbeVisualization.materialtype">
+      <Filter>..\Assets\Materials\ReflectionProbe</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Materials\Special\ShadowCatcher.azsl">
+      <Filter>..\Assets\Materials\Special</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Materials\Special\ShadowCatcher.materialtype">
+      <Filter>..\Assets\Materials\Special</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Materials\Special\ShadowCatcher.shader">
+      <Filter>..\Assets\Materials\Special</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Materials\Types\EnhancedPBR.materialtype">
+      <Filter>..\Assets\Materials\Types</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Materials\Types\EnhancedPBR_Common.azsli">
+      <Filter>..\Assets\Materials\Types</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Materials\Types\EnhancedPBR_DepthPass_WithPS.azsl">
+      <Filter>..\Assets\Materials\Types</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Materials\Types\EnhancedPBR_DepthPass_WithPS.shader">
+      <Filter>..\Assets\Materials\Types</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Materials\Types\EnhancedPBR_ForwardPass.azsl">
+      <Filter>..\Assets\Materials\Types</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Materials\Types\EnhancedPBR_ForwardPass.shader">
+      <Filter>..\Assets\Materials\Types</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Materials\Types\EnhancedPBR_ForwardPass_EDS.shader">
+      <Filter>..\Assets\Materials\Types</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Materials\Types\EnhancedPBR_Shadowmap_WithPS.azsl">
+      <Filter>..\Assets\Materials\Types</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Materials\Types\EnhancedPBR_Shadowmap_WithPS.shader">
+      <Filter>..\Assets\Materials\Types</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Materials\Types\EnhancedPBR_SubsurfaceState.lua">
+      <Filter>..\Assets\Materials\Types</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Materials\Types\Skin.azsl">
+      <Filter>..\Assets\Materials\Types</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Materials\Types\Skin.materialtype">
+      <Filter>..\Assets\Materials\Types</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Materials\Types\Skin.shader">
+      <Filter>..\Assets\Materials\Types</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Materials\Types\Skin_Common.azsli">
+      <Filter>..\Assets\Materials\Types</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Materials\Types\Skin_WrinkleMaps.lua">
+      <Filter>..\Assets\Materials\Types</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Materials\Types\StandardMultilayerPBR.materialtype">
+      <Filter>..\Assets\Materials\Types</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Materials\Types\StandardMultilayerPBR_ClearCoatEnableFeature.lua">
+      <Filter>..\Assets\Materials\Types</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Materials\Types\StandardMultilayerPBR_Common.azsli">
+      <Filter>..\Assets\Materials\Types</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Materials\Types\StandardMultilayerPBR_DepthPass_WithPS.azsl">
+      <Filter>..\Assets\Materials\Types</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Materials\Types\StandardMultilayerPBR_DepthPass_WithPS.shader">
+      <Filter>..\Assets\Materials\Types</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Materials\Types\StandardMultilayerPBR_Displacement.lua">
+      <Filter>..\Assets\Materials\Types</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Materials\Types\StandardMultilayerPBR_ForwardPass.azsl">
+      <Filter>..\Assets\Materials\Types</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Materials\Types\StandardMultilayerPBR_ForwardPass.shader">
+      <Filter>..\Assets\Materials\Types</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Materials\Types\StandardMultilayerPBR_ForwardPass_EDS.shader">
+      <Filter>..\Assets\Materials\Types</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Materials\Types\StandardMultilayerPBR_LayerEnable.lua">
+      <Filter>..\Assets\Materials\Types</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Materials\Types\StandardMultilayerPBR_ShaderEnable.lua">
+      <Filter>..\Assets\Materials\Types</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Materials\Types\StandardMultilayerPBR_Shadowmap_WithPS.azsl">
+      <Filter>..\Assets\Materials\Types</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Materials\Types\StandardMultilayerPBR_Shadowmap_WithPS.shader">
+      <Filter>..\Assets\Materials\Types</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Materials\Types\StandardPBR.materialtype">
+      <Filter>..\Assets\Materials\Types</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Materials\Types\StandardPBR_ClearCoatEnableFeature.lua">
+      <Filter>..\Assets\Materials\Types</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Materials\Types\StandardPBR_ClearCoatState.lua">
+      <Filter>..\Assets\Materials\Types</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Materials\Types\StandardPBR_Common.azsli">
+      <Filter>..\Assets\Materials\Types</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Materials\Types\StandardPBR_DepthPass_WithPS.azsl">
+      <Filter>..\Assets\Materials\Types</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Materials\Types\StandardPBR_DepthPass_WithPS.shader">
+      <Filter>..\Assets\Materials\Types</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Materials\Types\StandardPBR_EmissiveState.lua">
+      <Filter>..\Assets\Materials\Types</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Materials\Types\StandardPBR_ForwardPass.azsl">
+      <Filter>..\Assets\Materials\Types</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Materials\Types\StandardPBR_ForwardPass.shader">
+      <Filter>..\Assets\Materials\Types</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Materials\Types\StandardPBR_ForwardPass_EDS.shader">
+      <Filter>..\Assets\Materials\Types</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Materials\Types\StandardPBR_HandleOpacityDoubleSided.lua">
+      <Filter>..\Assets\Materials\Types</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Materials\Types\StandardPBR_HandleOpacityMode.lua">
+      <Filter>..\Assets\Materials\Types</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Materials\Types\StandardPBR_LowEndForward.azsl">
+      <Filter>..\Assets\Materials\Types</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Materials\Types\StandardPBR_LowEndForward.shader">
+      <Filter>..\Assets\Materials\Types</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Materials\Types\StandardPBR_LowEndForward_EDS.shader">
+      <Filter>..\Assets\Materials\Types</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Materials\Types\StandardPBR_ParallaxState.lua">
+      <Filter>..\Assets\Materials\Types</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Materials\Types\StandardPBR_Roughness.lua">
+      <Filter>..\Assets\Materials\Types</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Materials\Types\StandardPBR_ShaderEnable.lua">
+      <Filter>..\Assets\Materials\Types</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Materials\Types\StandardPBR_Shadowmap_WithPS.azsl">
+      <Filter>..\Assets\Materials\Types</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Materials\Types\StandardPBR_Shadowmap_WithPS.shader">
+      <Filter>..\Assets\Materials\Types</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Materials\Types\MaterialInputs\AlphaInput.azsli">
+      <Filter>..\Assets\Materials\Types\MaterialInputs</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Materials\Types\MaterialInputs\BaseColorInput.azsli">
+      <Filter>..\Assets\Materials\Types\MaterialInputs</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Materials\Types\MaterialInputs\ClearCoatInput.azsli">
+      <Filter>..\Assets\Materials\Types\MaterialInputs</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Materials\Types\MaterialInputs\DetailMapsCommonFunctor.lua">
+      <Filter>..\Assets\Materials\Types\MaterialInputs</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Materials\Types\MaterialInputs\DetailMapsInput.azsli">
+      <Filter>..\Assets\Materials\Types\MaterialInputs</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Materials\Types\MaterialInputs\EmissiveInput.azsli">
+      <Filter>..\Assets\Materials\Types\MaterialInputs</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Materials\Types\MaterialInputs\MetallicInput.azsli">
+      <Filter>..\Assets\Materials\Types\MaterialInputs</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Materials\Types\MaterialInputs\NormalInput.azsli">
+      <Filter>..\Assets\Materials\Types\MaterialInputs</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Materials\Types\MaterialInputs\OcclusionInput.azsli">
+      <Filter>..\Assets\Materials\Types\MaterialInputs</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Materials\Types\MaterialInputs\ParallaxInput.azsli">
+      <Filter>..\Assets\Materials\Types\MaterialInputs</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Materials\Types\MaterialInputs\RoughnessInput.azsli">
+      <Filter>..\Assets\Materials\Types\MaterialInputs</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Materials\Types\MaterialInputs\SpecularInput.azsli">
+      <Filter>..\Assets\Materials\Types\MaterialInputs</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Materials\Types\MaterialInputs\SubsurfaceInput.azsli">
+      <Filter>..\Assets\Materials\Types\MaterialInputs</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Materials\Types\MaterialInputs\TransmissionInput.azsli">
+      <Filter>..\Assets\Materials\Types\MaterialInputs</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Materials\Types\MaterialInputs\UvSetCount.azsli">
+      <Filter>..\Assets\Materials\Types\MaterialInputs</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Passes\AuxGeom.pass">
+      <Filter>..\Assets\Passes</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Passes\BlendColorGradingLuts.pass">
+      <Filter>..\Assets\Passes</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Passes\Bloom.pass">
+      <Filter>..\Assets\Passes</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Passes\BloomBlur.pass">
+      <Filter>..\Assets\Passes</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Passes\BloomComposite.pass">
+      <Filter>..\Assets\Passes</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Passes\BloomDownsample.pass">
+      <Filter>..\Assets\Passes</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Passes\BRDFTexture.pass">
+      <Filter>..\Assets\Passes</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Passes\BRDFTexturePipeline.pass">
+      <Filter>..\Assets\Passes</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Passes\CameraMotionVector.pass">
+      <Filter>..\Assets\Passes</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Passes\CascadedShadowmaps.pass">
+      <Filter>..\Assets\Passes</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Passes\CheckerboardResolveColor.pass">
+      <Filter>..\Assets\Passes</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Passes\CheckerboardResolveDepth.pass">
+      <Filter>..\Assets\Passes</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Passes\HDRColorGrading.pass">
+      <Filter>..\Assets\Passes</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Passes\ContrastAdaptiveSharpening.pass">
+      <Filter>..\Assets\Passes</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Passes\ConvertToAcescg.pass">
+      <Filter>..\Assets\Passes</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Passes\DebugOverlayParent.pass">
+      <Filter>..\Assets\Passes</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Passes\DeferredFog.pass">
+      <Filter>..\Assets\Passes</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Passes\Depth.pass">
+      <Filter>..\Assets\Passes</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Passes\DepthCheckerboard.pass">
+      <Filter>..\Assets\Passes</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Passes\DepthDownsample.pass">
+      <Filter>..\Assets\Passes</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Passes\DepthExponentiation.pass">
+      <Filter>..\Assets\Passes</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Passes\DepthMax.pass">
+      <Filter>..\Assets\Passes</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Passes\DepthMSAA.pass">
+      <Filter>..\Assets\Passes</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Passes\DepthMSAA2x.pass">
+      <Filter>..\Assets\Passes</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Passes\DepthMSAA4x.pass">
+      <Filter>..\Assets\Passes</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Passes\DepthMSAA8x.pass">
+      <Filter>..\Assets\Passes</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Passes\DepthMSAAParent.pass">
+      <Filter>..\Assets\Passes</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Passes\DepthOfField.pass">
+      <Filter>..\Assets\Passes</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Passes\DepthOfFieldBlurBokeh.pass">
+      <Filter>..\Assets\Passes</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Passes\DepthOfFieldComposite.pass">
+      <Filter>..\Assets\Passes</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Passes\DepthOfFieldDownSample.pass">
+      <Filter>..\Assets\Passes</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Passes\DepthOfFieldMask.pass">
+      <Filter>..\Assets\Passes</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Passes\DepthOfFieldOnBokeh.pass">
+      <Filter>..\Assets\Passes</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Passes\DepthOfFieldPrepare.pass">
+      <Filter>..\Assets\Passes</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Passes\DepthOfFieldReadBackFocusDepth.pass">
+      <Filter>..\Assets\Passes</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Passes\DepthOfFieldWriteFocusDepthFromGpu.pass">
+      <Filter>..\Assets\Passes</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Passes\DepthToLinearDepth.pass">
+      <Filter>..\Assets\Passes</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Passes\DepthUpsample.pass">
+      <Filter>..\Assets\Passes</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Passes\DiffuseComposite.pass">
+      <Filter>..\Assets\Passes</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Passes\DiffuseGlobalFullscreen.pass">
+      <Filter>..\Assets\Passes</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Passes\DiffuseGlobalIllumination.pass">
+      <Filter>..\Assets\Passes</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Passes\DiffuseProbeGridBlendDistance.pass">
+      <Filter>..\Assets\Passes</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Passes\DiffuseProbeGridBlendIrradiance.pass">
+      <Filter>..\Assets\Passes</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Passes\DiffuseProbeGridBorderUpdate.pass">
+      <Filter>..\Assets\Passes</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Passes\DiffuseProbeGridClassification.pass">
+      <Filter>..\Assets\Passes</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Passes\DiffuseProbeGridDownsample.pass">
+      <Filter>..\Assets\Passes</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Passes\DiffuseProbeGridRayTracing.pass">
+      <Filter>..\Assets\Passes</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Passes\DiffuseProbeGridRelocation.pass">
+      <Filter>..\Assets\Passes</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Passes\DiffuseProbeGridRender.pass">
+      <Filter>..\Assets\Passes</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Passes\DiffuseProbeGridUpdate.pass">
+      <Filter>..\Assets\Passes</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Passes\DiffuseSpecularMerge.pass">
+      <Filter>..\Assets\Passes</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Passes\DisplayMapper.pass">
+      <Filter>..\Assets\Passes</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Passes\DownsampleLuminanceMinAvgMaxCS.pass">
+      <Filter>..\Assets\Passes</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Passes\DownsampleMinAvgMaxCS.pass">
+      <Filter>..\Assets\Passes</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Passes\DownsampleMipChain.pass">
+      <Filter>..\Assets\Passes</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Passes\EnvironmentCubeMapDepthMSAA.pass">
+      <Filter>..\Assets\Passes</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Passes\EnvironmentCubeMapForwardMSAA.pass">
+      <Filter>..\Assets\Passes</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Passes\EnvironmentCubeMapPipeline.pass">
+      <Filter>..\Assets\Passes</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Passes\EnvironmentCubeMapSkyBox.pass">
+      <Filter>..\Assets\Passes</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Passes\EsmShadowmaps.pass">
+      <Filter>..\Assets\Passes</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Passes\EyeAdaptation.pass">
+      <Filter>..\Assets\Passes</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Passes\FastDepthAwareBlur.pass">
+      <Filter>..\Assets\Passes</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Passes\FastDepthAwareBlurHor.pass">
+      <Filter>..\Assets\Passes</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Passes\FastDepthAwareBlurVer.pass">
+      <Filter>..\Assets\Passes</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Passes\Forward.pass">
+      <Filter>..\Assets\Passes</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Passes\ForwardCheckerboard.pass">
+      <Filter>..\Assets\Passes</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Passes\ForwardMSAA.pass">
+      <Filter>..\Assets\Passes</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Passes\ForwardSubsurfaceMSAA.pass">
+      <Filter>..\Assets\Passes</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Passes\FullscreenCopy.pass">
+      <Filter>..\Assets\Passes</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Passes\FullscreenOutputOnly.pass">
+      <Filter>..\Assets\Passes</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Passes\ImGui.pass">
+      <Filter>..\Assets\Passes</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Passes\KawaseShadowBlur.pass">
+      <Filter>..\Assets\Passes</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Passes\LightAdaptationParent.pass">
+      <Filter>..\Assets\Passes</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Passes\LightCulling.pass">
+      <Filter>..\Assets\Passes</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Passes\LightCullingHeatmap.pass">
+      <Filter>..\Assets\Passes</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Passes\LightCullingParent.pass">
+      <Filter>..\Assets\Passes</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Passes\LightCullingRemap.pass">
+      <Filter>..\Assets\Passes</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Passes\LightCullingTilePrepareMSAA.pass">
+      <Filter>..\Assets\Passes</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Passes\LookModificationComposite.pass">
+      <Filter>..\Assets\Passes</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Passes\LookModificationTransform.pass">
+      <Filter>..\Assets\Passes</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Passes\LowEndForward.pass">
+      <Filter>..\Assets\Passes</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Passes\LowEndPipeline.pass">
+      <Filter>..\Assets\Passes</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Passes\LuminanceHeatmap.pass">
+      <Filter>..\Assets\Passes</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Passes\LuminanceHistogramGenerator.pass">
+      <Filter>..\Assets\Passes</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Passes\MainPipeline.pass">
+      <Filter>..\Assets\Passes</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Passes\MainPipelineRenderToTexture.pass">
+      <Filter>..\Assets\Passes</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Passes\MeshMotionVector.pass">
+      <Filter>..\Assets\Passes</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Passes\ModulateTexture.pass">
+      <Filter>..\Assets\Passes</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Passes\MorphTarget.pass">
+      <Filter>..\Assets\Passes</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Passes\MotionVectorParent.pass">
+      <Filter>..\Assets\Passes</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Passes\MSAAResolveColor.pass">
+      <Filter>..\Assets\Passes</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Passes\MSAAResolveCustom.pass">
+      <Filter>..\Assets\Passes</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Passes\MSAAResolveDepth.pass">
+      <Filter>..\Assets\Passes</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Passes\OpaqueParent.pass">
+      <Filter>..\Assets\Passes</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Passes\PostProcessParent.pass">
+      <Filter>..\Assets\Passes</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Passes\ProjectedShadowmaps.pass">
+      <Filter>..\Assets\Passes</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Passes\RayTracingAccelerationStructure.pass">
+      <Filter>..\Assets\Passes</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Passes\ReflectionComposite.pass">
+      <Filter>..\Assets\Passes</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Passes\ReflectionCopyFrameBuffer.pass">
+      <Filter>..\Assets\Passes</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Passes\ReflectionGlobalFullscreen.pass">
+      <Filter>..\Assets\Passes</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Passes\ReflectionProbeBlendWeight.pass">
+      <Filter>..\Assets\Passes</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Passes\ReflectionProbeRenderInner.pass">
+      <Filter>..\Assets\Passes</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Passes\ReflectionProbeRenderOuter.pass">
+      <Filter>..\Assets\Passes</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Passes\ReflectionProbeStencil.pass">
+      <Filter>..\Assets\Passes</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Passes\Reflections.pass">
+      <Filter>..\Assets\Passes</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Passes\ReflectionScreenSpace.pass">
+      <Filter>..\Assets\Passes</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Passes\ReflectionScreenSpaceBlur.pass">
+      <Filter>..\Assets\Passes</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Passes\ReflectionScreenSpaceBlurHorizontal.pass">
+      <Filter>..\Assets\Passes</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Passes\ReflectionScreenSpaceBlurMobile.pass">
+      <Filter>..\Assets\Passes</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Passes\ReflectionScreenSpaceBlurVertical.pass">
+      <Filter>..\Assets\Passes</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Passes\ReflectionScreenSpaceComposite.pass">
+      <Filter>..\Assets\Passes</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Passes\ReflectionScreenSpaceMobile.pass">
+      <Filter>..\Assets\Passes</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Passes\ReflectionScreenSpaceTrace.pass">
+      <Filter>..\Assets\Passes</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Passes\ShadowParent.pass">
+      <Filter>..\Assets\Passes</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Passes\Skinning.pass">
+      <Filter>..\Assets\Passes</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Passes\SkyBox.pass">
+      <Filter>..\Assets\Passes</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Passes\SkyBox_TwoOutputs.pass">
+      <Filter>..\Assets\Passes</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Passes\SMAA1xApplyLinearHDRColor.pass">
+      <Filter>..\Assets\Passes</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Passes\SMAA1xApplyPerceptualColor.pass">
+      <Filter>..\Assets\Passes</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Passes\SMAABlendingWeightCalculation.pass">
+      <Filter>..\Assets\Passes</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Passes\SMAAConvertToPerceptualColor.pass">
+      <Filter>..\Assets\Passes</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Passes\SMAAEdgeDetection.pass">
+      <Filter>..\Assets\Passes</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Passes\SMAANeighborhoodBlending.pass">
+      <Filter>..\Assets\Passes</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Passes\SsaoCompute.pass">
+      <Filter>..\Assets\Passes</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Passes\SsaoHalfRes.pass">
+      <Filter>..\Assets\Passes</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Passes\SsaoParent.pass">
+      <Filter>..\Assets\Passes</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Passes\SubsurfaceScattering.pass">
+      <Filter>..\Assets\Passes</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Passes\Taa.pass">
+      <Filter>..\Assets\Passes</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Passes\Transparent.pass">
+      <Filter>..\Assets\Passes</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Passes\TransparentParent.pass">
+      <Filter>..\Assets\Passes</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Passes\UI.pass">
+      <Filter>..\Assets\Passes</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Passes\UIParent.pass">
+      <Filter>..\Assets\Passes</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Scripts\material_property_overrides_demo.lua">
+      <Filter>..\Assets\Scripts</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\ShaderLib\Atom\Features\BlendUtility.azsli">
+      <Filter>..\Assets\ShaderLib\Atom\Features</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\ShaderLib\Atom\Features\IndirectRendering.azsli">
+      <Filter>..\Assets\ShaderLib\Atom\Features</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\ShaderLib\Atom\Features\MatrixUtility.azsli">
+      <Filter>..\Assets\ShaderLib\Atom\Features</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\ShaderLib\Atom\Features\ParallaxMapping.azsli">
+      <Filter>..\Assets\ShaderLib\Atom\Features</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\ShaderLib\Atom\Features\ShaderQualityOptions.azsli">
+      <Filter>..\Assets\ShaderLib\Atom\Features</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\ShaderLib\Atom\Features\SphericalHarmonicsUtility.azsli">
+      <Filter>..\Assets\ShaderLib\Atom\Features</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\ShaderLib\Atom\Features\SrgSemantics.azsli">
+      <Filter>..\Assets\ShaderLib\Atom\Features</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\ShaderLib\Atom\Features\ColorManagement\TransformColor.azsli">
+      <Filter>..\Assets\ShaderLib\Atom\Features\ColorManagement</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\ShaderLib\Atom\Features\ColorManagement\GeneratedTransforms\AcesCg_To_LinearSrgb.azsli">
+      <Filter>..\Assets\ShaderLib\Atom\Features\ColorManagement\GeneratedTransforms</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\ShaderLib\Atom\Features\ColorManagement\GeneratedTransforms\Aces_To_AcesCg.azsli">
+      <Filter>..\Assets\ShaderLib\Atom\Features\ColorManagement\GeneratedTransforms</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\ShaderLib\Atom\Features\ColorManagement\GeneratedTransforms\CalculateLuminance_AcesCg.azsli">
+      <Filter>..\Assets\ShaderLib\Atom\Features\ColorManagement\GeneratedTransforms</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\ShaderLib\Atom\Features\ColorManagement\GeneratedTransforms\CalculateLuminance_LinearSrgb.azsli">
+      <Filter>..\Assets\ShaderLib\Atom\Features\ColorManagement\GeneratedTransforms</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\ShaderLib\Atom\Features\ColorManagement\GeneratedTransforms\LinearSrgb_To_AcesCg.azsli">
+      <Filter>..\Assets\ShaderLib\Atom\Features\ColorManagement\GeneratedTransforms</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\ShaderLib\Atom\Features\ColorManagement\GeneratedTransforms\LinearSrgb_To_Srgb.azsli">
+      <Filter>..\Assets\ShaderLib\Atom\Features\ColorManagement\GeneratedTransforms</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\ShaderLib\Atom\Features\ColorManagement\GeneratedTransforms\Srgb_To_LinearSrgb.azsli">
+      <Filter>..\Assets\ShaderLib\Atom\Features\ColorManagement\GeneratedTransforms</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\ShaderLib\Atom\Features\ColorManagement\GeneratedTransforms\AcesCcToAcesCg.azsli">
+      <Filter>..\Assets\ShaderLib\Atom\Features\ColorManagement\GeneratedTransforms</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\ShaderLib\Atom\Features\ColorManagement\GeneratedTransforms\AcesCgToAcesCc.azsli">
+      <Filter>..\Assets\ShaderLib\Atom\Features\ColorManagement\GeneratedTransforms</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\ShaderLib\Atom\Features\CoreLights\PhotometricValue.azsli">
+      <Filter>..\Assets\ShaderLib\Atom\Features\CoreLights</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\ShaderLib\Atom\Features\Decals\DecalTextureUtil.azsli">
+      <Filter>..\Assets\ShaderLib\Atom\Features\Decals</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\ShaderLib\Atom\Features\LightCulling\LightCullingShared.azsli">
+      <Filter>..\Assets\ShaderLib\Atom\Features\LightCulling</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\ShaderLib\Atom\Features\LightCulling\LightCullingTileIterator.azsli">
+      <Filter>..\Assets\ShaderLib\Atom\Features\LightCulling</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\ShaderLib\Atom\Features\LightCulling\NVLC.azsli">
+      <Filter>..\Assets\ShaderLib\Atom\Features\LightCulling</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\ShaderLib\Atom\Features\Math\Filter.azsli">
+      <Filter>..\Assets\ShaderLib\Atom\Features\Math</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\ShaderLib\Atom\Features\Math\FilterPassSrg.azsli">
+      <Filter>..\Assets\ShaderLib\Atom\Features\Math</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\ShaderLib\Atom\Features\Math\IntersectionTests.azsli">
+      <Filter>..\Assets\ShaderLib\Atom\Features\Math</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\ShaderLib\Atom\Features\MorphTargets\MorphTargetCompression.azsli">
+      <Filter>..\Assets\ShaderLib\Atom\Features\MorphTargets</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\ShaderLib\Atom\Features\PBR\AlphaUtils.azsli">
+      <Filter>..\Assets\ShaderLib\Atom\Features\PBR</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\ShaderLib\Atom\Features\PBR\BackLighting.azsli">
+      <Filter>..\Assets\ShaderLib\Atom\Features\PBR</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\ShaderLib\Atom\Features\PBR\Decals.azsli">
+      <Filter>..\Assets\ShaderLib\Atom\Features\PBR</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\ShaderLib\Atom\Features\PBR\DefaultObjectSrg.azsli">
+      <Filter>..\Assets\ShaderLib\Atom\Features\PBR</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\ShaderLib\Atom\Features\PBR\ForwardPassOutput.azsli">
+      <Filter>..\Assets\ShaderLib\Atom\Features\PBR</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\ShaderLib\Atom\Features\PBR\ForwardPassSrg.azsli">
+      <Filter>..\Assets\ShaderLib\Atom\Features\PBR</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\ShaderLib\Atom\Features\PBR\ForwardSubsurfacePassOutput.azsli">
+      <Filter>..\Assets\ShaderLib\Atom\Features\PBR</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\ShaderLib\Atom\Features\PBR\Hammersley.azsli">
+      <Filter>..\Assets\ShaderLib\Atom\Features\PBR</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\ShaderLib\Atom\Features\PBR\LightingOptions.azsli">
+      <Filter>..\Assets\ShaderLib\Atom\Features\PBR</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\ShaderLib\Atom\Features\PBR\LightingUtils.azsli">
+      <Filter>..\Assets\ShaderLib\Atom\Features\PBR</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\ShaderLib\Atom\Features\PBR\Lighting\DualSpecularLighting.azsli">
+      <Filter>..\Assets\ShaderLib\Atom\Features\PBR\Lighting</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\ShaderLib\Atom\Features\PBR\Lighting\EnhancedLighting.azsli">
+      <Filter>..\Assets\ShaderLib\Atom\Features\PBR\Lighting</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\ShaderLib\Atom\Features\PBR\Lighting\LightingData.azsli">
+      <Filter>..\Assets\ShaderLib\Atom\Features\PBR\Lighting</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\ShaderLib\Atom\Features\PBR\Lighting\SkinLighting.azsli">
+      <Filter>..\Assets\ShaderLib\Atom\Features\PBR\Lighting</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\ShaderLib\Atom\Features\PBR\Lighting\StandardLighting.azsli">
+      <Filter>..\Assets\ShaderLib\Atom\Features\PBR\Lighting</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\ShaderLib\Atom\Features\PBR\Lights\CapsuleLight.azsli">
+      <Filter>..\Assets\ShaderLib\Atom\Features\PBR\Lights</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\ShaderLib\Atom\Features\PBR\Lights\DirectionalLight.azsli">
+      <Filter>..\Assets\ShaderLib\Atom\Features\PBR\Lights</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\ShaderLib\Atom\Features\PBR\Lights\DiskLight.azsli">
+      <Filter>..\Assets\ShaderLib\Atom\Features\PBR\Lights</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\ShaderLib\Atom\Features\PBR\Lights\Ibl.azsli">
+      <Filter>..\Assets\ShaderLib\Atom\Features\PBR\Lights</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\ShaderLib\Atom\Features\PBR\Lights\Lights.azsli">
+      <Filter>..\Assets\ShaderLib\Atom\Features\PBR\Lights</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\ShaderLib\Atom\Features\PBR\Lights\LightTypesCommon.azsli">
+      <Filter>..\Assets\ShaderLib\Atom\Features\PBR\Lights</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\ShaderLib\Atom\Features\PBR\Lights\Ltc.azsli">
+      <Filter>..\Assets\ShaderLib\Atom\Features\PBR\Lights</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\ShaderLib\Atom\Features\PBR\Lights\PointLight.azsli">
+      <Filter>..\Assets\ShaderLib\Atom\Features\PBR\Lights</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\ShaderLib\Atom\Features\PBR\Lights\PolygonLight.azsli">
+      <Filter>..\Assets\ShaderLib\Atom\Features\PBR\Lights</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\ShaderLib\Atom\Features\PBR\Lights\QuadLight.azsli">
+      <Filter>..\Assets\ShaderLib\Atom\Features\PBR\Lights</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\ShaderLib\Atom\Features\PBR\Lights\SimplePointLight.azsli">
+      <Filter>..\Assets\ShaderLib\Atom\Features\PBR\Lights</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\ShaderLib\Atom\Features\PBR\Lights\SimpleSpotLight.azsli">
+      <Filter>..\Assets\ShaderLib\Atom\Features\PBR\Lights</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\ShaderLib\Atom\Features\PBR\Microfacet\Brdf.azsli">
+      <Filter>..\Assets\ShaderLib\Atom\Features\PBR\Microfacet</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\ShaderLib\Atom\Features\PBR\Microfacet\Fresnel.azsli">
+      <Filter>..\Assets\ShaderLib\Atom\Features\PBR\Microfacet</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\ShaderLib\Atom\Features\PBR\Microfacet\Ggx.azsli">
+      <Filter>..\Assets\ShaderLib\Atom\Features\PBR\Microfacet</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\ShaderLib\Atom\Features\PBR\Surfaces\AnisotropicSurfaceData.azsli">
+      <Filter>..\Assets\ShaderLib\Atom\Features\PBR\Surfaces</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\ShaderLib\Atom\Features\PBR\Surfaces\BasePbrSurfaceData.azsli">
+      <Filter>..\Assets\ShaderLib\Atom\Features\PBR\Surfaces</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\ShaderLib\Atom\Features\PBR\Surfaces\ClearCoatSurfaceData.azsli">
+      <Filter>..\Assets\ShaderLib\Atom\Features\PBR\Surfaces</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\ShaderLib\Atom\Features\PBR\Surfaces\DualSpecularSurface.azsli">
+      <Filter>..\Assets\ShaderLib\Atom\Features\PBR\Surfaces</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\ShaderLib\Atom\Features\PBR\Surfaces\EnhancedSurface.azsli">
+      <Filter>..\Assets\ShaderLib\Atom\Features\PBR\Surfaces</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\ShaderLib\Atom\Features\PBR\Surfaces\SkinSurface.azsli">
+      <Filter>..\Assets\ShaderLib\Atom\Features\PBR\Surfaces</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\ShaderLib\Atom\Features\PBR\Surfaces\StandardSurface.azsli">
+      <Filter>..\Assets\ShaderLib\Atom\Features\PBR\Surfaces</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\ShaderLib\Atom\Features\PBR\Surfaces\TransmissionSurfaceData.azsli">
+      <Filter>..\Assets\ShaderLib\Atom\Features\PBR\Surfaces</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\ShaderLib\Atom\Features\PostProcessing\Aces.azsli">
+      <Filter>..\Assets\ShaderLib\Atom\Features\PostProcessing</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\ShaderLib\Atom\Features\PostProcessing\AcesColorSpaceConversion.azsli">
+      <Filter>..\Assets\ShaderLib\Atom\Features\PostProcessing</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\ShaderLib\Atom\Features\PostProcessing\FullscreenPixelInfo.azsli">
+      <Filter>..\Assets\ShaderLib\Atom\Features\PostProcessing</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\ShaderLib\Atom\Features\PostProcessing\FullscreenVertex.azsli">
+      <Filter>..\Assets\ShaderLib\Atom\Features\PostProcessing</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\ShaderLib\Atom\Features\PostProcessing\FullscreenVertexInfo.azsli">
+      <Filter>..\Assets\ShaderLib\Atom\Features\PostProcessing</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\ShaderLib\Atom\Features\PostProcessing\FullscreenVertexUtil.azsli">
+      <Filter>..\Assets\ShaderLib\Atom\Features\PostProcessing</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\ShaderLib\Atom\Features\PostProcessing\GlyphData.azsli">
+      <Filter>..\Assets\ShaderLib\Atom\Features\PostProcessing</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\ShaderLib\Atom\Features\PostProcessing\GlyphRender.azsli">
+      <Filter>..\Assets\ShaderLib\Atom\Features\PostProcessing</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\ShaderLib\Atom\Features\PostProcessing\PostProcessUtil.azsli">
+      <Filter>..\Assets\ShaderLib\Atom\Features\PostProcessing</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\ShaderLib\Atom\Features\RayTracing\RayTracingSceneSrg.azsli">
+      <Filter>..\Assets\ShaderLib\Atom\Features\RayTracing</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\ShaderLib\Atom\Features\ScreenSpace\ScreenSpaceUtil.azsli">
+      <Filter>..\Assets\ShaderLib\Atom\Features\ScreenSpace</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\ShaderLib\Atom\Features\Shadow\BicubicPcfFilters.azsli">
+      <Filter>..\Assets\ShaderLib\Atom\Features\Shadow</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\ShaderLib\Atom\Features\Shadow\DirectionalLightShadow.azsli">
+      <Filter>..\Assets\ShaderLib\Atom\Features\Shadow</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\ShaderLib\Atom\Features\Shadow\JitterTablePcf.azsli">
+      <Filter>..\Assets\ShaderLib\Atom\Features\Shadow</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\ShaderLib\Atom\Features\Shadow\ProjectedShadow.azsli">
+      <Filter>..\Assets\ShaderLib\Atom\Features\Shadow</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\ShaderLib\Atom\Features\Shadow\Shadow.azsli">
+      <Filter>..\Assets\ShaderLib\Atom\Features\Shadow</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\ShaderLib\Atom\Features\Shadow\ShadowmapAtlasLib.azsli">
+      <Filter>..\Assets\ShaderLib\Atom\Features\Shadow</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\ShaderLib\Atom\Features\Vertex\VertexHelper.azsli">
+      <Filter>..\Assets\ShaderLib\Atom\Features\Vertex</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\ShaderLib\3rdParty\Features\PostProcessing\KelvinToRgb.azsli">
+      <Filter>..\Assets\ShaderLib\3rdParty\Features\PostProcessing</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\ShaderLib\3rdParty\Features\PostProcessing\PSstyleColorBlends_NonSeparable.azsli">
+      <Filter>..\Assets\ShaderLib\3rdParty\Features\PostProcessing</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\ShaderLib\3rdParty\Features\PostProcessing\PSstyleColorBlends_Separable.azsli">
+      <Filter>..\Assets\ShaderLib\3rdParty\Features\PostProcessing</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\ShaderResourceGroups\SceneSrg.azsli">
+      <Filter>..\Assets\ShaderResourceGroups</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\ShaderResourceGroups\SceneSrgAll.azsli">
+      <Filter>..\Assets\ShaderResourceGroups</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\ShaderResourceGroups\ViewSrg.azsli">
+      <Filter>..\Assets\ShaderResourceGroups</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\ShaderResourceGroups\ViewSrgAll.azsli">
+      <Filter>..\Assets\ShaderResourceGroups</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\ShaderResourceGroups\CoreLights\SceneSrg.azsli">
+      <Filter>..\Assets\ShaderResourceGroups\CoreLights</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\ShaderResourceGroups\CoreLights\ViewSrg.azsli">
+      <Filter>..\Assets\ShaderResourceGroups\CoreLights</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\ShaderResourceGroups\Decals\ViewSrg.azsli">
+      <Filter>..\Assets\ShaderResourceGroups\Decals</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\ShaderResourceGroups\PostProcessing\SceneSrg.azsli">
+      <Filter>..\Assets\ShaderResourceGroups\PostProcessing</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\ShaderResourceGroups\PostProcessing\ViewSrg.azsli">
+      <Filter>..\Assets\ShaderResourceGroups\PostProcessing</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\ShaderResourceGroups\SkyBox\SceneSrg.azsli">
+      <Filter>..\Assets\ShaderResourceGroups\SkyBox</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Shaders\AuxGeom\AuxGeomObject.azsl">
+      <Filter>..\Assets\Shaders\AuxGeom</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Shaders\AuxGeom\AuxGeomObject.shader">
+      <Filter>..\Assets\Shaders\AuxGeom</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Shaders\AuxGeom\AuxGeomObjectLit.azsl">
+      <Filter>..\Assets\Shaders\AuxGeom</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Shaders\AuxGeom\AuxGeomObjectLit.shader">
+      <Filter>..\Assets\Shaders\AuxGeom</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Shaders\AuxGeom\AuxGeomWorld.azsl">
+      <Filter>..\Assets\Shaders\AuxGeom</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Shaders\AuxGeom\AuxGeomWorld.shader">
+      <Filter>..\Assets\Shaders\AuxGeom</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Shaders\AuxGeom\ObjectSrg.azsli">
+      <Filter>..\Assets\Shaders\AuxGeom</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Shaders\AuxGeom\ObjectSrgLit.azsli">
+      <Filter>..\Assets\Shaders\AuxGeom</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Shaders\BRDFTexture\BRDFTextureCS.azsl">
+      <Filter>..\Assets\Shaders\BRDFTexture</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Shaders\BRDFTexture\BRDFTextureCS.shader">
+      <Filter>..\Assets\Shaders\BRDFTexture</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Shaders\Checkerboard\CheckerboardColorResolveCS.azsl">
+      <Filter>..\Assets\Shaders\Checkerboard</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Shaders\Checkerboard\CheckerboardColorResolveCS.shader">
+      <Filter>..\Assets\Shaders\Checkerboard</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Shaders\Depth\DepthPass.azsl">
+      <Filter>..\Assets\Shaders\Depth</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Shaders\Depth\DepthPass.shader">
+      <Filter>..\Assets\Shaders\Depth</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Shaders\Depth\DepthPassTransparentMax.shader">
+      <Filter>..\Assets\Shaders\Depth</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Shaders\Depth\DepthPassTransparentMin.shader">
+      <Filter>..\Assets\Shaders\Depth</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Shaders\DiffuseGlobalIllumination\DiffuseComposite.azsl">
+      <Filter>..\Assets\Shaders\DiffuseGlobalIllumination</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Shaders\DiffuseGlobalIllumination\DiffuseComposite.shader">
+      <Filter>..\Assets\Shaders\DiffuseGlobalIllumination</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Shaders\DiffuseGlobalIllumination\DiffuseGlobalFullscreen.azsl">
+      <Filter>..\Assets\Shaders\DiffuseGlobalIllumination</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Shaders\DiffuseGlobalIllumination\DiffuseGlobalFullscreen.shader">
+      <Filter>..\Assets\Shaders\DiffuseGlobalIllumination</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Shaders\DiffuseGlobalIllumination\DiffuseProbeGridDownsample.azsl">
+      <Filter>..\Assets\Shaders\DiffuseGlobalIllumination</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Shaders\DiffuseGlobalIllumination\DiffuseProbeGridDownsample.shader">
+      <Filter>..\Assets\Shaders\DiffuseGlobalIllumination</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Shaders\ImGui\ImGui.azsl">
+      <Filter>..\Assets\Shaders\ImGui</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Shaders\ImGui\ImGui.shader">
+      <Filter>..\Assets\Shaders\ImGui</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Shaders\LightCulling\LightCulling.azsl">
+      <Filter>..\Assets\Shaders\LightCulling</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Shaders\LightCulling\LightCulling.shader">
+      <Filter>..\Assets\Shaders\LightCulling</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Shaders\LightCulling\LightCullingHeatmap.azsl">
+      <Filter>..\Assets\Shaders\LightCulling</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Shaders\LightCulling\LightCullingHeatmap.shader">
+      <Filter>..\Assets\Shaders\LightCulling</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Shaders\LightCulling\LightCullingRemap.azsl">
+      <Filter>..\Assets\Shaders\LightCulling</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Shaders\LightCulling\LightCullingRemap.shader">
+      <Filter>..\Assets\Shaders\LightCulling</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Shaders\LightCulling\LightCullingTilePrepare.azsl">
+      <Filter>..\Assets\Shaders\LightCulling</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Shaders\LightCulling\LightCullingTilePrepare.shader">
+      <Filter>..\Assets\Shaders\LightCulling</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Shaders\LuxCore\RenderTexture.azsl">
+      <Filter>..\Assets\Shaders\LuxCore</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Shaders\LuxCore\RenderTexture.shader">
+      <Filter>..\Assets\Shaders\LuxCore</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Shaders\MorphTargets\MorphTargetCS.azsl">
+      <Filter>..\Assets\Shaders\MorphTargets</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Shaders\MorphTargets\MorphTargetCS.shader">
+      <Filter>..\Assets\Shaders\MorphTargets</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Shaders\MorphTargets\MorphTargetSRG.azsli">
+      <Filter>..\Assets\Shaders\MorphTargets</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Shaders\MotionVector\CameraMotionVector.azsl">
+      <Filter>..\Assets\Shaders\MotionVector</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Shaders\MotionVector\CameraMotionVector.shader">
+      <Filter>..\Assets\Shaders\MotionVector</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Shaders\MotionVector\MeshMotionVector.azsl">
+      <Filter>..\Assets\Shaders\MotionVector</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Shaders\MotionVector\MeshMotionVector.shader">
+      <Filter>..\Assets\Shaders\MotionVector</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Shaders\PostProcessing\AcesOutputTransformLut.azsl">
+      <Filter>..\Assets\Shaders\PostProcessing</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Shaders\PostProcessing\AcesOutputTransformLut.shader">
+      <Filter>..\Assets\Shaders\PostProcessing</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Shaders\PostProcessing\ApplyShaperLookupTable.azsl">
+      <Filter>..\Assets\Shaders\PostProcessing</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Shaders\PostProcessing\ApplyShaperLookupTable.shader">
+      <Filter>..\Assets\Shaders\PostProcessing</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Shaders\PostProcessing\BakeAcesOutputTransformLutCS.azsl">
+      <Filter>..\Assets\Shaders\PostProcessing</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Shaders\PostProcessing\BakeAcesOutputTransformLutCS.shader">
+      <Filter>..\Assets\Shaders\PostProcessing</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Shaders\PostProcessing\BlendColorGradingLuts.azsl">
+      <Filter>..\Assets\Shaders\PostProcessing</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Shaders\PostProcessing\BlendColorGradingLuts.shader">
+      <Filter>..\Assets\Shaders\PostProcessing</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Shaders\PostProcessing\BloomBlurCS.azsl">
+      <Filter>..\Assets\Shaders\PostProcessing</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Shaders\PostProcessing\BloomBlurCS.shader">
+      <Filter>..\Assets\Shaders\PostProcessing</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Shaders\PostProcessing\BloomCompositeCS.azsl">
+      <Filter>..\Assets\Shaders\PostProcessing</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Shaders\PostProcessing\BloomCompositeCS.shader">
+      <Filter>..\Assets\Shaders\PostProcessing</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Shaders\PostProcessing\BloomDownsampleCS.azsl">
+      <Filter>..\Assets\Shaders\PostProcessing</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Shaders\PostProcessing\BloomDownsampleCS.shader">
+      <Filter>..\Assets\Shaders\PostProcessing</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Shaders\PostProcessing\ConvertToAcescg.azsl">
+      <Filter>..\Assets\Shaders\PostProcessing</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Shaders\PostProcessing\ConvertToAcescg.shader">
+      <Filter>..\Assets\Shaders\PostProcessing</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Shaders\PostProcessing\DepthDownsample.azsl">
+      <Filter>..\Assets\Shaders\PostProcessing</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Shaders\PostProcessing\DepthDownsample.shader">
+      <Filter>..\Assets\Shaders\PostProcessing</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Shaders\PostProcessing\DepthOfField.azsli">
+      <Filter>..\Assets\Shaders\PostProcessing</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Shaders\PostProcessing\DepthOfFieldBlurBokeh.azsl">
+      <Filter>..\Assets\Shaders\PostProcessing</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Shaders\PostProcessing\DepthOfFieldBlurBokeh.shader">
+      <Filter>..\Assets\Shaders\PostProcessing</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Shaders\PostProcessing\DepthOfFieldComposite.azsl">
+      <Filter>..\Assets\Shaders\PostProcessing</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Shaders\PostProcessing\DepthOfFieldComposite.shader">
+      <Filter>..\Assets\Shaders\PostProcessing</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Shaders\PostProcessing\DepthOfFieldDownSample.azsl">
+      <Filter>..\Assets\Shaders\PostProcessing</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Shaders\PostProcessing\DepthOfFieldDownSample.shader">
+      <Filter>..\Assets\Shaders\PostProcessing</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Shaders\PostProcessing\DepthOfFieldMask.azsl">
+      <Filter>..\Assets\Shaders\PostProcessing</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Shaders\PostProcessing\DepthOfFieldMask.shader">
+      <Filter>..\Assets\Shaders\PostProcessing</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Shaders\PostProcessing\DepthOfFieldPrepare.azsl">
+      <Filter>..\Assets\Shaders\PostProcessing</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Shaders\PostProcessing\DepthOfFieldPrepare.shader">
+      <Filter>..\Assets\Shaders\PostProcessing</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Shaders\PostProcessing\DepthOfFieldWriteFocusDepthFromGpu.azsl">
+      <Filter>..\Assets\Shaders\PostProcessing</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Shaders\PostProcessing\DepthOfFieldWriteFocusDepthFromGpu.shader">
+      <Filter>..\Assets\Shaders\PostProcessing</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Shaders\PostProcessing\DepthToLinearDepth.azsl">
+      <Filter>..\Assets\Shaders\PostProcessing</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Shaders\PostProcessing\DepthToLinearDepth.shader">
+      <Filter>..\Assets\Shaders\PostProcessing</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Shaders\PostProcessing\DepthUpsample.azsl">
+      <Filter>..\Assets\Shaders\PostProcessing</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Shaders\PostProcessing\DepthUpsample.shader">
+      <Filter>..\Assets\Shaders\PostProcessing</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Shaders\PostProcessing\DiffuseSpecularMerge.azsl">
+      <Filter>..\Assets\Shaders\PostProcessing</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Shaders\PostProcessing\DiffuseSpecularMerge.shader">
+      <Filter>..\Assets\Shaders\PostProcessing</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Shaders\PostProcessing\DisplayMapper.azsl">
+      <Filter>..\Assets\Shaders\PostProcessing</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Shaders\PostProcessing\DisplayMapper.shader">
+      <Filter>..\Assets\Shaders\PostProcessing</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Shaders\PostProcessing\DisplayMapperOnlyGammaCorrection.azsl">
+      <Filter>..\Assets\Shaders\PostProcessing</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Shaders\PostProcessing\DisplayMapperOnlyGammaCorrection.shader">
+      <Filter>..\Assets\Shaders\PostProcessing</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Shaders\PostProcessing\DownsampleLuminanceMinAvgMaxCS.azsl">
+      <Filter>..\Assets\Shaders\PostProcessing</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Shaders\PostProcessing\DownsampleLuminanceMinAvgMaxCS.shader">
+      <Filter>..\Assets\Shaders\PostProcessing</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Shaders\PostProcessing\DownsampleMinAvgMaxCS.azsl">
+      <Filter>..\Assets\Shaders\PostProcessing</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Shaders\PostProcessing\DownsampleMinAvgMaxCS.shader">
+      <Filter>..\Assets\Shaders\PostProcessing</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Shaders\PostProcessing\EyeAdaptation.azsl">
+      <Filter>..\Assets\Shaders\PostProcessing</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Shaders\PostProcessing\EyeAdaptation.shader">
+      <Filter>..\Assets\Shaders\PostProcessing</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Shaders\PostProcessing\EyeAdaptationUtil.azsli">
+      <Filter>..\Assets\Shaders\PostProcessing</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Shaders\PostProcessing\FastDepthAwareBlurCommon.azsli">
+      <Filter>..\Assets\Shaders\PostProcessing</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Shaders\PostProcessing\FastDepthAwareBlurHor.azsl">
+      <Filter>..\Assets\Shaders\PostProcessing</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Shaders\PostProcessing\FastDepthAwareBlurHor.shader">
+      <Filter>..\Assets\Shaders\PostProcessing</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Shaders\PostProcessing\FastDepthAwareBlurVer.azsl">
+      <Filter>..\Assets\Shaders\PostProcessing</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Shaders\PostProcessing\FastDepthAwareBlurVer.shader">
+      <Filter>..\Assets\Shaders\PostProcessing</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Shaders\PostProcessing\FullscreenCopy.azsl">
+      <Filter>..\Assets\Shaders\PostProcessing</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Shaders\PostProcessing\FullscreenCopy.shader">
+      <Filter>..\Assets\Shaders\PostProcessing</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Shaders\PostProcessing\HDRColorGrading.azsl">
+      <Filter>..\Assets\Shaders\PostProcessing</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Shaders\PostProcessing\HDRColorGrading.shader">
+      <Filter>..\Assets\Shaders\PostProcessing</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Shaders\PostProcessing\LookModificationTransform.azsl">
+      <Filter>..\Assets\Shaders\PostProcessing</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Shaders\PostProcessing\LookModificationTransform.shader">
+      <Filter>..\Assets\Shaders\PostProcessing</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Shaders\PostProcessing\LuminanceHeatmap.azsl">
+      <Filter>..\Assets\Shaders\PostProcessing</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Shaders\PostProcessing\LuminanceHeatmap.shader">
+      <Filter>..\Assets\Shaders\PostProcessing</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Shaders\PostProcessing\LuminanceHistogramCommon.azsli">
+      <Filter>..\Assets\Shaders\PostProcessing</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Shaders\PostProcessing\LuminanceHistogramGenerator.azsl">
+      <Filter>..\Assets\Shaders\PostProcessing</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Shaders\PostProcessing\LuminanceHistogramGenerator.shader">
+      <Filter>..\Assets\Shaders\PostProcessing</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Shaders\PostProcessing\ModulateTexture.azsl">
+      <Filter>..\Assets\Shaders\PostProcessing</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Shaders\PostProcessing\ModulateTexture.shader">
+      <Filter>..\Assets\Shaders\PostProcessing</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Shaders\PostProcessing\MSAAResolveCustom.azsl">
+      <Filter>..\Assets\Shaders\PostProcessing</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Shaders\PostProcessing\MSAAResolveCustom.shader">
+      <Filter>..\Assets\Shaders\PostProcessing</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Shaders\PostProcessing\MSAAResolveDepth.azsl">
+      <Filter>..\Assets\Shaders\PostProcessing</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Shaders\PostProcessing\MSAAResolveDepth.shader">
+      <Filter>..\Assets\Shaders\PostProcessing</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Shaders\PostProcessing\OutputTransform.azsl">
+      <Filter>..\Assets\Shaders\PostProcessing</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Shaders\PostProcessing\OutputTransform.shader">
+      <Filter>..\Assets\Shaders\PostProcessing</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Shaders\PostProcessing\ScreenSpaceSubsurfaceScatteringCS.azsl">
+      <Filter>..\Assets\Shaders\PostProcessing</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Shaders\PostProcessing\ScreenSpaceSubsurfaceScatteringCS.shader">
+      <Filter>..\Assets\Shaders\PostProcessing</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Shaders\PostProcessing\SMAA.azsli">
+      <Filter>..\Assets\Shaders\PostProcessing</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Shaders\PostProcessing\SMAABlendingWeightCalculation.azsl">
+      <Filter>..\Assets\Shaders\PostProcessing</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Shaders\PostProcessing\SMAABlendingWeightCalculation.shader">
+      <Filter>..\Assets\Shaders\PostProcessing</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Shaders\PostProcessing\SMAAConvertToPerceptualColor.azsl">
+      <Filter>..\Assets\Shaders\PostProcessing</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Shaders\PostProcessing\SMAAConvertToPerceptualColor.shader">
+      <Filter>..\Assets\Shaders\PostProcessing</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Shaders\PostProcessing\SMAAEdgeDetection.azsl">
+      <Filter>..\Assets\Shaders\PostProcessing</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Shaders\PostProcessing\SMAAEdgeDetection.shader">
+      <Filter>..\Assets\Shaders\PostProcessing</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Shaders\PostProcessing\SMAANeighborhoodBlending.azsl">
+      <Filter>..\Assets\Shaders\PostProcessing</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Shaders\PostProcessing\SMAANeighborhoodBlending.shader">
+      <Filter>..\Assets\Shaders\PostProcessing</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Shaders\PostProcessing\SMAAUtils.azsli">
+      <Filter>..\Assets\Shaders\PostProcessing</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Shaders\PostProcessing\SsaoCompute.azsl">
+      <Filter>..\Assets\Shaders\PostProcessing</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Shaders\PostProcessing\SsaoCompute.shader">
+      <Filter>..\Assets\Shaders\PostProcessing</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Shaders\PostProcessing\UniformColor.azsl">
+      <Filter>..\Assets\Shaders\PostProcessing</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Shaders\PostProcessing\UniformColor.shader">
+      <Filter>..\Assets\Shaders\PostProcessing</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Shaders\Reflections\ReflectionCommon.azsli">
+      <Filter>..\Assets\Shaders\Reflections</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Shaders\Reflections\ReflectionComposite.azsl">
+      <Filter>..\Assets\Shaders\Reflections</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Shaders\Reflections\ReflectionComposite.shader">
+      <Filter>..\Assets\Shaders\Reflections</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Shaders\Reflections\ReflectionGlobalFullscreen.azsl">
+      <Filter>..\Assets\Shaders\Reflections</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Shaders\Reflections\ReflectionGlobalFullscreen.shader">
+      <Filter>..\Assets\Shaders\Reflections</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Shaders\Reflections\ReflectionProbeBlendWeight.azsl">
+      <Filter>..\Assets\Shaders\Reflections</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Shaders\Reflections\ReflectionProbeBlendWeight.shader">
+      <Filter>..\Assets\Shaders\Reflections</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Shaders\Reflections\ReflectionProbeRenderCommon.azsli">
+      <Filter>..\Assets\Shaders\Reflections</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Shaders\Reflections\ReflectionProbeRenderInner.azsl">
+      <Filter>..\Assets\Shaders\Reflections</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Shaders\Reflections\ReflectionProbeRenderInner.shader">
+      <Filter>..\Assets\Shaders\Reflections</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Shaders\Reflections\ReflectionProbeRenderObjectSrg.azsli">
+      <Filter>..\Assets\Shaders\Reflections</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Shaders\Reflections\ReflectionProbeRenderOuter.azsl">
+      <Filter>..\Assets\Shaders\Reflections</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Shaders\Reflections\ReflectionProbeRenderOuter.shader">
+      <Filter>..\Assets\Shaders\Reflections</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Shaders\Reflections\ReflectionProbeStencil.azsl">
+      <Filter>..\Assets\Shaders\Reflections</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Shaders\Reflections\ReflectionProbeStencil.shader">
+      <Filter>..\Assets\Shaders\Reflections</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Shaders\Reflections\ReflectionScreenSpaceBlurCommon.azsli">
+      <Filter>..\Assets\Shaders\Reflections</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Shaders\Reflections\ReflectionScreenSpaceBlurHorizontal.azsl">
+      <Filter>..\Assets\Shaders\Reflections</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Shaders\Reflections\ReflectionScreenSpaceBlurHorizontal.shader">
+      <Filter>..\Assets\Shaders\Reflections</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Shaders\Reflections\ReflectionScreenSpaceBlurVertical.azsl">
+      <Filter>..\Assets\Shaders\Reflections</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Shaders\Reflections\ReflectionScreenSpaceBlurVertical.shader">
+      <Filter>..\Assets\Shaders\Reflections</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Shaders\Reflections\ReflectionScreenSpaceComposite.azsl">
+      <Filter>..\Assets\Shaders\Reflections</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Shaders\Reflections\ReflectionScreenSpaceComposite.shader">
+      <Filter>..\Assets\Shaders\Reflections</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Shaders\Reflections\ReflectionScreenSpaceTrace.azsl">
+      <Filter>..\Assets\Shaders\Reflections</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Shaders\Reflections\ReflectionScreenSpaceTrace.azsli">
+      <Filter>..\Assets\Shaders\Reflections</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Shaders\Reflections\ReflectionScreenSpaceTrace.shader">
+      <Filter>..\Assets\Shaders\Reflections</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Shaders\ScreenSpace\DeferredFog.azsl">
+      <Filter>..\Assets\Shaders\ScreenSpace</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Shaders\ScreenSpace\DeferredFog.shader">
+      <Filter>..\Assets\Shaders\ScreenSpace</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Shaders\Shadow\DepthExponentiation.azsl">
+      <Filter>..\Assets\Shaders\Shadow</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Shaders\Shadow\DepthExponentiation.shader">
+      <Filter>..\Assets\Shaders\Shadow</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Shaders\Shadow\KawaseShadowBlur.azsl">
+      <Filter>..\Assets\Shaders\Shadow</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Shaders\Shadow\KawaseShadowBlur.shader">
+      <Filter>..\Assets\Shaders\Shadow</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Shaders\Shadow\Shadowmap.azsl">
+      <Filter>..\Assets\Shaders\Shadow</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Shaders\Shadow\Shadowmap.shader">
+      <Filter>..\Assets\Shaders\Shadow</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Shaders\SkinnedMesh\LinearSkinningCS.azsl">
+      <Filter>..\Assets\Shaders\SkinnedMesh</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Shaders\SkinnedMesh\LinearSkinningCS.shader">
+      <Filter>..\Assets\Shaders\SkinnedMesh</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Shaders\SkinnedMesh\LinearSkinningPassSRG.azsli">
+      <Filter>..\Assets\Shaders\SkinnedMesh</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Shaders\SkyBox\SkyBox.azsl">
+      <Filter>..\Assets\Shaders\SkyBox</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Shaders\SkyBox\SkyBox.shader">
+      <Filter>..\Assets\Shaders\SkyBox</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Shaders\SkyBox\SkyBox_TwoOutputs.azsl">
+      <Filter>..\Assets\Shaders\SkyBox</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\Shaders\SkyBox\SkyBox_TwoOutputs.shader">
+      <Filter>..\Assets\Shaders\SkyBox</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Assets\atom_feature_common_asset_files.cmake">
+      <Filter>..\Assets</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\Platform\Windows\runtime_dependencies_clients.cmake">
+      <Filter>Source\Platform\Windows</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\runtime_dependencies\debug\Atom_Feature_Common_debug.stamp">
+      <Filter>Generated Files</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\runtime_dependencies\profile\Atom_Feature_Common_profile.stamp">
+      <Filter>Generated Files</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\runtime_dependencies\release\Atom_Feature_Common_release.stamp">
+      <Filter>Generated Files</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="..">
+      <UniqueIdentifier>{B62B6BD3-6D53-356A-92E7-D4477019628D}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="..\Assets">
+      <UniqueIdentifier>{14B846D0-5CAF-3679-A475-7706CBC167C1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="..\Assets\Materials">
+      <UniqueIdentifier>{0C9B941F-ADD5-3680-A4A1-2207EE06D758}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="..\Assets\Materials\ReflectionProbe">
+      <UniqueIdentifier>{25853CF5-BC6A-30B7-883C-923E0B6540E4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="..\Assets\Materials\Special">
+      <UniqueIdentifier>{BF970088-0F2E-3AA5-8A8A-8E2F302A4183}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="..\Assets\Materials\Types">
+      <UniqueIdentifier>{384456B9-32A2-368F-A407-58B9E642C248}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="..\Assets\Materials\Types\MaterialInputs">
+      <UniqueIdentifier>{13F9EA6F-4F93-3240-A58C-882DE2AD6637}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="..\Assets\Passes">
+      <UniqueIdentifier>{6426BDEE-C796-3E7A-8A72-CE833B965845}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="..\Assets\Scripts">
+      <UniqueIdentifier>{BCA11FBE-216D-30AC-B6A4-38CAE87C78EA}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="..\Assets\ShaderLib">
+      <UniqueIdentifier>{2BA8DF22-3954-32E3-9AFA-28E01F53D169}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="..\Assets\ShaderLib\3rdParty">
+      <UniqueIdentifier>{9BB7C94E-A208-3B2F-B460-AB87DD9B931F}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="..\Assets\ShaderLib\3rdParty\Features">
+      <UniqueIdentifier>{331D3ACA-3C10-33F0-9B49-F336B8CD33FD}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="..\Assets\ShaderLib\3rdParty\Features\PostProcessing">
+      <UniqueIdentifier>{446D9FC1-122D-3486-9282-3C29755E8D29}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="..\Assets\ShaderLib\Atom">
+      <UniqueIdentifier>{902F9914-7F6A-3889-8F47-FAFBCE57DE39}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="..\Assets\ShaderLib\Atom\Features">
+      <UniqueIdentifier>{8F4C2D1A-CC33-3020-ACB9-054C5081BDBD}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="..\Assets\ShaderLib\Atom\Features\ColorManagement">
+      <UniqueIdentifier>{1A9500D9-5141-3B95-9B5E-E1A7FFB6CB31}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="..\Assets\ShaderLib\Atom\Features\ColorManagement\GeneratedTransforms">
+      <UniqueIdentifier>{F3B1FA82-390D-3CEF-A2AC-DBC6FE4E1CA6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="..\Assets\ShaderLib\Atom\Features\CoreLights">
+      <UniqueIdentifier>{F6845AD3-0D2D-35ED-86FC-FA8E7401A1BE}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="..\Assets\ShaderLib\Atom\Features\Decals">
+      <UniqueIdentifier>{4E783C78-9B6B-3C85-B126-B283510150D6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="..\Assets\ShaderLib\Atom\Features\LightCulling">
+      <UniqueIdentifier>{0ECC44D9-0BEB-31A3-8912-853C64210533}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="..\Assets\ShaderLib\Atom\Features\Math">
+      <UniqueIdentifier>{D8E52DA8-EFE3-389A-86BF-8A94667E8336}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="..\Assets\ShaderLib\Atom\Features\MorphTargets">
+      <UniqueIdentifier>{DF8BEB99-1402-3F0B-8F28-84C73D30643B}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="..\Assets\ShaderLib\Atom\Features\PBR">
+      <UniqueIdentifier>{7868C814-950B-3E22-9EB4-F2053146E2A3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="..\Assets\ShaderLib\Atom\Features\PBR\Lighting">
+      <UniqueIdentifier>{56FFFAC5-C604-3951-8158-1E2984BDF507}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="..\Assets\ShaderLib\Atom\Features\PBR\Lights">
+      <UniqueIdentifier>{0035A4C2-4EE5-3B00-A35F-9C12DFE8BF4B}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="..\Assets\ShaderLib\Atom\Features\PBR\Microfacet">
+      <UniqueIdentifier>{5EC17B24-EEEE-3BAD-9595-99051855B7C4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="..\Assets\ShaderLib\Atom\Features\PBR\Surfaces">
+      <UniqueIdentifier>{C0B5571E-8652-3416-AA79-FAEE11B3A694}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="..\Assets\ShaderLib\Atom\Features\PostProcessing">
+      <UniqueIdentifier>{A9E90F5B-35AE-36AB-ADE1-57B55B464612}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="..\Assets\ShaderLib\Atom\Features\RayTracing">
+      <UniqueIdentifier>{5FDCA01E-AAD4-3257-99C7-B9C75B784222}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="..\Assets\ShaderLib\Atom\Features\ScreenSpace">
+      <UniqueIdentifier>{9060F413-1E57-3544-BED0-7CC516573C77}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="..\Assets\ShaderLib\Atom\Features\Shadow">
+      <UniqueIdentifier>{785DBCF6-2EF2-3823-8286-537A3968D03D}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="..\Assets\ShaderLib\Atom\Features\Vertex">
+      <UniqueIdentifier>{D06704AA-63B0-3841-A8A0-2833BBF328B0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="..\Assets\ShaderResourceGroups">
+      <UniqueIdentifier>{71D2B52F-51A0-394B-A7BF-C05FCF393898}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="..\Assets\ShaderResourceGroups\CoreLights">
+      <UniqueIdentifier>{F6F53A86-7544-3956-96BE-D12DACA9E5AF}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="..\Assets\ShaderResourceGroups\Decals">
+      <UniqueIdentifier>{02761C73-23DE-353D-ACB2-B76AF5FC8CA9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="..\Assets\ShaderResourceGroups\PostProcessing">
+      <UniqueIdentifier>{CA7F2B8D-FD8A-35FC-BA55-803C15103122}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="..\Assets\ShaderResourceGroups\SkyBox">
+      <UniqueIdentifier>{C81EE366-7E78-32B9-8680-26E76DCA0F9B}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="..\Assets\Shaders">
+      <UniqueIdentifier>{5246181B-7663-3F60-AFA9-EB1B288B9826}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="..\Assets\Shaders\AuxGeom">
+      <UniqueIdentifier>{0D869BC6-448E-3526-9FBA-9679322250AC}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="..\Assets\Shaders\BRDFTexture">
+      <UniqueIdentifier>{B6F1AD41-95A6-34B9-8F63-216836837ED1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="..\Assets\Shaders\Checkerboard">
+      <UniqueIdentifier>{19378A4B-7F65-3C90-8C3A-49FC7FE834A9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="..\Assets\Shaders\Depth">
+      <UniqueIdentifier>{CF9C719D-1DAB-399F-BC5C-40496511390B}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="..\Assets\Shaders\DiffuseGlobalIllumination">
+      <UniqueIdentifier>{8DC40484-9DB2-3F85-9E4C-3BFF0016DD48}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="..\Assets\Shaders\ImGui">
+      <UniqueIdentifier>{59A232BB-95F7-3219-912C-0C3B3F427759}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="..\Assets\Shaders\LightCulling">
+      <UniqueIdentifier>{F95F235A-1D03-37D0-95E9-BAC79791EAEC}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="..\Assets\Shaders\LuxCore">
+      <UniqueIdentifier>{6F806A63-0FA0-3811-AA7D-BACD5F072D85}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="..\Assets\Shaders\MorphTargets">
+      <UniqueIdentifier>{4F9B2D51-490A-3130-8503-89529B9662DD}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="..\Assets\Shaders\MotionVector">
+      <UniqueIdentifier>{CABD507A-5CCF-3741-A9EE-A63B8148128A}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="..\Assets\Shaders\PostProcessing">
+      <UniqueIdentifier>{B03AD22D-6FE8-36E7-ACFC-F91192920B34}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="..\Assets\Shaders\Reflections">
+      <UniqueIdentifier>{91BD5D26-1905-3627-BD17-EC1694495897}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="..\Assets\Shaders\ScreenSpace">
+      <UniqueIdentifier>{5F5A1AC1-D738-3098-A7F2-21C2A1B74BD4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="..\Assets\Shaders\Shadow">
+      <UniqueIdentifier>{D64EE158-0C97-34F4-BD08-749A96F36994}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="..\Assets\Shaders\SkinnedMesh">
+      <UniqueIdentifier>{A6D1F46E-5676-3756-A0B9-09D54EB86820}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="..\Assets\Shaders\SkyBox">
+      <UniqueIdentifier>{E29F0FEE-48F4-3D09-8504-F1ED361476AB}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Generated Files">
+      <UniqueIdentifier>{FB9B7D8B-7F05-31D5-AA90-592248EDE1B3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source">
+      <UniqueIdentifier>{F3F0AD47-5F83-373B-A2BF-650D2E4FA3EA}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Platform">
+      <UniqueIdentifier>{4FB794FF-EAE9-3B82-95CC-6241BAD0E3AC}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Platform\Windows">
+      <UniqueIdentifier>{2D0E7154-D797-393D-A7EB-8527ACAFB2BF}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

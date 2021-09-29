@@ -1,0 +1,902 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\LyShine-4e09d22a\Code\LyShine.Editor.Static_autogen\mocs_compilation_debug.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\LyShine-4e09d22a\Code\CMakeFiles\LyShine.Editor.Static.dir\Unity\unity_15_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\LyShine-4e09d22a\Code\CMakeFiles\LyShine.Editor.Static.dir\Unity\unity_14_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\LyShine-4e09d22a\Code\CMakeFiles\LyShine.Editor.Static.dir\Unity\unity_13_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\LyShine-4e09d22a\Code\CMakeFiles\LyShine.Editor.Static.dir\Unity\unity_12_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\LyShine-4e09d22a\Code\CMakeFiles\LyShine.Editor.Static.dir\Unity\unity_11_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\LyShine-4e09d22a\Code\CMakeFiles\LyShine.Editor.Static.dir\Unity\unity_10_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\LyShine-4e09d22a\Code\CMakeFiles\LyShine.Editor.Static.dir\Unity\unity_9_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\LyShine-4e09d22a\Code\CMakeFiles\LyShine.Editor.Static.dir\Unity\unity_8_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\LyShine-4e09d22a\Code\CMakeFiles\LyShine.Editor.Static.dir\Unity\unity_7_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\LyShine-4e09d22a\Code\CMakeFiles\LyShine.Editor.Static.dir\Unity\unity_6_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\LyShine-4e09d22a\Code\CMakeFiles\LyShine.Editor.Static.dir\Unity\unity_5_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\LyShine-4e09d22a\Code\CMakeFiles\LyShine.Editor.Static.dir\Unity\unity_4_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\LyShine-4e09d22a\Code\CMakeFiles\LyShine.Editor.Static.dir\Unity\unity_3_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\LyShine-4e09d22a\Code\CMakeFiles\LyShine.Editor.Static.dir\Unity\unity_2_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\LyShine-4e09d22a\Code\CMakeFiles\LyShine.Editor.Static.dir\Unity\unity_1_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\LyShine-4e09d22a\Code\CMakeFiles\LyShine.Editor.Static.dir\Unity\unity_0_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\LyShineEditorSystemComponent.cpp">
+      <Filter>Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\Animation\UiAnimViewDialog.cpp">
+      <Filter>Editor\Animation</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\Animation\UiAVCustomizeTrackColorsDlg.cpp">
+      <Filter>Editor\Animation</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\AlignToolbarSection.cpp">
+      <Filter>Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\AnchorPresets.cpp">
+      <Filter>Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\AnchorPresetsWidget.cpp">
+      <Filter>Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\AssetDropHelpers.cpp">
+      <Filter>Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\AssetTreeEntry.cpp">
+      <Filter>Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\CanvasHelpers.cpp">
+      <Filter>Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\CanvasSizeToolbarSection.cpp">
+      <Filter>Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\CommandCanvasPropertiesChange.cpp">
+      <Filter>Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\CommandCanvasSize.cpp">
+      <Filter>Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\CommandCanvasSizeToolbarIndex.cpp">
+      <Filter>Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\CommandHierarchyItemCreate.cpp">
+      <Filter>Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\CommandHierarchyItemCreateFromData.cpp">
+      <Filter>Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\CommandHierarchyItemDelete.cpp">
+      <Filter>Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\CommandHierarchyItemRename.cpp">
+      <Filter>Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\CommandHierarchyItemReparent.cpp">
+      <Filter>Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\CommandHierarchyItemToggleIsExpanded.cpp">
+      <Filter>Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\CommandHierarchyItemToggleIsSelectable.cpp">
+      <Filter>Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\CommandHierarchyItemToggleIsSelected.cpp">
+      <Filter>Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\CommandHierarchyItemToggleIsVisible.cpp">
+      <Filter>Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\CommandPropertiesChange.cpp">
+      <Filter>Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\CommandViewportInteractionMode.cpp">
+      <Filter>Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\ComponentButton.cpp">
+      <Filter>Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\ComponentHelpers.cpp">
+      <Filter>Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\CoordinateSystemToolbarSection.cpp">
+      <Filter>Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\EditorCommon.cpp">
+      <Filter>Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\EditorMenu.cpp">
+      <Filter>Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\EditorWindow.cpp">
+      <Filter>Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\EnterPreviewToolbar.cpp">
+      <Filter>Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\EntityHelpers.cpp">
+      <Filter>Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\FeedbackDialog.cpp">
+      <Filter>Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\FileHelpers.cpp">
+      <Filter>Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\FindEntityItemModel.cpp">
+      <Filter>Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\FindEntitySortFilterProxyModel.cpp">
+      <Filter>Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\FindEntityWidget.cpp">
+      <Filter>Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\GuideHelpers.cpp">
+      <Filter>Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\HierarchyClipboard.cpp">
+      <Filter>Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\HierarchyHeader.cpp">
+      <Filter>Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\HierarchyHelpers.cpp">
+      <Filter>Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\HierarchyItem.cpp">
+      <Filter>Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\HierarchyMenu.cpp">
+      <Filter>Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\HierarchyWidget.cpp">
+      <Filter>Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\MainToolbar.cpp">
+      <Filter>Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\ModeToolbar.cpp">
+      <Filter>Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\NewElementToolbarSection.cpp">
+      <Filter>Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\PivotPresets.cpp">
+      <Filter>Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\PivotPresetsWidget.cpp">
+      <Filter>Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\PresetButton.cpp">
+      <Filter>Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\PreviewActionLog.cpp">
+      <Filter>Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\PreviewAnimationList.cpp">
+      <Filter>Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\PreviewToolbar.cpp">
+      <Filter>Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\PropertiesContainer.cpp">
+      <Filter>Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\PropertiesWidget.cpp">
+      <Filter>Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\PropertiesWrapper.cpp">
+      <Filter>Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\PropertyHandlerAnchor.cpp">
+      <Filter>Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\PropertyHandlerChar.cpp">
+      <Filter>Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\PropertyHandlerDirectory.cpp">
+      <Filter>Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\PropertyHandlerEntityIdComboBox.cpp">
+      <Filter>Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\PropertyHandlerLayoutPadding.cpp">
+      <Filter>Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\PropertyHandlerOffset.cpp">
+      <Filter>Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\PropertyHandlerUiParticleColorKeyframe.cpp">
+      <Filter>Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\PropertyHandlerUiParticleFloatKeyframe.cpp">
+      <Filter>Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\PropertyHandlerPivot.cpp">
+      <Filter>Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\PropertyHandlers.cpp">
+      <Filter>Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\PropertyHandlerSprite.cpp">
+      <Filter>Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\PropertyHandlerVec.cpp">
+      <Filter>Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\QtHelpers.cpp">
+      <Filter>Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\RecentFiles.cpp">
+      <Filter>Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\RulerWidget.cpp">
+      <Filter>Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\SelectionHelpers.cpp">
+      <Filter>Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\SerializeHelpers.cpp">
+      <Filter>Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\SliceMenuHelpers.cpp">
+      <Filter>Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\SlicerEdit.cpp">
+      <Filter>Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\SlicerManipulator.cpp">
+      <Filter>Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\SlicerView.cpp">
+      <Filter>Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\SpriteBorderEditor.cpp">
+      <Filter>Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\SpriteBorderEditorCommon.cpp">
+      <Filter>Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\UiEditorEntityContext.cpp">
+      <Filter>Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\UiSliceManager.cpp">
+      <Filter>Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\UndoStack.cpp">
+      <Filter>Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\UndoStackExecutionScope.cpp">
+      <Filter>Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\ViewportAddGuideInteraction.cpp">
+      <Filter>Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\ViewportAlign.cpp">
+      <Filter>Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\ViewportAnchor.cpp">
+      <Filter>Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\ViewportCanvasBackground.cpp">
+      <Filter>Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\ViewportDragInteraction.cpp">
+      <Filter>Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\ViewportElement.cpp">
+      <Filter>Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\ViewportHelpers.cpp">
+      <Filter>Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\ViewportHighlight.cpp">
+      <Filter>Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\ViewportIcon.cpp">
+      <Filter>Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\ViewportInteraction.cpp">
+      <Filter>Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\ViewportMoveGuideInteraction.cpp">
+      <Filter>Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\ViewportMoveInteraction.cpp">
+      <Filter>Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\ViewportNudge.cpp">
+      <Filter>Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\ViewportPivot.cpp">
+      <Filter>Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\ViewportSnap.cpp">
+      <Filter>Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\ViewportWidget.cpp">
+      <Filter>Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\Animation\AnimationContext.cpp">
+      <Filter>Editor\Animation</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\Animation\UiAnimUndo.cpp">
+      <Filter>Editor\Animation</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\Animation\UiAnimUndoManager.cpp">
+      <Filter>Editor\Animation</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\Animation\UiAnimViewAnimNode.cpp">
+      <Filter>Editor\Animation</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\Animation\UiAnimViewEventNode.cpp">
+      <Filter>Editor\Animation</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\Animation\UiAnimViewNode.cpp">
+      <Filter>Editor\Animation</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\Animation\UiAnimViewNodeFactories.cpp">
+      <Filter>Editor\Animation</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\Animation\UiAnimViewSequence.cpp">
+      <Filter>Editor\Animation</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\Animation\UiAnimViewSequenceManager.cpp">
+      <Filter>Editor\Animation</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\Animation\UiAnimViewTrack.cpp">
+      <Filter>Editor\Animation</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\Animation\UiAnimViewUndo.cpp">
+      <Filter>Editor\Animation</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\Animation\Controls\UiSplineCtrlEx.cpp">
+      <Filter>Editor\Animation\Controls</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\Animation\Controls\UiTimelineCtrl.cpp">
+      <Filter>Editor\Animation\Controls</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\Animation\Util\UiEditorUtils.cpp">
+      <Filter>Editor\Animation\Util</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\Animation\UiAnimViewCurveEditor.cpp">
+      <Filter>Editor\Animation</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\Animation\UiAnimViewDopeSheetBase.cpp">
+      <Filter>Editor\Animation</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\Animation\UiAnimViewFindDlg.cpp">
+      <Filter>Editor\Animation</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\Animation\UiAnimViewKeyPropertiesDlg.cpp">
+      <Filter>Editor\Animation</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\Animation\UiAnimViewNewSequenceDialog.cpp">
+      <Filter>Editor\Animation</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\Animation\UiAnimViewNodes.cpp">
+      <Filter>Editor\Animation</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\Animation\UiAnimViewSplineCtrl.cpp">
+      <Filter>Editor\Animation</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\Animation\UiAVEventsDialog.cpp">
+      <Filter>Editor\Animation</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\Animation\UiAVSequenceProps.cpp">
+      <Filter>Editor\Animation</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\Animation\UiAVTrackEventKeyUIControls.cpp">
+      <Filter>Editor\Animation</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\LyShine-4e09d22a\Code\LyShine.Editor.Static_autogen\VXJ2TIUOOO\qrc_UiCanvasEditor.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\LyShine-4e09d22a\Code\LyShine.Editor.Static_autogen\2GHLWBTVZW\qrc_UiAnimViewDialog.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\LyShine-4e09d22a\Code\LyShine.Editor.Static_autogen\mocs_compilation_profile.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\LyShine-4e09d22a\Code\LyShine.Editor.Static_autogen\mocs_compilation_release.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\LyShineEditorSystemComponent.h">
+      <Filter>Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\Animation\UiAnimViewDialog.h">
+      <Filter>Editor\Animation</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\Animation\UiAVCustomizeTrackColorsDlg.h">
+      <Filter>Editor\Animation</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\AlignToolbarSection.h">
+      <Filter>Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\AnchorPresets.h">
+      <Filter>Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\AnchorPresetsWidget.h">
+      <Filter>Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\AssetDropHelpers.h">
+      <Filter>Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\AssetTreeEntry.h">
+      <Filter>Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\CanvasHelpers.h">
+      <Filter>Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\CanvasSizeToolbarSection.h">
+      <Filter>Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\CommandCanvasPropertiesChange.h">
+      <Filter>Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\CommandCanvasSize.h">
+      <Filter>Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\CommandCanvasSizeToolbarIndex.h">
+      <Filter>Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\CommandHierarchyItemCreate.h">
+      <Filter>Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\CommandHierarchyItemCreateFromData.h">
+      <Filter>Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\CommandHierarchyItemDelete.h">
+      <Filter>Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\CommandHierarchyItemRename.h">
+      <Filter>Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\CommandHierarchyItemReparent.h">
+      <Filter>Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\CommandHierarchyItemToggleIsExpanded.h">
+      <Filter>Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\CommandHierarchyItemToggleIsSelectable.h">
+      <Filter>Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\CommandHierarchyItemToggleIsSelected.h">
+      <Filter>Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\CommandHierarchyItemToggleIsVisible.h">
+      <Filter>Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\CommandPropertiesChange.h">
+      <Filter>Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\CommandViewportInteractionMode.h">
+      <Filter>Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\ComponentAssetHelpers.h">
+      <Filter>Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\ComponentButton.h">
+      <Filter>Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\ComponentHelpers.h">
+      <Filter>Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\CoordinateSystemToolbarSection.h">
+      <Filter>Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\EditorCommon.h">
+      <Filter>Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\EditorWindow.h">
+      <Filter>Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\EnterPreviewToolbar.h">
+      <Filter>Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\EntityHelpers.h">
+      <Filter>Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\FeedbackDialog.h">
+      <Filter>Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\FileHelpers.h">
+      <Filter>Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\FindEntityItemModel.h">
+      <Filter>Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\FindEntitySortFilterProxyModel.h">
+      <Filter>Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\FindEntityWidget.h">
+      <Filter>Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\GuideHelpers.h">
+      <Filter>Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\HierarchyClipboard.h">
+      <Filter>Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\HierarchyHeader.h">
+      <Filter>Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\HierarchyHelpers.h">
+      <Filter>Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\HierarchyItem.h">
+      <Filter>Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\HierarchyMenu.h">
+      <Filter>Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\HierarchyWidget.h">
+      <Filter>Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\MainToolbar.h">
+      <Filter>Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\ModeToolbar.h">
+      <Filter>Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\NewElementToolbarSection.h">
+      <Filter>Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\PivotPresets.h">
+      <Filter>Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\PivotPresetsWidget.h">
+      <Filter>Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\PresetButton.h">
+      <Filter>Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\PreviewActionLog.h">
+      <Filter>Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\PreviewAnimationList.h">
+      <Filter>Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\PreviewToolbar.h">
+      <Filter>Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\PropertiesContainer.h">
+      <Filter>Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\PropertiesWidget.h">
+      <Filter>Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\PropertiesWrapper.h">
+      <Filter>Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\PropertyHandlerAnchor.h">
+      <Filter>Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\PropertyHandlerChar.h">
+      <Filter>Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\PropertyHandlerDirectory.h">
+      <Filter>Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\PropertyHandlerEntityIdComboBox.h">
+      <Filter>Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\PropertyHandlerLayoutPadding.h">
+      <Filter>Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\PropertyHandlerOffset.h">
+      <Filter>Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\PropertyHandlerUiParticleColorKeyframe.h">
+      <Filter>Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\PropertyHandlerUiParticleFloatKeyframe.h">
+      <Filter>Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\PropertyHandlerPivot.h">
+      <Filter>Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\PropertyHandlers.h">
+      <Filter>Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\PropertyHandlerSprite.h">
+      <Filter>Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\PropertyHandlerVec.h">
+      <Filter>Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\QtHelpers.h">
+      <Filter>Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\RecentFiles.h">
+      <Filter>Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\RulerWidget.h">
+      <Filter>Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\SelectionHelpers.h">
+      <Filter>Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\SerializeHelpers.h">
+      <Filter>Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\SliceMenuHelpers.h">
+      <Filter>Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\SlicerEdit.h">
+      <Filter>Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\SlicerManipulator.h">
+      <Filter>Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\SlicerView.h">
+      <Filter>Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\SpriteBorderEditor.h">
+      <Filter>Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\SpriteBorderEditorCommon.h">
+      <Filter>Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\UiEditorInternalBus.h">
+      <Filter>Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\UiEditorEntityContext.h">
+      <Filter>Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\UiEditorEntityContextBus.h">
+      <Filter>Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\UiSliceManager.h">
+      <Filter>Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\UIVectorPropertyHandlerBase.h">
+      <Filter>Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\UndoStack.h">
+      <Filter>Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\UndoStackExecutionScope.h">
+      <Filter>Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\ViewportAddGuideInteraction.h">
+      <Filter>Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\ViewportAlign.h">
+      <Filter>Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\ViewportAnchor.h">
+      <Filter>Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\ViewportCanvasBackground.h">
+      <Filter>Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\ViewportDragInteraction.h">
+      <Filter>Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\ViewportElement.h">
+      <Filter>Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\ViewportHelpers.h">
+      <Filter>Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\ViewportHighlight.h">
+      <Filter>Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\ViewportIcon.h">
+      <Filter>Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\ViewportInteraction.h">
+      <Filter>Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\ViewportMoveGuideInteraction.h">
+      <Filter>Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\ViewportMoveInteraction.h">
+      <Filter>Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\ViewportNudge.h">
+      <Filter>Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\ViewportPivot.h">
+      <Filter>Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\ViewportSnap.h">
+      <Filter>Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\ViewportWidget.h">
+      <Filter>Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\Animation\AnimationContext.h">
+      <Filter>Editor\Animation</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\Animation\UiAnimUndo.h">
+      <Filter>Editor\Animation</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\Animation\UiAnimUndoManager.h">
+      <Filter>Editor\Animation</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\Animation\UiAnimUndoObject.h">
+      <Filter>Editor\Animation</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\Animation\UiAnimViewAnimNode.h">
+      <Filter>Editor\Animation</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\Animation\UiAnimViewEventNode.h">
+      <Filter>Editor\Animation</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\Animation\UiAnimViewNode.h">
+      <Filter>Editor\Animation</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\Animation\UiAnimViewNodeFactories.h">
+      <Filter>Editor\Animation</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\Animation\UiAnimViewSequence.h">
+      <Filter>Editor\Animation</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\Animation\UiAnimViewSequenceManager.h">
+      <Filter>Editor\Animation</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\Animation\UiAnimViewTrack.h">
+      <Filter>Editor\Animation</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\Animation\UiAnimViewUndo.h">
+      <Filter>Editor\Animation</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\Animation\Controls\UiSplineCtrlEx.h">
+      <Filter>Editor\Animation\Controls</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\Animation\Controls\UiTimelineCtrl.h">
+      <Filter>Editor\Animation\Controls</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\Animation\UiAnimViewCurveEditor.h">
+      <Filter>Editor\Animation</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\Animation\UiAnimViewDopeSheetBase.h">
+      <Filter>Editor\Animation</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\Animation\UiAnimViewFindDlg.h">
+      <Filter>Editor\Animation</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\Animation\UiAnimViewKeyPropertiesDlg.h">
+      <Filter>Editor\Animation</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\Animation\UiAnimViewNewSequenceDialog.h">
+      <Filter>Editor\Animation</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\Animation\UiAnimViewNodes.h">
+      <Filter>Editor\Animation</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\Animation\UiAnimViewSplineCtrl.h">
+      <Filter>Editor\Animation</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\Animation\UiAVEventsDialog.h">
+      <Filter>Editor\Animation</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\Animation\UiAVSequenceProps.h">
+      <Filter>Editor\Animation</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\Animation\UiAVTrackEventKeyUIControls.h">
+      <Filter>Editor\Animation</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\External\LyShine-4e09d22a\Code\LyShine.Editor.Static_autogen\include\Editor\Animation\ui_UiAVCustomizeTrackColorsDialog.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\External\LyShine-4e09d22a\Code\LyShine.Editor.Static_autogen\include\Editor\Animation\ui_UiAnimViewCurveEditor.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\External\LyShine-4e09d22a\Code\LyShine.Editor.Static_autogen\include\Editor\Animation\ui_UiAnimViewFindDlg.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\External\LyShine-4e09d22a\Code\LyShine.Editor.Static_autogen\include\Editor\Animation\ui_UiAnimViewNewSequenceDialog.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\External\LyShine-4e09d22a\Code\LyShine.Editor.Static_autogen\include\Editor\Animation\ui_UiAnimViewNodes.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\External\LyShine-4e09d22a\Code\LyShine.Editor.Static_autogen\include\Editor\Animation\ui_UiAnimViewTrackPropsDlg.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\External\LyShine-4e09d22a\Code\LyShine.Editor.Static_autogen\include\Editor\Animation\ui_UiAVEventsDialog.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\External\LyShine-4e09d22a\Code\LyShine.Editor.Static_autogen\include\Editor\Animation\ui_UiAVSequenceProps.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\Animation\UiAVCustomizeTrackColorsDialog.ui">
+      <Filter>Editor\Animation</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\Animation\UiAnimViewCurveEditor.ui">
+      <Filter>Editor\Animation</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\Animation\UiAnimViewFindDlg.ui">
+      <Filter>Editor\Animation</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\Animation\UiAnimViewNewSequenceDialog.ui">
+      <Filter>Editor\Animation</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\Animation\UiAnimViewNodes.ui">
+      <Filter>Editor\Animation</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\Animation\UiAnimViewTrackPropsDlg.ui">
+      <Filter>Editor\Animation</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\Animation\UiAVEventsDialog.ui">
+      <Filter>Editor\Animation</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\Animation\UiAVSequenceProps.ui">
+      <Filter>Editor\Animation</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\CMakeFiles\dfd65b49699f31115f43a26cf949bf6e\qrc_UiCanvasEditor.cpp.rule">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\CMakeFiles\2d2a707296738a8dd877efb8a6eb9793\qrc_UiAnimViewDialog.cpp.rule">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\CMakeLists.txt">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\UiCanvasEditor.qrc">
+      <Filter>Editor</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\Editor\Animation\UiAnimViewDialog.qrc">
+      <Filter>Editor\Animation</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\LyShine\Code\lyshine_uicanvaseditor_files.cmake" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Editor">
+      <UniqueIdentifier>{AB7AD22B-4C45-3CDD-8A3C-7A5D74862736}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Editor\Animation">
+      <UniqueIdentifier>{424BEC0F-9493-3D28-83A2-D37F64B34D4A}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Editor\Animation\Controls">
+      <UniqueIdentifier>{45464DBF-8899-3E1A-AFBF-876D07A7FC10}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Editor\Animation\Util">
+      <UniqueIdentifier>{9C37DC84-C51D-3FA3-AD5D-C2275F1A6FAD}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Generated Files">
+      <UniqueIdentifier>{FB9B7D8B-7F05-31D5-AA90-592248EDE1B3}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

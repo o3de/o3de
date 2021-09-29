@@ -1,0 +1,9 @@
+# CMake generation dependency list for this directory.
+C:/Users/lesaelr/o3de/Gems/SaveData/Code/CMakeLists.txt
+C:/Users/lesaelr/o3de/Gems/SaveData/Code/Source/Platform/Windows/platform_test_windows_files.cmake
+C:/Users/lesaelr/o3de/Gems/SaveData/Code/Source/Platform/Windows/platform_windows.cmake
+C:/Users/lesaelr/o3de/Gems/SaveData/Code/Source/Platform/Windows/platform_windows_files.cmake
+C:/Users/lesaelr/o3de/Gems/SaveData/Code/savedata_files.cmake
+C:/Users/lesaelr/o3de/Gems/SaveData/Code/savedata_shared_files.cmake
+C:/Users/lesaelr/o3de/Gems/SaveData/Code/savedata_tests_files.cmake
+C:/Users/lesaelr/o3de/cmake/Platform/Windows/LYTestWrappers_windows.cmake

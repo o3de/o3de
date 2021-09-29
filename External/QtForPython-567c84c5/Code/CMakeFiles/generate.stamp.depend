@@ -1,0 +1,9 @@
+# CMake generation dependency list for this directory.
+C:/Users/lesaelr/.o3de/3rdParty/packages/pyside2-qt-5.15.1-rev2-windows/Findpyside2.cmake
+C:/Users/lesaelr/.o3de/3rdParty/packages/pyside2-qt-5.15.1-rev2-windows/PackageInfo.json
+C:/Users/lesaelr/.o3de/3rdParty/packages/pyside2-qt-5.15.1-rev2-windows/pyside2/setup.py
+C:/Users/lesaelr/o3de/Gems/QtForPython/Code/CMakeLists.txt
+C:/Users/lesaelr/o3de/Gems/QtForPython/Code/Source/Platform/Common/MSVC/qtforpython_msvc.cmake
+C:/Users/lesaelr/o3de/Gems/QtForPython/Code/Source/Platform/Windows/PAL_windows.cmake
+C:/Users/lesaelr/o3de/Gems/QtForPython/Code/qtforpython_editor_windows_files.cmake
+C:/Users/lesaelr/o3de/Gems/QtForPython/Code/qtforpython_shared_files.cmake

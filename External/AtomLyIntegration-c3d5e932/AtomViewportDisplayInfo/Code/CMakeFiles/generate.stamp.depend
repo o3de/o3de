@@ -1,0 +1,5 @@
+# CMake generation dependency list for this directory.
+C:/Users/lesaelr/o3de/Gems/AtomLyIntegration/AtomViewportDisplayInfo/Code/CMakeLists.txt
+C:/Users/lesaelr/o3de/Gems/AtomLyIntegration/AtomViewportDisplayInfo/Code/atomviewportdisplayinfo_files.cmake
+C:/Users/lesaelr/o3de/Gems/AtomLyIntegration/AtomViewportDisplayInfo/Code/atomviewportdisplayinfo_test_files.cmake
+C:/Users/lesaelr/o3de/cmake/Platform/Windows/LYTestWrappers_windows.cmake

@@ -1,0 +1,47 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\ImGui-c4b4abc8\Code\CMakeFiles\ImGui.ImGuiLYUtils.dir\Unity\unity_0_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ImGui\Code\Source\LYImGuiUtils\HistogramContainer.cpp">
+      <Filter>Source\LYImGuiUtils</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ImGui\Code\Source\LYImGuiUtils\ImGuiDrawHelpers.cpp">
+      <Filter>Source\LYImGuiUtils</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ImGui\Code\Include\LYImGuiUtils\HistogramContainer.h">
+      <Filter>Include\LYImGuiUtils</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ImGui\Code\Include\LYImGuiUtils\ImGuiDrawHelpers.h">
+      <Filter>Include\LYImGuiUtils</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Gems\ImGui\Code\CMakeLists.txt">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="C:\Users\lesaelr\o3de\Gems\ImGui\Code\imgui_lyutils_static_files.cmake" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Generated Files">
+      <UniqueIdentifier>{FB9B7D8B-7F05-31D5-AA90-592248EDE1B3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include">
+      <UniqueIdentifier>{E188105A-C8C4-34BB-9809-15E8410EF7F8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\LYImGuiUtils">
+      <UniqueIdentifier>{7035547B-5FEE-37B2-931D-273B335A8A6F}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source">
+      <UniqueIdentifier>{F3F0AD47-5F83-373B-A2BF-650D2E4FA3EA}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\LYImGuiUtils">
+      <UniqueIdentifier>{BE02D756-7E25-3834-8E3B-D33AC78E7492}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

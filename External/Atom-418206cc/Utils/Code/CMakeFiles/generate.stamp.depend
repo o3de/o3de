@@ -1,0 +1,6 @@
+# CMake generation dependency list for this directory.
+C:/Users/lesaelr/o3de/Gems/Atom/Utils/Code/CMakeLists.txt
+C:/Users/lesaelr/o3de/Gems/Atom/Utils/Code/Platform/Windows/platform_windows.cmake
+C:/Users/lesaelr/o3de/Gems/Atom/Utils/Code/atom_utils_files.cmake
+C:/Users/lesaelr/o3de/Gems/Atom/Utils/Code/atom_utils_tests_files.cmake
+C:/Users/lesaelr/o3de/cmake/Platform/Windows/LYTestWrappers_windows.cmake

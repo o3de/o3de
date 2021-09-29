@@ -1,0 +1,398 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\ProjectManager\ProjectManager.Static_autogen\mocs_compilation_debug.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\ProjectManager\CMakeFiles\ProjectManager.Static.dir\Unity\unity_6_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\ProjectManager\CMakeFiles\ProjectManager.Static.dir\Unity\unity_5_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\ProjectManager\CMakeFiles\ProjectManager.Static.dir\Unity\unity_4_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\ProjectManager\CMakeFiles\ProjectManager.Static.dir\Unity\unity_3_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\ProjectManager\CMakeFiles\ProjectManager.Static.dir\Unity\unity_2_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\ProjectManager\CMakeFiles\ProjectManager.Static.dir\Unity\unity_1_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\ProjectManager\CMakeFiles\ProjectManager.Static.dir\Unity\unity_0_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\ProjectManager\Source\Application.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\ProjectManager\Source\ScreenFactory.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\ProjectManager\Source\ScreensCtrl.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\ProjectManager\Source\EngineInfo.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\ProjectManager\Source\FormLineEditWidget.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\ProjectManager\Source\FormBrowseEditWidget.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\ProjectManager\Source\FormFolderBrowseEditWidget.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\ProjectManager\Source\FormImageBrowseEditWidget.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\ProjectManager\Source\PathValidator.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\ProjectManager\Source\ProjectManagerWindow.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\ProjectManager\Source\ProjectTemplateInfo.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\ProjectManager\Source\PythonBindings.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\ProjectManager\Source\ProjectInfo.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\ProjectManager\Source\ProjectUtils.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\ProjectManager\Source\ProjectBuilderWorker.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\ProjectManager\Source\ProjectBuilderController.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\ProjectManager\Source\UpdateProjectSettingsScreen.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\ProjectManager\Source\NewProjectSettingsScreen.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\ProjectManager\Source\CreateProjectCtrl.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\ProjectManager\Source\UpdateProjectCtrl.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\ProjectManager\Source\ProjectsScreen.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\ProjectManager\Source\ProjectSettingsScreen.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\ProjectManager\Source\EngineScreenCtrl.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\ProjectManager\Source\EngineSettingsScreen.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\ProjectManager\Source\ProjectButtonWidget.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\ProjectManager\Source\ScreenHeaderWidget.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\ProjectManager\Source\LinkWidget.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\ProjectManager\Source\TagWidget.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\ProjectManager\Source\TemplateButtonWidget.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\ProjectManager\Source\GemCatalog\GemCatalogHeaderWidget.cpp">
+      <Filter>Source\GemCatalog</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\ProjectManager\Source\GemCatalog\GemCatalogScreen.cpp">
+      <Filter>Source\GemCatalog</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\ProjectManager\Source\GemCatalog\GemFilterTagWidget.cpp">
+      <Filter>Source\GemCatalog</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\ProjectManager\Source\GemCatalog\GemFilterWidget.cpp">
+      <Filter>Source\GemCatalog</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\ProjectManager\Source\GemCatalog\GemInfo.cpp">
+      <Filter>Source\GemCatalog</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\ProjectManager\Source\GemCatalog\GemInspector.cpp">
+      <Filter>Source\GemCatalog</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\ProjectManager\Source\GemCatalog\GemItemDelegate.cpp">
+      <Filter>Source\GemCatalog</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\ProjectManager\Source\GemCatalog\GemListView.cpp">
+      <Filter>Source\GemCatalog</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\ProjectManager\Source\GemCatalog\GemListHeaderWidget.cpp">
+      <Filter>Source\GemCatalog</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\ProjectManager\Source\GemCatalog\GemModel.cpp">
+      <Filter>Source\GemCatalog</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\ProjectManager\Source\GemCatalog\GemRequirementDialog.cpp">
+      <Filter>Source\GemCatalog</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\ProjectManager\Source\GemCatalog\GemRequirementDelegate.cpp">
+      <Filter>Source\GemCatalog</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\ProjectManager\Source\GemCatalog\GemRequirementFilterProxyModel.cpp">
+      <Filter>Source\GemCatalog</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\ProjectManager\Source\GemCatalog\GemRequirementListView.cpp">
+      <Filter>Source\GemCatalog</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\ProjectManager\Source\GemCatalog\GemSortFilterProxyModel.cpp">
+      <Filter>Source\GemCatalog</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\ProjectManager\Source\GemRepo\GemRepoScreen.cpp">
+      <Filter>Source\GemRepo</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\ProjectManager\Source\GemRepo\GemRepoInfo.cpp">
+      <Filter>Source\GemRepo</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\ProjectManager\Source\GemRepo\GemRepoItemDelegate.cpp">
+      <Filter>Source\GemRepo</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\ProjectManager\Source\GemRepo\GemRepoListView.cpp">
+      <Filter>Source\GemRepo</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\ProjectManager\Source\GemRepo\GemRepoModel.cpp">
+      <Filter>Source\GemRepo</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\ProjectManager\Platform\Windows\Python_windows.cpp">
+      <Filter>Platform\Windows</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\ProjectManager\Platform\Windows\ProjectBuilderWorker_windows.cpp">
+      <Filter>Platform\Windows</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\ProjectManager\Platform\Windows\ProjectUtils_windows.cpp">
+      <Filter>Platform\Windows</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\ProjectManager\Platform\Windows\ProjectManagerDefs_windows.cpp">
+      <Filter>Platform\Windows</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\ProjectManager\ProjectManager.Static_autogen\mocs_compilation_profile.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\ProjectManager\ProjectManager.Static_autogen\mocs_compilation_release.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\ProjectManager\Source\Application.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\ProjectManager\Source\ProjectManagerDefs.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\ProjectManager\Source\ScreenDefs.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\ProjectManager\Source\ScreenFactory.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\ProjectManager\Source\ScreensCtrl.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\ProjectManager\Source\ScreenWidget.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\ProjectManager\Source\EngineInfo.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\ProjectManager\Source\FormLineEditWidget.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\ProjectManager\Source\FormBrowseEditWidget.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\ProjectManager\Source\FormFolderBrowseEditWidget.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\ProjectManager\Source\FormImageBrowseEditWidget.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\ProjectManager\Source\PathValidator.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\ProjectManager\Source\ProjectManagerWindow.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\ProjectManager\Source\ProjectTemplateInfo.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\ProjectManager\Source\PythonBindings.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\ProjectManager\Source\PythonBindingsInterface.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\ProjectManager\Source\ProjectInfo.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\ProjectManager\Source\ProjectUtils.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\ProjectManager\Source\ProjectBuilderWorker.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\ProjectManager\Source\ProjectBuilderController.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\ProjectManager\Source\UpdateProjectSettingsScreen.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\ProjectManager\Source\NewProjectSettingsScreen.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\ProjectManager\Source\CreateProjectCtrl.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\ProjectManager\Source\UpdateProjectCtrl.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\ProjectManager\Source\ProjectsScreen.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\ProjectManager\Source\ProjectSettingsScreen.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\ProjectManager\Source\EngineScreenCtrl.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\ProjectManager\Source\EngineSettingsScreen.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\ProjectManager\Source\ProjectButtonWidget.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\ProjectManager\Source\ScreenHeaderWidget.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\ProjectManager\Source\LinkWidget.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\ProjectManager\Source\TagWidget.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\ProjectManager\Source\TemplateButtonWidget.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\ProjectManager\Source\GemCatalog\GemCatalogHeaderWidget.h">
+      <Filter>Source\GemCatalog</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\ProjectManager\Source\GemCatalog\GemCatalogScreen.h">
+      <Filter>Source\GemCatalog</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\ProjectManager\Source\GemCatalog\GemFilterTagWidget.h">
+      <Filter>Source\GemCatalog</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\ProjectManager\Source\GemCatalog\GemFilterWidget.h">
+      <Filter>Source\GemCatalog</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\ProjectManager\Source\GemCatalog\GemInfo.h">
+      <Filter>Source\GemCatalog</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\ProjectManager\Source\GemCatalog\GemInspector.h">
+      <Filter>Source\GemCatalog</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\ProjectManager\Source\GemCatalog\GemItemDelegate.h">
+      <Filter>Source\GemCatalog</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\ProjectManager\Source\GemCatalog\GemListView.h">
+      <Filter>Source\GemCatalog</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\ProjectManager\Source\GemCatalog\GemListHeaderWidget.h">
+      <Filter>Source\GemCatalog</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\ProjectManager\Source\GemCatalog\GemModel.h">
+      <Filter>Source\GemCatalog</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\ProjectManager\Source\GemCatalog\GemRequirementDialog.h">
+      <Filter>Source\GemCatalog</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\ProjectManager\Source\GemCatalog\GemRequirementDelegate.h">
+      <Filter>Source\GemCatalog</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\ProjectManager\Source\GemCatalog\GemRequirementFilterProxyModel.h">
+      <Filter>Source\GemCatalog</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\ProjectManager\Source\GemCatalog\GemRequirementListView.h">
+      <Filter>Source\GemCatalog</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\ProjectManager\Source\GemCatalog\GemSortFilterProxyModel.h">
+      <Filter>Source\GemCatalog</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\ProjectManager\Source\GemRepo\GemRepoScreen.h">
+      <Filter>Source\GemRepo</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\ProjectManager\Source\GemRepo\GemRepoInfo.h">
+      <Filter>Source\GemRepo</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\ProjectManager\Source\GemRepo\GemRepoItemDelegate.h">
+      <Filter>Source\GemRepo</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\ProjectManager\Source\GemRepo\GemRepoListView.h">
+      <Filter>Source\GemRepo</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\ProjectManager\Source\GemRepo\GemRepoModel.h">
+      <Filter>Source\GemRepo</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Code\Tools\ProjectManager\CMakeLists.txt">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="C:\Users\lesaelr\o3de\Code\Tools\ProjectManager\project_manager_files.cmake" />
+    <None Include="C:\Users\lesaelr\o3de\Code\Tools\ProjectManager\Platform\Windows\PAL_windows_files.cmake">
+      <Filter>Platform\Windows</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Tools\ProjectManager\Platform\Windows\PAL_windows.cmake">
+      <Filter>Platform\Windows</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Tools\ProjectManager\Platform\Common\MSVC\projectmanager_msvc.cmake">
+      <Filter>Platform\Common\MSVC</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Generated Files">
+      <UniqueIdentifier>{FB9B7D8B-7F05-31D5-AA90-592248EDE1B3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Platform">
+      <UniqueIdentifier>{378A8D8C-6CA1-3F6B-A02B-1E9FF64C97B2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Platform\Common">
+      <UniqueIdentifier>{0EAED895-BF71-3C34-B697-D34AC533F377}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Platform\Common\MSVC">
+      <UniqueIdentifier>{883C5313-C39C-3C49-9C84-39593C4125EC}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Platform\Windows">
+      <UniqueIdentifier>{63AEF2F6-51C7-306A-BFE8-A049C8C62EFB}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source">
+      <UniqueIdentifier>{F3F0AD47-5F83-373B-A2BF-650D2E4FA3EA}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\GemCatalog">
+      <UniqueIdentifier>{6BE31602-5445-3A4D-9908-604520FC48B0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\GemRepo">
+      <UniqueIdentifier>{BAF3F56B-E0B4-3FAB-8CF3-9DD3823A5F1A}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

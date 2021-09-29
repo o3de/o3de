@@ -1,0 +1,473 @@
+{
+	"BUILD_DIR" : "C:/Users/lesaelr/o3de/External/Atom-418206cc/Tools/AtomToolsFramework/Code/AtomToolsFramework.Static_autogen",
+	"CMAKE_BINARY_DIR" : "C:/Users/lesaelr/o3de",
+	"CMAKE_CURRENT_BINARY_DIR" : "C:/Users/lesaelr/o3de/External/Atom-418206cc/Tools/AtomToolsFramework/Code",
+	"CMAKE_CURRENT_SOURCE_DIR" : "C:/Users/lesaelr/o3de/Gems/Atom/Tools/AtomToolsFramework/Code",
+	"CMAKE_EXECUTABLE" : "C:/Program Files/CMake/bin/cmake.exe",
+	"CMAKE_LIST_FILES" : 
+	[
+		"C:/Users/lesaelr/o3de/Gems/Atom/Tools/AtomToolsFramework/Code/CMakeLists.txt",
+		"C:/Users/lesaelr/o3de/Gems/Atom/Tools/AtomToolsFramework/Code/atomtoolsframework_files.cmake",
+		"C:/Users/lesaelr/o3de/Gems/Atom/Tools/AtomToolsFramework/Code/atomtoolsframework_shared_files.cmake",
+		"C:/Users/lesaelr/o3de/Gems/Atom/Tools/AtomToolsFramework/Code/Source/Inspector/InspectorWidget.qrc"
+	],
+	"CMAKE_SOURCE_DIR" : "C:/Users/lesaelr/o3de",
+	"DEP_FILE" : "",
+	"DEP_FILE_RULE_NAME" : "",
+	"HEADERS" : 
+	[
+		[
+			"C:/Users/lesaelr/o3de/Gems/Atom/Tools/AtomToolsFramework/Code/Include/AtomToolsFramework/Application/AtomToolsApplication.h",
+			"Mu",
+			"Z3UJMNRMM7/moc_AtomToolsApplication.cpp",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Gems/Atom/Tools/AtomToolsFramework/Code/Include/AtomToolsFramework/Communication/LocalServer.h",
+			"Mu",
+			"2SOB3NPF2Z/moc_LocalServer.cpp",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Gems/Atom/Tools/AtomToolsFramework/Code/Include/AtomToolsFramework/Communication/LocalSocket.h",
+			"Mu",
+			"2SOB3NPF2Z/moc_LocalSocket.cpp",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Gems/Atom/Tools/AtomToolsFramework/Code/Include/AtomToolsFramework/Debug/TraceRecorder.h",
+			"Mu",
+			"Q7EVMR6FR4/moc_TraceRecorder.cpp",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Gems/Atom/Tools/AtomToolsFramework/Code/Include/AtomToolsFramework/Document/AtomToolsDocument.h",
+			"Mu",
+			"CFKRZ4CXGM/moc_AtomToolsDocument.cpp",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Gems/Atom/Tools/AtomToolsFramework/Code/Include/AtomToolsFramework/Document/AtomToolsDocumentMainWindow.h",
+			"Mu",
+			"CFKRZ4CXGM/moc_AtomToolsDocumentMainWindow.cpp",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Gems/Atom/Tools/AtomToolsFramework/Code/Include/AtomToolsFramework/Document/AtomToolsDocumentNotificationBus.h",
+			"Mu",
+			"CFKRZ4CXGM/moc_AtomToolsDocumentNotificationBus.cpp",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Gems/Atom/Tools/AtomToolsFramework/Code/Include/AtomToolsFramework/Document/AtomToolsDocumentRequestBus.h",
+			"Mu",
+			"CFKRZ4CXGM/moc_AtomToolsDocumentRequestBus.cpp",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Gems/Atom/Tools/AtomToolsFramework/Code/Include/AtomToolsFramework/Document/AtomToolsDocumentSystemRequestBus.h",
+			"Mu",
+			"CFKRZ4CXGM/moc_AtomToolsDocumentSystemRequestBus.cpp",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Gems/Atom/Tools/AtomToolsFramework/Code/Include/AtomToolsFramework/Document/AtomToolsDocumentSystemSettings.h",
+			"Mu",
+			"CFKRZ4CXGM/moc_AtomToolsDocumentSystemSettings.cpp",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Gems/Atom/Tools/AtomToolsFramework/Code/Include/AtomToolsFramework/DynamicProperty/DynamicProperty.h",
+			"Mu",
+			"U33GKL7DTO/moc_DynamicProperty.cpp",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Gems/Atom/Tools/AtomToolsFramework/Code/Include/AtomToolsFramework/DynamicProperty/DynamicPropertyGroup.h",
+			"Mu",
+			"U33GKL7DTO/moc_DynamicPropertyGroup.cpp",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Gems/Atom/Tools/AtomToolsFramework/Code/Include/AtomToolsFramework/Inspector/InspectorGroupHeaderWidget.h",
+			"Mu",
+			"IYBBZ57MAO/moc_InspectorGroupHeaderWidget.cpp",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Gems/Atom/Tools/AtomToolsFramework/Code/Include/AtomToolsFramework/Inspector/InspectorGroupWidget.h",
+			"Mu",
+			"IYBBZ57MAO/moc_InspectorGroupWidget.cpp",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Gems/Atom/Tools/AtomToolsFramework/Code/Include/AtomToolsFramework/Inspector/InspectorNotificationBus.h",
+			"Mu",
+			"IYBBZ57MAO/moc_InspectorNotificationBus.cpp",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Gems/Atom/Tools/AtomToolsFramework/Code/Include/AtomToolsFramework/Inspector/InspectorPropertyGroupWidget.h",
+			"Mu",
+			"IYBBZ57MAO/moc_InspectorPropertyGroupWidget.cpp",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Gems/Atom/Tools/AtomToolsFramework/Code/Include/AtomToolsFramework/Inspector/InspectorRequestBus.h",
+			"Mu",
+			"IYBBZ57MAO/moc_InspectorRequestBus.cpp",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Gems/Atom/Tools/AtomToolsFramework/Code/Include/AtomToolsFramework/Inspector/InspectorWidget.h",
+			"Mu",
+			"IYBBZ57MAO/moc_InspectorWidget.cpp",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Gems/Atom/Tools/AtomToolsFramework/Code/Include/AtomToolsFramework/Util/MaterialPropertyUtil.h",
+			"Mu",
+			"JA2NMBFE46/moc_MaterialPropertyUtil.cpp",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Gems/Atom/Tools/AtomToolsFramework/Code/Include/AtomToolsFramework/Util/Util.h",
+			"Mu",
+			"JA2NMBFE46/moc_Util.cpp",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Gems/Atom/Tools/AtomToolsFramework/Code/Include/AtomToolsFramework/Viewport/ModularViewportCameraController.h",
+			"Mu",
+			"E3VKRBFSZP/moc_ModularViewportCameraController.cpp",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Gems/Atom/Tools/AtomToolsFramework/Code/Include/AtomToolsFramework/Viewport/ModularViewportCameraControllerRequestBus.h",
+			"Mu",
+			"E3VKRBFSZP/moc_ModularViewportCameraControllerRequestBus.cpp",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Gems/Atom/Tools/AtomToolsFramework/Code/Include/AtomToolsFramework/Viewport/RenderViewportWidget.h",
+			"Mu",
+			"E3VKRBFSZP/moc_RenderViewportWidget.cpp",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Gems/Atom/Tools/AtomToolsFramework/Code/Include/AtomToolsFramework/Viewport/RenderViewportWidgetNotificationBus.h",
+			"Mu",
+			"E3VKRBFSZP/moc_RenderViewportWidgetNotificationBus.cpp",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Gems/Atom/Tools/AtomToolsFramework/Code/Include/AtomToolsFramework/Window/AtomToolsMainWindow.h",
+			"Mu",
+			"B6TQHDXYE3/moc_AtomToolsMainWindow.cpp",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Gems/Atom/Tools/AtomToolsFramework/Code/Include/AtomToolsFramework/Window/AtomToolsMainWindowFactoryRequestBus.h",
+			"Mu",
+			"B6TQHDXYE3/moc_AtomToolsMainWindowFactoryRequestBus.cpp",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Gems/Atom/Tools/AtomToolsFramework/Code/Include/AtomToolsFramework/Window/AtomToolsMainWindowNotificationBus.h",
+			"Mu",
+			"B6TQHDXYE3/moc_AtomToolsMainWindowNotificationBus.cpp",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Gems/Atom/Tools/AtomToolsFramework/Code/Include/AtomToolsFramework/Window/AtomToolsMainWindowRequestBus.h",
+			"Mu",
+			"B6TQHDXYE3/moc_AtomToolsMainWindowRequestBus.cpp",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Gems/Atom/Tools/AtomToolsFramework/Code/Source/Document/AtomToolsDocumentSystemComponent.h",
+			"Mu",
+			"7HFTCE577T/moc_AtomToolsDocumentSystemComponent.cpp",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Gems/Atom/Tools/AtomToolsFramework/Code/Source/Window/AtomToolsMainWindowSystemComponent.h",
+			"Mu",
+			"L6L7XOLXOZ/moc_AtomToolsMainWindowSystemComponent.cpp",
+			null
+		]
+	],
+	"HEADER_EXTENSIONS" : [ "h", "hh", "h++", "hm", "hpp", "hxx", "in", "txx" ],
+	"INCLUDE_DIR" : "C:/Users/lesaelr/o3de/External/Atom-418206cc/Tools/AtomToolsFramework/Code/AtomToolsFramework.Static_autogen/include",
+	"INCLUDE_DIR_debug" : "C:/Users/lesaelr/o3de/External/Atom-418206cc/Tools/AtomToolsFramework/Code/AtomToolsFramework.Static_autogen/include_debug",
+	"INCLUDE_DIR_profile" : "C:/Users/lesaelr/o3de/External/Atom-418206cc/Tools/AtomToolsFramework/Code/AtomToolsFramework.Static_autogen/include_profile",
+	"INCLUDE_DIR_release" : "C:/Users/lesaelr/o3de/External/Atom-418206cc/Tools/AtomToolsFramework/Code/AtomToolsFramework.Static_autogen/include_release",
+	"MOC_COMPILATION_FILE" : "C:/Users/lesaelr/o3de/External/Atom-418206cc/Tools/AtomToolsFramework/Code/AtomToolsFramework.Static_autogen/mocs_compilation.cpp",
+	"MOC_COMPILATION_FILE_debug" : "C:/Users/lesaelr/o3de/External/Atom-418206cc/Tools/AtomToolsFramework/Code/AtomToolsFramework.Static_autogen/mocs_compilation_debug.cpp",
+	"MOC_COMPILATION_FILE_profile" : "C:/Users/lesaelr/o3de/External/Atom-418206cc/Tools/AtomToolsFramework/Code/AtomToolsFramework.Static_autogen/mocs_compilation_profile.cpp",
+	"MOC_COMPILATION_FILE_release" : "C:/Users/lesaelr/o3de/External/Atom-418206cc/Tools/AtomToolsFramework/Code/AtomToolsFramework.Static_autogen/mocs_compilation_release.cpp",
+	"MOC_DEFINITIONS" : 
+	[
+		"DEFAULT_LY_PYTHONHOME=\"C:/Users/lesaelr/o3de/python/runtime/python-3.7.10-rev2-windows/python\"",
+		"NOMINMAX",
+		"OPENSSL_ENABLED",
+		"QT_CORE_LIB",
+		"QT_GUI_LIB",
+		"QT_NETWORK_LIB",
+		"QT_NO_DEBUG",
+		"QT_SVG_LIB",
+		"QT_WIDGETS_LIB",
+		"QT_XML_LIB",
+		"WIN32",
+		"WIN64",
+		"_ENABLE_EXTENDED_ALIGNED_STORAGE",
+		"_HAS_EXCEPTIONS=0",
+		"_WIN32",
+		"_WIN64"
+	],
+	"MOC_DEFINITIONS_debug" : 
+	[
+		"AZ_BUILD_CONFIGURATION_TYPE=\"debug\"",
+		"AZ_DEBUG_BUILD=1",
+		"AZ_ENABLE_DEBUG_TOOLS",
+		"AZ_ENABLE_TRACING",
+		"DEFAULT_LY_PYTHONHOME=\"C:/Users/lesaelr/o3de/python/runtime/python-3.7.10-rev2-windows/python\"",
+		"NOMINMAX",
+		"OPENSSL_ENABLED",
+		"QT_CORE_LIB",
+		"QT_GUI_LIB",
+		"QT_NETWORK_LIB",
+		"QT_SVG_LIB",
+		"QT_WIDGETS_LIB",
+		"QT_XML_LIB",
+		"WIN32",
+		"WIN64",
+		"_DEBUG",
+		"_ENABLE_EXTENDED_ALIGNED_STORAGE",
+		"_HAS_EXCEPTIONS=0",
+		"_WIN32",
+		"_WIN64"
+	],
+	"MOC_DEFINITIONS_profile" : 
+	[
+		"AZ_BUILD_CONFIGURATION_TYPE=\"profile\"",
+		"AZ_ENABLE_DEBUG_TOOLS",
+		"AZ_ENABLE_TRACING",
+		"DEFAULT_LY_PYTHONHOME=\"C:/Users/lesaelr/o3de/python/runtime/python-3.7.10-rev2-windows/python\"",
+		"NDEBUG",
+		"NOMINMAX",
+		"OPENSSL_ENABLED",
+		"PROFILE",
+		"QT_CORE_LIB",
+		"QT_GUI_LIB",
+		"QT_NETWORK_LIB",
+		"QT_NO_DEBUG",
+		"QT_SVG_LIB",
+		"QT_WIDGETS_LIB",
+		"QT_XML_LIB",
+		"WIN32",
+		"WIN64",
+		"_ENABLE_EXTENDED_ALIGNED_STORAGE",
+		"_HAS_EXCEPTIONS=0",
+		"_PROFILE",
+		"_WIN32",
+		"_WIN64"
+	],
+	"MOC_DEFINITIONS_release" : 
+	[
+		"AZ_BUILD_CONFIGURATION_TYPE=\"release\"",
+		"DEFAULT_LY_PYTHONHOME=\"C:/Users/lesaelr/o3de/python/runtime/python-3.7.10-rev2-windows/python\"",
+		"NDEBUG",
+		"NOMINMAX",
+		"OPENSSL_ENABLED",
+		"QT_CORE_LIB",
+		"QT_GUI_LIB",
+		"QT_NETWORK_LIB",
+		"QT_NO_DEBUG",
+		"QT_SVG_LIB",
+		"QT_WIDGETS_LIB",
+		"QT_XML_LIB",
+		"RELEASE",
+		"WIN32",
+		"WIN64",
+		"_ENABLE_EXTENDED_ALIGNED_STORAGE",
+		"_HAS_EXCEPTIONS=0",
+		"_RELEASE",
+		"_WIN32",
+		"_WIN64"
+	],
+	"MOC_DEPEND_FILTERS" : 
+	[
+		[
+			"Q_PLUGIN_METADATA",
+			"[\n][ \t]*Q_PLUGIN_METADATA[ \t]*\\([^\\)]*FILE[ \t]*\"([^\"]+)\""
+		]
+	],
+	"MOC_INCLUDES" : 
+	[
+		"C:/Users/lesaelr/o3de/Gems/Atom/Tools/AtomToolsFramework/Code/Source",
+		"C:/Users/lesaelr/o3de/Gems/Atom/Tools/AtomToolsFramework/Code/Include",
+		"C:/Users/lesaelr/o3de/External/Atom-418206cc/Tools/AtomToolsFramework/Code/AtomToolsFramework.Static_autogen/include/Source",
+		"C:/Users/lesaelr/o3de/External/Atom-418206cc/Tools/AtomToolsFramework/Code/AtomToolsFramework.Static_autogen/include/Include",
+		"C:/Users/lesaelr/o3de/External/Atom-418206cc/Tools/AtomToolsFramework/Code/AtomToolsFramework.Static_autogen/include",
+		"C:/Users/lesaelr/o3de/Code/Framework/AzCore",
+		"C:/Users/lesaelr/o3de/Code/Framework/AzCore/Platform/Windows",
+		"C:/Users/lesaelr/o3de/Code/Framework/AzCore/Platform/Common",
+		"C:/Users/lesaelr/o3de/Code/Framework/AzToolsFramework",
+		"C:/Users/lesaelr/o3de/Code/Framework/AzToolsFramework/AzToolsFramework",
+		"C:/Users/lesaelr/o3de/Code/Framework/AzToolsFramework/Platform/Windows",
+		"C:/Users/lesaelr/o3de/Code/Framework/AzFramework",
+		"C:/Users/lesaelr/o3de/Code/Framework/AzFramework/Platform/Windows",
+		"C:/Users/lesaelr/o3de/Code/Framework/GridMate",
+		"C:/Users/lesaelr/o3de/Code/Framework/GridMate/Platform/Windows",
+		"C:/Users/lesaelr/o3de/Code/Framework/AzQtComponents",
+		"C:/Users/lesaelr/o3de/Gems/Atom/RPI/Code/Include",
+		"C:/Users/lesaelr/o3de/Gems/Atom/RPI/Code/External",
+		"C:/Users/lesaelr/o3de/Gems/Atom/RHI/Code/Include",
+		"C:/Users/lesaelr/o3de/Code/Framework/AtomCore",
+		"C:/Users/lesaelr/o3de/Gems/Atom/Bootstrap/Code/Include"
+	],
+	"MOC_MACRO_NAMES" : [ "Q_OBJECT", "Q_GADGET", "Q_NAMESPACE", "Q_NAMESPACE_EXPORT" ],
+	"MOC_OPTIONS" : [],
+	"MOC_PATH_PREFIX" : false,
+	"MOC_PREDEFS_CMD" : [],
+	"MOC_PREDEFS_FILE" : "",
+	"MOC_RELAXED_MODE" : false,
+	"MOC_SKIP" : 
+	[
+		"C:/Users/lesaelr/o3de/External/Atom-418206cc/Tools/AtomToolsFramework/Code/AtomToolsFramework.Static_autogen/include/Source/Inspector/ui_InspectorWidget.h"
+	],
+	"MULTI_CONFIG" : true,
+	"PARALLEL" : 6,
+	"PARSE_CACHE_FILE" : "C:/Users/lesaelr/o3de/External/Atom-418206cc/Tools/AtomToolsFramework/Code/CMakeFiles/AtomToolsFramework.Static_autogen.dir/ParseCache.txt",
+	"PARSE_CACHE_FILE_debug" : "C:/Users/lesaelr/o3de/External/Atom-418206cc/Tools/AtomToolsFramework/Code/CMakeFiles/AtomToolsFramework.Static_autogen.dir/ParseCache_debug.txt",
+	"PARSE_CACHE_FILE_profile" : "C:/Users/lesaelr/o3de/External/Atom-418206cc/Tools/AtomToolsFramework/Code/CMakeFiles/AtomToolsFramework.Static_autogen.dir/ParseCache_profile.txt",
+	"PARSE_CACHE_FILE_release" : "C:/Users/lesaelr/o3de/External/Atom-418206cc/Tools/AtomToolsFramework/Code/CMakeFiles/AtomToolsFramework.Static_autogen.dir/ParseCache_release.txt",
+	"QT_MOC_EXECUTABLE" : "C:/Users/lesaelr/.o3de/3rdParty/packages/qt-5.15.2-rev4-windows/qt/bin/moc.exe",
+	"QT_UIC_EXECUTABLE" : "",
+	"QT_VERSION_MAJOR" : 5,
+	"QT_VERSION_MINOR" : 15,
+	"SETTINGS_FILE" : "C:/Users/lesaelr/o3de/External/Atom-418206cc/Tools/AtomToolsFramework/Code/CMakeFiles/AtomToolsFramework.Static_autogen.dir/AutogenUsed.txt",
+	"SETTINGS_FILE_debug" : "C:/Users/lesaelr/o3de/External/Atom-418206cc/Tools/AtomToolsFramework/Code/CMakeFiles/AtomToolsFramework.Static_autogen.dir/AutogenUsed_debug.txt",
+	"SETTINGS_FILE_profile" : "C:/Users/lesaelr/o3de/External/Atom-418206cc/Tools/AtomToolsFramework/Code/CMakeFiles/AtomToolsFramework.Static_autogen.dir/AutogenUsed_profile.txt",
+	"SETTINGS_FILE_release" : "C:/Users/lesaelr/o3de/External/Atom-418206cc/Tools/AtomToolsFramework/Code/CMakeFiles/AtomToolsFramework.Static_autogen.dir/AutogenUsed_release.txt",
+	"SOURCES" : 
+	[
+		[
+			"C:/Users/lesaelr/o3de/External/Atom-418206cc/Tools/AtomToolsFramework/Code/CMakeFiles/AtomToolsFramework.Static.dir/Unity/unity_0_cxx.cxx",
+			"Mu",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/External/Atom-418206cc/Tools/AtomToolsFramework/Code/CMakeFiles/AtomToolsFramework.Static.dir/Unity/unity_1_cxx.cxx",
+			"Mu",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/External/Atom-418206cc/Tools/AtomToolsFramework/Code/CMakeFiles/AtomToolsFramework.Static.dir/Unity/unity_2_cxx.cxx",
+			"Mu",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Gems/Atom/Tools/AtomToolsFramework/Code/Source/Application/AtomToolsApplication.cpp",
+			"Mu",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Gems/Atom/Tools/AtomToolsFramework/Code/Source/Communication/LocalServer.cpp",
+			"Mu",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Gems/Atom/Tools/AtomToolsFramework/Code/Source/Communication/LocalSocket.cpp",
+			"Mu",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Gems/Atom/Tools/AtomToolsFramework/Code/Source/Debug/TraceRecorder.cpp",
+			"Mu",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Gems/Atom/Tools/AtomToolsFramework/Code/Source/Document/AtomToolsDocument.cpp",
+			"Mu",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Gems/Atom/Tools/AtomToolsFramework/Code/Source/Document/AtomToolsDocumentMainWindow.cpp",
+			"Mu",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Gems/Atom/Tools/AtomToolsFramework/Code/Source/Document/AtomToolsDocumentSystemComponent.cpp",
+			"Mu",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Gems/Atom/Tools/AtomToolsFramework/Code/Source/Document/AtomToolsDocumentSystemSettings.cpp",
+			"Mu",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Gems/Atom/Tools/AtomToolsFramework/Code/Source/DynamicProperty/DynamicProperty.cpp",
+			"Mu",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Gems/Atom/Tools/AtomToolsFramework/Code/Source/DynamicProperty/DynamicPropertyGroup.cpp",
+			"Mu",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Gems/Atom/Tools/AtomToolsFramework/Code/Source/Inspector/InspectorGroupHeaderWidget.cpp",
+			"Mu",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Gems/Atom/Tools/AtomToolsFramework/Code/Source/Inspector/InspectorGroupWidget.cpp",
+			"Mu",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Gems/Atom/Tools/AtomToolsFramework/Code/Source/Inspector/InspectorPropertyGroupWidget.cpp",
+			"Mu",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Gems/Atom/Tools/AtomToolsFramework/Code/Source/Inspector/InspectorWidget.cpp",
+			"Mu",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Gems/Atom/Tools/AtomToolsFramework/Code/Source/Util/MaterialPropertyUtil.cpp",
+			"Mu",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Gems/Atom/Tools/AtomToolsFramework/Code/Source/Util/Util.cpp",
+			"Mu",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Gems/Atom/Tools/AtomToolsFramework/Code/Source/Viewport/ModularViewportCameraController.cpp",
+			"Mu",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Gems/Atom/Tools/AtomToolsFramework/Code/Source/Viewport/RenderViewportWidget.cpp",
+			"Mu",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Gems/Atom/Tools/AtomToolsFramework/Code/Source/Window/AtomToolsMainWindow.cpp",
+			"Mu",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Gems/Atom/Tools/AtomToolsFramework/Code/Source/Window/AtomToolsMainWindowSystemComponent.cpp",
+			"Mu",
+			null
+		]
+	],
+	"VERBOSITY" : 0
+}

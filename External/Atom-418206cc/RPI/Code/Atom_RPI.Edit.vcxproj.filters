@@ -1,0 +1,215 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\Atom-418206cc\RPI\Code\CMakeFiles\Atom_RPI.Edit.dir\Unity\unity_2_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\Atom-418206cc\RPI\Code\CMakeFiles\Atom_RPI.Edit.dir\Unity\unity_1_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\Atom-418206cc\RPI\Code\CMakeFiles\Atom_RPI.Edit.dir\Unity\unity_0_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\RPI\Code\Source\RPI.Edit\Material\LuaMaterialFunctorSourceData.cpp">
+      <Filter>Source\RPI.Edit\Material</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\RPI\Code\Source\RPI.Edit\Material\MaterialTypeSourceData.cpp">
+      <Filter>Source\RPI.Edit\Material</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\RPI\Code\Source\RPI.Edit\Material\MaterialPropertyId.cpp">
+      <Filter>Source\RPI.Edit\Material</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\RPI\Code\Source\RPI.Edit\Material\MaterialPropertySerializer.cpp">
+      <Filter>Source\RPI.Edit\Material</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\RPI\Code\Source\RPI.Edit\Material\MaterialPropertyValueSerializer.cpp">
+      <Filter>Source\RPI.Edit\Material</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\RPI\Code\Source\RPI.Edit\Material\MaterialPropertyValueSourceData.cpp">
+      <Filter>Source\RPI.Edit\Material</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\RPI\Code\Source\RPI.Edit\Material\MaterialPropertyValueSourceDataSerializer.cpp">
+      <Filter>Source\RPI.Edit\Material</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\RPI\Code\Source\RPI.Edit\Material\MaterialSourceData.cpp">
+      <Filter>Source\RPI.Edit\Material</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\RPI\Code\Source\RPI.Edit\Material\MaterialSourceDataSerializer.cpp">
+      <Filter>Source\RPI.Edit\Material</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\RPI\Code\Source\RPI.Edit\Material\MaterialFunctorSourceData.cpp">
+      <Filter>Source\RPI.Edit\Material</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\RPI\Code\Source\RPI.Edit\Material\MaterialFunctorSourceDataSerializer.cpp">
+      <Filter>Source\RPI.Edit\Material</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\RPI\Code\Source\RPI.Edit\Material\MaterialFunctorSourceDataRegistration.cpp">
+      <Filter>Source\RPI.Edit\Material</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\RPI\Code\Source\RPI.Edit\Material\MaterialUtils.cpp">
+      <Filter>Source\RPI.Edit\Material</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\RPI\Code\Source\RPI.Edit\Shader\ShaderSourceData.cpp">
+      <Filter>Source\RPI.Edit\Shader</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\RPI\Code\Source\RPI.Edit\Shader\ShaderVariantListSourceData.cpp">
+      <Filter>Source\RPI.Edit\Shader</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\RPI\Code\Source\RPI.Edit\Shader\ShaderVariantAssetCreator.cpp">
+      <Filter>Source\RPI.Edit\Shader</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\RPI\Code\Source\RPI.Edit\Shader\ShaderVariantTreeAssetCreator.cpp">
+      <Filter>Source\RPI.Edit\Shader</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\RPI\Code\Source\RPI.Edit\Common\AssetUtils.cpp">
+      <Filter>Source\RPI.Edit\Common</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\RPI\Code\Source\RPI.Edit\Common\AssetAliasesSourceData.cpp">
+      <Filter>Source\RPI.Edit\Common</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\RPI\Code\Source\RPI.Edit\Common\ColorUtils.cpp">
+      <Filter>Source\RPI.Edit\Common</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\RPI\Code\Source\RPI.Edit\Common\ConvertibleSource.cpp">
+      <Filter>Source\RPI.Edit\Common</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\RPI\Code\Source\RPI.Edit\Common\JsonFileLoadContext.cpp">
+      <Filter>Source\RPI.Edit\Common</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\RPI\Code\Source\RPI.Edit\Common\JsonReportingHelper.cpp">
+      <Filter>Source\RPI.Edit\Common</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\RPI\Code\Source\RPI.Edit\Common\JsonUtils.cpp">
+      <Filter>Source\RPI.Edit\Common</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\RPI\Code\Include\Atom\RPI.Edit\Common\AssetUtils.h">
+      <Filter>Include\Atom\RPI.Edit\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\RPI\Code\Include\Atom\RPI.Edit\Common\AssetAliasesSourceData.h">
+      <Filter>Include\Atom\RPI.Edit\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\RPI\Code\Include\Atom\RPI.Edit\Common\ColorUtils.h">
+      <Filter>Include\Atom\RPI.Edit\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\RPI\Code\Include\Atom\RPI.Edit\Common\ConvertibleSource.h">
+      <Filter>Include\Atom\RPI.Edit\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\RPI\Code\Include\Atom\RPI.Edit\Common\JsonFileLoadContext.h">
+      <Filter>Include\Atom\RPI.Edit\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\RPI\Code\Include\Atom\RPI.Edit\Common\JsonReportingHelper.h">
+      <Filter>Include\Atom\RPI.Edit\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\RPI\Code\Include\Atom\RPI.Edit\Common\JsonUtils.h">
+      <Filter>Include\Atom\RPI.Edit\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\RPI\Code\Include\Atom\RPI.Edit\Material\LuaMaterialFunctorSourceData.h">
+      <Filter>Include\Atom\RPI.Edit\Material</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\RPI\Code\Include\Atom\RPI.Edit\Material\MaterialTypeSourceData.h">
+      <Filter>Include\Atom\RPI.Edit\Material</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\RPI\Code\Include\Atom\RPI.Edit\Material\MaterialConverterBus.h">
+      <Filter>Include\Atom\RPI.Edit\Material</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\RPI\Code\Include\Atom\RPI.Edit\Material\MaterialPropertyId.h">
+      <Filter>Include\Atom\RPI.Edit\Material</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\RPI\Code\Include\Atom\RPI.Edit\Material\MaterialPropertySerializer.h">
+      <Filter>Include\Atom\RPI.Edit\Material</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\RPI\Code\Include\Atom\RPI.Edit\Material\MaterialPropertyValueSerializer.h">
+      <Filter>Include\Atom\RPI.Edit\Material</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\RPI\Code\Include\Atom\RPI.Edit\Material\MaterialPropertyValueSourceData.h">
+      <Filter>Include\Atom\RPI.Edit\Material</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\RPI\Code\Include\Atom\RPI.Edit\Material\MaterialPropertyValueSourceDataSerializer.h">
+      <Filter>Include\Atom\RPI.Edit\Material</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\RPI\Code\Include\Atom\RPI.Edit\Material\MaterialSourceData.h">
+      <Filter>Include\Atom\RPI.Edit\Material</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\RPI\Code\Include\Atom\RPI.Edit\Material\MaterialSourceDataSerializer.h">
+      <Filter>Include\Atom\RPI.Edit\Material</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\RPI\Code\Include\Atom\RPI.Edit\Material\MaterialFunctorSourceData.h">
+      <Filter>Include\Atom\RPI.Edit\Material</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\RPI\Code\Include\Atom\RPI.Edit\Material\MaterialFunctorSourceDataSerializer.h">
+      <Filter>Include\Atom\RPI.Edit\Material</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\RPI\Code\Include\Atom\RPI.Edit\Material\MaterialFunctorSourceDataRegistration.h">
+      <Filter>Include\Atom\RPI.Edit\Material</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\RPI\Code\Include\Atom\RPI.Edit\Material\MaterialUtils.h">
+      <Filter>Include\Atom\RPI.Edit\Material</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\RPI\Code\Include\Atom\RPI.Edit\ResourcePool\ResourcePoolSourceData.h">
+      <Filter>Include\Atom\RPI.Edit\ResourcePool</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\RPI\Code\Include\Atom\RPI.Edit\Shader\ShaderSourceData.h">
+      <Filter>Include\Atom\RPI.Edit\Shader</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\RPI\Code\Include\Atom\RPI.Edit\Shader\ShaderVariantListSourceData.h">
+      <Filter>Include\Atom\RPI.Edit\Shader</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\RPI\Code\Include\Atom\RPI.Edit\Shader\ShaderVariantAssetCreator.h">
+      <Filter>Include\Atom\RPI.Edit\Shader</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\RPI\Code\Include\Atom\RPI.Edit\Shader\ShaderVariantTreeAssetCreator.h">
+      <Filter>Include\Atom\RPI.Edit\Shader</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Gems\Atom\RPI\Code\CMakeLists.txt">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\RPI\Code\atom_rpi_edit_files.cmake" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Generated Files">
+      <UniqueIdentifier>{FB9B7D8B-7F05-31D5-AA90-592248EDE1B3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include">
+      <UniqueIdentifier>{E188105A-C8C4-34BB-9809-15E8410EF7F8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\Atom">
+      <UniqueIdentifier>{D3FF6349-761F-30FE-A9A9-4A8D0DE47ADF}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\Atom\RPI.Edit">
+      <UniqueIdentifier>{6BF718E5-92BE-3206-9E24-43448F5AEEF8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\Atom\RPI.Edit\Common">
+      <UniqueIdentifier>{277ECBDE-DACF-36D8-B1EB-14705E85CFB3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\Atom\RPI.Edit\Material">
+      <UniqueIdentifier>{EDDC388D-C383-385B-9742-E57CDBB9C6CA}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\Atom\RPI.Edit\ResourcePool">
+      <UniqueIdentifier>{C57D2828-E5B5-3A95-8FD8-D862D540930D}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\Atom\RPI.Edit\Shader">
+      <UniqueIdentifier>{E479347E-0943-3211-BEE2-41DB354F76B6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source">
+      <UniqueIdentifier>{F3F0AD47-5F83-373B-A2BF-650D2E4FA3EA}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\RPI.Edit">
+      <UniqueIdentifier>{7CC254AD-100D-3C2F-82A4-F5579FBAFC30}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\RPI.Edit\Common">
+      <UniqueIdentifier>{0C6B1251-421A-3E27-8D35-4DB552F0C543}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\RPI.Edit\Material">
+      <UniqueIdentifier>{57EC2D1F-5C80-358B-BA2F-11C116D232CE}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\RPI.Edit\Shader">
+      <UniqueIdentifier>{FBFC3158-EE6D-39AD-9E74-17E133D1C8ED}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

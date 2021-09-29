@@ -1,0 +1,252 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\EditorCore_autogen\mocs_compilation_debug.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\CMakeFiles\EditorCore.dir\Unity\unity_3_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\CMakeFiles\EditorCore.dir\Unity\unity_2_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\CMakeFiles\EditorCore.dir\Unity\unity_1_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\CMakeFiles\EditorCore.dir\Unity\unity_0_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\Include\EditorCoreAPI.cpp">
+      <Filter>Include</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\Controls\ReflectedPropertyControl\ReflectedPropertyCtrl.cpp">
+      <Filter>Controls\ReflectedPropertyControl</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\Controls\ReflectedPropertyControl\ReflectedPropertyItem.cpp">
+      <Filter>Controls\ReflectedPropertyControl</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\Controls\ReflectedPropertyControl\ReflectedVar.cpp">
+      <Filter>Controls\ReflectedPropertyControl</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\Controls\ReflectedPropertyControl\ReflectedVarWrapper.cpp">
+      <Filter>Controls\ReflectedPropertyControl</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\Controls\QBitmapPreviewDialog.cpp">
+      <Filter>Controls</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\Controls\QBitmapPreviewDialogImp.cpp">
+      <Filter>Controls</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\Controls\QToolTipWidget.cpp">
+      <Filter>Controls</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\BaseLibraryItem.cpp" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\BaseLibrary.cpp" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\UsedResources.cpp" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\UIEnumsDatabase.cpp" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\QtViewPaneManager.cpp" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\ErrorRecorder.cpp" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\ErrorDialog.cpp" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\Clipboard.cpp" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\Util\MemoryBlock.cpp">
+      <Filter>Util</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\Util\Variable.cpp">
+      <Filter>Util</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\Util\UndoUtil.cpp">
+      <Filter>Util</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\Util\VariablePropertyType.cpp">
+      <Filter>Util</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\Util\PathUtil.cpp">
+      <Filter>Util</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\Util\ImageHistogram.cpp">
+      <Filter>Util</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\Util\Image.cpp">
+      <Filter>Util</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\Util\ColorUtils.cpp">
+      <Filter>Util</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\Undo\Undo.cpp">
+      <Filter>Undo</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\QtUI\ColorButton.cpp">
+      <Filter>QtUI</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\EditorCore_autogen\mocs_compilation_profile.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\EditorCore_autogen\mocs_compilation_release.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\BaseLibrary.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\BaseLibraryItem.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\UsedResources.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\UIEnumsDatabase.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Include\IErrorReport.h">
+      <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Include\IBaseLibraryManager.h">
+      <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Include\IFileUtil.h">
+      <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Include\EditorCoreAPI.h">
+      <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Include\IEditorMaterial.h">
+      <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Include\IEditorMaterialManager.h">
+      <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Include\IImageUtil.h">
+      <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Controls\ReflectedPropertyControl\ReflectedPropertyCtrl.h">
+      <Filter>Controls\ReflectedPropertyControl</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Controls\ReflectedPropertyControl\ReflectedPropertyItem.h">
+      <Filter>Controls\ReflectedPropertyControl</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Controls\ReflectedPropertyControl\ReflectedVar.h">
+      <Filter>Controls\ReflectedPropertyControl</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Controls\ReflectedPropertyControl\ReflectedVarWrapper.h">
+      <Filter>Controls\ReflectedPropertyControl</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Controls\QBitmapPreviewDialog.h">
+      <Filter>Controls</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Controls\QBitmapPreviewDialogImp.h">
+      <Filter>Controls</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Controls\QToolTipWidget.h">
+      <Filter>Controls</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\LyViewPaneNames.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\QtViewPaneManager.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\ErrorRecorder.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\ErrorDialog.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Clipboard.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Util\MemoryBlock.h">
+      <Filter>Util</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Util\Variable.h">
+      <Filter>Util</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Util\UndoUtil.h">
+      <Filter>Util</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Util\VariablePropertyType.h">
+      <Filter>Util</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Util\RefCountBase.h">
+      <Filter>Util</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Util\PathUtil.h">
+      <Filter>Util</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Util\ImageHistogram.h">
+      <Filter>Util</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Util\Image.h">
+      <Filter>Util</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Util\ColorUtils.h">
+      <Filter>Util</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Undo\IUndoManagerListener.h">
+      <Filter>Undo</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Undo\IUndoObject.h">
+      <Filter>Undo</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Undo\Undo.h">
+      <Filter>Undo</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Undo\UndoVariableChange.h">
+      <Filter>Undo</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\WinWidgetId.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\QtUI\ColorButton.h">
+      <Filter>QtUI</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\QtUtil.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\QtUtilWin.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\QtViewPane.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\EditorCore_autogen\include\Controls\ui_QBitmapPreviewDialog.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\EditorCore_autogen\include\ui_ErrorDialog.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Code\Editor\Controls\QBitmapPreviewDialog.ui">
+      <Filter>Controls</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Code\Editor\ErrorDialog.ui" />
+    <CustomBuild Include="C:\Users\lesaelr\o3de\CMakeFiles\08b24365a84bd27d080f6dd51f42b933\EditorCore_(CONFIG).stamp.rule">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Code\Editor\CMakeLists.txt">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\Controls\ReflectedPropertyControl\ReflectedPropertyCtrl.qrc">
+      <Filter>Controls\ReflectedPropertyControl</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\editor_core_files.cmake" />
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\Platform\Windows\editor_core_files_windows.cmake">
+      <Filter>Platform\Windows</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\runtime_dependencies\debug\EditorCore_debug.stamp">
+      <Filter>Generated Files</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\runtime_dependencies\profile\EditorCore_profile.stamp">
+      <Filter>Generated Files</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\runtime_dependencies\release\EditorCore_release.stamp">
+      <Filter>Generated Files</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Controls">
+      <UniqueIdentifier>{B78162EC-EA55-327D-93B0-31314D0B8F8E}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Controls\ReflectedPropertyControl">
+      <UniqueIdentifier>{CE05B3D2-0C2F-3848-BAB2-5B32A7467371}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Generated Files">
+      <UniqueIdentifier>{FB9B7D8B-7F05-31D5-AA90-592248EDE1B3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include">
+      <UniqueIdentifier>{E188105A-C8C4-34BB-9809-15E8410EF7F8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Platform">
+      <UniqueIdentifier>{378A8D8C-6CA1-3F6B-A02B-1E9FF64C97B2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Platform\Windows">
+      <UniqueIdentifier>{63AEF2F6-51C7-306A-BFE8-A049C8C62EFB}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="QtUI">
+      <UniqueIdentifier>{9BCAEF24-1001-361F-B52E-53D4A608C5FB}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Undo">
+      <UniqueIdentifier>{6439A5D2-97CD-3810-9032-E12DC9CC65F2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Util">
+      <UniqueIdentifier>{CFE2217B-0C2E-336B-A1F7-F1C2582F509B}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

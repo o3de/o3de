@@ -1,0 +1,2740 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework_autogen\mocs_compilation_debug.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\CMakeFiles\AzToolsFramework.dir\Unity\unity_37_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\CMakeFiles\AzToolsFramework.dir\Unity\unity_36_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\CMakeFiles\AzToolsFramework.dir\Unity\unity_35_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\CMakeFiles\AzToolsFramework.dir\Unity\unity_34_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\CMakeFiles\AzToolsFramework.dir\Unity\unity_33_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\CMakeFiles\AzToolsFramework.dir\Unity\unity_32_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\CMakeFiles\AzToolsFramework.dir\Unity\unity_31_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\CMakeFiles\AzToolsFramework.dir\Unity\unity_30_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\CMakeFiles\AzToolsFramework.dir\Unity\unity_29_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\CMakeFiles\AzToolsFramework.dir\Unity\unity_28_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\CMakeFiles\AzToolsFramework.dir\Unity\unity_27_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\CMakeFiles\AzToolsFramework.dir\Unity\unity_26_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\CMakeFiles\AzToolsFramework.dir\Unity\unity_25_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\CMakeFiles\AzToolsFramework.dir\Unity\unity_24_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\CMakeFiles\AzToolsFramework.dir\Unity\unity_23_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\CMakeFiles\AzToolsFramework.dir\Unity\unity_22_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\CMakeFiles\AzToolsFramework.dir\Unity\unity_21_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\CMakeFiles\AzToolsFramework.dir\Unity\unity_20_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\CMakeFiles\AzToolsFramework.dir\Unity\unity_19_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\CMakeFiles\AzToolsFramework.dir\Unity\unity_18_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\CMakeFiles\AzToolsFramework.dir\Unity\unity_17_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\CMakeFiles\AzToolsFramework.dir\Unity\unity_16_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\CMakeFiles\AzToolsFramework.dir\Unity\unity_15_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\CMakeFiles\AzToolsFramework.dir\Unity\unity_14_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\CMakeFiles\AzToolsFramework.dir\Unity\unity_13_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\CMakeFiles\AzToolsFramework.dir\Unity\unity_12_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\CMakeFiles\AzToolsFramework.dir\Unity\unity_11_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\CMakeFiles\AzToolsFramework.dir\Unity\unity_10_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\CMakeFiles\AzToolsFramework.dir\Unity\unity_9_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\CMakeFiles\AzToolsFramework.dir\Unity\unity_8_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\CMakeFiles\AzToolsFramework.dir\Unity\unity_7_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\CMakeFiles\AzToolsFramework.dir\Unity\unity_6_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\CMakeFiles\AzToolsFramework.dir\Unity\unity_5_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\CMakeFiles\AzToolsFramework.dir\Unity\unity_4_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\CMakeFiles\AzToolsFramework.dir\Unity\unity_3_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\CMakeFiles\AzToolsFramework.dir\Unity\unity_2_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\CMakeFiles\AzToolsFramework.dir\Unity\unity_1_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\CMakeFiles\AzToolsFramework.dir\Unity\unity_0_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\AssetEditor\AssetEditorWidget.cpp">
+      <Filter>AzToolsFramework\AssetEditor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\AssetEditor\AssetEditorHeader.cpp">
+      <Filter>AzToolsFramework\AssetEditor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\Logging\LogLine.cpp">
+      <Filter>AzToolsFramework\UI\Logging</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\SearchWidget\SearchCriteriaWidget.cpp">
+      <Filter>AzToolsFramework\UI\SearchWidget</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\AzToolsFrameworkModule.cpp">
+      <Filter>AzToolsFramework</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\API\EditorCameraBus.cpp">
+      <Filter>AzToolsFramework\API</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Application\Ticker.cpp">
+      <Filter>AzToolsFramework\Application</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Application\EditorEntityManager.cpp">
+      <Filter>AzToolsFramework\Application</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Application\ToolsApplication.cpp">
+      <Filter>AzToolsFramework\Application</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Asset\AssetDebugInfo.cpp">
+      <Filter>AzToolsFramework\Asset</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Asset\AssetProcessorMessages.cpp">
+      <Filter>AzToolsFramework\Asset</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Asset\AssetSystemComponent.cpp">
+      <Filter>AzToolsFramework\Asset</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Asset\AssetSeedManager.cpp">
+      <Filter>AzToolsFramework\Asset</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Asset\AssetBundler.cpp">
+      <Filter>AzToolsFramework\Asset</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Asset\AssetUtils.cpp">
+      <Filter>AzToolsFramework\Asset</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\AssetCatalog\PlatformAddressedAssetCatalog.cpp">
+      <Filter>AzToolsFramework\AssetCatalog</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\AssetCatalog\PlatformAddressedAssetCatalogManager.cpp">
+      <Filter>AzToolsFramework\AssetCatalog</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Thumbnails\ThumbnailerComponent.cpp">
+      <Filter>AzToolsFramework\Thumbnails</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Thumbnails\ThumbnailerNullComponent.cpp">
+      <Filter>AzToolsFramework\Thumbnails</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Thumbnails\LoadingThumbnail.cpp">
+      <Filter>AzToolsFramework\Thumbnails</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Thumbnails\MissingThumbnail.cpp">
+      <Filter>AzToolsFramework\Thumbnails</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Thumbnails\SourceControlThumbnail.cpp">
+      <Filter>AzToolsFramework\Thumbnails</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Thumbnails\Thumbnail.cpp">
+      <Filter>AzToolsFramework\Thumbnails</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Thumbnails\ThumbnailContext.cpp">
+      <Filter>AzToolsFramework\Thumbnails</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Thumbnails\ThumbnailWidget.cpp">
+      <Filter>AzToolsFramework\Thumbnails</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\AssetBundle\AssetBundleComponent.cpp">
+      <Filter>AzToolsFramework\AssetBundle</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\AssetDatabase\AssetDatabaseConnection.cpp">
+      <Filter>AzToolsFramework\AssetDatabase</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Debug\TraceContextStack.cpp">
+      <Filter>AzToolsFramework\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Debug\TraceContextSingleStackHandler.cpp">
+      <Filter>AzToolsFramework\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Debug\TraceContextMultiStackHandler.cpp">
+      <Filter>AzToolsFramework\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Debug\TraceContextBufferedFormatter.cpp">
+      <Filter>AzToolsFramework\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Debug\TraceContextLogFormatter.cpp">
+      <Filter>AzToolsFramework\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Component\EditorComponentAPIComponent.cpp">
+      <Filter>AzToolsFramework\Component</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Component\EditorLevelComponentAPIComponent.cpp">
+      <Filter>AzToolsFramework\Component</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Entity\EditorEntityContextComponent.cpp">
+      <Filter>AzToolsFramework\Entity</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Entity\EditorEntityActionComponent.cpp">
+      <Filter>AzToolsFramework\Entity</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Entity\EditorEntityFixupComponent.cpp">
+      <Filter>AzToolsFramework\Entity</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Entity\EditorEntityHelpers.cpp">
+      <Filter>AzToolsFramework\Entity</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Entity\EditorEntityModel.cpp">
+      <Filter>AzToolsFramework\Entity</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Entity\EditorEntityModelComponent.cpp">
+      <Filter>AzToolsFramework\Entity</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Entity\EditorEntitySearchComponent.cpp">
+      <Filter>AzToolsFramework\Entity</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Entity\EditorEntitySortComponent.cpp">
+      <Filter>AzToolsFramework\Entity</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Entity\PrefabEditorEntityOwnershipService.cpp">
+      <Filter>AzToolsFramework\Entity</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Entity\SliceEditorEntityOwnershipService.cpp">
+      <Filter>AzToolsFramework\Entity</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Fingerprinting\TypeFingerprinter.cpp">
+      <Filter>AzToolsFramework\Fingerprinting</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\FocusMode\FocusModeSystemComponent.cpp">
+      <Filter>AzToolsFramework\FocusMode</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Logger\TraceLogger.cpp">
+      <Filter>AzToolsFramework\Logger</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Manipulators\AngularManipulator.cpp">
+      <Filter>AzToolsFramework\Manipulators</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Manipulators\BaseManipulator.cpp">
+      <Filter>AzToolsFramework\Manipulators</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Manipulators\EditorVertexSelection.cpp">
+      <Filter>AzToolsFramework\Manipulators</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Manipulators\LineHoverSelection.cpp">
+      <Filter>AzToolsFramework\Manipulators</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Manipulators\LineSegmentSelectionManipulator.cpp">
+      <Filter>AzToolsFramework\Manipulators</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Manipulators\LinearManipulator.cpp">
+      <Filter>AzToolsFramework\Manipulators</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Manipulators\MultiLinearManipulator.cpp">
+      <Filter>AzToolsFramework\Manipulators</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Manipulators\ManipulatorDebug.cpp">
+      <Filter>AzToolsFramework\Manipulators</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Manipulators\ManipulatorManager.cpp">
+      <Filter>AzToolsFramework\Manipulators</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Manipulators\ManipulatorView.cpp">
+      <Filter>AzToolsFramework\Manipulators</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Manipulators\ManipulatorSnapping.cpp">
+      <Filter>AzToolsFramework\Manipulators</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Manipulators\ManipulatorSpace.cpp">
+      <Filter>AzToolsFramework\Manipulators</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Manipulators\PlanarManipulator.cpp">
+      <Filter>AzToolsFramework\Manipulators</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Manipulators\RotationManipulators.cpp">
+      <Filter>AzToolsFramework\Manipulators</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Manipulators\ScaleManipulators.cpp">
+      <Filter>AzToolsFramework\Manipulators</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Manipulators\SelectionManipulator.cpp">
+      <Filter>AzToolsFramework\Manipulators</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Manipulators\SplineHoverSelection.cpp">
+      <Filter>AzToolsFramework\Manipulators</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Manipulators\SplineSelectionManipulator.cpp">
+      <Filter>AzToolsFramework\Manipulators</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Manipulators\SurfaceManipulator.cpp">
+      <Filter>AzToolsFramework\Manipulators</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Manipulators\TranslationManipulators.cpp">
+      <Filter>AzToolsFramework\Manipulators</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Picking\Manipulators\ManipulatorBoundManager.cpp">
+      <Filter>AzToolsFramework\Picking\Manipulators</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Picking\Manipulators\ManipulatorBounds.cpp">
+      <Filter>AzToolsFramework\Picking\Manipulators</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\PropertyTreeEditor\PropertyTreeEditor.cpp">
+      <Filter>AzToolsFramework\PropertyTreeEditor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\PropertyTreeEditor\PropertyTreeEditorComponent.cpp">
+      <Filter>AzToolsFramework\PropertyTreeEditor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Render\EditorIntersectorComponent.cpp">
+      <Filter>AzToolsFramework\Render</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Slice\SliceDataFlagsCommand.cpp">
+      <Filter>AzToolsFramework\Slice</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Slice\SliceUtilities.cpp">
+      <Filter>AzToolsFramework\Slice</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Slice\SliceCompilation.cpp">
+      <Filter>AzToolsFramework\Slice</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Slice\SliceTransaction.cpp">
+      <Filter>AzToolsFramework\Slice</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Slice\SliceDependencyBrowserComponent.cpp">
+      <Filter>AzToolsFramework\Slice</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Slice\SliceRelationshipNode.cpp">
+      <Filter>AzToolsFramework\Slice</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Slice\SliceRequestComponent.cpp">
+      <Filter>AzToolsFramework\Slice</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Slice\SliceMetadataEntityContextComponent.cpp">
+      <Filter>AzToolsFramework\Slice</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\SourceControl\LocalFileSCComponent.cpp">
+      <Filter>AzToolsFramework\SourceControl</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\SourceControl\PerforceComponent.cpp">
+      <Filter>AzToolsFramework\SourceControl</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\SourceControl\PerforceConnection.cpp">
+      <Filter>AzToolsFramework\SourceControl</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\SourceControl\QtSourceControlNotificationHandler.cpp">
+      <Filter>AzToolsFramework\SourceControl</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\SQLite\SQLiteConnection.cpp">
+      <Filter>AzToolsFramework\SQLite</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\SQLite\SQLiteQuery.cpp">
+      <Filter>AzToolsFramework\SQLite</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\SQLite\SQLiteBoundColumnSet.cpp">
+      <Filter>AzToolsFramework\SQLite</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\ToolsComponents\ComponentAssetMimeDataContainer.cpp">
+      <Filter>AzToolsFramework\ToolsComponents</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\ToolsComponents\ComponentMimeData.cpp">
+      <Filter>AzToolsFramework\ToolsComponents</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\ToolsComponents\EditorAssetMimeDataContainer.cpp">
+      <Filter>AzToolsFramework\ToolsComponents</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\ToolsComponents\EditorAssetReference.cpp">
+      <Filter>AzToolsFramework\ToolsComponents</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\ToolsComponents\EditorComponentBase.cpp">
+      <Filter>AzToolsFramework\ToolsComponents</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\ToolsComponents\EditorDisabledCompositionComponent.cpp">
+      <Filter>AzToolsFramework\ToolsComponents</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\ToolsComponents\EditorOnlyEntityComponent.cpp">
+      <Filter>AzToolsFramework\ToolsComponents</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\ToolsComponents\EditorEntityIdContainer.cpp">
+      <Filter>AzToolsFramework\ToolsComponents</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\ToolsComponents\EditorEntityIconComponent.cpp">
+      <Filter>AzToolsFramework\ToolsComponents</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\ToolsComponents\EditorLayerComponent.cpp">
+      <Filter>AzToolsFramework\ToolsComponents</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\ToolsComponents\LayerResult.cpp">
+      <Filter>AzToolsFramework\ToolsComponents</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\ToolsComponents\EditorLockComponent.cpp">
+      <Filter>AzToolsFramework\ToolsComponents</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\ToolsComponents\EditorInspectorComponent.cpp">
+      <Filter>AzToolsFramework\ToolsComponents</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\ToolsComponents\EditorPendingCompositionComponent.cpp">
+      <Filter>AzToolsFramework\ToolsComponents</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\ToolsComponents\EditorSelectionAccentSystemComponent.cpp">
+      <Filter>AzToolsFramework\ToolsComponents</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\ToolsComponents\EditorVisibilityComponent.cpp">
+      <Filter>AzToolsFramework\ToolsComponents</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\ToolsComponents\GenericComponentWrapper.cpp">
+      <Filter>AzToolsFramework\ToolsComponents</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\ToolsComponents\SelectionComponent.cpp">
+      <Filter>AzToolsFramework\ToolsComponents</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\ToolsComponents\TransformComponent.cpp">
+      <Filter>AzToolsFramework\ToolsComponents</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\ToolsComponents\TransformComponentSerializer.cpp">
+      <Filter>AzToolsFramework\ToolsComponents</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\ToolsComponents\ScriptEditorComponent.cpp">
+      <Filter>AzToolsFramework\ToolsComponents</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\ToolsComponents\ToolsAssetCatalogComponent.cpp">
+      <Filter>AzToolsFramework\ToolsComponents</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\ToolsComponents\AzToolsFrameworkConfigurationSystemComponent.cpp">
+      <Filter>AzToolsFramework\ToolsComponents</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\ToolsComponents\EditorNonUniformScaleComponent.cpp">
+      <Filter>AzToolsFramework\ToolsComponents</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\ToolsComponents\EditorNonUniformScaleComponentMode.cpp">
+      <Filter>AzToolsFramework\ToolsComponents</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\Docking\DockWidgetUtils.cpp">
+      <Filter>AzToolsFramework\UI\Docking</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\Layer\AddToLayerMenu.cpp">
+      <Filter>AzToolsFramework\UI\Layer</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\Logging\LogEntry.cpp">
+      <Filter>AzToolsFramework\UI\Logging</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\Logging\LogControl.cpp">
+      <Filter>AzToolsFramework\UI\Logging</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\Logging\NewLogTabDialog.cpp">
+      <Filter>AzToolsFramework\UI\Logging</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\Logging\LogPanel_Panel.cpp">
+      <Filter>AzToolsFramework\UI\Logging</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\Logging\TracePrintFLogPanel.cpp">
+      <Filter>AzToolsFramework\UI\Logging</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\Logging\GenericLogPanel.cpp">
+      <Filter>AzToolsFramework\UI\Logging</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\Logging\LogTableModel.cpp">
+      <Filter>AzToolsFramework\UI\Logging</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\Logging\LogTableItemDelegate.cpp">
+      <Filter>AzToolsFramework\UI\Logging</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\Logging\StyledLogPanel.cpp">
+      <Filter>AzToolsFramework\UI\Logging</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\Logging\StyledTracePrintFLogPanel.cpp">
+      <Filter>AzToolsFramework\UI\Logging</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\ComponentPalette\ComponentPaletteWidget.cpp">
+      <Filter>AzToolsFramework\UI\ComponentPalette</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\ComponentPalette\ComponentPaletteModel.cpp">
+      <Filter>AzToolsFramework\UI\ComponentPalette</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\ComponentPalette\ComponentPaletteModelFilter.cpp">
+      <Filter>AzToolsFramework\UI\ComponentPalette</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\ComponentPalette\ComponentPaletteUtil.cpp">
+      <Filter>AzToolsFramework\UI\ComponentPalette</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\Layer\NameConflictWarning.cpp">
+      <Filter>AzToolsFramework\UI\Layer</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\PropertyEditor\ComponentEditor.cpp">
+      <Filter>AzToolsFramework\UI\PropertyEditor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\PropertyEditor\ComponentEditorHeader.cpp">
+      <Filter>AzToolsFramework\UI\PropertyEditor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\PropertyEditor\DHQComboBox.cpp">
+      <Filter>AzToolsFramework\UI\PropertyEditor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\PropertyEditor\DHQSlider.cpp">
+      <Filter>AzToolsFramework\UI\PropertyEditor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\PropertyEditor\EntityIdQLabel.cpp">
+      <Filter>AzToolsFramework\UI\PropertyEditor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\PropertyEditor\EntityIdQLineEdit.cpp">
+      <Filter>AzToolsFramework\UI\PropertyEditor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\PropertyEditor\EntityPropertyEditor.cpp">
+      <Filter>AzToolsFramework\UI\PropertyEditor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\PropertyEditor\GenericComboBoxCtrl.cpp">
+      <Filter>AzToolsFramework\UI\PropertyEditor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\PropertyEditor\InstanceDataHierarchy.cpp">
+      <Filter>AzToolsFramework\UI\PropertyEditor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\PropertyEditor\PropertyAssetCtrl.cpp">
+      <Filter>AzToolsFramework\UI\PropertyEditor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\PropertyEditor\PropertyAudioCtrl.cpp">
+      <Filter>AzToolsFramework\UI\PropertyEditor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\PropertyEditor\PropertyBoolComboBoxCtrl.cpp">
+      <Filter>AzToolsFramework\UI\PropertyEditor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\PropertyEditor\PropertyBoolRadioButtonsCtrl.cpp">
+      <Filter>AzToolsFramework\UI\PropertyEditor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\PropertyEditor\PropertyButtonCtrl.cpp">
+      <Filter>AzToolsFramework\UI\PropertyEditor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\PropertyEditor\PropertyCheckBoxCtrl.cpp">
+      <Filter>AzToolsFramework\UI\PropertyEditor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\PropertyEditor\PropertyColorCtrl.cpp">
+      <Filter>AzToolsFramework\UI\PropertyEditor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\PropertyEditor\PropertyDoubleSliderCtrl.cpp">
+      <Filter>AzToolsFramework\UI\PropertyEditor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\PropertyEditor\PropertyDoubleSpinCtrl.cpp">
+      <Filter>AzToolsFramework\UI\PropertyEditor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\PropertyEditor\PropertyEditorApi.cpp">
+      <Filter>AzToolsFramework\UI\PropertyEditor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\PropertyEditor\PropertyEntityIdCtrl.cpp">
+      <Filter>AzToolsFramework\UI\PropertyEditor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\PropertyEditor\PropertyEnumComboBoxCtrl.cpp">
+      <Filter>AzToolsFramework\UI\PropertyEditor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\PropertyEditor\PropertyIntSliderCtrl.cpp">
+      <Filter>AzToolsFramework\UI\PropertyEditor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\PropertyEditor\PropertyIntSpinCtrl.cpp">
+      <Filter>AzToolsFramework\UI\PropertyEditor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\PropertyEditor\PropertyCRCCtrl.cpp">
+      <Filter>AzToolsFramework\UI\PropertyEditor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\PropertyEditor\PropertyManagerComponent.cpp">
+      <Filter>AzToolsFramework\UI\PropertyEditor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\PropertyEditor\PropertyRowWidget.cpp">
+      <Filter>AzToolsFramework\UI\PropertyEditor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\PropertyEditor\PropertyStringComboBoxCtrl.cpp">
+      <Filter>AzToolsFramework\UI\PropertyEditor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\PropertyEditor\PropertyStringLineEditCtrl.cpp">
+      <Filter>AzToolsFramework\UI\PropertyEditor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\PropertyEditor\PropertyVectorCtrl.cpp">
+      <Filter>AzToolsFramework\UI\PropertyEditor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\PropertyEditor\ReflectedPropertyEditor.cpp">
+      <Filter>AzToolsFramework\UI\PropertyEditor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\PropertyEditor\GrowTextEdit.cpp">
+      <Filter>AzToolsFramework\UI\PropertyEditor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\PropertyEditor\MultiLineTextEditHandler.cpp">
+      <Filter>AzToolsFramework\UI\PropertyEditor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\PropertyEditor\ThumbnailPropertyCtrl.cpp">
+      <Filter>AzToolsFramework\UI\PropertyEditor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\Slice\SlicePushWidget.cpp">
+      <Filter>AzToolsFramework\UI\Slice</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\Slice\SliceOverridesNotificationWindow.cpp">
+      <Filter>AzToolsFramework\UI\Slice</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\Slice\SliceOverridesNotificationWindowManager.cpp">
+      <Filter>AzToolsFramework\UI\Slice</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\Slice\SliceRelationshipWidget.cpp">
+      <Filter>AzToolsFramework\UI\Slice</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\UICore\AspectRatioAwarePixmapWidget.cpp">
+      <Filter>AzToolsFramework\UI\UICore</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\UICore\AZAutoSizingScrollArea.cpp">
+      <Filter>AzToolsFramework\UI\UICore</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\UICore\ColorPickerDelegate.cpp">
+      <Filter>AzToolsFramework\UI\UICore</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\UICore\ClickableLabel.cpp">
+      <Filter>AzToolsFramework\UI\UICore</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\UICore\IconButton.cpp">
+      <Filter>AzToolsFramework\UI\UICore</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\UICore\PlainTextEdit.cpp">
+      <Filter>AzToolsFramework\UI\UICore</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\UICore\ProgressShield.cpp">
+      <Filter>AzToolsFramework\UI\UICore</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\UICore\QTreeViewStateSaver.cpp">
+      <Filter>AzToolsFramework\UI\UICore</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\UICore\QWidgetSavedState.cpp">
+      <Filter>AzToolsFramework\UI\UICore</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\UICore\TargetSelectorButton.cpp">
+      <Filter>AzToolsFramework\UI\UICore</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Undo\UndoSystem.cpp">
+      <Filter>AzToolsFramework\Undo</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Commands\ComponentModeCommand.cpp">
+      <Filter>AzToolsFramework\Commands</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Commands\EntityManipulatorCommand.cpp">
+      <Filter>AzToolsFramework\Commands</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Commands\EntityStateCommand.cpp">
+      <Filter>AzToolsFramework\Commands</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Commands\SelectionCommand.cpp">
+      <Filter>AzToolsFramework\Commands</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Commands\EntityTransformCommand.cpp">
+      <Filter>AzToolsFramework\Commands</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Commands\PreemptiveUndoCache.cpp">
+      <Filter>AzToolsFramework\Commands</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Commands\BaseSliceCommand.cpp">
+      <Filter>AzToolsFramework\Commands</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Commands\SliceDetachEntityCommand.cpp">
+      <Filter>AzToolsFramework\Commands</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Commands\DetachSubSliceInstanceCommand.cpp">
+      <Filter>AzToolsFramework\Commands</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Commands\PushToSliceCommand.cpp">
+      <Filter>AzToolsFramework\Commands</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Commands\CreateSliceCommand.cpp">
+      <Filter>AzToolsFramework\Commands</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Viewport\EditorContextMenu.cpp">
+      <Filter>AzToolsFramework\Viewport</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Viewport\VertexContainerDisplay.cpp">
+      <Filter>AzToolsFramework\Viewport</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Viewport\ViewportMessages.cpp">
+      <Filter>AzToolsFramework\Viewport</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Viewport\ViewportTypes.cpp">
+      <Filter>AzToolsFramework\Viewport</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\ViewportUi\Button.cpp">
+      <Filter>AzToolsFramework\ViewportUi</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\ViewportUi\ButtonGroup.cpp">
+      <Filter>AzToolsFramework\ViewportUi</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\ViewportUi\TextField.cpp">
+      <Filter>AzToolsFramework\ViewportUi</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\ViewportUi\ViewportUiDisplay.cpp">
+      <Filter>AzToolsFramework\ViewportUi</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\ViewportUi\ViewportUiManager.cpp">
+      <Filter>AzToolsFramework\ViewportUi</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\ViewportUi\ViewportUiTextField.cpp">
+      <Filter>AzToolsFramework\ViewportUi</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\ViewportUi\ViewportUiCluster.cpp">
+      <Filter>AzToolsFramework\ViewportUi</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\ViewportUi\ViewportUiSwitcher.cpp">
+      <Filter>AzToolsFramework\ViewportUi</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\ViewportUi\ViewportUiWidgetCallbacks.cpp">
+      <Filter>AzToolsFramework\ViewportUi</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\ViewportUi\ViewportUiDisplayLayout.cpp">
+      <Filter>AzToolsFramework\ViewportUi</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\ComponentMode\ComponentModeCollection.cpp">
+      <Filter>AzToolsFramework\ComponentMode</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\ComponentMode\ComponentModeDelegate.cpp">
+      <Filter>AzToolsFramework\ComponentMode</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\ComponentMode\ComponentModeViewportUi.cpp">
+      <Filter>AzToolsFramework\ComponentMode</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\ComponentMode\EditorBaseComponentMode.cpp">
+      <Filter>AzToolsFramework\ComponentMode</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\ComponentModes\BoxComponentMode.cpp">
+      <Filter>AzToolsFramework\ComponentModes</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\ComponentModes\BoxViewportEdit.cpp">
+      <Filter>AzToolsFramework\ComponentModes</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\ViewportSelection\EditorBoxSelect.cpp">
+      <Filter>AzToolsFramework\ViewportSelection</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\ViewportSelection\EditorDefaultSelection.cpp">
+      <Filter>AzToolsFramework\ViewportSelection</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\ViewportSelection\EditorHelpers.cpp">
+      <Filter>AzToolsFramework\ViewportSelection</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\ViewportSelection\EditorInteractionSystemComponent.cpp">
+      <Filter>AzToolsFramework\ViewportSelection</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\ViewportSelection\EditorPickEntitySelection.cpp">
+      <Filter>AzToolsFramework\ViewportSelection</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\ViewportSelection\EditorSelectionUtil.cpp">
+      <Filter>AzToolsFramework\ViewportSelection</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\ViewportSelection\EditorTransformComponentSelection.cpp">
+      <Filter>AzToolsFramework\ViewportSelection</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\ViewportSelection\EditorTransformComponentSelectionRequestBus.cpp">
+      <Filter>AzToolsFramework\ViewportSelection</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\ViewportSelection\EditorVisibleEntityDataCache.cpp">
+      <Filter>AzToolsFramework\ViewportSelection</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\ViewportSelection\ViewportEditorModeTracker.cpp">
+      <Filter>AzToolsFramework\ViewportSelection</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\AssetBrowser\AssetBrowserComponent.cpp">
+      <Filter>AzToolsFramework\AssetBrowser</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\AssetBrowser\AssetBrowserFilterModel.cpp">
+      <Filter>AzToolsFramework\AssetBrowser</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\AssetBrowser\AssetBrowserTableModel.cpp">
+      <Filter>AzToolsFramework\AssetBrowser</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\AssetBrowser\AssetBrowserModel.cpp">
+      <Filter>AzToolsFramework\AssetBrowser</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\AssetBrowser\AssetEntryChangeset.cpp">
+      <Filter>AzToolsFramework\AssetBrowser</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\AssetBrowser\AssetSelectionModel.cpp">
+      <Filter>AzToolsFramework\AssetBrowser</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\AssetBrowser\Views\AssetBrowserTreeView.cpp">
+      <Filter>AzToolsFramework\AssetBrowser\Views</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\AssetBrowser\Views\AssetBrowserTableView.cpp">
+      <Filter>AzToolsFramework\AssetBrowser\Views</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\AssetBrowser\Views\EntryDelegate.cpp">
+      <Filter>AzToolsFramework\AssetBrowser\Views</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\AssetBrowser\Views\AssetBrowserFolderWidget.cpp">
+      <Filter>AzToolsFramework\AssetBrowser\Views</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\AssetBrowser\Entries\AssetBrowserEntry.cpp">
+      <Filter>AzToolsFramework\AssetBrowser\Entries</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\AssetBrowser\Entries\AssetBrowserEntryCache.cpp">
+      <Filter>AzToolsFramework\AssetBrowser\Entries</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\AssetBrowser\Entries\FolderAssetBrowserEntry.cpp">
+      <Filter>AzToolsFramework\AssetBrowser\Entries</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\AssetBrowser\Entries\ProductAssetBrowserEntry.cpp">
+      <Filter>AzToolsFramework\AssetBrowser\Entries</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\AssetBrowser\Entries\RootAssetBrowserEntry.cpp">
+      <Filter>AzToolsFramework\AssetBrowser\Entries</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\AssetBrowser\Entries\SourceAssetBrowserEntry.cpp">
+      <Filter>AzToolsFramework\AssetBrowser\Entries</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\AssetBrowser\Search\Filter.cpp">
+      <Filter>AzToolsFramework\AssetBrowser\Search</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\AssetBrowser\Search\FilterByWidget.cpp">
+      <Filter>AzToolsFramework\AssetBrowser\Search</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\AssetBrowser\Search\SearchAssetTypeSelectorWidget.cpp">
+      <Filter>AzToolsFramework\AssetBrowser\Search</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\AssetBrowser\Search\SearchParametersWidget.cpp">
+      <Filter>AzToolsFramework\AssetBrowser\Search</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\AssetBrowser\Search\SearchWidget.cpp">
+      <Filter>AzToolsFramework\AssetBrowser\Search</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\AssetBrowser\Thumbnails\FolderThumbnail.cpp">
+      <Filter>AzToolsFramework\AssetBrowser\Thumbnails</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\AssetBrowser\Thumbnails\ProductThumbnail.cpp">
+      <Filter>AzToolsFramework\AssetBrowser\Thumbnails</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\AssetBrowser\Thumbnails\SourceThumbnail.cpp">
+      <Filter>AzToolsFramework\AssetBrowser\Thumbnails</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\AssetBrowser\AssetPicker\AssetPickerDialog.cpp">
+      <Filter>AzToolsFramework\AssetBrowser\AssetPicker</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\AssetBrowser\Previewer\EmptyPreviewer.cpp">
+      <Filter>AzToolsFramework\AssetBrowser\Previewer</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\AssetBrowser\Previewer\Previewer.cpp">
+      <Filter>AzToolsFramework\AssetBrowser\Previewer</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\AssetBrowser\Previewer\PreviewerFrame.cpp">
+      <Filter>AzToolsFramework\AssetBrowser\Previewer</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Archive\ArchiveComponent.cpp">
+      <Filter>AzToolsFramework\Archive</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Archive\NullArchiveComponent.cpp">
+      <Filter>AzToolsFramework\Archive</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\PropertyEditor\Model\AssetCompleterModel.cpp">
+      <Filter>AzToolsFramework\UI\PropertyEditor\Model</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\PropertyEditor\View\AssetCompleterListView.cpp">
+      <Filter>AzToolsFramework\UI\PropertyEditor\View</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Prefab\EditorPrefabComponent.cpp">
+      <Filter>AzToolsFramework\Prefab</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Prefab\PrefabDomUtils.cpp">
+      <Filter>AzToolsFramework\Prefab</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Prefab\PrefabFocusHandler.cpp">
+      <Filter>AzToolsFramework\Prefab</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Prefab\PrefabLoader.cpp">
+      <Filter>AzToolsFramework\Prefab</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Prefab\PrefabSystemComponent.cpp">
+      <Filter>AzToolsFramework\Prefab</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Prefab\Instance\Instance.cpp">
+      <Filter>AzToolsFramework\Prefab\Instance</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Prefab\Instance\InstanceSerializer.cpp">
+      <Filter>AzToolsFramework\Prefab\Instance</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Prefab\Instance\InstanceEntityScrubber.cpp">
+      <Filter>AzToolsFramework\Prefab\Instance</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Prefab\Instance\InstanceEntityIdMapper.cpp">
+      <Filter>AzToolsFramework\Prefab\Instance</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Prefab\Instance\InstanceEntityMapper.cpp">
+      <Filter>AzToolsFramework\Prefab\Instance</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Prefab\Instance\InstanceToTemplatePropagator.cpp">
+      <Filter>AzToolsFramework\Prefab\Instance</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Prefab\Instance\InstanceUpdateExecutor.cpp">
+      <Filter>AzToolsFramework\Prefab\Instance</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Prefab\Instance\TemplateInstanceMapper.cpp">
+      <Filter>AzToolsFramework\Prefab\Instance</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Prefab\Link\Link.cpp">
+      <Filter>AzToolsFramework\Prefab\Link</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Prefab\PrefabPublicHandler.cpp">
+      <Filter>AzToolsFramework\Prefab</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Prefab\PrefabPublicRequestHandler.cpp">
+      <Filter>AzToolsFramework\Prefab</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Prefab\PrefabUndo.cpp">
+      <Filter>AzToolsFramework\Prefab</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Prefab\PrefabUndoCache.cpp">
+      <Filter>AzToolsFramework\Prefab</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Prefab\PrefabUndoHelpers.cpp">
+      <Filter>AzToolsFramework\Prefab</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Prefab\Spawnable\ComponentRequirementsValidator.cpp">
+      <Filter>AzToolsFramework\Prefab\Spawnable</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Prefab\Spawnable\EditorInfoRemover.cpp">
+      <Filter>AzToolsFramework\Prefab\Spawnable</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Prefab\Spawnable\EditorOnlyEntityHandler\EditorOnlyEntityHandler.cpp">
+      <Filter>AzToolsFramework\Prefab\Spawnable\EditorOnlyEntityHandler</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Prefab\Spawnable\EditorOnlyEntityHandler\UiEditorOnlyEntityHandler.cpp">
+      <Filter>AzToolsFramework\Prefab\Spawnable\EditorOnlyEntityHandler</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Prefab\Spawnable\EditorOnlyEntityHandler\WorldEditorOnlyEntityHandler.cpp">
+      <Filter>AzToolsFramework\Prefab\Spawnable\EditorOnlyEntityHandler</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Prefab\Spawnable\PrefabCatchmentProcessor.cpp">
+      <Filter>AzToolsFramework\Prefab\Spawnable</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Prefab\Spawnable\PrefabConversionPipeline.cpp">
+      <Filter>AzToolsFramework\Prefab\Spawnable</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Prefab\Spawnable\ProcesedObjectStore.cpp">
+      <Filter>AzToolsFramework\Prefab\Spawnable</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Prefab\Spawnable\PrefabProcessorContext.cpp">
+      <Filter>AzToolsFramework\Prefab\Spawnable</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Prefab\Spawnable\SpawnableMetaDataBuilder.cpp">
+      <Filter>AzToolsFramework\Prefab\Spawnable</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Prefab\Spawnable\SpawnableUtils.cpp">
+      <Filter>AzToolsFramework\Prefab\Spawnable</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Prefab\Template\Template.cpp">
+      <Filter>AzToolsFramework\Prefab\Template</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\Outliner\EntityOutlinerDisplayOptionsMenu.cpp">
+      <Filter>AzToolsFramework\UI\Outliner</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\Outliner\EntityOutlinerTreeView.cpp">
+      <Filter>AzToolsFramework\UI\Outliner</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\Outliner\EntityOutlinerWidget.cpp">
+      <Filter>AzToolsFramework\UI\Outliner</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\Outliner\EntityOutlinerListModel.cpp">
+      <Filter>AzToolsFramework\UI\Outliner</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\Outliner\EntityOutlinerSearchWidget.cpp">
+      <Filter>AzToolsFramework\UI\Outliner</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\Outliner\EntityOutlinerSortFilterProxyModel.cpp">
+      <Filter>AzToolsFramework\UI\Outliner</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\EditorEntityUi\EditorEntityUiHandlerBase.cpp">
+      <Filter>AzToolsFramework\UI\EditorEntityUi</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\EditorEntityUi\EditorEntityUiSystemComponent.cpp">
+      <Filter>AzToolsFramework\UI\EditorEntityUi</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\Layer\LayerUiHandler.cpp">
+      <Filter>AzToolsFramework\UI\Layer</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\Prefab\LevelRootUiHandler.cpp">
+      <Filter>AzToolsFramework\UI\Prefab</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\Prefab\PrefabIntegrationManager.cpp">
+      <Filter>AzToolsFramework\UI\Prefab</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\Prefab\PrefabUiHandler.cpp">
+      <Filter>AzToolsFramework\UI\Prefab</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\PythonTerminal\ScriptHelpDialog.cpp">
+      <Filter>AzToolsFramework\PythonTerminal</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\PythonTerminal\ScriptTermDialog.cpp">
+      <Filter>AzToolsFramework\PythonTerminal</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Input\QtEventToAzInputManager.cpp">
+      <Filter>AzToolsFramework\Input</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\LegacyFramework\MainWindowSavedState.cpp">
+      <Filter>AzToolsFramework\UI\LegacyFramework</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\LegacyFramework\UIFramework.cpp">
+      <Filter>AzToolsFramework\UI\LegacyFramework</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\LegacyFramework\UIFrameworkAPI.cpp">
+      <Filter>AzToolsFramework\UI\LegacyFramework</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\LegacyFramework\UIFrameworkPreferences.cpp">
+      <Filter>AzToolsFramework\UI\LegacyFramework</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\LegacyFramework\Core\EditorFrameworkAPI.cpp">
+      <Filter>AzToolsFramework\UI\LegacyFramework\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\LegacyFramework\Core\EditorFrameworkApplication.cpp">
+      <Filter>AzToolsFramework\UI\LegacyFramework\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\LegacyFramework\Core\IPCComponent.cpp">
+      <Filter>AzToolsFramework\UI\LegacyFramework\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\LegacyFramework\CustomMenus\CustomMenusComponent.cpp">
+      <Filter>AzToolsFramework\UI\LegacyFramework\CustomMenus</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\UICore\OverwritePromptDialog.cpp">
+      <Filter>AzToolsFramework\UI\UICore</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\UICore\SaveChangesDialog.cpp">
+      <Filter>AzToolsFramework\UI\UICore</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\ToolsFileUtils\ToolsFileUtils_win.cpp">
+      <Filter>AzToolsFramework\ToolsFileUtils</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\Platform\Windows\AzToolsFramework\Archive\ArchiveComponent_Windows.cpp">
+      <Filter>Platform\Windows\AzToolsFramework\Archive</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework_autogen\RXS2VG5GDI\qrc_AssetEditorResources.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework_autogen\GWNHALLJK6\qrc_Icons.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework_autogen\PQ4ZRQBAUS\qrc_AssetBrowserFolderWidget.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework_autogen\YAC6GGHYA5\qrc_search.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework_autogen\7PHNMHJWMA\qrc_resources.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework_autogen\PDKVTSZXUF\qrc_sharedResources.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework_autogen\mocs_compilation_profile.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework_autogen\mocs_compilation_release.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\AssetEditor\AssetEditorBus.h">
+      <Filter>AzToolsFramework\AssetEditor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\AssetEditor\AssetEditorWidget.h">
+      <Filter>AzToolsFramework\AssetEditor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\AssetEditor\AssetEditorHeader.h">
+      <Filter>AzToolsFramework\AssetEditor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\AssetEditor\AssetEditorUtils.h">
+      <Filter>AzToolsFramework\AssetEditor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\Logging\LogLine.h">
+      <Filter>AzToolsFramework\UI\Logging</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\SearchWidget\SearchCriteriaWidget.hxx">
+      <Filter>AzToolsFramework\UI\SearchWidget</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\SearchWidget\SearchWidgetTypes.hxx">
+      <Filter>AzToolsFramework\UI\SearchWidget</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\AzToolsFrameworkModule.h">
+      <Filter>AzToolsFramework</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\API\ToolsApplicationAPI.h">
+      <Filter>AzToolsFramework\API</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\API\EditorAssetSystemAPI.h">
+      <Filter>AzToolsFramework\API</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\API\AssetDatabaseBus.h">
+      <Filter>AzToolsFramework\API</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\API\ComponentEntityObjectBus.h">
+      <Filter>AzToolsFramework\API</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\API\ComponentEntitySelectionBus.h">
+      <Filter>AzToolsFramework\API</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\API\EditorCameraBus.h">
+      <Filter>AzToolsFramework\API</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\API\EditorAnimationSystemRequestBus.h">
+      <Filter>AzToolsFramework\API</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\API\EditorEntityAPI.h">
+      <Filter>AzToolsFramework\API</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\API\EditorLevelNotificationBus.h">
+      <Filter>AzToolsFramework\API</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\API\ViewportEditorModeTrackerNotificationBus.h">
+      <Filter>AzToolsFramework\API</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\API\EditorVegetationRequestsBus.h">
+      <Filter>AzToolsFramework\API</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\API\EditorPythonConsoleBus.h">
+      <Filter>AzToolsFramework\API</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\API\EditorPythonRunnerRequestsBus.h">
+      <Filter>AzToolsFramework\API</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\API\EditorPythonScriptNotificationsBus.h">
+      <Filter>AzToolsFramework\API</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\API\EntityPropertyEditorRequestsBus.h">
+      <Filter>AzToolsFramework\API</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\API\EditorWindowRequestBus.h">
+      <Filter>AzToolsFramework\API</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\API\EntityCompositionRequestBus.h">
+      <Filter>AzToolsFramework\API</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\API\EntityCompositionNotificationBus.h">
+      <Filter>AzToolsFramework\API</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\API\EditorViewportIconDisplayInterface.h">
+      <Filter>AzToolsFramework\API</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\API\ViewPaneOptions.h">
+      <Filter>AzToolsFramework\API</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\API\ViewportEditorModeTrackerInterface.h">
+      <Filter>AzToolsFramework\API</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Application\Ticker.h">
+      <Filter>AzToolsFramework\Application</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Application\EditorEntityManager.h">
+      <Filter>AzToolsFramework\Application</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Application\ToolsApplication.h">
+      <Filter>AzToolsFramework\Application</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Asset\AssetDebugInfo.h">
+      <Filter>AzToolsFramework\Asset</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Asset\AssetProcessorMessages.h">
+      <Filter>AzToolsFramework\Asset</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Asset\AssetSystemComponent.h">
+      <Filter>AzToolsFramework\Asset</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Asset\AssetSeedManager.h">
+      <Filter>AzToolsFramework\Asset</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Asset\AssetBundler.h">
+      <Filter>AzToolsFramework\Asset</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Asset\AssetUtils.h">
+      <Filter>AzToolsFramework\Asset</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\AssetCatalog\PlatformAddressedAssetCatalogBus.h">
+      <Filter>AzToolsFramework\AssetCatalog</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\AssetCatalog\PlatformAddressedAssetCatalog.h">
+      <Filter>AzToolsFramework\AssetCatalog</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\AssetCatalog\PlatformAddressedAssetCatalogManager.h">
+      <Filter>AzToolsFramework\AssetCatalog</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Thumbnails\ThumbnailerComponent.h">
+      <Filter>AzToolsFramework\Thumbnails</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Thumbnails\ThumbnailerNullComponent.h">
+      <Filter>AzToolsFramework\Thumbnails</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Thumbnails\LoadingThumbnail.h">
+      <Filter>AzToolsFramework\Thumbnails</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Thumbnails\MissingThumbnail.h">
+      <Filter>AzToolsFramework\Thumbnails</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Thumbnails\SourceControlThumbnail.h">
+      <Filter>AzToolsFramework\Thumbnails</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Thumbnails\SourceControlThumbnailBus.h">
+      <Filter>AzToolsFramework\Thumbnails</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Thumbnails\Thumbnail.h">
+      <Filter>AzToolsFramework\Thumbnails</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Thumbnails\Thumbnail.inl">
+      <Filter>AzToolsFramework\Thumbnails</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Thumbnails\ThumbnailContext.h">
+      <Filter>AzToolsFramework\Thumbnails</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Thumbnails\ThumbnailerBus.h">
+      <Filter>AzToolsFramework\Thumbnails</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Thumbnails\ThumbnailWidget.h">
+      <Filter>AzToolsFramework\Thumbnails</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\AssetBundle\AssetBundleAPI.h">
+      <Filter>AzToolsFramework\AssetBundle</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\AssetBundle\AssetBundleComponent.h">
+      <Filter>AzToolsFramework\AssetBundle</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\AssetDatabase\AssetDatabaseConnection.h">
+      <Filter>AzToolsFramework\AssetDatabase</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Debug\TraceContext.inl">
+      <Filter>AzToolsFramework\Debug</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Debug\TraceContext.h">
+      <Filter>AzToolsFramework\Debug</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Debug\TraceContextStackInterface.h">
+      <Filter>AzToolsFramework\Debug</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Debug\TraceContextStack.h">
+      <Filter>AzToolsFramework\Debug</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Debug\TraceContextSingleStackHandler.h">
+      <Filter>AzToolsFramework\Debug</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Debug\TraceContextMultiStackHandler.h">
+      <Filter>AzToolsFramework\Debug</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Debug\TraceContextBufferedFormatter.inl">
+      <Filter>AzToolsFramework\Debug</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Debug\TraceContextBufferedFormatter.h">
+      <Filter>AzToolsFramework\Debug</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Debug\TraceContextLogFormatter.h">
+      <Filter>AzToolsFramework\Debug</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Component\EditorComponentAPIBus.h">
+      <Filter>AzToolsFramework\Component</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Component\EditorComponentAPIComponent.h">
+      <Filter>AzToolsFramework\Component</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Component\EditorLevelComponentAPIBus.h">
+      <Filter>AzToolsFramework\Component</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Component\EditorLevelComponentAPIComponent.h">
+      <Filter>AzToolsFramework\Component</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Editor\EditorContextMenuBus.h">
+      <Filter>AzToolsFramework\Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Editor\EditorSettingsAPIBus.h">
+      <Filter>AzToolsFramework\Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Entity\EditorEntityStartStatus.h">
+      <Filter>AzToolsFramework\Entity</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Entity\EditorEntityAPIBus.h">
+      <Filter>AzToolsFramework\Entity</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Entity\EditorEntityContextComponent.h">
+      <Filter>AzToolsFramework\Entity</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Entity\EditorEntityContextBus.h">
+      <Filter>AzToolsFramework\Entity</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Entity\EditorEntityContextPickingBus.h">
+      <Filter>AzToolsFramework\Entity</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Entity\EditorEntityActionComponent.h">
+      <Filter>AzToolsFramework\Entity</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Entity\EditorEntityFixupComponent.h">
+      <Filter>AzToolsFramework\Entity</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Entity\EditorEntityHelpers.h">
+      <Filter>AzToolsFramework\Entity</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Entity\EditorEntityInfoBus.h">
+      <Filter>AzToolsFramework\Entity</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Entity\EditorEntityModel.h">
+      <Filter>AzToolsFramework\Entity</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Entity\EditorEntityModelBus.h">
+      <Filter>AzToolsFramework\Entity</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Entity\EditorEntityModelComponent.h">
+      <Filter>AzToolsFramework\Entity</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Entity\EditorEntityRuntimeActivationBus.h">
+      <Filter>AzToolsFramework\Entity</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Entity\EditorEntitySearchBus.h">
+      <Filter>AzToolsFramework\Entity</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Entity\EditorEntitySearchComponent.h">
+      <Filter>AzToolsFramework\Entity</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Entity\EditorEntitySortBus.h">
+      <Filter>AzToolsFramework\Entity</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Entity\EditorEntitySortComponent.h">
+      <Filter>AzToolsFramework\Entity</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Entity\EditorEntityTransformBus.h">
+      <Filter>AzToolsFramework\Entity</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Entity\PrefabEditorEntityOwnershipInterface.h">
+      <Filter>AzToolsFramework\Entity</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Entity\PrefabEditorEntityOwnershipService.h">
+      <Filter>AzToolsFramework\Entity</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Entity\SliceEditorEntityOwnershipService.h">
+      <Filter>AzToolsFramework\Entity</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Entity\SliceEditorEntityOwnershipServiceBus.h">
+      <Filter>AzToolsFramework\Entity</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Fingerprinting\TypeFingerprinter.h">
+      <Filter>AzToolsFramework\Fingerprinting</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\FocusMode\FocusModeInterface.h">
+      <Filter>AzToolsFramework\FocusMode</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\FocusMode\FocusModeSystemComponent.h">
+      <Filter>AzToolsFramework\FocusMode</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Logger\TraceLogger.h">
+      <Filter>AzToolsFramework\Logger</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Manipulators\AngularManipulator.h">
+      <Filter>AzToolsFramework\Manipulators</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Manipulators\BaseManipulator.h">
+      <Filter>AzToolsFramework\Manipulators</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Manipulators\BoxManipulatorRequestBus.h">
+      <Filter>AzToolsFramework\Manipulators</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Manipulators\EditorVertexSelection.h">
+      <Filter>AzToolsFramework\Manipulators</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Manipulators\HoverSelection.h">
+      <Filter>AzToolsFramework\Manipulators</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Manipulators\LineHoverSelection.h">
+      <Filter>AzToolsFramework\Manipulators</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Manipulators\LineSegmentSelectionManipulator.h">
+      <Filter>AzToolsFramework\Manipulators</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Manipulators\LinearManipulator.h">
+      <Filter>AzToolsFramework\Manipulators</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Manipulators\MultiLinearManipulator.h">
+      <Filter>AzToolsFramework\Manipulators</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Manipulators\ManipulatorBus.h">
+      <Filter>AzToolsFramework\Manipulators</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Manipulators\ManipulatorDebug.h">
+      <Filter>AzToolsFramework\Manipulators</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Manipulators\ManipulatorManager.h">
+      <Filter>AzToolsFramework\Manipulators</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Manipulators\ManipulatorView.h">
+      <Filter>AzToolsFramework\Manipulators</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Manipulators\ManipulatorSnapping.h">
+      <Filter>AzToolsFramework\Manipulators</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Manipulators\ManipulatorSpace.h">
+      <Filter>AzToolsFramework\Manipulators</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Manipulators\PlanarManipulator.h">
+      <Filter>AzToolsFramework\Manipulators</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Manipulators\RotationManipulators.h">
+      <Filter>AzToolsFramework\Manipulators</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Manipulators\ScaleManipulators.h">
+      <Filter>AzToolsFramework\Manipulators</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Manipulators\SelectionManipulator.h">
+      <Filter>AzToolsFramework\Manipulators</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Manipulators\SplineHoverSelection.h">
+      <Filter>AzToolsFramework\Manipulators</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Manipulators\SplineSelectionManipulator.h">
+      <Filter>AzToolsFramework\Manipulators</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Manipulators\SurfaceManipulator.h">
+      <Filter>AzToolsFramework\Manipulators</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Manipulators\TranslationManipulators.h">
+      <Filter>AzToolsFramework\Manipulators</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Maths\TransformUtils.h">
+      <Filter>AzToolsFramework\Maths</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Picking\BoundInterface.h">
+      <Filter>AzToolsFramework\Picking</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Picking\ContextBoundAPI.h">
+      <Filter>AzToolsFramework\Picking</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Picking\Manipulators\ManipulatorBoundManager.h">
+      <Filter>AzToolsFramework\Picking\Manipulators</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Picking\Manipulators\ManipulatorBounds.h">
+      <Filter>AzToolsFramework\Picking\Manipulators</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\PropertyTreeEditor\PropertyTreeEditor.h">
+      <Filter>AzToolsFramework\PropertyTreeEditor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\PropertyTreeEditor\PropertyTreeEditorComponent.h">
+      <Filter>AzToolsFramework\PropertyTreeEditor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Render\EditorIntersectorComponent.h">
+      <Filter>AzToolsFramework\Render</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Slice\SliceDataFlagsCommand.h">
+      <Filter>AzToolsFramework\Slice</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Slice\SliceUtilities.h">
+      <Filter>AzToolsFramework\Slice</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Slice\SliceCompilation.h">
+      <Filter>AzToolsFramework\Slice</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Slice\SliceTransaction.h">
+      <Filter>AzToolsFramework\Slice</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Slice\SliceDependencyBrowserComponent.h">
+      <Filter>AzToolsFramework\Slice</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Slice\SliceDependencyBrowserBus.h">
+      <Filter>AzToolsFramework\Slice</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Slice\SliceRelationshipNode.h">
+      <Filter>AzToolsFramework\Slice</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Slice\SliceRequestBus.h">
+      <Filter>AzToolsFramework\Slice</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Slice\SliceRequestComponent.h">
+      <Filter>AzToolsFramework\Slice</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Slice\SliceMetadataEntityContextBus.h">
+      <Filter>AzToolsFramework\Slice</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Slice\SliceMetadataEntityContextComponent.h">
+      <Filter>AzToolsFramework\Slice</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\SourceControl\LocalFileSCComponent.h">
+      <Filter>AzToolsFramework\SourceControl</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\SourceControl\PerforceComponent.h">
+      <Filter>AzToolsFramework\SourceControl</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\SourceControl\PerforceConnection.h">
+      <Filter>AzToolsFramework\SourceControl</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\SourceControl\QtSourceControlNotificationHandler.h">
+      <Filter>AzToolsFramework\SourceControl</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\SourceControl\SourceControlAPI.h">
+      <Filter>AzToolsFramework\SourceControl</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\SQLite\SQLiteConnection.h">
+      <Filter>AzToolsFramework\SQLite</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\SQLite\SQLiteQuery.h">
+      <Filter>AzToolsFramework\SQLite</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\SQLite\SQLiteQueryLogBus.h">
+      <Filter>AzToolsFramework\SQLite</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\SQLite\SQLiteBoundColumnSet.h">
+      <Filter>AzToolsFramework\SQLite</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\ToolsComponents\ComponentAssetMimeDataContainer.h">
+      <Filter>AzToolsFramework\ToolsComponents</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\ToolsComponents\ComponentMimeData.h">
+      <Filter>AzToolsFramework\ToolsComponents</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\ToolsComponents\EditorAssetMimeDataContainer.h">
+      <Filter>AzToolsFramework\ToolsComponents</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\ToolsComponents\EditorAssetReference.h">
+      <Filter>AzToolsFramework\ToolsComponents</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\ToolsComponents\EditorComponentAdapter.inl">
+      <Filter>AzToolsFramework\ToolsComponents</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\ToolsComponents\EditorComponentAdapter.h">
+      <Filter>AzToolsFramework\ToolsComponents</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\ToolsComponents\EditorComponentBase.h">
+      <Filter>AzToolsFramework\ToolsComponents</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\ToolsComponents\EditorDisabledCompositionComponent.h">
+      <Filter>AzToolsFramework\ToolsComponents</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\ToolsComponents\EditorDisabledCompositionBus.h">
+      <Filter>AzToolsFramework\ToolsComponents</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\ToolsComponents\EditorOnlyEntityComponent.h">
+      <Filter>AzToolsFramework\ToolsComponents</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\ToolsComponents\EditorOnlyEntityComponentBus.h">
+      <Filter>AzToolsFramework\ToolsComponents</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\ToolsComponents\EditorEntityIdContainer.h">
+      <Filter>AzToolsFramework\ToolsComponents</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\ToolsComponents\EditorEntityIconComponent.h">
+      <Filter>AzToolsFramework\ToolsComponents</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\ToolsComponents\EditorEntityIconComponentBus.h">
+      <Filter>AzToolsFramework\ToolsComponents</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\ToolsComponents\EditorLayerComponent.h">
+      <Filter>AzToolsFramework\ToolsComponents</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\ToolsComponents\EditorLayerComponentBus.h">
+      <Filter>AzToolsFramework\ToolsComponents</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\ToolsComponents\LayerResult.h">
+      <Filter>AzToolsFramework\ToolsComponents</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\ToolsComponents\EditorLockComponent.h">
+      <Filter>AzToolsFramework\ToolsComponents</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\ToolsComponents\EditorLockComponentBus.h">
+      <Filter>AzToolsFramework\ToolsComponents</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\ToolsComponents\EditorInspectorComponent.h">
+      <Filter>AzToolsFramework\ToolsComponents</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\ToolsComponents\EditorInspectorComponentBus.h">
+      <Filter>AzToolsFramework\ToolsComponents</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\ToolsComponents\EditorPendingCompositionComponent.h">
+      <Filter>AzToolsFramework\ToolsComponents</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\ToolsComponents\EditorPendingCompositionBus.h">
+      <Filter>AzToolsFramework\ToolsComponents</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\ToolsComponents\EditorSelectionAccentSystemComponent.h">
+      <Filter>AzToolsFramework\ToolsComponents</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\ToolsComponents\EditorSelectionAccentingBus.h">
+      <Filter>AzToolsFramework\ToolsComponents</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\ToolsComponents\EditorVisibilityComponent.h">
+      <Filter>AzToolsFramework\ToolsComponents</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\ToolsComponents\EditorVisibilityBus.h">
+      <Filter>AzToolsFramework\ToolsComponents</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\ToolsComponents\GenericComponentWrapper.h">
+      <Filter>AzToolsFramework\ToolsComponents</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\ToolsComponents\SelectionComponent.h">
+      <Filter>AzToolsFramework\ToolsComponents</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\ToolsComponents\SelectionComponentBus.h">
+      <Filter>AzToolsFramework\ToolsComponents</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\ToolsComponents\TransformComponent.h">
+      <Filter>AzToolsFramework\ToolsComponents</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\ToolsComponents\TransformComponentBus.h">
+      <Filter>AzToolsFramework\ToolsComponents</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\ToolsComponents\TransformComponentSerializer.h">
+      <Filter>AzToolsFramework\ToolsComponents</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\ToolsComponents\ScriptEditorComponent.h">
+      <Filter>AzToolsFramework\ToolsComponents</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\ToolsComponents\ToolsAssetCatalogComponent.h">
+      <Filter>AzToolsFramework\ToolsComponents</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\ToolsComponents\ToolsAssetCatalogBus.h">
+      <Filter>AzToolsFramework\ToolsComponents</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\ToolsComponents\AzToolsFrameworkConfigurationSystemComponent.h">
+      <Filter>AzToolsFramework\ToolsComponents</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\ToolsComponents\EditorNonUniformScaleComponent.h">
+      <Filter>AzToolsFramework\ToolsComponents</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\ToolsComponents\EditorNonUniformScaleComponentMode.h">
+      <Filter>AzToolsFramework\ToolsComponents</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\ToolsMessaging\EntityHighlightBus.h">
+      <Filter>AzToolsFramework\ToolsMessaging</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\Docking\DockWidgetUtils.h">
+      <Filter>AzToolsFramework\UI\Docking</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\Layer\AddToLayerMenu.h">
+      <Filter>AzToolsFramework\UI\Layer</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\Logging\LoggingCommon.h">
+      <Filter>AzToolsFramework\UI\Logging</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\Logging\LogEntry.h">
+      <Filter>AzToolsFramework\UI\Logging</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\Logging\LogControl.h">
+      <Filter>AzToolsFramework\UI\Logging</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\Logging\NewLogTabDialog.h">
+      <Filter>AzToolsFramework\UI\Logging</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\Logging\LogPanel_Panel.h">
+      <Filter>AzToolsFramework\UI\Logging</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\Logging\TracePrintFLogPanel.h">
+      <Filter>AzToolsFramework\UI\Logging</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\Logging\GenericLogPanel.h">
+      <Filter>AzToolsFramework\UI\Logging</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\Logging\LogTableModel.h">
+      <Filter>AzToolsFramework\UI\Logging</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\Logging\LogTableItemDelegate.h">
+      <Filter>AzToolsFramework\UI\Logging</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\Logging\StyledLogPanel.h">
+      <Filter>AzToolsFramework\UI\Logging</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\Logging\StyledTracePrintFLogPanel.h">
+      <Filter>AzToolsFramework\UI\Logging</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\ComponentPalette\ComponentPaletteWidget.hxx">
+      <Filter>AzToolsFramework\UI\ComponentPalette</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\ComponentPalette\ComponentPaletteModel.hxx">
+      <Filter>AzToolsFramework\UI\ComponentPalette</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\ComponentPalette\ComponentPaletteModelFilter.hxx">
+      <Filter>AzToolsFramework\UI\ComponentPalette</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\ComponentPalette\ComponentPaletteUtil.hxx">
+      <Filter>AzToolsFramework\UI\ComponentPalette</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\Layer\NameConflictWarning.hxx">
+      <Filter>AzToolsFramework\UI\Layer</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\PropertyEditor\ComponentEditor.hxx">
+      <Filter>AzToolsFramework\UI\PropertyEditor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\PropertyEditor\ComponentEditorHeader.hxx">
+      <Filter>AzToolsFramework\UI\PropertyEditor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\PropertyEditor\QtWidgetLimits.h">
+      <Filter>AzToolsFramework\UI\PropertyEditor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\PropertyEditor\DHQComboBox.hxx">
+      <Filter>AzToolsFramework\UI\PropertyEditor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\PropertyEditor\DHQSlider.hxx">
+      <Filter>AzToolsFramework\UI\PropertyEditor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\PropertyEditor\EntityIdQLabel.hxx">
+      <Filter>AzToolsFramework\UI\PropertyEditor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\PropertyEditor\EntityIdQLineEdit.h">
+      <Filter>AzToolsFramework\UI\PropertyEditor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\PropertyEditor\EntityPropertyEditor.hxx">
+      <Filter>AzToolsFramework\UI\PropertyEditor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\PropertyEditor\GenericComboBoxCtrl.h">
+      <Filter>AzToolsFramework\UI\PropertyEditor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\PropertyEditor\GenericComboBoxCtrl.inl">
+      <Filter>AzToolsFramework\UI\PropertyEditor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\PropertyEditor\InstanceDataHierarchy.h">
+      <Filter>AzToolsFramework\UI\PropertyEditor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\PropertyEditor\PropertyAssetCtrl.hxx">
+      <Filter>AzToolsFramework\UI\PropertyEditor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\PropertyEditor\PropertyAudioCtrl.h">
+      <Filter>AzToolsFramework\UI\PropertyEditor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\PropertyEditor\PropertyAudioCtrlTypes.h">
+      <Filter>AzToolsFramework\UI\PropertyEditor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\PropertyEditor\PropertyBoolComboBoxCtrl.hxx">
+      <Filter>AzToolsFramework\UI\PropertyEditor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\PropertyEditor\PropertyBoolRadioButtonsCtrl.hxx">
+      <Filter>AzToolsFramework\UI\PropertyEditor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\PropertyEditor\PropertyButtonCtrl.hxx">
+      <Filter>AzToolsFramework\UI\PropertyEditor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\PropertyEditor\PropertyCheckBoxCtrl.hxx">
+      <Filter>AzToolsFramework\UI\PropertyEditor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\PropertyEditor\PropertyColorCtrl.hxx">
+      <Filter>AzToolsFramework\UI\PropertyEditor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\PropertyEditor\PropertyDoubleSliderCtrl.hxx">
+      <Filter>AzToolsFramework\UI\PropertyEditor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\PropertyEditor\PropertyDoubleSpinCtrl.hxx">
+      <Filter>AzToolsFramework\UI\PropertyEditor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\PropertyEditor\PropertyEditor_UITypes.h">
+      <Filter>AzToolsFramework\UI\PropertyEditor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\PropertyEditor\PropertyEditorAPI.h">
+      <Filter>AzToolsFramework\UI\PropertyEditor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\PropertyEditor\PropertyEditorAPI_Internals.h">
+      <Filter>AzToolsFramework\UI\PropertyEditor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\PropertyEditor\PropertyEditorAPI_Internals_Impl.h">
+      <Filter>AzToolsFramework\UI\PropertyEditor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\PropertyEditor\PropertyEntityIdCtrl.hxx">
+      <Filter>AzToolsFramework\UI\PropertyEditor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\PropertyEditor\PropertyEnumComboBoxCtrl.hxx">
+      <Filter>AzToolsFramework\UI\PropertyEditor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\PropertyEditor\PropertyIntCtrlCommon.h">
+      <Filter>AzToolsFramework\UI\PropertyEditor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\PropertyEditor\PropertyIntSliderCtrl.hxx">
+      <Filter>AzToolsFramework\UI\PropertyEditor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\PropertyEditor\PropertyIntSpinCtrl.hxx">
+      <Filter>AzToolsFramework\UI\PropertyEditor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\PropertyEditor\PropertyCRCCtrl.h">
+      <Filter>AzToolsFramework\UI\PropertyEditor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\PropertyEditor\PropertyManagerComponent.h">
+      <Filter>AzToolsFramework\UI\PropertyEditor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\PropertyEditor\PropertyQTConstants.h">
+      <Filter>AzToolsFramework\UI\PropertyEditor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\PropertyEditor\PropertyRowWidget.hxx">
+      <Filter>AzToolsFramework\UI\PropertyEditor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\PropertyEditor\PropertyStringComboBoxCtrl.hxx">
+      <Filter>AzToolsFramework\UI\PropertyEditor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\PropertyEditor\PropertyStringLineEditCtrl.hxx">
+      <Filter>AzToolsFramework\UI\PropertyEditor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\PropertyEditor\PropertyVectorCtrl.hxx">
+      <Filter>AzToolsFramework\UI\PropertyEditor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\PropertyEditor\ReflectedPropertyEditor.hxx">
+      <Filter>AzToolsFramework\UI\PropertyEditor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\PropertyEditor\GrowTextEdit.h">
+      <Filter>AzToolsFramework\UI\PropertyEditor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\PropertyEditor\MultiLineTextEditHandler.h">
+      <Filter>AzToolsFramework\UI\PropertyEditor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\PropertyEditor\ThumbnailPropertyCtrl.h">
+      <Filter>AzToolsFramework\UI\PropertyEditor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\Slice\SlicePushWidget.hxx">
+      <Filter>AzToolsFramework\UI\Slice</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\Slice\SliceOverridesNotificationWindow.hxx">
+      <Filter>AzToolsFramework\UI\Slice</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\Slice\SliceOverridesNotificationWindowManager.hxx">
+      <Filter>AzToolsFramework\UI\Slice</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\Slice\Constants.h">
+      <Filter>AzToolsFramework\UI\Slice</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\Slice\SliceRelationshipWidget.hxx">
+      <Filter>AzToolsFramework\UI\Slice</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\UICore\AspectRatioAwarePixmapWidget.hxx">
+      <Filter>AzToolsFramework\UI\UICore</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\UICore\AZAutoSizingScrollArea.hxx">
+      <Filter>AzToolsFramework\UI\UICore</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\UICore\ColorPickerDelegate.hxx">
+      <Filter>AzToolsFramework\UI\UICore</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\UICore\ClickableLabel.hxx">
+      <Filter>AzToolsFramework\UI\UICore</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\UICore\IconButton.hxx">
+      <Filter>AzToolsFramework\UI\UICore</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\UICore\PlainTextEdit.hxx">
+      <Filter>AzToolsFramework\UI\UICore</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\UICore\ProgressShield.hxx">
+      <Filter>AzToolsFramework\UI\UICore</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\UICore\QTreeViewStateSaver.hxx">
+      <Filter>AzToolsFramework\UI\UICore</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\UICore\QWidgetSavedState.h">
+      <Filter>AzToolsFramework\UI\UICore</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\UICore\TargetSelectorButton.hxx">
+      <Filter>AzToolsFramework\UI\UICore</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\UICore\WidgetHelpers.h">
+      <Filter>AzToolsFramework\UI\UICore</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Undo\UndoSystem.h">
+      <Filter>AzToolsFramework\Undo</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Undo\UndoCacheInterface.h">
+      <Filter>AzToolsFramework\Undo</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Commands\ComponentModeCommand.h">
+      <Filter>AzToolsFramework\Commands</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Commands\EntityManipulatorCommand.h">
+      <Filter>AzToolsFramework\Commands</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Commands\EntityStateCommand.h">
+      <Filter>AzToolsFramework\Commands</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Commands\SelectionCommand.h">
+      <Filter>AzToolsFramework\Commands</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Commands\EntityTransformCommand.h">
+      <Filter>AzToolsFramework\Commands</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Commands\PreemptiveUndoCache.h">
+      <Filter>AzToolsFramework\Commands</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Commands\LegacyCommand.h">
+      <Filter>AzToolsFramework\Commands</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Commands\BaseSliceCommand.h">
+      <Filter>AzToolsFramework\Commands</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Commands\SliceDetachEntityCommand.h">
+      <Filter>AzToolsFramework\Commands</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Commands\DetachSubSliceInstanceCommand.h">
+      <Filter>AzToolsFramework\Commands</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Commands\PushToSliceCommand.h">
+      <Filter>AzToolsFramework\Commands</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Commands\CreateSliceCommand.h">
+      <Filter>AzToolsFramework\Commands</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Viewport\ActionBus.h">
+      <Filter>AzToolsFramework\Viewport</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Viewport\EditorContextMenu.h">
+      <Filter>AzToolsFramework\Viewport</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Viewport\VertexContainerDisplay.h">
+      <Filter>AzToolsFramework\Viewport</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Viewport\ViewportMessages.h">
+      <Filter>AzToolsFramework\Viewport</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Viewport\ViewportTypes.h">
+      <Filter>AzToolsFramework\Viewport</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\ViewportUi\Button.h">
+      <Filter>AzToolsFramework\ViewportUi</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\ViewportUi\ButtonGroup.h">
+      <Filter>AzToolsFramework\ViewportUi</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\ViewportUi\TextField.h">
+      <Filter>AzToolsFramework\ViewportUi</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\ViewportUi\ViewportUiDisplay.h">
+      <Filter>AzToolsFramework\ViewportUi</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\ViewportUi\ViewportUiManager.h">
+      <Filter>AzToolsFramework\ViewportUi</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\ViewportUi\ViewportUiRequestBus.h">
+      <Filter>AzToolsFramework\ViewportUi</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\ViewportUi\ViewportUiTextField.h">
+      <Filter>AzToolsFramework\ViewportUi</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\ViewportUi\ViewportUiCluster.h">
+      <Filter>AzToolsFramework\ViewportUi</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\ViewportUi\ViewportUiSwitcher.h">
+      <Filter>AzToolsFramework\ViewportUi</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\ViewportUi\ViewportUiWidgetCallbacks.h">
+      <Filter>AzToolsFramework\ViewportUi</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\ViewportUi\ViewportUiDisplayLayout.h">
+      <Filter>AzToolsFramework\ViewportUi</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\ComponentMode\EditorComponentModeBus.h">
+      <Filter>AzToolsFramework\ComponentMode</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\ComponentMode\ComponentModeCollection.h">
+      <Filter>AzToolsFramework\ComponentMode</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\ComponentMode\ComponentModeDelegate.h">
+      <Filter>AzToolsFramework\ComponentMode</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\ComponentMode\ComponentModeViewportUi.h">
+      <Filter>AzToolsFramework\ComponentMode</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\ComponentMode\ComponentModeViewportUiRequestBus.h">
+      <Filter>AzToolsFramework\ComponentMode</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\ComponentMode\EditorBaseComponentMode.h">
+      <Filter>AzToolsFramework\ComponentMode</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\ComponentModes\BoxComponentMode.h">
+      <Filter>AzToolsFramework\ComponentModes</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\ComponentModes\BoxViewportEdit.h">
+      <Filter>AzToolsFramework\ComponentModes</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\ViewportSelection\EditorBoxSelect.h">
+      <Filter>AzToolsFramework\ViewportSelection</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\ViewportSelection\EditorDefaultSelection.h">
+      <Filter>AzToolsFramework\ViewportSelection</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\ViewportSelection\EditorHelpers.h">
+      <Filter>AzToolsFramework\ViewportSelection</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\ViewportSelection\EditorInteractionSystemComponent.h">
+      <Filter>AzToolsFramework\ViewportSelection</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\ViewportSelection\EditorInteractionSystemViewportSelectionRequestBus.h">
+      <Filter>AzToolsFramework\ViewportSelection</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\ViewportSelection\EditorPickEntitySelection.h">
+      <Filter>AzToolsFramework\ViewportSelection</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\ViewportSelection\EditorSelectionUtil.h">
+      <Filter>AzToolsFramework\ViewportSelection</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\ViewportSelection\EditorTransformComponentSelection.h">
+      <Filter>AzToolsFramework\ViewportSelection</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\ViewportSelection\EditorTransformComponentSelectionRequestBus.h">
+      <Filter>AzToolsFramework\ViewportSelection</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\ViewportSelection\EditorVisibleEntityDataCache.h">
+      <Filter>AzToolsFramework\ViewportSelection</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\ViewportSelection\ViewportEditorModeTracker.h">
+      <Filter>AzToolsFramework\ViewportSelection</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\ToolsFileUtils\ToolsFileUtils.h">
+      <Filter>AzToolsFramework\ToolsFileUtils</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\AssetBrowser\AssetBrowserBus.h">
+      <Filter>AzToolsFramework\AssetBrowser</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\AssetBrowser\AssetBrowserSourceDropBus.h">
+      <Filter>AzToolsFramework\AssetBrowser</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\AssetBrowser\AssetBrowserComponent.h">
+      <Filter>AzToolsFramework\AssetBrowser</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\AssetBrowser\AssetBrowserEntry.h">
+      <Filter>AzToolsFramework\AssetBrowser</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\AssetBrowser\AssetBrowserFilterModel.h">
+      <Filter>AzToolsFramework\AssetBrowser</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\AssetBrowser\AssetBrowserTableModel.h">
+      <Filter>AzToolsFramework\AssetBrowser</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\AssetBrowser\AssetBrowserModel.h">
+      <Filter>AzToolsFramework\AssetBrowser</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\AssetBrowser\AssetEntryChange.h">
+      <Filter>AzToolsFramework\AssetBrowser</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\AssetBrowser\AssetEntryChangeset.h">
+      <Filter>AzToolsFramework\AssetBrowser</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\AssetBrowser\AssetSelectionModel.h">
+      <Filter>AzToolsFramework\AssetBrowser</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\AssetBrowser\EBusFindAssetTypeByName.h">
+      <Filter>AzToolsFramework\AssetBrowser</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\AssetBrowser\Views\AssetBrowserTreeView.h">
+      <Filter>AzToolsFramework\AssetBrowser\Views</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\AssetBrowser\Views\AssetBrowserTableView.h">
+      <Filter>AzToolsFramework\AssetBrowser\Views</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\AssetBrowser\Views\EntryDelegate.h">
+      <Filter>AzToolsFramework\AssetBrowser\Views</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\AssetBrowser\Views\AssetBrowserFolderWidget.h">
+      <Filter>AzToolsFramework\AssetBrowser\Views</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\AssetBrowser\Entries\AssetBrowserEntry.h">
+      <Filter>AzToolsFramework\AssetBrowser\Entries</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\AssetBrowser\Entries\AssetBrowserEntry.inl">
+      <Filter>AzToolsFramework\AssetBrowser\Entries</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\AssetBrowser\Entries\AssetBrowserEntryCache.h">
+      <Filter>AzToolsFramework\AssetBrowser\Entries</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\AssetBrowser\Entries\FolderAssetBrowserEntry.h">
+      <Filter>AzToolsFramework\AssetBrowser\Entries</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\AssetBrowser\Entries\ProductAssetBrowserEntry.h">
+      <Filter>AzToolsFramework\AssetBrowser\Entries</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\AssetBrowser\Entries\RootAssetBrowserEntry.h">
+      <Filter>AzToolsFramework\AssetBrowser\Entries</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\AssetBrowser\Entries\SourceAssetBrowserEntry.h">
+      <Filter>AzToolsFramework\AssetBrowser\Entries</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\AssetBrowser\Search\Filter.h">
+      <Filter>AzToolsFramework\AssetBrowser\Search</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\AssetBrowser\Search\FilterByWidget.h">
+      <Filter>AzToolsFramework\AssetBrowser\Search</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\AssetBrowser\Search\SearchAssetTypeSelectorWidget.h">
+      <Filter>AzToolsFramework\AssetBrowser\Search</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\AssetBrowser\Search\SearchParametersWidget.h">
+      <Filter>AzToolsFramework\AssetBrowser\Search</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\AssetBrowser\Search\SearchWidget.h">
+      <Filter>AzToolsFramework\AssetBrowser\Search</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\AssetBrowser\Thumbnails\FolderThumbnail.h">
+      <Filter>AzToolsFramework\AssetBrowser\Thumbnails</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\AssetBrowser\Thumbnails\ProductThumbnail.h">
+      <Filter>AzToolsFramework\AssetBrowser\Thumbnails</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\AssetBrowser\Thumbnails\SourceThumbnail.h">
+      <Filter>AzToolsFramework\AssetBrowser\Thumbnails</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\AssetBrowser\AssetPicker\AssetPickerDialog.h">
+      <Filter>AzToolsFramework\AssetBrowser\AssetPicker</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\AssetBrowser\Previewer\EmptyPreviewer.h">
+      <Filter>AzToolsFramework\AssetBrowser\Previewer</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\AssetBrowser\Previewer\Previewer.h">
+      <Filter>AzToolsFramework\AssetBrowser\Previewer</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\AssetBrowser\Previewer\PreviewerBus.h">
+      <Filter>AzToolsFramework\AssetBrowser\Previewer</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\AssetBrowser\Previewer\PreviewerFactory.h">
+      <Filter>AzToolsFramework\AssetBrowser\Previewer</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\AssetBrowser\Previewer\PreviewerFrame.h">
+      <Filter>AzToolsFramework\AssetBrowser\Previewer</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Archive\ArchiveComponent.h">
+      <Filter>AzToolsFramework\Archive</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Archive\NullArchiveComponent.h">
+      <Filter>AzToolsFramework\Archive</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Archive\ArchiveAPI.h">
+      <Filter>AzToolsFramework\Archive</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\PropertyEditor\Model\AssetCompleterModel.h">
+      <Filter>AzToolsFramework\UI\PropertyEditor\Model</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\PropertyEditor\View\AssetCompleterListView.h">
+      <Filter>AzToolsFramework\UI\PropertyEditor\View</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Prefab\EditorPrefabComponent.h">
+      <Filter>AzToolsFramework\Prefab</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Prefab\PrefabDomTypes.h">
+      <Filter>AzToolsFramework\Prefab</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Prefab\PrefabDomUtils.h">
+      <Filter>AzToolsFramework\Prefab</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Prefab\PrefabFocusHandler.h">
+      <Filter>AzToolsFramework\Prefab</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Prefab\PrefabFocusInterface.h">
+      <Filter>AzToolsFramework\Prefab</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Prefab\PrefabIdTypes.h">
+      <Filter>AzToolsFramework\Prefab</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Prefab\PrefabLoader.h">
+      <Filter>AzToolsFramework\Prefab</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Prefab\PrefabLoaderInterface.h">
+      <Filter>AzToolsFramework\Prefab</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Prefab\PrefabSystemComponent.h">
+      <Filter>AzToolsFramework\Prefab</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Prefab\PrefabSystemComponentInterface.h">
+      <Filter>AzToolsFramework\Prefab</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Prefab\Instance\Instance.h">
+      <Filter>AzToolsFramework\Prefab\Instance</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Prefab\Instance\InstanceSerializer.h">
+      <Filter>AzToolsFramework\Prefab\Instance</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Prefab\Instance\InstanceEntityScrubber.h">
+      <Filter>AzToolsFramework\Prefab\Instance</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Prefab\Instance\InstanceEntityIdMapper.h">
+      <Filter>AzToolsFramework\Prefab\Instance</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Prefab\Instance\InstanceEntityMapper.h">
+      <Filter>AzToolsFramework\Prefab\Instance</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Prefab\Instance\InstanceEntityMapperInterface.h">
+      <Filter>AzToolsFramework\Prefab\Instance</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Prefab\Instance\InstanceToTemplateInterface.h">
+      <Filter>AzToolsFramework\Prefab\Instance</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Prefab\Instance\InstanceToTemplatePropagator.h">
+      <Filter>AzToolsFramework\Prefab\Instance</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Prefab\Instance\InstanceUpdateExecutor.h">
+      <Filter>AzToolsFramework\Prefab\Instance</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Prefab\Instance\InstanceUpdateExecutorInterface.h">
+      <Filter>AzToolsFramework\Prefab\Instance</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Prefab\Instance\TemplateInstanceMapper.h">
+      <Filter>AzToolsFramework\Prefab\Instance</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Prefab\Instance\TemplateInstanceMapperInterface.h">
+      <Filter>AzToolsFramework\Prefab\Instance</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Prefab\Link\Link.h">
+      <Filter>AzToolsFramework\Prefab\Link</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Prefab\PrefabPublicHandler.h">
+      <Filter>AzToolsFramework\Prefab</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Prefab\PrefabPublicInterface.h">
+      <Filter>AzToolsFramework\Prefab</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Prefab\PrefabPublicNotificationBus.h">
+      <Filter>AzToolsFramework\Prefab</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Prefab\PrefabPublicRequestBus.h">
+      <Filter>AzToolsFramework\Prefab</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Prefab\PrefabPublicRequestHandler.h">
+      <Filter>AzToolsFramework\Prefab</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Prefab\PrefabUndo.h">
+      <Filter>AzToolsFramework\Prefab</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Prefab\PrefabUndoCache.h">
+      <Filter>AzToolsFramework\Prefab</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Prefab\PrefabUndoHelpers.h">
+      <Filter>AzToolsFramework\Prefab</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Prefab\Spawnable\ComponentRequirementsValidator.h">
+      <Filter>AzToolsFramework\Prefab\Spawnable</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Prefab\Spawnable\EditorInfoRemover.h">
+      <Filter>AzToolsFramework\Prefab\Spawnable</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Prefab\Spawnable\EditorOnlyEntityHandler\EditorOnlyEntityHandler.h">
+      <Filter>AzToolsFramework\Prefab\Spawnable\EditorOnlyEntityHandler</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Prefab\Spawnable\EditorOnlyEntityHandler\UiEditorOnlyEntityHandler.h">
+      <Filter>AzToolsFramework\Prefab\Spawnable\EditorOnlyEntityHandler</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Prefab\Spawnable\EditorOnlyEntityHandler\WorldEditorOnlyEntityHandler.h">
+      <Filter>AzToolsFramework\Prefab\Spawnable\EditorOnlyEntityHandler</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Prefab\Spawnable\PrefabCatchmentProcessor.h">
+      <Filter>AzToolsFramework\Prefab\Spawnable</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Prefab\Spawnable\PrefabConversionPipeline.h">
+      <Filter>AzToolsFramework\Prefab\Spawnable</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Prefab\Spawnable\ProcesedObjectStore.h">
+      <Filter>AzToolsFramework\Prefab\Spawnable</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Prefab\Spawnable\PrefabProcessor.h">
+      <Filter>AzToolsFramework\Prefab\Spawnable</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Prefab\Spawnable\PrefabProcessorContext.h">
+      <Filter>AzToolsFramework\Prefab\Spawnable</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Prefab\Spawnable\SpawnableMetaDataBuilder.h">
+      <Filter>AzToolsFramework\Prefab\Spawnable</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Prefab\Spawnable\SpawnableUtils.h">
+      <Filter>AzToolsFramework\Prefab\Spawnable</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Prefab\Template\Template.h">
+      <Filter>AzToolsFramework\Prefab\Template</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\Outliner\EntityOutlinerDisplayOptionsMenu.h">
+      <Filter>AzToolsFramework\UI\Outliner</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\Outliner\EntityOutlinerTreeView.hxx">
+      <Filter>AzToolsFramework\UI\Outliner</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\Outliner\EntityOutlinerWidget.hxx">
+      <Filter>AzToolsFramework\UI\Outliner</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\Outliner\EntityOutlinerCacheBus.h">
+      <Filter>AzToolsFramework\UI\Outliner</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\Outliner\EntityOutlinerListModel.hxx">
+      <Filter>AzToolsFramework\UI\Outliner</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\Outliner\EntityOutlinerSearchWidget.h">
+      <Filter>AzToolsFramework\UI\Outliner</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\Outliner\EntityOutlinerSortFilterProxyModel.hxx">
+      <Filter>AzToolsFramework\UI\Outliner</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\EditorEntityUi\EditorEntityUiInterface.h">
+      <Filter>AzToolsFramework\UI\EditorEntityUi</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\EditorEntityUi\EditorEntityUiHandlerBase.h">
+      <Filter>AzToolsFramework\UI\EditorEntityUi</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\EditorEntityUi\EditorEntityUiSystemComponent.h">
+      <Filter>AzToolsFramework\UI\EditorEntityUi</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\Layer\LayerUiHandler.h">
+      <Filter>AzToolsFramework\UI\Layer</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\Prefab\LevelRootUiHandler.h">
+      <Filter>AzToolsFramework\UI\Prefab</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\Prefab\PrefabIntegrationBus.h">
+      <Filter>AzToolsFramework\UI\Prefab</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\Prefab\PrefabIntegrationManager.h">
+      <Filter>AzToolsFramework\UI\Prefab</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\Prefab\PrefabIntegrationInterface.h">
+      <Filter>AzToolsFramework\UI\Prefab</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\Prefab\PrefabUiHandler.h">
+      <Filter>AzToolsFramework\UI\Prefab</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\PythonTerminal\ScriptHelpDialog.h">
+      <Filter>AzToolsFramework\PythonTerminal</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\PythonTerminal\ScriptTermDialog.h">
+      <Filter>AzToolsFramework\PythonTerminal</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\Input\QtEventToAzInputManager.h">
+      <Filter>AzToolsFramework\Input</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\LegacyFramework\MainWindowSavedState.h">
+      <Filter>AzToolsFramework\UI\LegacyFramework</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\LegacyFramework\UIFramework.hxx">
+      <Filter>AzToolsFramework\UI\LegacyFramework</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\LegacyFramework\UIFrameworkAPI.h">
+      <Filter>AzToolsFramework\UI\LegacyFramework</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\LegacyFramework\Core\EditorContextBus.h">
+      <Filter>AzToolsFramework\UI\LegacyFramework\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\LegacyFramework\Core\EditorFrameworkAPI.h">
+      <Filter>AzToolsFramework\UI\LegacyFramework\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\LegacyFramework\Core\EditorFrameworkApplication.h">
+      <Filter>AzToolsFramework\UI\LegacyFramework\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\LegacyFramework\Core\IPCComponent.h">
+      <Filter>AzToolsFramework\UI\LegacyFramework\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\LegacyFramework\CustomMenus\CustomMenusAPI.h">
+      <Filter>AzToolsFramework\UI\LegacyFramework\CustomMenus</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\UICore\OverwritePromptDialog.hxx">
+      <Filter>AzToolsFramework\UI\UICore</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\UICore\SaveChangesDialog.hxx">
+      <Filter>AzToolsFramework\UI\UICore</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework_autogen\include\AzToolsFramework\AssetEditor\ui_AssetEditorToolbar.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework_autogen\include\AzToolsFramework\AssetEditor\ui_AssetEditorStatusBar.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework_autogen\include\AzToolsFramework\UI\Logging\ui_NewLogTabDialog.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework_autogen\include\AzToolsFramework\UI\PropertyEditor\ui_EntityPropertyEditor.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework_autogen\include\AzToolsFramework\UI\Slice\ui_NotificationWindow.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework_autogen\include\AzToolsFramework\UI\UICore\ui_ProgressShield.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework_autogen\include\AzToolsFramework\AssetBrowser\Search\ui_FilterByWidget.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework_autogen\include\AzToolsFramework\AssetBrowser\Search\ui_SearchAssetTypeSelectorWidget.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework_autogen\include\AzToolsFramework\AssetBrowser\Search\ui_SearchParametersWidget.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework_autogen\include\AzToolsFramework\AssetBrowser\Search\ui_SearchWidget.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework_autogen\include\AzToolsFramework\AssetBrowser\AssetPicker\ui_AssetPickerDialog.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework_autogen\include\AzToolsFramework\AssetBrowser\Previewer\ui_EmptyPreviewer.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework_autogen\include\AzToolsFramework\UI\Outliner\ui_EntityOutlinerWidget.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework_autogen\include\AzToolsFramework\PythonTerminal\ui_ScriptHelpDialog.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework_autogen\include\AzToolsFramework\PythonTerminal\ui_ScriptTermDialog.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework_autogen\include\AzToolsFramework\UI\UICore\ui_OverwritePromptDialog.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework_autogen\include\AzToolsFramework\UI\UICore\ui_SaveChangesDialog.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\AssetEditor\AssetEditorToolbar.ui">
+      <Filter>AzToolsFramework\AssetEditor</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\AssetEditor\AssetEditorStatusBar.ui">
+      <Filter>AzToolsFramework\AssetEditor</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\Logging\NewLogTabDialog.ui">
+      <Filter>AzToolsFramework\UI\Logging</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\PropertyEditor\EntityPropertyEditor.ui">
+      <Filter>AzToolsFramework\UI\PropertyEditor</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\Slice\NotificationWindow.ui">
+      <Filter>AzToolsFramework\UI\Slice</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\UICore\ProgressShield.ui">
+      <Filter>AzToolsFramework\UI\UICore</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\AssetBrowser\Search\FilterByWidget.ui">
+      <Filter>AzToolsFramework\AssetBrowser\Search</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\AssetBrowser\Search\SearchAssetTypeSelectorWidget.ui">
+      <Filter>AzToolsFramework\AssetBrowser\Search</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\AssetBrowser\Search\SearchParametersWidget.ui">
+      <Filter>AzToolsFramework\AssetBrowser\Search</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\AssetBrowser\Search\SearchWidget.ui">
+      <Filter>AzToolsFramework\AssetBrowser\Search</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\AssetBrowser\AssetPicker\AssetPickerDialog.ui">
+      <Filter>AzToolsFramework\AssetBrowser\AssetPicker</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\AssetBrowser\Previewer\EmptyPreviewer.ui">
+      <Filter>AzToolsFramework\AssetBrowser\Previewer</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\Outliner\EntityOutlinerWidget.ui">
+      <Filter>AzToolsFramework\UI\Outliner</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\PythonTerminal\ScriptHelpDialog.ui">
+      <Filter>AzToolsFramework\PythonTerminal</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\PythonTerminal\ScriptTermDialog.ui">
+      <Filter>AzToolsFramework\PythonTerminal</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\UICore\OverwritePromptDialog.ui">
+      <Filter>AzToolsFramework\UI\UICore</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\UICore\SaveChangesDialog.ui">
+      <Filter>AzToolsFramework\UI\UICore</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\CMakeFiles\912e2af5182f226d422a2a9f8c45a5d7\qrc_AssetEditorResources.cpp.rule">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\CMakeFiles\3feb099c9800a12e2aa1db1c6ad50d16\qrc_Icons.cpp.rule">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\CMakeFiles\eafe7d118aa4f19c8acfa97a1b5d0fbb\qrc_AssetBrowserFolderWidget.cpp.rule">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\CMakeFiles\9949bf049985465f54154085481cc82b\qrc_search.cpp.rule">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\CMakeFiles\5ff28b1b4405e5e20d479828817ec987\qrc_resources.cpp.rule">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\CMakeFiles\f6699be9f6a55cfa7a851b547d131324\qrc_sharedResources.cpp.rule">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\CMakeLists.txt">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\AssetEditor\Resources\AssetEditorResources.qrc">
+      <Filter>AzToolsFramework\AssetEditor\Resources</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\PropertyEditor\Resources\Icons.qrc">
+      <Filter>AzToolsFramework\UI\PropertyEditor\Resources</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\Logging\NewLogTabDialog.qss">
+      <Filter>AzToolsFramework\UI\Logging</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\AssetBrowser\Views\AssetBrowserFolderWidget.qrc">
+      <Filter>AzToolsFramework\AssetBrowser\Views</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\AssetBrowser\Search\search.qrc">
+      <Filter>AzToolsFramework\AssetBrowser\Search</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\Outliner\EntityOutliner.qss">
+      <Filter>AzToolsFramework\UI\Outliner</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\Outliner\resources.qrc">
+      <Filter>AzToolsFramework\UI\Outliner</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\aztoolsframework_files.cmake">
+      <Filter>AzToolsFramework</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UI\LegacyFramework\Resources\sharedResources.qrc">
+      <Filter>AzToolsFramework\UI\LegacyFramework\Resources</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\aztoolsframework_windows_files.cmake">
+      <Filter>AzToolsFramework</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\Platform\Windows\platform_windows_files.cmake">
+      <Filter>Platform\Windows</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="AzToolsFramework">
+      <UniqueIdentifier>{3FB87680-4AE7-3CD5-8680-BA4A4F9E0ED0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzToolsFramework\API">
+      <UniqueIdentifier>{02D97F11-4263-3FD6-880D-4DD7D5A34A6E}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzToolsFramework\Application">
+      <UniqueIdentifier>{E5809233-6D65-3FBD-BCBF-EA5D2EEB1AB3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzToolsFramework\Archive">
+      <UniqueIdentifier>{1F13EF3E-103F-3595-8291-50E9E9DD5E7B}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzToolsFramework\Asset">
+      <UniqueIdentifier>{D8333D80-EDB2-3C23-9C73-6795D3FBD0E5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzToolsFramework\AssetBrowser">
+      <UniqueIdentifier>{722B608A-6A9B-399F-81CD-E7D3A88C5FFC}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzToolsFramework\AssetBrowser\AssetPicker">
+      <UniqueIdentifier>{E16ABB13-3A51-3376-98B2-0309704A55BF}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzToolsFramework\AssetBrowser\Entries">
+      <UniqueIdentifier>{AE834090-FCF2-3244-B033-4B85974ED2E5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzToolsFramework\AssetBrowser\Previewer">
+      <UniqueIdentifier>{F1620F1D-5CD5-39BC-851D-250A9BE3B831}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzToolsFramework\AssetBrowser\Search">
+      <UniqueIdentifier>{65A525AB-9C6C-30E5-90A8-DFED1ECC66D7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzToolsFramework\AssetBrowser\Thumbnails">
+      <UniqueIdentifier>{FE6CD5B6-C136-37F1-A745-886B57081EA7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzToolsFramework\AssetBrowser\Views">
+      <UniqueIdentifier>{3359EC4F-8ABF-3754-964E-336AACAB0168}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzToolsFramework\AssetBundle">
+      <UniqueIdentifier>{A714FBE5-BB7D-38C0-8FA9-E209079C95D9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzToolsFramework\AssetCatalog">
+      <UniqueIdentifier>{C00F3731-AF8E-381E-A3E4-4C33972E583F}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzToolsFramework\AssetDatabase">
+      <UniqueIdentifier>{D8E95C91-42A8-34FC-B310-BBF8604D0CCA}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzToolsFramework\AssetEditor">
+      <UniqueIdentifier>{A620D4E4-1236-3A77-BFE9-0BFD344C7B34}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzToolsFramework\AssetEditor\Resources">
+      <UniqueIdentifier>{EE6783D5-51F7-3AC9-88F8-7EF7A08C7F78}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzToolsFramework\Commands">
+      <UniqueIdentifier>{1672B6FA-DCE3-3A27-A972-C0C8F1D6B746}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzToolsFramework\Component">
+      <UniqueIdentifier>{72FE5E01-0F45-3E70-81FF-CA752E966AB0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzToolsFramework\ComponentMode">
+      <UniqueIdentifier>{C790D4F0-DD90-3358-BEDE-069077DB6EF4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzToolsFramework\ComponentModes">
+      <UniqueIdentifier>{A8E5B6FB-CC26-32E2-B5A7-FD7578FDC2F4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzToolsFramework\Debug">
+      <UniqueIdentifier>{54FB3BDA-21A4-3648-A2CC-170194EB3647}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzToolsFramework\Editor">
+      <UniqueIdentifier>{A39CC5C2-9668-3EC7-9F47-A6EC6570CEEE}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzToolsFramework\Entity">
+      <UniqueIdentifier>{3B554B81-010E-306C-9A45-5391EB044D74}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzToolsFramework\Fingerprinting">
+      <UniqueIdentifier>{25299627-1BAA-3416-824C-F89DA82372E6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzToolsFramework\FocusMode">
+      <UniqueIdentifier>{AC7F567A-4F5D-362E-823C-34CE8A4EAD72}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzToolsFramework\Input">
+      <UniqueIdentifier>{B051957F-62E8-3ED2-A7BB-8C45327851B8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzToolsFramework\Logger">
+      <UniqueIdentifier>{ED85E5FF-7937-35B5-A639-5046AD5CEE0C}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzToolsFramework\Manipulators">
+      <UniqueIdentifier>{73EDD889-D5FA-3872-AD30-F1F71CC9F58C}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzToolsFramework\Maths">
+      <UniqueIdentifier>{661FE720-77D3-32E8-B015-9E4119980881}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzToolsFramework\Picking">
+      <UniqueIdentifier>{6FD4B75C-B54F-3A99-BA02-EE694E518135}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzToolsFramework\Picking\Manipulators">
+      <UniqueIdentifier>{36B52F16-1259-3A2A-89CF-0ADDF2A097E7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzToolsFramework\Prefab">
+      <UniqueIdentifier>{F22ADB28-3E05-32FA-8571-14B0BDFCDC94}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzToolsFramework\Prefab\Instance">
+      <UniqueIdentifier>{770A0712-3256-39A0-9590-A60814A98FF7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzToolsFramework\Prefab\Link">
+      <UniqueIdentifier>{D9660CD4-5636-3537-B3F4-12C339EB3241}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzToolsFramework\Prefab\Spawnable">
+      <UniqueIdentifier>{D276023C-9AC9-320A-BF2B-FEA45EDBE27D}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzToolsFramework\Prefab\Spawnable\EditorOnlyEntityHandler">
+      <UniqueIdentifier>{806BE2C0-B124-32A2-A3DD-A2A372D59762}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzToolsFramework\Prefab\Template">
+      <UniqueIdentifier>{88871154-F093-33CB-9AC6-B13D888E5B02}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzToolsFramework\PropertyTreeEditor">
+      <UniqueIdentifier>{5631E3E6-5B28-330D-A265-71A17560A7FE}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzToolsFramework\PythonTerminal">
+      <UniqueIdentifier>{B3C275F7-DD3C-3271-9FC9-AC9D18E1EF90}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzToolsFramework\Render">
+      <UniqueIdentifier>{136E4CC6-C62D-3165-8E55-146BED58A2C5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzToolsFramework\SQLite">
+      <UniqueIdentifier>{7A96992C-E09E-385A-AC15-F225D9196A93}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzToolsFramework\Slice">
+      <UniqueIdentifier>{3B508590-C16E-38D1-B3EE-D583A7932920}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzToolsFramework\SourceControl">
+      <UniqueIdentifier>{789AA88A-D1A1-3BF0-9757-B6B6471AD9C1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzToolsFramework\Thumbnails">
+      <UniqueIdentifier>{BE8FF9BC-3640-3E87-A684-8E5208C3ABFA}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzToolsFramework\ToolsComponents">
+      <UniqueIdentifier>{AF5D6D52-74EB-3BC1-B78C-EF541C626568}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzToolsFramework\ToolsFileUtils">
+      <UniqueIdentifier>{9FC2444B-FB7F-365D-95E0-195FE32A6A38}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzToolsFramework\ToolsMessaging">
+      <UniqueIdentifier>{2F6D111A-6301-3F98-BC65-D035F7BBFCA9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzToolsFramework\UI">
+      <UniqueIdentifier>{0E5322EF-B87B-389A-8D8C-A26D0800535D}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzToolsFramework\UI\ComponentPalette">
+      <UniqueIdentifier>{D4DF1F3F-5F58-3DD6-90B1-F3716417DC04}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzToolsFramework\UI\Docking">
+      <UniqueIdentifier>{566981D5-DF6C-3AB8-905F-49969C7DFE26}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzToolsFramework\UI\EditorEntityUi">
+      <UniqueIdentifier>{BC6DF6B5-097C-3910-9926-F2DF36D13223}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzToolsFramework\UI\Layer">
+      <UniqueIdentifier>{AB22BBBF-FB8A-38CE-B3B5-DACA206F69A1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzToolsFramework\UI\LegacyFramework">
+      <UniqueIdentifier>{D436B950-9AF8-330F-944E-3D87B56D7EFE}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzToolsFramework\UI\LegacyFramework\Core">
+      <UniqueIdentifier>{5AFE708D-993D-3A3C-93A2-127E0AC1F61F}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzToolsFramework\UI\LegacyFramework\CustomMenus">
+      <UniqueIdentifier>{B4ED2538-AB1F-3711-914F-FF655D3DB38E}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzToolsFramework\UI\LegacyFramework\Resources">
+      <UniqueIdentifier>{ED1DCA4F-D949-3D1A-B7B0-73863CE5EF05}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzToolsFramework\UI\Logging">
+      <UniqueIdentifier>{375382FB-E0EA-3B65-842A-152B8E17B177}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzToolsFramework\UI\Outliner">
+      <UniqueIdentifier>{CE436202-A32D-397D-90CC-82D4D3BE3351}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzToolsFramework\UI\Prefab">
+      <UniqueIdentifier>{880B6C7E-C674-301F-8473-2624E7944AE5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzToolsFramework\UI\PropertyEditor">
+      <UniqueIdentifier>{7409C179-D63A-3AF0-A6C5-F0B63A60DC43}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzToolsFramework\UI\PropertyEditor\Model">
+      <UniqueIdentifier>{529F88FD-5FC1-3990-9119-3797B3A9FB6E}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzToolsFramework\UI\PropertyEditor\Resources">
+      <UniqueIdentifier>{366AFBF9-2967-3C73-9BA7-D3CBA29BF494}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzToolsFramework\UI\PropertyEditor\View">
+      <UniqueIdentifier>{A140A664-E663-3898-A81A-41D9B1C58359}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzToolsFramework\UI\SearchWidget">
+      <UniqueIdentifier>{6F84C307-73D4-3C4C-9E37-375C6366A79D}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzToolsFramework\UI\Slice">
+      <UniqueIdentifier>{CD8E7DEB-46BC-3287-8C31-DBB2E9FFD1E1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzToolsFramework\UI\UICore">
+      <UniqueIdentifier>{B8F734AF-F2DB-31DD-BF62-24B75039A932}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzToolsFramework\Undo">
+      <UniqueIdentifier>{8B814625-E6A1-367A-840C-F1D73B70F92E}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzToolsFramework\Viewport">
+      <UniqueIdentifier>{C712EE79-65CF-347D-B7A0-C49CE8139BA8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzToolsFramework\ViewportSelection">
+      <UniqueIdentifier>{58D23F5A-9E9F-30E2-BBCB-ABDEDFA3544D}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzToolsFramework\ViewportUi">
+      <UniqueIdentifier>{55B79848-EF71-3313-AFC2-12AE55607242}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Generated Files">
+      <UniqueIdentifier>{FB9B7D8B-7F05-31D5-AA90-592248EDE1B3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Platform">
+      <UniqueIdentifier>{378A8D8C-6CA1-3F6B-A02B-1E9FF64C97B2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Platform\Windows">
+      <UniqueIdentifier>{63AEF2F6-51C7-306A-BFE8-A049C8C62EFB}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Platform\Windows\AzToolsFramework">
+      <UniqueIdentifier>{26725471-DE1C-3BA9-A68A-34431EA16148}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Platform\Windows\AzToolsFramework\Archive">
+      <UniqueIdentifier>{C48F0205-2314-35A4-B50F-12BC9FDAD512}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

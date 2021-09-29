@@ -1,0 +1,7 @@
+# CMake generation dependency list for this directory.
+C:/Users/lesaelr/o3de/Gems/ScriptCanvasTesting/Code/CMakeLists.txt
+C:/Users/lesaelr/o3de/Gems/ScriptCanvasTesting/Code/scriptcanvastesting_autogen_files.cmake
+C:/Users/lesaelr/o3de/Gems/ScriptCanvasTesting/Code/scriptcanvastestingeditor_files.cmake
+C:/Users/lesaelr/o3de/Gems/ScriptCanvasTesting/Code/scriptcanvastestingeditor_shared_files.cmake
+C:/Users/lesaelr/o3de/Gems/ScriptCanvasTesting/Code/scriptcanvastestingeditor_tests_files.cmake
+C:/Users/lesaelr/o3de/cmake/Platform/Windows/LYTestWrappers_windows.cmake

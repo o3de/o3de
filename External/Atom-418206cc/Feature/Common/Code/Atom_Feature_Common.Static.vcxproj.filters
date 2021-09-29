@@ -1,0 +1,1233 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\Atom-418206cc\Feature\Common\Code\CMakeFiles\Atom_Feature_Common.Static.dir\Unity\unity_18_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\Atom-418206cc\Feature\Common\Code\CMakeFiles\Atom_Feature_Common.Static.dir\Unity\unity_17_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\Atom-418206cc\Feature\Common\Code\CMakeFiles\Atom_Feature_Common.Static.dir\Unity\unity_16_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\Atom-418206cc\Feature\Common\Code\CMakeFiles\Atom_Feature_Common.Static.dir\Unity\unity_15_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\Atom-418206cc\Feature\Common\Code\CMakeFiles\Atom_Feature_Common.Static.dir\Unity\unity_14_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\Atom-418206cc\Feature\Common\Code\CMakeFiles\Atom_Feature_Common.Static.dir\Unity\unity_13_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\Atom-418206cc\Feature\Common\Code\CMakeFiles\Atom_Feature_Common.Static.dir\Unity\unity_12_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\Atom-418206cc\Feature\Common\Code\CMakeFiles\Atom_Feature_Common.Static.dir\Unity\unity_11_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\Atom-418206cc\Feature\Common\Code\CMakeFiles\Atom_Feature_Common.Static.dir\Unity\unity_10_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\Atom-418206cc\Feature\Common\Code\CMakeFiles\Atom_Feature_Common.Static.dir\Unity\unity_9_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\Atom-418206cc\Feature\Common\Code\CMakeFiles\Atom_Feature_Common.Static.dir\Unity\unity_8_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\Atom-418206cc\Feature\Common\Code\CMakeFiles\Atom_Feature_Common.Static.dir\Unity\unity_7_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\Atom-418206cc\Feature\Common\Code\CMakeFiles\Atom_Feature_Common.Static.dir\Unity\unity_6_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\Atom-418206cc\Feature\Common\Code\CMakeFiles\Atom_Feature_Common.Static.dir\Unity\unity_5_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\Atom-418206cc\Feature\Common\Code\CMakeFiles\Atom_Feature_Common.Static.dir\Unity\unity_4_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\Atom-418206cc\Feature\Common\Code\CMakeFiles\Atom_Feature_Common.Static.dir\Unity\unity_3_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\Atom-418206cc\Feature\Common\Code\CMakeFiles\Atom_Feature_Common.Static.dir\Unity\unity_2_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\Atom-418206cc\Feature\Common\Code\CMakeFiles\Atom_Feature_Common.Static.dir\Unity\unity_1_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\Atom-418206cc\Feature\Common\Code\CMakeFiles\Atom_Feature_Common.Static.dir\Unity\unity_0_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\CommonModule.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\CommonSystemComponent.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\FrameCaptureSystemComponent.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\ProfilingCaptureSystemComponent.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\3rdParty\ACES\ACES\Aces.cpp">
+      <Filter>3rdParty\ACES\ACES</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\ACES\AcesDisplayMapperFeatureProcessor.cpp">
+      <Filter>Source\ACES</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\AuxGeom\AuxGeomFeatureProcessor.cpp">
+      <Filter>Source\AuxGeom</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\AuxGeom\AuxGeomDrawQueue.cpp">
+      <Filter>Source\AuxGeom</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\AuxGeom\AuxGeomDrawProcessorShared.cpp">
+      <Filter>Source\AuxGeom</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\AuxGeom\DynamicPrimitiveProcessor.cpp">
+      <Filter>Source\AuxGeom</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\AuxGeom\FixedShapeProcessor.cpp">
+      <Filter>Source\AuxGeom</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\CoreLights\CapsuleLightFeatureProcessor.cpp">
+      <Filter>Source\CoreLights</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\CoreLights\CascadedShadowmapsPass.cpp">
+      <Filter>Source\CoreLights</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\CoreLights\CoreLightsSystemComponent.cpp">
+      <Filter>Source\CoreLights</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\CoreLights\DepthExponentiationPass.cpp">
+      <Filter>Source\CoreLights</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\CoreLights\DirectionalLightFeatureProcessor.cpp">
+      <Filter>Source\CoreLights</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\CoreLights\DiskLightFeatureProcessor.cpp">
+      <Filter>Source\CoreLights</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\CoreLights\EsmShadowmapsPass.cpp">
+      <Filter>Source\CoreLights</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\CoreLights\LtcCommon.cpp">
+      <Filter>Source\CoreLights</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\CoreLights\PointLightFeatureProcessor.cpp">
+      <Filter>Source\CoreLights</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\CoreLights\PolygonLightFeatureProcessor.cpp">
+      <Filter>Source\CoreLights</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\CoreLights\ProjectedShadowmapsPass.cpp">
+      <Filter>Source\CoreLights</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\CoreLights\QuadLightFeatureProcessor.cpp">
+      <Filter>Source\CoreLights</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\CoreLights\SimplePointLightFeatureProcessor.cpp">
+      <Filter>Source\CoreLights</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\CoreLights\SimpleSpotLightFeatureProcessor.cpp">
+      <Filter>Source\CoreLights</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\CoreLights\Shadow.cpp">
+      <Filter>Source\CoreLights</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\CoreLights\ShadowmapAtlas.cpp">
+      <Filter>Source\CoreLights</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\CoreLights\ShadowmapPass.cpp">
+      <Filter>Source\CoreLights</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\CoreLights\LightCullingPass.cpp">
+      <Filter>Source\CoreLights</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\CoreLights\LightCullingTilePreparePass.cpp">
+      <Filter>Source\CoreLights</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\CoreLights\LightCullingRemap.cpp">
+      <Filter>Source\CoreLights</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\Checkerboard\CheckerboardColorResolvePass.cpp">
+      <Filter>Source\Checkerboard</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\Checkerboard\CheckerboardPass.cpp">
+      <Filter>Source\Checkerboard</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\Decals\DecalFeatureProcessor.cpp">
+      <Filter>Source\Decals</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\Decals\DecalTextureArray.cpp">
+      <Filter>Source\Decals</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\Decals\DecalTextureArrayFeatureProcessor.cpp">
+      <Filter>Source\Decals</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\DiffuseGlobalIllumination\DiffuseProbeGridRayTracingPass.cpp">
+      <Filter>Source\DiffuseGlobalIllumination</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\DiffuseGlobalIllumination\DiffuseProbeGridBlendIrradiancePass.cpp">
+      <Filter>Source\DiffuseGlobalIllumination</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\DiffuseGlobalIllumination\DiffuseProbeGridBlendDistancePass.cpp">
+      <Filter>Source\DiffuseGlobalIllumination</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\DiffuseGlobalIllumination\DiffuseProbeGridBorderUpdatePass.cpp">
+      <Filter>Source\DiffuseGlobalIllumination</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\DiffuseGlobalIllumination\DiffuseProbeGridRelocationPass.cpp">
+      <Filter>Source\DiffuseGlobalIllumination</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\DiffuseGlobalIllumination\DiffuseProbeGridClassificationPass.cpp">
+      <Filter>Source\DiffuseGlobalIllumination</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\DiffuseGlobalIllumination\DiffuseProbeGridRenderPass.cpp">
+      <Filter>Source\DiffuseGlobalIllumination</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\DiffuseGlobalIllumination\DiffuseProbeGrid.cpp">
+      <Filter>Source\DiffuseGlobalIllumination</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\DiffuseGlobalIllumination\DiffuseProbeGridTextureReadback.cpp">
+      <Filter>Source\DiffuseGlobalIllumination</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\DiffuseGlobalIllumination\DiffuseProbeGridFeatureProcessor.cpp">
+      <Filter>Source\DiffuseGlobalIllumination</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\DiffuseGlobalIllumination\DiffuseGlobalIlluminationFeatureProcessor.cpp">
+      <Filter>Source\DiffuseGlobalIllumination</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\DisplayMapper\AcesOutputTransformPass.cpp">
+      <Filter>Source\DisplayMapper</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\DisplayMapper\AcesOutputTransformLutPass.cpp">
+      <Filter>Source\DisplayMapper</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\DisplayMapper\ApplyShaperLookupTablePass.cpp">
+      <Filter>Source\DisplayMapper</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\DisplayMapper\DisplayMapperPass.cpp">
+      <Filter>Source\DisplayMapper</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\DisplayMapper\DisplayMapperFullScreenPass.cpp">
+      <Filter>Source\DisplayMapper</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\DisplayMapper\BakeAcesOutputTransformLutPass.cpp">
+      <Filter>Source\DisplayMapper</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\DisplayMapper\DisplayMapperConfigurationDescriptor.cpp">
+      <Filter>Source\DisplayMapper</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\DisplayMapper\OutputTransformPass.cpp">
+      <Filter>Source\DisplayMapper</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\ImGui\ImGuiPass.cpp">
+      <Filter>Source\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\ImGui\ImGuiSystemComponent.cpp">
+      <Filter>Source\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\ImageBasedLights\ImageBasedLightFeatureProcessor.cpp">
+      <Filter>Source\ImageBasedLights</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\LookupTable\LookupTableAsset.cpp">
+      <Filter>Source\LookupTable</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\Material\ConvertEmissiveUnitFunctor.cpp">
+      <Filter>Source\Material</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\Material\SubsurfaceTransmissionParameterFunctor.cpp">
+      <Filter>Source\Material</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\Material\Transform2DFunctor.cpp">
+      <Filter>Source\Material</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\Material\UseTextureFunctor.cpp">
+      <Filter>Source\Material</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\Material\DrawListFunctor.cpp">
+      <Filter>Source\Material</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\Math\GaussianMathFilter.cpp">
+      <Filter>Source\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\Math\MathFilter.cpp">
+      <Filter>Source\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\Mesh\MeshFeatureProcessor.cpp">
+      <Filter>Source\Mesh</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\MorphTargets\MorphTargetComputePass.cpp">
+      <Filter>Source\MorphTargets</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\MorphTargets\MorphTargetDispatchItem.cpp">
+      <Filter>Source\MorphTargets</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\OcclusionCullingPlane\OcclusionCullingPlaneFeatureProcessor.cpp">
+      <Filter>Source\OcclusionCullingPlane</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\OcclusionCullingPlane\OcclusionCullingPlane.cpp">
+      <Filter>Source\OcclusionCullingPlane</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\PostProcess\PostProcessBase.cpp">
+      <Filter>Source\PostProcess</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\PostProcess\PostProcessFeatureProcessor.cpp">
+      <Filter>Source\PostProcess</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\PostProcess\PostProcessSettings.cpp">
+      <Filter>Source\PostProcess</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\PostProcess\ColorGrading\HDRColorGradingSettings.cpp">
+      <Filter>Source\PostProcess\ColorGrading</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\PostProcess\Bloom\BloomSettings.cpp">
+      <Filter>Source\PostProcess\Bloom</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\PostProcess\DepthOfField\DepthOfFieldSettings.cpp">
+      <Filter>Source\PostProcess\DepthOfField</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\PostProcess\ExposureControl\ExposureControlSettings.cpp">
+      <Filter>Source\PostProcess\ExposureControl</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\PostProcess\Ssao\SsaoSettings.cpp">
+      <Filter>Source\PostProcess\Ssao</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\PostProcess\LookModification\LookModificationSettings.cpp">
+      <Filter>Source\PostProcess\LookModification</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\PostProcessing\BlendColorGradingLutsPass.cpp">
+      <Filter>Source\PostProcessing</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\PostProcessing\BloomDownsamplePass.cpp">
+      <Filter>Source\PostProcessing</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\PostProcessing\BloomBlurPass.cpp">
+      <Filter>Source\PostProcessing</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\PostProcessing\BloomCompositePass.cpp">
+      <Filter>Source\PostProcessing</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\PostProcessing\BloomParentPass.cpp">
+      <Filter>Source\PostProcessing</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\PostProcessing\HDRColorGradingPass.cpp">
+      <Filter>Source\PostProcessing</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\PostProcessing\DepthOfFieldCompositePass.cpp">
+      <Filter>Source\PostProcessing</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\PostProcessing\DepthOfFieldBokehBlurPass.cpp">
+      <Filter>Source\PostProcessing</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\PostProcessing\DepthOfFieldMaskPass.cpp">
+      <Filter>Source\PostProcessing</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\PostProcessing\DepthOfFieldParentPass.cpp">
+      <Filter>Source\PostProcessing</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\PostProcessing\DepthOfFieldReadBackFocusDepthPass.cpp">
+      <Filter>Source\PostProcessing</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\PostProcessing\DepthOfFieldWriteFocusDepthFromGpuPass.cpp">
+      <Filter>Source\PostProcessing</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\PostProcessing\DepthOfFieldCopyFocusDepthToCpuPass.cpp">
+      <Filter>Source\PostProcessing</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\PostProcessing\DepthUpsamplePass.cpp">
+      <Filter>Source\PostProcessing</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\PostProcessing\EyeAdaptationPass.cpp">
+      <Filter>Source\PostProcessing</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\PostProcessing\FastDepthAwareBlurPasses.cpp">
+      <Filter>Source\PostProcessing</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\PostProcessing\LookModificationCompositePass.cpp">
+      <Filter>Source\PostProcessing</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\PostProcessing\LookModificationTransformPass.cpp">
+      <Filter>Source\PostProcessing</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\PostProcessing\LuminanceHistogramGeneratorPass.cpp">
+      <Filter>Source\PostProcessing</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\PostProcessing\PostProcessingShaderOptionBase.cpp">
+      <Filter>Source\PostProcessing</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\PostProcessing\SMAABasePass.cpp">
+      <Filter>Source\PostProcessing</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\PostProcessing\SMAABlendingWeightCalculationPass.cpp">
+      <Filter>Source\PostProcessing</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\PostProcessing\SMAAConfigurationDescriptor.cpp">
+      <Filter>Source\PostProcessing</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\PostProcessing\SMAAEdgeDetectionPass.cpp">
+      <Filter>Source\PostProcessing</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\PostProcessing\SMAAFeatureProcessor.cpp">
+      <Filter>Source\PostProcessing</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\PostProcessing\SMAANeighborhoodBlendingPass.cpp">
+      <Filter>Source\PostProcessing</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\PostProcessing\SsaoPasses.cpp">
+      <Filter>Source\PostProcessing</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\PostProcessing\SubsurfaceScatteringPass.cpp">
+      <Filter>Source\PostProcessing</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\PostProcessing\TaaPass.cpp">
+      <Filter>Source\PostProcessing</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\RayTracing\RayTracingFeatureProcessor.cpp">
+      <Filter>Source\RayTracing</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\RayTracing\RayTracingAccelerationStructurePass.cpp">
+      <Filter>Source\RayTracing</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\RayTracing\RayTracingPass.cpp">
+      <Filter>Source\RayTracing</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\ReflectionProbe\ReflectionProbeFeatureProcessor.cpp">
+      <Filter>Source\ReflectionProbe</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\ReflectionProbe\ReflectionProbe.cpp">
+      <Filter>Source\ReflectionProbe</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\ReflectionScreenSpace\ReflectionScreenSpaceBlurPass.cpp">
+      <Filter>Source\ReflectionScreenSpace</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\ReflectionScreenSpace\ReflectionScreenSpaceBlurChildPass.cpp">
+      <Filter>Source\ReflectionScreenSpace</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\ReflectionScreenSpace\ReflectionScreenSpaceCompositePass.cpp">
+      <Filter>Source\ReflectionScreenSpace</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\ReflectionScreenSpace\ReflectionCopyFrameBufferPass.cpp">
+      <Filter>Source\ReflectionScreenSpace</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\ScreenSpace\DeferredFogSettings.cpp">
+      <Filter>Source\ScreenSpace</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\ScreenSpace\DeferredFogPass.cpp">
+      <Filter>Source\ScreenSpace</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\Shadows\ProjectedShadowFeatureProcessor.cpp">
+      <Filter>Source\Shadows</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\SkinnedMesh\SkinnedMeshComputePass.cpp">
+      <Filter>Source\SkinnedMesh</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\SkinnedMesh\SkinnedMeshDispatchItem.cpp">
+      <Filter>Source\SkinnedMesh</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\SkinnedMesh\SkinnedMeshFeatureProcessor.cpp">
+      <Filter>Source\SkinnedMesh</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\SkinnedMesh\SkinnedMeshOutputStreamManager.cpp">
+      <Filter>Source\SkinnedMesh</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\SkinnedMesh\SkinnedMeshRenderProxy.cpp">
+      <Filter>Source\SkinnedMesh</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\SkinnedMesh\SkinnedMeshShaderOptionsCache.cpp">
+      <Filter>Source\SkinnedMesh</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\SkinnedMesh\SkinnedMeshStatsCollector.cpp">
+      <Filter>Source\SkinnedMesh</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\SkinnedMesh\SkinnedMeshSystemComponent.cpp">
+      <Filter>Source\SkinnedMesh</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\SkinnedMesh\SkinnedMeshVertexStreamProperties.cpp">
+      <Filter>Source\SkinnedMesh</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\SkyBox\SkyBoxFeatureProcessor.cpp">
+      <Filter>Source\SkyBox</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\SkyBox\SkyBoxFogSettings.cpp">
+      <Filter>Source\SkyBox</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\TransformService\TransformServiceFeatureProcessor.cpp">
+      <Filter>Source\TransformService</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\Utils\GpuBufferHandler.cpp">
+      <Filter>Source\Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\LuxCore\LuxCoreTexturePass.cpp">
+      <Filter>Source\LuxCore</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\LuxCore\RenderTexturePass.cpp">
+      <Filter>Source\LuxCore</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\LuxCore\LuxCoreMaterial.cpp">
+      <Filter>Source\LuxCore</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\LuxCore\LuxCoreMesh.cpp">
+      <Filter>Source\LuxCore</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\LuxCore\LuxCoreObject.cpp">
+      <Filter>Source\LuxCore</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\LuxCore\LuxCoreRenderer.cpp">
+      <Filter>Source\LuxCore</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\LuxCore\LuxCoreTexture.cpp">
+      <Filter>Source\LuxCore</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\Material\MaterialAssignment.cpp">
+      <Filter>Source\Material</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\Material\MaterialAssignmentId.cpp">
+      <Filter>Source\Material</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\Material\MaterialAssignmentSerializer.cpp">
+      <Filter>Source\Material</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\Utils\LightingPreset.cpp">
+      <Filter>Source\Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\Utils\ModelPreset.cpp">
+      <Filter>Source\Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\Platform\Windows\LaunchLuxCoreUI_Windows.cpp">
+      <Filter>Source\Platform\Windows</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\3rdParty\ACES\ACES\Aces.h">
+      <Filter>3rdParty\ACES\ACES</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Include\Atom\Feature\ACES\AcesDisplayMapperFeatureProcessor.h">
+      <Filter>Include\Atom\Feature\ACES</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Include\Atom\Feature\Automation\AtomAutomationBus.h">
+      <Filter>Include\Atom\Feature\Automation</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Include\Atom\Feature\AuxGeom\AuxGeomFeatureProcessor.h">
+      <Filter>Include\Atom\Feature\AuxGeom</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Include\Atom\Feature\CoreLights\CoreLightsConstants.h">
+      <Filter>Include\Atom\Feature\CoreLights</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Include\Atom\Feature\DisplayMapper\AcesOutputTransformPass.h">
+      <Filter>Include\Atom\Feature\DisplayMapper</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Include\Atom\Feature\DisplayMapper\AcesOutputTransformLutPass.h">
+      <Filter>Include\Atom\Feature\DisplayMapper</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Include\Atom\Feature\DisplayMapper\ApplyShaperLookupTablePass.h">
+      <Filter>Include\Atom\Feature\DisplayMapper</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Include\Atom\Feature\DisplayMapper\DisplayMapperPass.h">
+      <Filter>Include\Atom\Feature\DisplayMapper</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Include\Atom\Feature\DisplayMapper\DisplayMapperFullScreenPass.h">
+      <Filter>Include\Atom\Feature\DisplayMapper</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Include\Atom\Feature\DisplayMapper\BakeAcesOutputTransformLutPass.h">
+      <Filter>Include\Atom\Feature\DisplayMapper</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Include\Atom\Feature\DisplayMapper\DisplayMapperConfigurationDescriptor.h">
+      <Filter>Include\Atom\Feature\DisplayMapper</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Include\Atom\Feature\DisplayMapper\OutputTransformPass.h">
+      <Filter>Include\Atom\Feature\DisplayMapper</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Include\Atom\Feature\ImGui\ImGuiUtils.h">
+      <Filter>Include\Atom\Feature\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Include\Atom\Feature\ImGui\SystemBus.h">
+      <Filter>Include\Atom\Feature\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Include\Atom\Feature\ImageBasedLights\ImageBasedLightFeatureProcessor.h">
+      <Filter>Include\Atom\Feature\ImageBasedLights</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Include\Atom\Feature\LookupTable\LookupTableAsset.h">
+      <Filter>Include\Atom\Feature\LookupTable</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Include\Atom\Feature\Mesh\MeshFeatureProcessor.h">
+      <Filter>Include\Atom\Feature\Mesh</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Include\Atom\Feature\PostProcessing\PostProcessingConstants.h">
+      <Filter>Include\Atom\Feature\PostProcessing</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Include\Atom\Feature\PostProcessing\SMAAFeatureProcessorInterface.h">
+      <Filter>Include\Atom\Feature\PostProcessing</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Include\Atom\Feature\PostProcess\PostFxLayerCategoriesConstants.h">
+      <Filter>Include\Atom\Feature\PostProcess</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Include\Atom\Feature\ReflectionProbe\ReflectionProbeFeatureProcessor.h">
+      <Filter>Include\Atom\Feature\ReflectionProbe</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Include\Atom\Feature\SkyBox\SkyBoxFogBus.h">
+      <Filter>Include\Atom\Feature\SkyBox</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Include\Atom\Feature\SkyBox\SkyboxConstants.h">
+      <Filter>Include\Atom\Feature\SkyBox</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Include\Atom\Feature\SkyBox\SkyBoxLUT.h">
+      <Filter>Include\Atom\Feature\SkyBox</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Include\Atom\Feature\SphericalHarmonics\SphericalHarmonicsUtility.h">
+      <Filter>Include\Atom\Feature\SphericalHarmonics</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Include\Atom\Feature\SphericalHarmonics\SphericalHarmonicsUtility.inl">
+      <Filter>Include\Atom\Feature\SphericalHarmonics</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Include\Atom\Feature\TransformService\TransformServiceFeatureProcessor.h">
+      <Filter>Include\Atom\Feature\TransformService</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Include\Atom\Feature\Utils\FrameCaptureBus.h">
+      <Filter>Include\Atom\Feature\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Include\Atom\Feature\Utils\GpuBufferHandler.h">
+      <Filter>Include\Atom\Feature\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Include\Atom\Feature\Utils\IndexedDataVector.h">
+      <Filter>Include\Atom\Feature\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Include\Atom\Feature\Utils\IndexedDataVector.inl">
+      <Filter>Include\Atom\Feature\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Include\Atom\Feature\Utils\MultiIndexedDataVector.h">
+      <Filter>Include\Atom\Feature\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Include\Atom\Feature\Utils\MultiSparseVector.h">
+      <Filter>Include\Atom\Feature\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Include\Atom\Feature\Utils\ProfilingCaptureBus.h">
+      <Filter>Include\Atom\Feature\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Include\Atom\Feature\Utils\SparseVector.h">
+      <Filter>Include\Atom\Feature\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Include\Atom\Feature\LuxCore\LuxCoreBus.h">
+      <Filter>Include\Atom\Feature\LuxCore</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Include\Atom\Feature\LuxCore\LuxCoreTexturePass.h">
+      <Filter>Include\Atom\Feature\LuxCore</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Include\Atom\Feature\LuxCore\RenderTexturePass.h">
+      <Filter>Include\Atom\Feature\LuxCore</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\FrameCaptureSystemComponent.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\ProfilingCaptureSystemComponent.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\RenderCommon.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\AuxGeom\AuxGeomBase.h">
+      <Filter>Source\AuxGeom</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\AuxGeom\AuxGeomDrawQueue.h">
+      <Filter>Source\AuxGeom</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\AuxGeom\AuxGeomDrawProcessorShared.h">
+      <Filter>Source\AuxGeom</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\AuxGeom\DynamicPrimitiveProcessor.h">
+      <Filter>Source\AuxGeom</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\AuxGeom\FixedShapeProcessor.h">
+      <Filter>Source\AuxGeom</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\CoreLights\CapsuleLightFeatureProcessor.h">
+      <Filter>Source\CoreLights</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\CoreLights\CascadedShadowmapsPass.h">
+      <Filter>Source\CoreLights</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\CoreLights\CoreLightsSystemComponent.h">
+      <Filter>Source\CoreLights</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\CoreLights\DepthExponentiationPass.h">
+      <Filter>Source\CoreLights</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\CoreLights\DirectionalLightFeatureProcessor.h">
+      <Filter>Source\CoreLights</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\CoreLights\DiskLightFeatureProcessor.h">
+      <Filter>Source\CoreLights</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\CoreLights\EsmShadowmapsPass.h">
+      <Filter>Source\CoreLights</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\CoreLights\LtcCommon.h">
+      <Filter>Source\CoreLights</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\CoreLights\PointLightFeatureProcessor.h">
+      <Filter>Source\CoreLights</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\CoreLights\PolygonLightFeatureProcessor.h">
+      <Filter>Source\CoreLights</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\CoreLights\ProjectedShadowmapsPass.h">
+      <Filter>Source\CoreLights</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\CoreLights\QuadLightFeatureProcessor.h">
+      <Filter>Source\CoreLights</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\CoreLights\SimplePointLightFeatureProcessor.h">
+      <Filter>Source\CoreLights</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\CoreLights\SimpleSpotLightFeatureProcessor.h">
+      <Filter>Source\CoreLights</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\CoreLights\Shadow.h">
+      <Filter>Source\CoreLights</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\CoreLights\ShadowmapAtlas.h">
+      <Filter>Source\CoreLights</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\CoreLights\ShadowmapPass.h">
+      <Filter>Source\CoreLights</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\CoreLights\LightCullingPass.h">
+      <Filter>Source\CoreLights</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\CoreLights\LightCullingTilePreparePass.h">
+      <Filter>Source\CoreLights</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\CoreLights\LightCullingRemap.h">
+      <Filter>Source\CoreLights</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\CoreLights\LightCullingConstants.h">
+      <Filter>Source\CoreLights</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\Checkerboard\CheckerboardColorResolvePass.h">
+      <Filter>Source\Checkerboard</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\Checkerboard\CheckerboardPass.h">
+      <Filter>Source\Checkerboard</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\Decals\DecalFeatureProcessor.h">
+      <Filter>Source\Decals</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\Decals\DecalTextureArray.h">
+      <Filter>Source\Decals</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\Decals\AsyncLoadTracker.h">
+      <Filter>Source\Decals</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\Decals\DecalTextureArrayFeatureProcessor.h">
+      <Filter>Source\Decals</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\DiffuseGlobalIllumination\DiffuseProbeGridRayTracingPass.h">
+      <Filter>Source\DiffuseGlobalIllumination</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\DiffuseGlobalIllumination\DiffuseProbeGridBlendIrradiancePass.h">
+      <Filter>Source\DiffuseGlobalIllumination</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\DiffuseGlobalIllumination\DiffuseProbeGridBlendDistancePass.h">
+      <Filter>Source\DiffuseGlobalIllumination</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\DiffuseGlobalIllumination\DiffuseProbeGridBorderUpdatePass.h">
+      <Filter>Source\DiffuseGlobalIllumination</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\DiffuseGlobalIllumination\DiffuseProbeGridRelocationPass.h">
+      <Filter>Source\DiffuseGlobalIllumination</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\DiffuseGlobalIllumination\DiffuseProbeGridClassificationPass.h">
+      <Filter>Source\DiffuseGlobalIllumination</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\DiffuseGlobalIllumination\DiffuseProbeGridRenderPass.h">
+      <Filter>Source\DiffuseGlobalIllumination</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\DiffuseGlobalIllumination\DiffuseProbeGrid.h">
+      <Filter>Source\DiffuseGlobalIllumination</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\DiffuseGlobalIllumination\DiffuseProbeGridTextureReadback.h">
+      <Filter>Source\DiffuseGlobalIllumination</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\DiffuseGlobalIllumination\DiffuseProbeGridFeatureProcessor.h">
+      <Filter>Source\DiffuseGlobalIllumination</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\DiffuseGlobalIllumination\DiffuseGlobalIlluminationFeatureProcessor.h">
+      <Filter>Source\DiffuseGlobalIllumination</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\ImGui\ImGuiPass.h">
+      <Filter>Source\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\ImGui\ImGuiSystemComponent.h">
+      <Filter>Source\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\Material\ConvertEmissiveUnitFunctor.h">
+      <Filter>Source\Material</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\Material\SubsurfaceTransmissionParameterFunctor.h">
+      <Filter>Source\Material</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\Material\Transform2DFunctor.h">
+      <Filter>Source\Material</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\Material\UseTextureFunctor.h">
+      <Filter>Source\Material</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\Material\DrawListFunctor.h">
+      <Filter>Source\Material</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\Math\GaussianMathFilter.h">
+      <Filter>Source\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\Math\MathFilter.h">
+      <Filter>Source\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\Math\MathFilterDescriptor.h">
+      <Filter>Source\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\MorphTargets\MorphTargetComputePass.h">
+      <Filter>Source\MorphTargets</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\MorphTargets\MorphTargetDispatchItem.h">
+      <Filter>Source\MorphTargets</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\OcclusionCullingPlane\OcclusionCullingPlaneFeatureProcessor.h">
+      <Filter>Source\OcclusionCullingPlane</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\OcclusionCullingPlane\OcclusionCullingPlane.h">
+      <Filter>Source\OcclusionCullingPlane</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\PostProcess\PostProcessBase.h">
+      <Filter>Source\PostProcess</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\PostProcess\PostProcessFeatureProcessor.h">
+      <Filter>Source\PostProcess</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\PostProcess\PostProcessSettings.h">
+      <Filter>Source\PostProcess</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\PostProcess\ColorGrading\HDRColorGradingSettings.h">
+      <Filter>Source\PostProcess\ColorGrading</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\PostProcess\Bloom\BloomSettings.h">
+      <Filter>Source\PostProcess\Bloom</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\PostProcess\DepthOfField\DepthOfFieldSettings.h">
+      <Filter>Source\PostProcess\DepthOfField</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\PostProcess\ExposureControl\ExposureControlSettings.h">
+      <Filter>Source\PostProcess\ExposureControl</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\PostProcess\Ssao\SsaoSettings.h">
+      <Filter>Source\PostProcess\Ssao</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\PostProcess\LookModification\LookModificationSettings.h">
+      <Filter>Source\PostProcess\LookModification</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\PostProcessing\BlendColorGradingLutsPass.h">
+      <Filter>Source\PostProcessing</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\PostProcessing\DepthOfFieldPencilMap.h">
+      <Filter>Source\PostProcessing</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\PostProcessing\BloomDownsamplePass.h">
+      <Filter>Source\PostProcessing</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\PostProcessing\BloomBlurPass.h">
+      <Filter>Source\PostProcessing</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\PostProcessing\BloomCompositePass.h">
+      <Filter>Source\PostProcessing</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\PostProcessing\BloomParentPass.h">
+      <Filter>Source\PostProcessing</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\PostProcessing\HDRColorGradingPass.h">
+      <Filter>Source\PostProcessing</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\PostProcessing\DepthOfFieldCompositePass.h">
+      <Filter>Source\PostProcessing</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\PostProcessing\DepthOfFieldBokehBlurPass.h">
+      <Filter>Source\PostProcessing</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\PostProcessing\DepthOfFieldMaskPass.h">
+      <Filter>Source\PostProcessing</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\PostProcessing\DepthOfFieldParentPass.h">
+      <Filter>Source\PostProcessing</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\PostProcessing\DepthOfFieldReadBackFocusDepthPass.h">
+      <Filter>Source\PostProcessing</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\PostProcessing\DepthOfFieldWriteFocusDepthFromGpuPass.h">
+      <Filter>Source\PostProcessing</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\PostProcessing\DepthOfFieldCopyFocusDepthToCpuPass.h">
+      <Filter>Source\PostProcessing</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\PostProcessing\DepthUpsamplePass.h">
+      <Filter>Source\PostProcessing</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\PostProcessing\EyeAdaptationPass.h">
+      <Filter>Source\PostProcessing</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\PostProcessing\FastDepthAwareBlurPasses.h">
+      <Filter>Source\PostProcessing</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\PostProcessing\LookModificationCompositePass.h">
+      <Filter>Source\PostProcessing</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\PostProcessing\LookModificationTransformPass.h">
+      <Filter>Source\PostProcessing</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\PostProcessing\LuminanceHistogramGeneratorPass.h">
+      <Filter>Source\PostProcessing</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\PostProcessing\PostProcessingShaderOptionBase.h">
+      <Filter>Source\PostProcessing</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\PostProcessing\SMAABasePass.h">
+      <Filter>Source\PostProcessing</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\PostProcessing\SMAABlendingWeightCalculationPass.h">
+      <Filter>Source\PostProcessing</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\PostProcessing\SMAACommon.h">
+      <Filter>Source\PostProcessing</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\PostProcessing\SMAAConfigurationDescriptor.h">
+      <Filter>Source\PostProcessing</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\PostProcessing\SMAAEdgeDetectionPass.h">
+      <Filter>Source\PostProcessing</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\PostProcessing\SMAAFeatureProcessor.h">
+      <Filter>Source\PostProcessing</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\PostProcessing\SMAANeighborhoodBlendingPass.h">
+      <Filter>Source\PostProcessing</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\PostProcessing\SsaoPasses.h">
+      <Filter>Source\PostProcessing</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\PostProcessing\SubsurfaceScatteringPass.h">
+      <Filter>Source\PostProcessing</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\PostProcessing\TaaPass.h">
+      <Filter>Source\PostProcessing</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\RayTracing\RayTracingFeatureProcessor.h">
+      <Filter>Source\RayTracing</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\RayTracing\RayTracingAccelerationStructurePass.h">
+      <Filter>Source\RayTracing</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\RayTracing\RayTracingPass.h">
+      <Filter>Source\RayTracing</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\RayTracing\RayTracingPassData.h">
+      <Filter>Source\RayTracing</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\ReflectionScreenSpace\ReflectionScreenSpaceBlurPass.h">
+      <Filter>Source\ReflectionScreenSpace</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\ReflectionScreenSpace\ReflectionScreenSpaceBlurChildPass.h">
+      <Filter>Source\ReflectionScreenSpace</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\ReflectionScreenSpace\ReflectionScreenSpaceCompositePass.h">
+      <Filter>Source\ReflectionScreenSpace</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\ReflectionScreenSpace\ReflectionCopyFrameBufferPass.h">
+      <Filter>Source\ReflectionScreenSpace</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\ScreenSpace\DeferredFogSettings.h">
+      <Filter>Source\ScreenSpace</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\ScreenSpace\DeferredFogPass.h">
+      <Filter>Source\ScreenSpace</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\Shadows\ProjectedShadowFeatureProcessor.h">
+      <Filter>Source\Shadows</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\SkinnedMesh\SkinnedMeshComputePass.h">
+      <Filter>Source\SkinnedMesh</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\SkinnedMesh\SkinnedMeshDispatchItem.h">
+      <Filter>Source\SkinnedMesh</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\SkinnedMesh\SkinnedMeshFeatureProcessor.h">
+      <Filter>Source\SkinnedMesh</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\SkinnedMesh\SkinnedMeshOutputStreamManager.h">
+      <Filter>Source\SkinnedMesh</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\SkinnedMesh\SkinnedMeshRenderProxy.h">
+      <Filter>Source\SkinnedMesh</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\SkinnedMesh\SkinnedMeshShaderOptionsCache.h">
+      <Filter>Source\SkinnedMesh</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\SkinnedMesh\SkinnedMeshStatsCollector.h">
+      <Filter>Source\SkinnedMesh</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\SkinnedMesh\SkinnedMeshSystemComponent.h">
+      <Filter>Source\SkinnedMesh</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\SkinnedMesh\SkinnedMeshVertexStreamProperties.h">
+      <Filter>Source\SkinnedMesh</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\SkyBox\SkyBoxFeatureProcessor.h">
+      <Filter>Source\SkyBox</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\SkyBox\SkyBoxFogSettings.h">
+      <Filter>Source\SkyBox</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\LuxCore\LuxCoreMaterial.h">
+      <Filter>Source\LuxCore</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\LuxCore\LuxCoreMesh.h">
+      <Filter>Source\LuxCore</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\LuxCore\LuxCoreObject.h">
+      <Filter>Source\LuxCore</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\LuxCore\LuxCoreRenderer.h">
+      <Filter>Source\LuxCore</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\LuxCore\LuxCoreTexture.h">
+      <Filter>Source\LuxCore</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Include\Atom\Feature\Material\MaterialAssignment.h">
+      <Filter>Include\Atom\Feature\Material</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Include\Atom\Feature\Material\MaterialAssignmentId.h">
+      <Filter>Include\Atom\Feature\Material</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Include\Atom\Feature\Utils\LightingPreset.h">
+      <Filter>Include\Atom\Feature\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Include\Atom\Feature\Utils\ModelPreset.h">
+      <Filter>Include\Atom\Feature\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\Material\MaterialAssignmentSerializer.h">
+      <Filter>Source\Material</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\Platform\Windows\Atom_Feature_Traits_Platform.h">
+      <Filter>Source\Platform\Windows</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\Platform\Windows\Atom_Feature_Traits_Windows.h">
+      <Filter>Source\Platform\Windows</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\CMakeLists.txt">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\atom_feature_common_files.cmake" />
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\atom_feature_common_staticlibrary_files.cmake" />
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\Platform\Windows\platform_windows_files.cmake">
+      <Filter>Source\Platform\Windows</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\Platform\Windows\platform_windows.cmake">
+      <Filter>Source\Platform\Windows</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\Platform\Common\MSVC\atom_feature_common_msvc.cmake">
+      <Filter>Source\Platform\Common\MSVC</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="3rdParty">
+      <UniqueIdentifier>{46C469FA-CF2F-32AA-B96C-D1C11F4E76B0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="3rdParty\ACES">
+      <UniqueIdentifier>{2CB24C1B-B0EF-36EC-BDD9-CB9E054D9757}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="3rdParty\ACES\ACES">
+      <UniqueIdentifier>{434E45C5-37D0-3B75-87E4-86A1F978F46F}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Generated Files">
+      <UniqueIdentifier>{FB9B7D8B-7F05-31D5-AA90-592248EDE1B3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include">
+      <UniqueIdentifier>{E188105A-C8C4-34BB-9809-15E8410EF7F8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\Atom">
+      <UniqueIdentifier>{D3FF6349-761F-30FE-A9A9-4A8D0DE47ADF}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\Atom\Feature">
+      <UniqueIdentifier>{2F0D75A6-C4B8-3529-BAE5-8F93C3A0A8D2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\Atom\Feature\ACES">
+      <UniqueIdentifier>{B26281C4-77E3-332A-89E7-6B4BDF472DAE}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\Atom\Feature\Automation">
+      <UniqueIdentifier>{95BF827A-E99D-3139-8174-639684861715}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\Atom\Feature\AuxGeom">
+      <UniqueIdentifier>{DB584BF3-9418-3B15-83D2-E0DB0AD0A4DC}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\Atom\Feature\CoreLights">
+      <UniqueIdentifier>{09F1262A-5C9A-348A-A69F-C0CC43BE8D8F}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\Atom\Feature\DisplayMapper">
+      <UniqueIdentifier>{4A8B80BF-A7E1-3F5B-83A0-91D5601F8483}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\Atom\Feature\ImGui">
+      <UniqueIdentifier>{447DFEAC-6BB1-3E58-97F1-DA193DD2CB0B}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\Atom\Feature\ImageBasedLights">
+      <UniqueIdentifier>{D448E201-B014-356B-B6B6-0BF1C4C0A37F}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\Atom\Feature\LookupTable">
+      <UniqueIdentifier>{B294DBD6-4A3F-300C-BA4C-01225C5BF432}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\Atom\Feature\LuxCore">
+      <UniqueIdentifier>{C3A5977C-7392-30DD-9E6F-DA1A06C11778}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\Atom\Feature\Material">
+      <UniqueIdentifier>{84681C4B-05EA-30C6-8004-79516B2FB5A0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\Atom\Feature\Mesh">
+      <UniqueIdentifier>{56DF08F3-C277-31A4-B147-2B1A4C22EEFD}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\Atom\Feature\PostProcess">
+      <UniqueIdentifier>{12073B05-96F1-3E7B-B71F-ED591FFE48CD}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\Atom\Feature\PostProcessing">
+      <UniqueIdentifier>{07FA5BD0-15B8-3876-8790-E9E7D35893CF}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\Atom\Feature\ReflectionProbe">
+      <UniqueIdentifier>{D01704EE-A406-342B-910E-7B63550D814E}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\Atom\Feature\SkyBox">
+      <UniqueIdentifier>{31866285-E2CD-3A25-BFC3-B12161D69ED1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\Atom\Feature\SphericalHarmonics">
+      <UniqueIdentifier>{314251FD-7162-3027-8D34-6B06F3B99D73}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\Atom\Feature\TransformService">
+      <UniqueIdentifier>{90E604F0-9F6A-3C02-BC2C-6039B8275F9A}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\Atom\Feature\Utils">
+      <UniqueIdentifier>{092AD097-879E-3832-A092-14A2F6607C36}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source">
+      <UniqueIdentifier>{F3F0AD47-5F83-373B-A2BF-650D2E4FA3EA}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\ACES">
+      <UniqueIdentifier>{A39BC2DF-A876-3899-8095-520C68FB46D8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\AuxGeom">
+      <UniqueIdentifier>{28A1CBBA-9910-3FF7-8182-8FAE7453DB1B}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Checkerboard">
+      <UniqueIdentifier>{51914544-2427-37C6-B1F7-AF6F8C51168A}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\CoreLights">
+      <UniqueIdentifier>{022EF510-CA2B-3726-85DD-7EC4CA0133A4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Decals">
+      <UniqueIdentifier>{9ECA1584-8BEF-3510-80A7-DC72CFA4C4F2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\DiffuseGlobalIllumination">
+      <UniqueIdentifier>{134A356C-F428-3605-B896-A08A671ED96A}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\DisplayMapper">
+      <UniqueIdentifier>{AEDD300A-ED2E-3CDC-A508-4AB80CEF6E2A}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\ImGui">
+      <UniqueIdentifier>{8E5FFFC5-9D1A-3041-BE52-338A19349AE5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\ImageBasedLights">
+      <UniqueIdentifier>{78C15A7A-3950-3024-B75F-0DD1C3E68FF4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\LookupTable">
+      <UniqueIdentifier>{82E2E95A-2D4E-32D1-9E57-E51FE18555FB}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\LuxCore">
+      <UniqueIdentifier>{A4ECAC3B-8D63-3C66-9A67-022F86A0EAF7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Material">
+      <UniqueIdentifier>{CA24FD99-8DCF-3299-BBEF-6FFD7F143307}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Math">
+      <UniqueIdentifier>{1EBC9767-E9E6-3398-B89E-8BA974D02A43}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Mesh">
+      <UniqueIdentifier>{D875F237-A9B7-3C88-93D9-5980912543FF}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\MorphTargets">
+      <UniqueIdentifier>{1A86833E-4836-3D7A-89A3-4822311BD51E}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\OcclusionCullingPlane">
+      <UniqueIdentifier>{9DAA55F1-6E0D-314E-B075-108F9D19F7C1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Platform">
+      <UniqueIdentifier>{4FB794FF-EAE9-3B82-95CC-6241BAD0E3AC}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Platform\Common">
+      <UniqueIdentifier>{36290816-6835-39C0-B301-795953CCC13E}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Platform\Common\MSVC">
+      <UniqueIdentifier>{E1E89B60-2468-3907-B827-F49D4366A0DE}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Platform\Windows">
+      <UniqueIdentifier>{2D0E7154-D797-393D-A7EB-8527ACAFB2BF}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\PostProcess">
+      <UniqueIdentifier>{7A5363EC-4371-3643-95D4-F8E85BEE73BD}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\PostProcess\Bloom">
+      <UniqueIdentifier>{F63167DD-84E8-3CDD-8073-87773AFDBF99}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\PostProcess\ColorGrading">
+      <UniqueIdentifier>{512D6A0F-F942-3515-A290-1914E22EAC73}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\PostProcess\DepthOfField">
+      <UniqueIdentifier>{0ABB5150-2BB1-3864-B30B-44056258E275}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\PostProcess\ExposureControl">
+      <UniqueIdentifier>{003B4E4E-4DAF-3DF0-9922-8A5E0366B0CA}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\PostProcess\LookModification">
+      <UniqueIdentifier>{18448552-1DFA-3BDF-8CA7-079B07E46B31}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\PostProcess\Ssao">
+      <UniqueIdentifier>{711336E4-57F8-3C26-BADA-FA076FDD08D9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\PostProcessing">
+      <UniqueIdentifier>{9F93457A-CD99-32FE-8322-972247E401DF}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\RayTracing">
+      <UniqueIdentifier>{5EE48B88-1DD1-3DDC-8C80-DDCEEE1BC1F8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\ReflectionProbe">
+      <UniqueIdentifier>{71751B42-37C1-3952-B5AB-3B78C66C4C90}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\ReflectionScreenSpace">
+      <UniqueIdentifier>{5B133C0E-0C4A-3054-9646-CE956EA7309E}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\ScreenSpace">
+      <UniqueIdentifier>{18336BA2-CE9E-3847-9830-27041BB61449}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Shadows">
+      <UniqueIdentifier>{EF1561C4-3548-322B-B2D3-C178182CA6E0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\SkinnedMesh">
+      <UniqueIdentifier>{900D7451-825C-33CA-A2B7-CD939EC443D9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\SkyBox">
+      <UniqueIdentifier>{0061B378-3C41-3C77-BDA2-7E877E222808}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\TransformService">
+      <UniqueIdentifier>{89983321-E95F-39A8-8FAD-98E4462B0424}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Utils">
+      <UniqueIdentifier>{486E47BA-D6A3-3218-BB54-9CC9C06A2B4B}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

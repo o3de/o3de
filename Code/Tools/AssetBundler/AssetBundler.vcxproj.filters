@@ -1,0 +1,302 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\AssetBundler\AssetBundler_autogen\mocs_compilation_debug.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\AssetBundler\CMakeFiles\AssetBundler.dir\Unity\unity_2_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\AssetBundler\CMakeFiles\AssetBundler.dir\Unity\unity_1_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\AssetBundler\CMakeFiles\AssetBundler.dir\Unity\unity_0_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\AssetBundler\source\models\AssetBundlerAbstractFileTableModel.cpp">
+      <Filter>source\models</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\AssetBundler\source\models\AssetBundlerFileTableFilterModel.cpp">
+      <Filter>source\models</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\AssetBundler\source\models\AssetListFileTableModel.cpp">
+      <Filter>source\models</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\AssetBundler\source\models\AssetListTableModel.cpp">
+      <Filter>source\models</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\AssetBundler\source\models\BundleFileListModel.cpp">
+      <Filter>source\models</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\AssetBundler\source\models\RulesFileTableModel.cpp">
+      <Filter>source\models</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\AssetBundler\source\models\SeedListFileTableModel.cpp">
+      <Filter>source\models</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\AssetBundler\source\models\SeedListTableModel.cpp">
+      <Filter>source\models</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\AssetBundler\source\ui\AddSeedDialog.cpp">
+      <Filter>source\ui</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\AssetBundler\source\ui\AssetBundlerTabWidget.cpp">
+      <Filter>source\ui</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\AssetBundler\source\ui\AssetListTabWidget.cpp">
+      <Filter>source\ui</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\AssetBundler\source\ui\BundleListTabWidget.cpp">
+      <Filter>source\ui</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\AssetBundler\source\ui\ComparisonDataWidget.cpp">
+      <Filter>source\ui</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\AssetBundler\source\ui\EditSeedDialog.cpp">
+      <Filter>source\ui</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\AssetBundler\source\ui\GenerateBundlesModal.cpp">
+      <Filter>source\ui</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\AssetBundler\source\ui\MainWindow.cpp">
+      <Filter>source\ui</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\AssetBundler\source\ui\NewFileDialog.cpp">
+      <Filter>source\ui</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\AssetBundler\source\ui\PlatformSelectionWidget.cpp">
+      <Filter>source\ui</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\AssetBundler\source\ui\RulesTabWidget.cpp">
+      <Filter>source\ui</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\AssetBundler\source\ui\SeedTabWidget.cpp">
+      <Filter>source\ui</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\AssetBundler\source\utils\GUIApplicationManager.cpp">
+      <Filter>source\utils</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\AssetBundler\source\main.cpp">
+      <Filter>source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\AssetBundler\Platform\Windows\source\utils\GUIApplicationManager_Win.cpp">
+      <Filter>Platform\Windows\source\utils</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\AssetBundler\AssetBundler_autogen\6XBB44IFRS\qrc_AssetBundler.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\AssetBundler\AssetBundler_autogen\mocs_compilation_profile.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\AssetBundler\AssetBundler_autogen\mocs_compilation_release.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\AssetBundler\source\models\AssetBundlerAbstractFileTableModel.h">
+      <Filter>source\models</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\AssetBundler\source\models\AssetBundlerFileTableFilterModel.h">
+      <Filter>source\models</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\AssetBundler\source\models\AssetListFileTableModel.h">
+      <Filter>source\models</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\AssetBundler\source\models\AssetListTableModel.h">
+      <Filter>source\models</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\AssetBundler\source\models\BundleFileListModel.h">
+      <Filter>source\models</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\AssetBundler\source\models\RulesFileTableModel.h">
+      <Filter>source\models</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\AssetBundler\source\models\SeedListFileTableModel.h">
+      <Filter>source\models</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\AssetBundler\source\models\SeedListTableModel.h">
+      <Filter>source\models</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\AssetBundler\source\ui\AddSeedDialog.h">
+      <Filter>source\ui</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\AssetBundler\source\ui\AssetBundlerTabWidget.h">
+      <Filter>source\ui</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\AssetBundler\source\ui\AssetListTabWidget.h">
+      <Filter>source\ui</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\AssetBundler\source\ui\BundleListTabWidget.h">
+      <Filter>source\ui</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\AssetBundler\source\ui\ComparisonDataWidget.h">
+      <Filter>source\ui</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\AssetBundler\source\ui\EditSeedDialog.h">
+      <Filter>source\ui</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\AssetBundler\source\ui\GenerateBundlesModal.h">
+      <Filter>source\ui</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\AssetBundler\source\ui\MainWindow.h">
+      <Filter>source\ui</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\AssetBundler\source\ui\NewFileDialog.h">
+      <Filter>source\ui</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\AssetBundler\source\ui\PlatformSelectionWidget.h">
+      <Filter>source\ui</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\AssetBundler\source\ui\RulesTabWidget.h">
+      <Filter>source\ui</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\AssetBundler\source\ui\SeedTabWidget.h">
+      <Filter>source\ui</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\AssetBundler\source\utils\GUIApplicationManager.h">
+      <Filter>source\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\AssetBundler\AssetBundler_autogen\include\source\ui\ui_AddSeedDialog.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\AssetBundler\AssetBundler_autogen\include\source\ui\ui_AssetListTabWidget.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\AssetBundler\AssetBundler_autogen\include\source\ui\ui_BundleListTabWidget.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\AssetBundler\AssetBundler_autogen\include\source\ui\ui_ComparisonDataWidget.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\AssetBundler\AssetBundler_autogen\include\source\ui\ui_EditSeedDialog.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\AssetBundler\AssetBundler_autogen\include\source\ui\ui_GenerateBundlesModal.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\AssetBundler\AssetBundler_autogen\include\source\ui\ui_MainWindow.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\AssetBundler\AssetBundler_autogen\include\source\ui\ui_NewFileDialog.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\AssetBundler\AssetBundler_autogen\include\source\ui\ui_PlatformSelectionWidget.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\AssetBundler\AssetBundler_autogen\include\source\ui\ui_RulesTabWidget.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\AssetBundler\AssetBundler_autogen\include\source\ui\ui_SeedTabWidget.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Code\Tools\AssetBundler\source\ui\AddSeedDialog.ui">
+      <Filter>source\ui</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Code\Tools\AssetBundler\source\ui\AssetListTabWidget.ui">
+      <Filter>source\ui</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Code\Tools\AssetBundler\source\ui\BundleListTabWidget.ui">
+      <Filter>source\ui</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Code\Tools\AssetBundler\source\ui\ComparisonDataWidget.ui">
+      <Filter>source\ui</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Code\Tools\AssetBundler\source\ui\EditSeedDialog.ui">
+      <Filter>source\ui</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Code\Tools\AssetBundler\source\ui\GenerateBundlesModal.ui">
+      <Filter>source\ui</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Code\Tools\AssetBundler\source\ui\MainWindow.ui">
+      <Filter>source\ui</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Code\Tools\AssetBundler\source\ui\NewFileDialog.ui">
+      <Filter>source\ui</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Code\Tools\AssetBundler\source\ui\PlatformSelectionWidget.ui">
+      <Filter>source\ui</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Code\Tools\AssetBundler\source\ui\RulesTabWidget.ui">
+      <Filter>source\ui</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Code\Tools\AssetBundler\source\ui\SeedTabWidget.ui">
+      <Filter>source\ui</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\CMakeFiles\08b24365a84bd27d080f6dd51f42b933\AssetBundler_(CONFIG).stamp.rule">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\CMakeFiles\2b2b3f9858db7fb7ea56b5cf6793b707\qrc_AssetBundler.cpp.rule">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Code\Tools\AssetBundler\CMakeLists.txt">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="C:\Users\lesaelr\o3de\Code\Tools\AssetBundler\source\ui\style\AssetBundler.qrc">
+      <Filter>source\ui\style</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Tools\AssetBundler\source\ui\style\AssetBundler.qss">
+      <Filter>source\ui\style</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Tools\AssetBundler\source\ui\style\AssetBundlerConfig.ini">
+      <Filter>source\ui\style</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Tools\AssetBundler\source\ui\style\AssetBundler-Icon-256x256@x2.ico">
+      <Filter>source\ui\style</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Tools\AssetBundler\assetbundlergui_files.cmake" />
+    <None Include="C:\Users\lesaelr\o3de\Code\Tools\AssetBundler\assetbundler_exe_files.cmake" />
+    <None Include="C:\Users\lesaelr\o3de\Code\Tools\AssetBundler\Platform\Windows\assetbundlergui_windows_files.cmake">
+      <Filter>Platform\Windows</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\runtime_dependencies\debug\AssetBundler_debug.stamp">
+      <Filter>Generated Files</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\runtime_dependencies\profile\AssetBundler_profile.stamp">
+      <Filter>Generated Files</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\runtime_dependencies\release\AssetBundler_release.stamp">
+      <Filter>Generated Files</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="C:\Users\lesaelr\o3de\Code\Tools\AssetBundler\source\AssetBundler.rc">
+      <Filter>source</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Generated Files">
+      <UniqueIdentifier>{FB9B7D8B-7F05-31D5-AA90-592248EDE1B3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Platform">
+      <UniqueIdentifier>{378A8D8C-6CA1-3F6B-A02B-1E9FF64C97B2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Platform\Windows">
+      <UniqueIdentifier>{63AEF2F6-51C7-306A-BFE8-A049C8C62EFB}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Platform\Windows\source">
+      <UniqueIdentifier>{03CE5E91-4123-39B3-9313-5200A2DD73CA}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Platform\Windows\source\utils">
+      <UniqueIdentifier>{3CFF941C-B780-38F6-B9D9-6483B2900DD0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="source">
+      <UniqueIdentifier>{688443FA-03E8-36C5-B319-1AA129228091}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="source\models">
+      <UniqueIdentifier>{DA95EC08-9C4D-3B60-8CFB-6C07B71B12A4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="source\ui">
+      <UniqueIdentifier>{43FECEC7-E379-3300-8167-96C5EDBFAEDC}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="source\ui\style">
+      <UniqueIdentifier>{38AC89AF-D162-36A7-90C7-AC0AE494265E}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="source\utils">
+      <UniqueIdentifier>{822BD001-FAB5-3701-BC17-AD30FAFB5943}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

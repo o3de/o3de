@@ -1,0 +1,7 @@
+# CMake generation dependency list for this directory.
+C:/Users/lesaelr/o3de/Gems/SurfaceData/Code/CMakeLists.txt
+C:/Users/lesaelr/o3de/Gems/SurfaceData/Code/surfacedata_editor_files.cmake
+C:/Users/lesaelr/o3de/Gems/SurfaceData/Code/surfacedata_files.cmake
+C:/Users/lesaelr/o3de/Gems/SurfaceData/Code/surfacedata_shared_files.cmake
+C:/Users/lesaelr/o3de/Gems/SurfaceData/Code/surfacedata_tests_files.cmake
+C:/Users/lesaelr/o3de/cmake/Platform/Windows/LYTestWrappers_windows.cmake

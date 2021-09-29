@@ -1,0 +1,52 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\CMakeFiles\AzCoreTestCommon.dir\Unity\unity_0_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\UnitTest\MockComponentApplication.cpp">
+      <Filter>AzCore\UnitTest</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\UnitTest\MockComponentApplication.h">
+      <Filter>AzCore\UnitTest</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\UnitTest\UnitTest.h">
+      <Filter>AzCore\UnitTest</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\UnitTest\TestTypes.h">
+      <Filter>AzCore\UnitTest</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\UnitTest\Mocks\MockFileIOBase.h">
+      <Filter>AzCore\UnitTest\Mocks</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\UnitTest\Mocks\MockSettingsRegistry.h">
+      <Filter>AzCore\UnitTest\Mocks</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\CMakeLists.txt">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore\azcoretestcommon_files.cmake">
+      <Filter>AzCore</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="AzCore">
+      <UniqueIdentifier>{D95D01FB-523F-3F9E-91CA-D1BA8036F892}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzCore\UnitTest">
+      <UniqueIdentifier>{A26C68AE-E057-386C-8B8F-1615C28F72A8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzCore\UnitTest\Mocks">
+      <UniqueIdentifier>{CE51E679-50AA-3354-90B8-31F75E8012A0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Generated Files">
+      <UniqueIdentifier>{FB9B7D8B-7F05-31D5-AA90-592248EDE1B3}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

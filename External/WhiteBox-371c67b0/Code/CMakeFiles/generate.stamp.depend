@@ -1,0 +1,12 @@
+# CMake generation dependency list for this directory.
+C:/Users/lesaelr/o3de/Gems/WhiteBox/Code/CMakeLists.txt
+C:/Users/lesaelr/o3de/Gems/WhiteBox/Code/Source/Platform/Windows/PAL_windows.cmake
+C:/Users/lesaelr/o3de/Gems/WhiteBox/Code/Source/Platform/Windows/platform_windows_tools.cmake
+C:/Users/lesaelr/o3de/Gems/WhiteBox/Code/whitebox_editor_physics_tests_supported_files.cmake
+C:/Users/lesaelr/o3de/Gems/WhiteBox/Code/whitebox_editor_shared_files.cmake
+C:/Users/lesaelr/o3de/Gems/WhiteBox/Code/whitebox_editor_supported_files.cmake
+C:/Users/lesaelr/o3de/Gems/WhiteBox/Code/whitebox_editor_tests_supported_files.cmake
+C:/Users/lesaelr/o3de/Gems/WhiteBox/Code/whitebox_shared_files.cmake
+C:/Users/lesaelr/o3de/Gems/WhiteBox/Code/whitebox_supported_files.cmake
+C:/Users/lesaelr/o3de/Gems/WhiteBox/Code/whitebox_tests_supported_files.cmake
+C:/Users/lesaelr/o3de/cmake/Platform/Windows/LYTestWrappers_windows.cmake

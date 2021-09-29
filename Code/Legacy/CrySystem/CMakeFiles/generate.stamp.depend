@@ -1,0 +1,12 @@
+# CMake generation dependency list for this directory.
+C:/Users/lesaelr/.o3de/3rdParty/packages/expat-2.1.0-multiplatform/Findexpat.cmake
+C:/Users/lesaelr/.o3de/3rdParty/packages/expat-2.1.0-multiplatform/PackageInfo.json
+C:/Users/lesaelr/.o3de/3rdParty/packages/md5-2.0-multiplatform/Findmd5.cmake
+C:/Users/lesaelr/.o3de/3rdParty/packages/md5-2.0-multiplatform/PackageInfo.json
+C:/Users/lesaelr/.o3de/3rdParty/packages/tiff-4.2.0.15-rev2-windows/Findtiff.cmake
+C:/Users/lesaelr/.o3de/3rdParty/packages/tiff-4.2.0.15-rev2-windows/PackageInfo.json
+C:/Users/lesaelr/o3de/Code/Legacy/CrySystem/CMakeLists.txt
+C:/Users/lesaelr/o3de/Code/Legacy/CrySystem/Platform/Windows/platform_windows.cmake
+C:/Users/lesaelr/o3de/Code/Legacy/CrySystem/Platform/Windows/platform_windows_files.cmake
+C:/Users/lesaelr/o3de/Code/Legacy/CrySystem/crysystem_files.cmake
+C:/Users/lesaelr/o3de/Code/Legacy/CrySystem/crysystem_shared_files.cmake

@@ -1,0 +1,534 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\CMakeFiles\AzNetworking.dir\Unity\unity_4_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\CMakeFiles\AzNetworking.dir\Unity\unity_3_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\CMakeFiles\AzNetworking.dir\Unity\unity_2_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\CMakeFiles\AzNetworking.dir\Unity\unity_1_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\CMakeFiles\AzNetworking.dir\Unity\unity_0_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\AzNetworking\AzNetworkingModule.cpp">
+      <Filter>AzNetworking</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\AzNetworking\ConnectionLayer\ConnectionMetrics.cpp">
+      <Filter>AzNetworking\ConnectionLayer</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\AzNetworking\DataStructures\TimeoutQueue.cpp">
+      <Filter>AzNetworking\DataStructures</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\AzNetworking\Framework\NetworkingSystemComponent.cpp">
+      <Filter>AzNetworking\Framework</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\AzNetworking\Serialization\DeltaSerializer.cpp">
+      <Filter>AzNetworking\Serialization</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\AzNetworking\Serialization\HashSerializer.cpp">
+      <Filter>AzNetworking\Serialization</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\AzNetworking\Serialization\NetworkInputSerializer.cpp">
+      <Filter>AzNetworking\Serialization</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\AzNetworking\Serialization\NetworkOutputSerializer.cpp">
+      <Filter>AzNetworking\Serialization</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\AzNetworking\Serialization\StringifySerializer.cpp">
+      <Filter>AzNetworking\Serialization</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\AzNetworking\TcpTransport\TcpConnection.cpp">
+      <Filter>AzNetworking\TcpTransport</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\AzNetworking\TcpTransport\TcpConnectionSet.cpp">
+      <Filter>AzNetworking\TcpTransport</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\AzNetworking\TcpTransport\TcpPacketHeader.cpp">
+      <Filter>AzNetworking\TcpTransport</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\AzNetworking\TcpTransport\TcpRingBufferImpl.cpp">
+      <Filter>AzNetworking\TcpTransport</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\AzNetworking\TcpTransport\TcpSocket.cpp">
+      <Filter>AzNetworking\TcpTransport</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\AzNetworking\TcpTransport\TcpSocketManager_Epoll.cpp">
+      <Filter>AzNetworking\TcpTransport</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\AzNetworking\TcpTransport\TcpSocketManager_None.cpp">
+      <Filter>AzNetworking\TcpTransport</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\AzNetworking\TcpTransport\TcpSocketManager_Select.cpp">
+      <Filter>AzNetworking\TcpTransport</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\AzNetworking\TcpTransport\TlsSocket.cpp">
+      <Filter>AzNetworking\TcpTransport</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\AzNetworking\TcpTransport\TcpListenThread.cpp">
+      <Filter>AzNetworking\TcpTransport</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\AzNetworking\TcpTransport\TcpNetworkInterface.cpp">
+      <Filter>AzNetworking\TcpTransport</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\AzNetworking\UdpTransport\DtlsEndpoint.cpp">
+      <Filter>AzNetworking\UdpTransport</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\AzNetworking\UdpTransport\DtlsSocket.cpp">
+      <Filter>AzNetworking\UdpTransport</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\AzNetworking\UdpTransport\UdpConnection.cpp">
+      <Filter>AzNetworking\UdpTransport</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\AzNetworking\UdpTransport\UdpConnectionSet.cpp">
+      <Filter>AzNetworking\UdpTransport</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\AzNetworking\UdpTransport\UdpFragmentQueue.cpp">
+      <Filter>AzNetworking\UdpTransport</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\AzNetworking\UdpTransport\UdpNetworkInterface.cpp">
+      <Filter>AzNetworking\UdpTransport</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\AzNetworking\UdpTransport\UdpPacketHeader.cpp">
+      <Filter>AzNetworking\UdpTransport</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\AzNetworking\UdpTransport\UdpPacketIdWindow.cpp">
+      <Filter>AzNetworking\UdpTransport</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\AzNetworking\UdpTransport\UdpPacketTracker.cpp">
+      <Filter>AzNetworking\UdpTransport</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\AzNetworking\UdpTransport\UdpReaderThread.cpp">
+      <Filter>AzNetworking\UdpTransport</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\AzNetworking\UdpTransport\UdpReliableQueue.cpp">
+      <Filter>AzNetworking\UdpTransport</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\AzNetworking\UdpTransport\UdpSocket.cpp">
+      <Filter>AzNetworking\UdpTransport</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\AzNetworking\Utilities\CidrAddress.cpp">
+      <Filter>AzNetworking\Utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\AzNetworking\Utilities\EncryptionCommon.cpp">
+      <Filter>AzNetworking\Utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\AzNetworking\Utilities\IpAddress.cpp">
+      <Filter>AzNetworking\Utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\AzNetworking\Utilities\NetworkCommon.cpp">
+      <Filter>AzNetworking\Utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\AzNetworking\Utilities\TimedThread.cpp">
+      <Filter>AzNetworking\Utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\Platform\Common\Default\AzNetworking\Utilities\IpAddress_Default.cpp">
+      <Filter>Platform\Windows\..\Common\Default\AzNetworking\Utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\Platform\Common\WinAPI\AzNetworking\Utilities\NetworkCommon_WinAPI.cpp">
+      <Filter>Platform\Windows\..\Common\WinAPI\AzNetworking\Utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\Azcg\Generated\AzNetworking\AutoGen\CorePackets.AutoPackets.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\AzNetworking\AzNetworkingModule.h">
+      <Filter>AzNetworking</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\AzNetworking\ConnectionLayer\ConnectionEnums.h">
+      <Filter>AzNetworking\ConnectionLayer</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\AzNetworking\ConnectionLayer\ConnectionMetrics.h">
+      <Filter>AzNetworking\ConnectionLayer</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\AzNetworking\ConnectionLayer\ConnectionMetrics.inl">
+      <Filter>AzNetworking\ConnectionLayer</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\AzNetworking\ConnectionLayer\IConnection.h">
+      <Filter>AzNetworking\ConnectionLayer</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\AzNetworking\ConnectionLayer\IConnection.inl">
+      <Filter>AzNetworking\ConnectionLayer</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\AzNetworking\ConnectionLayer\IConnectionListener.h">
+      <Filter>AzNetworking\ConnectionLayer</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\AzNetworking\ConnectionLayer\IConnectionSet.h">
+      <Filter>AzNetworking\ConnectionLayer</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\AzNetworking\ConnectionLayer\SequenceGenerator.h">
+      <Filter>AzNetworking\ConnectionLayer</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\AzNetworking\ConnectionLayer\SequenceGenerator.inl">
+      <Filter>AzNetworking\ConnectionLayer</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\AzNetworking\DataStructures\ByteBuffer.h">
+      <Filter>AzNetworking\DataStructures</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\AzNetworking\DataStructures\ByteBuffer.inl">
+      <Filter>AzNetworking\DataStructures</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\AzNetworking\DataStructures\FixedSizeBitset.h">
+      <Filter>AzNetworking\DataStructures</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\AzNetworking\DataStructures\FixedSizeBitset.inl">
+      <Filter>AzNetworking\DataStructures</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\AzNetworking\DataStructures\FixedSizeBitsetView.h">
+      <Filter>AzNetworking\DataStructures</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\AzNetworking\DataStructures\FixedSizeBitsetView.inl">
+      <Filter>AzNetworking\DataStructures</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\AzNetworking\DataStructures\FixedSizeVectorBitset.h">
+      <Filter>AzNetworking\DataStructures</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\AzNetworking\DataStructures\FixedSizeVectorBitset.inl">
+      <Filter>AzNetworking\DataStructures</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\AzNetworking\DataStructures\IBitset.h">
+      <Filter>AzNetworking\DataStructures</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\AzNetworking\DataStructures\RingBufferBitset.h">
+      <Filter>AzNetworking\DataStructures</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\AzNetworking\DataStructures\RingBufferBitset.inl">
+      <Filter>AzNetworking\DataStructures</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\AzNetworking\DataStructures\TimeoutQueue.h">
+      <Filter>AzNetworking\DataStructures</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\AzNetworking\DataStructures\TimeoutQueue.inl">
+      <Filter>AzNetworking\DataStructures</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\AzNetworking\Framework\ICompressor.h">
+      <Filter>AzNetworking\Framework</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\AzNetworking\Framework\INetworking.h">
+      <Filter>AzNetworking\Framework</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\AzNetworking\Framework\INetworkInterface.h">
+      <Filter>AzNetworking\Framework</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\AzNetworking\Framework\NetworkingSystemComponent.h">
+      <Filter>AzNetworking\Framework</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\AzNetworking\Framework\NetworkInterfaceMetrics.h">
+      <Filter>AzNetworking\Framework</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\AzNetworking\PacketLayer\IPacket.h">
+      <Filter>AzNetworking\PacketLayer</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\AzNetworking\PacketLayer\IPacketHeader.h">
+      <Filter>AzNetworking\PacketLayer</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\AzNetworking\Serialization\AbstractValue.h">
+      <Filter>AzNetworking\Serialization</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\AzNetworking\Serialization\AzContainerSerializers.h">
+      <Filter>AzNetworking\Serialization</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\AzNetworking\Serialization\DeltaSerializer.h">
+      <Filter>AzNetworking\Serialization</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\AzNetworking\Serialization\DeltaSerializer.inl">
+      <Filter>AzNetworking\Serialization</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\AzNetworking\Serialization\HashSerializer.h">
+      <Filter>AzNetworking\Serialization</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\AzNetworking\Serialization\ISerializer.h">
+      <Filter>AzNetworking\Serialization</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\AzNetworking\Serialization\ISerializer.inl">
+      <Filter>AzNetworking\Serialization</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\AzNetworking\Serialization\NetworkInputSerializer.h">
+      <Filter>AzNetworking\Serialization</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\AzNetworking\Serialization\NetworkInputSerializer.inl">
+      <Filter>AzNetworking\Serialization</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\AzNetworking\Serialization\NetworkOutputSerializer.h">
+      <Filter>AzNetworking\Serialization</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\AzNetworking\Serialization\NetworkOutputSerializer.inl">
+      <Filter>AzNetworking\Serialization</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\AzNetworking\Serialization\StringifySerializer.h">
+      <Filter>AzNetworking\Serialization</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\AzNetworking\Serialization\TrackChangedSerializer.h">
+      <Filter>AzNetworking\Serialization</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\AzNetworking\Serialization\TrackChangedSerializer.inl">
+      <Filter>AzNetworking\Serialization</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\AzNetworking\TcpTransport\TcpConnection.h">
+      <Filter>AzNetworking\TcpTransport</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\AzNetworking\TcpTransport\TcpConnection.inl">
+      <Filter>AzNetworking\TcpTransport</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\AzNetworking\TcpTransport\TcpConnectionSet.h">
+      <Filter>AzNetworking\TcpTransport</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\AzNetworking\TcpTransport\TcpPacketHeader.h">
+      <Filter>AzNetworking\TcpTransport</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\AzNetworking\TcpTransport\TcpPacketHeader.inl">
+      <Filter>AzNetworking\TcpTransport</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\AzNetworking\TcpTransport\TcpRingBuffer.h">
+      <Filter>AzNetworking\TcpTransport</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\AzNetworking\TcpTransport\TcpRingBuffer.inl">
+      <Filter>AzNetworking\TcpTransport</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\AzNetworking\TcpTransport\TcpRingBufferImpl.h">
+      <Filter>AzNetworking\TcpTransport</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\AzNetworking\TcpTransport\TcpRingBufferImpl.inl">
+      <Filter>AzNetworking\TcpTransport</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\AzNetworking\TcpTransport\TcpSocket.h">
+      <Filter>AzNetworking\TcpTransport</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\AzNetworking\TcpTransport\TcpSocket.inl">
+      <Filter>AzNetworking\TcpTransport</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\AzNetworking\TcpTransport\TcpSocketManager.h">
+      <Filter>AzNetworking\TcpTransport</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\AzNetworking\TcpTransport\TlsSocket.h">
+      <Filter>AzNetworking\TcpTransport</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\AzNetworking\TcpTransport\TcpListenThread.h">
+      <Filter>AzNetworking\TcpTransport</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\AzNetworking\TcpTransport\TcpNetworkInterface.h">
+      <Filter>AzNetworking\TcpTransport</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\AzNetworking\UdpTransport\DtlsEndpoint.h">
+      <Filter>AzNetworking\UdpTransport</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\AzNetworking\UdpTransport\DtlsSocket.h">
+      <Filter>AzNetworking\UdpTransport</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\AzNetworking\UdpTransport\UdpConnection.h">
+      <Filter>AzNetworking\UdpTransport</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\AzNetworking\UdpTransport\UdpConnection.inl">
+      <Filter>AzNetworking\UdpTransport</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\AzNetworking\UdpTransport\UdpConnectionSet.h">
+      <Filter>AzNetworking\UdpTransport</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\AzNetworking\UdpTransport\UdpFragmentQueue.h">
+      <Filter>AzNetworking\UdpTransport</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\AzNetworking\UdpTransport\UdpNetworkInterface.h">
+      <Filter>AzNetworking\UdpTransport</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\AzNetworking\UdpTransport\UdpPacketHeader.h">
+      <Filter>AzNetworking\UdpTransport</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\AzNetworking\UdpTransport\UdpPacketHeader.inl">
+      <Filter>AzNetworking\UdpTransport</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\AzNetworking\UdpTransport\UdpPacketIdWindow.h">
+      <Filter>AzNetworking\UdpTransport</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\AzNetworking\UdpTransport\UdpPacketIdWindow.inl">
+      <Filter>AzNetworking\UdpTransport</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\AzNetworking\UdpTransport\UdpPacketTracker.h">
+      <Filter>AzNetworking\UdpTransport</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\AzNetworking\UdpTransport\UdpPacketTracker.inl">
+      <Filter>AzNetworking\UdpTransport</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\AzNetworking\UdpTransport\UdpReaderThread.h">
+      <Filter>AzNetworking\UdpTransport</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\AzNetworking\UdpTransport\UdpReliableQueue.h">
+      <Filter>AzNetworking\UdpTransport</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\AzNetworking\UdpTransport\UdpSocket.h">
+      <Filter>AzNetworking\UdpTransport</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\AzNetworking\UdpTransport\UdpSocket.inl">
+      <Filter>AzNetworking\UdpTransport</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\AzNetworking\Utilities\CidrAddress.h">
+      <Filter>AzNetworking\Utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\AzNetworking\Utilities\EncryptionCommon.h">
+      <Filter>AzNetworking\Utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\AzNetworking\Utilities\Endian.h">
+      <Filter>AzNetworking\Utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\AzNetworking\Utilities\IpAddress.h">
+      <Filter>AzNetworking\Utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\AzNetworking\Utilities\IpAddress.inl">
+      <Filter>AzNetworking\Utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\AzNetworking\Utilities\NetworkCommon.h">
+      <Filter>AzNetworking\Utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\AzNetworking\Utilities\NetworkCommon.inl">
+      <Filter>AzNetworking\Utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\AzNetworking\Utilities\NetworkIncludes.h">
+      <Filter>AzNetworking\Utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\AzNetworking\Utilities\QuantizedValues.h">
+      <Filter>AzNetworking\Utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\AzNetworking\Utilities\QuantizedValues.inl">
+      <Filter>AzNetworking\Utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\AzNetworking\Utilities\TimedThread.h">
+      <Filter>AzNetworking\Utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\Platform\Common\WinAPI\AzNetworking\Utilities\Endian_WinAPI.h">
+      <Filter>Platform\Windows\..\Common\WinAPI\AzNetworking\Utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\Platform\Common\WinAPI\AzNetworking\Utilities\NetworkIncludes_WinAPI.h">
+      <Filter>Platform\Windows\..\Common\WinAPI\AzNetworking\Utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\Platform\Windows\AzNetworking\AzNetworking_Traits_Platform.h">
+      <Filter>Platform\Windows\AzNetworking</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\Platform\Windows\AzNetworking\Utilities\Endian_Platform.h">
+      <Filter>Platform\Windows\AzNetworking\Utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\Platform\Windows\AzNetworking\Utilities\NetworkIncludes_Platform.h">
+      <Filter>Platform\Windows\AzNetworking\Utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\Azcg\Generated\AzNetworking\AutoGen\CorePackets.AutoPackets.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\Azcg\Generated\AzNetworking\AutoGen\CorePackets.AutoPackets.inl">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\CMakeFiles\aaff558dada7c0901a46a2b7aef703e7\CorePackets.AutoPackets.h.rule">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\CMakeLists.txt">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\AzNetworking\AutoGen\AutoPacketDispatcher_Header.jinja">
+      <Filter>AzNetworking\AutoGen</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\AzNetworking\AutoGen\AutoPacketDispatcher_Inline.jinja">
+      <Filter>AzNetworking\AutoGen</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\AzNetworking\AutoGen\AutoPackets_Header.jinja">
+      <Filter>AzNetworking\AutoGen</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\AzNetworking\AutoGen\AutoPackets_Inline.jinja">
+      <Filter>AzNetworking\AutoGen</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\AzNetworking\AutoGen\AutoPackets_Source.jinja">
+      <Filter>AzNetworking\AutoGen</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\AzNetworking\aznetworking_files.cmake">
+      <Filter>AzNetworking</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\Platform\Windows\platform_windows_files.cmake">
+      <Filter>Platform\Windows</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\Platform\Windows\platform_windows.cmake">
+      <Filter>Platform\Windows</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <XML Include="C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\AzNetworking\AutoGen\CorePackets.AutoPackets.xml">
+      <Filter>AzNetworking\AutoGen</Filter>
+    </XML>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="AzNetworking">
+      <UniqueIdentifier>{F8D6D6BA-FDA4-36DA-BC24-4CFA710D1788}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzNetworking\AutoGen">
+      <UniqueIdentifier>{D547F505-B332-3E73-9089-3DE06C73E49B}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzNetworking\ConnectionLayer">
+      <UniqueIdentifier>{930977B5-3FFE-3274-BEF4-183C069003E6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzNetworking\DataStructures">
+      <UniqueIdentifier>{495998FC-E874-346A-B761-63F1FD66675A}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzNetworking\Framework">
+      <UniqueIdentifier>{C53617F2-91F4-37E5-8F87-2B4BC17E010D}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzNetworking\PacketLayer">
+      <UniqueIdentifier>{7786AF28-F5D7-35D6-9A69-1373FCD91FAB}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzNetworking\Serialization">
+      <UniqueIdentifier>{BAF6CD48-13DF-3A28-9508-538F1B83A40C}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzNetworking\TcpTransport">
+      <UniqueIdentifier>{5953FE15-0F72-347A-AEB7-71F32F9C1524}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzNetworking\UdpTransport">
+      <UniqueIdentifier>{D61A919D-D3F3-3E16-A267-59BB32A0B41E}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzNetworking\Utilities">
+      <UniqueIdentifier>{E68FBDAF-74D2-3B50-AA4A-361C05A383F7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Generated Files">
+      <UniqueIdentifier>{FB9B7D8B-7F05-31D5-AA90-592248EDE1B3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Platform">
+      <UniqueIdentifier>{378A8D8C-6CA1-3F6B-A02B-1E9FF64C97B2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Platform\Windows">
+      <UniqueIdentifier>{63AEF2F6-51C7-306A-BFE8-A049C8C62EFB}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Platform\Windows\..">
+      <UniqueIdentifier>{C2D7F6B4-9216-3C2D-9F9A-76D34821E4A4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Platform\Windows\..\Common">
+      <UniqueIdentifier>{905836E8-0C7C-3AC8-B31E-AD197AA2F2EA}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Platform\Windows\..\Common\Default">
+      <UniqueIdentifier>{9F370D39-A521-3AA5-B0D6-C2458DC201B2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Platform\Windows\..\Common\Default\AzNetworking">
+      <UniqueIdentifier>{6F384857-0329-3791-9FAB-3C711F45B60D}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Platform\Windows\..\Common\Default\AzNetworking\Utilities">
+      <UniqueIdentifier>{8D6E3A61-4474-3472-833D-F37646294710}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Platform\Windows\..\Common\WinAPI">
+      <UniqueIdentifier>{1168C645-1E7D-354D-A1D3-60D4294B95F3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Platform\Windows\..\Common\WinAPI\AzNetworking">
+      <UniqueIdentifier>{6EC14762-805C-39BF-93D0-179354F98B83}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Platform\Windows\..\Common\WinAPI\AzNetworking\Utilities">
+      <UniqueIdentifier>{1E3332B6-D4A2-3F5F-9F29-2C0F98F09DEA}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Platform\Windows\AzNetworking">
+      <UniqueIdentifier>{874FB4E0-7C6A-32FC-8B60-F09B2C71791D}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Platform\Windows\AzNetworking\Utilities">
+      <UniqueIdentifier>{25A1FEA3-65E5-3BB9-922C-D5479B5EE0D0}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

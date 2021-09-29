@@ -1,0 +1,2366 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\CMakeFiles\ScriptCanvas.Static.dir\Unity\unity_33_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\CMakeFiles\ScriptCanvas.Static.dir\Unity\unity_32_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\CMakeFiles\ScriptCanvas.Static.dir\Unity\unity_31_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\CMakeFiles\ScriptCanvas.Static.dir\Unity\unity_30_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\CMakeFiles\ScriptCanvas.Static.dir\Unity\unity_29_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\CMakeFiles\ScriptCanvas.Static.dir\Unity\unity_28_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\CMakeFiles\ScriptCanvas.Static.dir\Unity\unity_27_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\CMakeFiles\ScriptCanvas.Static.dir\Unity\unity_26_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\CMakeFiles\ScriptCanvas.Static.dir\Unity\unity_25_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\CMakeFiles\ScriptCanvas.Static.dir\Unity\unity_24_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\CMakeFiles\ScriptCanvas.Static.dir\Unity\unity_23_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\CMakeFiles\ScriptCanvas.Static.dir\Unity\unity_22_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\CMakeFiles\ScriptCanvas.Static.dir\Unity\unity_21_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\CMakeFiles\ScriptCanvas.Static.dir\Unity\unity_20_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\CMakeFiles\ScriptCanvas.Static.dir\Unity\unity_19_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\CMakeFiles\ScriptCanvas.Static.dir\Unity\unity_18_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\CMakeFiles\ScriptCanvas.Static.dir\Unity\unity_17_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\CMakeFiles\ScriptCanvas.Static.dir\Unity\unity_16_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\CMakeFiles\ScriptCanvas.Static.dir\Unity\unity_15_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\CMakeFiles\ScriptCanvas.Static.dir\Unity\unity_14_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\CMakeFiles\ScriptCanvas.Static.dir\Unity\unity_13_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\CMakeFiles\ScriptCanvas.Static.dir\Unity\unity_12_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\CMakeFiles\ScriptCanvas.Static.dir\Unity\unity_11_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\CMakeFiles\ScriptCanvas.Static.dir\Unity\unity_10_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\CMakeFiles\ScriptCanvas.Static.dir\Unity\unity_9_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\CMakeFiles\ScriptCanvas.Static.dir\Unity\unity_8_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\CMakeFiles\ScriptCanvas.Static.dir\Unity\unity_7_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\CMakeFiles\ScriptCanvas.Static.dir\Unity\unity_6_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\CMakeFiles\ScriptCanvas.Static.dir\Unity\unity_5_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\CMakeFiles\ScriptCanvas.Static.dir\Unity\unity_4_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\CMakeFiles\ScriptCanvas.Static.dir\Unity\unity_3_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\CMakeFiles\ScriptCanvas.Static.dir\Unity\unity_2_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\CMakeFiles\ScriptCanvas.Static.dir\Unity\unity_1_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\CMakeFiles\ScriptCanvas.Static.dir\Unity\unity_0_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Source\SystemComponent.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Source\ScriptCanvasCommonGem.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Source\PerformanceStatistician.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Source\PerformanceTracker.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Asset\AssetRegistry.cpp">
+      <Filter>Include\ScriptCanvas\Asset</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Asset\ExecutionLogAsset.cpp">
+      <Filter>Include\ScriptCanvas\Asset</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Asset\RuntimeAsset.cpp">
+      <Filter>Include\ScriptCanvas\Asset</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Asset\RuntimeAssetHandler.cpp">
+      <Filter>Include\ScriptCanvas\Asset</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Asset\SubgraphInterfaceAssetHandler.cpp">
+      <Filter>Include\ScriptCanvas\Asset</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Core\ExecutionNotificationsBus.cpp">
+      <Filter>Include\ScriptCanvas\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Core\Connection.cpp">
+      <Filter>Include\ScriptCanvas\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Core\Contract.cpp">
+      <Filter>Include\ScriptCanvas\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Core\Contracts\MethodOverloadContract.cpp">
+      <Filter>Include\ScriptCanvas\Core\Contracts</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Core\Contracts\RestrictedNodeContract.cpp">
+      <Filter>Include\ScriptCanvas\Core\Contracts</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Core\Core.cpp">
+      <Filter>Include\ScriptCanvas\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Core\Datum.cpp">
+      <Filter>Include\ScriptCanvas\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Core\EBusHandler.cpp">
+      <Filter>Include\ScriptCanvas\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Core\Endpoint.cpp">
+      <Filter>Include\ScriptCanvas\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Core\Graph.cpp">
+      <Filter>Include\ScriptCanvas\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Core\GraphData.cpp">
+      <Filter>Include\ScriptCanvas\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Core\MethodConfiguration.cpp">
+      <Filter>Include\ScriptCanvas\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Core\ModifiableDatumView.cpp">
+      <Filter>Include\ScriptCanvas\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Core\Node.cpp">
+      <Filter>Include\ScriptCanvas\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Core\Nodeable.cpp">
+      <Filter>Include\ScriptCanvas\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Core\NodeableNode.cpp">
+      <Filter>Include\ScriptCanvas\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Core\NodeableNodeOverloaded.cpp">
+      <Filter>Include\ScriptCanvas\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Core\Slot.cpp">
+      <Filter>Include\ScriptCanvas\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Core\SlotConfigurations.cpp">
+      <Filter>Include\ScriptCanvas\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Core\SlotExecutionMap.cpp">
+      <Filter>Include\ScriptCanvas\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Core\SlotMetadata.cpp">
+      <Filter>Include\ScriptCanvas\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Core\SubgraphInterface.cpp">
+      <Filter>Include\ScriptCanvas\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Core\SubgraphInterfaceUtility.cpp">
+      <Filter>Include\ScriptCanvas\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Translation\GraphToCPlusPlus.cpp">
+      <Filter>Include\ScriptCanvas\Translation</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Translation\GraphToLua.cpp">
+      <Filter>Include\ScriptCanvas\Translation</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Translation\GraphToLuaUtility.cpp">
+      <Filter>Include\ScriptCanvas\Translation</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Translation\GraphToX.cpp">
+      <Filter>Include\ScriptCanvas\Translation</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Translation\Translation.cpp">
+      <Filter>Include\ScriptCanvas\Translation</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Translation\TranslationContext.cpp">
+      <Filter>Include\ScriptCanvas\Translation</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Translation\TranslationResult.cpp">
+      <Filter>Include\ScriptCanvas\Translation</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Translation\TranslationUtilities.cpp">
+      <Filter>Include\ScriptCanvas\Translation</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Core\Contracts\ConnectionLimitContract.cpp">
+      <Filter>Include\ScriptCanvas\Core\Contracts</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Core\Contracts\ContractRTTI.cpp">
+      <Filter>Include\ScriptCanvas\Core\Contracts</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Core\Contracts\DisallowReentrantExecutionContract.cpp">
+      <Filter>Include\ScriptCanvas\Core\Contracts</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Core\Contracts\DisplayGroupConnectedSlotLimitContract.cpp">
+      <Filter>Include\ScriptCanvas\Core\Contracts</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Core\Contracts\DynamicTypeContract.cpp">
+      <Filter>Include\ScriptCanvas\Core\Contracts</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Core\Contracts\IsReferenceTypeContract.cpp">
+      <Filter>Include\ScriptCanvas\Core\Contracts</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Core\Contracts\MathOperatorContract.cpp">
+      <Filter>Include\ScriptCanvas\Core\Contracts</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Core\Contracts\SlotTypeContract.cpp">
+      <Filter>Include\ScriptCanvas\Core\Contracts</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Core\Contracts\SupportsMethodContract.cpp">
+      <Filter>Include\ScriptCanvas\Core\Contracts</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Core\Contracts\TypeContract.cpp">
+      <Filter>Include\ScriptCanvas\Core\Contracts</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Data\BehaviorContextObject.cpp">
+      <Filter>Include\ScriptCanvas\Data</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Data\BehaviorContextObjectPtr.cpp">
+      <Filter>Include\ScriptCanvas\Data</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Data\Data.cpp">
+      <Filter>Include\ScriptCanvas\Data</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Data\DataRegistry.cpp">
+      <Filter>Include\ScriptCanvas\Data</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Deprecated\VariableDatumBase.cpp">
+      <Filter>Include\ScriptCanvas\Deprecated</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Deprecated\VariableDatum.cpp">
+      <Filter>Include\ScriptCanvas\Deprecated</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Deprecated\VariableHelpers.cpp">
+      <Filter>Include\ScriptCanvas\Deprecated</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Execution\ExecutionContext.cpp">
+      <Filter>Include\ScriptCanvas\Execution</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Execution\ExecutionObjectCloning.cpp">
+      <Filter>Include\ScriptCanvas\Execution</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Execution\ExecutionPerformanceTimer.cpp">
+      <Filter>Include\ScriptCanvas\Execution</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Execution\ExecutionState.cpp">
+      <Filter>Include\ScriptCanvas\Execution</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Execution\NativeHostDeclarations.cpp">
+      <Filter>Include\ScriptCanvas\Execution</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Execution\NativeHostDefinitions.cpp">
+      <Filter>Include\ScriptCanvas\Execution</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Execution\RuntimeComponent.cpp">
+      <Filter>Include\ScriptCanvas\Execution</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Execution\Interpreted\ExecutionInterpretedAPI.cpp">
+      <Filter>Include\ScriptCanvas\Execution\Interpreted</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Execution\Interpreted\ExecutionInterpretedCloningAPI.cpp">
+      <Filter>Include\ScriptCanvas\Execution\Interpreted</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Execution\Interpreted\ExecutionInterpretedDebugAPI.cpp">
+      <Filter>Include\ScriptCanvas\Execution\Interpreted</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Execution\Interpreted\ExecutionInterpretedEBusAPI.cpp">
+      <Filter>Include\ScriptCanvas\Execution\Interpreted</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Execution\Interpreted\ExecutionInterpretedOut.cpp">
+      <Filter>Include\ScriptCanvas\Execution\Interpreted</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Execution\Interpreted\ExecutionStateInterpreted.cpp">
+      <Filter>Include\ScriptCanvas\Execution\Interpreted</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Execution\Interpreted\ExecutionStateInterpretedPerActivation.cpp">
+      <Filter>Include\ScriptCanvas\Execution\Interpreted</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Execution\Interpreted\ExecutionStateInterpretedPure.cpp">
+      <Filter>Include\ScriptCanvas\Execution\Interpreted</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Execution\Interpreted\ExecutionStateInterpretedSingleton.cpp">
+      <Filter>Include\ScriptCanvas\Execution\Interpreted</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Execution\Interpreted\ExecutionStateInterpretedUtility.cpp">
+      <Filter>Include\ScriptCanvas\Execution\Interpreted</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Grammar\AbstractCodeModel.cpp">
+      <Filter>Include\ScriptCanvas\Grammar</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Grammar\DebugMap.cpp">
+      <Filter>Include\ScriptCanvas\Grammar</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Grammar\ExecutionTraversalListeners.cpp">
+      <Filter>Include\ScriptCanvas\Grammar</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Grammar\ParsingMetaData.cpp">
+      <Filter>Include\ScriptCanvas\Grammar</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Grammar\ParsingUtilities.cpp">
+      <Filter>Include\ScriptCanvas\Grammar</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Grammar\Primitives.cpp">
+      <Filter>Include\ScriptCanvas\Grammar</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Grammar\PrimitivesDeclarations.cpp">
+      <Filter>Include\ScriptCanvas\Grammar</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Grammar\PrimitivesExecution.cpp">
+      <Filter>Include\ScriptCanvas\Grammar</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Internal\Nodeables\BaseTimer.cpp">
+      <Filter>Include\ScriptCanvas\Internal\Nodeables</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Internal\Nodes\BaseTimerNode.cpp">
+      <Filter>Include\ScriptCanvas\Internal\Nodes</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Internal\Nodes\ExpressionNodeBase.cpp">
+      <Filter>Include\ScriptCanvas\Internal\Nodes</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Internal\Nodes\StringFormatted.cpp">
+      <Filter>Include\ScriptCanvas\Internal\Nodes</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Libraries.cpp">
+      <Filter>Include\ScriptCanvas\Libraries</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Core\AzEventHandler.cpp">
+      <Filter>Include\ScriptCanvas\Libraries\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Core\BinaryOperator.cpp">
+      <Filter>Include\ScriptCanvas\Libraries\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Core\CoreNodes.cpp">
+      <Filter>Include\ScriptCanvas\Libraries\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Core\EBusEventHandler.cpp">
+      <Filter>Include\ScriptCanvas\Libraries\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Core\ExtractProperty.cpp">
+      <Filter>Include\ScriptCanvas\Libraries\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Core\EventHandlerTranslationUtility.cpp">
+      <Filter>Include\ScriptCanvas\Libraries\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Core\ForEach.cpp">
+      <Filter>Include\ScriptCanvas\Libraries\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Core\FunctionCallNode.cpp">
+      <Filter>Include\ScriptCanvas\Libraries\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Core\FunctionCallNodeIsOutOfDate.cpp">
+      <Filter>Include\ScriptCanvas\Libraries\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Core\FunctionDefinitionNode.cpp">
+      <Filter>Include\ScriptCanvas\Libraries\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Core\GetVariable.cpp">
+      <Filter>Include\ScriptCanvas\Libraries\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Core\Method.cpp">
+      <Filter>Include\ScriptCanvas\Libraries\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Core\MethodOverloaded.cpp">
+      <Filter>Include\ScriptCanvas\Libraries\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Core\MethodUtility.cpp">
+      <Filter>Include\ScriptCanvas\Libraries\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Core\Nodeling.cpp">
+      <Filter>Include\ScriptCanvas\Libraries\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Core\ReceiveScriptEvent.cpp">
+      <Filter>Include\ScriptCanvas\Libraries\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Core\Repeater.cpp">
+      <Filter>Include\ScriptCanvas\Libraries\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Core\RepeaterNodeable.cpp">
+      <Filter>Include\ScriptCanvas\Libraries\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Core\ScriptEventBase.cpp">
+      <Filter>Include\ScriptCanvas\Libraries\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Core\SendScriptEvent.cpp">
+      <Filter>Include\ScriptCanvas\Libraries\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Core\SetVariable.cpp">
+      <Filter>Include\ScriptCanvas\Libraries\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Core\UnaryOperator.cpp">
+      <Filter>Include\ScriptCanvas\Libraries\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Entity\Entity.cpp">
+      <Filter>Include\ScriptCanvas\Libraries\Entity</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Entity\RotateMethod.cpp">
+      <Filter>Include\ScriptCanvas\Libraries\Entity</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Logic\Any.cpp">
+      <Filter>Include\ScriptCanvas\Libraries\Logic</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Logic\Break.cpp">
+      <Filter>Include\ScriptCanvas\Libraries\Logic</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Logic\Cycle.cpp">
+      <Filter>Include\ScriptCanvas\Libraries\Logic</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Logic\Gate.cpp">
+      <Filter>Include\ScriptCanvas\Libraries\Logic</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Logic\IsNull.cpp">
+      <Filter>Include\ScriptCanvas\Libraries\Logic</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Logic\Logic.cpp">
+      <Filter>Include\ScriptCanvas\Libraries\Logic</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Logic\Once.cpp">
+      <Filter>Include\ScriptCanvas\Libraries\Logic</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Logic\OrderedSequencer.cpp">
+      <Filter>Include\ScriptCanvas\Libraries\Logic</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Logic\Sequencer.cpp">
+      <Filter>Include\ScriptCanvas\Libraries\Logic</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Logic\TargetedSequencer.cpp">
+      <Filter>Include\ScriptCanvas\Libraries\Logic</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Logic\WeightedRandomSequencer.cpp">
+      <Filter>Include\ScriptCanvas\Libraries\Logic</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Logic\While.cpp">
+      <Filter>Include\ScriptCanvas\Libraries\Logic</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Math\Math.cpp">
+      <Filter>Include\ScriptCanvas\Libraries\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Math\MathExpression.cpp">
+      <Filter>Include\ScriptCanvas\Libraries\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Math\MathNodeUtilities.cpp">
+      <Filter>Include\ScriptCanvas\Libraries\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Comparison\Comparison.cpp">
+      <Filter>Include\ScriptCanvas\Libraries\Comparison</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Time\Time.cpp">
+      <Filter>Include\ScriptCanvas\Libraries\Time</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Time\Countdown.cpp">
+      <Filter>Include\ScriptCanvas\Libraries\Time</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Time\DelayNodeable.cpp">
+      <Filter>Include\ScriptCanvas\Libraries\Time</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Time\Duration.cpp">
+      <Filter>Include\ScriptCanvas\Libraries\Time</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Time\HeartBeat.cpp">
+      <Filter>Include\ScriptCanvas\Libraries\Time</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Time\Timer.cpp">
+      <Filter>Include\ScriptCanvas\Libraries\Time</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Time\TimeDelayNodeable.cpp">
+      <Filter>Include\ScriptCanvas\Libraries\Time</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Time\DurationNodeable.cpp">
+      <Filter>Include\ScriptCanvas\Libraries\Time</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Time\HeartBeatNodeable.cpp">
+      <Filter>Include\ScriptCanvas\Libraries\Time</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Time\TimerNodeable.cpp">
+      <Filter>Include\ScriptCanvas\Libraries\Time</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Spawning\Spawning.cpp">
+      <Filter>Include\ScriptCanvas\Libraries\Spawning</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Spawning\SpawnNodeable.cpp">
+      <Filter>Include\ScriptCanvas\Libraries\Spawning</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\String\Contains.cpp">
+      <Filter>Include\ScriptCanvas\Libraries\String</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\String\Format.cpp">
+      <Filter>Include\ScriptCanvas\Libraries\String</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\String\Replace.cpp">
+      <Filter>Include\ScriptCanvas\Libraries\String</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\String\String.cpp">
+      <Filter>Include\ScriptCanvas\Libraries\String</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\String\StringMethods.cpp">
+      <Filter>Include\ScriptCanvas\Libraries\String</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\String\Utilities.cpp">
+      <Filter>Include\ScriptCanvas\Libraries\String</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\UnitTesting\AddFailure.cpp">
+      <Filter>Include\ScriptCanvas\Libraries\UnitTesting</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\UnitTesting\ExpectEqual.cpp">
+      <Filter>Include\ScriptCanvas\Libraries\UnitTesting</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\UnitTesting\ExpectFalse.cpp">
+      <Filter>Include\ScriptCanvas\Libraries\UnitTesting</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\UnitTesting\ExpectGreaterThan.cpp">
+      <Filter>Include\ScriptCanvas\Libraries\UnitTesting</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\UnitTesting\ExpectGreaterThanEqual.cpp">
+      <Filter>Include\ScriptCanvas\Libraries\UnitTesting</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\UnitTesting\ExpectLessThan.cpp">
+      <Filter>Include\ScriptCanvas\Libraries\UnitTesting</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\UnitTesting\ExpectLessThanEqual.cpp">
+      <Filter>Include\ScriptCanvas\Libraries\UnitTesting</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\UnitTesting\ExpectNotEqual.cpp">
+      <Filter>Include\ScriptCanvas\Libraries\UnitTesting</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\UnitTesting\ExpectTrue.cpp">
+      <Filter>Include\ScriptCanvas\Libraries\UnitTesting</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\UnitTesting\UnitTesting.cpp">
+      <Filter>Include\ScriptCanvas\Libraries\UnitTesting</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\UnitTesting\UnitTestingLibrary.cpp">
+      <Filter>Include\ScriptCanvas\Libraries\UnitTesting</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\UnitTesting\Auxiliary\Auxiliary.cpp">
+      <Filter>Include\ScriptCanvas\Libraries\UnitTesting\Auxiliary</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\UnitTesting\UnitTestBusSender.cpp">
+      <Filter>Include\ScriptCanvas\Libraries\UnitTesting</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Operators\Operators.cpp">
+      <Filter>Include\ScriptCanvas\Libraries\Operators</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Operators\Operator.cpp">
+      <Filter>Include\ScriptCanvas\Libraries\Operators</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Operators\Containers\OperatorAt.cpp">
+      <Filter>Include\ScriptCanvas\Libraries\Operators\Containers</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Operators\Containers\OperatorBack.cpp">
+      <Filter>Include\ScriptCanvas\Libraries\Operators\Containers</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Operators\Containers\OperatorClear.cpp">
+      <Filter>Include\ScriptCanvas\Libraries\Operators\Containers</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Operators\Containers\OperatorEmpty.cpp">
+      <Filter>Include\ScriptCanvas\Libraries\Operators\Containers</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Operators\Containers\OperatorErase.cpp">
+      <Filter>Include\ScriptCanvas\Libraries\Operators\Containers</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Operators\Containers\OperatorFront.cpp">
+      <Filter>Include\ScriptCanvas\Libraries\Operators\Containers</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Operators\Containers\OperatorInsert.cpp">
+      <Filter>Include\ScriptCanvas\Libraries\Operators\Containers</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Operators\Containers\OperatorPushBack.cpp">
+      <Filter>Include\ScriptCanvas\Libraries\Operators\Containers</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Operators\Containers\OperatorSize.cpp">
+      <Filter>Include\ScriptCanvas\Libraries\Operators\Containers</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Operators\Math\OperatorAdd.cpp">
+      <Filter>Include\ScriptCanvas\Libraries\Operators\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Operators\Math\OperatorArithmetic.cpp">
+      <Filter>Include\ScriptCanvas\Libraries\Operators\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Operators\Math\OperatorDiv.cpp">
+      <Filter>Include\ScriptCanvas\Libraries\Operators\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Operators\Math\OperatorDivideByNumber.cpp">
+      <Filter>Include\ScriptCanvas\Libraries\Operators\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Operators\Math\OperatorLength.cpp">
+      <Filter>Include\ScriptCanvas\Libraries\Operators\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Operators\Math\OperatorLerp.cpp">
+      <Filter>Include\ScriptCanvas\Libraries\Operators\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Operators\Math\OperatorMul.cpp">
+      <Filter>Include\ScriptCanvas\Libraries\Operators\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Operators\Math\OperatorSub.cpp">
+      <Filter>Include\ScriptCanvas\Libraries\Operators\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Operators\Math\OperatorLerpNodeable.cpp">
+      <Filter>Include\ScriptCanvas\Libraries\Operators\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Operators\Math\OperatorLerpNodeableNode.cpp">
+      <Filter>Include\ScriptCanvas\Libraries\Operators\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Profiler\Aggregator.cpp">
+      <Filter>Include\ScriptCanvas\Profiler</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Profiler\DrillerEvents.cpp">
+      <Filter>Include\ScriptCanvas\Profiler</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Serialization\BehaviorContextObjectSerializer.cpp">
+      <Filter>Include\ScriptCanvas\Serialization</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Serialization\DatumSerializer.cpp">
+      <Filter>Include\ScriptCanvas\Serialization</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Serialization\RuntimeVariableSerializer.cpp">
+      <Filter>Include\ScriptCanvas\Serialization</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Data\DataTrait.cpp">
+      <Filter>Include\ScriptCanvas\Data</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Data\PropertyTraits.cpp">
+      <Filter>Include\ScriptCanvas\Data</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Variable\GraphVariable.cpp">
+      <Filter>Include\ScriptCanvas\Variable</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Variable\GraphVariableManagerComponent.cpp">
+      <Filter>Include\ScriptCanvas\Variable</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Variable\VariableCore.cpp">
+      <Filter>Include\ScriptCanvas\Variable</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Variable\VariableData.cpp">
+      <Filter>Include\ScriptCanvas\Variable</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Utils\DataUtils.cpp">
+      <Filter>Include\ScriptCanvas\Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Utils\NodeUtils.cpp">
+      <Filter>Include\ScriptCanvas\Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Utils\VersionConverters.cpp">
+      <Filter>Include\ScriptCanvas\Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Utils\VersioningUtils.cpp">
+      <Filter>Include\ScriptCanvas\Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Utils\BehaviorContextUtils.cpp">
+      <Filter>Include\ScriptCanvas\Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Asset\RuntimeAssetSystemComponent.cpp">
+      <Filter>Asset</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\Azcg\Generated\Include\ScriptCanvas\Internal\Nodes\BaseTimerNode.generated.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\Azcg\Generated\Include\ScriptCanvas\Internal\Nodes\ExpressionNodeBase.generated.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\Azcg\Generated\Include\ScriptCanvas\Internal\Nodes\StringFormatted.generated.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\Azcg\Generated\Include\ScriptCanvas\Libraries\Core\AzEventHandler.generated.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\Azcg\Generated\Include\ScriptCanvas\Libraries\Core\EBusEventHandler.generated.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\Azcg\Generated\Include\ScriptCanvas\Libraries\Core\ExtractProperty.generated.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\Azcg\Generated\Include\ScriptCanvas\Libraries\Core\ForEach.generated.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\Azcg\Generated\Include\ScriptCanvas\Libraries\Core\FunctionCallNode.generated.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\Azcg\Generated\Include\ScriptCanvas\Libraries\Core\FunctionDefinitionNode.generated.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\Azcg\Generated\Include\ScriptCanvas\Libraries\Core\GetVariable.generated.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\Azcg\Generated\Include\ScriptCanvas\Libraries\Core\Nodeling.generated.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\Azcg\Generated\Include\ScriptCanvas\Libraries\Core\ReceiveScriptEvent.generated.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\Azcg\Generated\Include\ScriptCanvas\Libraries\Core\Repeater.generated.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\Azcg\Generated\Include\ScriptCanvas\Libraries\Core\ScriptEventBase.generated.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\Azcg\Generated\Include\ScriptCanvas\Libraries\Core\SendScriptEvent.generated.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\Azcg\Generated\Include\ScriptCanvas\Libraries\Core\SetVariable.generated.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\Azcg\Generated\Include\ScriptCanvas\Libraries\Core\Start.generated.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\Azcg\Generated\Include\ScriptCanvas\Libraries\Logic\Any.generated.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\Azcg\Generated\Include\ScriptCanvas\Libraries\Logic\Break.generated.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\Azcg\Generated\Include\ScriptCanvas\Libraries\Logic\Cycle.generated.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\Azcg\Generated\Include\ScriptCanvas\Libraries\Logic\Gate.generated.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\Azcg\Generated\Include\ScriptCanvas\Libraries\Logic\Indexer.generated.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\Azcg\Generated\Include\ScriptCanvas\Libraries\Logic\IsNull.generated.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\Azcg\Generated\Include\ScriptCanvas\Libraries\Logic\Multiplexer.generated.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\Azcg\Generated\Include\ScriptCanvas\Libraries\Logic\Once.generated.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\Azcg\Generated\Include\ScriptCanvas\Libraries\Logic\OrderedSequencer.generated.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\Azcg\Generated\Include\ScriptCanvas\Libraries\Logic\Sequencer.generated.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\Azcg\Generated\Include\ScriptCanvas\Libraries\Logic\TargetedSequencer.generated.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\Azcg\Generated\Include\ScriptCanvas\Libraries\Logic\WeightedRandomSequencer.generated.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\Azcg\Generated\Include\ScriptCanvas\Libraries\Logic\While.generated.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\Azcg\Generated\Include\ScriptCanvas\Libraries\Math\MathExpression.generated.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\Azcg\Generated\Include\ScriptCanvas\Libraries\Time\Countdown.generated.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\Azcg\Generated\Include\ScriptCanvas\Libraries\Time\Duration.generated.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\Azcg\Generated\Include\ScriptCanvas\Libraries\Time\HeartBeat.generated.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\Azcg\Generated\Include\ScriptCanvas\Libraries\Time\Timer.generated.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\Azcg\Generated\Include\ScriptCanvas\Libraries\String\Contains.generated.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\Azcg\Generated\Include\ScriptCanvas\Libraries\String\Format.generated.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\Azcg\Generated\Include\ScriptCanvas\Libraries\String\Print.generated.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\Azcg\Generated\Include\ScriptCanvas\Libraries\String\Replace.generated.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\Azcg\Generated\Include\ScriptCanvas\Libraries\String\Utilities.generated.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\Azcg\Generated\Include\ScriptCanvas\Libraries\UnitTesting\AddFailure.generated.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\Azcg\Generated\Include\ScriptCanvas\Libraries\UnitTesting\AddSuccess.generated.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\Azcg\Generated\Include\ScriptCanvas\Libraries\UnitTesting\Checkpoint.generated.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\Azcg\Generated\Include\ScriptCanvas\Libraries\UnitTesting\ExpectEqual.generated.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\Azcg\Generated\Include\ScriptCanvas\Libraries\UnitTesting\ExpectFalse.generated.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\Azcg\Generated\Include\ScriptCanvas\Libraries\UnitTesting\ExpectGreaterThan.generated.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\Azcg\Generated\Include\ScriptCanvas\Libraries\UnitTesting\ExpectGreaterThanEqual.generated.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\Azcg\Generated\Include\ScriptCanvas\Libraries\UnitTesting\ExpectLessThan.generated.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\Azcg\Generated\Include\ScriptCanvas\Libraries\UnitTesting\ExpectLessThanEqual.generated.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\Azcg\Generated\Include\ScriptCanvas\Libraries\UnitTesting\ExpectNotEqual.generated.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\Azcg\Generated\Include\ScriptCanvas\Libraries\UnitTesting\ExpectTrue.generated.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\Azcg\Generated\Include\ScriptCanvas\Libraries\UnitTesting\MarkComplete.generated.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\Azcg\Generated\Include\ScriptCanvas\Libraries\Operators\Operator.generated.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\Azcg\Generated\Include\ScriptCanvas\Libraries\Operators\Containers\OperatorAt.generated.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\Azcg\Generated\Include\ScriptCanvas\Libraries\Operators\Containers\OperatorBack.generated.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\Azcg\Generated\Include\ScriptCanvas\Libraries\Operators\Containers\OperatorClear.generated.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\Azcg\Generated\Include\ScriptCanvas\Libraries\Operators\Containers\OperatorEmpty.generated.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\Azcg\Generated\Include\ScriptCanvas\Libraries\Operators\Containers\OperatorErase.generated.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\Azcg\Generated\Include\ScriptCanvas\Libraries\Operators\Containers\OperatorFront.generated.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\Azcg\Generated\Include\ScriptCanvas\Libraries\Operators\Containers\OperatorInsert.generated.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\Azcg\Generated\Include\ScriptCanvas\Libraries\Operators\Containers\OperatorPushBack.generated.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\Azcg\Generated\Include\ScriptCanvas\Libraries\Operators\Containers\OperatorSize.generated.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\Azcg\Generated\Include\ScriptCanvas\Libraries\Operators\Math\OperatorAdd.generated.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\Azcg\Generated\Include\ScriptCanvas\Libraries\Operators\Math\OperatorArithmetic.generated.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\Azcg\Generated\Include\ScriptCanvas\Libraries\Operators\Math\OperatorDiv.generated.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\Azcg\Generated\Include\ScriptCanvas\Libraries\Operators\Math\OperatorDivideByNumber.generated.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\Azcg\Generated\Include\ScriptCanvas\Libraries\Operators\Math\OperatorLength.generated.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\Azcg\Generated\Include\ScriptCanvas\Libraries\Operators\Math\OperatorLerp.generated.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\Azcg\Generated\Include\ScriptCanvas\Libraries\Operators\Math\OperatorMul.generated.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\Azcg\Generated\Include\ScriptCanvas\Libraries\Operators\Math\OperatorSub.generated.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\Azcg\Generated\Include\ScriptCanvas\Internal\Nodeables\BaseTimer.generated.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\Azcg\Generated\Include\ScriptCanvas\Libraries\Core\RepeaterNodeable.generated.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\Azcg\Generated\Include\ScriptCanvas\Libraries\Time\DelayNodeable.generated.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\Azcg\Generated\Include\ScriptCanvas\Libraries\Time\TimeDelayNodeable.generated.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\Azcg\Generated\Include\ScriptCanvas\Libraries\Time\DurationNodeable.generated.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\Azcg\Generated\Include\ScriptCanvas\Libraries\Time\HeartBeatNodeable.generated.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\Azcg\Generated\Include\ScriptCanvas\Libraries\Time\TimerNodeable.generated.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\Azcg\Generated\Include\ScriptCanvas\Libraries\Spawning\SpawnNodeable.generated.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\SystemComponent.h">
+      <Filter>Include\ScriptCanvas</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\ScriptCanvasGem.h">
+      <Filter>Include\ScriptCanvas</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Asset\AssetDescription.h">
+      <Filter>Include\ScriptCanvas\Asset</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Asset\AssetRegistry.h">
+      <Filter>Include\ScriptCanvas\Asset</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Asset\AssetRegistryBus.h">
+      <Filter>Include\ScriptCanvas\Asset</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Asset\ExecutionLogAsset.h">
+      <Filter>Include\ScriptCanvas\Asset</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Asset\ExecutionLogAssetBus.h">
+      <Filter>Include\ScriptCanvas\Asset</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Asset\RuntimeAsset.h">
+      <Filter>Include\ScriptCanvas\Asset</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Asset\RuntimeAssetHandler.h">
+      <Filter>Include\ScriptCanvas\Asset</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Asset\ScriptCanvasAssetBase.h">
+      <Filter>Include\ScriptCanvas\Asset</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Asset\ScriptCanvasAssetData.h">
+      <Filter>Include\ScriptCanvas\Asset</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Asset\SubgraphInterfaceAssetHandler.h">
+      <Filter>Include\ScriptCanvas\Asset</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Core\ScriptCanvasBus.h">
+      <Filter>Include\ScriptCanvas\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Core\ExecutionNotificationsBus.h">
+      <Filter>Include\ScriptCanvas\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Core\GraphBus.h">
+      <Filter>Include\ScriptCanvas\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Core\NodeBus.h">
+      <Filter>Include\ScriptCanvas\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Core\EBusNodeBus.h">
+      <Filter>Include\ScriptCanvas\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Core\NodelingBus.h">
+      <Filter>Include\ScriptCanvas\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Core\ContractBus.h">
+      <Filter>Include\ScriptCanvas\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Core\Attributes.h">
+      <Filter>Include\ScriptCanvas\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Core\Connection.h">
+      <Filter>Include\ScriptCanvas\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Core\ConnectionBus.h">
+      <Filter>Include\ScriptCanvas\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Core\Contract.h">
+      <Filter>Include\ScriptCanvas\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Core\Contracts.h">
+      <Filter>Include\ScriptCanvas\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Core\Contracts\MethodOverloadContract.h">
+      <Filter>Include\ScriptCanvas\Core\Contracts</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Core\Contracts\RestrictedNodeContract.h">
+      <Filter>Include\ScriptCanvas\Core\Contracts</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Core\Core.h">
+      <Filter>Include\ScriptCanvas\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Core\Datum.h">
+      <Filter>Include\ScriptCanvas\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Core\DatumBus.h">
+      <Filter>Include\ScriptCanvas\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Core\EBusHandler.h">
+      <Filter>Include\ScriptCanvas\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Core\Endpoint.h">
+      <Filter>Include\ScriptCanvas\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Core\Graph.h">
+      <Filter>Include\ScriptCanvas\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Core\GraphData.h">
+      <Filter>Include\ScriptCanvas\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Core\GraphScopedTypes.h">
+      <Filter>Include\ScriptCanvas\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Core\MethodConfiguration.h">
+      <Filter>Include\ScriptCanvas\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Core\ModifiableDatumView.h">
+      <Filter>Include\ScriptCanvas\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Core\Node.h">
+      <Filter>Include\ScriptCanvas\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Core\Nodeable.h">
+      <Filter>Include\ScriptCanvas\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Core\NodeableNode.h">
+      <Filter>Include\ScriptCanvas\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Core\NodeableNodeOverloaded.h">
+      <Filter>Include\ScriptCanvas\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Core\NodeFunctionGeneric.h">
+      <Filter>Include\ScriptCanvas\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Core\SerializationListener.h">
+      <Filter>Include\ScriptCanvas\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Core\Slot.h">
+      <Filter>Include\ScriptCanvas\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Core\SlotConfigurationDefaults.h">
+      <Filter>Include\ScriptCanvas\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Core\SlotConfigurations.h">
+      <Filter>Include\ScriptCanvas\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Core\SlotExecutionMap.h">
+      <Filter>Include\ScriptCanvas\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Core\SlotMetadata.h">
+      <Filter>Include\ScriptCanvas\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Core\SlotNames.h">
+      <Filter>Include\ScriptCanvas\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Core\SubgraphInterface.h">
+      <Filter>Include\ScriptCanvas\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Core\SubgraphInterfaceUtility.h">
+      <Filter>Include\ScriptCanvas\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Translation\AbstractModelTranslator.h">
+      <Filter>Include\ScriptCanvas\Translation</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Translation\Configuration.h">
+      <Filter>Include\ScriptCanvas\Translation</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Translation\GraphToCPlusPlus.h">
+      <Filter>Include\ScriptCanvas\Translation</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Translation\GraphToLua.h">
+      <Filter>Include\ScriptCanvas\Translation</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Translation\GraphToLuaUtility.h">
+      <Filter>Include\ScriptCanvas\Translation</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Translation\GraphToX.h">
+      <Filter>Include\ScriptCanvas\Translation</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Translation\Translation.h">
+      <Filter>Include\ScriptCanvas\Translation</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Translation\TranslationContext.h">
+      <Filter>Include\ScriptCanvas\Translation</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Translation\TranslationResult.h">
+      <Filter>Include\ScriptCanvas\Translation</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Translation\TranslationUtilities.h">
+      <Filter>Include\ScriptCanvas\Translation</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\PerformanceStatistician.h">
+      <Filter>Include\ScriptCanvas</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\PerformanceStatisticsBus.h">
+      <Filter>Include\ScriptCanvas</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\PerformanceTracker.h">
+      <Filter>Include\ScriptCanvas</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\CodeGen\NodeableCodegen.h">
+      <Filter>Include\ScriptCanvas\CodeGen</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Core\Contracts\ConnectionLimitContract.h">
+      <Filter>Include\ScriptCanvas\Core\Contracts</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Core\Contracts\ContractRTTI.h">
+      <Filter>Include\ScriptCanvas\Core\Contracts</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Core\Contracts\DisallowReentrantExecutionContract.h">
+      <Filter>Include\ScriptCanvas\Core\Contracts</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Core\Contracts\DisplayGroupConnectedSlotLimitContract.h">
+      <Filter>Include\ScriptCanvas\Core\Contracts</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Core\Contracts\DynamicTypeContract.h">
+      <Filter>Include\ScriptCanvas\Core\Contracts</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Core\Contracts\IsReferenceTypeContract.h">
+      <Filter>Include\ScriptCanvas\Core\Contracts</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Core\Contracts\MathOperatorContract.h">
+      <Filter>Include\ScriptCanvas\Core\Contracts</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Core\Contracts\SlotTypeContract.h">
+      <Filter>Include\ScriptCanvas\Core\Contracts</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Core\Contracts\SupportsMethodContract.h">
+      <Filter>Include\ScriptCanvas\Core\Contracts</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Core\Contracts\TypeContract.h">
+      <Filter>Include\ScriptCanvas\Core\Contracts</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Data\BehaviorContextObject.h">
+      <Filter>Include\ScriptCanvas\Data</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Data\BehaviorContextObjectPtr.h">
+      <Filter>Include\ScriptCanvas\Data</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Data\Data.h">
+      <Filter>Include\ScriptCanvas\Data</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Data\DataMacros.h">
+      <Filter>Include\ScriptCanvas\Data</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Data\DataRegistry.h">
+      <Filter>Include\ScriptCanvas\Data</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Data\NumericData.h">
+      <Filter>Include\ScriptCanvas\Data</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Deprecated\VariableDatumBase.h">
+      <Filter>Include\ScriptCanvas\Deprecated</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Deprecated\VariableDatum.h">
+      <Filter>Include\ScriptCanvas\Deprecated</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Deprecated\VariableHelpers.h">
+      <Filter>Include\ScriptCanvas\Deprecated</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Execution\ErrorBus.h">
+      <Filter>Include\ScriptCanvas\Execution</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Execution\ExecutionBus.h">
+      <Filter>Include\ScriptCanvas\Execution</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Execution\ExecutionContext.h">
+      <Filter>Include\ScriptCanvas\Execution</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Execution\ExecutionObjectCloning.h">
+      <Filter>Include\ScriptCanvas\Execution</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Execution\ExecutionPerformanceTimer.h">
+      <Filter>Include\ScriptCanvas\Execution</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Execution\ExecutionState.h">
+      <Filter>Include\ScriptCanvas\Execution</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Execution\ExecutionStateDeclarations.h">
+      <Filter>Include\ScriptCanvas\Execution</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Execution\NativeHostDeclarations.h">
+      <Filter>Include\ScriptCanvas\Execution</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Execution\NativeHostDefinitions.h">
+      <Filter>Include\ScriptCanvas\Execution</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Execution\RuntimeComponent.h">
+      <Filter>Include\ScriptCanvas\Execution</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Execution\Interpreted\ExecutionInterpretedAPI.h">
+      <Filter>Include\ScriptCanvas\Execution\Interpreted</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Execution\Interpreted\ExecutionInterpretedCloningAPI.h">
+      <Filter>Include\ScriptCanvas\Execution\Interpreted</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Execution\Interpreted\ExecutionInterpretedDebugAPI.h">
+      <Filter>Include\ScriptCanvas\Execution\Interpreted</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Execution\Interpreted\ExecutionInterpretedEBusAPI.h">
+      <Filter>Include\ScriptCanvas\Execution\Interpreted</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Execution\Interpreted\ExecutionInterpretedOut.h">
+      <Filter>Include\ScriptCanvas\Execution\Interpreted</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Execution\Interpreted\ExecutionStateInterpreted.h">
+      <Filter>Include\ScriptCanvas\Execution\Interpreted</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Execution\Interpreted\ExecutionStateInterpretedPerActivation.h">
+      <Filter>Include\ScriptCanvas\Execution\Interpreted</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Execution\Interpreted\ExecutionStateInterpretedPure.h">
+      <Filter>Include\ScriptCanvas\Execution\Interpreted</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Execution\Interpreted\ExecutionStateInterpretedSingleton.h">
+      <Filter>Include\ScriptCanvas\Execution\Interpreted</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Execution\Interpreted\ExecutionStateInterpretedUtility.h">
+      <Filter>Include\ScriptCanvas\Execution\Interpreted</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Execution\NodeableOut\NodeableOutNative.h">
+      <Filter>Include\ScriptCanvas\Execution\NodeableOut</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Grammar\AbstractCodeModel.h">
+      <Filter>Include\ScriptCanvas\Grammar</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Grammar\DebugMap.h">
+      <Filter>Include\ScriptCanvas\Grammar</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Grammar\ExecutionTraversalListeners.h">
+      <Filter>Include\ScriptCanvas\Grammar</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Grammar\ParsingMetaData.h">
+      <Filter>Include\ScriptCanvas\Grammar</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Grammar\ParsingUtilities.h">
+      <Filter>Include\ScriptCanvas\Grammar</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Grammar\Primitives.h">
+      <Filter>Include\ScriptCanvas\Grammar</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Grammar\PrimitivesDeclarations.h">
+      <Filter>Include\ScriptCanvas\Grammar</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Grammar\PrimitivesExecution.h">
+      <Filter>Include\ScriptCanvas\Grammar</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Grammar\SymbolNames.h">
+      <Filter>Include\ScriptCanvas\Grammar</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Internal\Nodeables\BaseTimer.h">
+      <Filter>Include\ScriptCanvas\Internal\Nodeables</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Internal\Nodes\BaseTimerNode.h">
+      <Filter>Include\ScriptCanvas\Internal\Nodes</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Internal\Nodes\ExpressionNodeBase.h">
+      <Filter>Include\ScriptCanvas\Internal\Nodes</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Internal\Nodes\StringFormatted.h">
+      <Filter>Include\ScriptCanvas\Internal\Nodes</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Libraries.h">
+      <Filter>Include\ScriptCanvas\Libraries</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Core\AzEventHandler.h">
+      <Filter>Include\ScriptCanvas\Libraries\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Core\BinaryOperator.h">
+      <Filter>Include\ScriptCanvas\Libraries\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Core\CoreNodes.h">
+      <Filter>Include\ScriptCanvas\Libraries\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Core\ContainerTypeReflection.h">
+      <Filter>Include\ScriptCanvas\Libraries\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Core\EBusEventHandler.h">
+      <Filter>Include\ScriptCanvas\Libraries\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Core\ExtractProperty.h">
+      <Filter>Include\ScriptCanvas\Libraries\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Core\EventHandlerTranslationUtility.h">
+      <Filter>Include\ScriptCanvas\Libraries\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Core\ForEach.h">
+      <Filter>Include\ScriptCanvas\Libraries\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Core\FunctionBus.h">
+      <Filter>Include\ScriptCanvas\Libraries\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Core\FunctionCallNode.h">
+      <Filter>Include\ScriptCanvas\Libraries\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Core\FunctionCallNodeIsOutOfDate.h">
+      <Filter>Include\ScriptCanvas\Libraries\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Core\FunctionDefinitionNode.h">
+      <Filter>Include\ScriptCanvas\Libraries\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Core\GetVariable.h">
+      <Filter>Include\ScriptCanvas\Libraries\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Core\Method.h">
+      <Filter>Include\ScriptCanvas\Libraries\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Core\MethodOverloaded.h">
+      <Filter>Include\ScriptCanvas\Libraries\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Core\MethodUtility.h">
+      <Filter>Include\ScriptCanvas\Libraries\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Core\Nodeling.h">
+      <Filter>Include\ScriptCanvas\Libraries\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Core\ReceiveScriptEvent.h">
+      <Filter>Include\ScriptCanvas\Libraries\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Core\Repeater.h">
+      <Filter>Include\ScriptCanvas\Libraries\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Core\RepeaterNodeable.h">
+      <Filter>Include\ScriptCanvas\Libraries\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Core\ScriptEventBase.h">
+      <Filter>Include\ScriptCanvas\Libraries\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Core\SendScriptEvent.h">
+      <Filter>Include\ScriptCanvas\Libraries\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Core\SetVariable.h">
+      <Filter>Include\ScriptCanvas\Libraries\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Core\Start.h">
+      <Filter>Include\ScriptCanvas\Libraries\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Core\UnaryOperator.h">
+      <Filter>Include\ScriptCanvas\Libraries\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Entity\Entity.h">
+      <Filter>Include\ScriptCanvas\Libraries\Entity</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Entity\EntityNodes.h">
+      <Filter>Include\ScriptCanvas\Libraries\Entity</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Entity\RotateMethod.h">
+      <Filter>Include\ScriptCanvas\Libraries\Entity</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Logic\And.h">
+      <Filter>Include\ScriptCanvas\Libraries\Logic</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Logic\Any.h">
+      <Filter>Include\ScriptCanvas\Libraries\Logic</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Logic\Break.h">
+      <Filter>Include\ScriptCanvas\Libraries\Logic</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Logic\Cycle.h">
+      <Filter>Include\ScriptCanvas\Libraries\Logic</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Logic\Gate.h">
+      <Filter>Include\ScriptCanvas\Libraries\Logic</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Logic\Indexer.h">
+      <Filter>Include\ScriptCanvas\Libraries\Logic</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Logic\IsNull.h">
+      <Filter>Include\ScriptCanvas\Libraries\Logic</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Logic\Logic.h">
+      <Filter>Include\ScriptCanvas\Libraries\Logic</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Logic\Multiplexer.h">
+      <Filter>Include\ScriptCanvas\Libraries\Logic</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Logic\Not.h">
+      <Filter>Include\ScriptCanvas\Libraries\Logic</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Logic\Once.h">
+      <Filter>Include\ScriptCanvas\Libraries\Logic</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Logic\Or.h">
+      <Filter>Include\ScriptCanvas\Libraries\Logic</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Logic\OrderedSequencer.h">
+      <Filter>Include\ScriptCanvas\Libraries\Logic</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Logic\Sequencer.h">
+      <Filter>Include\ScriptCanvas\Libraries\Logic</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Logic\TargetedSequencer.h">
+      <Filter>Include\ScriptCanvas\Libraries\Logic</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Logic\WeightedRandomSequencer.h">
+      <Filter>Include\ScriptCanvas\Libraries\Logic</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Logic\While.h">
+      <Filter>Include\ScriptCanvas\Libraries\Logic</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Math\AABBNodes.h">
+      <Filter>Include\ScriptCanvas\Libraries\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Math\ColorNodes.h">
+      <Filter>Include\ScriptCanvas\Libraries\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Math\CRCNodes.h">
+      <Filter>Include\ScriptCanvas\Libraries\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Math\Divide.h">
+      <Filter>Include\ScriptCanvas\Libraries\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Math\Math.h">
+      <Filter>Include\ScriptCanvas\Libraries\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Math\MathExpression.h">
+      <Filter>Include\ScriptCanvas\Libraries\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Math\MathNodeUtilities.h">
+      <Filter>Include\ScriptCanvas\Libraries\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Math\MathGenerics.h">
+      <Filter>Include\ScriptCanvas\Libraries\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Math\MathRandom.h">
+      <Filter>Include\ScriptCanvas\Libraries\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Math\Matrix3x3Nodes.h">
+      <Filter>Include\ScriptCanvas\Libraries\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Math\Matrix4x4Nodes.h">
+      <Filter>Include\ScriptCanvas\Libraries\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Math\Multiply.h">
+      <Filter>Include\ScriptCanvas\Libraries\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Math\OBBNodes.h">
+      <Filter>Include\ScriptCanvas\Libraries\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Math\PlaneNodes.h">
+      <Filter>Include\ScriptCanvas\Libraries\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Math\RotationNodes.h">
+      <Filter>Include\ScriptCanvas\Libraries\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Math\Subtract.h">
+      <Filter>Include\ScriptCanvas\Libraries\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Math\Sum.h">
+      <Filter>Include\ScriptCanvas\Libraries\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Math\TransformNodes.h">
+      <Filter>Include\ScriptCanvas\Libraries\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Math\Vector2Nodes.h">
+      <Filter>Include\ScriptCanvas\Libraries\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Math\Vector3Nodes.h">
+      <Filter>Include\ScriptCanvas\Libraries\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Math\Vector4Nodes.h">
+      <Filter>Include\ScriptCanvas\Libraries\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Comparison\Comparison.h">
+      <Filter>Include\ScriptCanvas\Libraries\Comparison</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Comparison\ComparisonFunctions.h">
+      <Filter>Include\ScriptCanvas\Libraries\Comparison</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Comparison\EqualTo.h">
+      <Filter>Include\ScriptCanvas\Libraries\Comparison</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Comparison\NotEqualTo.h">
+      <Filter>Include\ScriptCanvas\Libraries\Comparison</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Comparison\Less.h">
+      <Filter>Include\ScriptCanvas\Libraries\Comparison</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Comparison\Greater.h">
+      <Filter>Include\ScriptCanvas\Libraries\Comparison</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Comparison\LessEqual.h">
+      <Filter>Include\ScriptCanvas\Libraries\Comparison</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Comparison\GreaterEqual.h">
+      <Filter>Include\ScriptCanvas\Libraries\Comparison</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Time\Time.h">
+      <Filter>Include\ScriptCanvas\Libraries\Time</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Time\Countdown.h">
+      <Filter>Include\ScriptCanvas\Libraries\Time</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Time\DelayNodeable.h">
+      <Filter>Include\ScriptCanvas\Libraries\Time</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Time\Duration.h">
+      <Filter>Include\ScriptCanvas\Libraries\Time</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Time\HeartBeat.h">
+      <Filter>Include\ScriptCanvas\Libraries\Time</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Time\Timer.h">
+      <Filter>Include\ScriptCanvas\Libraries\Time</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Time\TimeDelayNodeable.h">
+      <Filter>Include\ScriptCanvas\Libraries\Time</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Time\DurationNodeable.h">
+      <Filter>Include\ScriptCanvas\Libraries\Time</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Time\HeartBeatNodeable.h">
+      <Filter>Include\ScriptCanvas\Libraries\Time</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Time\TimerNodeable.h">
+      <Filter>Include\ScriptCanvas\Libraries\Time</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Spawning\Spawning.h">
+      <Filter>Include\ScriptCanvas\Libraries\Spawning</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Spawning\SpawnNodeable.h">
+      <Filter>Include\ScriptCanvas\Libraries\Spawning</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\String\Contains.h">
+      <Filter>Include\ScriptCanvas\Libraries\String</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\String\Format.h">
+      <Filter>Include\ScriptCanvas\Libraries\String</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\String\Print.h">
+      <Filter>Include\ScriptCanvas\Libraries\String</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\String\Replace.h">
+      <Filter>Include\ScriptCanvas\Libraries\String</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\String\String.h">
+      <Filter>Include\ScriptCanvas\Libraries\String</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\String\StringMethods.h">
+      <Filter>Include\ScriptCanvas\Libraries\String</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\String\StringGenerics.h">
+      <Filter>Include\ScriptCanvas\Libraries\String</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\String\Utilities.h">
+      <Filter>Include\ScriptCanvas\Libraries\String</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\UnitTesting\AddFailure.h">
+      <Filter>Include\ScriptCanvas\Libraries\UnitTesting</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\UnitTesting\AddSuccess.h">
+      <Filter>Include\ScriptCanvas\Libraries\UnitTesting</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\UnitTesting\Checkpoint.h">
+      <Filter>Include\ScriptCanvas\Libraries\UnitTesting</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\UnitTesting\ExpectEqual.h">
+      <Filter>Include\ScriptCanvas\Libraries\UnitTesting</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\UnitTesting\ExpectFalse.h">
+      <Filter>Include\ScriptCanvas\Libraries\UnitTesting</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\UnitTesting\ExpectGreaterThan.h">
+      <Filter>Include\ScriptCanvas\Libraries\UnitTesting</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\UnitTesting\ExpectGreaterThanEqual.h">
+      <Filter>Include\ScriptCanvas\Libraries\UnitTesting</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\UnitTesting\ExpectLessThan.h">
+      <Filter>Include\ScriptCanvas\Libraries\UnitTesting</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\UnitTesting\ExpectLessThanEqual.h">
+      <Filter>Include\ScriptCanvas\Libraries\UnitTesting</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\UnitTesting\ExpectNotEqual.h">
+      <Filter>Include\ScriptCanvas\Libraries\UnitTesting</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\UnitTesting\ExpectTrue.h">
+      <Filter>Include\ScriptCanvas\Libraries\UnitTesting</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\UnitTesting\MarkComplete.h">
+      <Filter>Include\ScriptCanvas\Libraries\UnitTesting</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\UnitTesting\UnitTestBus.h">
+      <Filter>Include\ScriptCanvas\Libraries\UnitTesting</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\UnitTesting\UnitTestBusMacros.h">
+      <Filter>Include\ScriptCanvas\Libraries\UnitTesting</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\UnitTesting\UnitTesting.h">
+      <Filter>Include\ScriptCanvas\Libraries\UnitTesting</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\UnitTesting\UnitTestingLibrary.h">
+      <Filter>Include\ScriptCanvas\Libraries\UnitTesting</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\UnitTesting\Auxiliary\Auxiliary.h">
+      <Filter>Include\ScriptCanvas\Libraries\UnitTesting\Auxiliary</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\UnitTesting\Auxiliary\AuxiliaryGenerics.h">
+      <Filter>Include\ScriptCanvas\Libraries\UnitTesting\Auxiliary</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\UnitTesting\UnitTestBusSender.h">
+      <Filter>Include\ScriptCanvas\Libraries\UnitTesting</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\UnitTesting\UnitTestBusSenderMacros.h">
+      <Filter>Include\ScriptCanvas\Libraries\UnitTesting</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Operators\Operators.h">
+      <Filter>Include\ScriptCanvas\Libraries\Operators</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Operators\Operator.h">
+      <Filter>Include\ScriptCanvas\Libraries\Operators</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Operators\Containers\OperatorAt.h">
+      <Filter>Include\ScriptCanvas\Libraries\Operators\Containers</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Operators\Containers\OperatorBack.h">
+      <Filter>Include\ScriptCanvas\Libraries\Operators\Containers</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Operators\Containers\OperatorClear.h">
+      <Filter>Include\ScriptCanvas\Libraries\Operators\Containers</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Operators\Containers\OperatorEmpty.h">
+      <Filter>Include\ScriptCanvas\Libraries\Operators\Containers</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Operators\Containers\OperatorErase.h">
+      <Filter>Include\ScriptCanvas\Libraries\Operators\Containers</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Operators\Containers\OperatorFront.h">
+      <Filter>Include\ScriptCanvas\Libraries\Operators\Containers</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Operators\Containers\OperatorInsert.h">
+      <Filter>Include\ScriptCanvas\Libraries\Operators\Containers</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Operators\Containers\OperatorPushBack.h">
+      <Filter>Include\ScriptCanvas\Libraries\Operators\Containers</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Operators\Containers\OperatorSize.h">
+      <Filter>Include\ScriptCanvas\Libraries\Operators\Containers</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Operators\Math\OperatorAdd.h">
+      <Filter>Include\ScriptCanvas\Libraries\Operators\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Operators\Math\OperatorArithmetic.h">
+      <Filter>Include\ScriptCanvas\Libraries\Operators\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Operators\Math\OperatorDiv.h">
+      <Filter>Include\ScriptCanvas\Libraries\Operators\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Operators\Math\OperatorDivideByNumber.h">
+      <Filter>Include\ScriptCanvas\Libraries\Operators\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Operators\Math\OperatorLength.h">
+      <Filter>Include\ScriptCanvas\Libraries\Operators\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Operators\Math\OperatorLerp.h">
+      <Filter>Include\ScriptCanvas\Libraries\Operators\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Operators\Math\OperatorMul.h">
+      <Filter>Include\ScriptCanvas\Libraries\Operators\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Operators\Math\OperatorSub.h">
+      <Filter>Include\ScriptCanvas\Libraries\Operators\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Operators\Math\OperatorLerpNodeable.h">
+      <Filter>Include\ScriptCanvas\Libraries\Operators\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Operators\Math\OperatorLerpNodeableNode.h">
+      <Filter>Include\ScriptCanvas\Libraries\Operators\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Profiler\Driller.h">
+      <Filter>Include\ScriptCanvas\Profiler</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Profiler\Aggregator.h">
+      <Filter>Include\ScriptCanvas\Profiler</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Profiler\DrillerEvents.h">
+      <Filter>Include\ScriptCanvas\Profiler</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Serialization\BehaviorContextObjectSerializer.h">
+      <Filter>Include\ScriptCanvas\Serialization</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Serialization\DatumSerializer.h">
+      <Filter>Include\ScriptCanvas\Serialization</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Serialization\RuntimeVariableSerializer.h">
+      <Filter>Include\ScriptCanvas\Serialization</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Data\DataTrait.h">
+      <Filter>Include\ScriptCanvas\Data</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Data\PropertyTraits.h">
+      <Filter>Include\ScriptCanvas\Data</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Data\Traits.h">
+      <Filter>Include\ScriptCanvas\Data</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Variable\VariableBus.h">
+      <Filter>Include\ScriptCanvas\Variable</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Variable\GraphVariable.h">
+      <Filter>Include\ScriptCanvas\Variable</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Variable\GraphVariableManagerComponent.h">
+      <Filter>Include\ScriptCanvas\Variable</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Variable\VariableCore.h">
+      <Filter>Include\ScriptCanvas\Variable</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Variable\VariableData.h">
+      <Filter>Include\ScriptCanvas\Variable</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Utils\DataUtils.h">
+      <Filter>Include\ScriptCanvas\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Utils\NodeUtils.h">
+      <Filter>Include\ScriptCanvas\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Utils\SerializationUtils.h">
+      <Filter>Include\ScriptCanvas\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Utils\VersionConverters.h">
+      <Filter>Include\ScriptCanvas\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Utils\BehaviorContextUtils.h">
+      <Filter>Include\ScriptCanvas\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Asset\RuntimeAssetSystemComponent.h">
+      <Filter>Asset</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\Azcg\Generated\Include\ScriptCanvas\Internal\Nodes\BaseTimerNode.generated.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\Azcg\Generated\Include\ScriptCanvas\Internal\Nodes\ExpressionNodeBase.generated.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\Azcg\Generated\Include\ScriptCanvas\Internal\Nodes\StringFormatted.generated.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\Azcg\Generated\Include\ScriptCanvas\Libraries\Core\AzEventHandler.generated.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\Azcg\Generated\Include\ScriptCanvas\Libraries\Core\EBusEventHandler.generated.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\Azcg\Generated\Include\ScriptCanvas\Libraries\Core\ExtractProperty.generated.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\Azcg\Generated\Include\ScriptCanvas\Libraries\Core\ForEach.generated.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\Azcg\Generated\Include\ScriptCanvas\Libraries\Core\FunctionCallNode.generated.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\Azcg\Generated\Include\ScriptCanvas\Libraries\Core\FunctionDefinitionNode.generated.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\Azcg\Generated\Include\ScriptCanvas\Libraries\Core\GetVariable.generated.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\Azcg\Generated\Include\ScriptCanvas\Libraries\Core\Nodeling.generated.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\Azcg\Generated\Include\ScriptCanvas\Libraries\Core\ReceiveScriptEvent.generated.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\Azcg\Generated\Include\ScriptCanvas\Libraries\Core\Repeater.generated.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\Azcg\Generated\Include\ScriptCanvas\Libraries\Core\ScriptEventBase.generated.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\Azcg\Generated\Include\ScriptCanvas\Libraries\Core\SendScriptEvent.generated.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\Azcg\Generated\Include\ScriptCanvas\Libraries\Core\SetVariable.generated.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\Azcg\Generated\Include\ScriptCanvas\Libraries\Core\Start.generated.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\Azcg\Generated\Include\ScriptCanvas\Libraries\Logic\Any.generated.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\Azcg\Generated\Include\ScriptCanvas\Libraries\Logic\Break.generated.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\Azcg\Generated\Include\ScriptCanvas\Libraries\Logic\Cycle.generated.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\Azcg\Generated\Include\ScriptCanvas\Libraries\Logic\Gate.generated.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\Azcg\Generated\Include\ScriptCanvas\Libraries\Logic\Indexer.generated.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\Azcg\Generated\Include\ScriptCanvas\Libraries\Logic\IsNull.generated.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\Azcg\Generated\Include\ScriptCanvas\Libraries\Logic\Multiplexer.generated.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\Azcg\Generated\Include\ScriptCanvas\Libraries\Logic\Once.generated.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\Azcg\Generated\Include\ScriptCanvas\Libraries\Logic\OrderedSequencer.generated.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\Azcg\Generated\Include\ScriptCanvas\Libraries\Logic\Sequencer.generated.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\Azcg\Generated\Include\ScriptCanvas\Libraries\Logic\TargetedSequencer.generated.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\Azcg\Generated\Include\ScriptCanvas\Libraries\Logic\WeightedRandomSequencer.generated.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\Azcg\Generated\Include\ScriptCanvas\Libraries\Logic\While.generated.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\Azcg\Generated\Include\ScriptCanvas\Libraries\Math\MathExpression.generated.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\Azcg\Generated\Include\ScriptCanvas\Libraries\Time\Countdown.generated.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\Azcg\Generated\Include\ScriptCanvas\Libraries\Time\Duration.generated.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\Azcg\Generated\Include\ScriptCanvas\Libraries\Time\HeartBeat.generated.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\Azcg\Generated\Include\ScriptCanvas\Libraries\Time\Timer.generated.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\Azcg\Generated\Include\ScriptCanvas\Libraries\String\Contains.generated.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\Azcg\Generated\Include\ScriptCanvas\Libraries\String\Format.generated.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\Azcg\Generated\Include\ScriptCanvas\Libraries\String\Print.generated.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\Azcg\Generated\Include\ScriptCanvas\Libraries\String\Replace.generated.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\Azcg\Generated\Include\ScriptCanvas\Libraries\String\Utilities.generated.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\Azcg\Generated\Include\ScriptCanvas\Libraries\UnitTesting\AddFailure.generated.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\Azcg\Generated\Include\ScriptCanvas\Libraries\UnitTesting\AddSuccess.generated.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\Azcg\Generated\Include\ScriptCanvas\Libraries\UnitTesting\Checkpoint.generated.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\Azcg\Generated\Include\ScriptCanvas\Libraries\UnitTesting\ExpectEqual.generated.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\Azcg\Generated\Include\ScriptCanvas\Libraries\UnitTesting\ExpectFalse.generated.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\Azcg\Generated\Include\ScriptCanvas\Libraries\UnitTesting\ExpectGreaterThan.generated.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\Azcg\Generated\Include\ScriptCanvas\Libraries\UnitTesting\ExpectGreaterThanEqual.generated.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\Azcg\Generated\Include\ScriptCanvas\Libraries\UnitTesting\ExpectLessThan.generated.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\Azcg\Generated\Include\ScriptCanvas\Libraries\UnitTesting\ExpectLessThanEqual.generated.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\Azcg\Generated\Include\ScriptCanvas\Libraries\UnitTesting\ExpectNotEqual.generated.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\Azcg\Generated\Include\ScriptCanvas\Libraries\UnitTesting\ExpectTrue.generated.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\Azcg\Generated\Include\ScriptCanvas\Libraries\UnitTesting\MarkComplete.generated.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\Azcg\Generated\Include\ScriptCanvas\Libraries\Operators\Operator.generated.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\Azcg\Generated\Include\ScriptCanvas\Libraries\Operators\Containers\OperatorAt.generated.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\Azcg\Generated\Include\ScriptCanvas\Libraries\Operators\Containers\OperatorBack.generated.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\Azcg\Generated\Include\ScriptCanvas\Libraries\Operators\Containers\OperatorClear.generated.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\Azcg\Generated\Include\ScriptCanvas\Libraries\Operators\Containers\OperatorEmpty.generated.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\Azcg\Generated\Include\ScriptCanvas\Libraries\Operators\Containers\OperatorErase.generated.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\Azcg\Generated\Include\ScriptCanvas\Libraries\Operators\Containers\OperatorFront.generated.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\Azcg\Generated\Include\ScriptCanvas\Libraries\Operators\Containers\OperatorInsert.generated.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\Azcg\Generated\Include\ScriptCanvas\Libraries\Operators\Containers\OperatorPushBack.generated.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\Azcg\Generated\Include\ScriptCanvas\Libraries\Operators\Containers\OperatorSize.generated.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\Azcg\Generated\Include\ScriptCanvas\Libraries\Operators\Math\OperatorAdd.generated.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\Azcg\Generated\Include\ScriptCanvas\Libraries\Operators\Math\OperatorArithmetic.generated.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\Azcg\Generated\Include\ScriptCanvas\Libraries\Operators\Math\OperatorDiv.generated.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\Azcg\Generated\Include\ScriptCanvas\Libraries\Operators\Math\OperatorDivideByNumber.generated.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\Azcg\Generated\Include\ScriptCanvas\Libraries\Operators\Math\OperatorLength.generated.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\Azcg\Generated\Include\ScriptCanvas\Libraries\Operators\Math\OperatorLerp.generated.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\Azcg\Generated\Include\ScriptCanvas\Libraries\Operators\Math\OperatorMul.generated.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\Azcg\Generated\Include\ScriptCanvas\Libraries\Operators\Math\OperatorSub.generated.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\Azcg\Generated\Include\ScriptCanvas\Internal\Nodeables\BaseTimer.generated.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\Azcg\Generated\Include\ScriptCanvas\Libraries\Core\RepeaterNodeable.generated.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\Azcg\Generated\Include\ScriptCanvas\Libraries\Time\DelayNodeable.generated.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\Azcg\Generated\Include\ScriptCanvas\Libraries\Time\TimeDelayNodeable.generated.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\Azcg\Generated\Include\ScriptCanvas\Libraries\Time\DurationNodeable.generated.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\Azcg\Generated\Include\ScriptCanvas\Libraries\Time\HeartBeatNodeable.generated.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\Azcg\Generated\Include\ScriptCanvas\Libraries\Time\TimerNodeable.generated.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\Azcg\Generated\Include\ScriptCanvas\Libraries\Spawning\SpawnNodeable.generated.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\CMakeFiles\11127e0ccb6f3bcb4feb93f76f6e78fd\BaseTimerNode.generated.h.rule">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\CMakeLists.txt">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\AutoGen\ScriptCanvas_Macros.jinja">
+      <Filter>Include\ScriptCanvas\AutoGen</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\AutoGen\ScriptCanvas_Nodeable_Macros.jinja">
+      <Filter>Include\ScriptCanvas\AutoGen</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\AutoGen\ScriptCanvasGrammar_Header.jinja">
+      <Filter>Include\ScriptCanvas\AutoGen</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\AutoGen\ScriptCanvasGrammar_Source.jinja">
+      <Filter>Include\ScriptCanvas\AutoGen</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\AutoGen\ScriptCanvasNodeable_Header.jinja">
+      <Filter>Include\ScriptCanvas\AutoGen</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\AutoGen\ScriptCanvasNodeable_Source.jinja">
+      <Filter>Include\ScriptCanvas\AutoGen</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\scriptcanvasgem_common_files.cmake" />
+    <None Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\scriptcanvasgem_runtime_asset_files.cmake" />
+  </ItemGroup>
+  <ItemGroup>
+    <XML Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Internal\Nodeables\BaseTimer.ScriptCanvasNodeable.xml">
+      <Filter>Include\ScriptCanvas\Internal\Nodeables</Filter>
+    </XML>
+    <XML Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Internal\Nodes\BaseTimerNode.ScriptCanvasGrammar.xml">
+      <Filter>Include\ScriptCanvas\Internal\Nodes</Filter>
+    </XML>
+    <XML Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Internal\Nodes\ExpressionNodeBase.ScriptCanvasGrammar.xml">
+      <Filter>Include\ScriptCanvas\Internal\Nodes</Filter>
+    </XML>
+    <XML Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Internal\Nodes\StringFormatted.ScriptCanvasGrammar.xml">
+      <Filter>Include\ScriptCanvas\Internal\Nodes</Filter>
+    </XML>
+    <XML Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Core\AzEventHandler.ScriptCanvasGrammar.xml">
+      <Filter>Include\ScriptCanvas\Libraries\Core</Filter>
+    </XML>
+    <XML Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Core\EBusEventHandler.ScriptCanvasGrammar.xml">
+      <Filter>Include\ScriptCanvas\Libraries\Core</Filter>
+    </XML>
+    <XML Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Core\ExtractProperty.ScriptCanvasGrammar.xml">
+      <Filter>Include\ScriptCanvas\Libraries\Core</Filter>
+    </XML>
+    <XML Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Core\ForEach.ScriptCanvasGrammar.xml">
+      <Filter>Include\ScriptCanvas\Libraries\Core</Filter>
+    </XML>
+    <XML Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Core\FunctionCallNode.ScriptCanvasGrammar.xml">
+      <Filter>Include\ScriptCanvas\Libraries\Core</Filter>
+    </XML>
+    <XML Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Core\FunctionDefinitionNode.ScriptCanvasGrammar.xml">
+      <Filter>Include\ScriptCanvas\Libraries\Core</Filter>
+    </XML>
+    <XML Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Core\GetVariable.ScriptCanvasGrammar.xml">
+      <Filter>Include\ScriptCanvas\Libraries\Core</Filter>
+    </XML>
+    <XML Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Core\Nodeling.ScriptCanvasGrammar.xml">
+      <Filter>Include\ScriptCanvas\Libraries\Core</Filter>
+    </XML>
+    <XML Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Core\ReceiveScriptEvent.ScriptCanvasGrammar.xml">
+      <Filter>Include\ScriptCanvas\Libraries\Core</Filter>
+    </XML>
+    <XML Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Core\Repeater.ScriptCanvasGrammar.xml">
+      <Filter>Include\ScriptCanvas\Libraries\Core</Filter>
+    </XML>
+    <XML Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Core\RepeaterNodeable.ScriptCanvasNodeable.xml">
+      <Filter>Include\ScriptCanvas\Libraries\Core</Filter>
+    </XML>
+    <XML Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Core\ScriptEventBase.ScriptCanvasGrammar.xml">
+      <Filter>Include\ScriptCanvas\Libraries\Core</Filter>
+    </XML>
+    <XML Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Core\SendScriptEvent.ScriptCanvasGrammar.xml">
+      <Filter>Include\ScriptCanvas\Libraries\Core</Filter>
+    </XML>
+    <XML Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Core\SetVariable.ScriptCanvasGrammar.xml">
+      <Filter>Include\ScriptCanvas\Libraries\Core</Filter>
+    </XML>
+    <XML Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Core\Start.ScriptCanvasGrammar.xml">
+      <Filter>Include\ScriptCanvas\Libraries\Core</Filter>
+    </XML>
+    <XML Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Logic\Any.ScriptCanvasGrammar.xml">
+      <Filter>Include\ScriptCanvas\Libraries\Logic</Filter>
+    </XML>
+    <XML Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Logic\Break.ScriptCanvasGrammar.xml">
+      <Filter>Include\ScriptCanvas\Libraries\Logic</Filter>
+    </XML>
+    <XML Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Logic\Cycle.ScriptCanvasGrammar.xml">
+      <Filter>Include\ScriptCanvas\Libraries\Logic</Filter>
+    </XML>
+    <XML Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Logic\Gate.ScriptCanvasGrammar.xml">
+      <Filter>Include\ScriptCanvas\Libraries\Logic</Filter>
+    </XML>
+    <XML Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Logic\Indexer.ScriptCanvasGrammar.xml">
+      <Filter>Include\ScriptCanvas\Libraries\Logic</Filter>
+    </XML>
+    <XML Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Logic\IsNull.ScriptCanvasGrammar.xml">
+      <Filter>Include\ScriptCanvas\Libraries\Logic</Filter>
+    </XML>
+    <XML Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Logic\Multiplexer.ScriptCanvasGrammar.xml">
+      <Filter>Include\ScriptCanvas\Libraries\Logic</Filter>
+    </XML>
+    <XML Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Logic\Once.ScriptCanvasGrammar.xml">
+      <Filter>Include\ScriptCanvas\Libraries\Logic</Filter>
+    </XML>
+    <XML Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Logic\OrderedSequencer.ScriptCanvasGrammar.xml">
+      <Filter>Include\ScriptCanvas\Libraries\Logic</Filter>
+    </XML>
+    <XML Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Logic\Sequencer.ScriptCanvasGrammar.xml">
+      <Filter>Include\ScriptCanvas\Libraries\Logic</Filter>
+    </XML>
+    <XML Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Logic\TargetedSequencer.ScriptCanvasGrammar.xml">
+      <Filter>Include\ScriptCanvas\Libraries\Logic</Filter>
+    </XML>
+    <XML Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Logic\WeightedRandomSequencer.ScriptCanvasGrammar.xml">
+      <Filter>Include\ScriptCanvas\Libraries\Logic</Filter>
+    </XML>
+    <XML Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Logic\While.ScriptCanvasGrammar.xml">
+      <Filter>Include\ScriptCanvas\Libraries\Logic</Filter>
+    </XML>
+    <XML Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Math\MathExpression.ScriptCanvasGrammar.xml">
+      <Filter>Include\ScriptCanvas\Libraries\Math</Filter>
+    </XML>
+    <XML Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Time\Countdown.ScriptCanvasGrammar.xml">
+      <Filter>Include\ScriptCanvas\Libraries\Time</Filter>
+    </XML>
+    <XML Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Time\DelayNodeable.ScriptCanvasNodeable.xml">
+      <Filter>Include\ScriptCanvas\Libraries\Time</Filter>
+    </XML>
+    <XML Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Time\Duration.ScriptCanvasGrammar.xml">
+      <Filter>Include\ScriptCanvas\Libraries\Time</Filter>
+    </XML>
+    <XML Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Time\HeartBeat.ScriptCanvasGrammar.xml">
+      <Filter>Include\ScriptCanvas\Libraries\Time</Filter>
+    </XML>
+    <XML Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Time\Timer.ScriptCanvasGrammar.xml">
+      <Filter>Include\ScriptCanvas\Libraries\Time</Filter>
+    </XML>
+    <XML Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Time\TimeDelayNodeable.ScriptCanvasNodeable.xml">
+      <Filter>Include\ScriptCanvas\Libraries\Time</Filter>
+    </XML>
+    <XML Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Time\DurationNodeable.ScriptCanvasNodeable.xml">
+      <Filter>Include\ScriptCanvas\Libraries\Time</Filter>
+    </XML>
+    <XML Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Time\HeartBeatNodeable.ScriptCanvasNodeable.xml">
+      <Filter>Include\ScriptCanvas\Libraries\Time</Filter>
+    </XML>
+    <XML Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Time\TimerNodeable.ScriptCanvasNodeable.xml">
+      <Filter>Include\ScriptCanvas\Libraries\Time</Filter>
+    </XML>
+    <XML Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Spawning\SpawnNodeable.ScriptCanvasNodeable.xml">
+      <Filter>Include\ScriptCanvas\Libraries\Spawning</Filter>
+    </XML>
+    <XML Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\String\Contains.ScriptCanvasGrammar.xml">
+      <Filter>Include\ScriptCanvas\Libraries\String</Filter>
+    </XML>
+    <XML Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\String\Format.ScriptCanvasGrammar.xml">
+      <Filter>Include\ScriptCanvas\Libraries\String</Filter>
+    </XML>
+    <XML Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\String\Print.ScriptCanvasGrammar.xml">
+      <Filter>Include\ScriptCanvas\Libraries\String</Filter>
+    </XML>
+    <XML Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\String\Replace.ScriptCanvasGrammar.xml">
+      <Filter>Include\ScriptCanvas\Libraries\String</Filter>
+    </XML>
+    <XML Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\String\Utilities.ScriptCanvasGrammar.xml">
+      <Filter>Include\ScriptCanvas\Libraries\String</Filter>
+    </XML>
+    <XML Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\UnitTesting\AddFailure.ScriptCanvasGrammar.xml">
+      <Filter>Include\ScriptCanvas\Libraries\UnitTesting</Filter>
+    </XML>
+    <XML Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\UnitTesting\AddSuccess.ScriptCanvasGrammar.xml">
+      <Filter>Include\ScriptCanvas\Libraries\UnitTesting</Filter>
+    </XML>
+    <XML Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\UnitTesting\Checkpoint.ScriptCanvasGrammar.xml">
+      <Filter>Include\ScriptCanvas\Libraries\UnitTesting</Filter>
+    </XML>
+    <XML Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\UnitTesting\ExpectEqual.ScriptCanvasGrammar.xml">
+      <Filter>Include\ScriptCanvas\Libraries\UnitTesting</Filter>
+    </XML>
+    <XML Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\UnitTesting\ExpectFalse.ScriptCanvasGrammar.xml">
+      <Filter>Include\ScriptCanvas\Libraries\UnitTesting</Filter>
+    </XML>
+    <XML Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\UnitTesting\ExpectGreaterThan.ScriptCanvasGrammar.xml">
+      <Filter>Include\ScriptCanvas\Libraries\UnitTesting</Filter>
+    </XML>
+    <XML Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\UnitTesting\ExpectGreaterThanEqual.ScriptCanvasGrammar.xml">
+      <Filter>Include\ScriptCanvas\Libraries\UnitTesting</Filter>
+    </XML>
+    <XML Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\UnitTesting\ExpectLessThan.ScriptCanvasGrammar.xml">
+      <Filter>Include\ScriptCanvas\Libraries\UnitTesting</Filter>
+    </XML>
+    <XML Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\UnitTesting\ExpectLessThanEqual.ScriptCanvasGrammar.xml">
+      <Filter>Include\ScriptCanvas\Libraries\UnitTesting</Filter>
+    </XML>
+    <XML Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\UnitTesting\ExpectNotEqual.ScriptCanvasGrammar.xml">
+      <Filter>Include\ScriptCanvas\Libraries\UnitTesting</Filter>
+    </XML>
+    <XML Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\UnitTesting\ExpectTrue.ScriptCanvasGrammar.xml">
+      <Filter>Include\ScriptCanvas\Libraries\UnitTesting</Filter>
+    </XML>
+    <XML Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\UnitTesting\MarkComplete.ScriptCanvasGrammar.xml">
+      <Filter>Include\ScriptCanvas\Libraries\UnitTesting</Filter>
+    </XML>
+    <XML Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Operators\Operator.ScriptCanvasGrammar.xml">
+      <Filter>Include\ScriptCanvas\Libraries\Operators</Filter>
+    </XML>
+    <XML Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Operators\Containers\OperatorAt.ScriptCanvasGrammar.xml">
+      <Filter>Include\ScriptCanvas\Libraries\Operators\Containers</Filter>
+    </XML>
+    <XML Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Operators\Containers\OperatorBack.ScriptCanvasGrammar.xml">
+      <Filter>Include\ScriptCanvas\Libraries\Operators\Containers</Filter>
+    </XML>
+    <XML Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Operators\Containers\OperatorClear.ScriptCanvasGrammar.xml">
+      <Filter>Include\ScriptCanvas\Libraries\Operators\Containers</Filter>
+    </XML>
+    <XML Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Operators\Containers\OperatorEmpty.ScriptCanvasGrammar.xml">
+      <Filter>Include\ScriptCanvas\Libraries\Operators\Containers</Filter>
+    </XML>
+    <XML Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Operators\Containers\OperatorErase.ScriptCanvasGrammar.xml">
+      <Filter>Include\ScriptCanvas\Libraries\Operators\Containers</Filter>
+    </XML>
+    <XML Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Operators\Containers\OperatorFront.ScriptCanvasGrammar.xml">
+      <Filter>Include\ScriptCanvas\Libraries\Operators\Containers</Filter>
+    </XML>
+    <XML Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Operators\Containers\OperatorInsert.ScriptCanvasGrammar.xml">
+      <Filter>Include\ScriptCanvas\Libraries\Operators\Containers</Filter>
+    </XML>
+    <XML Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Operators\Containers\OperatorPushBack.ScriptCanvasGrammar.xml">
+      <Filter>Include\ScriptCanvas\Libraries\Operators\Containers</Filter>
+    </XML>
+    <XML Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Operators\Containers\OperatorSize.ScriptCanvasGrammar.xml">
+      <Filter>Include\ScriptCanvas\Libraries\Operators\Containers</Filter>
+    </XML>
+    <XML Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Operators\Math\OperatorAdd.ScriptCanvasGrammar.xml">
+      <Filter>Include\ScriptCanvas\Libraries\Operators\Math</Filter>
+    </XML>
+    <XML Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Operators\Math\OperatorArithmetic.ScriptCanvasGrammar.xml">
+      <Filter>Include\ScriptCanvas\Libraries\Operators\Math</Filter>
+    </XML>
+    <XML Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Operators\Math\OperatorDiv.ScriptCanvasGrammar.xml">
+      <Filter>Include\ScriptCanvas\Libraries\Operators\Math</Filter>
+    </XML>
+    <XML Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Operators\Math\OperatorDivideByNumber.ScriptCanvasGrammar.xml">
+      <Filter>Include\ScriptCanvas\Libraries\Operators\Math</Filter>
+    </XML>
+    <XML Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Operators\Math\OperatorLength.ScriptCanvasGrammar.xml">
+      <Filter>Include\ScriptCanvas\Libraries\Operators\Math</Filter>
+    </XML>
+    <XML Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Operators\Math\OperatorLerp.ScriptCanvasGrammar.xml">
+      <Filter>Include\ScriptCanvas\Libraries\Operators\Math</Filter>
+    </XML>
+    <XML Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Operators\Math\OperatorMul.ScriptCanvasGrammar.xml">
+      <Filter>Include\ScriptCanvas\Libraries\Operators\Math</Filter>
+    </XML>
+    <XML Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Libraries\Operators\Math\OperatorSub.ScriptCanvasGrammar.xml">
+      <Filter>Include\ScriptCanvas\Libraries\Operators\Math</Filter>
+    </XML>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Asset">
+      <UniqueIdentifier>{98022B63-35BB-3925-9320-9785170F276E}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Generated Files">
+      <UniqueIdentifier>{FB9B7D8B-7F05-31D5-AA90-592248EDE1B3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include">
+      <UniqueIdentifier>{E188105A-C8C4-34BB-9809-15E8410EF7F8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\ScriptCanvas">
+      <UniqueIdentifier>{71510BC0-2808-3CCC-84ED-FDDDE11E1FCF}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\ScriptCanvas\Asset">
+      <UniqueIdentifier>{D13F57B9-B901-3245-8534-808DD18132F9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\ScriptCanvas\AutoGen">
+      <UniqueIdentifier>{F2C8000B-3993-3B3D-8472-9538D4B1F923}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\ScriptCanvas\CodeGen">
+      <UniqueIdentifier>{4543776E-A161-31B6-8EC8-0D9CE608F69D}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\ScriptCanvas\Core">
+      <UniqueIdentifier>{565F990E-22CF-35A6-838C-02175EE14C67}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\ScriptCanvas\Core\Contracts">
+      <UniqueIdentifier>{1BA969DB-BDB0-3F20-B506-0B63118EF0B2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\ScriptCanvas\Data">
+      <UniqueIdentifier>{132BF8D6-0B9A-314E-9573-0F97DEA45F15}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\ScriptCanvas\Deprecated">
+      <UniqueIdentifier>{2098DEBA-7D83-33EE-92F2-93DAF361F76A}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\ScriptCanvas\Execution">
+      <UniqueIdentifier>{319163CD-70EC-379C-8589-9E5C3DC8FFD2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\ScriptCanvas\Execution\Interpreted">
+      <UniqueIdentifier>{C362B1FA-C17F-3FDF-878D-EB912F1AF8DF}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\ScriptCanvas\Execution\NodeableOut">
+      <UniqueIdentifier>{39342086-FC4B-3890-AD9E-E029B91EC5AA}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\ScriptCanvas\Grammar">
+      <UniqueIdentifier>{7747219C-0CF9-3913-B349-4275152DD552}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\ScriptCanvas\Internal">
+      <UniqueIdentifier>{A0B4C64B-F5A6-3C7B-9193-73914142CD49}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\ScriptCanvas\Internal\Nodeables">
+      <UniqueIdentifier>{1AA828B3-64F3-3025-A0F8-F2AB504AC97A}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\ScriptCanvas\Internal\Nodes">
+      <UniqueIdentifier>{DD0A49B8-454A-33A3-B8A3-0E879DF7C23C}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\ScriptCanvas\Libraries">
+      <UniqueIdentifier>{FFBA4A7D-1CF0-3F37-96EA-F59A5133D484}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\ScriptCanvas\Libraries\Comparison">
+      <UniqueIdentifier>{F73D784B-B0B2-3F9A-ABDD-DCFC98A66008}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\ScriptCanvas\Libraries\Core">
+      <UniqueIdentifier>{C831564F-FEF4-384A-AC02-13BC34A3590B}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\ScriptCanvas\Libraries\Entity">
+      <UniqueIdentifier>{0DB696A7-9FE6-3815-AE3F-B6782CDF1493}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\ScriptCanvas\Libraries\Logic">
+      <UniqueIdentifier>{A457AC94-67C5-35DD-A564-FC1A9758C050}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\ScriptCanvas\Libraries\Math">
+      <UniqueIdentifier>{912F061D-8EED-352C-BF47-34E795AED9CF}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\ScriptCanvas\Libraries\Operators">
+      <UniqueIdentifier>{FBB11390-5495-30B0-8981-85AA87521658}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\ScriptCanvas\Libraries\Operators\Containers">
+      <UniqueIdentifier>{E9B83057-2520-3BAA-8CFD-C82CA5498D60}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\ScriptCanvas\Libraries\Operators\Math">
+      <UniqueIdentifier>{AD000480-6B02-3A0E-94BA-D98C9C65756E}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\ScriptCanvas\Libraries\Spawning">
+      <UniqueIdentifier>{49D40184-C2C3-3B12-9B14-EF5F9B910168}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\ScriptCanvas\Libraries\String">
+      <UniqueIdentifier>{C52D7E22-EFAD-308B-9C78-E01CE384B188}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\ScriptCanvas\Libraries\Time">
+      <UniqueIdentifier>{E9FCF8D5-1201-3E46-B8D3-6420DFB25972}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\ScriptCanvas\Libraries\UnitTesting">
+      <UniqueIdentifier>{83CEB16A-F581-393C-9B4D-C96BEBB64EA5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\ScriptCanvas\Libraries\UnitTesting\Auxiliary">
+      <UniqueIdentifier>{8411047B-A592-36A1-AAB7-AA3F1B0B9A7E}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\ScriptCanvas\Profiler">
+      <UniqueIdentifier>{17D7A6D0-07DB-3C57-B919-1EE3F3C06375}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\ScriptCanvas\Serialization">
+      <UniqueIdentifier>{7E705DB6-F055-360F-A1D2-36A7703B0E2A}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\ScriptCanvas\Translation">
+      <UniqueIdentifier>{96FDFB16-231A-314D-8830-478CF13DE578}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\ScriptCanvas\Utils">
+      <UniqueIdentifier>{559D05D7-2EBB-3E87-9A21-9B5D41EEF51D}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\ScriptCanvas\Variable">
+      <UniqueIdentifier>{73B9361B-FA45-3E9F-A263-B1A16E0D1499}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source">
+      <UniqueIdentifier>{F3F0AD47-5F83-373B-A2BF-650D2E4FA3EA}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

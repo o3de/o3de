@@ -1,0 +1,57 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\Plugins\PerforcePlugin\PerforcePlugin_autogen\mocs_compilation_debug.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\Plugins\PerforcePlugin\CMakeFiles\PerforcePlugin.dir\Unity\unity_0_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\Plugins\PerforcePlugin\main.cpp" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\Plugins\PerforcePlugin\PasswordDlg.cpp" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\Plugins\PerforcePlugin\PerforcePlugin.cpp" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\Plugins\PerforcePlugin\PerforceSourceControl.cpp" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\Plugins\PerforcePlugin\PerforcePlugin_autogen\mocs_compilation_profile.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\Plugins\PerforcePlugin\PerforcePlugin_autogen\mocs_compilation_release.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Plugins\PerforcePlugin\PasswordDlg.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Plugins\PerforcePlugin\PerforcePlugin.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Plugins\PerforcePlugin\PerforceSourceControl.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Plugins\PerforcePlugin\resource.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Plugins\PerforcePlugin\PerforcePlugin_autogen\include\ui_settings.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Code\Editor\Plugins\PerforcePlugin\settings.ui" />
+    <CustomBuild Include="C:\Users\lesaelr\o3de\CMakeFiles\08b24365a84bd27d080f6dd51f42b933\PerforcePlugin_(CONFIG).stamp.rule">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Code\Editor\Plugins\PerforcePlugin\CMakeLists.txt">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\Plugins\PerforcePlugin\PerforcePlugin.qrc" />
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\Plugins\PerforcePlugin\perforceplugin_files.cmake" />
+    <None Include="C:\Users\lesaelr\o3de\runtime_dependencies\debug\PerforcePlugin_debug.stamp">
+      <Filter>Generated Files</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\runtime_dependencies\profile\PerforcePlugin_profile.stamp">
+      <Filter>Generated Files</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\runtime_dependencies\release\PerforcePlugin_release.stamp">
+      <Filter>Generated Files</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Generated Files">
+      <UniqueIdentifier>{FB9B7D8B-7F05-31D5-AA90-592248EDE1B3}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

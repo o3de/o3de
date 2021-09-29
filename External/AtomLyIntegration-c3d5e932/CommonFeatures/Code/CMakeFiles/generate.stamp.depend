@@ -1,0 +1,8 @@
+# CMake generation dependency list for this directory.
+C:/Users/lesaelr/o3de/Gems/AtomLyIntegration/CommonFeatures/Code/CMakeLists.txt
+C:/Users/lesaelr/o3de/Gems/AtomLyIntegration/CommonFeatures/Code/Resources/AtomLyIntegrationResources.qrc
+C:/Users/lesaelr/o3de/Gems/AtomLyIntegration/CommonFeatures/Code/Source/Platform/Windows/platform_windows_files.cmake
+C:/Users/lesaelr/o3de/Gems/AtomLyIntegration/CommonFeatures/Code/atomlyintegration_commonfeatures_editor_files.cmake
+C:/Users/lesaelr/o3de/Gems/AtomLyIntegration/CommonFeatures/Code/atomlyintegration_commonfeatures_files.cmake
+C:/Users/lesaelr/o3de/Gems/AtomLyIntegration/CommonFeatures/Code/atomlyintegration_commonfeatures_public_files.cmake
+C:/Users/lesaelr/o3de/Gems/AtomLyIntegration/CommonFeatures/Code/atomlyintegration_commonfeatures_shared_files.cmake

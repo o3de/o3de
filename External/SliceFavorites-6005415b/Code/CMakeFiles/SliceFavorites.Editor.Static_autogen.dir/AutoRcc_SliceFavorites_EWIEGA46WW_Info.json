@@ -1,0 +1,31 @@
+{
+	"BUILD_DIR" : "C:/Users/lesaelr/o3de/External/SliceFavorites-6005415b/Code/SliceFavorites.Editor.Static_autogen",
+	"CMAKE_BINARY_DIR" : "C:/Users/lesaelr/o3de",
+	"CMAKE_CURRENT_BINARY_DIR" : "C:/Users/lesaelr/o3de/External/SliceFavorites-6005415b/Code",
+	"CMAKE_CURRENT_SOURCE_DIR" : "C:/Users/lesaelr/o3de/Gems/SliceFavorites/Code",
+	"CMAKE_SOURCE_DIR" : "C:/Users/lesaelr/o3de",
+	"INCLUDE_DIR" : "C:/Users/lesaelr/o3de/External/SliceFavorites-6005415b/Code/SliceFavorites.Editor.Static_autogen/include",
+	"INCLUDE_DIR_debug" : "C:/Users/lesaelr/o3de/External/SliceFavorites-6005415b/Code/SliceFavorites.Editor.Static_autogen/include_debug",
+	"INCLUDE_DIR_profile" : "C:/Users/lesaelr/o3de/External/SliceFavorites-6005415b/Code/SliceFavorites.Editor.Static_autogen/include_profile",
+	"INCLUDE_DIR_release" : "C:/Users/lesaelr/o3de/External/SliceFavorites-6005415b/Code/SliceFavorites.Editor.Static_autogen/include_release",
+	"INPUTS" : 
+	[
+		"C:/Users/lesaelr/o3de/Gems/SliceFavorites/Code/resources/SliceFavorite_Icon_Manage.png",
+		"C:/Users/lesaelr/o3de/Gems/SliceFavorites/Code/resources/SliceFavorite_Icon_Folder.png",
+		"C:/Users/lesaelr/o3de/Gems/SliceFavorites/Code/resources/SliceFavorite_Icon_Favorite.png",
+		"C:/Users/lesaelr/o3de/Gems/SliceFavorites/Code/resources/SliceFavorite_Icon_DynamicFavorite.png"
+	],
+	"LOCK_FILE" : "C:/Users/lesaelr/o3de/External/SliceFavorites-6005415b/Code/CMakeFiles/SliceFavorites.Editor.Static_autogen.dir/AutoRcc_SliceFavorites_EWIEGA46WW_Lock.lock",
+	"MULTI_CONFIG" : true,
+	"OPTIONS" : [ "-name", "SliceFavorites" ],
+	"OUTPUT_CHECKSUM" : "EWIEGA46WW",
+	"OUTPUT_NAME" : "qrc_SliceFavorites.cpp",
+	"RCC_EXECUTABLE" : "C:/Users/lesaelr/.o3de/3rdParty/packages/qt-5.15.2-rev4-windows/qt/bin/rcc.exe",
+	"RCC_LIST_OPTIONS" : [ "--list" ],
+	"SETTINGS_FILE" : "C:/Users/lesaelr/o3de/External/SliceFavorites-6005415b/Code/CMakeFiles/SliceFavorites.Editor.Static_autogen.dir/AutoRcc_SliceFavorites_EWIEGA46WW_Used.txt",
+	"SETTINGS_FILE_debug" : "C:/Users/lesaelr/o3de/External/SliceFavorites-6005415b/Code/CMakeFiles/SliceFavorites.Editor.Static_autogen.dir/AutoRcc_SliceFavorites_EWIEGA46WW_Used_debug.txt",
+	"SETTINGS_FILE_profile" : "C:/Users/lesaelr/o3de/External/SliceFavorites-6005415b/Code/CMakeFiles/SliceFavorites.Editor.Static_autogen.dir/AutoRcc_SliceFavorites_EWIEGA46WW_Used_profile.txt",
+	"SETTINGS_FILE_release" : "C:/Users/lesaelr/o3de/External/SliceFavorites-6005415b/Code/CMakeFiles/SliceFavorites.Editor.Static_autogen.dir/AutoRcc_SliceFavorites_EWIEGA46WW_Used_release.txt",
+	"SOURCE" : "C:/Users/lesaelr/o3de/Gems/SliceFavorites/Code/SliceFavorites.qrc",
+	"VERBOSITY" : 0
+}

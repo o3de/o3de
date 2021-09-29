@@ -1,0 +1,7 @@
+# CMake generation dependency list for this directory.
+C:/Users/lesaelr/o3de/Code/Tools/SceneAPI/SceneBuilder/CMakeLists.txt
+C:/Users/lesaelr/o3de/Code/Tools/SceneAPI/SceneBuilder/Platform/Windows/platform_windows_files.cmake
+C:/Users/lesaelr/o3de/Code/Tools/SceneAPI/SceneBuilder/scenebuilder_files.cmake
+C:/Users/lesaelr/o3de/Code/Tools/SceneAPI/SceneBuilder/scenebuilder_shared_files.cmake
+C:/Users/lesaelr/o3de/Code/Tools/SceneAPI/SceneBuilder/scenebuilder_testing_files.cmake
+C:/Users/lesaelr/o3de/cmake/Platform/Windows/LYTestWrappers_windows.cmake

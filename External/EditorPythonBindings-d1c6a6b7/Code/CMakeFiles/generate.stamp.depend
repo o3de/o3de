@@ -1,0 +1,10 @@
+# CMake generation dependency list for this directory.
+C:/Users/lesaelr/o3de/Gems/EditorPythonBindings/Code/CMakeLists.txt
+C:/Users/lesaelr/o3de/Gems/EditorPythonBindings/Code/Source/Platform/Common/MSVC/editorpythonbindings_static_msvc.cmake
+C:/Users/lesaelr/o3de/Gems/EditorPythonBindings/Code/Source/Platform/Common/MSVC/editorpythonbindings_tests_msvc.cmake
+C:/Users/lesaelr/o3de/Gems/EditorPythonBindings/Code/Source/Platform/Windows/platform_windows.cmake
+C:/Users/lesaelr/o3de/Gems/EditorPythonBindings/Code/Source/Platform/Windows/platform_windows_files.cmake
+C:/Users/lesaelr/o3de/Gems/EditorPythonBindings/Code/editorpythonbindings_common_files.cmake
+C:/Users/lesaelr/o3de/Gems/EditorPythonBindings/Code/editorpythonbindings_editor_files.cmake
+C:/Users/lesaelr/o3de/Gems/EditorPythonBindings/Code/editorpythonbindings_tests_files.cmake
+C:/Users/lesaelr/o3de/cmake/Platform/Windows/LYTestWrappers_windows.cmake

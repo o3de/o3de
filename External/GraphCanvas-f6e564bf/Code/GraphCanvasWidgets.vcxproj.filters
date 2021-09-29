@@ -1,0 +1,923 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\GraphCanvas-f6e564bf\Code\GraphCanvasWidgets_autogen\mocs_compilation_debug.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\GraphCanvas-f6e564bf\Code\CMakeFiles\GraphCanvasWidgets.dir\Unity\unity_9_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\GraphCanvas-f6e564bf\Code\CMakeFiles\GraphCanvasWidgets.dir\Unity\unity_8_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\GraphCanvas-f6e564bf\Code\CMakeFiles\GraphCanvasWidgets.dir\Unity\unity_7_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\GraphCanvas-f6e564bf\Code\CMakeFiles\GraphCanvasWidgets.dir\Unity\unity_6_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\GraphCanvas-f6e564bf\Code\CMakeFiles\GraphCanvasWidgets.dir\Unity\unity_5_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\GraphCanvas-f6e564bf\Code\CMakeFiles\GraphCanvasWidgets.dir\Unity\unity_4_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\GraphCanvas-f6e564bf\Code\CMakeFiles\GraphCanvasWidgets.dir\Unity\unity_3_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\GraphCanvas-f6e564bf\Code\CMakeFiles\GraphCanvasWidgets.dir\Unity\unity_2_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\GraphCanvas-f6e564bf\Code\CMakeFiles\GraphCanvasWidgets.dir\Unity\unity_1_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\GraphCanvas-f6e564bf\Code\CMakeFiles\GraphCanvasWidgets.dir\Unity\unity_0_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Widgets\GraphCanvasMimeContainer.cpp">
+      <Filter>StaticLib\GraphCanvas\Widgets</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Widgets\GraphCanvasMimeEvent.cpp">
+      <Filter>StaticLib\GraphCanvas\Widgets</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Widgets\GraphCanvasTreeCategorizer.cpp">
+      <Filter>StaticLib\GraphCanvas\Widgets</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Widgets\GraphCanvasTreeItem.cpp">
+      <Filter>StaticLib\GraphCanvas\Widgets</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Widgets\GraphCanvasTreeModel.cpp">
+      <Filter>StaticLib\GraphCanvas\Widgets</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\GraphicsItems\AnimatedPulse.cpp">
+      <Filter>StaticLib\GraphCanvas\GraphicsItems</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\GraphicsItems\GlowOutlineGraphicsItem.cpp">
+      <Filter>StaticLib\GraphCanvas\GraphicsItems</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\GraphicsItems\Occluder.cpp">
+      <Filter>StaticLib\GraphCanvas\GraphicsItems</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\GraphicsItems\ParticleGraphicsItem.cpp">
+      <Filter>StaticLib\GraphCanvas\GraphicsItems</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Components\ColorPaletteManager\ColorPaletteManagerComponent.cpp">
+      <Filter>StaticLib\GraphCanvas\Components\ColorPaletteManager</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Components\NodePropertyDisplay\NodePropertyDisplay.cpp">
+      <Filter>StaticLib\GraphCanvas\Components\NodePropertyDisplay</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Styling\definitions.cpp">
+      <Filter>StaticLib\GraphCanvas\Styling</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Styling\PseudoElement.cpp">
+      <Filter>StaticLib\GraphCanvas\Styling</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Styling\Selector.cpp">
+      <Filter>StaticLib\GraphCanvas\Styling</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Styling\SelectorImplementations.cpp">
+      <Filter>StaticLib\GraphCanvas\Styling</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Styling\Parser.cpp">
+      <Filter>StaticLib\GraphCanvas\Styling</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Styling\Style.cpp">
+      <Filter>StaticLib\GraphCanvas\Styling</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Styling\StyleManager.cpp">
+      <Filter>StaticLib\GraphCanvas\Styling</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Types\ConstructPresets.cpp">
+      <Filter>StaticLib\GraphCanvas\Types</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Types\GraphCanvasGraphData.cpp">
+      <Filter>StaticLib\GraphCanvas\Types</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Types\GraphCanvasGraphSerialization.cpp">
+      <Filter>StaticLib\GraphCanvas\Types</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Widgets\AssetEditorToolbar\AssetEditorToolbar.cpp">
+      <Filter>StaticLib\GraphCanvas\Widgets\AssetEditorToolbar</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Widgets\Bookmarks\BookmarkDockWidget.cpp">
+      <Filter>StaticLib\GraphCanvas\Widgets\Bookmarks</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Widgets\Bookmarks\BookmarkTableModel.cpp">
+      <Filter>StaticLib\GraphCanvas\Widgets\Bookmarks</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Widgets\ConstructPresetDialog\ConstructPresetDialog.cpp">
+      <Filter>StaticLib\GraphCanvas\Widgets\ConstructPresetDialog</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Widgets\EditorContextMenu\EditorContextMenu.cpp">
+      <Filter>StaticLib\GraphCanvas\Widgets\EditorContextMenu</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Widgets\EditorContextMenu\ContextMenus\BookmarkContextMenu.cpp">
+      <Filter>StaticLib\GraphCanvas\Widgets\EditorContextMenu\ContextMenus</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Widgets\EditorContextMenu\ContextMenus\CollapsedNodeGroupContextMenu.cpp">
+      <Filter>StaticLib\GraphCanvas\Widgets\EditorContextMenu\ContextMenus</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Widgets\EditorContextMenu\ContextMenus\CommentContextMenu.cpp">
+      <Filter>StaticLib\GraphCanvas\Widgets\EditorContextMenu\ContextMenus</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Widgets\EditorContextMenu\ContextMenus\ConnectionContextMenu.cpp">
+      <Filter>StaticLib\GraphCanvas\Widgets\EditorContextMenu\ContextMenus</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Widgets\EditorContextMenu\ContextMenus\NodeContextMenu.cpp">
+      <Filter>StaticLib\GraphCanvas\Widgets\EditorContextMenu\ContextMenus</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Widgets\EditorContextMenu\ContextMenus\NodeGroupContextMenu.cpp">
+      <Filter>StaticLib\GraphCanvas\Widgets\EditorContextMenu\ContextMenus</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Widgets\EditorContextMenu\ContextMenus\SceneContextMenu.cpp">
+      <Filter>StaticLib\GraphCanvas\Widgets\EditorContextMenu\ContextMenus</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Widgets\EditorContextMenu\ContextMenus\SlotContextMenu.cpp">
+      <Filter>StaticLib\GraphCanvas\Widgets\EditorContextMenu\ContextMenus</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Widgets\EditorContextMenu\ContextMenuActions\ContextMenuAction.cpp">
+      <Filter>StaticLib\GraphCanvas\Widgets\EditorContextMenu\ContextMenuActions</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Widgets\EditorContextMenu\ContextMenuActions\AlignmentMenuActions\AlignmentActionsMenuGroup.cpp">
+      <Filter>StaticLib\GraphCanvas\Widgets\EditorContextMenu\ContextMenuActions\AlignmentMenuActions</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Widgets\EditorContextMenu\ContextMenuActions\AlignmentMenuActions\AlignmentContextMenuActions.cpp">
+      <Filter>StaticLib\GraphCanvas\Widgets\EditorContextMenu\ContextMenuActions\AlignmentMenuActions</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Widgets\EditorContextMenu\ContextMenuActions\ConstructMenuActions\BookmarkConstructMenuActions.cpp">
+      <Filter>StaticLib\GraphCanvas\Widgets\EditorContextMenu\ContextMenuActions\ConstructMenuActions</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Widgets\EditorContextMenu\ContextMenuActions\ConstructMenuActions\CommentConstructMenuActions.cpp">
+      <Filter>StaticLib\GraphCanvas\Widgets\EditorContextMenu\ContextMenuActions\ConstructMenuActions</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Widgets\EditorContextMenu\ContextMenuActions\ConstructMenuActions\ConstructPresetMenuActions.cpp">
+      <Filter>StaticLib\GraphCanvas\Widgets\EditorContextMenu\ContextMenuActions\ConstructMenuActions</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Widgets\EditorContextMenu\ContextMenuActions\ConstructMenuActions\GraphCanvasConstructActionsMenuGroup.cpp">
+      <Filter>StaticLib\GraphCanvas\Widgets\EditorContextMenu\ContextMenuActions\ConstructMenuActions</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Widgets\EditorContextMenu\ContextMenuActions\DisableMenuActions\DisableActionsMenuGroup.cpp">
+      <Filter>StaticLib\GraphCanvas\Widgets\EditorContextMenu\ContextMenuActions\DisableMenuActions</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Widgets\EditorContextMenu\ContextMenuActions\DisableMenuActions\DisableMenuActions.cpp">
+      <Filter>StaticLib\GraphCanvas\Widgets\EditorContextMenu\ContextMenuActions\DisableMenuActions</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Widgets\EditorContextMenu\ContextMenuActions\CommentMenuActions\CommentActionsMenuGroup.cpp">
+      <Filter>StaticLib\GraphCanvas\Widgets\EditorContextMenu\ContextMenuActions\CommentMenuActions</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Widgets\EditorContextMenu\ContextMenuActions\CommentMenuActions\CommentContextMenuActions.cpp">
+      <Filter>StaticLib\GraphCanvas\Widgets\EditorContextMenu\ContextMenuActions\CommentMenuActions</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Widgets\EditorContextMenu\ContextMenuActions\EditMenuActions\EditActionsMenuGroup.cpp">
+      <Filter>StaticLib\GraphCanvas\Widgets\EditorContextMenu\ContextMenuActions\EditMenuActions</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Widgets\EditorContextMenu\ContextMenuActions\EditMenuActions\EditContextMenuActions.cpp">
+      <Filter>StaticLib\GraphCanvas\Widgets\EditorContextMenu\ContextMenuActions\EditMenuActions</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Widgets\EditorContextMenu\ContextMenuActions\GeneralMenuActions\GeneralMenuActions.cpp">
+      <Filter>StaticLib\GraphCanvas\Widgets\EditorContextMenu\ContextMenuActions\GeneralMenuActions</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Widgets\EditorContextMenu\ContextMenuActions\NodeGroupMenuActions\NodeGroupActionsMenuGroup.cpp">
+      <Filter>StaticLib\GraphCanvas\Widgets\EditorContextMenu\ContextMenuActions\NodeGroupMenuActions</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Widgets\EditorContextMenu\ContextMenuActions\NodeGroupMenuActions\NodeGroupContextMenuActions.cpp">
+      <Filter>StaticLib\GraphCanvas\Widgets\EditorContextMenu\ContextMenuActions\NodeGroupMenuActions</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Widgets\EditorContextMenu\ContextMenuActions\NodeMenuActions\NodeContextMenuActions.cpp">
+      <Filter>StaticLib\GraphCanvas\Widgets\EditorContextMenu\ContextMenuActions\NodeMenuActions</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Widgets\EditorContextMenu\ContextMenuActions\SceneMenuActions\SceneActionsMenuGroup.cpp">
+      <Filter>StaticLib\GraphCanvas\Widgets\EditorContextMenu\ContextMenuActions\SceneMenuActions</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Widgets\EditorContextMenu\ContextMenuActions\SceneMenuActions\SceneContextMenuActions.cpp">
+      <Filter>StaticLib\GraphCanvas\Widgets\EditorContextMenu\ContextMenuActions\SceneMenuActions</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Widgets\EditorContextMenu\ContextMenuActions\SlotMenuActions\SlotContextMenuActions.cpp">
+      <Filter>StaticLib\GraphCanvas\Widgets\EditorContextMenu\ContextMenuActions\SlotMenuActions</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Widgets\GraphCanvasEditor\GraphCanvasAssetEditorMainWindow.cpp">
+      <Filter>StaticLib\GraphCanvas\Widgets\GraphCanvasEditor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Widgets\GraphCanvasEditor\GraphCanvasEditorCentralWidget.cpp">
+      <Filter>StaticLib\GraphCanvas\Widgets\GraphCanvasEditor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Widgets\GraphCanvasEditor\GraphCanvasEditorDockWidget.cpp">
+      <Filter>StaticLib\GraphCanvas\Widgets\GraphCanvasEditor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Widgets\GraphCanvasGraphicsView\GraphCanvasGraphicsView.cpp">
+      <Filter>StaticLib\GraphCanvas\Widgets\GraphCanvasGraphicsView</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Widgets\MimeEvents\CreateSplicingNodeMimeEvent.cpp">
+      <Filter>StaticLib\GraphCanvas\Widgets\MimeEvents</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Widgets\MiniMapGraphicsView\MiniMapGraphicsView.cpp">
+      <Filter>StaticLib\GraphCanvas\Widgets\MiniMapGraphicsView</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Widgets\NodePalette\NodePaletteDockWidget.cpp">
+      <Filter>StaticLib\GraphCanvas\Widgets\NodePalette</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Widgets\NodePalette\NodePaletteTreeView.cpp">
+      <Filter>StaticLib\GraphCanvas\Widgets\NodePalette</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Widgets\NodePalette\NodePaletteWidget.cpp">
+      <Filter>StaticLib\GraphCanvas\Widgets\NodePalette</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Widgets\NodePalette\Model\NodePaletteSortFilterProxyModel.cpp">
+      <Filter>StaticLib\GraphCanvas\Widgets\NodePalette\Model</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Widgets\NodePalette\TreeItems\DraggableNodePaletteTreeItem.cpp">
+      <Filter>StaticLib\GraphCanvas\Widgets\NodePalette\TreeItems</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Widgets\NodePalette\TreeItems\IconDecoratedNodePaletteTreeItem.cpp">
+      <Filter>StaticLib\GraphCanvas\Widgets\NodePalette\TreeItems</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Widgets\NodePalette\TreeItems\NodePaletteTreeItem.cpp">
+      <Filter>StaticLib\GraphCanvas\Widgets\NodePalette\TreeItems</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Widgets\StyledItemDelegates\GenericComboBoxDelegate.cpp">
+      <Filter>StaticLib\GraphCanvas\Widgets\StyledItemDelegates</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Widgets\StyledItemDelegates\IconDecoratedNameDelegate.cpp">
+      <Filter>StaticLib\GraphCanvas\Widgets\StyledItemDelegates</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Widgets\ToastNotification\ToastNotification.cpp">
+      <Filter>StaticLib\GraphCanvas\Widgets\ToastNotification</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Utils\GraphUtils.cpp">
+      <Filter>StaticLib\GraphCanvas\Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Utils\NodeNudgingController.cpp">
+      <Filter>StaticLib\GraphCanvas\Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Utils\QtDrawingUtils.cpp">
+      <Filter>StaticLib\GraphCanvas\Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\GraphCanvas-f6e564bf\Code\GraphCanvasWidgets_autogen\3XD3IIXUY6\qrc_GraphCanvasEditorResources.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\GraphCanvas-f6e564bf\Code\GraphCanvasWidgets_autogen\mocs_compilation_profile.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\GraphCanvas-f6e564bf\Code\GraphCanvasWidgets_autogen\mocs_compilation_release.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Widgets\Resources\Resources.h">
+      <Filter>StaticLib\GraphCanvas\Widgets\Resources</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Widgets\GraphCanvasMimeContainer.h">
+      <Filter>StaticLib\GraphCanvas\Widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Widgets\GraphCanvasMimeEvent.h">
+      <Filter>StaticLib\GraphCanvas\Widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Widgets\GraphCanvasTreeCategorizer.h">
+      <Filter>StaticLib\GraphCanvas\Widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Widgets\GraphCanvasTreeItem.h">
+      <Filter>StaticLib\GraphCanvas\Widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Widgets\GraphCanvasTreeModel.h">
+      <Filter>StaticLib\GraphCanvas\Widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Widgets\NodePropertyBus.h">
+      <Filter>StaticLib\GraphCanvas\Widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\GraphCanvasBus.h">
+      <Filter>StaticLib\GraphCanvas</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Components\EntitySaveDataBus.h">
+      <Filter>StaticLib\GraphCanvas\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Components\GeometryBus.h">
+      <Filter>StaticLib\GraphCanvas\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Components\GraphCanvasPropertyBus.h">
+      <Filter>StaticLib\GraphCanvas\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Components\GridBus.h">
+      <Filter>StaticLib\GraphCanvas\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Components\LayerBus.h">
+      <Filter>StaticLib\GraphCanvas\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Components\MimeDataHandlerBus.h">
+      <Filter>StaticLib\GraphCanvas\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Components\PersistentIdBus.h">
+      <Filter>StaticLib\GraphCanvas\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Components\SceneBus.h">
+      <Filter>StaticLib\GraphCanvas\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Components\StyleBus.h">
+      <Filter>StaticLib\GraphCanvas\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Components\ToastBus.h">
+      <Filter>StaticLib\GraphCanvas\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Components\ViewBus.h">
+      <Filter>StaticLib\GraphCanvas\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Components\VisualBus.h">
+      <Filter>StaticLib\GraphCanvas\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\GraphicsItems\AnimatedPulse.h">
+      <Filter>StaticLib\GraphCanvas\GraphicsItems</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\GraphicsItems\GlowOutlineGraphicsItem.h">
+      <Filter>StaticLib\GraphCanvas\GraphicsItems</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\GraphicsItems\GraphicsEffect.h">
+      <Filter>StaticLib\GraphCanvas\GraphicsItems</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\GraphicsItems\Occluder.h">
+      <Filter>StaticLib\GraphCanvas\GraphicsItems</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\GraphicsItems\ParticleGraphicsItem.h">
+      <Filter>StaticLib\GraphCanvas\GraphicsItems</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\GraphicsItems\PulseBus.h">
+      <Filter>StaticLib\GraphCanvas\GraphicsItems</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Components\Bookmarks\BookmarkBus.h">
+      <Filter>StaticLib\GraphCanvas\Components\Bookmarks</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Components\ColorPaletteManager\ColorPaletteManagerComponent.h">
+      <Filter>StaticLib\GraphCanvas\Components\ColorPaletteManager</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Components\Connections\ConnectionBus.h">
+      <Filter>StaticLib\GraphCanvas\Components\Connections</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Components\NodePropertyDisplay\AssetIdDataInterface.h">
+      <Filter>StaticLib\GraphCanvas\Components\NodePropertyDisplay</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Components\NodePropertyDisplay\BooleanDataInterface.h">
+      <Filter>StaticLib\GraphCanvas\Components\NodePropertyDisplay</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Components\NodePropertyDisplay\ComboBoxDataInterface.h">
+      <Filter>StaticLib\GraphCanvas\Components\NodePropertyDisplay</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Components\NodePropertyDisplay\DataInterface.h">
+      <Filter>StaticLib\GraphCanvas\Components\NodePropertyDisplay</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Components\NodePropertyDisplay\DoubleDataInterface.h">
+      <Filter>StaticLib\GraphCanvas\Components\NodePropertyDisplay</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Components\NodePropertyDisplay\EntityIdDataInterface.h">
+      <Filter>StaticLib\GraphCanvas\Components\NodePropertyDisplay</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Components\NodePropertyDisplay\NodePropertyDisplay.h">
+      <Filter>StaticLib\GraphCanvas\Components\NodePropertyDisplay</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Components\NodePropertyDisplay\NumericDataInterface.h">
+      <Filter>StaticLib\GraphCanvas\Components\NodePropertyDisplay</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Components\NodePropertyDisplay\ReadOnlyDataInterface.h">
+      <Filter>StaticLib\GraphCanvas\Components\NodePropertyDisplay</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Components\NodePropertyDisplay\StringDataInterface.h">
+      <Filter>StaticLib\GraphCanvas\Components\NodePropertyDisplay</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Components\NodePropertyDisplay\VectorDataInterface.h">
+      <Filter>StaticLib\GraphCanvas\Components\NodePropertyDisplay</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Components\Nodes\NodeBus.h">
+      <Filter>StaticLib\GraphCanvas\Components\Nodes</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Components\Nodes\NodeUIBus.h">
+      <Filter>StaticLib\GraphCanvas\Components\Nodes</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Components\Nodes\NodeConfiguration.h">
+      <Filter>StaticLib\GraphCanvas\Components\Nodes</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Components\Nodes\NodeLayoutBus.h">
+      <Filter>StaticLib\GraphCanvas\Components\Nodes</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Components\Nodes\NodeTitleBus.h">
+      <Filter>StaticLib\GraphCanvas\Components\Nodes</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Components\Nodes\Comment\CommentBus.h">
+      <Filter>StaticLib\GraphCanvas\Components\Nodes\Comment</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Components\Nodes\Group\NodeGroupBus.h">
+      <Filter>StaticLib\GraphCanvas\Components\Nodes\Group</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Components\Nodes\Wrapper\WrapperNodeBus.h">
+      <Filter>StaticLib\GraphCanvas\Components\Nodes\Wrapper</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Components\Slots\SlotBus.h">
+      <Filter>StaticLib\GraphCanvas\Components\Slots</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Components\Slots\Data\DataSlotBus.h">
+      <Filter>StaticLib\GraphCanvas\Components\Slots\Data</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Components\Slots\Property\PropertySlotBus.h">
+      <Filter>StaticLib\GraphCanvas\Components\Slots\Property</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Editor\AssetEditorBus.h">
+      <Filter>StaticLib\GraphCanvas\Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Editor\Automation\AutomationIds.h">
+      <Filter>StaticLib\GraphCanvas\Editor\Automation</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Editor\Automation\AutomationUtils.h">
+      <Filter>StaticLib\GraphCanvas\Editor\Automation</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Editor\EditorDockWidgetBus.h">
+      <Filter>StaticLib\GraphCanvas\Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Editor\EditorTypes.h">
+      <Filter>StaticLib\GraphCanvas\Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Editor\GraphCanvasProfiler.h">
+      <Filter>StaticLib\GraphCanvas\Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Editor\GraphModelBus.h">
+      <Filter>StaticLib\GraphCanvas\Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Styling\definitions.h">
+      <Filter>StaticLib\GraphCanvas\Styling</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Styling\PseudoElement.h">
+      <Filter>StaticLib\GraphCanvas\Styling</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Styling\SelectorImplementations.h">
+      <Filter>StaticLib\GraphCanvas\Styling</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Styling\Parser.h">
+      <Filter>StaticLib\GraphCanvas\Styling</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Styling\Selector.h">
+      <Filter>StaticLib\GraphCanvas\Styling</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Styling\Style.h">
+      <Filter>StaticLib\GraphCanvas\Styling</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Styling\StyleHelper.h">
+      <Filter>StaticLib\GraphCanvas\Styling</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Styling\StyleManager.h">
+      <Filter>StaticLib\GraphCanvas\Styling</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Types\ComponentSaveDataInterface.h">
+      <Filter>StaticLib\GraphCanvas\Types</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Types\ConstructPresets.h">
+      <Filter>StaticLib\GraphCanvas\Types</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Types\EntitySaveData.h">
+      <Filter>StaticLib\GraphCanvas\Types</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Types\Endpoint.h">
+      <Filter>StaticLib\GraphCanvas\Types</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Types\GraphCanvasGraphData.h">
+      <Filter>StaticLib\GraphCanvas\Types</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Types\GraphCanvasGraphSerialization.h">
+      <Filter>StaticLib\GraphCanvas\Types</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Types\SceneMemberComponentSaveData.h">
+      <Filter>StaticLib\GraphCanvas\Types</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Types\TranslationTypes.h">
+      <Filter>StaticLib\GraphCanvas\Types</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Types\Types.h">
+      <Filter>StaticLib\GraphCanvas\Types</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Types\QtMetaTypes.h">
+      <Filter>StaticLib\GraphCanvas\Types</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Widgets\AssetEditorToolbar\AssetEditorToolbar.h">
+      <Filter>StaticLib\GraphCanvas\Widgets\AssetEditorToolbar</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Widgets\Bookmarks\BookmarkDockWidget.h">
+      <Filter>StaticLib\GraphCanvas\Widgets\Bookmarks</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Widgets\Bookmarks\BookmarkTableModel.h">
+      <Filter>StaticLib\GraphCanvas\Widgets\Bookmarks</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Widgets\ComboBox\ComboBoxItemModels.h">
+      <Filter>StaticLib\GraphCanvas\Widgets\ComboBox</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Widgets\ComboBox\ComboBoxItemModelInterface.h">
+      <Filter>StaticLib\GraphCanvas\Widgets\ComboBox</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Widgets\ConstructPresetDialog\ConstructPresetDialog.h">
+      <Filter>StaticLib\GraphCanvas\Widgets\ConstructPresetDialog</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Widgets\EditorContextMenu\EditorContextMenu.h">
+      <Filter>StaticLib\GraphCanvas\Widgets\EditorContextMenu</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Widgets\EditorContextMenu\ContextMenus\BookmarkContextMenu.h">
+      <Filter>StaticLib\GraphCanvas\Widgets\EditorContextMenu\ContextMenus</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Widgets\EditorContextMenu\ContextMenus\CollapsedNodeGroupContextMenu.h">
+      <Filter>StaticLib\GraphCanvas\Widgets\EditorContextMenu\ContextMenus</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Widgets\EditorContextMenu\ContextMenus\CommentContextMenu.h">
+      <Filter>StaticLib\GraphCanvas\Widgets\EditorContextMenu\ContextMenus</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Widgets\EditorContextMenu\ContextMenus\ConnectionContextMenu.h">
+      <Filter>StaticLib\GraphCanvas\Widgets\EditorContextMenu\ContextMenus</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Widgets\EditorContextMenu\ContextMenus\NodeContextMenu.h">
+      <Filter>StaticLib\GraphCanvas\Widgets\EditorContextMenu\ContextMenus</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Widgets\EditorContextMenu\ContextMenus\NodeGroupContextMenu.h">
+      <Filter>StaticLib\GraphCanvas\Widgets\EditorContextMenu\ContextMenus</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Widgets\EditorContextMenu\ContextMenus\SceneContextMenu.h">
+      <Filter>StaticLib\GraphCanvas\Widgets\EditorContextMenu\ContextMenus</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Widgets\EditorContextMenu\ContextMenus\SlotContextMenu.h">
+      <Filter>StaticLib\GraphCanvas\Widgets\EditorContextMenu\ContextMenus</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Widgets\EditorContextMenu\ContextMenuActions\ContextMenuAction.h">
+      <Filter>StaticLib\GraphCanvas\Widgets\EditorContextMenu\ContextMenuActions</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Widgets\EditorContextMenu\ContextMenuActions\AlignmentMenuActions\AlignmentActionsMenuGroup.h">
+      <Filter>StaticLib\GraphCanvas\Widgets\EditorContextMenu\ContextMenuActions\AlignmentMenuActions</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Widgets\EditorContextMenu\ContextMenuActions\AlignmentMenuActions\AlignmentContextMenuAction.h">
+      <Filter>StaticLib\GraphCanvas\Widgets\EditorContextMenu\ContextMenuActions\AlignmentMenuActions</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Widgets\EditorContextMenu\ContextMenuActions\AlignmentMenuActions\AlignmentContextMenuActions.h">
+      <Filter>StaticLib\GraphCanvas\Widgets\EditorContextMenu\ContextMenuActions\AlignmentMenuActions</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Widgets\EditorContextMenu\ContextMenuActions\ConstructMenuActions\BookmarkConstructMenuActions.h">
+      <Filter>StaticLib\GraphCanvas\Widgets\EditorContextMenu\ContextMenuActions\ConstructMenuActions</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Widgets\EditorContextMenu\ContextMenuActions\ConstructMenuActions\CommentConstructMenuActions.h">
+      <Filter>StaticLib\GraphCanvas\Widgets\EditorContextMenu\ContextMenuActions\ConstructMenuActions</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Widgets\EditorContextMenu\ContextMenuActions\ConstructMenuActions\ConstructContextMenuAction.h">
+      <Filter>StaticLib\GraphCanvas\Widgets\EditorContextMenu\ContextMenuActions\ConstructMenuActions</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Widgets\EditorContextMenu\ContextMenuActions\ConstructMenuActions\ConstructPresetMenuActions.h">
+      <Filter>StaticLib\GraphCanvas\Widgets\EditorContextMenu\ContextMenuActions\ConstructMenuActions</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Widgets\EditorContextMenu\ContextMenuActions\ConstructMenuActions\GraphCanvasConstructActionsMenuGroup.h">
+      <Filter>StaticLib\GraphCanvas\Widgets\EditorContextMenu\ContextMenuActions\ConstructMenuActions</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Widgets\EditorContextMenu\ContextMenuActions\DisableMenuActions\DisableActionsMenuGroup.h">
+      <Filter>StaticLib\GraphCanvas\Widgets\EditorContextMenu\ContextMenuActions\DisableMenuActions</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Widgets\EditorContextMenu\ContextMenuActions\DisableMenuActions\DisableMenuActions.h">
+      <Filter>StaticLib\GraphCanvas\Widgets\EditorContextMenu\ContextMenuActions\DisableMenuActions</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Widgets\EditorContextMenu\ContextMenuActions\DisableMenuActions\DisableMenuAction.h">
+      <Filter>StaticLib\GraphCanvas\Widgets\EditorContextMenu\ContextMenuActions\DisableMenuActions</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Widgets\EditorContextMenu\ContextMenuActions\CommentMenuActions\CommentActionsMenuGroup.h">
+      <Filter>StaticLib\GraphCanvas\Widgets\EditorContextMenu\ContextMenuActions\CommentMenuActions</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Widgets\EditorContextMenu\ContextMenuActions\CommentMenuActions\CommentContextMenuAction.h">
+      <Filter>StaticLib\GraphCanvas\Widgets\EditorContextMenu\ContextMenuActions\CommentMenuActions</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Widgets\EditorContextMenu\ContextMenuActions\CommentMenuActions\CommentContextMenuActions.h">
+      <Filter>StaticLib\GraphCanvas\Widgets\EditorContextMenu\ContextMenuActions\CommentMenuActions</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Widgets\EditorContextMenu\ContextMenuActions\EditMenuActions\EditActionsMenuGroup.h">
+      <Filter>StaticLib\GraphCanvas\Widgets\EditorContextMenu\ContextMenuActions\EditMenuActions</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Widgets\EditorContextMenu\ContextMenuActions\EditMenuActions\EditContextMenuAction.h">
+      <Filter>StaticLib\GraphCanvas\Widgets\EditorContextMenu\ContextMenuActions\EditMenuActions</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Widgets\EditorContextMenu\ContextMenuActions\EditMenuActions\EditContextMenuActions.h">
+      <Filter>StaticLib\GraphCanvas\Widgets\EditorContextMenu\ContextMenuActions\EditMenuActions</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Widgets\EditorContextMenu\ContextMenuActions\GeneralMenuActions\GeneralMenuActions.h">
+      <Filter>StaticLib\GraphCanvas\Widgets\EditorContextMenu\ContextMenuActions\GeneralMenuActions</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Widgets\EditorContextMenu\ContextMenuActions\NodeGroupMenuActions\NodeGroupActionsMenuGroup.h">
+      <Filter>StaticLib\GraphCanvas\Widgets\EditorContextMenu\ContextMenuActions\NodeGroupMenuActions</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Widgets\EditorContextMenu\ContextMenuActions\NodeGroupMenuActions\NodeGroupContextMenuAction.h">
+      <Filter>StaticLib\GraphCanvas\Widgets\EditorContextMenu\ContextMenuActions\NodeGroupMenuActions</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Widgets\EditorContextMenu\ContextMenuActions\NodeGroupMenuActions\NodeGroupContextMenuActions.h">
+      <Filter>StaticLib\GraphCanvas\Widgets\EditorContextMenu\ContextMenuActions\NodeGroupMenuActions</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Widgets\EditorContextMenu\ContextMenuActions\NodeMenuActions\NodeContextMenuAction.h">
+      <Filter>StaticLib\GraphCanvas\Widgets\EditorContextMenu\ContextMenuActions\NodeMenuActions</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Widgets\EditorContextMenu\ContextMenuActions\NodeMenuActions\NodeContextMenuActions.h">
+      <Filter>StaticLib\GraphCanvas\Widgets\EditorContextMenu\ContextMenuActions\NodeMenuActions</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Widgets\EditorContextMenu\ContextMenuActions\SceneMenuActions\SceneActionsMenuGroup.h">
+      <Filter>StaticLib\GraphCanvas\Widgets\EditorContextMenu\ContextMenuActions\SceneMenuActions</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Widgets\EditorContextMenu\ContextMenuActions\SceneMenuActions\SceneContextMenuAction.h">
+      <Filter>StaticLib\GraphCanvas\Widgets\EditorContextMenu\ContextMenuActions\SceneMenuActions</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Widgets\EditorContextMenu\ContextMenuActions\SceneMenuActions\SceneContextMenuActions.h">
+      <Filter>StaticLib\GraphCanvas\Widgets\EditorContextMenu\ContextMenuActions\SceneMenuActions</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Widgets\EditorContextMenu\ContextMenuActions\SlotMenuActions\SlotContextMenuAction.h">
+      <Filter>StaticLib\GraphCanvas\Widgets\EditorContextMenu\ContextMenuActions\SlotMenuActions</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Widgets\EditorContextMenu\ContextMenuActions\SlotMenuActions\SlotContextMenuActions.h">
+      <Filter>StaticLib\GraphCanvas\Widgets\EditorContextMenu\ContextMenuActions\SlotMenuActions</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Widgets\GraphCanvasEditor\GraphCanvasAssetEditorMainWindow.h">
+      <Filter>StaticLib\GraphCanvas\Widgets\GraphCanvasEditor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Widgets\GraphCanvasEditor\GraphCanvasEditorCentralWidget.h">
+      <Filter>StaticLib\GraphCanvas\Widgets\GraphCanvasEditor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Widgets\GraphCanvasEditor\GraphCanvasEditorDockWidget.h">
+      <Filter>StaticLib\GraphCanvas\Widgets\GraphCanvasEditor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Widgets\GraphCanvasGraphicsView\GraphCanvasGraphicsView.h">
+      <Filter>StaticLib\GraphCanvas\Widgets\GraphCanvasGraphicsView</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Widgets\MimeEvents\CreateSplicingNodeMimeEvent.h">
+      <Filter>StaticLib\GraphCanvas\Widgets\MimeEvents</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Widgets\MiniMapGraphicsView\MiniMapGraphicsView.h">
+      <Filter>StaticLib\GraphCanvas\Widgets\MiniMapGraphicsView</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Widgets\NodePalette\NodePaletteDockWidget.h">
+      <Filter>StaticLib\GraphCanvas\Widgets\NodePalette</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Widgets\NodePalette\NodePaletteTreeView.h">
+      <Filter>StaticLib\GraphCanvas\Widgets\NodePalette</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Widgets\NodePalette\NodePaletteWidget.h">
+      <Filter>StaticLib\GraphCanvas\Widgets\NodePalette</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Widgets\NodePalette\Model\NodePaletteSortFilterProxyModel.h">
+      <Filter>StaticLib\GraphCanvas\Widgets\NodePalette\Model</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Widgets\NodePalette\TreeItems\DraggableNodePaletteTreeItem.h">
+      <Filter>StaticLib\GraphCanvas\Widgets\NodePalette\TreeItems</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Widgets\NodePalette\TreeItems\IconDecoratedNodePaletteTreeItem.h">
+      <Filter>StaticLib\GraphCanvas\Widgets\NodePalette\TreeItems</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Widgets\NodePalette\TreeItems\NodePaletteTreeItem.h">
+      <Filter>StaticLib\GraphCanvas\Widgets\NodePalette\TreeItems</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Widgets\StyledItemDelegates\GenericComboBoxDelegate.h">
+      <Filter>StaticLib\GraphCanvas\Widgets\StyledItemDelegates</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Widgets\StyledItemDelegates\IconDecoratedNameDelegate.h">
+      <Filter>StaticLib\GraphCanvas\Widgets\StyledItemDelegates</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Widgets\ToastNotification\ToastNotification.h">
+      <Filter>StaticLib\GraphCanvas\Widgets\ToastNotification</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Utils\ColorUtils.h">
+      <Filter>StaticLib\GraphCanvas\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Utils\ConversionUtils.h">
+      <Filter>StaticLib\GraphCanvas\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Utils\GraphUtils.h">
+      <Filter>StaticLib\GraphCanvas\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Utils\NodeNudgingController.h">
+      <Filter>StaticLib\GraphCanvas\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Utils\QtDrawingUtils.h">
+      <Filter>StaticLib\GraphCanvas\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Utils\QtMimeUtils.h">
+      <Filter>StaticLib\GraphCanvas\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Utils\QtVectorMath.h">
+      <Filter>StaticLib\GraphCanvas\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Utils\StateControllers\StateController.h">
+      <Filter>StaticLib\GraphCanvas\Utils\StateControllers</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Utils\StateControllers\PrioritizedStateController.h">
+      <Filter>StaticLib\GraphCanvas\Utils\StateControllers</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Utils\StateControllers\StackStateController.h">
+      <Filter>StaticLib\GraphCanvas\Utils\StateControllers</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\External\GraphCanvas-f6e564bf\Code\GraphCanvasWidgets_autogen\include\StaticLib\GraphCanvas\Widgets\AssetEditorToolbar\ui_AssetEditorToolbar.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\External\GraphCanvas-f6e564bf\Code\GraphCanvasWidgets_autogen\include\StaticLib\GraphCanvas\Widgets\Bookmarks\ui_BookmarkDockWidget.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\External\GraphCanvas-f6e564bf\Code\GraphCanvasWidgets_autogen\include\StaticLib\GraphCanvas\Widgets\ConstructPresetDialog\ui_ConstructPresetDialog.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\External\GraphCanvas-f6e564bf\Code\GraphCanvasWidgets_autogen\include\StaticLib\GraphCanvas\Widgets\GraphCanvasEditor\ui_GraphCanvasEditorCentralWidget.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\External\GraphCanvas-f6e564bf\Code\GraphCanvasWidgets_autogen\include\StaticLib\GraphCanvas\Widgets\GraphCanvasEditor\ui_GraphCanvasEditorDockWidget.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\External\GraphCanvas-f6e564bf\Code\GraphCanvasWidgets_autogen\include\StaticLib\GraphCanvas\Widgets\NodePalette\ui_NodePaletteDockWidget.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\External\GraphCanvas-f6e564bf\Code\GraphCanvasWidgets_autogen\include\StaticLib\GraphCanvas\Widgets\NodePalette\ui_NodePaletteWidget.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\External\GraphCanvas-f6e564bf\Code\GraphCanvasWidgets_autogen\include\StaticLib\GraphCanvas\Widgets\ToastNotification\ui_ToastNotification.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Widgets\AssetEditorToolbar\AssetEditorToolbar.ui">
+      <Filter>StaticLib\GraphCanvas\Widgets\AssetEditorToolbar</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Widgets\Bookmarks\BookmarkDockWidget.ui">
+      <Filter>StaticLib\GraphCanvas\Widgets\Bookmarks</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Widgets\ConstructPresetDialog\ConstructPresetDialog.ui">
+      <Filter>StaticLib\GraphCanvas\Widgets\ConstructPresetDialog</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Widgets\GraphCanvasEditor\GraphCanvasEditorCentralWidget.ui">
+      <Filter>StaticLib\GraphCanvas\Widgets\GraphCanvasEditor</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Widgets\GraphCanvasEditor\GraphCanvasEditorDockWidget.ui">
+      <Filter>StaticLib\GraphCanvas\Widgets\GraphCanvasEditor</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Widgets\NodePalette\NodePaletteDockWidget.ui">
+      <Filter>StaticLib\GraphCanvas\Widgets\NodePalette</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Widgets\NodePalette\NodePaletteWidget.ui">
+      <Filter>StaticLib\GraphCanvas\Widgets\NodePalette</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Widgets\ToastNotification\ToastNotification.ui">
+      <Filter>StaticLib\GraphCanvas\Widgets\ToastNotification</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\CMakeFiles\10cbf3e80c3430f15604288414d7df9c\qrc_GraphCanvasEditorResources.cpp.rule">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\CMakeLists.txt">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Widgets\Resources\GraphCanvasEditorResources.qrc">
+      <Filter>StaticLib\GraphCanvas\Widgets\Resources</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\StaticLib\GraphCanvas\Widgets\Resources\default_style.json">
+      <Filter>StaticLib\GraphCanvas\Widgets\Resources</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\GraphCanvas\Code\graphcanvas_staticlib_files.cmake" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Generated Files">
+      <UniqueIdentifier>{FB9B7D8B-7F05-31D5-AA90-592248EDE1B3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="StaticLib">
+      <UniqueIdentifier>{783746F6-9544-3C3B-AA1A-62069AAF4B79}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="StaticLib\GraphCanvas">
+      <UniqueIdentifier>{521735C1-AABF-314D-9BFE-5A5B115E1B10}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="StaticLib\GraphCanvas\Components">
+      <UniqueIdentifier>{127A6B3A-E141-352F-9422-8D9E9B10CE53}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="StaticLib\GraphCanvas\Components\Bookmarks">
+      <UniqueIdentifier>{6FF49414-D620-3DA0-A140-57B03FFBA12F}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="StaticLib\GraphCanvas\Components\ColorPaletteManager">
+      <UniqueIdentifier>{DE08529B-FD52-3827-9177-783D2D73BA97}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="StaticLib\GraphCanvas\Components\Connections">
+      <UniqueIdentifier>{068DECCD-26F8-327A-91A4-216FDE1A3B02}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="StaticLib\GraphCanvas\Components\NodePropertyDisplay">
+      <UniqueIdentifier>{DD90D4F6-2806-3BA8-BFF0-03D2EA1AFBBF}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="StaticLib\GraphCanvas\Components\Nodes">
+      <UniqueIdentifier>{0CB57A4F-6378-3F81-81A3-4F91A8BB850D}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="StaticLib\GraphCanvas\Components\Nodes\Comment">
+      <UniqueIdentifier>{E5ABC9FC-189E-3ADA-A824-99C3684504F5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="StaticLib\GraphCanvas\Components\Nodes\Group">
+      <UniqueIdentifier>{326AA0BF-4589-369B-9675-8F135787A454}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="StaticLib\GraphCanvas\Components\Nodes\Wrapper">
+      <UniqueIdentifier>{9FC38C64-7AF5-3E6B-BA48-69EE0C174F52}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="StaticLib\GraphCanvas\Components\Slots">
+      <UniqueIdentifier>{43946C40-ECD0-3794-B7C0-999876762CCB}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="StaticLib\GraphCanvas\Components\Slots\Data">
+      <UniqueIdentifier>{9C40132E-C763-37BD-8D79-A9D39CEF4CFF}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="StaticLib\GraphCanvas\Components\Slots\Property">
+      <UniqueIdentifier>{ED1F2484-22FB-32DA-90F7-D96F85BE7F4A}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="StaticLib\GraphCanvas\Editor">
+      <UniqueIdentifier>{3E39EB84-28A8-3AFC-9354-DA1011447408}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="StaticLib\GraphCanvas\Editor\Automation">
+      <UniqueIdentifier>{319B797F-713B-330B-9D57-4D5ABA478B6C}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="StaticLib\GraphCanvas\GraphicsItems">
+      <UniqueIdentifier>{6BDAA610-90BD-3760-A0BD-AB64A523083D}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="StaticLib\GraphCanvas\Styling">
+      <UniqueIdentifier>{8BBE37DF-EEB8-30BD-8606-9FE8A8DD60DF}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="StaticLib\GraphCanvas\Types">
+      <UniqueIdentifier>{89DB5315-B7E8-346D-83D0-21D538A91086}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="StaticLib\GraphCanvas\Utils">
+      <UniqueIdentifier>{195DA0B1-76CC-31FC-8E93-860E89C76C26}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="StaticLib\GraphCanvas\Utils\StateControllers">
+      <UniqueIdentifier>{9AE4A3A2-8AD1-3EEC-A203-ABA4CC1523E8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="StaticLib\GraphCanvas\Widgets">
+      <UniqueIdentifier>{CF8C481B-CA5F-3FAE-B374-65BB3D93D3C7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="StaticLib\GraphCanvas\Widgets\AssetEditorToolbar">
+      <UniqueIdentifier>{0BA852B6-852E-3CCA-A4F2-17208284FD88}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="StaticLib\GraphCanvas\Widgets\Bookmarks">
+      <UniqueIdentifier>{A51F5F7C-7CE8-357F-9086-0A5ABD8D35BA}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="StaticLib\GraphCanvas\Widgets\ComboBox">
+      <UniqueIdentifier>{59C3104E-4A4F-3C22-B6A9-CA936DBFDEC9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="StaticLib\GraphCanvas\Widgets\ConstructPresetDialog">
+      <UniqueIdentifier>{3B28325D-05C9-3622-BF66-BA8B5FEB6619}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="StaticLib\GraphCanvas\Widgets\EditorContextMenu">
+      <UniqueIdentifier>{12D2E764-9D65-3BFB-9AD3-A991F89BA716}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="StaticLib\GraphCanvas\Widgets\EditorContextMenu\ContextMenuActions">
+      <UniqueIdentifier>{9F80F688-FCCB-31A5-9983-BBD6904ABF1F}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="StaticLib\GraphCanvas\Widgets\EditorContextMenu\ContextMenuActions\AlignmentMenuActions">
+      <UniqueIdentifier>{1297E01E-B6C2-337C-9BDE-3419FAB71300}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="StaticLib\GraphCanvas\Widgets\EditorContextMenu\ContextMenuActions\CommentMenuActions">
+      <UniqueIdentifier>{E4E76C77-E6E6-3C55-839A-38C607B297B6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="StaticLib\GraphCanvas\Widgets\EditorContextMenu\ContextMenuActions\ConstructMenuActions">
+      <UniqueIdentifier>{E45BDA30-09B0-3C7C-B399-8E840904E7FF}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="StaticLib\GraphCanvas\Widgets\EditorContextMenu\ContextMenuActions\DisableMenuActions">
+      <UniqueIdentifier>{21F90635-B017-330A-93CB-DBB1F47144D4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="StaticLib\GraphCanvas\Widgets\EditorContextMenu\ContextMenuActions\EditMenuActions">
+      <UniqueIdentifier>{1A8A8B15-56CE-3959-8B14-FF2B39A1C302}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="StaticLib\GraphCanvas\Widgets\EditorContextMenu\ContextMenuActions\GeneralMenuActions">
+      <UniqueIdentifier>{0508ED9B-3763-36B6-A531-182D0EAA605F}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="StaticLib\GraphCanvas\Widgets\EditorContextMenu\ContextMenuActions\NodeGroupMenuActions">
+      <UniqueIdentifier>{F3E9788B-CC53-3869-BF04-92D0A5DD57D7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="StaticLib\GraphCanvas\Widgets\EditorContextMenu\ContextMenuActions\NodeMenuActions">
+      <UniqueIdentifier>{52EC30F5-A118-3D19-9EAB-E5D54F68F32C}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="StaticLib\GraphCanvas\Widgets\EditorContextMenu\ContextMenuActions\SceneMenuActions">
+      <UniqueIdentifier>{0956E6F2-35A4-3876-B2E4-0293F5865776}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="StaticLib\GraphCanvas\Widgets\EditorContextMenu\ContextMenuActions\SlotMenuActions">
+      <UniqueIdentifier>{366AAB16-AA44-3321-8A66-82E510C93B0E}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="StaticLib\GraphCanvas\Widgets\EditorContextMenu\ContextMenus">
+      <UniqueIdentifier>{93FDF75C-3320-32F5-BCAC-354403E2C879}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="StaticLib\GraphCanvas\Widgets\GraphCanvasEditor">
+      <UniqueIdentifier>{5A5A6DB0-2004-3EF4-A2BC-8700EDC1C69A}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="StaticLib\GraphCanvas\Widgets\GraphCanvasGraphicsView">
+      <UniqueIdentifier>{0A17057C-523B-3949-B24F-43347313CF2E}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="StaticLib\GraphCanvas\Widgets\MimeEvents">
+      <UniqueIdentifier>{58032F4E-6D7B-3766-AA58-434D497ED33C}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="StaticLib\GraphCanvas\Widgets\MiniMapGraphicsView">
+      <UniqueIdentifier>{DA4D5AEB-D5C3-3354-860F-397D1241185E}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="StaticLib\GraphCanvas\Widgets\NodePalette">
+      <UniqueIdentifier>{141BEF17-0A2D-35B7-9C33-F95C13F00D38}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="StaticLib\GraphCanvas\Widgets\NodePalette\Model">
+      <UniqueIdentifier>{54DDA883-B856-39B4-BF43-A0F21E26A626}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="StaticLib\GraphCanvas\Widgets\NodePalette\TreeItems">
+      <UniqueIdentifier>{93D8953D-7D4B-3577-B254-62AE8807A8FD}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="StaticLib\GraphCanvas\Widgets\Resources">
+      <UniqueIdentifier>{59A3A2E8-FF6F-3287-B054-16E2DC9832F5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="StaticLib\GraphCanvas\Widgets\StyledItemDelegates">
+      <UniqueIdentifier>{FD7110BB-B44C-3E5B-B64C-39E85B118F6D}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="StaticLib\GraphCanvas\Widgets\ToastNotification">
+      <UniqueIdentifier>{ED849A41-8ABF-3FA3-A8BF-0A4645AB2803}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

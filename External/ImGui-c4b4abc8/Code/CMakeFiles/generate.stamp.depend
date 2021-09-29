@@ -1,0 +1,10 @@
+# CMake generation dependency list for this directory.
+C:/Users/lesaelr/o3de/Gems/ImGui/Code/CMakeLists.txt
+C:/Users/lesaelr/o3de/Gems/ImGui/Code/Source/Platform/Windows/imgui_windows.cmake
+C:/Users/lesaelr/o3de/Gems/ImGui/Code/Source/Platform/Windows/platform_windows.cmake
+C:/Users/lesaelr/o3de/Gems/ImGui/Code/Source/Platform/Windows/platform_windows_files.cmake
+C:/Users/lesaelr/o3de/Gems/ImGui/Code/imgui_common_files.cmake
+C:/Users/lesaelr/o3de/Gems/ImGui/Code/imgui_editor_files.cmake
+C:/Users/lesaelr/o3de/Gems/ImGui/Code/imgui_lib_files.cmake
+C:/Users/lesaelr/o3de/Gems/ImGui/Code/imgui_lyutils_static_files.cmake
+C:/Users/lesaelr/o3de/Gems/ImGui/Code/imgui_shared_files.cmake

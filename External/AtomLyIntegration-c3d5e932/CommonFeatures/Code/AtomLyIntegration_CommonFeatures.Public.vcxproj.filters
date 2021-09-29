@@ -1,0 +1,253 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\CMakeLists.txt">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Include\AtomLyIntegration\CommonFeatures\CoreLights\AreaLightBus.h">
+      <Filter>Include\AtomLyIntegration\CommonFeatures\CoreLights</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Include\AtomLyIntegration\CommonFeatures\CoreLights\AreaLightComponentConfig.h">
+      <Filter>Include\AtomLyIntegration\CommonFeatures\CoreLights</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Include\AtomLyIntegration\CommonFeatures\CoreLights\CoreLightsConstants.h">
+      <Filter>Include\AtomLyIntegration\CommonFeatures\CoreLights</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Include\AtomLyIntegration\CommonFeatures\CoreLights\DirectionalLightBus.h">
+      <Filter>Include\AtomLyIntegration\CommonFeatures\CoreLights</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Include\AtomLyIntegration\CommonFeatures\CoreLights\DirectionalLightComponentConfig.h">
+      <Filter>Include\AtomLyIntegration\CommonFeatures\CoreLights</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Include\AtomLyIntegration\CommonFeatures\Decals\DecalBus.h">
+      <Filter>Include\AtomLyIntegration\CommonFeatures\Decals</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Include\AtomLyIntegration\CommonFeatures\Decals\DecalComponentConfig.h">
+      <Filter>Include\AtomLyIntegration\CommonFeatures\Decals</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Include\AtomLyIntegration\CommonFeatures\Decals\DecalConstants.h">
+      <Filter>Include\AtomLyIntegration\CommonFeatures\Decals</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Include\AtomLyIntegration\CommonFeatures\Grid\GridComponentBus.h">
+      <Filter>Include\AtomLyIntegration\CommonFeatures\Grid</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Include\AtomLyIntegration\CommonFeatures\Grid\GridComponentConfig.h">
+      <Filter>Include\AtomLyIntegration\CommonFeatures\Grid</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Include\AtomLyIntegration\CommonFeatures\Grid\GridComponentConstants.h">
+      <Filter>Include\AtomLyIntegration\CommonFeatures\Grid</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Include\AtomLyIntegration\CommonFeatures\ImageBasedLights\ImageBasedLightComponentBus.h">
+      <Filter>Include\AtomLyIntegration\CommonFeatures\ImageBasedLights</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Include\AtomLyIntegration\CommonFeatures\ImageBasedLights\ImageBasedLightComponentConfig.h">
+      <Filter>Include\AtomLyIntegration\CommonFeatures\ImageBasedLights</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Include\AtomLyIntegration\CommonFeatures\ImageBasedLights\ImageBasedLightComponentConstants.h">
+      <Filter>Include\AtomLyIntegration\CommonFeatures\ImageBasedLights</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Include\AtomLyIntegration\CommonFeatures\Material\MaterialComponentBus.h">
+      <Filter>Include\AtomLyIntegration\CommonFeatures\Material</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Include\AtomLyIntegration\CommonFeatures\Material\MaterialComponentConfig.h">
+      <Filter>Include\AtomLyIntegration\CommonFeatures\Material</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Include\AtomLyIntegration\CommonFeatures\Material\MaterialComponentConstants.h">
+      <Filter>Include\AtomLyIntegration\CommonFeatures\Material</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Include\AtomLyIntegration\CommonFeatures\Mesh\MeshComponentBus.h">
+      <Filter>Include\AtomLyIntegration\CommonFeatures\Mesh</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Include\AtomLyIntegration\CommonFeatures\Mesh\MeshComponentConstants.h">
+      <Filter>Include\AtomLyIntegration\CommonFeatures\Mesh</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Include\AtomLyIntegration\CommonFeatures\PostProcess\PostFxLayerBus.h">
+      <Filter>Include\AtomLyIntegration\CommonFeatures\PostProcess</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Include\AtomLyIntegration\CommonFeatures\PostProcess\PostFxLayerComponentConfig.h">
+      <Filter>Include\AtomLyIntegration\CommonFeatures\PostProcess</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Include\AtomLyIntegration\CommonFeatures\PostProcess\PostFxLayerComponentConstants.h">
+      <Filter>Include\AtomLyIntegration\CommonFeatures\PostProcess</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Include\AtomLyIntegration\CommonFeatures\PostProcess\Bloom\BloomBus.h">
+      <Filter>Include\AtomLyIntegration\CommonFeatures\PostProcess\Bloom</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Include\AtomLyIntegration\CommonFeatures\PostProcess\Bloom\BloomComponentConfig.h">
+      <Filter>Include\AtomLyIntegration\CommonFeatures\PostProcess\Bloom</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Include\AtomLyIntegration\CommonFeatures\PostProcess\DepthOfField\DepthOfFieldBus.h">
+      <Filter>Include\AtomLyIntegration\CommonFeatures\PostProcess\DepthOfField</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Include\AtomLyIntegration\CommonFeatures\PostProcess\DepthOfField\DepthOfFieldComponentConfig.h">
+      <Filter>Include\AtomLyIntegration\CommonFeatures\PostProcess\DepthOfField</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Include\AtomLyIntegration\CommonFeatures\PostProcess\DisplayMapper\DisplayMapperComponentBus.h">
+      <Filter>Include\AtomLyIntegration\CommonFeatures\PostProcess\DisplayMapper</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Include\AtomLyIntegration\CommonFeatures\PostProcess\DisplayMapper\DisplayMapperComponentConfig.h">
+      <Filter>Include\AtomLyIntegration\CommonFeatures\PostProcess\DisplayMapper</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Include\AtomLyIntegration\CommonFeatures\PostProcess\DisplayMapper\DisplayMapperComponentConstants.h">
+      <Filter>Include\AtomLyIntegration\CommonFeatures\PostProcess\DisplayMapper</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Include\AtomLyIntegration\CommonFeatures\PostProcess\ExposureControl\ExposureControlBus.h">
+      <Filter>Include\AtomLyIntegration\CommonFeatures\PostProcess\ExposureControl</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Include\AtomLyIntegration\CommonFeatures\PostProcess\ExposureControl\ExposureControlComponentConfig.h">
+      <Filter>Include\AtomLyIntegration\CommonFeatures\PostProcess\ExposureControl</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Include\AtomLyIntegration\CommonFeatures\PostProcess\ExposureControl\ExposureControlComponentConstants.h">
+      <Filter>Include\AtomLyIntegration\CommonFeatures\PostProcess\ExposureControl</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Include\AtomLyIntegration\CommonFeatures\PostProcess\ColorGrading\HDRColorGradingBus.h">
+      <Filter>Include\AtomLyIntegration\CommonFeatures\PostProcess\ColorGrading</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Include\AtomLyIntegration\CommonFeatures\PostProcess\ColorGrading\HDRColorGradingComponentConfig.h">
+      <Filter>Include\AtomLyIntegration\CommonFeatures\PostProcess\ColorGrading</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Include\AtomLyIntegration\CommonFeatures\PostProcess\Ssao\SsaoBus.h">
+      <Filter>Include\AtomLyIntegration\CommonFeatures\PostProcess\Ssao</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Include\AtomLyIntegration\CommonFeatures\PostProcess\Ssao\SsaoComponentConfiguration.h">
+      <Filter>Include\AtomLyIntegration\CommonFeatures\PostProcess\Ssao</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Include\AtomLyIntegration\CommonFeatures\PostProcess\LookModification\LookModificationBus.h">
+      <Filter>Include\AtomLyIntegration\CommonFeatures\PostProcess\LookModification</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Include\AtomLyIntegration\CommonFeatures\PostProcess\LookModification\LookModificationComponentConfig.h">
+      <Filter>Include\AtomLyIntegration\CommonFeatures\PostProcess\LookModification</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Include\AtomLyIntegration\CommonFeatures\PostProcess\LookModification\LookModificationComponentConstants.h">
+      <Filter>Include\AtomLyIntegration\CommonFeatures\PostProcess\LookModification</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Include\AtomLyIntegration\CommonFeatures\PostProcess\PostFxWeightRequestBus.h">
+      <Filter>Include\AtomLyIntegration\CommonFeatures\PostProcess</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Include\AtomLyIntegration\CommonFeatures\PostProcess\PostFxLayerCategoriesProviderRequestBus.h">
+      <Filter>Include\AtomLyIntegration\CommonFeatures\PostProcess</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Include\AtomLyIntegration\CommonFeatures\PostProcess\RadiusWeightModifier\RadiusWeightModifierComponentConfig.h">
+      <Filter>Include\AtomLyIntegration\CommonFeatures\PostProcess\RadiusWeightModifier</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Include\AtomLyIntegration\CommonFeatures\PostProcess\RadiusWeightModifier\RadiusWeightModifierComponentConstants.h">
+      <Filter>Include\AtomLyIntegration\CommonFeatures\PostProcess\RadiusWeightModifier</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Include\AtomLyIntegration\CommonFeatures\PostProcess\ShapeWeightModifier\ShapeWeightModifierComponentConfig.h">
+      <Filter>Include\AtomLyIntegration\CommonFeatures\PostProcess\ShapeWeightModifier</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Include\AtomLyIntegration\CommonFeatures\PostProcess\ShapeWeightModifier\ShapeWeightModifierComponentConstants.h">
+      <Filter>Include\AtomLyIntegration\CommonFeatures\PostProcess\ShapeWeightModifier</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Include\AtomLyIntegration\CommonFeatures\PostProcess\GradientWeightModifier\GradientWeightModifierComponentConfig.h">
+      <Filter>Include\AtomLyIntegration\CommonFeatures\PostProcess\GradientWeightModifier</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Include\AtomLyIntegration\CommonFeatures\PostProcess\GradientWeightModifier\GradientWeightModifierComponentConstants.h">
+      <Filter>Include\AtomLyIntegration\CommonFeatures\PostProcess\GradientWeightModifier</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Include\AtomLyIntegration\CommonFeatures\ScreenSpace\DeferredFogComponentConfig.h">
+      <Filter>Include\AtomLyIntegration\CommonFeatures\ScreenSpace</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Include\AtomLyIntegration\CommonFeatures\ScreenSpace\DeferredFogBus.h">
+      <Filter>Include\AtomLyIntegration\CommonFeatures\ScreenSpace</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Include\AtomLyIntegration\CommonFeatures\SkyBox\HDRiSkyboxBus.h">
+      <Filter>Include\AtomLyIntegration\CommonFeatures\SkyBox</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Include\AtomLyIntegration\CommonFeatures\SkyBox\HDRiSkyboxComponentConfig.h">
+      <Filter>Include\AtomLyIntegration\CommonFeatures\SkyBox</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Include\AtomLyIntegration\CommonFeatures\SkyBox\PhysicalSkyBus.h">
+      <Filter>Include\AtomLyIntegration\CommonFeatures\SkyBox</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Include\AtomLyIntegration\CommonFeatures\SkyBox\PhysicalSkyComponentConfig.h">
+      <Filter>Include\AtomLyIntegration\CommonFeatures\SkyBox</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Include\AtomLyIntegration\CommonFeatures\Scripting\EntityReferenceRequestBus.h">
+      <Filter>Include\AtomLyIntegration\CommonFeatures\Scripting</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Include\AtomLyIntegration\CommonFeatures\Scripting\EntityReferenceConstants.h">
+      <Filter>Include\AtomLyIntegration\CommonFeatures\Scripting</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Include\AtomLyIntegration\CommonFeatures\Scripting\EntityReferenceComponentConfig.h">
+      <Filter>Include\AtomLyIntegration\CommonFeatures\Scripting</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\atomlyintegration_commonfeatures_public_files.cmake" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Generated Files">
+      <UniqueIdentifier>{FB9B7D8B-7F05-31D5-AA90-592248EDE1B3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include">
+      <UniqueIdentifier>{E188105A-C8C4-34BB-9809-15E8410EF7F8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\AtomLyIntegration">
+      <UniqueIdentifier>{047FBAEF-F91B-3201-BAD9-0E29EA79A9C3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\AtomLyIntegration\CommonFeatures">
+      <UniqueIdentifier>{5A13A2A2-23CC-3F12-B59C-3A3E3F8E16B8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\AtomLyIntegration\CommonFeatures\CoreLights">
+      <UniqueIdentifier>{889DE2A5-BEF8-3EF5-916C-5A39B640026A}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\AtomLyIntegration\CommonFeatures\Decals">
+      <UniqueIdentifier>{8F54E273-1EBC-34E1-A47B-3772B5FBFCAB}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\AtomLyIntegration\CommonFeatures\Grid">
+      <UniqueIdentifier>{B1EA0A1C-A656-37FD-87A1-8651DFEA9CF7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\AtomLyIntegration\CommonFeatures\ImageBasedLights">
+      <UniqueIdentifier>{27FF8378-8A31-325F-A2A5-94A8D7A383F0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\AtomLyIntegration\CommonFeatures\Material">
+      <UniqueIdentifier>{A3E60ED5-6673-3CFC-8786-1E35FE60322C}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\AtomLyIntegration\CommonFeatures\Mesh">
+      <UniqueIdentifier>{D41BC976-2BE3-3A30-9C62-C04CDAAD6F04}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\AtomLyIntegration\CommonFeatures\PostProcess">
+      <UniqueIdentifier>{66CBFF4A-60C6-3538-9638-8FF71949321D}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\AtomLyIntegration\CommonFeatures\PostProcess\Bloom">
+      <UniqueIdentifier>{2CFB8FBB-414D-35C0-8CF7-114351925DCB}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\AtomLyIntegration\CommonFeatures\PostProcess\ColorGrading">
+      <UniqueIdentifier>{F9F79E00-F97C-3F25-821F-599FD8EE0BAE}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\AtomLyIntegration\CommonFeatures\PostProcess\DepthOfField">
+      <UniqueIdentifier>{F700E308-E135-3B6E-BB53-2BFBBEFB3AA3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\AtomLyIntegration\CommonFeatures\PostProcess\DisplayMapper">
+      <UniqueIdentifier>{C90A941C-1E81-3B89-A793-80889FC1EFD2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\AtomLyIntegration\CommonFeatures\PostProcess\ExposureControl">
+      <UniqueIdentifier>{99115B04-AC3A-34CE-942B-D51D36B7D5AB}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\AtomLyIntegration\CommonFeatures\PostProcess\GradientWeightModifier">
+      <UniqueIdentifier>{117B1597-45DD-3154-A211-EED7FBDF120A}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\AtomLyIntegration\CommonFeatures\PostProcess\LookModification">
+      <UniqueIdentifier>{B5652AA1-D819-38A2-8A55-0301CEBD4D97}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\AtomLyIntegration\CommonFeatures\PostProcess\RadiusWeightModifier">
+      <UniqueIdentifier>{2152C13C-0425-3128-9BCE-C9DE5B1E46E2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\AtomLyIntegration\CommonFeatures\PostProcess\ShapeWeightModifier">
+      <UniqueIdentifier>{3A830F5A-CBD1-3EAF-A6A2-B536FE2E79F7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\AtomLyIntegration\CommonFeatures\PostProcess\Ssao">
+      <UniqueIdentifier>{471560FC-6D28-3D17-8702-6F5971AF6436}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\AtomLyIntegration\CommonFeatures\ScreenSpace">
+      <UniqueIdentifier>{3B5DAAF1-A13E-3098-81E8-399C2FE55C3E}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\AtomLyIntegration\CommonFeatures\Scripting">
+      <UniqueIdentifier>{E9A9B2ED-59E3-32CB-B21D-F83DA71D1385}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\AtomLyIntegration\CommonFeatures\SkyBox">
+      <UniqueIdentifier>{1316D63A-189C-335C-803F-706EAE057FB2}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

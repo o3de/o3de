@@ -1,0 +1,323 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\ScriptCanvasDeveloper-a77675ce\Code\ScriptCanvasDeveloper.Editor_autogen\mocs_compilation_debug.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\ScriptCanvasDeveloper-a77675ce\Code\CMakeFiles\ScriptCanvasDeveloper.Editor.dir\Unity\unity_4_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\ScriptCanvasDeveloper-a77675ce\Code\CMakeFiles\ScriptCanvasDeveloper.Editor.dir\Unity\unity_3_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\ScriptCanvasDeveloper-a77675ce\Code\CMakeFiles\ScriptCanvasDeveloper.Editor.dir\Unity\unity_2_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\ScriptCanvasDeveloper-a77675ce\Code\CMakeFiles\ScriptCanvasDeveloper.Editor.dir\Unity\unity_1_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\ScriptCanvasDeveloper-a77675ce\Code\CMakeFiles\ScriptCanvasDeveloper.Editor.dir\Unity\unity_0_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvasDeveloper\Code\Editor\Source\Developer.cpp">
+      <Filter>Editor\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvasDeveloper\Code\Editor\Source\DeveloperUtils.cpp">
+      <Filter>Editor\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvasDeveloper\Code\Editor\Source\EditorAutomationTestDialog.cpp">
+      <Filter>Editor\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvasDeveloper\Code\Editor\Source\ScriptCanvasDeveloperGem.cpp">
+      <Filter>Editor\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvasDeveloper\Code\Editor\Source\ScriptCanvasDeveloperEditorComponent.cpp">
+      <Filter>Editor\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvasDeveloper\Code\Editor\Source\Mock.cpp">
+      <Filter>Editor\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvasDeveloper\Code\Editor\Source\NodeListDumpAction.cpp">
+      <Filter>Editor\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvasDeveloper\Code\Editor\Source\TSGenerateAction.cpp">
+      <Filter>Editor\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvasDeveloper\Code\Editor\Source\WrapperMock.cpp">
+      <Filter>Editor\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvasDeveloper\Code\Editor\Source\XMLDoc.cpp">
+      <Filter>Editor\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvasDeveloper\Code\Editor\Source\AutomationActions\DynamicSlotFullCreation.cpp">
+      <Filter>Editor\Source\AutomationActions</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvasDeveloper\Code\Editor\Source\AutomationActions\NodePaletteFullCreation.cpp">
+      <Filter>Editor\Source\AutomationActions</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvasDeveloper\Code\Editor\Source\AutomationActions\VariableListFullCreation.cpp">
+      <Filter>Editor\Source\AutomationActions</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvasDeveloper\Code\Editor\Source\EditorAutomation\EditorAutomationTest.cpp">
+      <Filter>Editor\Source\EditorAutomation</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvasDeveloper\Code\Editor\Source\EditorAutomation\EditorAutomationActions\ScriptCanvasActions\ConnectionActions.cpp">
+      <Filter>Editor\Source\EditorAutomation\EditorAutomationActions\ScriptCanvasActions</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvasDeveloper\Code\Editor\Source\EditorAutomation\EditorAutomationActions\ScriptCanvasActions\CreateElementsActions.cpp">
+      <Filter>Editor\Source\EditorAutomation\EditorAutomationActions\ScriptCanvasActions</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvasDeveloper\Code\Editor\Source\EditorAutomation\EditorAutomationActions\ScriptCanvasActions\EditorViewActions.cpp">
+      <Filter>Editor\Source\EditorAutomation\EditorAutomationActions\ScriptCanvasActions</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvasDeveloper\Code\Editor\Source\EditorAutomation\EditorAutomationActions\ScriptCanvasActions\ElementInteractions.cpp">
+      <Filter>Editor\Source\EditorAutomation\EditorAutomationActions\ScriptCanvasActions</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvasDeveloper\Code\Editor\Source\EditorAutomation\EditorAutomationActions\ScriptCanvasActions\GraphActions.cpp">
+      <Filter>Editor\Source\EditorAutomation\EditorAutomationActions\ScriptCanvasActions</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvasDeveloper\Code\Editor\Source\EditorAutomation\EditorAutomationActions\ScriptCanvasActions\VariableActions.cpp">
+      <Filter>Editor\Source\EditorAutomation\EditorAutomationActions\ScriptCanvasActions</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvasDeveloper\Code\Editor\Source\EditorAutomation\EditorAutomationActions\EditorKeyActions.cpp">
+      <Filter>Editor\Source\EditorAutomation\EditorAutomationActions</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvasDeveloper\Code\Editor\Source\EditorAutomation\EditorAutomationActions\EditorMouseActions.cpp">
+      <Filter>Editor\Source\EditorAutomation\EditorAutomationActions</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvasDeveloper\Code\Editor\Source\EditorAutomation\EditorAutomationActions\GenericActions.cpp">
+      <Filter>Editor\Source\EditorAutomation\EditorAutomationActions</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvasDeveloper\Code\Editor\Source\EditorAutomation\EditorAutomationActions\WidgetActions.cpp">
+      <Filter>Editor\Source\EditorAutomation\EditorAutomationActions</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvasDeveloper\Code\Editor\Source\EditorAutomation\EditorAutomationStates\ConnectionStates.cpp">
+      <Filter>Editor\Source\EditorAutomation\EditorAutomationStates</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvasDeveloper\Code\Editor\Source\EditorAutomation\EditorAutomationStates\CreateElementsStates.cpp">
+      <Filter>Editor\Source\EditorAutomation\EditorAutomationStates</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvasDeveloper\Code\Editor\Source\EditorAutomation\EditorAutomationStates\EditorViewStates.cpp">
+      <Filter>Editor\Source\EditorAutomation\EditorAutomationStates</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvasDeveloper\Code\Editor\Source\EditorAutomation\EditorAutomationStates\ElementInteractionStates.cpp">
+      <Filter>Editor\Source\EditorAutomation\EditorAutomationStates</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvasDeveloper\Code\Editor\Source\EditorAutomation\EditorAutomationStates\GraphStates.cpp">
+      <Filter>Editor\Source\EditorAutomation\EditorAutomationStates</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvasDeveloper\Code\Editor\Source\EditorAutomation\EditorAutomationStates\UtilityStates.cpp">
+      <Filter>Editor\Source\EditorAutomation\EditorAutomationStates</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvasDeveloper\Code\Editor\Source\EditorAutomation\EditorAutomationStates\VariableStates.cpp">
+      <Filter>Editor\Source\EditorAutomation\EditorAutomationStates</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvasDeveloper\Code\Editor\Source\EditorAutomationTests\GraphCreationTests.cpp">
+      <Filter>Editor\Source\EditorAutomationTests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvasDeveloper\Code\Editor\Source\EditorAutomationTests\GroupTests.cpp">
+      <Filter>Editor\Source\EditorAutomationTests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvasDeveloper\Code\Editor\Source\EditorAutomationTests\InteractionTests.cpp">
+      <Filter>Editor\Source\EditorAutomationTests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvasDeveloper\Code\Editor\Source\EditorAutomationTests\NodeCreationTests.cpp">
+      <Filter>Editor\Source\EditorAutomationTests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvasDeveloper\Code\Editor\Source\EditorAutomationTests\VariableTests.cpp">
+      <Filter>Editor\Source\EditorAutomationTests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\ScriptCanvasDeveloper-a77675ce\Code\ScriptCanvasDeveloper.Editor_autogen\mocs_compilation_profile.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\ScriptCanvasDeveloper-a77675ce\Code\ScriptCanvasDeveloper.Editor_autogen\mocs_compilation_release.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvasDeveloper\Code\Editor\Include\ScriptCanvasDeveloperEditor\EditorAutomation\EditorAutomationAction.h">
+      <Filter>Editor\Include\ScriptCanvasDeveloperEditor\EditorAutomation</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvasDeveloper\Code\Editor\Include\ScriptCanvasDeveloperEditor\EditorAutomation\EditorAutomationModelIds.h">
+      <Filter>Editor\Include\ScriptCanvasDeveloperEditor\EditorAutomation</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvasDeveloper\Code\Editor\Include\ScriptCanvasDeveloperEditor\EditorAutomation\EditorAutomationTest.h">
+      <Filter>Editor\Include\ScriptCanvasDeveloperEditor\EditorAutomation</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvasDeveloper\Code\Editor\Include\ScriptCanvasDeveloperEditor\EditorAutomation\EditorAutomationActions\ScriptCanvasActions\ConnectionActions.h">
+      <Filter>Editor\Include\ScriptCanvasDeveloperEditor\EditorAutomation\EditorAutomationActions\ScriptCanvasActions</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvasDeveloper\Code\Editor\Include\ScriptCanvasDeveloperEditor\EditorAutomation\EditorAutomationActions\ScriptCanvasActions\CreateElementsActions.h">
+      <Filter>Editor\Include\ScriptCanvasDeveloperEditor\EditorAutomation\EditorAutomationActions\ScriptCanvasActions</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvasDeveloper\Code\Editor\Include\ScriptCanvasDeveloperEditor\EditorAutomation\EditorAutomationActions\ScriptCanvasActions\EditorViewActions.h">
+      <Filter>Editor\Include\ScriptCanvasDeveloperEditor\EditorAutomation\EditorAutomationActions\ScriptCanvasActions</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvasDeveloper\Code\Editor\Include\ScriptCanvasDeveloperEditor\EditorAutomation\EditorAutomationActions\ScriptCanvasActions\ElementInteractions.h">
+      <Filter>Editor\Include\ScriptCanvasDeveloperEditor\EditorAutomation\EditorAutomationActions\ScriptCanvasActions</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvasDeveloper\Code\Editor\Include\ScriptCanvasDeveloperEditor\EditorAutomation\EditorAutomationActions\ScriptCanvasActions\GraphActions.h">
+      <Filter>Editor\Include\ScriptCanvasDeveloperEditor\EditorAutomation\EditorAutomationActions\ScriptCanvasActions</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvasDeveloper\Code\Editor\Include\ScriptCanvasDeveloperEditor\EditorAutomation\EditorAutomationActions\ScriptCanvasActions\VariableActions.h">
+      <Filter>Editor\Include\ScriptCanvasDeveloperEditor\EditorAutomation\EditorAutomationActions\ScriptCanvasActions</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvasDeveloper\Code\Editor\Include\ScriptCanvasDeveloperEditor\EditorAutomation\EditorAutomationActions\EditorKeyActions.h">
+      <Filter>Editor\Include\ScriptCanvasDeveloperEditor\EditorAutomation\EditorAutomationActions</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvasDeveloper\Code\Editor\Include\ScriptCanvasDeveloperEditor\EditorAutomation\EditorAutomationActions\EditorMouseActions.h">
+      <Filter>Editor\Include\ScriptCanvasDeveloperEditor\EditorAutomation\EditorAutomationActions</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvasDeveloper\Code\Editor\Include\ScriptCanvasDeveloperEditor\EditorAutomation\EditorAutomationActions\GenericActions.h">
+      <Filter>Editor\Include\ScriptCanvasDeveloperEditor\EditorAutomation\EditorAutomationActions</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvasDeveloper\Code\Editor\Include\ScriptCanvasDeveloperEditor\EditorAutomation\EditorAutomationActions\WidgetActions.h">
+      <Filter>Editor\Include\ScriptCanvasDeveloperEditor\EditorAutomation\EditorAutomationActions</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvasDeveloper\Code\Editor\Include\ScriptCanvasDeveloperEditor\EditorAutomation\EditorAutomationStates\ConnectionStates.h">
+      <Filter>Editor\Include\ScriptCanvasDeveloperEditor\EditorAutomation\EditorAutomationStates</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvasDeveloper\Code\Editor\Include\ScriptCanvasDeveloperEditor\EditorAutomation\EditorAutomationStates\CreateElementsStates.h">
+      <Filter>Editor\Include\ScriptCanvasDeveloperEditor\EditorAutomation\EditorAutomationStates</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvasDeveloper\Code\Editor\Include\ScriptCanvasDeveloperEditor\EditorAutomation\EditorAutomationStates\EditorViewStates.h">
+      <Filter>Editor\Include\ScriptCanvasDeveloperEditor\EditorAutomation\EditorAutomationStates</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvasDeveloper\Code\Editor\Include\ScriptCanvasDeveloperEditor\EditorAutomation\EditorAutomationStates\ElementInteractionStates.h">
+      <Filter>Editor\Include\ScriptCanvasDeveloperEditor\EditorAutomation\EditorAutomationStates</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvasDeveloper\Code\Editor\Include\ScriptCanvasDeveloperEditor\EditorAutomation\EditorAutomationStates\GraphStates.h">
+      <Filter>Editor\Include\ScriptCanvasDeveloperEditor\EditorAutomation\EditorAutomationStates</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvasDeveloper\Code\Editor\Include\ScriptCanvasDeveloperEditor\EditorAutomation\EditorAutomationStates\UtilityStates.h">
+      <Filter>Editor\Include\ScriptCanvasDeveloperEditor\EditorAutomation\EditorAutomationStates</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvasDeveloper\Code\Editor\Include\ScriptCanvasDeveloperEditor\EditorAutomation\EditorAutomationStates\VariableStates.h">
+      <Filter>Editor\Include\ScriptCanvasDeveloperEditor\EditorAutomation\EditorAutomationStates</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvasDeveloper\Code\Editor\Include\ScriptCanvasDeveloperEditor\Developer.h">
+      <Filter>Editor\Include\ScriptCanvasDeveloperEditor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvasDeveloper\Code\Editor\Include\ScriptCanvasDeveloperEditor\DeveloperUtils.h">
+      <Filter>Editor\Include\ScriptCanvasDeveloperEditor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvasDeveloper\Code\Editor\Include\ScriptCanvasDeveloperEditor\ScriptCanvasDeveloperEditorComponent.h">
+      <Filter>Editor\Include\ScriptCanvasDeveloperEditor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvasDeveloper\Code\Editor\Include\ScriptCanvasDeveloperEditor\Mock.h">
+      <Filter>Editor\Include\ScriptCanvasDeveloperEditor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvasDeveloper\Code\Editor\Include\ScriptCanvasDeveloperEditor\MockBus.h">
+      <Filter>Editor\Include\ScriptCanvasDeveloperEditor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvasDeveloper\Code\Editor\Include\ScriptCanvasDeveloperEditor\NodeListDumpAction.h">
+      <Filter>Editor\Include\ScriptCanvasDeveloperEditor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvasDeveloper\Code\Editor\Include\ScriptCanvasDeveloperEditor\TSGenerateAction.h">
+      <Filter>Editor\Include\ScriptCanvasDeveloperEditor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvasDeveloper\Code\Editor\Include\ScriptCanvasDeveloperEditor\WrapperMock.h">
+      <Filter>Editor\Include\ScriptCanvasDeveloperEditor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvasDeveloper\Code\Editor\Include\ScriptCanvasDeveloperEditor\AutomationActions\DynamicSlotFullCreation.h">
+      <Filter>Editor\Include\ScriptCanvasDeveloperEditor\AutomationActions</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvasDeveloper\Code\Editor\Include\ScriptCanvasDeveloperEditor\AutomationActions\VariableListFullCreation.h">
+      <Filter>Editor\Include\ScriptCanvasDeveloperEditor\AutomationActions</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvasDeveloper\Code\Editor\Source\EditorAutomationTestDialog.h">
+      <Filter>Editor\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvasDeveloper\Code\Editor\Source\XMLDoc.h">
+      <Filter>Editor\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvasDeveloper\Code\Editor\Source\EditorAutomationTests\EditorAutomationTests.h">
+      <Filter>Editor\Source\EditorAutomationTests</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvasDeveloper\Code\Editor\Source\EditorAutomationTests\GraphCreationTests.h">
+      <Filter>Editor\Source\EditorAutomationTests</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvasDeveloper\Code\Editor\Source\EditorAutomationTests\GroupTests.h">
+      <Filter>Editor\Source\EditorAutomationTests</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvasDeveloper\Code\Editor\Source\EditorAutomationTests\InteractionTests.h">
+      <Filter>Editor\Source\EditorAutomationTests</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvasDeveloper\Code\Editor\Source\EditorAutomationTests\NodeCreationTests.h">
+      <Filter>Editor\Source\EditorAutomationTests</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvasDeveloper\Code\Editor\Source\EditorAutomationTests\VariableTests.h">
+      <Filter>Editor\Source\EditorAutomationTests</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\CMakeFiles\08b24365a84bd27d080f6dd51f42b933\ScriptCanvasDeveloper.Editor_(CONFIG).stamp.rule">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvasDeveloper\Code\CMakeLists.txt">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvasDeveloper\Code\scriptcanvasdeveloper_gem_editor_files.cmake" />
+    <None Include="C:\Users\lesaelr\o3de\runtime_dependencies\debug\ScriptCanvasDeveloper.Editor_debug.stamp">
+      <Filter>Generated Files</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\runtime_dependencies\profile\ScriptCanvasDeveloper.Editor_profile.stamp">
+      <Filter>Generated Files</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\runtime_dependencies\release\ScriptCanvasDeveloper.Editor_release.stamp">
+      <Filter>Generated Files</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Editor">
+      <UniqueIdentifier>{AB7AD22B-4C45-3CDD-8A3C-7A5D74862736}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Editor\Include">
+      <UniqueIdentifier>{34FDBC73-F285-38A8-99E0-A56EDB5F822D}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Editor\Include\ScriptCanvasDeveloperEditor">
+      <UniqueIdentifier>{191F1EE0-7556-3272-956D-C7AC18C43D1B}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Editor\Include\ScriptCanvasDeveloperEditor\AutomationActions">
+      <UniqueIdentifier>{6B439D9A-7C15-3260-9A1E-F821E3EB9F8F}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Editor\Include\ScriptCanvasDeveloperEditor\EditorAutomation">
+      <UniqueIdentifier>{E4942254-79E9-3F5A-9CF6-87F08CE1BD7E}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Editor\Include\ScriptCanvasDeveloperEditor\EditorAutomation\EditorAutomationActions">
+      <UniqueIdentifier>{464D2A19-987F-33EF-8376-34C9DC7767D8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Editor\Include\ScriptCanvasDeveloperEditor\EditorAutomation\EditorAutomationActions\ScriptCanvasActions">
+      <UniqueIdentifier>{A9A207E3-65B4-397F-8673-0F8178A20DD6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Editor\Include\ScriptCanvasDeveloperEditor\EditorAutomation\EditorAutomationStates">
+      <UniqueIdentifier>{A5A545A2-66E3-35AC-A3B7-192DF6605BAB}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Editor\Source">
+      <UniqueIdentifier>{A8979465-D2E3-3D39-875C-29D924046239}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Editor\Source\AutomationActions">
+      <UniqueIdentifier>{2A7BE4CA-F863-3DDD-8609-7E5E28A90BBC}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Editor\Source\EditorAutomation">
+      <UniqueIdentifier>{D93281C8-653B-3A45-BE42-06FEA5F8410B}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Editor\Source\EditorAutomationTests">
+      <UniqueIdentifier>{85705F03-1BA9-3FF9-9E86-F71BDB010E36}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Editor\Source\EditorAutomation\EditorAutomationActions">
+      <UniqueIdentifier>{6C38C033-D15D-3A63-8918-1A54A4F8DA92}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Editor\Source\EditorAutomation\EditorAutomationActions\ScriptCanvasActions">
+      <UniqueIdentifier>{185DD3F1-4556-3982-99DF-B0544AE94C3B}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Editor\Source\EditorAutomation\EditorAutomationStates">
+      <UniqueIdentifier>{F233E54C-E236-3CA3-B8D4-FE2B6C95380C}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Generated Files">
+      <UniqueIdentifier>{FB9B7D8B-7F05-31D5-AA90-592248EDE1B3}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>
