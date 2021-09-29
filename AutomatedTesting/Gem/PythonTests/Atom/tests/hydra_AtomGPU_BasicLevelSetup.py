@@ -279,7 +279,8 @@ def AtomGPU_BasicLevelSetup_SetsUpLevel():
         helper.wait_for_condition(function=lambda: not general.is_in_game_mode(), timeout_in_seconds=2.0)
 
         # 24. Look for errors.
-        helper.wait_for_condition(lambda: error_tracer.has_errors, 1.0)
+        helper.wait_for_condition(lambda: error_tracer.has_errors or error_tracer.has_asserts, 1.0)
+        Report.result(Tests.no_assert_occurred, not error_tracer.has_asserts)
         Report.result(Tests.no_error_occurred, not error_tracer.has_errors)
 
 
