@@ -125,6 +125,18 @@ namespace UnitTest
         AzNetworking::NetworkingSystemComponent* m_networkingSystemComponent;
     };
 
+    TEST_F(UdpTransportTests, PacketIdWrap)
+    {
+        const uint32_t SEQUENCE_BOUNDARY = 0xFFFF;
+        UdpPacketTracker tracker;
+
+        for (uint32_t i = 0; i < SEQUENCE_BOUNDARY; ++i)
+        {
+            tracker.GetNextPacketId();
+        }
+        EXPECT_EQ(tracker.GetNextPacketId(), PacketId(SEQUENCE_BOUNDARY + 1));
+    }
+
     TEST_F(UdpTransportTests, AckReplication)
     {
         static const SequenceId TestReliableSequenceId = InvalidSequenceId;
@@ -266,6 +278,15 @@ namespace UnitTest
 
         EXPECT_EQ(testServer.m_serverNetworkInterface->GetConnectionSet().GetConnectionCount(), 1);
         EXPECT_EQ(testClient.m_clientNetworkInterface->GetConnectionSet().GetConnectionCount(), 1);
+
+        testClient.m_clientNetworkInterface->SetTimeoutEnabled(true);
+        EXPECT_TRUE(testClient.m_clientNetworkInterface->IsTimeoutEnabled());
+
+        EXPECT_FALSE(dynamic_cast<UdpNetworkInterface*>(testClient.m_clientNetworkInterface)->IsEncrypted());
+
+        EXPECT_TRUE(testServer.m_serverNetworkInterface->StopListening());
+        EXPECT_FALSE(testServer.m_serverNetworkInterface->StopListening());
+        EXPECT_FALSE(dynamic_cast<UdpNetworkInterface*>(testServer.m_serverNetworkInterface)->IsOpen());
     }
 
     TEST_F(UdpTransportTests, TestMultipleClients)
