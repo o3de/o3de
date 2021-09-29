@@ -84,11 +84,20 @@ namespace AzToolsFramework::Prefab
             m_focusedInstance = focusedInstance;
             m_focusedTemplateId = focusedInstance->get().GetTemplateId();
 
-            AZ::EntityId containerEntityId = focusedInstance->get().GetContainerEntityId();
+            AZ::EntityId containerEntityId;
 
-            // Select the container entity
-            AzToolsFramework::SelectEntity(containerEntityId);
+            if (focusedInstance->get().GetParentInstance() != AZStd::nullopt)
+            {
+                containerEntityId = focusedInstance->get().GetContainerEntityId();
 
+                // Select the container entity
+                AzToolsFramework::SelectEntity(containerEntityId);
+            }
+            else
+            {
+                containerEntityId = AZ::EntityId();
+            }
+            
             // Focus on the descendants of the container entity
             if (FocusModeInterface* focusModeInterface = AZ::Interface<FocusModeInterface>::Get())
             {
@@ -96,7 +105,6 @@ namespace AzToolsFramework::Prefab
             }
 
             RefreshInstanceFocusList();
-
             PrefabFocusNotificationBus::Broadcast(&PrefabFocusNotifications::OnPrefabFocusChanged);
         }
 
