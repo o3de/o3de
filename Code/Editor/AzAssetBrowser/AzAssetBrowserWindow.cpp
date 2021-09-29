@@ -141,6 +141,10 @@ AzAssetBrowserWindow::AzAssetBrowserWindow(QWidget* parent)
         m_ui->m_assetBrowserTreeViewWidget, &AzAssetBrowser::AssetBrowserTreeView::ClearTypeFilter, m_ui->m_searchWidget,
         &AzAssetBrowser::SearchWidget::ClearTypeFilter);
 
+    connect(
+        this, &AzAssetBrowserWindow::SizeChangedSignal, m_ui->m_assetBrowserTableViewWidget,
+        &AzAssetBrowser::AssetBrowserTableView::UpdateSizeSlot);
+
     m_ui->m_assetBrowserTreeViewWidget->SetName("AssetBrowserTreeView_main");
 }
 
@@ -162,6 +166,25 @@ QObject* AzAssetBrowserWindow::createListenerForShowAssetEditorEvent(QObject* pa
 
     // the listener is attached to the parent and will get cleaned up then
     return listener;
+}
+
+void AzAssetBrowserWindow::resizeEvent(QResizeEvent* resizeEvent)
+{
+    // leftLayout is the parent of the tableView
+    // rightLayout is the parent of the preview window.
+    // Workaround: When docking windows this event keeps holding the old size of the widgets instead of the new one
+    // but the resizeEvent holds the new size of the whole widget
+    // So we have to save the proportions somehow
+    const QWidget* leftLayout = m_ui->m_leftLayout;
+    const QVBoxLayout* rightLayout = m_ui->m_rightLayout;
+
+    const float oldLeftLayoutWidth = aznumeric_cast<float>(leftLayout->geometry().width());
+    const float oldWidth = aznumeric_cast<float>(leftLayout->geometry().width() + rightLayout->geometry().width());
+
+    const float newWidth = oldLeftLayoutWidth * aznumeric_cast<float>(resizeEvent->size().width()) / oldWidth;
+    
+    emit SizeChangedSignal(aznumeric_cast<int>(newWidth));
+    QWidget::resizeEvent(resizeEvent);
 }
 
 void AzAssetBrowserWindow::OnInitViewToggleButton()
