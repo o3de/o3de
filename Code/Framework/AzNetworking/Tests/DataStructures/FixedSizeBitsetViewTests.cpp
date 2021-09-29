@@ -52,9 +52,11 @@ namespace UnitTest
 
     TEST(FixedSizeBitsetView, TestAnySet)
     {
+        const uint32_t VIEW_SIZE = 5;
+
         AzNetworking::FixedSizeBitset<9> unusedBitTest(true);
-        AzNetworking::FixedSizeBitsetView view(unusedBitTest, 0, 5);
-        for (uint32_t i = 0; i < 5; ++i)
+        AzNetworking::FixedSizeBitsetView view(unusedBitTest, 0, VIEW_SIZE);
+        for (uint32_t i = 0; i < VIEW_SIZE; ++i)
         {
             view.SetBit(i, false);
         }
@@ -63,6 +65,6 @@ namespace UnitTest
         view.SetBit(0, true);
         EXPECT_TRUE(view.AnySet());
 
-        EXPECT_EQ(view.GetValidBitCount(), 5);
+        EXPECT_EQ(view.GetValidBitCount(), VIEW_SIZE);
     }
 }
