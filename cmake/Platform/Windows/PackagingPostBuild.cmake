@@ -32,6 +32,9 @@ set(_addtional_defines
     -dCPACK_RESOURCE_PATH=${CPACK_SOURCE_DIR}/Platform/Windows/Packaging
 )
 
+file(REAL_PATH "${CPACK_SOURCE_DIR}/.." _root_path)
+file(TO_NATIVE_PATH "${_root_path}/scripts/signer/signer.ps1" _sign_script)
+
 if(CPACK_LICENSE_URL)
     list(APPEND _addtional_defines -dCPACK_LICENSE_URL=${CPACK_LICENSE_URL})
 endif()
@@ -55,31 +58,19 @@ set(_light_command
     -o "${_bootstrap_output_file}"
 )
 
-file(REAL_PATH "${CPACK_SOURCE_DIR}/.." _root_path)
-file(TO_NATIVE_PATH "${_root_path}/scripts/signer/signer.ps1" _sign_script)
-
-set(_signbase_command
+set(_signing_command
     powershell.exe
     -nologo
     -ExecutionPolicy Bypass 
     -File ${_sign_script}
-    -basePath ${_cpack_wix_out_dir}
-)
-
-set(_signbootstrap_command
-    powershell.exe
-    -nologo
-    -ExecutionPolicy Bypass 
-    -File ${_sign_script}
-    -bootstrapPath ${CPACK_PACKAGE_DIRECTORY}/${_bootstrap_filename}
 )
 
 message(STATUS "Signing base files in ${_cpack_wix_out_dir}")
 execute_process(
-    COMMAND ${_signbase_command}
-    RESULT_VARIABLE _signbase_result
-    ERROR_VARIABLE _signbase_errors
-    OUTPUT_VARIABLE _signbase_output
+    COMMAND ${_signing_command} -basePath ${_cpack_wix_out_dir}
+    RESULT_VARIABLE _signing_result
+    ERROR_VARIABLE _signing_errors
+    OUTPUT_VARIABLE _signing_output
     ECHO_OUTPUT_VARIABLE
 )
 
@@ -114,10 +105,10 @@ message(STATUS "Bootstrap installer generated to ${CPACK_PACKAGE_DIRECTORY}/${_b
 
 message(STATUS "Signing bootstrap installer in ${CPACK_PACKAGE_DIRECTORY}")
 execute_process(
-    COMMAND ${_signbootstrap_command}
-    RESULT_VARIABLE _signbootstrap_result
-    ERROR_VARIABLE _signbootstrap_errors
-    OUTPUT_VARIABLE _signbootstrap_output
+    COMMAND ${_signing_command} -bootstrapPath ${CPACK_PACKAGE_DIRECTORY}/${_bootstrap_filename}
+    RESULT_VARIABLE _signing_result
+    ERROR_VARIABLE _signing_errors
+    OUTPUT_VARIABLE _signing_output
     ECHO_OUTPUT_VARIABLE
 )
 
