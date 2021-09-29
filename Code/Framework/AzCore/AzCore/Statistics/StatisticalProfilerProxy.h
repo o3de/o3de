@@ -133,7 +133,7 @@ namespace AZ::Statistics
 
         void RegisterProfilerId(StatisticalProfilerId id)
         {
-            m_profilers.try_emplace(id, AZStd::move(ProfilerInfo()));
+            m_profilers.try_emplace(id, ProfilerInfo());
         }
 
         bool IsProfilerActive(StatisticalProfilerId id) const
@@ -144,22 +144,21 @@ namespace AZ::Statistics
 
         StatisticalProfilerType& GetProfiler(StatisticalProfilerId id)
         {
-            auto iter = m_profilers.try_emplace(id, AZStd::move(ProfilerInfo())).first;
+            auto iter = m_profilers.try_emplace(id, ProfilerInfo()).first;
             return iter->second.m_profiler;
         }
 
         void ActivateProfiler(StatisticalProfilerId id, bool activate, bool autoCreate = true)
         {
-            ProfilerMap::iterator iter;
             if (autoCreate)
             {
-                iter = m_profilers.try_emplace(id, AZStd::move(ProfilerInfo())).first;
+                auto iter = m_profilers.try_emplace(id, ProfilerInfo()).first;
+                iter->second.m_enabled = activate;
             }
-            else
+            else if (auto iter = m_profilers.find(id); iter != m_profilers.end())
             {
-                iter = m_profilers.find(id);
+                iter->second.m_enabled = activate;
             }
-            iter->second.m_enabled = activate;
         }
 
         void PushSample(StatisticalProfilerId id, const StatIdType& statId, double value)
