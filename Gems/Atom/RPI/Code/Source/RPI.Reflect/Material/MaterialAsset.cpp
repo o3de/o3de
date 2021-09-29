@@ -195,7 +195,7 @@ namespace AZ
 
         void MaterialAsset::ApplyVersionUpdates()
         {
-            for (int i = 0; i < static_cast<int>(m_materialTypeAsset->GetVersion() - m_materialTypeVersion); ++i)
+            for (int i = 0; i < aznumeric_cast<int>(m_materialTypeAsset->GetVersion() - m_materialTypeVersion); ++i)
             {
                 const auto& versionUpdate = m_materialTypeAsset->GetMaterialVersionUpdate(m_materialTypeVersion + i + 1);
 

@@ -311,16 +311,21 @@ namespace AZ
 
             // Set materialtype version and add each version update object into MaterialTypeAsset.
             materialTypeAssetCreator.SetVersion(m_version);
-            for (const auto& versionUpdate : m_versionUpdates)
             {
-                MaterialVersionUpdate materialVersionUpdate;
-                for (const auto& action : versionUpdate.m_actions)
+            const AZ::Name rename = AZ::Name{ "rename" };
+            const AZ::Name from = AZ::Name{ "from" };
+            const AZ::Name to = AZ::Name{ "to" };
+                for (const auto& versionUpdate : m_versionUpdates)
                 {
-                    materialVersionUpdate.AddAction(MaterialVersionUpdate::Action(AZ::Name{ "rename" }, {
-                        { AZ::Name{ "from" }, AZ::Name{ action.m_renameFrom } },
-                        { AZ::Name{ "to" }, AZ::Name{ action.m_renameTo } } }));
+                    MaterialVersionUpdate materialVersionUpdate;
+                    for (const auto& action : versionUpdate.m_actions)
+                    {
+                        materialVersionUpdate.AddAction(MaterialVersionUpdate::Action(rename, {
+                            { from, AZ::Name{ action.m_renameFrom } },
+                            { to, AZ::Name{ action.m_renameTo } } }));
+                    }
+                    materialTypeAssetCreator.AddVersionUpdate(versionUpdate.m_toVersion, materialVersionUpdate);
                 }
-                materialTypeAssetCreator.AddVersionUpdate(versionUpdate.m_toVersion, materialVersionUpdate);
             }
 
             // Used to gather all the UV streams used in this material type from its shaders in alphabetical order.
