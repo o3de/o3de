@@ -54,7 +54,7 @@ private:
         float m_translateSmoothness;
         bool m_translateSmoothing;
         bool m_captureCursorLook;
-        bool m_orbitYawRotationInverted;
+        bool m_pivotYawRotationInverted;
         bool m_panInvertedX;
         bool m_panInvertedY;
 
@@ -80,12 +80,12 @@ private:
         AZStd::string m_translateUpChannelId;
         AZStd::string m_translateDownChannelId;
         AZStd::string m_boostChannelId;
-        AZStd::string m_orbitChannelId;
+        AZStd::string m_pivotChannelId;
         AZStd::string m_freeLookChannelId;
         AZStd::string m_freePanChannelId;
-        AZStd::string m_orbitLookChannelId;
-        AZStd::string m_orbitDollyChannelId;
-        AZStd::string m_orbitPanChannelId;
+        AZStd::string m_pivotLookChannelId;
+        AZStd::string m_pivotDollyChannelId;
+        AZStd::string m_pivotPanChannelId;
     };
 
     CameraMovementSettings m_cameraMovementSettings;

@@ -28,7 +28,7 @@ namespace SandboxEditor
     constexpr AZStd::string_view CameraRotateSpeedSetting = "/Amazon/Preferences/Editor/Camera/RotateSpeed";
     constexpr AZStd::string_view CameraScrollSpeedSetting = "/Amazon/Preferences/Editor/Camera/DollyScrollSpeed";
     constexpr AZStd::string_view CameraDollyMotionSpeedSetting = "/Amazon/Preferences/Editor/Camera/DollyMotionSpeed";
-    constexpr AZStd::string_view CameraOrbitYawRotationInvertedSetting = "/Amazon/Preferences/Editor/Camera/YawRotationInverted";
+    constexpr AZStd::string_view CameraPivotYawRotationInvertedSetting = "/Amazon/Preferences/Editor/Camera/YawRotationInverted";
     constexpr AZStd::string_view CameraPanInvertedXSetting = "/Amazon/Preferences/Editor/Camera/PanInvertedX";
     constexpr AZStd::string_view CameraPanInvertedYSetting = "/Amazon/Preferences/Editor/Camera/PanInvertedY";
     constexpr AZStd::string_view CameraPanSpeedSetting = "/Amazon/Preferences/Editor/Camera/PanSpeed";
@@ -44,12 +44,12 @@ namespace SandboxEditor
     constexpr AZStd::string_view CameraTranslateUpIdSetting = "/Amazon/Preferences/Editor/Camera/CameraTranslateUpId";
     constexpr AZStd::string_view CameraTranslateDownIdSetting = "/Amazon/Preferences/Editor/Camera/CameraTranslateUpDownId";
     constexpr AZStd::string_view CameraTranslateBoostIdSetting = "/Amazon/Preferences/Editor/Camera/TranslateBoostId";
-    constexpr AZStd::string_view CameraOrbitIdSetting = "/Amazon/Preferences/Editor/Camera/OrbitId";
+    constexpr AZStd::string_view CameraPivotIdSetting = "/Amazon/Preferences/Editor/Camera/PivotId";
     constexpr AZStd::string_view CameraFreeLookIdSetting = "/Amazon/Preferences/Editor/Camera/FreeLookId";
     constexpr AZStd::string_view CameraFreePanIdSetting = "/Amazon/Preferences/Editor/Camera/FreePanId";
-    constexpr AZStd::string_view CameraOrbitLookIdSetting = "/Amazon/Preferences/Editor/Camera/OrbitLookId";
-    constexpr AZStd::string_view CameraOrbitDollyIdSetting = "/Amazon/Preferences/Editor/Camera/OrbitDollyId";
-    constexpr AZStd::string_view CameraOrbitPanIdSetting = "/Amazon/Preferences/Editor/Camera/OrbitPanId";
+    constexpr AZStd::string_view CameraPivotLookIdSetting = "/Amazon/Preferences/Editor/Camera/PivotLookId";
+    constexpr AZStd::string_view CameraPivotDollyIdSetting = "/Amazon/Preferences/Editor/Camera/PivotDollyId";
+    constexpr AZStd::string_view CameraPivotPanIdSetting = "/Amazon/Preferences/Editor/Camera/PivotPanId";
 
     template<typename T>
     void SetRegistry(const AZStd::string_view setting, T&& value)
@@ -239,14 +239,14 @@ namespace SandboxEditor
         SetRegistry(CameraDollyMotionSpeedSetting, speed);
     }
 
-    bool CameraOrbitYawRotationInverted()
+    bool CameraPivotYawRotationInverted()
     {
-        return GetRegistry(CameraOrbitYawRotationInvertedSetting, false);
+        return GetRegistry(CameraPivotYawRotationInvertedSetting, false);
     }
 
-    void SetCameraOrbitYawRotationInverted(const bool inverted)
+    void SetCameraPivotYawRotationInverted(const bool inverted)
     {
-        SetRegistry(CameraOrbitYawRotationInvertedSetting, inverted);
+        SetRegistry(CameraPivotYawRotationInvertedSetting, inverted);
     }
 
     bool CameraPanInvertedX()
@@ -403,14 +403,14 @@ namespace SandboxEditor
         SetRegistry(CameraTranslateBoostIdSetting, cameraTranslateBoostId);
     }
 
-    AzFramework::InputChannelId CameraOrbitChannelId()
+    AzFramework::InputChannelId CameraPivotChannelId()
     {
-        return AzFramework::InputChannelId(GetRegistry(CameraOrbitIdSetting, AZStd::string("keyboard_key_modifier_alt_l")).c_str());
+        return AzFramework::InputChannelId(GetRegistry(CameraPivotIdSetting, AZStd::string("keyboard_key_modifier_alt_l")).c_str());
     }
 
-    void SetCameraOrbitChannelId(AZStd::string_view cameraOrbitId)
+    void SetCameraPivotChannelId(AZStd::string_view cameraPivotId)
     {
-        SetRegistry(CameraOrbitIdSetting, cameraOrbitId);
+        SetRegistry(CameraPivotIdSetting, cameraPivotId);
     }
 
     AzFramework::InputChannelId CameraFreeLookChannelId()
@@ -433,33 +433,33 @@ namespace SandboxEditor
         SetRegistry(CameraFreePanIdSetting, cameraFreePanId);
     }
 
-    AzFramework::InputChannelId CameraOrbitLookChannelId()
+    AzFramework::InputChannelId CameraPivotLookChannelId()
     {
-        return AzFramework::InputChannelId(GetRegistry(CameraOrbitLookIdSetting, AZStd::string("mouse_button_left")).c_str());
+        return AzFramework::InputChannelId(GetRegistry(CameraPivotLookIdSetting, AZStd::string("mouse_button_left")).c_str());
     }
 
-    void SetCameraOrbitLookChannelId(AZStd::string_view cameraOrbitLookId)
+    void SetCameraPivotLookChannelId(AZStd::string_view cameraPivotLookId)
     {
-        SetRegistry(CameraOrbitLookIdSetting, cameraOrbitLookId);
+        SetRegistry(CameraPivotLookIdSetting, cameraPivotLookId);
     }
 
-    AzFramework::InputChannelId CameraOrbitDollyChannelId()
+    AzFramework::InputChannelId CameraPivotDollyChannelId()
     {
-        return AzFramework::InputChannelId(GetRegistry(CameraOrbitDollyIdSetting, AZStd::string("mouse_button_right")).c_str());
+        return AzFramework::InputChannelId(GetRegistry(CameraPivotDollyIdSetting, AZStd::string("mouse_button_right")).c_str());
     }
 
-    void SetCameraOrbitDollyChannelId(AZStd::string_view cameraOrbitDollyId)
+    void SetCameraPivotDollyChannelId(AZStd::string_view cameraPivotDollyId)
     {
-        SetRegistry(CameraOrbitDollyIdSetting, cameraOrbitDollyId);
+        SetRegistry(CameraPivotDollyIdSetting, cameraPivotDollyId);
     }
 
-    AzFramework::InputChannelId CameraOrbitPanChannelId()
+    AzFramework::InputChannelId CameraPivotPanChannelId()
     {
-        return AzFramework::InputChannelId(GetRegistry(CameraOrbitPanIdSetting, AZStd::string("mouse_button_middle")).c_str());
+        return AzFramework::InputChannelId(GetRegistry(CameraPivotPanIdSetting, AZStd::string("mouse_button_middle")).c_str());
     }
 
-    void SetCameraOrbitPanChannelId(AZStd::string_view cameraOrbitPanId)
+    void SetCameraPivotPanChannelId(AZStd::string_view cameraPivotPanId)
     {
-        SetRegistry(CameraOrbitPanIdSetting, cameraOrbitPanId);
+        SetRegistry(CameraPivotPanIdSetting, cameraPivotPanId);
     }
 } // namespace SandboxEditor
