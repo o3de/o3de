@@ -7,11 +7,12 @@
  */
 
 #include "InputConfigurationComponent.h"
+#include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
-#include <AzCore/IO/SystemFile.h>
-#include <AzCore/Serialization/ObjectStream.h>
-#include <AzCore/Serialization/DataPatch.h>
 #include <AzCore/IO/ByteContainerStream.h>
+#include <AzCore/IO/SystemFile.h>
+#include <AzCore/Serialization/DataPatch.h>
+#include <AzCore/Serialization/ObjectStream.h>
 #include <AzCore/Serialization/Utils.h>
 
 namespace StartingPointInput
