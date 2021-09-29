@@ -87,10 +87,10 @@ namespace JsonSerializationTests
             ASSERT_FALSE(m_jsonDocument->HasParseError());
 
             JsonImporterCustom* importerObj = new JsonImporterCustom(this);
-            AZStd::unique_ptr<AZ::JsonImportResolver> importResolver(new AZ::JsonImportResolver(m_jsonDocument->GetAllocator(), importerObj));
+            AZStd::unique_ptr<AZ::JsonImportResolver> importResolver(new AZ::JsonImportResolver(importerObj));
 
             AZ::StackedString pathLoad(AZ::StackedString::Format::JsonPointer);
-            importResolver->LoadImports(m_jsonDocument->GetObject(), pathLoad);
+            importResolver->LoadImports(m_jsonDocument->GetObject(), pathLoad, m_jsonDocument->GetAllocator());
 
             rapidjson::Document expectedOutcome;
             expectedOutcome.Parse(expectedImportedValue);
@@ -103,7 +103,7 @@ namespace JsonSerializationTests
             ASSERT_FALSE(originalInput.HasParseError());
             
             AZ::StackedString pathStore(AZ::StackedString::Format::JsonPointer);
-            importResolver->StoreImports(m_jsonDocument->GetObject(), pathStore);
+            importResolver->StoreImports(m_jsonDocument->GetObject(), pathStore, m_jsonDocument->GetAllocator());
             
             Expect_DocStrEq(m_jsonDocument->GetObject(), originalInput.GetObject());
         }

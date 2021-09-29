@@ -43,15 +43,14 @@ namespace AZ
 
         JsonImportResolver() = delete;
 
-        JsonImportResolver(rapidjson::Document::AllocatorType& allocator, AZStd::string& loadedJsonPath)
+        JsonImportResolver(AZStd::string& loadedJsonPath)
         {
             m_importerObj.reset(new BaseJsonImporter);
             m_importerObj->SetLoadedJsonPath(loadedJsonPath);
         }
         
-        JsonImportResolver(rapidjson::Document::AllocatorType& allocator, BaseJsonImporter* jsonImporter)
+        JsonImportResolver(BaseJsonImporter* jsonImporter)
         {
-            m_allocator = allocator;
             m_importerObj.reset(jsonImporter);
         }
 
@@ -60,13 +59,12 @@ namespace AZ
             m_importerObj.reset();
         }
 
-        bool LoadImports(rapidjson::Value& jsonDoc, StackedString& element);
-        bool StoreImports(rapidjson::Value& jsonDoc, StackedString& element);
+        bool LoadImports(rapidjson::Value& jsonDoc, StackedString& element, rapidjson::Document::AllocatorType& allocator);
+        bool StoreImports(rapidjson::Value& jsonDoc, StackedString& element, rapidjson::Document::AllocatorType& allocator);
         
     private:
 
         AZStd::unique_ptr<BaseJsonImporter> m_importerObj;
-        rapidjson::Document::AllocatorType m_allocator;
         AZStd::vector<AZStd::pair<rapidjson::Pointer, AZStd::string>> m_importPaths;
     };
 } // namespace AZ

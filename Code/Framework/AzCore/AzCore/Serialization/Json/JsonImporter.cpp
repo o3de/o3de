@@ -11,7 +11,7 @@
 
 namespace AZ
 {
-    bool JsonImportResolver::LoadImports(rapidjson::Value& jsonDoc, StackedString& element)
+    bool JsonImportResolver::LoadImports(rapidjson::Value& jsonDoc, StackedString& element, rapidjson::Document::AllocatorType& allocator)
     {
         if (jsonDoc.IsObject())
         {
@@ -21,13 +21,13 @@ namespace AZ
                 {
                     rapidjson::Value importedValue;
                     rapidjson::Pointer path(element.Get().data(), element.Get().size());
-                    m_importerObj->Load(jsonDoc, field.value, path, m_allocator);
+                    m_importerObj->Load(jsonDoc, field.value, path, allocator);
                     m_importPaths.emplace_back(AZStd::make_pair(path, field.value.GetString()));
                 }
                 else if (field.value.IsObject() || field.value.IsArray())
                 {
                     ScopedStackedString entryName(element, AZStd::string_view(field.name.GetString(), field.name.GetStringLength()));
-                    LoadImports(field.value, element);
+                    LoadImports(field.value, element, allocator);
                 }
             }
         }
@@ -42,14 +42,14 @@ namespace AZ
                 }
                 AZStd::string indexStr = AZStd::to_string(index);
                 ScopedStackedString entryName(element, AZStd::string_view(indexStr.c_str(), indexStr.size()));
-                LoadImports(*elem, element);
+                LoadImports(*elem, element, allocator);
             }
         }
 
         return true;
     }
 
-    bool JsonImportResolver::StoreImports(rapidjson::Value& jsonDoc, StackedString& element)
+    bool JsonImportResolver::StoreImports(rapidjson::Value& jsonDoc, StackedString& element, rapidjson::Document::AllocatorType& allocator)
     {
         if (jsonDoc.IsObject())
         {
@@ -58,15 +58,15 @@ namespace AZ
                 rapidjson::Pointer importPath = import->first;
                 rapidjson::Value importDirective, storedValue;
                 rapidjson::Value* currentValue = importPath.Get(jsonDoc);
-                m_importerObj->Store(importDirective, *currentValue, importPath, m_allocator, import->second);
+                m_importerObj->Store(importDirective, *currentValue, importPath, allocator, import->second);
                 currentValue->SetObject();
                 if (!importDirective.IsObject())
                 {
-                    currentValue->AddMember(rapidjson::StringRef("$import"), rapidjson::StringRef(import->second.c_str()), m_allocator);
+                    currentValue->AddMember(rapidjson::StringRef("$import"), rapidjson::StringRef(import->second.c_str()), allocator);
                 }
                 else
                 {
-                    currentValue->AddMember(rapidjson::StringRef("$import"), importDirective, m_allocator);
+                    currentValue->AddMember(rapidjson::StringRef("$import"), importDirective, allocator);
                 }
             }
         }
