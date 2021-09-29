@@ -467,16 +467,3 @@ def vector3_str(vector3):
 
 def aabb_str(aabb):
     return "[Min: %s, Max: %s]" % (vector3_str(aabb.min), vector3_str(aabb.max))
-
-
-def isclose(first_float, second_float, rel_tol=1e-9, abs_tol=0.0):
-    # type: (float, float, float, float) -> bool
-    """
-    Compares two floating-point values for "nearly-equal"
-    :param first_float: the first floating point value.
-    :param second_float: the second floating point value.
-    :param rel_tol: maximum allowed difference between the values (must be greater than zero - defaults to 1e-9)
-    :param abs_tol: absolute minimum tolerance allowed
-    :return: boolean True if the values are nearly equal, False otherwise.
-    """
-    return abs(first_float - second_float) <= max(rel_tol * max(abs(first_float), abs(second_float)), abs_tol)

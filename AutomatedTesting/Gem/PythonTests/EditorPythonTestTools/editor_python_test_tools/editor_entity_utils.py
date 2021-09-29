@@ -373,7 +373,7 @@ class EditorEntity:
     def set_local_rotation(self, vector3_rotation) -> None:
         """
         Sets the "SetLocalRotation" value on the entity.
-        :param vector3_rotation: The math.Vector3 value to use for rotation on the entity.
-        :return:
+        :param vector3_rotation: The math.Vector3 value to use for rotation on the entity (uses radians).
+        :return: None
         """
         azlmbr.components.TransformBus(azlmbr.bus.Event, "SetLocalRotation", self.id, vector3_rotation)
