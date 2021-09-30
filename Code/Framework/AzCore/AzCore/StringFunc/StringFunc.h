@@ -258,17 +258,21 @@ namespace AZ
         bool Strip(AZStd::string& inout, const char* stripCharacters = " ", bool bCaseSensitive = false, bool bStripBeginning = false, bool bStripEnding = false);
 
         //! Tokenize
-        /*! Tokenize a c-string, into a vector of AZStd::string(s) optionally keeping empty string
+        /*! Tokenize a c-string, into a vector of strings optionally keeping empty string
          *! and optionally keeping space only strings
+         *! (The string type may be AZStd::string or AZStd::string_view. New code should use AZStd::string_view for better performance. AZStd::string version is preserved for compatibility.)
          Example: Tokenize the words of a sentence.
          StringFunc::Tokenize("Hello World", d, ' '); s[0] == "Hello", s[1] == "World"
          Example: Tokenize a comma and end line delimited string
          StringFunc::Tokenize("Hello,World\nHello,World", d, ' '); s[0] == "Hello", s[1] == "World"
          s[2] == "Hello", s[3] == "World"
          */
-        void Tokenize(AZStd::string_view in, AZStd::vector<AZStd::string>& tokens, const char delimiter, bool keepEmptyStrings = false, bool keepSpaceStrings = false);
-        void Tokenize(AZStd::string_view in, AZStd::vector<AZStd::string>& tokens, AZStd::string_view delimiters = "\\//, \t\n", bool keepEmptyStrings = false, bool keepSpaceStrings = false);
-        void Tokenize(AZStd::string_view in, AZStd::vector<AZStd::string>& tokens, const AZStd::vector<AZStd::string_view>& delimiters, bool keepEmptyStrings = false, bool keepSpaceStrings = false);
+        template<typename StringType>
+        void Tokenize(AZStd::string_view in, AZStd::vector<StringType>& tokens, const char delimiter, bool keepEmptyStrings = false, bool keepSpaceStrings = false);
+        template<typename StringType>
+        void Tokenize(AZStd::string_view in, AZStd::vector<StringType>& tokens, AZStd::string_view delimiters = "\\//, \t\n", bool keepEmptyStrings = false, bool keepSpaceStrings = false);
+        template<typename StringType>
+        void Tokenize(AZStd::string_view in, AZStd::vector<StringType>& tokens, const AZStd::vector<AZStd::string_view>& delimiters, bool keepEmptyStrings = false, bool keepSpaceStrings = false);
 
         //! TokenizeVisitor
         /*! Tokenize a string_view and invoke a handler for each token found.
