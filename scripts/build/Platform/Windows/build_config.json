@@ -353,7 +353,8 @@
   },
   "installer_vs2019": {
     "TAGS": [
-      "nightly-clean"
+      "nightly-clean",
+      "nightly-installer"
     ],
     "PIPELINE_ENV":{
       "NODE_LABEL":"windows-packaging"
