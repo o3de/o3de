@@ -7,6 +7,7 @@
  */
 
 #include <AzCore/Asset/AssetManager.h>
+#include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/Settings/SettingsRegistry.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzFramework/Spawnable/SpawnableMetaData.h>

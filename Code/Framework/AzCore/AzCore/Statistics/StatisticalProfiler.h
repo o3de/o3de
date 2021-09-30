@@ -9,7 +9,7 @@
 
 #include <AzCore/EBus/BusImpl.h> //Just to get AZ::NullMutex
 #include <AzCore/Statistics/StatisticsManager.h>
-#include <AzCore/std/chrono/clocks.h>
+#include <AzCore/std/chrono/chrono.h>
 #include <AzCore/std/parallel/scoped_lock.h>
 
 namespace AZ
@@ -242,7 +242,7 @@ namespace AZ
 
                 //! This one is needed because running statistics are collected many times across
                 //! several frames. This value is used to calculate a per frame sample for @m_totalTimePerFrameStat,
-                //! by subtracting @m_prevAccumulatedSums from the accumulated sum in @m_statisticsManager. 
+                //! by subtracting @m_prevAccumulatedSums from the accumulated sum in @m_statisticsManager.
                 double m_prevAccumulatedSums;
             };
 
