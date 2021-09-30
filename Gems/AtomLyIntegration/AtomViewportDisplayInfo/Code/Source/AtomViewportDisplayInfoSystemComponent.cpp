@@ -183,15 +183,6 @@ namespace AZ::Render
         DrawFramerate();
     }
 
-    void AtomViewportDisplayInfoSystemComponent::OnFrameEnd()
-    {
-        auto currentTime = AZStd::chrono::system_clock::now();
-        if (!m_fpsHistory.empty())
-        {
-            m_fpsHistory.back().m_endFrameTime = currentTime;
-        }
-    }
-
     AtomBridge::ViewportInfoDisplayState AtomViewportDisplayInfoSystemComponent::GetDisplayState() const
     {
         return aznumeric_cast<AtomBridge::ViewportInfoDisplayState>(r_displayInfo.operator int());
@@ -257,11 +248,11 @@ namespace AZ::Render
     void AtomViewportDisplayInfoSystemComponent::UpdateFramerate()
     {
         auto currentTime = AZStd::chrono::system_clock::now();
-        while (!m_fpsHistory.empty() && (currentTime - m_fpsHistory.front().m_beginFrameTime) > m_fpsInterval)
+        while (!m_fpsHistory.empty() && (currentTime - m_fpsHistory.front()) > m_fpsInterval)
         {
             m_fpsHistory.pop_front();
         }
-        m_fpsHistory.push_back(FrameTimingInfo(currentTime));
+        m_fpsHistory.push_back(currentTime);
     }
 
     void AtomViewportDisplayInfoSystemComponent::DrawFramerate()
@@ -270,31 +261,25 @@ namespace AZ::Render
         double minFPS = DBL_MAX;
         double maxFPS = 0;
         AZStd::chrono::duration<double> deltaTime;
-        AZStd::chrono::milliseconds totalFrameMS(0);
         for (const auto& time : m_fpsHistory)
         {
             if (lastTime.has_value())
             {
-                deltaTime = time.m_beginFrameTime - lastTime.value();
+                deltaTime = time - lastTime.value();
                 double fps = AZStd::chrono::seconds(1) / deltaTime;
                 minFPS = AZStd::min(minFPS, fps);
                 maxFPS = AZStd::max(maxFPS, fps);
             }
-            lastTime = time.m_beginFrameTime;
-
-            if (time.m_endFrameTime.has_value())
-            {
-                totalFrameMS += time.m_endFrameTime.value() - time.m_beginFrameTime;
-            }
+            lastTime = time;
         }
 
         double averageFPS = 0;
         double averageFrameMs = 0;
         if (m_fpsHistory.size() > 1)
         {
-            deltaTime = m_fpsHistory.back().m_beginFrameTime - m_fpsHistory.front().m_beginFrameTime;
-            averageFPS = AZStd::chrono::seconds(m_fpsHistory.size() - 1) / deltaTime;
-            averageFrameMs = aznumeric_cast<double>(totalFrameMS.count()) / (m_fpsHistory.size() - 1);
+            deltaTime = m_fpsHistory.back() - m_fpsHistory.front();
+            averageFPS = AZStd::chrono::seconds(m_fpsHistory.size()) / deltaTime;
+            averageFrameMs = 1000.0f/averageFPS;
         }
 
         const double frameIntervalSeconds = m_fpsInterval.count();
@@ -303,7 +288,7 @@ namespace AZ::Render
             AZStd::string::format(
                 "FPS %.1f [%.0f..%.0f], %.1fms/frame, avg over %.1fs",
                 averageFPS,
-                minFPS == DBL_MAX ? 0.0 : minFPS,
+                minFPS,
                 maxFPS,
                 averageFrameMs,
                 frameIntervalSeconds),

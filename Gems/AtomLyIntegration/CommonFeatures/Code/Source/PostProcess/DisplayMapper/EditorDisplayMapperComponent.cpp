@@ -6,9 +6,10 @@
  *
  */
 
-#include <AzCore/RTTI/BehaviorContext.h>
 #include <PostProcess/DisplayMapper/EditorDisplayMapperComponent.h>
 #include <Atom/Feature/ACES/AcesDisplayMapperFeatureProcessor.h>
+#include <AzCore/Asset/AssetSerializer.h>
+#include <AzCore/RTTI/BehaviorContext.h>
 
 namespace AZ
 {
