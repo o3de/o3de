@@ -102,11 +102,10 @@ namespace AZ
             AZStd::string pathWithoutSlash = RemoveTrailingSlash(resolvedPath);
             bool isInAPK = AZ::Android::Utils::IsApkPath(pathWithoutSlash.c_str());
 
+            AZ::IO::FixedMaxPath tempBuffer;
             if (isInAPK)
             {
                 AZ::IO::FixedMaxPath strippedPath = AZ::Android::Utils::StripApkPrefix(pathWithoutSlash.c_str());
-
-                char tempBuffer[AZ::IO::MaxPathLength] = {0};
 
                 AZ::Android::APKFileHandler::ParseDirectory(strippedPath.c_str(), [&](const char* name)
                     {
@@ -117,10 +116,9 @@ namespace AZ
                             AZStd::string foundFilePath = CheckForTrailingSlash(resolvedPath);
                             foundFilePath += name;
                             // if aliased, de-alias!
-                            azstrcpy(tempBuffer, AZ::IO::MaxPathLength, foundFilePath.c_str());
-                            ConvertToAlias(tempBuffer, AZ::IO::MaxPathLength);
+                            ConvertToAlias(tempBuffer, AZ::IO::PathView{ foundFilePath });
 
-                            if (!callback(tempBuffer))
+                            if (!callback(tempBuffer.c_str()))
                             {
                                 return false;
                             }
@@ -134,10 +132,6 @@ namespace AZ
 
                 if (dir != nullptr)
                 {
-                    // because the absolute path might actually be SHORTER than the alias ("/data/org.o3de.${project}.GameLauncher" -> "@engroot@"), we need to
-                    // use a static buffer here.
-                    char tempBuffer[AZ::IO::MaxPathLength];
-
                     // clear the errno state so we can distinguish between errors and end of stream
                     errno = 0;
                     struct dirent* entry = readdir(dir);
@@ -152,10 +146,9 @@ namespace AZ
                             AZStd::string foundFilePath = CheckForTrailingSlash(resolvedPath);
                             foundFilePath += entry->d_name;
                             // if aliased, de-alias!
-                            azstrcpy(tempBuffer, AZ::IO::MaxPathLength, foundFilePath.c_str());
-                            ConvertToAlias(tempBuffer, AZ::IO::MaxPathLength);
+                            ConvertToAlias(tempBuffer, AZ::IO::PathView{ foundFilePath });
 
-                            if (!callback(tempBuffer))
+                            if (!callback(tempBuffer.c_str()))
                             {
                                 break;
                             }
