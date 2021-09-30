@@ -30,88 +30,127 @@ namespace UnitTest
              *          |_ Passenger
              */
 
-            m_entityMap["passenger1"] = CreateEntity("Passenger1");
-            m_entityMap["passenger2"] = CreateEntity("Passenger2");
-            m_entityMap["city"] = CreateEntity("City");
+            // Create loose entities
+            m_entityMap[Passenger1EntityName] = CreateEntity(Passenger1EntityName);
+            m_entityMap[Passenger2EntityName] = CreateEntity(Passenger2EntityName);
+            m_entityMap[CityEntityName] = CreateEntity(CityEntityName);
 
+            // Call HandleEntitiesAdded to the loose entities to register them with the Prefab EOS
             AzToolsFramework::EditorEntityContextRequestBus::Broadcast(
                 &AzToolsFramework::EditorEntityContextRequests::HandleEntitiesAdded,
-                AzToolsFramework::EntityList{ m_entityMap["passenger1"], m_entityMap["passenger2"], m_entityMap["city"] });
+                AzToolsFramework::EntityList{ m_entityMap[Passenger1EntityName], m_entityMap[Passenger2EntityName], m_entityMap[CityEntityName] });
 
+            // Create a car prefab from the passenger1 entity. The container entity will be created as part of the process.
             AZStd::unique_ptr<AzToolsFramework::Prefab::Instance> carInstance =
-                m_prefabSystemComponent->CreatePrefab({ m_entityMap["passenger1"] }, {}, "test/car");
+                m_prefabSystemComponent->CreatePrefab({ m_entityMap[Passenger1EntityName] }, {}, "test/car");
             ASSERT_TRUE(carInstance);
-            m_instanceMap["car"] = carInstance.get();
+            m_instanceMap[CarEntityName] = carInstance.get();
 
+            // Create a sportscar prefab from the passenger2 entity. The container entity will be created as part of the process.
             AZStd::unique_ptr<AzToolsFramework::Prefab::Instance> sportsCarInstance =
-                m_prefabSystemComponent->CreatePrefab({ m_entityMap["passenger2"] }, {}, "test/sportsCar");
+                m_prefabSystemComponent->CreatePrefab({ m_entityMap[Passenger2EntityName] }, {}, "test/sportsCar");
             ASSERT_TRUE(sportsCarInstance);
-            m_instanceMap["sportsCar"] = sportsCarInstance.get();
+            m_instanceMap[SportsCarEntityName] = sportsCarInstance.get();
 
+            // Create a street prefab that nests the car and sportscar instances created above. The container entity will be created as part of the process.
             AZStd::unique_ptr<AzToolsFramework::Prefab::Instance> streetInstance =
                 m_prefabSystemComponent->CreatePrefab({}, MakeInstanceList( AZStd::move(carInstance), AZStd::move(sportsCarInstance) ), "test/street");
             ASSERT_TRUE(streetInstance);
-            m_instanceMap["street"] = streetInstance.get();
+            m_instanceMap[StreetEntityName] = streetInstance.get();
 
+            // Create a city prefab that nests the street instances created above and the city entity. The container entity will be created as part of the process.
             m_rootInstance =
-                m_prefabSystemComponent->CreatePrefab({ m_entityMap["city"] }, MakeInstanceList(AZStd::move(streetInstance)), "test/city");
+                m_prefabSystemComponent->CreatePrefab({ m_entityMap[CityEntityName] }, MakeInstanceList(AZStd::move(streetInstance)), "test/city");
             ASSERT_TRUE(m_rootInstance);
-            m_instanceMap["city"] = m_rootInstance.get();
+            m_instanceMap[CityEntityName] = m_rootInstance.get();
+        }
+
+        void SetUpEditorFixtureImpl() override
+        {
+            PrefabTestFixture::SetUpEditorFixtureImpl();
+
+            m_prefabFocusInterface = AZ::Interface<PrefabFocusInterface>::Get();
+            ASSERT_TRUE(m_prefabFocusInterface != nullptr);
+
+            GenerateTestHierarchy();
+        }
+
+        void TearDownEditorFixtureImpl() override
+        {
+            m_rootInstance.release();
+
+            PrefabTestFixture::TearDownEditorFixtureImpl();
         }
 
         AZStd::unordered_map<AZStd::string, AZ::Entity*> m_entityMap;
         AZStd::unordered_map<AZStd::string, Instance*> m_instanceMap;
 
         AZStd::unique_ptr<AzToolsFramework::Prefab::Instance> m_rootInstance;
+
+        PrefabFocusInterface* m_prefabFocusInterface = nullptr;
+
+        inline static const char* CityEntityName = "City";
+        inline static const char* StreetEntityName = "Street";
+        inline static const char* CarEntityName = "Car";
+        inline static const char* SportsCarEntityName = "SportsCar";
+        inline static const char* Passenger1EntityName = "Passenger1";
+        inline static const char* Passenger2EntityName = "Passenger2";
     };
 
-    TEST_F(PrefabFocusTests, PrefabFocus_FocusOnOwningPrefab)
+    TEST_F(PrefabFocusTests, PrefabFocus_FocusOnOwningPrefab_RootContainer)
     {
-        GenerateTestHierarchy();
-
-        PrefabFocusInterface* prefabFocusInterface = AZ::Interface<PrefabFocusInterface>::Get();
-        EXPECT_TRUE(prefabFocusInterface != nullptr);
-        
         // Verify FocusOnOwningPrefab works when passing the container entity of the root prefab.
         {
-            prefabFocusInterface->FocusOnOwningPrefab(m_instanceMap["city"]->GetContainerEntityId());
-            EXPECT_EQ(prefabFocusInterface->GetFocusedPrefabTemplateId(), m_instanceMap["city"]->GetTemplateId());
+            m_prefabFocusInterface->FocusOnOwningPrefab(m_instanceMap[CityEntityName]->GetContainerEntityId());
+            EXPECT_EQ(m_prefabFocusInterface->GetFocusedPrefabTemplateId(), m_instanceMap[CityEntityName]->GetTemplateId());
 
-            auto instance = prefabFocusInterface->GetFocusedPrefabInstance();
+            auto instance = m_prefabFocusInterface->GetFocusedPrefabInstance();
             EXPECT_TRUE(instance.has_value());
-            EXPECT_EQ(&instance->get(), m_instanceMap["city"]);
+            EXPECT_EQ(&instance->get(), m_instanceMap[CityEntityName]);
         }
+    }
 
+    TEST_F(PrefabFocusTests, PrefabFocus_FocusOnOwningPrefab_RootEntity)
+    {
         // Verify FocusOnOwningPrefab works when passing a nested entity of the root prefab.
         {
-            prefabFocusInterface->FocusOnOwningPrefab(m_entityMap["city"]->GetId());
-            EXPECT_EQ(prefabFocusInterface->GetFocusedPrefabTemplateId(), m_instanceMap["city"]->GetTemplateId());
+            m_prefabFocusInterface->FocusOnOwningPrefab(m_entityMap[CityEntityName]->GetId());
+            EXPECT_EQ(m_prefabFocusInterface->GetFocusedPrefabTemplateId(), m_instanceMap[CityEntityName]->GetTemplateId());
 
-            auto instance = prefabFocusInterface->GetFocusedPrefabInstance();
+            auto instance = m_prefabFocusInterface->GetFocusedPrefabInstance();
             EXPECT_TRUE(instance.has_value());
-            EXPECT_EQ(&instance->get(), m_instanceMap["city"]);
+            EXPECT_EQ(&instance->get(), m_instanceMap[CityEntityName]);
         }
+    }
 
+    TEST_F(PrefabFocusTests, PrefabFocus_FocusOnOwningPrefab_NestedContainer)
+    {
         // Verify FocusOnOwningPrefab works when passing the container entity of a nested prefab.
         {
-            prefabFocusInterface->FocusOnOwningPrefab(m_instanceMap["car"]->GetContainerEntityId());
-            EXPECT_EQ(prefabFocusInterface->GetFocusedPrefabTemplateId(), m_instanceMap["car"]->GetTemplateId());
+            m_prefabFocusInterface->FocusOnOwningPrefab(m_instanceMap[CarEntityName]->GetContainerEntityId());
+            EXPECT_EQ(m_prefabFocusInterface->GetFocusedPrefabTemplateId(), m_instanceMap[CarEntityName]->GetTemplateId());
 
-            auto instance = prefabFocusInterface->GetFocusedPrefabInstance();
+            auto instance = m_prefabFocusInterface->GetFocusedPrefabInstance();
             EXPECT_TRUE(instance.has_value());
-            EXPECT_EQ(&instance->get(), m_instanceMap["car"]);
+            EXPECT_EQ(&instance->get(), m_instanceMap[CarEntityName]);
         }
+    }
 
+    TEST_F(PrefabFocusTests, PrefabFocus_FocusOnOwningPrefab_NestedEntity)
+    {
         // Verify FocusOnOwningPrefab works when passing a nested entity of the a nested prefab.
         {
-            prefabFocusInterface->FocusOnOwningPrefab(m_entityMap["passenger1"]->GetId());
-            EXPECT_EQ(prefabFocusInterface->GetFocusedPrefabTemplateId(), m_instanceMap["car"]->GetTemplateId());
+            m_prefabFocusInterface->FocusOnOwningPrefab(m_entityMap[Passenger1EntityName]->GetId());
+            EXPECT_EQ(m_prefabFocusInterface->GetFocusedPrefabTemplateId(), m_instanceMap[CarEntityName]->GetTemplateId());
 
-            auto instance = prefabFocusInterface->GetFocusedPrefabInstance();
+            auto instance = m_prefabFocusInterface->GetFocusedPrefabInstance();
             EXPECT_TRUE(instance.has_value());
-            EXPECT_EQ(&instance->get(), m_instanceMap["car"]);
+            EXPECT_EQ(&instance->get(), m_instanceMap[CarEntityName]);
         }
+    }
 
+    TEST_F(PrefabFocusTests, PrefabFocus_FocusOnOwningPrefab_Clear)
+    {
         // Verify FocusOnOwningPrefab points to the root prefab when the focus is cleared.
         {
             AzToolsFramework::PrefabEditorEntityOwnershipInterface* prefabEditorEntityOwnershipInterface =
@@ -120,54 +159,51 @@ namespace UnitTest
                 prefabEditorEntityOwnershipInterface->GetRootPrefabInstance();
             EXPECT_TRUE(rootPrefabInstance.has_value());
 
-            prefabFocusInterface->FocusOnOwningPrefab(AZ::EntityId());
-            EXPECT_EQ(prefabFocusInterface->GetFocusedPrefabTemplateId(), rootPrefabInstance->get().GetTemplateId());
+            m_prefabFocusInterface->FocusOnOwningPrefab(AZ::EntityId());
+            EXPECT_EQ(m_prefabFocusInterface->GetFocusedPrefabTemplateId(), rootPrefabInstance->get().GetTemplateId());
 
-            auto instance = prefabFocusInterface->GetFocusedPrefabInstance();
+            auto instance = m_prefabFocusInterface->GetFocusedPrefabInstance();
             EXPECT_TRUE(instance.has_value());
             EXPECT_EQ(&instance->get(), &rootPrefabInstance->get());
         }
-
-        m_rootInstance.release();
     }
 
-    TEST_F(PrefabFocusTests, PrefabFocus_IsOwningPrefabBeingFocused)
+    TEST_F(PrefabFocusTests, PrefabFocus_IsOwningPrefabBeingFocused_Content)
     {
-        GenerateTestHierarchy();
-
-        PrefabFocusInterface* prefabFocusInterface = AZ::Interface<PrefabFocusInterface>::Get();
-        EXPECT_TRUE(prefabFocusInterface != nullptr);
-
         // Verify IsOwningPrefabBeingFocused returns true for all entities in a focused prefab (container/nested)
         {
-            prefabFocusInterface->FocusOnOwningPrefab(m_instanceMap["city"]->GetContainerEntityId());
+            m_prefabFocusInterface->FocusOnOwningPrefab(m_instanceMap[CityEntityName]->GetContainerEntityId());
 
-            EXPECT_TRUE(prefabFocusInterface->IsOwningPrefabBeingFocused(m_instanceMap["city"]->GetContainerEntityId()));
-            EXPECT_TRUE(prefabFocusInterface->IsOwningPrefabBeingFocused(m_entityMap["city"]->GetId()));
+            EXPECT_TRUE(m_prefabFocusInterface->IsOwningPrefabBeingFocused(m_instanceMap[CityEntityName]->GetContainerEntityId()));
+            EXPECT_TRUE(m_prefabFocusInterface->IsOwningPrefabBeingFocused(m_entityMap[CityEntityName]->GetId()));
         }
+    }
 
+    TEST_F(PrefabFocusTests, PrefabFocus_IsOwningPrefabBeingFocused_AncestorsDescendants)
+    {
         // Verify IsOwningPrefabBeingFocused returns false for all entities not in a focused prefab (ancestors/descendants)
         {
-            prefabFocusInterface->FocusOnOwningPrefab(m_instanceMap["street"]->GetContainerEntityId());
+            m_prefabFocusInterface->FocusOnOwningPrefab(m_instanceMap[StreetEntityName]->GetContainerEntityId());
 
-            EXPECT_TRUE(prefabFocusInterface->IsOwningPrefabBeingFocused(m_instanceMap["street"]->GetContainerEntityId()));
-            EXPECT_FALSE(prefabFocusInterface->IsOwningPrefabBeingFocused(m_instanceMap["city"]->GetContainerEntityId()));
-            EXPECT_FALSE(prefabFocusInterface->IsOwningPrefabBeingFocused(m_entityMap["city"]->GetId()));
-            EXPECT_FALSE(prefabFocusInterface->IsOwningPrefabBeingFocused(m_instanceMap["car"]->GetContainerEntityId()));
-            EXPECT_FALSE(prefabFocusInterface->IsOwningPrefabBeingFocused(m_entityMap["passenger1"]->GetId()));
+            EXPECT_TRUE(m_prefabFocusInterface->IsOwningPrefabBeingFocused(m_instanceMap[StreetEntityName]->GetContainerEntityId()));
+            EXPECT_FALSE(m_prefabFocusInterface->IsOwningPrefabBeingFocused(m_instanceMap[CityEntityName]->GetContainerEntityId()));
+            EXPECT_FALSE(m_prefabFocusInterface->IsOwningPrefabBeingFocused(m_entityMap[CityEntityName]->GetId()));
+            EXPECT_FALSE(m_prefabFocusInterface->IsOwningPrefabBeingFocused(m_instanceMap[CarEntityName]->GetContainerEntityId()));
+            EXPECT_FALSE(m_prefabFocusInterface->IsOwningPrefabBeingFocused(m_entityMap[Passenger1EntityName]->GetId()));
         }
+    }
 
+    TEST_F(PrefabFocusTests, PrefabFocus_IsOwningPrefabBeingFocused_Siblings)
+    {
         // Verify IsOwningPrefabBeingFocused returns false for all entities not in a focused prefab (siblings)
         {
-            prefabFocusInterface->FocusOnOwningPrefab(m_instanceMap["sportsCar"]->GetContainerEntityId());
+            m_prefabFocusInterface->FocusOnOwningPrefab(m_instanceMap[SportsCarEntityName]->GetContainerEntityId());
 
-            EXPECT_TRUE(prefabFocusInterface->IsOwningPrefabBeingFocused(m_instanceMap["sportsCar"]->GetContainerEntityId()));
-            EXPECT_TRUE(prefabFocusInterface->IsOwningPrefabBeingFocused(m_entityMap["passenger2"]->GetId()));
-            EXPECT_FALSE(prefabFocusInterface->IsOwningPrefabBeingFocused(m_instanceMap["car"]->GetContainerEntityId()));
-            EXPECT_FALSE(prefabFocusInterface->IsOwningPrefabBeingFocused(m_entityMap["passenger1"]->GetId()));
+            EXPECT_TRUE(m_prefabFocusInterface->IsOwningPrefabBeingFocused(m_instanceMap[SportsCarEntityName]->GetContainerEntityId()));
+            EXPECT_TRUE(m_prefabFocusInterface->IsOwningPrefabBeingFocused(m_entityMap[Passenger2EntityName]->GetId()));
+            EXPECT_FALSE(m_prefabFocusInterface->IsOwningPrefabBeingFocused(m_instanceMap[CarEntityName]->GetContainerEntityId()));
+            EXPECT_FALSE(m_prefabFocusInterface->IsOwningPrefabBeingFocused(m_entityMap[Passenger1EntityName]->GetId()));
         }
-
-        m_rootInstance.release();
     }
 
 }
