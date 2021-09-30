@@ -59,8 +59,12 @@ set(_light_command
 )
 
 set(_signing_command
+    psexec.exe
+    -accepteula 
+    -nobanner 
+    -s
     powershell.exe
-    -nologo
+    -NoLogo
     -ExecutionPolicy Bypass 
     -File ${_sign_script}
 )

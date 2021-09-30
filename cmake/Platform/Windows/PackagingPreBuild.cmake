@@ -11,8 +11,12 @@ set(_cpack_wix_out_dir ${CPACK_TOPLEVEL_DIRECTORY})
 file(TO_NATIVE_PATH "${_root_path}/scripts/signer/signer.ps1" _sign_script)
 
 set(_signing_command
+    psexec.exe
+    -accepteula 
+    -nobanner 
+    -s
     powershell.exe
-    -nologo
+    -NoLogo
     -ExecutionPolicy Bypass 
     -File ${_sign_script}
 )
