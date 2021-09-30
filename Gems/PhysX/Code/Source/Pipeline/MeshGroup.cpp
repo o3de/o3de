@@ -852,16 +852,7 @@ namespace PhysX
         {
             if (index < m_materialSlots.size())
             {
-                // When limited to one material, clarify in the label the material
-                // will be used for the entire object.
-                if (index == 0 && (GetExportAsConvex() || GetExportAsPrimitive()))
-                {
-                    return m_materialSlots[index] + " (entire object)";
-                }
-                else
-                {
-                    return m_materialSlots[index];
-                }
+                return m_materialSlots[index];
             }
             else
             {
