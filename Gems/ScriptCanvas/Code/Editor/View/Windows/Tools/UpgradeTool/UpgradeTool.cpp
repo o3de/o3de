@@ -506,7 +506,7 @@ namespace ScriptCanvasEditor
             sourceFilePath = AZ::IO::FixedMaxPath(AZStd::string_view(watchFolder)) / sourceFileAssetInfo.m_relativePath;
         }
 
-        const auto targetFilePath = AZ::IO::FixedMaxPath(AZStd::string_view(m_backupPath)) / sourceFileAssetInfo.m_relativePath;
+        const auto targetFilePath = m_backupPath / sourceFileAssetInfo.m_relativePath;
 
         if (AZ::IO::FileIOBase::GetInstance()->Copy(sourceFilePath.c_str(), targetFilePath.c_str()) != AZ::IO::ResultCode::Error)
         {
