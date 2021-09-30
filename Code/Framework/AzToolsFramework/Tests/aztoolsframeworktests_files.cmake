@@ -35,6 +35,7 @@ set(FILES
     EntityTestbed.h
     FileFunc.cpp
     FingerprintingTests.cpp
+    FocusMode/EditorFocusModeTests.cpp
     GenericComponentWrapperTest.cpp
     InstanceDataHierarchy.cpp
     IntegerPrimtitiveTestConfig.h
@@ -51,6 +52,7 @@ set(FILES
     Prefab/Benchmark/PrefabLoadBenchmarks.cpp
     Prefab/Benchmark/PrefabUpdateInstancesBenchmarks.cpp
     Prefab/Benchmark/SpawnableCreateBenchmarks.cpp
+    Prefab/PrefabFocus/PrefabFocusTests.cpp
     Prefab/MockPrefabFileIOActionValidator.cpp
     Prefab/MockPrefabFileIOActionValidator.h
     Prefab/PrefabDuplicateTests.cpp
@@ -113,6 +115,7 @@ set(FILES
     UI/EntityPropertyEditorTests.cpp
     UndoStack.cpp
     Viewport/ClusterTests.cpp
+    Viewport/ViewportEditorModeTests.cpp
     Viewport/ViewportScreenTests.cpp
     Viewport/ViewportUiClusterTests.cpp
     Viewport/ViewportUiDisplayTests.cpp

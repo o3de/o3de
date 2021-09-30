@@ -372,6 +372,8 @@ namespace EMotionFX
     // updates the skinning matrices of all nodes
     void ActorInstance::UpdateSkinningMatrices()
     {
+        AZ_PROFILE_SCOPE(Animation, "ActorInstance::UpdateSkinningMatrices");
+
         AZ::Matrix3x4* skinningMatrices = m_transformData->GetSkinningMatrices();
         const Pose* pose = m_transformData->GetCurrentPose();
 
@@ -596,6 +598,8 @@ namespace EMotionFX
     // update the bounding volume
     void ActorInstance::UpdateBounds(size_t geomLODLevel, EBoundsType boundsType, uint32 itemFrequency)
     {
+        AZ_PROFILE_SCOPE(Animation, "ActorInstance::UpdateBounds");
+
         // depending on the bounding volume update type
         switch (boundsType)
         {

@@ -187,8 +187,7 @@ namespace AZ::IO::ZipDir::ZipDirStructuresInternal
 
         // If src/dst overlap (in place decompress), then inflate in chunks, copying src locally to ensure
         // pointers don't foul each other.
-        bool bIndependantBlocks = ((pInput + nInputLen) <= pOutput) || (pInput >= (pOutput + nOutputLen));
-        if (bIndependantBlocks)
+        if ((pInput + nInputLen) <= pOutput || pInput >= (pOutput + nOutputLen))
         {
             pZStream->next_in = (Bytef*)pInput;
             pZStream->avail_in = aznumeric_cast<uint32_t>(nInputLen);
@@ -260,8 +259,7 @@ namespace AZ::IO::ZipDir::ZipDirStructuresInternal
 
         // If src/dst overlap (in place decompress), then inflate in chunks, copying src locally to ensure
         // pointers don't foul each other.
-        bool bIndependantBlocks = ((pIn + nIn) <= stream.next_out) || (pIn >= (stream.next_out + stream.avail_out));
-        if (bIndependantBlocks)
+        if ((pIn + nIn) <= stream.next_out || pIn >= (stream.next_out + stream.avail_out))
         {
             stream.next_in = pIn;
             stream.avail_in = nIn;
@@ -498,18 +496,18 @@ namespace AZ::IO::ZipDir
     //////////////////////////////////////////////////////////////////////////
     FileEntryBase::FileEntryBase(const ZipFile::CDRFileHeader& header, const SExtraZipFileData& extra)
     {
-        this->desc = header.desc;
-        this->nFileHeaderOffset = header.lLocalHeaderOffset;
-        //this->nFileDataOffset   = INVALID_DATA_OFFSET; // we don't know yet
-        this->nMethod = header.nMethod;
-        this->nNameOffset = 0; // we don't know yet
-        this->nLastModTime = header.nLastModTime;
-        this->nLastModDate = header.nLastModDate;
-        this->nNTFS_LastModifyTime = extra.nLastModifyTime;
+        desc = header.desc;
+        nFileHeaderOffset = header.lLocalHeaderOffset;
+
+        nMethod = header.nMethod;
+        nNameOffset = 0; // we don't know yet
+        nLastModTime = header.nLastModTime;
+        nLastModDate = header.nLastModDate;
+        nNTFS_LastModifyTime = extra.nLastModifyTime;
 
         // make an estimation (at least this offset should be there), but we don't actually know yet
-        this->nFileDataOffset = header.lLocalHeaderOffset + sizeof(ZipFile::LocalFileHeader) + header.nFileNameLength;
-        this->nEOFOffset = header.lLocalHeaderOffset + sizeof(ZipFile::LocalFileHeader) + header.nFileNameLength + header.desc.lSizeCompressed;
+        nFileDataOffset = header.lLocalHeaderOffset + sizeof(ZipFile::LocalFileHeader) + header.nFileNameLength + header.nExtraFieldLength;
+        nEOFOffset = nFileDataOffset + header.desc.lSizeCompressed;
     }
 
     // Uncompresses raw (without wrapping) data that is compressed with method 8 (deflated) in the Zip file
@@ -817,8 +815,6 @@ namespace AZ::IO::ZipDir
         header.nFileNameLength = aznumeric_cast<uint16_t>(nFileNameLength);
         header.nExtraFieldLength = 0;
 
-        pFileEntry->nFileDataOffset = pFileEntry->nFileHeaderOffset + sizeof(header) + header.nFileNameLength;
-        pFileEntry->nEOFOffset = pFileEntry->nFileDataOffset + pFileEntry->desc.lSizeCompressed;
         if (!AZ::IO::FileIOBase::GetDirectInstance()->Write(fileHandle, &header, sizeof(header)))
         {
             return ZD_ERROR_IO_FAILED;

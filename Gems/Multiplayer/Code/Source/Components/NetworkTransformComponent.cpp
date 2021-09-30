@@ -26,12 +26,9 @@ namespace Multiplayer
     }
 
     NetworkTransformComponent::NetworkTransformComponent()
-        : m_rotationEventHandler([this](const AZ::Quaternion& rotation) { OnRotationChangedEvent(rotation); })
-        , m_translationEventHandler([this](const AZ::Vector3& translation) { OnTranslationChangedEvent(translation); })
-        , m_scaleEventHandler([this](float scale) { OnScaleChangedEvent(scale); })
-        , m_resetCountEventHandler([this](const uint8_t&) { OnResetCountChangedEvent(); })
-        , m_entityPreRenderEventHandler([this](float deltaTime, float blendFactor) { OnPreRender(deltaTime, blendFactor); })
+        : m_entityPreRenderEventHandler([this](float deltaTime) { OnPreRender(deltaTime); })
         , m_entityCorrectionEventHandler([this]() { OnCorrection(); })
+        , m_parentChangedEventHandler([this](NetEntityId parentId) { OnParentChanged(parentId); })
     {
         ;
     }
@@ -43,15 +40,9 @@ namespace Multiplayer
 
     void NetworkTransformComponent::OnActivate([[maybe_unused]] Multiplayer::EntityIsMigrating entityIsMigrating)
     {
-        RotationAddEvent(m_rotationEventHandler);
-        TranslationAddEvent(m_translationEventHandler);
-        ScaleAddEvent(m_scaleEventHandler);
-        ResetCountAddEvent(m_resetCountEventHandler);
         GetNetBindComponent()->AddEntityPreRenderEventHandler(m_entityPreRenderEventHandler);
         GetNetBindComponent()->AddEntityCorrectionEventHandler(m_entityCorrectionEventHandler);
-
-        // When coming into relevance, reset all blending factors so we don't interpolate to our start position
-        OnResetCountChangedEvent();
+        ParentEntityIdAddEvent(m_parentChangedEventHandler);
     }
 
     void NetworkTransformComponent::OnDeactivate([[maybe_unused]] Multiplayer::EntityIsMigrating entityIsMigrating)
@@ -59,59 +50,31 @@ namespace Multiplayer
         ;
     }
 
-    void NetworkTransformComponent::OnRotationChangedEvent(const AZ::Quaternion& rotation)
-    {
-        m_previousTransform.SetRotation(m_targetTransform.GetRotation());
-        m_targetTransform.SetRotation(rotation);
-        UpdateTargetHostFrameId();
-    }
-
-    void NetworkTransformComponent::OnTranslationChangedEvent(const AZ::Vector3& translation)
-    {
-        m_previousTransform.SetTranslation(m_targetTransform.GetTranslation());
-        m_targetTransform.SetTranslation(translation);
-        UpdateTargetHostFrameId();
-    }
-
-    void NetworkTransformComponent::OnScaleChangedEvent(float scale)
-    {
-        m_previousTransform.SetUniformScale(m_targetTransform.GetUniformScale());
-        m_targetTransform.SetUniformScale(scale);
-        UpdateTargetHostFrameId();
-    }
-
-    void NetworkTransformComponent::OnResetCountChangedEvent()
-    {
-        m_targetTransform.SetRotation(GetRotation());
-        m_targetTransform.SetTranslation(GetTranslation());
-        m_targetTransform.SetUniformScale(GetScale());
-        m_previousTransform = m_targetTransform;
-    }
-
-    void NetworkTransformComponent::UpdateTargetHostFrameId()
-    {
-        HostFrameId currentHostFrameId = Multiplayer::GetNetworkTime()->GetHostFrameId();
-        if (currentHostFrameId > m_targetHostFrameId)
-        {
-            m_targetHostFrameId = currentHostFrameId;
-        }
-    }
-
-    void NetworkTransformComponent::OnPreRender([[maybe_unused]] float deltaTime, float blendFactor)
+    void NetworkTransformComponent::OnPreRender([[maybe_unused]] float deltaTime)
     {
         if (!HasController())
         {
             AZ::Transform blendTransform;
-            if (Multiplayer::GetNetworkTime() && Multiplayer::GetNetworkTime()->GetHostFrameId() > m_targetHostFrameId)
+            blendTransform.SetRotation(GetRotation());
+            blendTransform.SetTranslation(GetTranslation());
+            blendTransform.SetUniformScale(GetScale());
+
+            const float blendFactor = GetMultiplayer()->GetCurrentBlendFactor();
+            if (!AZ::IsClose(blendFactor, 1.0f))
             {
-                m_previousTransform = m_targetTransform;
-                blendTransform = m_targetTransform;
-            }
-            else
-            {
-                blendTransform.SetRotation(m_previousTransform.GetRotation().Slerp(m_targetTransform.GetRotation(), blendFactor));
-                blendTransform.SetTranslation(m_previousTransform.GetTranslation().Lerp(m_targetTransform.GetTranslation(), blendFactor));
-                blendTransform.SetUniformScale(AZ::Lerp(m_previousTransform.GetUniformScale(), m_targetTransform.GetUniformScale(), blendFactor));
+                AZ::Transform blendTransformPrevious;
+                blendTransformPrevious.SetRotation(GetRotationPrevious());
+                blendTransformPrevious.SetTranslation(GetTranslationPrevious());
+                blendTransformPrevious.SetUniformScale(GetScalePrevious());
+
+                if (!blendTransform.IsClose(blendTransformPrevious))
+                {
+                    blendTransform.SetRotation(blendTransformPrevious.GetRotation().Slerp(blendTransform.GetRotation(), blendFactor));
+                    blendTransform.SetTranslation(
+                        blendTransformPrevious.GetTranslation().Lerp(blendTransform.GetTranslation(), blendFactor));
+                    blendTransform.SetUniformScale(
+                        AZ::Lerp(blendTransformPrevious.GetUniformScale(), blendTransform.GetUniformScale(), blendFactor));
+                }
             }
 
             if (!GetTransformComponent()->GetWorldTM().IsClose(blendTransform))
@@ -124,19 +87,38 @@ namespace Multiplayer
     void NetworkTransformComponent::OnCorrection()
     {
         // Snap to latest
-        OnResetCountChangedEvent();
+        AZ::Transform targetTransform;
+        targetTransform.SetRotation(GetRotation());
+        targetTransform.SetTranslation(GetTranslation());
+        targetTransform.SetUniformScale(GetScale());
 
         // Hard set the entities transform
-        if (!GetTransformComponent()->GetWorldTM().IsClose(m_targetTransform))
+        if (!GetTransformComponent()->GetWorldTM().IsClose(targetTransform))
         {
-            GetTransformComponent()->SetWorldTM(m_targetTransform);
+            GetTransformComponent()->SetWorldTM(targetTransform);
         }
     }
 
+    void NetworkTransformComponent::OnParentChanged(NetEntityId parentId)
+    {
+        const ConstNetworkEntityHandle parentEntityHandle = GetNetworkEntityManager()->GetEntity(parentId);
+        if (parentEntityHandle.Exists())
+        {
+            if (const AZ::Entity* parentEntity = parentEntityHandle.GetEntity())
+            {
+                GetEntity()->GetTransform()->SetParent(parentEntity->GetId());
+            }
+        }
+        else
+        {
+            GetEntity()->GetTransform()->SetParent(AZ::EntityId());
+        }
+    }
 
     NetworkTransformComponentController::NetworkTransformComponentController(NetworkTransformComponent& parent)
         : NetworkTransformComponentControllerBase(parent)
         , m_transformChangedHandler([this](const AZ::Transform&, const AZ::Transform& worldTm) { OnTransformChangedEvent(worldTm); })
+        , m_parentIdChangedHandler([this](AZ::EntityId oldParent, AZ::EntityId newParent) { OnParentIdChangedEvent(oldParent, newParent); })
     {
         ;
     }
@@ -145,6 +127,9 @@ namespace Multiplayer
     {
         GetParent().GetTransformComponent()->BindTransformChangedEventHandler(m_transformChangedHandler);
         OnTransformChangedEvent(GetParent().GetTransformComponent()->GetWorldTM());
+
+        GetParent().GetTransformComponent()->BindParentChangedEventHandler(m_parentIdChangedHandler);
+        OnParentIdChangedEvent(AZ::EntityId(), GetParent().GetTransformComponent()->GetParentId());
     }
 
     void NetworkTransformComponentController::OnDeactivate([[maybe_unused]] Multiplayer::EntityIsMigrating entityIsMigrating)
@@ -157,5 +142,15 @@ namespace Multiplayer
         SetRotation(worldTm.GetRotation());
         SetTranslation(worldTm.GetTranslation());
         SetScale(worldTm.GetUniformScale());
+    }
+
+    void NetworkTransformComponentController::OnParentIdChangedEvent([[maybe_unused]] AZ::EntityId oldParent, AZ::EntityId newParent)
+    {
+        AZ::Entity* parentEntity = AZ::Interface<AZ::ComponentApplicationRequests>::Get()->FindEntity(newParent);
+        if (parentEntity)
+        {
+            const ConstNetworkEntityHandle parentHandle(parentEntity, GetNetworkEntityTracker());
+            SetParentEntityId(parentHandle.GetNetEntityId());
+        }
     }
 }

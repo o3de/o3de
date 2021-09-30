@@ -65,27 +65,8 @@ namespace Terrain
 
         virtual ~TerrainAreaHeightRequests() = default;
 
-        enum SurfacePointDataMask
-        {
-            POSITION = 0x01,
-            NORMAL = 0x02,
-            SURFACE_WEIGHTS = 0x04,
-
-            DEFAULT = POSITION | NORMAL | SURFACE_WEIGHTS
-        };
-
         // Synchronous single input location.  The Vector3 input position versions are defined to ignore the input Z value.
-
-        virtual void GetHeight(
-            const AZ::Vector3& inPosition,
-            AZ::Vector3& outPosition,
-            AzFramework::Terrain::TerrainDataRequests::Sampler sampleFilter =
-                AzFramework::Terrain::TerrainDataRequests::Sampler::DEFAULT) = 0;
-        virtual void GetNormal(
-            const AZ::Vector3& inPosition,
-            AZ::Vector3& outNormal,
-            AzFramework::Terrain::TerrainDataRequests::Sampler sampleFilter =
-                AzFramework::Terrain::TerrainDataRequests::Sampler::DEFAULT) = 0;
+        virtual void GetHeight(const AZ::Vector3& inPosition, AZ::Vector3& outPosition, bool& terrainExists) = 0;
     };
 
     using TerrainAreaHeightRequestBus = AZ::EBus<TerrainAreaHeightRequests>;

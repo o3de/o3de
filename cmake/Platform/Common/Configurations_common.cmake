@@ -36,7 +36,7 @@ ly_append_configurations_options(
         AZ_BUILD_CONFIGURATION_TYPE="${LY_BUILD_CONFIGURATION_TYPE_DEBUG}"
     DEFINES_PROFILE
         _PROFILE
-        PROFILE
+        AZ_PROFILE_BUILD=1
         NDEBUG
         AZ_ENABLE_TRACING
         AZ_ENABLE_DEBUG_TOOLS

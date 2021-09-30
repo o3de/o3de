@@ -8,6 +8,7 @@
 
 set(FILES
     3rdParty/ACES/ACES/Aces.h
+    Include/Atom/Feature/RenderCommon.h
     Include/Atom/Feature/ACES/AcesDisplayMapperFeatureProcessor.h
     Include/Atom/Feature/Automation/AtomAutomationBus.h
     Include/Atom/Feature/AuxGeom/AuxGeomFeatureProcessor.h
@@ -52,7 +53,6 @@ set(FILES
     Source/FrameCaptureSystemComponent.h
     Source/ProfilingCaptureSystemComponent.cpp
     Source/ProfilingCaptureSystemComponent.h
-    Source/RenderCommon.h
     3rdParty/ACES/ACES/Aces.cpp
     Source/ACES/AcesDisplayMapperFeatureProcessor.cpp
     Source/AuxGeom/AuxGeomBase.h
@@ -183,6 +183,8 @@ set(FILES
     Source/PostProcess/PostProcessFeatureProcessor.h
     Source/PostProcess/PostProcessSettings.cpp
     Source/PostProcess/PostProcessSettings.h
+    Source/PostProcess/ColorGrading/HDRColorGradingSettings.h
+    Source/PostProcess/ColorGrading/HDRColorGradingSettings.cpp
     Source/PostProcess/Bloom/BloomSettings.cpp
     Source/PostProcess/Bloom/BloomSettings.h
     Source/PostProcess/DepthOfField/DepthOfFieldSettings.cpp
@@ -205,6 +207,8 @@ set(FILES
     Source/PostProcessing/BloomCompositePass.cpp
     Source/PostProcessing/BloomParentPass.h
     Source/PostProcessing/BloomParentPass.cpp
+    Source/PostProcessing/HDRColorGradingPass.cpp
+    Source/PostProcessing/HDRColorGradingPass.h
     Source/PostProcessing/DepthOfFieldCompositePass.h
     Source/PostProcessing/DepthOfFieldCompositePass.cpp
     Source/PostProcessing/DepthOfFieldBokehBlurPass.h

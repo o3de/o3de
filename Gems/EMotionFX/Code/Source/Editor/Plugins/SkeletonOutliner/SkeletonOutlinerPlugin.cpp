@@ -211,15 +211,15 @@ namespace EMotionFX
 
     AZ::Outcome<const QModelIndexList&> SkeletonOutlinerPlugin::GetSelectedRowIndices()
     {
-        return AZ::Success(m_selectedRows);
+        return AZ::Success(m_treeView->selectionModel()->selectedRows());
     }
 
     void SkeletonOutlinerPlugin::OnSelectionChanged([[maybe_unused]] const QItemSelection& selected, [[maybe_unused]] const QItemSelection& deselected)
     {
-        m_selectedRows = m_treeView->selectionModel()->selectedRows();
-        if (m_selectedRows.size() == 1)
+        QModelIndexList selectedRows = m_treeView->selectionModel()->selectedRows();
+        if (selectedRows.size() == 1)
         {
-            const QModelIndex& modelIndex = m_selectedRows[0];
+            const QModelIndex& modelIndex = selectedRows[0];
             Node* selectedNode = modelIndex.data(SkeletonModel::ROLE_POINTER).value<Node*>();
             Actor* selectedActor = modelIndex.data(SkeletonModel::ROLE_ACTOR_POINTER).value<Actor*>();
             SkeletonOutlinerNotificationBus::Broadcast(&SkeletonOutlinerNotifications::SingleNodeSelectionChanged, selectedActor, selectedNode);

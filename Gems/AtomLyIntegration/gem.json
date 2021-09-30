@@ -5,8 +5,24 @@
     "origin": "Open 3D Engine - o3de.org",
     "type": "Code",
     "summary": "The Atom O3DE Integration Gem provides components, libraries, and functionality to support and integrate Atom Renderer in Open 3D Engine.",
-    "canonical_tags": ["Gem"],
-    "user_tags": ["Rendering", "Core", "Utility"],
+    "canonical_tags": [
+        "Gem"
+    ],
+    "user_tags": [
+        "Rendering",
+        "Core",
+        "Utility"
+    ],
     "requirements": "",
-    "documentation_url": "https://o3de.org/docs/user-guide/gems/reference/rendering/atom/atom-ly-integration/"
+    "documentation_url": "https://o3de.org/docs/user-guide/gems/reference/rendering/atom/atom-ly-integration/",
+    "dependencies": [
+        "Atom_AtomBridge",
+        "AtomFont",
+        "AtomImGuiTools",
+        "AtomViewportDisplayIcons",
+        "AtomViewportDisplayInfo",
+        "CommonFeaturesAtom",
+        "EMotionFX_Atom",
+        "ImguiAtom"
+    ]
 }

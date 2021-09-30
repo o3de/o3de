@@ -77,6 +77,8 @@ namespace AZ
             };
             AZStd::unordered_map<IconId, IconData> m_iconData;
             IconId m_currentId = 0;
+
+            bool m_drawContextRegistered = false;
         };
     } // namespace Render
 } // namespace AZ

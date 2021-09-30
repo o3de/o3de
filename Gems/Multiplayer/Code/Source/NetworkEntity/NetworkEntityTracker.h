@@ -37,6 +37,7 @@ namespace Multiplayer
         NetworkEntityHandle Get(NetEntityId netEntityId);
         ConstNetworkEntityHandle Get(NetEntityId netEntityId) const;
 
+        //! Returns Net Entity ID for a given AZ Entity ID.
         NetEntityId Get(const AZ::EntityId& entityId) const;
 
         //! Returns true if the netEntityId exists.

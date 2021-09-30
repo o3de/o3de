@@ -181,7 +181,7 @@ namespace AZ::IO::ArchiveInternal
             return 0;
         }
 
-        nTotal = (AZStd::min)(nTotal, GetFileSize() - m_nCurSeek);
+        nTotal = AZStd::min<size_t>(nTotal, GetFileSize() - m_nCurSeek);
 
         int64_t nReadBytes = GetFile()->ReadData(pDest, m_nCurSeek, nTotal);
         if (nReadBytes == -1)
