@@ -11,6 +11,7 @@
 #include <AzCore/Memory/MemoryDrillerBus.h>
 #include <AzCore/Debug/AssetTrackingTypesImpl.h>
 #include <AzCore/Debug/AssetTracking.h>
+#include <AzCore/std/containers/unordered_set.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
 
 ///////////////////////////////////////////////////////////////////////////////
