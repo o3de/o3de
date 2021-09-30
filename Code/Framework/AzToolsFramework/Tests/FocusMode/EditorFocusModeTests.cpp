@@ -14,10 +14,10 @@ namespace AzToolsFramework
     {
         // When an entity is set as the focus root, GetFocusRoot should return its EntityId.
         m_focusModeInterface->SetFocusRoot(m_entityMap[CarEntityName]);
-        EXPECT_EQ(m_focusModeInterface->GetFocusRoot(), m_entityMap[CarEntityName]);
+        EXPECT_EQ(m_focusModeInterface->GetFocusRoot(m_editorEntityContextId), m_entityMap[CarEntityName]);
 
         // Restore default expected focus.
-        m_focusModeInterface->ClearFocusRoot();
+        m_focusModeInterface->ClearFocusRoot(m_editorEntityContextId);
     }
 
     TEST_F(EditorFocusModeFixture, EditorFocusModeTests_ClearFocus)
@@ -26,8 +26,8 @@ namespace AzToolsFramework
         m_focusModeInterface->SetFocusRoot(m_entityMap[CarEntityName]);
 
         // Calling ClearFocusRoot restores the default focus root (which is an invalid EntityId).
-        m_focusModeInterface->ClearFocusRoot();
-        EXPECT_EQ(m_focusModeInterface->GetFocusRoot(), AZ::EntityId());
+        m_focusModeInterface->ClearFocusRoot(m_editorEntityContextId);
+        EXPECT_EQ(m_focusModeInterface->GetFocusRoot(m_editorEntityContextId), AZ::EntityId());
     }
 
     TEST_F(EditorFocusModeFixture, EditorFocusModeTests_IsInFocusSubTree_AncestorsDescendants)
@@ -45,7 +45,7 @@ namespace AzToolsFramework
         }
 
         // Restore default expected focus.
-        m_focusModeInterface->ClearFocusRoot();
+        m_focusModeInterface->ClearFocusRoot(m_editorEntityContextId);
     }
 
     TEST_F(EditorFocusModeFixture, EditorFocusModeTests_IsInFocusSubTree_Siblings)
@@ -63,7 +63,7 @@ namespace AzToolsFramework
         }
 
         // Restore default expected focus.
-        m_focusModeInterface->ClearFocusRoot();
+        m_focusModeInterface->ClearFocusRoot(m_editorEntityContextId);
     }
 
     TEST_F(EditorFocusModeFixture, EditorFocusModeTests_IsInFocusSubTree_Leaf)
@@ -81,7 +81,7 @@ namespace AzToolsFramework
         }
 
         // Restore default expected focus.
-        m_focusModeInterface->ClearFocusRoot();
+        m_focusModeInterface->ClearFocusRoot(m_editorEntityContextId);
     }
 
     TEST_F(EditorFocusModeFixture, EditorFocusModeTests_IsInFocusSubTree_Clear)
@@ -91,7 +91,7 @@ namespace AzToolsFramework
 
         // When the focus is cleared, the whole level is in the focus subtree; so we expect all entities to return true.
         {
-            m_focusModeInterface->ClearFocusRoot();
+            m_focusModeInterface->ClearFocusRoot(m_editorEntityContextId);
 
             EXPECT_EQ(m_focusModeInterface->IsInFocusSubTree(m_entityMap[CityEntityName]), true);
             EXPECT_EQ(m_focusModeInterface->IsInFocusSubTree(m_entityMap[StreetEntityName]), true);

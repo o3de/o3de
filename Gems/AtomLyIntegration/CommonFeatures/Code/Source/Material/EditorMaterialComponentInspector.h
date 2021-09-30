@@ -100,7 +100,7 @@ namespace AZ
                 void RunEditorMaterialFunctors();
                 void UpdateMaterialInstanceProperty(const AtomToolsFramework::DynamicProperty& property);
 
-                AZ::Crc32 GetSaveStateKeyForGroup(const AZStd::string& groupNameId) const;
+                AZ::Crc32 GetSaveStateKeyForGroup(const AZStd::string& groupName) const;
                 static bool AreNodePropertyValuesEqual(
                     const AzToolsFramework::InstanceDataNode* source, const AzToolsFramework::InstanceDataNode* target);
 
