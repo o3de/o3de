@@ -29,7 +29,7 @@ AZ_PUSH_DISABLE_WARNING(4251 4244, "-Wunknown-warning-option") // disable warnin
 AZ_POP_DISABLE_WARNING
 
 AZ_CVAR(
-    bool, ed_hideAssetPickerPathColumn, false, nullptr, AZ::ConsoleFunctorFlags::Null,
+    bool, ed_hideAssetPickerPathColumn, true, nullptr, AZ::ConsoleFunctorFlags::Null,
     "Hide AssetPicker path column for a clearer view.");
 AZ_CVAR_EXTERNED(bool, ed_useNewAssetBrowserTableView);
 
