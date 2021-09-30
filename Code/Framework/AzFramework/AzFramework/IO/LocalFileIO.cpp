@@ -472,14 +472,14 @@ namespace AZ
                 return false;
             }
 
-            if (AZ::IO::PathView(path).IsAbsolute())
+            if (AZ::IO::PathView(path).HasRootPath())
             {
                 size_t pathLen = strlen(path);
                 if (pathLen + 1 < resolvedPathSize)
                 {
                     azstrncpy(resolvedPath, resolvedPathSize, path, pathLen + 1);
 
-                    //see if the absolute path uses @projectproductassets@ or @projectproductassets@, if it does lowercase the relative part
+                    //see if the absolute path matches the resolved value of @projectproductassets@, if it does lowercase the relative part
                     LowerIfBeginsWith(resolvedPath, resolvedPathSize, GetAlias("@projectproductassets@"));
 
                     ToUnixSlashes(resolvedPath, resolvedPathSize);
