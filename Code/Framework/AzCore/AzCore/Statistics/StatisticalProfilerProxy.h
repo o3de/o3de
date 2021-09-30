@@ -12,18 +12,6 @@
 #include <AzCore/std/containers/unordered_map.h>
 #include <AzCore/std/parallel/shared_spin_mutex.h>
 
-#if defined(AZ_STATISTICAL_PROFILING_ENABLED)
-
-#if defined(AZ_PROFILE_SCOPE)
-#undef AZ_PROFILE_SCOPE
-#endif // #if defined(AZ_PROFILE_SCOPE)
-
-#define AZ_PROFILE_SCOPE(budget, scopeNameId, ...) \
-    constexpr AZ::Crc32 AZ_JOIN(blockId, __LINE__)(scopeNameId); \
-    AZ::Statistics::StatisticalProfilerProxy::TimedScope AZ_JOIN(scope, __LINE__)(AZ_CRC_CE(#budget), AZ_JOIN(blockId, __LINE__));
-
-#endif //#if defined(AZ_STATISTICAL_PROFILING_ENABLED)
-
 
 namespace AZ::Statistics
 {
