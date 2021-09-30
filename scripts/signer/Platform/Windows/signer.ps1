@@ -1,9 +1,10 @@
 #
-#  Copyright (c) Contributors to the Open 3D Engine Project
-# 
-#  SPDX-License-Identifier: Apache-2.0 OR MIT
-# 
-# 
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
+#
+# SPDX-License-Identifier: Apache-2.0 OR MIT
+#
+#
 
 param (
     [String[]] $exePath,
@@ -13,7 +14,7 @@ param (
 )
 
 # Get prerequisites, certs, and paths ready
-$tempPath = "C:\\temp"
+$tempPath = [System.IO.Path]::GetTempPath() # Order of operations defined here: https://docs.microsoft.com/en-us/dotnet/api/system.io.path.gettemppath?view=net-5.0&tabs=windows#remarks
 $certThumbprint = Get-ChildItem -Path Cert:LocalMachine\MY -ErrorAction Stop | Select-Object -ExpandProperty Thumbprint # Grab first certificate from local machine store
 
 if ($certificate) {
@@ -35,19 +36,30 @@ Catch {
     Write-Error "Signtool or Wix insignia not found! Exiting."
 }
 
-function Write-Signiture {
+function Write-Signature {
     param (
         $signtool,
         $thumbprint,
         $filename
     )
-    Try {
-        & $signtool sign /tr http://timestamp.digicert.com /td sha256 /fd sha256 /sha1 $thumbprint /sm $filename
-        & $signtool verify /pa /v $filename
+
+    $attempts = 2
+    $sleepSec = 5
+
+    Do {
+        $attmpts--
+        Try {
+            & $signtool sign /tr http://timestamp.digicert.com /td sha256 /fd sha256 /sha1 $thumbprint /sm $filename
+            & $signtool verify /pa /v $filename
+            return
         }
-    Catch {
-        Write-Error "Failed to sign $filename!"
-    }
+        Catch {
+            Write-Error $_.Exception.InnerException.Message -ErrorAction Continue
+            Start-Sleep -Seconds $sleepSec
+        }
+    } while ($attempts -lt 0)
+
+    throw "Failed to sign $filename" # Bypassed in try block if the command is successful
 }
 
 # Looping through each path insteaad of globbing to prevent hitting maximum command string length limit
@@ -55,7 +67,7 @@ if ($exePath) {
     Write-Output "### Signing EXE files ###"
     $files = @(Get-ChildItem $exePath -Recurse *.exe | % { $_.FullName })
     foreach ($file in $files) {
-        Write-Signiture -signtool $signtoolPath -thumbprint $certThumbprint -filename $file
+        Write-Signature -signtool $signtoolPath -thumbprint $certThumbprint -filename $file
     }
 }
 
@@ -63,14 +75,14 @@ if ($packagePath) {
     Write-Output "### Signing CAB files ###"
     $files = @(Get-ChildItem $packagePath -Recurse *.cab | % { $_.FullName })
     foreach ($file in $files) {
-        Write-Signiture -signtool $signtoolPath -thumbprint $certThumbprint -filename $file
+        Write-Signature -signtool $signtoolPath -thumbprint $certThumbprint -filename $file
     }
 
     Write-Output "### Signing MSI files ###"
     $files = @(Get-ChildItem $packagePath -Recurse *.msi | % { $_.FullName })
     foreach ($file in $files) {
         & $insigniaPath -im $files
-        Write-Signiture -signtool $signtoolPath -thumbprint $certThumbprint -filename $file
+        Write-Signature -signtool $signtoolPath -thumbprint $certThumbprint -filename $file
     }
 }
 
@@ -79,9 +91,9 @@ if ($bootstrapPath) {
     $files = @(Get-ChildItem $bootstrapPath -Recurse *.exe | % { $_.FullName })
     foreach ($file in $files) {
         & $insigniaPath -ib $file -o $tempPath\engine.exe
-        Write-Signiture -signtool $signtoolPath -thumbprint $certThumbprint -filename $tempPath\engine.exe
+        Write-Signature -signtool $signtoolPath -thumbprint $certThumbprint -filename $tempPath\engine.exe
         & $insigniaPath -ab $tempPath\engine.exe $file -o $file
-        Write-Signiture -signtool $signtoolPath -thumbprint $certThumbprint -filename $file
-        del -Force $tempPath\engine.exe
+        Write-Signature -signtool $signtoolPath -thumbprint $certThumbprint -filename $file
+        Remove-Item -Force $tempPath\engine.exe
     }
 }
