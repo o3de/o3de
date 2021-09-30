@@ -43,12 +43,12 @@ namespace AzToolsFramework
 
         void PrefabUndoInstance::Undo()
         {
-            m_instanceToTemplateInterface->PatchTemplate(m_undoPatch, m_templateId, AZStd::nullopt, true);
+            m_instanceToTemplateInterface->PatchTemplate(m_undoPatch, m_templateId, true, AZStd::nullopt);
         }
 
         void PrefabUndoInstance::Redo()
         {
-            m_instanceToTemplateInterface->PatchTemplate(m_redoPatch, m_templateId, AZStd::nullopt, true);
+            m_instanceToTemplateInterface->PatchTemplate(m_redoPatch, m_templateId, true, AZStd::nullopt);
         }
 
 
@@ -91,7 +91,7 @@ namespace AzToolsFramework
         void PrefabUndoEntityUpdate::Undo()
         {
             [[maybe_unused]] bool isPatchApplicationSuccessful =
-                m_instanceToTemplateInterface->PatchTemplate(m_undoPatch, m_templateId, AZStd::nullopt, true);
+                m_instanceToTemplateInterface->PatchTemplate(m_undoPatch, m_templateId, true, AZStd::nullopt);
 
             AZ_Error(
                 "Prefab", isPatchApplicationSuccessful,
@@ -102,7 +102,7 @@ namespace AzToolsFramework
         void PrefabUndoEntityUpdate::Redo()
         {
             [[maybe_unused]] bool isPatchApplicationSuccessful =
-                m_instanceToTemplateInterface->PatchTemplate(m_redoPatch, m_templateId, AZStd::nullopt, true);
+                m_instanceToTemplateInterface->PatchTemplate(m_redoPatch, m_templateId, true, AZStd::nullopt);
 
             AZ_Error(
                 "Prefab", isPatchApplicationSuccessful,
@@ -113,7 +113,7 @@ namespace AzToolsFramework
         void PrefabUndoEntityUpdate::Redo(InstanceOptionalReference instanceToExclude)
         {
             [[maybe_unused]] bool isPatchApplicationSuccessful =
-                m_instanceToTemplateInterface->PatchTemplate(m_redoPatch, m_templateId, instanceToExclude, true);
+                m_instanceToTemplateInterface->PatchTemplate(m_redoPatch, m_templateId, true, instanceToExclude);
 
             AZ_Error(
                 "Prefab", isPatchApplicationSuccessful,
@@ -329,7 +329,7 @@ namespace AzToolsFramework
 
             //propagate the link changes
             link->get().UpdateTarget();
-            m_prefabSystemComponentInterface->PropagateTemplateChanges(link->get().GetTargetTemplateId(), instanceToExclude);
+            m_prefabSystemComponentInterface->PropagateTemplateChanges(link->get().GetTargetTemplateId(), false, instanceToExclude);
 
             //mark as dirty
             m_prefabSystemComponentInterface->SetTemplateDirtyFlag(link->get().GetTargetTemplateId(), true);
