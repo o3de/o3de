@@ -306,7 +306,6 @@ namespace AZ
         return **s_executor;
     }
 
-    // TODO: Create the default executor as part of a component (as in TaskManagerComponent)
     void TaskExecutor::SetInstance(TaskExecutor* executor)
     {
         if (!executor)

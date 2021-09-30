@@ -79,7 +79,7 @@ namespace AZ
             m_rootScope = m_rootScopeProducer->GetScope();
             m_device = &device;
 
-            m_useTaskGraph = AZ::Interface<AZ::UseTaskGraphInterface>::Get();
+            m_taskGraphActive = AZ::Interface<AZ::TaskGraphActiveInterface>::Get();
 
             m_lastFrameEndTime = AZStd::GetTimeNowTicks();
 
@@ -89,7 +89,7 @@ namespace AZ
         void FrameScheduler::Shutdown()
         {
             m_device = nullptr;
-            m_useTaskGraph = nullptr;
+            m_taskGraphActive = nullptr;
             m_rootScopeProducer = nullptr;
             m_rootScope = nullptr;
             m_frameGraphExecuter = nullptr;
@@ -265,7 +265,7 @@ namespace AZ
             {
                 // Iterate over each SRG pool and fork jobs to compile SRGs.
                 const uint32_t compilesPerJob = m_compileRequest.m_shaderResourceGroupCompilesPerJob;
-                if (m_useTaskGraph && m_useTaskGraph->UseTaskGraph())
+                if (m_taskGraphActive && m_taskGraphActive->IsTaskGraphActive())
                 {
                     AZ::TaskGraph taskGraph;
 

@@ -94,7 +94,7 @@ namespace AZ
 
         Scene::~Scene()
         {
-            if (m_useTaskGraph)
+            if (m_taskGraphActive)
             {
                 WaitTGEvent(m_simulationFinishedTGEvent, &m_simulationFinishedWorkActive);
             }
@@ -403,7 +403,7 @@ namespace AZ
             m_simulationTime = tickInfo.m_currentGameTime;
 
             // If previous simulation job wasn't done, wait for it to finish.
-            if (m_useTaskGraph)
+            if (m_taskGraphActive)
             {
                 WaitTGEvent(m_simulationFinishedTGEvent, &m_simulationFinishedWorkActive);
             }
@@ -412,8 +412,8 @@ namespace AZ
                 WaitAndCleanCompletionJob(m_simulationCompletion);
             }
 
-            auto useTaskGraphInterface = AZ::Interface<AZ::UseTaskGraphInterface>::Get();
-            m_useTaskGraph = useTaskGraphInterface && useTaskGraphInterface->UseTaskGraph();
+            auto taskGraphActiveInterface = AZ::Interface<AZ::TaskGraphActiveInterface>::Get();
+            m_taskGraphActive = taskGraphActiveInterface && taskGraphActiveInterface->IsTaskGraphActive();
 
             if (jobPolicy == RHI::JobPolicy::Serial)
             {
@@ -424,7 +424,7 @@ namespace AZ
             }
             else
             {
-                if (m_useTaskGraph)
+                if (m_taskGraphActive)
                 {
                     SimulateTaskGraph();
                 }
@@ -437,7 +437,7 @@ namespace AZ
 
         void Scene::WaitTGEvent(AZ::TaskGraphEvent& completionTGEvent, AZStd::atomic_bool* workToWaitOn )
         {
-                AZ_PROFILE_SCOPE(RPI, "Scene: WaitAndCleanCompletionJob");
+            AZ_PROFILE_SCOPE(RPI, "Scene: WaitAndCleanCompletionJob");
             if (!workToWaitOn || workToWaitOn->load())
             {
                 completionTGEvent.Wait();
@@ -610,7 +610,7 @@ namespace AZ
         {
             AZ_PROFILE_SCOPE(RPI, "Scene: PrepareRender");
 
-            if (m_useTaskGraph)
+            if (m_taskGraphActive)
             {
                 WaitTGEvent(m_simulationFinishedTGEvent, &m_simulationFinishedWorkActive);
             }
@@ -689,7 +689,7 @@ namespace AZ
 
             {
 
-                if (m_useTaskGraph)
+                if (m_taskGraphActive)
                 {
                     CollectDrawPacketsTaskGraph();
                 }
@@ -720,7 +720,7 @@ namespace AZ
                 }
                 else
                 {
-                    if (m_useTaskGraph)
+                    if (m_taskGraphActive)
                     {
                         FinalizeDrawListsTaskGraph();
                     }

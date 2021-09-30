@@ -13,7 +13,7 @@
 #include <AzCore/Serialization/EditContext.h>
 
 // Create a cvar as a central location for experimentation with switching from the Job system to TaskGraph system.
-AZ_CVAR(bool, cl_useTaskGraph, false, nullptr, AZ::ConsoleFunctorFlags::Null, "Flag for use of TaskGraph (Note does not disable task graph system)");
+AZ_CVAR(bool, cl_activateTaskGraph, false, nullptr, AZ::ConsoleFunctorFlags::Null, "Flag clients of TaskGraph to switch between jobs/taskgraph (Note does not disable task graph system)");
 
 namespace AZ
 {
@@ -21,11 +21,11 @@ namespace AZ
     {
         AZ_Assert(m_taskExecutor == nullptr, "Error multiple activation of the TaskGraphSystemComponent");
 
-        if (Interface<UseTaskGraphInterface>::Get() == nullptr)
+        if (Interface<TaskGraphActiveInterface>::Get() == nullptr)
         {
-            Interface<UseTaskGraphInterface>::Register(this);
+            Interface<TaskGraphActiveInterface>::Register(this);
             m_taskExecutor = aznew TaskExecutor();
-            m_taskExecutor->SetInstance(m_taskExecutor);
+            TaskExecutor::SetInstance(m_taskExecutor);
         }
     }
 
@@ -40,9 +40,9 @@ namespace AZ
             azdestroy(m_taskExecutor);
             m_taskExecutor = nullptr;
         }
-        if (Interface<UseTaskGraphInterface>::Get() == this)
+        if (Interface<TaskGraphActiveInterface>::Get() == this)
         {
-            Interface<UseTaskGraphInterface>::Unregister(this);
+            Interface<TaskGraphActiveInterface>::Unregister(this);
         }
     }
 
@@ -80,8 +80,8 @@ namespace AZ
         }
     }
 
-    bool TaskGraphSystemComponent::UseTaskGraph() const
+    bool TaskGraphSystemComponent::IsTaskGraphActive() const
     {
-        return cl_useTaskGraph;
+        return cl_activateTaskGraph;
     }
 } // namespace AZ

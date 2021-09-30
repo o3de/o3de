@@ -62,6 +62,7 @@ namespace AZ
         {
             if (IsInitialized())
             {
+                AZ_Assert(m_pendingGroups.empty(), "Pending contexts in queue.");
                 ShutdownInternal();
                 DeviceObject::Shutdown();
             }
@@ -76,6 +77,7 @@ namespace AZ
         void FrameGraphExecuter::End()
         {
             AZ_PROFILE_SCOPE(RHI, "FrameGraphExecuter: End");
+            AZ_Assert(m_pendingGroups.empty(), "Pending contexts in queue.");
             m_groups.clear();
             EndInternal();
         }

@@ -511,6 +511,7 @@ namespace UnitTest
                 f.Precedes(g);
                 TaskGraphEvent ev;
                 subgraph.SubmitOnExecutor(*m_executor, &ev);
+                // TaskGraphEvent::Wait asserts if called on a worker thread, suppress & validate assert
                 AZ_TEST_START_TRACE_SUPPRESSION;
                 ev.Wait();
                 AZ_TEST_STOP_TRACE_SUPPRESSION(1);
@@ -543,8 +544,6 @@ namespace UnitTest
         TaskGraphEvent ev;
         graph.SubmitOnExecutor(*m_executor, &ev);
         ev.Wait();
-
-        // EXPECT_EQ(3 | 0b100000, x);
     }
 
     TEST_F(TaskGraphTestFixture, RetainedGraph)

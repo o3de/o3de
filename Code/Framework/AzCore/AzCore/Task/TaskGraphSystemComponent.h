@@ -16,15 +16,15 @@ namespace AZ
 {
     class TaskGraphSystemComponent
         : public Component
-        , public UseTaskGraphInterface
+        , public TaskGraphActiveInterface
     {
     public:
         AZ_COMPONENT(AZ::TaskGraphSystemComponent, "{5D56B829-1FEB-43D5-A0BD-E33C0497EFE2}")
 
         TaskGraphSystemComponent() = default;
 
-        // Implement UseTaskGraphInterface
-        bool UseTaskGraph() const override;
+        // Implement TaskGraphActiveInterface
+        bool IsTaskGraphActive() const override;
 
     private:
         //////////////////////////////////////////////////////////////////////////

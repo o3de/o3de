@@ -246,7 +246,7 @@ namespace AZ
             SceneId m_id;
 
             bool m_activated = false;
-            bool m_useTaskGraph = false; // update during tick, to ensure it only changes on frame boundaries
+            bool m_taskGraphActive = false; // update during tick, to ensure it only changes on frame boundaries
 
             RenderPipelinePtr m_defaultPipeline;
 
