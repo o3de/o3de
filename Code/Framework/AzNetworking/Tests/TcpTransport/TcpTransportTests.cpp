@@ -148,6 +148,11 @@ namespace UnitTest
 
         EXPECT_EQ(testServer.m_serverNetworkInterface->GetConnectionSet().GetConnectionCount(), 1);
         EXPECT_EQ(testClient.m_clientNetworkInterface->GetConnectionSet().GetConnectionCount(), 1);
+
+        testClient.m_clientNetworkInterface->SetTimeoutEnabled(true);
+        EXPECT_TRUE(testClient.m_clientNetworkInterface->IsTimeoutEnabled());
+
+        EXPECT_TRUE(testServer.m_serverNetworkInterface->StopListening());
     }
 
     #if AZ_TRAIT_DISABLE_FAILED_NETWORKING_TESTS

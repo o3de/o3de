@@ -6,123 +6,99 @@
  *
  */
 
-#include <AzTest/AzTest.h>
-#include <AzCore/UserSettings/UserSettingsComponent.h>
-#include <AzCore/Component/TransformBus.h>
-#include <AzToolsFramework/FocusMode/FocusModeInterface.h>
-#include <AzToolsFramework/UnitTest/AzToolsFrameworkTestHelpers.h>
+#include <Tests/FocusMode/EditorFocusModeFixture.h>
 
 namespace AzToolsFramework
 {
-    class EditorFocusModeTests
-        : public ::testing::Test
+    TEST_F(EditorFocusModeFixture, EditorFocusModeTests_SetFocus)
     {
-    protected:
-        void SetUp() override
-        {
-            m_app.Start(m_descriptor);
+        // When an entity is set as the focus root, GetFocusRoot should return its EntityId.
+        m_focusModeInterface->SetFocusRoot(m_entityMap[CarEntityName]);
+        EXPECT_EQ(m_focusModeInterface->GetFocusRoot(), m_entityMap[CarEntityName]);
 
-            // Without this, the user settings component would attempt to save on finalize/shutdown. Since the file is
-            // shared across the whole engine, if multiple tests are run in parallel, the saving could cause a crash 
-            // in the unit tests.
-            AZ::UserSettingsComponentRequestBus::Broadcast(&AZ::UserSettingsComponentRequests::DisableSaveOnFinalize);
-
-            GenerateTestHierarchy();
-        }
-
-        void GenerateTestHierarchy() 
-        {
-            /*
-            *   City
-            *   |_  Street
-            *       |_  Car
-            *       |   |_ Passenger
-            *       |_  SportsCar
-            *           |_ Passenger
-            */
-
-            m_entityMap["cityId"] =         CreateEditorEntity("City",      AZ::EntityId());
-            m_entityMap["streetId"] =       CreateEditorEntity("Street",    m_entityMap["cityId"]);
-            m_entityMap["carId"] =          CreateEditorEntity("Car",       m_entityMap["streetId"]);
-            m_entityMap["passengerId1"] =   CreateEditorEntity("Passenger", m_entityMap["carId"]);
-            m_entityMap["sportsCarId"] =    CreateEditorEntity("SportsCar", m_entityMap["streetId"]);
-            m_entityMap["passengerId2"] =   CreateEditorEntity("Passenger", m_entityMap["sportsCarId"]);
-        }
-
-        AZ::EntityId CreateEditorEntity(const char* name, AZ::EntityId parentId)
-        {
-            AZ::Entity* entity = nullptr;
-            UnitTest::CreateDefaultEditorEntity(name, &entity);
-
-            // Parent
-            AZ::TransformBus::Event(entity->GetId(), &AZ::TransformInterface::SetParent, parentId);
-
-            return entity->GetId();
-        }
-
-        void TearDown() override
-        {
-            m_app.Stop();
-        }
-
-        UnitTest::ToolsTestApplication m_app{ "EditorFocusModeTests" };
-        AZ::ComponentApplication::Descriptor m_descriptor;
-        AZStd::unordered_map<AZStd::string, AZ::EntityId> m_entityMap;
-    };
-
-    TEST_F(EditorFocusModeTests, EditorFocusModeTests_SetFocus)
-    {
-        FocusModeInterface* focusModeInterface = AZ::Interface<FocusModeInterface>::Get();
-        EXPECT_TRUE(focusModeInterface != nullptr);
-
-        focusModeInterface->SetFocusRoot(m_entityMap["carId"]);
-        EXPECT_EQ(focusModeInterface->GetFocusRoot(), m_entityMap["carId"]);
-
-        focusModeInterface->ClearFocusRoot();
-        EXPECT_EQ(focusModeInterface->GetFocusRoot(), AZ::EntityId());
+        // Restore default expected focus.
+        m_focusModeInterface->ClearFocusRoot();
     }
 
-    TEST_F(EditorFocusModeTests, EditorFocusModeTests_IsInFocusSubTree)
+    TEST_F(EditorFocusModeFixture, EditorFocusModeTests_ClearFocus)
     {
-        FocusModeInterface* focusModeInterface = AZ::Interface<FocusModeInterface>::Get();
-        EXPECT_TRUE(focusModeInterface != nullptr);
+        // Change the value from the default.
+        m_focusModeInterface->SetFocusRoot(m_entityMap[CarEntityName]);
 
-        focusModeInterface->ClearFocusRoot();
-        
-        EXPECT_EQ(focusModeInterface->IsInFocusSubTree(m_entityMap["cityId"]), true);
-        EXPECT_EQ(focusModeInterface->IsInFocusSubTree(m_entityMap["streetId"]), true);
-        EXPECT_EQ(focusModeInterface->IsInFocusSubTree(m_entityMap["carId"]), true);
-        EXPECT_EQ(focusModeInterface->IsInFocusSubTree(m_entityMap["passengerId1"]), true);
-        EXPECT_EQ(focusModeInterface->IsInFocusSubTree(m_entityMap["sportsCarId"]), true);
-        EXPECT_EQ(focusModeInterface->IsInFocusSubTree(m_entityMap["passengerId2"]), true);
+        // Calling ClearFocusRoot restores the default focus root (which is an invalid EntityId).
+        m_focusModeInterface->ClearFocusRoot();
+        EXPECT_EQ(m_focusModeInterface->GetFocusRoot(), AZ::EntityId());
+    }
 
-        focusModeInterface->SetFocusRoot(m_entityMap["streetId"]);
+    TEST_F(EditorFocusModeFixture, EditorFocusModeTests_IsInFocusSubTree_AncestorsDescendants)
+    {
+        // When the focus is set to an entity, all its descendants are in the focus subtree while the ancestors aren't.
+        {
+            m_focusModeInterface->SetFocusRoot(m_entityMap[StreetEntityName]);
 
-        EXPECT_EQ(focusModeInterface->IsInFocusSubTree(m_entityMap["cityId"]), false);
-        EXPECT_EQ(focusModeInterface->IsInFocusSubTree(m_entityMap["streetId"]), true);
-        EXPECT_EQ(focusModeInterface->IsInFocusSubTree(m_entityMap["carId"]), true);
-        EXPECT_EQ(focusModeInterface->IsInFocusSubTree(m_entityMap["passengerId1"]), true);
-        EXPECT_EQ(focusModeInterface->IsInFocusSubTree(m_entityMap["sportsCarId"]), true);
-        EXPECT_EQ(focusModeInterface->IsInFocusSubTree(m_entityMap["passengerId2"]), true);
+            EXPECT_EQ(m_focusModeInterface->IsInFocusSubTree(m_entityMap[CityEntityName]), false);
+            EXPECT_EQ(m_focusModeInterface->IsInFocusSubTree(m_entityMap[StreetEntityName]), true);
+            EXPECT_EQ(m_focusModeInterface->IsInFocusSubTree(m_entityMap[CarEntityName]), true);
+            EXPECT_EQ(m_focusModeInterface->IsInFocusSubTree(m_entityMap[Passenger1EntityName]), true);
+            EXPECT_EQ(m_focusModeInterface->IsInFocusSubTree(m_entityMap[SportsCarEntityName]), true);
+            EXPECT_EQ(m_focusModeInterface->IsInFocusSubTree(m_entityMap[Passenger2EntityName]), true);
+        }
 
-        focusModeInterface->SetFocusRoot(m_entityMap["carId"]);
+        // Restore default expected focus.
+        m_focusModeInterface->ClearFocusRoot();
+    }
 
-        EXPECT_EQ(focusModeInterface->IsInFocusSubTree(m_entityMap["cityId"]), false);
-        EXPECT_EQ(focusModeInterface->IsInFocusSubTree(m_entityMap["streetId"]), false);
-        EXPECT_EQ(focusModeInterface->IsInFocusSubTree(m_entityMap["carId"]), true);
-        EXPECT_EQ(focusModeInterface->IsInFocusSubTree(m_entityMap["passengerId1"]), true);
-        EXPECT_EQ(focusModeInterface->IsInFocusSubTree(m_entityMap["sportsCarId"]), false);
-        EXPECT_EQ(focusModeInterface->IsInFocusSubTree(m_entityMap["passengerId2"]), false);
+    TEST_F(EditorFocusModeFixture, EditorFocusModeTests_IsInFocusSubTree_Siblings)
+    {
+        // If the root entity has siblings, they are also outside of the focus subtree.
+        {
+            m_focusModeInterface->SetFocusRoot(m_entityMap[CarEntityName]);
 
-        focusModeInterface->SetFocusRoot(m_entityMap["passengerId2"]);
+            EXPECT_EQ(m_focusModeInterface->IsInFocusSubTree(m_entityMap[CityEntityName]), false);
+            EXPECT_EQ(m_focusModeInterface->IsInFocusSubTree(m_entityMap[StreetEntityName]), false);
+            EXPECT_EQ(m_focusModeInterface->IsInFocusSubTree(m_entityMap[CarEntityName]), true);
+            EXPECT_EQ(m_focusModeInterface->IsInFocusSubTree(m_entityMap[Passenger1EntityName]), true);
+            EXPECT_EQ(m_focusModeInterface->IsInFocusSubTree(m_entityMap[SportsCarEntityName]), false);
+            EXPECT_EQ(m_focusModeInterface->IsInFocusSubTree(m_entityMap[Passenger2EntityName]), false);
+        }
 
-        EXPECT_EQ(focusModeInterface->IsInFocusSubTree(m_entityMap["cityId"]), false);
-        EXPECT_EQ(focusModeInterface->IsInFocusSubTree(m_entityMap["streetId"]), false);
-        EXPECT_EQ(focusModeInterface->IsInFocusSubTree(m_entityMap["carId"]), false);
-        EXPECT_EQ(focusModeInterface->IsInFocusSubTree(m_entityMap["passengerId1"]), false);
-        EXPECT_EQ(focusModeInterface->IsInFocusSubTree(m_entityMap["sportsCarId"]), false);
-        EXPECT_EQ(focusModeInterface->IsInFocusSubTree(m_entityMap["passengerId2"]), true);
+        // Restore default expected focus.
+        m_focusModeInterface->ClearFocusRoot();
+    }
 
-        focusModeInterface->ClearFocusRoot();
+    TEST_F(EditorFocusModeFixture, EditorFocusModeTests_IsInFocusSubTree_Leaf)
+    {
+        // If the root is a leaf, then the focus subtree will consists of just that entity.
+        {
+            m_focusModeInterface->SetFocusRoot(m_entityMap[Passenger2EntityName]);
+
+            EXPECT_EQ(m_focusModeInterface->IsInFocusSubTree(m_entityMap[CityEntityName]), false);
+            EXPECT_EQ(m_focusModeInterface->IsInFocusSubTree(m_entityMap[StreetEntityName]), false);
+            EXPECT_EQ(m_focusModeInterface->IsInFocusSubTree(m_entityMap[CarEntityName]), false);
+            EXPECT_EQ(m_focusModeInterface->IsInFocusSubTree(m_entityMap[Passenger1EntityName]), false);
+            EXPECT_EQ(m_focusModeInterface->IsInFocusSubTree(m_entityMap[SportsCarEntityName]), false);
+            EXPECT_EQ(m_focusModeInterface->IsInFocusSubTree(m_entityMap[Passenger2EntityName]), true);
+        }
+
+        // Restore default expected focus.
+        m_focusModeInterface->ClearFocusRoot();
+    }
+
+    TEST_F(EditorFocusModeFixture, EditorFocusModeTests_IsInFocusSubTree_Clear)
+    {
+        // Change the value from the default.
+        m_focusModeInterface->SetFocusRoot(m_entityMap[StreetEntityName]);
+
+        // When the focus is cleared, the whole level is in the focus subtree; so we expect all entities to return true.
+        {
+            m_focusModeInterface->ClearFocusRoot();
+
+            EXPECT_EQ(m_focusModeInterface->IsInFocusSubTree(m_entityMap[CityEntityName]), true);
+            EXPECT_EQ(m_focusModeInterface->IsInFocusSubTree(m_entityMap[StreetEntityName]), true);
+            EXPECT_EQ(m_focusModeInterface->IsInFocusSubTree(m_entityMap[CarEntityName]), true);
+            EXPECT_EQ(m_focusModeInterface->IsInFocusSubTree(m_entityMap[Passenger1EntityName]), true);
+            EXPECT_EQ(m_focusModeInterface->IsInFocusSubTree(m_entityMap[SportsCarEntityName]), true);
+            EXPECT_EQ(m_focusModeInterface->IsInFocusSubTree(m_entityMap[Passenger2EntityName]), true);
+        }
     }
 }
