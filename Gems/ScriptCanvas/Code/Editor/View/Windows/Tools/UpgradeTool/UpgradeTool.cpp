@@ -171,10 +171,11 @@ namespace ScriptCanvasEditor
             QDateTime theTime = QDateTime::currentDateTime();
             QString subFolder = theTime.toString("yyyy-MM-dd [HH.mm.ss]");
 
-            m_backupPath = AZStd::string::format("@engroot@/ScriptCanvas_BACKUP/%s", subFolder.toUtf8().data());
-            char backupPathCStr[AZ_MAX_PATH_LEN] = { 0 };
-            AZ::IO::FileIOBase::GetInstance()->ResolvePath(m_backupPath.c_str(), backupPathCStr, AZ_MAX_PATH_LEN);
-            m_backupPath = backupPathCStr;
+            auto settingsRegistry = AZ::SettingsRegistry::Get();
+            m_backupPath.clear();
+            settingsRegistry->Get(m_backupPath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_ProjectUserPath);
+
+            m_backupPath = m_backupPath / "ScriptCanvas_BACKUP" / subFolder.toUtf8().data();
 
             if (!AZ::IO::FileIOBase::GetInstance()->Exists(m_backupPath.c_str()))
             {
@@ -554,7 +555,7 @@ namespace ScriptCanvasEditor
 
     void UpgradeTool::SaveLog()
     {
-        AZStd::string outputFileName = AZStd::string::format("@engroot@/ScriptCanvasUpgradeReport.html");
+        AZStd::string outputFileName = AZStd::string::format("@log@/ScriptCanvasUpgradeReport.html");
 
         char resolvedBuffer[AZ_MAX_PATH_LEN] = { 0 };
         AZ::IO::FileIOBase::GetInstance()->ResolvePath(outputFileName.c_str(), resolvedBuffer, AZ_MAX_PATH_LEN);

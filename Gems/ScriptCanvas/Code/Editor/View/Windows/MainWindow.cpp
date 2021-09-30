@@ -72,6 +72,7 @@
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzCore/Component/EntityUtils.h>
 #include <AzCore/Serialization/IdUtils.h>
+#include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/Math/Color.h>
 #include <AzCore/Math/Vector2.h>
 #include <AzCore/Math/Vector3.h>
@@ -734,21 +735,23 @@ namespace ScriptCanvasEditor
                             message.append(QObject::tr("<br>%1 graph(s) that need manual corrections. You will be prompted to review them after you close this dialog.<br>").arg(assetsThatNeedManualInspection));
                         }
 
+                        auto settingsRegistry = AZ::SettingsRegistry::Get();
+
+                        AZ::IO::Path outputFileName;
+                        settingsRegistry->Get(outputFileName.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_ProjectLogPath);
+                        outputFileName /= "ScriptCanvasUpgradeReport.html";
                         // Report
-                        char resolvedBuffer[AZ_MAX_PATH_LEN] = { 0 };
-                        AZStd::string outputFileName = AZStd::string::format("@engroot@/ScriptCanvasUpgradeReport.html");
-                        AZ::IO::FileIOBase::GetInstance()->ResolvePath(outputFileName.c_str(), resolvedBuffer, AZ_MAX_PATH_LEN);
-                        AZStd::string urlToReport = AZStd::string::format("For more information see the <a href=\"%s\">Upgrade Report</a>.", resolvedBuffer);
+                        AZStd::string urlToReport = AZStd::string::format("For more information see the <a href=\"%s\">Upgrade Report</a>.", outputFileName.c_str());
                         message.append(QObject::tr("<br>%1").arg(urlToReport.c_str()));
 
                         // Backup
                         if (upgradeTool->HasBackup())
                         {
-                            AZStd::string outputFileName2 = AZStd::string::format("@engroot@/ScriptCanvas_BACKUP");
+                            AZ::IO::Path outputFileName2;
+                            settingsRegistry->Get(outputFileName2.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_ProjectUserPath);
+                            outputFileName2 /= "ScriptCanvas_BACKUP";
 
-                            AZ::IO::FileIOBase::GetInstance()->ResolvePath(outputFileName2.c_str(), resolvedBuffer, AZ_MAX_PATH_LEN);
-
-                            AZStd::string backupPath = AZStd::string::format("<br>Open the <a href=\"%s\">Backup Folder</a>.", resolvedBuffer);
+                            AZStd::string backupPath = AZStd::string::format("<br>Open the <a href=\"%s\">Backup Folder</a>.", outputFileName.c_str());
                             message.append(QObject::tr("%1").arg(backupPath.c_str()));
                         }
 
