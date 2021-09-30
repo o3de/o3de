@@ -78,49 +78,6 @@ namespace AzToolsFramework
             RegisterEntity(m_containerEntity->GetId(), PrefabDomUtils::ContainerEntityName);
         }
 
-        /*Instance::Instance(InstanceAlias alias)
-            : Instance(nullptr, AZStd::move(alias))
-        {
-        }
-
-        Instance::Instance(InstanceOptionalReference parent)
-            : Instance(parent.has_value() ? &parent->get() : nullptr, GenerateInstanceAlias())
-        {
-        }
-
-        Instance::Instance(Instance* parent, InstanceAlias alias)
-            : m_parent(parent)
-            , m_alias(alias)
-            , m_instanceEntityMapper(AZ::Interface<InstanceEntityMapperInterface>::Get())
-            , m_templateInstanceMapper(AZ::Interface<TemplateInstanceMapperInterface>::Get())
-        {
-            AZ_Assert(m_instanceEntityMapper,
-                "Instance Entity Mapper Interface could not be found. "
-                "It is a requirement for the Prefab Instance class. "
-                "Check that it is being correctly initialized.");
-
-            AZ_Assert(m_templateInstanceMapper,
-                "Template Instance Mapper Interface could not be found. "
-                "It is a requirement for the Prefab Instance class. "
-                "Check that it is being correctly initialized.");
-
-            if (parent)
-            {
-                AliasPath absoluteInstancePath = m_parent->GetAbsoluteInstanceAliasPath();
-                absoluteInstancePath.Append(m_alias);
-                absoluteInstancePath.Append(PrefabDomUtils::ContainerEntityName);
-
-                AZ::EntityId newContainerEntityId = InstanceEntityIdMapper::GenerateEntityIdForAliasPath(absoluteInstancePath);
-                m_containerEntity = AZStd::make_unique<AZ::Entity>(newContainerEntityId);
-            }
-            else
-            {
-                m_containerEntity = AZStd::make_unique<AZ::Entity>();
-            }
-            
-            RegisterEntity(m_containerEntity->GetId(), PrefabDomUtils::ContainerEntityName);
-        }*/
-
         Instance::~Instance()
         {
             Reset();
