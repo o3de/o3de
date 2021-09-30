@@ -8,6 +8,7 @@
 
 #include "EditorPickEntitySelection.h"
 
+#include <AzToolsFramework/API/ViewportEditorModeTrackerInterface.h>
 #include <AzToolsFramework/ViewportSelection/EditorSelectionUtil.h>
 #include <QApplication>
 
@@ -15,9 +16,12 @@ namespace AzToolsFramework
 {
     AZ_CLASS_ALLOCATOR_IMPL(EditorPickEntitySelection, AZ::SystemAllocator, 0)
 
-    EditorPickEntitySelection::EditorPickEntitySelection(const EditorVisibleEntityDataCache* entityDataCache)
+    EditorPickEntitySelection::EditorPickEntitySelection(
+        const EditorVisibleEntityDataCache* entityDataCache, ViewportEditorModeTrackerInterface* viewportEditorModeTracker)
         : m_editorHelpers(AZStd::make_unique<EditorHelpers>(entityDataCache))
+        , m_viewportEditorModeTracker(viewportEditorModeTracker)
     {
+        m_viewportEditorModeTracker->ActivateMode({ /* DefaultViewportId */ }, ViewportEditorMode::Pick);
     }
 
     EditorPickEntitySelection::~EditorPickEntitySelection()
@@ -26,6 +30,8 @@ namespace AzToolsFramework
         {
             ToolsApplicationRequestBus::Broadcast(&ToolsApplicationRequests::SetEntityHighlighted, m_hoveredEntityId, false);
         }
+
+        m_viewportEditorModeTracker->DeactivateMode({ /* DefaultViewportId */ }, ViewportEditorMode::Pick);
     }
 
     // note: entityIdUnderCursor is the authoritative entityId we get each frame by querying

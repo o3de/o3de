@@ -344,9 +344,10 @@ namespace UnitTest
         using AzToolsFramework::EditorInteractionSystemViewportSelectionRequestBus;
         EditorInteractionSystemViewportSelectionRequestBus::Event(
             AzToolsFramework::GetEntityContextId(), &EditorInteractionSystemViewportSelectionRequestBus::Events::SetHandler,
-            [](const AzToolsFramework::EditorVisibleEntityDataCache* entityDataCache)
+            [](const AzToolsFramework::EditorVisibleEntityDataCache* entityDataCache,
+               [[maybe_unused]] AzToolsFramework::ViewportEditorModeTrackerInterface* viewportEditorModeTracker)
             {
-                return AZStd::make_unique<AzToolsFramework::EditorPickEntitySelection>(entityDataCache);
+                return AZStd::make_unique<AzToolsFramework::EditorPickEntitySelection>(entityDataCache, viewportEditorModeTracker);
             });
 
         // When

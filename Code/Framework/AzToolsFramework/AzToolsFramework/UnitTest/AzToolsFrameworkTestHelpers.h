@@ -22,6 +22,7 @@
 #include <AZTestShared/Math/MathTestHelpers.h>
 #include <AZTestShared/Utils/Utils.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
+#include <AzToolsFramework/API/ViewportEditorModeTrackerInterface.h>
 #include <AzToolsFramework/Application/ToolsApplication.h>
 #include <AzToolsFramework/Entity/EditorEntityTransformBus.h>
 #include <AzToolsFramework/ComponentMode/EditorComponentModeBus.h>
@@ -166,11 +167,12 @@ namespace UnitTest
             m_editorActions.Connect();
 
             const auto viewportHandlerBuilder =
-                [this](const AzToolsFramework::EditorVisibleEntityDataCache* entityDataCache)
+                [this](const AzToolsFramework::EditorVisibleEntityDataCache* entityDataCache,
+                    [[maybe_unused]] AzToolsFramework::ViewportEditorModeTrackerInterface* viewportEditorModeTracker)
             {
                 // create the default viewport (handles ComponentMode)
                 AZStd::unique_ptr<AzToolsFramework::EditorDefaultSelection> defaultSelection =
-                    AZStd::make_unique<AzToolsFramework::EditorDefaultSelection>(entityDataCache);
+                    AZStd::make_unique<AzToolsFramework::EditorDefaultSelection>(entityDataCache, viewportEditorModeTracker);
 
                 // override the phantom widget so we can use out custom test widget
                 defaultSelection->SetOverridePhantomWidget(&m_editorActions.m_componentModeWidget);
