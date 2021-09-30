@@ -19,8 +19,6 @@
 
 namespace AzToolsFramework
 {
-
-
     class EditorFocusModeFixture
         : public UnitTest::ToolsApplicationFixture
     {

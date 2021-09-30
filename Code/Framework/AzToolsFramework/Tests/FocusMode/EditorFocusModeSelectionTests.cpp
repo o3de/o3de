@@ -31,7 +31,7 @@ namespace AzToolsFramework
         : public UnitTest::IndirectCallManipulatorViewportInteractionFixtureMixin<EditorFocusModeFixture>
     {
     public:
-        void ClickAtWorldPositionOnViewport(AZ::Vector3 worldPosition)
+        void ClickAtWorldPositionOnViewport(const AZ::Vector3& worldPosition)
         {
             // Calculate the world position in screen space
             const auto carScreenPosition = AzFramework::WorldToScreen(worldPosition, m_cameraState);
