@@ -240,7 +240,7 @@ namespace AZ::IO
         return AZStd::fixed_string<MaxPathLength>(m_path.begin(), m_path.end());
     }
 
-    // as_sosix
+    // as_posix
     constexpr AZStd::fixed_string<MaxPathLength> PathView::FixedMaxPathStringAsPosix() const noexcept
     {
         AZStd::fixed_string<MaxPathLength> resultPath(m_path.begin(), m_path.end());

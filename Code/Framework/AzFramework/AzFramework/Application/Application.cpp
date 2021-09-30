@@ -482,13 +482,13 @@ namespace AzFramework
         newThreadDesc.m_name = newThreadName;
         AZStd::binary_semaphore binarySemaphore;
         AZStd::thread newThread([&workForNewThread, &binarySemaphore, &newThreadName]
-        {
-            AZ_PROFILE_SCOPE(AzFramework,
-                "Application::PumpSystemEventLoopWhileDoingWorkInNewThread:ThreadWorker %s", newThreadName);
+            {
+                AZ_PROFILE_SCOPE(AzFramework,
+                    "Application::PumpSystemEventLoopWhileDoingWorkInNewThread:ThreadWorker %s", newThreadName);
 
-            workForNewThread();
-            binarySemaphore.release();
-        }, &newThreadDesc);
+                workForNewThread();
+                binarySemaphore.release();
+            }, &newThreadDesc);
         while (!binarySemaphore.try_acquire_for(eventPumpFrequency))
         {
             PumpSystemEventLoopUntilEmpty();
@@ -622,8 +622,8 @@ namespace AzFramework
         };
         AZStd::vector<AliasPair> m_aliases;
 
-        private:
-            AZStd::string m_parentArrayPath;
+    private:
+        AZStd::string m_parentArrayPath;
     };
 
     static void CreateUserCache(const AZ::IO::FixedMaxPath& cacheUserPath, AZ::IO::FileIOBase& fileIoBase)
@@ -720,7 +720,7 @@ namespace AzFramework
             DeprecatedAliasesKeyVisitor visitor;
             if (m_settingsRegistry->Visit(visitor, ApplicationInternal::DeprecatedFileIOAliasesRoot))
             {
-                for(const auto& [oldAlias, newAlias] : visitor.m_aliases)
+                for (const auto& [oldAlias, newAlias] : visitor.m_aliases)
                 {
                     fileIoBase->SetDeprecatedAlias(oldAlias, newAlias);
                 }
