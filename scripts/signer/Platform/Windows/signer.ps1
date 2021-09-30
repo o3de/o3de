@@ -15,7 +15,7 @@ param (
 
 # Get prerequisites, certs, and paths ready
 $tempPath = [System.IO.Path]::GetTempPath() # Order of operations defined here: https://docs.microsoft.com/en-us/dotnet/api/system.io.path.gettemppath?view=net-5.0&tabs=windows#remarks
-$certThumbprint = Get-ChildItem -Path Cert:LocalMachine\MY -ErrorAction Stop | Select-Object -ExpandProperty Thumbprint # Grab first certificate from local machine store
+$certThumbprint = Get-ChildItem -Path Cert:LocalMachine\MY -CodeSigningCert -ErrorAction Stop | Select-Object -ExpandProperty Thumbprint # Grab first certificate from local machine store
 
 if ($certificate) {
     Write-Output "Checking certificate thumbprint $certificate"
