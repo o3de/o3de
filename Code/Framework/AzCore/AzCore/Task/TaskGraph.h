@@ -22,9 +22,18 @@ namespace AZ
     namespace Internal
     {
         class CompiledTaskGraph;
+        class TaskWorker;
     }
     class TaskExecutor;
     class TaskGraph;
+
+    class TaskGraphActiveInterface
+    {
+    public:
+        AZ_RTTI(TaskGraphActiveInterface, "{08118074-B139-4EF9-B8FD-29F1D6DC9233}");
+
+        virtual bool IsTaskGraphActive() const = 0;
+    };
 
     // A TaskToken is returned each time a Task is added to the TaskGraph. TaskTokens are used to
     // express dependencies between tasks within the graph, and have no purpose after the graph
@@ -70,9 +79,12 @@ namespace AZ
     private:
         friend class ::AZ::Internal::CompiledTaskGraph;
         friend class TaskGraph;
+        friend class TaskExecutor;
+
         void Signal();
 
         AZStd::binary_semaphore m_semaphore;
+        TaskExecutor* m_executor = nullptr;
     };
 
     // The TaskGraph encapsulates a set of tasks and their interdependencies. After adding
@@ -89,6 +101,9 @@ namespace AZ
         // Reset the state of the task graph to begin recording tasks and edges again
         // NOTE: Graph must be in a "settled" state (cannot be in-flight)
         void Reset();
+        
+        // Returns false if 1 or more tasks have been added to the graph
+        bool IsEmpty();
 
         // Add a task to the graph, retrieiving a token that can be used to express dependencies
         // between tasks. The first argument specifies the TaskKind, used for tracking the task.
