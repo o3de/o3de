@@ -79,7 +79,6 @@ namespace AZ
 
         void RPISystem::Initialize(const RPISystemDescriptor& rpiSystemDescriptor)
         {
-            AZ_Printf("RHI", "RPISystem Initialize\n");
             m_rhiSystem.InitDevice();
 
             // Gather asset handlers from sub-systems.

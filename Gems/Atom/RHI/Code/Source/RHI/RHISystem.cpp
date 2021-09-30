@@ -129,7 +129,7 @@ namespace AZ
                 }
             }
 
-            AZ_Warning("RHI", preferredUserAdapterName.empty() || preferredUserDevice, "Specified adapter name not found: '%s'", preferredUserAdapterName.c_str());
+            AZ_Warning("RHISystem", preferredUserAdapterName.empty() || preferredUserDevice, "Specified adapter name not found: '%s'", preferredUserAdapterName.c_str());
 
             RHI::PhysicalDevice* physicalDeviceFound{};
 
