@@ -7,6 +7,7 @@
  */
 
 #include <AzToolsFramework/ContainerEntity/ContainerEntitySystemComponent.h>
+#include <AzToolsFramework/ContainerEntity/ContainerEntityNotificationBus.h>
 
 namespace AzToolsFramework
 {
@@ -92,6 +93,8 @@ namespace AzToolsFramework
         {
             m_closedContainerSet.erase(entityId);
         }
+
+        ContainerEntityNotificationBus::Broadcast(&ContainerEntityNotifications::OnContainerEntityStatusChanged, entityId);
 
         return AZ::Success();
     }
