@@ -14,8 +14,6 @@
 #include <Atom/RPI.Public/Scene.h>
 #include <Atom/RPI.Public/View.h>
 
-#include <Atom/RHI/CpuProfiler.h>
-
 #include <AzCore/Math/MatrixUtils.h>
 #include <AzCore/Math/ShapeIntersection.h>
 #include <AzCore/Casting/numeric_cast.h>
@@ -730,11 +728,21 @@ namespace AZ
 
             m_debugCtx.ResetCullStats();
             m_debugCtx.m_numCullablesInScene = GetNumCullables();
+            AZ::JobCompletion beginCullingCompletion;
 
             for (auto& view : views)
             {
-                view->BeginCulling();
+                const auto cullingLambda = [&view]()
+                {
+                    view->BeginCulling();
+                };
+
+                AZ::Job* cullingJob = AZ::CreateJobFunction(AZStd::move(cullingLambda), true, nullptr);
+                cullingJob->SetDependent(&beginCullingCompletion);
+                cullingJob->Start();
             }
+
+            beginCullingCompletion.StartAndWaitForCompletion();
 
             AuxGeomDrawPtr auxGeom;
             if (m_debugCtx.m_debugDraw)

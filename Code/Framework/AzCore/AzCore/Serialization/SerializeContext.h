@@ -5,8 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef AZCORE_SERIALIZE_CONTEXT_H
-#define AZCORE_SERIALIZE_CONTEXT_H
+#pragma once
 
 #include <limits>
 
@@ -43,6 +42,12 @@
 
 namespace AZ
 {
+    namespace Data
+    {
+        template<typename T>
+        class Asset;
+    }
+
     class EditContext;
 
     class ObjectStream;
@@ -2562,11 +2567,13 @@ namespace AZ
 #include <AzCore/Serialization/AZStdContainers.inl>
 #include <AzCore/Serialization/std/VariantReflection.inl>
 
-/// include asset generics
-#include <AzCore/Asset/AssetSerializer.h>
+// Forward declare asset serialization helper specialization
+namespace AZ
+{
+    template<typename T>
+    struct SerializeGenericTypeInfo< Data::Asset<T> >;
+}
 
 /// include implementation of SerializeContext::EnumBuilder
 #include <AzCore/Serialization/SerializeContextEnum.inl>
 
-#endif // AZCORE_SERIALIZE_CONTEXT_H
-#pragma once

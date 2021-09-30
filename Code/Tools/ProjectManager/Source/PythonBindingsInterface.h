@@ -56,8 +56,9 @@ namespace O3DE::ProjectManager
         // Gems
 
         /**
-         * Get info about a Gem 
-         * @param projectPath the absolute path to the Gem 
+         * Get info about a Gem.
+         * @param path The absolute path to the Gem
+         * @param projectPath (Optional) The absolute path to the Gem project
          * @return an outcome with GemInfo on success 
          */
         virtual AZ::Outcome<GemInfo> GetGemInfo(const QString& path, const QString& projectPath = {}) = 0;
@@ -158,6 +159,13 @@ namespace O3DE::ProjectManager
         virtual AZ::Outcome<QVector<ProjectTemplateInfo>> GetProjectTemplates(const QString& projectPath = {}) = 0;
 
         // Gem Repos
+
+        /**
+         * A gem repo to engine. Registers this gem repo with the current engine.
+         * @param repoUri the absolute filesystem path or url to the gem repo manifest file.
+         * @return An outcome with the success flag as well as an error message in case of a failure.
+         */
+        virtual AZ::Outcome<void, AZStd::string> AddGemRepo(const QString& repoUri) = 0;
 
         /**
          * Get all available gem repo infos. Gathers all repos registered with the engine.

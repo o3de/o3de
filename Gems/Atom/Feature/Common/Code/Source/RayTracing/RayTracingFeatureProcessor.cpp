@@ -9,7 +9,6 @@
 #include <RayTracing/RayTracingFeatureProcessor.h>
 #include <AzCore/Debug/EventTrace.h>
 #include <Atom/Feature/TransformService/TransformServiceFeatureProcessor.h>
-#include <Atom/RHI/CpuProfiler.h>
 #include <Atom/RHI/Factory.h>
 #include <Atom/RHI/RHISystemInterface.h>
 #include <Atom/RPI.Public/Scene.h>
@@ -105,14 +104,31 @@ namespace AZ
                 m_meshes[objectIndex].m_subMeshes = subMeshes;
             }
 
+            Mesh& mesh = m_meshes[objectIndex];
+
+            // search for an existing BLAS instance entry for this mesh using the assetId
+            BlasInstanceMap::iterator itMeshBlasInstance = m_blasInstanceMap.find(assetId);
+            if (itMeshBlasInstance == m_blasInstanceMap.end())
+            {
+                // make a new BLAS map entry for this mesh
+                MeshBlasInstance meshBlasInstance;
+                meshBlasInstance.m_count = 1;
+                meshBlasInstance.m_subMeshes.reserve(mesh.m_subMeshes.size());
+                itMeshBlasInstance = m_blasInstanceMap.insert({ assetId, meshBlasInstance }).first;
+            }
+            else
+            {
+                itMeshBlasInstance->second.m_count++;
+            }
+
             // create the BLAS buffers for each sub-mesh, or re-use existing BLAS objects if they were already created.
             // Note: all sub-meshes must either create new BLAS objects or re-use existing ones, otherwise it's an error (it's the same model in both cases)
             // Note: the buffer is just reserved here, the BLAS is built in the RayTracingAccelerationStructurePass
-            Mesh& mesh = m_meshes[objectIndex];
             bool blasInstanceFound = false;
-
-            for (auto& subMesh : mesh.m_subMeshes)
+            for (uint32_t subMeshIndex = 0; subMeshIndex < mesh.m_subMeshes.size(); ++subMeshIndex)
             {
+                SubMesh& subMesh = mesh.m_subMeshes[subMeshIndex];
+
                 RHI::RayTracingBlasDescriptor blasDescriptor;
                 blasDescriptor.Build()
                     ->Geometry()
@@ -121,13 +137,11 @@ namespace AZ
                         ->IndexBuffer(subMesh.m_indexBufferView)
                 ;
 
-                // search for an existing BLAS object for this model
-                RayTracingBlasMap::iterator itBlas = m_blasMap.find(assetId);
-                if (itBlas != m_blasMap.end())
+                // determine if we have an existing BLAS object for this subMesh
+                if (itMeshBlasInstance->second.m_subMeshes.size() >= subMeshIndex + 1)
                 {
                     // re-use existing BLAS
-                    subMesh.m_blas = itBlas->second.m_blas;
-                    itBlas->second.m_count++;
+                    subMesh.m_blas = itMeshBlasInstance->second.m_subMeshes[subMeshIndex].m_blas;
 
                     // keep track of the fact that we re-used a BLAS
                     blasInstanceFound = true;
@@ -143,8 +157,7 @@ namespace AZ
                     subMesh.m_blas->CreateBuffers(*device, &blasDescriptor, *m_bufferPools);
 
                     // store the BLAS in the side list
-                    RayTracingBlasInstance blasInstance = { subMesh.m_blas, 1 };
-                    m_blasMap.insert({ assetId, blasInstance });
+                    itMeshBlasInstance->second.m_subMeshes.push_back({ subMesh.m_blas });
                 }
             }
 
@@ -182,16 +195,16 @@ namespace AZ
                 m_meshes.erase(itMesh);
                 m_revision++;
 
-                // decrement the count from the BLAS instance, and check to see if we can remove it
-                RayTracingBlasMap::iterator itBlas = m_blasMap.find(itMesh->second.m_assetId);
-                if (itBlas != m_blasMap.end())
+                // decrement the count from the BLAS instances, and check to see if we can remove them
+                BlasInstanceMap::iterator itBlas = m_blasInstanceMap.find(itMesh->second.m_assetId);
+                if (itBlas != m_blasInstanceMap.end())
                 {
                     itBlas->second.m_count--;
                     if (itBlas->second.m_count == 0)
                     {
-                        m_blasMap.erase(itBlas);
+                        m_blasInstanceMap.erase(itBlas);
                     }
-                }                
+                }
             }
 
             m_meshInfoBufferNeedsUpdate = true;

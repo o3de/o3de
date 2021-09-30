@@ -16,8 +16,6 @@
 
 #include <Atom/RHI/Factory.h>
 
-#include <Atom/RHI/CpuProfiler.h>
-
 #include <Atom/RPI.Public/Pass/PassSystemInterface.h>
 #include <Atom/RPI.Public/RPISystemInterface.h>
 #include <Atom/RPI.Public/Scene.h>

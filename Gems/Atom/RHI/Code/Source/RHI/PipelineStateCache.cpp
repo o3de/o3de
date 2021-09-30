@@ -6,9 +6,10 @@
  *
  */
 
-#include <Atom/RHI/CpuProfiler.h>
 #include <Atom/RHI/PipelineStateCache.h>
 #include <Atom/RHI/Factory.h>
+
+#include <AzCore/Debug/Profiler.h>
 #include <AzCore/std/sort.h>
 #include <AzCore/std/parallel/exponential_backoff.h>
 

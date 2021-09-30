@@ -72,9 +72,9 @@ namespace AZ
             /// Seek in current file.
             void Seek(SeekSizeType offset, SeekMode mode);
             /// Get the cursor position in the current file.
-            SizeType Tell();
+            SizeType Tell() const;
             /// Is the cursor at the end of the file?
-            bool Eof();
+            bool Eof() const;
             /// Get the time the file was last modified.
             AZ::u64 ModificationTime();
             /// Read data from a file synchronous. Return number of bytes actually read in the buffer.

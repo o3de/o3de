@@ -9,7 +9,7 @@
 #include "QtEditorApplication.h"
 
 #ifdef PAL_TRAIT_LINUX_WINDOW_MANAGER_XCB
-#include <AzFramework/API/ApplicationAPI_Linux.h>
+#include <AzFramework/XcbEventHandler.h>
 #endif
 
 namespace Editor
@@ -19,7 +19,7 @@ namespace Editor
         if (GetIEditor()->IsInGameMode())
         {
 #ifdef PAL_TRAIT_LINUX_WINDOW_MANAGER_XCB
-            AzFramework::LinuxXcbEventHandlerBus::Broadcast(&AzFramework::LinuxXcbEventHandler::HandleXcbEvent, static_cast<xcb_generic_event_t*>(message));
+            AzFramework::XcbEventHandlerBus::Broadcast(&AzFramework::XcbEventHandler::HandleXcbEvent, static_cast<xcb_generic_event_t*>(message));
 #endif
             return true;
         }

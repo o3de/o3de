@@ -9,6 +9,9 @@
 set(FILES
     Source/ScriptEventsSystemComponent.h
     Source/ScriptEventsSystemComponent.cpp
+    Source/ScriptEventParameter.cpp
+    Source/ScriptEventMethod.cpp
+    Source/ScriptEventsAssetRef.cpp
     Include/ScriptEvents/ScriptEventsGem.h
     Include/ScriptEvents/ScriptEventsAsset.h
     Include/ScriptEvents/ScriptEventsAsset.cpp

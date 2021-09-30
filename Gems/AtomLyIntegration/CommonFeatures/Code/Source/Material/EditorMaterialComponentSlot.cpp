@@ -10,6 +10,7 @@
 #include <Material/EditorMaterialComponentExporter.h>
 #include <Material/EditorMaterialComponentInspector.h>
 #include <Material/EditorMaterialModelUvNameMapInspector.h>
+#include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/RTTI/BehaviorContext.h>
@@ -140,7 +141,7 @@ namespace AZ
 
         void EditorMaterialComponentSlot::SetAsset(const Data::AssetId& assetId)
         {
-            m_materialAsset.Create(assetId);
+            m_materialAsset = AZ::Data::Asset<AZ::RPI::MaterialAsset>(assetId, AZ::AzTypeInfo<AZ::RPI::MaterialAsset>::Uuid());
             MaterialComponentRequestBus::Event(
                 m_entityId, &MaterialComponentRequestBus::Events::SetMaterialOverride, m_id, m_materialAsset.GetId());
             OnDataChanged();
@@ -164,7 +165,7 @@ namespace AZ
 
         void EditorMaterialComponentSlot::ClearToDefaultAsset()
         {
-            m_materialAsset.Create(GetDefaultAssetId());
+            m_materialAsset = AZ::Data::Asset<AZ::RPI::MaterialAsset>(GetDefaultAssetId(), AZ::AzTypeInfo<AZ::RPI::MaterialAsset>::Uuid());
             MaterialComponentRequestBus::Event(
                 m_entityId, &MaterialComponentRequestBus::Events::SetMaterialOverride, m_id, m_materialAsset.GetId());
             ClearOverrides();
@@ -204,7 +205,8 @@ namespace AZ
                     const auto& assetIdOutcome = AZ::RPI::AssetUtils::MakeAssetId(exportItem.GetExportPath(), 0);
                     if (assetIdOutcome)
                     {
-                        m_materialAsset.Create(assetIdOutcome.GetValue());
+                        m_materialAsset = AZ::Data::Asset<AZ::RPI::MaterialAsset>(
+                            assetIdOutcome.GetValue(), AZ::AzTypeInfo<AZ::RPI::MaterialAsset>::Uuid());
                         changed = true;
                     }
                 }

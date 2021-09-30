@@ -19,6 +19,8 @@ set(FILES
     Source/Components/TerrainWorldComponent.h
     Source/Components/TerrainWorldDebuggerComponent.cpp
     Source/Components/TerrainWorldDebuggerComponent.h
+    Source/Components/TerrainWorldRendererComponent.cpp
+    Source/Components/TerrainWorldRendererComponent.h
     Source/TerrainRenderer/TerrainFeatureProcessor.cpp
     Source/TerrainRenderer/TerrainFeatureProcessor.h
     Source/TerrainSystem/TerrainSystem.cpp

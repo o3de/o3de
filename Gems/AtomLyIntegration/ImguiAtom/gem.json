@@ -8,7 +8,10 @@
     "canonical_tags": [
         "Gem"
     ],
-    "user_tags": [
-    ],
-    "requirements": ""
+    "user_tags": [],
+    "requirements": "",
+    "dependencies": [
+        "ImGui",
+        "Atom_Feature_Common"
+    ]
 }
