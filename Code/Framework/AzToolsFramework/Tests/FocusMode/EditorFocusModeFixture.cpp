@@ -25,7 +25,7 @@ namespace AzToolsFramework
         ASSERT_TRUE(m_focusModeInterface != nullptr);
 
         // register a simple component implementing BoundsRequestBus and EditorComponentSelectionRequestsBus
-        GetApplication()->RegisterComponentDescriptor(BoundsTestComponent::CreateDescriptor());
+        GetApplication()->RegisterComponentDescriptor(UnitTest::BoundsTestComponent::CreateDescriptor());
 
         GenerateTestHierarchy();
     }
@@ -48,13 +48,21 @@ namespace AzToolsFramework
         m_entityMap[SportsCarEntityName] =  CreateEditorEntity(SportsCarEntityName,     m_entityMap[StreetEntityName]);
         m_entityMap[Passenger2EntityName] = CreateEditorEntity(Passenger2EntityName,    m_entityMap[SportsCarEntityName]);
 
-        MoveEntityAndAddBoundComponent(m_entityMap[CityEntityName], CityEntityPosition);
-        MoveEntityAndAddBoundComponent(m_entityMap[CarEntityName], CarEntityPosition);
+        // Add a BoundsTestComponent to the Car entity.
+        AZ::Entity* entity = GetEntityById(m_entityMap[CarEntityName]);
 
+        entity->Deactivate();
+        entity->CreateComponent<UnitTest::BoundsTestComponent>();
+        entity->Activate();
+
+        // Move the CarEntity so it's out of the way.
+        AZ::TransformBus::Event(m_entityMap[CarEntityName], &AZ::TransformBus::Events::SetWorldTranslation, CarEntityPosition);
+
+        // Setup the camera so the Car entity is in view.
         AzFramework::SetCameraTransform(
             m_cameraState,
             AZ::Transform::CreateFromQuaternionAndTranslation(
-                AZ::Quaternion::CreateFromEulerAnglesDegrees(AZ::Vector3(CameraPitch, 0.0f, CameraYaw)), CameraPosition));
+                AZ::Quaternion::CreateFromEulerAnglesDegrees(AZ::Vector3(0.0f, 0.0f, 0.0f)), CameraPosition));
     }
 
     AZ::EntityId EditorFocusModeFixture::CreateEditorEntity(const char* name, AZ::EntityId parentId)
@@ -66,27 +74,5 @@ namespace AzToolsFramework
         AZ::TransformBus::Event(entity->GetId(), &AZ::TransformInterface::SetParent, parentId);
 
         return entity->GetId();
-    }
-
-    void EditorFocusModeFixture::MoveEntityAndAddBoundComponent(AZ::EntityId entityId, AZ::Vector3 position)
-    {
-        AZ::Entity* entity = GetEntityById(entityId);
-        AZ::TransformBus::Event(entityId, &AZ::TransformBus::Events::SetWorldTranslation, position);
-
-        entity->Deactivate();
-        entity->CreateComponent<BoundsTestComponent>();
-        entity->Activate();
-    }
-
-    void EditorFocusModeFixture::TearDownEditorFixtureImpl()
-    {
-    }
-
-    AzToolsFramework::EntityIdList EditorFocusModeFixture::GetSelectedEntities()
-    {
-        AzToolsFramework::EntityIdList selectedEntities;
-        AzToolsFramework::ToolsApplicationRequestBus::BroadcastResult(
-            selectedEntities, &AzToolsFramework::ToolsApplicationRequestBus::Events::GetSelectedEntities);
-        return selectedEntities;
     }
 }
