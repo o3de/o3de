@@ -5,8 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef AZCORE_ENTITY_UTILS_H
-#define AZCORE_ENTITY_UTILS_H
+#pragma once
 
 #include <AzCore/Component/Entity.h>
 #include <AzCore/Debug/Profiler.h>
@@ -217,6 +216,3 @@ namespace AZ
 
     } // namespace EntityUtils
 }   // namespace AZ
-
-#endif  // AZCORE_ENTITY_UTILS_H
-#pragma once

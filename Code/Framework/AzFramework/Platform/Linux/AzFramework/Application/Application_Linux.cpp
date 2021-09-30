@@ -8,7 +8,9 @@
 
 #include <AzFramework/Application/Application.h>
 
-#include "Application_Linux_xcb.h"
+#if PAL_TRAIT_LINUX_WINDOW_MANAGER_XCB
+#include <AzFramework/XcbApplication.h>
+#endif
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 namespace AzFramework
@@ -17,7 +19,7 @@ namespace AzFramework
     Application::Implementation* Application::Implementation::Create()
     {
 #if PAL_TRAIT_LINUX_WINDOW_MANAGER_XCB
-        return aznew ApplicationLinux_xcb();
+        return aznew XcbApplication();
 #elif PAL_TRAIT_LINUX_WINDOW_MANAGER_WAYLAND
         #error "Linux Window Manager Wayland not supported."
         return nullptr;

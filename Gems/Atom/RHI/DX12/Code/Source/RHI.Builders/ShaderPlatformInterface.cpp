@@ -255,6 +255,11 @@ namespace AZ
 
             // Compilation parameters
             AZStd::string params = shaderCompilerArguments.MakeAdditionalDxcCommandLineString();
+            if (BuildHasDebugInfo(shaderCompilerArguments))
+            {
+                params += " -Zi";  // Generate debug information
+                params += " -Zss"; // Compute Shader Hash considering source information
+            }
 
             // Enable half precision types when shader model >= 6.2
             int shaderModelMajor = 0;
@@ -281,12 +286,11 @@ namespace AZ
             AZStd::string symbolDatabaseFileCliArgument{" "};  // when not debug: still insert a space between 5.dxil and 7.hlsl-in
             if (BuildHasDebugInfo(shaderCompilerArguments))
             {
-                // prepare .ldd filename:
+                // prepare .pdb filename:
                 AZStd::string md5hex = RHI::ByteToHexString(md5);
                 AZStd::string symbolDatabaseFilePath = dxcInputFile.c_str();  // mutate from source
-                AZStd::string lldFileName = md5hex    // lld is like pdb but it's the default symbol database extension in dxc
-                                          + "-" + profileIt->second;   // concatenate the shader profile to disambiguate vs/ps...
-                AzFramework::StringFunc::Path::ReplaceFullName(symbolDatabaseFilePath, lldFileName.c_str(), "lld");
+                AZStd::string pdbFileName = md5hex + "-" + profileIt->second;   // concatenate the shader profile to disambiguate vs/ps...
+                AzFramework::StringFunc::Path::ReplaceFullName(symbolDatabaseFilePath, pdbFileName.c_str(), "pdb");
                 // it is possible that another activated platform/profile, already exported that file. (since it's hashed on the source file)
                 // dxc returns an error in such case. we get less surprising effets by just not mentionning an -Fd argument
                 if (AZ::IO::SystemFile::Exists(symbolDatabaseFilePath.c_str()))
