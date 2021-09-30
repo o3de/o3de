@@ -12,6 +12,8 @@
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/Serialization/SerializeContext.h>
 
+#include <AzFramework/Entity/EntityContextBus.h>
+
 namespace AzToolsFramework
 {
     //! FocusModeInterface
