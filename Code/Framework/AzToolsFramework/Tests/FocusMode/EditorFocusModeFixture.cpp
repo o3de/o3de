@@ -27,6 +27,9 @@ namespace AzToolsFramework
         // register a simple component implementing BoundsRequestBus and EditorComponentSelectionRequestsBus
         GetApplication()->RegisterComponentDescriptor(UnitTest::BoundsTestComponent::CreateDescriptor());
 
+        AzToolsFramework::EditorEntityContextRequestBus::BroadcastResult(
+            m_editorEntityContextId, &AzToolsFramework::EditorEntityContextRequestBus::Events::GetEditorEntityContextId);
+
         GenerateTestHierarchy();
     }
 
