@@ -49,7 +49,7 @@ TEST_F(SeedBuilderTests, SeedBuilder_SourceDependency_Valid)
 {
     DependencyBuilder::SeedBuilderWorker seedBuilderWorker;
     AssetBuilderSDK::CreateJobsRequest request;
-    constexpr char testSeedFolder[] = "@projectproductassets@/../Gems/LmbrCentral/Code/Tests/Seed";
+    constexpr char testSeedFolder[] = "@engroot@/Gems/LmbrCentral/Code/Tests/Seed";
     char resolvedPath[AZ_MAX_PATH_LEN];
     AZ::IO::FileIOBase::GetInstance()->ResolvePath(testSeedFolder, resolvedPath, AZ_MAX_PATH_LEN);
     request.m_watchFolder = resolvedPath;

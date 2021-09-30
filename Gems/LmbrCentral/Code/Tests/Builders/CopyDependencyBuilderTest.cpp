@@ -894,7 +894,7 @@ namespace UnitTest
         AssetBuilderSDK::CreateJobsResponse response;
 
         request.m_sourceFile = "Tests/Xmls/XmlExampleWithoutVersion.xml";
-        request.m_watchFolder = "@projectproductassets@/../Gems/LmbrCentral/Code/";
+        request.m_watchFolder = "@engroot@/Gems/LmbrCentral/Code/";
 
         XmlBuilderWorker builderWorker;
         builderWorker.AddSchemaFileDirectory(GetFullPath("Xmls/Schema/WithoutVersionConstraints/FullFeatured"));
