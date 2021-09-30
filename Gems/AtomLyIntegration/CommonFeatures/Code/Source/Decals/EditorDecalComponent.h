@@ -65,7 +65,7 @@ namespace AZ
             //! EditorRenderComponentAdapter overrides ...
             u32 OnConfigurationChanged() override;
 
-			// Hold onto the material for the lifespan of the EditorDecalComponent to smooth out performance. This is so we can avoid
+            // Hold onto the material for the lifespan of the EditorDecalComponent to smooth out performance. This is so we can avoid
             // duplicate loads as the DecalTextureArrayFeatureProcessor will unload the materials after texture packing.
             void CacheMaterial();
 
