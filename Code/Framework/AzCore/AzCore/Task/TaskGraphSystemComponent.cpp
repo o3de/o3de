@@ -14,6 +14,7 @@
 
 // Create a cvar as a central location for experimentation with switching from the Job system to TaskGraph system.
 AZ_CVAR(bool, cl_activateTaskGraph, false, nullptr, AZ::ConsoleFunctorFlags::Null, "Flag clients of TaskGraph to switch between jobs/taskgraph (Note does not disable task graph system)");
+static constexpr uint32_t TaskExecutorServiceCrc = AZ_CRC_CE("TaskExecutorService");
 
 namespace AZ
 {
@@ -48,12 +49,12 @@ namespace AZ
 
     void TaskGraphSystemComponent::GetProvidedServices(ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC_CE("TaskExecutorService"));
+        provided.push_back(TaskExecutorServiceCrc);
     }
 
     void TaskGraphSystemComponent::GetIncompatibleServices(ComponentDescriptor::DependencyArrayType& incompatible)
     {
-        incompatible.push_back(AZ_CRC_CE("TaskExecutorService"));
+        incompatible.push_back(TaskExecutorServiceCrc);
     }
 
     void TaskGraphSystemComponent::GetDependentServices([[maybe_unused]] ComponentDescriptor::DependencyArrayType& dependent)
