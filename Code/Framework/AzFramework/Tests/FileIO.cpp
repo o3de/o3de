@@ -855,7 +855,11 @@ namespace UnitTest
         TEST_F(AliasTest, GetAlias_LogsError_WhenAccessingDeprecatedAlias_Succeeds)
         {
             AZ::IO::LocalFileIO local;
-            AZ::IO::FixedMaxPathString aliasFolder("/temp");
+
+            AZ::IO::FixedMaxPathString aliasFolder;
+            EXPECT_TRUE(local.ConvertToAbsolutePath("/temp", aliasFolder.data(), aliasFolder.capacity()));
+            aliasFolder.resize_no_construct(AZStd::char_traits<char>::length(aliasFolder.data()));
+
             local.SetAlias("@test@", aliasFolder.c_str());
             local.SetDeprecatedAlias("@deprecated@", "@test@");
             local.SetDeprecatedAlias("@deprecatednonexistent@", "@nonexistent@");
