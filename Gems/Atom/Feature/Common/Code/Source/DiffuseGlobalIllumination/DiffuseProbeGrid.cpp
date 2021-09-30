@@ -831,7 +831,7 @@ namespace AZ
             aabbWs.GetAsSphere(center, radius);
 
             m_cullable.m_cullData.m_boundingSphere = Sphere(center, radius);
-            m_cullable.m_cullData.m_boundingObb = aabbWs.GetTransformedObb(AZ::Transform::CreateIdentity());
+            m_cullable.m_cullData.m_boundingObb = m_obbWs;
             m_cullable.m_cullData.m_visibilityEntry.m_boundingVolume = aabbWs;
             m_cullable.m_cullData.m_visibilityEntry.m_userData = &m_cullable;
             m_cullable.m_cullData.m_visibilityEntry.m_typeFlags = AzFramework::VisibilityEntry::TYPE_RPI_Cullable;
