@@ -10,6 +10,7 @@
 #include <Atom/RPI.Edit/Material/MaterialTypeSourceData.h>
 #include <Atom/RPI.Edit/Material/MaterialSourceDataSerializer.h>
 #include <Atom/RPI.Edit/Material/MaterialPropertySerializer.h>
+#include <Atom/RPI.Edit/Material/MaterialPropertyId.h>
 
 #include <AzCore/Math/Color.h>
 #include <AzCore/Math/Vector2.h>
@@ -63,6 +64,7 @@ namespace AZ
             }
 
             // Construct the full property name (groupName.propertyName) by parsing it from the JSON path string.
+            // Note we don't yet support full nested property sets, but eventually this should not be limited to just one group with one list of properties...
             size_t startPropertyName = context.GetPath().Get().rfind('/');
             size_t startGroupName = context.GetPath().Get().rfind('/', startPropertyName-1);
             AZStd::string_view groupName = context.GetPath().Get().substr(startGroupName + 1, startPropertyName - startGroupName - 1);
@@ -70,7 +72,7 @@ namespace AZ
 
             JSR::ResultCode result(JSR::Tasks::ReadField);
 
-            auto propertyDefinition = materialType->FindProperty(groupName, propertyName);
+            auto propertyDefinition = materialType->FindProperty(MaterialPropertyId{groupName, propertyName}.GetStringView());
             if (!propertyDefinition)
             {
                 AZStd::string message = AZStd::string::format("Property '%.*s.%.*s' not found in material type.", AZ_STRING_ARG(groupName), AZ_STRING_ARG(propertyName));

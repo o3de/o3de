@@ -90,6 +90,7 @@ namespace AZ
                 settings.m_metadata.Add(fileLoadContext);
 
                 JsonSerialization::Load(materialType, *document, settings);
+                materialType.ConvertToNewDataFormat();
                 materialType.ResolveUvEnums();
 
                 if (reportingHelper.ErrorsReported())

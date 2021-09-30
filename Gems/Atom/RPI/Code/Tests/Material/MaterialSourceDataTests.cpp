@@ -201,33 +201,38 @@ namespace UnitTest
     TEST_F(MaterialSourceDataTests, TestJsonRoundTrip)
     {
         const char* materialTypeJson =
-            "{                                                                   \n"
-            "    \"propertyLayout\": {                                           \n"
-            "        \"version\": 1,                                             \n"
-            "        \"groups\": [                                               \n"
-            "            { \"name\": \"groupA\" },                               \n"
-            "            { \"name\": \"groupB\" },                               \n"
-            "            { \"name\": \"groupC\" }                                \n"
-            "        ],                                                          \n"
-            "        \"properties\": {                                           \n"
-            "            \"groupA\": [                                           \n"
-            "                {\"name\": \"MyBool\", \"type\": \"bool\"},         \n"
-            "                {\"name\": \"MyInt\", \"type\": \"int\"},           \n"
-            "                {\"name\": \"MyUInt\", \"type\": \"uint\"}          \n"
-            "            ],                                                      \n"
-            "            \"groupB\": [                                           \n"
-            "                {\"name\": \"MyFloat\", \"type\": \"float\"},       \n"
-            "                {\"name\": \"MyFloat2\", \"type\": \"vector2\"},    \n"
-            "                {\"name\": \"MyFloat3\", \"type\": \"vector3\"}     \n"
-            "            ],                                                      \n"
-            "            \"groupC\": [                                           \n"
-            "                {\"name\": \"MyFloat4\", \"type\": \"vector4\"},    \n"
-            "                {\"name\": \"MyColor\", \"type\": \"color\"},       \n"
-            "                {\"name\": \"MyImage\", \"type\": \"image\"}        \n"
-            "            ]                                                       \n"
-            "        }                                                           \n"
-            "    }                                                               \n"
-            "}                                                                   \n";
+            R"(
+                {
+                    "propertyLayout": {                        
+                        "propertySets": [
+                            { 
+                                "name": "groupA",
+                                "properties": [
+                                    {"name": "MyBool", "type": "bool"},
+                                    {"name": "MyInt", "type": "int"},
+                                    {"name": "MyUInt", "type": "uint"}
+                                ]
+                            },
+                            { 
+                                "name": "groupB",
+                                "properties": [
+                                    {"name": "MyFloat", "type": "float"},
+                                    {"name": "MyFloat2", "type": "vector2"},
+                                    {"name": "MyFloat3", "type": "vector3"}
+                                ]
+                            },
+                            {
+                                "name": "groupC",
+                                "properties": [
+                                    {"name": "MyFloat4", "type": "vector4"},
+                                    {"name": "MyColor", "type": "color"},
+                                    {"name": "MyImage", "type": "image"}
+                                ]
+                            }
+                        ]
+                    }
+                }
+            )";
 
         const char* materialTypeFilePath = "@exefolder@/Gems/Atom/RPI/Code/Tests/Material/Temp/roundTripTest.materialtype";
         
@@ -259,25 +264,29 @@ namespace UnitTest
 
         MaterialSourceData sourceDataCopy;
         JsonTestResult loadResult = LoadTestDataFromJson(sourceDataCopy, sourceDataSerialized);
-        
+
         CheckEqual(sourceDataOriginal, sourceDataCopy);
     }
 
     TEST_F(MaterialSourceDataTests, Load_MaterialTypeAfterPropertyList)
     {
         const AZStd::string simpleMaterialTypeJson = R"(
-        {
-            "propertyLayout": {
-                "properties": {
-                    "general": [
+            {
+                "propertyLayout": {
+                    "propertySets":
+                    [
                         {
-                            "name": "testColor",
-                            "type": "color"
+                            "name": "general",
+                            "properties": [
+                                {
+                                    "name": "testColor",
+                                    "type": "color"
+                                }
+                            ]
                         }
                     ]
                 }
             }
-        } 
         )";
 
         const char* materialTypeFilePath = "@exefolder@/Gems/Atom/RPI/Code/Tests/Material/Temp/simpleMaterialType.materialtype";
@@ -376,18 +385,22 @@ namespace UnitTest
     TEST_F(MaterialSourceDataTests, Load_MaterialTypeMessagesAreReported)
     {
         const AZStd::string simpleMaterialTypeJson = R"(
-        {
-            "propertyLayout": {
-                "properties": {
-                    "general": [
+            {
+                "propertyLayout": {
+                    "propertySets":
+                    [
                         {
-                            "name": "testColor",
-                            "type": "color"
+                            "name": "general",
+                            "properties": [
+                                {
+                                    "name": "testColor",
+                                    "type": "color"
+                                }
+                            ]
                         }
                     ]
                 }
             }
-        } 
         )";
 
         const char* materialTypeFilePath = "@exefolder@/Gems/Atom/RPI/Code/Tests/Material/Temp/simpleMaterialType.materialtype";
@@ -416,24 +429,28 @@ namespace UnitTest
         EXPECT_EQ(AZ::JsonSerializationResult::Processing::Completed, loadResult.m_jsonResultCode.GetProcessing());
 
         // propertyLayout is a field in the material type, not the material
-        EXPECT_TRUE(loadResult.ContainsMessage("[simpleMaterialType.materialtype]/propertyLayout/properties", "Successfully read"));
+        EXPECT_TRUE(loadResult.ContainsMessage("[simpleMaterialType.materialtype]/propertyLayout/propertySets", "Successfully read"));
     }
 
     TEST_F(MaterialSourceDataTests, Load_Error_PropertyNotFound)
     {
         const AZStd::string simpleMaterialTypeJson = R"(
-        {
-            "propertyLayout": {
-                "properties": {
-                    "general": [
+            {
+                "propertyLayout": {
+                    "propertySets":
+                    [
                         {
-                            "name": "testColor",
-                            "type": "color"
+                            "name": "general",
+                            "properties": [
+                                {
+                                    "name": "testColor",
+                                    "type": "color"
+                                }
+                            ]
                         }
                     ]
                 }
             }
-        } 
         )";
 
         const char* materialTypeFilePath = "@exefolder@/Gems/Atom/RPI/Code/Tests/Material/Temp/simpleMaterialType.materialtype";

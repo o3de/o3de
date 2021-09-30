@@ -230,7 +230,7 @@ namespace MaterialEditor
 
         // create source data from properties
         MaterialSourceData sourceData;
-        sourceData.m_propertyLayoutVersion = m_materialTypeSourceData.m_propertyLayout.m_version;
+        sourceData.m_propertyLayoutVersion = m_materialTypeSourceData.GetPropertyLayout().m_version;
         sourceData.m_materialType = m_materialSourceData.m_materialType;
         sourceData.m_parentMaterial = m_materialSourceData.m_parentMaterial;
 
@@ -302,7 +302,7 @@ namespace MaterialEditor
 
         // create source data from properties
         MaterialSourceData sourceData;
-        sourceData.m_propertyLayoutVersion = m_materialTypeSourceData.m_propertyLayout.m_version;
+        sourceData.m_propertyLayoutVersion = m_materialTypeSourceData.GetPropertyLayout().m_version;
         sourceData.m_materialType = m_materialSourceData.m_materialType;
         sourceData.m_parentMaterial = m_materialSourceData.m_parentMaterial;
 
@@ -373,7 +373,7 @@ namespace MaterialEditor
 
         // create source data from properties
         MaterialSourceData sourceData;
-        sourceData.m_propertyLayoutVersion = m_materialTypeSourceData.m_propertyLayout.m_version;
+        sourceData.m_propertyLayoutVersion = m_materialTypeSourceData.GetPropertyLayout().m_version;
         sourceData.m_materialType = m_materialSourceData.m_materialType;
 
         // Only assign a parent path if the source was a .material
@@ -592,24 +592,26 @@ namespace MaterialEditor
         bool result = true;
 
         // populate sourceData with properties that meet the filter
-        m_materialTypeSourceData.EnumerateProperties([this, &sourceData, &propertyFilter, &result](const AZStd::string& groupName, const AZStd::string& propertyName, const auto& propertyDefinition) {
+        m_materialTypeSourceData.EnumerateProperties([this, &sourceData, &propertyFilter, &result](const AZStd::string& propertyIdContext, const auto& propertyDefinition) {
 
-            const MaterialPropertyId propertyId(groupName, propertyName);
+            const AZStd::string propertyId = propertyIdContext + propertyDefinition->m_name;
 
-            const auto it = m_properties.find(propertyId);
+            const auto it = m_properties.find(Name{propertyId});
             if (it != m_properties.end() && propertyFilter(it->second))
             {
                 MaterialPropertyValue propertyValue = AtomToolsFramework::ConvertToRuntimeType(it->second.GetValue());
                 if (propertyValue.IsValid())
                 {
-                    if (!m_materialTypeSourceData.ConvertPropertyValueToSourceDataFormat(propertyDefinition, propertyValue))
+                    if (!m_materialTypeSourceData.ConvertPropertyValueToSourceDataFormat(*propertyDefinition, propertyValue))
                     {
-                        AZ_Error("MaterialDocument", false, "Material document property could not be converted: '%s' in '%s'.", propertyId.GetCStr(), m_absolutePath.c_str());
+                        AZ_Error("MaterialDocument", false, "Material document property could not be converted: '%s' in '%s'.", propertyId.c_str(), m_absolutePath.c_str());
                         result = false;
                         return false;
                     }
-
-                    sourceData.m_properties[groupName][propertyName].m_value = propertyValue;
+                    
+                    // TODO: Support populating the Material Editor with nested property sets, not just the top level.
+                    const AZStd::string groupName = propertyId.substr(0, propertyId.size() - propertyDefinition->m_name.size() - 1);
+                    sourceData.m_properties[groupName][propertyDefinition->m_name].m_value = propertyValue;
                 }
             }
             return true;
@@ -678,7 +680,7 @@ namespace MaterialEditor
                 AZ_Error("MaterialDocument", false, "Material type source data could not be loaded: '%s'.", materialTypeSourceFilePath.c_str());
                 return false;
             }
-            m_materialTypeSourceData = materialTypeOutcome.GetValue();
+            m_materialTypeSourceData = materialTypeOutcome.TakeValue();
         }
         else if (AzFramework::StringFunc::Path::IsExtension(m_absolutePath.c_str(), MaterialTypeSourceData::Extension))
         {
@@ -691,7 +693,7 @@ namespace MaterialEditor
                 AZ_Error("MaterialDocument", false, "Material type source data could not be loaded: '%s'.", m_absolutePath.c_str());
                 return false;
             }
-            m_materialTypeSourceData = materialTypeOutcome.GetValue();
+            m_materialTypeSourceData = materialTypeOutcome.TakeValue();
 
             // The document represents a material, not a material type.
             // If the input data is a material type file we have to generate the material source data by referencing it.
@@ -770,33 +772,41 @@ namespace MaterialEditor
         // Populate the property map from a combination of source data and assets
         // Assets must still be used for now because they contain the final accumulated value after all other materials
         // in the hierarchy are applied
-        m_materialTypeSourceData.EnumerateProperties([this, &parentPropertyValues](const AZStd::string& groupName, const AZStd::string& propertyName, const auto& propertyDefinition) {
-            AtomToolsFramework::DynamicPropertyConfig propertyConfig;
-
-            // Assign id before conversion so it can be used in dynamic description
-            propertyConfig.m_id = MaterialPropertyId(groupName, propertyName);
-
-            const auto& propertyIndex = m_materialAsset->GetMaterialPropertiesLayout()->FindPropertyIndex(propertyConfig.m_id);
-            const bool propertyIndexInBounds = propertyIndex.IsValid() && propertyIndex.GetIndex() < m_materialAsset->GetPropertyValues().size();
-            AZ_Warning("MaterialDocument", propertyIndexInBounds, "Failed to add material property '%s' to document '%s'.", propertyConfig.m_id.GetCStr(), m_absolutePath.c_str());
-
-            if (propertyIndexInBounds)
+        m_materialTypeSourceData.EnumeratePropertySets([this, &parentPropertyValues](const AZStd::string& propertyIdContext, const MaterialTypeSourceData::PropertySet* propertySet)
             {
-                AtomToolsFramework::ConvertToPropertyConfig(propertyConfig, propertyDefinition);
-                propertyConfig.m_showThumbnail = true;
-                propertyConfig.m_originalValue = AtomToolsFramework::ConvertToEditableType(m_materialAsset->GetPropertyValues()[propertyIndex.GetIndex()]);
-                propertyConfig.m_parentValue = AtomToolsFramework::ConvertToEditableType(parentPropertyValues[propertyIndex.GetIndex()]);
-                auto groupDefinition = m_materialTypeSourceData.FindGroup(groupName);
-                propertyConfig.m_groupName = groupDefinition ? groupDefinition->m_displayName : groupName;
-                m_properties[propertyConfig.m_id] = AtomToolsFramework::DynamicProperty(propertyConfig);
-            }
-            return true;
-        });
+                AtomToolsFramework::DynamicPropertyConfig propertyConfig;
+
+                for (const auto& propertyDefinition : propertySet->GetProperties())
+                {
+                    // Assign id before conversion so it can be used in dynamic description
+                    propertyConfig.m_id = propertyIdContext + propertySet->GetName() + "." + propertyDefinition->m_name;
+
+                    const auto& propertyIndex = m_materialAsset->GetMaterialPropertiesLayout()->FindPropertyIndex(propertyConfig.m_id);
+                    const bool propertyIndexInBounds = propertyIndex.IsValid() && propertyIndex.GetIndex() < m_materialAsset->GetPropertyValues().size();
+                    AZ_Warning("MaterialDocument", propertyIndexInBounds, "Failed to add material property '%s' to document '%s'.", propertyConfig.m_id.GetCStr(), m_absolutePath.c_str());
+
+                    if (propertyIndexInBounds)
+                    {
+                        AtomToolsFramework::ConvertToPropertyConfig(propertyConfig, *propertyDefinition);
+                        propertyConfig.m_showThumbnail = true;
+                        propertyConfig.m_originalValue = AtomToolsFramework::ConvertToEditableType(m_materialAsset->GetPropertyValues()[propertyIndex.GetIndex()]);
+                        propertyConfig.m_parentValue = AtomToolsFramework::ConvertToEditableType(parentPropertyValues[propertyIndex.GetIndex()]);
+                        
+                        // TODO: Support populating the Material Editor with nested property sets, not just the top level.
+                        // (Does DynamicPropertyConfig really even need  m_groupName?)
+                        propertyConfig.m_groupName = propertySet->GetDisplayName();
+                        m_properties[propertyConfig.m_id] = AtomToolsFramework::DynamicProperty(propertyConfig);
+                    }
+                }
+
+                return true;
+            });
 
         // Populate the property group visibility map
-        for (MaterialTypeSourceData::GroupDefinition& group : m_materialTypeSourceData.GetGroupDefinitionsInDisplayOrder())
+        // TODO: Support populating the Material Editor with nested property sets, not just the top level.
+        for (const AZStd::unique_ptr<MaterialTypeSourceData::PropertySet>& propertySet : m_materialTypeSourceData.GetPropertyLayout().m_propertySets)
         {
-            m_propertyGroupVisibility[AZ::Name{group.m_name}] = true;
+            m_propertyGroupVisibility[AZ::Name{propertySet->GetName()}] = true;
         }
 
         // Adding properties for material type and parent as part of making dynamic
@@ -876,6 +886,39 @@ namespace MaterialEditor
                 AZ_Error("MaterialDocument", false, "Material functors were not created: '%s'.", m_absolutePath.c_str());
                 return false;
             }
+        }
+    
+        bool enumerateResult = m_materialTypeSourceData.EnumeratePropertySets(
+            [this, &materialTypeSourceFilePath](const AZStd::string&, const MaterialTypeSourceData::PropertySet* propertySet)
+            {
+                const MaterialFunctorSourceData::EditorContext editorContext = MaterialFunctorSourceData::EditorContext(
+                    materialTypeSourceFilePath, m_materialAsset->GetMaterialPropertiesLayout());
+
+                for (Ptr<MaterialFunctorSourceDataHolder> functorData : propertySet->GetFunctors())
+                {
+                    MaterialFunctorSourceData::FunctorResult result = functorData->CreateFunctor(editorContext);
+
+                    if (result.IsSuccess())
+                    {
+                        Ptr<MaterialFunctor>& functor = result.GetValue();
+                        if (functor != nullptr)
+                        {
+                            m_editorFunctors.push_back(functor);
+                        }
+                    }
+                    else
+                    {
+                        AZ_Error("MaterialDocument", false, "Material functors were not created: '%s'.", m_absolutePath.c_str());
+                        return false;
+                    }
+                }
+
+                return true;
+            });
+
+        if (!enumerateResult)
+        {
+            return false;
         }
 
         AZ::RPI::MaterialPropertyFlags dirtyFlags;

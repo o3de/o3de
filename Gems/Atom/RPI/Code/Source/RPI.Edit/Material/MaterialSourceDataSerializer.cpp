@@ -103,6 +103,7 @@ namespace AZ
                     settings.m_clearContainers = context.ShouldClearContainers();
 
                     JsonSerializationResult::ResultCode materialTypeLoadResult = JsonSerialization::Load(materialTypeData, materialTypeJson.GetValue(), settings);
+                    materialTypeData.ConvertToNewDataFormat();
                     materialTypeData.ResolveUvEnums();
 
                     // Restore prior configuration

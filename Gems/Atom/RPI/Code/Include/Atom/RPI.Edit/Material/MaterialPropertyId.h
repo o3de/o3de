@@ -35,6 +35,7 @@ namespace AZ
             MaterialPropertyId(AZStd::string_view groupName, AZStd::string_view propertyName);
             MaterialPropertyId(const Name& groupName, const Name& propertyName);
             MaterialPropertyId(const AZStd::array_view<AZStd::string> names);
+            MaterialPropertyId(const AZStd::array_view<AZStd::string> groupNames, AZStd::string_view propertyName);
 
             AZ_DEFAULT_COPY_MOVE(MaterialPropertyId);
 
@@ -43,6 +44,9 @@ namespace AZ
             //! Returns a pointer to the full name ("[groupName].[propertyName]"). 
             //! This is included for convenience so it can be used for error messages in the same way an AZ::Name is used.
             const char* GetCStr() const;
+
+            //! Wraps Name::GetStringView() for convenience.
+            AZStd::string_view GetStringView() const;
 
             //! Returns a hash of the full name. This is needed for compatibility with NameIdReflectionMap.
             Name::Hash GetHash() const;
