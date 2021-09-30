@@ -42,7 +42,7 @@ namespace UnitTest
     {
         AZ::Render::DecalTextureArray decalTextureArray;
         decalTextureArray.Pack();
-        auto nothing = decalTextureArray.GetPackedTexture();
+        auto nothing = decalTextureArray.GetPackedTexture(AZ::Render::DecalMapType_Diffuse);
         EXPECT_EQ(nothing, nullptr);
     }
 
