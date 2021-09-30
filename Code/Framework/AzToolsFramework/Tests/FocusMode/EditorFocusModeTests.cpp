@@ -75,11 +75,15 @@ namespace AzToolsFramework
         FocusModeInterface* focusModeInterface = AZ::Interface<FocusModeInterface>::Get();
         EXPECT_TRUE(focusModeInterface != nullptr);
 
-        focusModeInterface->SetFocusRoot(m_entityMap["carId"]);
-        EXPECT_EQ(focusModeInterface->GetFocusRoot(), m_entityMap["carId"]);
+        AzFramework::EntityContextId editorEntityContextId = AzFramework::EntityContextId::CreateNull();
+        AzToolsFramework::EditorEntityContextRequestBus::BroadcastResult(
+            editorEntityContextId, &AzToolsFramework::EditorEntityContextRequestBus::Events::GetEditorEntityContextId);
 
-        focusModeInterface->ClearFocusRoot();
-        EXPECT_EQ(focusModeInterface->GetFocusRoot(), AZ::EntityId());
+        focusModeInterface->SetFocusRoot(m_entityMap["carId"]);
+        EXPECT_EQ(focusModeInterface->GetFocusRoot(editorEntityContextId), m_entityMap["carId"]);
+
+        focusModeInterface->ClearFocusRoot(editorEntityContextId);
+        EXPECT_EQ(focusModeInterface->GetFocusRoot(editorEntityContextId), AZ::EntityId());
     }
 
     TEST_F(EditorFocusModeTests, EditorFocusModeTests_IsInFocusSubTree)
@@ -87,7 +91,11 @@ namespace AzToolsFramework
         FocusModeInterface* focusModeInterface = AZ::Interface<FocusModeInterface>::Get();
         EXPECT_TRUE(focusModeInterface != nullptr);
 
-        focusModeInterface->ClearFocusRoot();
+        AzFramework::EntityContextId editorEntityContextId = AzFramework::EntityContextId::CreateNull();
+        AzToolsFramework::EditorEntityContextRequestBus::BroadcastResult(
+            editorEntityContextId, &AzToolsFramework::EditorEntityContextRequestBus::Events::GetEditorEntityContextId);
+
+        focusModeInterface->ClearFocusRoot(editorEntityContextId);
         
         EXPECT_EQ(focusModeInterface->IsInFocusSubTree(m_entityMap["cityId"]), true);
         EXPECT_EQ(focusModeInterface->IsInFocusSubTree(m_entityMap["streetId"]), true);
@@ -123,6 +131,6 @@ namespace AzToolsFramework
         EXPECT_EQ(focusModeInterface->IsInFocusSubTree(m_entityMap["sportsCarId"]), false);
         EXPECT_EQ(focusModeInterface->IsInFocusSubTree(m_entityMap["passengerId2"]), true);
 
-        focusModeInterface->ClearFocusRoot();
+        focusModeInterface->ClearFocusRoot(editorEntityContextId);
     }
 }
