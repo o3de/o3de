@@ -303,7 +303,9 @@ namespace AZ
 
             if (material.IsValid())
             {
-                AZ_Assert(m_decalData.GetData(handle.GetIndex()).m_textureArrayIndex == DecalData::UnusedIndex, "Setting Material on a decal more than once is not currently supported.");
+                AZ_Assert(
+                    m_decalData.GetData(handle.GetIndex()).m_textureArrayIndex == DecalData::UnusedIndex || GetMaterialUsedByDecal(handle) == material,
+                    "Setting Material on a decal more than once is not currently supported.");
 
                 const auto iter = m_materialToTextureArrayLookupTable.find(material);
                 if (iter != m_materialToTextureArrayLookupTable.end())
