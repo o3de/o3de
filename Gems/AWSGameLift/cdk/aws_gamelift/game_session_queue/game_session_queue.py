@@ -12,7 +12,7 @@ from aws_cdk import (
 )
 
 
-class GameSessionQueue:
+class GameSessionQueueResources:
     """
     Create a game session queue which fulfills game session placement requests using the fleets.
     For more information about Gamelift game session queues, please check

@@ -14,12 +14,15 @@ RULE_SET_BODY = '{"ruleLanguageVersion":"1.0","teams":[{"name":"Players","maxPla
 # A flag that determines whether a match that was created with this configuration
 # must be accepted by the matched players.
 ACCEPTANCE_REQUIRED = False
+
 # The maximum duration, in seconds, that a matchmaking ticket can remain in process before timing out.
 # Requests that fail due to timing out can be resubmitted as needed.
 REQUEST_TIMEOUT_SECONDS = 300
+
 # The number of player slots in a match to keep open for future players.
 # This parameter is not used if FlexMatchMode is set to STANDALONE.
 ADDITIONAL_PLAYER_COUNT = 2
+
 # The method used to backfill game sessions that are created with this matchmaking configuration.
 # Specify MANUAL when your game manages backfill requests manually or does not use the match backfill feature.
 # Specify AUTOMATIC to have GameLift create a StartMatchBackfill request whenever a game session has one or more

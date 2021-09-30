@@ -12,12 +12,12 @@ from aws_cdk import (
     aws_gamelift as gamelift
 )
 
-from . import flex_match_configurations
+from . import flexmatch_configurations
 
 FLEX_MATCH_MODE = 'WITH_QUEUE'
 
 
-class Matchmaking:
+class MatchmakingResoures:
     """
     Create a matchmaking rule set and matchmaking configuration for Gamelift FlexMatch.
     For more information about Gamelift FlexMatch, please check
@@ -28,18 +28,18 @@ class Matchmaking:
             scope=stack,
             id='MatchmakingRuleSet',
             name=f'{stack.stack_name}-MatchmakingRuleSet',
-            rule_set_body=flex_match_configurations.RULE_SET_BODY
+            rule_set_body=flexmatch_configurations.RULE_SET_BODY
         )
 
         matchmaking_configuration = gamelift.CfnMatchmakingConfiguration(
             scope=stack,
             id='MatchmakingConfiguration',
-            acceptance_required=flex_match_configurations.ACCEPTANCE_REQUIRED,
+            acceptance_required=flexmatch_configurations.ACCEPTANCE_REQUIRED,
             name=f'{stack.stack_name}-MatchmakingConfiguration',
-            request_timeout_seconds=flex_match_configurations.REQUEST_TIMEOUT_SECONDS,
+            request_timeout_seconds=flexmatch_configurations.REQUEST_TIMEOUT_SECONDS,
             rule_set_name=rule_set.name,
-            additional_player_count=flex_match_configurations.ADDITIONAL_PLAYER_COUNT,
-            backfill_mode=flex_match_configurations.BACKFILL_MODE,
+            additional_player_count=flexmatch_configurations.ADDITIONAL_PLAYER_COUNT,
+            backfill_mode=flexmatch_configurations.BACKFILL_MODE,
             flex_match_mode=FLEX_MATCH_MODE,
             game_session_queue_arns=game_session_queue_arns if len(game_session_queue_arns) else None
         )

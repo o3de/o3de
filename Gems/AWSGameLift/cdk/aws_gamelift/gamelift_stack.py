@@ -5,14 +5,12 @@ For complete copyright and license terms please see the LICENSE at the root of t
 SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 
-import typing
-
 from aws_cdk import (
     core,
     aws_gamelift as gamelift
 )
 
-from .flex_match import matchmaking
+from .flexmatch import matchmaking
 from .game_session_queue import game_session_queue
 
 
@@ -67,11 +65,11 @@ class GameLiftStack(core.Stack):
 
         game_session_queue_arns = []
         if flex_match or create_game_session_queue:
-            queue = game_session_queue.GameSessionQueue(self, queue_destinations)
+            queue = game_session_queue.GameSessionQueueResources(self, queue_destinations)
             game_session_queue_arns.append(queue.game_session_queue_arn)
 
         if flex_match:
-            matchmaking.Matchmaking(self, game_session_queue_arns)
+            matchmaking.MatchmakingResoures(self, game_session_queue_arns)
 
     def _create_fleet(self, fleet_configuration: dict, identifier: int) -> gamelift.CfnFleet:
         """
