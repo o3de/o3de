@@ -160,12 +160,12 @@ void SystemFile::Seek(SeekSizeType offset, SeekMode mode)
     Platform::Seek(m_handle, this, offset, mode);
 }
 
-SystemFile::SizeType SystemFile::Tell()
+SystemFile::SizeType SystemFile::Tell() const
 {
     return Platform::Tell(m_handle, this);
 }
 
-bool SystemFile::Eof()
+bool SystemFile::Eof() const
 {
     return Platform::Eof(m_handle, this);
 }

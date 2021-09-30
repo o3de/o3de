@@ -6,8 +6,6 @@
  *
  */
 
-#include <Atom/RHI/CpuProfiler.h>
-
 #include <Atom/RPI.Public/Culling.h>
 #include <Atom/RPI.Public/DynamicDraw/DynamicDrawSystem.h>
 #include <Atom/RPI.Public/FeatureProcessorFactory.h>
@@ -420,7 +418,7 @@ namespace AZ
             }
         }
 
-        void Scene::PrepareRender([[maybe_unused]]const TickTimeInfo& tickInfo, RHI::JobPolicy jobPolicy)
+        void Scene::PrepareRender(const TickTimeInfo& tickInfo, RHI::JobPolicy jobPolicy)
         {
             AZ_PROFILE_SCOPE(RPI, "Scene: PrepareRender");
 
@@ -431,25 +429,18 @@ namespace AZ
 
             SceneNotificationBus::Event(GetId(), &SceneNotification::OnBeginPrepareRender);
 
-            // Get active pipelines which need to be rendered and notify them of an impending frame.
+            // Get active pipelines which need to be rendered and notify them frame started
             AZStd::vector<RenderPipelinePtr> activePipelines;
             {
-                AZ_PROFILE_SCOPE(RPI, "Scene: OnPrepareFrame");
+                AZ_PROFILE_SCOPE(RPI, "Scene: OnStartFrame");
                 for (auto& pipeline : m_pipelines)
                 {
-                    pipeline->OnPrepareFrame();
                     if (pipeline->NeedsRender())
                     {
                         activePipelines.push_back(pipeline);
+                        pipeline->OnStartFrame(tickInfo);
                     }
                 }
-            }
-
-            // Get active pipelines which need to be rendered and notify them frame started
-            for (const auto& pipeline : activePipelines)
-            {
-                AZ_PROFILE_SCOPE(RPI, "Scene: OnStartFrame");
-                pipeline->OnStartFrame();
             }
 
             // Return if there is no active render pipeline
@@ -591,22 +582,16 @@ namespace AZ
         void Scene::OnFrameEnd()
         {
             AZ_PROFILE_SCOPE(RPI, "Scene: OnFrameEnd");
-            bool didRender = false;
             for (auto& pipeline : m_pipelines)
             {
                 if (pipeline->NeedsRender())
                 {
-                    didRender = true;
                     pipeline->OnFrameEnd();
                 }
             }
             for (auto& fp : m_featureProcessors)
             {
                 fp->OnRenderEnd();
-            }
-            if (didRender)
-            {
-                SceneNotificationBus::Event(GetId(), &SceneNotification::OnFrameEnd);
             }
         }
 

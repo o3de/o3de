@@ -7,5 +7,6 @@
     "summary": "Atom Asset Gem with a library of reference materials for StandardPBR (and others in the future)",
     "canonical_tags": ["Gem"],
     "user_tags": ["Assets", "PBR", "Materials"],
-    "icon_path": "preview.png"
+    "icon_path": "preview.png",
+    "dependencies": []
 }

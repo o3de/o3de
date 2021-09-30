@@ -39,7 +39,7 @@
                     "_bc",
                     "_diffuse"
                 ],
-                "PixelFormat": "ETC2",
+                "PixelFormat": "ASTC_6x6",
                 "DiscardAlpha": true,
                 "IsPowerOf2": true,
                 "MipMapSetting": {

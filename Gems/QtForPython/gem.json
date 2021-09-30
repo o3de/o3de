@@ -5,9 +5,18 @@
     "origin": "Open 3D Engine - o3de.org",
     "type": "Tool",
     "summary": "The Qt for Python Gem provides the PySide2 Python libraries to manage Qt widgets.",
-    "canonical_tags": ["Gem"],
-    "user_tags": ["Scripting", "UI", "Framework"],
+    "canonical_tags": [
+        "Gem"
+    ],
+    "user_tags": [
+        "Scripting",
+        "UI",
+        "Framework"
+    ],
     "icon_path": "preview.png",
     "requirements": "",
-    "documentation_url": "https://o3de.org/docs/user-guide/gems/reference/script/python/qt-for-python/"
+    "documentation_url": "https://o3de.org/docs/user-guide/gems/reference/script/python/qt-for-python/",
+    "dependencies": [
+        "EditorPythonBindings"
+    ]
 }

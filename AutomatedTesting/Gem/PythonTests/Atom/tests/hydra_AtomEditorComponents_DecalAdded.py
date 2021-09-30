@@ -73,7 +73,7 @@ def AtomEditorComponents_Decal_AddedToEntity():
 
         # Test steps begin.
         # 1. Create a Decal entity with no components.
-        decal_name = "Decal (Atom)"
+        decal_name = "Decal"
         decal_entity = EditorEntity.create_editor_entity_at(math.Vector3(512.0, 512.0, 34.0), decal_name)
         Report.critical_result(Tests.decal_creation, decal_entity.exists())
 

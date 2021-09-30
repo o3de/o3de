@@ -652,8 +652,13 @@ namespace ScriptCanvas
                 return {};
             }
 
-            bool Method::GetBehaviorContextClassMethod(const AZStd::string&, const AZ::BehaviorClass*& outClass, const AZ::BehaviorMethod*& outMethod, EventType& outType) const
+            bool Method::GetBehaviorContextClassMethod(const AZ::BehaviorClass*& outClass, const AZ::BehaviorMethod*& outMethod, EventType& outType) const
             {
+                if (m_lookupName.empty() && m_className.empty())
+                {
+                    return false;
+                }
+
                 AZStd::string prettyClassName;
                 AZStd::string methodName = m_lookupName;
 
@@ -749,15 +754,14 @@ namespace ScriptCanvas
             AZStd::tuple<const AZ::BehaviorMethod*, MethodType, EventType, const AZ::BehaviorClass*> Method::LookupMethod() const
             {
                 using TupleType = AZStd::tuple<const AZ::BehaviorMethod*, MethodType, EventType, const AZ::BehaviorClass*>;
-                AZStd::string methodName = m_lookupName;
-
+                
                 AZStd::string prettyClassName;
 
                 const AZ::BehaviorClass* bcClass{};
                 const AZ::BehaviorMethod* method{};
                 EventType eventType;
 
-                if (GetBehaviorContextClassMethod(m_lookupName, bcClass, method, eventType))
+                if (GetBehaviorContextClassMethod(bcClass, method, eventType))
                 {
                     return TupleType{ method, m_methodType, eventType, bcClass };
                 }
@@ -776,7 +780,7 @@ namespace ScriptCanvas
                     const AZ::BehaviorMethod* method{};
                     EventType eventType;
 
-                    if (GetBehaviorContextClassMethod(m_lookupName, bcClass, method, eventType))
+                    if (GetBehaviorContextClassMethod(bcClass, method, eventType))
                     {
                         m_eventType = eventType;
                         ConfigureMethod(*method, bcClass);

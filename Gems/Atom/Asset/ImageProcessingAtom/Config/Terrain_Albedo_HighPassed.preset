@@ -20,7 +20,7 @@
                 "Name": "Terrain_Albedo_HighPassed",
                 "SourceColor": "Linear",
                 "DestColor": "Linear",
-                "PixelFormat": "ETC2",
+                "PixelFormat": "ASTC_6x6",
                 "IsPowerOf2": true,
                 "MipMapSetting": {
                     "MipGenType": "Box"

@@ -7,6 +7,7 @@
 #
 
 set(FILES
+    AssetEditor/AssetEditorBus.cpp
     AssetEditor/AssetEditorBus.h
     AssetEditor/AssetEditorToolbar.ui
     AssetEditor/AssetEditorStatusBar.ui
@@ -149,6 +150,10 @@ set(FILES
     Entity/SliceEditorEntityOwnershipServiceBus.h
     Fingerprinting/TypeFingerprinter.h
     Fingerprinting/TypeFingerprinter.cpp
+    FocusMode/FocusModeInterface.h
+    FocusMode/FocusModeNotificationBus.h
+    FocusMode/FocusModeSystemComponent.h
+    FocusMode/FocusModeSystemComponent.cpp
     Logger/TraceLogger.cpp
     Logger/TraceLogger.h
     Manipulators/AngularManipulator.cpp
@@ -629,6 +634,10 @@ set(FILES
     Prefab/PrefabDomTypes.h
     Prefab/PrefabDomUtils.h
     Prefab/PrefabDomUtils.cpp
+    Prefab/PrefabFocusHandler.h
+    Prefab/PrefabFocusHandler.cpp
+    Prefab/PrefabFocusInterface.h
+    Prefab/PrefabFocusNotificationBus.h
     Prefab/PrefabIdTypes.h
     Prefab/PrefabLoader.h
     Prefab/PrefabLoader.cpp
@@ -721,15 +730,14 @@ set(FILES
     UI/Layer/LayerUiHandler.cpp
     UI/Prefab/LevelRootUiHandler.h
     UI/Prefab/LevelRootUiHandler.cpp
-    UI/Prefab/PrefabEditInterface.h
-    UI/Prefab/PrefabEditManager.h
-    UI/Prefab/PrefabEditManager.cpp
     UI/Prefab/PrefabIntegrationBus.h
     UI/Prefab/PrefabIntegrationManager.h
     UI/Prefab/PrefabIntegrationManager.cpp
     UI/Prefab/PrefabIntegrationInterface.h
     UI/Prefab/PrefabUiHandler.h
     UI/Prefab/PrefabUiHandler.cpp
+    UI/Prefab/PrefabViewportFocusPathHandler.h
+    UI/Prefab/PrefabViewportFocusPathHandler.cpp
     PythonTerminal/ScriptHelpDialog.cpp
     PythonTerminal/ScriptHelpDialog.h
     PythonTerminal/ScriptHelpDialog.ui

@@ -11,6 +11,7 @@
 
 #include <AzCore/std/parallel/threadbus.h>
 #include <AzCore/std/parallel/shared_mutex.h>
+#include <AzCore/std/smart_ptr/unique_ptr.h>
 
 namespace AZ
 {

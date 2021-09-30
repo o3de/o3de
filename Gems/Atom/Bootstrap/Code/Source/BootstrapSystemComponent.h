@@ -69,8 +69,6 @@ namespace AZ
                 // Render::Bootstrap::RequestBus::Handler overrides ...
                 AZ::RPI::ScenePtr GetOrCreateAtomSceneFromAzScene(AzFramework::Scene* scene) override;
                 bool EnsureDefaultRenderPipelineInstalledForScene(AZ::RPI::ScenePtr scene, AZ::RPI::ViewportContextPtr viewportContext) override;
-                float GetFrameRateLimit() const override;
-                void SetFrameRateLimit(float fpsLimit) override;
 
             protected:
                 // Component overrides ...

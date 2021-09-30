@@ -164,12 +164,6 @@ namespace AZ
                 m_currentImageIndex = 0;
             }
 
-#if defined(PAL_TRAIT_LINUX_WINDOW_MANAGER_XCB)
-            // If we are presenting through the editor, the resize is triggered through the editor's window, which
-            // won't happen until after the surface is ready to present
-            m_readyToPresent.store(true);
-#endif // PAL_TRAIT_LINUX_WINDOW_MANAGER_XCB
-
             return resultCode;
         }
 
