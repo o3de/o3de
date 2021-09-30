@@ -89,37 +89,42 @@ endif()
 
 set(_cmake_package_dest ${CPACK_BINARY_DIR}/${CPACK_CMAKE_PACKAGE_FILE})
 
-string(REPLACE "." ";" _version_componets "${CPACK_DESIRED_CMAKE_VERSION}")
-list(GET _version_componets 0 _major_version)
-list(GET _version_componets 1 _minor_version)
-
-set(_url_version_tag "v${_major_version}.${_minor_version}")
-set(_package_url "https://cmake.org/files/${_url_version_tag}/${CPACK_CMAKE_PACKAGE_FILE}")
-
-message(STATUS "Downloading CMake ${CPACK_DESIRED_CMAKE_VERSION} for packaging...")
-download_file(
-    URL ${_package_url}
-    TARGET_FILE ${_cmake_package_dest}
-    EXPECTED_HASH ${CPACK_CMAKE_PACKAGE_HASH}
-    RESULTS _results
-)
-list(GET _results 0 _status_code)
-
-if (${_status_code} EQUAL 0 AND EXISTS ${_cmake_package_dest})
-    message(STATUS "Package found and verified!")
+if(EXISTS ${_cmake_package_dest})
+    message(STATUS "CMake ${CPACK_DESIRED_CMAKE_VERSION} found")
 else()
-    file(REMOVE ${_cmake_package_dest})
-    list(REMOVE_AT _results 0)
+    # download it
+    string(REPLACE "." ";" _version_componets "${CPACK_DESIRED_CMAKE_VERSION}")
+    list(GET _version_componets 0 _major_version)
+    list(GET _version_componets 1 _minor_version)
 
-    set(_error_message "An error occurred, code ${_status_code}.  URL ${_package_url} - ${_results}")
+    set(_url_version_tag "v${_major_version}.${_minor_version}")
+    set(_package_url "https://cmake.org/files/${_url_version_tag}/${CPACK_CMAKE_PACKAGE_FILE}")
 
-    if(${_status_code} EQUAL 1)
-        string(APPEND _error_message
-            "  Please double check the CPACK_CMAKE_PACKAGE_FILE and "
-            "CPACK_CMAKE_PACKAGE_HASH properties before trying again.")
+    message(STATUS "Downloading CMake ${CPACK_DESIRED_CMAKE_VERSION} for packaging...")
+    download_file(
+        URL ${_package_url}
+        TARGET_FILE ${_cmake_package_dest}
+        EXPECTED_HASH ${CPACK_CMAKE_PACKAGE_HASH}
+        RESULTS _results
+    )
+    list(GET _results 0 _status_code)
+
+    if (${_status_code} EQUAL 0 AND EXISTS ${_cmake_package_dest})
+        message(STATUS "CMake ${CPACK_DESIRED_CMAKE_VERSION} found")
+    else()
+        file(REMOVE ${_cmake_package_dest})
+        list(REMOVE_AT _results 0)
+
+        set(_error_message "An error occurred, code ${_status_code}.  URL ${_package_url} - ${_results}")
+
+        if(${_status_code} EQUAL 1)
+            string(APPEND _error_message
+                "  Please double check the CPACK_CMAKE_PACKAGE_FILE and "
+                "CPACK_CMAKE_PACKAGE_HASH properties before trying again.")
+        endif()
+
+        message(FATAL_ERROR ${_error_message})
     endif()
-
-    message(FATAL_ERROR ${_error_message})
 endif()
 
 install(FILES ${_cmake_package_dest}
