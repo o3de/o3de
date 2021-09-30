@@ -167,7 +167,7 @@ namespace UnitTest
             AZ::Quaternion::CreateRotationZ(AZ::DegToRad(90.0f)), AZ::Vector3(20.0f, 40.0f, 60.0f));
         AtomToolsFramework::ModularViewportCameraControllerRequestBus::Event(
             TestViewportId, &AtomToolsFramework::ModularViewportCameraControllerRequestBus::Events::InterpolateToTransform,
-            transformToInterpolateTo, 0.0f);
+            transformToInterpolateTo);
 
         // simulate interpolation
         m_controllerList->UpdateViewport({ TestViewportId, AzFramework::FloatSeconds(0.5f), AZ::ScriptTimePoint() });
@@ -193,7 +193,7 @@ namespace UnitTest
         // When
         AtomToolsFramework::ModularViewportCameraControllerRequestBus::Event(
             TestViewportId, &AtomToolsFramework::ModularViewportCameraControllerRequestBus::Events::InterpolateToTransform,
-            transformToInterpolateTo, 0.0f);
+            transformToInterpolateTo);
 
         // simulate interpolation
         m_controllerList->UpdateViewport({ TestViewportId, AzFramework::FloatSeconds(0.5f), AZ::ScriptTimePoint() });

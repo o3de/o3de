@@ -227,19 +227,6 @@ namespace AtomToolsFramework
         {
             m_targetCamera = m_cameraSystem.StepCamera(m_targetCamera, event.m_deltaTime.count());
             m_camera = AzFramework::SmoothCamera(m_camera, m_targetCamera, m_cameraProps, event.m_deltaTime.count());
-
-            // if there has been an interpolation, only clear the look at point if it is no longer
-            // centered in the view (the camera has looked away from it)
-            if (m_lookAtAfterInterpolation.has_value())
-            {
-                if (const float lookDirection =
-                        (*m_lookAtAfterInterpolation - m_camera.Translation()).GetNormalized().Dot(m_camera.Transform().GetBasisY());
-                    !AZ::IsCloseMag(lookDirection, 1.0f, 0.001f))
-                {
-                    m_lookAtAfterInterpolation = {};
-                }
-            }
-
             m_modularCameraViewportContext->SetCameraTransform(m_referenceFrameOverride * m_camera.Transform());
         }
         else if (m_cameraMode == CameraMode::Animation)
@@ -277,16 +264,10 @@ namespace AtomToolsFramework
         m_updatingTransformInternally = false;
     }
 
-    void ModularViewportCameraControllerInstance::InterpolateToTransform(const AZ::Transform& worldFromLocal, const float lookAtDistance)
+    void ModularViewportCameraControllerInstance::InterpolateToTransform(const AZ::Transform& worldFromLocal)
     {
         m_cameraMode = CameraMode::Animation;
         m_cameraAnimation = CameraAnimation{ m_referenceFrameOverride * m_camera.Transform(), worldFromLocal, 0.0f };
-        m_lookAtAfterInterpolation = worldFromLocal.GetTranslation() + worldFromLocal.GetBasisY() * lookAtDistance;
-    }
-
-    AZStd::optional<AZ::Vector3> ModularViewportCameraControllerInstance::LookAtAfterInterpolation() const
-    {
-        return m_lookAtAfterInterpolation;
     }
 
     AZ::Transform ModularViewportCameraControllerInstance::GetReferenceFrame() const

@@ -175,27 +175,15 @@ namespace SandboxEditor
         m_pivotCamera = AZStd::make_shared<AzFramework::PivotCameraInput>(SandboxEditor::CameraPivotChannelId());
 
         m_pivotCamera->SetPivotFn(
-            [viewportId = m_viewportId]([[maybe_unused]] const AZ::Vector3& position, [[maybe_unused]] const AZ::Vector3& direction)
+            []([[maybe_unused]] const AZ::Vector3& position, [[maybe_unused]] const AZ::Vector3& direction)
             {
-                AZStd::optional<AZ::Vector3> lookAtAfterInterpolation;
-                AtomToolsFramework::ModularViewportCameraControllerRequestBus::EventResult(
-                    lookAtAfterInterpolation, viewportId,
-                    &AtomToolsFramework::ModularViewportCameraControllerRequestBus::Events::LookAtAfterInterpolation);
-
-                // initially attempt to use the last set look at point after an interpolation has finished
-                // note: ignore this if it is the same location as the camera (e.g. after go to position)
-                if (lookAtAfterInterpolation.has_value() && !lookAtAfterInterpolation->IsClose(position))
-                {
-                    return *lookAtAfterInterpolation;
-                }
-
-                // otherwise fall back to the selected entity pivot
+                // use the manipulator transform as the pivot point
                 AZStd::optional<AZ::Transform> entityPivot;
                 AzToolsFramework::EditorTransformComponentSelectionRequestBus::EventResult(
                     entityPivot, AzToolsFramework::GetEntityContextId(),
                     &AzToolsFramework::EditorTransformComponentSelectionRequestBus::Events::GetManipulatorTransform);
 
-                // finally just use the identity
+                // otherwise just use the identity
                 return entityPivot.value_or(AZ::Transform::CreateIdentity()).GetTranslation();
             });
 
