@@ -142,7 +142,7 @@
   <customwidget>
    <class>AzQtComponents::BreadCrumbs</class>
    <extends>QWidget</extends>
-   <header>AzQtComponents/Components/Widgets/Breadcrumbs.h</header>
+   <header>AzQtComponents/Components/Widgets/BreadCrumbs.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>
