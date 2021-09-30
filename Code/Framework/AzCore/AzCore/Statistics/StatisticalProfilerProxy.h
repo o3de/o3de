@@ -19,8 +19,8 @@
 #endif // #if defined(AZ_PROFILE_SCOPE)
 
 #define AZ_PROFILE_SCOPE(budget, scopeNameId, ...) \
-    static const AZStd::string AZ_JOIN(blockName, __LINE__)(scopeNameId); \
-    AZ::Statistics::StatisticalProfilerProxy::TimedScope AZ_JOIN(scope, __LINE__)(AZ_CRC_CE(#budget), AZ_JOIN(blockName, __LINE__));
+    constexpr AZ::Crc32 AZ_JOIN(blockId, __LINE__)(scopeNameId); \
+    AZ::Statistics::StatisticalProfilerProxy::TimedScope AZ_JOIN(scope, __LINE__)(AZ_CRC_CE(#budget), AZ_JOIN(blockId, __LINE__));
 
 #endif //#if defined(AZ_STATISTICAL_PROFILING_ENABLED)
 
@@ -61,7 +61,7 @@ namespace AZ::Statistics
     public:
         AZ_TYPE_INFO(StatisticalProfilerProxy, "{1103D0EB-1C32-4854-B9D9-40A2D65BDBD2}");
 
-        using StatIdType = AZStd::string;
+        using StatIdType = AZ::Crc32;
         using StatisticalProfilerType = StatisticalProfiler<StatIdType, AZStd::shared_spin_mutex>;
 
         //! A Convenience class used to measure time performance of scopes of code

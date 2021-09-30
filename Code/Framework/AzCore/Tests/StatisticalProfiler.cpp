@@ -321,10 +321,10 @@ namespace UnitTest
         AZ::Statistics::StatisticalProfilerProxy* proxy = AZ::Interface<AZ::Statistics::StatisticalProfilerProxy>::Get();
         AZ::Statistics::StatisticalProfilerProxy::StatisticalProfilerType& profiler = proxy->GetProfiler(ProfilerProxyGroup);
 
-        const AZ::Statistics::StatisticalProfilerProxy::StatIdType statIdPerformance = "PerformanceResult";
+        const AZ::Statistics::StatisticalProfilerProxy::StatIdType statIdPerformance("PerformanceResult");
         const AZStd::string statNamePerformance("PerformanceResult");
 
-        const AZ::Statistics::StatisticalProfilerProxy::StatIdType statIdBlock = "Block";
+        const AZ::Statistics::StatisticalProfilerProxy::StatIdType statIdBlock("Block");
         const AZStd::string statNameBlock("Block");
 
         ASSERT_TRUE(profiler.GetStatsManager().AddStatistic(statIdPerformance, statNamePerformance, "us") != nullptr);
@@ -412,19 +412,19 @@ namespace UnitTest
         AZ::Statistics::StatisticalProfilerProxy* proxy = AZ::Interface<AZ::Statistics::StatisticalProfilerProxy>::Get();
         AZ::Statistics::StatisticalProfilerProxy::StatisticalProfilerType& profiler = proxy->GetProfiler(ProfilerProxyGroup);
 
-        const AZ::Statistics::StatisticalProfilerProxy::StatIdType statIdThread1 = "simple_thread1";
+        const AZ::Statistics::StatisticalProfilerProxy::StatIdType statIdThread1("simple_thread1");
         const AZStd::string statNameThread1("simple_thread1");
-        const AZ::Statistics::StatisticalProfilerProxy::StatIdType statIdThread1Loop = "simple_thread1_loop";
+        const AZ::Statistics::StatisticalProfilerProxy::StatIdType statIdThread1Loop("simple_thread1_loop");
         const AZStd::string statNameThread1Loop("simple_thread1_loop");
 
-        const AZ::Statistics::StatisticalProfilerProxy::StatIdType statIdThread2 = "simple_thread2";
+        const AZ::Statistics::StatisticalProfilerProxy::StatIdType statIdThread2("simple_thread2");
         const AZStd::string statNameThread2("simple_thread2");
-        const AZ::Statistics::StatisticalProfilerProxy::StatIdType statIdThread2Loop = "simple_thread2_loop";
+        const AZ::Statistics::StatisticalProfilerProxy::StatIdType statIdThread2Loop("simple_thread2_loop");
         const AZStd::string statNameThread2Loop("simple_thread2_loop");
 
-        const AZ::Statistics::StatisticalProfilerProxy::StatIdType statIdThread3 = "simple_thread3";
+        const AZ::Statistics::StatisticalProfilerProxy::StatIdType statIdThread3("simple_thread3");
         const AZStd::string statNameThread3("simple_thread3");
-        const AZ::Statistics::StatisticalProfilerProxy::StatIdType statIdThread3Loop = "simple_thread3_loop";
+        const AZ::Statistics::StatisticalProfilerProxy::StatIdType statIdThread3Loop("simple_thread3_loop");
         const AZStd::string statNameThread3Loop("simple_thread3_loop");
 
         ASSERT_TRUE(profiler.GetStatsManager().AddStatistic(statIdThread1, statNameThread1, "us"));
@@ -749,10 +749,10 @@ namespace UnitTest
         AZ::Statistics::StatisticalProfilerProxy* proxy = AZ::Interface<AZ::Statistics::StatisticalProfilerProxy>::Get();
         AZ::Statistics::StatisticalProfilerProxy::StatisticalProfilerType& profiler = proxy->GetProfiler(ProfilerProxyGroup);
 
-        const AZ::Statistics::StatisticalProfilerProxy::StatIdType statIdPerformance = "PerformanceResult";
+        const AZ::Statistics::StatisticalProfilerProxy::StatIdType statIdPerformance("PerformanceResult");
         const AZStd::string statNamePerformance("PerformanceResult");
 
-        const AZ::Statistics::StatisticalProfilerProxy::StatIdType statIdBlock = "Block";
+        const AZ::Statistics::StatisticalProfilerProxy::StatIdType statIdBlock("Block");
         const AZStd::string statNameBlock("Block");
 
         ASSERT_TRUE(profiler.GetStatsManager().AddStatistic(statIdPerformance, statNamePerformance, "us") != nullptr);
@@ -792,19 +792,19 @@ namespace UnitTest
         AZ::Statistics::StatisticalProfilerProxy* proxy = AZ::Interface<AZ::Statistics::StatisticalProfilerProxy>::Get();
         AZ::Statistics::StatisticalProfilerProxy::StatisticalProfilerType& profiler = proxy->GetProfiler(ProfilerProxyGroup);
 
-        const AZ::Statistics::StatisticalProfilerProxy::StatIdType statIdThread1 = "simple_thread1";
+        const AZ::Statistics::StatisticalProfilerProxy::StatIdType statIdThread1("simple_thread1");
         const AZStd::string statNameThread1("simple_thread1");
-        const AZ::Statistics::StatisticalProfilerProxy::StatIdType statIdThread1Loop = "simple_thread1_loop";
+        const AZ::Statistics::StatisticalProfilerProxy::StatIdType statIdThread1Loop("simple_thread1_loop");
         const AZStd::string statNameThread1Loop("simple_thread1_loop");
 
-        const AZ::Statistics::StatisticalProfilerProxy::StatIdType statIdThread2 = "simple_thread2";
+        const AZ::Statistics::StatisticalProfilerProxy::StatIdType statIdThread2("simple_thread2");
         const AZStd::string statNameThread2("simple_thread2");
-        const AZ::Statistics::StatisticalProfilerProxy::StatIdType statIdThread2Loop = "simple_thread2_loop";
+        const AZ::Statistics::StatisticalProfilerProxy::StatIdType statIdThread2Loop("simple_thread2_loop");
         const AZStd::string statNameThread2Loop("simple_thread2_loop");
 
-        const AZ::Statistics::StatisticalProfilerProxy::StatIdType statIdThread3 = "simple_thread3";
+        const AZ::Statistics::StatisticalProfilerProxy::StatIdType statIdThread3("simple_thread3");
         const AZStd::string statNameThread3("simple_thread3");
-        const AZ::Statistics::StatisticalProfilerProxy::StatIdType statIdThread3Loop = "simple_thread3_loop";
+        const AZ::Statistics::StatisticalProfilerProxy::StatIdType statIdThread3Loop("simple_thread3_loop");
         const AZStd::string statNameThread3Loop("simple_thread3_loop");
 
         ASSERT_TRUE(profiler.GetStatsManager().AddStatistic(statIdThread1, statNameThread1, "us"));
