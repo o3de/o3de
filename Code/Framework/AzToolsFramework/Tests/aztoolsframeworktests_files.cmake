@@ -114,6 +114,7 @@ set(FILES
     ToolsComponents/EditorLayerComponentTests.cpp
     ToolsComponents/EditorTransformComponentTests.cpp
     TransformComponent.cpp
+    UI/EntityIdQLineEditTests.cpp
     UI/EntityPropertyEditorTests.cpp
     UndoStack.cpp
     Viewport/ClusterTests.cpp
