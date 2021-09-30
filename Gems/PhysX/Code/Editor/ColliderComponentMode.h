@@ -15,7 +15,7 @@
 
 namespace PhysX
 {
-    class ColliderSubComponentMode;
+    class PhysXSubComponentModeBase;
 
     //! ComponentMode for the Collider Component - Manages a list of Sub-Component Modes and 
     //! is responsible for switching between and activating them.
@@ -53,7 +53,7 @@ namespace PhysX
         void CreateSubModes();
         void ResetCurrentMode();
 
-        AZStd::unordered_map<SubMode, AZStd::unique_ptr<ColliderSubComponentMode>> m_subModes;
+        AZStd::unordered_map<SubMode, AZStd::unique_ptr<PhysXSubComponentModeBase>> m_subModes;
         SubMode m_subMode = SubMode::Dimensions;
 
         //! Create the Viewport UI cluster for sub mode selection.
