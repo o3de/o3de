@@ -180,9 +180,7 @@ namespace AZ
             };
             
             PropertySet* AddPropertySet(AZStd::string_view propertySetId);
-            //PropertySet* AddPropertySet(AZStd::string_view parentPropertySetId, AZStd::string_view name);
             PropertyDefinition* AddProperty(AZStd::string_view propertyId);
-            //PropertyDefinition* AddProperty(AZStd::string_view parentPropertySetId, AZStd::string_view name);
 
             const PropertyLayout& GetPropertyLayout() const { return m_propertyLayout; }
 
@@ -241,15 +239,9 @@ namespace AZ
 
         private:
                 
-            //PropertySet* FindPropertySet(AZStd::array_view<AZStd::string_view> parsedPropertySetId, AZStd::array_view<AZStd::unique_ptr<PropertySet>> inPropertySetList);
             const PropertySet* FindPropertySet(AZStd::array_view<AZStd::string_view> parsedPropertySetId, AZStd::array_view<AZStd::unique_ptr<PropertySet>> inPropertySetList) const;
-
-            //PropertyDefinition* FindProperty(AZStd::array_view<AZStd::string_view> parsedPropertyId, AZStd::array_view<AZStd::unique_ptr<PropertySet>> inPropertySetList);
             const PropertyDefinition* FindProperty(AZStd::array_view<AZStd::string_view> parsedPropertyId, AZStd::array_view<AZStd::unique_ptr<PropertySet>> inPropertySetList) const;
             
-            //PropertyDefinition* FindProperty(AZStd::array_view<AZStd::string_view> parsedPropertyId, PropertySet& inPropertySet);
-            //const PropertyDefinition* FindProperty(AZStd::array_view<AZStd::string_view> parsedPropertyId, const PropertySet& inPropertySet) const;
-
             // Function overloads for recursion, returns false to indicate that recursion should end.
             bool EnumeratePropertySets(const EnumeratePropertySetsCallback& callback, AZStd::string propertyIdContext, const AZStd::vector<AZStd::unique_ptr<PropertySet>>& inPropertySetList) const;
             bool EnumerateProperties(const EnumeratePropertiesCallback& callback, AZStd::string propertyIdContext, const AZStd::vector<AZStd::unique_ptr<PropertySet>>& inPropertySetList) const;
