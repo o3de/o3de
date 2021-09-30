@@ -15,6 +15,11 @@ namespace AZ
 {
     namespace Render
     {
+        static AZ::Data::Asset<AZ::RPI::MaterialAsset> QueueLoad(const AZ::Data::AssetId id)
+        {
+            return AZ::Data::AssetManager::Instance().GetAsset<AZ::RPI::MaterialAsset>(id, AZ::Data::AssetLoadBehavior::QueueLoad);
+        }
+
         EditorDecalComponent::EditorDecalComponent(const DecalComponentConfig& config)
             : BaseClass(config)
         {
@@ -87,14 +92,24 @@ namespace AZ
             AzFramework::EntityDebugDisplayEventBus::Handler::BusConnect(GetEntityId());
             AzToolsFramework::EditorComponentSelectionRequestsBus::Handler::BusConnect(GetEntityId());
             AzFramework::BoundsRequestBus::Handler::BusConnect(GetEntityId());
+            CacheMaterial();
         }
 
         void EditorDecalComponent::Deactivate()
         {
+            m_cachedMaterial = {};
             AzFramework::BoundsRequestBus::Handler::BusDisconnect();
             AzToolsFramework::EditorComponentSelectionRequestsBus::Handler::BusDisconnect();
             AzFramework::EntityDebugDisplayEventBus::Handler::BusDisconnect();
             BaseClass::Deactivate();
+        }
+
+        void EditorDecalComponent::CacheMaterial()
+        {
+            DecalComponentConfig decalComponentConfig;
+            GetConfiguration(decalComponentConfig);
+            const auto& materialAsset = decalComponentConfig.m_materialAsset;
+            m_cachedMaterial = QueueLoad(materialAsset.GetId());
         }
 
         AZ::Transform EditorDecalComponent::GetWorldTransform() const
@@ -193,6 +208,7 @@ namespace AZ
         u32 EditorDecalComponent::OnConfigurationChanged()
         {
             BaseClass::OnConfigurationChanged();
+            CacheMaterial();
             return Edit::PropertyRefreshLevels::AttributesAndValues;
         }
 
