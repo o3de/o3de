@@ -27,7 +27,7 @@ namespace AzToolsFramework
 
         // Calling ClearFocusRoot restores the default focus root (which is an invalid EntityId).
         m_focusModeInterface->ClearFocusRoot(m_editorEntityContextId);
-        EXPECT_EQ(m_focusModeInterface->GetFocusRoot(editorEntityContextId), AZ::EntityId());
+        EXPECT_EQ(m_focusModeInterface->GetFocusRoot(m_editorEntityContextId), AZ::EntityId());
     }
 
     TEST_F(EditorFocusModeFixture, EditorFocusModeTests_IsInFocusSubTree_AncestorsDescendants)

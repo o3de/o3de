@@ -173,7 +173,7 @@ namespace UnitTest
             EXPECT_EQ(
                 m_prefabFocusInterface->GetFocusedPrefabTemplateId(m_editorEntityContextId), rootPrefabInstance->get().GetTemplateId());
 
-            auto instance = m_prefabFocusInterface->GetFocusedPrefabInstance();
+            auto instance = m_prefabFocusInterface->GetFocusedPrefabInstance(m_editorEntityContextId);
             EXPECT_TRUE(instance.has_value());
             EXPECT_EQ(&instance->get(), &rootPrefabInstance->get());
         }
