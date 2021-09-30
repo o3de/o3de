@@ -21,15 +21,6 @@
 
 namespace AtomToolsFramework
 {
-    AZ_CVAR(
-        AZ::Color,
-        ed_cameraSystemOrbitPointColor,
-        AZ::Color::CreateFromRgba(255, 255, 255, 255),
-        nullptr,
-        AZ::ConsoleFunctorFlags::Null,
-        "");
-    AZ_CVAR(float, ed_cameraSystemOrbitPointSize, 0.1f, nullptr, AZ::ConsoleFunctorFlags::Null, "");
-
     AZ::Transform TransformFromMatrix4x4(const AZ::Matrix4x4& matrix)
     {
         const auto rotation = AZ::Matrix3x3::CreateFromMatrix4x4(matrix);
@@ -200,14 +191,12 @@ namespace AtomToolsFramework
         m_cameraViewMatrixChangeHandler = AZ::RPI::ViewportContext::MatrixChangedEvent::Handler(handleCameraChange);
         m_modularCameraViewportContext->ConnectViewMatrixChangedHandler(m_cameraViewMatrixChangeHandler);
 
-        AzFramework::ViewportDebugDisplayEventBus::Handler::BusConnect(AzToolsFramework::GetEntityContextId());
         ModularViewportCameraControllerRequestBus::Handler::BusConnect(viewportId);
     }
 
     ModularViewportCameraControllerInstance::~ModularViewportCameraControllerInstance()
     {
         ModularViewportCameraControllerRequestBus::Handler::BusDisconnect();
-        AzFramework::ViewportDebugDisplayEventBus::Handler::BusDisconnect();
     }
 
     bool ModularViewportCameraControllerInstance::HandleInputChannelEvent(const AzFramework::ViewportControllerInputEvent& event)
@@ -238,19 +227,6 @@ namespace AtomToolsFramework
         {
             m_targetCamera = m_cameraSystem.StepCamera(m_targetCamera, event.m_deltaTime.count());
             m_camera = AzFramework::SmoothCamera(m_camera, m_targetCamera, m_cameraProps, event.m_deltaTime.count());
-
-            // if there has been an interpolation, only clear the look at point if it is no longer
-            // centered in the view (the camera has looked away from it)
-            if (m_lookAtAfterInterpolation.has_value())
-            {
-                if (const float lookDirection =
-                        (*m_lookAtAfterInterpolation - m_camera.Translation()).GetNormalized().Dot(m_camera.Transform().GetBasisY());
-                    !AZ::IsCloseMag(lookDirection, 1.0f, 0.001f))
-                {
-                    m_lookAtAfterInterpolation = {};
-                }
-            }
-
             m_modularCameraViewportContext->SetCameraTransform(m_referenceFrameOverride * m_camera.Transform());
         }
         else if (m_cameraMode == CameraMode::Animation)
@@ -272,7 +248,8 @@ namespace AtomToolsFramework
             const AZ::Vector3 eulerAngles = AzFramework::EulerAngles(AZ::Matrix3x3::CreateFromTransform(current));
             m_camera.m_pitch = eulerAngles.GetX();
             m_camera.m_yaw = eulerAngles.GetZ();
-            m_camera.m_lookAt = current.GetTranslation();
+            m_camera.m_pivot = current.GetTranslation();
+            m_camera.m_offset = AZ::Vector3::CreateZero();
             m_targetCamera = m_camera;
 
             m_modularCameraViewportContext->SetCameraTransform(current);
@@ -287,27 +264,10 @@ namespace AtomToolsFramework
         m_updatingTransformInternally = false;
     }
 
-    void ModularViewportCameraControllerInstance::DisplayViewport(
-        [[maybe_unused]] const AzFramework::ViewportInfo& viewportInfo, AzFramework::DebugDisplayRequests& debugDisplay)
-    {
-        if (const float alpha = AZStd::min(-m_camera.m_lookDist / 5.0f, 1.0f); alpha > AZ::Constants::FloatEpsilon)
-        {
-            const AZ::Color orbitPointColor = ed_cameraSystemOrbitPointColor;
-            debugDisplay.SetColor(orbitPointColor.GetR(), orbitPointColor.GetG(), orbitPointColor.GetB(), alpha);
-            debugDisplay.DrawWireSphere(m_camera.m_lookAt, ed_cameraSystemOrbitPointSize);
-        }
-    }
-
-    void ModularViewportCameraControllerInstance::InterpolateToTransform(const AZ::Transform& worldFromLocal, const float lookAtDistance)
+    void ModularViewportCameraControllerInstance::InterpolateToTransform(const AZ::Transform& worldFromLocal)
     {
         m_cameraMode = CameraMode::Animation;
         m_cameraAnimation = CameraAnimation{ m_referenceFrameOverride * m_camera.Transform(), worldFromLocal, 0.0f };
-        m_lookAtAfterInterpolation = worldFromLocal.GetTranslation() + worldFromLocal.GetBasisY() * lookAtDistance;
-    }
-
-    AZStd::optional<AZ::Vector3> ModularViewportCameraControllerInstance::LookAtAfterInterpolation() const
-    {
-        return m_lookAtAfterInterpolation;
     }
 
     AZ::Transform ModularViewportCameraControllerInstance::GetReferenceFrame() const
@@ -325,8 +285,8 @@ namespace AtomToolsFramework
         m_referenceFrameOverride = worldFromLocal;
         m_targetCamera.m_pitch = 0.0f;
         m_targetCamera.m_yaw = 0.0f;
-        m_targetCamera.m_lookAt = AZ::Vector3::CreateZero();
-        m_targetCamera.m_lookDist = 0.0f;
+        m_targetCamera.m_offset = AZ::Vector3::CreateZero();
+        m_targetCamera.m_pivot = AZ::Vector3::CreateZero();
         m_camera = m_targetCamera;
     }
 

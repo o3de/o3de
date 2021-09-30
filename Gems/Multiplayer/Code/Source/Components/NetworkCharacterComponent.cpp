@@ -8,6 +8,7 @@
 
 #include <Multiplayer/Components/NetworkCharacterComponent.h>
 #include <Multiplayer/Components/NetworkRigidBodyComponent.h>
+#include <AzCore/RTTI/BehaviorContext.h>
 #include <AzFramework/Visibility/EntityBoundsUnionBus.h>
 #include <AzFramework/Physics/CharacterBus.h>
 #include <AzFramework/Physics/Character.h>
@@ -19,7 +20,7 @@
 
 namespace Multiplayer
 {
-    
+
     bool CollisionLayerBasedControllerFilter(const physx::PxController& controllerA, const physx::PxController& controllerB)
     {
         PHYSX_SCENE_READ_LOCK(controllerA.getActor()->getScene());
@@ -82,8 +83,8 @@ namespace Multiplayer
 
         return physx::PxQueryHitType::eNONE;
     }
-    
-    void NetworkCharacterComponent::NetworkCharacterComponent::Reflect(AZ::ReflectContext* context)
+
+    void NetworkCharacterComponent::Reflect(AZ::ReflectContext* context)
     {
         AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context);
         if (serializeContext)
@@ -92,6 +93,7 @@ namespace Multiplayer
                 ->Version(1);
         }
         NetworkCharacterComponentBase::Reflect(context);
+        NetworkCharacterComponentController::Reflect(context);
     }
 
     NetworkCharacterComponent::NetworkCharacterComponent()
@@ -115,7 +117,7 @@ namespace Multiplayer
                 callbackManager->SetObjectPreFilter(CollisionLayerBasedObjectPreFilter);
             }
         }
-        
+
         if (!HasController())
         {
             GetNetworkTransformComponent()->TranslationAddEvent(m_translationEventHandler);
@@ -133,7 +135,7 @@ namespace Multiplayer
     }
 
     void NetworkCharacterComponent::OnSyncRewind()
-    { 
+    {
         if (m_physicsCharacter == nullptr)
         {
             return;
@@ -161,6 +163,18 @@ namespace Multiplayer
         return state.touchedActor != nullptr || (state.collisionFlags & physx::PxControllerCollisionFlag::eCOLLISION_DOWN) != 0;
     }
 
+    void NetworkCharacterComponentController::Reflect(AZ::ReflectContext* context)
+    {
+        if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
+        {
+            behaviorContext->EBus<NetworkCharacterRequestBus>("NetworkCharacterRequestBus")
+                ->Event("TryMoveWithVelocity", &NetworkCharacterRequestBus::Events::TryMoveWithVelocity, {{ { "Velocity" }, { "DeltaTime" } }});
+
+            behaviorContext->Class<NetworkCharacterComponentController>("NetworkCharacterComponentController")
+                ->RequestBus("NetworkCharacterRequestBus");
+        }
+    }
+
     NetworkCharacterComponentController::NetworkCharacterComponentController(NetworkCharacterComponent& parent)
         : NetworkCharacterComponentControllerBase(parent)
     {
@@ -169,12 +183,12 @@ namespace Multiplayer
 
     void NetworkCharacterComponentController::OnActivate([[maybe_unused]] Multiplayer::EntityIsMigrating entityIsMigrating)
     {
-        ;
+        NetworkCharacterRequestBus::Handler::BusConnect(GetEntity()->GetId());
     }
 
     void NetworkCharacterComponentController::OnDeactivate([[maybe_unused]] Multiplayer::EntityIsMigrating entityIsMigrating)
     {
-        ;
+        NetworkCharacterRequestBus::Handler::BusDisconnect(GetEntity()->GetId());
     }
 
     AZ::Vector3 NetworkCharacterComponentController::TryMoveWithVelocity(const AZ::Vector3& velocity, [[maybe_unused]] float deltaTime)

@@ -151,18 +151,18 @@ if("${CMAKE_INSTALL_CONFIG_NAME}" MATCHES "^([Rr][Ee][Ll][Ee][Aa][Ss][Ee])$")
     if(NOT DEFINED LY_ASSET_DEPLOY_ASSET_TYPE)
         set(LY_ASSET_DEPLOY_ASSET_TYPE @LY_ASSET_DEPLOY_ASSET_TYPE@)
     endif()
-    message(STATUS "Generating ${install_output_folder}/Engine.pak from @full_directory_path@/Cache/${LY_ASSET_DEPLOY_ASSET_TYPE}")
+    message(STATUS "Generating ${install_output_folder}/engine.pak from @full_directory_path@/Cache/${LY_ASSET_DEPLOY_ASSET_TYPE}")
     file(MAKE_DIRECTORY "${install_output_folder}")
     cmake_path(SET cache_product_path "@full_directory_path@/Cache/${LY_ASSET_DEPLOY_ASSET_TYPE}")
     file(GLOB product_assets "${cache_product_path}/*")
     if(product_assets)
         execute_process(
-            COMMAND ${CMAKE_COMMAND} -E tar "cf" "${install_output_folder}/Engine.pak" --format=zip -- ${product_assets}
+            COMMAND ${CMAKE_COMMAND} -E tar "cf" "${install_output_folder}/engine.pak" --format=zip -- ${product_assets}
             WORKING_DIRECTORY "${cache_product_path}"
             RESULT_VARIABLE archive_creation_result
         )
         if(archive_creation_result EQUAL 0)
-            message(STATUS "${install_output_folder}/Engine.pak generated")
+            message(STATUS "${install_output_folder}/engine.pak generated")
         endif()
     endif()
 endif()
