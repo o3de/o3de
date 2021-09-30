@@ -37,7 +37,6 @@ namespace AZ
 
                 void OnHairGlobalSettingsChanged();
 
-                // HairComponentConfigInterface overrides...
                 void SetEnabled(bool value)
                 {
                     m_enabled = value;

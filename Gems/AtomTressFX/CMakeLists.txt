@@ -6,8 +6,6 @@
 #
 #
 
-set(GemUUID d4a3e3d6b9b14e12982c774f35f48a7c)
-
 if(PAL_TRAIT_BUILD_HOST_TOOLS)
 
     # Declare ATOMTRESSFX_EDITOR only when tools pipeline is built

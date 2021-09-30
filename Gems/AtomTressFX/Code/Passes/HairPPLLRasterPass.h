@@ -54,7 +54,7 @@ namespace AZ
                 //! Creates a HairPPLLRasterPass
                 static RPI::Ptr<HairPPLLRasterPass> Create(const RPI::PassDescriptor& descriptor);
 
-                bool AddDrawPacket(HairRenderObject* hairObject);
+                bool AddDrawPackets(AZStd::list<Data::Instance<HairRenderObject>>& hairObjects);
 
                 //! The following will be called when an object was added or shader has been compiled
                 void SchedulePacketBuild(HairRenderObject* hairObject);

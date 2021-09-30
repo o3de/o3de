@@ -83,32 +83,6 @@ namespace AZ
                 return RPI::BufferSystemInterface::Get()->CreateBufferFromCommonPool(desc);
             }
 
-
-            Data::Instance<RPI::Buffer> UtilityClass::CreateBufferAndBindToSrg(
-                const char* warningHeader,
-                SrgBufferDescriptor& bufferDesc,
-                Data::Instance<RPI::ShaderResourceGroup> srg)
-            {
-                // Buffer creation
-                Data::Instance<RPI::Buffer> buffer = CreateBuffer(warningHeader, bufferDesc, srg);
-
-                if (!buffer)
-                {
-                    AZ_Error(warningHeader, false, "Failed to create buffer for [%s]", bufferDesc.m_bufferName.GetCStr());
-                    return nullptr;
-                }
-
-                // Buffer binding to Srg (if buffer was created)
-                if (buffer && (!srg->SetBufferView(RHI::ShaderInputBufferIndex(bufferDesc.m_resourceShaderIndex), buffer->GetBufferView())))
-                {
-                    AZ_Error(warningHeader, false, "Failed to bind buffer view for [%s]", bufferDesc.m_bufferName.GetCStr());
-                    return nullptr;
-                }
-
-                return buffer;
-            }
-
-
             bool UtilityClass::BindBufferToSrg(
                 const char* warningHeader,
                 Data::Instance<RPI::Buffer> buffer,
@@ -136,6 +110,22 @@ namespace AZ
                 }
 
                 return true;
+            }
+
+            Data::Instance<RPI::Buffer> UtilityClass::CreateBufferAndBindToSrg(
+                const char* warningHeader,
+                SrgBufferDescriptor& bufferDesc,
+                Data::Instance<RPI::ShaderResourceGroup> srg)
+            {
+                // Buffer creation
+                Data::Instance<RPI::Buffer> buffer = CreateBuffer(warningHeader, bufferDesc, srg);
+
+                if (!BindBufferToSrg(warningHeader, buffer, bufferDesc, srg))
+                {
+                    return nullptr;
+                }
+
+                return buffer;
             }
 
             Data::Instance<RHI::ImagePool> UtilityClass::CreateImagePool(RHI::ImagePoolDescriptor& imagePoolDesc)

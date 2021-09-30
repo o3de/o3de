@@ -10,7 +10,6 @@
 
 #include <Atom/RHI/DispatchItem.h>
 #include <AtomCore/Instance/InstanceData.h>
-#include <Atom/RPI.Reflect/Shader/ShaderOptionGroup.h>
 
 namespace AZ
 {
@@ -65,8 +64,8 @@ namespace AZ
 
                 RHI::DispatchItem* GetDispatchItem() { return &m_dispatchItem;  }
 
+            private:
                 RHI::DispatchItem m_dispatchItem;
-
                 RPI::Shader* m_shader;
             };
 

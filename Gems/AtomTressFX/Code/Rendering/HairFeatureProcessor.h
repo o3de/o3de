@@ -41,7 +41,7 @@ namespace AZ
     {
         namespace Hair
         {
-            //! The following few lined dictates the overall memory consumption reserved for the
+            //! The following lines dictate the overall memory consumption reserved for the
             //!  PPLL fragments.  The memory consumption using this technique is quite large (can
             //!  grow far above 1GB in GPU/CPU data and in extreme cases of zoom up with dense hair
             //!  might still not be enough.  For this reason it is recommended to utilize the
@@ -60,7 +60,7 @@ namespace AZ
 
             //! The HairFeatureProcessor (FP) is the glue between the various hair components / entities in
             //!  the scene and their passes / shaders.
-            //! The FP will keep track of all active hair objects, will rung their skinning update iteration
+            //! The FP will keep track of all active hair objects, will run their skinning update iteration
             //!  and will then populate them into each of the passes to be computed and rendered.
             //! The overall process involves update, skinning, collision, and simulation compute, fragment
             //!  raster fill, and final frame buffer OIT resolve.
@@ -85,7 +85,6 @@ namespace AZ
 
             public:
                 AZ_RTTI(AZ::Render::Hair::HairFeatureProcessor, "{5F9DDA81-B43F-4E30-9E56-C7C3DC517A4C}", RPI::FeatureProcessor);
-                AZ_FEATURE_PROCESSOR(HairFeatureProcessor);
 
                 static void Reflect(AZ::ReflectContext* context);
 
@@ -115,9 +114,6 @@ namespace AZ
                 void OnRenderPipelineAdded(RPI::RenderPipelinePtr renderPipeline) override;
                 void OnRenderPipelineRemoved(RPI::RenderPipeline* renderPipeline) override;
                 void OnRenderPipelinePassesChanged(RPI::RenderPipeline* renderPipeline) override;
-
-                void OnBeginPrepareRender() override;
-                void OnEndPrepareRender() override;
 
                 Data::Instance<HairSkinningComputePass> GetHairSkinningComputegPass();
                 Data::Instance<HairPPLLRasterPass> GetHairPPLLRasterPass();

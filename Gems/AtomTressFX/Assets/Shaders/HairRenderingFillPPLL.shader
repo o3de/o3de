@@ -2,19 +2,13 @@
     "Source" : "HairRenderingFillPPLL.azsl",	
     "DrawList" : "hairFillPass",
 
-    "CompilerHints" : 
-    { 
-        "DxcDisableOptimizations" : false,
-        "DxcGenerateDebugInfo" : true
-    },
-
     "DepthStencilState" : 
     {
         "Depth" : 
         { 
             "Enable" : true,
              "CompareFunc" : "GreaterEqual"
-            // Adi - in TressFX this is LessEqual
+            // Originally in TressFX this is LessEqual - Atom is using reverse sort
         },
         "Stencil" :
         {
@@ -30,9 +24,6 @@
     "BlendState" : 
     {
         "Enable" : false
-//        "BlendSource" : "AlphaSource",
-//        "BlendDest" : "AlphaSourceInverse",
-//        "BlendOp" : "Add"
     },
 
     "ProgramSettings":

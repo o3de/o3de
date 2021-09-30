@@ -37,11 +37,11 @@
 #define AMD_TRESSFX_MAX_HAIR_GROUP_RENDER 16
 
 //!------------------------------ SRG Structure --------------------------------
-//! Per pass SRG the holds the dynamic shared read-write buffer shared 
-//!  across all dispatches and draw calls and used for all the dynamic buffers
-//!  that can change between passes due to the application of skinning, simulation 
-//!  and physics affect and is then read by the rendering shaders.  
-//ShaderResourceGroup PassSrg : SRG_PerPass 
+//! Per pass SRG that holds the dynamic shared read-write buffer shared 
+//! across all dispatches and draw calls. It is used for all the dynamic buffers
+//! that can change between passes due to the application of skinning, simulation 
+//! and physics affect. 
+//! Once the compute pases are done, it is read by the rendering shaders.  
 ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
 {   
     //! Per Pixel Linked List data used by the render raster pass to generate per pixel  
@@ -143,7 +143,7 @@ float4 GatherLinkedList(float2 vfScreenAddress, float2 screenUV, inout float out
 
     uint4 kBuffer[KBUFFER_SIZE];
 
-    // Init kbuffer to large values
+    // Init kbuffer to far depth values (reverse depth - 0 is the furthest)
     [unroll]
     for (int t = 0; t < KBUFFER_SIZE; ++t)
     {
@@ -303,7 +303,7 @@ float4 GatherLinkedList(float2 vfScreenAddress, float2 screenUV, inout float out
         // Blend in the fragment color
         fcolor.xyz = fcolor.xyz * (1.f - alpha) + fragmentColor * alpha;
         // No HW alpha blending - the first layer blends the image buffer and 
-        // the rest of the hairs are blended on top. HOwever, this might be used 
+        // the rest of the hairs are blended on top. However, this might be used 
         // as the blocking factor for the TT lobe in the Marschner lighting model 
         // to gradually block light passing through the hair strands from the back.
         fcolor.w += alpha * (1.0f - fcolor.w);
@@ -315,7 +315,7 @@ float4 GatherLinkedList(float2 vfScreenAddress, float2 screenUV, inout float out
 
 //!-----------------------------------------------------------------------------
 //! This method is a testing method for displaying only the closest hair
-//! strand for getting a clear method of texting the lighting elelments, the 
+//! strand for getting a clear method for testing the lighting elelments, the 
 //! depth and the blending of a single hair strand.
 //!-----------------------------------------------------------------------------
 float4 GetClosestFragment(float2 vfScreenAddress, float2 screenUV, inout float closestDepth)

@@ -33,40 +33,38 @@ namespace AZ
 
     namespace Render
     {
-        class SharedBufferAllocation;
+        class HairSharedBufferAllocation;
 
         //! A class for allocating memory for skinning buffers
-        class SharedBufferInterface
+        class HairSharedBufferInterface
         {
         public:
-            AZ_RTTI(AZ::Render::SharedBufferInterface, "{3CCB13CB-16FF-43F5-98DC-F36B2A9F8E5E}");
+            AZ_RTTI(AZ::Render::HairSharedBufferInterface, "{3CCB13CB-16FF-43F5-98DC-F36B2A9F8E5E}");
 
-            SharedBufferInterface()
+            HairSharedBufferInterface()
             {
-                Interface<SharedBufferInterface>::Register(this);
+                Interface<HairSharedBufferInterface>::Register(this);
             }
 
-            virtual ~SharedBufferInterface()
+            virtual ~HairSharedBufferInterface()
             {
-                Interface<SharedBufferInterface>::Unregister(this);
+                Interface<HairSharedBufferInterface>::Unregister(this);
             }
 
-            static SharedBufferInterface* Get()
+            static HairSharedBufferInterface* Get()
             {
-                return Interface<SharedBufferInterface>::Get();
+                return Interface<HairSharedBufferInterface>::Get();
             }
 
-            //! Returns the buffer asset that is used for all skinned mesh outputs
+            //! Returns the shared buffer asset used for all Hair objects and passes
             virtual Data::Asset<RPI::BufferAsset> GetBufferAsset() const = 0;
 
             //! Returns the buffer that is used for all skinned mesh outputs
             virtual Data::Instance<RPI::Buffer> GetBuffer() = 0;
-//            virtual Data::Instance<RHI::Buffer> GetBuffer() = 0;
-//            virtual RHI::BufferView* GetBufferView() = 0;
 
             //! If the allocation succeeds, returns a ref-counted pointer to a VirtualAddress which will be automatically freed if the ref-count drops to zero
             //! If the allocation fails, returns nullptr
-            virtual AZStd::intrusive_ptr<SharedBufferAllocation> Allocate(size_t byteCount) = 0;
+            virtual AZStd::intrusive_ptr<HairSharedBufferAllocation> Allocate(size_t byteCount) = 0;
 
             //! Mark the memory as available and queue garbage collection to recycle it later (see RHI::Allocator::DeAllocate)
             //! After garbage collection is done signal handlers that memory has been freed
@@ -81,10 +79,10 @@ namespace AZ
             virtual bool UpdateData(const void* sourceData, uint64_t sourceDataSizeInBytes, uint64_t bufferByteOffset = 0) = 0;
 
             // Note that you have to delete these for safety reasons, you will trip a static_assert if you do not
-            AZ_DISABLE_COPY_MOVE(SharedBufferInterface);
+            AZ_DISABLE_COPY_MOVE(HairSharedBufferInterface);
         };
 
-        class SharedBufferNotifications
+        class HairSharedBufferNotifications
             : public AZ::EBusTraits
         {
         public:
@@ -94,28 +92,28 @@ namespace AZ
             //! and attempt to allocate memory again if it failed initially
             virtual void OnSharedBufferMemoryAvailable() = 0;
         };
-        using SharedBufferNotificationBus = AZ::EBus<SharedBufferNotifications>;
+        using SharedBufferNotificationBus = AZ::EBus<HairSharedBufferNotifications>;
 
         //! An intrusive_ptr wrapper around an RHI::Allocation that will automatically free the memory
         //! from the SharedBuffer when the ref count drops to zero
-        class SharedBufferAllocation
+        class HairSharedBufferAllocation
             : public AZStd::intrusive_base
         {
         public:
-            AZ_CLASS_ALLOCATOR(SharedBufferAllocation, AZ::SystemAllocator, 0);
-            explicit SharedBufferAllocation(RHI::VirtualAddress virtualAddress)
+            AZ_CLASS_ALLOCATOR(HairSharedBufferAllocation, AZ::SystemAllocator, 0);
+            explicit HairSharedBufferAllocation(RHI::VirtualAddress virtualAddress)
                 : m_virtualAddress(virtualAddress)
             {}
 
-            ~SharedBufferAllocation()
+            ~HairSharedBufferAllocation()
             {
                 if (!m_suppressSignalOnDeallocate)
                 {
-                    SharedBufferInterface::Get()->DeAllocate(m_virtualAddress);
+                    HairSharedBufferInterface::Get()->DeAllocate(m_virtualAddress);
                 }
                 else
                 {
-                    SharedBufferInterface::Get()->DeAllocateNoSignal(m_virtualAddress);
+                    HairSharedBufferInterface::Get()->DeAllocateNoSignal(m_virtualAddress);
                 }
             }
 

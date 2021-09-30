@@ -33,7 +33,7 @@ namespace AZ
             }
 
             // Reference in the code above that tackles handling of the different dispatches possible
-            // This one is targeting the per vertex dispatches fro now.
+            // This one is targeting the per vertex dispatches for now.
             void HairDispatchItem::InitSkinningDispatch(
                 RPI::Shader* shader,
                 RPI::ShaderResourceGroup* hairGenerationSrg,

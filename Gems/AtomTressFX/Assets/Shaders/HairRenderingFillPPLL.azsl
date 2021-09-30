@@ -168,9 +168,10 @@ void WriteFragmentAttributes(int nAddress, int nPreviousLink, float4 vData, floa
 
 
 // Use the following structure for debug purposes for outputting test results to RT
+// You can use depth, color or both when outputing and testing the calculation.
 struct PSOutput
 {
-//    float4 m_color : SV_Target0;
+    float4 m_color : SV_Target0;
     float m_depth : SV_Depth;
 };
 
@@ -182,21 +183,20 @@ struct PSOutput
 [earlydepthstencil]
 void PPLLFillPS(PS_INPUT_HAIR input)
 {
-    // Strand Color read in is either the BaseMatColor, or BaseMatColor modulated with a color read from texture on vertex shader for base color;
-    //along with modulation by the tip color  
+    // Strand Color read in is either the BaseMatColor, or BaseMatColor modulated with a color read 
+    // from texture in the vertex shader for base color along with modulation by the tip color  
     float4 strandColor = float4(input.StrandColor.rgb, MatBaseColor.a);
-
-    // Grab the uv in case we need it
-    float2 uv = float2(input.Tangent.w, input.StrandColor.w);
-
-    // Apply StrandUVTiling
-    // strandUV.y = (uv.y * StrandUVTilingFactor) % 1.f
-    float2 strandUV = float2(uv.x, (uv.y * StrandUVTilingFactor) - floor(uv.y * StrandUVTilingFactor));
 
     // If we are supporting strand UV texturing, further blend in the texture color/alpha
     // Do this while computing NDC and coverage to hide latency from texture lookup
     if (EnableStrandUV)
     {
+        // Grab the uv in case we need it
+        float2 uv = float2(input.Tangent.w, input.StrandColor.w);
+
+        // Apply StrandUVTiling
+        float2 strandUV = float2(uv.x, (uv.y * StrandUVTilingFactor) - floor(uv.y * StrandUVTilingFactor));
+
         strandColor.rgb *= StrandAlbedoTexture.Sample(LinearWrapSampler, strandUV).rgb;
     }
 

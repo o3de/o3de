@@ -71,8 +71,7 @@ set(FILES
 #
 #set(atom_hair_interfaces
     Code/Rendering/HairBuffersSemantics.h
-    Code/Rendering/SharedBufferInterface.h
-    Code/Rendering/HairRenderObjectInterface.h
+    Code/Rendering/HairSharedBufferInterface.h
     Code/Components/HairBus.h
     
     Code/Assets/HairAsset.h

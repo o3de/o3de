@@ -13,7 +13,6 @@
 
 class Surface
 {
-//    ClearCoatSurfaceData clearCoat;
     TransmissionSurfaceData transmission;
 
     // ------- BasePbrSurfaceData -------

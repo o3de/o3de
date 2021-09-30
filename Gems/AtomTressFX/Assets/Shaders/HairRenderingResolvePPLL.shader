@@ -1,11 +1,5 @@
 { 
     "Source" : "HairRenderingResolvePPLL.azsl",
-	
-    "CompilerHints" : 
-    { 
-        "DxcDisableOptimizations" : false,
-        "DxcGenerateDebugInfo" : false
-    },
 
     "DepthStencilState" : 
     {
@@ -13,7 +7,7 @@
         { 
             "Enable" : true,    // The resolve will write the closest hair depth
             // Pixels that don't belong to the hair will be discarded, otherwise if a fragment
-            // exist in the list, it already passed the depth test
+            // already exists in the list, it passed the depth test in the fill pass
             "CompareFunc" : "Always"    
         },
         "Stencil" :
@@ -22,20 +16,13 @@
         }
     },
 
+    // Note that in the original TressFX 4.1 a blend operation is used with source One and destination AlphaSource.
+    // In our current implementation alpha blending is not required as the backbuffer is being sampled to create 
+    // the proper background color. This will prevent having the slight silhuette that the original implementation 
+    // sometime had.
     "BlendState" : 
     {
-        "Enable" : false,
-//        "Enable" : true,
-        "BlendSource" : "AlphaSource",
-        "BlendDest" : "AlphaSourceInverse",
-        "BlendOp" : "Add",
-//        "BlendSource" : "One",
-//        "BlendDest" : "AlphaSource",
-//        "BlendOp" : "Add",
-
-        "BlendAlphaSource" : "Zero",
-        "BlendAlphaDest" : "Zero",
-        "BlendAlphaOp" : "Add"
+        "Enable" : false
     },
 
     "ProgramSettings":

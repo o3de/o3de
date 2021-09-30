@@ -70,7 +70,7 @@ namespace AZ
 
             void HairComponentController::GetRequiredServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& required)
             {
-                // Dependency in the Actor due to the need to get the bone / join matrices
+                // Dependency in the Actor due to the need to get the bone / joint matrices
                 required.push_back(AZ_CRC_CE("EMotionFXActorService"));
             }
 
@@ -155,7 +155,7 @@ namespace AZ
             void HairComponentController::OnHairConfigChanged()
             {
                 // The actual config change to render object happens in the onTick function. We do this to make sure it 
-                // always happen pre-rendering. There is no need to do it before render object created, because the object
+                // always happens pre-rendering. There is no need to do it before render object created, because the object
                 // will always be created with the updated configuration.
                 if (m_renderObject)
                 {
@@ -197,8 +197,9 @@ namespace AZ
                 // Config change to renderObject happens on the OnTick, so we know the it occurs before render update.
                 if (m_configChanged)
                 {
-                    m_renderObject->UpdateSimulationParameters(
-                        &m_configuration.m_simulationSettings, 0.035f /*default value in hairRenderObject*/);
+                    const float MAX_SIMULATION_TIME_STEP = 0.033f;  // Assuming minimal of 30 fps
+                    float currentDeltaTime = AZStd::min(deltaTime, MAX_SIMULATION_TIME_STEP);
+                    m_renderObject->UpdateSimulationParameters(&m_configuration.m_simulationSettings, currentDeltaTime);
 
                     // [To Do] Hair - Allow update of the following settings to control dynamic LOD
                     const float distanceFromCamera = 1.0f;

@@ -93,20 +93,21 @@ float3 GetStrandColor(int index, float fractionOfStrand)
 
 TressFXVertex GetExpandedTressFXVert(uint vertexId, float3 eye, float2 winSize, float4x4 viewProj)
 {
-    // Access the current line segment
-    uint index = vertexId / 2;  // vertexId is actually the indexed vertex id when indexed triangles are used
+    // Access the current line / curve segment - remember that the mesh is built around
+    // the center line / curve that is expanded as the vertices.
+    uint index = vertexId / 2;  // vertexId is the indexed vertex id when indexed triangles are used
     // Get updated positions and tangents from simulation result
 //    float3 v = GetSharedPosition(index).xyz;
     float3 v = g_GuideHairVertexPositions[index].xyz;
 
-    // Both approach (offset to shared buffer or BufferView) will work!!
+    // Both approaches (offset to shared buffer or BufferView) will work!
 //    float3 t = GetSharedTangent(index);   
     float3 t = g_GuideHairVertexTangents[index].xyz;
 
     // Get hair strand thickness
     uint indexInStrand = index % NumVerticesPerStrand;
     float fractionOfStrand = (float)indexInStrand / (NumVerticesPerStrand - 1);
-    float ratio = (EnableThinTip > 0) ? lerp(1.0, FiberRatio, fractionOfStrand) : 1.0;  //need length of full strand vs the length of this point on the strand. 	
+    float ratio = (EnableThinTip > 0) ? lerp(1.0, FiberRatio, fractionOfStrand) : 1.0;  // need length of full strand vs the length of this point on the strand. 	
  
     // Calculate right and projected right vectors
     float3 right = Safe_normalize(cross(t, Safe_normalize(v - eye)));

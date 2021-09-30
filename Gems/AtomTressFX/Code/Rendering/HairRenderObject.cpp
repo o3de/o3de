@@ -238,7 +238,7 @@ namespace AZ
                 {
                     SrgBufferDescriptor& streamDesc = m_dynamicBuffersDescriptors[stream];
                     size_t requiredSize = (uint64_t)streamDesc.m_elementCount * streamDesc.m_elementSize;
-                    m_dynamicViewAllocators[stream] = SharedBufferInterface::Get()->Allocate(requiredSize);
+                    m_dynamicViewAllocators[stream] = HairSharedBufferInterface::Get()->Allocate(requiredSize);
                     if (!m_dynamicViewAllocators[stream])
                     {
                         // Allocated memory will be cleared using the underlying allocator system and
@@ -280,7 +280,7 @@ namespace AZ
 
                 const SrgBufferDescriptor* streamDesc = &m_dynamicBuffersDescriptors[uint8_t(HairDynamicBuffersSemantics::Position)];
                 uint32_t requiredSize = streamDesc->m_elementSize * streamDesc->m_elementCount;
-                Data::Instance<RPI::Buffer> sharedBuffer = SharedBufferInterface::Get()->GetBuffer();
+                Data::Instance<RPI::Buffer> sharedBuffer = HairSharedBufferInterface::Get()->GetBuffer();
                 AZ_Error("Hair Gem", sharedBuffer, "Attempt to load Hair dynamic data for [%s] without initialize shared buffer", name);
 
                 bool uploadSuccess = true;
@@ -342,7 +342,7 @@ namespace AZ
                 };
                 // StructuredBuffer with strandsCount elements specifying hair blend bones and their weight
                 // Format set to Format::Unknown to avoid set size by type but follow the specified size.
-                // This is specifically required fro StructuredBuffers.
+                // This is specifically required for StructuredBuffers.
                 m_hairGenerationDescriptors[uint8_t(HairGenerationBuffersSemantics::BoneSkinningData)] = {
                     RPI::CommonBufferPoolType::ReadOnly,
                     RHI::Format::Unknown, sizeof(AMD::TressFXBoneSkinningData), strandsCount,
@@ -428,59 +428,59 @@ namespace AZ
             {
                 AZ_Error("Hair Gem", m_hairRenderSrg, "Error - m_hairRenderSrg was not created yet");
 
-                m_hairRenerDescriptors.resize(uint8_t(HairRenderBuffersSemantics::NumBufferStreams));
+                m_hairRenderDescriptors.resize(uint8_t(HairRenderBuffersSemantics::NumBufferStreams));
                 AZStd::string objectNumber = AZStd::to_string(s_objectCounter);
 
                 // Rendering constant buffers creation
-                m_hairRenerDescriptors[uint8_t(HairRenderBuffersSemantics::RenderCB)] = SrgBufferDescriptor(
+                m_hairRenderDescriptors[uint8_t(HairRenderBuffersSemantics::RenderCB)] = SrgBufferDescriptor(
                     RPI::CommonBufferPoolType::Constant, RHI::Format::Unknown,
                     sizeof(AMD::TressFXRenderParams), 1,
                     Name{ "TressFXRenderConstantBuffer" + objectNumber  }, Name{ "m_tressFXRenderParameters" }, 0, 0
                 );
 
-                m_hairRenerDescriptors[uint8_t(HairRenderBuffersSemantics::StrandCB)] = SrgBufferDescriptor(
+                m_hairRenderDescriptors[uint8_t(HairRenderBuffersSemantics::StrandCB)] = SrgBufferDescriptor(
                     RPI::CommonBufferPoolType::Constant, RHI::Format::Unknown,
                     sizeof(AMD::TressFXStrandParams), 1,
                     Name{ "TressFXStrandConstantBuffer" + objectNumber}, Name{ "m_tressFXStrandParameters" }, 0, 0
                 );
 
                 // Albedo texture Srg binding indices
-                m_hairRenerDescriptors[uint8_t(HairRenderBuffersSemantics::BaseAlbedo)] = SrgBufferDescriptor(
+                m_hairRenderDescriptors[uint8_t(HairRenderBuffersSemantics::BaseAlbedo)] = SrgBufferDescriptor(
                     RPI::CommonBufferPoolType::Invalid, RHI::Format::R32_UINT, sizeof(uint32_t), 1,
                     Name{"HairBaseAlbedo" + objectNumber}, Name{"m_baseAlbedoTexture"}, 0, 0
                 );
-                m_hairRenerDescriptors[uint8_t(HairRenderBuffersSemantics::BaseAlbedo)].m_resourceShaderIndex =
-                    m_hairRenderSrg->FindShaderInputImageIndex(m_hairRenerDescriptors[uint8_t(HairRenderBuffersSemantics::BaseAlbedo)].m_paramNameInSrg).GetIndex();
+                m_hairRenderDescriptors[uint8_t(HairRenderBuffersSemantics::BaseAlbedo)].m_resourceShaderIndex =
+                    m_hairRenderSrg->FindShaderInputImageIndex(m_hairRenderDescriptors[uint8_t(HairRenderBuffersSemantics::BaseAlbedo)].m_paramNameInSrg).GetIndex();
 
-                m_hairRenerDescriptors[uint8_t(HairRenderBuffersSemantics::StrandAlbedo)] = SrgBufferDescriptor(
+                m_hairRenderDescriptors[uint8_t(HairRenderBuffersSemantics::StrandAlbedo)] = SrgBufferDescriptor(
                     RPI::CommonBufferPoolType::Invalid, RHI::Format::R32_UINT, sizeof(uint32_t), 1,
                     Name{"HairStrandAlbedo" + objectNumber}, Name{"m_strandAlbedoTexture"}, 0, 0
                 );
-                m_hairRenerDescriptors[uint8_t(HairRenderBuffersSemantics::StrandAlbedo)].m_resourceShaderIndex =
-                    m_hairRenderSrg->FindShaderInputImageIndex(m_hairRenerDescriptors[uint8_t(HairRenderBuffersSemantics::StrandAlbedo)].m_paramNameInSrg).GetIndex();
+                m_hairRenderDescriptors[uint8_t(HairRenderBuffersSemantics::StrandAlbedo)].m_resourceShaderIndex =
+                    m_hairRenderSrg->FindShaderInputImageIndex(m_hairRenderDescriptors[uint8_t(HairRenderBuffersSemantics::StrandAlbedo)].m_paramNameInSrg).GetIndex();
 
                 // Vertices Data creation and bind: vertex thickness and texture coordinates.
                 // Vertex thickness
-                m_hairRenerDescriptors[uint8_t(HairRenderBuffersSemantics::HairVertexRenderParams)] = SrgBufferDescriptor(
+                m_hairRenderDescriptors[uint8_t(HairRenderBuffersSemantics::HairVertexRenderParams)] = SrgBufferDescriptor(
                     RPI::CommonBufferPoolType::ReadOnly,
                     RHI::Format::R32_FLOAT, sizeof(float), m_NumTotalVertices,
                     Name{ "HairVertRenderParams" + objectNumber}, Name{ "m_hairThicknessCoeffs" }, 0, 0
                 );
-                m_hairRenerDescriptors[uint8_t(HairRenderBuffersSemantics::HairVertexRenderParams)].m_resourceShaderIndex =
-                    m_hairRenderSrg->FindShaderInputBufferIndex(m_hairRenerDescriptors[uint8_t(HairRenderBuffersSemantics::HairVertexRenderParams)].m_paramNameInSrg).GetIndex();
+                m_hairRenderDescriptors[uint8_t(HairRenderBuffersSemantics::HairVertexRenderParams)].m_resourceShaderIndex =
+                    m_hairRenderSrg->FindShaderInputBufferIndex(m_hairRenderDescriptors[uint8_t(HairRenderBuffersSemantics::HairVertexRenderParams)].m_paramNameInSrg).GetIndex();
 
                 // Texture coordinates
-                m_hairRenerDescriptors[uint8_t(HairRenderBuffersSemantics::HairTexCoords)] = SrgBufferDescriptor(
+                m_hairRenderDescriptors[uint8_t(HairRenderBuffersSemantics::HairTexCoords)] = SrgBufferDescriptor(
                     RPI::CommonBufferPoolType::ReadOnly,
-                    RHI::Format::R32G32_FLOAT, 2.0 * sizeof(float), m_NumTotalStrands,
+                    RHI::Format::R32G32_FLOAT, 2 * sizeof(float), m_NumTotalStrands,
                     Name{"HairTexCoords" + objectNumber}, Name{"m_hairStrandTexCd"}, 0, 0
                 );
-                m_hairRenerDescriptors[uint8_t(HairRenderBuffersSemantics::HairTexCoords)].m_resourceShaderIndex =
-                    m_hairRenderSrg->FindShaderInputBufferIndex(m_hairRenerDescriptors[uint8_t(HairRenderBuffersSemantics::HairTexCoords)].m_paramNameInSrg).GetIndex();
+                m_hairRenderDescriptors[uint8_t(HairRenderBuffersSemantics::HairTexCoords)].m_resourceShaderIndex =
+                    m_hairRenderSrg->FindShaderInputBufferIndex(m_hairRenderDescriptors[uint8_t(HairRenderBuffersSemantics::HairTexCoords)].m_paramNameInSrg).GetIndex();
             }
 
 
-            //! This is the binding method - not the data set that will happen every frame update.
+            //! This is the binding method - not the actual content update that will happen every frame update.
             bool HairRenderObject::BindRenderSrgResources()
             {
                 // Protect Update and Render if on async threads
@@ -493,13 +493,13 @@ namespace AZ
                 bindSuccess &= m_strandCB.UpdateGPUData();
 
                 // Albedo textures 
-                const SrgBufferDescriptor* desc = &m_hairRenerDescriptors[uint8_t(HairRenderBuffersSemantics::BaseAlbedo)];
+                const SrgBufferDescriptor* desc = &m_hairRenderDescriptors[uint8_t(HairRenderBuffersSemantics::BaseAlbedo)];
                 if (!m_hairRenderSrg->SetImage(RHI::ShaderInputImageIndex(desc->m_resourceShaderIndex), m_baseAlbedo))
                 {
                     bindSuccess = false;
                     AZ_Error("Hair Gem", false, "Failed to bind SRG image for [%s]", desc->m_paramNameInSrg.GetCStr());
                 }
-                desc = &m_hairRenerDescriptors[uint8_t(HairRenderBuffersSemantics::StrandAlbedo)];
+                desc = &m_hairRenderDescriptors[uint8_t(HairRenderBuffersSemantics::StrandAlbedo)];
                 if (!m_hairRenderSrg->SetImage(RHI::ShaderInputImageIndex(desc->m_resourceShaderIndex), m_strandAlbedo))
                 {
                     bindSuccess = false;
@@ -507,13 +507,13 @@ namespace AZ
                 }
 
                 // Vertex streams: thickness and texture coordinates
-                desc = &m_hairRenerDescriptors[uint8_t(HairRenderBuffersSemantics::HairVertexRenderParams)];
+                desc = &m_hairRenderDescriptors[uint8_t(HairRenderBuffersSemantics::HairVertexRenderParams)];
                 if (!m_hairRenderSrg->SetBufferView(RHI::ShaderInputBufferIndex(desc->m_resourceShaderIndex), m_hairVertexRenderParams->GetBufferView()))
                 {
                     bindSuccess = false;
                     AZ_Error("Hair Gem", false, "Failed to bind buffer view for [%s]", desc->m_bufferName.GetCStr());
                 }
-                desc = &m_hairRenerDescriptors[uint8_t(HairRenderBuffersSemantics::HairTexCoords)];
+                desc = &m_hairRenderDescriptors[uint8_t(HairRenderBuffersSemantics::HairTexCoords)];
                 if (!m_hairRenderSrg->SetBufferView(RHI::ShaderInputBufferIndex(desc->m_resourceShaderIndex), m_hairTexCoords->GetBufferView()))
                 {
                     AZ_Error("Hair Gem", false, "Failed to bind buffer view for [%s]", desc->m_bufferName.GetCStr());
@@ -548,9 +548,9 @@ namespace AZ
                 // Constant buffer structures
                 bool bindSuccess = true;
                 bindSuccess &= m_renderCB.InitForUniqueSrg(m_hairRenderSrg,
-                    m_hairRenerDescriptors[uint8_t(HairRenderBuffersSemantics::RenderCB)]);
+                    m_hairRenderDescriptors[uint8_t(HairRenderBuffersSemantics::RenderCB)]);
                 bindSuccess &= m_strandCB.InitForUniqueSrg(m_hairRenderSrg,
-                    m_hairRenerDescriptors[uint8_t(HairRenderBuffersSemantics::StrandCB)]);
+                    m_hairRenderDescriptors[uint8_t(HairRenderBuffersSemantics::StrandCB)]);
 
                 if (!bindSuccess)
                 {
@@ -560,7 +560,7 @@ namespace AZ
 
                 // Vertices Data creation and bind: vertex thickness and texture coordinates.
                 m_hairVertexRenderParams = UtilityClass::CreateBuffer("Hair Gem",
-                    m_hairRenerDescriptors[uint8_t(HairRenderBuffersSemantics::HairVertexRenderParams)], nullptr);
+                    m_hairRenderDescriptors[uint8_t(HairRenderBuffersSemantics::HairVertexRenderParams)], nullptr);
                 if (!m_hairVertexRenderParams.get())
                 {
                     AZ_Error("Hair Gem", false, "Failed to create hair vertex buffer for model [%s]", assetName);
@@ -569,7 +569,7 @@ namespace AZ
 
                 if (asset.m_strandUV.data())
                 {
-                    m_hairTexCoords = UtilityClass::CreateBuffer("Hair Gem", m_hairRenerDescriptors[uint8_t(HairRenderBuffersSemantics::HairTexCoords)], nullptr);
+                    m_hairTexCoords = UtilityClass::CreateBuffer("Hair Gem", m_hairRenderDescriptors[uint8_t(HairRenderBuffersSemantics::HairTexCoords)], nullptr);
                 }
 
                 //------------ Index Buffer  ------------
@@ -604,7 +604,7 @@ namespace AZ
 
             //! Bind Render Srg (m_hairRenderSrg) resources. No resources data update should be doe here
             //! Notice that this also loads the images and is slower if a new asset is required.
-            //!     If the image was not changed it should only bind without the retrieve operation.
+            //! If the image was not changed it should only bind without the retrieve operation.
             bool HairRenderObject::PopulateDrawStrandsBindSet(AMD::TressFXRenderingSettings* pRenderSettings)
             {
                 // First, Directly loading from the asset stored in the render settings.
@@ -653,13 +653,13 @@ namespace AZ
                 m_strandAlbedo = strandAlbedo;
 
                 bool success = true;
-                const SrgBufferDescriptor* desc = &m_hairRenerDescriptors[uint8_t(HairRenderBuffersSemantics::BaseAlbedo)];
+                const SrgBufferDescriptor* desc = &m_hairRenderDescriptors[uint8_t(HairRenderBuffersSemantics::BaseAlbedo)];
                 if (!m_hairRenderSrg->SetImage(RHI::ShaderInputImageIndex(desc->m_resourceShaderIndex), m_baseAlbedo))
                 {
                     success = false;
                     AZ_Error("Hair Gem", false, "Failed to bind SRG image for [%s]", desc->m_paramNameInSrg.GetCStr());
                 }
-                desc = &m_hairRenerDescriptors[uint8_t(HairRenderBuffersSemantics::StrandAlbedo)];
+                desc = &m_hairRenderDescriptors[uint8_t(HairRenderBuffersSemantics::StrandAlbedo)];
                 if (!m_hairRenderSrg->SetImage(RHI::ShaderInputImageIndex(desc->m_resourceShaderIndex), m_strandAlbedo))
                 {
                     success = false;
@@ -670,21 +670,22 @@ namespace AZ
 
             bool HairRenderObject::UploadRenderingGPUResources(AMD::TressFXAsset& asset)
             {
-                bool updateSuccess;
+                bool updateSuccess = true;
 
-                // If the CBs data was changed, it is not being uploaded to the GPU.
-                updateSuccess = m_renderCB.UpdateGPUData();
+                // When the CBs data is changed, this is updating the CPU memory - it will be reflected to the GPU
+                // only after binding and compiling stage in the pass.
+                updateSuccess &= m_renderCB.UpdateGPUData();
                 updateSuccess &= m_strandCB.UpdateGPUData();
 
                 // This should be called once on creation and separate method should apply the CBs update.
                 // Vertex streams data update
                 if (asset.m_strandUV.data())
                 {
-                    const SrgBufferDescriptor* desc = &m_hairRenerDescriptors[uint8_t(HairRenderBuffersSemantics::HairTexCoords)];
+                    const SrgBufferDescriptor* desc = &m_hairRenderDescriptors[uint8_t(HairRenderBuffersSemantics::HairTexCoords)];
                     updateSuccess &= m_hairTexCoords->UpdateData( (void*)asset.m_strandUV.data(), desc->m_elementCount * desc->m_elementSize, 0);
                 }
 
-                const SrgBufferDescriptor* desc = &m_hairRenerDescriptors[uint8_t(HairRenderBuffersSemantics::HairVertexRenderParams)];
+                const SrgBufferDescriptor* desc = &m_hairRenderDescriptors[uint8_t(HairRenderBuffersSemantics::HairVertexRenderParams)];
                 updateSuccess &= m_hairVertexRenderParams->UpdateData((void*)asset.m_thicknessCoeffs.data(), desc->m_elementCount * desc->m_elementSize, 0);
 
                 // No need to update index buffer data unless we go to dynamic reduction
@@ -697,7 +698,7 @@ namespace AZ
             //!
             //!-------------------------------------------------------------------------------------
             
-            // [TODO] Possibly move wind settings to Simulation Parameters or alike.
+            // [To Do] Possibly move wind settings to Simulation Parameters or alike.
 
             // Wind is in a pyramid around the main wind direction.
             // To add a random appearance, the shader will sample some direction
@@ -706,21 +707,23 @@ namespace AZ
             // [To Do] Requires more testing
             static void SetWindCorner(
                 Quaternion rotFromXAxisToWindDir, Vector3 rotAxis,
-                float angleToWideWindCone, float wM, AMD::float4& outVec)
+                float angleToWideWindCone, float windMagnitude, AMD::float4& outVec)
             {
                 static const Vector3 XAxis(1.0f, 0, 0);
                 Quaternion rot(rotAxis, angleToWideWindCone);
                 // original code: Vector3 newWindDir = rotFromXAxisToWindDir * rot * XAxis;
-                Vector3 newWindDir = (rotFromXAxisToWindDir * rot).TransformVector(XAxis);  // test
-                outVec.x = newWindDir.GetX() * wM;
-                outVec.y = newWindDir.GetY() * wM;
-                outVec.z = newWindDir.GetZ() * wM;
+                Vector3 newWindDir = (rotFromXAxisToWindDir * rot).TransformVector(XAxis);
+                outVec.x = newWindDir.GetX() * windMagnitude;
+                outVec.y = newWindDir.GetY() * windMagnitude;
+                outVec.z = newWindDir.GetZ() * windMagnitude;
                 outVec.w = 0;  // unused.
             }
 
             void HairRenderObject::SetWind(const Vector3& windDir, float windMag, int frame)
             {
-                float wM = windMag * (pow(sin(frame * 0.01f), 2.0f) + 0.5f);
+                // Based on the original AMD code for pleasing wind rate simulation.
+                // [To Do] - production can add user control over velocity if required.
+                float windMagnitude = windMag * (pow(sin(frame * 0.01f), 2.0f) + 0.5f);
 
                 Vector3 windDirN(windDir);
                 windDirN.Normalize();
@@ -742,10 +745,10 @@ namespace AZ
 
                 const float angleToWideWindCone = AZ::DegToRad(40.f);
 
-                SetWindCorner(rotFromXAxisToWindDir, Vector3(0, 1.0, 0),  angleToWideWindCone, wM, m_simCB->m_Wind);
-                SetWindCorner(rotFromXAxisToWindDir, Vector3(0, -1.0, 0), angleToWideWindCone, wM, m_simCB->m_Wind1);
-                SetWindCorner(rotFromXAxisToWindDir, Vector3(0, 0, 1.0),  angleToWideWindCone, wM, m_simCB->m_Wind2);
-                SetWindCorner(rotFromXAxisToWindDir, Vector3(0, 0, -1.0), angleToWideWindCone, wM, m_simCB->m_Wind3);
+                SetWindCorner(rotFromXAxisToWindDir, Vector3(0, 1.0, 0),  angleToWideWindCone, windMagnitude, m_simCB->m_Wind);
+                SetWindCorner(rotFromXAxisToWindDir, Vector3(0, -1.0, 0), angleToWideWindCone, windMagnitude, m_simCB->m_Wind1);
+                SetWindCorner(rotFromXAxisToWindDir, Vector3(0, 0, 1.0),  angleToWideWindCone, windMagnitude, m_simCB->m_Wind2);
+                SetWindCorner(rotFromXAxisToWindDir, Vector3(0, 0, -1.0), angleToWideWindCone, windMagnitude, m_simCB->m_Wind3);
                 // fourth component unused. (used to store frame number, but no longer used).
             }
 
@@ -753,7 +756,12 @@ namespace AZ
             {
                 pBoneMatricesInWS;
 
-                float identityValues[16] = { 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1 };
+                float identityValues[16] = {
+                    1, 0, 0, 0,
+                    0, 1, 0, 0,
+                    0, 0, 1, 0,
+                    0, 0, 0, 1
+                };
                 int numMatrices = AZStd::min(numBoneMatrices, AMD_TRESSFX_MAX_NUM_BONES);
                 for (int i = 0; i < numMatrices; ++i)
                 {
@@ -937,11 +945,11 @@ namespace AZ
 
             //!=====================================================================================
             //!
-            //!                     Generic non StressFX Specific Methods
+            //!                     Generic non tressFX Specific Methods
             //!
             //!-------------------------------------------------------------------------------------
             //! This is the equivalent method to the TressFXObject constructor.
-            //! It prepare all dynamic and static buffers and load the data into them, then
+            //! It prepares all dynamic and static buffers and load the data into them, then
             //!  creates all the Srgs associated with the buffers and the remaining structures
             //!  that drive skinning, simulation and rendering of the hair.
             //!---------------------------------------------------------------------
@@ -965,8 +973,10 @@ namespace AZ
 
                  // dummy method - replace with the bone matrices at init pose and the real bones amount
                 InitBoneMatricesPlaceHolder(nullptr, AMD_TRESSFX_MAX_NUM_BONES);
+
                 // First time around, make sure all parameters are properly filled
-                UpdateSimulationParameters(simSettings, 0.035f); // large fast step for faster simulation, but..
+                const float SIMULATION_TIME_STEP = 0.0166667f;  // 60 fps to start with nominal step
+                UpdateSimulationParameters(simSettings, SIMULATION_TIME_STEP); 
 
                 // [To Do] Hair - change to be dynamically calculated
                 const float distanceFromCamera = 1.0; 

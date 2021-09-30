@@ -8,8 +8,7 @@
 
 set(FILES
     Code/Rendering/HairBuffersSemantics.h
-    Code/Rendering/SharedBufferInterface.h
-    Code/Rendering/HairRenderObjectInterface.h
+    Code/Rendering/HairSharedBufferInterface.h
     Code/Components/HairBus.h
     Code/Components/HairSystemComponent.h
     Code/HairModule.h

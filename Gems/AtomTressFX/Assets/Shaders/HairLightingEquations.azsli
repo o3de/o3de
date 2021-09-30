@@ -196,7 +196,7 @@ float3 HairMarschnerBSDF(Surface surface, LightingData lightingData, const float
     // R Path - single reflection from the hair towards the eye.
     if (o_enableMarschner_R)
     {
-        float lighting_R = o_enableDiffuseLobe ? M_R(surface, Lh, sinLiPlusSinLr) : float3(1.0f, 1.0f, 1.0f);
+        float lighting_R = o_enableDiffuseLobe ? M_R(surface, Lh, sinLiPlusSinLr) : 1.0f;
         if (o_enableSpecularLobe)
             lighting_R *= N_R(surface, cos_O2, Wi, Wr, f0);
 
@@ -217,7 +217,7 @@ float3 HairMarschnerBSDF(Surface surface, LightingData lightingData, const float
     // back of the hair.  The main contribution here would for thin hair areas from lights 
     // behind the hair that are not concealed.  For thicker hair this contribution should
     // be blocked by the head consealing the back light and by the thickness of the hair 
-    // that obsorbs this energy over thick area hence reducing the energy pass based
+    // that absorbs this energy over thick area hence reducing the energy pass based
     // on the average thickness.
     if (o_enableMarschner_TT)
     {   
@@ -225,7 +225,7 @@ float3 HairMarschnerBSDF(Surface surface, LightingData lightingData, const float
         if (o_enableSpecularLobe)
             lighting_TT *= N_TT(surface, n2, cos_O, cos_O2, cos_Ld, f0);
 
-        // Reduce back transmittance based on the thicknessof the hair
+        // Reduce back transmittance based on the thickness of the hair
         lighting_TT *= (1.0f - surface.thickness);
         lighting += lighting_TT;
     }

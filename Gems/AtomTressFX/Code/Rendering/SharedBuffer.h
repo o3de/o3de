@@ -18,7 +18,7 @@
 #include <Atom/RPI.Public/Shader/ShaderResourceGroup.h>
 
 // Hair specific
-#include <Rendering/SharedBufferInterface.h>
+#include <Rendering/HairSharedBufferInterface.h>
 
 namespace AZ
 {
@@ -52,7 +52,7 @@ namespace AZ
             //! The assigned SRG slot in the CPU / GPU for this shader resource
             uint32_t m_resourceShaderIndex;
             //! If using a buffer view within a shared buffer, this represents
-            //!  of the view offset from the shared buffer origin in bytes.
+            //! the view offset from the shared buffer origin in bytes.
             uint32_t m_viewOffsetInBytes;
 
             SrgBufferDescriptor() = default;
@@ -82,20 +82,20 @@ namespace AZ
         //! 
         // Adopted from SkinnedMeshOutputStreamManager in order to make it more generic and context free usage
         class SharedBuffer
-            : public SharedBufferInterface
+            : public HairSharedBufferInterface
             , private SystemTickBus::Handler
         {
         public:
             SharedBuffer();
             SharedBuffer(AZStd::string bufferName, AZStd::vector<SrgBufferDescriptor>& buffersDescriptors);
 
-            AZ_RTTI(AZ::Render::SharedBuffer, "{D910C301-99F7-41B6-A2A6-D566F3B2C030}", AZ::Render::SharedBufferInterface);
+            AZ_RTTI(AZ::Render::SharedBuffer, "{D910C301-99F7-41B6-A2A6-D566F3B2C030}", AZ::Render::HairSharedBufferInterface);
 
             ~SharedBuffer();
             void Init(AZStd::string bufferName, AZStd::vector<SrgBufferDescriptor>& buffersDescriptors);
 
             // SharedBufferInterface
-            AZStd::intrusive_ptr<SharedBufferAllocation> Allocate(size_t byteCount) override;
+            AZStd::intrusive_ptr<HairSharedBufferAllocation> Allocate(size_t byteCount) override;
             void DeAllocate(RHI::VirtualAddress allocation) override;
             void DeAllocateNoSignal(RHI::VirtualAddress allocation) override;
             Data::Asset<RPI::BufferAsset> GetBufferAsset() const override;
@@ -135,7 +135,7 @@ namespace AZ
             //! solution but requires using re-allocations and proper synchronizing between all existing buffers.
             //! This amount of memory should be enough for 2-3 very details cinematic hair or for 4-6 high
             //! fidelity hair objects.
-            //! Additional attention should be to the fact that because the buffers in Atom are NOT triple
+            //! Additional attention should be given to the fact that because the buffers in Atom are NOT triple
             //! buffered but instead they are delayed via garbage collection mechanism, during reallocation
             //! the amount of memory required might reach close to double of the run-time.
             size_t m_sizeInBytes = 256u * (1024u * 1024u);   

@@ -8,7 +8,7 @@ REM SPDX-License-Identifier: Apache-2.0 OR MIT
 REM
 REM
 
-:: Launches maya wityh a bunch of local hooks for AtomTressFX (Hair) plugins
+:: Launches maya with a bunch of local hooks for AtomTressFX (Hair) plugins
 :: ToDo: move all of this to a .json data driven boostrapping system
 
 @echo off

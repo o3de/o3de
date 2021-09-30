@@ -51,8 +51,8 @@ namespace AZ
 
                 bool BuildDispatchItem(HairRenderObject* hairObject, DispatchLevel dispatchLevel );
 
-                //! Thread-safe function for adding a dispatch item to the current frame.
-                void AddDispatchItem(HairRenderObject* hairObject);
+                //! Thread-safe function for adding the frame's dispatch items
+                void AddDispatchItems(AZStd::list<Data::Instance<HairRenderObject>>& renderObjects);
 
                 // Pass behavior overrides
                 void CompileResources(const RHI::FrameGraphCompileContext& context) override;
@@ -80,8 +80,6 @@ namespace AZ
                 void InitializeInternal() override;
                 void BuildInternal() override;
                 void FrameBeginInternal(FramePrepareParams params) override;
-
-                void SetupFrameGraphDependencies(RHI::FrameGraphInterface frameGraph) override;
 
                 // ShaderReloadNotificationBus::Handler overrides...
                 void OnShaderReinitialized(const AZ::RPI::Shader& shader) override;

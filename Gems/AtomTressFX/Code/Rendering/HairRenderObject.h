@@ -23,7 +23,6 @@
 #include <Rendering/SharedBuffer.h>
 #include <Rendering/HairDispatchItem.h>
 #include <Rendering/HairBuffersSemantics.h>
-#include <Rendering/HairRenderObjectInterface.h>
 
 #define TRESSFX_MIN_VERTS_PER_STRAND_FOR_GPU_ITERATION 64
 
@@ -52,14 +51,13 @@ namespace AZ
 
     namespace Render
     {
-        class HairFeatureProcessor;
 
         namespace Hair
         {
             class HairFeatureProcessor;
 
             //! TressFXStrandLevelData represents blended bone data per hair strand that once calculated
-            //!  is passed between the skinning pass and the simulation shape constrains pass
+            //!  is passed between the skinning pass and the simulation shape constraints pass
             struct TressFXStrandLevelData
             {
                 AMD::float4 skinningQuat;
@@ -84,6 +82,8 @@ namespace AZ
             //!-----------------------------------------------------------------------------------------
             class DynamicHairData
             {
+                friend class HairRenderObject;
+
             public:           
                 //! Creates the GPU dynamic buffers of a single hair object
                 //! Equivalent to TressFXDynamicHairData::CreateGPUResources
@@ -98,8 +98,9 @@ namespace AZ
                 bool UploadGPUData(const char* name, void* positions, void* tangents);
 
                 //! Preparation of the descriptors table of all the dynamic stream buffers within the class.
-                //! Do not call this method manually as it is called from CreateAndBindGPUResources.
-                //! Can be called from the outside to retrieve the descriptors table (SharedBuffer)
+                //! Do not call this method before calling CreateAndBindGPUResources as it is already called
+                //! from CreateAndBindGPUResources.
+                //! This method can be called also for retrieving the descriptors table (SharedBuffer)
                 static void PrepareSrgDescriptors(
                     AZStd::vector<SrgBufferDescriptor>& descriptorArray,
                     int32_t vertexCount, uint32_t strandsCount);
@@ -108,19 +109,19 @@ namespace AZ
                 {
                     PrepareSrgDescriptors(m_dynamicBuffersDescriptors, vertexCount, strandsCount);
                 }
-
-                //! Matching between the buffers Srg and its buffers descriptors, this method fills the Srg with
-                //!  the views of the buffers to be used by the hair instance.
-                //! Do not call this method manually as it is called from CreateAndBindGPUResources.
-                bool BindPerObjectSrgForCompute();
-                bool BindPerObjectSrgForRaster();
  
                 Data::Instance<RPI::ShaderResourceGroup> GetSimSrgForCompute() { return m_simSrgForCompute; }
                 Data::Instance<RPI::ShaderResourceGroup> GetSimSrgForRaster() { return m_simSrgForRaster; }
 
                 bool IsInitialized() { return m_initialized;  }
 
+
             private:
+                //! Matching between the buffers Srg and its buffers descriptors, this method fills the Srg with
+                //!  the views of the buffers to be used by the hair instance.
+                bool BindPerObjectSrgForCompute();
+                bool BindPerObjectSrgForRaster();
+
                 //! The descriptors required to allocate and associate the dynamic buffers with the SRGs
                 //! Each descriptor also contains the byte offsets of the sub-buffers in the global dynamic
                 //!  array for the data copy.
@@ -137,7 +138,7 @@ namespace AZ
 
                 //! The following vector is required in order to keep the allocators 'alive' or
                 //!  else they are cleared from the buffer via the reference mechanism.
-                AZStd::vector<Data::Instance<SharedBufferAllocation>> m_dynamicViewAllocators;
+                AZStd::vector<Data::Instance<HairSharedBufferAllocation>> m_dynamicViewAllocators;
 
                 //------------------------------------------------------------------
                 //! The following SRGs are the ones represented by this class' data.
@@ -163,12 +164,11 @@ namespace AZ
             //!-----------------------------------------------------------------------------------------
             class HairRenderObject final
                 : public Data::InstanceData
-                , public HairRenderObjectInterface
             {
                 friend HairFeatureProcessor;
 
             public:
-                AZ_RTTI(HairRenderObject, "{58F48A58-C5B9-4CAE-9AFD-9B3AF3A01C73}", HairRenderObjectInterface);
+                AZ_RTTI(HairRenderObject, "{58F48A58-C5B9-4CAE-9AFD-9B3AF3A01C73}");
                 HairRenderObject() = default;
                 ~HairRenderObject();
 
@@ -233,10 +233,10 @@ namespace AZ
                 //! connection in code to the TressFX method.
                 //! Bind Render Srg (m_hairRenderSrg) resources. No resources data update should be doe here
                 //! Notice that this also loads the images and is slower if a new asset is required.
-                //!     If the image was not changed it should only bind without the retrieve operation.
+                //! If the image was not changed it should only bind without the retrieve operation.
                 bool PopulateDrawStrandsBindSet(AMD::TressFXRenderingSettings* pRenderSettings/*=nullptr*/);
 
-                // This function will called when the image asset changed from the component.
+                // This function will be called when the image asset changed for the component.
                 bool LoadImageAsset(AMD::TressFXRenderingSettings* pRenderSettings);
 
                 bool UploadRenderingGPUResources(AMD::TressFXAsset& asset);
@@ -257,7 +257,7 @@ namespace AZ
 
                 void SetFrameDeltaTime(float deltaTime);
                 //! Updating the bone matrices for the skinning in the simulation constant buffer.
-                //! pBoneMatricesInWS constrains array of column major bone matrices in world space.
+                //! pBoneMatricesInWS constraints array of column major bone matrices in world space.
                 void UpdateRenderingParameters(
                     const AMD::TressFXRenderingSettings* parameters, const int nodePoolSize,
                     float distance, bool shadowUpdate /*= false*/);
@@ -289,16 +289,16 @@ namespace AZ
                 //!-----------------------------------------------------------------
 
             private:
+                //----------------------- Private Methods --------------------------
                 bool BindRenderSrgResources();
                 void PrepareRenderSrgDescriptors();
                 bool GetShaders();
 
-
-            private:
+                //------------------------------ Data ------------------------------
                 static uint32_t s_objectCounter;
 
-                //! The feature processor is the centralize class that gathers all render nodes and
-                //!   responsible for the various stages and passesn updates
+                //! The feature processor is the centralized class that gathers all render nodes and
+                //!   responsible for the various stages and passes' updates
                 HairFeatureProcessor* m_featureProcessor = nullptr;
 
                 //! The dispatch item used for the skinning
@@ -366,7 +366,7 @@ namespace AZ
                 HairUniformBuffer<AMD::TressFXRenderParams> m_renderCB;
                 HairUniformBuffer<AMD::TressFXStrandParams> m_strandCB;
 
-                AZStd::vector<SrgBufferDescriptor> m_hairRenerDescriptors;
+                AZStd::vector<SrgBufferDescriptor> m_hairRenderDescriptors;
                 // Equivalent to m_pRenderLayoutBindSet in TressFX.
                 Data::Instance<RPI::ShaderResourceGroup> m_hairRenderSrg;   
  

@@ -29,7 +29,7 @@ namespace AZ
             //! The hair PPLL resolve pass is a full screen pass that runs over the hair fragments list
             //!  that were computed in the raster fill pass and resolves their depth order, transparency
             //! and lighting values to be output to display.
-            //! Each pixel on the screen will processed only once and will iterate through the fragments
+            //! Each pixel on the screen will be processed only once and will iterate through the fragments
             //!  list associated with the pixel's location.
             //! The full screen resolve pass is using the following Srgs:
             //!  - PerPassSrg: hair vertex data data, PPLL buffers and material array
@@ -55,7 +55,6 @@ namespace AZ
 
                 //! Override pass behavior methods
                 void InitializeInternal() override;
-                void BuildInternal() override;
                 void CompileResources(const RHI::FrameGraphCompileContext& context) override;
 
             private:

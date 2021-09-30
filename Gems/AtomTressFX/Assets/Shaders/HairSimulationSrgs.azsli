@@ -54,7 +54,8 @@ struct TressFXSimulationParams
     float4 m_GravTimeTip;   // gravity maginitude (assumed to be in negative y direction.)
     int4   m_SimInts;       // Length iterations, local iterations, collision flag.
     int4   m_Counts;        // num strands per thread group, num follow hairs per guid hair, num verts per strand.
-    float4 m_VSP;           // VSP parmeters
+    float4 m_VSP;           // VSP parameters - controls how Velocity Shock Propogation will dictate how 
+                            // fast velocities are handled and can be compensated using the hair root velocity  
 
     float m_ResetPositions;
     float m_ClampPositionDelta;

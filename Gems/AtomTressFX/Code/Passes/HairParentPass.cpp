@@ -29,6 +29,12 @@ namespace AZ
             return aznew HairParentPass(descriptor);
         }
 
+        // The following two methods are here as the mean to allow usage of different hair passes in
+        // the active pipeline due to different hair options activations.
+        // For example - one might want to use short resolve render method vs' the complete full buffers
+        // that is used currently (but cost much memory), or to enable/disable collisions by removing
+        // the collision passes.
+        // [To Do] - The parent pass class can be removed if this is not done. 
         void HairParentPass::UpdateChildren()
         {
             if (!m_updateChildren)

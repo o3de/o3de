@@ -30,11 +30,6 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 //
-
-// This is code decoration for our sample.  
-// Remove this and the EndHLSL at the end of this file 
-// to turn this into valid HLSL
-
 // originated from: TressFXRendering.hlsl
 
 #pragma once
@@ -63,7 +58,7 @@
 //! 
 //!=============================================================================
 // If you change this, you MUST also change TressFXRenderParams in TressFXConstantBuffers.h
-// org: cbuffer TressFXParameters : register(b3, space0)
+// originally: cbuffer TressFXParameters : register(b3, space0)
 struct TressFXRenderParameters
 {
     // General information
@@ -90,7 +85,7 @@ struct TressFXRenderParameters
 
 // Separate strand params from pixel render params (so we can index for PPLL)
 // If you change this, you MUST change TressFXStrandParams in TressFXConstantBuffers.h
-// org: cbuffer TressFXStrandParameters : register(b4, space0)
+// originally: cbuffer TressFXStrandParameters : register(b4, space0)
 struct TressFXStrandParameters
 {
     float4      m_matBaseColor;
@@ -115,8 +110,8 @@ struct TressFXStrandParameters
 //!------------------------------ SRG Structure --------------------------------
 //! Used by the rendering raster pass only - might be possible to harness 
 //! the material pipeline / tooling.  
-//! This is the per draw Srg containing the specific per har object parameters 
-//!  for the physics simulation and material rendering.
+//! This is the per draw Srg containing the specific per hair object parameters 
+//! for the physics simulation and material rendering.
 //! Originally at space0 in TressFXRendering.hlsl 
 //!-----------------------------------------------------------------------------
 ShaderResourceGroup HairRenderingMaterialSrg : SRG_PerMaterial
@@ -200,8 +195,8 @@ struct HairObjectShadeParams
 //------------------------------------------------------------------------------
 struct PPLL_STRUCT
 {
-    uint	depth;
-    uint	data;
+    uint    depth;
+    uint    data;
     uint    color;
     uint    uNext;
 };

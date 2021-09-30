@@ -97,12 +97,6 @@ namespace AZ
                 return true;
             }
 
-            void HairPPLLResolvePass::BuildInternal()
-            {
-                // No need to attach any buffer / image - it is done in the fill pass
-                FullscreenTrianglePass::BuildInternal();
-            }
-
             void HairPPLLResolvePass::CompileResources(const RHI::FrameGraphCompileContext& context)
             {
                 if (!m_shaderResourceGroup || !AcquireFeatureProcessor())

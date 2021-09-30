@@ -25,7 +25,7 @@
 
 // Hair Specific
 #include <Rendering/HairCommon.h>
-#include <Rendering/SharedBufferInterface.h>
+#include <Rendering/HairSharedBufferInterface.h>
 #include <Rendering/HairDispatchItem.h>
 #include <Rendering/HairFeatureProcessor.h>
 #include <Rendering/HairRenderObject.h>
@@ -38,7 +38,6 @@ namespace AZ
     {
         namespace Hair
         {
-            //        static const char* const HairSkinningBufferBaseName = "HairSkinningBuffer";
             Data::Instance<RPI::Shader> HairSkinningComputePass::GetShader()
             {
                 return m_shader;
@@ -82,11 +81,6 @@ namespace AZ
             {
             }
 
-            void HairSkinningComputePass::SetupFrameGraphDependencies(RHI::FrameGraphInterface frameGraph)
-            {
-                ComputePass::SetupFrameGraphDependencies(frameGraph);
-            }
-
             void HairSkinningComputePass::InitializeInternal()
             {
                 if (GetScene())
@@ -111,7 +105,7 @@ namespace AZ
                 RPI::PassAttachmentBinding* localBinding = FindAttachmentBinding(bufferName);
                 if (localBinding && !localBinding->m_attachment)
                 {
-                    AttachBufferToSlot(Name{ "SkinnedHairSharedBuffer" }, SharedBufferInterface::Get()->GetBuffer());
+                    AttachBufferToSlot(Name{ "SkinnedHairSharedBuffer" }, HairSharedBufferInterface::Get()->GetBuffer());
                 }
             }
 
@@ -122,12 +116,14 @@ namespace AZ
                     if (AcquireFeatureProcessor())
                     {   // FP exists or can be acquired
                         LoadShader();   // this will happen in this frame
+                        // Flag the FP not to add any more dispatches until shader rebuild was done
+                        m_featureProcessor->SetAddDispatchEnable(false);
                         // The following will force rebuild in the next frame keeping this frame clean.
                         m_featureProcessor->ForceRebuildRenderData();
                         m_buildShaderAndData = false;
                     }
 
-                    // Clear the dispatch items. They are invalid and will be re-populated next frame
+                    // Clear the dispatch items, they will be re-populated next frame
                     m_dispatchItems.clear();
                 }
 
@@ -172,34 +168,45 @@ namespace AZ
                 return hairObject->BuildDispatchItem(m_shader.get(), dispatchLevel);
             }
 
-            void HairSkinningComputePass::AddDispatchItem(HairRenderObject* hairObject)
+            void HairSkinningComputePass::AddDispatchItems(AZStd::list<Data::Instance<HairRenderObject>>& hairRenderObjects)
             {
-                if (!hairObject)
-                {
-                    return;
-                }
-
-                const RHI::DispatchItem* dispatchItem = hairObject->GetDispatchItem(m_shader.get());
-                if (!dispatchItem)
-                {
-                    return;
-                }
-
-
-                // For dispatches that change the same base data this lock method might not be enough.
-                // Since build might take more than several frames, iterating over passes in the future
-                // is recommended to verify that a proper barrier is put in place.
-                // Currently this approach of blocking set of passes is not taken anywhere in Atom and
-                // we leave it as low importance as it is only relevant rarely when hot reloading changed
-                // compute shaders that depends on a resource from previous pass that are also compiled.
-                // To that affect, iterating over the entire simulation pass chain rather than iterating
-                // over each pass separately is safer for simulation integrity after shader changes.
-                uint32_t iterations = m_allowSimIterations ? AZ::GetMax(hairObject->GetCPULocalShapeIterations(), 1) : 1;
+                // The following mutex is used for blocking the shader switch when a hot load occurs, hence ensuring
+                // the shader exists and the same shader, data and dispatch items are used across all hair objects
+                // during this frame.
+                // Several cases exist:
+                // 1. Hot reload was invoked first - either finished before this method or the mutex in this method
+                //  is waited upon. The flag for hot reload was set already resulting in exit without add of dispatches.
+                // 2. Hot reload was invoked after this method - the BuildCommandListInternal will test for the flag and
+                //  clear if required.
+                // 3. Hot reload was invoked after send to the GPU (BuildCommandListInternal) - the data sent is valid
+                //  and it is safe to change the shader and create new dispatches.
+                // Remark: BuildCommandListInternal does not need to be synched as well since if the data was already
+                //      inserted it is consistent and valid using the existing shader and data with instance counting.
                 AZStd::lock_guard<AZStd::mutex> lock(m_mutex);
 
-                for (uint32_t j = 0; j < iterations; ++j)
+                if (m_buildShaderAndData)
+                {   // mutex was held by the hot reload and released - abort render until done. List is empty.
+                    return;
+                }
+
+                for (auto& renderObject : hairRenderObjects)
                 {
-                    m_dispatchItems.insert(dispatchItem);
+                    if (!renderObject->IsEnabled())
+                    {
+                        continue;
+                    }
+
+                    const RHI::DispatchItem* dispatchItem = renderObject->GetDispatchItem(m_shader.get());
+                    if (!dispatchItem)
+                    {
+                        continue;
+                    }
+
+                    uint32_t iterations = m_allowSimIterations ? AZ::GetMax(renderObject->GetCPULocalShapeIterations(), 1) : 1;
+                    for (uint32_t j = 0; j < iterations; ++j)
+                    {
+                        m_dispatchItems.insert(dispatchItem);
+                    }
                 }
             }
 
@@ -230,26 +237,11 @@ namespace AZ
             void HairSkinningComputePass::BuildShaderAndRenderData()
             {
                 AZStd::lock_guard<AZStd::mutex> lock(m_mutex);
-                if (!AcquireFeatureProcessor())
+                m_buildShaderAndData = true;
+                if (AcquireFeatureProcessor())
                 {
-                    m_buildShaderAndData = true;
-                    return;
-                }
-
-                // Flag the FP not to add any more dispatches until shader rebuild was done
-                m_featureProcessor->SetAddDispatchEnable(false);
-
-                while (true)
-                {   // This loop bounds to terminate once the dispatches are submitted.
-                    if (m_dispatchItems.empty())
-                    {
-                        LoadShader();
-
-                        // Flag the FP about the need to rebuild data only after the pass shader was rebuilt
-                        m_featureProcessor->ForceRebuildRenderData();
-                        m_buildShaderAndData = false;
-                        break;
-                    }
+                    // Flag the FP not to add any more dispatches until shader rebuild was done
+                    m_featureProcessor->SetAddDispatchEnable(false);
                 }
             }
 

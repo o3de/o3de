@@ -50,7 +50,7 @@ struct HairShadeParams
     float m_Ks2;
     float m_Ex2;
 
-    // MArschner lighting model parameters
+    // Marschner lighting model parameters
     float m_cuticleTilt;
     float m_roughness;
 };
@@ -263,7 +263,8 @@ float3 TressFXShading(float2 pixelCoord, float depth, float3 vTangentCoverage, f
 
     float3 accumulatedLight = float3(0, 0, 1);
     if (o_hairLightingModel == HairLightingModel::Kajiya)
-    {
+    {   // This option should be removed and the Kajiya-Kay model should be operated from within 
+        // the Atom lighting loop.
         accumulatedLight = SimplifiedHairLighting(vTangent, vPositionWS, vViewDirWS, params, vNDC);    
     }
     else

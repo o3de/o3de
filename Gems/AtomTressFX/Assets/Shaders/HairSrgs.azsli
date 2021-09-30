@@ -50,6 +50,10 @@
 //#define CM_TO_METERS  0.01
 //#define METERS_TO_CM  100.0
 
+// The following macro is not being used yet due to limitation of the C preprocessor 
+// mcpp that creates a shader compilation fault not being able to extend the macro.
+#define BYTE_OFFSET(index,baseOffset)       ((baseOffset >> 2) + (index << 2))
+
 //!------------------------------ SRG Structure --------------------------------
 //! Per pass SRG the holds the dynamic read-write buffer shared across all 
 //!  dispatches and draw calls and used as the memory pool for all the dynamic 
@@ -147,7 +151,6 @@ void SetSharedVector4(int offset, float4 pos)
     PassSrg::m_skinnedHairSharedBuffer[offset+3] = asint(pos.w); 
 }
 
-#define BYTE_OFFSET(index,baseOffset)       (baseOffset >> 2) + (index << 2)
 //------------------------------------------------------------------------------
 //! Getter/setter of position / tangent in the global shared buffer based on the 
 //! per-instance offset of the instance positions buffer within the global shared buffer

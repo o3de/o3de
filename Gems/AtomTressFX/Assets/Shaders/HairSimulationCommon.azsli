@@ -36,12 +36,10 @@
 //
 // Physics simulation of hair using compute shaders
 //--------------------------------------------------------------------------------------
-//#include <HairSRGs.azsli>
 
 #pragma once
 
 #define USE_MESH_BASED_HAIR_TRANSFORM 0
-
 
 // If you change the value below, you must change it in TressFXAsset.h as well.
 #ifndef THREAD_GROUP_SIZE
@@ -288,7 +286,7 @@ void CalcIndicesInStrandLevelMaster(uint local_id, uint group_id, inout uint glo
 //  Integrate
 //
 // Verlet integration for calculating the new position based on exponential decay to move
-//  towards from the current position towards an approximated extrapolation point based
+// from the current position towards an approximated extrapolation point based
 // on the velocity between the two last points and influenced by gravity force.
 //--------------------------------------------------------------------------------------
 float3 Integrate(float3 curPosition, float3 oldPosition, float3 initialPos, float dampingCoeff = 1.0f)

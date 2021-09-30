@@ -210,15 +210,9 @@ namespace AZ
                 return hairObject->BuildPPLLDrawPacket(drawRequest);
             }
 
-            bool HairPPLLRasterPass::AddDrawPacket(HairRenderObject* hairObject)
+            bool HairPPLLRasterPass::AddDrawPackets(AZStd::list<Data::Instance<HairRenderObject>>& hairRenderObjects)
             {
-                const RHI::DrawPacket* drawPacket = hairObject->GetFillDrawPacket();
-                if (!drawPacket)
-                {   // might not be an error - the object might have just been added and the DrawPacket is
-                    // scheduled to be built when the render frame begins
-                    AZ_Warning("Hair Gem", !m_newRenderObjects.empty(), "HairPPLLRasterPass - DrawPacket wasn't built");
-                    return false;
-                }
+                bool overallSuccess = true;
 
                 if (!m_currentView &&
                     (!(m_currentView = GetView()) || !m_currentView->HasDrawListTag(m_drawListTag)))
@@ -228,8 +222,20 @@ namespace AZ
                     return false;
                 }
 
-                m_currentView->AddDrawPacket(drawPacket);
-                return true;
+                for (auto& renderObject : hairRenderObjects)
+                {
+                    const RHI::DrawPacket* drawPacket = renderObject->GetFillDrawPacket();
+                    if (!drawPacket)
+                    {   // might not be an error - the object might have just been added and the DrawPacket is
+                        // scheduled to be built when the render frame begins
+                        AZ_Warning("Hair Gem", !m_newRenderObjects.empty(), "HairPPLLRasterPass - DrawPacket wasn't built");
+                        overallSuccess = false;
+                        continue;
+                    }
+
+                    m_currentView->AddDrawPacket(drawPacket);
+                }
+                return overallSuccess;
             }
 
             void HairPPLLRasterPass::FrameBeginInternal(FramePrepareParams params)
@@ -273,7 +279,7 @@ namespace AZ
 
             void HairPPLLRasterPass::CompileResources(const RHI::FrameGraphCompileContext& context)
             {
-                AZ_PROFILE_FUNCTION(Debug::ProfileCategory::Hair);
+                AZ_PROFILE_FUNCTION(AzRender);
 
                 if (!m_featureProcessor)
                 {

@@ -20,8 +20,8 @@ namespace AZ
 {
     namespace Render
     {
-        //!Setting the constructor as private will create compile error to remind the developer to set
-        //!  the buffer Init in the FeatureProcessor and initialize properly
+        //! Setting the constructor as private will create compile error to remind the developer to set
+        //! the buffer Init in the FeatureProcessor and initialize properly
 
         SharedBuffer::SharedBuffer()
         {
@@ -136,13 +136,12 @@ namespace AZ
 
             InitAllocator();
 
-//            CreateBufferAsset();
             CreateBuffer();
 
             SystemTickBus::Handler::BusConnect();
         }
 
-        AZStd::intrusive_ptr<SharedBufferAllocation> SharedBuffer::Allocate(size_t byteCount)
+        AZStd::intrusive_ptr<HairSharedBufferAllocation> SharedBuffer::Allocate(size_t byteCount)
         {
             RHI::VirtualAddress result;
             {
@@ -152,7 +151,7 @@ namespace AZ
 
             if (result.IsValid())
             {
-                return aznew SharedBufferAllocation(result);
+                return aznew HairSharedBufferAllocation(result);
             }
 
             return nullptr;
@@ -199,7 +198,6 @@ namespace AZ
         }
 
         //! Update buffer's content with sourceData at an offset of bufferByteOffset
-        //! [To Do] - Remove this method and use exposed RHI method when / if implemented
         bool SharedBuffer::UpdateData(const void* sourceData, uint64_t sourceDataSizeInBytes, uint64_t bufferByteOffset) 
         {
             AZStd::lock_guard<AZStd::mutex> lock(m_allocatorMutex);

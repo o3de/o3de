@@ -79,7 +79,7 @@ namespace AZ
             void HairAssetBuilder::ProcessJob(
                 const AssetBuilderSDK::ProcessJobRequest& request, AssetBuilderSDK::ProcessJobResponse& response)
             {
-                AZ_TracePrintf(AssetBuilderSDK::InfoWindow, "HairAssetBuilder Starting Job.\n");
+                AZ_TracePrintf(AssetBuilderSDK::InfoWindow, "HairAssetBuilder Starting Job for %s.\n", request.m_fullPath.c_str());
 
                 if (m_isShuttingDown)
                 {
@@ -146,6 +146,9 @@ namespace AZ
                 if (tfxSize == 0 || tfxBoneSize == 0)
                 {
                     // Fail the job if the .tfx file or the .tfxbone file is missing.
+                    AZ_TracePrintf(AssetBuilderSDK::ErrorWindow,
+                        "Error: Failed job %s because tfxSize=%d or tfxBoneSize=%d.\n",
+                        request.m_fullPath.c_str(), tfxSize, tfxBoneSize);
                     response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Failed;
                     return;
                 }
@@ -162,6 +165,8 @@ namespace AZ
                 jobProduct.m_dependenciesHandled = true; 
                 response.m_outputProducts.push_back(jobProduct);
                 response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Success;
+
+                AZ_TracePrintf(AssetBuilderSDK::InfoWindow, "HairAssetBuilder successfully finished Job for %s.\n", request.m_fullPath.c_str());
             }
         }
     } // namespace Render

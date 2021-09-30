@@ -108,7 +108,7 @@ namespace AZ
             {
                 const float MAX_SIMULATION_TIME_STEP = 0.033f;  // Assuming minimal of 30 fps
                 m_currentDeltaTime = AZStd::min(deltaTime, MAX_SIMULATION_TIME_STEP);
-                for (auto object : m_hairRenderObjects)
+                for (auto& object : m_hairRenderObjects)
                 {
                     object->SetFrameDeltaTime(m_currentDeltaTime);
                 }
@@ -135,16 +135,11 @@ namespace AZ
 
             void HairFeatureProcessor::EnablePasses(bool enable)
             {
-                // [To Do] - this currently doesn't work as it should so it is disabled for now.
-                // Allows for removing overhead.
-                // To do this properly, the entire parent pass will need to be removed, all passes
-                // to be reconnected and then loaded again.
-                return;
-
-                for (auto mapIter = m_computePasses.begin(); mapIter != m_computePasses.end(); ++mapIter)
+                for (auto& [passName, pass] : m_computePasses)
                 {
-                    mapIter->second->SetEnabled(enable);
+                    pass->SetEnabled(enable);
                 }
+
                 m_hairPPLLRasterPass->SetEnabled(enable);
                 m_hairPPLLResolvePass->SetEnabled(enable);
             }
@@ -205,7 +200,7 @@ namespace AZ
             //==========================================================================================
             void HairFeatureProcessor::Simulate(const FeatureProcessor::SimulatePacket& packet)
             {
-                AZ_PROFILE_FUNCTION(Debug::ProfileCategory::Hair);
+                AZ_PROFILE_FUNCTION(AzRender);
                 AZ_ATOM_PROFILE_FUNCTION("Hair", "HairFeatureProcessor: Simulate");
                 AZ_UNUSED(packet);
 
@@ -254,37 +249,26 @@ namespace AZ
 
             void HairFeatureProcessor::Render([[maybe_unused]] const FeatureProcessor::RenderPacket& packet)
             {
-                AZ_PROFILE_FUNCTION(Debug::ProfileCategory::Hair);
+                AZ_PROFILE_FUNCTION(AzRender);
                 AZ_ATOM_PROFILE_FUNCTION("Hair", "HairFeatureProcessor: Render");
 
-                if (!m_initialized)
-                {
+                if (!m_initialized || !m_addDispatchEnabled)
+                {   // Skip adding dispatches / Draw packets for this frame until initialized and the shaders are ready
                     return;
                 }
 
                 // [To Do] - no culling scheme applied yet.
                 // Possibly setup the hair culling work group to be re-used for each view.
                 // See SkinnedMeshFeatureProcessor::Render for more details
-                for (auto objIter = m_hairRenderObjects.begin(); objIter != m_hairRenderObjects.end(); ++objIter)
+                
+                // Add dispatch per hair object per Compute passes
+                for (auto& [passName, pass] : m_computePasses)
                 {
-                    HairRenderObject* renderObject = objIter->get();
-                    if (!renderObject->IsEnabled())
-                    {
-                        continue;
-                    }
-
-                    // Compute pases
-                    if (m_addDispatchEnabled)
-                    {
-                        for (auto mapIter = m_computePasses.begin(); mapIter != m_computePasses.end(); ++mapIter)
-                        {
-                            mapIter->second->AddDispatchItem(renderObject);
-                        }
-                    }
-
-                    // Render / Raster Passes - these might be enabled even is simulation is on pause / reload
-                    m_hairPPLLRasterPass->AddDrawPacket(renderObject);
+                    pass->AddDispatchItems(m_hairRenderObjects);
                 }
+
+                // Add all hair objects to the Render / Raster Pass
+                m_hairPPLLRasterPass->AddDrawPackets(m_hairRenderObjects);
             }
 
             void HairFeatureProcessor::ClearPasses()
@@ -339,16 +323,6 @@ namespace AZ
                 m_forceRebuildRenderData = true;
             }
 
-            void HairFeatureProcessor::OnBeginPrepareRender()
-            {
-                RPI::FeatureProcessor::OnBeginPrepareRender();
-            }
-
-            void HairFeatureProcessor::OnEndPrepareRender()
-            {
-                RPI::FeatureProcessor::OnEndPrepareRender();
-            }
-
             bool HairFeatureProcessor::Init(RPI::RenderPipeline* renderPipeline)
             {
                 m_renderPipeline = renderPipeline;
@@ -367,8 +341,11 @@ namespace AZ
                 resultSuccess &= InitPPLLFillPass();
                 resultSuccess &= InitPPLLResolvePass();
 
-                // No need to have the passes enabled if no hair object was added 
-                EnablePasses(false);
+                // Don't enable passes if no hair object was added yet (depending on activation order)
+                if (m_hairRenderObjects.empty())
+                {
+                    EnablePasses(false);
+                }
 
                 m_initialized = resultSuccess;
 
@@ -395,7 +372,7 @@ namespace AZ
                     AZStd::vector<SrgBufferDescriptor> hairDynamicDescriptors;
                     DynamicHairData::PrepareSrgDescriptors(hairDynamicDescriptors, 1, 1);
                     Name sharedBufferName = Name{ "HairSharedDynamicBuffer" + instanceNumber };
-                    if (!SharedBufferInterface::Get())
+                    if (!HairSharedBufferInterface::Get())
                     {   // Since there can be several pipelines, allocate the shared buffer only for the
                         // first one and from that moment on it will be used through its interface
                         m_sharedDynamicBuffer = AZStd::make_unique<SharedBuffer>(sharedBufferName.GetCStr(), hairDynamicDescriptors);
@@ -503,8 +480,7 @@ namespace AZ
                 }
                 else
                 {
-                    AZ_ErrorOnce("Hair Gem", false, "HairPPLLResolvePassTemplate does not have valid passes. Check your game project's .pass assets.");
-//                    AZ_Error("Hair Gem", false, "HairPPLLResolvePassTemplate does not have valid passes. Check your game project's .pass assets.");
+                    AZ_Error("Hair Gem", false, "HairPPLLResolvePassTemplate does not have valid passes. Check your game project's .pass assets.");
                     return false;
                 }
                 return true;
@@ -553,3 +529,4 @@ namespace AZ
         } // namespace Hair
     } // namespace Render
 } // namespace AZ
+

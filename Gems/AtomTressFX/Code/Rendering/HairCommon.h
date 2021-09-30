@@ -131,7 +131,7 @@ namespace AZ
                     return true;
                 }
 
-                //! Updates Binds the data to the Srg and copies it to the GPU side.
+                //! Updates and binds the data to the Srg and copies it to the GPU side.
                 //! Assumes that the buffer is uniquely attached to the saved srg.
                 bool UpdateGPUData()
                 {

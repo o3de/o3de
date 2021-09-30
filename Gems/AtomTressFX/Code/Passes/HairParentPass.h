@@ -15,7 +15,10 @@ namespace AZ
 {
     namespace Render
     {
-        //! HairParentPass owns and manages ShadowmapPasses.
+        //! HairParentPass owns the hair passes.
+        //! Currently they are all defined via the pipeline configuration, making the HairParent
+        //! class somewhat redundant, but moving forward, such class can be required to control
+        //! passes activation and usage based on user activation options.
         class HairParentPass final
             : public RPI::ParentPass
         {
@@ -29,9 +32,6 @@ namespace AZ
             virtual ~HairParentPass();
             static RPI::Ptr<HairParentPass> Create(const RPI::PassDescriptor& descriptor);
 
-            //! This returns pipeline view tag for children.
-            const AZStd::array_view<RPI::PipelineViewTag> GetPipelineViewTags();
-
         private:
             HairParentPass() = delete;
             explicit HairParentPass(const RPI::PassDescriptor& descriptor);
@@ -40,8 +40,6 @@ namespace AZ
             void BuildAttachmentsInternal() override;
 
             void UpdateChildren();
-
-            const Name m_slotName{ "HairParentPass" };
 
             bool m_updateChildren = true;
         };

@@ -53,7 +53,7 @@ void IntegrationAndGlobalShapeConstraints(
     uint globalStrandIndex, localStrandIndex, globalVertexIndex, localVertexIndex, numVerticesInTheStrand, indexForSharedMem, strandType;
     CalcIndicesInVertexLevelMaster(GIndex, GId.x, globalStrandIndex, localStrandIndex, globalVertexIndex, localVertexIndex, numVerticesInTheStrand, indexForSharedMem, strandType);
 
-    // Copy data into shared memory
+    // Copy data from init rest data to be used to set updated shared memory
     float4 initialPos = float4(CM_TO_METERS,CM_TO_METERS,CM_TO_METERS,1.0) * g_InitialHairPositions[globalVertexIndex]; // rest position
 
     // Apply bone skinning to initial position
@@ -62,7 +62,8 @@ void IntegrationAndGlobalShapeConstraints(
     initialPos.xyz = ApplyVertexBoneSkinning(initialPos.xyz, skinningData, bone_quat);
 
     // position when this step starts. In other words, a position from the last step.
-    float4 currentPos = sharedPos[indexForSharedMem] = GetSharedPosition(globalVertexIndex);
+    sharedPos[indexForSharedMem] = GetSharedPosition(globalVertexIndex);
+    float4 currentPos = sharedPos[indexForSharedMem];
     //    float4 currentPos = sharedPos[indexForSharedMem] = g_HairVertexPositions[globalVertexIndex];
 
     GroupMemoryBarrierWithGroupSync();
@@ -119,7 +120,7 @@ void IntegrationAndGlobalShapeConstraints(
 //
 // Propagate velocity shock resulted by attached based mesh
 //
-// One thread computes one strand.
+// One thread computes two vertices within a strand.
 //
 //--------------------------------------------------------------------------------------
 [numthreads(THREAD_GROUP_SIZE, 1, 1)]
@@ -157,7 +158,7 @@ void CalculateStrandLevelData(
     float restLength0 = g_HairRestLengthSRV[globalRootVertexIndex];
     float vspAccelThreshold  = GetVSPAccelThreshold();
 
-    // Increate the VSP coefficient by checking pseudo-acceleration to handle over-stretching when the character moves very fast 
+    // Increase the VSP coefficient by checking pseudo-acceleration to handle over-stretching when the character moves very fast 
     float accel = length(pos_new[1] - 2.0 * pos_old[1] + pos_old_old[1]);
 
     if (accel > vspAccelThreshold)
@@ -165,9 +166,9 @@ void CalculateStrandLevelData(
     g_StrandLevelData[globalStrandIndex].vspQuat = rot;
     g_StrandLevelData[globalStrandIndex].vspTranslation = float4(trans, vspCoeff);
 
-    // skinning
+    // Skinning
 
-    // Copy data into shared memory
+    // Copy data from init rest data to be used to set updated shared memory
     float4 initialPos = float4(CM_TO_METERS,CM_TO_METERS,CM_TO_METERS,1.0) * g_InitialHairPositions[globalRootVertexIndex]; // rest position
 
     // Apply bone skinning to initial position
@@ -184,7 +185,7 @@ void CalculateStrandLevelData(
 //
 // Propagate velocity shock resulted by attached based mesh
 //
-// One thread computes one strand.
+// One thread computes a vertex in a strand.
 //
 //--------------------------------------------------------------------------------------
 [numthreads(THREAD_GROUP_SIZE, 1, 1)]
@@ -261,7 +262,6 @@ void LocalShapeConstraints(
 
             float3 lastVec = pos.xyz - pos_minus_one.xyz;
 
-            float4 invBone = InverseQuaternion(boneQuat);
             float3 vecBindPose = bindPos_plus_one - bindPos;
             float3 lastVecBindPose = bindPos - bindPos_minus_one;
             float4 rotGlobal = QuatFromTwoUnitVectors(normalize(lastVecBindPose), normalize(lastVec));
@@ -312,13 +312,11 @@ void LengthConstriantsWindAndCollision(uint GIndex : SV_GroupIndex,
 
 /*
     //------------
-    // Wind
+    // Wind - does not work yet and requires some LTC
     //------------
-    if ( g_Wind.x != 0 || g_Wind.y != 0 || g_Wind.z != 0 )
+    if (any(g_Wind.xyz))    // g_Wind.w is the current frame
     {
         float4 force = float4(0, 0, 0, 0);
-
-        float frame = g_Wind.w;
 
         if ( localVertexIndex >= 2 && localVertexIndex < numVerticesInTheStrand-1 )
         {
@@ -340,15 +338,17 @@ void LengthConstriantsWindAndCollision(uint GIndex : SV_GroupIndex,
     //----------------------------
     // Enforce length constraints
     //----------------------------
-    uint a = floor(numVerticesInTheStrand/2.0f);
-    uint b = floor((numVerticesInTheStrand-1)/2.0f);
+    uint a = numVerticesInTheStrand/2.0f;
+    uint b = (numVerticesInTheStrand-1)/2.0f;
 
-    int nLengthContraintIterations = GetLengthConstraintIterations();
+    int lengthContraintIterations = GetLengthConstraintIterations();
 
-    for ( int iterationE=0; iterationE < nLengthContraintIterations; iterationE++ )
+    for ( int iterationE=0; iterationE < lengthContraintIterations; iterationE++ )
     {
-        uint sharedIndex = 2*localVertexIndex * numOfStrandsPerThreadGroup + localStrandIndex;
+        uint sharedIndex = 2 * localVertexIndex * numOfStrandsPerThreadGroup + localStrandIndex;
 
+        // Notice that the following is based on the fact that we are dealing here with two vertices 
+        // one at each side of the central control point and each should extend towards its side only.
         if( localVertexIndex < a )
             ApplyDistanceConstraint(sharedPos[sharedIndex], sharedPos[sharedIndex+numOfStrandsPerThreadGroup], sharedLength[sharedIndex].x);
 

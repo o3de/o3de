@@ -53,7 +53,7 @@ float4 MatrixMult(float4x4 m, float4 v)
 }
 
 // Given the depth buffer depth of the current pixel and the fragment XY position, 
-// reconstruct the world space position
+// reconstruct the NDC.
 // screenCoords - from 0.. dimension of the screen of the current pixel
 // screenTexture - screen buffer texture representing the same resolution we work in
 // sDepth - the depth buffer depth at the fragment location
@@ -71,6 +71,8 @@ float3 ScreenPosToNDC( Texture2D<float> screenTexture, float2 screenCoords, floa
     return NDC;
 }
 
+// Given the depth buffer depth of the current pixel and the fragment XY position, 
+// reconstruct the world space position
 float3 ScreenPosToWorldPos( 
     Texture2D<float> screenTexture, float2 screenCoords, float depth, 
     inout float3 screenPosNDC )
