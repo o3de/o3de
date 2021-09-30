@@ -12,30 +12,35 @@
 #include <AzToolsFramework/API/ComponentEntitySelectionBus.h>
 #include <AzToolsFramework/ToolsComponents/EditorComponentBase.h>
 
-//! Basic component that implements BoundsRequestBus and EditorComponentSelectionRequestsBus to be compatible
-//! with the Editor visibility system.
-//! Note: Used for simulating selection (picking) in the viewport.
-class BoundsTestComponent
-    : public AzToolsFramework::Components::EditorComponentBase
-    , public AzFramework::BoundsRequestBus::Handler
-    , public AzToolsFramework::EditorComponentSelectionRequestsBus::Handler
+namespace UnitTest
 {
-public:
-    AZ_EDITOR_COMPONENT(BoundsTestComponent, "{E6312E9D-8489-4677-9980-C93C328BC92C}", AzToolsFramework::Components::EditorComponentBase);
+    //! Basic component that implements BoundsRequestBus and EditorComponentSelectionRequestsBus to be compatible
+    //! with the Editor visibility system.
+    //! Note: Used for simulating selection (picking) in the viewport.
+    class BoundsTestComponent
+        : public AzToolsFramework::Components::EditorComponentBase
+        , public AzFramework::BoundsRequestBus::Handler
+        , public AzToolsFramework::EditorComponentSelectionRequestsBus::Handler
+    {
+    public:
+        AZ_EDITOR_COMPONENT(
+            BoundsTestComponent, "{E6312E9D-8489-4677-9980-C93C328BC92C}", AzToolsFramework::Components::EditorComponentBase);
 
-    static void Reflect(AZ::ReflectContext* context);
+        static void Reflect(AZ::ReflectContext* context);
 
-    // AZ::Component overrides ...
-    void Activate() override;
-    void Deactivate() override;
+        // AZ::Component overrides ...
+        void Activate() override;
+        void Deactivate() override;
 
-    // EditorComponentSelectionRequestsBus overrides ...
-    AZ::Aabb GetEditorSelectionBoundsViewport(const AzFramework::ViewportInfo& viewportInfo) override;
-    bool EditorSelectionIntersectRayViewport(
-        const AzFramework::ViewportInfo& viewportInfo, const AZ::Vector3& src, const AZ::Vector3& dir, float& distance) override;
-    bool SupportsEditorRayIntersect() override;
+        // EditorComponentSelectionRequestsBus overrides ...
+        AZ::Aabb GetEditorSelectionBoundsViewport(const AzFramework::ViewportInfo& viewportInfo) override;
+        bool EditorSelectionIntersectRayViewport(
+            const AzFramework::ViewportInfo& viewportInfo, const AZ::Vector3& src, const AZ::Vector3& dir, float& distance) override;
+        bool SupportsEditorRayIntersect() override;
 
-    // BoundsRequestBus overrides ...
-    AZ::Aabb GetWorldBounds() override;
-    AZ::Aabb GetLocalBounds() override;
-};
+        // BoundsRequestBus overrides ...
+        AZ::Aabb GetWorldBounds() override;
+        AZ::Aabb GetLocalBounds() override;
+    };
+
+} // namespace UnitTest
