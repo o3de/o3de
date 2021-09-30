@@ -161,25 +161,19 @@ namespace AZ
 
             //! Add this RenderPipeline to RPI system's RenderTick and it will be rendered whenever
             //! the RPI system's RenderTick is called.
-            //! The RenderPipeline is rendered per RenderTick by default.
+            //! The RenderPipeline is rendered per RenderTick by default unless AddToRenderTickOnce() was called.
             void AddToRenderTick();
-
-            //! Add this RenderPipeline to RPI system's RenderTick and it will be rendered every RenderTick
-            //! after the specified interval has elapsed since the last rendered frame.
-            //! @param renderInterval The desired time between rendered frames, in seconds.
-            void AddToRenderTickAtInterval(AZStd::chrono::duration<float> renderInterval);
 
             //! Disable render for this RenderPipeline
             void RemoveFromRenderTick();
 
             ~RenderPipeline();
-
+                        
             enum class RenderMode : uint8_t
             {
-                RenderEveryTick, //!< Render at each RPI system render tick.
-                RenderAtTargetRate, //!< Render on RPI system render tick after a target refresh rate interval has passed.
-                RenderOnce, //!< Render once in next RPI system render tick.
-                NoRender //!< Render disabled.
+                RenderEveryTick, // Render at each RPI system render tick
+                RenderOnce, // Render once in next RPI system render tick
+                NoRender // Render disabled.
             };
 
             //! Get current render mode
@@ -190,12 +184,6 @@ namespace AZ
 
             //! Get draw filter mask
             RHI::DrawFilterMask GetDrawFilterMask() const;
-
-            using FrameNotificationEvent = AZ::Event<>;
-            //! Notifies a listener when a frame is about to be prepared for render, before SRGs are bound.
-            void ConnectPrepareFrameHandler(FrameNotificationEvent::Handler& handler);
-            //! Notifies a listener when the rendering of a frame has finished
-            void ConnectEndFrameHandler(FrameNotificationEvent::Handler& handler);
 
         private:
             RenderPipeline() = default;
@@ -214,11 +202,8 @@ namespace AZ
             void OnAddedToScene(Scene* scene);
             void OnRemovedFromScene(Scene* scene);
 
-            // Called before this pipeline is about to be rendered and before SRGs are bound.
-            void OnPrepareFrame();
-
             // Called when this pipeline is about to be rendered
-            void OnStartFrame();
+            void OnStartFrame(const TickTimeInfo& tick);
 
             // Called when the rendering of current frame is finished.
             void OnFrameEnd();
@@ -243,14 +228,8 @@ namespace AZ
             
             PipelineViewMap m_pipelineViewsByTag;
             
-            // The system time when the last time this pipeline render was started
-            AZStd::chrono::system_clock::time_point m_lastRenderStartTime;
-
-            // The current system time, as of OnPrepareFrame's execution.
-            AZStd::chrono::system_clock::time_point m_lastRenderRequestTime;
-
-            // The target time between renders when m_renderMode is RenderMode::RenderAtTargetRate
-            AZStd::chrono::duration<float> m_targetRefreshRate;
+            /// The system time when the last time this pipeline render was started
+            float m_lastRenderStartTime = 0;
             
             // RenderPipeline's name id, it will be used to identify the render pipeline when it's added to a Scene
             RenderPipelineId m_nameId;
@@ -280,11 +259,7 @@ namespace AZ
             RHI::DrawFilterTag m_drawFilterTag;
             // A mask to filter draw items submitted by passes of this render pipeline.
             // This mask is created from the value of m_drawFilterTag.
-            RHI::DrawFilterMask m_drawFilterMask = 0;
-
-            // Events for notification on render state
-            FrameNotificationEvent m_prepareFrameEvent;
-            FrameNotificationEvent m_endFrameEvent;
+            RHI::DrawFilterMask m_drawFilterMask = 0; 
         };
 
     } // namespace RPI
