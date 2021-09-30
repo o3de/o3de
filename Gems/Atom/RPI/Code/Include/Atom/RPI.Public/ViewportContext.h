@@ -51,21 +51,9 @@ namespace AZ
             //! Sets the root scene associated with this viewport.
             //! This does not provide a default render pipeline, one must be provided to enable rendering.
             void SetRenderScene(ScenePtr scene);
-
-            //! Gets the maximum frame rate this viewport context's pipeline can render at, 0 for unlimited.
-            //! The target framerate for the pipeline will be determined by this frame limit and the
-            //! vsync settings for the current window.
-            float GetFpsLimit() const;
-
-            //! Sets the maximum frame rate this viewport context's pipeline can render at, 0 for unlimited.
-            //! The target framerate for the pipeline will be determined by this frame limit and the
-            //! vsync settings for the current window.
-            void SetFpsLimit(float fpsLimit);
-
-            //! Gets the target frame rate for this viewport context.
-            //! This returns the lowest of either the current VSync refresh rate
-            //! or 0 for an unlimited frame rate (if there's no FPS limit and vsync is off).
-            float GetTargetFrameRate() const;
+            //! Runs one simulation and render tick and renders a frame to this viewport's window.
+            //! @note This is likely to be replaced by a tick management system in the RPI.
+            void RenderTick();
 
             //! Gets the current name of this ViewportContext.
             //! This name is used to tie this ViewportContext to its View stack, and ViewportContexts may be
@@ -86,28 +74,19 @@ namespace AZ
             //! \see AzFramework::WindowRequests::GetDpiScaleFactor
             float GetDpiScalingFactor() const;
 
-            //! Gets the current vsync interval, as a divisor of the current refresh rate.
-            //! A value of 0 indicates that vsync is disabled.
-            uint32_t GetVsyncInterval() const;
-
-            //! Gets the current display refresh rate, in frames per second.
-            uint32_t GetRefreshRate() const;
-
             // SceneNotificationBus interface overrides...
             //! Ensures our default view remains set when our scene's render pipelines are modified.
             void OnRenderPipelineAdded(RenderPipelinePtr pipeline) override;
             //! Ensures our default view remains set when our scene's render pipelines are modified.
             void OnRenderPipelineRemoved(RenderPipeline* pipeline) override;
+            //! OnBeginPrepareRender is forwarded to our RenderTick notification to allow subscribers to do rendering.
+            void OnBeginPrepareRender() override;
 
             // WindowNotificationBus interface overrides...
             //! Used to fire a notification when our window resizes.
             void OnWindowResized(uint32_t width, uint32_t height) override;
             //! Used to fire a notification when our window DPI changes.
             void OnDpiScaleFactorChanged(float dpiScaleFactor) override;
-            //! Used to fire a notification when our vsync interval changes.
-            void OnVsyncIntervalChanged(uint32_t interval) override;
-            //! Used to fire a notification when our refresh rate changes.
-            void OnRefreshRateChanged(uint32_t refreshRate) override;
 
             using SizeChangedEvent = AZ::Event<AzFramework::WindowSize>;
             //! Notifies consumers when the viewport size has changed.
@@ -118,12 +97,6 @@ namespace AZ
             //! Notifies consumers when the viewport DPI scaling ratio has changed.
             //! Alternatively, connect to ViewportContextNotificationsBus and listen to ViewportContextNotifications::OnViewportDpiScalingChanged.
             void ConnectDpiScalingFactorChangedHandler(ScalarChangedEvent::Handler& handler);
-
-            using UintChangedEvent = AZ::Event<uint32_t>;
-            //! Notifies consumers when the vsync interval has changed.
-            void ConnectVsyncIntervalChangedHandler(UintChangedEvent::Handler& handler);
-            //! Notifies consumers when the refresh rate has changed.
-            void ConnectRefreshRateChangedHandler(UintChangedEvent::Handler& handler);
 
             using MatrixChangedEvent = AZ::Event<const AZ::Matrix4x4&>;
             //! Notifies consumers when the view matrix has changed.
@@ -166,24 +139,15 @@ namespace AZ
             void SetDefaultView(ViewPtr view);
             // Ensures our render pipeline's default camera matches ours.
             void UpdatePipelineView();
-            // Ensures our render pipeline refresh rate matches our refresh rate.
-            void UpdatePipelineRefreshRate();
-            // Resets the current pipeline reference and ensures pipeline events are disconnected.
-            void ResetCurrentPipeline();
 
             ScenePtr m_rootScene;
             WindowContextSharedPtr m_windowContext;
             ViewPtr m_defaultView;
             AzFramework::WindowSize m_viewportSize;
             float m_viewportDpiScaleFactor = 1.0f;
-            uint32_t m_vsyncInterval = 1;
-            uint32_t m_refreshRate = 60;
-            float m_fpsLimit = 0.f;
 
             SizeChangedEvent m_sizeChangedEvent;
             ScalarChangedEvent m_dpiScalingFactorChangedEvent;
-            UintChangedEvent m_vsyncIntervalChangedEvent;
-            UintChangedEvent m_refreshRateChangedEvent;
             MatrixChangedEvent m_viewMatrixChangedEvent;
             MatrixChangedEvent::Handler m_onViewMatrixChangedHandler;
             MatrixChangedEvent m_projectionMatrixChangedEvent;
@@ -192,9 +156,6 @@ namespace AZ
             PipelineChangedEvent m_currentPipelineChangedEvent;
             ViewChangedEvent m_defaultViewChangedEvent;
             ViewportIdEvent m_aboutToBeDestroyedEvent;
-
-            AZ::Event<>::Handler m_prepareFrameHandler;
-            AZ::Event<>::Handler m_endFrameHandler;
 
             ViewportContextManager* m_manager;
             RenderPipelinePtr m_currentPipeline;
