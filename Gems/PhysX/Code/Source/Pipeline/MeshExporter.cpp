@@ -339,7 +339,7 @@ namespace PhysX
                     if (limitToOneMaterial && nodeMaterials.size() > 1)
                     {
                         AZ_TracePrintf(AZ::SceneAPI::Utilities::WarningWindow,
-                            "Node '%s' has %d materials, but cooking methods Convex and Primitive has support for one material per node. The first material '%s' will be used.",
+                            "Node '%s' has %d materials, but cooking methods Convex and Primitive support one material per node. The first material '%s' will be used.",
                             sceneNodeSelectionList.GetSelectedNode(index).c_str(), nodeMaterials.size(), firstMaterial.c_str());
                     }
                 }
