@@ -23,11 +23,11 @@ namespace AZ
 {
     namespace RPI
     {
-        AZStd::string GetMetricsFilePath()
+        AZ::IO::FixedMaxPath GetMetricsFilePath()
         {
-            char shaderMetricPath[AZ_MAX_PATH_LEN];
-            AZ::Utils::GetExecutableDirectory(shaderMetricPath, AZ_MAX_PATH_LEN);
-            return AZStd::string(shaderMetricPath) + AZ_CORRECT_FILESYSTEM_SEPARATOR_STRING + "ShaderMetrics.json";
+            AZ::IO::FixedMaxPath resolvedPath;
+            AZ::IO::LocalFileIO::GetInstance()->ResolvePath(resolvedPath, "@user@/ShaderMetrics.json");
+            return resolvedPath;
         }
 
         ShaderMetricsSystemInterface* ShaderMetricsSystemInterface::Get()
@@ -64,7 +64,7 @@ namespace AZ
 
         void ShaderMetricsSystem::ReadLog()
         {
-            const AZStd::string metricsFilePath = GetMetricsFilePath();
+            const AZ::IO::FixedMaxPath metricsFilePath = GetMetricsFilePath();
 
             if (AZ::IO::LocalFileIO::GetInstance()->Exists(metricsFilePath.c_str()))
             {
@@ -80,7 +80,7 @@ namespace AZ
 
         void ShaderMetricsSystem::WriteLog()
         {
-            const AZStd::string metricsFilePath = GetMetricsFilePath();
+            const AZ::IO::FixedMaxPath metricsFilePath = GetMetricsFilePath();
 
             auto saveResult = AZ::JsonSerializationUtils::SaveObjectToFile<ShaderVariantMetrics>(&m_metrics, metricsFilePath.c_str());
 
