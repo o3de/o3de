@@ -31,6 +31,7 @@ namespace AzToolsFramework
         Instance::Instance(AZStd::unique_ptr<AZ::Entity> containerEntity)
             : m_parent(nullptr)
             , m_alias(GenerateInstanceAlias())
+            , m_containerEntity(containerEntity ? AZStd::move(containerEntity) : AZStd::make_unique<AZ::Entity>())
             , m_instanceEntityMapper(AZ::Interface<InstanceEntityMapperInterface>::Get())
             , m_templateInstanceMapper(AZ::Interface<TemplateInstanceMapperInterface>::Get())
         {
@@ -44,9 +45,6 @@ namespace AzToolsFramework
                 "It is a requirement for the Prefab Instance class. "
                 "Check that it is being correctly initialized.");
 
-            m_containerEntity = containerEntity ? AZStd::move(containerEntity)
-                                                : AZStd::make_unique<AZ::Entity>();
-
             RegisterEntity(m_containerEntity->GetId(), PrefabDomUtils::ContainerEntityName);
         }
 
@@ -56,7 +54,7 @@ namespace AzToolsFramework
         }
 
         Instance::Instance(InstanceOptionalReference parent)
-            : Instance(parent.has_value()? &parent->get() : nullptr, GenerateInstanceAlias())
+            : Instance(parent.has_value() ? &parent->get() : nullptr, GenerateInstanceAlias())
         {
         }
 
@@ -113,12 +111,12 @@ namespace AzToolsFramework
             }
         }
 
-        const TemplateId& Instance::GetTemplateId() const
+        TemplateId Instance::GetTemplateId() const
         {
             return m_templateId;
         }
 
-        void Instance::SetTemplateId(const TemplateId& templateId)
+        void Instance::SetTemplateId(TemplateId templateId)
         {
             // If we aren't changing the template Id, there's no need to unregister / re-register
             if (templateId == m_templateId)
@@ -353,7 +351,7 @@ namespace AzToolsFramework
 
             instance->m_parent = this;
             auto& alias = instance->GetInstanceAlias();
-            return *(m_nestedInstances[alias] = std::move(instance));
+            return *(m_nestedInstances[alias] = AZStd::move(instance));
         }
 
         void Instance::DetachNestedInstances(const AZStd::function<void(AZStd::unique_ptr<Instance>)>& callback)

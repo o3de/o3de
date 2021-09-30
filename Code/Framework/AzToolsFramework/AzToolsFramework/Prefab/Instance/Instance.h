@@ -74,8 +74,8 @@ namespace AzToolsFramework
 
             static void Reflect(AZ::ReflectContext* context);
 
-            const TemplateId& GetTemplateId() const;
-            void SetTemplateId(const TemplateId& templateId);
+            TemplateId GetTemplateId() const;
+            void SetTemplateId(TemplateId templateId);
 
             const AZ::IO::Path& GetTemplateSourcePath() const;
             void SetTemplateSourcePath(AZ::IO::PathView sourcePath);
@@ -185,7 +185,7 @@ namespace AzToolsFramework
         private:
             static constexpr const char s_aliasPathSeparator = '/';
 
-            explicit Instance(Instance* parent, InstanceAlias alias);
+            Instance(Instance* parent, InstanceAlias alias);
 
             void ClearEntities();
 

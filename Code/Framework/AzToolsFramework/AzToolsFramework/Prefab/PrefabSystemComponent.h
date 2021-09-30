@@ -84,7 +84,7 @@ namespace AzToolsFramework
              * @param id A unique id of a Template.
              * @return Reference of Template if the Template exists.
              */
-            TemplateReference FindTemplate(const TemplateId& id) override;
+            TemplateReference FindTemplate(TemplateId id) override;
 
             /**
              * Find Link with given Link id from Prefab System Component.
@@ -112,7 +112,7 @@ namespace AzToolsFramework
             * Remove the Template associated with the given id from Prefab System Component.
             * @param templateId A unique id of a Template.
             */
-            void RemoveTemplate(const TemplateId& templateId) override;
+            void RemoveTemplate(TemplateId templateId) override;
 
             /**
              * Remove all Templates from the Prefab System Component.
@@ -135,7 +135,7 @@ namespace AzToolsFramework
             * @return A unique_ptr to the newly instantiated instance. Null if operation failed.
             */
             AZStd::unique_ptr<Instance> InstantiatePrefab(
-                const TemplateId& templateId, InstanceOptionalReference parent = AZStd::nullopt) override;
+                TemplateId templateId, InstanceOptionalReference parent = AZStd::nullopt) override;
 
             /**
             * Add a new Link into Prefab System Component and create a unique id for it.
@@ -146,8 +146,8 @@ namespace AzToolsFramework
             * @return A unique id for the new Link.
             */
             LinkId AddLink(
-                const TemplateId& sourceTemplateId,
-                const TemplateId& targetTemplateId,
+                TemplateId sourceTemplateId,
+                TemplateId targetTemplateId,
                 PrefabDomValue::MemberIterator& instanceIterator,
                 InstanceOptionalReference instance) override;
 
@@ -161,8 +161,8 @@ namespace AzToolsFramework
             * @return A unique id for the new Link.
             */
             LinkId CreateLink(
-                const TemplateId& linkTargetId,
-                const TemplateId& linkSourceId,
+                TemplateId linkTargetId,
+                TemplateId linkSourceId,
                 const InstanceAlias& instanceAlias,
                 const PrefabDomConstReference linkPatches,
                 const LinkId& linkId = InvalidLinkId) override;
@@ -185,14 +185,14 @@ namespace AzToolsFramework
              * @param templateId The id of the template to query.
              * @return The value of the dirty flag on the template.
              */
-            bool IsTemplateDirty(const TemplateId& templateId) override;
+            bool IsTemplateDirty(TemplateId templateId) override;
 
             /**
              * Sets the dirty flag of the template to the value provided.
              * @param templateId The id of the template to flag.
              * @param dirty The new value of the dirty flag.
              */
-            void SetTemplateDirtyFlag(const TemplateId& templateId, bool dirty) override;
+            void SetTemplateDirtyFlag(TemplateId templateId, bool dirty) override;
 
             bool AreDirtyTemplatesPresent(TemplateId rootTemplateId) override;
 
@@ -237,7 +237,7 @@ namespace AzToolsFramework
              *
              * @param templateId The id of the Template owning Instances to update.
              */
-            void UpdatePrefabInstances(const TemplateId& templateId, InstanceOptionalReference instanceToExclude = AZStd::nullopt);
+            void UpdatePrefabInstances(TemplateId templateId, InstanceOptionalReference instanceToExclude = AZStd::nullopt);
 
         private:
             AZ_DISABLE_COPY_MOVE(PrefabSystemComponent);
@@ -330,7 +330,7 @@ namespace AzToolsFramework
             * @param instance The instance that the template was created from. This needs to be editable for inserting linkId into it.
             * @return bool on whether the operation succeeded
             */
-            bool GenerateLinksForNewTemplate(const TemplateId& newTemplateId, Instance& instance);
+            bool GenerateLinksForNewTemplate(TemplateId newTemplateId, Instance& instance);
 
             /**
              * Create a unique Template id for newly created Template.

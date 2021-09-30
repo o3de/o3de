@@ -307,19 +307,19 @@ namespace AzToolsFramework
 
     Prefab::InstanceOptionalReference PrefabEditorEntityOwnershipService::CreatePrefab(
         const AZStd::vector<AZ::Entity*>& entities, AZStd::vector<AZStd::unique_ptr<Prefab::Instance>>&& nestedPrefabInstances,
-        AZ::IO::PathView filePath, Prefab::InstanceOptionalReference instanceToParentUnderReference)
+        AZ::IO::PathView filePath, Prefab::InstanceOptionalReference instanceToParentUnder)
     {
-        if (!instanceToParentUnderReference)
+        if (!instanceToParentUnder)
         {
-            instanceToParentUnderReference = *m_rootInstance;
+            instanceToParentUnder = *m_rootInstance;
         }
 
         AZStd::unique_ptr<Prefab::Instance> createdPrefabInstance = m_prefabSystemComponent->CreatePrefab(
-            entities, AZStd::move(nestedPrefabInstances), filePath, nullptr, instanceToParentUnderReference, false);
+            entities, AZStd::move(nestedPrefabInstances), filePath, nullptr, instanceToParentUnder, false);
 
         if (createdPrefabInstance)
         {
-            Prefab::Instance& addedInstance = instanceToParentUnderReference->get().AddInstance(
+            Prefab::Instance& addedInstance = instanceToParentUnder->get().AddInstance(
                 AZStd::move(createdPrefabInstance));
             AZ::Entity* containerEntity = addedInstance.m_containerEntity.get();
             containerEntity->AddComponent(aznew Prefab::EditorPrefabComponent());
@@ -332,19 +332,19 @@ namespace AzToolsFramework
     }
 
     Prefab::InstanceOptionalReference PrefabEditorEntityOwnershipService::InstantiatePrefab(
-        AZ::IO::PathView filePath, Prefab::InstanceOptionalReference instanceToParentUnderReference)
+        AZ::IO::PathView filePath, Prefab::InstanceOptionalReference instanceToParentUnder)
     {
-        if (!instanceToParentUnderReference)
+        if (!instanceToParentUnder)
         {
-            instanceToParentUnderReference = *m_rootInstance;
+            instanceToParentUnder = *m_rootInstance;
         }
 
         AZStd::unique_ptr<Prefab::Instance> instantiatedPrefabInstance =
-            m_prefabSystemComponent->InstantiatePrefab(filePath, instanceToParentUnderReference);
+            m_prefabSystemComponent->InstantiatePrefab(filePath, instanceToParentUnder);
 
         if (instantiatedPrefabInstance)
         {
-            Prefab::Instance& addedInstance = instanceToParentUnderReference->get().AddInstance(
+            Prefab::Instance& addedInstance = instanceToParentUnder->get().AddInstance(
                 AZStd::move(instantiatedPrefabInstance));
             HandleEntitiesAdded({addedInstance.m_containerEntity.get()});
             return addedInstance;
