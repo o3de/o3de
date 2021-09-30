@@ -30,7 +30,7 @@ namespace AZ
     class TaskGraphActiveInterface
     {
     public:
-        AZ_RTTI(ComponentApplicationRequests, "{08118074-B139-4EF9-B8FD-29F1D6DC9233}");
+        AZ_RTTI(TaskGraphActiveInterface, "{08118074-B139-4EF9-B8FD-29F1D6DC9233}");
 
         virtual bool IsTaskGraphActive() const = 0;
     };
