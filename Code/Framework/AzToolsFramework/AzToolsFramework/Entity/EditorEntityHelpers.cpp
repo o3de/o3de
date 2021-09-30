@@ -14,6 +14,7 @@
 #include <AzCore/std/algorithm.h>
 #include <AzCore/std/sort.h>
 #include <AzCore/RTTI/AttributeReader.h>
+#include <AzCore/Serialization/SerializeContext.h>
 #include <AzToolsFramework/Commands/EntityStateCommand.h>
 #include <AzToolsFramework/Entity/EditorEntityInfoBus.h>
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>

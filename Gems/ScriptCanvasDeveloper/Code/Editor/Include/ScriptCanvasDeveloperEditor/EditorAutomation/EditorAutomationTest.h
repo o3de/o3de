@@ -11,6 +11,7 @@
 
 #include <AzCore/Component/TickBus.h>
 #include <AzCore/std/any.h>
+#include <AzCore/std/containers/unordered_set.h>
 
 #include <ScriptCanvasDeveloperEditor/EditorAutomation/EditorAutomationAction.h>
 #include <ScriptCanvasDeveloperEditor/EditorAutomation/EditorAutomationModelIds.h>
