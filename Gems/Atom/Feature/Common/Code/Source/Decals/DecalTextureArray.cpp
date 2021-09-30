@@ -48,6 +48,7 @@ namespace AZ
                 return asset;
             }
 
+            // Extract exactly which texture asset we need to load from the given material and map type (diffuse, normal, etc).
             static AZ::Data::Asset<AZ::RPI::StreamingImageAsset> GetStreamingImageAsset(const AZ::RPI::MaterialAsset& materialAsset, const AZ::Name& propertyName)
             {
                 if (!materialAsset.IsReady())

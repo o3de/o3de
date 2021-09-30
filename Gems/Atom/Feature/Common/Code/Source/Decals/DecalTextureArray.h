@@ -37,6 +37,9 @@ namespace AZ
 
         //! Helper class used by DecalTextureArrayFeatureProcessor.
         //! Given a set of images (all with the same dimensions and format), it can pack them together into a single textureArray that can be sent to the GPU.
+        //! Note that once textures are packed, this class will release any material references
+        //! This might free memory if nothing else is holding onto them
+        //! The class DOES keep note of which material asset ids were added, so it can load them again if necessary if the whole thing needs to be repacked
         class DecalTextureArray : public Data::AssetBus::MultiHandler
         {
         public:
@@ -47,7 +50,11 @@ namespace AZ
 
             AZ::Data::AssetId GetMaterialAssetId(const int index) const;
 
+            // Packs all the added materials into one texture array per DecalMapType.
             void Pack();
+
+            // Note that we pack each type into a separate texture array. This is because formats are
+            // often different (BC5 for normals, BC7 for diffuse, etc)
             const Data::Instance<RPI::StreamingImage>& GetPackedTexture(const DecalMapType mapType) const;
 
             static bool IsValidDecalMaterial(const RPI::MaterialAsset& materialAsset);
@@ -63,6 +70,7 @@ namespace AZ
 
             void OnAssetReady(Data::Asset<Data::AssetData> asset) override;
 
+            // Returns the index of the material in the m_materials container. -1 if not present.
             int FindMaterial(const AZ::Data::AssetId materialAssetId) const;
 
             // packs the contents of the source images into a texture array readable by the GPU and returns it
