@@ -619,9 +619,9 @@ namespace AZ::IO::ZipDir
                 if (pFileHeader->nLastModDate != localFileHeader->nLastModDate
                     || pFileHeader->nLastModTime != localFileHeader->nLastModTime)
                 {
-                    AZ_Warning("Archive", false, "ZD_ERROR_VALIDATION_FAILED:"
+                    AZ_Warning("Archive", false, "ZD_ERROR_VALIDATION_FAILED: (%s)\n"
                         " The local file header's modification timestamps don't match that of the global file header in the archive."
-                        " The archive timestamps are inconsistent and may be damaged. Check the archive file.");
+                        " The archive timestamps are inconsistent and may be damaged. Check the archive file.", m_szFilename.c_str());
                     // don't return here, it may be ok.
                 }
 
@@ -630,9 +630,9 @@ namespace AZ::IO::ZipDir
                     || pFileHeader->nMethod != localFileHeader->nMethod
                     || pFileHeader->nFileNameLength != localFileHeader->nFileNameLength)
                 {
-                    AZ_Warning("Archive", false, "ZD_ERROR_VALIDATION_FAILED:"
+                    AZ_Warning("Archive", false, "ZD_ERROR_VALIDATION_FAILED: (%s)\n"
                         " The local file header descriptor doesn't match basic parameters declared in the global file header in the file."
-                        " The archive content is inconsistent and may be damaged. Please try to repair the archive.");
+                        " The archive content is inconsistent and may be damaged. Please try to repair the archive.", m_szFilename.c_str());
                     // return here because further checks aren't worse than this.
                     return;
                 }
@@ -647,21 +647,22 @@ namespace AZ::IO::ZipDir
                 AZStd::string_view cdrFileName{ reinterpret_cast<const char*>(pFileHeader + 1), pFileHeader->nFileNameLength };
                 if (zipFileName != cdrFileName)
                 {
-                    AZ_Warning("Archive", false, "ZD_ERROR_VALIDATION_FAILED:"
+                    AZ_Warning("Archive", false, "ZD_ERROR_VALIDATION_FAILED: (%s)\n"
                         " The file name in the local file header doesn't match the name in the global file header."
-                        " The archive content is inconsisten with the directory. Please check the archive.");
+                        " The archive content is inconsisten with the directory. Please check the archive.", m_szFilename.c_str());
                 }
 
                 // CDR and local "extra field" lengths may be different, should we compare them if they are equal?
 
                 // make sure it's the same file and the fileEntry structure is properly initialized
-                AZ_Assert(fileEntry.nFileHeaderOffset == pFileHeader->lLocalHeaderOffset, "The file entry header offset doesn't match the file header local offst");
+                AZ_Assert(fileEntry.nFileHeaderOffset == pFileHeader->lLocalHeaderOffset,
+                    "The file entry header offset doesn't match the file header local offst (%s)", m_szFilename.c_str());
 
                 if (fileEntry.nFileDataOffset >= m_nCDREndPos)
                 {
-                    AZ_Warning("Archive", false, "ZD_ERROR_VALIDATION_FAILED:"
+                    AZ_Warning("Archive", false, "ZD_ERROR_VALIDATION_FAILED: (%s)\n"
                         " The global file header declares the file which crosses the boundaries of the archive."
-                        " The archive is either corrupted or truncated, please try to repair it");
+                        " The archive is either corrupted or truncated, please try to repair it", m_szFilename.c_str());
                 }
 
                 // End Validation

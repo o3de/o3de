@@ -111,7 +111,7 @@ namespace AzToolsFramework
         if (AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serializeContext->Class<ArchiveComponent, AZ::Component>()
-                ->Version(2)
+                ->Version(3)
                 ->Attribute(AZ::Edit::Attributes::SystemComponentTags, AZStd::vector<AZ::Crc32>({ AZ_CRC_CE("AssetBuilder") }))
                 ;
 

@@ -80,6 +80,7 @@ namespace AzToolsFramework
         if (serialize)
         {
             serialize->Class<NullArchiveComponent, AZ::Component>()
+                ->Version(1)
                 ;
         }
     }
