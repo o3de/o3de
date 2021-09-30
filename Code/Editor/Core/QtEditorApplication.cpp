@@ -44,7 +44,7 @@ enum
 {
     // in milliseconds
     GameModeIdleFrequency = 0,
-    EditorModeIdleFrequency = 0,
+    EditorModeIdleFrequency = 1,
     InactiveModeFrequency = 10,
     UninitializedFrequency = 9999,
 };

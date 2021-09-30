@@ -10,6 +10,11 @@
 
 #include <AzCore/EBus/EBus.h>
 
+namespace AZ
+{
+    class Entity;
+}
+
 namespace AzFramework
 {
     using EntityContextId = AZ::Uuid;
