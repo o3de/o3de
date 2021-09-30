@@ -15,6 +15,7 @@
 namespace AzToolsFramework
 {
     class EditorMetricsEventsBusTraits;
+    class ViewportEditorModeTrackerInterface;
 
     namespace ComponentModeFramework
     {
@@ -25,7 +26,7 @@ namespace AzToolsFramework
             AZ_CLASS_ALLOCATOR_DECL
 
             /// @cond
-            ComponentModeCollection() = default;
+            explicit ComponentModeCollection(ViewportEditorModeTrackerInterface* viewportEditorModeTracker);
             ~ComponentModeCollection() = default;
             ComponentModeCollection(const ComponentModeCollection&) = delete;
             ComponentModeCollection& operator=(const ComponentModeCollection&) = delete;
@@ -101,6 +102,7 @@ namespace AzToolsFramework
             size_t m_selectedComponentModeIndex = 0; ///< Index into the array of active ComponentModes, current index is 'selected' ComponentMode.
             bool m_adding = false; ///< Are we currently adding individual ComponentModes to the Editor wide ComponentMode.
             bool m_componentMode = false; ///< Editor (global) ComponentMode flag - is ComponentMode active or not.
+            ViewportEditorModeTrackerInterface* m_viewportEditorModeTracker = nullptr; //!< Tracker for activating/deactivating viewport editor modes.
         };
     } // namespace ComponentModeFramework
 } // namespace AzToolsFramework
