@@ -123,7 +123,7 @@ namespace AZ
             RHI::JobPolicy m_prepareRenderJobPolicy = RHI::JobPolicy::Parallel;
 
             ScriptTimePoint m_startTime;
-			float m_currentSimulationTime = 0.0f;
+            float m_currentSimulationTime = 0.0f;
 			
             RPISystemDescriptor m_descriptor;
 
