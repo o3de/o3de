@@ -757,13 +757,18 @@ namespace AZ::StringFunc
         }
         return value;
     }
-
-    void Tokenize(AZStd::string_view in, AZStd::vector<AZStd::string>& tokens, const char delimiter, bool keepEmptyStrings, bool keepSpaceStrings)
+        
+    template<typename StringType>
+    void Tokenize(AZStd::string_view in, AZStd::vector<StringType>& tokens, const char delimiter, bool keepEmptyStrings, bool keepSpaceStrings)
     {
         return Tokenize(in, tokens, { &delimiter, 1 }, keepEmptyStrings, keepSpaceStrings);
     }
 
-    void Tokenize(AZStd::string_view in, AZStd::vector<AZStd::string>& tokens, AZStd::string_view delimiters, bool keepEmptyStrings, bool keepSpaceStrings)
+    template void Tokenize(AZStd::string_view in, AZStd::vector<AZStd::string>& tokens, const char delimiter, bool keepEmptyStrings, bool keepSpaceStrings);
+    template void Tokenize(AZStd::string_view in, AZStd::vector<AZStd::string_view>& tokens, const char delimiter, bool keepEmptyStrings, bool keepSpaceStrings);
+        
+    template<typename StringType>
+    void Tokenize(AZStd::string_view in, AZStd::vector<StringType>& tokens, AZStd::string_view delimiters, bool keepEmptyStrings, bool keepSpaceStrings)
     {
         auto insertVisitor = [&tokens](AZStd::string_view token)
         {
@@ -771,6 +776,9 @@ namespace AZ::StringFunc
         };
         return TokenizeVisitor(in, insertVisitor, delimiters, keepEmptyStrings, keepSpaceStrings);
     }
+        
+    template void Tokenize(AZStd::string_view in, AZStd::vector<AZStd::string>& tokens, AZStd::string_view delimiters, bool keepEmptyStrings, bool keepSpaceStrings);
+    template void Tokenize(AZStd::string_view in, AZStd::vector<AZStd::string_view>& tokens, AZStd::string_view delimiters, bool keepEmptyStrings, bool keepSpaceStrings);
 
     void TokenizeVisitor(AZStd::string_view in, const TokenVisitor& tokenVisitor, const char delimiter, bool keepEmptyStrings, bool keepSpaceStrings)
     {
@@ -918,8 +926,9 @@ namespace AZ::StringFunc
 
         return found;
     }
-
-    void Tokenize(AZStd::string_view input, AZStd::vector<AZStd::string>& tokens, const AZStd::vector<AZStd::string_view>& delimiters, bool keepEmptyStrings /*= false*/, bool keepSpaceStrings /*= false*/)
+        
+    template<typename StringType>
+    void Tokenize(AZStd::string_view input, AZStd::vector<StringType>& tokens, const AZStd::vector<AZStd::string_view>& delimiters, bool keepEmptyStrings /*= false*/, bool keepSpaceStrings /*= false*/)
     {
         if (input.empty())
         {
@@ -939,7 +948,7 @@ namespace AZ::StringFunc
             }
 
             // Take the substring, not including the separator, and increment our offset
-            AZStd::string nextSubstring = input.substr(offset, nextOffset - offset);
+            AZStd::string_view nextSubstring = input.substr(offset, nextOffset - offset);
             if (keepEmptyStrings || keepSpaceStrings || !nextSubstring.empty())
             {
                 tokens.push_back(nextSubstring);
@@ -948,6 +957,9 @@ namespace AZ::StringFunc
             offset = nextOffset + delimiters[nextMatch].size();
         }
     }
+        
+    template void Tokenize(AZStd::string_view input, AZStd::vector<AZStd::string>& tokens, const AZStd::vector<AZStd::string_view>& delimiters, bool keepEmptyStrings /*= false*/, bool keepSpaceStrings /*= false*/);
+    template void Tokenize(AZStd::string_view input, AZStd::vector<AZStd::string_view>& tokens, const AZStd::vector<AZStd::string_view>& delimiters, bool keepEmptyStrings /*= false*/, bool keepSpaceStrings /*= false*/);
 
     int ToInt(const char* in)
     {
