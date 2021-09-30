@@ -8,7 +8,7 @@
 
 file(REAL_PATH "${CPACK_SOURCE_DIR}/.." _root_path)
 set(_cpack_wix_out_dir ${CPACK_TOPLEVEL_DIRECTORY})
-file(TO_NATIVE_PATH "${_root_path}/scripts/signer/signer.ps1" _sign_script)
+file(TO_NATIVE_PATH "${_root_path}/scripts/signer/Platform/Windows/signer.ps1" _sign_script)
 
 set(_signing_command
     psexec.exe

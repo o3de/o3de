@@ -351,12 +351,12 @@
         "CMAKE_NATIVE_BUILD_ARGS": "/m /nologo"
     }
   },
-  "windows_installer": {
+  "installer_vs2019": {
     "TAGS": [
       "nightly-clean"
     ],
     "PIPELINE_ENV":{
-      "NODE_LABEL":"windows-packaging-test"
+      "NODE_LABEL":"windows-packaging"
     },
     "COMMAND": "build_installer_windows.cmd",
     "PARAMETERS": {

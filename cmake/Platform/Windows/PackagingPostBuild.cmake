@@ -33,7 +33,7 @@ set(_addtional_defines
 )
 
 file(REAL_PATH "${CPACK_SOURCE_DIR}/.." _root_path)
-file(TO_NATIVE_PATH "${_root_path}/scripts/signer/signer.ps1" _sign_script)
+file(TO_NATIVE_PATH "${_root_path}/scripts/signer/Platform/Windows/signer.ps1" _sign_script)
 
 if(CPACK_LICENSE_URL)
     list(APPEND _addtional_defines -dCPACK_LICENSE_URL=${CPACK_LICENSE_URL})
