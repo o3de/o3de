@@ -1739,8 +1739,7 @@ void SandboxIntegrationManager::GoToEntitiesInViewports(const AzToolsFramework::
 
             AtomToolsFramework::ModularViewportCameraControllerRequestBus::Event(
                 viewportContext->GetId(),
-                &AtomToolsFramework::ModularViewportCameraControllerRequestBus::Events::InterpolateToTransform, nextCameraTransform,
-                distanceToLookAt);
+                &AtomToolsFramework::ModularViewportCameraControllerRequestBus::Events::InterpolateToTransform, nextCameraTransform);
         }
     }
 }

@@ -808,7 +808,7 @@ void CSystem::OpenBasicPaks()
     const char* const assetsDir = "@projectproductassets@";
 
     // After game paks to have same search order as with files on disk
-    m_env.pCryPak->OpenPack(assetsDir, "Engine.pak");
+    m_env.pCryPak->OpenPack(assetsDir, "engine.pak");
 
 #if defined(AZ_RESTRICTED_PLATFORM)
 #define AZ_RESTRICTED_SECTION SYSTEMINIT_CPP_SECTION_15
@@ -1259,9 +1259,6 @@ AZ_POP_DISABLE_WARNING
         static_cast<AZ::IO::Archive* const>(m_env.pCryPak)->SetLocalizationFolder(g_cvars.sys_localization_folder->GetString());
 
         InlineInitializationProcessing("CSystem::Init Create console");
-
-        // Need to load the engine.pak that includes the config files needed during initialization
-        m_env.pCryPak->OpenPack("@projectproductassets@", "Engine.pak");
 
         InitFileSystem_LoadEngineFolders(startupParams);
 
