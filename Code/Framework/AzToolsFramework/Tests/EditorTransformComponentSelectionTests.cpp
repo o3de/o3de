@@ -13,7 +13,6 @@
 #include <AzFramework/Components/TransformComponent.h>
 #include <AzFramework/Entity/EntityContext.h>
 #include <AzFramework/Viewport/ViewportScreen.h>
-#include <AzFramework/Visibility/BoundsBus.h>
 #include <AzManipulatorTestFramework/AzManipulatorTestFramework.h>
 #include <AzManipulatorTestFramework/AzManipulatorTestFrameworkTestHelpers.h>
 #include <AzManipulatorTestFramework/AzManipulatorTestFrameworkUtils.h>
@@ -22,12 +21,10 @@
 #include <AzManipulatorTestFramework/ViewportInteraction.h>
 #include <AzQtComponents/Components/GlobalEventFilter.h>
 #include <AzTest/AzTest.h>
-#include <AzToolsFramework/API/ComponentEntitySelectionBus.h>
 #include <AzToolsFramework/Application/ToolsApplication.h>
 #include <AzToolsFramework/Entity/EditorEntityActionComponent.h>
 #include <AzToolsFramework/Entity/EditorEntityHelpers.h>
 #include <AzToolsFramework/Entity/EditorEntityModel.h>
-#include <AzToolsFramework/ToolsComponents/EditorComponentBase.h>
 #include <AzToolsFramework/ToolsComponents/EditorLockComponent.h>
 #include <AzToolsFramework/ToolsComponents/EditorVisibilityComponent.h>
 #include <AzToolsFramework/ToolsComponents/TransformComponent.h>
@@ -40,6 +37,8 @@
 #include <AzToolsFramework/ViewportSelection/EditorTransformComponentSelection.h>
 #include <AzToolsFramework/ViewportSelection/EditorVisibleEntityDataCache.h>
 #include <AzToolsFramework/ViewportUi/ViewportUiManager.h>
+
+#include<Tests/BoundsTestComponent.h>
 
 namespace AZ
 {
@@ -121,80 +120,6 @@ namespace UnitTest
         EXPECT_FALSE(m_cache.IsVisibleEntityVisible(m_cache.GetVisibleEntityIndexFromId(m_entityIds[0]).value()));
         EXPECT_FALSE(m_cache.IsVisibleEntityVisible(m_cache.GetVisibleEntityIndexFromId(m_entityIds[1]).value()));
         EXPECT_FALSE(m_cache.IsVisibleEntityVisible(m_cache.GetVisibleEntityIndexFromId(m_entityIds[2]).value()));
-    }
-
-    //! Basic component that implements BoundsRequestBus and EditorComponentSelectionRequestsBus to be compatible
-    //! with the Editor visibility system.
-    //! Note: Used for simulating selection (picking) in the viewport.
-    class BoundsTestComponent
-        : public AzToolsFramework::Components::EditorComponentBase
-        , public AzFramework::BoundsRequestBus::Handler
-        , public AzToolsFramework::EditorComponentSelectionRequestsBus::Handler
-    {
-    public:
-        AZ_EDITOR_COMPONENT(
-            BoundsTestComponent, "{E6312E9D-8489-4677-9980-C93C328BC92C}", AzToolsFramework::Components::EditorComponentBase);
-
-        static void Reflect(AZ::ReflectContext* context);
-
-        // AZ::Component overrides ...
-        void Activate() override;
-        void Deactivate() override;
-
-        // EditorComponentSelectionRequestsBus overrides ...
-        AZ::Aabb GetEditorSelectionBoundsViewport(const AzFramework::ViewportInfo& viewportInfo) override;
-        bool EditorSelectionIntersectRayViewport(
-            const AzFramework::ViewportInfo& viewportInfo, const AZ::Vector3& src, const AZ::Vector3& dir, float& distance) override;
-        bool SupportsEditorRayIntersect() override;
-
-        // BoundsRequestBus overrides ...
-        AZ::Aabb GetWorldBounds() override;
-        AZ::Aabb GetLocalBounds() override;
-    };
-
-    AZ::Aabb BoundsTestComponent::GetEditorSelectionBoundsViewport([[maybe_unused]] const AzFramework::ViewportInfo& viewportInfo)
-    {
-        return GetWorldBounds();
-    }
-
-    bool BoundsTestComponent::EditorSelectionIntersectRayViewport(
-        [[maybe_unused]] const AzFramework::ViewportInfo& viewportInfo, const AZ::Vector3& src, const AZ::Vector3& dir, float& distance)
-    {
-        return AzToolsFramework::AabbIntersectRay(src, dir, GetWorldBounds(), distance);
-    }
-
-    bool BoundsTestComponent::SupportsEditorRayIntersect()
-    {
-        return true;
-    }
-
-    void BoundsTestComponent::Reflect([[maybe_unused]] AZ::ReflectContext* context)
-    {
-        // noop
-    }
-
-    void BoundsTestComponent::Activate()
-    {
-        AzFramework::BoundsRequestBus::Handler::BusConnect(GetEntityId());
-        AzToolsFramework::EditorComponentSelectionRequestsBus::Handler::BusConnect(GetEntityId());
-    }
-
-    void BoundsTestComponent::Deactivate()
-    {
-        AzToolsFramework::EditorComponentSelectionRequestsBus::Handler::BusDisconnect();
-        AzFramework::BoundsRequestBus::Handler::BusDisconnect();
-    }
-
-    AZ::Aabb BoundsTestComponent::GetWorldBounds()
-    {
-        AZ::Transform worldFromLocal = AZ::Transform::CreateIdentity();
-        AZ::TransformBus::EventResult(worldFromLocal, GetEntityId(), &AZ::TransformBus::Events::GetWorldTM);
-        return GetLocalBounds().GetTransformedAabb(worldFromLocal);
-    }
-
-    AZ::Aabb BoundsTestComponent::GetLocalBounds()
-    {
-        return AZ::Aabb::CreateFromMinMax(AZ::Vector3(-0.5f), AZ::Vector3(0.5f));
     }
 
     // Fixture to support testing EditorTransformComponentSelection functionality on an Entity selection.
