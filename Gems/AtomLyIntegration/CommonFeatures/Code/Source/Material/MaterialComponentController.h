@@ -22,6 +22,7 @@ namespace AZ
         //! to provide material overrides on a per-entity basis.
         class MaterialComponentController final
             : MaterialComponentRequestBus::Handler
+            , MaterialReceiverNotificationBus::Handler
             , Data::AssetBus::MultiHandler
             , TickBus::Handler
         {
@@ -100,6 +101,9 @@ namespace AZ
                 const MaterialAssignmentId& materialAssignmentId, const AZ::RPI::MaterialModelUvOverrideMap& modelUvOverrides) override;
             AZ::RPI::MaterialModelUvOverrideMap GetModelUvOverrides(const MaterialAssignmentId& materialAssignmentId) const override;
 
+            //! MaterialReceiverNotificationBus::Handler overrides...
+            void OnMaterialAssignmentsChanged() override;
+
         private:
 
             AZ_DISABLE_COPY(MaterialComponentController);
@@ -121,7 +125,7 @@ namespace AZ
 
             EntityId m_entityId;
             MaterialComponentConfig m_configuration;
-            AZStd::unordered_set<MaterialAssignmentId> m_queuedPropertyOverrides;
+            AZStd::unordered_set<MaterialAssignmentId> m_materialsWithDirtyProperties;
             bool m_queuedMaterialUpdateNotification = false;
         };
     } // namespace Render

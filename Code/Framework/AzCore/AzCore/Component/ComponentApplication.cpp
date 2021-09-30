@@ -74,8 +74,6 @@
 #include <AzCore/Module/Environment.h>
 #include <AzCore/std/string/conversions.h>
 
-AZ_CVAR(float, g_simulation_tick_rate, 0, nullptr, AZ::ConsoleFunctorFlags::Null, "The rate at which the game simulation tick loop runs, or 0 for as fast as possible");
-
 static void PrintEntityName(const AZ::ConsoleCommandContainer& arguments)
 {
     if (arguments.empty())
@@ -1395,23 +1393,6 @@ namespace AZ
             {
                 AZ_PROFILE_SCOPE(AzCore, "ComponentApplication::Tick:OnTick");
                 EBUS_EVENT(TickBus, OnTick, m_deltaTime, ScriptTimePoint(now));
-            }
-
-            // If tick rate limiting is on, ensure (1 / g_simulation_tick_rate) ms has elapsed since the last frame,
-            // sleeping if there's still time remaining.
-            if (g_simulation_tick_rate > 0.f)
-            {
-                now = AZStd::chrono::system_clock::now();
-
-                // Work in microsecond durations here as that's the native measurement time for time_point
-                constexpr float microsecondsPerSecond = 1000.f * 1000.f;
-                const AZStd::chrono::microseconds timeBudgetPerTick(static_cast<int>(microsecondsPerSecond / g_simulation_tick_rate));
-                AZStd::chrono::microseconds timeUntilNextTick = m_currentTime + timeBudgetPerTick - now;
-
-                if (timeUntilNextTick.count() > 0)
-                {
-                    AZStd::this_thread::sleep_for(timeUntilNextTick);
-                }
             }
         }
     }

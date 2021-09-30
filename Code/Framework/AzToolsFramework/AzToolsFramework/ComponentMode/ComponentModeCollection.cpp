@@ -8,8 +8,9 @@
 
 #include "ComponentModeCollection.h"
 
-#include <AzToolsFramework/Commands/ComponentModeCommand.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
+#include <AzToolsFramework/API/ViewportEditorModeTrackerInterface.h>
+#include <AzToolsFramework/Commands/ComponentModeCommand.h>
 
 namespace AzToolsFramework
 {
@@ -17,7 +18,7 @@ namespace AzToolsFramework
     {
         AZ_CLASS_ALLOCATOR_IMPL(ComponentModeCollection, AZ::SystemAllocator, 0)
 
-            static const char* const s_nextActiveComponentModeTitle = "Edit Next";
+        static const char* const s_nextActiveComponentModeTitle = "Edit Next";
         static const char* const s_previousActiveComponentModeTitle = "Edit Previous";
         static const char* const s_nextActiveComponentModeDesc = "Move to the next component";
         static const char* const s_prevActiveComponentModeDesc = "Move to the previous component";
@@ -119,6 +120,11 @@ namespace AzToolsFramework
             }
         };
 
+        ComponentModeCollection::ComponentModeCollection(ViewportEditorModeTrackerInterface* viewportEditorModeTracker)
+            : m_viewportEditorModeTracker(viewportEditorModeTracker)
+        {
+        }
+
         void ComponentModeCollection::AddComponentMode(
             const AZ::EntityComponentIdPair& entityComponentIdPair, const AZ::Uuid componentType,
             const ComponentModeFactoryFunction& componentModeBuilder)
@@ -209,6 +215,11 @@ namespace AzToolsFramework
                 GetEntityContextId(), &EditorComponentModeNotifications::EnteredComponentMode,
                 m_activeComponentTypes);
 
+            // this call to activate the component mode editor state should eventually replace the bus call in
+            // ComponentModeCollection::BeginComponentMode() to EditorComponentModeNotifications::EnteredComponentMode
+            // such that all of the notifications for activating/deactivating the different editor modes are in a central location
+            m_viewportEditorModeTracker->ActivateMode({ /* DefaultViewportId */ }, ViewportEditorMode::Component);
+
             // enable actions for the first/primary ComponentMode
             // note: if multiple ComponentModes are activated at the same time, actions
             // are not available together, the 'active' mode will bind its actions one at a time
@@ -282,6 +293,10 @@ namespace AzToolsFramework
                 &EditorComponentModeNotifications::LeftComponentMode,
                 m_activeComponentTypes);
 
+            // this call to deactivate the component mode editor state should eventually replace the bus call in
+            // ComponentModeCollection::EndComponentMode() to EditorComponentModeNotifications::LeftComponentMode
+            // such that all of the notifications for activating/deactivating the different editor modes are in a central location
+            m_viewportEditorModeTracker->DeactivateMode({ /* DefaultViewportId */ }, ViewportEditorMode::Component);
 
             // clear stored modes and builders for this ComponentMode
             // TLDR: avoid 'use after free' error
