@@ -8,7 +8,6 @@
 #pragma once
 
 #include <AzToolsFramework/ToolsComponents/EditorComponentBase.h>
-#include <AzCore/Serialization/SerializeContext.h>
 
 namespace AzToolsFramework
 {

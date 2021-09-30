@@ -10,7 +10,6 @@
 
 #include <Atom/RPI.Public/ViewportContext.h>
 #include <AtomToolsFramework/Viewport/ModularViewportCameraControllerRequestBus.h>
-#include <AzFramework/Entity/EntityDebugDisplayBus.h>
 #include <AzFramework/Viewport/CameraInput.h>
 #include <AzFramework/Viewport/MultiViewportController.h>
 
@@ -103,7 +102,6 @@ namespace AtomToolsFramework
     class ModularViewportCameraControllerInstance final
         : public AzFramework::MultiViewportControllerInstanceInterface<ModularViewportCameraController>
         , public ModularViewportCameraControllerRequestBus::Handler
-        , private AzFramework::ViewportDebugDisplayEventBus::Handler
     {
     public:
         explicit ModularViewportCameraControllerInstance(AzFramework::ViewportId viewportId, ModularViewportCameraController* controller);
@@ -114,16 +112,12 @@ namespace AtomToolsFramework
         void UpdateViewport(const AzFramework::ViewportControllerUpdateEvent& event) override;
 
         // ModularViewportCameraControllerRequestBus overrides ...
-        void InterpolateToTransform(const AZ::Transform& worldFromLocal, float lookAtDistance) override;
-        AZStd::optional<AZ::Vector3> LookAtAfterInterpolation() const override;
+        void InterpolateToTransform(const AZ::Transform& worldFromLocal) override;
         AZ::Transform GetReferenceFrame() const override;
         void SetReferenceFrame(const AZ::Transform& worldFromLocal) override;
         void ClearReferenceFrame() override;
 
     private:
-        // AzFramework::ViewportDebugDisplayEventBus overrides ...
-        void DisplayViewport(const AzFramework::ViewportInfo& viewportInfo, AzFramework::DebugDisplayRequests& debugDisplay) override;
-
         //! Update the reference frame after a change has been made to the camera
         //! view without updating the internal camera via user input.
         void RefreshReferenceFrame();
@@ -154,9 +148,8 @@ namespace AtomToolsFramework
 
         CameraAnimation m_cameraAnimation; //!< Camera animation state (used during CameraMode::Animation).
         CameraMode m_cameraMode = CameraMode::Control; //!< The current mode the camera is operating in.
-        AZStd::optional<AZ::Vector3> m_lookAtAfterInterpolation; //!< The look at point after an interpolation has finished.
-                                                                 //!< Will be cleared when the view changes (camera looks away).
-        AZ::Transform m_referenceFrameOverride = AZ::Transform::CreateIdentity(); //!<
+        //! An additional reference frame the camera can operate in (identity has no effect).
+        AZ::Transform m_referenceFrameOverride = AZ::Transform::CreateIdentity();
         //! Flag to prevent circular updates of the camera transform (while the viewport transform is being updated internally).
         bool m_updatingTransformInternally = false;
         //! Listen for camera view changes outside of the camera controller.

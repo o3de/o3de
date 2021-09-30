@@ -9,7 +9,6 @@
 #pragma once
 
 #include <AzFramework/Physics/ShapeConfiguration.h>
-#include <AzCore/Serialization/SerializeContext.h>
 #include <AzFramework/Physics/Material.h>
 #include <AzFramework/Physics/Collision/CollisionGroups.h>
 #include <AzFramework/Physics/Collision/CollisionLayers.h>
