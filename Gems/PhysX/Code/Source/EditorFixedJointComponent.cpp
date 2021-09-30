@@ -13,7 +13,7 @@
 #include <AzToolsFramework/ViewportSelection/EditorSelectionUtil.h>
 
 #include <Source/EditorFixedJointComponent.h>
-#include <Editor/EditorJointComponentMode.h>
+#include <Editor/Source/ComponentModes/Joints/JointsComponentMode.h>
 #include <Source/FixedJointComponent.h>
 
 namespace PhysX
@@ -70,9 +70,8 @@ namespace PhysX
         AzToolsFramework::EditorComponentSelectionNotificationsBus::Handler::BusConnect(entityId);
 
         AzToolsFramework::EditorComponentSelectionRequestsBus::Handler* selection = this;
-        m_componentModeDelegate.ConnectWithSingleComponentMode <
-            EditorFixedJointComponent, EditorFixedJointComponentMode>(
-                AZ::EntityComponentIdPair(entityId, GetId()), selection);
+        m_componentModeDelegate.ConnectWithSingleComponentMode<EditorFixedJointComponent, JointsComponentMode>(
+            AZ::EntityComponentIdPair(entityId, GetId()), selection);
 
         PhysX::EditorJointRequestBus::Handler::BusConnect(AZ::EntityComponentIdPair(entityId, GetId()));
     }
@@ -90,5 +89,10 @@ namespace PhysX
     {
         m_config.m_followerEntity = GetEntityId(); // joint is always in the same entity as the follower body.
         gameEntity->CreateComponent<FixedJointComponent>(m_config.ToGameTimeConfig(), m_config.ToGenericProperties());
+    }
+
+    AZStd::vector<JointsComponentModeCommon::SubModeParamaterState> EditorFixedJointComponent::GetSubComponentModesState()
+    {
+        return EditorJointComponent::GetSubComponentModesState();
     }
 }

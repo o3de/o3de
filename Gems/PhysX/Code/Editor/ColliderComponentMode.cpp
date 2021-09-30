@@ -7,7 +7,6 @@
  */
 
 #include "ColliderComponentMode.h"
-#include "ColliderSubComponentMode.h"
 #include "ColliderOffsetMode.h"
 #include "ColliderRotationMode.h"
 #include "ColliderBoxMode.h"
@@ -15,6 +14,7 @@
 #include "ColliderCapsuleMode.h"
 #include "ColliderAssetScaleMode.h"
 
+#include <Editor/Source/ComponentModes/PhysXSubComponentModeBase.h>
 #include <PhysX/EditorColliderComponentRequestBus.h>
 
 #include <AzFramework/Physics/ShapeConfiguration.h>

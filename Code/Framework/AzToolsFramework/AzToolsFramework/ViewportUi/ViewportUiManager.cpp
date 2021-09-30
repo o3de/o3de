@@ -50,6 +50,16 @@ namespace AzToolsFramework::ViewportUi
         }
     }
 
+    void ViewportUiManager::ClearClusterActiveButton(ClusterId clusterId)
+    {
+        if (auto clusterIt = m_clusterButtonGroups.find(clusterId); clusterIt != m_clusterButtonGroups.end())
+        {
+            auto cluster = clusterIt->second;
+            cluster->ClearHighlightedButton();
+            UpdateButtonGroupUi(cluster.get());
+        }
+    }
+
     void ViewportUiManager::SetSwitcherActiveButton(const SwitcherId switcherId, const ButtonId buttonId)
     {
         if (auto switcherIt = m_switcherButtonGroups.find(switcherId); switcherIt != m_switcherButtonGroups.end())

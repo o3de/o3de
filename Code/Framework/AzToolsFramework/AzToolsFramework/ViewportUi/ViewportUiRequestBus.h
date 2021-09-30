@@ -59,6 +59,8 @@ namespace AzToolsFramework::ViewportUi
         virtual const SwitcherId CreateSwitcher(Alignment align) = 0;
         //! Sets the active button of the cluster. This is the button which will display as highlighted.
         virtual void SetClusterActiveButton(ClusterId clusterId, ButtonId buttonId) = 0;
+        //! Clears the active button of the cluster if one is active. The button will no longer display as highlighted.
+        virtual void ClearClusterActiveButton(ClusterId clusterId) = 0;
         //! Sets the active button of the switcher. This is the button which has a text label.
         virtual void SetSwitcherActiveButton(SwitcherId clusterId, ButtonId buttonId) = 0;
         //! Adds a locked overlay to the cluster button's icon.

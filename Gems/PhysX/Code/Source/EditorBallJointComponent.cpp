@@ -13,7 +13,8 @@
 #include <AzToolsFramework/ViewportSelection/EditorSelectionUtil.h>
 
 #include <Source/EditorBallJointComponent.h>
-#include <Editor/EditorJointComponentMode.h>
+#include <Editor/Source/ComponentModes/Joints/JointsComponentMode.h>
+#include <Editor/Source/ComponentModes/Joints/JointsComponentModeCommon.h>
 #include <Source/BallJointComponent.h>
 #include <Source/Utils.h>
 
@@ -73,9 +74,8 @@ namespace PhysX
         AzToolsFramework::EditorComponentSelectionNotificationsBus::Handler::BusConnect(entityId);
 
         AzToolsFramework::EditorComponentSelectionRequestsBus::Handler* selection = this;
-        m_componentModeDelegate.ConnectWithSingleComponentMode <
-            EditorBallJointComponent, EditorBallJointComponentMode>(
-                AZ::EntityComponentIdPair(entityId, GetId()), selection);
+        m_componentModeDelegate.ConnectWithSingleComponentMode<EditorBallJointComponent, JointsComponentMode>(
+            AZ::EntityComponentIdPair(entityId, GetId()), selection);
 
         PhysX::EditorJointRequestBus::Handler::BusConnect(AZ::EntityComponentIdPair(entityId, GetId()));
     }
@@ -100,23 +100,19 @@ namespace PhysX
 
     float EditorBallJointComponent::GetLinearValue(const AZStd::string& parameterName)
     {
-        if (parameterName == PhysX::EditorJointComponentMode::s_parameterMaxForce)
+        if (parameterName == PhysX::JointsComponentModeCommon::ParamaterNames::MaxForce)
         {
             return m_config.m_forceMax;
         }
-        else if (parameterName == PhysX::EditorJointComponentMode::s_parameterMaxTorque)
+        else if (parameterName == PhysX::JointsComponentModeCommon::ParamaterNames::MaxTorque)
         {
             return m_config.m_torqueMax;
         }
-        else if (parameterName == PhysX::EditorJointComponentMode::s_parameterTolerance)
-        {
-            return m_swingLimit.m_standardLimitConfig.m_tolerance;
-        }
-        else if (parameterName == PhysX::EditorJointComponentMode::s_parameterDamping)
+        else if (parameterName == PhysX::JointsComponentModeCommon::ParamaterNames::Damping)
         {
             return m_swingLimit.m_standardLimitConfig.m_damping;
         }
-        else if (parameterName == PhysX::EditorJointComponentMode::s_parameterStiffness)
+        else if (parameterName == PhysX::JointsComponentModeCommon::ParamaterNames::Stiffness)
         {
             return m_swingLimit.m_standardLimitConfig.m_stiffness;
         }
@@ -126,7 +122,7 @@ namespace PhysX
 
     AngleLimitsFloatPair EditorBallJointComponent::GetLinearValuePair(const AZStd::string& parameterName)
     {
-        if (parameterName == PhysX::EditorJointComponentMode::s_parameterSwingLimit)
+        if (parameterName == PhysX::JointsComponentModeCommon::ParamaterNames::SwingLimit)
         {
             return AngleLimitsFloatPair(m_swingLimit.m_limitY, m_swingLimit.m_limitZ);
         }
@@ -134,49 +130,58 @@ namespace PhysX
         return AngleLimitsFloatPair();
     }
 
-    bool EditorBallJointComponent::IsParameterUsed(const AZStd::string& parameterName)
+    AZStd::vector<JointsComponentModeCommon::SubModeParamaterState> EditorBallJointComponent::GetSubComponentModesState()
     {
-        if (parameterName == PhysX::EditorJointComponentMode::s_parameterMaxForce
-            || parameterName == PhysX::EditorJointComponentMode::s_parameterMaxTorque
-            )
+        AZStd::vector<JointsComponentModeCommon::SubModeParamaterState> subModes;
+
+        subModes.emplace_back(JointsComponentModeCommon::SubModeParamaterState{
+            JointsComponentModeCommon::SubComponentModes::ModeType::SnapPosition,
+            JointsComponentModeCommon::ParamaterNames::SnapPosition });
+        subModes.emplace_back(JointsComponentModeCommon::SubModeParamaterState{
+            JointsComponentModeCommon::SubComponentModes::ModeType::SnapRotation,
+            JointsComponentModeCommon::ParamaterNames::SnapRotation });
+
+        if (AZStd::vector<JointsComponentModeCommon::SubModeParamaterState> baseSubModes =
+                EditorJointComponent::GetSubComponentModesState();
+            !baseSubModes.empty())
         {
-            return m_config.m_breakable;
-        }
-        else if (parameterName == PhysX::EditorJointComponentMode::s_parameterTolerance)
-        {
-            return !m_swingLimit.m_standardLimitConfig.m_isSoftLimit;
-        }
-        else if (parameterName == PhysX::EditorJointComponentMode::s_parameterDamping)
-        {
-            return m_swingLimit.m_standardLimitConfig.m_isSoftLimit;
-        }
-        else if (parameterName == PhysX::EditorJointComponentMode::s_parameterStiffness)
-        {
-            return m_swingLimit.m_standardLimitConfig.m_isSoftLimit;
+            subModes.insert(subModes.end(), baseSubModes.begin(), baseSubModes.end());
         }
 
-        return true; // Sub-component mode always enabled unless disabled explicitly.
+        if (m_swingLimit.m_standardLimitConfig.m_isLimited)
+        {
+            subModes.emplace_back(
+                JointsComponentModeCommon::SubModeParamaterState{ JointsComponentModeCommon::SubComponentModes::ModeType::SwingLimits,
+                                                                  JointsComponentModeCommon::ParamaterNames::SwingLimit });
+
+            if (m_swingLimit.m_standardLimitConfig.m_isSoftLimit)
+            {
+                subModes.emplace_back(JointsComponentModeCommon::SubModeParamaterState{
+                    JointsComponentModeCommon::SubComponentModes::ModeType::Damping, JointsComponentModeCommon::ParamaterNames::Damping });
+                subModes.emplace_back(
+                    JointsComponentModeCommon::SubModeParamaterState{ JointsComponentModeCommon::SubComponentModes::ModeType::Stiffness,
+                                                                      JointsComponentModeCommon::ParamaterNames::Stiffness });
+            }
+        }
+        
+        return subModes;
     }
 
     void EditorBallJointComponent::SetLinearValue(const AZStd::string& parameterName, float value)
     {
-        if (parameterName == PhysX::EditorJointComponentMode::s_parameterMaxForce)
+        if (parameterName == PhysX::JointsComponentModeCommon::ParamaterNames::MaxForce)
         {
             m_config.m_forceMax = value;
         }
-        else if (parameterName == PhysX::EditorJointComponentMode::s_parameterMaxTorque)
+        else if (parameterName == PhysX::JointsComponentModeCommon::ParamaterNames::MaxTorque)
         {
             m_config.m_torqueMax = value;
         }
-        else if (parameterName == PhysX::EditorJointComponentMode::s_parameterTolerance)
-        {
-            m_swingLimit.m_standardLimitConfig.m_tolerance = value;
-        }
-        else if (parameterName == PhysX::EditorJointComponentMode::s_parameterDamping)
+        else if (parameterName == PhysX::JointsComponentModeCommon::ParamaterNames::Damping)
         {
             m_swingLimit.m_standardLimitConfig.m_damping = value;
         }
-        else if (parameterName == PhysX::EditorJointComponentMode::s_parameterStiffness)
+        else if (parameterName == PhysX::JointsComponentModeCommon::ParamaterNames::Stiffness)
         {
             m_swingLimit.m_standardLimitConfig.m_stiffness = value;
         }
@@ -184,7 +189,7 @@ namespace PhysX
 
     void EditorBallJointComponent::SetLinearValuePair(const AZStd::string& parameterName, const AngleLimitsFloatPair& valuePair)
     {
-        if (parameterName == PhysX::EditorJointComponentMode::s_parameterSwingLimit)
+        if (parameterName == PhysX::JointsComponentModeCommon::ParamaterNames::SwingLimit)
         {
             m_swingLimit.m_limitY = valuePair.first;
             m_swingLimit.m_limitZ = valuePair.second;
@@ -193,7 +198,7 @@ namespace PhysX
 
     void EditorBallJointComponent::SetBoolValue(const AZStd::string& parameterName, bool value)
     {
-        if (parameterName == PhysX::EditorJointComponentMode::s_parameterComponentMode)
+        if (parameterName == PhysX::JointsComponentModeCommon::ParamaterNames::ComponentMode)
         {
             m_swingLimit.m_standardLimitConfig.m_inComponentMode = value;
             m_config.m_inComponentMode = value;
@@ -201,10 +206,6 @@ namespace PhysX
             AzToolsFramework::ToolsApplicationEvents::Bus::Broadcast(
                 &AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplay
                 , AzToolsFramework::Refresh_EntireTree);
-        }
-        else if (parameterName == PhysX::EditorJointComponentMode::s_parameterSelectOnSnap)
-        {
-            m_config.m_selectLeadOnSnap = value;
         }
     }
 
@@ -228,7 +229,7 @@ namespace PhysX
         EditorJointRequestBus::EventResult(localTransform,
             AZ::EntityComponentIdPair(entityId, GetId()),
             &EditorJointRequests::GetTransformValue, 
-            PhysX::EditorJointComponentMode::s_parameterTransform);
+            PhysX::JointsComponentModeCommon::ParamaterNames::Transform);
 
         AZ::u32 stateBefore = debugDisplay.GetState();
         debugDisplay.CullOff();

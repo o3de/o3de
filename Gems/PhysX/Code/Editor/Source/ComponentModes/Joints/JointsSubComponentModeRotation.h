@@ -8,18 +8,26 @@
 
 #pragma once
 
+#include <AzCore/Math/Vector3.h>
+#include <AzCore/Memory/Memory.h>
+#include <AzCore/std/containers/array.h>
+#include <AzCore/std/smart_ptr/shared_ptr.h>
 #include <Editor/Source/ComponentModes/PhysXSubComponentModeBase.h>
-#include <AzToolsFramework/Manipulators/ScaleManipulators.h>
+
+namespace AzToolsFramework
+{
+    class AngularManipulator;
+}
 
 namespace PhysX
 {
-    /// Sub component mode for modifying the asset scale on a collider in the viewport.
-    class ColliderAssetScaleMode : public PhysXSubComponentModeBase
+    class JointsSubComponentModeRotation final
+        : public PhysXSubComponentModeBase
     {
     public:
-        AZ_CLASS_ALLOCATOR_DECL
+        AZ_CLASS_ALLOCATOR_DECL;
 
-        ColliderAssetScaleMode();
+        JointsSubComponentModeRotation() = default;
 
         // PhysXSubComponentModeBase ...
         void Setup(const AZ::EntityComponentIdPair& idPair) override;
@@ -28,11 +36,9 @@ namespace PhysX
         void ResetValues(const AZ::EntityComponentIdPair& idPair) override;
 
     private:
+        void InstallManipulatorMouseCallbacks(const AZ::EntityComponentIdPair& idPair);
 
-        void OnManipulatorDown(const AZ::EntityComponentIdPair& idPair);
-        void OnManipulatorMoved(const AZ::Vector3& scale, const AZ::EntityComponentIdPair& idPair);
-
-        AZ::Vector3 m_initialScale;
-        AzToolsFramework::ScaleManipulators m_dimensionsManipulators;
+        AZ::Vector3 m_resetValue = AZ::Vector3::CreateZero();
+        AZStd::array<AZStd::shared_ptr<AzToolsFramework::AngularManipulator>, 3> m_manipulators;
     };
-} //namespace PhysX
+}

@@ -1,4 +1,3 @@
-
 /*
  * Copyright (c) Contributors to the Open 3D Engine Project.
  * For complete copyright and license terms please see the LICENSE at the root of this distribution.
@@ -6,49 +5,67 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include <AzCore/Component/TransformBus.h>
-#include <AzToolsFramework/API/ComponentEntitySelectionBus.h>
+#include <Editor/Source/ComponentModes/Joints/JointsSubComponentModeSnap.h>
+
+#include <AzCore/Memory/SystemAllocator.h>
 #include <AzToolsFramework/Manipulators/LinearManipulator.h>
+#include <AzToolsFramework/Manipulators/ManipulatorManager.h>
 #include <AzToolsFramework/ViewportSelection/EditorSelectionUtil.h>
 
-#include <Editor/EditorJointComponentMode.h>
-#include <Editor/EditorSubComponentModeSnap.h>
+#include <Editor/Source/ComponentModes/Joints/JointsComponentModeCommon.h>
 #include <PhysX/EditorJointBus.h>
 #include <Source/Utils.h>
 
 namespace PhysX
 {
-    EditorSubComponentModeSnap::EditorSubComponentModeSnap(
-        const AZ::EntityComponentIdPair& entityComponentIdPair
-        , const AZ::Uuid& componentType
-        , const AZStd::string& name)
-        : EditorSubComponentModeBase(entityComponentIdPair, componentType, name)
+    AZ_CLASS_ALLOCATOR_IMPL(JointsSubComponentModeSnap, AZ::SystemAllocator, 0);
+
+    void JointsSubComponentModeSnap::Setup(const AZ::EntityComponentIdPair& idPair)
     {
+        m_entityComponentId = idPair;
+
         AZ::Transform worldTransform = PhysX::Utils::GetEntityWorldTransformWithoutScale(m_entityComponentId.GetEntityId());
 
         AZ::Transform localTransform = AZ::Transform::CreateIdentity();
         EditorJointRequestBus::EventResult(
-            localTransform, m_entityComponentId
-            , &EditorJointRequests::GetTransformValue
-            , PhysX::EditorJointComponentMode::s_parameterTransform);
+            localTransform, m_entityComponentId, &EditorJointRequests::GetTransformValue, JointsComponentModeCommon::ParamaterNames::Transform);
 
         m_manipulator = AzToolsFramework::LinearManipulator::MakeShared(worldTransform);
         m_manipulator->AddEntityComponentIdPair(m_entityComponentId);
         m_manipulator->SetAxis(AZ::Vector3::CreateAxisX());
         m_manipulator->SetLocalTransform(localTransform);
 
-        Refresh();
+        Refresh(idPair);
 
         const AZ::Color manipulatorColor(0.3f, 0.3f, 0.3f, 1.0f);
         const float manipulatorSize = 0.05f;
         AzToolsFramework::ManipulatorViews views;
-        views.emplace_back(AzToolsFramework::CreateManipulatorViewQuadBillboard(manipulatorColor
-            , manipulatorSize));
+        views.emplace_back(AzToolsFramework::CreateManipulatorViewQuadBillboard(manipulatorColor, manipulatorSize));
         m_manipulator->SetViews(AZStd::move(views));
+
+        m_manipulator->Register(AzToolsFramework::g_mainManipulatorManagerId);
+        AzFramework::EntityDebugDisplayEventBus::Handler::BusConnect(m_entityComponentId.GetEntityId());
     }
 
-    void EditorSubComponentModeSnap::HandleMouseInteraction(
-        const AzToolsFramework::ViewportInteraction::MouseInteractionEvent& mouseInteraction)
+    void JointsSubComponentModeSnap::Refresh(const AZ::EntityComponentIdPair& idPair)
+    {
+        AZ::Transform localTransform = AZ::Transform::CreateIdentity();
+        EditorJointRequestBus::EventResult(
+            localTransform, idPair, &EditorJointRequests::GetTransformValue, JointsComponentModeCommon::ParamaterNames::Transform);
+
+        m_manipulator->SetLocalTransform(localTransform);
+    }
+
+    void JointsSubComponentModeSnap::Teardown(const AZ::EntityComponentIdPair& idPair)
+    {
+        AzFramework::EntityDebugDisplayEventBus::Handler::BusDisconnect();
+
+        m_manipulator->RemoveEntityComponentIdPair(idPair);
+        m_manipulator->Unregister();
+        m_manipulator.reset();
+    }
+
+    void JointsSubComponentModeSnap::HandleMouseInteraction(const AzToolsFramework::ViewportInteraction::MouseInteractionEvent& mouseInteraction)
     {
         if (mouseInteraction.m_mouseEvent == AzToolsFramework::ViewportInteraction::MouseEvent::Move)
         {
@@ -63,25 +80,36 @@ namespace PhysX
                 const AZ::Quaternion worldRotateInv = worldRotate.GetInverseFull();
 
                 m_manipulator->SetLocalPosition(worldRotateInv.TransformVector(m_pickedPosition - worldTransform.GetTranslation()));
-                m_manipulator->SetBoundsDirty();
             }
         }
     }
 
-    void EditorSubComponentModeSnap::Refresh()
+    AZStd::string JointsSubComponentModeSnap::GetPickedEntityName()
     {
-        AZ::Transform localTransform = AZ::Transform::CreateIdentity();
-        EditorJointRequestBus::EventResult(
-            localTransform, m_entityComponentId
-            , &EditorJointRequests::GetTransformValue
-            , PhysX::EditorJointComponentMode::s_parameterTransform);
-
-        m_manipulator->SetLocalTransform(localTransform);
+        AZStd::string pickedEntityName;
+        if (m_pickedEntity.IsValid())
+        {
+            AZ::ComponentApplicationBus::BroadcastResult(
+                pickedEntityName, &AZ::ComponentApplicationRequests::GetEntityName, m_pickedEntity);
+        }
+        return pickedEntityName;
     }
 
-    void EditorSubComponentModeSnap::DisplayEntityViewport(
-        const AzFramework::ViewportInfo& viewportInfo,
-        AzFramework::DebugDisplayRequests& debugDisplay)
+    AZ::Vector3 JointsSubComponentModeSnap::GetPosition() const
+    {
+        AZ::Transform worldTransform = PhysX::Utils::GetEntityWorldTransformWithoutScale(m_entityComponentId.GetEntityId());
+
+        AZ::Quaternion worldRotate = worldTransform.GetRotation();
+
+        AZ::Transform localTransform = AZ::Transform::CreateIdentity();
+        EditorJointRequestBus::EventResult(
+            localTransform, m_entityComponentId, &EditorJointRequests::GetTransformValue, JointsComponentModeCommon::ParamaterNames::Transform);
+
+        return worldTransform.GetTranslation() + worldRotate.TransformVector(localTransform.GetTranslation());
+    }
+
+    void JointsSubComponentModeSnap::DisplayEntityViewport(
+        const AzFramework::ViewportInfo& viewportInfo, AzFramework::DebugDisplayRequests& debugDisplay)
     {
         AZ::u32 stateBefore = debugDisplay.GetState();
 
@@ -89,11 +117,9 @@ namespace PhysX
 
         AZ::Transform worldTransform = PhysX::Utils::GetEntityWorldTransformWithoutScale(m_entityComponentId.GetEntityId());
 
-        AZ::Transform localTransform = AZ::Transform::CreateIdentity();;
+        AZ::Transform localTransform = AZ::Transform::CreateIdentity();
         EditorJointRequestBus::EventResult(
-            localTransform, m_entityComponentId
-            , &EditorJointRequests::GetTransformValue
-            , PhysX::EditorJointComponentMode::s_parameterTransform);
+            localTransform, m_entityComponentId, &EditorJointRequests::GetTransformValue, JointsComponentModeCommon::ParamaterNames::Transform);
 
         debugDisplay.PushMatrix(worldTransform);
         debugDisplay.PushMatrix(localTransform);
@@ -104,9 +130,7 @@ namespace PhysX
 
         AngleLimitsFloatPair yzSwingAngleLimits;
         EditorJointRequestBus::EventResult(
-            yzSwingAngleLimits, m_entityComponentId
-            , &EditorJointRequests::GetLinearValuePair
-            , PhysX::EditorJointComponentMode::s_parameterSwingLimit);
+            yzSwingAngleLimits, m_entityComponentId, &EditorJointRequests::GetLinearValuePair, JointsComponentModeCommon::ParamaterNames::SwingLimit);
 
         const AZ::u32 numEllipseSamples = 16;
         AZStd::array<AZ::Vector3, numEllipseSamples> ellipseSamples;
@@ -154,8 +178,8 @@ namespace PhysX
         debugDisplay.DrawLine(ellipseSamples[numEllipseSamples * 3 / 4], ellipseSamples[numEllipseSamples / 4]);
         debugDisplay.DrawLine(AZ::Vector3(0.0f, 0.0f, 0.0f), AZ::Vector3(coneHeight, 0.0f, 0.0f));
 
-        debugDisplay.PopMatrix();//pop local transform
-        debugDisplay.PopMatrix();//pop world transform
+        debugDisplay.PopMatrix(); // pop local transform
+        debugDisplay.PopMatrix(); // pop world transform
 
         // draw line from joint to mouse-over entity
         if (m_pickedEntity.IsValid())
@@ -173,40 +197,9 @@ namespace PhysX
             debugDisplay.DrawWireBox(m_pickedEntityAabb.GetMin(), m_pickedEntityAabb.GetMax());
 
             // draw something, e.g. an icon, to indicate type of snapping
-            DisplaySpecificSnapType(viewportInfo, 
-                debugDisplay, 
-                position, 
-                directionNorm, 
-                directionLength);
+            DisplaySpecificSnapType(viewportInfo, debugDisplay, position, directionNorm, directionLength);
         }
 
         debugDisplay.SetState(stateBefore);
-    }
-
-    AZStd::string EditorSubComponentModeSnap::GetPickedEntityName()
-    {
-        AZStd::string pickedEntityName;
-        if (m_pickedEntity.IsValid())
-        {
-            AZ::ComponentApplicationBus::BroadcastResult(pickedEntityName,
-                &AZ::ComponentApplicationRequests::GetEntityName,
-                m_pickedEntity);
-        }
-        return pickedEntityName;
-    }
-
-    AZ::Vector3 EditorSubComponentModeSnap::GetPosition() const
-    {
-        AZ::Transform worldTransform = PhysX::Utils::GetEntityWorldTransformWithoutScale(m_entityComponentId.GetEntityId());
-
-        AZ::Quaternion worldRotate = worldTransform.GetRotation();
-
-        AZ::Transform localTransform = AZ::Transform::CreateIdentity();
-        EditorJointRequestBus::EventResult(
-            localTransform, m_entityComponentId
-            , &EditorJointRequests::GetTransformValue
-            , PhysX::EditorJointComponentMode::s_parameterTransform);
-
-        return worldTransform.GetTranslation() + worldRotate.TransformVector(localTransform.GetTranslation());
     }
 } // namespace PhysX
