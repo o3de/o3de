@@ -340,8 +340,6 @@ namespace Terrain
                 uint16_t bottomLeft = (y + 1) * gridVertices + x;
                 uint16_t bottomRight = bottomLeft + 1;
 
-                constexpr uint16_t one = 1;
-
                 patchdata.m_indices.emplace_back(topLeft);
                 patchdata.m_indices.emplace_back(topRight);
                 patchdata.m_indices.emplace_back(bottomLeft);
