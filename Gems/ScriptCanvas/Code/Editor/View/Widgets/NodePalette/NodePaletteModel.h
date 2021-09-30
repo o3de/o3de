@@ -104,10 +104,6 @@ namespace ScriptCanvasEditor
         {
             DisconnectLambdas();
         }
-        void OnUpgradeComplete() override
-        {
-            ConnectLambdas();
-        }
 
         // Asset Node Support
         void OnRowsInserted(const QModelIndex& parentIndex, int first, int last);

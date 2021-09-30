@@ -117,11 +117,6 @@ namespace ScriptCanvasEditor
         {
             AzToolsFramework::AssetBrowser::AssetBrowserComponentNotificationBus::Handler::BusDisconnect();
         }
-        
-        void OnUpgradeComplete() override
-        {
-            AzToolsFramework::AssetBrowser::AssetBrowserComponentNotificationBus::Handler::BusConnect();
-        }
     };
 
     class OnSaveToast

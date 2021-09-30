@@ -92,7 +92,6 @@ namespace ScriptCanvasEditor
 
             // UpgradeNotifications::Bus
             void OnUpgradeStart() override;
-            void OnUpgradeComplete() override;
             void OnUpgradeCancelled() override;
             ////
 

@@ -386,15 +386,6 @@ namespace ScriptCanvasEditor
             AzFramework::AssetCatalogEventBus::Handler::BusDisconnect();
         }
 
-        void ScriptCanvasRootPaletteTreeItem::OnUpgradeComplete()
-        {
-            ConnectLambdas();
-
-            AzFramework::AssetCatalogEventBus::Handler::BusConnect();
-
-            TraverseTree();
-        }
-
         void ScriptCanvasRootPaletteTreeItem::OnUpgradeCancelled()
         {
             if (!AzFramework::AssetCatalogEventBus::Handler::BusIsConnected())

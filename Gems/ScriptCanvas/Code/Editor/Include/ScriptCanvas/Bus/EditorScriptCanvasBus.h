@@ -223,7 +223,6 @@ namespace ScriptCanvasEditor
         static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Multiple;
 
         virtual void OnUpgradeStart() {}
-        virtual void OnUpgradeComplete() {}
         virtual void OnUpgradeCancelled() {}
 
         virtual void OnGraphUpgradeComplete(AZ::Data::Asset<AZ::Data::AssetData>&, bool skipped = false) { (void)skipped; }
