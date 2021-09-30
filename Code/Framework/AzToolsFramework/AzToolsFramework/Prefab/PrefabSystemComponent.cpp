@@ -818,7 +818,14 @@ namespace AzToolsFramework
                 auto linkIterator = m_linkIdMap.find(linkId);
                 if (linkIterator != m_linkIdMap.end())
                 {
-                    return AreDirtyTemplatesPresent(linkIterator->second.GetSourceTemplateId());
+                    if (AreDirtyTemplatesPresent(linkIterator->second.GetSourceTemplateId()))
+                    {
+                        return true;
+                    }
+                    else
+                    {
+                        continue;
+                    }
                 }
             }
             return false;
