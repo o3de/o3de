@@ -47,7 +47,7 @@ function Write-Signature {
     $sleepSec = 5
 
     Do {
-        $attmpts--
+        $attempts--
         Try {
             & $signtool sign /tr http://timestamp.digicert.com /td sha256 /fd sha256 /sha1 $thumbprint /sm $filename
             & $signtool verify /pa /v $filename
