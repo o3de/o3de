@@ -6,7 +6,6 @@
 # 
 
 set(FILES
-    Materials/ReflectionProbe/ReflectionProbeVisualization.materialtype
     Materials/Special/ShadowCatcher.azsl
     Materials/Special/ShadowCatcher.materialtype
     Materials/Special/ShadowCatcher.shader
