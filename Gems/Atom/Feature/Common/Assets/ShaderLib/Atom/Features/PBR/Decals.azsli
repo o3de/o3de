@@ -67,6 +67,9 @@ void ApplyDecal(uint currDecalIndex, inout Surface surface)
         float3 decalSample;
 
         float4 baseMap = 0;
+        
+        // Each texture array handles a size permutation. 
+        // e.g. it could be that tex array 0 handles 256x256 and tex array 1 handles 512x64, etc.
         switch(textureArrayIndex)
         {
             case 0:
