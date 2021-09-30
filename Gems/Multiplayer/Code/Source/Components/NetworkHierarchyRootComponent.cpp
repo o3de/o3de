@@ -139,6 +139,11 @@ namespace Multiplayer
         return m_hierarchicalEntities;
     }
 
+    const AZStd::vector<AZ::Entity*>& NetworkHierarchyRootComponent::GetHierarchicalEntitiesRef() const
+    {
+        return m_hierarchicalEntities;
+    }
+
     AZ::Entity* NetworkHierarchyRootComponent::GetHierarchicalRoot() const
     {
         if (m_rootEntity)
@@ -326,4 +331,99 @@ namespace Multiplayer
             RebuildHierarchy();
         }
     }
+
+    NetworkHierarchyRootComponentController::NetworkHierarchyRootComponentController(NetworkHierarchyRootComponent& parent)
+        : NetworkHierarchyRootComponentControllerBase(parent)
+    {
+
+    }
+
+    void NetworkHierarchyRootComponentController::OnActivate([[maybe_unused]] Multiplayer::EntityIsMigrating entityIsMigrating)
+    {
+
+    }
+
+    void NetworkHierarchyRootComponentController::OnDeactivate([[maybe_unused]] Multiplayer::EntityIsMigrating entityIsMigrating)
+    {
+
+    }
+
+    Multiplayer::MultiplayerController::InputPriorityOrder NetworkHierarchyRootComponentController::GetInputOrder() const
+    {
+        return Multiplayer::MultiplayerController::InputPriorityOrder::SubEntities;
+    }
+
+    void NetworkHierarchyRootComponentController::CreateInput(Multiplayer::NetworkInput& input, float deltaTime)
+    {
+        NetworkHierarchyRootComponent& component = GetParent();
+        if(!component.IsHierarchicalRoot())
+        {
+            return;
+        }
+
+        const AZStd::vector<AZ::Entity*>& entities = component.GetHierarchicalEntitiesRef();
+
+        auto* networkInput = input.FindComponentInput<NetworkHierarchyRootComponentNetworkInput>();
+        networkInput->m_childInputs.clear();
+        networkInput->m_childInputs.reserve(entities.size());
+
+        for (AZ::Entity* child : entities)
+        {
+            if(child == component.GetEntity())
+            {
+                return; // Avoid infinite recursion
+            }
+
+            auto* netComp = child->FindComponent<NetBindComponent>();
+            AZ_Assert(netComp, "No NetSystemComponent, this should be impossible");
+            // Validate we still have a controller and we aren't in the middle of removing them
+            if (netComp->HasController())
+            {
+                ConstNetworkEntityHandle childEntityHandle = netComp->GetEntityHandle();
+                NetworkSubInput subInput;
+                subInput.Attach(childEntityHandle);
+                subInput.GetNetworkInput().SetClientInputId(input.GetClientInputId());
+
+                netComp->CreateInput(subInput.GetNetworkInput(), deltaTime);
+                    
+                // make sure our input sub commands have the same time as the original
+                subInput.GetNetworkInput().SetClientInputId(input.GetClientInputId());
+                networkInput->m_childInputs.emplace_back(subInput);
+            }
+        }
+    }
+
+    void NetworkHierarchyRootComponentController::ProcessInput(Multiplayer::NetworkInput& input, float deltaTime)
+    {
+        // Prevent replaying process input commands for child entities that weren't part of the hierarchy at that time
+        //if (!m_firstProcessInputOccurred)
+        //{
+        //    m_firstProcessInputOccurred = true;
+        //    m_firstProcessInputTime = input.GetInputId().GetGameTimePoint();
+        //}
+        //else if (m_firstProcessInputTime > input.GetInputId().GetGameTimePoint())
+        //{
+        //    return;
+        //}
+
+        if (auto* networkInput = input.FindComponentInput<NetworkHierarchyRootComponentNetworkInput>())
+        {
+            for (NetworkSubInput& subInput : networkInput->m_childInputs)
+            {
+                const ConstNetworkEntityHandle& childEntity = subInput.GetOwner();
+                if (auto* localChild = childEntity.GetEntity())
+                {
+                    auto* netComp = localChild->FindComponent<NetBindComponent>();
+                    AZ_Assert(netComp, "No NetSystemComponent, this should be impossible");
+                    // We do not rewind entity role changes, so make sure we are the correct role prior to processing
+                    if (netComp->HasController())
+                    {
+                        subInput.GetNetworkInput().SetClientInputId(input.GetClientInputId());
+                        netComp->ProcessInput(subInput.GetNetworkInput(), deltaTime);
+                    }
+                }
+            }
+        }
+    }
+
 }

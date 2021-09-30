@@ -57,6 +57,8 @@ namespace Multiplayer
         void BindNetworkHierarchyLeaveEventHandler(NetworkHierarchyLeaveEvent::Handler& handler) override;
         //! @}
 
+        const AZStd::vector<AZ::Entity*>& GetHierarchicalEntitiesRef() const;
+
     protected:
         void SetTopLevelHierarchyRootEntity(AZ::Entity* hierarchyRoot);
 
@@ -96,5 +98,25 @@ namespace Multiplayer
         
         //! Set to false when deactivating or otherwise not to be included in hierarchy considerations.
         bool m_isHierarchyEnabled = true;
+    };
+
+
+    //! NetworkCharacterComponentController
+    //! This is the network controller for NetworkHierarchyRootComponent.
+    //! Class provides the ability to process input for hierarchies.
+    class NetworkHierarchyRootComponentController
+        : public NetworkHierarchyRootComponentControllerBase
+    {
+    public:
+        NetworkHierarchyRootComponentController(NetworkHierarchyRootComponent& parent);
+
+        // NetworkHierarchyRootComponentControllerBase
+        void OnActivate(Multiplayer::EntityIsMigrating entityIsMigrating) override;
+        void OnDeactivate(Multiplayer::EntityIsMigrating entityIsMigrating) override;
+
+        //! MultiplayerController interface
+        Multiplayer::MultiplayerController::InputPriorityOrder GetInputOrder() const override;
+        void CreateInput(Multiplayer::NetworkInput& input, float deltaTime) override;
+        void ProcessInput(Multiplayer::NetworkInput& input, float deltaTime) override;
     };
 }

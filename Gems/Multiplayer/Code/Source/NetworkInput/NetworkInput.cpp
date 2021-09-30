@@ -188,4 +188,53 @@ namespace Multiplayer
         }
         m_wasAttached = rhs.m_wasAttached;
     }
+
+    NetworkSubInput::NetworkSubInput(const ConstNetworkEntityHandle& entityHandle)
+        : m_owner(entityHandle)
+    {
+        Attach(m_owner);
+    }
+
+    void NetworkSubInput::Attach(const ConstNetworkEntityHandle& entityHandle)
+    {
+        m_owner = entityHandle;
+        if (auto* localEnt = entityHandle.GetEntity())
+        {
+            NetBindComponent* netBindComponent = localEnt->FindComponent<NetBindComponent>();
+            if (netBindComponent)
+            {
+                m_networkInput.AttachNetBindComponent(netBindComponent);
+            }
+        }
+    }
+
+    const ConstNetworkEntityHandle& NetworkSubInput::GetOwner() const
+    {
+        return m_owner;
+    }
+
+    NetworkInput& NetworkSubInput::GetNetworkInput()
+    {
+        return m_networkInput;
+    }
+
+    const NetworkInput& NetworkSubInput::GetNetworkInput() const
+    {
+        return m_networkInput;
+    }
+
+    bool NetworkSubInput::Serialize(AzNetworking::ISerializer& serializer)
+    {
+        NetEntityId tmpId = m_owner.GetNetEntityId();
+        serializer.Serialize(tmpId, "OwnerId");
+
+        if (serializer.GetSerializerMode() == AzNetworking::SerializerMode::WriteToObject)
+        {
+            m_owner = AZ::Interface<INetworkEntityManager>::Get()->GetEntity(tmpId);
+        }
+
+        serializer.Serialize(m_networkInput, "NetInput");
+        return serializer.IsValid();
+    }
+
 }
