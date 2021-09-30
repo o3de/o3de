@@ -29,8 +29,28 @@ namespace AzToolsFramework
         }
 
         Instance::Instance(AZStd::unique_ptr<AZ::Entity> containerEntity)
-            : m_parent(nullptr)
-            , m_alias(GenerateInstanceAlias())
+            : Instance(AZStd::move(containerEntity), AZStd::nullopt, GenerateInstanceAlias())
+        {
+        }
+
+        Instance::Instance(InstanceOptionalReference parent)
+            : Instance(nullptr, parent, GenerateInstanceAlias())
+        {
+        }
+
+        Instance::Instance(InstanceAlias alias)
+            : Instance(nullptr, AZStd::nullopt, AZStd::move(alias))
+        {
+        }
+
+        Instance::Instance(AZStd::unique_ptr<AZ::Entity> containerEntity, InstanceOptionalReference parent)
+            : Instance(AZStd::move(containerEntity), parent, GenerateInstanceAlias())
+        {
+        }
+
+        Instance::Instance(AZStd::unique_ptr<AZ::Entity> containerEntity, InstanceOptionalReference parent, InstanceAlias alias)
+            : m_parent(parent.has_value() ? &parent->get() : nullptr)
+            , m_alias(AZStd::move(alias))
             , m_containerEntity(containerEntity ? AZStd::move(containerEntity) : AZStd::make_unique<AZ::Entity>())
             , m_instanceEntityMapper(AZ::Interface<InstanceEntityMapperInterface>::Get())
             , m_templateInstanceMapper(AZ::Interface<TemplateInstanceMapperInterface>::Get())
@@ -45,10 +65,20 @@ namespace AzToolsFramework
                 "It is a requirement for the Prefab Instance class. "
                 "Check that it is being correctly initialized.");
 
+            if (parent)
+            {
+                AliasPath absoluteInstancePath = m_parent->GetAbsoluteInstanceAliasPath();
+                absoluteInstancePath.Append(m_alias);
+                absoluteInstancePath.Append(PrefabDomUtils::ContainerEntityName);
+
+                AZ::EntityId newContainerEntityId = InstanceEntityIdMapper::GenerateEntityIdForAliasPath(absoluteInstancePath);
+                m_containerEntity->SetId(newContainerEntityId);
+            }
+
             RegisterEntity(m_containerEntity->GetId(), PrefabDomUtils::ContainerEntityName);
         }
 
-        Instance::Instance(InstanceAlias alias)
+        /*Instance::Instance(InstanceAlias alias)
             : Instance(nullptr, AZStd::move(alias))
         {
         }
@@ -89,7 +119,7 @@ namespace AzToolsFramework
             }
             
             RegisterEntity(m_containerEntity->GetId(), PrefabDomUtils::ContainerEntityName);
-        }
+        }*/
 
         Instance::~Instance()
         {

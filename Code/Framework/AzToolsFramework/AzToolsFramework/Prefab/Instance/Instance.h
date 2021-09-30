@@ -66,6 +66,7 @@ namespace AzToolsFramework
             Instance();
             explicit Instance(AZStd::unique_ptr<AZ::Entity> containerEntity);
             explicit Instance(InstanceOptionalReference parent);
+            explicit Instance(AZStd::unique_ptr<AZ::Entity> containerEntity, InstanceOptionalReference parent);
             explicit Instance(InstanceAlias alias);
             virtual ~Instance();
 
@@ -185,7 +186,7 @@ namespace AzToolsFramework
         private:
             static constexpr const char s_aliasPathSeparator = '/';
 
-            Instance(Instance* parent, InstanceAlias alias);
+            Instance(AZStd::unique_ptr<AZ::Entity> containerEntity, InstanceOptionalReference parent, InstanceAlias alias);
 
             void ClearEntities();
 

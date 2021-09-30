@@ -95,10 +95,7 @@ namespace AzToolsFramework
             AZ::IO::PathView filePath, AZStd::unique_ptr<AZ::Entity> containerEntity, InstanceOptionalReference parent,
             bool shouldCreateLinks)
         {
-
-            AZStd::unique_ptr<Instance> newInstance = parent.has_value() ? AZStd::make_unique<Instance>(parent)
-                                                                         : AZStd::make_unique<Instance>(AZStd::move(containerEntity));
-
+            AZStd::unique_ptr<Instance> newInstance = AZStd::make_unique<Instance>(AZStd::move(containerEntity), parent);
             CreatePrefab(entities, AZStd::move(instancesToConsume), filePath, newInstance, shouldCreateLinks);
             return newInstance;
         }
