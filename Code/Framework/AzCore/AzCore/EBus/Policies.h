@@ -18,9 +18,8 @@
 #include <AzCore/std/function/invoke.h>
 #include <AzCore/std/containers/queue.h>
 #include <AzCore/std/containers/intrusive_set.h>
+#include <AzCore/std/parallel/scoped_lock.h>
 
-#include <AzCore/Module/Environment.h>
-#include <AzCore/EBus/Environment.h>
 
 namespace AZ
 {
@@ -251,29 +250,21 @@ namespace AZ
         void Execute()
         {
             AZ_Warning("System", m_isActive, "You are calling execute queued functions on a bus which has not activated its function queuing! Call YourBus::AllowFunctionQueuing(true)!");
-            while (true)
+
+            MessageQueueType localMessages;
+
+            // Swap the current list of queue functions with a local instance
             {
-                BusMessageCall invoke;
+                AZStd::scoped_lock lock(m_messagesMutex);
+                AZStd::swap(localMessages, m_messages);
+            }
 
-                //////////////////////////////////////////////////////////////////////////
-                // Pop element from the queue.
-                {
-                    AZStd::lock_guard<MutexType> lock(m_messagesMutex);
-                    size_t numMessages = m_messages.size();
-                    if (numMessages == 0)
-                    {
-                        break;
-                    }
-                    AZStd::swap(invoke, m_messages.front());
-                    m_messages.pop();
-                    if (numMessages == 1)
-                    {
-                        m_messages = {};
-                    }
-                }
-                //////////////////////////////////////////////////////////////////////////
-
-                invoke();
+            // Execute the queue functions safely now that are owned by the function
+            while (!localMessages.empty())
+            {
+                const BusMessageCall& localMessage = localMessages.front();
+                localMessage();
+                localMessages.pop();
             }
         }
 
