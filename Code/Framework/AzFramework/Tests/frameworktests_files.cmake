@@ -7,7 +7,7 @@
 #
 
 set(FILES
-    ../../AzCore/Tests/Main.cpp
+    Main.cpp
     Spawnable/SpawnableEntitiesInterfaceTests.cpp
     Spawnable/SpawnableEntitiesManagerTests.cpp
     ArchiveCompressionTests.cpp
