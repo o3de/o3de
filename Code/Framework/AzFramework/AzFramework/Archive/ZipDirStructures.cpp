@@ -434,7 +434,7 @@ namespace AZ::IO::ZipDir
 
         if (AZ::IO::PathView(filename).IsRelative())
         {
-            AZ::IO::FileIOBase::GetDirectInstance()->ResolvePath(volume, filename);
+            m_fileIOBase->ResolvePath(volume, filename);
         }
         else
         {
@@ -754,7 +754,7 @@ namespace AZ::IO::ZipDir
     // the file must be opened both for reading and writing
     ErrorEnum UpdateLocalHeader(AZ::IO::HandleType fileHandle, FileEntryBase* pFileEntry)
     {
-
+        // This function is writing, so use the direct instance, it won't write to an archive nested in another archive.
         if (!AZ::IO::FileIOBase::GetDirectInstance()->Seek(fileHandle, pFileEntry->nFileHeaderOffset, AZ::IO::SeekType::SeekFromStart))
         {
             return ZD_ERROR_IO_FAILED;
@@ -799,6 +799,7 @@ namespace AZ::IO::ZipDir
         pFileEntry->nFileDataOffset = aznumeric_cast<uint32_t>(pFileEntry->nFileHeaderOffset + nHeaderSize);
         pFileEntry->nEOFOffset = pFileEntry->nFileDataOffset + pFileEntry->desc.lSizeCompressed;
 
+        // This function is writing, so use the direct instance, it won't write to an archive nested in another archive.
         if (!AZ::IO::FileIOBase::GetDirectInstance()->Seek(fileHandle, pFileEntry->nFileHeaderOffset, AZ::IO::SeekType::SeekFromStart))
         {
             return ZD_ERROR_IO_FAILED;
@@ -1031,7 +1032,7 @@ namespace AZ::IO::ZipDir
         }
         else
         {
-            if (AZ::IO::FileIOBase::GetDirectInstance()->Seek(file->m_fileHandle, origin, AZ::IO::GetSeekTypeFromFSeekMode(command)))
+            if (file->m_fileIOBase->Seek(file->m_fileHandle, origin, AZ::IO::GetSeekTypeFromFSeekMode(command)))
             {
                 return 0;
             }
@@ -1061,7 +1062,7 @@ namespace AZ::IO::ZipDir
         {
             AZ::IO::HandleType fileHandle = file->m_fileHandle;
             AZ::u64 bytesRead = 0;
-            AZ::IO::FileIOBase::GetDirectInstance()->Read(fileHandle, data, elementSize * count, false, &bytesRead);
+            file->m_fileIOBase->Read(fileHandle, data, elementSize * count, false, &bytesRead);
             return bytesRead / elementSize;
         }
     }
@@ -1075,7 +1076,7 @@ namespace AZ::IO::ZipDir
         else
         {
             AZ::u64 tellResult = 0;
-            AZ::IO::FileIOBase::GetDirectInstance()->Tell(file->m_fileHandle, tellResult);
+            file->m_fileIOBase->Tell(file->m_fileHandle, tellResult);
             return tellResult;
         }
     }
@@ -1088,7 +1089,7 @@ namespace AZ::IO::ZipDir
         }
         else
         {
-            return AZ::IO::FileIOBase::GetDirectInstance()->Eof(zipFile->m_fileHandle);
+            return zipFile->m_fileIOBase->Eof(zipFile->m_fileHandle);
         }
     }
 }

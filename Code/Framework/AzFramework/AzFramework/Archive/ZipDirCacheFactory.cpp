@@ -76,7 +76,7 @@ namespace AZ::IO::ZipDir
         // first, try to open the file for reading or reading/writing
         if (m_nFlags & FLAGS_READ_ONLY)
         {
-            AZ::IO::FileIOBase::GetDirectInstance()->Open(szFileName, AZ::IO::OpenMode::ModeRead | AZ::IO::OpenMode::ModeBinary, m_fileExt.m_fileHandle);
+            m_fileExt.m_fileIOBase->Open(szFileName, AZ::IO::OpenMode::ModeRead | AZ::IO::OpenMode::ModeBinary, m_fileExt.m_fileHandle);
             pCache->m_nFlags |= Cache::FLAGS_CDR_DIRTY | Cache::FLAGS_READ_ONLY;
 
             if (m_fileExt.m_fileHandle == AZ::IO::InvalidHandle)
@@ -95,7 +95,9 @@ namespace AZ::IO::ZipDir
             m_fileExt.m_fileHandle = AZ::IO::InvalidHandle;
             if (!(m_nFlags & FLAGS_CREATE_NEW))
             {
-                AZ::IO::FileIOBase::GetDirectInstance()->Open(szFileName, AZ::IO::OpenMode::ModeRead | AZ::IO::OpenMode::ModeUpdate | AZ::IO::OpenMode::ModeBinary, m_fileExt.m_fileHandle);
+                m_fileExt.m_fileIOBase->Open(
+                    szFileName, AZ::IO::OpenMode::ModeRead | AZ::IO::OpenMode::ModeUpdate | AZ::IO::OpenMode::ModeBinary,
+                    m_fileExt.m_fileHandle);
             }
 
             bool bOpenForWriting = true;
@@ -122,11 +124,13 @@ namespace AZ::IO::ZipDir
             {
                 if (m_fileExt.m_fileHandle != AZ::IO::InvalidHandle)
                 {
-                    AZ::IO::FileIOBase::GetDirectInstance()->Close(m_fileExt.m_fileHandle);
+                    m_fileExt.m_fileIOBase->Close(m_fileExt.m_fileHandle);
                     m_fileExt.m_fileHandle = AZ::IO::InvalidHandle;
                 }
 
-                if (AZ::IO::FileIOBase::GetDirectInstance()->Open(szFileName, AZ::IO::OpenMode::ModeWrite | AZ::IO::OpenMode::ModeUpdate | AZ::IO::OpenMode::ModeBinary, m_fileExt.m_fileHandle))
+                if (m_fileExt.m_fileIOBase->Open(
+                        szFileName, AZ::IO::OpenMode::ModeWrite | AZ::IO::OpenMode::ModeUpdate | AZ::IO::OpenMode::ModeBinary,
+                        m_fileExt.m_fileHandle))
                 {
                     // there's no such file, but we'll create one. We'll need to write out the CDR here
                     pCache->m_lCDROffset = 0;

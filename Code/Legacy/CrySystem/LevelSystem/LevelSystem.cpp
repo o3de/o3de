@@ -339,7 +339,9 @@ void CLevelSystem::PopulateLevels(
     {
         // allow this find first to actually touch the file system
         // (causes small overhead but with minimal amount of levels this should only be around 150ms on actual DVD Emu)
-        AZ::IO::ArchiveFileIterator handle = pPak->FindFirst(searchPattern.c_str(), AZ::IO::IArchive::eFileSearchType_AllowOnDiskOnly);
+        const AZ::IO::IArchive::EFileSearchType fileSearchType =
+            fromFileSystemOnly ? AZ::IO::IArchive::eFileSearchType_AllowOnDiskOnly : AZ::IO::IArchive::eFileSearchType_AllowInZipsOnly;
+        AZ::IO::ArchiveFileIterator handle = pPak->FindFirst(searchPattern.c_str(), fileSearchType);
 
         if (handle)
         {
