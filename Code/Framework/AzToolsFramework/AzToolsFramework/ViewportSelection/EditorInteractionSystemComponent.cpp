@@ -10,9 +10,24 @@
 
 #include <AzToolsFramework/ViewportSelection/EditorDefaultSelection.h>
 #include <AzToolsFramework/ViewportSelection/EditorVisibleEntityDataCache.h>
+#include <AzToolsFramework/ViewportSelection/ViewportEditorModeTracker.h>
 
 namespace AzToolsFramework
 {
+    EditorInteractionSystemComponent::EditorInteractionSystemComponent()
+        : m_viewportEditorMode(AZStd::make_unique<ViewportEditorModeTracker>())
+    {
+        AZ_Assert(AZ::Interface<ViewportEditorModeTrackerInterface>::Get() == nullptr, "Unexpected registration of viewport editor mode tracker.")
+        AZ::Interface<ViewportEditorModeTrackerInterface>::Register(m_viewportEditorMode.get());
+    }
+
+    EditorInteractionSystemComponent::~EditorInteractionSystemComponent()
+    {
+        m_interactionRequests.reset();
+        AZ_Assert(AZ::Interface<ViewportEditorModeTrackerInterface>::Get() != nullptr, "Unexpected unregistration of viewport editor mode tracker.")
+        AZ::Interface<ViewportEditorModeTrackerInterface>::Unregister(m_viewportEditorMode.get());
+    }
+
     void EditorInteractionSystemComponent::Activate()
     {
         EditorInteractionSystemViewportSelectionRequestBus::Handler::BusConnect(GetEntityContextId());
@@ -41,7 +56,8 @@ namespace AzToolsFramework
         return m_interactionRequests->InternalHandleMouseManipulatorInteraction(mouseInteraction);
     }
 
-    void EditorInteractionSystemComponent::SetHandler(const ViewportSelectionRequestsBuilderFn& interactionRequestsBuilder)
+    void EditorInteractionSystemComponent::SetHandler(
+        const ViewportSelectionRequestsBuilderFn& interactionRequestsBuilder)
     {
         // when setting a handler, make sure we're connected to the ViewportDebugDisplayEventBus so we
         // can forward calls to the specific type implementing ViewportSelectionRequests
@@ -59,7 +75,7 @@ namespace AzToolsFramework
             m_entityDataCache = AZStd::make_unique<EditorVisibleEntityDataCache>();
             m_interactionRequests.reset(); // BusConnect/Disconnect in constructor/destructor,
                                            // so have to reset before assigning the new one
-            m_interactionRequests = interactionRequestsBuilder(m_entityDataCache.get());
+            m_interactionRequests = interactionRequestsBuilder(m_entityDataCache.get(), m_viewportEditorMode.get());
         }
 
         EditorInteractionSystemViewportSelectionRequestBus::Handler::BusConnect(GetEntityContextId());
@@ -68,9 +84,9 @@ namespace AzToolsFramework
     void EditorInteractionSystemComponent::SetDefaultHandler()
     {
         SetHandler(
-            [](const EditorVisibleEntityDataCache* entityDataCache)
+            [](const EditorVisibleEntityDataCache* entityDataCache, ViewportEditorModeTrackerInterface* viewportEditorModeTracker)
             {
-                return AZStd::make_unique<EditorDefaultSelection>(entityDataCache);
+                return AZStd::make_unique<EditorDefaultSelection>(entityDataCache, viewportEditorModeTracker);
             });
     }
 

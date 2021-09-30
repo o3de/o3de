@@ -41,12 +41,6 @@ namespace AzToolsFramework
         : public ViewportEditorModeTrackerInterface
     {
     public:
-        //! Registers this object with the AZ::Interface.
-        void RegisterInterface();
-
-        //! Unregisters this object with the AZ::Interface.
-        void UnregisterInterface();
-
         // ViewportEditorModeTrackerInterface overrides ...
         AZ::Outcome<void, AZStd::string> ActivateMode(const ViewportEditorModeInfo& viewportEditorModeInfo, ViewportEditorMode mode) override;
         AZ::Outcome<void, AZStd::string> DeactivateMode(const ViewportEditorModeInfo& viewportEditorModeInfo, ViewportEditorMode mode) override;
