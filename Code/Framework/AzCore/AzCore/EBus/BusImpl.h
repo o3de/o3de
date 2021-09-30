@@ -194,7 +194,7 @@ namespace AZ
              * True if the ThreadDispatchPolicy type alias is a structure that implements
              * the <ret-type> operator()(PostDispatchTagType) signature
              */
-            static constexpr bool EnablePostDispatch = AZStd::is_invocable_v<Traits::ThreadDispatchPolicy, EBusPolicies::PostDispatchTagType>;
+            static constexpr bool EnablePostDispatch = AZStd::is_invocable_v<typename Traits::ThreadDispatchPolicy, EBusPolicies::PostDispatchTagType>;
         };
 
         /**
