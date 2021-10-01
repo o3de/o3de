@@ -309,8 +309,8 @@ namespace AZ
             const bool isValidMaterialBeingUsedCurrently = m_decalData.GetData(decalIndex).m_textureArrayIndex != DecalData::UnusedIndex;
             if (isValidMaterialBeingUsedCurrently)
             {
-                AZ_Assert(
-                AZ_Assert(m_decalData.GetData(handle.GetIndex()).m_textureArrayIndex == DecalData::UnusedIndex, "Setting Material on a decal more than once is not currently supported.");
+                RemoveMaterialFromDecal(decalIndex);
+            }
 
             if (!material.IsValid())
                 return;
