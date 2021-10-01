@@ -8,17 +8,21 @@
 
 #pragma once
 
+#include <TestImpactFramework/TestImpactUtils.h>
+
 #include <Artifact/Factory/TestImpactTestRunSuiteFactory.h>
+#include <TestEngine/TestImpactTestEngineException.h>
 #include <Artifact/Factory/TestImpactModuleCoverageFactory.h>
 #include <TestEngine/Common/Run/TestImpactInstrumentedTestRunner.h>
 #include <TestEngine/Common/Job/TestImpactInstrumentedTestRunJobData.h>
+#include <TestEngine/Native/Job/TestImpactNativeTestRunJobData.h>
 
 namespace TestImpact
 {
     struct NativeInstrumentedTestRunJobData
-        : public InstrumentedTestRunJobData
+        : public NativeTestRunJobData<InstrumentedTestRunJobData>
     {
-        using InstrumentedTestRunJobData::InstrumentedTestRunJobData;
+        using NativeTestRunJobData<InstrumentedTestRunJobData>::NativeTestRunJobData;
     };
 
     class NativeInstrumentedTestRunner

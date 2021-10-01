@@ -11,11 +11,12 @@
 #include <Target/TestImpactTestTarget.h>
 #include <TestEngine/TestImpactTestEngineException.h>
 #include <TestEngine/TestImpactTestEngine.h>
+#include <TestEngine/Common/TestImpactErrorCodeChecker.h>
+#include <TestEngine/Native/TestImpactNativeErrorCodeHandler.h>
 #include <TestEngine/Native/Enumeration/TestImpactNativeTestEnumerator.h>
 #include <TestEngine/Native/Run/TestImpactNativeInstrumentedTestRunner.h>
 #include <TestEngine/Native/Run/TestImpactNativeRegularTestRunner.h>
 #include <TestEngine/Native/Job/TestImpactNativeTestJobInfoGenerator.h>
-#include <TestEngine/TestImpactTestEngineJobFailure.h>
 
 #include <AzCore/std/containers/unordered_map.h>
 
@@ -71,42 +72,6 @@ namespace TestImpact
             }
         }
 
-        // Deduces the run result for a given test target based on how the process exited and known return values
-        Client::TestRunResult GetClientTestRunResultForMeta(const JobMeta& meta)
-        {
-            // Attempt to determine why a given test target executed successfully but return with an error code
-            if (meta.m_returnCode.has_value())
-            {
-                if (const auto result = CheckForAnyKnownErrorCode(meta.m_returnCode.value());
-                    result != AZStd::nullopt)
-                {
-                    return result.value();
-                }
-            }
-
-            switch (meta.m_result)
-            {
-            // If the test target executed successfully but returned in an unknown abnormal state it's probably because a test caused
-            // an unhandled exception, segfault or any other of the weird and wonderful ways a badly behaving test can terminate
-            case JobResult::ExecutedWithFailure:
-                return Client::TestRunResult::TestFailures;
-            // The trivial case: all of the tests in the test target passed
-            case JobResult::ExecutedWithSuccess:
-                return Client::TestRunResult::AllTestsPass;
-            // NotExecuted happens when a test is queued for launch but the test runner terminates the sequence (either due to client abort
-            // or due to the sequence timer expiring) whereas Terminated happens when the aforementioned scenarios happen when the test target
-            // is in flight
-            case JobResult::NotExecuted:
-            case JobResult::Terminated:
-                return Client::TestRunResult::NotRun;
-            // The individual timer for the test target expired
-            case JobResult::Timeout:
-                return Client::TestRunResult::Timeout;
-            default:
-                throw(TestEngineException(AZStd::string::format("Unexpected job result: %u", static_cast<unsigned int>(meta.m_result))));
-            }
-        }
-
         // Map for storing the test engine job data of completed test target runs
         template<typename IdType>
         using TestEngineJobMap = AZStd::unordered_map<IdType, TestEngineJob>;
@@ -153,11 +118,15 @@ namespace TestImpact
                 TestEngineJobMap<IdType>* engineJobs,
                 Policy::ExecutionFailure executionFailurePolicy,
                 Policy::TestFailure testFailurePolicy,
+                const ErrorCodeChecker& standAloneErrorCodeChecker,
+                const ErrorCodeChecker& testRunnerErrorCodeChecker,
                 AZStd::optional<TestEngineJobCompleteCallback>* callback)
                 : m_testTargets(testTargets)
                 , m_engineJobs(engineJobs)
                 , m_executionFailurePolicy(executionFailurePolicy)
                 , m_testFailurePolicy(testFailurePolicy)
+                , m_standAloneErrorCodeChecker(standAloneErrorCodeChecker)
+                , m_testRunnerErrorCodeChecker(testRunnerErrorCodeChecker)
                 , m_callback(callback)
             {
             }
@@ -167,7 +136,7 @@ namespace TestImpact
                 const auto id = jobInfo.GetId().m_value;
                 const auto& args = jobInfo.GetCommand().m_args;
                 const auto* target = m_testTargets[id];
-                const auto result = GetClientTestRunResultForMeta(meta);
+                const auto result = GetClientTestRunResultForMeta(jobInfo, meta);
 
                 // Place the test engine job associated with this test run into the map along with its client test run result so
                 // that it can be retrieved when the sequence has ended (and any associated artifacts processed)
@@ -187,11 +156,52 @@ namespace TestImpact
                 return ProcessCallbackResult::Continue;
             }
 
+            // Deduces the run result for a given test target based on how the process exited and known return values
+            Client::TestRunResult GetClientTestRunResultForMeta(const typename JobInfo& jobInfo, const JobMeta& meta)
+            {
+                // Attempt to determine why a given test target executed successfully but return with an error code
+                if (meta.m_returnCode.has_value())
+                {
+                    const ErrorCodeChecker& checker =
+                        jobInfo.GetLaunchMethod() == LaunchMethod::StandAlone ? m_standAloneErrorCodeChecker : m_testRunnerErrorCodeChecker;
+                    if (const auto result = checker.CheckErrorCode(meta.m_returnCode.value());
+                        result.has_value())
+                    {
+                        return result.value();
+                    }
+                }
+
+                switch (meta.m_result)
+                {
+                // If the test target executed successfully but returned in an unknown abnormal state it's probably because a test caused
+                // an unhandled exception, segfault or any other of the weird and wonderful ways a badly behaving test can terminate
+                case JobResult::ExecutedWithFailure:
+                    return Client::TestRunResult::TestFailures;
+                // The trivial case: all of the tests in the test target passed
+                case JobResult::ExecutedWithSuccess:
+                    return Client::TestRunResult::AllTestsPass;
+                // NotExecuted happens when a test is queued for launch but the test runner terminates the sequence (either due to client
+                // abort or due to the sequence timer expiring) whereas Terminated happens when the aforementioned scenarios happen when the
+                // test target is in flight
+                case JobResult::NotExecuted:
+                case JobResult::Terminated:
+                    return Client::TestRunResult::NotRun;
+                // The individual timer for the test target expired
+                case JobResult::Timeout:
+                    return Client::TestRunResult::Timeout;
+                default:
+                    throw(
+                        TestEngineException(AZStd::string::format("Unexpected job result: %u", static_cast<unsigned int>(meta.m_result))));
+                }
+            }
+
         private:
             const AZStd::vector<const TestTarget*>& m_testTargets;
             TestEngineJobMap<typename IdType>* m_engineJobs;
             Policy::ExecutionFailure m_executionFailurePolicy;
             Policy::TestFailure m_testFailurePolicy;
+            ErrorCodeChecker m_standAloneErrorCodeChecker;
+            ErrorCodeChecker m_testRunnerErrorCodeChecker;
             AZStd::optional<TestEngineJobCompleteCallback>* m_callback;
         };
 
@@ -277,6 +287,23 @@ namespace TestImpact
     //    return { CalculateSequenceResult(result, engineRuns, executionFailurePolicy), AZStd::move(engineRuns) };
     //}
 
+    AZStd::optional<Client::TestRunResult> StandAloneHandler(ReturnCode returnCode)
+    {
+        if (returnCode == 0)
+        {
+            return AZStd::nullopt;
+        }
+        else
+        {
+            return Client::TestRunResult::FailedToExecute;
+        }
+    }
+
+    // ALLLLLLLLLLSOOOOOOOOOOOO CHECK IF GTEST TARGET OR NOT AND HAVE THAT AS ARG IN ADDITIONALINFO
+
+    // actually: have the job info gen store the different error code checkers and stuff a ptr to each one on a per-job basis
+    // they can then be accessed via the AdditionalInfo of the job info class
+
     AZStd::pair<TestSequenceResult, AZStd::vector<TestEngineRegularRun>> TestEngine::RegularRun(
         const AZStd::vector<const TestTarget*>& testTargets,
         Policy::ExecutionFailure executionFailurePolicy,
@@ -291,8 +318,22 @@ namespace TestImpact
         TestEngineJobMap<NativeRegularTestRunner::JobInfo::IdType> engineJobs;
         const auto jobInfos = m_testJobInfoGenerator->GenerateRegularTestRunJobInfos(testTargets);
 
+        ErrorCodeChecker standAloneErrorCodeChecker({ GetNativeTestLibraryErrorCodeHandler(),
+                                                      [](ReturnCode returnCode)
+                                                      {
+                                                          return StandAloneHandler(returnCode);
+                                                      } });
+        ErrorCodeChecker testRunnerErrorCodeChecker({ GetNativeTestRunnerErrorCodeHandler(), GetNativeTestLibraryErrorCodeHandler() });
+
         TestJobRunnerCallbackHandler<NativeRegularTestRunner> jobCallback(
-            testTargets, &engineJobs, executionFailurePolicy, testFailurePolicy, &callback);
+            testTargets,
+            &engineJobs,
+            executionFailurePolicy,
+            testFailurePolicy,
+            standAloneErrorCodeChecker,
+            testRunnerErrorCodeChecker,
+            &callback);
+
         auto [result, runnerJobs] = m_testRunner->RunTests(
             jobInfos,
             testTargetTimeout,
@@ -318,12 +359,26 @@ namespace TestImpact
         TestEngineJobMap<NativeInstrumentedTestRunner::JobInfo::IdType> engineJobs;
         const auto jobInfos = m_testJobInfoGenerator->GenerateInstrumentedTestRunJobInfos(testTargets, CoverageLevel::Source);
 
+        ErrorCodeChecker standAloneErrorCodeChecker({ GetNativeInstrumentationErrorCodeHandler(), GetNativeTestLibraryErrorCodeHandler(),
+                                                      [](ReturnCode returnCode)
+                                                      {
+                                                          return StandAloneHandler(returnCode);
+                                                      } });
+        ErrorCodeChecker testRunnerErrorCodeChecker(
+            { GetNativeInstrumentationErrorCodeHandler(), GetNativeTestRunnerErrorCodeHandler(), GetNativeTestLibraryErrorCodeHandler() });
+
         auto [result, runnerJobs] = m_instrumentedTestRunner->RunTests(
             jobInfos,
             testTargetTimeout,
             globalTimeout,
             TestJobRunnerCallbackHandler<NativeInstrumentedTestRunner>(
-                testTargets, &engineJobs, executionFailurePolicy, testFailurePolicy, &callback));
+                testTargets,
+                &engineJobs,
+                executionFailurePolicy,
+                testFailurePolicy,
+                standAloneErrorCodeChecker,
+                testRunnerErrorCodeChecker,
+                &callback));
 
         auto engineRuns = CompileTestEngineRuns<NativeInstrumentedTestRunner>(testTargets, runnerJobs, AZStd::move(engineJobs));
 

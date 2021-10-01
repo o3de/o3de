@@ -15,6 +15,7 @@
 #include <TestEngine/Common/Enumeration/TestImpactTestEnumeration.h>
 #include <TestEngine/Common/Job/TestImpactTestEnumerationJobData.h>
 #include <TestEngine/Common/Job/TestImpactTestJobRunner.h>
+#include <TestEngine/TestImpactTestEngineException.h>
 
 namespace TestImpact
 {

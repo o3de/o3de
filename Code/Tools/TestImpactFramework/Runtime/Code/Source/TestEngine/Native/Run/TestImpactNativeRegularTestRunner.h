@@ -14,24 +14,25 @@
 #include <TestEngine/TestImpactTestEngineException.h>
 #include <TestEngine/Common/Run/TestImpactRegularTestRunner.h>
 #include <TestEngine/Common/Job/TestImpactRegularTestRunJobData.h>
+#include <TestEngine/Native/Job/TestImpactNativeTestRunJobData.h>
 
 namespace TestImpact
 {
-    struct NativeTestRunJobData
-        : public TestRunJobData
+    struct NativeRegularTestRunJobData
+        : public NativeTestRunJobData<TestRunJobData>
     {
-        using TestRunJobData::TestRunJobData;
+        using NativeTestRunJobData<TestRunJobData>::NativeTestRunJobData;
     };
 
     class NativeRegularTestRunner
-        : public RegularTestRunner<NativeTestRunJobData>
+        : public RegularTestRunner<NativeRegularTestRunJobData>
     {
     public:
-        using RegularTestRunner<NativeTestRunJobData>::RegularTestRunner;
+        using RegularTestRunner<NativeRegularTestRunJobData>::RegularTestRunner;
     };
 
     template<>
-    inline PayloadOutcome<TestRun> PayloadFactory(const JobInfo<NativeTestRunJobData>& jobData, const JobMeta& jobMeta)
+    inline PayloadOutcome<TestRun> PayloadFactory(const JobInfo<NativeRegularTestRunJobData>& jobData, const JobMeta& jobMeta)
     {
         try
         {

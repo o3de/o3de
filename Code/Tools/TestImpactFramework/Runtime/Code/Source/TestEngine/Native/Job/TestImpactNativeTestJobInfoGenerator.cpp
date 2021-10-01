@@ -105,7 +105,7 @@ namespace TestImpact
             runArtifact.c_str())
         };
     
-        return JobInfo(jobId, args, JobData(runArtifact));
+        return JobInfo(jobId, args, JobData(testTarget->GetLaunchMethod(), runArtifact));
     }
     
     NativeInstrumentedTestRunner::JobInfo NativeTestJobInfoGenerator::GenerateInstrumentedTestRunJobInfo(
@@ -140,7 +140,7 @@ namespace TestImpact
             runArtifact.c_str())                                                // 8. Result artifact
         };
     
-        return JobInfo(jobId, args, JobData(runArtifact, coverageArtifact));
+        return JobInfo(jobId, args, JobData(testTarget->GetLaunchMethod(), runArtifact, coverageArtifact));
     }
 
     AZStd::vector<NativeTestEnumerator::JobInfo> NativeTestJobInfoGenerator::GenerateTestEnumerationJobInfos(

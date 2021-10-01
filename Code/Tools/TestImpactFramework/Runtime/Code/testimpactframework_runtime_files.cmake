@@ -87,6 +87,8 @@ set(FILES
     Source/Target/TestImpactTestTarget.cpp
     Source/Target/TestImpactTestTarget.h
     Source/Target/TestImpactTestTargetList.h
+    Source/TestEngine/Common/TestImpactErrorCodeChecker.cpp
+    Source/TestEngine/Common/TestImpactErrorCodeChecker.h
     Source/TestEngine/Common/Job/TestImpactTestJobRunner.h
     Source/TestEngine/Common/Job/TestImpactInstrumentedTestRunJobData.cpp
     Source/TestEngine/Common/Job/TestImpactInstrumentedTestRunJobData.h
@@ -107,14 +109,15 @@ set(FILES
     Source/TestEngine/Common/Run/TestImpactTestRun.h
     Source/TestEngine/Common/Run/TestImpactTestRunSerializer.cpp
     Source/TestEngine/Common/Run/TestImpactTestRunSerializer.h
+    Source/TestEngine/Native/TestImpactNativeErrorCodeHandler.cpp
+    Source/TestEngine/Native/TestImpactNativeErrorCodeHandler.h
     Source/TestEngine/Native/Enumeration/TestImpactNativeTestEnumerator.h
     Source/TestEngine/Native/Job/TestImpactNativeTestJobInfoGenerator.cpp
     Source/TestEngine/Native/Job/TestImpactNativeTestJobInfoGenerator.h
+    Source/TestEngine/Native/Job/TestImpactNativeTestRunJobData.h
     Source/TestEngine/Native/Job/TestImpactNativeTestTargetExtension.h
     Source/TestEngine/Native/Run/TestImpactNativeInstrumentedTestRunner.h
     Source/TestEngine/Native/Run/TestImpactNativeRegularTestRunner.h
-    Source/TestEngine/TestImpactTestEngineJobFailure.cpp
-    Source/TestEngine/TestImpactTestEngineJobFailure.h
     Source/TestEngine/TestImpactTestSuiteContainer.h
     Source/TestEngine/TestImpactTestEngine.cpp
     Source/TestEngine/TestImpactTestEngine.h
