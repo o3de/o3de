@@ -903,9 +903,8 @@ namespace Multiplayer
 
             // Unfortunately necessary, as NotifyPreRender can update transforms and thus cause a deadlock inside the vis system
             AZStd::vector<NetBindComponent*> gatheredEntities;
-            INetworkEntityManager* netEntityManager = GetNetworkEntityManager();
             AZ::Interface<AzFramework::IVisibilitySystem>::Get()->GetDefaultVisibilityScene()->Enumerate(viewFrustum,
-                [netEntityManager, &gatheredEntities](const AzFramework::IVisibilityScene::NodeData& nodeData)
+                [&gatheredEntities](const AzFramework::IVisibilityScene::NodeData& nodeData)
             {
                 gatheredEntities.reserve(gatheredEntities.size() + nodeData.m_entries.size());
                 for (AzFramework::VisibilityEntry* visEntry : nodeData.m_entries)
@@ -913,14 +912,10 @@ namespace Multiplayer
                     if (visEntry->m_typeFlags & AzFramework::VisibilityEntry::TypeFlags::TYPE_Entity)
                     {
                         AZ::Entity* entity = static_cast<AZ::Entity*>(visEntry->m_userData);
-                        NetEntityId netEntitydId = netEntityManager->GetNetEntityIdById(entity->GetId());
-                        if (netEntitydId != InvalidNetEntityId)
+                        NetBindComponent* netBindComponent = entity->FindComponent<NetBindComponent>();
+                        if (netBindComponent != nullptr)
                         {
-                            NetBindComponent* netBindComponent = netEntityManager->GetEntity(netEntitydId).GetNetBindComponent();
-                            if (netBindComponent != nullptr)
-                            {
-                                gatheredEntities.push_back(netBindComponent);
-                            }
+                            gatheredEntities.push_back(netBindComponent);
                         }
                     }
                 }
@@ -937,14 +932,10 @@ namespace Multiplayer
             for (auto& iter : *(m_networkEntityManager.GetNetworkEntityTracker()))
             {
                 AZ::Entity* entity = iter.second;
-                NetEntityId netEntitydId = GetNetworkEntityManager()->GetNetEntityIdById(entity->GetId());
-                if (netEntitydId != InvalidNetEntityId)
+                NetBindComponent* netBindComponent = entity->FindComponent<NetBindComponent>();
+                if (netBindComponent != nullptr)
                 {
-                    NetBindComponent* netBindComponent = GetNetworkEntityManager()->GetEntity(netEntitydId).GetNetBindComponent();
-                    if (netBindComponent != nullptr)
-                    {
-                        netBindComponent->NotifyPreRender(deltaTime);
-                    }
+                    netBindComponent->NotifyPreRender(deltaTime);
                 }
             }
         }
