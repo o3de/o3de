@@ -9,6 +9,7 @@
 #include <Material/MaterialComponentController.h>
 #include <Atom/RPI.Reflect/Material/MaterialAsset.h>
 #include <Atom/RPI.Reflect/Asset/AssetUtils.h>
+#include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AtomCore/Instance/InstanceDatabase.h>
 
@@ -110,12 +111,14 @@ namespace AZ
             m_queuedMaterialUpdateNotification = false;
 
             MaterialComponentRequestBus::Handler::BusConnect(m_entityId);
+            MaterialReceiverNotificationBus::Handler::BusConnect(m_entityId);
             LoadMaterials();
         }
 
         void MaterialComponentController::Deactivate()
         {
             MaterialComponentRequestBus::Handler::BusDisconnect();
+            MaterialReceiverNotificationBus::Handler::BusDisconnect();
             TickBus::Handler::BusDisconnect();
             ReleaseMaterials();
 
@@ -142,59 +145,29 @@ namespace AZ
         {
             InitializeMaterialInstance(asset);
         }
-        
+
         void MaterialComponentController::OnTick([[maybe_unused]] float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time)
         {
-            AZStd::unordered_set<MaterialAssignmentId> propertyOverrides;
-            AZStd::swap(m_queuedPropertyOverrides, propertyOverrides);
+            AZStd::unordered_set<MaterialAssignmentId> materialsWithDirtyProperties;
+            AZStd::swap(m_materialsWithDirtyProperties, materialsWithDirtyProperties);
 
             // Iterate through all MaterialAssignmentId's that have property overrides and attempt to apply them
             // if material instance is already compiling, delay application of property overrides until next frame
-            for (const auto& materialAssignmentId : propertyOverrides)
+            for (const auto& materialAssignmentId : materialsWithDirtyProperties)
             {
                 const auto materialIt = m_configuration.m_materials.find(materialAssignmentId);
-                if (materialIt == m_configuration.m_materials.end())
+                if (materialIt != m_configuration.m_materials.end())
                 {
-                    //Skip materials that do not exist in the map
-                    continue;
-                }
-
-                auto materialInstance = materialIt->second.m_materialInstance;
-                if (!materialInstance)
-                {
-                    //Skip materials with an invalid instances
-                    continue;
-                }
-
-                if (!materialInstance->CanCompile())
-                {
-                    //If a material cannot currently be compiled then it must be queued again
-                    m_queuedPropertyOverrides.emplace(materialAssignmentId);
-                    continue;
-                }
-
-                const auto& propertyOverrides2 = materialIt->second.m_propertyOverrides;
-                for (auto& propertyPair : propertyOverrides2)
-                {
-                    if (propertyPair.second.empty())
+                    if (!materialIt->second.ApplyProperties())
                     {
-                        continue;
+                        // If a material cannot currently be compiled then it must be queued again
+                        m_materialsWithDirtyProperties.emplace(materialAssignmentId);
                     }
-
-                    const auto& materialPropertyIndex = materialInstance->FindPropertyIndex(propertyPair.first);
-                    if (materialPropertyIndex.IsNull())
-                    {
-                        continue;
-                    }
-
-                    materialInstance->SetPropertyValue(materialPropertyIndex, AZ::RPI::MaterialPropertyValue::FromAny(propertyPair.second));
                 }
-
-                materialInstance->Compile();
             }
 
-            // Only disconnect from tick bus and send notification after all pending properties have been applied 
-            if (m_queuedPropertyOverrides.empty())
+            // Only disconnect from tick bus and send notification after all pending properties have been applied
+            if (m_materialsWithDirtyProperties.empty())
             {
                 if (m_queuedMaterialUpdateNotification)
                 {
@@ -212,15 +185,35 @@ namespace AZ
             Data::AssetBus::MultiHandler::BusDisconnect();
 
             bool anyQueued = false;
-            for (auto& materialPair : m_configuration.m_materials)
+            auto queueAsset = [&anyQueued, this](AZ::Data::Asset<AZ::RPI::MaterialAsset>& materialAsset) -> bool
             {
-                auto& materialAsset = materialPair.second.m_materialAsset;
-
-                if (materialAsset.GetId().IsValid() && !Data::AssetBus::MultiHandler::BusIsConnectedId(materialAsset.GetId()))
+                if (materialAsset.GetId().IsValid() && !this->Data::AssetBus::MultiHandler::BusIsConnectedId(materialAsset.GetId()))
                 {
                     anyQueued = true;
                     materialAsset.QueueLoad();
-                    Data::AssetBus::MultiHandler::BusConnect(materialAsset.GetId());
+                    this->Data::AssetBus::MultiHandler::BusConnect(materialAsset.GetId());
+                    return true;
+                }
+                return false;
+            };
+
+            for (auto& materialPair : m_configuration.m_materials)
+            {
+                if (materialPair.second.m_materialInstancePreCreated)
+                {
+                    continue;
+                }
+
+                materialPair.second.m_defaultMaterialAsset = {};
+                if (!queueAsset(materialPair.second.m_materialAsset))
+                {
+                    // Only assign and load the default material if there was no material override and there are propoerties to apply
+                    if (!materialPair.second.m_propertyOverrides.empty() || !materialPair.second.m_matModUvOverrides.empty())
+                    {
+                        materialPair.second.m_defaultMaterialAsset = AZ::Data::Asset<AZ::RPI::MaterialAsset>(
+                            GetDefaultMaterialAssetId(materialPair.first), AZ::AzTypeInfo<AZ::RPI::MaterialAsset>::Uuid());
+                        queueAsset(materialPair.second.m_defaultMaterialAsset);
+                    }
                 }
             }
 
@@ -229,14 +222,12 @@ namespace AZ
                 ReleaseMaterials();
             }
         }
-        
+
         void MaterialComponentController::InitializeMaterialInstance(const Data::Asset<Data::AssetData>& asset)
         {
             bool allReady = true;
-
-            for (auto& materialPair : m_configuration.m_materials)
+            auto updateAsset = [&](AZ::Data::Asset<AZ::RPI::MaterialAsset>& materialAsset)
             {
-                auto& materialAsset = materialPair.second.m_materialAsset;
                 if (materialAsset.GetId() == asset.GetId())
                 {
                     materialAsset = asset;
@@ -246,6 +237,12 @@ namespace AZ
                 {
                     allReady = false;
                 }
+            };
+
+            for (auto& materialPair : m_configuration.m_materials)
+            {
+                updateAsset(materialPair.second.m_materialAsset);
+                updateAsset(materialPair.second.m_defaultMaterialAsset);
             }
 
             if (allReady)
@@ -268,11 +265,7 @@ namespace AZ
 
             for (auto& materialPair : m_configuration.m_materials)
             {
-                if (materialPair.second.m_materialAsset.GetId().IsValid())
-                {
-                    materialPair.second.m_materialAsset.Release();
-                    materialPair.second.m_materialInstance = nullptr;
-                }
+                materialPair.second.Release();
             }
 
             MaterialComponentNotificationBus::Event(m_entityId, &MaterialComponentNotifications::OnMaterialsUpdated, m_configuration.m_materials);
@@ -334,7 +327,7 @@ namespace AZ
             // this function is called twice once material asset is changed, a temp variable is
             // needed to prevent material asset going out of scope during second call
             // before LoadMaterials() is called [LYN-2249]
-            auto temp = m_configuration.m_materials; 
+            auto temp = m_configuration.m_materials;
             m_configuration.m_materials = materials;
             LoadMaterials();
         }
@@ -440,12 +433,7 @@ namespace AZ
         AZ::Data::AssetId MaterialComponentController::GetMaterialOverride(const MaterialAssignmentId& materialAssignmentId) const
         {
             auto materialIt = m_configuration.m_materials.find(materialAssignmentId);
-            if (materialIt == m_configuration.m_materials.end())
-            {
-                return {};
-            }
-
-            return materialIt->second.m_materialAsset.GetId();
+            return materialIt != m_configuration.m_materials.end() ? materialIt->second.m_materialAsset.GetId() : AZ::Data::AssetId();
         }
 
         void MaterialComponentController::ClearMaterialOverride(const MaterialAssignmentId& materialAssignmentId)
@@ -459,18 +447,21 @@ namespace AZ
         void MaterialComponentController::SetPropertyOverride(const MaterialAssignmentId& materialAssignmentId, const AZStd::string& propertyName, const AZStd::any& value)
         {
             auto& materialAssignment = m_configuration.m_materials[materialAssignmentId];
+            const bool wasEmpty = materialAssignment.m_propertyOverrides.empty();
+            materialAssignment.m_propertyOverrides[AZ::Name(propertyName)] = value;
 
-            // When applying property overrides for the first time, new instance needs to be created in case the current instance is already used somewhere else to keep overrides local
-            if (materialAssignment.m_propertyOverrides.empty())
+            if (materialAssignment.RequiresLoading())
             {
-                materialAssignment.m_propertyOverrides[AZ::Name(propertyName)] = value;
-                materialAssignment.RebuildInstance();
-                MaterialComponentNotificationBus::Event(m_entityId, &MaterialComponentNotifications::OnMaterialInstanceCreated, materialAssignment);
-                QueueMaterialUpdateNotification();
+                LoadMaterials();
+                return;
             }
-            else
+
+            if (wasEmpty != materialAssignment.m_propertyOverrides.empty())
             {
-                materialAssignment.m_propertyOverrides[AZ::Name(propertyName)] = value;
+                materialAssignment.RebuildInstance();
+                MaterialComponentNotificationBus::Event(
+                    m_entityId, &MaterialComponentNotifications::OnMaterialInstanceCreated, materialAssignment);
+                QueueMaterialUpdateNotification();
             }
 
             QueuePropertyChanges(materialAssignmentId);
@@ -703,6 +694,12 @@ namespace AZ
             const bool wasEmpty = materialAssignment.m_propertyOverrides.empty();
             materialAssignment.m_propertyOverrides = propertyOverrides;
 
+            if (materialAssignment.RequiresLoading())
+            {
+                LoadMaterials();
+                return;
+            }
+
             if (wasEmpty != materialAssignment.m_propertyOverrides.empty())
             {
                 materialAssignment.RebuildInstance();
@@ -712,14 +709,11 @@ namespace AZ
             QueuePropertyChanges(materialAssignmentId);
         }
 
-        MaterialPropertyOverrideMap MaterialComponentController::GetPropertyOverrides(const MaterialAssignmentId& materialAssignmentId) const
+        MaterialPropertyOverrideMap MaterialComponentController::GetPropertyOverrides(
+            const MaterialAssignmentId& materialAssignmentId) const
         {
             const auto materialIt = m_configuration.m_materials.find(materialAssignmentId);
-            if (materialIt == m_configuration.m_materials.end())
-            {
-                return {};
-            }
-            return materialIt->second.m_propertyOverrides;
+            return materialIt != m_configuration.m_materials.end() ? materialIt->second.m_propertyOverrides : MaterialPropertyOverrideMap();
         }
 
         void MaterialComponentController::SetModelUvOverrides(
@@ -728,6 +722,12 @@ namespace AZ
             auto& materialAssignment = m_configuration.m_materials[materialAssignmentId];
             const bool wasEmpty = materialAssignment.m_matModUvOverrides.empty();
             materialAssignment.m_matModUvOverrides = modelUvOverrides;
+
+            if (materialAssignment.RequiresLoading())
+            {
+                LoadMaterials();
+                return;
+            }
 
             if (wasEmpty != materialAssignment.m_matModUvOverrides.empty())
             {
@@ -742,16 +742,24 @@ namespace AZ
             const MaterialAssignmentId& materialAssignmentId) const
         {
             const auto materialIt = m_configuration.m_materials.find(materialAssignmentId);
-            if (materialIt == m_configuration.m_materials.end())
+            return materialIt != m_configuration.m_materials.end() ? materialIt->second.m_matModUvOverrides : AZ::RPI::MaterialModelUvOverrideMap();
+        }
+
+        void MaterialComponentController::OnMaterialAssignmentsChanged()
+        {
+            for (const auto& materialPair : m_configuration.m_materials)
             {
-                return {};
+                if (materialPair.second.RequiresLoading())
+                {
+                    LoadMaterials();
+                    return;
+                }
             }
-            return materialIt->second.m_matModUvOverrides;
         }
 
         void MaterialComponentController::QueuePropertyChanges(const MaterialAssignmentId& materialAssignmentId)
         {
-            m_queuedPropertyOverrides.emplace(materialAssignmentId);
+            m_materialsWithDirtyProperties.emplace(materialAssignmentId);
             if (!TickBus::Handler::BusIsConnected())
             {
                 TickBus::Handler::BusConnect();
