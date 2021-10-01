@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <Atom/RPI.Reflect/Model/ModelAsset.h>
 #include <AzCore/EBus/Event.h>
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/RTTI/RTTI.h>
@@ -18,11 +19,6 @@ namespace AZ
     {
         template<class T>
         class Asset;
-    }
-
-    namespace RPI
-    {
-        class ModelAsset;
     }
 
     namespace Render
