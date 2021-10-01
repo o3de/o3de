@@ -30,7 +30,7 @@ namespace AZ
         using ModelReloadedEvent = Event<const Data::Asset<RPI::ModelAsset>>;
 
         //! A system that handles reloading the hierarchy of model assets in the correct order
-		class ModelReloaderSystemInterface
+        class ModelReloaderSystemInterface
         {
         public:
             AZ_RTTI(AZ::Render::ModelReloaderSystemInterface, "{E7E05B1F-8928-4A1B-B75D-3D5433E65BCA}");
