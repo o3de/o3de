@@ -8,7 +8,7 @@ namespace {{ xml.attrib['Name'] }}
         {
 {% set packet_ns = namespace(handshake=false) %}
 {%      for Packet in xml.iter('Packet') %}
-{%          if ('HandshakePacket' in Packet.attrib) and (Packet.attrib['HandshakePacket'] == 'true') %}
+{%          if ('HandshakePacket' in Packet.attrib) and (Packet.attrib['HandshakePacket']|booleanTrue == true) %}
 {% set packet_ns.handshake = True %}
 {%          endif %}
 {%      endfor %}
