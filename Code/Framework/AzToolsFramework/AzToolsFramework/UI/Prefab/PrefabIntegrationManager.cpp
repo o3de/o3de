@@ -448,7 +448,6 @@ namespace AzToolsFramework
 
             if (hasUserForProceduralPrefabAsset)
             {
-                AzToolsFramework::Prefab::InstanceOptionalReference targetInstanceRef = AZStd::nullopt;
                 AZ::EntityId parentId;
                 AZ::Vector3 position = AZ::Vector3::CreateZero();
 
