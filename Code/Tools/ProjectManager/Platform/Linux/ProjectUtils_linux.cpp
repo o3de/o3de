@@ -19,7 +19,10 @@ namespace O3DE::ProjectManager
 
         AZ::Outcome<QProcessEnvironment, QString> GetCommandLineProcessEnvironment()
         {
-            return AZ::Success(QProcessEnvironment(QProcessEnvironment::systemEnvironment()));
+            QProcessEnvironment currentEnvironment(QProcessEnvironment::systemEnvironment());
+            currentEnvironment.insert("CC", "clang-12");
+            currentEnvironment.insert("CXX", "clang++-12");
+            return AZ::Success(currentEnvironment);
         }
 
         AZ::Outcome<QString, QString> FindSupportedCompilerForPlatform()
