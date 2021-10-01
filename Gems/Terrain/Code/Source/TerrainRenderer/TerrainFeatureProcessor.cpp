@@ -180,16 +180,17 @@ namespace Terrain
 
         if (!m_areaData.m_heightmapImage || m_areaData.m_heightmapImage->GetDescriptor().m_size != worldSize)
         {
+            // World size changed, so the whole world needs updating.
+            width = worldSize.m_width;
+            height = worldSize.m_height;
+            m_dirtyRegion = worldBounds;
+
             AZ::Data::Instance<AZ::RPI::AttachmentImagePool> imagePool = AZ::RPI::ImageSystemInterface::Get()->GetSystemAttachmentPool();
             AZ::RHI::ImageDescriptor imageDescriptor = AZ::RHI::ImageDescriptor::Create2D(
                 AZ::RHI::ImageBindFlags::ShaderRead, width, height, AZ::RHI::Format::R16_UNORM
             );
             m_areaData.m_heightmapImage = AZ::RPI::AttachmentImage::Create(*imagePool.get(), imageDescriptor, AZ::Name("TerrainHeightmap"), nullptr, nullptr);
             AZ_Error(TerrainFPName, m_areaData.m_heightmapImage, "Failed to initialize the heightmap image!");
-
-            // World size changed, so the whole world needs updating.
-            width = worldSize.m_width;
-            height = worldSize.m_height;
         }
 
         AZStd::vector<uint16_t> pixels;
