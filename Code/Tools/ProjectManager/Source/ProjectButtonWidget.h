@@ -99,7 +99,7 @@ namespace O3DE::ProjectManager
         void RemoveProject(const QString& projectName);
         void DeleteProject(const QString& projectName);
         void BuildProject(const ProjectInfo& projectInfo);
-        void OpenCMake(const ProjectInfo& projectInfo);
+        void OpenCMakeGUI(const ProjectInfo& projectInfo);
 
     private:
         void enterEvent(QEvent* event) override;

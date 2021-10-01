@@ -185,7 +185,7 @@ namespace O3DE::ProjectManager
         connect(projectButton, &ProjectButton::RemoveProject, this, &ProjectsScreen::HandleRemoveProject);
         connect(projectButton, &ProjectButton::DeleteProject, this, &ProjectsScreen::HandleDeleteProject);
         connect(projectButton, &ProjectButton::BuildProject, this, &ProjectsScreen::QueueBuildProject);
-        connect(projectButton, &ProjectButton::OpenCMake, this, 
+        connect(projectButton, &ProjectButton::OpenCMakeGUI, this, 
             [this](const ProjectInfo& projectInfo)
             {
                 AZ::Outcome result = ProjectUtils::OpenCMakeGUI(projectInfo.m_path);

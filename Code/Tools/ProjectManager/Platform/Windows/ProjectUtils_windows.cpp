@@ -101,21 +101,21 @@ namespace O3DE::ProjectManager
         
         AZ::Outcome<void, QString> OpenCMakeGUI(const QString& projectPath)
         {
-            auto cmakeProcessEnvResult = GetCommandLineProcessEnvironment();
-            if (!cmakeProcessEnvResult.IsSuccess())
+            AZ::Outcome processEnvResult = GetCommandLineProcessEnvironment();
+            if (!processEnvResult.IsSuccess())
             {
-                return AZ::Failure(cmakeProcessEnvResult.GetError());
+                return AZ::Failure(processEnvResult.GetError());
             }
 
             QString projectBuildPath = QDir(projectPath).filePath(ProjectBuildPathPostfix);
-            AZ::Outcome result = GetProjectBuildPath(projectPath);
-            if (result.IsSuccess())
+            AZ::Outcome projectBuildPathResult = GetProjectBuildPath(projectPath);
+            if (projectBuildPathResult.IsSuccess())
             {
-                projectBuildPath = result.GetValue();
+                projectBuildPath = projectBuildPathResult.GetValue();
             }
 
             QProcess process;
-            process.setProcessEnvironment(cmakeProcessEnvResult.GetValue());
+            process.setProcessEnvironment(processEnvResult.GetValue());
 
             // if the project build path is relative, it should be relative to the project path 
             process.setWorkingDirectory(projectPath);

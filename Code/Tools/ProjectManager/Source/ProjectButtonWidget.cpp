@@ -199,7 +199,7 @@ namespace O3DE::ProjectManager
             QMenu* menu = new QMenu(this);
             menu->addAction(tr("Edit Project Settings..."), this, [this]() { emit EditProject(m_projectInfo.m_path); });
             menu->addAction(tr("Auto-build"), this, [this]() { emit BuildProject(m_projectInfo); });
-            menu->addAction(tr("Open CMake..."), this, [this]() { emit OpenCMake(m_projectInfo); });
+            menu->addAction(tr("Open CMake GUI..."), this, [this]() { emit OpenCMakeGUI(m_projectInfo); });
             menu->addSeparator();
             menu->addAction(tr("Open Project folder..."), this, [this]()
             { 
@@ -276,8 +276,8 @@ namespace O3DE::ProjectManager
         QAction* autoBuildAction = menu->addAction(tr("Auto-build"));
         connect( autoBuildAction, &QAction::triggered, this, [this](){ emit BuildProject(m_projectInfo); });
 
-        QAction* openCMakeAction = menu->addAction(tr("Open CMake..."));
-        connect( openCMakeAction, &QAction::triggered, this, [this](){ emit OpenCMake(m_projectInfo); });
+        QAction* openCMakeAction = menu->addAction(tr("Open CMake GUI..."));
+        connect( openCMakeAction, &QAction::triggered, this, [this](){ emit OpenCMakeGUI(m_projectInfo); });
 
         projectActionButton->setMenu(menu);
     }

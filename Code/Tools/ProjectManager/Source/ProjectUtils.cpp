@@ -545,7 +545,7 @@ namespace O3DE::ProjectManager
             auto registry = AZ::SettingsRegistry::Get();
 
             // the project_build_path should be in the user settings registry inside the project folder
-            AZ::IO::FixedMaxPath projectUserPath(projectPath.toStdString().c_str());
+            AZ::IO::FixedMaxPath projectUserPath(projectPath.toUtf8().constData());
             projectUserPath /= AZ::SettingsRegistryInterface::DevUserRegistryFolder;
             if (!QDir(projectUserPath.c_str()).exists())
             {
