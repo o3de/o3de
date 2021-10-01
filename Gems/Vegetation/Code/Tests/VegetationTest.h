@@ -21,21 +21,34 @@
 namespace UnitTest
 {
     class VegetationComponentTests
-        : public ::testing::Test
+        : public ScopedAllocatorSetupFixture
     {
     protected:
+        VegetationComponentTests()
+            : ScopedAllocatorSetupFixture(
+                []() {
+                    AZ::SystemAllocator::Descriptor desc;
+                    desc.m_heap.m_fixedMemoryBlocksByteSize[0] = 20 * 1024 * 1024;
+                    desc.m_stackRecordLevels = 20;
+                    return desc;
+                }()
+            )
+        {
+        }
+
         AZ::ComponentApplication m_app;
 
         virtual void RegisterComponentDescriptors() {}
 
         void SetUp() override
         {
-            AZ::ComponentApplication::Descriptor appDesc;
-            appDesc.m_memoryBlocksByteSize = 20 * 1024 * 1024;
-            appDesc.m_recordingMode = AZ::Debug::AllocationRecords::RECORD_NO_RECORDS;
-            appDesc.m_stackRecordLevels = 20;
+            if (AZ::Debug::AllocationRecords* records = AZ::AllocatorInstance<AZ::SystemAllocator>::GetAllocator().GetRecords();
+                records != nullptr)
+            {
+                records->SetMode(AZ::Debug::AllocationRecords::RECORD_NO_RECORDS);
+            }
 
-            m_app.Create(appDesc);
+            m_app.Create({});
             RegisterComponentDescriptors();
         }
 
