@@ -28,7 +28,7 @@ namespace EMStudio
 
     const char* AtomRenderPlugin::GetName() const
     {
-        return "Atom Render Window";
+        return "Atom Render Window (Preview)";
     }
 
     uint32 AtomRenderPlugin::GetClassID() const
@@ -86,6 +86,7 @@ namespace EMStudio
         verticalLayout->setSpacing(1);
         verticalLayout->setMargin(0);
         m_animViewportWidget = new AnimViewportWidget(m_innerWidget);
+        verticalLayout->addWidget(m_animViewportWidget);
 
         // Register command callbacks.
         m_createActorInstanceCallback = new CreateActorInstanceCallback(false);

@@ -8,7 +8,7 @@
 #pragma once
 
 #include <AtomToolsFramework/Viewport/RenderViewportWidget.h>
-
+#include <AzFramework/Viewport/CameraInput.h>
 
 namespace EMStudio
 {
@@ -22,6 +22,12 @@ namespace EMStudio
         AnimViewportRenderer* GetAnimViewportRenderer() { return m_renderer.get(); }
 
     private:
+        void SetupCameras();
+        void SetupCameraController();
+
         AZStd::unique_ptr<AnimViewportRenderer> m_renderer;
+        AZStd::shared_ptr<AzFramework::RotateCameraInput> m_orbitRotateCamera;
+        AZStd::shared_ptr<AzFramework::TranslateCameraInput> m_orbitTranslateCamera;
+        AZStd::shared_ptr<AzFramework::OrbitDollyScrollCameraInput> m_orbitDollyScrollCamera;
     };
 }

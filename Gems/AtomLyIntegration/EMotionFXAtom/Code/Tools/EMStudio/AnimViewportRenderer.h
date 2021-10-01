@@ -14,7 +14,7 @@
 
 #include <Integration/Assets/ActorAsset.h>
 #include <Atom/RPI.Public/Base.h>
-#include <Atom/RPI.Public/WindowContext.h>
+#include <Atom/RPI.Public/ViewportContext.h>
 #include <Atom/Feature/SkyBox/SkyBoxFeatureProcessorInterface.h>
 #include <Atom/Feature/CoreLights/DirectionalLightFeatureProcessorInterface.h>
 #include <Atom/Feature/Utils/LightingPreset.h>
@@ -44,7 +44,7 @@ namespace EMStudio
     public:
         AZ_CLASS_ALLOCATOR(AnimViewportRenderer, AZ::SystemAllocator, 0);
 
-        AnimViewportRenderer(AZStd::shared_ptr<AZ::RPI::WindowContext> windowContext);
+        AnimViewportRenderer(AZ::RPI::ViewportContextPtr viewportContext);
         ~AnimViewportRenderer();
 
         void Reinit();

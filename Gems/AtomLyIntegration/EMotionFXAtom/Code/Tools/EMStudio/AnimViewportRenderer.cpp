@@ -32,17 +32,19 @@
 #include <AtomLyIntegration/CommonFeatures/PostProcess/ExposureControl/ExposureControlComponentConstants.h>
 #include <AtomLyIntegration/CommonFeatures/ImageBasedLights/ImageBasedLightComponentConstants.h>
 
+#include <EMStudio/AnimViewportRenderer.h>
 #include <EMotionFX/Source/EMotionFXManager.h>
 #include <EMotionFX/Source/ActorManager.h>
-#include <EMStudio/AnimViewportRenderer.h>
+#include <EMotionFX/CommandSystem/Source/CommandManager.h>
+#include <EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/EMStudioManager.h>
 
 
 namespace EMStudio
 {
     static constexpr float DepthNear = 0.01f;
 
-    AnimViewportRenderer::AnimViewportRenderer(AZStd::shared_ptr<AZ::RPI::WindowContext> windowContext)
-        : m_windowContext(windowContext)
+    AnimViewportRenderer::AnimViewportRenderer(AZ::RPI::ViewportContextPtr viewportContext)
+        : m_windowContext(viewportContext->GetWindowContext())
     {
         // Create a new entity context
         m_entityContext = AZStd::make_unique<AzFramework::EntityContext>();
@@ -72,32 +74,13 @@ namespace EMStudio
         m_renderPipeline = AZ::RPI::RenderPipeline::CreateRenderPipelineForWindow(pipelineAsset, *m_windowContext.get());
         pipelineAsset.Release();
         m_scene->AddRenderPipeline(m_renderPipeline);
+        m_renderPipeline->SetDefaultView(viewportContext->GetDefaultView());
 
         // Currently the scene has to be activated after render pipeline was added so some feature processors (i.e. imgui) can be
         // initialized properly with pipeline's pass information.
         m_scene->Activate();
         AZ::RPI::RPISystemInterface::Get()->RegisterScene(m_scene);
-
         AzFramework::EntityContextId entityContextId = m_entityContext->GetContextId();
-
-        // Configure camera
-        AzFramework::EntityContextRequestBus::EventResult(
-            m_cameraEntity, entityContextId, &AzFramework::EntityContextRequestBus::Events::CreateEntity, "Cameraentity");
-        AZ_Assert(m_cameraEntity != nullptr, "Failed to create camera entity.");
-
-        // Add debug camera and controller components
-        AZ::Debug::CameraComponentConfig cameraConfig(m_windowContext);
-        cameraConfig.m_fovY = AZ::Constants::HalfPi;
-        cameraConfig.m_depthNear = DepthNear;
-        m_cameraComponent = m_cameraEntity->CreateComponent(azrtti_typeid<AZ::Debug::CameraComponent>());
-        m_cameraComponent->SetConfiguration(cameraConfig);
-        m_cameraEntity->CreateComponent(azrtti_typeid<AzFramework::TransformComponent>());
-        m_cameraEntity->CreateComponent(azrtti_typeid<AZ::Debug::NoClipControllerComponent>());
-        m_cameraEntity->Init();
-        m_cameraEntity->Activate();
-
-        // Connect camera to pipeline's default view after camera entity activated
-        m_renderPipeline->SetDefaultViewFromEntity(m_cameraEntity->GetId());
 
         // Get the FeatureProcessors
         m_meshFeatureProcessor = m_scene->GetFeatureProcessor<AZ::Render::MeshFeatureProcessorInterface>();
@@ -162,7 +145,7 @@ namespace EMStudio
         // Destroy all the entity we created.
         m_entityContext->DestroyEntity(m_iblEntity);
         m_entityContext->DestroyEntity(m_postProcessEntity);
-        m_entityContext->DestroyEntity(m_cameraEntity);
+        //m_entityContext->DestroyEntity(m_cameraEntity);
         m_entityContext->DestroyEntity(m_gridEntity);
         for (AZ::Entity* entity : m_actorEntities)
         {
@@ -204,26 +187,6 @@ namespace EMStudio
         AZ::RPI::ScenePtr scene = AZ::RPI::RPISystemInterface::Get()->GetDefaultScene();
         auto skyBoxFeatureProcessorInterface = scene->GetFeatureProcessor<AZ::Render::SkyBoxFeatureProcessorInterface>();
         skyBoxFeatureProcessorInterface->SetCubemapRotationMatrix(rotationMatrix);
-
-        Camera::Configuration cameraConfig;
-        Camera::CameraRequestBus::EventResult(
-            cameraConfig, m_cameraEntity->GetId(), &Camera::CameraRequestBus::Events::GetCameraConfiguration);
-
-        // Reset the camera position
-        static constexpr float StartingDistanceMultiplier = 2.0f;
-        static constexpr float StartingRotationAngle = AZ::Constants::QuarterPi / 2.0f;
-
-        AZ::Vector3 targetPosition = iblTransform.GetTranslation();
-        const float distance = 1.0f * StartingDistanceMultiplier;
-        const AZ::Quaternion cameraRotation = AZ::Quaternion::CreateFromAxisAngle(AZ::Vector3::CreateAxisZ(), StartingRotationAngle);
-        AZ::Vector3 cameraPosition(targetPosition.GetX(), targetPosition.GetY() - distance, targetPosition.GetZ());
-        cameraPosition = cameraRotation.TransformVector(cameraPosition);
-        AZ::Transform cameraTransform = AZ::Transform::CreateFromQuaternionAndTranslation(cameraRotation, cameraPosition);
-        AZ::TransformBus::Event(m_cameraEntity->GetId(), &AZ::TransformBus::Events::SetLocalTM, cameraTransform);
-
-        // Setup primary camera controls
-        AZ::Debug::CameraControllerRequestBus::Event(
-            m_cameraEntity->GetId(), &AZ::Debug::CameraControllerRequestBus::Events::Enable, azrtti_typeid<AZ::Debug::NoClipControllerComponent>());
     }
 
     void AnimViewportRenderer::ReinitActorEntities()
@@ -292,6 +255,13 @@ namespace EMStudio
         EMotionFX::Integration::ActorComponent* actorComponent = actorEntity->FindComponent<EMotionFX::Integration::ActorComponent>();
         actorComponent->SetActorAsset(actorAsset);
 
+        // Since this entity belongs to the animation editor, we need to set the isOwnByRuntime flag to false.
+        actorComponent->GetActorInstance()->SetIsOwnedByRuntime(false);
+        // Selet the actor instance in the command manager after it has been created.
+        AZStd::string outResult;
+        EMStudioManager::GetInstance()->GetCommandManager()->ExecuteCommandInsideCommand(
+            AZStd::string::format("Select -actorInstanceID %i", actorComponent->GetActorInstance()->GetID()).c_str(), outResult);
+
         return actorEntity;
     }
 
@@ -312,8 +282,8 @@ namespace EMStudio
                 ->GetOrCreateExposureControlSettingsInterface();
 
         Camera::Configuration cameraConfig;
-        Camera::CameraRequestBus::EventResult(
-            cameraConfig, m_cameraEntity->GetId(), &Camera::CameraRequestBus::Events::GetCameraConfiguration);
+        cameraConfig.m_fovRadians = AZ::Constants::HalfPi;
+        cameraConfig.m_nearClipDistance = DepthNear;
 
         preset->ApplyLightingPreset(
             iblFeatureProcessor, m_skyboxFeatureProcessor, exposureControlSettingInterface, m_directionalLightFeatureProcessor,
