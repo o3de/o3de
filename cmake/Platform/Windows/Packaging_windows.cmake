@@ -23,6 +23,7 @@ set(CPACK_WIX_ROOT ${LY_INSTALLER_WIX_ROOT})
 
 set(CPACK_GENERATOR WIX)
 
+set(CPACK_THREADS 0)
 set(_cmake_package_name "cmake-${CPACK_DESIRED_CMAKE_VERSION}-windows-x86_64")
 set(CPACK_CMAKE_PACKAGE_FILE "${_cmake_package_name}.zip")
 set(CPACK_CMAKE_PACKAGE_HASH "15a49e2ab81c1822d75b1b1a92f7863f58e31f6d6aac1c4103eef2b071be3112")
