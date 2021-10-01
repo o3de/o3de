@@ -28,5 +28,5 @@ ly_associate_package(PACKAGE_NAME googlebenchmark-1.5.0-rev2-ios TARGETS GoogleB
 ly_associate_package(PACKAGE_NAME libpng-1.6.37-ios              TARGETS libpng          PACKAGE_HASH 18a8217721083c4dc46514105be43ca764fa9c994a74aa0b57766ea6f8187e7b)
 ly_associate_package(PACKAGE_NAME libsamplerate-0.2.1-rev2-ios   TARGETS libsamplerate   PACKAGE_HASH 7656b961697f490d4f9c35d2e61559f6fc38c32102e542a33c212cd618fc2119)
 ly_associate_package(PACKAGE_NAME OpenSSL-1.1.1b-rev1-ios        TARGETS OpenSSL         PACKAGE_HASH cd0dfce3086a7172777c63dadbaf0ac3695b676119ecb6d0614b5fb1da03462f)
-ly_associate_package(PACKAGE_NAME zlib-1.2.11-rev4-ios           TARGETS zlib            PACKAGE_HASH 5b3c9efc940ae2fba177e51f98e02860e8e6c9bc6547f2a5dfbd0d453040a7d8)
+ly_associate_package(PACKAGE_NAME zlib-1.2.11-rev4-ios           TARGETS ZLIB            PACKAGE_HASH 5b3c9efc940ae2fba177e51f98e02860e8e6c9bc6547f2a5dfbd0d453040a7d8)
 ly_associate_package(PACKAGE_NAME lz4-1.9.3-vcpkg-rev4-ios       TARGETS lz4             PACKAGE_HASH 588ea05739caa9231a9a17a1e8cf64c5b9a265e16528bc05420af7e2534e86c1)
