@@ -717,7 +717,9 @@ namespace AZ::SettingsRegistryMergeUtils
         if (registry.Get(cacheRootPath, FilePathKey_CacheRootFolder))
         {
             mergePath = AZStd::move(cacheRootPath);
-            mergePath /= SettingsRegistryInterface::RegistryFolder;
+            AZStd::fixed_string<32> registryFolderLower(SettingsRegistryInterface::RegistryFolder);
+            AZStd::to_lower(registryFolderLower.begin(), registryFolderLower.end());
+            mergePath /= registryFolderLower;
             registry.MergeSettingsFolder(mergePath.Native(), specializations, platform, "", scratchBuffer);
         }
 

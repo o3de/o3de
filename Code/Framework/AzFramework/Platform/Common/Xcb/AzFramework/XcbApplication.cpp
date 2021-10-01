@@ -8,6 +8,7 @@
 
 #include <AzFramework/XcbApplication.h>
 #include <AzFramework/XcbEventHandler.h>
+#include <AzFramework/XcbInterface.h>
 
 namespace AzFramework
 {
@@ -17,8 +18,8 @@ namespace AzFramework
     {
     public:
         XcbConnectionManagerImpl()
+            : m_xcbConnection(xcb_connect(nullptr, nullptr))
         {
-            m_xcbConnection = xcb_connect(nullptr, nullptr);
             AZ_Error("Application", m_xcbConnection != nullptr, "Unable to connect to X11 Server.");
             XcbConnectionManagerBus::Handler::BusConnect();
         }
@@ -26,16 +27,15 @@ namespace AzFramework
         ~XcbConnectionManagerImpl() override
         {
             XcbConnectionManagerBus::Handler::BusDisconnect();
-            xcb_disconnect(m_xcbConnection);   
         }
 
         xcb_connection_t* GetXcbConnection() const override
         {
-            return m_xcbConnection;
+            return m_xcbConnection.get();
         }
 
     private:
-        xcb_connection_t*   m_xcbConnection = nullptr;
+        XcbUniquePtr<xcb_connection_t, xcb_disconnect> m_xcbConnection = nullptr;
     };
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -65,10 +65,9 @@ namespace AzFramework
     {
         if (xcb_connection_t* xcbConnection = m_xcbConnectionManager->GetXcbConnection())
         {
-            if (xcb_generic_event_t* event = xcb_poll_for_event(xcbConnection))
+            if (auto event = XcbStdFreePtr<xcb_generic_event_t>{xcb_poll_for_event(xcbConnection)})
             {
-                XcbEventHandlerBus::Broadcast(&XcbEventHandlerBus::Events::HandleXcbEvent, event);
-                free(event);
+                XcbEventHandlerBus::Broadcast(&XcbEventHandlerBus::Events::HandleXcbEvent, event.get());
             }
         }
     }
@@ -78,10 +77,9 @@ namespace AzFramework
     {
         if (xcb_connection_t* xcbConnection = m_xcbConnectionManager->GetXcbConnection())
         {
-            while (xcb_generic_event_t* event = xcb_poll_for_event(xcbConnection))
+            while (auto event = XcbStdFreePtr<xcb_generic_event_t>{xcb_poll_for_event(xcbConnection)})
             {
-                XcbEventHandlerBus::Broadcast(&XcbEventHandlerBus::Events::HandleXcbEvent, event);
-                free(event);
+                XcbEventHandlerBus::Broadcast(&XcbEventHandlerBus::Events::HandleXcbEvent, event.get());
             }
         }
     }
