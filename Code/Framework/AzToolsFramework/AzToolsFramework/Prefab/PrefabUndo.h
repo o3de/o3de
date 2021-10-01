@@ -49,7 +49,7 @@ namespace AzToolsFramework
             void Capture(
                 const PrefabDom& initialState,
                 const PrefabDom& endState,
-                const TemplateId& templateId);
+                TemplateId templateId);
 
             void Undo() override;
             void Redo() override;
@@ -95,8 +95,8 @@ namespace AzToolsFramework
 
             //capture for add/remove
             void Capture(
-                const TemplateId& targetId,
-                const TemplateId& sourceId,
+                TemplateId targetId,
+                TemplateId sourceId,
                 const InstanceAlias& instanceAlias,
                 PrefabDom linkPatches = PrefabDom(),
                 const LinkId linkId = InvalidLinkId);

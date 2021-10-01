@@ -644,11 +644,11 @@ JobManagerWorkStealing::ThreadList JobManagerWorkStealing::CreateWorkerThreads(c
         }
 
         info->m_thread = AZStd::thread(
+            threadDesc,
             [this, info]()
             {
                 this->ProcessJobsWorker(info);
-            },
-            &threadDesc
+            }
         );
 
         info->m_threadId = info->m_thread.get_id();

@@ -175,7 +175,7 @@ namespace AZ
 
             void MaterialPropertyInspector::AddDetailsGroup()
             {
-                const AZStd::string& groupNameId = "Details";
+                const AZStd::string& groupName = "Details";
                 const AZStd::string& groupDisplayName = "Details";
                 const AZStd::string& groupDescription = "";
 
@@ -241,15 +241,15 @@ namespace AZ
 
                 propertyGroupContainer->layout()->addWidget(materialInfoWidget);
 
-                AddGroup(groupNameId, groupDisplayName, groupDescription, propertyGroupContainer);
+                AddGroup(groupName, groupDisplayName, groupDescription, propertyGroupContainer);
             }
 
             void MaterialPropertyInspector::AddUvNamesGroup()
             {
-                const AZStd::string groupNameId = AZ::RPI::UvGroupName;
+                const AZStd::string groupName = AZ::RPI::UvGroupName;
                 const AZStd::string groupDisplayName = "UV Sets";
                 const AZStd::string groupDescription = "UV set names in this material, which can be renamed to match those in the model.";
-                auto& group = m_groups[groupNameId];
+                auto& group = m_groups[groupName];
 
                 const RPI::MaterialUvNameMap& uvNameMap = m_editData.m_materialAsset->GetMaterialTypeAsset()->GetUvNameMap();
                 group.m_properties.reserve(uvNameMap.size());
@@ -263,8 +263,8 @@ namespace AZ
 
                     propertyConfig = {};
                     propertyConfig.m_dataType = AtomToolsFramework::DynamicPropertyType::String;
-                    propertyConfig.m_id = AZ::RPI::MaterialPropertyId(groupNameId, shaderInputStr).GetCStr();
-                    propertyConfig.m_nameId = shaderInputStr;
+                    propertyConfig.m_id = AZ::RPI::MaterialPropertyId(groupName, shaderInputStr).GetCStr();
+                    propertyConfig.m_name = shaderInputStr;
                     propertyConfig.m_displayName = shaderInputStr;
                     propertyConfig.m_groupName = groupDisplayName;
                     propertyConfig.m_description = shaderInputStr;
@@ -277,8 +277,8 @@ namespace AZ
 
                 // Passing in same group as main and comparison instance to enable custom value comparison for highlighting modified properties
                 auto propertyGroupWidget = new AtomToolsFramework::InspectorPropertyGroupWidget(
-                    &group, nullptr, group.TYPEINFO_Uuid(), this, this, GetSaveStateKeyForGroup(groupNameId));
-                AddGroup(groupNameId, groupDisplayName, groupDescription, propertyGroupWidget);
+                    &group, nullptr, group.TYPEINFO_Uuid(), this, this, GetSaveStateKeyForGroup(groupName));
+                AddGroup(groupName, groupDisplayName, groupDescription, propertyGroupWidget);
             }
 
             void MaterialPropertyInspector::Populate()
@@ -291,13 +291,13 @@ namespace AZ
                 // Copy all of the properties from the material asset to the source data that will be exported
                 for (const auto& groupDefinition : m_editData.m_materialTypeSourceData.GetGroupDefinitionsInDisplayOrder())
                 {
-                    const AZStd::string& groupNameId = groupDefinition.m_nameId;
-                    const AZStd::string& groupDisplayName = !groupDefinition.m_displayName.empty() ? groupDefinition.m_displayName : groupNameId;
+                    const AZStd::string& groupName = groupDefinition.m_name;
+                    const AZStd::string& groupDisplayName = !groupDefinition.m_displayName.empty() ? groupDefinition.m_displayName : groupName;
                     const AZStd::string& groupDescription = !groupDefinition.m_description.empty() ? groupDefinition.m_description : groupDisplayName;
-                    auto& group = m_groups[groupNameId];
+                    auto& group = m_groups[groupName];
 
                     const auto& propertyLayout = m_editData.m_materialTypeSourceData.m_propertyLayout;
-                    const auto& propertyListItr = propertyLayout.m_properties.find(groupNameId);
+                    const auto& propertyListItr = propertyLayout.m_properties.find(groupName);
                     if (propertyListItr != propertyLayout.m_properties.end())
                     {
                         group.m_properties.reserve(propertyListItr->second.size());
@@ -306,7 +306,7 @@ namespace AZ
                             AtomToolsFramework::DynamicPropertyConfig propertyConfig;
 
                             // Assign id before conversion so it can be used in dynamic description
-                            propertyConfig.m_id = AZ::RPI::MaterialPropertyId(groupNameId, propertyDefinition.m_nameId).GetFullName();
+                            propertyConfig.m_id = AZ::RPI::MaterialPropertyId(groupName, propertyDefinition.m_name).GetFullName();
 
                             AtomToolsFramework::ConvertToPropertyConfig(propertyConfig, propertyDefinition);
 
@@ -322,8 +322,8 @@ namespace AZ
 
                     // Passing in same group as main and comparison instance to enable custom value comparison for highlighting modified properties
                     auto propertyGroupWidget = new AtomToolsFramework::InspectorPropertyGroupWidget(
-                        &group, nullptr, group.TYPEINFO_Uuid(), this, this, GetSaveStateKeyForGroup(groupNameId));
-                    AddGroup(groupNameId, groupDisplayName, groupDescription, propertyGroupWidget);
+                        &group, nullptr, group.TYPEINFO_Uuid(), this, this, GetSaveStateKeyForGroup(groupName));
+                    AddGroup(groupName, groupDisplayName, groupDescription, propertyGroupWidget);
                 }
 
                 AddGroupsEnd();
@@ -502,11 +502,11 @@ namespace AZ
                 }
             }
 
-            AZ::Crc32 MaterialPropertyInspector::GetSaveStateKeyForGroup(const AZStd::string& groupNameId) const
+            AZ::Crc32 MaterialPropertyInspector::GetSaveStateKeyForGroup(const AZStd::string& groupName) const
             {
                 return AZ::Crc32(AZStd::string::format(
                     "MaterialPropertyInspector::PropertyGroup::%s::%s", m_editData.m_materialAssetId.ToString<AZStd::string>().c_str(),
-                    groupNameId.c_str()));
+                    groupName.c_str()));
             }
 
             bool MaterialPropertyInspector::AreNodePropertyValuesEqual(
