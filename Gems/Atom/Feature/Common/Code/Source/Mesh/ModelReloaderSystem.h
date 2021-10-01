@@ -11,7 +11,7 @@
 #include <Atom/Feature/Mesh/ModelReloaderSystemInterface.h>
 
 #include <AzCore/Asset/AssetCommon.h>
-#include <AzCore/RTTI/TypeInfo.h>
+#include <AzCore/RTTI/RTTI.h>
 #include <AzCore/std/containers/unordered_map.h>
 
 namespace AZ
@@ -26,7 +26,7 @@ namespace AZ
             : public ModelReloaderSystemInterface
         {
         public:
-            AZ_RTTI(AZ::Render::ModelReloaderSystem, "{8C85ECCD-B6C8-4949-B26C-9C4F1020F2B8}");
+            AZ_RTTI(Render::ModelReloaderSystem, "{8C85ECCD-B6C8-4949-B26C-9C4F1020F2B8}", Render::ModelReloaderSystemInterface);
             
             void ReloadModel(Data::Asset<RPI::ModelAsset> modelAsset, ModelReloadedEvent::Handler& onReloadedEventHandler) override;
 
