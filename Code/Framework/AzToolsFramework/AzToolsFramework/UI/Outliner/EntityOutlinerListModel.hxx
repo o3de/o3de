@@ -17,6 +17,7 @@
 
 #include <AzToolsFramework/API/EntityCompositionNotificationBus.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
+#include <AzToolsFramework/ContainerEntity/ContainerEntityNotificationBus.h>
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 #include <AzToolsFramework/Entity/EditorEntityInfoBus.h>
 #include <AzToolsFramework/Entity/EditorEntityRuntimeActivationBus.h>
@@ -35,6 +36,7 @@
 
 namespace AzToolsFramework
 {
+    class ContainerEntityInterface;
     class EditorEntityUiInterface;
     class FocusModeInterface;
 
@@ -54,6 +56,7 @@ namespace AzToolsFramework
         , private EntityCompositionNotificationBus::Handler
         , private EditorEntityRuntimeActivationChangeNotificationBus::Handler
         , private AZ::EntitySystemBus::Handler
+        , private ContainerEntityNotificationBus::Handler
     {
         Q_OBJECT;
 
@@ -216,6 +219,9 @@ namespace AzToolsFramework
         // EditorEntityRuntimeActivationChangeNotificationBus::Handler
         void OnEntityRuntimeActivationChanged(AZ::EntityId entityId, bool activeOnStart) override;
 
+        // ContainerEntityNotificationBus overrides ...
+        void OnContainerEntityStatusChanged(AZ::EntityId entityId) override;
+
         // Drag/Drop of components from Component Palette.
         bool dropMimeDataComponentPalette(const QMimeData* data, Qt::DropAction action, int row, int column, const QModelIndex& parent);
 
@@ -273,7 +279,8 @@ namespace AzToolsFramework
     private:
         QVariant GetEntityIcon(const AZ::EntityId& id) const;
         QVariant GetEntityTooltip(const AZ::EntityId& id) const;
-        
+
+        ContainerEntityInterface* m_containerEntityInterface = nullptr;
         EditorEntityUiInterface* m_editorEntityUiInterface = nullptr;
         FocusModeInterface* m_focusModeInterface = nullptr;
     };

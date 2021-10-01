@@ -25,6 +25,7 @@ class QMouseEvent;
 
 namespace AzToolsFramework
 {
+    class ContainerEntityInterface;
     class EditorEntityUiInterface;
 
     //! This class largely exists to emit events for the OutlinerWidget to listen in on.
@@ -72,13 +73,14 @@ namespace AzToolsFramework
         void timerEvent(QTimerEvent* event) override;
     private:
         void ClearQueuedMouseEvent();
-
         void processQueuedMousePressedEvent(QMouseEvent* event);
-
         void StartCustomDrag(const QModelIndexList& indexList, Qt::DropActions supportedActions) override;
 
         void PaintBranchBackground(QPainter* painter, const QRect& rect, const QModelIndex& index) const;
         void PaintBranchSelectionHoverRect(QPainter* painter, const QRect& rect, bool isSelected, bool isHovered) const;
+        void PaintExpander(QPainter* painter, const QRect& rect, const QModelIndex& index, bool isExpanded) const;
+
+        bool IsExpanderHidden(const QModelIndex& index) const;
         
         QMouseEvent* m_queuedMouseEvent;
         QPoint m_mousePosition;
@@ -89,8 +91,11 @@ namespace AzToolsFramework
 
         const QColor m_selectedColor = QColor(255, 255, 255, 45);
         const QColor m_hoverColor = QColor(255, 255, 255, 30);
+        const QIcon m_expandedIcon;
+        const QIcon m_collapsedIcon;
 
-        EditorEntityUiInterface* m_editorEntityFrameworkInterface;
+        ContainerEntityInterface* m_containerEntityInterface = nullptr;
+        EditorEntityUiInterface* m_editorEntityFrameworkInterface = nullptr;
     };
 
 }

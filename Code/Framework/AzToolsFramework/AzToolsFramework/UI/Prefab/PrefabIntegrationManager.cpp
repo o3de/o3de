@@ -22,6 +22,7 @@
 #include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
 #include <AzToolsFramework/AssetBrowser/AssetSelectionModel.h>
 #include <AzToolsFramework/AssetBrowser/Entries/SourceAssetBrowserEntry.h>
+#include <AzToolsFramework/ContainerEntity/ContainerEntityInterface.h>
 #include <AzToolsFramework/Prefab/PrefabFocusInterface.h>
 #include <AzToolsFramework/Prefab/PrefabLoaderInterface.h>
 #include <AzToolsFramework/ToolsComponents/EditorLayerComponentBus.h>
@@ -33,7 +34,6 @@
 #include <AzQtComponents/Components/FlowLayout.h>
 #include <AzQtComponents/Components/StyleManager.h>
 #include <AzQtComponents/Components/Widgets/CardHeader.h>
-
 
 #include <QApplication>
 #include <QCheckBox>
@@ -56,7 +56,7 @@ namespace AzToolsFramework
 {
     namespace Prefab
     {
-        
+        ContainerEntityInterface* PrefabIntegrationManager::s_containerEntityInterface = nullptr;
         EditorEntityUiInterface* PrefabIntegrationManager::s_editorEntityUiInterface = nullptr;
         PrefabFocusInterface* PrefabIntegrationManager::s_prefabFocusInterface = nullptr;
         PrefabLoaderInterface* PrefabIntegrationManager::s_prefabLoaderInterface = nullptr;
@@ -89,6 +89,13 @@ namespace AzToolsFramework
 
         PrefabIntegrationManager::PrefabIntegrationManager()
         {
+            s_containerEntityInterface = AZ::Interface<ContainerEntityInterface>::Get();
+            if (s_containerEntityInterface == nullptr)
+            {
+                AZ_Assert(false, "Prefab - could not get ContainerEntityInterface on PrefabIntegrationManager construction.");
+                return;
+            }
+
             s_editorEntityUiInterface = AZ::Interface<EditorEntityUiInterface>::Get();
             if (s_editorEntityUiInterface == nullptr)
             {
@@ -1057,9 +1064,16 @@ namespace AzToolsFramework
 
         void PrefabIntegrationManager::OnPrefabComponentActivate(AZ::EntityId entityId)
         {
+            // Register entity as a container
+            s_containerEntityInterface->RegisterEntityAsContainer(entityId);
+
+            // Register entity to appropriate UI Handler for UI overrides
             if (s_prefabPublicInterface->IsLevelInstanceContainerEntity(entityId))
             {
                 s_editorEntityUiInterface->RegisterEntity(entityId, m_levelRootUiHandler.GetHandlerId());
+
+                // Force level container to always be open
+                s_containerEntityInterface->SetContainerClosedState(entityId, false);
             }
             else
             {
@@ -1069,7 +1083,11 @@ namespace AzToolsFramework
 
         void PrefabIntegrationManager::OnPrefabComponentDeactivate(AZ::EntityId entityId)
         {
+            // Unregister entity from UI Handler
             s_editorEntityUiInterface->UnregisterEntity(entityId);
+
+            // Unregister entity as a container
+            s_containerEntityInterface->UnregisterEntityAsContainer(entityId);
         }
 
         AZ::EntityId PrefabIntegrationManager::CreateNewEntityAtPosition(const AZ::Vector3& position, AZ::EntityId parentId)

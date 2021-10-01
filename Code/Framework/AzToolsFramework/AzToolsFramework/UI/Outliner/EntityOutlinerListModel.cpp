@@ -41,6 +41,7 @@
 #include <AzToolsFramework/API/ComponentEntityObjectBus.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserEntry.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserSourceDropBus.h>
+#include <AzToolsFramework/ContainerEntity/ContainerEntityInterface.h>
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 #include <AzToolsFramework/Entity/EditorEntityHelpers.h>
 #include <AzToolsFramework/Entity/EditorEntityInfoBus.h>
@@ -82,12 +83,16 @@ namespace AzToolsFramework
         , m_entityExpansionState()
         , m_entityFilteredState()
     {
+        m_containerEntityInterface = AZ::Interface<ContainerEntityInterface>::Get();
+        AZ_Assert(m_containerEntityInterface != nullptr, "EntityOutlinerListModel requires a ContainerEntityInterface instance on construction.");
+
         m_focusModeInterface = AZ::Interface<FocusModeInterface>::Get();
         AZ_Assert(m_focusModeInterface != nullptr, "EntityOutlinerListModel requires a FocusModeInterface instance on construction.");
     }
 
     EntityOutlinerListModel::~EntityOutlinerListModel()
     {
+        ContainerEntityNotificationBus::Handler::BusDisconnect();
         EditorEntityInfoNotificationBus::Handler::BusDisconnect();
         EditorEntityContextNotificationBus::Handler::BusDisconnect();
         ToolsApplicationEvents::Bus::Handler::BusDisconnect();
@@ -105,9 +110,14 @@ namespace AzToolsFramework
         EntityCompositionNotificationBus::Handler::BusConnect();
         AZ::EntitySystemBus::Handler::BusConnect();
 
-        m_editorEntityUiInterface = AZ::Interface<AzToolsFramework::EditorEntityUiInterface>::Get();
-        AZ_Assert(m_editorEntityUiInterface != nullptr,
-            "EntityOutlinerListModel requires a EditorEntityUiInterface instance on Initialize.");
+        AzFramework::EntityContextId editorEntityContextId = AzFramework::EntityContextId::CreateNull();
+        AzToolsFramework::EditorEntityContextRequestBus::BroadcastResult(
+            editorEntityContextId, &AzToolsFramework::EditorEntityContextRequestBus::Events::GetEditorEntityContextId);
+
+        ContainerEntityNotificationBus::Handler::BusConnect(editorEntityContextId);
+
+        m_editorEntityUiInterface = AZ::Interface<EditorEntityUiInterface>::Get();
+        AZ_Assert(m_editorEntityUiInterface != nullptr, "EntityOutlinerListModel requires a EditorEntityUiInterface instance on Initialize.");
     }
 
     int EntityOutlinerListModel::rowCount(const QModelIndex& parent) const
@@ -1339,6 +1349,18 @@ namespace AzToolsFramework
         QueueEntityUpdate(entityId);
     }
 
+    void EntityOutlinerListModel::OnContainerEntityStatusChanged(AZ::EntityId entityId)
+    {
+        OnEntityInfoResetBegin();
+
+        bool isExpanded = !m_containerEntityInterface->IsContainerClosed(entityId);
+        m_entityExpansionState[entityId] = isExpanded;
+        QueueEntityToExpand(entityId, isExpanded);
+        QueueEntityUpdate(entityId);
+
+        OnEntityInfoResetEnd();
+    }
+
     void EntityOutlinerListModel::OnEntityInfoUpdatedRemoveChildBegin([[maybe_unused]] AZ::EntityId parentId, [[maybe_unused]] AZ::EntityId childId)
     {
         //add/remove operations trigger selection change signals which assert and break undo/redo operations in progress in inspector etc.
@@ -1606,6 +1628,12 @@ namespace AzToolsFramework
 
     bool EntityOutlinerListModel::IsExpanded(const AZ::EntityId& entityId) const
     {
+        // Container entities override this check
+        if (m_containerEntityInterface->IsContainer(entityId))
+        {
+            return !m_containerEntityInterface->IsContainerClosed(entityId);
+        }
+
         auto expandedItr = m_entityExpansionState.find(entityId);
         return expandedItr != m_entityExpansionState.end() && expandedItr->second;
     }

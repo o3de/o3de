@@ -13,6 +13,7 @@
 #include <AzCore/std/sort.h>
 #include <AzCore/std/algorithm.h>
 
+#include <AzToolsFramework/ContainerEntity/ContainerEntityInterface.h>
 #include <AzToolsFramework/Entity/EditorEntityHelpers.h>
 #include <AzToolsFramework/UI/EditorEntityUi/EditorEntityUiInterface.h>
 #include <AzToolsFramework/UI/EditorEntityUi/EditorEntityUiHandlerBase.h>
@@ -30,16 +31,20 @@ namespace AzToolsFramework
         : AzQtComponents::StyledTreeView(pParent)
         , m_queuedMouseEvent(nullptr)
         , m_draggingUnselectedItem(false)
+        , m_expandedIcon(QStringLiteral(":/TreeView/open.svg"))
+        , m_collapsedIcon(QStringLiteral(":/TreeView/closed.svg"))
     {
         setUniformRowHeights(true);
         setHeaderHidden(true);
 
         m_editorEntityFrameworkInterface = AZ::Interface<AzToolsFramework::EditorEntityUiInterface>::Get();
-
         AZ_Assert((m_editorEntityFrameworkInterface != nullptr),
             "EntityOutlinerTreeView requires a EditorEntityFrameworkInterface instance on Construction.");
 
-        
+        m_containerEntityInterface = AZ::Interface<ContainerEntityInterface>::Get();
+        AZ_Assert((m_containerEntityInterface != nullptr),
+            "EntityOutlinerTreeView requires a ContainerEntityInterface instance on construction.");
+
         AzFramework::EntityContextId editorEntityContextId = AzFramework::EntityContextId::CreateNull();
         AzToolsFramework::EditorEntityContextRequestBus::BroadcastResult(
             editorEntityContextId, &AzToolsFramework::EditorEntityContextRequestBus::Events::GetEditorEntityContextId);
@@ -172,6 +177,12 @@ namespace AzToolsFramework
 
     void EntityOutlinerTreeView::dragMoveEvent(QDragMoveEvent* event)
     {
+        QModelIndex index = indexAt(event->pos());
+        if (IsExpanderHidden(index))
+        {
+            return;
+        }
+
         if (m_expandOnlyDelay >= 0)
         {
             m_expandTimer.start(m_expandOnlyDelay, this);
@@ -191,7 +202,6 @@ namespace AzToolsFramework
     void EntityOutlinerTreeView::drawBranches(QPainter* painter, const QRect& rect, const QModelIndex& index) const
     {
         const bool isEnabled = (this->model()->flags(index) & Qt::ItemIsEnabled);
-
         const bool isSelected = selectionModel()->isSelected(index);
         const bool isHovered = (index == indexAt(m_mousePosition)) && isEnabled;
 
@@ -201,7 +211,14 @@ namespace AzToolsFramework
         // Paint the branch background as defined by the entity's handler, or its closes ancestor's.
         PaintBranchBackground(painter, rect, index);
 
+        // Regular branch painting
         QTreeView::drawBranches(painter, rect, index);
+
+        // Paint the expander arrows if needed
+        if (model()->hasChildren(index) && !IsExpanderHidden(index))
+        {
+            PaintExpander(painter, rect, index, isExpanded(index));
+        }
     }
 
     void EntityOutlinerTreeView::PaintBranchSelectionHoverRect(
@@ -255,6 +272,28 @@ namespace AzToolsFramework
         }
     }
 
+    void EntityOutlinerTreeView::PaintExpander(QPainter* painter, const QRect& rect, const QModelIndex& index, bool isExpanded) const
+    {
+        const int indexLeft = visualRect(index).left();
+
+        // Paint Expander Arrows
+        if (isExpanded)
+        {
+            painter->drawPixmap(indexLeft - 13, rect.y() + 10, 8, 4, m_expandedIcon.pixmap(QSize(8, 4)));
+        }
+        else
+        {
+            painter->drawPixmap(indexLeft - 11, rect.y() + 8, 4, 8, m_collapsedIcon.pixmap(QSize(4, 8)));
+        }
+    }
+
+    bool EntityOutlinerTreeView::IsExpanderHidden(const QModelIndex& index) const
+    {
+        AZ::EntityId entityId(index.data(EntityOutlinerListModel::EntityIdRole).value<AZ::u64>());
+
+        return m_containerEntityInterface->IsContainer(entityId);
+    }
+
     void EntityOutlinerTreeView::timerEvent(QTimerEvent* event)
     {
         if (event->timerId() == m_expandTimer.timerId())
@@ -277,6 +316,19 @@ namespace AzToolsFramework
 
     void EntityOutlinerTreeView::processQueuedMousePressedEvent(QMouseEvent* event)
     {
+        // detect whether the expander should be hidden
+        QModelIndex clickedIndex = indexAt(event->pos());
+        if (clickedIndex.isValid() && IsExpanderHidden(clickedIndex))
+        {
+            QRect vrect = visualRect(clickedIndex);
+            int itemIndentation = vrect.x() - visualRect(rootIndex()).x();
+            if (event->pos().x() < itemIndentation)
+            {
+                // move the click to the right to still trigger selection, but avoid expanding
+                event->setLocalPos(event->localPos() + QPointF(itemIndentation, 0));
+            }
+        }
+
         //interpret the mouse event as a button press
         QMouseEvent mousePressedEvent(
             QEvent::MouseButtonPress,

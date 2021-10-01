@@ -200,6 +200,8 @@ namespace AzToolsFramework
         m_proxyModel->setSourceModel(m_listModel);
         m_gui->m_objectTree->setModel(m_proxyModel);
 
+        AzQtComponents::Style::addClass(m_gui->m_objectTree, QStringLiteral("DisableArrowPainting"));
+
         // Link up signals for informing the model of tree changes using the proxy as an intermediary
         connect(m_gui->m_objectTree, &QTreeView::clicked, this, &EntityOutlinerWidget::OnTreeItemClicked);
         connect(m_gui->m_objectTree, &QTreeView::doubleClicked, this, &EntityOutlinerWidget::OnTreeItemDoubleClicked);
