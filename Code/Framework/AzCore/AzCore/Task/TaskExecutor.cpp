@@ -205,13 +205,13 @@ namespace AZ
                 }
                 m_active.store(true, AZStd::memory_order_release);
 
-                m_thread = AZStd::thread{ [this, &initSemaphore]
+                m_thread = AZStd::thread{ desc,
+                                          [this, &initSemaphore]
                                           {
                                               t_worker = this;
                                               initSemaphore.release();
                                               Run();
-                                          },
-                                          &desc };
+                                          } };
             }
 
             // Threads that wait on a graph to complete are disqualified from receiving tasks until the wait finishes
