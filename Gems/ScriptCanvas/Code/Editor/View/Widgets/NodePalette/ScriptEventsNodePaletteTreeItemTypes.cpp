@@ -154,7 +154,9 @@ namespace ScriptCanvasEditor
 
             const ScriptEvents::ScriptEvent& definition = data->m_definition;
 
+#if defined(AZ_ENABLE_TRACING)
             bool recategorize = previousDefinition ? definition.GetCategory().compare(previousDefinition->GetCategory()) != 0 : false;
+#endif
             AZ_Warning("ScriptCanvas", !recategorize, "Unable to recategorize ScriptEvents events while open. Please close and re-open the Script Canvas Editor to see the new categorization");
 
             if (definition.GetName().empty())

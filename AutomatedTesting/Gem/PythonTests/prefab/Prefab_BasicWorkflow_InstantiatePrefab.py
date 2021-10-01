@@ -22,11 +22,11 @@ def Prefab_BasicWorkflow_InstantiatePrefab():
     # Checks for prefab instantiation passed or not 
     test_prefab = Prefab.get_prefab(EXISTING_TEST_PREFAB_FILE_NAME)
 
-    instantiated_test_container_entity_id = test_prefab.instantiate( 
+    test_instance = test_prefab.instantiate( 
         prefab_position=INSTANTIATED_TEST_PREFAB_POSITION)
     
     prefab_test_utils.check_entity_children_count(
-        instantiated_test_container_entity_id, 
+        test_instance.container_entity.id, 
         EXPECTED_TEST_PREFAB_CHILDREN_COUNT)
 
 if __name__ == "__main__":
