@@ -26,7 +26,7 @@ namespace AZ
             m_workItemIndex = 0;
             m_lastCompletedWorkItem = AsyncWorkHandle::Null;
             AZStd::thread_desc threadDesc{ "AsyncWorkQueue" };
-            m_thread = AZStd::thread([&]() { ProcessQueue(); }, &threadDesc);
+            m_thread = AZStd::thread(threadDesc, [&]() { ProcessQueue(); });
             m_isInitialized = true;
         }
 

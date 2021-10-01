@@ -72,14 +72,19 @@ namespace AZ
         explicit TaskExecutor(uint32_t threadCount = 0);
         ~TaskExecutor();
 
-        void Submit(Internal::CompiledTaskGraph& graph);
+        // Submit a task graph for execution. Waitable task graphs cannot enqueue work on the task thread
+        // that is currently active
+        void Submit(Internal::CompiledTaskGraph& graph, TaskGraphEvent* event);
 
         void Submit(Internal::Task& task);
 
     private:
         friend class Internal::TaskWorker;
+        friend class TaskGraphEvent;
 
+        Internal::TaskWorker* GetTaskWorker();
         void ReleaseGraph();
+        void ReactivateTaskWorker();
 
         Internal::TaskWorker* m_workers;
         uint32_t m_threadCount = 0;

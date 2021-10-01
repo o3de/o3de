@@ -71,7 +71,6 @@ void InitCRTHandlers()
 void InitCRTHandlers() {}
 #endif
 
-#ifndef SOFTCODE
 //////////////////////////////////////////////////////////////////////////
 // This is an entry to DLL initialization function that must be called for each loaded module
 //////////////////////////////////////////////////////////////////////////
@@ -135,8 +134,6 @@ void* GetDetachEnvironmentSymbol()
 {
     return reinterpret_cast<void*>(&DetachEnvironment);
 }
-
-#endif // !defined(SOFTCODE)
 
 bool g_bProfilerEnabled = false;
 

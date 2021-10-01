@@ -18,6 +18,7 @@
 
 #include <Atom/Utils/DdsFile.h>
 #include <Atom/Utils/PpmFile.h>
+#include <Atom/Utils/PngFile.h>
 
 #include <AzCore/Serialization/Json/JsonUtils.h>
 #include <AzCore/Jobs/JobFunction.h>
@@ -34,21 +35,12 @@
 #include <AzCore/Preprocessor/EnumReflectUtils.h>
 #include <AzCore/Console/Console.h>
 
-#if defined(OPEN_IMAGE_IO_ENABLED)
-// OpenImageIO/fmath.h(2271,5): error C4777: 'fprintf' : format string '%zd' requires an argument of type 'unsigned __int64', but variadic
-// argument 5 has type 'OpenImageIO_v2_1::span_strided<const float,-1>::index_type'
-AZ_PUSH_DISABLE_WARNING(4777, "-Wunknown-warning-option")
-#include <OpenImageIO/imageio.h>
-AZ_POP_DISABLE_WARNING
-#endif
-
 namespace AZ
 {
     namespace Render
     {
         AZ_ENUM_DEFINE_REFLECT_UTILITIES(FrameCaptureResult);
 
-#if defined(OPEN_IMAGE_IO_ENABLED)
         AZ_CVAR(unsigned int,
             r_pngCompressionLevel,
             3, // A compression level of 3 seems like the best default in terms of file size and saving speeds
@@ -97,28 +89,22 @@ namespace AZ
                 jobCompletion.StartAndWaitForCompletion();
             }
 
-            using namespace OIIO;
-            AZStd::unique_ptr<ImageOutput> out = ImageOutput::create(outputFilePath.c_str());
-            if (out)
-            {
-                ImageSpec spec(
-                    readbackResult.m_imageDescriptor.m_size.m_width,
-                    readbackResult.m_imageDescriptor.m_size.m_height,
-                    numChannels
-                );
-                spec.attribute("png:compressionLevel", r_pngCompressionLevel);
+            Utils::PngFile image = Utils::PngFile::Create(readbackResult.m_imageDescriptor.m_size, readbackResult.m_imageDescriptor.m_format, *buffer);
 
-                if (out->open(outputFilePath.c_str(), spec))
-                {
-                    out->write_image(TypeDesc::UINT8, buffer->data());
-                    out->close();
-                    return FrameCaptureOutputResult{FrameCaptureResult::Success, AZStd::nullopt};
-                }
+            Utils::PngFile::SaveSettings saveSettings;
+            saveSettings.m_compressionLevel = r_pngCompressionLevel;
+            // We should probably strip alpha to save space, especially for automated test screenshots. Alpha is left in to maintain
+            // prior behavior, changing this is out of scope for the current task. Note, it would have bit of a cascade effect where
+            // AtomSampleViewer's ScriptReporter assumes an RGBA image.
+            saveSettings.m_stripAlpha = false; 
+
+            if(image && image.Save(outputFilePath.c_str(), saveSettings))
+            {
+                return FrameCaptureOutputResult{FrameCaptureResult::Success, AZStd::nullopt};
             }
 
-            return FrameCaptureOutputResult{FrameCaptureResult::InternalError, "Unable to save frame capture output to " + outputFilePath};
+            return FrameCaptureOutputResult{FrameCaptureResult::InternalError, "Unable to save frame capture output to '" + outputFilePath + "'"};
         }
-#endif
 
         FrameCaptureOutputResult DdsFrameCaptureOutput(
             const AZStd::string& outputFilePath, const AZ::RPI::AttachmentReadback::ReadbackResult& readbackResult)
@@ -502,7 +488,6 @@ namespace AZ
                         m_result = ddsFrameCapture.m_result;
                         m_latestCaptureInfo = ddsFrameCapture.m_errorMessage.value_or("");
                     }
-#if defined(OPEN_IMAGE_IO_ENABLED)
                     else if (extension == "png")
                     {
                         if (readbackResult.m_imageDescriptor.m_format == RHI::Format::R8G8B8A8_UNORM ||
@@ -523,7 +508,6 @@ namespace AZ
                             m_result = FrameCaptureResult::UnsupportedFormat;
                         }
                     }
-#endif
                     else
                     {
                         m_latestCaptureInfo = AZStd::string::format("Only supports saving image to ppm or dds files");

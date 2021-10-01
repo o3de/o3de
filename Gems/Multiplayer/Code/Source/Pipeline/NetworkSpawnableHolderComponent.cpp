@@ -8,6 +8,7 @@
 
 #include <Source/Pipeline/NetworkSpawnableHolderComponent.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/Asset/AssetSerializer.h>
 #include <AzFramework/Components/TransformComponent.h>
 #include <Multiplayer/IMultiplayer.h>
 
