@@ -10,6 +10,7 @@
 
 #include <Atom/Feature/Mesh/ModelReloaderSystemInterface.h>
 
+#include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/RTTI/TypeInfo.h>
 #include <AzCore/std/containers/unordered_map.h>
 
