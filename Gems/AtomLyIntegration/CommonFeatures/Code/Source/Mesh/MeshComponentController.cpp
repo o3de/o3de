@@ -329,7 +329,7 @@ namespace AZ
             return model ? model->GetUvNames() : AZStd::unordered_set<AZ::Name>();
         }
 
-        void MeshComponentController::OnMaterialsUpdated([[maybe_unused]] const MaterialAssignmentMap& materials)
+        void MeshComponentController::OnMaterialsUpdated(const MaterialAssignmentMap& materials)
         {
             if (m_meshFeatureProcessor)
             {
