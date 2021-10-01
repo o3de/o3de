@@ -38,11 +38,11 @@ namespace AZ
                 {
                     return false;
                 }
-                for (size_t i = tracerPidOffset; i < numRead; ++i)
+                for (size_t i = tracerPidOffset + tracerPidString.length(); i < numRead; ++i)
                 {
                     if (!::isspace(processStatusView[i]))
                     {
-                        return processStatusView[i] != '0';
+                        return (::isdigit(processStatusView[i]) != 0) && processStatusView[i] != '0';
                     }
                 }
                 return false;
