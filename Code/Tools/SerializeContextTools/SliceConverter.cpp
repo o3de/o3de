@@ -558,7 +558,7 @@ namespace AZ
             AZStd::string instanceAlias = GetInstanceAlias(instance);
 
             // Create a new unmodified prefab Instance for the nested slice instance.
-            auto nestedInstance = AZStd::make_unique<AzToolsFramework::Prefab::Instance>();
+            auto nestedInstance = AZStd::make_unique<AzToolsFramework::Prefab::Instance>(AZStd::move(instanceAlias));
             AzToolsFramework::Prefab::Instance::EntityList newEntities;
             if (!AzToolsFramework::Prefab::PrefabDomUtils::LoadInstanceFromPrefabDom(
                     *nestedInstance, newEntities, nestedTemplate->get().GetPrefabDom()))
@@ -742,7 +742,7 @@ namespace AZ
             instanceToTemplateInterface->GenerateDomForInstance(topLevelInstanceDomBefore, *topLevelInstance);
 
             // Use the deterministic instance alias for this new instance
-            AzToolsFramework::Prefab::Instance& addedInstance = topLevelInstance->AddInstance(AZStd::move(nestedInstance), instanceAlias);
+            AzToolsFramework::Prefab::Instance& addedInstance = topLevelInstance->AddInstance(AZStd::move(nestedInstance));
 
             AzToolsFramework::Prefab::PrefabDom topLevelInstanceDomAfter;
             instanceToTemplateInterface->GenerateDomForInstance(topLevelInstanceDomAfter, *topLevelInstance);
