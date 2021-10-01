@@ -271,7 +271,7 @@ namespace MaterialEditor
 
         MaterialViewportNotificationBus::Broadcast(&MaterialViewportNotificationBus::Events::OnEndReloadContent);
 
-        AZ_TracePrintf("Material Editor", "Finished loading viewport configurtions.\n");
+        AZ_TracePrintf("Material Editor", "Finished loading viewport configurations.\n");
     }
 
     AZ::Render::LightingPresetPtr MaterialViewportComponent::AddLightingPreset(const AZ::Render::LightingPreset& preset)
