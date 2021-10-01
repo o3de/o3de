@@ -384,9 +384,9 @@ def stash_env(_SYNTH_ENV_DICT = OrderedDict()):
     _O3DE_PROJECT = os.getenv(ENVAR_O3DE_PROJECT)
     _SYNTH_ENV_DICT[ENVAR_O3DE_PROJECT] = _O3DE_PROJECT
     
-    _LY_BUILD_DIR_NAME = os.getenv(ENVAR_LY_BUILD_DIR_NAME,
-                                   TAG_DIR_LY_BUILD)
-    _SYNTH_ENV_DICT[ENVAR_LY_BUILD_DIR_NAME] = _LY_BUILD_DIR_NAME
+    _O3DE_BUILD_DIR_NAME = os.getenv(ENVAR_O3DE_BUILD_DIR_NAME,
+                                   TAG_DIR_O3DE_BUILD)
+    _SYNTH_ENV_DICT[ENVAR_O3DE_BUILD_DIR_NAME] = _O3DE_BUILD_DIR_NAME
 
     #  pattern for the above is (and will be repeated)
     #  _SOME_ENVAR = resolve_envar_path('ENVAR',
@@ -430,7 +430,7 @@ def stash_env(_SYNTH_ENV_DICT = OrderedDict()):
     # -- envar --
     _DCCSIG_PATH = resolve_envar_path(ENVAR_DCCSIG_PATH,  # envar
                                            _THIS_MODULE_PATH,  # search path
-                                           STUB_LY_ROOT_DCCSI,  # stub name
+                                           STUB_O3DE_ROOT_DCCSI,  # stub name
                                          TAG_DEFAULT_PROJECT)  # dir
     _SYNTH_ENV_DICT[ENVAR_DCCSIG_PATH] = _DCCSIG_PATH.as_posix()
 
@@ -441,7 +441,7 @@ def stash_env(_SYNTH_ENV_DICT = OrderedDict()):
 
     # -- envar --
     _DCCSI_TOOLS_PATH = Path(os.getenv(ENVAR_DCCSI_TOOLS_PATH,
-                                     Path(_DCCSIG_PATH, TAG_DIR_DCCSI_SDK)))
+                                     Path(_DCCSIG_PATH, TAG_DIR_DCCSI_TOOLS)))
     _SYNTH_ENV_DICT[ENVAR_DCCSI_TOOLS_PATH] = _DCCSI_TOOLS_PATH.as_posix()
 
     # -- envar --

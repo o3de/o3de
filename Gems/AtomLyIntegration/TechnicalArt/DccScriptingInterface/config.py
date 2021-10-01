@@ -16,6 +16,7 @@ import os
 import sys
 import site
 import re
+import logging as _logging
 
 # 3rdParty (possibly) py3 ships with pathlib, 2.7 does not
 # import pathlib
@@ -32,7 +33,7 @@ _DCCSIG_PATH = os.getenv('DCCSIG_PATH',
                          os.path.abspath(os.path.dirname(_MODULE_PATH)))
 # ^ we assume this config is in the root of the DCCsi
 # if it's not, be sure to set envar 'DCCSIG_PATH' to ensure it
-site.addsitedir(_DCCSIG_PATH)  # PYTHONPATH
+site.addsitedir(_DCCSIG_PATH)  # PYTHONPATH, add code access
 
 # now we have azpy api access
 import azpy
@@ -50,9 +51,12 @@ _PACKAGENAME = 'DCCsi.config'
 _LOG_LEVEL = int(20)
 if _DCCSI_GDEBUG:
     _LOG_LEVEL = int(10)
-_LOGGER = azpy.initialize_logger(_PACKAGENAME,
-                                 log_to_file=_DCCSI_GDEBUG,
-                                 default_log_level=_LOG_LEVEL)
+    _LOGGER = azpy.initialize_logger(_PACKAGENAME,
+                                     log_to_file=_DCCSI_GDEBUG,
+                                     default_log_level=_LOG_LEVEL)
+else:
+    _LOGGER = _logging.getLogger(_PACKAGENAME)
+
 _LOGGER.info('Starting up: {}.'.format({_PACKAGENAME}))
 _LOGGER.info('site.addsitedir({})'.format(_DCCSIG_PATH))
 _LOGGER.debug('_DCCSI_GDEBUG: {}'.format(_DCCSI_GDEBUG))
@@ -85,7 +89,7 @@ _DCCSI_PYTHON_LIB_PATH = Path(_DCCSI_PYTHON_LIB_PATH).resolve()
 
 
 # -------------------------------------------------------------------------
-def init_ly_pyside(O3DE_DEV=None):
+def init_o3de_pyside(O3DE_DEV=None):
     """sets access to lumberyards Qt dlls and PySide"""
 
     O3DE_DEV = Path(O3DE_DEV).resolve()
@@ -95,12 +99,12 @@ def init_ly_pyside(O3DE_DEV=None):
         # to do: 'windows_vs2019' might change or be different locally
         # 'windows_vs2019' is defined as a str tag in constants
         # we may not yet have access to azpy.constants :(
-        from azpy.constants import TAG_DIR_LY_BUILD
+        from azpy.constants import TAG_DIR_O3DE_BUILD
         from azpy.constants import PATH_O3DE_BUILD_PATH
         from azpy.constants import PATH_O3DE_BIN_PATH
         # to do: pull some of these str and tags from constants
         O3DE_BUILD_PATH = Path.joinpath(O3DE_DEV,
-                                      TAG_DIR_LY_BUILD).resolve()
+                                      TAG_DIR_O3DE_BUILD).resolve()
         O3DE_BIN_PATH = Path.joinpath(O3DE_BUILD_PATH,
                                     'bin',
                                     'profile').resolve()
@@ -215,11 +219,11 @@ from azpy.constants import PATH_O3DE_BIN_PATH
 os.environ["DYNACONF_DCCSI_GDEBUG"] = str(_DCCSI_GDEBUG)
 os.environ["DYNACONF_DCCSI_DEV_MODE"] = str(_DCCSI_DEV_MODE)
 
-# search up to get \dev
-_O3DE_DEV = azpy.config_utils.get_stub_check_path(in_path=_DCCSIG_PATH,
-                                                check_stub='engine.json')
+# get the O3DE engine root folder
+_O3DE_DEV = azpy.config_utils.get_o3de_engine_root()
+
 os.environ["DYNACONF_O3DE_DEV"] = str(_O3DE_DEV.resolve())
-_O3DE_PROJECT = azpy.config_utils.get_current_project()
+_O3DE_PROJECT = azpy.config_utils.get_check_global_project()
 os.environ["DYNACONF_O3DE_PROJECT"] = str(_O3DE_PROJECT.resolve())
 _O3DE_PROJECT_PATH = Path(_O3DE_DEV, _O3DE_PROJECT)
 os.environ["DYNACONF_O3DE_PROJECT_PATH"] = str(_O3DE_PROJECT_PATH)
@@ -263,7 +267,7 @@ def get_config_settings(setup_ly_pyside=False):
     from dynaconf import settings
 
     if setup_ly_pyside:
-        init_ly_pyside(settings.O3DE_DEV)
+        init_o3de_pyside(settings.O3DE_DEV)
 
     settings.setenv()
     return settings
@@ -310,7 +314,7 @@ if __name__ == '__main__':
     #_LOGGER.info('QTFORPYTHON_PATH: {}'.format(settings.QTFORPYTHON_PATH))
     #_LOGGER.info('QT_PLUGIN_PATH: {}'.format(settings.QT_PLUGIN_PATH))
 
-    init_ly_pyside(settings.O3DE_DEV)  # init lumberyard Qt/PySide2
+    init_o3de_pyside(settings.O3DE_DEV)  # init lumberyard Qt/PySide2
     # from dynaconf import settings # <-- no need to reimport
 
     settings.setenv()  # doing this will add/set the additional DYNACONF_ envars

@@ -155,7 +155,7 @@ if __name__ == '__main__':
     _READER.start('python', ['-u', _TEST_PY_FILE])  # start the process
 
     # after that starts, this will show the console
-    # LY_QSS = Path(_MODULE_PATH.parent, 'resources', 'stylesheets', 'LYstyle.qss')
+    # O3DE_QSS = Path(_MODULE_PATH.parent, 'resources', 'stylesheets', 'LYstyle.qss')
     _DARK_STYLE = Path(_MODULE_PATH.parent, 'resources', 'qdarkstyle', 'style.qss')
     _CONSOLE.qapp.setStyleSheet(_DARK_STYLE.read_file())
     _CONSOLE.show()  # make the console visible

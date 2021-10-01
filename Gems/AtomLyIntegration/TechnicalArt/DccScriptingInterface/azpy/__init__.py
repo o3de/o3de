@@ -81,7 +81,7 @@ _O3DE_DEV = os.getenv(constants.ENVAR_O3DE_DEV,
 
 # get/set the project name
 _O3DE_PROJECT_NAME = os.getenv(constants.ENVAR_O3DE_PROJECT,
-                            config_utils.get_current_project().name)
+                            config_utils.get_check_global_project().name)
 
 # project cache log dir path
 _DCCSI_LOG_PATH = Path(os.getenv(constants.ENVAR_DCCSI_LOG_PATH,

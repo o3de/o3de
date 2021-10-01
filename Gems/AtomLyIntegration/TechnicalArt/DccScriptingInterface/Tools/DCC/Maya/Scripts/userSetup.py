@@ -183,9 +183,9 @@ except Exception as e:
 
 # check some env var tags (fail if no, likely means no proper code access)
 _O3DE_DEV = _BASE_ENVVAR_DICT[ENVAR_O3DE_DEV]
-_LY_DCCSIG_PATH = _BASE_ENVVAR_DICT[ENVAR_DCCSIG_PATH]
-_LY_DCCSI_LOG_PATH = _BASE_ENVVAR_DICT[ENVAR_DCCSI_LOG_PATH]
-_LY_AZPY_PATH = _BASE_ENVVAR_DICT[ENVAR_DCCSI_AZPY_PATH]
+_O3DE_DCCSIG_PATH = _BASE_ENVVAR_DICT[ENVAR_DCCSIG_PATH]
+_O3DE_DCCSI_LOG_PATH = _BASE_ENVVAR_DICT[ENVAR_DCCSI_LOG_PATH]
+_O3DE_AZPY_PATH = _BASE_ENVVAR_DICT[ENVAR_DCCSI_AZPY_PATH]
 # -------------------------------------------------------------------------
 
 
@@ -292,7 +292,7 @@ def post_startup():
         _LOGGER.info('Add UI dependent tools')
         # wrap in a try, because we haven't implmented it yet
         try:
-            mel.eval(str(r'source "{}"'.format(TAG_LY_DCC_MAYA_MEL)))
+            mel.eval(str(r'source "{}"'.format(TAG_O3DE_DCC_MAYA_MEL)))
         except Exception as e:
             _LOGGER.error(e)
 

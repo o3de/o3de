@@ -65,7 +65,7 @@ def get_dccsi_config(DCCSIG_PATH=_DCCSIG_PATH):
     return _dccsi_config
 # -------------------------------------------------------------------------
 
-# set and retreive the base settings on import
+# set and retreive the base env context/settings on import
 config = get_dccsi_config()
 settings = config.get_config_settings()
 # done with basic setup

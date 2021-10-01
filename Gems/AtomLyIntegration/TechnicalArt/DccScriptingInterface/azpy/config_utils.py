@@ -13,17 +13,13 @@ import sys
 import os
 import re
 import site
+import pathlib
 import logging as _logging
 # -------------------------------------------------------------------------
 
 
 # --------------------------------------------------------------------------
 _PACKAGENAME = 'azpy.config_utils'
-
-FRMT_LOG_LONG = "[%(name)s][%(levelname)s] >> %(message)s (%(asctime)s; %(filename)s:%(lineno)d)"
-_logging.basicConfig(level=_logging.INFO,
-                     format=FRMT_LOG_LONG,
-                     datefmt='%m-%d %H:%M')
 _LOGGER = _logging.getLogger(_PACKAGENAME)
 _LOGGER.debug('Initializing: {0}.'.format({_PACKAGENAME}))
 
@@ -73,6 +69,26 @@ def get_os():
 
         raise RuntimeError(message)
     return os_folder
+# -------------------------------------------------------------------------
+
+
+# -------------------------------------------------------------------------
+def get_datadir() -> pathlib.Path:
+    """
+    persistent application data.
+    # linux: ~/.local/share
+    # macOS: ~/Library/Application Support
+    # windows: C:/Users/<USER>/AppData/Roaming
+    """
+
+    home = pathlib.Path.home()
+
+    if sys.platform.startswith('win'):
+        return home / "AppData/Roaming"
+    elif sys.platform == "linux":
+        return home / ".local/share"
+    elif sys.platform == "darwin":
+        return home / "Library/Application Support"
 # -------------------------------------------------------------------------
 
 
@@ -127,6 +143,27 @@ def get_stub_check_path(in_path=os.getcwd(), check_stub='engine.json'):
 
 
 # -------------------------------------------------------------------------
+def get_o3de_engine_root(check_stub='engine.json'):
+    # get the O3DE engine root folder
+    # if we are running within O3DE we can ensure which engine is running
+    _O3DE_DEV = None
+    try:
+        import azlmbr  # this file will fail outside of O3DE
+    except ImportError as e:
+        # if that fails, we can search up
+        # search up to get \dev
+        _O3DE_DEV = get_stub_check_path(check_stub='engine.json')
+        # To Do: What if engine.json doesn't exist?
+    else:
+        # BUT allow for ENVAR override by user
+        _O3DE_DEV = Path(os.getenv('O3DE_DEV', azlmbr.paths.engroot))
+    finally:
+        _LOGGER.info(f'O3DE engine root: {_O3DE_DEV.resolve()}')
+    return _O3DE_DEV
+# -------------------------------------------------------------------------
+
+
+# -------------------------------------------------------------------------
 # settings.setenv()  # doing this will add the additional DYNACONF_ envars
 def get_dccsi_config(dccsi_dirpath=return_stub_dir()):
     """Convenience method to set and retreive settings directly from module."""
@@ -176,7 +213,7 @@ def get_current_project_cfg(dev_folder=get_stub_check_path()):
 
 
 # -------------------------------------------------------------------------
-def get_current_project():
+def get_check_global_project():
     """Gets o3de project via .o3de data in user directory"""
 
     from azpy.constants import PATH_USER_O3DE_BOOTSTRAP
@@ -243,13 +280,10 @@ if __name__ == '__main__':
     _config = get_dccsi_config()
     _LOGGER.info('DCCSI_CONFIG_PATH: {}'.format(_config))
 
-    _LOGGER.info('O3DE_DEV: {}'.format(get_stub_check_path('engine.json')))
-
-    # this will be deprecated and shouldn't work soon (returns None)
-    _LOGGER.info('O3DE_PROJECT: {}'.format(get_current_project_cfg(get_stub_check_path('bootstrap.cfg'))))
+    _LOGGER.info('O3DE_DEV: {}'.format(get_o3de_engine_root(check_stub='engine.json')))
 
     # new o3de version
-    _LOGGER.info('O3DE_PROJECT: {}'.format(get_current_project()))
+    _LOGGER.info('O3DE_PROJECT: {}'.format(get_check_global_project()))
 
     _LOGGER.info('DCCSI_PYTHON_LIB_PATH: {}'.format(bootstrap_dccsi_py_libs(return_stub_dir('dccsi_stub'))))
 

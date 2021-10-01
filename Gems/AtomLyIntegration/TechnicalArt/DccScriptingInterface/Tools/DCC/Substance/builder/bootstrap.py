@@ -69,7 +69,7 @@ from dynaconf import settings
 try:
     from PySide2.QtWidgets import QApplication
 except:
-    _dccsi_config.init_ly_pyside(settings.O3DE_DEV)  # init for standalone
+    _dccsi_config.init_o3de_pyside(settings.O3DE_DEV)  # init for standalone
     # running in the editor if the QtForPython Gem is enabled
     # you should already have access and shouldn't need to set up
     

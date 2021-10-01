@@ -71,7 +71,7 @@ import config
 _LOGGER.debug('config.py is: {}'.format(config))
 
 # initialize the Lumberyard Qt / PySide2
-config.init_ly_pyside(settings.O3DE_DEV)  # for standalone
+config.init_o3de_pyside(settings.O3DE_DEV)  # for standalone
 settings.setenv()  # for standalone
 
 # log debug info about Qt/PySide2
