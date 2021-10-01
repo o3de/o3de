@@ -32,6 +32,8 @@ namespace AzToolsFramework
         FocusModeInterface* m_focusModeInterface = nullptr;
 
     public:
+        AzFramework::EntityContextId m_editorEntityContextId = AzFramework::EntityContextId::CreateNull();
+
         AzFramework::CameraState m_cameraState;
 
         inline static const AZ::Vector3 CameraPosition = AZ::Vector3(10.0f, 15.0f, 10.0f);

@@ -301,36 +301,72 @@ namespace AZ
                 return;
             }
 
-            if (material.IsValid())
+            if (GetMaterialUsedByDecal(handle) == material)
+                return;
+
+            const auto decalIndex = handle.GetIndex();
+
+            const bool isValidMaterialBeingUsedCurrently = m_decalData.GetData(decalIndex).m_textureArrayIndex != DecalData::UnusedIndex;
+            if (isValidMaterialBeingUsedCurrently)
             {
                 AZ_Assert(
-                    m_decalData.GetData(handle.GetIndex()).m_textureArrayIndex == DecalData::UnusedIndex || GetMaterialUsedByDecal(handle) == material,
-                    "Setting Material on a decal more than once is not currently supported.");
+                AZ_Assert(m_decalData.GetData(handle.GetIndex()).m_textureArrayIndex == DecalData::UnusedIndex, "Setting Material on a decal more than once is not currently supported.");
 
-                const auto iter = m_materialToTextureArrayLookupTable.find(material);
-                if (iter != m_materialToTextureArrayLookupTable.end())
-                {
-                    // This material is already loaded and registered with this feature processor
-                    iter->second.m_useCount++;
-                    SetDecalTextureLocation(handle, iter->second.m_location);
-                    return;
-                }
+            if (!material.IsValid())
+                return;
 
-                // Material not loaded so queue it up for loading.
-                QueueMaterialLoadForDecal(material, handle);
+            const auto iter = m_materialToTextureArrayLookupTable.find(material);
+            if (iter != m_materialToTextureArrayLookupTable.end())
+            {
+                // This material is already loaded and registered with this feature processor
+                iter->second.m_useCount++;
+                SetDecalTextureLocation(handle, iter->second.m_location);
                 return;
             }
+
+            // Material not loaded so queue it up for loading.
+            QueueMaterialLoadForDecal(material, handle);
+        }
+
+        void DecalTextureArrayFeatureProcessor::RemoveMaterialFromDecal(const uint16_t decalIndex)
+        {
+            DecalLocation decalLocation;
+            decalLocation.textureArrayIndex = m_decalData.GetData(decalIndex).m_textureArrayIndex;
+            decalLocation.textureIndex = m_decalData.GetData(decalIndex).m_textureIndex;
+            RemoveDecalFromTextureArrays(decalLocation);
+
+            m_decalData.GetData(decalIndex).m_textureArrayIndex = DecalData::UnusedIndex;
+            m_decalData.GetData(decalIndex).m_textureIndex = DecalData::UnusedIndex;
+
+            m_deviceBufferNeedsUpdate = true;
         }
 
         void DecalTextureArrayFeatureProcessor::CacheShaderIndices()
         {
-            for (int i = 0; i < NumTextureArrays; ++i)
-            {
-                const RHI::ShaderResourceGroupLayout* viewSrgLayout = RPI::RPISystemInterface::Get()->GetViewSrgLayout().get();
-                const AZStd::string baseName = "m_decalTextureArray" + AZStd::to_string(i);
+            // The azsl shader should define several texture arrays such as:
+            // Texture2DArray<float4> m_decalTextureArrayDiffuse0;
+            // Texture2DArray<float4> m_decalTextureArrayDiffuse1;
+            // Texture2DArray<float4> m_decalTextureArrayDiffuse2;
+            // and
+            // Texture2DArray<float2> m_decalTextureArrayNormalMaps0;
+            // Texture2DArray<float2> m_decalTextureArrayNormalMaps1;
+            // Texture2DArray<float2> m_decalTextureArrayNormalMaps2;
+            static const AZStd::array<AZStd::string, DecalMapType_Num> ShaderNames = { "m_decalTextureArrayDiffuse",
+                                                                                       "m_decalTextureArrayNormalMaps" };
 
-                m_decalTextureArrayIndices[i] = viewSrgLayout->FindShaderInputImageIndex(Name(baseName.c_str()));
-                AZ_Warning("DecalTextureArrayFeatureProcessor", m_decalTextureArrayIndices[i].IsValid(), "Unable to find %s in decal shader.", baseName.c_str());
+            for (int mapType = 0; mapType < DecalMapType_Num; ++mapType)
+            {
+                for (int texArrayIdx = 0; texArrayIdx < NumTextureArrays; ++texArrayIdx)
+                {
+                    const RHI::ShaderResourceGroupLayout* viewSrgLayout = RPI::RPISystemInterface::Get()->GetViewSrgLayout().get();
+                    const AZStd::string baseName = ShaderNames[mapType] + AZStd::to_string(texArrayIdx);
+
+                    m_decalTextureArrayIndices[texArrayIdx][mapType] = viewSrgLayout->FindShaderInputImageIndex(Name(baseName.c_str()));
+                    AZ_Warning(
+                        "DecalTextureArrayFeatureProcessor", m_decalTextureArrayIndices[texArrayIdx][mapType].IsValid(),
+                        "Unable to find %s in decal shader.",
+                        baseName.c_str());
+                }
             }
         }
 
@@ -413,8 +449,11 @@ namespace AZ
             int iter = m_textureArrayList.begin();
             while (iter != -1)
             {
-                const auto& packedTexture = m_textureArrayList[iter].second.GetPackedTexture();
-                view->GetShaderResourceGroup()->SetImage(m_decalTextureArrayIndices[iter], packedTexture);
+                for (int mapType = 0 ; mapType < DecalMapType_Num ; ++mapType)
+                {
+                    const auto& packedTexture = m_textureArrayList[iter].second.GetPackedTexture(aznumeric_cast<DecalMapType>(mapType));
+                    view->GetShaderResourceGroup()->SetImage(m_decalTextureArrayIndices[iter][mapType], packedTexture);
+                }
                 iter = m_textureArrayList.next(iter);
             }
         }
