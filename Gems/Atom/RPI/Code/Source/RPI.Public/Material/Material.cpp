@@ -386,9 +386,9 @@ namespace AZ
             return m_currentChangeId;
         }
 
-        MaterialPropertyIndex Material::FindPropertyIndex(const Name& name) const
+        MaterialPropertyIndex Material::FindPropertyIndex(const Name& propertyId) const
         {
-            return m_layout->FindPropertyIndex(name);
+            return m_layout->FindPropertyIndex(propertyId);
         }
 
         template<typename Type>
