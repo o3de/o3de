@@ -38,14 +38,6 @@ namespace EMotionFX
     {
         AZ_CLASS_ALLOCATOR_IMPL(LocomotionBehavior, MotionMatchAllocator, 0)
 
-        // Static members.
-        AZ::TypeId LocomotionBehavior::s_rootTrajectoryId = AZ::TypeId("{61369BE4-A158-4FC6-8C45-267BB369FE3C}");
-        AZ::TypeId LocomotionBehavior::s_leftFootPositionsId = AZ::TypeId("{20792202-8D0C-4F8E-B0FE-F979A39DFC2B}");
-        AZ::TypeId LocomotionBehavior::s_leftFootVelocitiesId = AZ::TypeId("{C89AE5EB-953E-4448-89D9-995E87A80BCE}");
-        AZ::TypeId LocomotionBehavior::s_rightFootPositionsId = AZ::TypeId("{D81C95CE-FDD8-4000-A37C-8B40887457C3}");
-        AZ::TypeId LocomotionBehavior::s_rightFootVelocitiesId = AZ::TypeId("{0C2296AB-DFF5-4D5D-8242-49923650E05B}");
-        AZ::TypeId LocomotionBehavior::s_rootDirectionId = AZ::TypeId("{7065E949-FFAF-4108-94E2-0BD429A5CD8F}");
-
         LocomotionBehavior::LocomotionBehavior()
             : Behavior()
         {
@@ -71,7 +63,6 @@ namespace EMotionFX
             m_rootTrajectoryData = aznew FeatureTrajectory();
             m_rootTrajectoryData->SetNodeIndex(m_rootNodeIndex);
             m_rootTrajectoryData->SetRelativeToNodeIndex(m_rootNodeIndex);
-            m_rootTrajectoryData->SetId(s_rootTrajectoryId);
             m_rootTrajectoryData->SetDebugDrawColor(AZ::Colors::Magenta);
             m_rootTrajectoryData->SetNumFutureSamplesPerFrame(6);
             m_rootTrajectoryData->SetNumPastSamplesPerFrame(6);
@@ -93,7 +84,6 @@ namespace EMotionFX
             m_leftFootPositionData = aznew FeaturePosition();
             m_leftFootPositionData->SetNodeIndex(m_leftFootNodeIndex);
             m_leftFootPositionData->SetRelativeToNodeIndex(m_rootNodeIndex);
-            m_leftFootPositionData->SetId(s_leftFootPositionsId);
             m_leftFootPositionData->SetDebugDrawColor(AZ::Colors::Red);
             m_leftFootPositionData->SetDebugDrawEnabled(false);
             m_leftFootPositionData->SetIncludeInKdTree(true);
@@ -111,7 +101,6 @@ namespace EMotionFX
             m_rightFootPositionData = aznew FeaturePosition();
             m_rightFootPositionData->SetNodeIndex(m_rightFootNodeIndex);
             m_rightFootPositionData->SetRelativeToNodeIndex(m_rootNodeIndex);
-            m_rightFootPositionData->SetId(s_rightFootPositionsId);
             m_rightFootPositionData->SetDebugDrawColor(AZ::Colors::Green);
             m_rightFootPositionData->SetDebugDrawEnabled(false);
             m_rightFootPositionData->SetIncludeInKdTree(true);
@@ -123,7 +112,6 @@ namespace EMotionFX
             m_leftFootVelocityData = aznew FeatureVelocity();
             m_leftFootVelocityData->SetNodeIndex(m_leftFootNodeIndex);
             m_leftFootVelocityData->SetRelativeToNodeIndex(m_rootNodeIndex);
-            m_leftFootVelocityData->SetId(s_leftFootVelocitiesId);
             m_leftFootVelocityData->SetDebugDrawColor(AZ::Colors::Teal);
             m_leftFootVelocityData->SetDebugDrawEnabled(true);
             m_leftFootVelocityData->SetIncludeInKdTree(true);
@@ -135,7 +123,6 @@ namespace EMotionFX
             m_rightFootVelocityData = aznew FeatureVelocity();
             m_rightFootVelocityData->SetNodeIndex(m_rightFootNodeIndex);
             m_rightFootVelocityData->SetRelativeToNodeIndex(m_rootNodeIndex);
-            m_rightFootVelocityData->SetId(s_rightFootVelocitiesId);
             m_rightFootVelocityData->SetDebugDrawColor(AZ::Colors::Cyan);
             m_rightFootVelocityData->SetDebugDrawEnabled(true);
             m_rightFootVelocityData->SetIncludeInKdTree(true);
@@ -143,14 +130,13 @@ namespace EMotionFX
             //----------------------------------------------------------------------------------------------------------
 
             // Root direction.
-            m_rootDirectionData = aznew FeatureDirection();
-            m_rootDirectionData->SetNodeIndex(m_rootNodeIndex);
+            /*m_rootDirectionData->SetNodeIndex(m_rootNodeIndex);
             m_rootDirectionData->SetRelativeToNodeIndex(m_rootNodeIndex);
-            m_rootDirectionData->SetId(s_rootDirectionId);
             m_rootDirectionData->SetDebugDrawColor(AZ::Colors::Yellow);
             m_rootDirectionData->SetDebugDrawEnabled(false);
             m_rootDirectionData->SetIncludeInKdTree(false);
             m_features.RegisterFeature(m_rootDirectionData);
+            m_rootDirectionData = aznew FeatureDirection();*/
             //----------------------------------------------------------------------------------------------------------
 
             return true;
@@ -188,8 +174,8 @@ namespace EMotionFX
 
             const ActorInstance* actorInstance = behaviorInstance->GetActorInstance();
             const Transform transform = actorInstance->GetTransformData()->GetCurrentPose()->GetWorldSpaceTransform(m_rootNodeIndex);
-            m_rootTrajectoryData->DebugDrawFutureTrajectory(draw, curFrameIndex, transform, AZ::Colors::LawnGreen);
-            m_rootTrajectoryData->DebugDrawPastTrajectory(draw, curFrameIndex, transform, AZ::Colors::Red);
+            m_rootTrajectoryData->DebugDrawFutureTrajectory(draw, behaviorInstance, curFrameIndex, transform, AZ::Colors::LawnGreen);
+            m_rootTrajectoryData->DebugDrawPastTrajectory(draw, behaviorInstance, curFrameIndex, transform, AZ::Colors::Red);
         }
 
         void LocomotionBehavior::DebugDrawControlSpline(EMotionFX::DebugDraw::ActorInstanceData& draw, BehaviorInstance* behaviorInstance)
@@ -238,16 +224,14 @@ namespace EMotionFX
             //const BehaviorInstance::ControlSpline& controlSpline = behaviorInstance->GetControlSpline();
             const Frame& currentFrame = m_data.GetFrame(currentFrameIndex);
             MotionInstance* motionInstance = behaviorInstance->GetMotionInstance();
-            FeaturePosition::FrameCostContext leftFootPosContext;
-            FeaturePosition::FrameCostContext rightFootPosContext;
-            FeatureTrajectory::FrameCostContext rootTrajectoryContext;
-            FeatureVelocity::FrameCostContext leftFootVelocityContext;
-            FeatureVelocity::FrameCostContext rightFootVelocityContext;
+            FeaturePosition::FrameCostContext leftFootPosContext(inputPose, m_features.GetFeatureMatrix());
+            FeaturePosition::FrameCostContext rightFootPosContext(inputPose, m_features.GetFeatureMatrix());
+            FeatureTrajectory::FrameCostContext rootTrajectoryContext(m_features.GetFeatureMatrix());
+            FeatureVelocity::FrameCostContext leftFootVelocityContext(m_features.GetFeatureMatrix());
+            FeatureVelocity::FrameCostContext rightFootVelocityContext(m_features.GetFeatureMatrix());
             //DirectionFrameData::FrameCostContext rootDirectionContext;
             Feature::CalculateVelocity(m_leftFootNodeIndex, m_rootNodeIndex, motionInstance, leftFootVelocityContext.m_direction, leftFootVelocityContext.m_speed);
             Feature::CalculateVelocity(m_rightFootNodeIndex, m_rootNodeIndex, motionInstance, rightFootVelocityContext.m_direction, rightFootVelocityContext.m_speed); // TODO: group this with left foot for faster performance
-            leftFootPosContext.m_pose = &inputPose;
-            rightFootPosContext.m_pose = &inputPose;
             rootTrajectoryContext.m_pose = &inputPose;
             rootTrajectoryContext.m_facingDirectionRelative = AZ::Vector3(0.0f, 1.0f, 0.0f);
             //rootDirectionContext.m_pose = &inputPose;
@@ -261,19 +245,19 @@ namespace EMotionFX
 
             // Left foot position.
             m_leftFootPositionData->FillFrameFloats(startOffset, frameFloats, leftFootPosContext);
-            startOffset += m_leftFootPositionData->GetNumDimensionsForKdTree();
+            startOffset += m_leftFootPositionData->GetNumDimensions();
 
             // Right foot position.
             m_rightFootPositionData->FillFrameFloats(startOffset, frameFloats, rightFootPosContext);
-            startOffset += m_rightFootPositionData->GetNumDimensionsForKdTree();
+            startOffset += m_rightFootPositionData->GetNumDimensions();
 
             // Left foot velocity.
             m_leftFootVelocityData->FillFrameFloats(startOffset, frameFloats, leftFootVelocityContext);
-            startOffset += m_leftFootVelocityData->GetNumDimensionsForKdTree();
+            startOffset += m_leftFootVelocityData->GetNumDimensions();
 
             // Right foot velocity.
             m_rightFootVelocityData->FillFrameFloats(startOffset, frameFloats, rightFootVelocityContext);
-            startOffset += m_leftFootVelocityData->GetNumDimensionsForKdTree();
+            startOffset += m_leftFootVelocityData->GetNumDimensions();
 
             AZ_Assert(startOffset == frameFloats.size(), "Frame float vector is not the expected size.");
             //-----------------------
@@ -296,11 +280,13 @@ namespace EMotionFX
                 float totalCost =
                     m_tweakFactors.m_footPositionFactor * m_leftFootPositionData->CalculateFrameCost(frameIndex, leftFootPosContext) +
                     m_tweakFactors.m_footPositionFactor * m_rightFootPositionData->CalculateFrameCost(frameIndex, rightFootPosContext) +
-                    m_tweakFactors.m_rootFutureFactor * m_rootTrajectoryData->CalculateFutureFrameCost(frameIndex, rootTrajectoryContext) +
-                    m_tweakFactors.m_rootPastFactor * m_rootTrajectoryData->CalculatePastFrameCost(frameIndex, rootTrajectoryContext) +
-                    m_tweakFactors.m_rootDirectionFactor * m_rootTrajectoryData->CalculateDirectionCost(frameIndex, rootTrajectoryContext) +
+
                     m_tweakFactors.m_footVelocityFactor * m_leftFootVelocityData->CalculateFrameCost(frameIndex, leftFootVelocityContext) +
-                    m_tweakFactors.m_footVelocityFactor * m_rightFootVelocityData->CalculateFrameCost(frameIndex, rightFootVelocityContext);// +
+                    m_tweakFactors.m_footVelocityFactor * m_rightFootVelocityData->CalculateFrameCost(frameIndex, rightFootVelocityContext) +
+
+                    m_tweakFactors.m_rootFutureFactor * m_rootTrajectoryData->CalculateFutureFrameCost(frameIndex, rootTrajectoryContext) +
+                    m_tweakFactors.m_rootPastFactor * m_rootTrajectoryData->CalculatePastFrameCost(frameIndex, rootTrajectoryContext);
+
                     //m_tweakFactors.m_rootDirectionFactor * m_rootDirectionData->CalculateFrameCost(frameIndex, rootDirectionContext);
 
                 if (frame.GetSourceMotion() != currentFrame.GetSourceMotion())

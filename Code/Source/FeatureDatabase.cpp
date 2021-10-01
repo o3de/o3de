@@ -11,6 +11,7 @@
 */
 
 #include <Allocators.h>
+#include <EMotionFX/Source/Actor.h>
 #include <EMotionFX/Source/ActorInstance.h>
 #include <EMotionFX/Source/AnimGraphPose.h>
 #include <EMotionFX/Source/AnimGraphPosePool.h>
@@ -50,23 +51,16 @@ namespace EMotionFX
             m_featuresByType.clear();
             m_features.clear();
             m_kdTree->Clear();
+            m_featureMatrix.Clear();
         }
 
         size_t FeatureDatabase::CalcMemoryUsageInBytes() const
         {
-            size_t total = 0;
-            for (const Feature* frameData : m_features)
-            {
-                if (frameData && frameData->GetId().IsNull())
-                {
-                    continue;
-                }
-
-                total += frameData->CalcMemoryUsageInBytes();
-            }
-
-            total += sizeof(m_featuresByType);
-            return total;
+            size_t result = 0;
+            result += m_kdTree->CalcMemoryUsageInBytes();
+            result += m_featureMatrix.CalcMemoryUsageInBytes();
+            result += sizeof(m_features) + m_features.capacity() * sizeof(Feature*);
+            return result;
         }
 
         const Feature* FeatureDatabase::GetFeature(size_t index) const
@@ -108,23 +102,30 @@ namespace EMotionFX
             }
 
             // Initialize all frame datas before we process each frame.
-            for (Feature* frameData : m_features)
+            FeatureMatrix::Index featureComponentCount = 0;
+            for (Feature* feature : m_features)
             {
-                if (frameData && frameData->GetId().IsNull())
+                if (feature && feature->GetId().IsNull())
                 {
                     return false;
                 }
 
                 Feature::InitSettings frameSettings;
                 frameSettings.m_actorInstance = actorInstance;
-                frameData->SetData(frameDatabase);
-                if (!frameData->Init(frameSettings))
+                feature->SetData(frameDatabase);
+                if (!feature->Init(frameSettings))
                 {
                     return false;
                 }
+
+                feature->SetColumnOffset(featureComponentCount);
+                featureComponentCount += feature->GetNumDimensions();
             }
 
             const auto& frames = frameDatabase->GetFrames();
+
+            // Allocate memory for the feature matrix
+            m_featureMatrix.resize(/*rows=*/numFrames, /*columns=*/featureComponentCount);
 
             // Iterate over all frames and extract the data for this frame.
             const Pose* bindPose = actorInstance->GetTransformData()->GetBindPose();
@@ -136,11 +137,13 @@ namespace EMotionFX
             AnimGraphPose* previousPose = posePool.RequestPose(actorInstance);
             AnimGraphPose* nextPose = posePool.RequestPose(actorInstance);
             Motion* previousSourceMotion = nullptr;
-            Feature::ExtractFrameContext context;
+
+            Feature::ExtractFrameContext context(m_featureMatrix);
             context.m_pose = &pose->GetPose();
             context.m_previousPose = &previousPose->GetPose();
             context.m_nextPose = &nextPose->GetPose();
             context.m_motionInstance = motionInstance;
+
             bool lastNextValid = false;
             for (const Frame& frame : frames)
             {
@@ -184,13 +187,14 @@ namespace EMotionFX
                     context.m_prevFrameIndex = frame.GetFrameIndex() - 1;
                 }
 
-                // Extract all frame datas.
-                for (const auto& frameDataEntry : m_featuresByType)
+                // Extract all features for the given frame.
                 {
-                    Feature* frameData = frameDataEntry.second;
-                    context.m_motionInstance->SetMirrorMotion(frame.GetMirrored());
-                    context.m_motionInstance->SetCurrentTime(frame.GetSampleTime());
-                    frameData->ExtractFrameData(context);
+                    for (Feature* feature : m_features)
+                    {
+                        context.m_motionInstance->SetMirrorMotion(frame.GetMirrored());
+                        context.m_motionInstance->SetCurrentTime(frame.GetSampleTime());
+                        feature->ExtractFrameData(context);
+                    }
                 }
 
                 *previousPose = *pose;
@@ -209,6 +213,11 @@ namespace EMotionFX
                 AZ_Error("EMotionFX", false, "Failed to initialize KdTree acceleration structure inside motion matching behavior.");
                 return false;
             }
+
+            AZ_Printf("MotionMatching", "Feature matrix (%zu, %zu) uses %.2f MB.",
+                m_featureMatrix.rows(),
+                m_featureMatrix.cols(),
+                static_cast<float>(m_featureMatrix.CalcMemoryUsageInBytes()) / 1024.0f / 1024.0f);
 
             return true;
         }
@@ -276,7 +285,7 @@ namespace EMotionFX
                     continue;
                 }
 
-                totalDimensions += frameData->GetNumDimensionsForKdTree();
+                totalDimensions += frameData->GetNumDimensions();
             }
             return totalDimensions;
         }

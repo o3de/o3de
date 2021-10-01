@@ -56,14 +56,18 @@ namespace EMotionFX
             // KD-Tree
             KdTree& GetKdTree() { return *m_kdTree.get(); }
             const KdTree& GetKdTree() const { return *m_kdTree.get(); }
-            size_t CalcNumDataDimensionsForKdTree() const;
+			size_t CalcNumDataDimensionsForKdTree() const;
+
+            const FeatureMatrix& GetFeatureMatrix() const { return m_featureMatrix; }
 
         private:
             static Feature* CreateFrameDataByType(const AZ::TypeId& typeId); // create from RTTI type
 
         private:
-            AZStd::unordered_map<AZ::TypeId, Feature*> m_featuresByType; /**< The per frame additional data. (Weak ownership) */
             AZStd::vector<Feature*> m_features; /**< This is a flat vector of all frame datas (Owner of the features). */
+            AZStd::unordered_map<AZ::TypeId, Feature*> m_featuresByType; /**< The per frame additional data. (Weak ownership) */
+            FeatureMatrix m_featureMatrix;
+
             AZStd::unique_ptr<KdTree> m_kdTree; /**< The acceleration structure to speed up the search for lowest cost frames. */
         };
     } // namespace MotionMatching

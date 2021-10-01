@@ -48,26 +48,23 @@ namespace EMotionFX
                 AXIS_Z = 2
             };
 
-            struct EMFX_API FrameCostContext
-            {
-                const Pose* m_pose;
-            };
-
             FeatureDirection();
             ~FeatureDirection() override = default;
 
             bool Init(const InitSettings& settings) override;
-            void ExtractFrameData(const ExtractFrameContext& context) override;
-            size_t GetNumDimensionsForKdTree() const override;
-            void FillFrameFloats(size_t frameIndex, size_t startIndex, AZStd::vector<float>& frameFloats) const override;
-            void CalcMedians(AZStd::vector<float>& medians, size_t startIndex) const override;
 
+            void ExtractFrameData(const ExtractFrameContext& context) override;
+            size_t GetNumDimensions() const override;
+            void FillFrameFloats(const FeatureMatrix& featureMatrix, size_t frameIndex, size_t startIndex, AZStd::vector<float>& frameFloats) const override;
+
+            struct EMFX_API FrameCostContext
+            {
+                const Pose* m_pose;
+            };
             float CalculateFrameCost(size_t frameIndex, const FrameCostContext& context) const;
 
             void SetNodeIndex(size_t nodeIndex);
             AZ_INLINE const AZ::Vector3& GetDirection(size_t frameIndex) const { return m_directions[frameIndex]; }
-
-            size_t CalcMemoryUsageInBytes() const override;
 
             void DebugDrawDirection(EMotionFX::DebugDraw::ActorInstanceData& draw, size_t frameIndex, const AZ::Vector3 startPoint, const AZ::Transform& transform, const AZ::Color& color);
 
