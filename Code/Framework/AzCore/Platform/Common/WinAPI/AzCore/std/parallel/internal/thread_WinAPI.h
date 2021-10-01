@@ -18,6 +18,8 @@ extern "C"
     AZ_DLL_IMPORT unsigned long __stdcall GetCurrentThreadId(void);
 }
 
+#include <AzCore/std/tuple.h>
+
 namespace AZStd
 {
     namespace Internal
@@ -30,11 +32,20 @@ namespace AZStd
 
     //////////////////////////////////////////////////////////////////////////
     // thread
-    template <class F>
-    inline thread::thread(F&& f, const thread_desc* desc)
+    template<class F, class... Args, typename>
+    thread::thread(F&& f, Args&&... args)
+        : thread(thread_desc{}, AZStd::forward<F>(f), AZStd::forward<Args>(args)...)
+    {}
+
+    template<class F, class... Args>
+    thread::thread(const thread_desc& desc, F&& f, Args&&... args)
     {
-        Internal::thread_info* ti = Internal::create_thread_info(AZStd::forward<F>(f));
-        m_thread.m_handle = Internal::create_thread(desc, ti, &m_thread.m_id);
+        auto threadfunc = [fn = AZStd::forward<F>(f), argsTuple = AZStd::make_tuple(AZStd::forward<Args>(args)...)]() mutable -> void
+        {
+            AZStd::apply(AZStd::move(fn), AZStd::move(argsTuple));
+        };
+        Internal::thread_info* ti = Internal::create_thread_info(AZStd::move(threadfunc));
+        m_thread.m_handle = Internal::create_thread(&desc, ti, &m_thread.m_id);
     }
 
     inline bool thread::joinable() const

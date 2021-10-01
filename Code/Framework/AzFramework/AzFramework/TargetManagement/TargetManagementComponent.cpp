@@ -319,7 +319,7 @@ namespace AzFramework
         AZStd::thread_desc td;
         td.m_name = "TargetManager Thread";
         td.m_cpuId = AFFINITY_MASK_USERTHREADS;
-        m_threadHandle = AZStd::thread(AZStd::bind(&TargetManagementComponent::TickThread, this), &td);
+        m_threadHandle = AZStd::thread(td, AZStd::bind(&TargetManagementComponent::TickThread, this));
     }
 
     void TargetManagementComponent::Deactivate()
