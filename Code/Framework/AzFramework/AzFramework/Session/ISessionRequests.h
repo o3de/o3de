@@ -18,6 +18,24 @@ namespace AzFramework
 {
     struct SessionConfig;
 
+    //! AcceptMatchRequest
+    //! The container for AcceptMatch request parameters.
+    struct AcceptMatchRequest
+    {
+        AZ_RTTI(AcceptMatchRequest, "{AD289D76-CEE2-424F-847E-E62AA83B7D79}");
+        static void Reflect(AZ::ReflectContext* context);
+
+        AcceptMatchRequest() = default;
+        virtual ~AcceptMatchRequest() = default;
+
+        // Player response to accept or reject match
+        bool m_acceptMatch;
+        // A list of unique identifiers for players delivering the response
+        AZStd::vector<AZStd::string> m_playerIds;
+        // A unique identifier for a matchmaking ticket
+        AZStd::string m_ticketId;
+    };
+
     //! CreateSessionRequest
     //! The container for CreateSession request parameters.
     struct CreateSessionRequest
@@ -102,6 +120,34 @@ namespace AzFramework
         AZStd::string m_playerData;
     };
 
+    //! StartMatchmakingRequest
+    //! The container for StartMatchmaking request parameters.
+    struct StartMatchmakingRequest
+    {
+        AZ_RTTI(StartMatchmakingRequest, "{70B47776-E8E7-4993-BEC3-5CAEC3D48E47}");
+        static void Reflect(AZ::ReflectContext* context);
+
+        StartMatchmakingRequest() = default;
+        virtual ~StartMatchmakingRequest() = default;
+
+        // A unique identifier for a matchmaking ticket
+        AZStd::string m_ticketId;
+    };
+
+    //! StopMatchmakingRequest
+    //! The container for StopMatchmaking request parameters.
+    struct StopMatchmakingRequest
+    {
+        AZ_RTTI(StopMatchmakingRequest, "{6132E293-65EF-4DC2-A8A0-00269697229D}");
+        static void Reflect(AZ::ReflectContext* context);
+
+        StopMatchmakingRequest() = default;
+        virtual ~StopMatchmakingRequest() = default;
+
+        // A unique identifier for a matchmaking ticket
+        AZStd::string m_ticketId;
+    };
+
     //! ISessionRequests
     //! Pure virtual session interface class to abstract the details of session handling from application code.
     class ISessionRequests
@@ -111,6 +157,10 @@ namespace AzFramework
 
         ISessionRequests() = default;
         virtual ~ISessionRequests() = default;
+
+        // Registers a player's acceptance or rejection of a proposed matchmaking.
+        // @param  acceptMatchRequest The request of AcceptMatch operation
+        virtual void AcceptMatch(const AcceptMatchRequest& acceptMatchRequest) = 0;
 
         // Create a session for players to find and join.
         // @param  createSessionRequest The request of CreateSession operation
@@ -129,6 +179,15 @@ namespace AzFramework
 
         // Disconnect player from session.
         virtual void LeaveSession() = 0;
+
+        // Create a game match for a group of players.
+        // @param  startMatchmakingRequest The request of StartMatchmaking operation
+        // @return A unique identifier for a matchmaking ticket
+        virtual AZStd::string StartMatchmaking(const StartMatchmakingRequest& startMatchmakingRequest) = 0;
+
+        // Cancels a matchmaking ticket that is currently being processed.
+        // @param  stopMatchmakingRequest The request of StopMatchmaking operation
+        virtual void StopMatchmaking(const StopMatchmakingRequest& stopMatchmakingRequest) = 0;
     };
 
     //! ISessionAsyncRequests
@@ -140,6 +199,10 @@ namespace AzFramework
 
         ISessionAsyncRequests() = default;
         virtual ~ISessionAsyncRequests() = default;
+
+        // AcceptMatch Async
+        // @param  acceptMatchRequest The request of AcceptMatch operation
+        virtual void AcceptMatchAsync(const AcceptMatchRequest& acceptMatchRequest) = 0;
 
         // CreateSession Async
         // @param  createSessionRequest The request of CreateSession operation
@@ -155,6 +218,14 @@ namespace AzFramework
 
         // LeaveSession Async
         virtual void LeaveSessionAsync() = 0;
+
+        // StartMatchmaking Async
+        // @param  startMatchmakingRequest The request of StartMatchmaking operation
+        virtual void StartMatchmakingAsync(const StartMatchmakingRequest& startMatchmakingRequest) = 0;
+
+        // StopMatchmaking Async
+        // @param  stopMatchmakingRequest The request of StopMatchmaking operation
+        virtual void StopMatchmakingAsync(const StopMatchmakingRequest& stopMatchmakingRequest) = 0;
     };
 
     //! SessionAsyncRequestNotifications
@@ -172,6 +243,9 @@ namespace AzFramework
         static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::Single;
         //////////////////////////////////////////////////////////////////////////
 
+        // OnAcceptMatchAsyncComplete is fired once AcceptMatchAsync completes
+        virtual void OnAcceptMatchAsyncComplete() = 0;
+
         // OnCreateSessionAsyncComplete is fired once CreateSessionAsync completes
         // @param createSessionResponse The request id if session creation request succeeds; empty if it fails
         virtual void OnCreateSessionAsyncComplete(const AZStd::string& createSessionReponse) = 0;
@@ -186,6 +260,13 @@ namespace AzFramework
 
         // OnLeaveSessionAsyncComplete is fired once LeaveSessionAsync completes
         virtual void OnLeaveSessionAsyncComplete() = 0;
+
+        // OnStartMatchmakingAsyncComplete is fired once StartMatchmakingAsync completes
+        // @param matchmakingTicketId The unique identifier for the matchmaking ticket
+        virtual void OnStartMatchmakingAsyncComplete(const AZStd::string& matchmakingTicketId) = 0;
+
+        // OnStopMatchmakingAsyncComplete is fired once StopMatchmakingAsync completes
+        virtual void OnStopMatchmakingAsyncComplete() = 0;
     };
     using SessionAsyncRequestNotificationBus = AZ::EBus<SessionAsyncRequestNotifications>;
 } // namespace AzFramework

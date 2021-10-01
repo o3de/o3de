@@ -41,6 +41,9 @@ namespace AzFramework
         // OnDestroySessionBegin is fired at the beginning of session termination
         // @return The result of all OnDestroySessionBegin notifications
         virtual bool OnDestroySessionBegin() = 0;
+
+        // OnUpdateGameSession is fired at the beginning of session update
+        virtual void OnUpdateSessionBegin(const SessionConfig& sessionConfig) = 0;
     };
     using SessionNotificationBus = AZ::EBus<SessionNotifications>;
 } // namespace AzFramework

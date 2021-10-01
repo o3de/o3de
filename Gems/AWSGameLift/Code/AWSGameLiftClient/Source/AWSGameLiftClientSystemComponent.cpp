@@ -13,10 +13,13 @@
 
 #include <AWSGameLiftClientManager.h>
 #include <AWSGameLiftClientSystemComponent.h>
+#include <Request/AWSGameLiftAcceptMatchRequest.h>
 #include <Request/AWSGameLiftCreateSessionOnQueueRequest.h>
 #include <Request/AWSGameLiftCreateSessionRequest.h>
 #include <Request/AWSGameLiftJoinSessionRequest.h>
 #include <Request/AWSGameLiftSearchSessionsRequest.h>
+#include <Request/AWSGameLiftStartMatchmakingRequest.h>
+#include <Request/AWSGameLiftStopMatchmakingRequest.h>
 
 #include <aws/gamelift/GameLiftClient.h>
 
@@ -29,17 +32,20 @@ namespace AWSGameLift
 
     void AWSGameLiftClientSystemComponent::Reflect(AZ::ReflectContext* context)
     {
+        AWSGameLiftAcceptMatchRequest::Reflect(context);
         ReflectCreateSessionRequest(context);
         AWSGameLiftCreateSessionOnQueueRequest::Reflect(context);
         AWSGameLiftCreateSessionRequest::Reflect(context);
         AWSGameLiftJoinSessionRequest::Reflect(context);
         AWSGameLiftSearchSessionsRequest::Reflect(context);
+        AWSGameLiftStartMatchmakingRequest::Reflect(context);
+        AWSGameLiftStopMatchmakingRequest::Reflect(context);
         ReflectSearchSessionsResponse(context);
 
         if (AZ::SerializeContext* serialize = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serialize->Class<AWSGameLiftClientSystemComponent, AZ::Component>()
-                ->Version(0)
+                ->Version(1)
                 ;
 
             if (AZ::EditContext* editContext = serialize->GetEditContext())
@@ -67,6 +73,8 @@ namespace AWSGameLift
                 ;
             behaviorContext->EBus<AWSGameLiftSessionAsyncRequestBus>("AWSGameLiftSessionAsyncRequestBus")
                 ->Attribute(AZ::Script::Attributes::Category, "AWSGameLift")
+                ->Event("AcceptMatchAsync", &AWSGameLiftSessionAsyncRequestBus::Events::AcceptMatchAsync,
+                    {{{"AcceptMatchRequest", ""}}})
                 ->Event("CreateSessionAsync", &AWSGameLiftSessionAsyncRequestBus::Events::CreateSessionAsync,
                     {{{"CreateSessionRequest", ""}}})
                 ->Event("JoinSessionAsync", &AWSGameLiftSessionAsyncRequestBus::Events::JoinSessionAsync,
@@ -74,6 +82,10 @@ namespace AWSGameLift
                 ->Event("SearchSessionsAsync", &AWSGameLiftSessionAsyncRequestBus::Events::SearchSessionsAsync,
                     {{{"SearchSessionsRequest", ""}}})
                 ->Event("LeaveSessionAsync", &AWSGameLiftSessionAsyncRequestBus::Events::LeaveSessionAsync)
+                ->Event("StartMatchmakingAsync", &AWSGameLiftSessionAsyncRequestBus::Events::StartMatchmakingAsync,
+                    {{{"StartMatchmakingRequest", ""}}})
+                ->Event("StopMatchmakingAsync", &AWSGameLiftSessionAsyncRequestBus::Events::StopMatchmakingAsync,
+                    {{{"StopMatchmakingRequest", ""}}})
                 ;
             behaviorContext
                 ->EBus<AzFramework::SessionAsyncRequestNotificationBus>("AWSGameLiftSessionAsyncRequestNotificationBus")
@@ -82,6 +94,8 @@ namespace AWSGameLift
                 ;
             behaviorContext->EBus<AWSGameLiftSessionRequestBus>("AWSGameLiftSessionRequestBus")
                 ->Attribute(AZ::Script::Attributes::Category, "AWSGameLift")
+                ->Event("AcceptMatch", &AWSGameLiftSessionRequestBus::Events::AcceptMatch,
+                    {{{"AcceptMatchRequest", ""}}})
                 ->Event("CreateSession", &AWSGameLiftSessionRequestBus::Events::CreateSession,
                     {{{"CreateSessionRequest", ""}}})
                 ->Event("JoinSession", &AWSGameLiftSessionRequestBus::Events::JoinSession,
@@ -89,6 +103,10 @@ namespace AWSGameLift
                 ->Event("SearchSessions", &AWSGameLiftSessionRequestBus::Events::SearchSessions,
                     {{{"SearchSessionsRequest", ""}}})
                 ->Event("LeaveSession", &AWSGameLiftSessionRequestBus::Events::LeaveSession)
+                ->Event("StartMatchmaking", &AWSGameLiftSessionRequestBus::Events::StartMatchmaking,
+                    {{{"StartMatchmakingRequest", ""}}})
+                ->Event("StopMatchmaking", &AWSGameLiftSessionRequestBus::Events::StopMatchmaking,
+                    {{{"StopMatchmakingRequest", ""}}})
                 ;
         }
     }
