@@ -400,6 +400,7 @@ namespace UnitTest
         for (int i = 0; i < loop_cnt; i++)
         {
             CODE_PROFILER_PROXY_PUSH_TIME(ProfilerProxyGroup, simple_thread3_loop);
+            counter++;
         }
     }
 
