@@ -1266,12 +1266,12 @@ void CObjectManager::Display(DisplayContext& dc)
 
 void CObjectManager::ForceUpdateVisibleObjectCache(DisplayContext& dc)
 {
-    FindDisplayableObjects(dc, false);
+    AZ_Assert(false, "CObjectManager::ForceUpdateVisibleObjectCache is legacy/deprecated and should not be used.");
 }
 
 void CObjectManager::FindDisplayableObjects([[maybe_unused]] DisplayContext& dc, [[maybe_unused]] bool bDisplay)
 {
-    // unused
+    AZ_Assert(false, "CObjectManager::FindDisplayableObjects is legacy/deprecated and should not be used.");
 }
 
 void CObjectManager::BeginEditParams(CBaseObject* obj, int flags)
@@ -1521,21 +1521,21 @@ bool CObjectManager::HitTestObject(CBaseObject* obj, HitContext& hc)
 //////////////////////////////////////////////////////////////////////////
 bool CObjectManager::HitTest([[maybe_unused]] HitContext& hitInfo)
 {
-    AZ_Assert(false, "CObjectManager::HitTest is legacy/deprecated and should not be used.")
+    AZ_Assert(false, "CObjectManager::HitTest is legacy/deprecated and should not be used.");
     return false;
 }
 
 void CObjectManager::FindObjectsInRect(
     [[maybe_unused]] CViewport* view, [[maybe_unused]] const QRect& rect, [[maybe_unused]] std::vector<GUID>& guids)
 {
-    AZ_Assert(false, "CObjectManager::FindObjectsInRect is legacy/deprecated and should not be used.")
+    AZ_Assert(false, "CObjectManager::FindObjectsInRect is legacy/deprecated and should not be used.");
 }
 
 //////////////////////////////////////////////////////////////////////////
 void CObjectManager::SelectObjectsInRect(
     [[maybe_unused]] CViewport* view, [[maybe_unused]] const QRect& rect, [[maybe_unused]] bool bSelect)
 {
-    AZ_Assert(false, "CObjectManager::SelectObjectsInRect is legacy/deprecated and should not be used.")
+    AZ_Assert(false, "CObjectManager::SelectObjectsInRect is legacy/deprecated and should not be used.");
 }
 
 //////////////////////////////////////////////////////////////////////////
