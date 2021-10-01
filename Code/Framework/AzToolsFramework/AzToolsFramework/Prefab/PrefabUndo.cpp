@@ -51,6 +51,11 @@ namespace AzToolsFramework
             m_instanceToTemplateInterface->PatchTemplate(m_redoPatch, m_templateId, true);
         }
 
+        void PrefabUndoInstance::RedoBatched()
+        {
+            m_instanceToTemplateInterface->PatchTemplate(m_redoPatch, m_templateId);
+        }
+
 
         //PrefabEntityUpdateUndo
         PrefabUndoEntityUpdate::PrefabUndoEntityUpdate(const AZStd::string& undoOperationName)
@@ -113,7 +118,7 @@ namespace AzToolsFramework
         void PrefabUndoEntityUpdate::Redo(InstanceOptionalReference instanceToExclude)
         {
             [[maybe_unused]] bool isPatchApplicationSuccessful =
-                m_instanceToTemplateInterface->PatchTemplate(m_redoPatch, m_templateId, true, instanceToExclude);
+                m_instanceToTemplateInterface->PatchTemplate(m_redoPatch, m_templateId, false, instanceToExclude);
 
             AZ_Error(
                 "Prefab", isPatchApplicationSuccessful,
