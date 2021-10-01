@@ -28,6 +28,7 @@
 #include <AzCore/NativeUI/NativeUISystemComponent.h>
 #include <AzCore/Module/ModuleManagerBus.h>
 #include <AzCore/Interface/Interface.h>
+#include <AzCore/Task/TaskGraphSystemComponent.h>
 
 #include <AzFramework/Asset/SimpleAsset.h>
 #include <AzFramework/Asset/AssetBundleManifest.h>
@@ -295,6 +296,7 @@ namespace AzFramework
             azrtti_typeid<AZ::ScriptSystemComponent>(),
             azrtti_typeid<AZ::JobManagerComponent>(),
             azrtti_typeid<AZ::SliceSystemComponent>(),
+            azrtti_typeid<AZ::TaskGraphSystemComponent>(),
 
             azrtti_typeid<AzFramework::AssetCatalogComponent>(),
             azrtti_typeid<AzFramework::CustomAssetTypeComponent>(),

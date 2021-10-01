@@ -108,7 +108,6 @@ set(_raw_text_license [[
 ]])
 
 if(LY_INSTALLER_DOWNLOAD_URL)
-
     set(WIX_THEME_WARNING_IMAGE ${CPACK_SOURCE_DIR}/Platform/Windows/Packaging/warning.png)
 
     if(LY_INSTALLER_LICENSE_URL)
@@ -137,6 +136,10 @@ if(LY_INSTALLER_DOWNLOAD_URL)
 
     # the bootstrapper will at the very least need a different upgrade guid
     generate_wix_guid(CPACK_WIX_BOOTSTRAP_UPGRADE_GUID "${_guid_seed_base}_Bootstrap_UpgradeCode")
+
+    set(CPACK_PRE_BUILD_SCRIPTS
+        ${CPACK_SOURCE_DIR}/Platform/Windows/PackagingPreBuild.cmake
+    )
 
     set(CPACK_POST_BUILD_SCRIPTS
         ${CPACK_SOURCE_DIR}/Platform/Windows/PackagingPostBuild.cmake
