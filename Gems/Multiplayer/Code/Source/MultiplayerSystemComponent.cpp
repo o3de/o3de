@@ -85,6 +85,7 @@ namespace Multiplayer
     AZ_CVAR(float, cl_renderTickBlendBase, 0.15f, nullptr, AZ::ConsoleFunctorFlags::Null,
         "The base used for blending between network updates, 0.1 will be quite linear, 0.2 or 0.3 will "
         "slow down quicker and may be better suited to connections with highly variable latency");
+    AZ_CVAR(bool, bg_multiplayerDebugDraw, false, nullptr, AZ::ConsoleFunctorFlags::Null, "Enables debug draw for the multiplayer gem");
 
     void MultiplayerSystemComponent::Reflect(AZ::ReflectContext* context)
     {
@@ -389,6 +390,11 @@ namespace Multiplayer
         if (!packet.GetCommandSet().empty())
         {
             m_networkInterface->GetConnectionSet().VisitConnections(visitor);
+        }
+
+        if (bg_multiplayerDebugDraw)
+        {
+            m_networkEntityManager.DebugDraw();
         }
     }
 
@@ -802,6 +808,11 @@ namespace Multiplayer
         handler.Connect(m_notifyClientMigrationEvent);
     }
 
+    void MultiplayerSystemComponent::AddNotifyEntityMigrationEventHandler(NotifyEntityMigrationEvent::Handler& handler)
+    {
+        handler.Connect(m_notifyEntityMigrationEvent);
+    }
+
     void MultiplayerSystemComponent::AddConnectionAcquiredHandler(ConnectionAcquiredEvent::Handler& handler)
     {
         handler.Connect(m_connectionAcquiredEvent);
@@ -820,6 +831,11 @@ namespace Multiplayer
     void MultiplayerSystemComponent::SendNotifyClientMigrationEvent(const HostId& hostId, uint64_t userIdentifier, ClientInputId lastClientInputId)
     {
         m_notifyClientMigrationEvent.Signal(hostId, userIdentifier, lastClientInputId);
+    }
+
+    void MultiplayerSystemComponent::SendNotifyEntityMigrationEvent(const ConstNetworkEntityHandle& entityHandle, const HostId& remoteHostId)
+    {
+        m_notifyEntityMigrationEvent.Signal(entityHandle, remoteHostId);
     }
 
     void MultiplayerSystemComponent::SendReadyForEntityUpdates(bool readyForEntityUpdates)
@@ -937,7 +953,7 @@ namespace Multiplayer
             // Unfortunately necessary, as NotifyPreRender can update transforms and thus cause a deadlock inside the vis system
             AZStd::vector<NetBindComponent*> gatheredEntities;
             AZ::Interface<AzFramework::IVisibilitySystem>::Get()->GetDefaultVisibilityScene()->Enumerate(viewFrustum,
-                [&gatheredEntities](const AzFramework::IVisibilityScene::NodeData& nodeData)
+                [this, &gatheredEntities](const AzFramework::IVisibilityScene::NodeData& nodeData)
             {
                 gatheredEntities.reserve(gatheredEntities.size() + nodeData.m_entries.size());
                 for (AzFramework::VisibilityEntry* visEntry : nodeData.m_entries)
@@ -945,7 +961,7 @@ namespace Multiplayer
                     if (visEntry->m_typeFlags & AzFramework::VisibilityEntry::TypeFlags::TYPE_Entity)
                     {
                         AZ::Entity* entity = static_cast<AZ::Entity*>(visEntry->m_userData);
-                        NetBindComponent* netBindComponent = entity->FindComponent<NetBindComponent>();
+                        NetBindComponent* netBindComponent = m_networkEntityManager.GetNetworkEntityTracker()->GetNetBindComponent(entity);
                         if (netBindComponent != nullptr)
                         {
                             gatheredEntities.push_back(netBindComponent);
@@ -965,7 +981,7 @@ namespace Multiplayer
             for (auto& iter : *(m_networkEntityManager.GetNetworkEntityTracker()))
             {
                 AZ::Entity* entity = iter.second;
-                NetBindComponent* netBindComponent = entity->FindComponent<NetBindComponent>();
+                NetBindComponent* netBindComponent = m_networkEntityManager.GetNetworkEntityTracker()->GetNetBindComponent(entity);
                 if (netBindComponent != nullptr)
                 {
                     netBindComponent->NotifyPreRender(deltaTime);

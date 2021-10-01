@@ -54,7 +54,7 @@ namespace Multiplayer
     {
         if (auto localEnt = m_entityHandle.GetEntity())
         {
-            m_netBindComponent = localEnt->FindComponent<NetBindComponent>();
+            m_netBindComponent = m_entityHandle.GetNetBindComponent();
             m_boundLocalNetworkRole = m_netBindComponent->GetNetEntityRole();
         }
     }
@@ -94,7 +94,7 @@ namespace Multiplayer
         m_entityHandle = entityHandle;
         if (auto localEntity = m_entityHandle.GetEntity())
         {
-            m_netBindComponent = localEntity->FindComponent<NetBindComponent>();
+            m_netBindComponent = m_entityHandle.GetNetBindComponent();
             AZ_Assert(m_netBindComponent, "No Multiplayer::NetBindComponent");
             m_boundLocalNetworkRole = m_netBindComponent->GetNetEntityRole();
             SetPrefabEntityId(m_netBindComponent->GetPrefabEntityId());
@@ -125,7 +125,8 @@ namespace Multiplayer
                     !RemoteManagerOwnsEntityLifetime() ? PropertyPublisher::OwnsLifetime::True : PropertyPublisher::OwnsLifetime::False,
                     m_netBindComponent,
                     *m_connection
-                    );
+                );
+            m_onEntityDirtiedHandler.Disconnect();
             m_netBindComponent->AddEntityDirtiedEventHandler(m_onEntityDirtiedHandler);
         }
         else
@@ -146,8 +147,9 @@ namespace Multiplayer
         // Prepare event handlers
         if (auto localEntity = m_entityHandle.GetEntity())
         {
-            NetBindComponent* netBindComponent = localEntity->FindComponent<NetBindComponent>();
+            NetBindComponent* netBindComponent = m_entityHandle.GetNetBindComponent();
             AZ_Assert(netBindComponent, "No Multiplayer::NetBindComponent");
+            m_onEntityStopHandler.Disconnect();
             netBindComponent->AddEntityStopEventHandler(m_onEntityStopHandler);
             AttachRPCHandlers();
         }
@@ -168,7 +170,7 @@ namespace Multiplayer
 
         if (auto localEntity = m_entityHandle.GetEntity())
         {
-            NetBindComponent* netBindComponent = localEntity->FindComponent<NetBindComponent>();
+            NetBindComponent* netBindComponent = m_entityHandle.GetNetBindComponent();
             AZ_Assert(netBindComponent, "No Multiplayer::NetBindComponent");
 
             switch (GetBoundLocalNetworkRole())
@@ -479,10 +481,10 @@ namespace Multiplayer
         }
 
         NetBindComponent* netBindComponent = GetNetBindComponent();
-        const bool sendSliceName = !m_propertyPublisher->IsRemoteReplicatorEstablished();
+        //const bool sendSliceName = !m_propertyPublisher->IsRemoteReplicatorEstablished();
 
         NetworkEntityUpdateMessage updateMessage(GetRemoteNetworkRole(), GetEntityHandle().GetNetEntityId());
-        if (sendSliceName)
+        //if (sendSliceName)
         {
             updateMessage.SetPrefabEntityId(netBindComponent->GetPrefabEntityId());
         }

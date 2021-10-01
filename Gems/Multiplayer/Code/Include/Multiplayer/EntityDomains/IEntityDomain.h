@@ -39,8 +39,7 @@ namespace Multiplayer
         virtual void ActivateTracking(const INetworkEntityManager::OwnedEntitySet& ownedEntitySet) = 0;
 
         //! Return the set of netbound entities not included in this domain.
-        //! @param outEntitiesNotInDomain the set of known networked entities not included in this domain
-        virtual void RetrieveEntitiesNotInDomain(EntitiesNotInDomain& outEntitiesNotInDomain) const = 0;
+        virtual const EntitiesNotInDomain& RetrieveEntitiesNotInDomain() const = 0;
 
         //! Debug draw to visualize host entity domains.
         virtual void DebugDraw() const = 0;

@@ -25,8 +25,11 @@ namespace Multiplayer
         const AZ::Aabb& GetAabb() const override;
         bool IsInDomain(const ConstNetworkEntityHandle& entityHandle) const override;
         void ActivateTracking(const INetworkEntityManager::OwnedEntitySet& ownedEntitySet) override;
-        void RetrieveEntitiesNotInDomain(EntitiesNotInDomain& outEntitiesNotInDomain) const override;
+        const EntitiesNotInDomain& RetrieveEntitiesNotInDomain() const override;
         void DebugDraw() const override;
         //! @}
+
+    private:
+        EntitiesNotInDomain m_entitiesNotInDomain;
     };
 }

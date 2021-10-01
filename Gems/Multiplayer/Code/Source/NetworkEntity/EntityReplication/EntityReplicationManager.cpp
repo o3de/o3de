@@ -45,6 +45,7 @@ namespace Multiplayer
         , m_clearRemovedReplicators([this]() { ClearRemovedReplicators(); }, AZ::Name("EntityReplicationManager::ClearRemovedReplicators"))
         , m_updateWindow([this]() { UpdateWindow(); }, AZ::Name("EntityReplicationManager::UpdateWindow"))
         , m_entityExitDomainEventHandler([this](const ConstNetworkEntityHandle& entityHandle) { OnEntityExitDomain(entityHandle); })
+        , m_notifyEntityMigrationHandler([this](const ConstNetworkEntityHandle& entityHandle, const HostId& remoteHostId) { OnPostEntityMigration(entityHandle, remoteHostId); })
     {
         // Our max payload size is whatever is passed in, minus room for a udp packetheader
         m_maxPayloadSize = connection.GetConnectionMtu() - UdpPacketHeaderSerializeSize - ReplicationManagerPacketOverhead;
@@ -60,6 +61,8 @@ namespace Multiplayer
         {
             networkEntityManager->AddEntityExitDomainHandler(m_entityExitDomainEventHandler);
         }
+
+        GetMultiplayer()->AddNotifyEntityMigrationEventHandler(m_notifyEntityMigrationHandler);
     }
 
     void EntityReplicationManager::SetRemoteHostId(const HostId& hostId)
@@ -355,8 +358,9 @@ namespace Multiplayer
             entityReplicator = GetEntityReplicator(entityHandle);
             if (entityReplicator)
             {
-                // Check if we changed our remote role - this can happen during server entity migration.  After we migrate ownership to the new server, we hold onto our entity replicator until we are sure
-                //      the other side has received all the packets (and we haven't had to do resends).  At this point, it is possible hear back from the remote side we migrated to on the old replicator prior to the timeout and cleanup on the old one
+                // Check if we changed our remote role - this can happen during server entity migration.
+                // Retain our replicator after migration until we are sure the other side has received all the packets (and we haven't had to do resends).
+                // At this point, the remote host should inform us we've migrated prior to the timeout and cleanup of the old replicator
                 const bool changedRemoteRole = (remoteNetworkRole != entityReplicator->GetRemoteNetworkRole());
                 // Check if we've changed our bound local role - this can occur when we gain Autonomous or lose Autonomous on a client
                 bool changedLocalRole(false);
@@ -1068,12 +1072,12 @@ namespace Multiplayer
         return false;
     }
 
-    void EntityReplicationManager::SetEntityDomain(AZStd::unique_ptr<IEntityDomain> entityDomain)
+    void EntityReplicationManager::SetRemoteEntityDomain(AZStd::unique_ptr<IEntityDomain> entityDomain)
     {
         m_remoteEntityDomain = AZStd::move(entityDomain);
     }
 
-    IEntityDomain* EntityReplicationManager::GetEntityDomain()
+    IEntityDomain* EntityReplicationManager::GetRemoteEntityDomain()
     {
         return m_remoteEntityDomain.get();
     }
@@ -1143,6 +1147,9 @@ namespace Multiplayer
             m_sendMigrateEntityEvent.Signal(m_connection, message);
             AZLOG(NET_RepDeletes, "Migration packet sent %u to remote host %s", netEntityId, GetRemoteHostId().GetString().c_str());
 
+            // Notify all other EntityReplicationManagers that this entity has migrated so they can adjust their own replicators given our new proxy status
+            GetMultiplayer()->SendNotifyEntityMigrationEvent(entityHandle, GetRemoteHostId());
+
             // Immediately add a new replicator so that we catch RPC invocations, the remote side will make us a new one, and then remove us if needs be
             AddEntityReplicator(entityHandle, NetEntityRole::Authority);
         }
@@ -1206,11 +1213,11 @@ namespace Multiplayer
         }
     }
 
-    void EntityReplicationManager::OnPostEntityMigration(const ConstNetworkEntityHandle& entityHandle, const HostId& remoteHostId, [[maybe_unused]] AzNetworking::ConnectionId connectionId)
+    void EntityReplicationManager::OnPostEntityMigration(const ConstNetworkEntityHandle& entityHandle, const HostId& remoteHostId)
     {
         if (remoteHostId == GetRemoteHostId())
         {
-            // don't handle self sent messages
+            // Don't handle self sent messages
             return;
         }
 

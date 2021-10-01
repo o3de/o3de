@@ -180,5 +180,8 @@ namespace Multiplayer
         //! Handle a local rpc message.
         //! @param entityRpcMessage the local rpc message to handle
         virtual void HandleLocalRpcMessage(NetworkEntityRpcMessage& message) = 0;
+
+        //! Visualization of network entity manager state.
+        virtual void DebugDraw() const = 0;
     };
 }

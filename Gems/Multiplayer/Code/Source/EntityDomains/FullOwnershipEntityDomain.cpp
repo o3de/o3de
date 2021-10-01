@@ -31,9 +31,9 @@ namespace Multiplayer
         ;
     }
 
-    void FullOwnershipEntityDomain::RetrieveEntitiesNotInDomain([[maybe_unused]] EntitiesNotInDomain& outEntitiesNotInDomain) const
+    const IEntityDomain::EntitiesNotInDomain& FullOwnershipEntityDomain::RetrieveEntitiesNotInDomain() const
     {
-        ;
+        return m_entitiesNotInDomain;
     }
 
     void FullOwnershipEntityDomain::DebugDraw() const

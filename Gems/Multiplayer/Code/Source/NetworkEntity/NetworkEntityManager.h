@@ -62,9 +62,7 @@ namespace Multiplayer
 
         AZStd::unique_ptr<AzFramework::EntitySpawnTicket> RequestNetSpawnableInstantiation(
             const AZ::Data::Asset<AzFramework::Spawnable>& netSpawnable, const AZ::Transform& transform) override;
-
         void SetupNetEntity(AZ::Entity* netEntity, PrefabEntityId prefabEntityId, NetEntityRole netEntityRole) override;
-
         uint32_t GetEntityCount() const override;
         NetworkEntityHandle AddEntityToEntityMap(NetEntityId netEntityId, AZ::Entity* entity) override;
         void MarkForRemoval(const ConstNetworkEntityHandle& entityHandle) override;
@@ -81,11 +79,13 @@ namespace Multiplayer
         void NotifyControllersActivated(const ConstNetworkEntityHandle& entityHandle, EntityIsMigrating entityIsMigrating) override;
         void NotifyControllersDeactivated(const ConstNetworkEntityHandle& entityHandle, EntityIsMigrating entityIsMigrating) override;
         void HandleLocalRpcMessage(NetworkEntityRpcMessage& message) override;
+        void DebugDraw() const override;
         //! @}
 
         void DispatchLocalDeferredRpcMessages();
         void UpdateEntityDomain();
         void OnEntityExitDomain(NetEntityId entityId);
+
         //! RootSpawnableNotificationBus
         //! @{
         void OnRootSpawnableAssigned(AZ::Data::Asset<AzFramework::Spawnable> rootSpawnable, uint32_t generation) override;
@@ -105,7 +105,6 @@ namespace Multiplayer
         AZStd::unique_ptr<IEntityDomain> m_entityDomain;
         AZ::ScheduledEvent m_updateEntityDomainEvent;
 
-        IEntityDomain::EntitiesNotInDomain m_entitiesNotInDomain;
         OwnedEntitySet m_ownedEntities;
 
         EntityExitDomainEvent m_entityExitDomainEvent;

@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <Multiplayer/IMultiplayer.h>
 #include <Multiplayer/NetworkEntity/EntityReplication/EntityReplicator.h>
 #include <Multiplayer/Components/NetBindComponent.h>
 #include <Multiplayer/EntityDomains/IEntityDomain.h>
@@ -71,8 +72,8 @@ namespace Multiplayer
 
         bool HasRemoteAuthority(const ConstNetworkEntityHandle& entityHandle) const;
 
-        void SetEntityDomain(AZStd::unique_ptr<IEntityDomain> entityDomain);
-        IEntityDomain* GetEntityDomain();
+        void SetRemoteEntityDomain(AZStd::unique_ptr<IEntityDomain> entityDomain);
+        IEntityDomain* GetRemoteEntityDomain();
         void SetReplicationWindow(AZStd::unique_ptr<IReplicationWindow> replicationWindow);
         IReplicationWindow* GetReplicationWindow();
 
@@ -125,7 +126,7 @@ namespace Multiplayer
 
         void MigrateEntityInternal(NetEntityId entityId);
         void OnEntityExitDomain(const ConstNetworkEntityHandle& entityHandle);
-        void OnPostEntityMigration(const ConstNetworkEntityHandle& entityHandle, const HostId& remoteHostId, AzNetworking::ConnectionId connectionId);
+        void OnPostEntityMigration(const ConstNetworkEntityHandle& entityHandle, const HostId& remoteHostId);
 
         EntityReplicator* AddEntityReplicator(const ConstNetworkEntityHandle& entityHandle, NetEntityRole netEntityRole);
 
@@ -193,6 +194,7 @@ namespace Multiplayer
         AZ::Event<NetEntityId> m_autonomousEntityReplicatorCreated;
         EntityExitDomainEvent::Handler m_entityExitDomainEventHandler;
         SendMigrateEntityEvent m_sendMigrateEntityEvent;
+        NotifyEntityMigrationEvent::Handler m_notifyEntityMigrationHandler;
 
         AZ::ScheduledEvent m_clearRemovedReplicators;
         AZ::ScheduledEvent m_updateWindow;

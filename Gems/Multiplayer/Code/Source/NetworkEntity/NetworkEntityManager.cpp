@@ -16,6 +16,8 @@
 #include <AzFramework/Components/TransformComponent.h>
 #include <AzFramework/Entity/EntityContextBus.h>
 #include <AzFramework/Entity/GameEntityContextBus.h>
+#include <AzFramework/Entity/EntityDebugDisplayBus.h>
+#include <AzFramework/Visibility/EntityBoundsUnionBus.h>
 #include <AzFramework/Spawnable/SpawnableEntitiesInterface.h>
 #include <Multiplayer/IMultiplayer.h>
 #include <Multiplayer/Components/NetBindComponent.h>
@@ -46,6 +48,7 @@ namespace Multiplayer
         m_hostId = hostId;
         m_entityDomain = AZStd::move(entityDomain);
         m_updateEntityDomainEvent.Enqueue(net_EntityDomainUpdateMs, true);
+        m_entityDomain->ActivateTracking(m_ownedEntities);
     }
 
     bool NetworkEntityManager::IsInitialized() const
@@ -96,7 +99,7 @@ namespace Multiplayer
     NetworkEntityHandle NetworkEntityManager::AddEntityToEntityMap(NetEntityId netEntityId, AZ::Entity* entity)
     {
         m_networkEntityTracker.Add(netEntityId, entity);
-        return NetworkEntityHandle(entity, netEntityId, &m_networkEntityTracker);
+        return NetworkEntityHandle(entity, &m_networkEntityTracker);
     }
 
     void NetworkEntityManager::MarkForRemoval(const ConstNetworkEntityHandle& entityHandle)
@@ -212,6 +215,29 @@ namespace Multiplayer
         m_localDeferredRpcMessages.emplace_back(AZStd::move(message));
     }
 
+    void NetworkEntityManager::DebugDraw() const
+    {
+        AzFramework::DebugDisplayRequestBus::BusPtr debugDisplayBus;
+        AzFramework::DebugDisplayRequestBus::Bind(debugDisplayBus, AzFramework::g_defaultSceneEntityDebugDisplayId);
+        AzFramework::DebugDisplayRequests* debugDisplay = AzFramework::DebugDisplayRequestBus::FindFirstHandler(debugDisplayBus);
+
+        for (NetworkEntityTracker::const_iterator it = m_networkEntityTracker.begin(); it != m_networkEntityTracker.end(); ++it)
+        {
+            AZ::Entity* entity = it->second;
+            NetBindComponent* netBindComponent = m_networkEntityTracker.GetNetBindComponent(entity);
+            if (netBindComponent->GetNetEntityRole() == NetEntityRole::Authority)
+            {
+                const AZ::Aabb entityBounds = AZ::Interface<AzFramework::IEntityBoundsUnion>::Get()->GetEntityWorldBoundsUnion(entity->GetId());
+                debugDisplay->DrawWireBox(entityBounds.GetMin(), entityBounds.GetMax());
+            }
+        }
+
+        if (m_entityDomain != nullptr)
+        {
+            m_entityDomain->DebugDraw();
+        }
+    }
+
     void NetworkEntityManager::DispatchLocalDeferredRpcMessages()
     {
         for (NetworkEntityRpcMessage& rpcMessage : m_localDeferredRpcMessages)
@@ -219,7 +245,7 @@ namespace Multiplayer
             AZ::Entity* entity = m_networkEntityTracker.GetRaw(rpcMessage.GetEntityId());
             if (entity != nullptr)
             {
-                NetBindComponent* netBindComponent = entity->FindComponent<NetBindComponent>();
+                NetBindComponent* netBindComponent = m_networkEntityTracker.GetNetBindComponent(entity);
                 AZ_Assert(netBindComponent != nullptr, "Attempting to send an RPC to an entity with no NetBindComponent");
                 netBindComponent->HandleRpcMessage(nullptr, NetEntityRole::Server, rpcMessage);
             }
@@ -234,9 +260,8 @@ namespace Multiplayer
             return;
         }
 
-        m_entitiesNotInDomain.clear();
-        m_entityDomain->RetrieveEntitiesNotInDomain(m_entitiesNotInDomain);
-        for (NetEntityId exitingId : m_entitiesNotInDomain)
+        const IEntityDomain::EntitiesNotInDomain& entitiesNotInDomain = m_entityDomain->RetrieveEntitiesNotInDomain();
+        for (NetEntityId exitingId : entitiesNotInDomain)
         {
             OnEntityExitDomain(exitingId);
         }
@@ -246,18 +271,6 @@ namespace Multiplayer
     {
         bool safeToExit = true;
         NetworkEntityHandle entityHandle = m_networkEntityTracker.Get(entityId);
-
-        // ClientAutonomous entities need special handling here. When we migrate a player's entity the player's client must tell the new server which
-        //  entity they were controlling. If we tell them to migrate before they know which entity they control it results in them requesting a new entity
-        //  from the new server, resulting in an orphaned PlayerChar. PlayerControllerComponentServerAuthority::PlayerClientHasControlledEntity()
-        //  will tell us whether the client sent an RPC acknowledging that they now know which entity is theirs.
-        if (AZ::Entity* entity = entityHandle.GetEntity())
-        {
-            //if (PlayerComponent::Authority* playerController = FindController<PlayerComponent::Authority>(nonConstExitingEntityPtr))
-            //{
-            //    safeToExit = playerController->PlayerClientHasControlledEntity();
-            //}
-        }
 
         // We also need special handling for the EntityHierarchyComponent as well, since related entities need to be migrated together
         //auto* hierarchyController = FindController<EntityHierarchyComponent::Authority>(nonConstExitingEntityPtr);
@@ -338,6 +351,7 @@ namespace Multiplayer
 
             originalToCloneIdMap[originalEntity->GetId()] = clone->GetId();
 
+            // Can't use NetworkEntityTracker to do the lookup since the entity has not activated yet
             NetBindComponent* netBindComponent = clone->FindComponent<NetBindComponent>();
             if (netBindComponent != nullptr)
             {

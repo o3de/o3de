@@ -46,6 +46,7 @@ namespace Multiplayer
     using ClientMigrationEndEvent = AZ::Event<>;
     using ClientDisconnectedEvent = AZ::Event<>;
     using NotifyClientMigrationEvent = AZ::Event<const HostId&, uint64_t, ClientInputId>;
+    using NotifyEntityMigrationEvent = AZ::Event<const ConstNetworkEntityHandle&, const HostId&>;
     using ConnectionAcquiredEvent = AZ::Event<MultiplayerAgentDatum>;
     using SessionInitEvent = AZ::Event<AzNetworking::INetworkInterface*>;
     using SessionShutdownEvent = AZ::Event<AzNetworking::INetworkInterface*>;
@@ -113,6 +114,10 @@ namespace Multiplayer
         //! @param handler The NotifyClientMigrationEvent Handler to add
         virtual void AddNotifyClientMigrationHandler(NotifyClientMigrationEvent::Handler& handler) = 0;
 
+        //! Adds a NotifyEntityMigrationEvent Handler which is invoked when an entity migrates from one host to another.
+        //! @param handler The NotifyEntityMigrationEvent Handler to add
+        virtual void AddNotifyEntityMigrationEventHandler(NotifyEntityMigrationEvent::Handler& handler) = 0;
+
         //! Adds a ConnectionAcquiredEvent Handler which is invoked when a new endpoint connects to the session.
         //! @param handler The ConnectionAcquiredEvent Handler to add
         virtual void AddConnectionAcquiredHandler(ConnectionAcquiredEvent::Handler& handler) = 0;
@@ -130,6 +135,11 @@ namespace Multiplayer
         //! @param userIdentifier    the user identifier the client will provide the new host to validate identity
         //! @param lastClientInputId the last processed clientInputId by the current host
         virtual void SendNotifyClientMigrationEvent(const HostId& hostId, uint64_t userIdentifier, ClientInputId lastClientInputId) = 0;
+
+        //! Signals a NotifyEntityMigrationEvent with the provided parameters.
+        //! @param entityHandle the network entity handle of the entity being migrated
+        //! @param remoteHostId the host id of the host the entity is migrating to
+        virtual void SendNotifyEntityMigrationEvent(const ConstNetworkEntityHandle& entityHandle, const HostId& remoteHostId) = 0;
 
         //! Sends a packet telling if entity update messages can be sent.
         //! @param readyForEntityUpdates Ready for entity updates or not
