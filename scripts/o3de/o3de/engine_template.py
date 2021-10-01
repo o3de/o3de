@@ -72,8 +72,21 @@ restricted_platforms = {
     'Provo',
     'Salem',
     'Jasper',
-    'Paris'
+    'Paris',
+    'Xenia',
+    'Akron',
+    'Dover',
+    'Lancaster'
 }
+
+O3DE_LICENSE_TEXT = \
+"""'# {BEGIN_LICENSE}
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
+#
+# SPDX-License-Identifier: Apache-2.0 OR MIT
+# {END_LICENSE}
+"""
 
 template_file_name = 'template.json'
 this_script_parent = pathlib.Path(os.path.dirname(os.path.realpath(__file__)))
@@ -1515,14 +1528,15 @@ def create_project(project_path: pathlib.Path,
         if not gem_restricted_path:
             logger.error(f'Project Restricted Name {project_restricted_name} cannot be found.')
             return 1
+
     # project restricted path
-    elif project_restricted_path:
+    if project_restricted_path:
         if not os.path.isabs(project_restricted_path):
             logger.error(f'Project Restricted Path {project_restricted_path} is not an absolute path.')
             return 1
     # neither make a dir side by side with the new project named <project_name>-restricted
     else:
-        project_restricted_path = project_path.parent / (project_name + '-restricted')
+        project_restricted_path = project_path.parent / f'{project_name}-restricted'
 
     # project restricted relative path
     if not project_restricted_platform_relative_path:
@@ -1892,14 +1906,15 @@ def create_gem(gem_path: pathlib.Path,
         if not gem_restricted_path:
             logger.error(f'Gem Restricted Name {gem_restricted_name} cannot be found.')
             return 1
+
     # gem restricted path
-    elif gem_restricted_path:
+    if gem_restricted_path:
         if not os.path.isabs(gem_restricted_path):
             logger.error(f'Gem Restricted Path {gem_restricted_path} is not an absolute path.')
             return 1
     # neither make a dir side by side with the new gem named <gem_name>-restricted
     else:
-        gem_restricted_path = gem_path.parent / (gem_name + '-restricted')
+        gem_restricted_path = gem_path.parent / f'{gem_name}-restricted'
 
     # gem restricted relative
     if not gem_restricted_platform_relative_path:
@@ -2025,12 +2040,7 @@ def create_gem(gem_path: pathlib.Path,
                 if not os.path.isfile(cmakelists_file_name):
                     with open(cmakelists_file_name, 'w') as d:
                         if keep_license_text:
-                            d.write('# {BEGIN_LICENSE}\n')
-                            d.write('# Copyright (c) Contributors to the Open 3D Engine Project.\n')
-                            d.write('# For complete copyright and license terms please see the LICENSE at the root of this distribution.\n')
-                            d.write('#\n')
-                            d.write('# SPDX-License-Identifier: Apache-2.0 OR MIT\n')
-                            d.write('# {END_LICENSE}\n')
+                            d.write(O3DE_LICENSE_TEXT)
 
     # Register the gem with the either o3de_manifest.json, engine.json or project.json based on the gem path
     return register.register(gem_path=gem_path) if not no_register else 0
