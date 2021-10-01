@@ -121,6 +121,8 @@ namespace Terrain
             AZ::Data::Instance<AZ::RPI::AttachmentImage> m_heightmapImage;
             uint32_t m_heightmapImageWidth{ 0 };
             uint32_t m_heightmapImageHeight{ 0 };
+            uint32_t m_updateWidth{ 0 };
+            uint32_t m_updateHeight{ 0 };
             bool m_propertiesDirty{ true };
             float m_sampleSpacing{ 0.0f };
         };

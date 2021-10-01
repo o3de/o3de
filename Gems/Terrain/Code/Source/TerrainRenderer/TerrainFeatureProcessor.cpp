@@ -70,6 +70,7 @@ namespace Terrain
     void TerrainFeatureProcessor::Activate()
     {
         m_areaData = {};
+        m_dirtyRegion = AZ::Aabb::CreateNull();
         Initialize();
         AzFramework::Terrain::TerrainDataNotificationBus::Handler::BusConnect();
     }
@@ -135,7 +136,8 @@ namespace Terrain
         const AZ::Aabb& regionToUpdate = dirtyRegion.IsValid() ? dirtyRegion : worldBounds;
 
         m_dirtyRegion.AddAabb(regionToUpdate);
-        
+        m_dirtyRegion.Clamp(worldBounds);
+
         AZ::Transform transform = AZ::Transform::CreateTranslation(worldBounds.GetCenter());
         
         AZ::Vector2 queryResolution = AZ::Vector2(1.0f);
@@ -144,12 +146,17 @@ namespace Terrain
 
         uint32_t width = aznumeric_cast<uint32_t>((float)m_dirtyRegion.GetXExtent() / queryResolution.GetX());
         uint32_t height = aznumeric_cast<uint32_t>((float)m_dirtyRegion.GetYExtent() / queryResolution.GetY());
+        
+        uint32_t worldWidth = aznumeric_cast<uint32_t>((float)worldBounds.GetXExtent() / queryResolution.GetX());
+        uint32_t worldHeight = aznumeric_cast<uint32_t>((float)worldBounds.GetYExtent() / queryResolution.GetY());
 
         m_areaData.m_transform = transform;
         m_areaData.m_heightScale = worldBounds.GetZExtent();
         m_areaData.m_terrainBounds = worldBounds;
-        m_areaData.m_heightmapImageWidth = width;
-        m_areaData.m_heightmapImageHeight = height;
+        m_areaData.m_heightmapImageWidth = worldWidth;
+        m_areaData.m_heightmapImageHeight = worldHeight;
+        m_areaData.m_updateWidth = width;
+        m_areaData.m_updateHeight = height;
         m_areaData.m_sampleSpacing = queryResolution.GetX();
         m_areaData.m_propertiesDirty = true;
     }
@@ -164,10 +171,26 @@ namespace Terrain
         auto& surfaceDataContext = SurfaceData::SurfaceDataSystemRequestBus::GetOrCreateContext(false);
         typename SurfaceData::SurfaceDataSystemRequestBus::Context::DispatchLockGuard scopeLock(surfaceDataContext.m_contextMutex);
 
-        uint32_t width = m_areaData.m_heightmapImageWidth;
-        uint32_t height = m_areaData.m_heightmapImageHeight;
+        uint32_t width = m_areaData.m_updateWidth;
+        uint32_t height = m_areaData.m_updateHeight;
         const AZ::Aabb& worldBounds = m_areaData.m_terrainBounds;
         float queryResolution = m_areaData.m_sampleSpacing;
+
+        AZ::RHI::Size worldSize = AZ::RHI::Size(m_areaData.m_heightmapImageWidth, m_areaData.m_heightmapImageHeight, 1);
+
+        if (!m_areaData.m_heightmapImage || m_areaData.m_heightmapImage->GetDescriptor().m_size != worldSize)
+        {
+            AZ::Data::Instance<AZ::RPI::AttachmentImagePool> imagePool = AZ::RPI::ImageSystemInterface::Get()->GetSystemAttachmentPool();
+            AZ::RHI::ImageDescriptor imageDescriptor = AZ::RHI::ImageDescriptor::Create2D(
+                AZ::RHI::ImageBindFlags::ShaderRead, width, height, AZ::RHI::Format::R16_UNORM
+            );
+            m_areaData.m_heightmapImage = AZ::RPI::AttachmentImage::Create(*imagePool.get(), imageDescriptor, AZ::Name("TerrainHeightmap"), nullptr, nullptr);
+            AZ_Error(TerrainFPName, m_areaData.m_heightmapImage, "Failed to initialize the heightmap image!");
+
+            // World size changed, so the whole world needs updating.
+            width = worldSize.m_width;
+            height = worldSize.m_height;
+        }
 
         AZStd::vector<uint16_t> pixels;
         pixels.reserve(width * height);
@@ -193,21 +216,6 @@ namespace Terrain
             }
         }
 
-        AZ::RHI::Size imageSize;
-        imageSize.m_width = width;
-        imageSize.m_height = height;
-        imageSize.m_depth = 1;
-
-        if (!m_areaData.m_heightmapImage || m_areaData.m_heightmapImage->GetDescriptor().m_size != imageSize)
-        {
-            AZ::Data::Instance<AZ::RPI::AttachmentImagePool> imagePool = AZ::RPI::ImageSystemInterface::Get()->GetSystemAttachmentPool();
-            AZ::RHI::ImageDescriptor imageDescriptor = AZ::RHI::ImageDescriptor::Create2D(
-                AZ::RHI::ImageBindFlags::ShaderRead, width, height, AZ::RHI::Format::R16_UNORM
-            );
-            m_areaData.m_heightmapImage = AZ::RPI::AttachmentImage::Create(*imagePool.get(), imageDescriptor, AZ::Name("TerrainHeightmap"), nullptr, nullptr);
-            AZ_Error(TerrainFPName, m_areaData.m_heightmapImage, "Failed to initialize the heightmap image!");
-        }
-
         if (m_areaData.m_heightmapImage)
         {
             float left = (m_dirtyRegion.GetMin().GetX() - worldBounds.GetMin().GetX()) / queryResolution;
@@ -218,13 +226,16 @@ namespace Terrain
             imageUpdateRequest.m_sourceSubresourceLayout.m_bytesPerRow = width * sizeof(uint16_t);
             imageUpdateRequest.m_sourceSubresourceLayout.m_bytesPerImage = width * height * sizeof(uint16_t);
             imageUpdateRequest.m_sourceSubresourceLayout.m_rowCount = height;
-            imageUpdateRequest.m_sourceSubresourceLayout.m_size = imageSize;
+            imageUpdateRequest.m_sourceSubresourceLayout.m_size.m_width = width;
+            imageUpdateRequest.m_sourceSubresourceLayout.m_size.m_height = height;
+            imageUpdateRequest.m_sourceSubresourceLayout.m_size.m_depth = 1;
             imageUpdateRequest.m_sourceData = pixels.data();
             imageUpdateRequest.m_image = m_areaData.m_heightmapImage->GetRHIImage();
 
             m_areaData.m_heightmapImage->UpdateImageContents(imageUpdateRequest);
-            m_dirtyRegion = AZ::Aabb::CreateNull();
         }
+        
+        m_dirtyRegion = AZ::Aabb::CreateNull();
     }
 
     void TerrainFeatureProcessor::ProcessSurfaces(const FeatureProcessor::RenderPacket& process)
