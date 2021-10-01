@@ -253,7 +253,7 @@ namespace AZ
                 //! update of the skinning matrices per frame.  The matrices are in model / local space
                 //!  which is why the entity world matrix is also passed.
                 void UpdateBoneMatrices(const AZ::Matrix3x4& entityWorldMatrix, const AZStd::vector<AZ::Matrix3x4>& boneMatrices);
-                void InitBoneMatricesPlaceHolder(const AMD::float4x4* pBoneMatricesInWS, int numBoneMatrices);
+                void InitBoneMatricesPlaceHolder(int numBoneMatrices);
 
                 void SetFrameDeltaTime(float deltaTime);
                 //! Updating the bone matrices for the skinning in the simulation constant buffer.

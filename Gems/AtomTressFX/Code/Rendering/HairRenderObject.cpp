@@ -752,10 +752,8 @@ namespace AZ
                 // fourth component unused. (used to store frame number, but no longer used).
             }
 
-            void HairRenderObject::InitBoneMatricesPlaceHolder(const AMD::float4x4* pBoneMatricesInWS, int numBoneMatrices)
+            void HairRenderObject::InitBoneMatricesPlaceHolder(int numBoneMatrices)
             {
-                pBoneMatricesInWS;
-
                 float identityValues[16] = {
                     1, 0, 0, 0,
                     0, 1, 0, 0,
@@ -972,7 +970,7 @@ namespace AZ
                 m_NumFollowHairsPerGuideHair = asset->m_numFollowStrandsPerGuide;
 
                  // dummy method - replace with the bone matrices at init pose and the real bones amount
-                InitBoneMatricesPlaceHolder(nullptr, AMD_TRESSFX_MAX_NUM_BONES);
+                InitBoneMatricesPlaceHolder(AMD_TRESSFX_MAX_NUM_BONES);
 
                 // First time around, make sure all parameters are properly filled
                 const float SIMULATION_TIME_STEP = 0.0166667f;  // 60 fps to start with nominal step

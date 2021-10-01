@@ -29,9 +29,10 @@
 #include <Math/Matrix33.h>
 #include <Math/Vector3D.h>
 
-#pragma warning(push)
-#pragma warning(                                                                                  \
-    disable : 4201)  // disable warning C4201: nonstandard extension used : nameless struct/union
+#ifdef _MSC_VER
+    #pragma warning(push)
+    #pragma warning(disable : 4201)  // disable warning C4201: nonstandard extension used : nameless struct/union
+#endif
 
 namespace AMD
 {
@@ -84,5 +85,6 @@ namespace AMD
 
 } // namespace AMD
 
-
-#pragma warning(pop)
+#ifdef _MSC_VER
+    #pragma warning(pop)
+#endif
