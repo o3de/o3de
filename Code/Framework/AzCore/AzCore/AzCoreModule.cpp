@@ -22,6 +22,7 @@
 #include <AzCore/Time/TimeSystemComponent.h>
 #include <AzCore/Console/LoggerSystemComponent.h>
 #include <AzCore/EBus/EventSchedulerSystemComponent.h>
+#include <AzCore/Task/TaskGraphSystemComponent.h>
 #include <AzCore/Statistics/StatisticalProfilerProxySystemComponent.h>
 
 namespace AZ
@@ -42,6 +43,7 @@ namespace AZ
             TimeSystemComponent::CreateDescriptor(),
             LoggerSystemComponent::CreateDescriptor(),
             EventSchedulerSystemComponent::CreateDescriptor(),
+            TaskGraphSystemComponent::CreateDescriptor(),
 
 #if !defined(_RELEASE)
             Statistics::StatisticalProfilerProxySystemComponent::CreateDescriptor(),
@@ -60,6 +62,7 @@ namespace AZ
             azrtti_typeid<TimeSystemComponent>(),
             azrtti_typeid<LoggerSystemComponent>(),
             azrtti_typeid<EventSchedulerSystemComponent>(),
+            azrtti_typeid<TaskGraphSystemComponent>(),
 
 #if !defined(_RELEASE)
             azrtti_typeid<Statistics::StatisticalProfilerProxySystemComponent>(),
