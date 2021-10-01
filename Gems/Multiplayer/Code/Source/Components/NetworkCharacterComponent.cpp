@@ -8,6 +8,7 @@
 
 #include <Multiplayer/Components/NetworkCharacterComponent.h>
 #include <Multiplayer/Components/NetworkRigidBodyComponent.h>
+#include <AzCore/RTTI/BehaviorContext.h>
 #include <AzFramework/Visibility/EntityBoundsUnionBus.h>
 #include <AzFramework/Physics/CharacterBus.h>
 #include <AzFramework/Physics/Character.h>
