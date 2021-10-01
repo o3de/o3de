@@ -8,6 +8,7 @@
 #include <ProjectUtils.h>
 #include <ProjectManagerDefs.h>
 #include <QProcessEnvironment>
+#include <QDir>
 
 namespace O3DE::ProjectManager
 {
