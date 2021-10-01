@@ -442,9 +442,9 @@ namespace Multiplayer
         MultiplayerPackets::SyncConsole m_syncPacket;
     };
 
-    bool MultiplayerSystemComponent::IsHandshakeComplete() const
+    bool MultiplayerSystemComponent::IsHandshakeComplete(AzNetworking::IConnection* connection) const
     {
-        return m_didHandshake;
+        return reinterpret_cast<IConnectionData*>(connection->GetUserData())->DidHandshake();
     }
 
     bool MultiplayerSystemComponent::HandleRequest
@@ -471,7 +471,7 @@ namespace Multiplayer
 
         if (connection->SendReliablePacket(MultiplayerPackets::Accept(InvalidHostId, sv_map)))
         {
-            m_didHandshake = true;
+            reinterpret_cast<ServerToClientConnectionData*>(connection->GetUserData())->SetDidHandshake(true);
 
             // Sync our console
             ConsoleReplicator consoleReplicator(connection);
@@ -488,7 +488,7 @@ namespace Multiplayer
         [[maybe_unused]] MultiplayerPackets::Accept& packet
     )
     {
-        m_didHandshake = true;
+        reinterpret_cast<ClientToServerConnectionData*>(connection->GetUserData())->SetDidHandshake(true);
 
         AZ::CVarFixedString commandString = "sv_map " + packet.GetMap();
         AZ::Interface<AZ::IConsole>::Get()->PerformCommand(commandString.c_str());
@@ -903,8 +903,9 @@ namespace Multiplayer
 
             // Unfortunately necessary, as NotifyPreRender can update transforms and thus cause a deadlock inside the vis system
             AZStd::vector<NetBindComponent*> gatheredEntities;
+            INetworkEntityManager* netEntityManager = GetNetworkEntityManager();
             AZ::Interface<AzFramework::IVisibilitySystem>::Get()->GetDefaultVisibilityScene()->Enumerate(viewFrustum,
-                [&gatheredEntities](const AzFramework::IVisibilityScene::NodeData& nodeData)
+                [netEntityManager, &gatheredEntities](const AzFramework::IVisibilityScene::NodeData& nodeData)
             {
                 gatheredEntities.reserve(gatheredEntities.size() + nodeData.m_entries.size());
                 for (AzFramework::VisibilityEntry* visEntry : nodeData.m_entries)
@@ -912,10 +913,14 @@ namespace Multiplayer
                     if (visEntry->m_typeFlags & AzFramework::VisibilityEntry::TypeFlags::TYPE_Entity)
                     {
                         AZ::Entity* entity = static_cast<AZ::Entity*>(visEntry->m_userData);
-                        NetBindComponent* netBindComponent = entity->FindComponent<NetBindComponent>();
-                        if (netBindComponent != nullptr)
+                        NetEntityId netEntitydId = netEntityManager->GetNetEntityIdById(entity->GetId());
+                        if (netEntitydId != InvalidNetEntityId)
                         {
-                            gatheredEntities.push_back(netBindComponent);
+                            NetBindComponent* netBindComponent = netEntityManager->GetEntity(netEntitydId).GetNetBindComponent();
+                            if (netBindComponent != nullptr)
+                            {
+                                gatheredEntities.push_back(netBindComponent);
+                            }
                         }
                     }
                 }
@@ -932,10 +937,14 @@ namespace Multiplayer
             for (auto& iter : *(m_networkEntityManager.GetNetworkEntityTracker()))
             {
                 AZ::Entity* entity = iter.second;
-                NetBindComponent* netBindComponent = entity->FindComponent<NetBindComponent>();
-                if (netBindComponent != nullptr)
+                NetEntityId netEntitydId = GetNetworkEntityManager()->GetNetEntityIdById(entity->GetId());
+                if (netEntitydId != InvalidNetEntityId)
                 {
-                    netBindComponent->NotifyPreRender(deltaTime);
+                    NetBindComponent* netBindComponent = GetNetworkEntityManager()->GetEntity(netEntitydId).GetNetBindComponent();
+                    if (netBindComponent != nullptr)
+                    {
+                        netBindComponent->NotifyPreRender(deltaTime);
+                    }
                 }
             }
         }
