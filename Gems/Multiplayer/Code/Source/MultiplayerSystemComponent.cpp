@@ -199,6 +199,8 @@ namespace Multiplayer
         AZ::Interface<INetworking>::Get()->DestroyNetworkInterface(AZ::Name(MpNetworkInterfaceName));
         AzFramework::SessionNotificationBus::Handler::BusDisconnect();
         AZ::TickBus::Handler::BusDisconnect();
+
+        m_networkEntityManager.Reset();
     }
 
     bool MultiplayerSystemComponent::StartHosting(uint16_t port, bool isDedicated)

@@ -300,6 +300,21 @@ namespace Multiplayer
         }
     }
 
+    void NetworkEntityManager::Reset()
+    {
+        m_multiplayerComponentRegistry.Reset();
+        m_removeList.clear();
+        m_entityDomain = nullptr;
+        m_updateEntityDomainEvent.RemoveFromQueue();
+        m_ownedEntities.clear();
+        m_entityExitDomainEvent.DisconnectAllHandlers();
+        m_onEntityMarkedDirty.DisconnectAllHandlers();
+        m_onEntityNotifyChanges.DisconnectAllHandlers();
+        m_controllersActivatedEvent.DisconnectAllHandlers();
+        m_controllersDeactivatedEvent.DisconnectAllHandlers();
+        m_localDeferredRpcMessages.clear();
+    }
+
     void NetworkEntityManager::RemoveEntities()
     {
         AZStd::vector<NetEntityId> removeList;

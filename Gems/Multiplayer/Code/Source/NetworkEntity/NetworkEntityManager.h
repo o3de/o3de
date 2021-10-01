@@ -92,6 +92,9 @@ namespace Multiplayer
         void OnRootSpawnableReleased(uint32_t generation) override;
         //! @}
 
+        //! Used to release all memory prior to shutdown.
+        void Reset();
+
     private:
         void RemoveEntities();
         NetEntityId NextId();
