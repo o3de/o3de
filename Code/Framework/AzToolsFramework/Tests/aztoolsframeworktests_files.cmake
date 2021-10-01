@@ -12,6 +12,8 @@ set(FILES
     AssetFileInfoListComparison.cpp
     AssetSeedManager.cpp
     AssetSystemMocks.h
+    BoundsTestComponent.cpp
+    BoundsTestComponent.h
     ComponentAdapterTests.cpp
     ComponentAddRemove.cpp
     ComponentModeTestDoubles.cpp
@@ -34,6 +36,9 @@ set(FILES
     EntityTestbed.h
     FileFunc.cpp
     FingerprintingTests.cpp
+    FocusMode/EditorFocusModeFixture.cpp
+    FocusMode/EditorFocusModeFixture.h
+    FocusMode/EditorFocusModeSelectionTests.cpp
     FocusMode/EditorFocusModeTests.cpp
     GenericComponentWrapperTest.cpp
     InstanceDataHierarchy.cpp

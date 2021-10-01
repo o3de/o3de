@@ -45,22 +45,6 @@ namespace AzToolsFramework
         return m_editorModes[static_cast<AZ::u32>(mode)];
     }
 
-    void ViewportEditorModeTracker::RegisterInterface()
-    {
-        if (AZ::Interface<ViewportEditorModeTrackerInterface>::Get() == nullptr)
-        {
-            AZ::Interface<ViewportEditorModeTrackerInterface>::Register(this);
-        }
-    }
-
-    void ViewportEditorModeTracker::UnregisterInterface()
-    {
-        if (AZ::Interface<ViewportEditorModeTrackerInterface>::Get() != nullptr)
-        {
-            AZ::Interface<ViewportEditorModeTrackerInterface>::Unregister(this);
-        }
-    }
-
     AZ::Outcome<void, AZStd::string> ViewportEditorModeTracker::ActivateMode(
         const ViewportEditorModeInfo& viewportEditorModeInfo, ViewportEditorMode mode)
     {

@@ -7,5 +7,4 @@
 #
 
 set(FILES
-    AzToolsFramework/Archive/ArchiveComponent_Windows.cpp
 )
