@@ -302,7 +302,9 @@ namespace AZ
             }
 
             if (GetMaterialUsedByDecal(handle) == material)
+            {
                 return;
+            }
 
             const auto decalIndex = handle.GetIndex();
 
@@ -313,7 +315,9 @@ namespace AZ
             }
 
             if (!material.IsValid())
+            {
                 return;
+            }
 
             const auto iter = m_materialToTextureArrayLookupTable.find(material);
             if (iter != m_materialToTextureArrayLookupTable.end())
@@ -330,13 +334,15 @@ namespace AZ
 
         void DecalTextureArrayFeatureProcessor::RemoveMaterialFromDecal(const uint16_t decalIndex)
         {
+            auto& decalData = m_decalData.GetData(decalIndex);
+
             DecalLocation decalLocation;
-            decalLocation.textureArrayIndex = m_decalData.GetData(decalIndex).m_textureArrayIndex;
-            decalLocation.textureIndex = m_decalData.GetData(decalIndex).m_textureIndex;
+            decalLocation.textureArrayIndex = decalData.m_textureArrayIndex;
+            decalLocation.textureIndex = decalData.m_textureIndex;
             RemoveDecalFromTextureArrays(decalLocation);
 
-            m_decalData.GetData(decalIndex).m_textureArrayIndex = DecalData::UnusedIndex;
-            m_decalData.GetData(decalIndex).m_textureIndex = DecalData::UnusedIndex;
+            decalData.m_textureArrayIndex = DecalData::UnusedIndex;
+            decalData.m_textureIndex = DecalData::UnusedIndex;
 
             m_deviceBufferNeedsUpdate = true;
         }
