@@ -32,6 +32,23 @@ namespace AZ
 {
     namespace Render
     {
+        namespace Internal
+        {
+            struct MeshComponentNotificationBusHandler final
+                : public MeshComponentNotificationBus::Handler
+                , public AZ::BehaviorEBusHandler
+            {
+                AZ_EBUS_BEHAVIOR_BINDER(
+                    MeshComponentNotificationBusHandler, "{8B8F4977-817F-4C7C-9141-0E5FF899E1BC}", AZ::SystemAllocator, OnModelReady);
+
+                void OnModelReady(
+                    const Data::Asset<RPI::ModelAsset>& [[maybe_unused]] modelAsset,
+                    const Data::Instance<RPI::Model>& [[maybe_unused]] model) override
+                {
+                    Call(FN_OnModelReady);
+                }
+            };
+        } // namespace Internal
 
         namespace MeshComponentControllerVersionUtility
         {
@@ -173,6 +190,12 @@ namespace AZ
                     ->VirtualProperty("MinimumScreenCoverage", "GetMinimumScreenCoverage", "SetMinimumScreenCoverage")
                     ->VirtualProperty("QualityDecayRate", "GetQualityDecayRate", "SetQualityDecayRate")
                     ;
+                
+                behaviorContext->EBus<MeshComponentNotificationBus>("MeshComponentNotificationBus")
+                    ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
+                    ->Attribute(AZ::Script::Attributes::Category, "render")
+                    ->Attribute(AZ::Script::Attributes::Module, "render")
+                    ->Handler<Internal::MeshComponentNotificationBusHandler>();
             }
         }
 
@@ -196,9 +219,9 @@ namespace AZ
 
         // [GFX TODO] [ATOM-13339] Remove the ModelAsset id fix up function in MeshComponentController
         // Model id was changed due to fix for [ATOM-13312]. We can remove this code when all the levels are updated.
-        void FixUpModelAsset(Data::Asset<RPI::ModelAsset>& modelAsset)
+        void FixUpModelAsset(Data::Asset<RPI::ModelAsset>& [[maybe_unused]]modelAsset)
         {
-            Data::AssetId assetId;
+           /* Data::AssetId assetId;
             Data::AssetCatalogRequestBus::BroadcastResult(
                 assetId,
                 &Data::AssetCatalogRequestBus::Events::GetAssetIdByPath,
@@ -216,7 +239,7 @@ namespace AZ
                 {
                     AZ_Error("MeshComponentController", false, "Failed to find asset id for [%s] ", modelAsset.GetHint().c_str());
                 }
-            }
+            }*/
         }
 
         MeshComponentController::MeshComponentController(const MeshComponentConfig& config)
