@@ -211,9 +211,6 @@ namespace Multiplayer
             const NetworkEntityHandle rootHandle(root.m_entity.get(), m_networkEntityTracker.get());
             root.m_replicator = AZStd::make_unique<EntityReplicator>(*m_entityReplicationManager, m_mockConnection.get(), NetEntityRole::Authority, rootHandle);
             root.m_replicator->Initialize(rootHandle);
-
-            root.m_entity->Activate();
-            child.m_entity->Activate();
         }
 
         AZStd::unique_ptr<EntityInfo> m_root;
@@ -228,6 +225,9 @@ namespace Multiplayer
 
     TEST_F(ClientNetTransformTests, ClientSetsLocalTmWhenParentIsSet)
     {
+        m_root->m_entity->Activate();
+        m_child->m_entity->Activate();
+
         SetTranslationOnNetworkTransform(m_root->m_entity, AZ::Vector3::CreateOne());
 
         SetParentIdOnNetworkTransform(m_child->m_entity, NetEntityId{ 1 });
@@ -249,6 +249,9 @@ namespace Multiplayer
 
     TEST_F(ClientNetTransformTests, ClientSetsWorldTmWhenParentIsNotSet)
     {
+        m_root->m_entity->Activate();
+        m_child->m_entity->Activate();
+
         SetTranslationOnNetworkTransform(m_root->m_entity, AZ::Vector3::CreateOne());
         SetTranslationOnNetworkTransform(m_child->m_entity, AZ::Vector3::CreateZero());
 
@@ -268,6 +271,9 @@ namespace Multiplayer
 
     TEST_F(ClientNetTransformTests, ChildFollowsWhenParentMovesOnServer)
     {
+        m_root->m_entity->Activate();
+        m_child->m_entity->Activate();
+
         SetTranslationOnNetworkTransform(m_root->m_entity, AZ::Vector3::CreateOne());
 
         SetParentIdOnNetworkTransform(m_child->m_entity, NetEntityId{ 1 });
@@ -288,6 +294,27 @@ namespace Multiplayer
         EXPECT_EQ(
             m_child->m_entity->FindComponent<AzFramework::TransformComponent>()->GetLocalTM().GetTranslation(),
             AZ::Vector3::CreateZero()
+        );
+    }
+
+    TEST_F(ClientNetTransformTests, ChildAttachesToParentIfParentIdIsSetBeforeActivation)
+    {
+        m_root->m_entity->Activate();
+
+        SetTranslationOnNetworkTransform(m_root->m_entity, AZ::Vector3::CreateOne());
+
+        SetParentIdOnNetworkTransform(m_child->m_entity, NetEntityId{ 1 });
+        SetTranslationOnNetworkTransform(m_child->m_entity, AZ::Vector3::CreateZero());
+
+        m_child->m_entity->Activate();
+
+        AZ::EntityBus::Broadcast(&AZ::EntityBus::Events::OnEntityActivated, m_root->m_entity->GetId());
+
+        MultiplayerTick();
+
+        EXPECT_EQ(
+            m_child->m_entity->FindComponent<AzFramework::TransformComponent>()->GetParentId(),
+            AZ::EntityId(1)
         );
     }
 }

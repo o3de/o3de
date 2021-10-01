@@ -14,7 +14,7 @@
 
 namespace Multiplayer
 {
-    void NetworkTransformComponent::NetworkTransformComponent::Reflect(AZ::ReflectContext* context)
+    void NetworkTransformComponent::Reflect(AZ::ReflectContext* context)
     {
         AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context);
         if (serializeContext)
@@ -43,6 +43,11 @@ namespace Multiplayer
         GetNetBindComponent()->AddEntityPreRenderEventHandler(m_entityPreRenderEventHandler);
         GetNetBindComponent()->AddEntityCorrectionEventHandler(m_entityCorrectionEventHandler);
         ParentEntityIdAddEvent(m_parentChangedEventHandler);
+
+        if (!HasController())
+        {
+            OnParentChanged(GetParentEntityId());
+        }
     }
 
     void NetworkTransformComponent::OnDeactivate([[maybe_unused]] Multiplayer::EntityIsMigrating entityIsMigrating)
@@ -123,17 +128,20 @@ namespace Multiplayer
 
     void NetworkTransformComponent::OnParentChanged(NetEntityId parentId)
     {
-        const ConstNetworkEntityHandle parentEntityHandle = GetNetworkEntityManager()->GetEntity(parentId);
-        if (parentEntityHandle.Exists())
+        if (AZ::TransformInterface* transformComponent = GetEntity()->GetTransform())
         {
-            if (const AZ::Entity* parentEntity = parentEntityHandle.GetEntity())
+            const ConstNetworkEntityHandle parentEntityHandle = GetNetworkEntityManager()->GetEntity(parentId);
+            if (parentEntityHandle.Exists())
             {
-                GetEntity()->GetTransform()->SetParent(parentEntity->GetId());
+                if (const AZ::Entity* parentEntity = parentEntityHandle.GetEntity())
+                {
+                    transformComponent->SetParent(parentEntity->GetId());
+                }
             }
-        }
-        else
-        {
-            GetEntity()->GetTransform()->SetParent(AZ::EntityId());
+            else
+            {
+                transformComponent->SetParent(AZ::EntityId());
+            }
         }
     }
 
