@@ -78,8 +78,7 @@ namespace AzToolsFramework
                 AZStd::unique_ptr<AZ::Entity> containerEntity = nullptr, InstanceOptionalReference parent = AZStd::nullopt,
                 bool shouldCreateLinks = true) = 0;
         };
-
-
+        
     } // namespace Prefab
 } // namespace AzToolsFramework
 

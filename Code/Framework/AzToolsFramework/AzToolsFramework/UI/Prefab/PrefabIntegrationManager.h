@@ -89,6 +89,7 @@ namespace AzToolsFramework
             // Context menu item handlers
             static void ContextMenu_CreatePrefab(AzToolsFramework::EntityIdList selectedEntities);
             static void ContextMenu_InstantiatePrefab();
+            static void ContextMenu_InstantiateProceduralPrefab();
             static void ContextMenu_EditPrefab(AZ::EntityId containerEntity);
             static void ContextMenu_SavePrefab(AZ::EntityId containerEntity);
             static void ContextMenu_DeleteSelected();
@@ -99,6 +100,7 @@ namespace AzToolsFramework
                 const AZStd::string& suggestedName, const char* initialTargetDirectory, AZ::u32 prefabUserSettingsId, QWidget* activeWindow,
                 AZStd::string& outPrefabName, AZStd::string& outPrefabFilePath);
             static bool QueryUserForPrefabFilePath(AZStd::string& outPrefabFilePath);
+            static bool QueryUserForProceduralPrefabAsset(AZStd::string& outPrefabAssetPath);
             static void WarnUserOfError(AZStd::string_view title, AZStd::string_view message);
 
             // Path and filename generation

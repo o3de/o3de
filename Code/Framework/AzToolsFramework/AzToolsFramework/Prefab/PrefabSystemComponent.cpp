@@ -10,6 +10,7 @@
 
 #include <AzCore/Component/Entity.h>
 #include <AzCore/IO/Path/Path.h>
+#include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/Json/JsonSerialization.h>
 #include <AzCore/Serialization/Json/RegistrationContext.h>
 #include <AzToolsFramework/Prefab/Instance/InstanceEntityIdMapper.h>
@@ -36,12 +37,14 @@ namespace AzToolsFramework
             m_instanceToTemplatePropagator.RegisterInstanceToTemplateInterface();
             m_prefabPublicHandler.RegisterPrefabPublicHandlerInterface();
             m_prefabPublicRequestHandler.Connect();
+            m_prefabSystemScriptingHandler.Connect(this);
             AZ::SystemTickBus::Handler::BusConnect();
         }
 
         void PrefabSystemComponent::Deactivate()
         {
             AZ::SystemTickBus::Handler::BusDisconnect();
+            m_prefabSystemScriptingHandler.Disconnect();
             m_prefabPublicRequestHandler.Disconnect();
             m_prefabPublicHandler.UnregisterPrefabPublicHandlerInterface();
             m_instanceToTemplatePropagator.UnregisterInstanceToTemplateInterface();
@@ -58,11 +61,22 @@ namespace AzToolsFramework
             AzToolsFramework::Prefab::PrefabConversionUtils::EditorInfoRemover::Reflect(context);
             PrefabPublicRequestHandler::Reflect(context);
             PrefabLoader::Reflect(context);
+            PrefabSystemScriptingHandler::Reflect(context);
 
-            AZ::SerializeContext* serialize = azrtti_cast<AZ::SerializeContext*>(context);
-            if (serialize)
+            if (AZ::SerializeContext* serialize = azrtti_cast<AZ::SerializeContext*>(context))
             {
                 serialize->Class<PrefabSystemComponent, AZ::Component>()->Version(1);
+            }
+
+            if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
+            {
+
+                behaviorContext->EBus<PrefabLoaderScriptingBus>("PrefabLoaderScriptingBus")
+                    ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
+                    ->Attribute(AZ::Script::Attributes::Module, "prefab")
+                    ->Attribute(AZ::Script::Attributes::Category, "Prefab")
+                    ->Event("SaveTemplateToString", &PrefabLoaderScriptingBus::Events::SaveTemplateToString);
+                ;
             }
 
             AZ::JsonRegistrationContext* jsonRegistration = azrtti_cast<AZ::JsonRegistrationContext*>(context);
@@ -145,7 +159,7 @@ namespace AzToolsFramework
                 newInstance->SetTemplateId(newTemplateId);
             }
         }
-
+        
         void PrefabSystemComponent::PropagateTemplateChanges(TemplateId templateId, InstanceOptionalReference instanceToExclude)
         {
             UpdatePrefabInstances(templateId, instanceToExclude);
