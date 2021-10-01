@@ -6,7 +6,6 @@
  *
  */
 
-//#include <AzTest/AzTest.h>
 #include <Components/TerrainSurfaceGradientListComponent.h>
 #include <Terrain/MockTerrainLayerSpawner.h>
 #include <GradientSignal/Ebuses/MockGradientRequestBus.h>
@@ -24,11 +23,11 @@ namespace UnitTest
         AZ::ComponentApplication m_app;
 
         AZStd::unique_ptr<AZ::Entity> m_entity;
-        UnitTest::MockTerrainLayerSpawnerComponent* m_layerSpawnerComponent;
+        UnitTest::MockTerrainLayerSpawnerComponent* m_layerSpawnerComponent = nullptr;
         AZStd::unique_ptr<AZ::Entity> m_gradientEntity1, m_gradientEntity2;
 
-        AZStd::string surfaceTag1 = "testtag1";
-        AZStd::string surfaceTag2 = "testtag2";
+        const AZStd::string surfaceTag1 = "testtag1";
+        const AZStd::string surfaceTag2 = "testtag2";
 
         void SetUp() override
         {
@@ -119,7 +118,7 @@ namespace UnitTest
         const float expectedWeightList[] = { gradient2Value, gradient1Value };
 
         int index = 0;
-        for (auto& surfaceWeight : weightSet)
+        for (const auto& surfaceWeight : weightSet)
         {
             EXPECT_EQ(surfaceWeight.m_surfaceType, expectedCrcList[index]);
             EXPECT_NEAR(surfaceWeight.m_weight, expectedWeightList[index], 0.01f);

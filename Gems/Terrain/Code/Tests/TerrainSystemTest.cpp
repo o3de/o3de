@@ -36,8 +36,8 @@ namespace UnitTest
         // Defines a structure for defining both an XY position and the expected height for that position.
         struct HeightTestPoint
         {
-            AZ::Vector2 m_testLocation;
-            float m_expectedHeight;
+            AZ::Vector2 m_testLocation = AZ::Vector2::CreateZero();
+            float m_expectedHeight = 0.0f;
         };
 
         AZ::ComponentApplication m_app;
