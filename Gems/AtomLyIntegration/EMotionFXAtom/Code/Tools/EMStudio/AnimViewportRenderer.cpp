@@ -145,7 +145,6 @@ namespace EMStudio
         // Destroy all the entity we created.
         m_entityContext->DestroyEntity(m_iblEntity);
         m_entityContext->DestroyEntity(m_postProcessEntity);
-        //m_entityContext->DestroyEntity(m_cameraEntity);
         m_entityContext->DestroyEntity(m_gridEntity);
         for (AZ::Entity* entity : m_actorEntities)
         {
