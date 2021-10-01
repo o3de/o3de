@@ -53,6 +53,7 @@ namespace AzToolsFramework
 
             void Undo() override;
             void Redo() override;
+            void RedoBatched();
         };
 
         //! handles entity updates, such as when the values on an entity change

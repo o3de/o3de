@@ -6,7 +6,7 @@
  *
  */
 
-#include "ScriptEvents/ScriptEventMethod.h"
+#include "ScriptEvents/ScriptEventsMethod.h"
 
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/SerializeContext.h>

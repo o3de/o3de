@@ -146,9 +146,9 @@ namespace AzToolsFramework
             }
         }
 
-        void PrefabSystemComponent::PropagateTemplateChanges(TemplateId templateId, InstanceOptionalReference instanceToExclude)
+        void PrefabSystemComponent::PropagateTemplateChanges(TemplateId templateId, bool immediate, InstanceOptionalReference instanceToExclude)
         {
-            UpdatePrefabInstances(templateId, instanceToExclude);
+            UpdatePrefabInstances(templateId, immediate, instanceToExclude);
 
             auto templateIdToLinkIdsIterator = m_templateToLinkIdsMap.find(templateId);
             if (templateIdToLinkIdsIterator != m_templateToLinkIdsMap.end())
@@ -177,9 +177,9 @@ namespace AzToolsFramework
             }
         }
 
-        void PrefabSystemComponent::UpdatePrefabInstances(TemplateId templateId, InstanceOptionalReference instanceToExclude)
+        void PrefabSystemComponent::UpdatePrefabInstances(TemplateId templateId, bool immediate, InstanceOptionalReference instanceToExclude)
         {
-            m_instanceUpdateExecutor.AddTemplateInstancesToQueue(templateId, instanceToExclude);
+            m_instanceUpdateExecutor.AddTemplateInstancesToQueue(templateId, immediate, instanceToExclude);
         }
 
         void PrefabSystemComponent::UpdateLinkedInstances(AZStd::queue<LinkIds>& linkIdsQueue)
@@ -579,10 +579,13 @@ namespace AzToolsFramework
 
             Template& targetTemplate = targetTemplateReference->get();
 
+#if defined(AZ_ENABLE_TRACING)
             Template& sourceTemplate = sourceTemplateReference->get();
             AZStd::string_view instanceName(instanceIterator->name.GetString(), instanceIterator->name.GetStringLength());
+
             const AZStd::string& targetTemplateFilePath = targetTemplate.GetFilePath().Native();
             const AZStd::string& sourceTemplateFilePath = sourceTemplate.GetFilePath().Native();
+#endif
 
             LinkId newLinkId = CreateUniqueLinkId();
             Link newLink(newLinkId);
@@ -911,8 +914,10 @@ namespace AzToolsFramework
                 return false;
             }
 
+#if defined(AZ_ENABLE_TRACING)
             Template& sourceTemplate = sourceTemplateReference->get();
             Template& targetTemplate = targetTemplateReference->get();
+#endif
 
             AZStd::string_view instanceName(instanceIterator->name.GetString(), instanceIterator->name.GetStringLength());
 
