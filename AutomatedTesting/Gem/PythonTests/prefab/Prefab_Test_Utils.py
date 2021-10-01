@@ -29,20 +29,8 @@ def find_entities_by_name(entity_name):
     searchFilter.names = [entity_name]
     return entity.SearchBus(bus.Broadcast, 'SearchEntities', searchFilter)
 
-def find_entity_by_unique_name(entity_name):
-    unique_name_entity_found_result =  (
-        "Entity with a unique name found",
-        "Entity with a unique name *not* found")
-
-    entities = find_entities_by_name(entity_name)
-    unique_name_entity_found = len(entities) == 1
-    Report.result(unique_name_entity_found_result, unique_name_entity_found)
-
-    if unique_name_entity_found:
-        return entities[0]
-    else:
-        Report.info(f"{len(entities)} entities with name '{entity_name}' found")
-        return EntityId()
+def get_all_entities():
+    return entity.SearchBus(bus.Broadcast, 'SearchEntities', entity.SearchFilter())
 
 def check_entity_at_position(entity_id, expected_entity_position):
     entity_at_expected_position_result = (

@@ -351,17 +351,21 @@
         "CMAKE_NATIVE_BUILD_ARGS": "/m /nologo"
     }
   },
-  "windows_installer": {
+  "installer_vs2019": {
     "TAGS": [
-      "nightly-clean"
+      "nightly-clean",
+      "nightly-installer"
     ],
+    "PIPELINE_ENV":{
+      "NODE_LABEL":"windows-packaging"
+    },
     "COMMAND": "build_installer_windows.cmd",
     "PARAMETERS": {
         "CONFIGURATION": "profile",
         "OUTPUT_DIRECTORY": "build\\windows_vs2019",
         "CMAKE_OPTIONS": "-G \"Visual Studio 16 2019\" -DCMAKE_SYSTEM_VERSION=10.0 -DLY_UNITY_BUILD=TRUE -DLY_DISABLE_TEST_MODULES=TRUE -DLY_VERSION_ENGINE_NAME=o3de-sdk -DLY_INSTALLER_WIX_ROOT=\"!WIX! \"",
-        "EXTRA_CMAKE_OPTIONS": "-DLY_INSTALLER_AUTO_GEN_TAG=ON -DLY_INSTALLER_DOWNLOAD_URL=https://www.o3debinaries.org -DLY_INSTALLER_LICENSE_URL=https://www.o3debinaries.org/license",
-        "CPACK_BUCKET": "spectra-prism-staging-us-west-2",
+        "EXTRA_CMAKE_OPTIONS": "-DLY_INSTALLER_AUTO_GEN_TAG=ON -DLY_INSTALLER_DOWNLOAD_URL=!INSTALLER_DOWNLOAD_URL! -DLY_INSTALLER_LICENSE_URL=!INSTALLER_DOWNLOAD_URL!/license",
+        "CPACK_BUCKET": "!INSTALLER_BUCKET!",
         "CMAKE_LY_PROJECTS": "",
         "CMAKE_TARGET": "ALL_BUILD",
         "CMAKE_NATIVE_BUILD_ARGS": "/m /nologo"

@@ -58,7 +58,7 @@ namespace AzToolsFramework
     TEST_F(EditorFocusModeSelectionFixture, EditorFocusModeSelectionTests_SelectEntityWithFocusOnLevel)
     {
         // Clear the focus, disabling focus mode
-        m_focusModeInterface->ClearFocusRoot();
+        m_focusModeInterface->ClearFocusRoot(AzFramework::EntityContextId::CreateNull());
         // Clear selection
         ClearSelectedEntities();
 
@@ -85,6 +85,9 @@ namespace AzToolsFramework
         auto selectedEntitiesAfter = GetSelectedEntities();
         EXPECT_EQ(selectedEntitiesAfter.size(), 1);
         EXPECT_EQ(selectedEntitiesAfter.front(), m_entityMap[CarEntityName]);
+
+        // Clear the focus, disabling focus mode
+        m_focusModeInterface->ClearFocusRoot(AzFramework::EntityContextId::CreateNull());
     }
 
     TEST_F(EditorFocusModeSelectionFixture, EditorFocusModeSelectionTests_SelectEntityWithFocusOnItself)
@@ -101,6 +104,9 @@ namespace AzToolsFramework
         auto selectedEntitiesAfter = GetSelectedEntities();
         EXPECT_EQ(selectedEntitiesAfter.size(), 1);
         EXPECT_EQ(selectedEntitiesAfter.front(), m_entityMap[CarEntityName]);
+
+        // Clear the focus, disabling focus mode
+        m_focusModeInterface->ClearFocusRoot(AzFramework::EntityContextId::CreateNull());
     }
 
     TEST_F(EditorFocusModeSelectionFixture, EditorFocusModeSelectionTests_SelectEntityWithFocusOnSibling)
@@ -113,9 +119,12 @@ namespace AzToolsFramework
         // Click on Car Entity
         ClickAtWorldPositionOnViewport(CarEntityPosition);
 
-        // entity is selected
+        // Verify entity is selected
         auto selectedEntitiesAfter = GetSelectedEntities();
         EXPECT_EQ(selectedEntitiesAfter.size(), 0);
+
+        // Clear the focus, disabling focus mode
+        m_focusModeInterface->ClearFocusRoot(AzFramework::EntityContextId::CreateNull());
     }
 
     TEST_F(EditorFocusModeSelectionFixture, EditorFocusModeSelectionTests_SelectEntityWithFocusOnDescendant)
@@ -128,8 +137,11 @@ namespace AzToolsFramework
         // Click on Car Entity
         ClickAtWorldPositionOnViewport(CarEntityPosition);
 
-        // entity is selected
+        // Verify entity is selected
         auto selectedEntitiesAfter = GetSelectedEntities();
         EXPECT_EQ(selectedEntitiesAfter.size(), 0);
+
+        // Clear the focus, disabling focus mode
+        m_focusModeInterface->ClearFocusRoot(AzFramework::EntityContextId::CreateNull());
     }
 }
