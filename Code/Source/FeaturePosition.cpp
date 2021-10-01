@@ -34,14 +34,6 @@ namespace EMotionFX
         {
         }
 
-        size_t FeaturePosition::CalcMemoryUsageInBytes() const
-        {
-            size_t total = 0;
-            total += m_positions.capacity() * sizeof(AZ::Vector3);
-            total += sizeof(m_positions);
-            return total;
-        }
-
         bool FeaturePosition::Init(const InitSettings& settings)
         {
             MCORE_UNUSED(settings);
@@ -51,7 +43,6 @@ namespace EMotionFX
                 return false;
             }
 
-            m_positions.resize(m_data->GetNumFrames());
             return true;
         }
 
@@ -60,14 +51,9 @@ namespace EMotionFX
             m_nodeIndex = nodeIndex;
         }
 
-        size_t FeaturePosition::GetNumDimensionsForKdTree() const
+        void FeaturePosition::FillFrameFloats(const FeatureMatrix& featureMatrix, size_t frameIndex, size_t startIndex, AZStd::vector<float>& frameFloats) const
         {
-            return 3;
-        }
-
-        void FeaturePosition::FillFrameFloats(size_t frameIndex, size_t startIndex, AZStd::vector<float>& frameFloats) const
-        {
-            const AZ::Vector3& value = m_positions[frameIndex];
+            const AZ::Vector3 value = featureMatrix.GetVector3(frameIndex, m_featureColumnOffset);
             frameFloats[startIndex] = value.GetX();
             frameFloats[startIndex + 1] = value.GetY();
             frameFloats[startIndex + 2] = value.GetZ();
@@ -75,61 +61,32 @@ namespace EMotionFX
 
         void FeaturePosition::FillFrameFloats(size_t startIndex, AZStd::vector<float>& frameFloats, const FrameCostContext& context)
         {
-            const Transform invRootTransform = context.m_pose->GetWorldSpaceTransform(m_relativeToNodeIndex).Inversed();
-            const AZ::Vector3 worldInputPosition = context.m_pose->GetWorldSpaceTransform(m_nodeIndex).m_position;
+            const Transform invRootTransform = context.m_pose.GetWorldSpaceTransform(m_relativeToNodeIndex).Inversed();
+            const AZ::Vector3 worldInputPosition = context.m_pose.GetWorldSpaceTransform(m_nodeIndex).m_position;
             const AZ::Vector3 relativeInputPosition = invRootTransform.TransformPoint(worldInputPosition);
             frameFloats[startIndex + 0] = relativeInputPosition.GetX();
             frameFloats[startIndex + 1] = relativeInputPosition.GetY();
             frameFloats[startIndex + 2] = relativeInputPosition.GetZ();
         }
 
-        void FeaturePosition::CalcMedians(AZStd::vector<float>& medians, size_t startIndex) const
-        {
-            float sums[3] = { 0.0f, 0.0f, 0.0f };
-            const size_t numFrames = m_positions.size();
-            for (size_t i = 0; i < numFrames; ++i)
-            {
-                sums[0] += m_positions[i].GetX();
-                sums[1] += m_positions[i].GetY();
-                sums[2] += m_positions[i].GetZ();
-            }
-
-            const float fNumFrames = static_cast<float>(numFrames);
-            for (size_t i = 0; i < 3; ++i)
-            {
-                medians[startIndex + i] = sums[i] / fNumFrames;
-            }
-        }
-
         void FeaturePosition::ExtractFrameData(const ExtractFrameContext& context)
         {
             const Transform invRootTransform = context.m_pose->GetWorldSpaceTransform(m_relativeToNodeIndex).Inversed();
             const AZ::Vector3 nodeWorldPosition = context.m_pose->GetWorldSpaceTransform(m_nodeIndex).m_position;
-            m_positions[context.m_frameIndex] = invRootTransform.TransformPoint(nodeWorldPosition);
+            const AZ::Vector3 position = invRootTransform.TransformPoint(nodeWorldPosition);
+            SetFeatureData(context.m_featureMatrix, context.m_frameIndex, position);
         }
 
         void FeaturePosition::DebugDraw([[maybe_unused]] EMotionFX::DebugDraw::ActorInstanceData& draw, [[maybe_unused]] BehaviorInstance* behaviorInstance, [[maybe_unused]] size_t frameIndex)
         {
-            /*AZ_UNUSED(behaviorInstance);
-
-            const size_t numPositions = m_positions.size();
-            if (numPositions < 2)
-            {
-                return;
-            }
-
-            for (size_t i = 0; i < numPositions-1; ++i)
-            {
-                draw.DrawLine(m_positions[i], m_positions[i+1], m_debugColor);
-            }*/
         }
 
         float FeaturePosition::CalculateFrameCost(size_t frameIndex, const FrameCostContext& context) const
         {
-            const Transform invRootTransform = context.m_pose->GetWorldSpaceTransform(m_relativeToNodeIndex).Inversed();
-            const AZ::Vector3 worldInputPosition = context.m_pose->GetWorldSpaceTransform(m_nodeIndex).m_position;
+            const Transform invRootTransform = context.m_pose.GetWorldSpaceTransform(m_relativeToNodeIndex).Inversed();
+            const AZ::Vector3 worldInputPosition = context.m_pose.GetWorldSpaceTransform(m_nodeIndex).m_position;
             const AZ::Vector3 relativeInputPosition = invRootTransform.TransformPoint(worldInputPosition);
-            const AZ::Vector3& framePosition = m_positions[frameIndex]; // This is already relative to the root node
+            const AZ::Vector3 framePosition = GetFeatureData(context.m_featureMatrix, frameIndex); // This is already relative to the root node
             return (framePosition - relativeInputPosition).GetLength();
         }
 
@@ -154,6 +111,21 @@ namespace EMotionFX
                 ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                 ->Attribute(AZ::Edit::Attributes::AutoExpand, "")
                 ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly);
+        }
+
+        size_t FeaturePosition::GetNumDimensions() const
+        {
+            return 3;
+        }
+
+        AZ::Vector3 FeaturePosition::GetFeatureData(const FeatureMatrix& featureMatrix, size_t frameIndex) const
+        {
+            return featureMatrix.GetVector3(frameIndex, m_featureColumnOffset);
+        }
+
+        void FeaturePosition::SetFeatureData(FeatureMatrix& featureMatrix, size_t frameIndex, const AZ::Vector3& position)
+        {
+            featureMatrix.SetVector3(frameIndex, m_featureColumnOffset, position);
         }
     } // namespace MotionMatching
 } // namespace EMotionFX

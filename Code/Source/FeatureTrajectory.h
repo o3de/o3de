@@ -58,13 +58,8 @@ namespace EMotionFX
                 AZ::Vector3 m_direction;
                 AZ::Vector3 m_facingDirection;
                 float m_speed;
-            };
 
-            struct EMFX_API FrameCostContext
-            {
-                const Pose* m_pose;
-                const BehaviorInstance::ControlSpline* m_controlSpline;
-                AZ::Vector3 m_facingDirectionRelative = AZ::Vector3(0.0f, 1.0f, 0.0f);
+                static constexpr size_t s_componentsPerSample = 10;
             };
 
             FeatureTrajectory();
@@ -73,14 +68,25 @@ namespace EMotionFX
             bool Init(const InitSettings& settings) override;
             void ExtractFrameData(const ExtractFrameContext& context) override;
             void DebugDraw(EMotionFX::DebugDraw::ActorInstanceData& draw, BehaviorInstance* behaviorInstance, size_t frameIndex) override;
-            size_t GetNumDimensionsForKdTree() const override;
 
-            void DebugDrawFutureTrajectory(EMotionFX::DebugDraw::ActorInstanceData& draw, size_t frameIndex, const Transform& transform, const AZ::Color& color);
-            void DebugDrawPastTrajectory(EMotionFX::DebugDraw::ActorInstanceData& draw, size_t frameIndex, const Transform& transform, const AZ::Color& color);
+            void DebugDrawFutureTrajectory(EMotionFX::DebugDraw::ActorInstanceData& draw, BehaviorInstance* behaviorInstance, size_t frameIndex, const Transform& transform, const AZ::Color& color);
+            void DebugDrawPastTrajectory(EMotionFX::DebugDraw::ActorInstanceData& draw, BehaviorInstance* behaviorInstance, size_t frameIndex, const Transform& transform, const AZ::Color& color);
 
+            struct EMFX_API FrameCostContext
+            {
+                FrameCostContext(const FeatureMatrix& featureMatrix)
+                    : m_featureMatrix(featureMatrix)
+                {
+                }
+
+                const FeatureMatrix& m_featureMatrix;
+                const Pose* m_pose;
+                const BehaviorInstance::ControlSpline* m_controlSpline;
+                AZ::Vector3 m_facingDirectionRelative = AZ::Vector3(0.0f, 1.0f, 0.0f);
+            };
             float CalculateFutureFrameCost(size_t frameIndex, const FrameCostContext& context) const;
             float CalculatePastFrameCost(size_t frameIndex, const FrameCostContext& context) const;
-            float CalculateDirectionCost(size_t frameIndex, const FrameCostContext& context) const;
+            //float CalculateDirectionCost(size_t frameIndex, const FrameCostContext& context) const;
 
             void SetNumPastSamplesPerFrame(size_t numHistorySamples);
             void SetNumFutureSamplesPerFrame(size_t numFutureSamples);
@@ -88,13 +94,10 @@ namespace EMotionFX
             void SetFutureTimeRange(float timeInSeconds);
             void SetFacingAxis(const Axis axis);
 
-            size_t CalcFrameDataIndex(size_t frameIndex) const;
-            size_t CalcMidFrameDataIndex(size_t frameIndex) const;
-            size_t CalcPastFrameDataIndex(size_t frameIndex, size_t historyFrameIndex) const;
-            size_t CalcFutureFrameDataIndex(size_t frameIndex, size_t futureFrameIndex) const;
+            size_t CalcMidFrameDataIndex() const;
+            size_t CalcPastFrameDataIndex(size_t historyFrameIndex) const;
+            size_t CalcFutureFrameDataIndex(size_t futureFrameIndex) const;
             size_t CalcNumSamplesPerFrame() const;
-            size_t GetNumFrames() const;
-            size_t CalcMemoryUsageInBytes() const override;
 
             AZ::Vector3 CalculateFacingDirectionWorldSpace(const Pose& pose, Axis facingAxis, size_t jointIndex) const;
             //float CalculateFacingAngle(const Transform& invBaseTransform, const Pose& pose, const AZ::Vector3& velocityDirection) const;
@@ -103,8 +106,11 @@ namespace EMotionFX
 
             static void Reflect(AZ::ReflectContext* context);
 
+            size_t GetNumDimensions() const override;
+            Sample GetFeatureData(const FeatureMatrix& featureMatrix, size_t frameIndex, size_t sampleIndex) const;
+            void SetFeatureData(FeatureMatrix& featureMatrix, size_t frameIndex, size_t sampleIndex, const Sample& sample);
+
         private:
-            AZStd::vector<Sample> m_samples; /**< The sample values for each frame plus history and future. */
             size_t m_nodeIndex = InvalidIndex32; /**< The node to grab the data from. */
             size_t m_numFutureSamples = 5; /**< How many samples do we store per frame, for the future trajectory of this frame? */
             size_t m_numPastSamples = 5; /**< How many samples do we store per frame, for the past (history) of the trajectory of this frame? */

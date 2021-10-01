@@ -20,6 +20,8 @@ set(FILES
     Source/FeatureDatabase.h
     Source/FeatureDirection.cpp
     Source/FeatureDirection.h
+    Source/FeatureMatrix.cpp
+    Source/FeatureMatrix.h
     Source/FeaturePosition.cpp
     Source/FeaturePosition.h
     Source/FeatureTrajectory.h

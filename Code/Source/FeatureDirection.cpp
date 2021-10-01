@@ -38,14 +38,6 @@ namespace EMotionFX
         {
         }
 
-        size_t FeatureDirection::CalcMemoryUsageInBytes() const
-        {
-            size_t total = 0;
-            total += m_directions.capacity() * sizeof(AZ::Vector3);
-            total += sizeof(*this);
-            return total;
-        }
-
         bool FeatureDirection::Init(const InitSettings& settings)
         {
             AZ_UNUSED(settings);
@@ -64,35 +56,17 @@ namespace EMotionFX
             m_nodeIndex = nodeIndex;
         }
 
-        size_t FeatureDirection::GetNumDimensionsForKdTree() const
+        size_t FeatureDirection::GetNumDimensions() const
         {
             return 3;
         }
         
-        void FeatureDirection::FillFrameFloats(size_t frameIndex, size_t startIndex, AZStd::vector<float>& frameFloats) const
+        void FeatureDirection::FillFrameFloats([[maybe_unused]] const FeatureMatrix& featureMatrix, size_t frameIndex, size_t startIndex, AZStd::vector<float>& frameFloats) const
         {
             const AZ::Vector3& value = m_directions[frameIndex];
             frameFloats[startIndex] = value.GetX();
             frameFloats[startIndex + 1] = value.GetY();
             frameFloats[startIndex + 2] = value.GetZ();
-        }
-
-        void FeatureDirection::CalcMedians(AZStd::vector<float>& medians, size_t startIndex) const
-        {
-            float sums[3] = { 0.0f, 0.0f, 0.0f };
-            const size_t numFrames = m_directions.size();
-            for (size_t i = 0; i < numFrames; ++i)
-            {
-                sums[0] += m_directions[i].GetX();
-                sums[1] += m_directions[i].GetY();
-                sums[2] += m_directions[i].GetZ();
-            }
-
-            const float fNumFrames = static_cast<float>(numFrames);
-            for (size_t i = 0; i < 3; ++i)
-            {
-                medians[startIndex + i] = sums[i] / fNumFrames;
-            }
         }
 
         AZ::Vector3 FeatureDirection::ExtractDirection(const AZ::Quaternion& quaternion) const
