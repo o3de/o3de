@@ -17,6 +17,7 @@
 #include <Components/TerrainHeightGradientListComponent.h>
 #include <Components/TerrainLayerSpawnerComponent.h>
 #include <Components/TerrainSurfaceDataSystemComponent.h>
+#include <Components/TerrainSurfaceMaterialsListComponent.h>
 
 namespace Terrain
 {
@@ -24,6 +25,7 @@ namespace Terrain
         : AZ::Module()
     {
         m_descriptors.insert(m_descriptors.end(), {
+                TerrainSurfaceMaterialsListComponent::CreateDescriptor(),
                 TerrainSystemComponent::CreateDescriptor(),
                 TerrainWorldComponent::CreateDescriptor(),
                 TerrainWorldDebuggerComponent::CreateDescriptor(),

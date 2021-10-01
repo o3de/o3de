@@ -13,6 +13,7 @@
 #include <EditorComponents/EditorTerrainWorldComponent.h>
 #include <EditorComponents/EditorTerrainWorldDebuggerComponent.h>
 #include <EditorComponents/EditorTerrainWorldRendererComponent.h>
+#include <Editor/EditorTerrainSurfaceMaterialsListComponent.h>
 
 namespace Terrain
 {
@@ -24,6 +25,7 @@ namespace Terrain
                 Terrain::EditorTerrainHeightGradientListComponent::CreateDescriptor(),
                 Terrain::EditorTerrainLayerSpawnerComponent::CreateDescriptor(),
                 Terrain::EditorTerrainSystemComponent::CreateDescriptor(),
+                Terrain::EditorTerrainSurfaceMaterialsListComponent::CreateDescriptor(),
                 Terrain::EditorTerrainWorldComponent::CreateDescriptor(),
                 Terrain::EditorTerrainWorldDebuggerComponent::CreateDescriptor(),
                 Terrain::EditorTerrainWorldRendererComponent::CreateDescriptor(),

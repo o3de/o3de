@@ -13,6 +13,8 @@ set(FILES
     Source/Components/TerrainLayerSpawnerComponent.h
     Source/Components/TerrainSurfaceDataSystemComponent.cpp
     Source/Components/TerrainSurfaceDataSystemComponent.h
+    Source/Components/TerrainSurfaceMaterialsListComponent.cpp
+    Source/Components/TerrainSurfaceMaterialsListComponent.h
     Source/Components/TerrainSystemComponent.cpp
     Source/Components/TerrainSystemComponent.h
     Source/Components/TerrainWorldComponent.cpp
