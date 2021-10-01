@@ -92,7 +92,17 @@ namespace AzToolsFramework
 
         AZStd::unique_ptr<Instance> PrefabSystemComponent::CreatePrefab(
             const AZStd::vector<AZ::Entity*>& entities, AZStd::vector<AZStd::unique_ptr<Instance>>&& instancesToConsume,
-            AZ::IO::PathView filePath, AZStd::unique_ptr<AZ::Entity> containerEntity, bool shouldCreateLinks)
+            AZ::IO::PathView filePath, AZStd::unique_ptr<AZ::Entity> containerEntity, InstanceOptionalReference parent,
+            bool shouldCreateLinks)
+        {
+            AZStd::unique_ptr<Instance> newInstance = AZStd::make_unique<Instance>(AZStd::move(containerEntity), parent);
+            CreatePrefab(entities, AZStd::move(instancesToConsume), filePath, newInstance, shouldCreateLinks);
+            return newInstance;
+        }
+
+        void PrefabSystemComponent::CreatePrefab(
+            const AZStd::vector<AZ::Entity*>& entities, AZStd::vector<AZStd::unique_ptr<Instance>>&& instancesToConsume,
+            AZ::IO::PathView filePath, AZStd::unique_ptr<Instance>& newInstance, bool shouldCreateLinks)
         {
             AZ::IO::Path relativeFilePath = m_prefabLoader.GenerateRelativePath(filePath);
             if (GetTemplateIdFromFilePath(relativeFilePath) != InvalidTemplateId)
@@ -101,10 +111,8 @@ namespace AzToolsFramework
                     "Filepath %s has already been registered with the Prefab System Component",
                     relativeFilePath.c_str());
 
-                return nullptr;
+                return;
             }
-
-            AZStd::unique_ptr<Instance> newInstance = AZStd::make_unique<Instance>(AZStd::move(containerEntity));
 
             for (AZ::Entity* entity : entities)
             {
@@ -136,8 +144,6 @@ namespace AzToolsFramework
             {
                 newInstance->SetTemplateId(newTemplateId);
             }
-
-            return newInstance;
         }
 
         void PrefabSystemComponent::PropagateTemplateChanges(TemplateId templateId, bool immediate, InstanceOptionalReference instanceToExclude)
@@ -171,7 +177,7 @@ namespace AzToolsFramework
             }
         }
 
-        void PrefabSystemComponent::UpdatePrefabInstances(const TemplateId& templateId, bool immediate, InstanceOptionalReference instanceToExclude)
+        void PrefabSystemComponent::UpdatePrefabInstances(TemplateId templateId, bool immediate, InstanceOptionalReference instanceToExclude)
         {
             m_instanceUpdateExecutor.AddTemplateInstancesToQueue(templateId, immediate, instanceToExclude);
         }
@@ -256,7 +262,8 @@ namespace AzToolsFramework
             }
         }
 
-        AZStd::unique_ptr<Instance> PrefabSystemComponent::InstantiatePrefab(AZ::IO::PathView filePath)
+        AZStd::unique_ptr<Instance> PrefabSystemComponent::InstantiatePrefab(
+            AZ::IO::PathView filePath, InstanceOptionalReference parent)
         {
             // Retrieve the template id for the source prefab filepath
             Prefab::TemplateId templateId = GetTemplateIdFromFilePath(filePath);
@@ -276,10 +283,11 @@ namespace AzToolsFramework
                 return nullptr;
             }
 
-            return InstantiatePrefab(templateId);
+            return InstantiatePrefab(templateId, parent);
         }
 
-        AZStd::unique_ptr<Instance> PrefabSystemComponent::InstantiatePrefab(const TemplateId& templateId)
+        AZStd::unique_ptr<Instance> PrefabSystemComponent::InstantiatePrefab(
+            TemplateId templateId, InstanceOptionalReference parent)
         {
             TemplateReference instantiatingTemplate = FindTemplate(templateId);
 
@@ -292,7 +300,7 @@ namespace AzToolsFramework
                 return nullptr;
             }
 
-            auto newInstance = AZStd::make_unique<Instance>();
+            auto newInstance = AZStd::make_unique<Instance>(parent);
             Instance::EntityList newEntities;
             if (!PrefabDomUtils::LoadInstanceFromPrefabDom(*newInstance, newEntities, instantiatingTemplate->get().GetPrefabDom()))
             {
@@ -354,7 +362,7 @@ namespace AzToolsFramework
             return newTemplateId;
         }
 
-        TemplateReference PrefabSystemComponent::FindTemplate(const TemplateId& id)
+        TemplateReference PrefabSystemComponent::FindTemplate(TemplateId id)
         {
             auto found = m_templateIdMap.find(id);
             if (found != m_templateIdMap.end())
@@ -466,7 +474,7 @@ namespace AzToolsFramework
             templateToChange.SetFilePath(filePath);
         }
 
-        void PrefabSystemComponent::RemoveTemplate(const TemplateId& templateId)
+        void PrefabSystemComponent::RemoveTemplate(TemplateId templateId)
         {
             auto findTemplateResult = FindTemplate(templateId);
             if (!findTemplateResult.has_value())
@@ -553,8 +561,8 @@ namespace AzToolsFramework
         }
 
         LinkId PrefabSystemComponent::AddLink(
-            const TemplateId& sourceTemplateId,
-            const TemplateId& targetTemplateId,
+            TemplateId sourceTemplateId,
+            TemplateId targetTemplateId,
             PrefabDomValue::MemberIterator& instanceIterator,
             InstanceOptionalReference instance)
         {
@@ -616,8 +624,8 @@ namespace AzToolsFramework
         }
 
         LinkId PrefabSystemComponent::CreateLink(
-            const TemplateId& linkTargetId,
-            const TemplateId& linkSourceId,
+            TemplateId linkTargetId,
+            TemplateId linkSourceId,
             const InstanceAlias& instanceAlias,
             const PrefabDomConstReference linkPatches,
             const LinkId& linkId)
@@ -774,7 +782,7 @@ namespace AzToolsFramework
             }
         }
 
-        bool PrefabSystemComponent::IsTemplateDirty(const TemplateId& templateId)
+        bool PrefabSystemComponent::IsTemplateDirty(TemplateId templateId)
         {
             auto templateRef = FindTemplate(templateId);
 
@@ -786,7 +794,7 @@ namespace AzToolsFramework
             return false;
         }
 
-        void PrefabSystemComponent::SetTemplateDirtyFlag(const TemplateId& templateId, bool dirty)
+        void PrefabSystemComponent::SetTemplateDirtyFlag(TemplateId templateId, bool dirty)
         {
             auto templateRef = FindTemplate(templateId);
 
@@ -940,7 +948,7 @@ namespace AzToolsFramework
             return true;
         }
 
-        bool PrefabSystemComponent::GenerateLinksForNewTemplate(const TemplateId& newTemplateId, Instance& instance)
+        bool PrefabSystemComponent::GenerateLinksForNewTemplate(TemplateId newTemplateId, Instance& instance)
         {
             TemplateReference newTemplateReference = FindTemplate(newTemplateId);
             if (!newTemplateReference.has_value())
@@ -980,7 +988,7 @@ namespace AzToolsFramework
                 }
 
                 const PrefabDomValue& source = instanceSourceReference->get();
-                const TemplateId& nestedTemplateId = GetTemplateIdFromFilePath(source.GetString());
+                TemplateId nestedTemplateId = GetTemplateIdFromFilePath(source.GetString());
                 if (nestedTemplateId == InvalidTemplateId)
                 {
                     AZ_Error("Prefab", false,

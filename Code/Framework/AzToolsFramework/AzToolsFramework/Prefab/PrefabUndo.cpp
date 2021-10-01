@@ -33,7 +33,7 @@ namespace AzToolsFramework
         void PrefabUndoInstance::Capture(
             const PrefabDom& initialState,
             const PrefabDom& endState,
-            const TemplateId& templateId)
+            TemplateId templateId)
         {
             m_templateId = templateId;
 
@@ -141,8 +141,8 @@ namespace AzToolsFramework
         }
 
         void PrefabUndoInstanceLink::Capture(
-            const TemplateId& targetId,
-            const TemplateId& sourceId,
+            TemplateId targetId,
+            TemplateId sourceId,
             const InstanceAlias& instanceAlias,
             PrefabDom linkPatches,
             const LinkId linkId)
