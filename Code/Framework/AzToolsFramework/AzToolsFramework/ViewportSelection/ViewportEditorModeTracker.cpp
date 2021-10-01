@@ -52,7 +52,8 @@ namespace AzToolsFramework
         if (editorModes.IsModeActive(mode))
         {
             return AZ::Failure(AZStd::string::format(
-                "Duplicate call to ActivateMode for mode '%u' on id '%i'", static_cast<AZ::u32>(mode), viewportEditorModeInfo.m_id));
+                "Duplicate call to ActivateMode for mode '%u' on id '%s'", static_cast<AZ::u32>(mode),
+                viewportEditorModeInfo.m_id.ToString<AZStd::string>().c_str()));
         }
         
         if (const auto result = editorModes.ActivateMode(mode);
@@ -78,7 +79,8 @@ namespace AzToolsFramework
             if (!editorModes->IsModeActive(mode))
             {
                 return AZ::Failure(AZStd::string::format(
-                    "Duplicate call to DeactivateMode for mode '%u' on id '%i'", static_cast<AZ::u32>(mode), viewportEditorModeInfo.m_id));
+                    "Duplicate call to DeactivateMode for mode '%u' on id '%s'", static_cast<AZ::u32>(mode),
+                    viewportEditorModeInfo.m_id.ToString<AZStd::string>().c_str()));
             }
         }
         else
@@ -103,8 +105,8 @@ namespace AzToolsFramework
         else
         {
             return AZ::Failure(AZStd::string::format(
-                "Call to DeactivateMode for mode '%u' on id '%i' without precursor call to ActivateMode", static_cast<AZ::u32>(mode),
-                viewportEditorModeInfo.m_id));
+                "Call to DeactivateMode for mode '%u' on id '%s' without precursor call to ActivateMode", static_cast<AZ::u32>(mode),
+                viewportEditorModeInfo.m_id.ToString<AZStd::string>().c_str()));
         }
     }
 
