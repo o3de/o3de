@@ -51,7 +51,6 @@ namespace Multiplayer
         //! @param canSendUpdates the state value
         virtual void SetCanSendUpdates(bool canSendUpdates) = 0;
 
-
         //! Fetches the state of connection whether handshake logic has completed
         //! @return true if handshake has completed
         virtual bool DidHandshake() const = 0;
