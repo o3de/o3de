@@ -82,11 +82,13 @@ ForwardPassOutput TerrainPBR_MainPassPS(VSOutput IN)
     float2 detailUv = IN.m_uv * TerrainMaterialSrg::m_detailTextureMultiplier;
     
     // ------- Normal -------
+    float3 macroNormal = IN.m_normal;
+    if (o_macroNormal_useTexture)
+    {
+        macroNormal = GetNormalInputTS(TerrainMaterialSrg::m_macroNormalMap, TerrainMaterialSrg::m_sampler, 
+            origUv, TerrainMaterialSrg::m_flipMacroNormalX, TerrainMaterialSrg::m_flipMacroNormalY, CreateIdentity3x3(), true, 1.0);
+    }
     
-    float3 normal = float3(0.0, 0.0, 1.0);
-    float3 macroNormal = GetNormalInputTS(TerrainMaterialSrg::m_macroNormalMap, TerrainMaterialSrg::m_sampler, 
-        origUv, TerrainMaterialSrg::m_flipMacroNormalX, TerrainMaterialSrg::m_flipMacroNormalY, CreateIdentity3x3(), o_macroNormal_useTexture, 1.0);
-
     float3 detailNormal = GetNormalInputTS(TerrainMaterialSrg::m_normalMap, TerrainMaterialSrg::m_sampler, 
         detailUv, TerrainMaterialSrg::m_flipNormalX, TerrainMaterialSrg::m_flipNormalY, CreateIdentity3x3(), o_normal_useTexture, TerrainMaterialSrg::m_normalFactor);
 

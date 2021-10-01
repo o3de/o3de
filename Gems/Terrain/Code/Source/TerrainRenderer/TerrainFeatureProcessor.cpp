@@ -43,7 +43,6 @@ namespace Terrain
 {
     namespace
     {
-        const uint32_t DEFAULT_UploadBufferSize = 512 * 1024; // 512k
         [[maybe_unused]] const char* TerrainFPName = "TerrainFeatureProcessor";
     }
 
