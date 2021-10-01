@@ -71,7 +71,7 @@ namespace O3DE::ProjectManager
             QString cmakeAppPath = QStandardPaths::locate(QStandardPaths::ApplicationsLocation, "CMake.app", QStandardPaths::LocateDirectory);
             if (cmakeAppPath.isEmpty())
             {
-                return AZ::Failure(QObject::tr("CMake.app not found. ") + cmakeHelp);
+                return AZ::Failure(QObject::tr("CMake.app not found.") + cmakeHelp);
             }
 
             QString projectBuildPath = QDir(projectPath).filePath(ProjectBuildPathPostfix);
@@ -86,10 +86,10 @@ namespace O3DE::ProjectManager
             // if the project build path is relative, it should be relative to the project path 
             process.setWorkingDirectory(projectPath);
             process.setProgram("open");
-            process.setArguments({ "-a","CMake","--args","-S", projectPath, "-B", projectBuildPath });
+            process.setArguments({"-a", "CMake", "--args", "-S", projectPath, "-B", projectBuildPath});
             if(!process.startDetached())
             {
-                return AZ::Failure(QObject::tr("CMake.app failed to open. ") + cmakeHelp);
+                return AZ::Failure(QObject::tr("CMake.app failed to open.") + cmakeHelp);
             }
 
             return AZ::Success();
