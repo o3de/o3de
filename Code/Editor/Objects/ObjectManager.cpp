@@ -6,7 +6,6 @@
  *
  */
 
-
 #include "EditorDefs.h"
 
 #include "ObjectManager.h"
@@ -15,19 +14,19 @@
 #include <QMessageBox>
 
 // Editor
-#include "Settings.h"
-#include "DisplaySettings.h"
-#include "EntityObject.h"
-#include "Viewport.h"
-#include "GizmoManager.h"
 #include "AxisGizmo.h"
-#include "GameEngine.h"
-#include "WaitProgress.h"
-#include "Util/Image.h"
-#include "ObjectManagerLegacyUndo.h"
-#include "Include/HitContext.h"
+#include "DisplaySettings.h"
 #include "EditMode/DeepSelection.h"
+#include "EntityObject.h"
+#include "GameEngine.h"
+#include "GizmoManager.h"
+#include "Include/HitContext.h"
+#include "ObjectManagerLegacyUndo.h"
 #include "Plugins/ComponentEntityEditorPlugin/Objects/ComponentEntityObject.h"
+#include "Settings.h"
+#include "Util/Image.h"
+#include "Viewport.h"
+#include "WaitProgress.h"
 
 #include <AzCore/Console/Console.h>
 
@@ -37,27 +36,41 @@ AZ_CVAR_EXTERNED(bool, ed_visibility_logTiming);
  *  Class Description used for object templates.
  *  This description filled from Xml template files.
  */
-class CXMLObjectClassDesc
-    : public CObjectClassDesc
+class CXMLObjectClassDesc : public CObjectClassDesc
 {
 public:
-    CObjectClassDesc*   superType;
+    CObjectClassDesc* superType;
     QString type;
     QString category;
     QString fileSpec;
     GUID guid;
 
 public:
-    virtual ~CXMLObjectClassDesc() = default; 
+    virtual ~CXMLObjectClassDesc() = default;
     REFGUID ClassID() override
     {
         return guid;
     }
-    ObjectType GetObjectType() override { return superType->GetObjectType(); };
-    QString ClassName() override { return type; };
-    QString Category() override { return category; };
-    QObject* CreateQObject() const override { return superType->CreateQObject(); }
-    QString GetTextureIcon() override { return superType->GetTextureIcon(); };
+    ObjectType GetObjectType() override
+    {
+        return superType->GetObjectType();
+    };
+    QString ClassName() override
+    {
+        return type;
+    };
+    QString Category() override
+    {
+        return category;
+    };
+    QObject* CreateQObject() const override
+    {
+        return superType->CreateQObject();
+    }
+    QString GetTextureIcon() override
+    {
+        return superType->GetTextureIcon();
+    };
     QString GetFileSpec() override
     {
         if (!fileSpec.isEmpty())
@@ -69,7 +82,10 @@ public:
             return superType->GetFileSpec();
         }
     };
-    int GameCreationOrder() override { return superType->GameCreationOrder(); };
+    int GameCreationOrder() override
+    {
+        return superType->GameCreationOrder();
+    };
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -130,11 +146,11 @@ void CObjectManager::RegisterObjectClasses()
 }
 
 //////////////////////////////////////////////////////////////////////////
-void    CObjectManager::SaveRegistry()
+void CObjectManager::SaveRegistry()
 {
 }
 
-void    CObjectManager::LoadRegistry()
+void CObjectManager::LoadRegistry()
 {
 }
 
@@ -149,12 +165,12 @@ CBaseObject* CObjectManager::NewObject(CObjectClassDesc* cls, CBaseObject* prev,
         obj = qobject_cast<CBaseObject*>(cls->CreateQObject());
         obj->SetClassDesc(cls);
         obj->InitVariables();
-        obj->m_guid = AZ::Uuid::CreateRandom();    // generate uniq GUID for this object.
+        obj->m_guid = AZ::Uuid::CreateRandom(); // generate uniq GUID for this object.
 
         GetIEditor()->GetErrorReport()->SetCurrentValidatorObject(obj);
         if (obj->Init(GetIEditor(), prev, file))
         {
-            if ((newObjectName)&&(newObjectName[0]))
+            if ((newObjectName) && (newObjectName[0]))
             {
                 obj->SetName(newObjectName);
             }
@@ -199,7 +215,6 @@ CBaseObject* CObjectManager::NewObject(CObjectClassDesc* cls, CBaseObject* prev,
                 entityClass = entityObj->GetEntityClass().toUtf8();
                 scriptClassName = entityClass.data();
             }
-
         }
     }
 
@@ -230,7 +245,7 @@ CBaseObject* CObjectManager::NewObject(CObjectArchive& ar, CBaseObject* pUndoObj
     {
         // Make new guid for this object.
         GUID newId = AZ::Uuid::CreateRandom();
-        ar.RemapID(id, newId);  // Mark this id remapped.
+        ar.RemapID(id, newId); // Mark this id remapped.
         id = newId;
     }
 
@@ -276,7 +291,9 @@ CBaseObject* CObjectManager::NewObject(CObjectArchive& ar, CBaseObject* pUndoObj
         {
             // If id is taken.
             QString error;
-            error = QObject::tr("[Error] Object %1 already exists in the Object Manager and has been deleted as it is a duplicate of object %2").arg(pObject->m_name, obj->GetName());
+            error =
+                QObject::tr("[Error] Object %1 already exists in the Object Manager and has been deleted as it is a duplicate of object %2")
+                    .arg(pObject->m_name, obj->GetName());
             CLogFile::WriteLine(error.toUtf8().data());
 
             if (!GetIEditor()->IsInTestMode() && !GetIEditor()->IsInLevelLoadTestMode())
@@ -286,12 +303,13 @@ CBaseObject* CObjectManager::NewObject(CObjectArchive& ar, CBaseObject* pUndoObj
                 errorRecord.count = 1;
                 errorRecord.severity = CErrorRecord::ESEVERITY_ERROR;
                 errorRecord.error = error;
-                errorRecord.description = "Possible duplicate objects being loaded, potential fix is to remove duplicate objects from level files.";
+                errorRecord.description =
+                    "Possible duplicate objects being loaded, potential fix is to remove duplicate objects from level files.";
                 GetIEditor()->GetErrorReport()->ReportError(errorRecord);
             }
 
             return nullptr;
-            //CoCreateGuid( &pObject->m_guid ); // generate uniq GUID for this object.
+            // CoCreateGuid( &pObject->m_guid ); // generate uniq GUID for this object.
         }
     }
 
@@ -308,7 +326,7 @@ CBaseObject* CObjectManager::NewObject(CObjectArchive& ar, CBaseObject* pUndoObj
         return nullptr;
     }
 
-    //pObject->Serialize( ar );
+    // pObject->Serialize( ar );
 
     GetIEditor()->GetErrorReport()->SetCurrentValidatorObject(nullptr);
 
@@ -343,7 +361,8 @@ CBaseObject* CObjectManager::NewObject(const QString& typeName, CBaseObject* pre
 
     if (!cls)
     {
-        GetIEditor()->GetSystem()->GetILog()->Log("Warning: RuntimeClass %s (as well as %s) not registered", typeName.toUtf8().data(), fullName.toUtf8().data());
+        GetIEditor()->GetSystem()->GetILog()->Log(
+            "Warning: RuntimeClass %s (as well as %s) not registered", typeName.toUtf8().data(), fullName.toUtf8().data());
         return nullptr;
     }
     CBaseObject* pObject = NewObject(cls, prev, file, newObjectName);
@@ -351,7 +370,7 @@ CBaseObject* CObjectManager::NewObject(const QString& typeName, CBaseObject* pre
 }
 
 //////////////////////////////////////////////////////////////////////////
-void    CObjectManager::DeleteObject(CBaseObject* obj)
+void CObjectManager::DeleteObject(CBaseObject* obj)
 {
     AZ_PROFILE_FUNCTION(Editor);
     if (m_currEditObject == obj)
@@ -506,9 +525,9 @@ CBaseObject* CObjectManager::CloneObject(CBaseObject* obj)
 {
     AZ_PROFILE_FUNCTION(Editor);
     assert(obj);
-    //CRuntimeClass *cls = obj->GetRuntimeClass();
-    //CBaseObject *clone = (CBaseObject*)cls->CreateObject();
-    //clone->CloneCopy( obj );
+    // CRuntimeClass *cls = obj->GetRuntimeClass();
+    // CBaseObject *clone = (CBaseObject*)cls->CreateObject();
+    // clone->CloneCopy( obj );
     CBaseObject* clone = NewObject(obj->GetClassDesc(), obj);
     return clone;
 }
@@ -596,7 +615,9 @@ bool CObjectManager::AddObject(CBaseObject* obj)
     if (p)
     {
         CErrorRecord err;
-        err.error = QObject::tr("New Object %1 has Duplicate GUID %2, New Object Ignored").arg(obj->GetName()).arg(GuidUtil::ToString(obj->GetId()));
+        err.error = QObject::tr("New Object %1 has Duplicate GUID %2, New Object Ignored")
+                        .arg(obj->GetName())
+                        .arg(GuidUtil::ToString(obj->GetId()));
         err.severity = CErrorRecord::ESEVERITY_ERROR;
         err.pObject = obj;
         err.flags = CErrorRecord::FLAG_OBJECTID;
@@ -611,7 +632,8 @@ bool CObjectManager::AddObject(CBaseObject* obj)
         if (CEntityObject* entityObj = qobject_cast<CEntityObject*>(obj))
         {
             CEntityObject::EAttachmentType attachType = entityObj->GetAttachType();
-            if (attachType == CEntityObject::EAttachmentType::eAT_GeomCacheNode || attachType == CEntityObject::EAttachmentType::eAT_CharacterBone)
+            if (attachType == CEntityObject::EAttachmentType::eAT_GeomCacheNode ||
+                attachType == CEntityObject::EAttachmentType::eAT_CharacterBone)
             {
                 m_animatedAttachedEntities.insert(entityObj);
             }
@@ -688,11 +710,10 @@ void CObjectManager::ShowDuplicationMsgWarning(CBaseObject* obj, const QString& 
     if (pExisting)
     {
         QString sRenameWarning = QObject::tr("%1 \"%2\" was NOT renamed to \"%3\" because %4 with the same name already exists.")
-            .arg(obj->GetClassDesc()->ClassName())
-            .arg(obj->GetName())
-            .arg(newName)
-            .arg(pExisting->GetClassDesc()->ClassName()
-        );
+                                     .arg(obj->GetClassDesc()->ClassName())
+                                     .arg(obj->GetName())
+                                     .arg(newName)
+                                     .arg(pExisting->GetClassDesc()->ClassName());
 
         // If id is taken.
         CryWarning(VALIDATOR_MODULE_EDITOR, VALIDATOR_WARNING, "%s", sRenameWarning.toUtf8().data());
@@ -1123,8 +1144,7 @@ int CObjectManager::ClearSelection()
 
     // Unselect all component entities as one bulk operation instead of individually
     AzToolsFramework::ToolsApplicationRequestBus::Broadcast(
-        &AzToolsFramework::ToolsApplicationRequests::SetSelectedEntities,
-        AzToolsFramework::EntityIdList());
+        &AzToolsFramework::ToolsApplicationRequests::SetSelectedEntities, AzToolsFramework::EntityIdList());
 
     m_processingBulkSelect = false;
 
@@ -1264,7 +1284,7 @@ void CObjectManager::Display(DisplayContext& dc)
     }
 }
 
-void CObjectManager::ForceUpdateVisibleObjectCache(DisplayContext& dc)
+void CObjectManager::ForceUpdateVisibleObjectCache([[maybe_unused]] DisplayContext& dc)
 {
     AZ_Assert(false, "CObjectManager::ForceUpdateVisibleObjectCache is legacy/deprecated and should not be used.");
 }
@@ -1291,7 +1311,7 @@ void CObjectManager::BeginEditParams(CBaseObject* obj, int flags)
 
     if (m_currEditObject)
     {
-        //if (obj->GetClassDesc() != m_currEditObject->GetClassDesc())
+        // if (obj->GetClassDesc() != m_currEditObject->GetClassDesc())
         if (!obj->IsSameClass(m_currEditObject))
         {
             EndEditParams(flags);
@@ -1311,7 +1331,8 @@ void CObjectManager::BeginEditParams(CBaseObject* obj, int flags)
     m_bSingleSelection = true;
 
     // Restore focus if it changed.
-    //  OBJECT_EDIT is used by the EntityOutliner when items are selected. Using it here to prevent shifting focus to the EntityInspector on select.
+    //  OBJECT_EDIT is used by the EntityOutliner when items are selected. Using it here to prevent shifting focus to the EntityInspector on
+    //  select.
     if (!(flags & OBJECT_EDIT) && prevActiveWindow && QApplication::activeWindow() != prevActiveWindow)
     {
         prevActiveWindow->setFocus();
@@ -1322,7 +1343,7 @@ void CObjectManager::EndEditParams([[maybe_unused]] int flags)
 {
     m_bSingleSelection = false;
     m_currEditObject = nullptr;
-    //m_bSelectionChanged = false; // don't need to clear for ungroup
+    // m_bSelectionChanged = false; // don't need to clear for ungroup
 }
 
 //! Select objects within specified distance from given position.
@@ -1368,17 +1389,17 @@ int CObjectManager::MoveObjects(const AABB& box, const Vec3& offset, ImageRotati
     float alpha = 0.0f;
     switch (rotation)
     {
-        case ImageRotationDegrees::Rotate90:
-            alpha = gf_halfPI;
-            break;
-        case ImageRotationDegrees::Rotate180:
-            alpha = gf_PI;
-            break;
-        case ImageRotationDegrees::Rotate270:
-            alpha = gf_PI + gf_halfPI;
-            break;
-        default:
-            break;
+    case ImageRotationDegrees::Rotate90:
+        alpha = gf_halfPI;
+        break;
+    case ImageRotationDegrees::Rotate180:
+        alpha = gf_PI;
+        break;
+    case ImageRotationDegrees::Rotate270:
+        alpha = gf_PI + gf_halfPI;
+        break;
+    default:
+        break;
     }
 
     float cosa = cos(alpha);
@@ -1707,11 +1728,11 @@ void CObjectManager::GetClassCategories(QStringList& categories)
     }
 }
 
-void CObjectManager::GetClassCategoryToolClassNamePairs(std::vector< std::pair<QString, QString> >& categoryToolClassNamePairs)
+void CObjectManager::GetClassCategoryToolClassNamePairs(std::vector<std::pair<QString, QString>>& categoryToolClassNamePairs)
 {
     std::vector<IClassDesc*> classes;
     CClassFactory::Instance()->GetClassesBySystemID(ESYSTEM_CLASS_OBJECT, classes);
-    std::set< std::pair<QString, QString> > cset;
+    std::set<std::pair<QString, QString>> cset;
     for (int i = 0; i < classes.size(); i++)
     {
         QString category = classes[i]->Category();
@@ -1723,7 +1744,7 @@ void CObjectManager::GetClassCategoryToolClassNamePairs(std::vector< std::pair<Q
     }
     categoryToolClassNamePairs.clear();
     categoryToolClassNamePairs.reserve(cset.size());
-    for (std::set< std::pair<QString, QString> >::iterator cit = cset.begin(); cit != cset.end(); ++cit)
+    for (std::set<std::pair<QString, QString>>::iterator cit = cset.begin(); cit != cset.end(); ++cit)
     {
         categoryToolClassNamePairs.push_back(*cit);
     }
@@ -1800,10 +1821,8 @@ void CObjectManager::LoadClassTemplates(const QString& path)
 //////////////////////////////////////////////////////////////////////////
 void CObjectManager::RegisterCVars()
 {
-    REGISTER_CVAR2("AxisHelperHitRadius",
-        &m_axisHelperHitRadius,
-        20,
-        VF_DEV_ONLY,
+    REGISTER_CVAR2(
+        "AxisHelperHitRadius", &m_axisHelperHitRadius, 20, VF_DEV_ONLY,
         "Adjust the hit radius used for axis helpers, like the transform gizmo.");
 }
 
@@ -1832,7 +1851,6 @@ void CObjectManager::Serialize(XmlNodeRef& xmlNode, bool bLoading, int flags)
             DeleteAllObjects();
         }
 
-
         XmlNodeRef root = xmlNode->findChild("Objects");
 
         int totalObjects = 0;
@@ -1841,7 +1859,6 @@ void CObjectManager::Serialize(XmlNodeRef& xmlNode, bool bLoading, int flags)
         {
             root->getAttr("NumObjects", totalObjects);
         }
-
 
         StartObjectsLoading(totalObjects);
 
@@ -1924,8 +1941,7 @@ void CObjectManager::Export(const QString& levelPath, XmlNodeRef& rootNode, bool
     {
         CBaseObject* obj = it->second;
         // Export Only shared objects.
-        if ((obj->CheckFlags(OBJFLAG_SHARED) && onlyShared) ||
-            (!obj->CheckFlags(OBJFLAG_SHARED) && !onlyShared))
+        if ((obj->CheckFlags(OBJFLAG_SHARED) && onlyShared) || (!obj->CheckFlags(OBJFLAG_SHARED) && !onlyShared))
         {
             obj->Export(levelPath, rootNode);
         }
@@ -2062,7 +2078,6 @@ void CObjectManager::SetObjectSelected(CBaseObject* pObject, bool bSelect)
 
     pObject->SetSelected(bSelect);
     m_bSelectionChanged = true;
-
 
     if (bSelect && !GetIEditor()->GetTransformManipulator())
     {
@@ -2213,7 +2228,8 @@ void CObjectManager::FindAndRenameProperty2(const char* property2Name, const QSt
     }
 }
 
-void CObjectManager::FindAndRenameProperty2If(const char* property2Name, const QString& oldValue, const QString& newValue, const char* otherProperty2Name, const QString& otherValue)
+void CObjectManager::FindAndRenameProperty2If(
+    const char* property2Name, const QString& oldValue, const QString& newValue, const char* otherProperty2Name, const QString& otherValue)
 {
     CBaseObjectsArray objects;
     GetObjects(objects);
@@ -2227,7 +2243,7 @@ void CObjectManager::FindAndRenameProperty2If(const char* property2Name, const Q
             CVarBlock* pProperties2 = pEntity->GetProperties2();
             if (pProperties2)
             {
-                IVariable* pVariable      = pProperties2->FindVariable(property2Name);
+                IVariable* pVariable = pProperties2->FindVariable(property2Name);
                 IVariable* pOtherVariable = pProperties2->FindVariable(otherProperty2Name);
                 if (pVariable && pOtherVariable)
                 {
@@ -2410,7 +2426,7 @@ namespace
 
     bool PyIsObjectHidden(const char* objName)
     {
-        CBaseObject* pObject =  GetIEditor()->GetObjectManager()->FindObject(objName);
+        CBaseObject* pObject = GetIEditor()->GetObjectManager()->FindObject(objName);
         if (!pObject)
         {
             throw std::logic_error((QString("\"") + objName + "\" is an invalid object name.").toUtf8().data());
@@ -2555,18 +2571,7 @@ namespace
 
             const AABB aabb = pGroup->GetBounds();
             AZ::Aabb result;
-            result.Set(
-                AZ::Vector3(
-                    aabb.min.x,
-                    aabb.min.y,
-                    aabb.min.z
-                ),
-                AZ::Vector3(
-                    aabb.max.x,
-                    aabb.max.y,
-                    aabb.max.z
-                )
-            );
+            result.Set(AZ::Vector3(aabb.min.x, aabb.min.y, aabb.min.z), AZ::Vector3(aabb.max.x, aabb.max.y, aabb.max.z));
             return result;
         }
 
@@ -2655,7 +2660,7 @@ namespace
         CUndo undo("Rename object");
         pObject->SetName(pNewName);
     }
-}
+} // namespace
 
 namespace AzToolsFramework
 {
@@ -2670,26 +2675,33 @@ namespace AzToolsFramework
                     ->Attribute(AZ::Script::Attributes::Category, "Legacy/Editor")
                     ->Attribute(AZ::Script::Attributes::Module, "legacy.general");
             };
-            addLegacyGeneral(behaviorContext->Method("get_all_objects", PyGetAllObjects, nullptr, "Gets the list of names of all objects in the whole level."));
-            addLegacyGeneral(behaviorContext->Method("get_names_of_selected_objects", PyGetNamesOfSelectedObjects, nullptr, "Get the name from selected object/objects."));
+            addLegacyGeneral(behaviorContext->Method(
+                "get_all_objects", PyGetAllObjects, nullptr, "Gets the list of names of all objects in the whole level."));
+            addLegacyGeneral(behaviorContext->Method(
+                "get_names_of_selected_objects", PyGetNamesOfSelectedObjects, nullptr, "Get the name from selected object/objects."));
 
             addLegacyGeneral(behaviorContext->Method("select_object", PySelectObject, nullptr, "Selects a specified object."));
             addLegacyGeneral(behaviorContext->Method("unselect_objects", PyUnselectObjects, nullptr, "Unselects a list of objects."));
             addLegacyGeneral(behaviorContext->Method("select_objects", PySelectObjects, nullptr, "Selects a list of objects."));
-            addLegacyGeneral(behaviorContext->Method("get_num_selected", PyGetNumSelectedObjects, nullptr, "Returns the number of selected objects."));
+            addLegacyGeneral(
+                behaviorContext->Method("get_num_selected", PyGetNumSelectedObjects, nullptr, "Returns the number of selected objects."));
             addLegacyGeneral(behaviorContext->Method("clear_selection", PyClearSelection, nullptr, "Clears selection."));
 
-            addLegacyGeneral(behaviorContext->Method("get_selection_center", PyGetSelectionCenter, nullptr, "Returns the center point of the selection group."));
-            addLegacyGeneral(behaviorContext->Method("get_selection_aabb", PyGetSelectionAABB, nullptr, "Returns the aabb of the selection group."));
+            addLegacyGeneral(behaviorContext->Method(
+                "get_selection_center", PyGetSelectionCenter, nullptr, "Returns the center point of the selection group."));
+            addLegacyGeneral(
+                behaviorContext->Method("get_selection_aabb", PyGetSelectionAABB, nullptr, "Returns the aabb of the selection group."));
 
             addLegacyGeneral(behaviorContext->Method("hide_object", PyHideObject, nullptr, "Hides a specified object."));
-            addLegacyGeneral(behaviorContext->Method("is_object_hidden", PyIsObjectHidden, nullptr, "Checks if object is hidden and returns a bool value."));
+            addLegacyGeneral(behaviorContext->Method(
+                "is_object_hidden", PyIsObjectHidden, nullptr, "Checks if object is hidden and returns a bool value."));
             addLegacyGeneral(behaviorContext->Method("unhide_object", PyUnhideObject, nullptr, "Unhides a specified object."));
             addLegacyGeneral(behaviorContext->Method("hide_all_objects", PyHideAllObjects, nullptr, "Hides all objects."));
             addLegacyGeneral(behaviorContext->Method("unhide_all_objects", PyUnHideAllObjects, nullptr, "Unhides all objects."));
 
             addLegacyGeneral(behaviorContext->Method("freeze_object", PyFreezeObject, nullptr, "Freezes a specified object."));
-            addLegacyGeneral(behaviorContext->Method("is_object_frozen", PyIsObjectFrozen, nullptr, "Checks if object is frozen and returns a bool value."));
+            addLegacyGeneral(behaviorContext->Method(
+                "is_object_frozen", PyIsObjectFrozen, nullptr, "Checks if object is frozen and returns a bool value."));
             addLegacyGeneral(behaviorContext->Method("unfreeze_object", PyUnfreezeObject, nullptr, "Unfreezes a specified object."));
 
             addLegacyGeneral(behaviorContext->Method("delete_object", PyDeleteObject, nullptr, "Deletes a specified object."));
@@ -2704,9 +2716,8 @@ namespace AzToolsFramework
             addLegacyGeneral(behaviorContext->Method("get_scale", PyGetObjectScale, nullptr, "Gets the scale of an object."));
             addLegacyGeneral(behaviorContext->Method("set_scale", PySetObjectScale, nullptr, "Sets the scale of an object."));
 
-            addLegacyGeneral(behaviorContext->Method("rename_object", PyRenameObject, nullptr, "Renames object with oldObjectName to newObjectName."));
-
-
+            addLegacyGeneral(
+                behaviorContext->Method("rename_object", PyRenameObject, nullptr, "Renames object with oldObjectName to newObjectName."));
         }
     }
 } // namespace AzToolsFramework
