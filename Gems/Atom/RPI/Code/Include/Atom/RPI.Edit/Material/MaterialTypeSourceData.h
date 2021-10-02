@@ -170,11 +170,11 @@ namespace AZ
 
                 //! [Deprecated] Use m_propertySets instead
                 //! List of groups that will contain the available properties
-                AZStd::vector<GroupDefinition> m_groups;
+                AZStd::vector<GroupDefinition> m_groupsOld;
 
                 //! [Deprecated] Use m_propertySets instead
                 //! Collection of all available user-facing properties
-                AZStd::map<AZStd::string /*group name*/, AZStd::vector<PropertyDefinition>> m_properties;
+                AZStd::map<AZStd::string /*group name*/, AZStd::vector<PropertyDefinition>> m_propertiesOld;
 
                 AZStd::vector<AZStd::unique_ptr<PropertySet>> m_propertySets;
             };

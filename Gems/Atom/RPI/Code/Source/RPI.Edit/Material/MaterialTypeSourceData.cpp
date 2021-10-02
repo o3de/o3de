@@ -83,8 +83,8 @@ namespace AZ
                 serializeContext->Class<PropertyLayout>()
                     ->Version(1)
                     ->Field("version", &PropertyLayout::m_version)
-                    ->Field("groups", &PropertyLayout::m_groups)         //< Old, preserved for backward compatibility, replaced by propertySets
-                    ->Field("properties", &PropertyLayout::m_properties) //< Old, preserved for backward compatibility, replaced by propertySets
+                    ->Field("groups", &PropertyLayout::m_groupsOld)         //< Deprecated, preserved for backward compatibility, replaced by propertySets
+                    ->Field("properties", &PropertyLayout::m_propertiesOld) //< Deprecated, preserved for backward compatibility, replaced by propertySets
                     ->Field("propertySets", &PropertyLayout::m_propertySets)
                     ;
 
@@ -397,8 +397,8 @@ namespace AZ
         {            
             for (const auto& group : GetOldFormatGroupDefinitionsInDisplayOrder())
             {
-                auto propertyListItr = m_propertyLayout.m_properties.find(group.m_name);
-                if (propertyListItr != m_propertyLayout.m_properties.end())
+                auto propertyListItr = m_propertyLayout.m_propertiesOld.find(group.m_name);
+                if (propertyListItr != m_propertyLayout.m_propertiesOld.end())
                 {
                     const auto& propertyList = propertyListItr->second;
                     for (auto& propertyDefinition : propertyList)
@@ -421,8 +421,8 @@ namespace AZ
                 }
             }
 
-            m_propertyLayout.m_groups.clear();
-            m_propertyLayout.m_properties.clear();
+            m_propertyLayout.m_groupsOld.clear();
+            m_propertyLayout.m_propertiesOld.clear();
 
             return true;
         }
@@ -451,11 +451,11 @@ namespace AZ
         AZStd::vector<MaterialTypeSourceData::GroupDefinition> MaterialTypeSourceData::GetOldFormatGroupDefinitionsInDisplayOrder() const
         {
             AZStd::vector<MaterialTypeSourceData::GroupDefinition> groupDefinitions;
-            groupDefinitions.reserve(m_propertyLayout.m_properties.size());
+            groupDefinitions.reserve(m_propertyLayout.m_propertiesOld.size());
 
             // Some groups are defined explicitly in the .materialtype file's "groups" section. This is the primary way groups are sorted in the UI.
             AZStd::unordered_set<AZStd::string> foundGroups;
-            for (const auto& groupDefinition : m_propertyLayout.m_groups)
+            for (const auto& groupDefinition : m_propertyLayout.m_groupsOld)
             {
                 if (foundGroups.insert(groupDefinition.m_name).second)
                 {
@@ -468,7 +468,7 @@ namespace AZ
             }
 
             // Some groups are defined implicitly, in the "properties" section where a group name is used but not explicitly defined in the "groups" section.
-            for (const auto& propertyListPair : m_propertyLayout.m_properties)
+            for (const auto& propertyListPair : m_propertyLayout.m_propertiesOld)
             {
                 const AZStd::string& groupName = propertyListPair.first;
                 if (foundGroups.insert(groupName).second)

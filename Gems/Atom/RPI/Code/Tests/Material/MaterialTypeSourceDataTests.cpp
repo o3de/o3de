@@ -1781,15 +1781,15 @@ namespace UnitTest
         JsonTestResult loadResult = LoadTestDataFromJson(material, inputJson);
 
         // Before conversion to the new format, the data is in the old place
-        EXPECT_EQ(material.GetPropertyLayout().m_groups.size(), 2);
-        EXPECT_EQ(material.GetPropertyLayout().m_properties.size(), 2);
+        EXPECT_EQ(material.GetPropertyLayout().m_groupsOld.size(), 2);
+        EXPECT_EQ(material.GetPropertyLayout().m_propertiesOld.size(), 2);
         EXPECT_EQ(material.GetPropertyLayout().m_propertySets.size(), 0);
 
         material.ConvertToNewDataFormat();
         
         // After conversion to the new format, the data is in the new place
-        EXPECT_EQ(material.GetPropertyLayout().m_groups.size(), 0);
-        EXPECT_EQ(material.GetPropertyLayout().m_properties.size(), 0);
+        EXPECT_EQ(material.GetPropertyLayout().m_groupsOld.size(), 0);
+        EXPECT_EQ(material.GetPropertyLayout().m_propertiesOld.size(), 0);
         EXPECT_EQ(material.GetPropertyLayout().m_propertySets.size(), 2);
 
         EXPECT_EQ(material.m_description, "This is a general description about the material");
