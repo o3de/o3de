@@ -1074,21 +1074,32 @@ namespace AzToolsFramework
             {
                 s_editorEntityUiInterface->RegisterEntity(entityId, m_prefabUiHandler.GetHandlerId());
 
-                // Register entity as a container
-                s_containerEntityInterface->RegisterEntityAsContainer(entityId);
+                bool prefabWipFeaturesEnabled = false;
+                AzFramework::ApplicationRequests::Bus::BroadcastResult(
+                    prefabWipFeaturesEnabled, &AzFramework::ApplicationRequests::ArePrefabWipFeaturesEnabled);
+
+                if (prefabWipFeaturesEnabled)
+                {
+                    // Register entity as a container
+                    s_containerEntityInterface->RegisterEntityAsContainer(entityId);
+                }
             }
         }
 
         void PrefabIntegrationManager::OnPrefabComponentDeactivate(AZ::EntityId entityId)
         {
-            if (!s_prefabPublicInterface->IsLevelInstanceContainerEntity(entityId))
+            bool prefabWipFeaturesEnabled = false;
+            AzFramework::ApplicationRequests::Bus::BroadcastResult(
+                prefabWipFeaturesEnabled, &AzFramework::ApplicationRequests::ArePrefabWipFeaturesEnabled);
+
+            if (prefabWipFeaturesEnabled && !s_prefabPublicInterface->IsLevelInstanceContainerEntity(entityId))
             {
-                // Unregister entity from UI Handler
-                s_editorEntityUiInterface->UnregisterEntity(entityId);
+                // Unregister entity as a container
+                s_containerEntityInterface->UnregisterEntityAsContainer(entityId);
             }
 
-            // Unregister entity as a container
-            s_containerEntityInterface->UnregisterEntityAsContainer(entityId);
+            // Unregister entity from UI Handler
+            s_editorEntityUiInterface->UnregisterEntity(entityId);
         }
 
         AZ::EntityId PrefabIntegrationManager::CreateNewEntityAtPosition(const AZ::Vector3& position, AZ::EntityId parentId)
