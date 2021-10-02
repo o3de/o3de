@@ -85,4 +85,8 @@ namespace AzToolsFramework
     {
     }
 
+    void EditorEntityUiHandlerBase::OnDoubleClick(AZ::EntityId /*entityId*/) const
+    {
+    }
+
 } // namespace AzToolsFramework

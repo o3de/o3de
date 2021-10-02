@@ -37,6 +37,8 @@ namespace AzToolsFramework
         void PaintDescendantBackground(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index,
             const QModelIndex& descendantIndex) const override;
 
+        void OnDoubleClick(AZ::EntityId entityId) const override;
+
     private:
         Prefab::PrefabFocusInterface* m_prefabFocusInterface = nullptr;
         Prefab::PrefabPublicInterface* m_prefabPublicInterface = nullptr;

@@ -61,6 +61,8 @@ namespace AzToolsFramework
         virtual void PaintDescendantForeground(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index,
             const QModelIndex& descendantIndex) const;
 
+        virtual void OnDoubleClick(AZ::EntityId entityId) const;
+
     private:
         EditorEntityUiHandlerId m_handlerId = 0;
     };

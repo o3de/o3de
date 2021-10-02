@@ -906,8 +906,15 @@ namespace AzToolsFramework
         }
     }
 
-    void EntityOutlinerWidget::OnTreeItemDoubleClicked(const QModelIndex& /*index*/)
+    void EntityOutlinerWidget::OnTreeItemDoubleClicked(const QModelIndex& index)
     {
+        AZ::EntityId entityId = GetEntityIdFromIndex(index);
+        auto entityUiHandler = m_editorEntityUiInterface->GetHandler(entityId);
+
+        if (entityUiHandler)
+        {
+            entityUiHandler->OnDoubleClick(entityId);
+        }
     }
 
     void EntityOutlinerWidget::OnTreeItemExpanded(const QModelIndex& index)
