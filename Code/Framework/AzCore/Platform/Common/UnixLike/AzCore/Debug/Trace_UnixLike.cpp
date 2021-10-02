@@ -42,7 +42,7 @@ namespace AZ
                 {
                     if (!::isspace(processStatusView[i]))
                     {
-                        return (::isdigit(processStatusView[i]) != 0) && processStatusView[i] != '0';
+                        return processStatusView[i] != '0';
                     }
                 }
                 return false;
