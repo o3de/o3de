@@ -128,26 +128,25 @@ class TestHelper:
                     return True
 
     @staticmethod
-    def after_level_load() -> None:
+    def close_error_windows():
         """
-        Updates viewport, closes helper gizmos, error reports, and error logs.
-        Closes out FPS meters and disables anti-aliasing.
+        Closes Error Report and Error Log windows that block focus if they are visible.
         :return: None
         """
-        # Give everything a second to initialize.
-        general.idle_enable(True)
-        general.idle_wait(1.0)
-        general.update_viewport()
-        general.idle_wait(0.5)  # half a second is more than enough for updating the viewport.
+        if general.is_pane_visible("Error Report"):
+            general.close_pane("Error Report")
+        if general.is_pane_visible("Error Log"):
+            general.close_pane("Error Log")
 
-        # Close out problematic windows, FPS meters, and anti-aliasing.
-        if general.is_helpers_shown():  # Turn off the helper gizmos if visible
+    @staticmethod
+    def close_display_helpers():
+        """
+        Closes helper gizmos, anti-aliasing, and FPS meters.
+        :return: None
+        """
+        if general.is_helpers_shown():
             general.toggle_helpers()
             general.idle_wait(1.0)
-        if general.is_pane_visible("Error Report"):  # Close Error Report windows that block focus.
-            general.close_pane("Error Report")
-        if general.is_pane_visible("Error Log"):  # Close Error Log windows that block focus.
-            general.close_pane("Error Log")
         general.idle_wait(1.0)
         general.run_console("r_displayInfo=0")
         general.run_console("r_antialiasingmode=0")

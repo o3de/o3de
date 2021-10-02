@@ -46,7 +46,7 @@ def AtomGPU_BasicLevelSetup_SetsUpLevel():
     The test screenshot matches the appearance of the AtomBasicLevelSetup.ppm golden image.
 
     Test Steps:
-    1. Wait for the level to load and update the viewport size.
+    1. Close error windows and display helpers then update the viewport size.
     2. Create Default Level Entity.
     3. Create Grid Entity as a child entity of the Default Level Entity.
     4. Add Grid component to Grid Entity and set Secondary Grid Spacing.
@@ -77,11 +77,12 @@ def AtomGPU_BasicLevelSetup_SetsUpLevel():
     import os
     from math import isclose
 
+    import azlmbr.asset as asset
+    import azlmbr.bus as bus
     import azlmbr.legacy.general as general
     import azlmbr.math as math
     import azlmbr.paths
 
-    from editor_python_test_tools.asset_utils import Asset
     from editor_python_test_tools.editor_entity_utils import EditorEntity
     from editor_python_test_tools.utils import Report, Tracer, TestHelper as helper
 
@@ -96,6 +97,7 @@ def AtomGPU_BasicLevelSetup_SetsUpLevel():
 
     def initial_viewport_setup(screen_width, screen_height):
         general.set_viewport_size(screen_width, screen_height)
+        general.idle_wait(1)
         general.update_viewport()
         helper.wait_for_condition(function=lambda: isclose(
                 a=general.get_viewport_size().x, b=SCREEN_WIDTH, rel_tol=0.1) and isclose(
@@ -115,13 +117,16 @@ def AtomGPU_BasicLevelSetup_SetsUpLevel():
         helper.open_level("", "Base")
 
         # Test steps begin.
-        # 1. Wait for the level to load and update the viewport size.
-        helper.after_level_load()
+        # 1. Close error windows and display helpers then update the viewport size.
+        helper.close_error_windows()
+        helper.close_display_helpers()
+        general.update_viewport()
         Report.critical_result(Tests.viewport_set, initial_viewport_setup(SCREEN_WIDTH, SCREEN_HEIGHT))
 
         # 2. Create Default Level Entity.
-        default_level_name = "Default Level"
-        default_level_entity = EditorEntity.create_editor_entity_at(math.Vector3(0.0, 0.0, 0.0), default_level_name)
+        default_level_entity_name = "Default Level"
+        default_level_entity = EditorEntity.create_editor_entity_at(
+            math.Vector3(0.0, 0.0, 0.0), default_level_entity_name)
 
         # 3. Create Grid Entity as a child entity of the Default Level Entity.
         grid_name = "Grid"
@@ -152,7 +157,8 @@ def AtomGPU_BasicLevelSetup_SetsUpLevel():
         # 8. Set the Cubemap Texture property of the HDRi Skybox component.
         global_skylight_image_asset_path = os.path.join(
             "LightingPresets", "greenwich_park_02_4k_iblskyboxcm_iblspecular.exr.streamingimage")
-        global_skylight_image_asset = Asset.find_asset_by_path(global_skylight_image_asset_path)
+        global_skylight_image_asset = asset.AssetCatalogRequestBus(
+            bus.Broadcast, "GetAssetIdByPath", global_skylight_image_asset_path, math.Uuid(), False)
         hdri_skybox_cubemap_texture_property = "Controller|Configuration|Cubemap Texture"
         hdri_skybox_component.set_component_property_value(
             hdri_skybox_cubemap_texture_property, global_skylight_image_asset)
@@ -191,7 +197,8 @@ def AtomGPU_BasicLevelSetup_SetsUpLevel():
         # 12. Set the Material Asset property of the Material component for the Ground Plane Entity.
         ground_plane_entity.set_local_uniform_scale(32.0)
         ground_plane_material_asset_path = os.path.join("Materials", "Presets", "PBR", "metal_chrome.azmaterial")
-        ground_plane_material_asset = Asset.find_asset_by_path(ground_plane_material_asset_path)
+        ground_plane_material_asset = asset.AssetCatalogRequestBus(
+            bus.Broadcast, "GetAssetIdByPath", ground_plane_material_asset_path, math.Uuid(), False)
         ground_plane_material_asset_property = "Default Material|Material Asset"
         ground_plane_material_component.set_component_property_value(
             ground_plane_material_asset_property, ground_plane_material_asset)
@@ -204,7 +211,8 @@ def AtomGPU_BasicLevelSetup_SetsUpLevel():
         ground_plane_mesh_component = ground_plane_entity.add_component(MESH_COMPONENT_NAME)
         Report.result(Tests.mesh_component_added, ground_plane_entity.has_component(MESH_COMPONENT_NAME))
         ground_plane_mesh_asset_path = os.path.join("Objects", "plane.azmodel")
-        ground_plane_mesh_asset = Asset.find_asset_by_path(ground_plane_mesh_asset_path)
+        ground_plane_mesh_asset = asset.AssetCatalogRequestBus(
+            bus.Broadcast, "GetAssetIdByPath", ground_plane_mesh_asset_path, math.Uuid(), False)
         ground_plane_mesh_asset_property = "Controller|Configuration|Mesh Asset"
         ground_plane_mesh_component.set_component_property_value(
             ground_plane_mesh_asset_property, ground_plane_mesh_asset)
@@ -233,7 +241,8 @@ def AtomGPU_BasicLevelSetup_SetsUpLevel():
 
         # 17. Set the Material Asset property of the Material component for the Sphere Entity.
         sphere_material_asset_path = os.path.join("Materials", "Presets", "PBR", "metal_brass_polished.azmaterial")
-        sphere_material_asset = Asset.find_asset_by_path(sphere_material_asset_path)
+        sphere_material_asset = asset.AssetCatalogRequestBus(
+            bus.Broadcast, "GetAssetIdByPath", sphere_material_asset_path, math.Uuid(), False)
         sphere_material_asset_property = "Default Material|Material Asset"
         sphere_material_component.set_component_property_value(sphere_material_asset_property, sphere_material_asset)
         Report.result(Tests.sphere_material_set, sphere_material_component.get_component_property_value(
@@ -242,7 +251,8 @@ def AtomGPU_BasicLevelSetup_SetsUpLevel():
         # 18. Add Mesh component to Sphere Entity and set the Mesh Asset property for the Mesh component.
         sphere_mesh_component = sphere_entity.add_component(MESH_COMPONENT_NAME)
         sphere_mesh_asset_path = os.path.join("Models", "sphere.azmodel")
-        sphere_mesh_asset = Asset.find_asset_by_path(sphere_mesh_asset_path)
+        sphere_mesh_asset = asset.AssetCatalogRequestBus(
+            bus.Broadcast, "GetAssetIdByPath", sphere_mesh_asset_path, math.Uuid(), False)
         sphere_mesh_asset_property = "Controller|Configuration|Mesh Asset"
         sphere_mesh_component.set_component_property_value(sphere_mesh_asset_property, sphere_mesh_asset)
         Report.result(Tests.sphere_mesh_asset_set, sphere_mesh_component.get_component_property_value(
@@ -268,14 +278,14 @@ def AtomGPU_BasicLevelSetup_SetsUpLevel():
 
         # 21. Enter game mode.
         helper.enter_game_mode(Tests.enter_game_mode)
-        helper.wait_for_condition(function=lambda: general.is_in_game_mode(), timeout_in_seconds=2.0)
+        helper.wait_for_condition(function=lambda: general.is_in_game_mode(), timeout_in_seconds=4.0)
 
         # 22. Take screenshot.
         ScreenshotHelper(general.idle_wait_frames).capture_screenshot_blocking(f"{SCREENSHOT_NAME}.ppm")
 
         # 23. Exit game mode.
         helper.exit_game_mode(Tests.exit_game_mode)
-        helper.wait_for_condition(function=lambda: not general.is_in_game_mode(), timeout_in_seconds=2.0)
+        helper.wait_for_condition(function=lambda: not general.is_in_game_mode(), timeout_in_seconds=4.0)
 
         # 24. Look for errors.
         helper.wait_for_condition(lambda: error_tracer.has_errors or error_tracer.has_asserts, 1.0)
