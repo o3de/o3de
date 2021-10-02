@@ -39,7 +39,11 @@ namespace AzToolsFramework
         //! @return An error message if the operation was invalid, success otherwise.
         virtual ContainerEntityOperationResult SetContainerOpenState(AZ::EntityId entityId, bool open) = 0;
 
-        //! Returns whether the entity id provided is registered as a container, and its state is closed.
+        //! If the entity id provided is registered as a container, it returns whether it's open.
+        //! Note that the default value for non-containers is true, so this function can be called without
+        //! verifying whether the entityId is registered as a container beforehand, since the container's
+        //! open behavior is exactly the same as the one of a regular entity.
+        //! @return False if the entityId is registered as a container, and its state is closed. True otherwise.
         virtual bool IsContainerOpen(AZ::EntityId entityId) const = 0;
     };
 

@@ -29,7 +29,8 @@ namespace AzToolsFramework
         
         //! Triggered when a container entity status changes.
         //! @param entityId The entity whose status has changed.
-        virtual void OnContainerEntityStatusChanged([[maybe_unused]] AZ::EntityId entityId) {};
+        //! @param open The open state the container was changed to.
+        virtual void OnContainerEntityStatusChanged([[maybe_unused]] AZ::EntityId entityId, [[maybe_unused]] bool open) {};
 
     protected:
         ~ContainerEntityNotifications() = default;

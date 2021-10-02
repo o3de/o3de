@@ -15,7 +15,11 @@
 
 namespace AzToolsFramework
 {
-    //! System Component to handle Container Entity
+    //! System Component to track Container Entity registration and open state.
+    //! An entity registered as Container is just like a regular entity when open. If its state is changed 
+    //! to closed, all descendants of the entity will be treated as part of the entity itself. Selecting any
+    //! descendant will result in the container being selected, and descendants will be hidden until the
+    //! container is opened.
     class ContainerEntitySystemComponent final
         : public AZ::Component
         , private ContainerEntityInterface

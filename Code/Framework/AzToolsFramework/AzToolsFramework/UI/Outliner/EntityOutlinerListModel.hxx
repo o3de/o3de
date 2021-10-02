@@ -219,7 +219,7 @@ namespace AzToolsFramework
         void OnEntityRuntimeActivationChanged(AZ::EntityId entityId, bool activeOnStart) override;
 
         // ContainerEntityNotificationBus overrides ...
-        void OnContainerEntityStatusChanged(AZ::EntityId entityId) override;
+        void OnContainerEntityStatusChanged(AZ::EntityId entityId, bool open) override;
 
         // Drag/Drop of components from Component Palette.
         bool dropMimeDataComponentPalette(const QMimeData* data, Qt::DropAction action, int row, int column, const QModelIndex& parent);

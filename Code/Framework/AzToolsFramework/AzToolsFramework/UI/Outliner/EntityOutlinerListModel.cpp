@@ -1346,14 +1346,19 @@ namespace AzToolsFramework
         QueueEntityUpdate(entityId);
     }
 
-    void EntityOutlinerListModel::OnContainerEntityStatusChanged(AZ::EntityId entityId)
+    void EntityOutlinerListModel::OnContainerEntityStatusChanged(AZ::EntityId entityId, bool open)
     {
         QModelIndex changedIndex = GetIndexFromEntity(entityId);
 
+        // Trigger a refresh of all direct children so that they can be shown or hidden appropriately.
         int numChildren = rowCount(changedIndex);
         emit dataChanged(index(0, 0, changedIndex), index(0, numChildren - 1, changedIndex));
 
-        QueueEntityToExpand(entityId, true);
+        // If a container was opened, expand it.
+        if (open)
+        {
+            QueueEntityToExpand(entityId, true);
+        }
     }
 
     void EntityOutlinerListModel::OnEntityInfoUpdatedRemoveChildBegin([[maybe_unused]] AZ::EntityId parentId, [[maybe_unused]] AZ::EntityId childId)
