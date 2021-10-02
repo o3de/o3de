@@ -92,12 +92,22 @@ namespace O3DE::ProjectManager
                 }
             }
 
-            return AZ::Failure(QObject::tr("Visual Studio 2019 version 16.9.2 or higher not found.\n\n"
+            return AZ::Failure(QObject::tr("Visual Studio 2019 version 16.9.2 or higher not found.<br><br>"
                 "Visual Studio 2019 is required to build this project."
                 " Install any edition of <a href='https://visualstudio.microsoft.com/downloads/'>Visual Studio 2019</a>"
                 " or update to a newer version before proceeding to the next step."
                 " While installing configure Visual Studio with these <a href='https://o3de.org/docs/welcome-guide/setup/requirements/#visual-studio-configuration'>workloads</a>."));
         }
         
+        AZ::Outcome<QString, QString> RunGetPythonScript(const QString& engineRoot)
+        {
+            const QString batPath = QString("%1/python/get_python.bat").arg(engineRoot);
+            return ExecuteCommandResultModalDialog(
+                "cmd.exe",
+                QStringList{"/c", batPath},
+                QProcessEnvironment::systemEnvironment(),
+                QObject::tr("Running get_python script..."));
+        }
+
     } // namespace ProjectUtils
 } // namespace O3DE::ProjectManager

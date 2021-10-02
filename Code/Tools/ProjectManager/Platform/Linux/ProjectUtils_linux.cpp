@@ -45,9 +45,18 @@ namespace O3DE::ProjectManager
                     return AZ::Success(supportClangCommand);
                 }
             }
-            return AZ::Failure(QObject::tr("Clang not found. \n\n"
+            return AZ::Failure(QObject::tr("Clang not found. <br><br>"
                 "Make sure that the clang is installed and available from the command prompt. "
                 "Refer to the <a href='https://o3de.org/docs/welcome-guide/setup/requirements/#cmake'>O3DE requirements</a> page for more information."));
+        }
+
+        AZ::Outcome<QString, QString> RunGetPythonScript(const QString& engineRoot)
+        {
+            return ExecuteCommandResultModalDialog(
+                QString("%1/python/get_python.sh").arg(engineRoot),
+                {},
+                QProcessEnvironment::systemEnvironment(),
+                QObject::tr("Running get_python script..."));
         }
         
     } // namespace ProjectUtils

@@ -21,6 +21,11 @@
 #include <QProgressDialog>
 #include <QSpacerItem>
 #include <QGridLayout>
+#include <QTextEdit>
+#include <QByteArray>
+#include <QScrollBar>
+#include <QProgressBar>
+#include <QLabel>
 
 #include <AzCore/std/chrono/chrono.h>
 
@@ -508,6 +513,97 @@ namespace O3DE::ProjectManager
             }
 
             return ProjectManagerScreen::Invalid;
+        }
+
+        AZ::Outcome<QString, QString> ExecuteCommandResultModalDialog(
+            const QString& cmd,
+            const QStringList& arguments,
+            const QProcessEnvironment& processEnv,
+            const QString& title)
+        {
+            QString resultOutput;
+            QProcess execProcess;
+            execProcess.setProcessEnvironment(processEnv);
+            execProcess.setProcessChannelMode(QProcess::MergedChannels);
+
+            QProgressDialog dialog(title, QObject::tr("Cancel"), /*minimum=*/0, /*maximum=*/0);
+            dialog.setMinimumWidth(500);
+            dialog.setAutoClose(false);
+
+            QProgressBar* bar = new QProgressBar(&dialog);
+            bar->setTextVisible(false);
+            bar->setMaximum(0); // infinite
+            dialog.setBar(bar);
+
+            QLabel* progressLabel = new QLabel(&dialog);
+            QVBoxLayout* layout = new QVBoxLayout();
+
+            // pre-fill the field with the title and command
+            const QString text = QString("%1<br>%2 %3<br>").arg(title).arg(cmd).arg(arguments.join(' '));
+
+            // replace the label with a scrollable text edit
+            QTextEdit* detailTextEdit = new QTextEdit(text, &dialog);
+            detailTextEdit->setReadOnly(true);
+            layout->addWidget(detailTextEdit);
+            layout->setMargin(0);
+            progressLabel->setLayout(layout);
+            progressLabel->setMinimumHeight(150);
+            dialog.setLabel(progressLabel);
+
+            auto readCon = QObject::connect(&execProcess, &QProcess::readyReadStandardOutput,
+                [&]()
+                {
+                    QScrollBar* scrollBar = detailTextEdit->verticalScrollBar();
+                    bool autoScroll = scrollBar->value() == scrollBar->maximum();
+
+                    QString output = execProcess.readAllStandardOutput();
+                    detailTextEdit->append(output);
+                    resultOutput.append(output);
+
+                    if (autoScroll)
+                    {
+                        scrollBar->setValue(scrollBar->maximum());
+                    }
+                });
+
+            auto exitCon = QObject::connect(&execProcess,
+                QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished),
+                [&](int exitCode, [[maybe_unused]] QProcess::ExitStatus exitStatus)
+                {
+                    QScrollBar* scrollBar = detailTextEdit->verticalScrollBar();
+                    dialog.setMaximum(100);
+                    dialog.setValue(dialog.maximum());
+                    if (exitCode == 0 && scrollBar->value() == scrollBar->maximum())
+                    {
+                        dialog.close();
+                    }
+                    else
+                    {
+                        // keep the dialog open so the user can look at the output
+                        dialog.setCancelButtonText(QObject::tr("Continue"));
+                    }
+                });
+
+            execProcess.start(cmd, arguments);
+
+            dialog.exec();
+
+            QObject::disconnect(readCon);
+            QObject::disconnect(exitCon);
+
+            if (execProcess.state() == QProcess::Running)
+            {
+                execProcess.kill();
+                return AZ::Failure(QObject::tr("Process for command '%1' was canceled").arg(cmd));
+            }
+
+            int resultCode = execProcess.exitCode();
+            if (resultCode != 0)
+            {
+                return AZ::Failure(QObject::tr("Process for command '%1' failed (result code %2").arg(cmd).arg(resultCode));
+            }
+
+            return AZ::Success(resultOutput);
         }
 
         AZ::Outcome<QString, QString> ExecuteCommandResult(
