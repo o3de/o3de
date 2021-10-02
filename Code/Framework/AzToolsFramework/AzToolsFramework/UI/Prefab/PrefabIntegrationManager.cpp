@@ -1065,27 +1065,27 @@ namespace AzToolsFramework
 
         void PrefabIntegrationManager::OnPrefabComponentActivate(AZ::EntityId entityId)
         {
-            // Register entity as a container
-            s_containerEntityInterface->RegisterEntityAsContainer(entityId);
-
             // Register entity to appropriate UI Handler for UI overrides
             if (s_prefabPublicInterface->IsLevelInstanceContainerEntity(entityId))
             {
                 s_editorEntityUiInterface->RegisterEntity(entityId, m_levelRootUiHandler.GetHandlerId());
-
-                // Level container should always be open
-                s_containerEntityInterface->SetContainerOpenState(entityId, true);
             }
             else
             {
                 s_editorEntityUiInterface->RegisterEntity(entityId, m_prefabUiHandler.GetHandlerId());
+
+                // Register entity as a container
+                s_containerEntityInterface->RegisterEntityAsContainer(entityId);
             }
         }
 
         void PrefabIntegrationManager::OnPrefabComponentDeactivate(AZ::EntityId entityId)
         {
-            // Unregister entity from UI Handler
-            s_editorEntityUiInterface->UnregisterEntity(entityId);
+            if (!s_prefabPublicInterface->IsLevelInstanceContainerEntity(entityId))
+            {
+                // Unregister entity from UI Handler
+                s_editorEntityUiInterface->UnregisterEntity(entityId);
+            }
 
             // Unregister entity as a container
             s_containerEntityInterface->UnregisterEntityAsContainer(entityId);

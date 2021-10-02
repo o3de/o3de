@@ -1340,13 +1340,12 @@ namespace AzToolsFramework
         emit EnableSelectionUpdates(true);
     }
 
-    void EntityOutlinerListModel::OnEntityRuntimeActivationChanged(AZ::EntityId entityId, bool activeOnStart)
+    void EntityOutlinerListModel::OnEntityRuntimeActivationChanged(AZ::EntityId entityId, [[maybe_unused]] bool activeOnStart)
     {
-        AZ_UNUSED(activeOnStart);
         QueueEntityUpdate(entityId);
     }
 
-    void EntityOutlinerListModel::OnContainerEntityStatusChanged(AZ::EntityId entityId, bool open)
+    void EntityOutlinerListModel::OnContainerEntityStatusChanged(AZ::EntityId entityId, [[maybe_unused]] bool open)
     {
         QModelIndex changedIndex = GetIndexFromEntity(entityId);
 
@@ -1354,11 +1353,8 @@ namespace AzToolsFramework
         int numChildren = rowCount(changedIndex);
         emit dataChanged(index(0, 0, changedIndex), index(0, numChildren - 1, changedIndex));
 
-        // If a container was opened, expand it.
-        if (open)
-        {
-            QueueEntityToExpand(entityId, true);
-        }
+        // Always expand containers
+        QueueEntityToExpand(entityId, true);
     }
 
     void EntityOutlinerListModel::OnEntityInfoUpdatedRemoveChildBegin([[maybe_unused]] AZ::EntityId parentId, [[maybe_unused]] AZ::EntityId childId)
