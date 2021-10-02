@@ -67,7 +67,7 @@ blackbox_fbx_tests = [
                             builder_guid=b"bd8bf65894854fe3830e8ec3a23c35f3",
                             status=4,
                             error_count=0,
-                            warning_count=0,
+                            warning_count=1,
                             products = [
                                 asset_db_utils.DBProduct(
                                     product_name='onemeshonematerial/onemeshonematerial.dbgsg',
@@ -99,7 +99,7 @@ blackbox_fbx_tests = [
                             builder_guid=b"bd8bf65894854fe3830e8ec3a23c35f3",
                             status=4,
                             error_count=0,
-                            warning_count=9,
+                            warning_count=22,
                             products = [
                                 asset_db_utils.DBProduct(
                                     product_name='softnaminglod/lodtest.dbgsg',
@@ -131,7 +131,7 @@ blackbox_fbx_tests = [
                             builder_guid=b"bd8bf65894854fe3830e8ec3a23c35f3",
                             status=4,
                             error_count=0,
-                            warning_count=6,
+                            warning_count=14,
                             products = [
                                 asset_db_utils.DBProduct(
                                     product_name='softnamingphysics/physicstest.dbgsg',
@@ -165,7 +165,7 @@ blackbox_fbx_tests = [
                             builder_guid=b"bd8bf65894854fe3830e8ec3a23c35f3",
                             status=4,
                             error_count=0,
-                            warning_count=0,
+                            warning_count=2,
                             products = [
                                 asset_db_utils.DBProduct(
                                     product_name='twomeshonematerial/multiple_mesh_one_material.dbgsg',
@@ -197,7 +197,7 @@ blackbox_fbx_tests = [
                             builder_guid=b"bd8bf65894854fe3830e8ec3a23c35f3",
                             status=4,
                             error_count=0,
-                            warning_count=0,
+                            warning_count=2,
                             products= [
                                 asset_db_utils.DBProduct(
                                     product_name='twomeshlinkedmaterials/multiple_mesh_linked_materials.dbgsg',
@@ -230,7 +230,7 @@ blackbox_fbx_tests = [
                             builder_guid=b"bd8bf65894854fe3830e8ec3a23c35f3",
                             status=4,
                             error_count=0,
-                            warning_count=0,
+                            warning_count=1,
                             products = [
                                 asset_db_utils.DBProduct(
                                     product_name='onemeshmultiplematerials/single_mesh_multiple_materials.dbgsg',
@@ -260,7 +260,7 @@ blackbox_fbx_tests = [
                             builder_guid=b"bd8bf65894854fe3830e8ec3a23c35f3",
                             status=4,
                             error_count=0,
-                            warning_count=0,
+                            warning_count=1,
                             products=[
                                 asset_db_utils.DBProduct(
                                     product_name='vertexcolor/vertexcolor.dbgsg',
@@ -296,7 +296,7 @@ blackbox_fbx_special_tests = [
                             builder_guid=b"bd8bf65894854fe3830e8ec3a23c35f3",
                             status=4,
                             error_count=0,
-                            warning_count=0,
+                            warning_count=2,
                             products = [
                                 asset_db_utils.DBProduct(
                                     product_name='twomeshtwomaterial/multiple_mesh_multiple_material.dbgsg',
@@ -317,7 +317,7 @@ blackbox_fbx_special_tests = [
                             builder_guid=b"bd8bf65894854fe3830e8ec3a23c35f3",
                             status=4,
                             error_count=0,
-                            warning_count=0,
+                            warning_count=2,
                             products = [
                                 asset_db_utils.DBProduct(
                                     product_name='twomeshtwomaterial/multiple_mesh_multiple_material.dbgsg',
