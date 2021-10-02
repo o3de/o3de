@@ -163,14 +163,6 @@ namespace Terrain
 
     void TerrainFeatureProcessor::UpdateTerrainData()
     {
-        // Block other threads from accessing the surface data bus while we are in GetValue (which may call into the SurfaceData bus).
-        // We lock our surface data mutex *before* checking / setting "isRequestInProgress" so that we prevent race conditions
-        // that create false detection of cyclic dependencies when multiple requests occur on different threads simultaneously.
-        // (One case where this was previously able to occur was in rapid updating of the Preview widget on the
-        // GradientSurfaceDataComponent in the Editor when moving the threshold sliders back and forth rapidly)
-        auto& surfaceDataContext = SurfaceData::SurfaceDataSystemRequestBus::GetOrCreateContext(false);
-        typename SurfaceData::SurfaceDataSystemRequestBus::Context::DispatchLockGuard scopeLock(surfaceDataContext.m_contextMutex);
-
         uint32_t width = m_areaData.m_updateWidth;
         uint32_t height = m_areaData.m_updateHeight;
         const AZ::Aabb& worldBounds = m_areaData.m_terrainBounds;
@@ -197,23 +189,34 @@ namespace Terrain
         pixels.reserve(width * height);
         const uint32_t pixelDataSize = width * height * sizeof(uint16_t);
 
-        for (uint32_t y = 0; y < height; y++)
         {
-            for (uint32_t x = 0; x < width; x++)
+            // Block other threads from accessing the surface data bus while we are in GetHeightFromFloats (which may call into the SurfaceData bus).
+            // We lock our surface data mutex *before* checking / setting "isRequestInProgress" so that we prevent race conditions
+            // that create false detection of cyclic dependencies when multiple requests occur on different threads simultaneously.
+            // (One case where this was previously able to occur was in rapid updating of the Preview widget on the
+            // GradientSurfaceDataComponent in the Editor when moving the threshold sliders back and forth rapidly)
+
+            auto& surfaceDataContext = SurfaceData::SurfaceDataSystemRequestBus::GetOrCreateContext(false);
+            typename SurfaceData::SurfaceDataSystemRequestBus::Context::DispatchLockGuard scopeLock(surfaceDataContext.m_contextMutex);
+
+            for (uint32_t y = 0; y < height; y++)
             {
-                bool terrainExists = true;
-                float terrainHeight = 0.0f;
-                AzFramework::Terrain::TerrainDataRequestBus::BroadcastResult(
-                    terrainHeight, &AzFramework::Terrain::TerrainDataRequests::GetHeightFromFloats,
-                    (x * queryResolution) + m_dirtyRegion.GetMin().GetX(),
-                    (y * queryResolution) + m_dirtyRegion.GetMin().GetY(),
-                    AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT,
-                    &terrainExists);
+                for (uint32_t x = 0; x < width; x++)
+                {
+                    bool terrainExists = true;
+                    float terrainHeight = 0.0f;
+                    AzFramework::Terrain::TerrainDataRequestBus::BroadcastResult(
+                        terrainHeight, &AzFramework::Terrain::TerrainDataRequests::GetHeightFromFloats,
+                        (x * queryResolution) + m_dirtyRegion.GetMin().GetX(),
+                        (y * queryResolution) + m_dirtyRegion.GetMin().GetY(),
+                        AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT,
+                        &terrainExists);
 
-                float clampedHeight = AZ::GetClamp((terrainHeight - worldBounds.GetMin().GetZ()) / worldBounds.GetExtents().GetZ(), 0.0f, 1.0f);
-                constexpr uint16_t MaxUint16 = 0xFFFF;
+                    float clampedHeight = AZ::GetClamp((terrainHeight - worldBounds.GetMin().GetZ()) / worldBounds.GetExtents().GetZ(), 0.0f, 1.0f);
+                    constexpr uint16_t MaxUint16 = 0xFFFF;
 
-                pixels.push_back(aznumeric_cast<uint16_t>(clampedHeight * MaxUint16));
+                    pixels.push_back(aznumeric_cast<uint16_t>(clampedHeight * MaxUint16));
+                }
             }
         }
 
