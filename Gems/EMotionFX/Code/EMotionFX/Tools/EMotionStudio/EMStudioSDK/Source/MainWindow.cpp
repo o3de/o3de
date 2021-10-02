@@ -69,6 +69,9 @@ AZ_PUSH_DISABLE_WARNING(4267, "-Wconversion")
 AZ_POP_DISABLE_WARNING
 #include <LyViewPaneNames.h>
 
+#include <AzToolsFramework/API/ToolsApplicationAPI.h>
+#include <IEditor.h>
+
 namespace EMStudio
 {
     class SaveDirtyWorkspaceCallback
@@ -257,10 +260,10 @@ namespace EMStudio
         m_saveWorkspaceCallback          = nullptr;
     }
 
-
-    // destructor
     MainWindow::~MainWindow()
     {
+        DisableUpdatingPlugins();
+
         if (m_nativeEventFilter)
         {
             QAbstractEventDispatcher::instance()->removeNativeEventFilter(m_nativeEventFilter);
@@ -577,6 +580,8 @@ namespace EMStudio
         AZ_Assert(!m_nativeEventFilter, "Double initialization?");
         m_nativeEventFilter = new NativeEventFilter(this);
         QAbstractEventDispatcher::instance()->installNativeEventFilter(m_nativeEventFilter);
+
+        EnableUpdatingPlugins();
     }
 
     MainWindow::MainWindowCommandManagerCallback::MainWindowCommandManagerCallback()
@@ -2813,6 +2818,53 @@ namespace EMStudio
         }
     }
 
-} // namespace EMStudio
+    void MainWindow::UpdatePlugins(float timeDelta)
+    {
+        EMStudio::PluginManager* pluginManager = EMStudio::GetPluginManager();
+        if (!pluginManager)
+        {
+            return;
+        }
 
-#include <EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/moc_MainWindow.cpp>
+        const size_t numPlugins = pluginManager->GetNumActivePlugins();
+        for (size_t i = 0; i < numPlugins; ++i)
+        {
+            EMStudio::EMStudioPlugin* plugin = pluginManager->GetActivePlugin(i);
+            plugin->ProcessFrame(timeDelta);
+        }
+    }
+
+    void MainWindow::EnableUpdatingPlugins()
+    {
+        AZ::TickBus::Handler::BusConnect();
+    }
+
+    void MainWindow::DisableUpdatingPlugins()
+    {
+        AZ::TickBus::Handler::BusDisconnect();
+    }
+
+    void MainWindow::OnTick(float delta, AZ::ScriptTimePoint timePoint)
+    {
+        AZ_UNUSED(timePoint);
+
+        // Check if we are in game mode.
+        IEditor* editor = nullptr;
+        AzToolsFramework::EditorRequestBus::BroadcastResult(editor, &AzToolsFramework::EditorRequests::GetEditor);
+        const bool inGameMode = editor ? editor->IsInGameMode() : false;
+
+        // Update all the animation editor plugins (redraw viewports, timeline, and graph windows etc).
+        // But only update this when the main window is visible and we are in game mode.
+        const bool isEditorActive = !visibleRegion().isEmpty() && !inGameMode;
+
+        if (isEditorActive)
+        {
+            UpdatePlugins(delta);
+        }
+    }
+
+    int MainWindow::GetTickOrder()
+    {
+        return AZ::TICK_UI;
+    }
+} // namespace EMStudio

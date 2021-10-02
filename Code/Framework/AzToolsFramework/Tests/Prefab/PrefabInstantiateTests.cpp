@@ -44,11 +44,11 @@ namespace UnitTest
         ASSERT_TRUE(firstInstance);
 
         AZStd::unique_ptr<AzToolsFramework::Prefab::Instance> secondInstance = m_prefabSystemComponent->CreatePrefab({},
-            MakeInstanceList( AZStd::move(firstInstance) ), "test/path2");
+            MakeInstanceList(AZStd::move(firstInstance)), "test/path2");
         ASSERT_TRUE(secondInstance);
 
         AZStd::unique_ptr<AzToolsFramework::Prefab::Instance> thirdInstance = m_prefabSystemComponent->CreatePrefab({},
-            MakeInstanceList( AZStd::move(secondInstance) ), "test/path3");
+            MakeInstanceList(AZStd::move(secondInstance)), "test/path3");
         ASSERT_TRUE(thirdInstance);
 
         //Instantiate it

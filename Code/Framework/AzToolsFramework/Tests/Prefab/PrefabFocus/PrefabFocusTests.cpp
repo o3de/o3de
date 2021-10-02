@@ -54,7 +54,7 @@ namespace UnitTest
 
             // Create a street prefab that nests the car and sportscar instances created above. The container entity will be created as part of the process.
             AZStd::unique_ptr<AzToolsFramework::Prefab::Instance> streetInstance =
-                m_prefabSystemComponent->CreatePrefab({}, MakeInstanceList( AZStd::move(carInstance), AZStd::move(sportsCarInstance) ), "test/street");
+                m_prefabSystemComponent->CreatePrefab({}, MakeInstanceList(AZStd::move(carInstance), AZStd::move(sportsCarInstance)), "test/street");
             ASSERT_TRUE(streetInstance);
             m_instanceMap[StreetEntityName] = streetInstance.get();
 

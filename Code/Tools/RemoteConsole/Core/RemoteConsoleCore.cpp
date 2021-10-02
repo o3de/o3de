@@ -99,7 +99,7 @@ void SRemoteThreadedObject::Start(const char* name)
     desc.m_name = name;
 
     auto function = AZStd::bind(&SRemoteThreadedObject::ThreadFunction, this);
-    m_thread = AZStd::thread(function, &desc);
+    m_thread = AZStd::thread(desc, function);
 }
 
 void SRemoteThreadedObject::WaitForThread()

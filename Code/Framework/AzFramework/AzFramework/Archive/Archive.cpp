@@ -1631,7 +1631,20 @@ namespace AZ::IO
             return nullptr;
         }
 
-        ZipDir::CacheFactory factory(ZipDir::ZD_INIT_FAST, nFactoryFlags);
+        ZipDir::InitMethod initType = ZipDir::InitMethod::Default;
+        if (!ZipDir::IsReleaseConfig)
+        {
+            if ((nFlags & INestedArchive::FLAGS_FULL_VALIDATE) != 0)
+            {
+                initType = ZipDir::InitMethod::FullValidation;
+            }
+            else if ((nFlags & INestedArchive::FLAGS_VALIDATE_HEADERS) != 0)
+            {
+                initType = ZipDir::InitMethod::ValidateHeaders;
+            }
+        }
+
+        ZipDir::CacheFactory factory(initType, nFactoryFlags);
 
         ZipDir::CachePtr cache = factory.New(szFullPath->c_str());
         if (cache)

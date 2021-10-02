@@ -1063,10 +1063,10 @@ namespace AssetProcessor
 
         AZStd::thread_desc threadDesc;
         threadDesc.m_name = "AssetCatalog Thread";
-        AZStd::thread catalogThread([this]()
+        AZStd::thread catalogThread(threadDesc, [this]()
             {
                 m_data->m_assetCatalog->BuildRegistry();
-            }, &threadDesc
+            }
         );
 
         AssetNotificationMessage message("some/path/image.png", AssetNotificationMessage::NotificationType::AssetChanged, AZ::Data::AssetType::CreateRandom(), "pc");

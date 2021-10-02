@@ -62,7 +62,6 @@
 
 
 #if defined(EMOTIONFXANIMATION_EDITOR) // EMFX tools / editor includes
-#   include <IEditor.h>
 // Qt
 #   include <QtGui/QSurfaceFormat>
 // EMStudio tools and main window registration
@@ -604,67 +603,15 @@ namespace EMotionFX
         }
 
         //////////////////////////////////////////////////////////////////////////
-#if defined (EMOTIONFXANIMATION_EDITOR)
-        void SystemComponent::UpdateAnimationEditorPlugins(float delta)
-        {
-            if (!EMStudio::GetManager())
-            {
-                return;
-            }
-
-            EMStudio::PluginManager* pluginManager = EMStudio::GetPluginManager();
-            if (!pluginManager)
-            {
-                return;
-            }
-
-            // Process the plugins.
-            const size_t numPlugins = pluginManager->GetNumActivePlugins();
-            for (size_t i = 0; i < numPlugins; ++i)
-            {
-                EMStudio::EMStudioPlugin* plugin = pluginManager->GetActivePlugin(i);
-                plugin->ProcessFrame(delta);
-            }
-        }
-#endif
-
-        //////////////////////////////////////////////////////////////////////////
         void SystemComponent::OnTick(float delta, AZ::ScriptTimePoint timePoint)
         {
             AZ_UNUSED(timePoint);
 
 #if defined (EMOTIONFXANIMATION_EDITOR)
             AZ_UNUSED(delta);
-            const float realDelta = m_updateTimer.StampAndGetDeltaTimeInSeconds();
+            delta = m_updateTimer.StampAndGetDeltaTimeInSeconds();
+#endif
 
-            // Flush events prior to updating EMotion FX.
-            ActorNotificationBus::ExecuteQueuedEvents();
-
-            if (CVars::emfx_updateEnabled)
-            {
-                // Main EMotionFX runtime update.
-                GetEMotionFX().Update(realDelta);
-            }
-
-            // Check if we are in game mode.
-            IEditor* editor = nullptr;
-            EBUS_EVENT_RESULT(editor, AzToolsFramework::EditorRequests::Bus, GetEditor);
-            const bool inGameMode = editor ? editor->IsInGameMode() : false;
-
-            // Update all the animation editor plugins (redraw viewports, timeline, and graph windows etc).
-            // But only update this when the main window is visible and we are in game mode.
-            const bool isEditorActive =
-                EMotionFX::GetEMotionFX().GetIsInEditorMode() &&
-                EMStudio::GetManager() &&
-                EMStudio::HasMainWindow() &&
-                !EMStudio::GetMainWindow()->visibleRegion().isEmpty() &&
-                !inGameMode;
-
-            if (isEditorActive)
-            {
-                UpdateAnimationEditorPlugins(realDelta);
-            }
-#else
             // Flush events prior to updating EMotion FX.
             ActorNotificationBus::ExecuteQueuedEvents();
 
@@ -673,9 +620,7 @@ namespace EMotionFX
                 // Main EMotionFX runtime update.
                 GetEMotionFX().Update(delta);
             }
-#endif
 
-            const float timeDelta = delta;
             const ActorManager* actorManager = GetEMotionFX().GetActorManager();
             const size_t numActorInstances = actorManager->GetNumActorInstances();
             for (size_t i = 0; i < numActorInstances; ++i)
@@ -704,7 +649,7 @@ namespace EMotionFX
                         // If we have a physics controller.
                         if (hasCustomMotionExtractionController || hasPhysicsController)
                         {
-                            const float deltaTimeInv = (timeDelta > 0.0f) ? (1.0f / timeDelta) : 0.0f;
+                            const float deltaTimeInv = (delta > 0.0f) ? (1.0f / delta) : 0.0f;
 
                             AZ::Transform currentTransform = AZ::Transform::CreateIdentity();
                             AZ::TransformBus::EventResult(currentTransform, entityId, &AZ::TransformBus::Events::GetWorldTM);
@@ -719,7 +664,7 @@ namespace EMotionFX
                             }
                             else if (hasCustomMotionExtractionController)
                             {
-                                MotionExtractionRequestBus::Event(entityId, &MotionExtractionRequestBus::Events::ExtractMotion, positionDelta, timeDelta);
+                                MotionExtractionRequestBus::Event(entityId, &MotionExtractionRequestBus::Events::ExtractMotion, positionDelta, delta);
                                 AZ::TransformBus::EventResult(currentTransform, entityId, &AZ::TransformBus::Events::GetWorldTM);
                             }
 
@@ -884,7 +829,7 @@ namespace EMotionFX
 
             // Register EMotionFX window with the main editor.
             AzToolsFramework::ViewPaneOptions emotionFXWindowOptions;
-            emotionFXWindowOptions.isPreview = true;
+            emotionFXWindowOptions.isPreview = false;
             emotionFXWindowOptions.isDeletable = true;
             emotionFXWindowOptions.isDockable = false;
 #if AZ_TRAIT_EMOTIONFX_MAIN_WINDOW_DETACHED

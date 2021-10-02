@@ -108,7 +108,6 @@ namespace EMotionFX
             void SetMediaRoot(const char* alias);
 
 #if defined (EMOTIONFXANIMATION_EDITOR)
-            void UpdateAnimationEditorPlugins(float delta);
             void NotifyRegisterViews() override;
             bool IsSystemActive(EditorAnimationSystemRequests::AnimationSystem systemType) override;
 
