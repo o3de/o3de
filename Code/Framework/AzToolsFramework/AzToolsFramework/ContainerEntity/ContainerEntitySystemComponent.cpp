@@ -90,7 +90,7 @@ namespace AzToolsFramework
             m_openContainerSet.erase(entityId);
         }
 
-        ContainerEntityNotificationBus::Broadcast(&ContainerEntityNotifications::OnContainerEntityStatusChanged, entityId);
+        ContainerEntityNotificationBus::Broadcast(&ContainerEntityNotifications::OnContainerEntityStatusChanged, entityId, open);
 
         return AZ::Success();
     }
