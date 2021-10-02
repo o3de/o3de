@@ -19,6 +19,7 @@
 
 namespace AzToolsFramework
 {
+    class ContainerEntityInterface;
 
     /*!
         * Enables the Outliner to filter entries based on search string.
@@ -43,6 +44,7 @@ namespace AzToolsFramework
 
     private:
         QString m_filterName;
+        ContainerEntityInterface* m_containerEntityInterface = nullptr;
     };
 
 }

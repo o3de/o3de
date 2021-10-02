@@ -11,6 +11,8 @@
 #include <AzCore/Component/ComponentApplication.h>
 #include <AzCore/Component/Entity.h>
 
+#include <AzToolsFramework/ContainerEntity/ContainerEntityInterface.h>
+
 #include "EntityOutlinerListModel.hxx"
 
 namespace AzToolsFramework
@@ -19,6 +21,10 @@ namespace AzToolsFramework
     EntityOutlinerSortFilterProxyModel::EntityOutlinerSortFilterProxyModel(QObject* pParent)
         : QSortFilterProxyModel(pParent)
     {
+        m_containerEntityInterface = AZ::Interface<ContainerEntityInterface>::Get();
+        AZ_Assert(
+            m_containerEntityInterface != nullptr,
+            "EntityOutlinerContainerProxyModel requires a ContainerEntityInterface instance on construction.");
     }
 
     void EntityOutlinerSortFilterProxyModel::UpdateFilter()
@@ -28,6 +34,22 @@ namespace AzToolsFramework
 
     bool EntityOutlinerSortFilterProxyModel::filterAcceptsRow(int sourceRow, const QModelIndex& sourceParent) const
     {
+        // Retrieve the entityId of the parent entity
+
+        // TODO - retrieve this once on constructor and assert if source model isn't EntityOutlinerListModel
+        EntityOutlinerListModel* listModel = qobject_cast<EntityOutlinerListModel*>(sourceModel());
+        if (!listModel)
+        {
+            return false;
+        }
+
+        AZ::EntityId parentEntityId = listModel->GetEntityFromIndex(sourceParent);
+
+        if(!m_containerEntityInterface->IsContainerOpen(parentEntityId))
+        {
+            return false;
+        }
+
         QModelIndex index = sourceModel()->index(sourceRow, 0, sourceParent);
         QVariant visibilityData = sourceModel()->data(index, EntityOutlinerListModel::VisibilityRole);
         return visibilityData.isValid() ? visibilityData.toBool() : true;

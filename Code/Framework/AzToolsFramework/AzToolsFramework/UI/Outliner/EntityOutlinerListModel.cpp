@@ -1351,7 +1351,7 @@ namespace AzToolsFramework
 
         // Trigger a refresh of all direct children so that they can be shown or hidden appropriately.
         int numChildren = rowCount(changedIndex);
-        emit dataChanged(index(0, 0, changedIndex), index(0, numChildren - 1, changedIndex));
+        emit dataChanged(index(0, 0, changedIndex), index(numChildren - 1, 0, changedIndex));
 
         // Always expand containers
         QueueEntityToExpand(entityId, true);

@@ -8,13 +8,15 @@
 
 #include "EditorHelpers.h"
 
+#include <AzCore/Component/TransformBus.h>
 #include <AzCore/Console/Console.h>
 #include <AzFramework/Entity/EntityDebugDisplayBus.h>
 #include <AzFramework/Viewport/CameraState.h>
 #include <AzFramework/Viewport/ViewportScreen.h>
 #include <AzFramework/Visibility/BoundsBus.h>
-#include <AzToolsFramework/FocusMode/FocusModeInterface.h>
 #include <AzToolsFramework/API/EditorViewportIconDisplayInterface.h>
+#include <AzToolsFramework/ContainerEntity/ContainerEntityInterface.h>
+#include <AzToolsFramework/FocusMode/FocusModeInterface.h>
 #include <AzToolsFramework/ToolsComponents/EditorEntityIconComponentBus.h>
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
 #include <AzToolsFramework/Viewport/ViewportTypes.h>
@@ -186,9 +188,37 @@ namespace AzToolsFramework
         }
 
         // Verify if the entity Id corresponds to an entity that is focused; if not, halt selection.
+        // TODO - move this to IsSelectable
         if (!m_focusModeInterface->IsInFocusSubTree(entityIdUnderCursor))
         {
             return AZ::EntityId();
+        }
+
+        // Container Entity support - if the entity that is being selected is part of a closed container,
+        // change the selection to the container instead.
+        ContainerEntityInterface* containerEntityInterface = AZ::Interface<ContainerEntityInterface>::Get();
+        if (containerEntityInterface)
+        {
+            AZ::EntityId entityId = entityIdUnderCursor;
+            AZ::EntityId topClosedContainerEntityId = AZ::EntityId(AZ::EntityId::InvalidEntityId);
+
+            // Go up the hierarchy until you hit the root
+            while (entityId.IsValid())
+            {
+                if (!containerEntityInterface->IsContainerOpen(entityId))
+                {
+                    // If one of the ancestors is a container and it's closed, keep track of its id.
+                    // We only keep track of the higher closed container in the hierarchy.
+                    topClosedContainerEntityId = entityId;
+                }
+
+                AZ::TransformBus::EventResult(entityId, entityId, &AZ::TransformBus::Events::GetParentId);
+            }
+
+            if (topClosedContainerEntityId.IsValid())
+            {
+                entityIdUnderCursor = topClosedContainerEntityId;
+            }
         }
 
         return entityIdUnderCursor;

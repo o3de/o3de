@@ -28,7 +28,6 @@
 #include <AzToolsFramework/Entity/EditorEntityInfoBus.h>
 #include <AzToolsFramework/UI/ComponentPalette/ComponentPaletteUtil.hxx>
 #include <AzToolsFramework/UI/EditorEntityUi/EditorEntityUiHandlerBase.h>
-#include <AzToolsFramework/UI/Outliner/EntityOutlinerContainerProxyModel.hxx>
 #include <AzToolsFramework/UI/Outliner/EntityOutlinerDisplayOptionsMenu.h>
 #include <AzToolsFramework/UI/Outliner/EntityOutlinerListModel.hxx>
 #include <AzToolsFramework/UI/Outliner/EntityOutlinerSortFilterProxyModel.hxx>
@@ -197,11 +196,8 @@ namespace AzToolsFramework
         // custom item delegate
         m_gui->m_objectTree->setItemDelegate(aznew EntityOutlinerItemDelegate(m_gui->m_objectTree));
 
-        m_containerModel = aznew EntityOutlinerContainerProxyModel(this);
-        m_containerModel->setSourceModel(m_listModel);
-
         m_proxyModel = aznew EntityOutlinerSortFilterProxyModel(this);
-        m_proxyModel->setSourceModel(m_containerModel);
+        m_proxyModel->setSourceModel(m_listModel);
 
         m_gui->m_objectTree->setModel(m_proxyModel);
 
@@ -1022,14 +1018,10 @@ namespace AzToolsFramework
     {
         if (index.isValid())
         {
-            const QModelIndex containerIndex = m_proxyModel->mapToSource(index);
-            if (containerIndex.isValid())
+            const QModelIndex modelIndex = m_proxyModel->mapToSource(index);
+            if (modelIndex.isValid())
             {
-                const QModelIndex modelIndex = m_containerModel->mapToSource(containerIndex);
-                if (modelIndex.isValid())
-                {
-                    return m_listModel->GetEntityFromIndex(modelIndex);
-                }
+                return m_listModel->GetEntityFromIndex(modelIndex);
             }
         }
 
@@ -1043,11 +1035,7 @@ namespace AzToolsFramework
             QModelIndex modelIndex = m_listModel->GetIndexFromEntity(entityId, 0);
             if (modelIndex.isValid())
             {
-                QModelIndex containerIndex = m_containerModel->mapFromSource(modelIndex);
-                if (containerIndex.isValid())
-                {
-                    return m_proxyModel->mapFromSource(containerIndex);
-                }
+                return m_proxyModel->mapFromSource(modelIndex);    
             }
         }
 
