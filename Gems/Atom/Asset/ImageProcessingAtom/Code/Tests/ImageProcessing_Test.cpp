@@ -860,8 +860,9 @@ namespace UnitTest
                 {
                     continue;
                 }
-
+#if defined(AZ_ENABLE_TRACING)
                 auto formatInfo = CPixelFormats::GetInstance().GetPixelFormatInfo(pixelFormat);
+#endif
                 ColorSpace sourceColorSpace = srcImage->HasImageFlags(EIF_SRGBRead) ? ColorSpace::sRGB : ColorSpace::linear;
                 ICompressorPtr compressor = ICompressor::FindCompressor(pixelFormat, sourceColorSpace, true);
 
