@@ -88,6 +88,7 @@ namespace AzToolsFramework
 
     EntityOutlinerListModel::~EntityOutlinerListModel()
     {
+        ContainerEntityNotificationBus::Handler::BusDisconnect();
         EditorEntityInfoNotificationBus::Handler::BusDisconnect();
         EditorEntityContextNotificationBus::Handler::BusDisconnect();
         ToolsApplicationEvents::Bus::Handler::BusDisconnect();
@@ -104,6 +105,12 @@ namespace AzToolsFramework
         EditorEntityInfoNotificationBus::Handler::BusConnect();
         EntityCompositionNotificationBus::Handler::BusConnect();
         AZ::EntitySystemBus::Handler::BusConnect();
+
+        AzFramework::EntityContextId editorEntityContextId = AzFramework::EntityContextId::CreateNull();
+        AzToolsFramework::EditorEntityContextRequestBus::BroadcastResult(
+            editorEntityContextId, &AzToolsFramework::EditorEntityContextRequestBus::Events::GetEditorEntityContextId);
+
+        ContainerEntityNotificationBus::Handler::BusConnect(editorEntityContextId);
 
         m_editorEntityUiInterface = AZ::Interface<AzToolsFramework::EditorEntityUiInterface>::Get();
         AZ_Assert(m_editorEntityUiInterface != nullptr,
@@ -1337,6 +1344,16 @@ namespace AzToolsFramework
     {
         AZ_UNUSED(activeOnStart);
         QueueEntityUpdate(entityId);
+    }
+
+    void EntityOutlinerListModel::OnContainerEntityStatusChanged(AZ::EntityId entityId)
+    {
+        QModelIndex changedIndex = GetIndexFromEntity(entityId);
+
+        int numChildren = rowCount(changedIndex);
+        emit dataChanged(index(0, 0, changedIndex), index(0, numChildren - 1, changedIndex));
+
+        QueueEntityToExpand(entityId, true);
     }
 
     void EntityOutlinerListModel::OnEntityInfoUpdatedRemoveChildBegin([[maybe_unused]] AZ::EntityId parentId, [[maybe_unused]] AZ::EntityId childId)

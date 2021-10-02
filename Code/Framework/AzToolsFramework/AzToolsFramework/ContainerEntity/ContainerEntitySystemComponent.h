@@ -40,12 +40,12 @@ namespace AzToolsFramework
         ContainerEntityOperationResult RegisterEntityAsContainer(AZ::EntityId entityId) override;
         ContainerEntityOperationResult UnregisterEntityAsContainer(AZ::EntityId entityId) override;
         bool IsContainer(AZ::EntityId entityId) const override;
-        ContainerEntityOperationResult SetContainerClosedState(AZ::EntityId entityId, bool closed) override;
-        bool IsContainerClosed(AZ::EntityId entityId) const override;
+        ContainerEntityOperationResult SetContainerOpenState(AZ::EntityId entityId, bool open) override;
+        bool IsContainerOpen(AZ::EntityId entityId) const override;
 
     private:
-        AZStd::unordered_set<AZ::EntityId> m_containerSet;          //!< All entities in this set are containers.
-        AZStd::unordered_set<AZ::EntityId> m_closedContainerSet;    //!< All entities in this set are closed containers.
+        AZStd::unordered_set<AZ::EntityId> m_containerSet;      //!< All entities in this set are containers.
+        AZStd::unordered_set<AZ::EntityId> m_openContainerSet;  //!< All entities in this set are open containers.
     };
 
 } // namespace AzToolsFramework

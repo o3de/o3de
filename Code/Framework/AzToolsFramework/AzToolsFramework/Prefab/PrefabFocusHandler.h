@@ -15,6 +15,13 @@
 #include <AzToolsFramework/Prefab/PrefabFocusInterface.h>
 #include <AzToolsFramework/Prefab/Template/Template.h>
 
+namespace AzToolsFramework
+{
+    class ContainerEntityInterface;
+    class FocusModeInterface;
+
+} // namespace AzToolsFramework
+
 namespace AzToolsFramework::Prefab
 {
     class InstanceEntityMapperInterface;
@@ -29,6 +36,8 @@ namespace AzToolsFramework::Prefab
 
         PrefabFocusHandler();
         ~PrefabFocusHandler();
+
+        void Initialize();
 
         // PrefabFocusInterface overrides ...
         PrefabFocusOperationResult FocusOnOwningPrefab(AZ::EntityId entityId) override;
@@ -46,12 +55,18 @@ namespace AzToolsFramework::Prefab
         PrefabFocusOperationResult FocusOnPrefabInstance(InstanceOptionalReference focusedInstance);
         void RefreshInstanceFocusList();
 
+        void SetContainerEntitiesState(const AZStd::vector<InstanceOptionalReference>& instances, bool closed);
+
         InstanceOptionalReference m_focusedInstance;
         TemplateId m_focusedTemplateId;
         AZStd::vector<InstanceOptionalReference> m_instanceFocusVector;
         AZ::IO::Path m_instanceFocusPath;
 
-        InstanceEntityMapperInterface* m_instanceEntityMapperInterface;
+        bool m_isInitialized = false;
+
+        ContainerEntityInterface* m_containerEntityInterface = nullptr;
+        FocusModeInterface* m_focusModeInterface = nullptr;
+        InstanceEntityMapperInterface* m_instanceEntityMapperInterface = nullptr;
     };
 
 } // namespace AzToolsFramework::Prefab
