@@ -350,6 +350,11 @@ namespace Platform
         return GetAttributes(fileName) != INVALID_FILE_ATTRIBUTES;
     }
 
+    bool IsDirectory(const char* filePath)
+    {
+        return (GetAttributes(filePath) & FILE_ATTRIBUTE_DIRECTORY) != 0;
+    }
+
 
     void FindFiles(const char* filter, SystemFile::FindFileCB cb)
     {
