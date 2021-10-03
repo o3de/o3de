@@ -8,6 +8,7 @@
 
 #include <Atom/RPI.Reflect/Buffer/BufferAsset.h>
 
+#include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/RTTI/ReflectContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 

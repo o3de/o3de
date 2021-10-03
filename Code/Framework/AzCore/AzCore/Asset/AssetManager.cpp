@@ -340,6 +340,14 @@ namespace AZ
                     // (Load jobs will attempt to reuse blocked threads before spinning off new job threads)
                     ProcessLoadJob();
                 }
+
+                // Pump the AssetBus function queue once more after the load has completed in case additional
+                // functions have been queued between the last call to DispatchEvents and the completion
+                // of the current load job
+                if (m_shouldDispatchEvents)
+                {
+                    AssetManager::Instance().DispatchEvents();
+                }
             }
 
             void Finish()
@@ -543,8 +551,6 @@ namespace AZ
         {
             PrepareShutDown();
 
-            DispatchEvents();
-
             // Acquire the asset lock to make sure nobody else is trying to do anything fancy with assets
             AZStd::scoped_lock<AZStd::recursive_mutex> assetLock(m_assetMutex);
 
@@ -567,7 +573,10 @@ namespace AZ
         {
             AZ_PROFILE_FUNCTION(AzCore);
             AssetManagerNotificationBus::Broadcast(&AssetManagerNotificationBus::Events::OnAssetEventsDispatchBegin);
-            AssetBus::ExecuteQueuedEvents();
+            while (AssetBus::QueuedEventCount())
+            {
+                AssetBus::ExecuteQueuedEvents();
+            }
             AssetManagerNotificationBus::Broadcast(&AssetManagerNotificationBus::Events::OnAssetEventsDispatchEnd);
         }
 

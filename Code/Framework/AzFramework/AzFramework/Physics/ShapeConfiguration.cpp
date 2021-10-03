@@ -7,9 +7,11 @@
  */
 
 #include <AzFramework/Physics/ShapeConfiguration.h>
+#include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzFramework/Physics/PropertyTypes.h>
 #include <AzFramework/Physics/SystemBus.h>
+#include <AzCore/RTTI/BehaviorContext.h>
 
 namespace Physics
 {

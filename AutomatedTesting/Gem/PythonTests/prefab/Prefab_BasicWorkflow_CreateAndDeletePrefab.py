@@ -22,11 +22,10 @@ def Prefab_BasicWorkflow_CreateAndDeletePrefab():
     car_prefab_entities = [car_entity]
 
     # Checks for prefab creation passed or not 
-    car_prefab = Prefab.create_prefab(
+    _, car = Prefab.create_prefab(
         car_prefab_entities, CAR_PREFAB_FILE_NAME)
 
     # Checks for prefab deletion passed or not 
-    car = car_prefab.instances[CAR_PREFAB_FILE_NAME]
     Prefab.remove_prefabs([car])
 
 if __name__ == "__main__":
