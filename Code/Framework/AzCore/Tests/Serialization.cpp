@@ -8209,26 +8209,26 @@ namespace UnitTest
 
             byteStream.Seek(0, AZ::IO::GenericStream::ST_SEEK_BEGIN);
 
-            AZ::IO::Path loadPath;
+            AZ::IO::Path loadPath{ testParams.m_preferredSeparator };
             EXPECT_TRUE(AZ::Utils::LoadObjectFromStreamInPlace(byteStream, loadPath, m_serializeContext.get()));
             EXPECT_EQ(testPath.LexicallyNormal(), loadPath);
         }
 
         {
             // FixedMaxPath serialization
-            AZ::IO::Path testPath{ testParams.m_testPath, testParams.m_preferredSeparator };
+            AZ::IO::FixedMaxPath testFixedMaxPath{ testParams.m_testPath, testParams.m_preferredSeparator };
 
             AZStd::vector<char> byteBuffer;
             AZ::IO::ByteContainerStream byteStream(&byteBuffer);
             auto objStream = AZ::ObjectStream::Create(&byteStream, *m_serializeContext, AZ::ObjectStream::ST_XML);
-            objStream->WriteClass(&testPath);
+            objStream->WriteClass(&testFixedMaxPath);
             objStream->Finalize();
 
             byteStream.Seek(0, AZ::IO::GenericStream::ST_SEEK_BEGIN);
 
-            AZ::IO::Path loadPath;
+            AZ::IO::FixedMaxPath loadPath{ testParams.m_preferredSeparator };
             EXPECT_TRUE(AZ::Utils::LoadObjectFromStreamInPlace(byteStream, loadPath, m_serializeContext.get()));
-            EXPECT_EQ(testPath.LexicallyNormal(), loadPath);
+            EXPECT_EQ(testFixedMaxPath.LexicallyNormal(), loadPath);
         }
     }
 
