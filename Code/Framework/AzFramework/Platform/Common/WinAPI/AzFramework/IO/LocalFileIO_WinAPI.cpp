@@ -15,22 +15,6 @@ namespace AZ
 {
     namespace IO
     {
-        bool LocalFileIO::IsDirectory(const char* filePath)
-        {
-            char resolvedPath[AZ_MAX_PATH_LEN];
-            ResolvePath(filePath, resolvedPath, AZ_MAX_PATH_LEN);
-
-            wchar_t resolvedPathW[AZ_MAX_PATH_LEN];
-            AZStd::to_wstring(resolvedPathW, AZ_MAX_PATH_LEN, resolvedPath);
-            DWORD fileAttributes = GetFileAttributesW(resolvedPathW);
-            if (fileAttributes == INVALID_FILE_ATTRIBUTES)
-            {
-                return false;
-            }
-
-            return (fileAttributes & FILE_ATTRIBUTE_DIRECTORY) != 0;
-        }
-
         Result LocalFileIO::FindFiles(const char* filePath, const char* filter, FindFilesCallbackType callback)
         {
             char resolvedPath[AZ_MAX_PATH_LEN];

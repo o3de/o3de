@@ -1,0 +1,30 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PassAsset",
+    "ClassData": {
+        "PassTemplate": {
+            "Name": "HairCalculateStrandLevelDataComputePassTemplate",
+            "PassClass": "HairSkinningComputePass",
+            "Slots": [
+                {
+                    "Name": "SkinnedHairSharedBuffer",
+                    "ShaderInputName": "m_skinnedHairSharedBuffer",
+                    "SlotType": "InputOutput",
+                    "ScopeAttachmentUsage": "Shader",
+                    "LoadStoreAction": {
+                        "LoadAction": "Load",
+                        "StoreAction": "Store"
+                    }
+                }
+            ],
+            "PassData": {
+                "$type": "ComputePassData",
+                "ShaderAsset": {
+                    // Looking for it in the Shaders directory relative to the Assets directory
+                    "FilePath": "Shaders/HairCalculateStrandLevelDataCompute.shader"
+                }
+            }
+        }
+    }
+}
