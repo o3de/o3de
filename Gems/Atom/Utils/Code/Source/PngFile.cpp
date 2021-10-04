@@ -21,7 +21,7 @@ namespace AZ
                 (*errorHandler)(error_msg);
             }
 
-            void PngImage_user_warning_fn(png_structp /*png_ptr*/, png_const_charp warning_msg)
+            void PngImage_user_warning_fn(png_structp /*png_ptr*/, [[maybe_unused]] png_const_charp warning_msg)
             {
                 AZ_Warning("PngFile", false, "%s", warning_msg);
             }
@@ -301,7 +301,7 @@ AZ_POP_DISABLE_WARNING
             return true;
         }
 
-        void PngFile::DefaultErrorHandler(const char* message)
+        void PngFile::DefaultErrorHandler([[maybe_unused]] const char* message)
         {
             AZ_Error("PngFile", false, "%s", message);
         }

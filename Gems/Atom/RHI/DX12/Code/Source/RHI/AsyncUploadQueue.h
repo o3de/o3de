@@ -69,12 +69,13 @@ namespace AZ
             void ProcessCallbacks(uint64_t fenceValue);
 
             RHI::Ptr<CommandQueue> m_copyQueue;
-            RHI::Ptr<ID3D12GraphicsCommandList> m_commandList;
 
             struct FramePacket
             {
-                RHI::Ptr<ID3D12CommandAllocator> m_commandAllocator;
                 RHI::Ptr<ID3D12Resource> m_stagingResource;
+                RHI::Ptr<ID3D12CommandAllocator> m_commandAllocator;
+                RHI::Ptr<ID3D12GraphicsCommandList> m_commandList;
+
                 Fence m_fence;
 
                 // Using persistent mapping for the staging resource so the Map function only need to be called called once.
