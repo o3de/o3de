@@ -15,7 +15,7 @@
 #include <AzTest/AzTest.h>
 #include <Multiplayer/Components/NetBindComponent.h>
 #include <Multiplayer/Components/NetworkHierarchyChildComponent.h>
-#include <multiplayer/NetworkEntity/EntityReplication/EntityReplicator.h>
+#include <Multiplayer/NetworkEntity/EntityReplication/EntityReplicator.h>
 
 namespace Multiplayer
 {
