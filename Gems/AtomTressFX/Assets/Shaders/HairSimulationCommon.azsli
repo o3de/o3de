@@ -1,0 +1,444 @@
+/*
+ * Modifications Copyright (c) Contributors to the Open 3D Engine Project. 
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: (Apache-2.0 OR MIT) AND MIT
+ *
+ */
+ 
+//---------------------------------------------------------------------------------------
+// Shader code related to simulating hair strands in compute.
+//-------------------------------------------------------------------------------------
+//
+// Copyright (c) 2019 Advanced Micro Devices, Inc. All rights reserved.
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE.
+//
+
+//--------------------------------------------------------------------------------------
+// File: HairSimulation.azsl
+//
+// Physics simulation of hair using compute shaders
+//--------------------------------------------------------------------------------------
+
+#pragma once
+
+#define USE_MESH_BASED_HAIR_TRANSFORM 0
+
+// If you change the value below, you must change it in TressFXAsset.h as well.
+#ifndef THREAD_GROUP_SIZE
+    #define THREAD_GROUP_SIZE 64
+#endif
+
+groupshared float4 sharedPos[THREAD_GROUP_SIZE];
+groupshared float4 sharedTangent[THREAD_GROUP_SIZE];
+groupshared float  sharedLength[THREAD_GROUP_SIZE];
+
+//--------------------------------------------------------------------------------------
+//
+//  			Helper Functions for the main simulation shaders
+//
+//--------------------------------------------------------------------------------------
+bool IsMovable(float4 particle)
+{
+    if ( particle.w > 0 )
+        return true;
+    return false;
+}
+
+float2 ConstraintMultiplier(float4 particle0, float4 particle1)
+{
+    if (IsMovable(particle0))
+    {
+        if (IsMovable(particle1))
+            return float2(0.5, 0.5);
+        else
+            return float2(1, 0);
+    }
+    else
+    {
+        if (IsMovable(particle1))
+            return float2(0, 1);
+        else
+            return float2(0, 0);
+    }
+}
+
+float4 MakeQuaternion(float angle_radian, float3 axis)
+{
+    // create quaternion using angle and rotation axis
+    float4 quaternion;
+    float halfAngle = 0.5f * angle_radian;
+    float sinHalf = sin(halfAngle);
+
+    quaternion.w = cos(halfAngle);
+    quaternion.xyz = sinHalf * axis.xyz;
+
+    return quaternion;
+}
+
+// Makes a quaternion from a 4x4 column major rigid transform matrix. Rigid transform means that rotational 3x3 sub matrix is orthonormal. 
+// Note that this function does not check the orthonormality. 
+float4 MakeQuaternion(column_major float4x4 m)
+{
+    float4 q;
+    float trace = m[0][0] + m[1][1] + m[2][2];
+
+    if (trace > 0.0f)
+    {
+        float r = sqrt(trace + 1.0f);
+        q.w = 0.5 * r;
+        r = 0.5 / r;
+        q.x = (m[1][2] - m[2][1])*r;
+        q.y = (m[2][0] - m[0][2])*r;
+        q.z = (m[0][1] - m[1][0])*r;
+    }
+    else
+    {
+        int i = 0, j = 1, k = 2;
+
+        if (m[1][1] > m[0][0])
+        {
+            i = 1; j = 2; k = 0;
+        }
+        if (m[2][2] > m[i][i])
+        {
+            i = 2; j = 0; k = 1;
+        }
+
+        float r = sqrt(m[i][i] - m[j][j] - m[k][k] + 1.0f);
+
+        float qq[4];
+
+        qq[i] = 0.5f * r;
+        r = 0.5f / r;
+        q.w = (m[j][k] - m[k][j])*r;
+        qq[j] = (m[j][i] + m[i][j])*r;
+        qq[k] = (m[k][i] + m[i][k])*r;
+
+        q.x = qq[0]; q.y = qq[1]; q.z = qq[2];
+    }
+
+    return q;
+}
+
+float4 InverseQuaternion(float4 q)
+{
+    float lengthSqr = q.x*q.x + q.y*q.y + q.z*q.z + q.w*q.w;
+
+    if ( lengthSqr < 0.001 )
+        return float4(0, 0, 0, 1.0f);
+
+    q.x = -q.x / lengthSqr;
+    q.y = -q.y / lengthSqr;
+    q.z = -q.z / lengthSqr;
+    q.w = q.w / lengthSqr;
+
+    return q;
+}
+
+float3 MultQuaternionAndVector(float4 q, float3 v)
+{
+    float3 uv, uuv;
+    float3 qvec = float3(q.x, q.y, q.z);
+    uv = cross(qvec, v);
+    uuv = cross(qvec, uv);
+    uv *= (2.0f * q.w);
+    uuv *= 2.0f;
+
+    return v + uv + uuv;
+}
+
+float4 MultQuaternionAndQuaternion(float4 qA, float4 qB)
+{
+    float4 q;
+
+    q.w = qA.w * qB.w - qA.x * qB.x - qA.y * qB.y - qA.z * qB.z;
+    q.x = qA.w * qB.x + qA.x * qB.w + qA.y * qB.z - qA.z * qB.y;
+    q.y = qA.w * qB.y + qA.y * qB.w + qA.z * qB.x - qA.x * qB.z;
+    q.z = qA.w * qB.z + qA.z * qB.w + qA.x * qB.y - qA.y * qB.x;
+
+    return q;
+}
+
+float4 NormalizeQuaternion(float4 q)
+{
+    float4 qq = q;
+    float n = q.x*q.x + q.y*q.y + q.z*q.z + q.w*q.w;
+
+    if (n < 1e-10f)
+    {
+        qq.w = 1;
+        return qq;
+    }
+
+    qq *= 1.0f / sqrt(n);
+    return qq;
+}
+
+// Compute a quaternion which rotates u to v. u and v must be unit vector. 
+float4 QuatFromTwoUnitVectors(float3 u, float3 v)
+{
+    float r = 1.f + dot(u, v);
+    float3 n;
+
+    // if u and v are parallel
+    if (r < 1e-7)
+    {
+        r = 0.0f;
+        n = abs(u.x) > abs(u.z) ? float3(-u.y, u.x, 0.f) : float3(0.f, -u.z, u.y);
+    }
+    else
+    {
+        n = cross(u, v);  
+    }
+
+    float4 q = float4(n.x, n.y, n.z, r);
+    return NormalizeQuaternion(q);
+}
+
+// Make the inpute 4x4 matrix be identity
+float4x4 MakeIdentity()
+{
+    float4x4 m;
+    m._m00 = 1;   m._m01 = 0;   m._m02 = 0;   m._m03 = 0;
+    m._m10 = 0;   m._m11 = 1;   m._m12 = 0;   m._m13 = 0;
+    m._m20 = 0;   m._m21 = 0;   m._m22 = 1;   m._m23 = 0;
+    m._m30 = 0;   m._m31 = 0;   m._m32 = 0;   m._m33 = 1;
+
+    return m;
+}
+
+void ApplyDistanceConstraint(inout float4 pos0, inout float4 pos1, float targetDistance, float stiffness = 1.0)
+{
+    float3 delta = pos1.xyz - pos0.xyz;
+    float distance = max(length(delta), 1e-7);
+    float stretching = 1 - targetDistance / distance;
+    delta = stretching * delta;
+    float2 multiplier = ConstraintMultiplier(pos0, pos1);
+
+    pos0.xyz += multiplier[0] * delta * stiffness;
+    pos1.xyz -= multiplier[1] * delta * stiffness;
+}
+
+void CalcIndicesInVertexLevelTotal(uint local_id, uint group_id, inout uint globalStrandIndex, inout uint localStrandIndex, inout uint globalVertexIndex, inout uint localVertexIndex, inout uint numVerticesInTheStrand, inout uint indexForSharedMem, inout uint strandType)
+{
+    indexForSharedMem = local_id;
+    numVerticesInTheStrand = (THREAD_GROUP_SIZE / g_NumOfStrandsPerThreadGroup);
+
+    localStrandIndex = local_id % g_NumOfStrandsPerThreadGroup;
+    globalStrandIndex = group_id * g_NumOfStrandsPerThreadGroup + localStrandIndex;
+    localVertexIndex = (local_id - localStrandIndex) / g_NumOfStrandsPerThreadGroup;
+
+    strandType = GetStrandType(globalStrandIndex);
+    globalVertexIndex = globalStrandIndex * numVerticesInTheStrand + localVertexIndex;
+}
+
+void CalcIndicesInVertexLevelMaster(uint local_id, uint group_id, inout uint globalStrandIndex, inout uint localStrandIndex, inout uint globalVertexIndex, inout uint localVertexIndex, inout uint numVerticesInTheStrand, inout uint indexForSharedMem, inout uint strandType)
+{
+    indexForSharedMem = local_id;
+    numVerticesInTheStrand = (THREAD_GROUP_SIZE / g_NumOfStrandsPerThreadGroup);
+
+    localStrandIndex = local_id % g_NumOfStrandsPerThreadGroup;
+    globalStrandIndex = group_id * g_NumOfStrandsPerThreadGroup + localStrandIndex;
+    globalStrandIndex *= (g_NumFollowHairsPerGuideHair+1);
+    localVertexIndex = (local_id - localStrandIndex) / g_NumOfStrandsPerThreadGroup;
+
+    strandType = GetStrandType(globalStrandIndex);
+    globalVertexIndex = globalStrandIndex * numVerticesInTheStrand + localVertexIndex;
+}
+
+void CalcIndicesInStrandLevelTotal(uint local_id, uint group_id, inout uint globalStrandIndex, inout uint numVerticesInTheStrand, inout uint globalRootVertexIndex, inout uint strandType)
+{
+    globalStrandIndex = THREAD_GROUP_SIZE*group_id + local_id;
+    numVerticesInTheStrand = (THREAD_GROUP_SIZE / g_NumOfStrandsPerThreadGroup);
+    strandType = GetStrandType(globalStrandIndex);
+    globalRootVertexIndex = globalStrandIndex * numVerticesInTheStrand;
+}
+
+void CalcIndicesInStrandLevelMaster(uint local_id, uint group_id, inout uint globalStrandIndex, inout uint numVerticesInTheStrand, inout uint globalRootVertexIndex, inout uint strandType)
+{
+    globalStrandIndex = THREAD_GROUP_SIZE*group_id + local_id;
+    globalStrandIndex *= (g_NumFollowHairsPerGuideHair+1);
+    numVerticesInTheStrand = (THREAD_GROUP_SIZE / g_NumOfStrandsPerThreadGroup);
+    strandType = GetStrandType(globalStrandIndex);
+    globalRootVertexIndex = globalStrandIndex * numVerticesInTheStrand;
+}
+
+//--------------------------------------------------------------------------------------
+//
+//  Integrate
+//
+// Verlet integration for calculating the new position based on exponential decay to move
+// from the current position towards an approximated extrapolation point based
+// on the velocity between the two last points and influenced by gravity force.
+//--------------------------------------------------------------------------------------
+float3 Integrate(float3 curPosition, float3 oldPosition, float3 initialPos, float dampingCoeff = 1.0f)
+{
+    float3 force = g_GravityMagnitude * float3(0, 0, -1.0f);
+    // float decay = exp(-g_TimeStep/decayTime)
+    float decay = exp(-dampingCoeff * g_TimeStep * 60.0f);
+    return curPosition + decay * (curPosition - oldPosition) + force * g_TimeStep * g_TimeStep;
+}
+
+
+struct CollisionCapsule
+{
+    float4 p0; // xyz = position of capsule 0, w = radius 0
+    float4 p1; // xyz = position of capsule 1, w = radius 1
+};
+
+//--------------------------------------------------------------------------------------
+//
+//  CapsuleCollision
+//
+//  Moves the position based on collision with capsule
+//
+//--------------------------------------------------------------------------------------
+bool CapsuleCollision(float4 curPosition, float4 oldPosition, inout float3 newPosition, CollisionCapsule cc, float friction = 0.4f)
+{
+    const float radius0 = cc.p0.w;
+    const float radius1 = cc.p1.w;
+    newPosition = curPosition.xyz;
+
+    if ( !IsMovable(curPosition) )
+        return false;
+
+    float3 segment = cc.p1.xyz - cc.p0.xyz;
+    float3 delta0 = curPosition.xyz - cc.p0.xyz;
+    float3 delta1 = cc.p1.xyz - curPosition.xyz;
+
+    float dist0 = dot(delta0, segment);
+    float dist1 = dot(delta1, segment);
+
+    // colliding with sphere 1
+    if (dist0 < 0.f )
+    {
+        if ( dot(delta0, delta0) < radius0 * radius0)
+        {
+            float3 n = normalize(delta0);
+            newPosition = radius0 * n + cc.p0.xyz;
+            return true;
+        }
+
+        return false;
+    }
+
+    // colliding with sphere 2
+    if (dist1 < 0.f )
+    {
+        if ( dot(delta1, delta1) < radius1 * radius1)
+        {
+            float3 n = normalize(-delta1);
+            newPosition = radius1 * n + cc.p1.xyz;
+            return true;
+        }
+
+        return false;
+    }
+
+    // colliding with middle cylinder
+    float3 x = (dist0 * cc.p1.xyz + dist1 * cc.p0.xyz) / (dist0 + dist1);
+    float3 delta = curPosition.xyz - x;
+
+    float radius_at_x = (dist0 * radius1 + dist1 * radius0) / (dist0 + dist1);
+
+    if ( dot(delta, delta) < radius_at_x * radius_at_x)
+    {
+        float3 n = normalize(delta);
+        float3 vec = curPosition.xyz - oldPosition.xyz;
+        float3 segN = normalize(segment);
+        float3 vecTangent = dot(vec, segN) * segN;
+        float3 vecNormal = vec - vecTangent;
+        newPosition = oldPosition.xyz + friction * vecTangent + (vecNormal + radius_at_x * n - delta);
+        return true;
+    }
+
+    return false;
+}
+
+float3 ApplyVertexBoneSkinning(float3 vertexPos, BoneSkinningData skinningData, inout float4 bone_quat)
+{
+    float3 newVertexPos;
+
+#if TRESSFX_DQ
+    {
+        // weighted rotation part of dual quaternion
+        float4 nq = g_BoneSkinningDQ[skinningData.boneIndex.x * 2] * skinningData.boneWeight.x + 
+            g_BoneSkinningDQ[skinningData.boneIndex.y * 2] * skinningData.boneWeight.y +
+            g_BoneSkinningDQ[skinningData.boneIndex.z * 2] * skinningData.boneWeight.z + 
+            g_BoneSkinningDQ[skinningData.boneIndex.w * 2] * skinningData.boneWeight.w;
+
+        // weighted tranlation part of dual quaternion
+        float4 dq = g_BoneSkinningDQ[skinningData.boneIndex.x * 2 + 1] * skinningData.boneWeight.x + 
+            g_BoneSkinningDQ[skinningData.boneIndex.y * 2 + 1] * skinningData.boneWeight.y +
+            g_BoneSkinningDQ[skinningData.boneIndex.z * 2 + 1] * skinningData.boneWeight.z + 
+            g_BoneSkinningDQ[skinningData.boneIndex.w * 2 + 1] * skinningData.boneWeight.w;
+
+        float len = rsqrt(dot(nq, nq));
+        nq *= len;
+        dq *= len;
+
+        bone_quat = nq;
+
+        //convert translation part of dual quaternion to translation vector:
+        float3 translation = (nq.w*dq.xyz - dq.w*nq.xyz + cross(nq.xyz, dq.xyz)) * 2;
+
+        newVertexPos = MultQuaternionAndVector(nq, vertexPos) + translation.xyz;
+    }
+#else
+    {
+        // Interpolate world space bone matrices using weights. 
+        row_major float4x4 bone_matrix = g_BoneSkinningMatrix[skinningData.boneIndex[0]] * skinningData.boneWeight[0];
+        float weight_sum = skinningData.boneWeight[0];
+
+        for (int i = 1; i < 4; i++)
+        {
+            if (skinningData.boneWeight[i] > 0)
+            {
+                bone_matrix += g_BoneSkinningMatrix[skinningData.boneIndex[i]] * skinningData.boneWeight[i];
+                weight_sum += skinningData.boneWeight[i];
+            }
+        }
+
+        bone_matrix /= weight_sum;
+        bone_quat = MakeQuaternion(bone_matrix);
+
+        newVertexPos = mul(float4(vertexPos, 1), bone_matrix).xyz;
+    }
+#endif
+
+    return newVertexPos;
+}
+
+
+//--------------------------------------------------------------------------------------
+//
+//  UpdateFinalVertexPositions
+//
+//  Updates the  hair vertex positions based on the physics simulation
+//
+//--------------------------------------------------------------------------------------
+void UpdateFinalVertexPositions(float4 oldPosition, float4 newPosition, int globalVertexIndex)
+{
+    SetSharedPrevPrevPosition(globalVertexIndex, GetSharedPrevPosition(globalVertexIndex));
+    SetSharedPrevPosition(globalVertexIndex, oldPosition);
+    SetSharedPosition(globalVertexIndex, newPosition);
+}
+//--------------------------------------------------------------------------------------
