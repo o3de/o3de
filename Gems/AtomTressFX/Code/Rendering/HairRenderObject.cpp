@@ -526,7 +526,7 @@ namespace AZ
             //! Creation of the render Srg m_hairRenderSrg, followed by creation and binding of the
             //! GPU render resources: vertex thickness, vertex UV, hair albedo maps and two constant buffers.
             bool HairRenderObject::CreateRenderingGPUResources(
-                Data::Instance<RPI::Shader> shader, AMD::TressFXAsset& asset, const char* assetName)
+                Data::Instance<RPI::Shader> shader, AMD::TressFXAsset& asset, [[maybe_unused]] const char* assetName)
             {
                 //-------------------- Render Srg Creation ---------------------
                 m_hairRenderSrg = UtilityClass::CreateShaderResourceGroup(shader, "HairRenderingMaterialSrg", "Hair Gem");
