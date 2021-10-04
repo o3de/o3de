@@ -201,7 +201,7 @@ namespace AZ
             void HairFeatureProcessor::Simulate(const FeatureProcessor::SimulatePacket& packet)
             {
                 AZ_PROFILE_FUNCTION(AzRender);
-                AZ_ATOM_PROFILE_FUNCTION("Hair", "HairFeatureProcessor: Simulate");
+                // AZ_ATOM_PROFILE_FUNCTION("Hair", "HairFeatureProcessor: Simulate");
                 AZ_UNUSED(packet);
 
                 if (m_hairRenderObjects.empty())
@@ -250,7 +250,7 @@ namespace AZ
             void HairFeatureProcessor::Render([[maybe_unused]] const FeatureProcessor::RenderPacket& packet)
             {
                 AZ_PROFILE_FUNCTION(AzRender);
-                AZ_ATOM_PROFILE_FUNCTION("Hair", "HairFeatureProcessor: Render");
+                //AZ_ATOM_PROFILE_FUNCTION("Hair", "HairFeatureProcessor: Render");
 
                 if (!m_initialized || !m_addDispatchEnabled)
                 {   // Skip adding dispatches / Draw packets for this frame until initialized and the shaders are ready

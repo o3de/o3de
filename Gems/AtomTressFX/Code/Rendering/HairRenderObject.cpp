@@ -592,7 +592,7 @@ namespace AZ
                     return false;
                 }
 
-                RHI::ResultCode result = bufferPool->InitBuffer(request);
+                [[maybe_unused]] RHI::ResultCode result = bufferPool->InitBuffer(request);
                 AZ_Error("Hair Gem", result == RHI::ResultCode::Success, "Failed to initialize index buffer - error [%d]", result);
 
                 // create index buffer view
