@@ -22,7 +22,7 @@ set(ALLFILES ${ALLFILES} ${LY_PAL_PACKAGE_FILE_NAME})
 
 # temporary compatibility: 
 # Some 3p libraries may still refer to zlib as "3rdParty::zlib" instead of
-# the corret "3rdParty::ZLIB" (Case difference).  Until those libraries are updated
+# the correct "3rdParty::ZLIB" (Case difference).  Until those libraries are updated
 # we alias the casing here.  This also provides backward compatibility for Gems that use 3rdParty::zlib
 # that are not part of the core O3DE repo.
 ly_download_associated_package(ZLIB)
