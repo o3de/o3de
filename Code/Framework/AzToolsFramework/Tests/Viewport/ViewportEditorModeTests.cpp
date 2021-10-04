@@ -157,6 +157,7 @@ namespace UnitTest
             m_handlerIds.resize(ViewportEditorModes::NumEditorModes);
             for (auto mode = 0; mode < ViewportEditorModes::NumEditorModes; mode++)
             {
+                // Create a random GUID for each handler and associate that GUID with an index derived from one of the possible editor modes
                 m_handlerIds[mode] = TrackerId::CreateRandom();
                 m_editorModeHandlers[mode] = AZStd::make_unique<ViewportEditorModeNotificationsBusHandler>(m_handlerIds[mode]);
             }
