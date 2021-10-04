@@ -38,7 +38,7 @@ namespace AzGameFramework
         {
             // fall back to checking Project Cache Root.
             enginePakPath /= "engine.pak";
-            enginePakOpened =m_archive->OpenPack("@projectproductassets@", enginePakPath.Native());
+            enginePakOpened = m_archive->OpenPack("@projectproductassets@", enginePakPath.Native());
         }
         if (!enginePakOpened)
         {
