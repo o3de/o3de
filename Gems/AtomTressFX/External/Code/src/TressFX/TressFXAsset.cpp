@@ -776,10 +776,8 @@ namespace AMD
                 EI_Read((char*)&skinData.weight[j], sizeof(AMD::real32), ioObject);
             }
 
-            float weightSum = skinData.weight[0] + skinData.weight[1] + skinData.weight[2] + skinData.weight[3];
-
+            [[maybe_unused]] float weightSum = skinData.weight[0] + skinData.weight[1] + skinData.weight[2] + skinData.weight[3];
             AZ_Assert(weightSum > 0.0f, "Weight sum should be greater than 0");
-            assert(skinData.weight[0] != 0.0f);
 
             // If bone index is -1, then it means that there is no bone associated to this. In this case we simply replace it with zero.
             // This is safe because the corresponding weight should be zero anyway.

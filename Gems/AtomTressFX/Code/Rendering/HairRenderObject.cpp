@@ -387,7 +387,7 @@ namespace AZ
 
             //! Updates the buffers data for the hair generation.
             //! Notice: does not update the bone matrices that will be updated every frame.
-            bool HairRenderObject::UploadGPUData(const char* name, AMD::TressFXAsset* asset)
+            bool HairRenderObject::UploadGPUData([[maybe_unused]] const char* name, AMD::TressFXAsset* asset)
             {
                 // The following must correlate the order in HairGenerationBuffersSemantics
                 void* buffersData[uint8_t(HairGenerationBuffersSemantics::NumBufferStreams)] = {
