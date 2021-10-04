@@ -87,14 +87,14 @@ namespace EMotionFX
             // Make sure we have enough space inside the frame floats array, which is used to search the kdTree.
             // It contains the value for each dimension.
             size_t numFloatsRequired = 0;
-            for (const Feature* frameData : m_behavior->GetFeatures().GetFeatures())
+            for (const Feature* feature : m_behavior->GetFeatures().GetFeatures())
             {
-                if (!frameData->GetIncludeInKdTree())
+                if (!feature->GetIncludeInKdTree())
                 {
                     continue;
                 }
 
-                numFloatsRequired += frameData->GetNumDimensionsForKdTree();
+                numFloatsRequired += feature->GetNumDimensions();
             }
             m_frameFloats.resize(numFloatsRequired);
         }
@@ -138,6 +138,8 @@ namespace EMotionFX
 
         void BehaviorInstance::Output(Pose& outputPose)
         {
+            AZ_PROFILE_SCOPE(Animation, "BehaviorInstance::Output");
+
             if (!m_behavior)
             {
                 outputPose.InitFromBindPose(m_actorInstance);
@@ -203,6 +205,8 @@ namespace EMotionFX
 
         void BehaviorInstance::Update(float timePassedInSeconds)
         {
+            AZ_PROFILE_SCOPE(Animation, "BehaviorInstance::Update");
+
             if (!m_behavior)
             {
                 return;

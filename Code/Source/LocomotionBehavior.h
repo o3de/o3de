@@ -74,14 +74,6 @@ namespace EMotionFX
             AZ_INLINE const TweakFactors& GetTweakFactors() const { return m_tweakFactors; }
             AZ_INLINE void SetTweakFactors(const TweakFactors& factors) { m_tweakFactors = factors; }
 
-        public:
-            static AZ::TypeId s_rootTrajectoryId;
-            static AZ::TypeId s_leftFootPositionsId;
-            static AZ::TypeId s_leftFootVelocitiesId;
-            static AZ::TypeId s_rightFootPositionsId;
-            static AZ::TypeId s_rightFootVelocitiesId;
-            static AZ::TypeId s_rootDirectionId;
-
         private:
             void OnSettingsChanged();
 
@@ -89,7 +81,7 @@ namespace EMotionFX
             FeaturePosition* m_rightFootPositionData = nullptr;
             FeatureVelocity* m_leftFootVelocityData = nullptr;
             FeatureVelocity* m_rightFootVelocityData = nullptr;
-            FeatureDirection* m_rootDirectionData = nullptr;
+            //FeatureDirection* m_rootDirectionData = nullptr;
             FeatureTrajectory* m_rootTrajectoryData = nullptr;
             size_t m_rootNodeIndex = InvalidIndex32;
             size_t m_leftFootNodeIndex = InvalidIndex32;

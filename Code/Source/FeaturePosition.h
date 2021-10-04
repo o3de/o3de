@@ -41,31 +41,39 @@ namespace EMotionFX
             AZ_RTTI(FeaturePosition, "{3EAA6459-DB59-4EA1-B8B3-C933A83AA77D}", Feature)
             AZ_CLASS_ALLOCATOR_DECL
 
-            struct EMFX_API FrameCostContext
-            {
-                const Pose* m_pose;
-            };
-
             FeaturePosition();
             ~FeaturePosition() override = default;
 
             bool Init(const InitSettings& settings) override;
+
             void ExtractFrameData(const ExtractFrameContext& context) override;
             void DebugDraw(EMotionFX::DebugDraw::ActorInstanceData& draw, BehaviorInstance* behaviorInstance, size_t frameIndex) override;
-            size_t GetNumDimensionsForKdTree() const override;
-            void FillFrameFloats(size_t frameIndex, size_t startIndex, AZStd::vector<float>& frameFloats) const override;
-            void FillFrameFloats(size_t startIndex, AZStd::vector<float>& frameFloats, const FrameCostContext& context);
-            void CalcMedians(AZStd::vector<float>& medians, size_t startIndex) const override;
 
+            struct EMFX_API FrameCostContext
+            {
+                FrameCostContext(const Pose& pose, const FeatureMatrix& featureMatrix)
+                    : m_pose(pose)
+                    , m_featureMatrix(featureMatrix)
+                {
+                }
+
+                const Pose& m_pose;
+                const FeatureMatrix& m_featureMatrix;
+            };
             float CalculateFrameCost(size_t frameIndex, const FrameCostContext& context) const;
 
+            void FillFrameFloats(const FeatureMatrix& featureMatrix, size_t frameIndex, size_t startIndex, AZStd::vector<float>& frameFloats) const override;
+            void FillFrameFloats(size_t startIndex, AZStd::vector<float>& frameFloats, const FrameCostContext& context);
+
             void SetNodeIndex(size_t nodeIndex);
-            size_t CalcMemoryUsageInBytes() const override;
 
             static void Reflect(AZ::ReflectContext* context);
 
+            size_t GetNumDimensions() const override;
+            AZ::Vector3 GetFeatureData(const FeatureMatrix& featureMatrix, size_t frameIndex) const;
+            void SetFeatureData(FeatureMatrix& featureMatrix, size_t frameIndex, const AZ::Vector3& position);
+
         private:
-            AZStd::vector<AZ::Vector3> m_positions; /**< A position for every frame. */
             size_t m_nodeIndex; /**< The node to grab the data from. */
         };
     } // namespace MotionMatching

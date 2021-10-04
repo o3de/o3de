@@ -15,6 +15,7 @@
 #include <EMotionFX/Source/EMotionFXManager.h>
 #include <EMotionFX/Source/EventManager.h>
 #include <EMotionFX/Source/TransformData.h>
+#include <Behavior.h>
 #include <BehaviorInstance.h>
 #include <FrameDatabase.h>
 #include <FeatureVelocity.h>
@@ -35,14 +36,6 @@ namespace EMotionFX
         {
         }
 
-        size_t FeatureVelocity::CalcMemoryUsageInBytes() const
-        {
-            size_t total = 0;
-            total += m_velocities.capacity() * sizeof(Velocity);
-            total += sizeof(m_velocities);
-            return total;
-        }
-
         bool FeatureVelocity::Init(const InitSettings& settings)
         {
             MCORE_UNUSED(settings);
@@ -52,7 +45,6 @@ namespace EMotionFX
                 return false;
             }
 
-            m_velocities.resize(m_data->GetNumFrames());
             return true;
         }
 
@@ -61,14 +53,10 @@ namespace EMotionFX
             m_nodeIndex = nodeIndex;
         }
 
-        size_t FeatureVelocity::GetNumDimensionsForKdTree() const
+        void FeatureVelocity::FillFrameFloats(const FeatureMatrix& featureMatrix, size_t frameIndex, size_t startIndex, AZStd::vector<float>& frameFloats) const
         {
-            return 4;
-        }
+            Velocity value = GetFeatureData(featureMatrix, frameIndex);
 
-        void FeatureVelocity::FillFrameFloats(size_t frameIndex, size_t startIndex, AZStd::vector<float>& frameFloats) const
-        {
-            const Velocity& value = m_velocities[frameIndex];
             frameFloats[startIndex] = value.m_direction.GetX();
             frameFloats[startIndex + 1] = value.m_direction.GetY();
             frameFloats[startIndex + 2] = value.m_direction.GetZ();
@@ -83,32 +71,15 @@ namespace EMotionFX
             frameFloats[startIndex + 3] = context.m_speed;
         }
 
-        void FeatureVelocity::CalcMedians(AZStd::vector<float>& medians, size_t startIndex) const
-        {
-            float sums[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
-            const size_t numFrames = m_velocities.size();
-            for (size_t i = 0; i < numFrames; ++i)
-            {
-                sums[0] += m_velocities[i].m_direction.GetX();
-                sums[1] += m_velocities[i].m_direction.GetY();
-                sums[2] += m_velocities[i].m_direction.GetZ();
-                sums[3] += m_velocities[i].m_speed;
-            }
-
-            const float fNumFrames = static_cast<float>(numFrames);
-            for (size_t i = 0; i < 4; ++i)
-            {
-                medians[startIndex + i] = sums[i] / fNumFrames;
-            }
-        }
-
         void FeatureVelocity::ExtractFrameData(const ExtractFrameContext& context)
         {
-            Velocity& currentVelocity = m_velocities[context.m_frameIndex];
-            CalculateVelocity(m_nodeIndex, m_relativeToNodeIndex, context.m_motionInstance, currentVelocity.m_direction, currentVelocity.m_speed);
+            Velocity velocity;
+            CalculateVelocity(m_nodeIndex, m_relativeToNodeIndex, context.m_motionInstance, velocity.m_direction, velocity.m_speed);
+
+            SetFeatureData(context.m_featureMatrix, context.m_frameIndex, velocity);
         }
 
-        void FeatureVelocity::DebugDraw([[maybe_unused]] EMotionFX::DebugDraw::ActorInstanceData& draw, [[maybe_unused]] BehaviorInstance* behaviorInstance, [[maybe_unused]] size_t frameIndex)
+        void FeatureVelocity::DebugDraw(EMotionFX::DebugDraw::ActorInstanceData& draw, [[maybe_unused]] BehaviorInstance* behaviorInstance, [[maybe_unused]] size_t frameIndex)
         {
             if (m_nodeIndex == InvalidIndex)
             {
@@ -120,17 +91,18 @@ namespace EMotionFX
             const Transform jointModelTM = pose->GetModelSpaceTransform(m_nodeIndex);
             const Transform relativeToWorldTM = pose->GetWorldSpaceTransform(m_relativeToNodeIndex);
 
-            const Velocity& velocity = m_velocities[frameIndex];
+            const Behavior* behavior = behaviorInstance->GetBehavior();
+            const Velocity velocity = GetFeatureData(behavior->GetFeatures().GetFeatureMatrix(), frameIndex);
             const float scale = 0.15f;
             const AZ::Vector3 jointPosition = relativeToWorldTM.TransformPoint(jointModelTM.m_position);
             const AZ::Vector3 directionWorldSpace = relativeToWorldTM.TransformVector(velocity.m_direction * velocity.m_speed * scale);
             draw.DrawLine(jointPosition, jointPosition + directionWorldSpace,
-                AZ::Color(1.0f, 1.0f, 0.0f, 1.0f));
+                m_debugColor);
         }
 
         float FeatureVelocity::CalculateFrameCost(size_t frameIndex, const FrameCostContext& context) const
         {
-            const Velocity& frameVelocity = m_velocities[frameIndex];
+            const Velocity& frameVelocity = GetFeatureData(context.m_featureMatrix, frameIndex);
             const float dotResult = frameVelocity.m_direction.Dot(context.m_direction);
             //const float speedDiff = AZ::GetAbs(frameVelocity.m_speed - context.m_speed);
 
@@ -161,6 +133,25 @@ namespace EMotionFX
                 ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                 ->Attribute(AZ::Edit::Attributes::AutoExpand, "")
                 ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly);
+        }
+
+        size_t FeatureVelocity::GetNumDimensions() const
+        {
+            return 4;
+        }
+
+        EMotionFX::MotionMatching::FeatureVelocity::Velocity FeatureVelocity::GetFeatureData(const FeatureMatrix& featureMatrix, size_t frameIndex) const
+        {
+            Velocity result;
+            result.m_direction = featureMatrix.GetVector3(frameIndex, m_featureColumnOffset);
+            result.m_speed = featureMatrix(frameIndex, m_featureColumnOffset + 3);
+            return result;
+        }
+
+        void FeatureVelocity::SetFeatureData(FeatureMatrix& featureMatrix, size_t frameIndex, const Velocity& velocity)
+        {
+            featureMatrix.SetVector3(frameIndex, m_featureColumnOffset, velocity.m_direction);
+            featureMatrix(frameIndex, m_featureColumnOffset + 3) = velocity.m_speed;
         }
     } // namespace MotionMatching
 } // namespace EMotionFX
