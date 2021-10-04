@@ -74,6 +74,10 @@ namespace AZ
             {
             }
 
+            void AssetImportRequest::GetGeneratedManifestExtension(AZStd::string& /*result*/)
+            {
+            }
+
             void AssetImportRequest::GetSupportedFileExtensions(AZStd::unordered_set<AZStd::string>& /*extensions*/)
             {
             }
@@ -104,8 +108,12 @@ namespace AZ
                 AZ_UNUSED(value);
             }
 
+            void AssetImportRequest::GetManifestDependencyPaths(AZStd::vector<AZStd::string>&)
+            {
+            }
+
             AZStd::shared_ptr<Containers::Scene> AssetImportRequest::LoadSceneFromVerifiedPath(const AZStd::string& assetFilePath, const Uuid& sourceGuid,
-                RequestingApplication requester, const Uuid& loadingComponentUuid)
+                                                                                               RequestingApplication requester, const Uuid& loadingComponentUuid)
             {
                 AZStd::string sceneName;
                 AzFramework::StringFunc::Path::GetFileName(assetFilePath.c_str(), sceneName);
