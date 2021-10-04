@@ -97,13 +97,7 @@ def AtomGPU_BasicLevelSetup_SetsUpLevel():
 
     def initial_viewport_setup(screen_width, screen_height):
         general.set_viewport_size(screen_width, screen_height)
-        general.idle_wait(1)
         general.update_viewport()
-        helper.wait_for_condition(function=lambda: isclose(
-                a=general.get_viewport_size().x, b=SCREEN_WIDTH, rel_tol=0.1) and isclose(
-                a=general.get_viewport_size().y, b=SCREEN_HEIGHT, rel_tol=0.1),
-            timeout_in_seconds=4.0
-        )
         result = isclose(
             a=general.get_viewport_size().x, b=SCREEN_WIDTH, rel_tol=0.1) and isclose(
             a=general.get_viewport_size().y, b=SCREEN_HEIGHT, rel_tol=0.1)

@@ -20,7 +20,7 @@ DEFAULT_SUBFOLDER_PATH = 'user/PythonTests/Automated/Screenshots'
 @pytest.mark.parametrize("project", ["AutomatedTesting"])
 @pytest.mark.parametrize("launcher_platform", ['windows_editor'])
 class TestAutomation(EditorTestSuite):
-    global_extra_cmdline_args = []  # Default is ["-BatchMode", "-autotest_mode"]
+    global_extra_cmdline_args = ["-BatchMode"]  # Default is ["-BatchMode", "-autotest_mode"]
 
     class AtomGPU_BasicLevelSetup_SetsUpLevel(EditorSharedTest):
         use_null_renderer = False  # Default is True
