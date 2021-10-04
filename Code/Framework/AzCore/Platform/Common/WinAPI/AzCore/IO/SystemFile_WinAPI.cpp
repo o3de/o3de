@@ -352,7 +352,8 @@ namespace Platform
 
     bool IsDirectory(const char* filePath)
     {
-        return (GetAttributes(filePath) & FILE_ATTRIBUTE_DIRECTORY) != 0;
+        DWORD attributes = GetAttributes(filePath);
+        return attributes != INVALID_FILE_ATTRIBUTES && (GetAttributes(filePath) & FILE_ATTRIBUTE_DIRECTORY) != 0;
     }
 
 
