@@ -68,7 +68,10 @@ namespace EMotionFX
             RemoveZeroFrameLeafNodes();
 
             const float initTime = timer.GetDeltaTimeInSeconds();
-            AZ_TracePrintf("EMotionFX", "KdTree initialized in %f seconds (numNodes = %d  numDims = %d  numBytes = %d).", initTime, m_nodes.size(), m_numDimensions, CalcMemoryUsageInBytes());
+            AZ_TracePrintf("EMotionFX", "KdTree initialized in %f seconds (numNodes = %d  numDims = %d  Memory used = %.2f MB).",
+                initTime, m_nodes.size(),
+                m_numDimensions,
+                static_cast<float>(CalcMemoryUsageInBytes()) / 1024.0f / 1024.0f);
 
             PrintStats();
             return true;
@@ -278,8 +281,8 @@ namespace EMotionFX
                     continue;
                 }
 
-                frameData->FillFrameFloats(frameIndex, startDimension, m_frameFloats);
-                startDimension += frameData->GetNumDimensionsForKdTree();
+                frameData->FillFrameFloats(featureDatabase.GetFeatureMatrix(), frameIndex, startDimension, m_frameFloats);
+                startDimension += frameData->GetNumDimensions();
             }
         }
 

@@ -112,6 +112,8 @@ namespace EMotionFX
 
         AZStd::tuple<size_t, size_t> FrameDatabase::ImportFrames(Motion* motion, const FrameImportSettings& settings, bool mirrored)
         {
+            AZ_PROFILE_SCOPE(Animation, "FrameDatabase::ImportFrames");
+
             AZ_Assert(motion, "The motion cannot be a nullptr");
             AZ_Assert(settings.m_sampleRate > 0, "The sample rate must be bigger than zero frames per second");
             AZ_Assert(settings.m_sampleRate <= 120, "The sample rate must be smaller than 120 frames per second");

@@ -73,6 +73,8 @@ namespace EMotionFX
 
         void BlendTreeMotionMatchNode::UniqueData::Update()
         {
+            AZ_PROFILE_SCOPE(Animation, "BlendTreeMotionMatchNode::UniqueData::Update");
+
             auto animGraphNode = azdynamic_cast<BlendTreeMotionMatchNode*>(m_object);
             AZ_Assert(animGraphNode, "Unique data linked to incorrect node type.");
 
@@ -152,6 +154,8 @@ namespace EMotionFX
 
         void BlendTreeMotionMatchNode::Update(AnimGraphInstance* animGraphInstance, float timePassedInSeconds)
         {
+            AZ_PROFILE_SCOPE(Animation, "BlendTreeMotionMatchNode::Update");
+
             m_timer.Stamp();
             
             UniqueData* uniqueData = static_cast<UniqueData*>(FindOrCreateUniqueNodeData(animGraphInstance));
@@ -195,6 +199,8 @@ namespace EMotionFX
 
         void BlendTreeMotionMatchNode::PostUpdate(AnimGraphInstance* animGraphInstance, float timePassedInSeconds)
         {
+            AZ_PROFILE_SCOPE(Animation, "BlendTreeMotionMatchNode::PostUpdate");
+
             AZ_UNUSED(animGraphInstance);
             AZ_UNUSED(timePassedInSeconds);
             m_timer.Stamp();
@@ -233,6 +239,8 @@ namespace EMotionFX
 
         void BlendTreeMotionMatchNode::Output(AnimGraphInstance* animGraphInstance)
         {
+            AZ_PROFILE_SCOPE(Animation, "BlendTreeMotionMatchNode::Output");
+
             AZ_UNUSED(animGraphInstance);
             m_timer.Stamp();
 

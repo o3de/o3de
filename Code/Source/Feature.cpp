@@ -32,20 +32,6 @@ namespace EMotionFX
     {
         AZ_CLASS_ALLOCATOR_IMPL(Feature, MotionMatchAllocator, 0)
 
-        Feature::Feature()
-            : m_id(AZ::TypeId::CreateNull())
-            , m_data(nullptr)
-            , m_relativeToNodeIndex(0)
-            , m_debugColor(AZ::Colors::Gray)
-            , m_debugDrawEnabled(true)
-        {
-        }
-
-        void Feature::SetId(const AZ::TypeId& id)
-        {
-            m_id = id;
-        }
-
         void Feature::SetDebugDrawColor(const AZ::Color& color)
         {
             m_debugColor = color;
@@ -85,10 +71,6 @@ namespace EMotionFX
         {
             motionInstance->SetMotion(sourceMotion);
             motionInstance->SetCurrentTime(sampleTime, true);
-            /*if (!motionInstance->GetIsReadyForSampling())
-            {
-                motionInstance->InitForSampling();
-            }*/
             sourceMotion->Update(bindPose, samplePose, motionInstance);
         }
 

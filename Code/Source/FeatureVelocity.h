@@ -45,34 +45,38 @@ namespace EMotionFX
                 float m_speed; /**< The speed at which we move into this direction (m/s). */
             };
 
-            struct EMFX_API FrameCostContext
-            {
-                AZ::Vector3 m_direction;
-                float m_speed;
-            };
-
             FeatureVelocity();
             ~FeatureVelocity() override = default;
 
             bool Init(const InitSettings& settings) override;
             void ExtractFrameData(const ExtractFrameContext& context) override;
             void DebugDraw(EMotionFX::DebugDraw::ActorInstanceData& draw, BehaviorInstance* behaviorInstance, size_t frameIndex) override;
-            size_t GetNumDimensionsForKdTree() const override;
-            void FillFrameFloats(size_t frameIndex, size_t startIndex, AZStd::vector<float>& frameFloats) const override;
-            void FillFrameFloats(size_t startIndex, AZStd::vector<float>& frameFloats, const FrameCostContext& context);
-            void CalcMedians(AZStd::vector<float>& medians, size_t startIndex) const override;
 
+            struct EMFX_API FrameCostContext
+            {
+                FrameCostContext(const FeatureMatrix& featureMatrix)
+                    : m_featureMatrix(featureMatrix)
+                {
+                }
+
+                const FeatureMatrix& m_featureMatrix;
+                AZ::Vector3 m_direction;
+                float m_speed;
+            };
             float CalculateFrameCost(size_t frameIndex, const FrameCostContext& context) const;
 
-            AZ_INLINE const Velocity& GetVelocity(size_t frameIndex) const { return m_velocities[frameIndex]; }
+            void FillFrameFloats(const FeatureMatrix& featureMatrix, size_t frameIndex, size_t startIndex, AZStd::vector<float>& frameFloats) const override;
+            void FillFrameFloats(size_t startIndex, AZStd::vector<float>& frameFloats, const FrameCostContext& context);
 
             void SetNodeIndex(size_t nodeIndex);
-            size_t CalcMemoryUsageInBytes() const override;
 
             static void Reflect(AZ::ReflectContext* context);
 
+            size_t GetNumDimensions() const override;
+            Velocity GetFeatureData(const FeatureMatrix& featureMatrix, size_t frameIndex) const;
+            void SetFeatureData(FeatureMatrix& featureMatrix, size_t frameIndex, const Velocity& velocity);
+
         private:
-            AZStd::vector<Velocity> m_velocities; /**< The velocities for each frame. */
             size_t m_nodeIndex = InvalidIndex; /**< The node to grab the data from. */
         };
     } // namespace MotionMatching
