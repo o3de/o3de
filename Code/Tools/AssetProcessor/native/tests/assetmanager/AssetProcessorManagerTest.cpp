@@ -4137,8 +4137,9 @@ struct LockedFileTest
         switch (message.GetMessageType())
         {
         case SourceFileNotificationMessage::MessageType:
-            if (const auto sourceFileMessage = static_cast<const SourceFileNotificationMessage&>(message);
-                sourceFileMessage.m_type == SourceFileNotificationMessage::NotificationType::FileRemoved && m_callback)
+            if (const auto sourceFileMessage = azrtti_cast<const SourceFileNotificationMessage*>(&message);
+                sourceFileMessage != nullptr && sourceFileMessage->m_type == SourceFileNotificationMessage::NotificationType::FileRemoved
+                && m_callback)
             {
                 m_callback();
             }
