@@ -106,6 +106,18 @@ namespace TestImpact
             using TestEngineJobType = TestEngineInstrumentedRun;
         };
 
+        AZStd::optional<Client::TestRunResult> StandAloneHandler(ReturnCode returnCode)
+        {
+            if (returnCode == 0)
+            {
+                return AZStd::nullopt;
+            }
+            else
+            {
+                return Client::TestRunResult::FailedToExecute;
+            }
+        }
+
         // Functor for handling test job runner callbacks
         template<typename TestJobRunner>
         class TestJobRunnerCallbackHandler
@@ -118,15 +130,15 @@ namespace TestImpact
                 TestEngineJobMap<IdType>* engineJobs,
                 Policy::ExecutionFailure executionFailurePolicy,
                 Policy::TestFailure testFailurePolicy,
-                const ErrorCodeChecker& standAloneErrorCodeChecker,
-                const ErrorCodeChecker& testRunnerErrorCodeChecker,
+                AZStd::vector<ErrorCodeHandler>&& standAloneErrorCodeHandlers,
+                AZStd::vector<ErrorCodeHandler>&& testRunnerErrorCodeHandlers,
                 AZStd::optional<TestEngineJobCompleteCallback>* callback)
                 : m_testTargets(testTargets)
                 , m_engineJobs(engineJobs)
                 , m_executionFailurePolicy(executionFailurePolicy)
                 , m_testFailurePolicy(testFailurePolicy)
-                , m_standAloneErrorCodeChecker(standAloneErrorCodeChecker)
-                , m_testRunnerErrorCodeChecker(testRunnerErrorCodeChecker)
+                , m_standAloneErrorCodeChecker(AZStd::move(standAloneErrorCodeHandlers))
+                , m_testRunnerErrorCodeChecker(AZStd::move(testRunnerErrorCodeHandlers))
                 , m_callback(callback)
             {
             }
@@ -203,6 +215,63 @@ namespace TestImpact
             ErrorCodeChecker m_standAloneErrorCodeChecker;
             ErrorCodeChecker m_testRunnerErrorCodeChecker;
             AZStd::optional<TestEngineJobCompleteCallback>* m_callback;
+        };
+
+        class RegularTestJobRunnerCallbackHandler
+            : public TestJobRunnerCallbackHandler<NativeRegularTestRunner>
+        {
+            using ParentHandler = TestJobRunnerCallbackHandler<NativeRegularTestRunner>;
+
+        public:
+            RegularTestJobRunnerCallbackHandler(
+                const AZStd::vector<const TestTarget*>& testTargets,
+                TestEngineJobMap<NativeRegularTestRunner::JobInfo::IdType>* engineJobs,
+                Policy::ExecutionFailure executionFailurePolicy,
+                Policy::TestFailure testFailurePolicy,
+                AZStd::optional<TestEngineJobCompleteCallback>* callback)
+                : ParentHandler(
+                      testTargets,
+                      engineJobs,
+                      executionFailurePolicy,
+                      testFailurePolicy,
+                      AZStd::vector<ErrorCodeHandler>{ GetNativeTestLibraryErrorCodeHandler(),
+                                                       [](ReturnCode returnCode)
+                                                       {
+                                                           return StandAloneHandler(returnCode);
+                                                       } },
+                      AZStd::vector<ErrorCodeHandler>{ GetNativeTestRunnerErrorCodeHandler(), GetNativeTestLibraryErrorCodeHandler() },
+                      callback)
+            {
+            }
+        };
+
+        class InstrumentedRegularTestJobRunnerCallbackHandler
+            : public TestJobRunnerCallbackHandler<NativeInstrumentedTestRunner>
+        {
+            using ParentHandler = TestJobRunnerCallbackHandler<NativeInstrumentedTestRunner>;
+
+        public:
+            InstrumentedRegularTestJobRunnerCallbackHandler(
+                const AZStd::vector<const TestTarget*>& testTargets,
+                TestEngineJobMap<NativeInstrumentedTestRunner::JobInfo::IdType>* engineJobs,
+                Policy::ExecutionFailure executionFailurePolicy,
+                Policy::TestFailure testFailurePolicy,
+                AZStd::optional<TestEngineJobCompleteCallback>* callback)
+                : ParentHandler(
+                      testTargets,
+                      engineJobs,
+                      executionFailurePolicy,
+                      testFailurePolicy,
+                      AZStd::vector<ErrorCodeHandler>{ GetNativeInstrumentationErrorCodeHandler(), GetNativeTestLibraryErrorCodeHandler(),
+                                                       [](ReturnCode returnCode)
+                                                       {
+                                                           return StandAloneHandler(returnCode);
+                                                       } },
+                      AZStd::vector<ErrorCodeHandler>{ GetNativeInstrumentationErrorCodeHandler(), GetNativeTestRunnerErrorCodeHandler(),
+                                                       GetNativeTestLibraryErrorCodeHandler() },
+                      callback)
+            {
+            }
         };
 
         // Helper function to compile the run type specific test engine jobs from their associated jobs and payloads
@@ -287,23 +356,6 @@ namespace TestImpact
     //    return { CalculateSequenceResult(result, engineRuns, executionFailurePolicy), AZStd::move(engineRuns) };
     //}
 
-    AZStd::optional<Client::TestRunResult> StandAloneHandler(ReturnCode returnCode)
-    {
-        if (returnCode == 0)
-        {
-            return AZStd::nullopt;
-        }
-        else
-        {
-            return Client::TestRunResult::FailedToExecute;
-        }
-    }
-
-    // ALLLLLLLLLLSOOOOOOOOOOOO CHECK IF GTEST TARGET OR NOT AND HAVE THAT AS ARG IN ADDITIONALINFO
-
-    // actually: have the job info gen store the different error code checkers and stuff a ptr to each one on a per-job basis
-    // they can then be accessed via the AdditionalInfo of the job info class
-
     AZStd::pair<TestSequenceResult, AZStd::vector<TestEngineRegularRun>> TestEngine::RegularRun(
         const AZStd::vector<const TestTarget*>& testTargets,
         Policy::ExecutionFailure executionFailurePolicy,
@@ -318,20 +370,11 @@ namespace TestImpact
         TestEngineJobMap<NativeRegularTestRunner::JobInfo::IdType> engineJobs;
         const auto jobInfos = m_testJobInfoGenerator->GenerateRegularTestRunJobInfos(testTargets);
 
-        ErrorCodeChecker standAloneErrorCodeChecker({ GetNativeTestLibraryErrorCodeHandler(),
-                                                      [](ReturnCode returnCode)
-                                                      {
-                                                          return StandAloneHandler(returnCode);
-                                                      } });
-        ErrorCodeChecker testRunnerErrorCodeChecker({ GetNativeTestRunnerErrorCodeHandler(), GetNativeTestLibraryErrorCodeHandler() });
-
-        TestJobRunnerCallbackHandler<NativeRegularTestRunner> jobCallback(
+        RegularTestJobRunnerCallbackHandler jobCallback(
             testTargets,
             &engineJobs,
             executionFailurePolicy,
             testFailurePolicy,
-            standAloneErrorCodeChecker,
-            testRunnerErrorCodeChecker,
             &callback);
 
         auto [result, runnerJobs] = m_testRunner->RunTests(
@@ -359,25 +402,15 @@ namespace TestImpact
         TestEngineJobMap<NativeInstrumentedTestRunner::JobInfo::IdType> engineJobs;
         const auto jobInfos = m_testJobInfoGenerator->GenerateInstrumentedTestRunJobInfos(testTargets, CoverageLevel::Source);
 
-        ErrorCodeChecker standAloneErrorCodeChecker({ GetNativeInstrumentationErrorCodeHandler(), GetNativeTestLibraryErrorCodeHandler(),
-                                                      [](ReturnCode returnCode)
-                                                      {
-                                                          return StandAloneHandler(returnCode);
-                                                      } });
-        ErrorCodeChecker testRunnerErrorCodeChecker(
-            { GetNativeInstrumentationErrorCodeHandler(), GetNativeTestRunnerErrorCodeHandler(), GetNativeTestLibraryErrorCodeHandler() });
-
         auto [result, runnerJobs] = m_instrumentedTestRunner->RunTests(
             jobInfos,
             testTargetTimeout,
             globalTimeout,
-            TestJobRunnerCallbackHandler<NativeInstrumentedTestRunner>(
+            InstrumentedRegularTestJobRunnerCallbackHandler(
                 testTargets,
                 &engineJobs,
                 executionFailurePolicy,
                 testFailurePolicy,
-                standAloneErrorCodeChecker,
-                testRunnerErrorCodeChecker,
                 &callback));
 
         auto engineRuns = CompileTestEngineRuns<NativeInstrumentedTestRunner>(testTargets, runnerJobs, AZStd::move(engineJobs));
