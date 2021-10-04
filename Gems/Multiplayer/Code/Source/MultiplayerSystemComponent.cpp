@@ -489,11 +489,23 @@ namespace Multiplayer
     {
         m_didHandshake = true;
 
-        AZ::CVarFixedString commandString = "sv_map " + packet.GetMap();
-        AZ::Interface<AZ::IConsole>::Get()->PerformCommand(commandString.c_str());
+        // If this is an Editor then we're now accepting the connection to the EditorServer.
+        // In normal game clients SendReadyForEntityUpdates will be enabled once the appropriate level's root spawnable is loaded,
+        // but since we're in Editor, we're already in the level.
+        AZ::ApplicationTypeQuery applicationType;
+        AZ::ComponentApplicationBus::Broadcast(&AZ::ComponentApplicationRequests::QueryApplicationType, applicationType);
+        if (applicationType.IsEditor())
+        {
+            SendReadyForEntityUpdates(true);
+        }
+        else
+        {
+            AZ::CVarFixedString commandString = "sv_map " + packet.GetMap();
+            AZ::Interface<AZ::IConsole>::Get()->PerformCommand(commandString.c_str());
 
-        AZ::CVarFixedString loadLevelString = "LoadLevel " + packet.GetMap();
-        AZ::Interface<AZ::IConsole>::Get()->PerformCommand(loadLevelString.c_str());
+            AZ::CVarFixedString loadLevelString = "LoadLevel " + packet.GetMap();
+            AZ::Interface<AZ::IConsole>::Get()->PerformCommand(loadLevelString.c_str());
+        }
         return true;
     }
 
@@ -981,7 +993,7 @@ namespace Multiplayer
         INetworkEntityManager::EntityList entityList = m_networkEntityManager.CreateEntitiesImmediate(playerPrefabEntityId, NetEntityRole::Authority, AZ::Transform::CreateIdentity(), Multiplayer::AutoActivate::DoNotActivate);
 
         NetworkEntityHandle controlledEntity;
-        if (entityList.size() > 0)
+        if (!entityList.empty())
         {
             controlledEntity = entityList[0];
         }
