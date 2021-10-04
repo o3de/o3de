@@ -94,7 +94,7 @@ namespace AZ::Prefab
 
     AZ::JsonSerializationResult::Result PrefabDomDataJsonSerializer::Load(
         void* outputValue,
-        const AZ::Uuid& outputValueTypeId,
+        [[maybe_unused]] const AZ::Uuid& outputValueTypeId,
         const rapidjson::Value& inputValue,
         AZ::JsonDeserializerContext& context)
     {
