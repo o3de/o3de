@@ -26,4 +26,6 @@ namespace O3DE::ProjectManager
     static const QString ProjectCMakeCommand = "cmake";
     static const QString ProjectCMakeBuildTargetEditor = "Editor";
 
+    static const QString RepoTimeFormat = "dd/MM/yyyy hh:mmap";
+
 } // namespace O3DE::ProjectManager

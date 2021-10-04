@@ -13,8 +13,10 @@ import json
 import logging
 import os
 import pathlib
+import shutil
+import hashlib
 
-from o3de import validation
+from o3de import validation, utils
 
 logger = logging.getLogger()
 logging.basicConfig()
@@ -135,12 +137,12 @@ def get_o3de_manifest() -> pathlib.Path:
         json_data.update({'default_restricted_folder': default_restricted_folder.as_posix()})
         json_data.update({'default_third_party_folder': default_third_party_folder.as_posix()})
 
+        json_data.update({'engines': []})
         json_data.update({'projects': []})
         json_data.update({'external_subdirectories': []})
         json_data.update({'templates': []})
         json_data.update({'restricted': []})
         json_data.update({'repos': []})
-        json_data.update({'engines': []})
 
         default_restricted_folder_json = default_restricted_folder / 'restricted.json'
         if not default_restricted_folder_json.is_file():
@@ -195,23 +197,25 @@ def load_o3de_manifest(manifest_path: pathlib.Path = None) -> dict:
             return json_data
 
 
-def save_o3de_manifest(json_data: dict, manifest_path: pathlib.Path = None) -> bool:
+def save_o3de_manifest(json_data: dict, manifest_path: pathlib.Path = None) -> None:
     """
-        Save the json dictionary to the supplied manifest file or ~/.o3de/o3de_manifest.json if manifest_path is None
+    Save the json dictionary to the supplied manifest file or ~/.o3de/o3de_manifest.json if None
 
-        :param json_data: dictionary to save in json format at the file path
-        :param manifest_path: optional path to manifest file to save
-        """
+    :param json_data: dictionary to save in json format at the file path
+    :param manifest_path: optional path to manifest file to save
+    """
     if not manifest_path:
         manifest_path = get_o3de_manifest()
+    backup_name = utils.backup_file(manifest_path)
     with manifest_path.open('w') as s:
         try:
             s.write(json.dumps(json_data, indent=4) + '\n')
-            return True
-        except OSError as e:
+        except Exception as e:
             logger.error(f'Manifest json failed to save: {str(e)}')
-            return False
-
+            os.unlink(manifest_path)
+            os.rename(backup_name, manifest_path)
+        finally:
+            os.unlink(backup_name)
 
 
 def get_gems_from_subdirectories(external_subdirs: list) -> list:
@@ -236,6 +240,12 @@ def get_gems_from_subdirectories(external_subdirs: list) -> list:
 
 
 # Data query methods
+def get_this_engine() -> dict:
+    json_data = load_o3de_manifest()
+    engine_data = find_engine_data(json_data)
+    return engine_data
+
+
 def get_engines() -> list:
     json_data = load_o3de_manifest()
     engine_list = json_data['engines'] if 'engines' in json_data else []
@@ -421,6 +431,35 @@ def get_templates_for_generic_creation():  # temporary until we have a better wa
 
     return list(filter(filter_project_and_gem_templates_out, get_all_templates()))
 
+def get_json_data(object_typename: str = None,
+                  object_path: str or pathlib.Path = None,
+                  object_validator = callable) -> dict or None:
+    if not object_typename or not object_validator:
+        logger.error(f'Missing object info.')
+    
+    if not object_path:
+        logger.error(f'{object_typename} Path {object_path} has not been registered.')
+        return None
+
+    object_path = pathlib.Path(object_path).resolve()
+    object_json = object_path / f'{object_typename}.json'
+    if not object_json.is_file():
+        logger.error(f'{object_typename} json {object_json} is not present.')
+        return None
+    if not object_validator(object_json):
+        logger.error(f'{object_typename} json {object_json} is not valid.')
+        return None
+
+    with object_json.open('r') as f:
+        try:
+            object_json_data = json.load(f)
+        except json.JSONDecodeError as e:
+            logger.warn(f'{object_json} failed to load: {str(e)}')
+        else:
+            return object_json_data
+
+    return None
+
 
 def get_engine_json_data(engine_name: str = None,
                          engine_path: str or pathlib.Path = None) -> dict or None:
@@ -431,28 +470,7 @@ def get_engine_json_data(engine_name: str = None,
     if engine_name and not engine_path:
         engine_path = get_registered(engine_name=engine_name)
 
-    if not engine_path:
-        logger.error(f'Engine Path {engine_path} has not been registered.')
-        return None
-
-    engine_path = pathlib.Path(engine_path).resolve()
-    engine_json = engine_path / 'engine.json'
-    if not engine_json.is_file():
-        logger.error(f'Engine json {engine_json} is not present.')
-        return None
-    if not validation.valid_o3de_engine_json(engine_json):
-        logger.error(f'Engine json {engine_json} is not valid.')
-        return None
-
-    with engine_json.open('r') as f:
-        try:
-            engine_json_data = json.load(f)
-        except json.JSONDecodeError as e:
-            logger.warn(f'{engine_json} failed to load: {str(e)}')
-        else:
-            return engine_json_data
-
-    return None
+    return get_json_data('engine', engine_path, validation.valid_o3de_engine_json)
 
 
 def get_project_json_data(project_name: str = None,
@@ -464,28 +482,7 @@ def get_project_json_data(project_name: str = None,
     if project_name and not project_path:
         project_path = get_registered(project_name=project_name)
 
-    if not project_path:
-        logger.error(f'Project Path {project_path} has not been registered.')
-        return None
-
-    project_path = pathlib.Path(project_path).resolve()
-    project_json = project_path / 'project.json'
-    if not project_json.is_file():
-        logger.error(f'Project json {project_json} is not present.')
-        return None
-    if not validation.valid_o3de_project_json(project_json):
-        logger.error(f'Project json {project_json} is not valid.')
-        return None
-
-    with project_json.open('r') as f:
-        try:
-            project_json_data = json.load(f)
-        except json.JSONDecodeError as e:
-            logger.warn(f'{project_json} failed to load: {str(e)}')
-        else:
-            return project_json_data
-
-    return None
+    return get_json_data('project', project_path, validation.valid_o3de_project_json)
 
 
 def get_gem_json_data(gem_name: str = None, gem_path: str or pathlib.Path = None,
@@ -497,28 +494,7 @@ def get_gem_json_data(gem_name: str = None, gem_path: str or pathlib.Path = None
     if gem_name and not gem_path:
         gem_path = get_registered(gem_name=gem_name, project_path=project_path)
 
-    if not gem_path:
-        logger.error(f'Gem Path {gem_path} has not been registered.')
-        return None
-
-    gem_path = pathlib.Path(gem_path).resolve()
-    gem_json = gem_path / 'gem.json'
-    if not gem_json.is_file():
-        logger.error(f'Gem json {gem_json} is not present.')
-        return None
-    if not validation.valid_o3de_gem_json(gem_json):
-        logger.error(f'Gem json {gem_json} is not valid.')
-        return None
-
-    with gem_json.open('r') as f:
-        try:
-            gem_json_data = json.load(f)
-        except json.JSONDecodeError as e:
-            logger.warn(f'{gem_json} failed to load: {str(e)}')
-        else:
-            return gem_json_data
-
-    return None
+    return get_json_data('gem', gem_path, validation.valid_o3de_gem_json)
 
 
 def get_template_json_data(template_name: str = None, template_path: str or pathlib.Path = None,
@@ -530,28 +506,7 @@ def get_template_json_data(template_name: str = None, template_path: str or path
     if template_name and not template_path:
         template_path = get_registered(template_name=template_name, project_path=project_path)
 
-    if not template_path:
-        logger.error(f'Template Path {template_path} has not been registered.')
-        return None
-
-    template_path = pathlib.Path(template_path).resolve()
-    template_json = template_path / 'template.json'
-    if not template_json.is_file():
-        logger.error(f'Template json {template_json} is not present.')
-        return None
-    if not validation.valid_o3de_template_json(template_json):
-        logger.error(f'Template json {template_json} is not valid.')
-        return None
-
-    with template_json.open('r') as f:
-        try:
-            template_json_data = json.load(f)
-        except json.JSONDecodeError as e:
-            logger.warn(f'{template_json} failed to load: {str(e)}')
-        else:
-            return template_json_data
-
-    return None
+    return get_json_data('template', template_path, validation.valid_o3de_template_json)
 
 
 def get_restricted_json_data(restricted_name: str = None, restricted_path: str or pathlib.Path = None,
@@ -563,29 +518,38 @@ def get_restricted_json_data(restricted_name: str = None, restricted_path: str o
     if restricted_name and not restricted_path:
         restricted_path = get_registered(restricted_name=restricted_name, project_path=project_path)
 
-    if not restricted_path:
-        logger.error(f'Restricted Path {restricted_path} has not been registered.')
+    return get_json_data('restricted', restricted_path, validation.valid_o3de_restricted_json)
+
+def get_repo_json_data(repo_uri: str = None) -> dict or None:
+    if not repo_uri:
+        logger.error('Must specify a Repo Uri.')
         return None
 
-    restricted_path = pathlib.Path(restricted_path).resolve()
-    restricted_json = restricted_path / 'restricted.json'
-    if not restricted_json.is_file():
-        logger.error(f'Restricted json {restricted_json} is not present.')
+    repo_json = get_repo_path(repo_uri=repo_uri)
+
+    if not repo_json.is_file():
+        logger.error(f'Repo json {repo_json} is not present.')
         return None
-    if not validation.valid_o3de_restricted_json(restricted_json):
-        logger.error(f'Restricted json {restricted_json} is not valid.')
+    if not validation.valid_o3de_repo_json(repo_json):
+        logger.error(f'Repo json {repo_json} is not valid.')
         return None
 
-    with restricted_json.open('r') as f:
+    with repo_json.open('r') as f:
         try:
-            restricted_json_data = json.load(f)
+            repo_json_data = json.load(f)
         except json.JSONDecodeError as e:
-            logger.warn(f'{restricted_json} failed to load: {str(e)}')
+            logger.warn(f'{repo_json} failed to load: {str(e)}')
         else:
-            return restricted_json_data
+            return repo_json_data
 
     return None
 
+def get_repo_path(repo_uri: str = None, cache_folder: str = None) -> pathlib.Path:
+    if not cache_folder:
+        cache_folder = get_o3de_cache_folder()
+
+    repo_sha256 = hashlib.sha256(repo_uri.encode())
+    return cache_folder / str(repo_sha256.hexdigest() + '.json')
 
 def get_registered(engine_name: str = None,
                    project_name: str = None,
@@ -721,9 +685,7 @@ def get_registered(engine_name: str = None,
     elif isinstance(repo_name, str):
         cache_folder = get_o3de_cache_folder()
         for repo_uri in json_data['repos']:
-            repo_uri = pathlib.Path(repo_uri).resolve()
-            repo_sha256 = hashlib.sha256(repo_uri.encode())
-            cache_file = cache_folder / str(repo_sha256.hexdigest() + '.json')
+            cache_file = get_repo_path(repo_uri=repo_uri, cache_folder=cache_folder)
             if cache_file.is_file():
                 repo = pathlib.Path(cache_file).resolve()
                 with repo.open('r') as f:
