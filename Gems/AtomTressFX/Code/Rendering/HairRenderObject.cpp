@@ -387,7 +387,7 @@ namespace AZ
 
             //! Updates the buffers data for the hair generation.
             //! Notice: does not update the bone matrices that will be updated every frame.
-            bool HairRenderObject::UploadGPUData(const char* name, AMD::TressFXAsset* asset)
+            bool HairRenderObject::UploadGPUData([[maybe_unused]] const char* name, AMD::TressFXAsset* asset)
             {
                 // The following must correlate the order in HairGenerationBuffersSemantics
                 void* buffersData[uint8_t(HairGenerationBuffersSemantics::NumBufferStreams)] = {
@@ -526,7 +526,7 @@ namespace AZ
             //! Creation of the render Srg m_hairRenderSrg, followed by creation and binding of the
             //! GPU render resources: vertex thickness, vertex UV, hair albedo maps and two constant buffers.
             bool HairRenderObject::CreateRenderingGPUResources(
-                Data::Instance<RPI::Shader> shader, AMD::TressFXAsset& asset, const char* assetName)
+                Data::Instance<RPI::Shader> shader, AMD::TressFXAsset& asset, [[maybe_unused]] const char* assetName)
             {
                 //-------------------- Render Srg Creation ---------------------
                 m_hairRenderSrg = UtilityClass::CreateShaderResourceGroup(shader, "HairRenderingMaterialSrg", "Hair Gem");
@@ -592,7 +592,7 @@ namespace AZ
                     return false;
                 }
 
-                RHI::ResultCode result = bufferPool->InitBuffer(request);
+                [[maybe_unused]] RHI::ResultCode result = bufferPool->InitBuffer(request);
                 AZ_Error("Hair Gem", result == RHI::ResultCode::Success, "Failed to initialize index buffer - error [%d]", result);
 
                 // create index buffer view
