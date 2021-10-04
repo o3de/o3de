@@ -32,18 +32,18 @@ namespace AzToolsFramework
         invalidateFilter();
     }
 
+    void EntityOutlinerSortFilterProxyModel::setSourceModel(QAbstractItemModel* sourceModel)
+    {
+        QSortFilterProxyModel::setSourceModel(sourceModel);
+
+        m_listModel = qobject_cast<EntityOutlinerListModel*>(sourceModel);
+        AZ_Assert(m_listModel != nullptr, "EntityOutlinerContainerProxyModel requires an EntityOutlinerListModel as its source .");
+    }
+
     bool EntityOutlinerSortFilterProxyModel::filterAcceptsRow(int sourceRow, const QModelIndex& sourceParent) const
     {
         // Retrieve the entityId of the parent entity
-
-        // TODO - retrieve this once on constructor and assert if source model isn't EntityOutlinerListModel
-        EntityOutlinerListModel* listModel = qobject_cast<EntityOutlinerListModel*>(sourceModel());
-        if (!listModel)
-        {
-            return false;
-        }
-
-        AZ::EntityId parentEntityId = listModel->GetEntityFromIndex(sourceParent);
+        AZ::EntityId parentEntityId = m_listModel->GetEntityFromIndex(sourceParent);
 
         if(!m_containerEntityInterface->IsContainerOpen(parentEntityId))
         {

@@ -188,7 +188,6 @@ namespace AzToolsFramework
         }
 
         // Verify if the entity Id corresponds to an entity that is focused; if not, halt selection.
-        // TODO - move this to IsSelectable
         if (!m_focusModeInterface->IsInFocusSubTree(entityIdUnderCursor))
         {
             return AZ::EntityId();
