@@ -27,6 +27,8 @@
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 
+#include <Assets/HairAsset.h>
+
 namespace AMD
 {
     void TressFXSimulationSettings::Reflect(AZ::ReflectContext* context)
