@@ -40,8 +40,7 @@ namespace Multiplayer
         virtual EntityReplicationManager& GetReplicationManager() = 0;
 
         //! Creates and manages sending updates to the remote endpoint.
-        //! @param hostTimeMs current server game time in milliseconds
-        virtual void Update(AZ::TimeMs hostTimeMs) = 0;
+        virtual void Update() = 0;
 
         //! Returns whether update messages can be sent to the connection.
         //! @return true if update messages can be sent

@@ -38,20 +38,19 @@ namespace Multiplayer
 
     void NetworkSpawnableHolderComponent::Activate()
     {
-        const auto agentType = GetMultiplayer()->GetAgentType();
-        const bool shouldSpawnNetEntities =
-            (agentType == MultiplayerAgentType::ClientServer || agentType == MultiplayerAgentType::DedicatedServer);
+        IMultiplayer* multiplayer = GetMultiplayer();
+        const bool shouldSpawnNetEntities = multiplayer->GetShouldSpawnNetworkEntities();
 
-        if(shouldSpawnNetEntities)
+        if (shouldSpawnNetEntities)
         {
             AZ::Transform rootEntityTransform = AZ::Transform::CreateIdentity();
 
-            if(auto* transformInterface = GetEntity()->GetTransform())
+            if (auto* transformInterface = GetEntity()->GetTransform())
             {
                 rootEntityTransform = transformInterface->GetWorldTM();
             }
 
-            INetworkEntityManager* networkEntityManager = GetNetworkEntityManager();
+            INetworkEntityManager* networkEntityManager = multiplayer->GetNetworkEntityManager();
             AZ_Assert(networkEntityManager != nullptr,
                 "Network Entity Manager must be initialized before NetworkSpawnableHolderComponent is activated");
 
