@@ -157,7 +157,7 @@ public:
 
     virtual Vec3 SnapToGrid(const Vec3& vec) = 0;
 
-    //! Get selection procision tolerance.
+    //! Get selection precision tolerance.
     virtual float GetSelectionTolerance() const = 0;
 
     //////////////////////////////////////////////////////////////////////////
