@@ -167,6 +167,9 @@ set(FILES
     Logging/MissingAssetLogger.cpp
     Logging/MissingAssetLogger.h
     Logging/MissingAssetNotificationBus.h
+    Matchmaking/IMatchmakingRequests.cpp
+    Matchmaking/IMatchmakingRequests.h
+    Matchmaking/MatchmakingNotifications.h
     Scene/Scene.h
     Scene/Scene.inl
     Scene/Scene.cpp

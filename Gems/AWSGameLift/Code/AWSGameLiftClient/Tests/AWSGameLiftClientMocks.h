@@ -57,12 +57,9 @@ public:
         AzFramework::SessionAsyncRequestNotificationBus::Handler::BusDisconnect();
     }
 
-    MOCK_METHOD0(OnAcceptMatchAsyncComplete, void());
     MOCK_METHOD1(OnCreateSessionAsyncComplete, void(const AZStd::string&));
     MOCK_METHOD1(OnSearchSessionsAsyncComplete, void(const AzFramework::SearchSessionsResponse&));
     MOCK_METHOD1(OnJoinSessionAsyncComplete, void(bool));
-    MOCK_METHOD1(OnStartMatchmakingAsyncComplete, void(const AZStd::string&));
-    MOCK_METHOD0(OnStopMatchmakingAsyncComplete, void());
     MOCK_METHOD0(OnLeaveSessionAsyncComplete, void());
 };
 

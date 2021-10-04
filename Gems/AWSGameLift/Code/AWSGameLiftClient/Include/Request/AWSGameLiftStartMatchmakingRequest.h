@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include <AzFramework/Session/ISessionRequests.h>
+#include <AzFramework/Matchmaking/IMatchmakingRequests.h>
 
 namespace AWSGameLift
 {
@@ -24,7 +24,7 @@ namespace AWSGameLift
         AWSGameLiftPlayerInformation() = default;
         virtual ~AWSGameLiftPlayerInformation() = default;
 
-        // A set of values, expressed in milliseconds, that indicates
+        // A map of region names to latencies in millseconds, that indicates
         // the amount of latency that a player experiences when connected to AWS Regions
         AZStd::unordered_map<AZStd::string, int> m_latencyInMs;
         // A collection of key:value pairs containing player information for use in matchmaking
