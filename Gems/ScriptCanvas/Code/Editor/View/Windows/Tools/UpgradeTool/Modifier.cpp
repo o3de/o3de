@@ -203,6 +203,24 @@ namespace ScriptCanvasEditor
             ModifyNextAsset();
         }
 
+        void Modifier::ReportSaveResult()
+        {
+            AZStd::lock_guard<AZStd::recursive_mutex> lock(m_mutex);
+            m_fileSaver.reset();
+
+            if (m_fileSaveResult.fileSaveError.empty())
+            {
+                ReportModificationSuccess();
+            }
+            else
+            {
+                ReportModificationError(m_fileSaveResult.fileSaveError);
+            }
+
+            m_fileSaveResult = {};
+            m_modifyState = ModifyState::Idle;
+        }
+
         void Modifier::OnFileSaveComplete(const FileSaveResult& result)
         {
             if (!result.tempFileRemovalError.empty())
@@ -213,16 +231,10 @@ namespace ScriptCanvasEditor
                     , result.tempFileRemovalError.c_str());
             }
 
+            AZStd::lock_guard<AZStd::recursive_mutex> lock(m_mutex);
+            m_modifyState = ModifyState::ReportResult;
             m_fileSaver.reset();
-
-            if (result.fileSaveError.empty())
-            {
-                ReportModificationSuccess();
-            }
-            else
-            {
-                ReportModificationError(result.fileSaveError);
-            }
+            m_fileSaveResult = result;
         }
 
         void Modifier::OnSystemTick()
@@ -328,9 +340,18 @@ namespace ScriptCanvasEditor
             }
             else
             {
-                if (m_modifyState == ModifyState::Idle)
+                AZStd::lock_guard<AZStd::recursive_mutex> lock(m_mutex);
+
+                switch (m_modifyState)
                 {
+                case ScriptCanvasEditor::VersionExplorer::Modifier::ModifyState::Idle:
                     ModifyCurrentAsset();
+                    break;
+                case ScriptCanvasEditor::VersionExplorer::Modifier::ModifyState::ReportResult:
+                    ReportSaveResult();
+                    break;
+                default:
+                    break;
                 }
             }
         }

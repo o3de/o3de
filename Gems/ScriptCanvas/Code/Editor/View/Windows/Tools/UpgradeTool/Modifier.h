@@ -58,7 +58,10 @@ namespace ScriptCanvasEditor
                 Idle,
                 InProgress,
                 Saving,
+                ReportResult
             };
+
+            AZStd::recursive_mutex m_mutex;
 
             // the two states reside in this class because the modification is only complete if the new source file saves out
             State m_state = State::GatheringDependencies;
@@ -77,6 +80,7 @@ namespace ScriptCanvasEditor
             ModificationResult m_result;
             ModificationResults m_results;
             AZStd::unique_ptr<FileSaver> m_fileSaver;
+            FileSaveResult m_fileSaveResult;
 
             void GatherDependencies();
             const AZ::Data::AssetInfo& GetCurrentAsset() const;
@@ -87,6 +91,7 @@ namespace ScriptCanvasEditor
             void ModificationComplete(const ModificationResult& result) override;
             void ReportModificationError(AZStd::string_view report);
             void ReportModificationSuccess();
+            void ReportSaveResult();
             void SaveModifiedGraph(const ModificationResult& result);
             void SortGraphsByDependencies();
             void OnFileSaveComplete(const FileSaveResult& result);
