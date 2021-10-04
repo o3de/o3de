@@ -146,7 +146,6 @@ namespace Multiplayer
                     {
                         // Connect the Editor to the editor server for Multiplayer simulation
                         AZ::Interface<IMultiplayer>::Get()->Connect(remoteAddress.c_str(), remotePort);
-                        AZ::Interface<IMultiplayer>::Get()->SendReadyForEntityUpdates(true);
                     }
             }
         }
