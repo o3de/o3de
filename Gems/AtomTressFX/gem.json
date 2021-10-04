@@ -4,7 +4,7 @@
     "license": "Apache-2.0 Or MIT",
     "origin": "Open 3D Engine - o3de.org",
     "type": "Code",
-    "summary": "The Atom TressFX Gem provides realistic hair and fur simulation and rendering in Atom and Open 3D Engine with AMD TressFX.",
+    "summary": "Atom TressFX Gem provides a cutting edge hair and fur simulation and rendering in Atom enhancing the AMD TressFX 4.1.  The open source TressFX can be found here: https://github.com/GPUOpen-Effects/TressFX",
     "canonical_tags": ["Gem"],
     "user_tags": ["Rendering", "Physics", "Animation"],
     "requirements": "",

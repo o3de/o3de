@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include <Atom/Features/PBR/Lights/LightTypesCommon.azsli>
+#include <Atom/Features/LightCulling/LightCullingTileIterator.azsli>
 
 void ApplySimplePointLight(ViewSrg::SimplePointLight light, Surface surface, inout LightingData lightingData)
 {

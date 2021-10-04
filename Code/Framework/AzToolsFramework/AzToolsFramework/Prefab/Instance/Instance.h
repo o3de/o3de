@@ -65,6 +65,9 @@ namespace AzToolsFramework
 
             Instance();
             explicit Instance(AZStd::unique_ptr<AZ::Entity> containerEntity);
+            explicit Instance(InstanceOptionalReference parent);
+            explicit Instance(AZStd::unique_ptr<AZ::Entity> containerEntity, InstanceOptionalReference parent);
+            explicit Instance(InstanceAlias alias);
             virtual ~Instance();
 
             Instance(const Instance& rhs) = delete;
@@ -72,8 +75,8 @@ namespace AzToolsFramework
 
             static void Reflect(AZ::ReflectContext* context);
 
-            const TemplateId& GetTemplateId() const;
-            void SetTemplateId(const TemplateId& templateId);
+            TemplateId GetTemplateId() const;
+            void SetTemplateId(TemplateId templateId);
 
             const AZ::IO::Path& GetTemplateSourcePath() const;
             void SetTemplateSourcePath(AZ::IO::PathView sourcePath);
@@ -97,7 +100,6 @@ namespace AzToolsFramework
             void Reset();
 
             Instance& AddInstance(AZStd::unique_ptr<Instance> instance);
-            Instance& AddInstance(AZStd::unique_ptr<Instance> instance, InstanceAlias instanceAlias);
             AZStd::unique_ptr<Instance> DetachNestedInstance(const InstanceAlias& instanceAlias);
             void DetachNestedInstances(const AZStd::function<void(AZStd::unique_ptr<Instance>)>& callback);
 
@@ -183,6 +185,8 @@ namespace AzToolsFramework
 
         private:
             static constexpr const char s_aliasPathSeparator = '/';
+
+            Instance(AZStd::unique_ptr<AZ::Entity> containerEntity, InstanceOptionalReference parent, InstanceAlias alias);
 
             void ClearEntities();
 

@@ -9,7 +9,7 @@
 #pragma once
 
 #include <Multiplayer/ConnectionData/IConnectionData.h>
-#include <Source/NetworkEntity/EntityReplication/EntityReplicationManager.h>
+#include <Multiplayer/NetworkEntity/EntityReplication/EntityReplicationManager.h>
 
 namespace Multiplayer
 {
@@ -30,7 +30,7 @@ namespace Multiplayer
         ConnectionDataType GetConnectionDataType() const override;
         AzNetworking::IConnection* GetConnection() const override;
         EntityReplicationManager& GetReplicationManager() override;
-        void Update(AZ::TimeMs hostTimeMs) override;
+        void Update() override;
         bool CanSendUpdates() const override;
         void SetCanSendUpdates(bool canSendUpdates) override;
         bool DidHandshake() const override;
