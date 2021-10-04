@@ -95,8 +95,9 @@ namespace UnitTest
 
     TEST_F(MultiplayerSystemTests, TestConnectionDatum)
     {
-        IMultiplayerConnectionMock connMock1 = IMultiplayerConnectionMock(aznumeric_cast<AzNetworking::ConnectionId>(10), AzNetworking::IpAddress(), AzNetworking::ConnectionRole::Acceptor);
-        IMultiplayerConnectionMock connMock2 = IMultiplayerConnectionMock(aznumeric_cast<AzNetworking::ConnectionId>(15), AzNetworking::IpAddress(), AzNetworking::ConnectionRole::Acceptor);
+        using namespace testing;
+        NiceMock<IMultiplayerConnectionMock> connMock1(aznumeric_cast<AzNetworking::ConnectionId>(10), AzNetworking::IpAddress(), AzNetworking::ConnectionRole::Acceptor);
+        NiceMock<IMultiplayerConnectionMock> connMock2(aznumeric_cast<AzNetworking::ConnectionId>(15), AzNetworking::IpAddress(), AzNetworking::ConnectionRole::Acceptor);
         m_mpComponent->OnConnect(&connMock1);
         m_mpComponent->OnConnect(&connMock2);
 
