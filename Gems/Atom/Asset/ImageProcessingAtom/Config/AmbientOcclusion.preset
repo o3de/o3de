@@ -28,6 +28,7 @@
                     "_amb",
                     "_ambientocclusion"
                 ],
+                "MaxTextureSize": 2048,
                 "PixelFormat": "ASTC_4x4"
             },
             "ios": {
@@ -41,6 +42,7 @@
                     "_amb",
                     "_ambientocclusion"
                 ],
+                "MaxTextureSize": 2048,
                 "PixelFormat": "ASTC_4x4"
             },
             "mac": {

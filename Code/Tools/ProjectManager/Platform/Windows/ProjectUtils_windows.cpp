@@ -99,6 +99,37 @@ namespace O3DE::ProjectManager
                 " While installing configure Visual Studio with these <a href='https://o3de.org/docs/welcome-guide/setup/requirements/#visual-studio-configuration'>workloads</a>."));
         }
         
+        AZ::Outcome<void, QString> OpenCMakeGUI(const QString& projectPath)
+        {
+            AZ::Outcome processEnvResult = GetCommandLineProcessEnvironment();
+            if (!processEnvResult.IsSuccess())
+            {
+                return AZ::Failure(processEnvResult.GetError());
+            }
+
+            QString projectBuildPath = QDir(projectPath).filePath(ProjectBuildPathPostfix);
+            AZ::Outcome projectBuildPathResult = GetProjectBuildPath(projectPath);
+            if (projectBuildPathResult.IsSuccess())
+            {
+                projectBuildPath = projectBuildPathResult.GetValue();
+            }
+
+            QProcess process;
+            process.setProcessEnvironment(processEnvResult.GetValue());
+
+            // if the project build path is relative, it should be relative to the project path 
+            process.setWorkingDirectory(projectPath);
+
+            process.setProgram("cmake-gui");
+            process.setArguments({ "-S", projectPath, "-B", projectBuildPath });
+            if(!process.startDetached())
+            {
+                return AZ::Failure(QObject::tr("Failed to start CMake GUI"));
+            }
+
+            return AZ::Success();
+        }
+
         AZ::Outcome<QString, QString> RunGetPythonScript(const QString& engineRoot)
         {
             const QString batPath = QString("%1/python/get_python.bat").arg(engineRoot);
@@ -108,6 +139,5 @@ namespace O3DE::ProjectManager
                 QProcessEnvironment::systemEnvironment(),
                 QObject::tr("Running get_python script..."));
         }
-
     } // namespace ProjectUtils
 } // namespace O3DE::ProjectManager

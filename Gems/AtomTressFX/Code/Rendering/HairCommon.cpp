@@ -39,7 +39,7 @@ namespace AZ
             Data::Instance<RPI::ShaderResourceGroup> UtilityClass::CreateShaderResourceGroup(
                 Data::Instance<RPI::Shader> shader,
                 const char* shaderResourceGroupId,
-                const char* moduleName)
+                [[maybe_unused]] const char* moduleName)
             {
                 Data::Instance<RPI::ShaderResourceGroup> srg = RPI::ShaderResourceGroup::Create(shader->GetAsset(), AZ::Name{ shaderResourceGroupId });
                 if (!srg)
@@ -54,7 +54,7 @@ namespace AZ
             //! If srg is nullptr the index handle will NOT be set.
             //! This can be useful when creating a constant buffer or an image.
             Data::Instance<RPI::Buffer> UtilityClass::CreateBuffer(
-                const char* warningHeader,
+                [[maybe_unused]] const char* warningHeader,
                 SrgBufferDescriptor& bufferDesc,
                 Data::Instance<RPI::ShaderResourceGroup> srg)
             {
@@ -84,7 +84,7 @@ namespace AZ
             }
 
             bool UtilityClass::BindBufferToSrg(
-                const char* warningHeader,
+                [[maybe_unused]] const char* warningHeader,
                 Data::Instance<RPI::Buffer> buffer,
                 SrgBufferDescriptor& bufferDesc,
                 Data::Instance<RPI::ShaderResourceGroup> srg)
