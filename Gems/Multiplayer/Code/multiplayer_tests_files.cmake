@@ -7,13 +7,14 @@
 #
 
 set(FILES
-    Tests/Main.cpp
-    Tests/MockInterfaces.h
     Tests/ClientHierarchyTests.cpp
-    Tests/ServerHierarchyTests.cpp
     Tests/CommonHierarchySetup.h
     Tests/IMultiplayerConnectionMock.h
+    Tests/Main.cpp
+    Tests/MockInterfaces.h
     Tests/MultiplayerSystemTests.cpp
+    Tests/NetworkTransformTests.cpp
     Tests/RewindableContainerTests.cpp
     Tests/RewindableObjectTests.cpp
+    Tests/ServerHierarchyTests.cpp
 )
