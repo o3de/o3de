@@ -25,21 +25,18 @@
 
 #pragma once
 
-
-//#ifndef _TRESSFXSIMULATIONPARAMS_H_
-//#define _TRESSFXSIMULATIONPARAMS_H_
-/*
-#pragma once
-*/
 #include <TressFX/TressFXCommon.h>
+
+// Atom
+#include <AzCore/Asset/AssetSerializer.h>
+#include <Atom/RPI.Reflect/Image/StreamingImageAsset.h>
+
 #include <AzCore/RTTI/ReflectContext.h>
 #include <AzCore/Math/Vector3.h>
 #include <AzCore/Math/Vector4.h>
 #include <AzCore/Math/Color.h>
 #include <AzCore/std/string/string.h>
 
-// Atom
-#include <Atom/RPI.Reflect/Image/StreamingImageAsset.h>
 
 #include <memory>
 
@@ -143,4 +140,3 @@ namespace AMD
 
 } // namespace AMD
 
-//#endif // _TRESSFXSIMULATIONPARAMS_H_
