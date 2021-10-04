@@ -66,6 +66,7 @@ namespace Multiplayer
         bool IsReadyToActivate() const;
 
         NetworkEntityUpdateMessage GenerateUpdatePacket();
+        void FinalizeSerialization(AzNetworking::PacketId sentId);
 
         AZ::TimeMs GetResendTimeoutTimeMs() const;
 
@@ -141,4 +142,4 @@ namespace Multiplayer
     };
 }
 
-#include <Source/NetworkEntity/EntityReplication/EntityReplicator.inl>
+#include <Multiplayer/NetworkEntity/EntityReplication/EntityReplicator.inl>

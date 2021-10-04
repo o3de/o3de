@@ -8,7 +8,8 @@
 
 #pragma once
 
-#include <Source/NetworkEntity/EntityReplication/EntityReplicator.h>
+#include <Multiplayer/IMultiplayer.h>
+#include <Multiplayer/NetworkEntity/EntityReplication/EntityReplicator.h>
 #include <Multiplayer/Components/NetBindComponent.h>
 #include <Multiplayer/EntityDomains/IEntityDomain.h>
 #include <Multiplayer/NetworkEntity/INetworkEntityManager.h>
@@ -35,7 +36,9 @@ namespace Multiplayer
 {
     class IEntityDomain;
     class EntityReplicator;
-    
+
+    using SendMigrateEntityEvent = AZ::Event<AzNetworking::IConnection&, const EntityMigrationMessage&>;
+
     //! @class EntityReplicationManager
     //! @brief Handles replication of relevant entities for one connection.
     class EntityReplicationManager final
@@ -54,11 +57,11 @@ namespace Multiplayer
         EntityReplicationManager(AzNetworking::IConnection& connection, AzNetworking::IConnectionListener& connectionListener, Mode mode);
         ~EntityReplicationManager() = default;
 
-        void SetRemoteHostId(HostId hostId);
-        HostId GetRemoteHostId() const;
+        void SetRemoteHostId(const HostId& hostId);
+        const HostId& GetRemoteHostId() const;
 
         void ActivatePendingEntities();
-        void SendUpdates(AZ::TimeMs hostTimeMs);
+        void SendUpdates();
         void Clear(bool forMigration);
 
         bool SetEntityRebasing(NetworkEntityHandle& entityHandle);
@@ -69,8 +72,8 @@ namespace Multiplayer
 
         bool HasRemoteAuthority(const ConstNetworkEntityHandle& entityHandle) const;
 
-        void SetEntityDomain(AZStd::unique_ptr<IEntityDomain> entityDomain);
-        IEntityDomain* GetEntityDomain();
+        void SetRemoteEntityDomain(AZStd::unique_ptr<IEntityDomain> entityDomain);
+        IEntityDomain* GetRemoteEntityDomain();
         void SetReplicationWindow(AZStd::unique_ptr<IReplicationWindow> replicationWindow);
         IReplicationWindow* GetReplicationWindow();
 
@@ -79,7 +82,8 @@ namespace Multiplayer
 
         void AddDeferredRpcMessage(NetworkEntityRpcMessage& rpcMessage);
 
-        void AddAutonomousEntityReplicatorCreatedHandle(AZ::Event<NetEntityId>::Handler& handler);
+        void AddAutonomousEntityReplicatorCreatedHandler(AZ::Event<NetEntityId>::Handler& handler);
+        void AddSendMigrateEntityEventHandler(SendMigrateEntityEvent::Handler& handler);
 
         bool HandleEntityMigration(AzNetworking::IConnection* invokingConnection, EntityMigrationMessage& message);
         bool HandleEntityDeleteMessage(EntityReplicator* entityReplicator, const AzNetworking::IPacketHeader& packetHeader, const NetworkEntityUpdateMessage& updateMessage);
@@ -117,14 +121,12 @@ namespace Multiplayer
         using EntityReplicatorList = AZStd::deque<EntityReplicator*>;
         EntityReplicatorList GenerateEntityUpdateList();
 
-        void SendEntityUpdatesPacketHelper(AZ::TimeMs hostTimeMs, EntityReplicatorList& toSendList, uint32_t maxPayloadSize, AzNetworking::IConnection& connection);
-
-        void SendEntityUpdates(AZ::TimeMs hostTimeMs);
-        void SendEntityRpcs(RpcMessages& deferredRpcs, bool reliable);
+        void SendEntityUpdateMessages(EntityReplicatorList& replicatorList);
+        void SendEntityRpcs(RpcMessages& rpcMessages, bool reliable);
 
         void MigrateEntityInternal(NetEntityId entityId);
         void OnEntityExitDomain(const ConstNetworkEntityHandle& entityHandle);
-        void OnPostEntityMigration(const ConstNetworkEntityHandle& entityHandle, HostId remoteHostId, AzNetworking::ConnectionId connectionId);
+        void OnPostEntityMigration(const ConstNetworkEntityHandle& entityHandle, const HostId& remoteHostId);
 
         EntityReplicator* AddEntityReplicator(const ConstNetworkEntityHandle& entityHandle, NetEntityRole netEntityRole);
 
@@ -153,7 +155,6 @@ namespace Multiplayer
         {
         public:
             OrphanedEntityRpcs(EntityReplicationManager& replicationManager);
-            virtual ~OrphanedEntityRpcs() = default;
             void Update();
             bool DispatchOrphanedRpcs(EntityReplicator& entityReplicator);
             void AddOrphanedRpc(NetEntityId entityId, NetworkEntityRpcMessage& entityRpcMessage);
@@ -192,6 +193,8 @@ namespace Multiplayer
 
         AZ::Event<NetEntityId> m_autonomousEntityReplicatorCreated;
         EntityExitDomainEvent::Handler m_entityExitDomainEventHandler;
+        SendMigrateEntityEvent m_sendMigrateEntityEvent;
+        NotifyEntityMigrationEvent::Handler m_notifyEntityMigrationHandler;
 
         AZ::ScheduledEvent m_clearRemovedReplicators;
         AZ::ScheduledEvent m_updateWindow;
