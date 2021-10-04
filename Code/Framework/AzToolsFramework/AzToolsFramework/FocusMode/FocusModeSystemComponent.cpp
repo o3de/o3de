@@ -11,7 +11,7 @@
 #include <AzToolsFramework/API/ViewportEditorModeTrackerInterface.h>
 #include <AzToolsFramework/FocusMode/FocusModeNotificationBus.h>
 #include <AzToolsFramework/FocusMode/FocusModeSystemComponent.h>
-#include <AzToolsFramework/API/ViewportEditorModeTrackerInterface.h>
+#include <AzToolsFramework/Viewport/ViewportMessages.h>
 
 namespace AzToolsFramework
 {
@@ -79,11 +79,11 @@ namespace AzToolsFramework
         {
             if (!m_focusRoot.IsValid() && entityId.IsValid())
             {
-                tracker->ActivateMode({ /* DefaultViewportId */ }, ViewportEditorMode::Focus);
+                tracker->ActivateMode({ GetEntityContextId() }, ViewportEditorMode::Focus);
             }
             else if (m_focusRoot.IsValid() && !entityId.IsValid())
             {
-                tracker->DeactivateMode({ /* DefaultViewportId */ }, ViewportEditorMode::Focus);
+                tracker->DeactivateMode({ GetEntityContextId() }, ViewportEditorMode::Focus);
             }
         }
     }

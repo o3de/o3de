@@ -30,18 +30,8 @@ namespace Multiplayer
         //! Constructs a ConstNetworkEntityHandle given an entity, an entity tracker
         //! @param entity        pointer to the entity to construct a ConstNetworkEntityHandle for
         //! @param entityTracker pointer to the entity tracker that tracks the entity
-        ConstNetworkEntityHandle(AZ::Entity* entity, const NetworkEntityTracker* entityTracker);
-
-        //! Constructs a ConstNetworkEntityHandle given an entity, a networkEntityId, and an entity tracker
-        //! @param entity        pointer to the entity to construct a ConstNetworkEntityHandle for
-        //! @param netEntityId   the networkEntityId of the entity
-        //! @param entityTracker pointer to the entity tracker that tracks the entity
-        ConstNetworkEntityHandle(AZ::Entity* entity, NetEntityId netEntityId, const NetworkEntityTracker* entityTracker);
-
-        //! Constructs a ConstNetworkEntityHandle given an entity, a networked entityId, an entity tracker, and a dirty version
-        //! @param netBindComponent pointer to the entities NetBindComponent
-        //! @param entityTracker    pointer to the entity tracker that tracks the entity
-        ConstNetworkEntityHandle(NetBindComponent* netBindComponent, const NetworkEntityTracker* entityTracker);
+        //!                      can optionally be null in which case the entity tracker will be looked up
+        ConstNetworkEntityHandle(AZ::Entity* entity, const NetworkEntityTracker* entityTracker = nullptr);
 
         ConstNetworkEntityHandle(const ConstNetworkEntityHandle&) = default;
 

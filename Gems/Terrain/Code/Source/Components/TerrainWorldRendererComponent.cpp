@@ -28,16 +28,27 @@ namespace Terrain
         AZ::SerializeContext* serialize = azrtti_cast<AZ::SerializeContext*>(context);
         if (serialize)
         {
-            serialize->Class<TerrainWorldRendererConfig, AZ::ComponentConfig>()->Version(1);
+            serialize->Class<TerrainWorldRendererConfig, AZ::ComponentConfig>()
+                ->Version(1)
+                ->Field("WorldSize", &TerrainWorldRendererConfig::m_worldSize)
+                ;
 
-            AZ::EditContext* edit = serialize->GetEditContext();
-            if (edit)
+            AZ::EditContext* editContext = serialize->GetEditContext();
+            if (editContext)
             {
-                edit->Class<TerrainWorldRendererConfig>("Terrain World Renderer Component", "Enables terrain rendering")
+                editContext->Class<TerrainWorldRendererConfig>("Terrain World Renderer Component", "Enables terrain rendering")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                    ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZStd::vector<AZ::Crc32>({ AZ_CRC_CE("Level") }))
-                    ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
-                    ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
+                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZStd::vector<AZ::Crc32>({ AZ_CRC_CE("Level") }))
+                        ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
+                        ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
+                    ->DataElement(AZ::Edit::UIHandlers::ComboBox, &TerrainWorldRendererConfig::m_worldSize, "Rendered world size", "The maximum amount of terrain that's rendered")
+                        ->EnumAttribute(TerrainWorldRendererConfig::WorldSize::_512Meters, "512 Meters")
+                        ->EnumAttribute(TerrainWorldRendererConfig::WorldSize::_1024Meters, "1 Kilometer")
+                        ->EnumAttribute(TerrainWorldRendererConfig::WorldSize::_2048Meters, "2 Kilometers")
+                        ->EnumAttribute(TerrainWorldRendererConfig::WorldSize::_4096Meters, "4 Kilometers")
+                        ->EnumAttribute(TerrainWorldRendererConfig::WorldSize::_8192Meters, "8 Kilometers")
+                        ->EnumAttribute(TerrainWorldRendererConfig::WorldSize::_16384Meters, "16 Kilometers")
+                        ;
             }
         }
     }
@@ -72,6 +83,28 @@ namespace Terrain
     TerrainWorldRendererComponent::TerrainWorldRendererComponent(const TerrainWorldRendererConfig& configuration)
         : m_configuration(configuration)
     {
+        switch (configuration.m_worldSize)
+        {
+        case TerrainWorldRendererConfig::WorldSize::_512Meters:
+            m_terrainFeatureProcessor->SetWorldSize(AZ::Vector2(512.0f, 512.0f));
+            break;
+        case TerrainWorldRendererConfig::WorldSize::_1024Meters:
+            m_terrainFeatureProcessor->SetWorldSize(AZ::Vector2(1024.0f, 1024.0f));
+            break;
+        case TerrainWorldRendererConfig::WorldSize::_2048Meters:
+            m_terrainFeatureProcessor->SetWorldSize(AZ::Vector2(2048.0f, 2048.0f));
+            break;
+        case TerrainWorldRendererConfig::WorldSize::_4096Meters:
+            m_terrainFeatureProcessor->SetWorldSize(AZ::Vector2(4096.0f, 4096.0f));
+            break;
+        case TerrainWorldRendererConfig::WorldSize::_8192Meters:
+            m_terrainFeatureProcessor->SetWorldSize(AZ::Vector2(8192.0f, 8192.0f));
+            break;
+        case TerrainWorldRendererConfig::WorldSize::_16384Meters:
+            m_terrainFeatureProcessor->SetWorldSize(AZ::Vector2(16384.0f, 16384.0f));
+            break;
+
+        }
     }
 
     TerrainWorldRendererComponent::~TerrainWorldRendererComponent()
