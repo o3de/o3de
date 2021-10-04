@@ -173,6 +173,8 @@ if("${CMAKE_INSTALL_CONFIG_NAME}" MATCHES "^([Rr][Ee][Ll][Ee][Aa][Ss][Ee])$")
             message(STATUS "${install_output_folder}/engine.pak generated")
         endif()
     endif()
+endif()
+]=])
 
     string(CONFIGURE "${install_engine_pak_template}" install_engine_pak_code @ONLY)
     ly_install_run_code("${install_engine_pak_code}")
