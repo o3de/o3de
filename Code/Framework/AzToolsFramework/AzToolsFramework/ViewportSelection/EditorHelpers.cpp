@@ -8,7 +8,6 @@
 
 #include "EditorHelpers.h"
 
-#include <AzCore/Component/TransformBus.h>
 #include <AzCore/Console/Console.h>
 #include <AzFramework/Entity/EntityDebugDisplayBus.h>
 #include <AzFramework/Viewport/CameraState.h>
@@ -195,28 +194,10 @@ namespace AzToolsFramework
 
         // Container Entity support - if the entity that is being selected is part of a closed container,
         // change the selection to the container instead.
-        if (ContainerEntityInterface* containerEntityInterface = AZ::Interface<ContainerEntityInterface>::Get())
+        ContainerEntityInterface* containerEntityInterface = AZ::Interface<ContainerEntityInterface>::Get();
+        if (containerEntityInterface)
         {
-            AZ::EntityId entityId = entityIdUnderCursor;
-            AZ::EntityId topClosedContainerEntityId = AZ::EntityId(AZ::EntityId::InvalidEntityId);
-
-            // Go up the hierarchy until you hit the root
-            while (entityId.IsValid())
-            {
-                if (!containerEntityInterface->IsContainerOpen(entityId))
-                {
-                    // If one of the ancestors is a container and it's closed, keep track of its id.
-                    // We only keep track of the higher closed container in the hierarchy.
-                    topClosedContainerEntityId = entityId;
-                }
-
-                AZ::TransformBus::EventResult(entityId, entityId, &AZ::TransformBus::Events::GetParentId);
-            }
-
-            if (topClosedContainerEntityId.IsValid())
-            {
-                entityIdUnderCursor = topClosedContainerEntityId;
-            }
+            return containerEntityInterface->FindHighestSelectableEntity(entityIdUnderCursor);
         }
 
         return entityIdUnderCursor;

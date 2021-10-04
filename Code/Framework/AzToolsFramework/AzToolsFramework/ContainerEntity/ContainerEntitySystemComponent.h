@@ -44,6 +44,7 @@ namespace AzToolsFramework
         bool IsContainer(AZ::EntityId entityId) const override;
         ContainerEntityOperationResult SetContainerOpenState(AZ::EntityId entityId, bool open) override;
         bool IsContainerOpen(AZ::EntityId entityId) const override;
+        AZ::EntityId FindHighestSelectableEntity(AZ::EntityId entityId) const override;
 
     private:
         AZStd::unordered_set<AZ::EntityId> m_containers;      //!< All entities in this set are containers.

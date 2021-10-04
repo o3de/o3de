@@ -7,6 +7,8 @@
  */
 
 #include <AzToolsFramework/ContainerEntity/ContainerEntitySystemComponent.h>
+
+#include <AzCore/Component/TransformBus.h>
 #include <AzToolsFramework/ContainerEntity/ContainerEntityNotificationBus.h>
 
 namespace AzToolsFramework
@@ -93,6 +95,26 @@ namespace AzToolsFramework
 
         // If the entity is a container, return its state.
         return m_openContainers.contains(entityId);
+    }
+
+    AZ::EntityId ContainerEntitySystemComponent::FindHighestSelectableEntity(AZ::EntityId entityId) const
+    {
+        AZ::EntityId highestSelectableEntityId = entityId;
+
+        // Go up the hierarchy until you hit the root
+        while (entityId.IsValid())
+        {
+            if (!IsContainerOpen(entityId))
+            {
+                // If one of the ancestors is a container and it's closed, keep track of its id.
+                // We only return of the higher closed container in the hierarchy.
+                highestSelectableEntityId = entityId;
+            }
+
+            AZ::TransformBus::EventResult(entityId, entityId, &AZ::TransformBus::Events::GetParentId);
+        }
+
+        return highestSelectableEntityId;
     }
 
 } // namespace AzToolsFramework
