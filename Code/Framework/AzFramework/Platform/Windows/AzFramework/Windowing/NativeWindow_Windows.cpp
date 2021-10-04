@@ -239,6 +239,8 @@ namespace AzFramework
             RAWINPUT* rawInput = (RAWINPUT*)rawInputBytes;
             AzFramework::RawInputNotificationBusWindows::Broadcast(
                 &AzFramework::RawInputNotificationBusWindows::Events::OnRawInputEvent, *rawInput);
+
+            delete [] rawInputBytes;
             break;
         }
         case WM_CHAR:

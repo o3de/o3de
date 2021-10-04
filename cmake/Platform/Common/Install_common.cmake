@@ -430,6 +430,21 @@ function(ly_setup_cmake_install)
         DESTINATION .
         COMPONENT ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME}
     )
+    string(CONFIGURE [=[
+if("${CMAKE_INSTALL_CONFIG_NAME}" MATCHES "^([Rr][Ee][Ll][Ee][Aa][Ss][Ee])$")
+    set(install_output_folder "${CMAKE_INSTALL_PREFIX}/@runtime_output_directory@")
+    file(WRITE ${install_output_folder}/engine.json 
+"{
+    \"engine_name\": \"@LY_VERSION_ENGINE_NAME@\"
+}")
+endif()
+]=]
+        install_engine_json_release
+        @ONLY
+    )
+    install(CODE ${install_engine_json_release}
+        COMPONENT ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME} # use the default for the time being
+    )
 
     # Collect all Find files that were added with ly_add_external_target_path
     unset(additional_find_files)
