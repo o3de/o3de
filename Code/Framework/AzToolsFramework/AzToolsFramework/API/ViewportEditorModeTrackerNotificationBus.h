@@ -24,7 +24,7 @@ namespace AzToolsFramework
     };
 
     //! Viewport editor mode tracker identifier and other relevant data.
-    struct ViewportEditorModeInfo
+    struct ViewportEditorModeTrackerInfo
     {
         using IdType = AzFramework::EntityContextId;
         IdType m_id = AzFramework::EntityContextId::CreateNull(); //!< The unique identifier for a given viewport editor mode tracker.
@@ -49,7 +49,7 @@ namespace AzToolsFramework
         // EBusTraits overrides
         static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Multiple;
         static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::ById;
-        using BusIdType = ViewportEditorModeInfo::IdType;
+        using BusIdType = ViewportEditorModeTrackerInfo::IdType;
         //////////////////////////////////////////////////////////////////////////
 
         //! Notifies subscribers of the a given viewport to the activation of the specified editor mode.

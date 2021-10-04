@@ -18,8 +18,8 @@ namespace UnitTest
     using ViewportEditorMode = AzToolsFramework::ViewportEditorMode;
     using ViewportEditorModes = AzToolsFramework::ViewportEditorModes;
     using ViewportEditorModeTracker = AzToolsFramework::ViewportEditorModeTracker;
-    using ViewportEditorModeInfo = AzToolsFramework::ViewportEditorModeInfo;
-    using TrackerId = ViewportEditorModeInfo::IdType;
+    using ViewportEditorModeTrackerInfo = AzToolsFramework::ViewportEditorModeTrackerInfo;
+    using TrackerId = ViewportEditorModeTrackerInfo::IdType;
     using ViewportEditorModesInterface = AzToolsFramework::ViewportEditorModesInterface;
     using ViewportEditorModeTrackerInterface = AzToolsFramework::ViewportEditorModeTrackerInterface;
 
