@@ -39,6 +39,8 @@ namespace AzFramework
     private:
         [[nodiscard]] const InputChannelId* InputChannelFromKeyEvent(xcb_keycode_t code) const;
 
+        static AZStd::string TextFromKeycode(xkb_state* state, xkb_keycode_t code);
+
         void UpdateState(const xcb_xkb_state_notify_event_t* state);
 
         XcbUniquePtr<xkb_context, xkb_context_unref> m_xkbContext;
@@ -47,5 +49,6 @@ namespace AzFramework
         int m_coreDeviceId{-1};
         uint8_t m_xkbEventCode{0};
         bool m_initialized{false};
+        bool m_hasTextEntryStarted{false};
     };
 } // namespace AzFramework

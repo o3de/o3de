@@ -119,15 +119,17 @@ namespace AzFramework
 
     bool XcbInputDeviceKeyboard::HasTextEntryStarted() const
     {
-        return false;
+        return m_hasTextEntryStarted;
     }
 
     void XcbInputDeviceKeyboard::TextEntryStart(const InputDeviceKeyboard::VirtualKeyboardOptions& options)
     {
+        m_hasTextEntryStarted = true;
     }
 
     void XcbInputDeviceKeyboard::TextEntryStop()
     {
+        m_hasTextEntryStarted = false;
     }
 
     void XcbInputDeviceKeyboard::TickInputDevice()
@@ -146,6 +148,8 @@ namespace AzFramework
         if (responseType == XCB_KEY_PRESS)
         {
             const auto* keyPress = reinterpret_cast<xcb_key_press_event_t*>(event);
+
+            QueueRawTextEvent(TextFromKeycode(m_xkbState.get(), keyPress->detail));
 
             if (const InputChannelId* key = InputChannelFromKeyEvent(keyPress->detail))
             {
@@ -324,6 +328,28 @@ namespace AzFramework
             case XKB_KEY_Scroll_Lock: return &InputDeviceKeyboard::Key::WindowsSystemScrollLock;
             default: return nullptr;
         }
+    }
+
+    AZStd::string XcbInputDeviceKeyboard::TextFromKeycode(xkb_state* state, xkb_keycode_t code)
+    {
+        // Find out how much of a buffer we need
+        const size_t size = xkb_state_key_get_utf8(state, code, nullptr, 0);
+        if (!size)
+        {
+            return {};
+        }
+        // xkb_state_key_get_utf8 will null-terminate the resulting string, and
+        // will truncate the result to `size - 1` if there is not enough space
+        // for the null byte. The first call returns the size of the resulting
+        // string without including the null byte. AZStd::string internally
+        // includes space for the null byte, but that is not included in its
+        // `size()`. xkb_state_key_get_utf8 will always set `buf[size - 1] =
+        // 0`, so add 1 to `chars.size()` to include that internal null byte in
+        // the string.
+        AZStd::string chars;
+        chars.resize_no_construct(size);
+        xkb_state_key_get_utf8(state, code, chars.data(), chars.size() + 1);
+        return chars;
     }
 
     void XcbInputDeviceKeyboard::UpdateState(const xcb_xkb_state_notify_event_t* state)
