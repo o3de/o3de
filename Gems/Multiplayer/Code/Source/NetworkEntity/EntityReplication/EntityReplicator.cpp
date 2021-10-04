@@ -296,10 +296,10 @@ namespace Multiplayer
     bool EntityReplicator::OwnsReplicatorLifetime() const
     {
         bool ret(false);
-        if (GetBoundLocalNetworkRole() == NetEntityRole::Authority
-            || (GetBoundLocalNetworkRole() == NetEntityRole::Server
+        if (GetBoundLocalNetworkRole() == NetEntityRole::Authority  // Authority always owns lifetime
+            || (GetBoundLocalNetworkRole() == NetEntityRole::Server // Server also owns lifetime if the remote endpoint is a client of some form
                 && (GetRemoteNetworkRole() == NetEntityRole::Client
-                    || GetRemoteNetworkRole() == NetEntityRole::Autonomous)))
+                ||  GetRemoteNetworkRole() == NetEntityRole::Autonomous)))
         {
             ret = true;
         }
@@ -309,10 +309,9 @@ namespace Multiplayer
     bool EntityReplicator::RemoteManagerOwnsEntityLifetime() const
     {
         bool isServer = (GetBoundLocalNetworkRole() == NetEntityRole::Server)
-            && (GetRemoteNetworkRole() == NetEntityRole::Authority);
+                     && (GetRemoteNetworkRole()     == NetEntityRole::Authority);
         bool isClient = (GetBoundLocalNetworkRole() == NetEntityRole::Client)
-            || (GetBoundLocalNetworkRole() == NetEntityRole::Autonomous);
-
+                     || (GetBoundLocalNetworkRole() == NetEntityRole::Autonomous);
         return isServer || isClient;
     }
 
@@ -477,14 +476,14 @@ namespace Multiplayer
                 WasMigrated() ? 1 : 0,
                 m_replicationManager.GetRemoteHostId().GetString().c_str()
             );
-            return NetworkEntityUpdateMessage(GetEntityHandle().GetNetEntityId(), WasMigrated(), m_propertyPublisher->IsRemoteReplicatorEstablished());
+            return NetworkEntityUpdateMessage(GetEntityHandle().GetNetEntityId(), WasMigrated());
         }
 
         NetBindComponent* netBindComponent = GetNetBindComponent();
-        //const bool sendSliceName = !m_propertyPublisher->IsRemoteReplicatorEstablished();
+        const bool sendSliceName = !m_propertyPublisher->IsRemoteReplicatorEstablished();
 
         NetworkEntityUpdateMessage updateMessage(GetRemoteNetworkRole(), GetEntityHandle().GetNetEntityId());
-        //if (sendSliceName)
+        if (sendSliceName)
         {
             updateMessage.SetPrefabEntityId(netBindComponent->GetPrefabEntityId());
         }

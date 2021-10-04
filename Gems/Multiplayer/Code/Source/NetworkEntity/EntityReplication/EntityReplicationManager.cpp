@@ -47,6 +47,9 @@ namespace Multiplayer
         , m_entityExitDomainEventHandler([this](const ConstNetworkEntityHandle& entityHandle) { OnEntityExitDomain(entityHandle); })
         , m_notifyEntityMigrationHandler([this](const ConstNetworkEntityHandle& entityHandle, const HostId& remoteHostId) { OnPostEntityMigration(entityHandle, remoteHostId); })
     {
+        // Set up our remote host identifier, we use the IP address of the host
+        m_remoteHostId = connection.GetRemoteAddress();
+
         // Our max payload size is whatever is passed in, minus room for a udp packetheader
         m_maxPayloadSize = connection.GetConnectionMtu() - UdpPacketHeaderSerializeSize - ReplicationManagerPacketOverhead;
 
@@ -63,11 +66,6 @@ namespace Multiplayer
         }
 
         GetMultiplayer()->AddNotifyEntityMigrationEventHandler(m_notifyEntityMigrationHandler);
-    }
-
-    void EntityReplicationManager::SetRemoteHostId(const HostId& hostId)
-    {
-        m_remoteHostId = hostId;
     }
 
     const HostId& EntityReplicationManager::GetRemoteHostId() const
@@ -515,10 +513,6 @@ namespace Multiplayer
                 entityReplicator->MarkForRemoval();
                 AZLOG(NET_RepDeletes, "Deleting replicater for entity id %u remote host %s", updateMessage.GetEntityId(), GetRemoteHostId().GetString().c_str());
             }
-        }
-        else
-        {
-            shouldDeleteEntity = updateMessage.GetTakeOwnership();
         }
 
         // Handle entity cleanup
