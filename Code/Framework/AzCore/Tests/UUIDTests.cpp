@@ -247,4 +247,27 @@ namespace UnitTest
         Uuid right = Uuid::CreateStringPermissive(permissiveStr1);
         EXPECT_EQ(left, right);
     }
+
+    TEST_F(UuidTests, CreateStringPermissive_StringWithExtraData_Succeeds)
+    {
+        const char uuidStr[] = "{34D44249-E599-4B30-811F-4215C2DEA269}";
+        Uuid left = Uuid::CreateString(uuidStr);
+
+        const char permissiveStr[] = "0x34D44249-0xE5994B30-0x811F4215-0xC2DEA269 Hello World";
+        Uuid right = Uuid::CreateStringPermissive(permissiveStr);
+        EXPECT_EQ(left, right);
+
+    }
+
+    TEST_F(UuidTests, CreateStringPermissive_StringWithLotsOfExtraData_Succeeds)
+    {
+        const char uuidStr[] = "{34D44249-E599-4B30-811F-4215C2DEA269}";
+        Uuid left = Uuid::CreateString(uuidStr);
+
+        const char permissiveStr[] = "0x34D44249-0xE5994B30-0x811F4215-0xC2DEA269 Hello World this is a really long string "
+        "with lots of extra data to make sure we can parse a long string without failing as long as the uuid is in "
+        "the beginning of the string then we should succeed";
+        Uuid right = Uuid::CreateStringPermissive(permissiveStr);
+        EXPECT_EQ(left, right);
+    }
 }
