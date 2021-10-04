@@ -31,14 +31,12 @@ namespace AzToolsFramework
         virtual ~ContainerEntitySystemComponent() = default;
 
         // AZ::Component overrides ...
-        void Init() override;
         void Activate() override;
         void Deactivate() override;
 
         static void Reflect(AZ::ReflectContext* context);
+
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided);
-        static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required);
-        static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible);
 
         // ContainerEntityInterface overrides ...
         ContainerEntityOperationResult RegisterEntityAsContainer(AZ::EntityId entityId) override;
@@ -48,8 +46,8 @@ namespace AzToolsFramework
         bool IsContainerOpen(AZ::EntityId entityId) const override;
 
     private:
-        AZStd::unordered_set<AZ::EntityId> m_containerSet;      //!< All entities in this set are containers.
-        AZStd::unordered_set<AZ::EntityId> m_openContainerSet;  //!< All entities in this set are open containers.
+        AZStd::unordered_set<AZ::EntityId> m_containers;      //!< All entities in this set are containers.
+        AZStd::unordered_set<AZ::EntityId> m_openContainers;  //!< All entities in this set are open containers.
     };
 
 } // namespace AzToolsFramework

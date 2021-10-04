@@ -908,10 +908,7 @@ namespace AzToolsFramework
 
     void EntityOutlinerWidget::OnTreeItemDoubleClicked(const QModelIndex& index)
     {
-        AZ::EntityId entityId = GetEntityIdFromIndex(index);
-        auto entityUiHandler = m_editorEntityUiInterface->GetHandler(entityId);
-
-        if (entityUiHandler)
+        if (AZ::EntityId entityId = GetEntityIdFromIndex(index); auto entityUiHandler = m_editorEntityUiInterface->GetHandler(entityId))
         {
             entityUiHandler->OnDoubleClick(entityId);
         }
@@ -1042,7 +1039,7 @@ namespace AzToolsFramework
             QModelIndex modelIndex = m_listModel->GetIndexFromEntity(entityId, 0);
             if (modelIndex.isValid())
             {
-                return m_proxyModel->mapFromSource(modelIndex);    
+                return m_proxyModel->mapFromSource(modelIndex);
             }
         }
 
@@ -1148,7 +1145,7 @@ namespace AzToolsFramework
 
     void EntityOutlinerWidget::OnPrefabInstancePropagationEnd()
     {
-        QTimer::singleShot(10, this, [this]() {
+        QTimer::singleShot(1, this, [this]() {
             m_gui->m_objectTree->setUpdatesEnabled(true);
             m_gui->m_objectTree->expandToDepth(0);
         });

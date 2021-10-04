@@ -106,8 +106,8 @@ namespace AzToolsFramework::Prefab
 
         if (!m_focusedInstance.has_value() || &m_focusedInstance->get() != &focusedInstance->get())
         {
-            // Close all entities in the old path
-            SetContainerEntitiesState(m_instanceFocusVector, false);
+            // Close all container entities in the old path
+            CloseInstanceContainers(m_instanceFocusVector);
 
             m_focusedInstance = focusedInstance;
             m_focusedTemplateId = focusedInstance->get().GetTemplateId();
@@ -136,8 +136,8 @@ namespace AzToolsFramework::Prefab
             // Refresh path variables
             RefreshInstanceFocusList();
 
-            // Open all entities in the new path
-            SetContainerEntitiesState(m_instanceFocusVector, true);
+            // Open all container entities in the new path
+            OpenInstanceContainers(m_instanceFocusVector);
 
             PrefabFocusNotificationBus::Broadcast(&PrefabFocusNotifications::OnPrefabFocusChanged);
         }
@@ -219,13 +219,24 @@ namespace AzToolsFramework::Prefab
         }
     }
 
-    void PrefabFocusHandler::SetContainerEntitiesState(const AZStd::vector<InstanceOptionalReference>& instances, bool open)
+    void PrefabFocusHandler::OpenInstanceContainers(const AZStd::vector<InstanceOptionalReference>& instances) const
     {
         for (const InstanceOptionalReference& instance : instances)
         {
             if (instance.has_value())
             {
-                m_containerEntityInterface->SetContainerOpenState(instance->get().GetContainerEntityId(), open);
+                m_containerEntityInterface->SetContainerOpenState(instance->get().GetContainerEntityId(), true);
+            }
+        }
+    }
+
+    void PrefabFocusHandler::CloseInstanceContainers(const AZStd::vector<InstanceOptionalReference>& instances) const
+    {
+        for (const InstanceOptionalReference& instance : instances)
+        {
+            if (instance.has_value())
+            {
+                m_containerEntityInterface->SetContainerOpenState(instance->get().GetContainerEntityId(), false);
             }
         }
     }

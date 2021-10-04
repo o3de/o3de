@@ -11,10 +11,6 @@
 
 namespace AzToolsFramework
 {
-    void ContainerEntitySystemComponent::Init()
-    {
-    }
-
     void ContainerEntitySystemComponent::Activate()
     {
         AZ::Interface<ContainerEntityInterface>::Register(this);
@@ -34,14 +30,6 @@ namespace AzToolsFramework
         provided.push_back(AZ_CRC_CE("ContainerEntityService"));
     }
 
-    void ContainerEntitySystemComponent::GetRequiredServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& required)
-    {
-    }
-
-    void ContainerEntitySystemComponent::GetIncompatibleServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& incompatible)
-    {
-    }
-
     ContainerEntityOperationResult ContainerEntitySystemComponent::RegisterEntityAsContainer(AZ::EntityId entityId)
     {
         if (IsContainer(entityId))
@@ -50,7 +38,7 @@ namespace AzToolsFramework
                 "ContainerEntitySystemComponent error - trying to register entity as container twice."));
         }
 
-        m_containerSet.insert(entityId);
+        m_containers.insert(entityId);
 
         return AZ::Success();
     }
@@ -63,14 +51,14 @@ namespace AzToolsFramework
                 "ContainerEntitySystemComponent error - trying to unregister entity that is not a container."));
         }
 
-        m_containerSet.erase(entityId);
+        m_containers.erase(entityId);
 
         return AZ::Success();
     }
 
     bool ContainerEntitySystemComponent::IsContainer(AZ::EntityId entityId) const
     {
-        return m_containerSet.contains(entityId);
+        return m_containers.contains(entityId);
     }
 
     ContainerEntityOperationResult ContainerEntitySystemComponent::SetContainerOpenState(AZ::EntityId entityId, bool open)
@@ -83,14 +71,14 @@ namespace AzToolsFramework
 
         if(open)
         {
-            m_openContainerSet.insert(entityId);
+            m_openContainers.insert(entityId);
         }
         else
         {
-            m_openContainerSet.erase(entityId);
+            m_openContainers.erase(entityId);
         }
 
-        ContainerEntityNotificationBus::Broadcast(&ContainerEntityNotifications::OnContainerEntityStatusChanged, entityId, open);
+        ContainerEntityNotificationBus::Broadcast(&ContainerEntityNotificationBus::Events::OnContainerEntityStatusChanged, entityId, open);
 
         return AZ::Success();
     }
@@ -98,13 +86,13 @@ namespace AzToolsFramework
     bool ContainerEntitySystemComponent::IsContainerOpen(AZ::EntityId entityId) const
     {
         // If the entity is not a container, it should behave as open.
-        if(!m_containerSet.contains(entityId))
+        if(!m_containers.contains(entityId))
         {
             return true;
         }
 
         // If the entity is a container, return its state.
-        return m_openContainerSet.contains(entityId);
+        return m_openContainers.contains(entityId);
     }
 
 } // namespace AzToolsFramework

@@ -22,11 +22,9 @@ namespace AzToolsFramework
     class ContainerEntityInterface;
     class EntityOutlinerListModel;
 
-    /*!
-        * Enables the Outliner to filter entries based on search string.
-        * Enables the Outliner to do custom sorting on entries.
-        * Enforces the correct rendering for container entities.
-        */
+    //! Enables the Outliner to filter entries based on search string.
+    //! Enables the Outliner to do custom sorting on entries.
+    //! Enforces the correct rendering for container entities.
     class EntityOutlinerSortFilterProxyModel
         : public QSortFilterProxyModel
     {

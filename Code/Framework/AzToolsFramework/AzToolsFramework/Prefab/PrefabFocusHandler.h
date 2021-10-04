@@ -19,8 +19,7 @@ namespace AzToolsFramework
 {
     class ContainerEntityInterface;
     class FocusModeInterface;
-
-} // namespace AzToolsFramework
+}
 
 namespace AzToolsFramework::Prefab
 {
@@ -55,18 +54,19 @@ namespace AzToolsFramework::Prefab
         PrefabFocusOperationResult FocusOnPrefabInstance(InstanceOptionalReference focusedInstance);
         void RefreshInstanceFocusList();
 
-        void SetContainerEntitiesState(const AZStd::vector<InstanceOptionalReference>& instances, bool closed);
+        void OpenInstanceContainers(const AZStd::vector<InstanceOptionalReference>& instances) const;
+        void CloseInstanceContainers(const AZStd::vector<InstanceOptionalReference>& instances) const;
 
         InstanceOptionalReference m_focusedInstance;
         TemplateId m_focusedTemplateId;
         AZStd::vector<InstanceOptionalReference> m_instanceFocusVector;
         AZ::IO::Path m_instanceFocusPath;
 
-        bool m_isInitialized = false;
-
         ContainerEntityInterface* m_containerEntityInterface = nullptr;
         FocusModeInterface* m_focusModeInterface = nullptr;
         InstanceEntityMapperInterface* m_instanceEntityMapperInterface = nullptr;
+
+        bool m_isInitialized = false;
     };
 
 } // namespace AzToolsFramework::Prefab

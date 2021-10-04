@@ -29,14 +29,13 @@ namespace AzToolsFramework
         PrefabUiHandler();
         ~PrefabUiHandler() override = default;
 
-        // EditorEntityUiHandler...
+        // EditorEntityUiHandler overrides ...
         QString GenerateItemInfoString(AZ::EntityId entityId) const override;
         QString GenerateItemTooltip(AZ::EntityId entityId) const override;
         QIcon GenerateItemIcon(AZ::EntityId entityId) const override;
         void PaintItemBackground(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const override;
         void PaintDescendantBackground(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index,
             const QModelIndex& descendantIndex) const override;
-
         void OnDoubleClick(AZ::EntityId entityId) const override;
 
     private:

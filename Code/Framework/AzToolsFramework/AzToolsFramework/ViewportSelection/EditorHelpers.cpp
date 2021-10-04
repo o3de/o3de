@@ -195,8 +195,7 @@ namespace AzToolsFramework
 
         // Container Entity support - if the entity that is being selected is part of a closed container,
         // change the selection to the container instead.
-        ContainerEntityInterface* containerEntityInterface = AZ::Interface<ContainerEntityInterface>::Get();
-        if (containerEntityInterface)
+        if (ContainerEntityInterface* containerEntityInterface = AZ::Interface<ContainerEntityInterface>::Get())
         {
             AZ::EntityId entityId = entityIdUnderCursor;
             AZ::EntityId topClosedContainerEntityId = AZ::EntityId(AZ::EntityId::InvalidEntityId);
