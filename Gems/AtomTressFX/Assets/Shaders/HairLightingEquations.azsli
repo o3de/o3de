@@ -57,9 +57,8 @@ option bool o_enableMarschner_R = true;
 option bool o_enableMarschner_TRT = true;
 option bool o_enableMarschner_TT = true;
 
-option bool o_enableDiffuseLobe = true; 
-option bool o_enableSpecularLobe = true;
-option bool o_enableTransmittanceLobe = true;
+option bool o_enableLongtitudeCoeff = true; 
+option bool o_enableAzimuthCoeff = true;
 //------------------------------------------------------------------------------
 
 // Longitudinal functions (M_R, M_TT, M_RTR)
@@ -196,8 +195,8 @@ float3 HairMarschnerBSDF(Surface surface, LightingData lightingData, const float
     // R Path - single reflection from the hair towards the eye.
     if (o_enableMarschner_R)
     {
-        float lighting_R = o_enableDiffuseLobe ? M_R(surface, Lh, sinLiPlusSinLr) : 1.0f;
-        if (o_enableSpecularLobe)
+        float lighting_R = o_enableLongtitudeCoeff ? M_R(surface, Lh, sinLiPlusSinLr) : 1.0f;
+        if (o_enableAzimuthCoeff)
             lighting_R *= N_R(surface, cos_O2, Wi, Wr, f0);
 
         // The following lines are a cheap method to get occluded reflection by accoounting 
@@ -221,8 +220,8 @@ float3 HairMarschnerBSDF(Surface surface, LightingData lightingData, const float
     // on the average thickness.
     if (o_enableMarschner_TT)
     {   
-        float3 lighting_TT = o_enableDiffuseLobe ? M_TT(surface, Lh, sinLiPlusSinLr) : float3(1.0f, 1.0f, 1.0f);
-        if (o_enableSpecularLobe)
+        float3 lighting_TT = o_enableLongtitudeCoeff ? M_TT(surface, Lh, sinLiPlusSinLr) : float3(1.0f, 1.0f, 1.0f);
+        if (o_enableAzimuthCoeff)
             lighting_TT *= N_TT(surface, n2, cos_O, cos_O2, cos_Ld, f0);
 
         // Reduce back transmittance based on the thickness of the hair
@@ -234,8 +233,8 @@ float3 HairMarschnerBSDF(Surface surface, LightingData lightingData, const float
     // the hair towards the eye.
     if (o_enableMarschner_TRT)
     {
-        float3 lighting_TRT = o_enableDiffuseLobe ? M_TRT(surface, Lh, sinLiPlusSinLr) : float3(1.0f, 1.0f, 1.0f);
-        if (o_enableSpecularLobe)
+        float3 lighting_TRT = o_enableLongtitudeCoeff ? M_TRT(surface, Lh, sinLiPlusSinLr) : float3(1.0f, 1.0f, 1.0f);
+        if (o_enableAzimuthCoeff)
             lighting_TRT *= N_TRT(surface, cos_O, cos_Ld, f0);
         lighting += lighting_TRT;
     }

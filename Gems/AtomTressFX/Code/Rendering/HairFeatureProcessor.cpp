@@ -135,6 +135,11 @@ namespace AZ
 
             void HairFeatureProcessor::EnablePasses(bool enable)
             {
+                if (!m_initialized)
+                {
+                    return;
+                }
+
                 for (auto& [passName, pass] : m_computePasses)
                 {
                     pass->SetEnabled(enable);
@@ -201,7 +206,6 @@ namespace AZ
             void HairFeatureProcessor::Simulate(const FeatureProcessor::SimulatePacket& packet)
             {
                 AZ_PROFILE_FUNCTION(AzRender);
-                AZ_ATOM_PROFILE_FUNCTION("Hair", "HairFeatureProcessor: Simulate");
                 AZ_UNUSED(packet);
 
                 if (m_hairRenderObjects.empty())
@@ -250,7 +254,6 @@ namespace AZ
             void HairFeatureProcessor::Render([[maybe_unused]] const FeatureProcessor::RenderPacket& packet)
             {
                 AZ_PROFILE_FUNCTION(AzRender);
-                AZ_ATOM_PROFILE_FUNCTION("Hair", "HairFeatureProcessor: Render");
 
                 if (!m_initialized || !m_addDispatchEnabled)
                 {   // Skip adding dispatches / Draw packets for this frame until initialized and the shaders are ready
@@ -341,13 +344,13 @@ namespace AZ
                 resultSuccess &= InitPPLLFillPass();
                 resultSuccess &= InitPPLLResolvePass();
 
+                m_initialized = resultSuccess;
+
                 // Don't enable passes if no hair object was added yet (depending on activation order)
-                if (m_hairRenderObjects.empty())
+                if (m_initialized && m_hairRenderObjects.empty())
                 {
                     EnablePasses(false);
                 }
-
-                m_initialized = resultSuccess;
 
                 // this might not be an error - if the pass system is still empty / minimal
                 //  and these passes are not part of the minimal pipeline, they will not

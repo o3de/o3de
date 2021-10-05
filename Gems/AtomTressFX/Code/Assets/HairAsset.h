@@ -9,6 +9,7 @@
 #pragma once
 
 #include <AzCore/Asset/AssetCommon.h>
+#include <AzCore/Asset/AssetSerializer.h>
 #include <AzFramework/Asset/GenericAssetHandler.h>
 #include <TressFX/TressFXAsset.h>
 
