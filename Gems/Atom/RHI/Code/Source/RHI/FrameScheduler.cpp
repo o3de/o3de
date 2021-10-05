@@ -460,7 +460,7 @@ namespace AZ
                 m_device->CompileMemoryStatistics(m_memoryStatistics, MemoryStatisticsReportFlags::Detail);
             }
 
-            m_device->UpdateCpuTimingStatistics(m_cpuTimingStatistics);
+            m_device->UpdateCpuTimingStatistics();
 
             m_scopeProducers.clear();
             m_scopeProducerLookup.clear();
@@ -602,12 +602,18 @@ namespace AZ
                 : nullptr;
         }
 
-        const CpuTimingStatistics* FrameScheduler::GetCpuTimingStatistics() const
+        double FrameScheduler::GetCpuFrameTime() const
         {
-            return
-                CheckBitsAny(m_compileRequest.m_statisticsFlags, FrameSchedulerStatisticsFlags::GatherCpuTimingStatistics)
-                ? &m_cpuTimingStatistics
-                : nullptr;
+            if (CheckBitsAny(m_compileRequest.m_statisticsFlags, FrameSchedulerStatisticsFlags::GatherCpuTimingStatistics))
+            {
+                if (auto statsProfiler = AZ::Interface<AZ::Statistics::StatisticalProfilerProxy>::Get(); statsProfiler)
+                {
+                    auto& rhiMetrics = statsProfiler->GetProfiler(rhiMetricsId);
+                    const auto* frameTimeStat = rhiMetrics.GetStatistic(frameTimeMetricId);
+                    return frameTimeStat->GetMostRecentSample();
+                }
+            }
+            return 0;
         }
 
         ScopeId FrameScheduler::GetRootScopeId() const

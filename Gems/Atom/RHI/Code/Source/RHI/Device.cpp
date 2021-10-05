@@ -160,7 +160,7 @@ namespace AZ
             return ResultCode::InvalidOperation;
         }
 
-        ResultCode Device::UpdateCpuTimingStatistics([[maybe_unused]] CpuTimingStatistics& cpuTimingStatistics) const
+        ResultCode Device::UpdateCpuTimingStatistics() const
         {
             if (ValidateIsNotInFrame())
             {
