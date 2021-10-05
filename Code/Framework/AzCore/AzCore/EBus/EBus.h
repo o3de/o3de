@@ -722,8 +722,7 @@ namespace AZ
         static bool IsInDispatch(Context* context = GetContext(false));
 
         /**
-         *Returns whether the EBus context is in the middle of a dispatch on the current thread
-         *
+         * Returns whether the EBus context is in the middle of a dispatch on the current thread
         */
         static bool IsInDispatchThisThread(Context* context = GetContext(false));
         /// @cond EXCLUDE_DOCS
