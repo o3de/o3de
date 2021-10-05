@@ -180,6 +180,13 @@ namespace AZ
         bool IsGreaterEqualThan(const Vector2& v) const;
         //! @}
 
+        //! Floor/Ceil/Round functions, operate on each component individually, result will be a new Vector2.
+        //! @{
+        Vector2 GetFloor() const;
+        Vector2 GetCeil() const;
+        Vector2 GetRound() const; // Ties to even (banker's rounding)
+        //! @}
+
         //! Min/Max functions, operate on each component individually, result will be a new Vector2.
         //! @{
         Vector2 GetMin(const Vector2& v) const;

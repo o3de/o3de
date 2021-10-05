@@ -17,19 +17,6 @@ namespace AZ
 {
     namespace IO
     {
-        bool LocalFileIO::IsDirectory(const char* filePath)
-        {
-            char resolvedPath[AZ::IO::MaxPathLength] = {0};
-            ResolvePath(filePath, resolvedPath, AZ::IO::MaxPathLength);
-
-            struct stat result;
-            if (stat(resolvedPath, &result) == 0)
-            {
-                return S_ISDIR(result.st_mode);
-            }
-            return false;
-        }
-
         Result LocalFileIO::Copy(const char* sourceFilePath, const char* destinationFilePath)
         {
             char resolvedSourceFilePath[AZ::IO::MaxPathLength] = {0};

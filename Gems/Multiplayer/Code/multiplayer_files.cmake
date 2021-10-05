@@ -33,6 +33,9 @@ set(FILES
     Include/Multiplayer/MultiplayerConstants.h
     Include/Multiplayer/MultiplayerStats.h
     Include/Multiplayer/MultiplayerTypes.h
+    Include/Multiplayer/NetworkEntity/EntityReplication/EntityReplicationManager.h
+    Include/Multiplayer/NetworkEntity/EntityReplication/EntityReplicator.h
+    Include/Multiplayer/NetworkEntity/EntityReplication/EntityReplicator.inl
     Include/Multiplayer/NetworkEntity/EntityReplication/ReplicationRecord.h
     Include/Multiplayer/NetworkEntity/IFilterEntityManager.h
     Include/Multiplayer/NetworkEntity/INetworkEntityManager.h
@@ -60,6 +63,7 @@ set(FILES
     Source/AutoGen/Multiplayer.AutoPackets.xml
     Source/AutoGen/MultiplayerEditor.AutoPackets.xml
     Source/AutoGen/NetworkCharacterComponent.AutoComponent.xml
+    Source/AutoGen/NetworkConnectionComponent.AutoComponent.xml
     Source/AutoGen/NetworkHitVolumesComponent.AutoComponent.xml
     Source/AutoGen/NetworkRigidBodyComponent.AutoComponent.xml
     Source/AutoGen/NetworkTransformComponent.AutoComponent.xml
@@ -90,10 +94,7 @@ set(FILES
     Source/MultiplayerSystemComponent.cpp
     Source/MultiplayerSystemComponent.h
     Source/NetworkEntity/EntityReplication/EntityReplicationManager.cpp
-    Source/NetworkEntity/EntityReplication/EntityReplicationManager.h
     Source/NetworkEntity/EntityReplication/EntityReplicator.cpp
-    Source/NetworkEntity/EntityReplication/EntityReplicator.h
-    Source/NetworkEntity/EntityReplication/EntityReplicator.inl
     Source/NetworkEntity/EntityReplication/PropertyPublisher.cpp
     Source/NetworkEntity/EntityReplication/PropertyPublisher.h
     Source/NetworkEntity/EntityReplication/PropertySubscriber.cpp

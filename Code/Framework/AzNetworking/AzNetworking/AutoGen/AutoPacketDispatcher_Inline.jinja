@@ -6,16 +6,25 @@ namespace {{ xml.attrib['Name'] }}
     {
         switch (aznumeric_cast<int32_t>(packetHeader.GetPacketType()))
         {
+{% set packet_ns = namespace(handshake=false) %}
+{%      for Packet in xml.iter('Packet') %}
+{%          if ('HandshakePacket' in Packet.attrib) and (Packet.attrib['HandshakePacket']|booleanTrue == true) %}
+{% set packet_ns.handshake = True %}
+{%          endif %}
+{%      endfor %}
+
 {%      for Packet in xml.iter('Packet') %}
             case aznumeric_cast<int32_t>({{ Packet.attrib['Name'] }}::Type):
             {
                 AZLOG(Debug_DispatchPackets, "Received packet %s", "{{ Packet.attrib['Name'] }}");
-{%      if ('HandshakePacket' not in Packet.attrib) or (Packet.attrib['HandshakePacket'] == 'false') %}
-                if (!handler.IsHandshakeComplete())
+{%      if packet_ns.handshake %}
+{%          if ('HandshakePacket' not in Packet.attrib) or (Packet.attrib['HandshakePacket'] == 'false') %}
+                if (!handler.IsHandshakeComplete(connection))
                 {
                     return AzNetworking::PacketDispatchResult::Skipped;
                 }
-{% endif %}
+{%          endif %}
+{%      endif %}
 
                 {{ Packet.attrib['Name'] }} packet;
                 if (!serializer.Serialize(packet, "Packet"))

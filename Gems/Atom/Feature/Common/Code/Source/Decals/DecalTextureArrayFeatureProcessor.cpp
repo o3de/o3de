@@ -301,23 +301,50 @@ namespace AZ
                 return;
             }
 
-            if (material.IsValid())
+            if (GetMaterialUsedByDecal(handle) == material)
             {
-                AZ_Assert(m_decalData.GetData(handle.GetIndex()).m_textureArrayIndex == DecalData::UnusedIndex, "Setting Material on a decal more than once is not currently supported.");
-
-                const auto iter = m_materialToTextureArrayLookupTable.find(material);
-                if (iter != m_materialToTextureArrayLookupTable.end())
-                {
-                    // This material is already loaded and registered with this feature processor
-                    iter->second.m_useCount++;
-                    SetDecalTextureLocation(handle, iter->second.m_location);
-                    return;
-                }
-
-                // Material not loaded so queue it up for loading.
-                QueueMaterialLoadForDecal(material, handle);
                 return;
             }
+
+            const auto decalIndex = handle.GetIndex();
+
+            const bool isValidMaterialBeingUsedCurrently = m_decalData.GetData(decalIndex).m_textureArrayIndex != DecalData::UnusedIndex;
+            if (isValidMaterialBeingUsedCurrently)
+            {
+                RemoveMaterialFromDecal(decalIndex);
+            }
+
+            if (!material.IsValid())
+            {
+                return;
+            }
+
+            const auto iter = m_materialToTextureArrayLookupTable.find(material);
+            if (iter != m_materialToTextureArrayLookupTable.end())
+            {
+                // This material is already loaded and registered with this feature processor
+                iter->second.m_useCount++;
+                SetDecalTextureLocation(handle, iter->second.m_location);
+                return;
+            }
+
+            // Material not loaded so queue it up for loading.
+            QueueMaterialLoadForDecal(material, handle);
+        }
+
+        void DecalTextureArrayFeatureProcessor::RemoveMaterialFromDecal(const uint16_t decalIndex)
+        {
+            auto& decalData = m_decalData.GetData(decalIndex);
+
+            DecalLocation decalLocation;
+            decalLocation.textureArrayIndex = decalData.m_textureArrayIndex;
+            decalLocation.textureIndex = decalData.m_textureIndex;
+            RemoveDecalFromTextureArrays(decalLocation);
+
+            decalData.m_textureArrayIndex = DecalData::UnusedIndex;
+            decalData.m_textureIndex = DecalData::UnusedIndex;
+
+            m_deviceBufferNeedsUpdate = true;
         }
 
         void DecalTextureArrayFeatureProcessor::CacheShaderIndices()
