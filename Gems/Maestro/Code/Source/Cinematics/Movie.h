@@ -14,6 +14,7 @@
 
 #pragma once
 #include <AzCore/std/containers/map.h>
+#include <AzCore/Time/ITime.h>
 
 #include <CryCommon/TimeValue.h>
 #include <CryCommon/StaticInstance.h>
@@ -235,7 +236,7 @@ private:
     IMovieUser* m_pUser;
     IMovieCallback* m_pCallback;
 
-    CTimeValue m_lastUpdateTime;
+    AZ::TimeMs m_lastUpdateTime;
 
     typedef AZStd::vector<AZStd::intrusive_ptr<IAnimSequence> > Sequences;
     Sequences m_sequences;

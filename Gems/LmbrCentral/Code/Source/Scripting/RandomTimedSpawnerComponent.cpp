@@ -13,6 +13,7 @@
 #include <LmbrCentral/Scripting/SpawnerComponentBus.h>
 
 #include <AzCore/Component/TransformBus.h>
+#include <AzCore/Time/ITime.h>
 
 namespace LmbrCentral
 {
@@ -88,8 +89,8 @@ namespace LmbrCentral
 
     void RandomTimedSpawnerComponent::Activate()
     {
-        AZStd::chrono::system_clock::time_point now = AZStd::chrono::system_clock::now();
-        m_currentTime = AZ::ScriptTimePoint(now).GetSeconds();
+        const AZ::TimeMs elapsedTimeMs = AZ::GetElapsedTimeMs();
+        m_currentTime = AZ::TimeMsToSecondsDouble(elapsedTimeMs);
         RandomTimedSpawnerComponentRequestBus::Handler::BusConnect(GetEntityId());
 
         CalculateNextSpawnTime();

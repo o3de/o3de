@@ -8,7 +8,8 @@
 
 #include "LyShineTest.h"
 #include <Mocks/ISystemMock.h>
-#include <Mocks/ITimerMock.h>
+#include <AzCore/UnitTest/Mocks/MockITime.h>
+#include <AzFramework/Application/Application.h>
 
 #include <UiCanvasComponent.h>
 #include <Animation/AnimSequence.h>
@@ -17,21 +18,21 @@
 
 namespace UnitTest
 {
-    class FrameTimerMock
-        : public TimerMock
+    struct AnimationTestStubTimer : public AZ::StubTimeSystem
     {
-    public:
-        const CTimeValue& GetFrameStartTime([[maybe_unused]] ITimer::ETimer which = ITimer::ETIMER_GAME) const override
+        AZ_RTTI(UnitTest::AnimationTestStubTimer, "{541EBC6C-E793-4433-9402-4CAD2F6770E3}", AZ::StubTimeSystem);
+
+        AZ::TimeMs GetElapsedTimeMs() const override
         {
-            return m_frameStartTime;
-        }
-        void AddFrameStartTime(float seconds)
-        {
-            m_frameStartTime += CTimeValue(seconds);
+            return m_timeMs;
         }
 
-    private:
-        CTimeValue m_frameStartTime = CTimeValue();
+        void AddFrameTime(float sec)
+        {
+            m_timeMs += AZ::SecondsToTimeMs(sec);
+        }
+
+        AZ::TimeMs m_timeMs = AZ::TimeMs{ 0 };
     };
 
     class TrackEventHandler
@@ -65,6 +66,22 @@ namespace UnitTest
         AZStd::vector<EventInfo> m_recievedEvents;
     };
 
+    class LyShineAnimationTestApplication : public AzFramework::Application
+    {
+    public:
+        LyShineAnimationTestApplication()
+            : AzFramework::Application()
+        {
+            m_timeSystem.reset();
+            m_timeSystem = AZStd::make_unique<UnitTest::AnimationTestStubTimer>();
+        }
+
+        UnitTest::AnimationTestStubTimer* GetTimer()
+        {
+            return azdynamic_cast<UnitTest::AnimationTestStubTimer*>(m_timeSystem.get());
+        }
+    };
+
     class LyShineAnimationTest
         : public LyShineTest
     {
@@ -74,12 +91,22 @@ namespace UnitTest
         {
         }
 
+        void SetupApplication() override
+        {
+            AZ::ComponentApplication::Descriptor appDesc;
+            appDesc.m_memoryBlocksByteSize = 10 * 1024 * 1024;
+            appDesc.m_recordingMode = AZ::Debug::AllocationRecords::RECORD_FULL;
+            appDesc.m_stackRecordLevels = 20;
+
+            m_application = aznew LyShineAnimationTestApplication();
+            m_systemEntity = m_application->Create(appDesc);
+            m_systemEntity->Init();
+            m_systemEntity->Activate();
+        }
+
         void SetupEnvironment() override
         {
             LyShineTest::SetupEnvironment();
-
-            m_data = AZStd::make_unique<Data>();
-            m_env->m_stubEnv.pTimer = &m_data->m_timer;
 
             m_canvasComponent = aznew UiCanvasComponent;
         }
@@ -87,18 +114,15 @@ namespace UnitTest
         void TearDown() override
         {
             delete m_canvasComponent;
-            m_data.reset();
 
             UiAnimationNotificationBus::ClearQueuedEvents();
             LyShineTest::TearDown();
         }
 
-        struct Data
+        UnitTest::AnimationTestStubTimer* GetTimer()
         {
-            testing::NiceMock<FrameTimerMock> m_timer;
-        };
-
-        AZStd::unique_ptr<Data> m_data;
+            return static_cast<LyShineAnimationTestApplication*>(m_application)->GetTimer();
+        }
         UiCanvasComponent* m_canvasComponent;
     };
 
@@ -126,13 +150,14 @@ namespace UnitTest
         eventHandler.Connect(m_canvasComponent->GetEntityId());
         animSys->PlaySequence(sequence, nullptr, true, true);
 
+        UnitTest::AnimationTestStubTimer* timer = GetTimer();
         for (int frame = 0; frame < 2; ++frame)
         {
             static float deltaTime = 1.0f / 60.0f;
 
             animSys->PreUpdate(deltaTime);
             animSys->PostUpdate(deltaTime);
-            m_data->m_timer.AddFrameStartTime(deltaTime);
+            timer->AddFrameTime(deltaTime);
         }
 
         UiAnimationNotificationBus::ExecuteQueuedEvents();

@@ -13,7 +13,6 @@
 #pragma once
 
 #include <IConsole.h>
-#include "Timer.h"
 #include <CryCommon/StlUtils.h>
 #include <AzFramework/Components/ConsoleBus.h>
 #include <AzFramework/CommandLine/CommandRegistrationBus.h>
@@ -377,7 +376,6 @@ private: // ----------------------------------------------------------
 
     CSystem*                                               m_pSystem;
     IFFont*                                                m_pFont;
-    ITimer*                                                m_pTimer;
 
     ICVar*                                                 m_pSysDeactivateConsole;
 

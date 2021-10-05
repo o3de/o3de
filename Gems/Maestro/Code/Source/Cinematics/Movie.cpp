@@ -10,6 +10,7 @@
 #include <AzCore/std/allocator_stateless.h>
 #include <AzCore/std/containers/map.h>
 #include <AzCore/std/containers/unordered_map.h>
+#include <AzCore/Time/ITime.h>
 #include <AzFramework/Components/CameraBus.h>
 #include <Maestro/Bus/SequenceComponentBus.h>
 #include "Movie.h"

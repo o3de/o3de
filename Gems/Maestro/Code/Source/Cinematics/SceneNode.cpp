@@ -11,6 +11,7 @@
 #include <AzCore/Math/Transform.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Component/TransformBus.h>
+#include <AzCore/Time/ITime.h>
 #include <AzFramework/Components/CameraBus.h>
 
 #include "MathConversion.h"
@@ -23,7 +24,6 @@
 #include "GotoTrack.h"
 #include "CaptureTrack.h"
 #include "ISystem.h"
-#include "ITimer.h"
 #include "AnimAZEntityNode.h"
 #include "AnimComponentNode.h"
 #include "Movie.h"
