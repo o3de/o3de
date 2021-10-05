@@ -12,6 +12,7 @@
 #include <AzCore/Serialization/SerializeContext.h>
 
 #include <GradientSignal/Ebuses/GradientRequestBus.h>
+#include <TerrainSystem/TerrainSystemBus.h>
 
 namespace Terrain
 {
@@ -109,12 +110,35 @@ namespace Terrain
 
     void TerrainSurfaceGradientListComponent::Activate()
     {
+        LmbrCentral::DependencyNotificationBus::Handler::BusConnect(GetEntityId());
         Terrain::TerrainAreaSurfaceRequestBus::Handler::BusConnect(GetEntityId());
+
+        // Make sure we get update notifications whenever this entity or any dependent gradient entity changes in any way.
+        // We'll use that to notify the terrain system that the surface information needs to be refreshed.
+        m_dependencyMonitor.Reset();
+        m_dependencyMonitor.ConnectOwner(GetEntityId());
+        m_dependencyMonitor.ConnectDependency(GetEntityId());
+
+        for (auto& surfaceMapping : m_configuration.m_gradientSurfaceMappings)
+        {
+            if (surfaceMapping.m_gradientEntityId != GetEntityId())
+            {
+                m_dependencyMonitor.ConnectDependency(surfaceMapping.m_gradientEntityId);
+            }
+        }
+
+        // Notify that the area has changed.
+        OnCompositionChanged();
     }
 
     void TerrainSurfaceGradientListComponent::Deactivate()
     {
+        m_dependencyMonitor.Reset();
+        LmbrCentral::DependencyNotificationBus::Handler::BusDisconnect();
         Terrain::TerrainAreaSurfaceRequestBus::Handler::BusDisconnect();
+
+        // Since this surface data will no longer exist, notify the terrain system to refresh the area.
+        TerrainSystemServiceRequestBus::Broadcast(&TerrainSystemServiceRequestBus::Events::RefreshArea, GetEntityId());
     }
 
     bool TerrainSurfaceGradientListComponent::ReadInConfig(const AZ::ComponentConfig* baseConfig)
@@ -154,4 +178,10 @@ namespace Terrain
             outSurfaceWeights.emplace(tagWeight);
         }
     }
+
+    void TerrainSurfaceGradientListComponent::OnCompositionChanged()
+    {
+        TerrainSystemServiceRequestBus::Broadcast(&TerrainSystemServiceRequestBus::Events::RefreshArea, GetEntityId());
+    }
+
 } // namespace Terrain
