@@ -8,21 +8,20 @@
 
 #pragma once
 
-#include "ColliderSubComponentMode.h"
+#include <Editor/Source/ComponentModes/PhysXSubComponentModeBase.h>
 #include <AzToolsFramework/Manipulators/ScaleManipulators.h>
 
 namespace PhysX
 {
     /// Sub component mode for modifying the asset scale on a collider in the viewport.
-    class ColliderAssetScaleMode
-        : public PhysX::ColliderSubComponentMode
+    class ColliderAssetScaleMode : public PhysXSubComponentModeBase
     {
     public:
         AZ_CLASS_ALLOCATOR_DECL
 
         ColliderAssetScaleMode();
 
-        // ColliderSubComponentMode ...
+        // PhysXSubComponentModeBase ...
         void Setup(const AZ::EntityComponentIdPair& idPair) override;
         void Refresh(const AZ::EntityComponentIdPair& idPair) override;
         void Teardown(const AZ::EntityComponentIdPair& idPair) override;

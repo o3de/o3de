@@ -7,6 +7,7 @@
  */
 
 #include "PrefabBuilderTests.h"
+#include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/Serialization/Json/JsonSystemComponent.h>
 #include <AzCore/Serialization/Json/JsonUtils.h>

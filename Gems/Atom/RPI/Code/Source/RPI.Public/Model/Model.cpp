@@ -7,6 +7,7 @@
  */
 
 #include <Atom/RPI.Public/Model/Model.h>
+#include <Atom/RPI.Reflect/Model/ModelAsset.h>
 
 #include <Atom/RHI/Factory.h>
 
@@ -28,6 +29,28 @@ namespace AZ
             return Data::InstanceDatabase<Model>::Instance().FindOrCreate(
                 Data::InstanceId::CreateFromAssetId(modelAsset.GetId()),
                 modelAsset);
+        }
+
+        
+        void Model::TEMPOrphanFromDatabase(const Data::Asset<ModelAsset>& modelAsset)
+        {
+            for (auto& modelLodAsset : modelAsset->GetLodAssets())
+            {
+                for(auto& mesh : modelLodAsset->GetMeshes())
+                {
+                    for (auto& streamBufferInfo : mesh.GetStreamBufferInfoList())
+                    {
+                        Data::InstanceDatabase<Buffer>::Instance().TEMPOrphan(
+                            Data::InstanceId::CreateFromAssetId(streamBufferInfo.m_bufferAssetView.GetBufferAsset().GetId()));
+                    }
+                    Data::InstanceDatabase<Buffer>::Instance().TEMPOrphan(
+                        Data::InstanceId::CreateFromAssetId(mesh.GetIndexBufferAssetView().GetBufferAsset().GetId()));
+                }
+                Data::InstanceDatabase<ModelLod>::Instance().TEMPOrphan(Data::InstanceId::CreateFromAssetId(modelLodAsset.GetId()));
+            }
+
+            Data::InstanceDatabase<Model>::Instance().TEMPOrphan(
+                Data::InstanceId::CreateFromAssetId(modelAsset.GetId()));
         }
 
         size_t Model::GetLodCount() const

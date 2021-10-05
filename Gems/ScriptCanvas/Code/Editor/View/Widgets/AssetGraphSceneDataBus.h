@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Math/Uuid.h>
 #include <AzCore/EBus/EBus.h>
 

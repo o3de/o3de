@@ -166,6 +166,8 @@ set(FILES
     IO/FileIO.cpp
     IO/FileIO.h
     IO/FileIOEventBus.h
+    IO/FileReader.cpp
+    IO/FileReader.h
     IO/IOUtils.h
     IO/IOUtils.cpp
     IO/IStreamer.h
@@ -631,6 +633,8 @@ set(FILES
     Task/TaskGraph.cpp
     Task/TaskGraph.h
     Task/TaskGraph.inl
+    Task/TaskGraphSystemComponent.h
+    Task/TaskGraphSystemComponent.cpp
     Threading/ThreadSafeDeque.h
     Threading/ThreadSafeDeque.inl
     Threading/ThreadSafeObject.h

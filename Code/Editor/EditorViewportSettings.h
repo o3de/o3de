@@ -71,8 +71,8 @@ namespace SandboxEditor
     SANDBOX_API float CameraDollyMotionSpeed();
     SANDBOX_API void SetCameraDollyMotionSpeed(float speed);
 
-    SANDBOX_API bool CameraOrbitYawRotationInverted();
-    SANDBOX_API void SetCameraOrbitYawRotationInverted(bool inverted);
+    SANDBOX_API bool CameraPivotYawRotationInverted();
+    SANDBOX_API void SetCameraPivotYawRotationInverted(bool inverted);
 
     SANDBOX_API bool CameraPanInvertedX();
     SANDBOX_API void SetCameraPanInvertedX(bool inverted);
@@ -119,8 +119,8 @@ namespace SandboxEditor
     SANDBOX_API AzFramework::InputChannelId CameraTranslateBoostChannelId();
     SANDBOX_API void SetCameraTranslateBoostChannelId(AZStd::string_view cameraTranslateBoostId);
 
-    SANDBOX_API AzFramework::InputChannelId CameraOrbitChannelId();
-    SANDBOX_API void SetCameraOrbitChannelId(AZStd::string_view cameraOrbitId);
+    SANDBOX_API AzFramework::InputChannelId CameraPivotChannelId();
+    SANDBOX_API void SetCameraPivotChannelId(AZStd::string_view cameraPivotId);
 
     SANDBOX_API AzFramework::InputChannelId CameraFreeLookChannelId();
     SANDBOX_API void SetCameraFreeLookChannelId(AZStd::string_view cameraFreeLookId);
@@ -128,12 +128,12 @@ namespace SandboxEditor
     SANDBOX_API AzFramework::InputChannelId CameraFreePanChannelId();
     SANDBOX_API void SetCameraFreePanChannelId(AZStd::string_view cameraFreePanId);
 
-    SANDBOX_API AzFramework::InputChannelId CameraOrbitLookChannelId();
-    SANDBOX_API void SetCameraOrbitLookChannelId(AZStd::string_view cameraOrbitLookId);
+    SANDBOX_API AzFramework::InputChannelId CameraPivotLookChannelId();
+    SANDBOX_API void SetCameraPivotLookChannelId(AZStd::string_view cameraPivotLookId);
 
-    SANDBOX_API AzFramework::InputChannelId CameraOrbitDollyChannelId();
-    SANDBOX_API void SetCameraOrbitDollyChannelId(AZStd::string_view cameraOrbitDollyId);
+    SANDBOX_API AzFramework::InputChannelId CameraPivotDollyChannelId();
+    SANDBOX_API void SetCameraPivotDollyChannelId(AZStd::string_view cameraPivotDollyId);
 
-    SANDBOX_API AzFramework::InputChannelId CameraOrbitPanChannelId();
-    SANDBOX_API void SetCameraOrbitPanChannelId(AZStd::string_view cameraOrbitPanId);
+    SANDBOX_API AzFramework::InputChannelId CameraPivotPanChannelId();
+    SANDBOX_API void SetCameraPivotPanChannelId(AZStd::string_view cameraPivotPanId);
 } // namespace SandboxEditor

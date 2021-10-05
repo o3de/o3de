@@ -42,7 +42,6 @@
  */
 
 #include <AzCore/std/string/string.h>
-#include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Component/Component.h>
@@ -74,38 +73,7 @@ namespace AzFramework
         virtual AZ::Data::AssetType GetAssetType() const = 0;
         virtual const char* GetFileFilter() const = 0;
 
-        static void Reflect(AZ::ReflectContext* context)
-        {
-            if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
-            {
-                serializeContext->Class<SimpleAssetReferenceBase>()
-                    ->Version(1)
-                    ->Field("AssetPath", &SimpleAssetReferenceBase::m_assetPath);
-
-                AZ::EditContext* edit = serializeContext->GetEditContext();
-                if (edit)
-                {
-                    edit->Class<SimpleAssetReferenceBase>("Asset path", "Asset reference as a project-relative path")
-                        ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                            ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::Hide)
-                        ;
-                }
-            }
-
-            if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
-            {
-                behaviorContext->Class<SimpleAssetReferenceBase>()
-                    ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
-                    ->Attribute(AZ::Script::Attributes::Category, "Asset")
-                    ->Attribute(AZ::Script::Attributes::Module, "asset")
-                    ->Property("assetPath", &SimpleAssetReferenceBase::GetAssetPath, nullptr)
-                    ->Property("assetType", &SimpleAssetReferenceBase::GetAssetType, nullptr)
-                    ->Property("fileFilter", &SimpleAssetReferenceBase::GetFileFilter, nullptr)
-                    ->Method("SetAssetPath", &SimpleAssetReferenceBase::SetAssetPath)
-                        ->Attribute(AZ::Script::Attributes::Alias, "set_asset_path")
-                    ;
-            }
-        }
+        static void Reflect(AZ::ReflectContext* context);
 
     protected:
 

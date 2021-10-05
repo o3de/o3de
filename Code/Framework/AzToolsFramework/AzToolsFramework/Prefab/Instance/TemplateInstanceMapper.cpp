@@ -27,7 +27,7 @@ namespace AzToolsFramework
         }
 
 
-        bool TemplateInstanceMapper::RegisterTemplate(const TemplateId& templateId)
+        bool TemplateInstanceMapper::RegisterTemplate(TemplateId templateId)
         {
             const bool result = m_templateIdToInstancesMap.emplace(templateId, InstanceSet()).second;
             AZ_Assert(result,
@@ -39,7 +39,7 @@ namespace AzToolsFramework
             return result;
         }
 
-        bool TemplateInstanceMapper::UnregisterTemplate(const TemplateId& templateId)
+        bool TemplateInstanceMapper::UnregisterTemplate(TemplateId templateId)
         {
             const bool result = m_templateIdToInstancesMap.erase(templateId) != 0;
             AZ_Assert(result,
@@ -53,7 +53,7 @@ namespace AzToolsFramework
 
         bool TemplateInstanceMapper::RegisterInstanceToTemplate(Instance& instance)
         {
-            const TemplateId& templateId = instance.GetTemplateId();
+            TemplateId templateId = instance.GetTemplateId();
             if (templateId == InvalidTemplateId)
             {
                 return false; 
@@ -79,7 +79,7 @@ namespace AzToolsFramework
                 found->second.erase(&instance) != 0;
         }
 
-        InstanceSetConstReference TemplateInstanceMapper::FindInstancesOwnedByTemplate(const TemplateId& templateId) const
+        InstanceSetConstReference TemplateInstanceMapper::FindInstancesOwnedByTemplate(TemplateId templateId) const
         {
             auto found = m_templateIdToInstancesMap.find(templateId);
 

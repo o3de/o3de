@@ -104,6 +104,8 @@ set(FILES
     Source/GemCatalog/GemSortFilterProxyModel.cpp
     Source/GemRepo/GemRepoScreen.h
     Source/GemRepo/GemRepoScreen.cpp
+    Source/GemRepo/GemRepoAddDialog.h
+    Source/GemRepo/GemRepoAddDialog.cpp
     Source/GemRepo/GemRepoInfo.h
     Source/GemRepo/GemRepoInfo.cpp
     Source/GemRepo/GemRepoInspector.h
