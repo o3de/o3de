@@ -56,9 +56,10 @@ namespace EMotionFX
             // KD-Tree
             KdTree& GetKdTree() { return *m_kdTree.get(); }
             const KdTree& GetKdTree() const { return *m_kdTree.get(); }
-			size_t CalcNumDataDimensionsForKdTree() const;
+            size_t CalcNumDataDimensionsForKdTree() const;
 
             const FeatureMatrix& GetFeatureMatrix() const { return m_featureMatrix; }
+            void SaveAsCsv(const AZStd::string& filename, Skeleton* skeleton);
 
         private:
             static Feature* CreateFrameDataByType(const AZ::TypeId& typeId); // create from RTTI type
