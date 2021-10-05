@@ -14,6 +14,7 @@ namespace Multiplayer
 {
     /*
      * Hierarchy of 16 entities: Parent -> Child_2 -> .. -> Child_16
+     * By default the maximum size of a hierarchy is defined by bg_hierarchyEntityMaxLimit (16).
      */
     class ServerDeepHierarchyBenchmark : public HierarchyBenchmarkBase
     {
