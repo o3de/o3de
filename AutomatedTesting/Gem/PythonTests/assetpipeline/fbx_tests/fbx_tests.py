@@ -387,7 +387,6 @@ class TestsFBX_AllPlatforms(object):
         self.run_fbx_test(workspace, ap_setup_fixture,
                           asset_processor, project, blackbox_param, True)
 
-    @pytest.mark.SUITE_sandbox
     def populateAssetInfo(self, workspace, project, assets):
 
         # Check that each given source asset resulted in the expected jobs and products.
