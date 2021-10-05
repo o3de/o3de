@@ -37,6 +37,8 @@
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <ScriptCanvas/Variable/GraphVariable.h>
 
+#pragma optimize("", off)
+
 namespace ScriptCanvasEditor
 {
 
@@ -411,10 +413,7 @@ namespace ScriptCanvasEditor
 
         case Qt::TextAlignmentRole:
         {
-            if (index.column() == ColumnIndex::Type)
-            {
-                return QVariant(Qt::AlignLeft | Qt::AlignVCenter);
-            }
+            return QVariant(Qt::AlignLeft | Qt::AlignVCenter);
         }
         break;
 
@@ -878,6 +877,11 @@ namespace ScriptCanvasEditor
         if (orientation == Qt::Horizontal && role == Qt::DisplayRole)
         {
             return tr(m_columnNames[section]);
+        }
+
+        if (role == Qt::TextAlignmentRole)
+        {
+            return QVariant(Qt::AlignLeft | Qt::AlignVCenter);
         }
 
         return QAbstractItemModel::headerData(section, orientation, role);
@@ -1410,3 +1414,6 @@ namespace ScriptCanvasEditor
 
 #include <Editor/View/Widgets/VariablePanel/moc_GraphVariablesTableView.cpp>
 }
+
+
+#pragma optimize("", on)
