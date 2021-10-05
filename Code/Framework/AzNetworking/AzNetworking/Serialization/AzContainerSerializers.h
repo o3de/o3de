@@ -321,4 +321,19 @@ namespace AzNetworking
             return serializer.IsValid();
         }
     };
+
+    template <>
+    struct SerializeObjectHelper<AZ::Aabb>
+    {
+        static bool SerializeObject(ISerializer& serializer, AZ::Aabb& value)
+        {
+            AZ::Vector3 minValue = value.GetMin();
+            AZ::Vector3 maxValue = value.GetMax();
+            serializer.Serialize(minValue, "minValue");
+            serializer.Serialize(maxValue, "maxValue");
+            value.SetMin(minValue);
+            value.SetMax(maxValue);
+            return serializer.IsValid();
+        }
+    };
 }

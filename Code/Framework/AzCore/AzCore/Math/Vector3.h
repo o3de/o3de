@@ -211,6 +211,13 @@ namespace AZ
         bool IsGreaterEqualThan(const Vector3& rhs) const;
         //! @}
 
+        //! Floor/Ceil/Round functions, operate on each component individually, result will be a new Vector3.
+        //! @{
+        Vector3 GetFloor() const;
+        Vector3 GetCeil() const;
+        Vector3 GetRound() const; // Ties to even (banker's rounding)
+        //! @}
+
         //! Min/Max functions, operate on each component individually, result will be a new Vector3.
         //! @{
         Vector3 GetMin(const Vector3& v) const;

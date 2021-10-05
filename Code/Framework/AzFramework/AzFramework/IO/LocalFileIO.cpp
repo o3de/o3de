@@ -281,6 +281,14 @@ namespace AZ
             return SystemFile::Exists(resolvedPath);
         }
 
+        bool LocalFileIO::IsDirectory(const char* filePath)
+        {
+            char resolvedPath[AZ_MAX_PATH_LEN];
+            ResolvePath(filePath, resolvedPath, AZ_MAX_PATH_LEN);
+
+            return SystemFile::IsDirectory(resolvedPath);
+        }
+
         void LocalFileIO::CheckInvalidWrite([[maybe_unused]] const char* path)
         {
 #if defined(AZ_ENABLE_TRACING)
