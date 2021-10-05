@@ -11,6 +11,7 @@
 #include <AzCore/Module/Environment.h>
 #include <AzCore/Math/Crc.h>
 #include <AzCore/Memory/SystemAllocator.h>
+#include <AzCore/Statistics/StatisticalProfilerProxy.h>
 
 AZ_DEFINE_BUDGET(Animation);
 AZ_DEFINE_BUDGET(Audio);
@@ -30,8 +31,7 @@ namespace AZ::Debug
     };
 
     Budget::Budget(const char* name)
-        : m_name{ name }
-        , m_crc{ Crc32(name) }
+        : Budget( name, Crc32(name) )
     {
     }
 
@@ -40,6 +40,10 @@ namespace AZ::Debug
         , m_crc{ crc }
     {
         m_impl = aznew BudgetImpl;
+        if (auto statsProfiler = Interface<Statistics::StatisticalProfilerProxy>::Get(); statsProfiler)
+        {
+            statsProfiler->RegisterProfilerId(m_crc);
+        }
     }
 
     Budget::~Budget()

@@ -26,10 +26,10 @@
 #include <Multiplayer/Components/NetworkHierarchyChildComponent.h>
 #include <Multiplayer/Components/NetworkHierarchyRootComponent.h>
 #include <Multiplayer/Components/NetworkTransformComponent.h>
+#include <Multiplayer/NetworkEntity/EntityReplication/EntityReplicationManager.h>
+#include <Multiplayer/NetworkEntity/EntityReplication/EntityReplicator.h>
 #include <NetworkEntity/NetworkEntityAuthorityTracker.h>
 #include <NetworkEntity/NetworkEntityTracker.h>
-#include <NetworkEntity/EntityReplication/EntityReplicationManager.h>
-#include <NetworkEntity/EntityReplication/EntityReplicator.h>
 
 namespace Multiplayer
 {
@@ -206,7 +206,7 @@ namespace Multiplayer
         NetworkEntityHandle AddEntityToEntityMap(NetEntityId netEntityId, AZ::Entity* entity)
         {
             m_networkEntityMap[netEntityId] = entity;
-            return NetworkEntityHandle(entity, netEntityId, m_networkEntityTracker.get());
+            return NetworkEntityHandle(entity, m_networkEntityTracker.get());
         }
 
         ConstNetworkEntityHandle GetEntity(NetEntityId netEntityId) const
