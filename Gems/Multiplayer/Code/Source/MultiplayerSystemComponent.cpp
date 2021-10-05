@@ -446,9 +446,9 @@ namespace Multiplayer
         MultiplayerPackets::SyncConsole m_syncPacket;
     };
 
-    bool MultiplayerSystemComponent::IsHandshakeComplete() const
+    bool MultiplayerSystemComponent::IsHandshakeComplete(AzNetworking::IConnection* connection) const
     {
-        return m_didHandshake;
+        return reinterpret_cast<IConnectionData*>(connection->GetUserData())->DidHandshake();
     }
 
     bool MultiplayerSystemComponent::HandleRequest
@@ -475,7 +475,7 @@ namespace Multiplayer
 
         if (connection->SendReliablePacket(MultiplayerPackets::Accept(sv_map)))
         {
-            m_didHandshake = true;
+            reinterpret_cast<ServerToClientConnectionData*>(connection->GetUserData())->SetDidHandshake(true);
 
             // Sync our console
             ConsoleReplicator consoleReplicator(connection);
@@ -492,7 +492,7 @@ namespace Multiplayer
         [[maybe_unused]] MultiplayerPackets::Accept& packet
     )
     {
-        m_didHandshake = true;
+        reinterpret_cast<ClientToServerConnectionData*>(connection->GetUserData())->SetDidHandshake(true);
         AZ::CVarFixedString commandString = "sv_map " + packet.GetMap();
         AZ::Interface<AZ::IConsole>::Get()->PerformCommand(commandString.c_str());
         AZ::CVarFixedString loadLevelString = "LoadLevel " + packet.GetMap();
