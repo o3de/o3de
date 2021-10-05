@@ -192,7 +192,6 @@ namespace AZ
                 return AZ::Failure(AZStd::string::format("Couldn't find attribute '%s' in shader asset '%s'", attributeName.GetCStr(), shaderAsset.GetHint().c_str()));
             }
             const RHI::ShaderStageAttributeArguments& args = *numThreads;
-            const auto numArguments = args.size();
             AZStd::string errorMsg;
             if (!GetAttributeArgumentByIndex(shaderAsset, attributeName, args, 0, numThreadsX, errorMsg))
             {
