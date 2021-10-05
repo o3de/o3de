@@ -201,16 +201,13 @@ namespace Multiplayer
         {
             if (const AZ::Entity* childEntity = componentApplication->FindEntity(childEntityId))
             {
-                for (Component* component : childEntity->GetComponents())
+                if (auto* hierarchyChildComponent = childEntity->FindComponent<NetworkHierarchyChildComponent>())
                 {
-                    if (component->GetUnderlyingComponentType() == NetworkHierarchyChildComponent::TYPEINFO_Uuid())
-                    {
-                        static_cast<NetworkHierarchyChildComponent*>(component)->SetTopLevelHierarchyRootEntity(nullptr);
-                    }
-                    else if (component->GetUnderlyingComponentType() == NetworkHierarchyRootComponent::TYPEINFO_Uuid())
-                    {
-                        static_cast<NetworkHierarchyRootComponent*>(component)->SetTopLevelHierarchyRootEntity(nullptr);
-                    }
+                    hierarchyChildComponent->SetTopLevelHierarchyRootEntity(nullptr);
+                }
+                else if (auto* hierarchyRootComponent = childEntity->FindComponent<NetworkHierarchyRootComponent>())
+                {
+                    hierarchyRootComponent->SetTopLevelHierarchyRootEntity(nullptr);
                 }
             }
         }

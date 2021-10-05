@@ -173,6 +173,29 @@ namespace Multiplayer
         }
     }
 
+    static AZStd::tuple<NetworkHierarchyRootComponent*, NetworkHierarchyChildComponent*> GetHierarchyComponents(const AZ::Entity* entity)
+    {
+        NetworkHierarchyChildComponent* childComponent = nullptr;
+        NetworkHierarchyRootComponent* rootComponent = nullptr;
+
+        for (AZ::Component* component : entity->GetComponents())
+        {
+            if (component->GetUnderlyingComponentType() == NetworkHierarchyChildComponent::TYPEINFO_Uuid())
+            {
+                childComponent = static_cast<NetworkHierarchyChildComponent*>(component);
+                break;
+            }
+
+            if (component->GetUnderlyingComponentType() == NetworkHierarchyRootComponent::TYPEINFO_Uuid())
+            {
+                rootComponent = static_cast<NetworkHierarchyRootComponent*>(component);
+                break;
+            }
+        }
+
+        return AZStd::tie(rootComponent, childComponent);
+    }
+
     void NetworkHierarchyRootComponent::OnParentChanged([[maybe_unused]] AZ::EntityId oldParent, AZ::EntityId newParent)
     {
         // If the parent is part of a hierarchy, it will detect this entity as a new child and rebuild hierarchy.
@@ -181,8 +204,8 @@ namespace Multiplayer
 
         if (AZ::Entity* parentEntity = AZ::Interface<AZ::ComponentApplicationRequests>::Get()->FindEntity(newParent))
         {
-            if (parentEntity->FindComponent<NetworkHierarchyRootComponent>() == nullptr &&
-                parentEntity->FindComponent<NetworkHierarchyChildComponent>() == nullptr)
+            auto [rootComponent, childComponent] = GetHierarchyComponents(parentEntity);
+            if (rootComponent == nullptr && childComponent == nullptr)
             {
                 RebuildHierarchy();
             }
@@ -257,8 +280,7 @@ namespace Multiplayer
 
             if (candidate)
             {
-                auto* hierarchyChildComponent = candidate->FindComponent<NetworkHierarchyChildComponent>();
-                auto* hierarchyRootComponent = candidate->FindComponent<NetworkHierarchyRootComponent>();
+                auto [hierarchyRootComponent, hierarchyChildComponent] = GetHierarchyComponents(candidate);
 
                 if ((hierarchyChildComponent && hierarchyChildComponent->IsHierarchyEnabled()) ||
                     (hierarchyRootComponent && hierarchyRootComponent->IsHierarchyEnabled()))
@@ -282,11 +304,13 @@ namespace Multiplayer
 
     void NetworkHierarchyRootComponent::SetRootForEntity(AZ::Entity* root, const AZ::Entity* childEntity)
     {
-        if (auto* hierarchyChildComponent = childEntity->FindComponent<NetworkHierarchyChildComponent>())
+        auto [hierarchyRootComponent, hierarchyChildComponent] = GetHierarchyComponents(childEntity);
+
+        if (hierarchyChildComponent)
         {
             hierarchyChildComponent->SetTopLevelHierarchyRootEntity(root);
         }
-        else if (auto* hierarchyRootComponent = childEntity->FindComponent<NetworkHierarchyRootComponent>())
+        else if (hierarchyRootComponent)
         {
             hierarchyRootComponent->SetTopLevelHierarchyRootEntity(root);
         }
