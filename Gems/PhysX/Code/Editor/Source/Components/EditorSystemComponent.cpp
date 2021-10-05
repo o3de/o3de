@@ -140,7 +140,12 @@ namespace PhysX
                         physxSystem->UpdateMaterialLibrary(retrievedMaterialLibrary.value());
 
                         // After setting the default material library, save the physx configuration.
-                        physxSystem->GetSettingsRegistryManager().SaveSystemConfiguration(physxSystem->GetPhysXConfiguration(), {});
+                        auto saveCallback = []([[maybe_unused]] const PhysXSystemConfiguration& config, PhysXSettingsRegistryManager::Result result)
+                        {
+                            AZ_Warning("PhysX", result == PhysXSettingsRegistryManager::Result::Success,
+                                "Unable to save the PhysX configuration after setting default material library.");
+                        };
+                        physxSystem->GetSettingsRegistryManager().SaveSystemConfiguration(physxSystem->GetPhysXConfiguration(), saveCallback);
                     }
                 }
             }
