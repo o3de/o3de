@@ -24,6 +24,7 @@ namespace O3DE::ProjectManager
     {
         setWindowTitle(tr("Manual setup is required"));
         setModal(true);
+        setAttribute(Qt::WA_DeleteOnClose);
 
         QVBoxLayout* vLayout = new QVBoxLayout();
         vLayout->setMargin(0);
@@ -62,27 +63,9 @@ namespace O3DE::ProjectManager
 
         QPushButton* cancelButton = dialogButtons->addButton(tr("Cancel"), QDialogButtonBox::RejectRole);
         cancelButton->setProperty("secondary", true);
-        QPushButton* continueButton = dialogButtons->addButton(tr("Continue"), QDialogButtonBox::ApplyRole);
+        QPushButton* continueButton = dialogButtons->addButton(tr("Continue"), QDialogButtonBox::AcceptRole);
 
-        connect(cancelButton, &QPushButton::clicked, this, &GemRequirementDialog::CancelButtonPressed);
-        connect(continueButton, &QPushButton::clicked, this, &GemRequirementDialog::ContinueButtonPressed);
+        connect(cancelButton, &QPushButton::clicked, this, &QDialog::reject);
+        connect(continueButton, &QPushButton::clicked, this, &QDialog::accept);
     }
-
-    QDialogButtonBox::ButtonRole GemRequirementDialog::GetButtonResult()
-    {
-        return m_buttonResult;
-    }
-
-    void GemRequirementDialog::CancelButtonPressed()
-    {
-        m_buttonResult = QDialogButtonBox::RejectRole;
-        close();
-    }
-
-    void GemRequirementDialog::ContinueButtonPressed()
-    {
-        m_buttonResult = QDialogButtonBox::ApplyRole;
-        close();
-    }
-
 } // namespace O3DE::ProjectManager

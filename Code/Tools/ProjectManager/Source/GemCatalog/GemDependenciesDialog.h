@@ -23,10 +23,5 @@ namespace O3DE::ProjectManager
     public:
         explicit GemDependenciesDialog(GemModel* gemModel, QWidget *parent = nullptr);
         ~GemDependenciesDialog() = default;
-
-        bool ChangesMade() const;
-
-    private:
-        int m_gemsAdded = 0;
     };
 } // namespace O3DE::ProjectManager

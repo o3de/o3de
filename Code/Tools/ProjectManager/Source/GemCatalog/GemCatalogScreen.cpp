@@ -144,9 +144,7 @@ namespace O3DE::ProjectManager
         if (m_gemModel->DoGemsToBeAddedHaveRequirements())
         {
             GemRequirementDialog* confirmRequirementsDialog = new GemRequirementDialog(m_gemModel, toBeAdded, this);
-            confirmRequirementsDialog->exec();
-
-            if (confirmRequirementsDialog->GetButtonResult() != QDialogButtonBox::ApplyRole)
+            if(confirmRequirementsDialog->exec() == QDialog::Rejected)
             {
                 return false;
             }
@@ -160,12 +158,8 @@ namespace O3DE::ProjectManager
                 return false;
             }
 
-            if (dependenciesDialog->ChangesMade())
-            {
-                toBeAdded = m_gemModel->GatherGemsToBeAdded();
-                toBeRemoved = m_gemModel->GatherGemsToBeRemoved();
-            }
-            dependenciesDialog->deleteLater();
+            toBeAdded = m_gemModel->GatherGemsToBeAdded();
+            toBeRemoved = m_gemModel->GatherGemsToBeRemoved();
         }
 
         for (const QModelIndex& modelIndex : toBeAdded)

@@ -10,8 +10,6 @@
 
 #if !defined(Q_MOC_RUN)
 #include <QDialog>
-
-#include <QDialogButtonBox>
 #endif
 
 namespace O3DE::ProjectManager
@@ -25,13 +23,5 @@ namespace O3DE::ProjectManager
     public:
         explicit GemRequirementDialog(GemModel* model, const QVector<QModelIndex>& gemsToAdd, QWidget *parent = nullptr);
         ~GemRequirementDialog() = default;
-
-        QDialogButtonBox::ButtonRole GetButtonResult();
-
-    private:
-        void CancelButtonPressed();
-        void ContinueButtonPressed();
-
-        QDialogButtonBox::ButtonRole m_buttonResult = QDialogButtonBox::RejectRole;
     };
 } // namespace O3DE::ProjectManager

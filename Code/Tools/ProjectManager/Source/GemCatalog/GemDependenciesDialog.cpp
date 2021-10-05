@@ -22,6 +22,7 @@ namespace O3DE::ProjectManager
     {
         setWindowTitle(tr("Dependent Gems"));
         setObjectName("GemDependenciesDialog");
+        setAttribute(Qt::WA_DeleteOnClose);
         setModal(true);
 
         QVBoxLayout* layout = new QVBoxLayout();
@@ -48,7 +49,6 @@ namespace O3DE::ProjectManager
                     [=](int state)
                     {
                         GemModel::SetIsAdded(*gemModel, gem, /*isAdded=*/state == Qt::Checked);
-                        m_gemsAdded += state == Qt::Checked ? 1 : -1;
                     });
                 flowLayout->addWidget(checkBox);
             }
@@ -76,10 +76,5 @@ namespace O3DE::ProjectManager
                 reject();
             });
         layout->addWidget(dialogButtons);
-    }
-
-    bool GemDependenciesDialog::ChangesMade() const
-    {
-        return m_gemsAdded > 0;
     }
 } // namespace O3DE::ProjectManager
