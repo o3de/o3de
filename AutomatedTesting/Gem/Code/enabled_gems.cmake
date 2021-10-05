@@ -24,6 +24,7 @@ set(ENABLED_GEMS
 
     Camera
     EMotionFX
+    AtomTressFX
     PhysX
     CameraFramework
     StartingPointMovement
@@ -52,9 +53,6 @@ set(ENABLED_GEMS
     AWSCore
     AWSClientAuth
     AWSMetrics
-
-
-
     
     AudioSystem
 )

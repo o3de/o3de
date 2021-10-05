@@ -31,6 +31,28 @@ namespace AZ
                 modelAsset);
         }
 
+        
+        void Model::TEMPOrphanFromDatabase(const Data::Asset<ModelAsset>& modelAsset)
+        {
+            for (auto& modelLodAsset : modelAsset->GetLodAssets())
+            {
+                for(auto& mesh : modelLodAsset->GetMeshes())
+                {
+                    for (auto& streamBufferInfo : mesh.GetStreamBufferInfoList())
+                    {
+                        Data::InstanceDatabase<Buffer>::Instance().TEMPOrphan(
+                            Data::InstanceId::CreateFromAssetId(streamBufferInfo.m_bufferAssetView.GetBufferAsset().GetId()));
+                    }
+                    Data::InstanceDatabase<Buffer>::Instance().TEMPOrphan(
+                        Data::InstanceId::CreateFromAssetId(mesh.GetIndexBufferAssetView().GetBufferAsset().GetId()));
+                }
+                Data::InstanceDatabase<ModelLod>::Instance().TEMPOrphan(Data::InstanceId::CreateFromAssetId(modelLodAsset.GetId()));
+            }
+
+            Data::InstanceDatabase<Model>::Instance().TEMPOrphan(
+                Data::InstanceId::CreateFromAssetId(modelAsset.GetId()));
+        }
+
         size_t Model::GetLodCount() const
         {
             return m_lods.size();
