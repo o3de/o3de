@@ -9,8 +9,8 @@
 #include <string>
 #include <vector>
 #include <AzCore/std/string/string.h>
-#include <AzCore/IO/Path/Path.h>
 #include <AzCore/Outcome/Outcome.h>
+#include <AzTest/Printers.h>
 namespace AZ
 {
     namespace Test

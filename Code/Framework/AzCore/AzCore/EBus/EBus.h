@@ -12,7 +12,7 @@
  * that Open 3D Engine uses to dispatch notifications and receive requests.
  * EBuses are configurable and support many different use cases.
  * For more information about %EBuses, see AZ::EBus in this guide and
- * [Event Bus](http://docs.aws.amazon.com/lumberyard/latest/developerguide/asset-pipeline-ebus.html)
+ * [Event Bus](https://o3de.org/docs/user-guide/engine/ebus/)
  * in the *Open 3D Engine Developer Guide*.
  */
 
@@ -62,7 +62,7 @@ namespace AZ
      * @endcode
      *
      * For more information about %EBuses, see EBus in this guide and
-     * [Event Bus](http://docs.aws.amazon.com/lumberyard/latest/developerguide/asset-pipeline-ebus.html)
+     * [Event Bus](https://o3de.org/docs/user-guide/engine/ebus/)
      * in the *Open 3D Engine Developer Guide*.
      */
     struct EBusTraits
@@ -267,8 +267,8 @@ namespace AZ
      *
      * EBuses are configurable and support many different use cases.
      * For more information about EBuses, see
-     * [Event Bus](http://docs.aws.amazon.com/lumberyard/latest/developerguide/asset-pipeline-ebus.html)
-     * and [Components and EBuses: Best Practices ](http://docs.aws.amazon.com/lumberyard/latest/developerguide/component-entity-system-pg-components-ebuses-best-practices.html)
+     * [Event Bus](https://o3de.org/docs/user-guide/engine/ebus/)
+     * and [Components and EBuses: Best Practices ](https://o3de.org/docs/user-guide/components/development/entity-system-pg-components-ebuses-best-practices/)
      * in the *Open 3D Engine Developer Guide*.
      *
      * ## How Components Use EBuses
