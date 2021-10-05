@@ -57,6 +57,7 @@ namespace EMotionFX
             ActorInstance* GetActorInstance() override { return m_actorInstance.get(); }
             bool GetRenderCharacter() const override;
             void SetRenderCharacter(bool enable) override;
+            bool GetRenderActorVisible() const override;
             size_t GetNumJoints() const override;
             SkinningMethod GetSkinningMethod() const override;
 

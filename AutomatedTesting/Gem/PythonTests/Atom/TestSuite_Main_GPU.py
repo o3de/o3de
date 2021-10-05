@@ -226,9 +226,9 @@ class TestMaterialEditor(object):
             self, request, workspace, project, launcher_platform, generic_launcher, exe_file_name, cfg_args):
         """
         Tests each valid RHI option (Null RHI excluded) can be launched with the MaterialEditor.
-        Checks for the "Finished loading viewport configurtions." success message post lounch.
+        Checks for the "Finished loading viewport configurations." success message post launch.
         """
-        expected_lines = ["Finished loading viewport configurtions."]
+        expected_lines = ["Finished loading viewport configurations."]
         unexpected_lines = [
             # "Trace::Assert",
             # "Trace::Error",
@@ -241,7 +241,7 @@ class TestMaterialEditor(object):
             generic_launcher,
             editor_script="",
             run_python="--runpython",
-            timeout=30,
+            timeout=60,
             expected_lines=expected_lines,
             unexpected_lines=unexpected_lines,
             halt_on_unexpected=False,

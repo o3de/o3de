@@ -21,6 +21,7 @@ namespace Multiplayer
     class NetworkEntityAuthorityTracker;
     class NetworkEntityRpcMessage;
     class MultiplayerComponentRegistry;
+    class IEntityDomain;
 
     using EntityExitDomainEvent = AZ::Event<const ConstNetworkEntityHandle&>;
     using ControllersActivatedEvent = AZ::Event<const ConstNetworkEntityHandle&, EntityIsMigrating>;
@@ -38,6 +39,19 @@ namespace Multiplayer
 
         virtual ~INetworkEntityManager() = default;
 
+        //! Configures the NetworkEntityManager to operate as an authoritative host.
+        //! @param hostId       the hostId of this NetworkEntityManager
+        //! @param entityDomain the entity domain used to determine which entities this manager has authority over
+        virtual void Initialize(const HostId& hostId, AZStd::unique_ptr<IEntityDomain> entityDomain) = 0;
+
+        //! Returns whether or not the network entity manager has been initialized to host.
+        //! @return boolean true if this network entity manager has been intialized to host
+        virtual bool IsInitialized() const = 0;
+
+        //! Returns the entity domain associated with this network entity manager, this will be nullptr on clients.
+        //! @return boolean the entity domain for this network entity manager
+        virtual IEntityDomain* GetEntityDomain() const = 0;
+
         //! Returns the NetworkEntityTracker for this INetworkEntityManager instance.
         //! @return the NetworkEntityTracker for this INetworkEntityManager instance
         virtual NetworkEntityTracker* GetNetworkEntityTracker() = 0;
@@ -52,7 +66,7 @@ namespace Multiplayer
 
         //! Returns the HostId for this INetworkEntityManager instance.
         //! @return the HostId for this INetworkEntityManager instance
-        virtual HostId GetHostId() const = 0;
+        virtual const HostId& GetHostId() const = 0;
 
         //! Creates new entities of the given archetype
         //! @param prefabEntryId the name of the spawnable to spawn
@@ -166,5 +180,8 @@ namespace Multiplayer
         //! Handle a local rpc message.
         //! @param entityRpcMessage the local rpc message to handle
         virtual void HandleLocalRpcMessage(NetworkEntityRpcMessage& message) = 0;
+
+        //! Visualization of network entity manager state.
+        virtual void DebugDraw() const = 0;
     };
 }

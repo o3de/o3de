@@ -279,8 +279,9 @@ namespace UnitTest
         EXPECT_EQ(testServer.m_serverNetworkInterface->GetConnectionSet().GetConnectionCount(), 1);
         EXPECT_EQ(testClient.m_clientNetworkInterface->GetConnectionSet().GetConnectionCount(), 1);
 
-        testClient.m_clientNetworkInterface->SetTimeoutEnabled(true);
-        EXPECT_TRUE(testClient.m_clientNetworkInterface->IsTimeoutEnabled());
+        const AZ::TimeMs timeoutMs = AZ::TimeMs{ 100 };
+        testClient.m_clientNetworkInterface->SetTimeoutMs(timeoutMs);
+        EXPECT_EQ(testClient.m_clientNetworkInterface->GetTimeoutMs(), timeoutMs);
 
         EXPECT_FALSE(dynamic_cast<UdpNetworkInterface*>(testClient.m_clientNetworkInterface)->IsEncrypted());
 

@@ -14,6 +14,12 @@ namespace AZ
 {
     using Internal::CompiledTaskGraph;
 
+    void TaskGraphEvent::Wait()
+    {
+        AZ_Assert(m_executor->GetTaskWorker() == nullptr, "Waiting in a task is unsupported");
+        m_semaphore.acquire();
+    }
+
     void TaskToken::PrecedesInternal(TaskToken& comesAfter)
     {
         AZ_Assert(!m_parent.m_submitted, "Cannot mutate a TaskGraph that was previously submitted.");
@@ -71,7 +77,7 @@ namespace AZ
             m_compiledTaskGraph->m_tasks[i].Init();
         }
 
-        executor.Submit(*m_compiledTaskGraph);
+        executor.Submit(*m_compiledTaskGraph, waitEvent);
 
         if (m_retained)
         {
