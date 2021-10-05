@@ -23,4 +23,6 @@ set(FILES
     Source/EditorTerrainModule.h
     Source/TerrainModule.cpp
     Source/TerrainModule.h
+    Source/TerrainRenderer/EditorComponents/EditorTerrainMacroMaterialComponent.cpp
+    Source/TerrainRenderer/EditorComponents/EditorTerrainMacroMaterialComponent.h
 )
