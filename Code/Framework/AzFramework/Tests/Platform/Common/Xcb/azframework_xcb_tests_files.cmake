@@ -9,6 +9,7 @@
 set(FILES
     Actions.h
     Main.cpp
+    Matchers.h
     MockXcbInterface.cpp
     MockXcbInterface.h
     Printers.cpp

@@ -103,5 +103,17 @@ int xkb_state_key_get_utf8(xkb_state* state, xkb_keycode_t key, char* buffer, si
 {
     return MockXcbInterface::Instance()->xkb_state_key_get_utf8(state, key, buffer, size);
 }
+xkb_state_component xkb_state_update_mask(
+    xkb_state* state,
+    xkb_mod_mask_t depressed_mods,
+    xkb_mod_mask_t latched_mods,
+    xkb_mod_mask_t locked_mods,
+    xkb_layout_index_t depressed_layout,
+    xkb_layout_index_t latched_layout,
+    xkb_layout_index_t locked_layout)
+{
+    return MockXcbInterface::Instance()->xkb_state_update_mask(
+        state, depressed_mods, latched_mods, locked_mods, depressed_layout, latched_layout, locked_layout);
+}
 
 }

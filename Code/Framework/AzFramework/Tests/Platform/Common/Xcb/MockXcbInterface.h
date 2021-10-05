@@ -36,14 +36,7 @@ struct xkb_keymap
 
 struct xkb_state
 {
-    enum class Modifier
-    {
-        None = 0,
-        Shift = 1,
-        Ctrl = 1 << 1,
-        Alt = 1 << 2,
-    };
-    Modifier m_modifiers;
+    xkb_mod_mask_t m_modifiers{};
 };
 
 class MockXcbInterface
@@ -87,7 +80,8 @@ public:
     MOCK_CONST_METHOD1(xkb_keymap_unref, void(xkb_keymap* keymap));
     MOCK_CONST_METHOD1(xkb_state_unref, void(xkb_state* state));
     MOCK_CONST_METHOD2(xkb_state_key_get_one_sym, xkb_keysym_t(xkb_state* state, xkb_keycode_t key));
-    MOCK_CONST_METHOD4(xkb_state_key_get_utf8, int(struct xkb_state* state, xkb_keycode_t key, char* buffer, size_t size));
+    MOCK_CONST_METHOD4(xkb_state_key_get_utf8, int(xkb_state* state, xkb_keycode_t key, char* buffer, size_t size));
+    MOCK_CONST_METHOD7(xkb_state_update_mask, xkb_state_component(xkb_state* state, xkb_mod_mask_t depressed_mods, xkb_mod_mask_t latched_mods, xkb_mod_mask_t locked_mods, xkb_layout_index_t depressed_layout, xkb_layout_index_t latched_layout, xkb_layout_index_t locked_layout));
 
 private:
     static inline MockXcbInterface* self = nullptr;

@@ -14,7 +14,9 @@
 
 #include <AzFramework/XcbApplication.h>
 #include <AzFramework/XcbInputDeviceKeyboard.h>
+#include <AzFramework/Input/Buses/Notifications/InputTextNotificationBus.h>
 #include "MockXcbInterface.h"
+#include "Matchers.h"
 #include "Actions.h"
 #include "XcbBaseTestFixture.h"
 
@@ -58,7 +60,7 @@ namespace AzFramework
                     Return(1)
                 ));
 
-            constexpr unsigned int xcbXkbSelectEventsSequence = 1;
+            constexpr unsigned int xcbXkbSelectEventsSequence = 342;
             ON_CALL(m_interface, xcb_xkb_select_events(&m_connection, _, _, _, _, _, _, _))
                 .WillByDefault(Return(xcb_void_cookie_t{/*.sequence = */ xcbXkbSelectEventsSequence}));
             ON_CALL(m_interface, xcb_request_check(&m_connection, testing::Field(&xcb_void_cookie_t::sequence, testing::Eq(xcbXkbSelectEventsSequence))))
@@ -70,15 +72,64 @@ namespace AzFramework
             ON_CALL(m_interface, xkb_state_key_get_one_sym(&m_xkbState, s_keycodeForAKey))
                 .WillByDefault(Return(XKB_KEY_a))
                 ;
+            ON_CALL(m_interface, xkb_state_key_get_one_sym(&m_xkbState, s_keycodeForShiftLKey))
+                .WillByDefault(Return(XKB_KEY_Shift_L))
+                ;
+
+            ON_CALL(m_interface, xkb_state_update_mask(&m_xkbState, _, _, _, _, _, _))
+                .WillByDefault(testing::Invoke(this, &XcbInputDeviceKeyboardTests::UpdateStateMask));
+
+            ON_CALL(m_interface, xkb_state_key_get_utf8(&m_xkbState, s_keycodeForAKey, nullptr, 0))
+                .WillByDefault(Return(1));
+            ON_CALL(m_interface, xkb_state_key_get_utf8(m_matchesStateWithoutShift, s_keycodeForAKey, _, 2))
+                .WillByDefault(DoAll(
+                    SetArgPointee<2>('a'),
+                    Return(1)
+                ));
+            ON_CALL(m_interface, xkb_state_key_get_utf8(m_matchesStateWithShift, s_keycodeForAKey, _, 2))
+                .WillByDefault(DoAll(
+                    SetArgPointee<2>('A'),
+                    Return(1)
+                ));
+        }
+
+    private:
+        xkb_state_component UpdateStateMask(
+            xkb_state* state,
+            xkb_mod_mask_t depressed_mods,
+            xkb_mod_mask_t latched_mods,
+            xkb_mod_mask_t locked_mods,
+            xkb_layout_index_t depressed_layout,
+            xkb_layout_index_t latched_layout,
+            xkb_layout_index_t locked_layout)
+        {
+            state->m_modifiers = depressed_mods | locked_mods;
+            return {};
         }
 
     protected:
         xkb_context m_xkbContext{};
         xkb_keymap m_xkbKeymap{};
         xkb_state m_xkbState{};
+        const testing::Matcher<xkb_state*> m_matchesStateWithoutShift = testing::AllOf(&m_xkbState, testing::Field(&xkb_state::m_modifiers, 0));
+        const testing::Matcher<xkb_state*> m_matchesStateWithShift = testing::AllOf(&m_xkbState, testing::Field(&xkb_state::m_modifiers, XCB_MOD_MASK_SHIFT));
+
         static constexpr int32_t s_coreDeviceId{1};
         static constexpr uint8_t s_xkbEventCode{85};
+
         static constexpr xcb_keycode_t s_keycodeForAKey{38};
+        static constexpr xcb_keycode_t s_keycodeForShiftLKey{50};
+    };
+
+    class InputTextNotificationListener
+        : public InputTextNotificationBus::Handler
+    {
+    public:
+        InputTextNotificationListener()
+        {
+            BusConnect();
+        }
+        MOCK_METHOD2(OnInputTextEvent, void(const AZStd::string& /*textUTF8*/, bool& /*o_hasBeenConsumed*/));
     };
 
     TEST_F(XcbInputDeviceKeyboardTests, InputChannelsUpdateStateFromXcbEvents)
@@ -140,14 +191,6 @@ namespace AzFramework
         EXPECT_CALL(m_interface, xkb_state_key_get_one_sym(&m_xkbState, s_keycodeForAKey))
             .Times(2);
 
-        EXPECT_CALL(m_interface, xkb_state_key_get_utf8(&m_xkbState, s_keycodeForAKey, nullptr, 0))
-            .WillRepeatedly(Return(1));
-        EXPECT_CALL(m_interface, xkb_state_key_get_utf8(&m_xkbState, s_keycodeForAKey, _, 2))
-            .WillRepeatedly(DoAll(
-                SetArgPointee<2>('a'),
-                Return(1)
-            ));
-
         Application application;
         application.Start({}, {});
 
@@ -166,6 +209,182 @@ namespace AzFramework
         application.Tick();
 
         EXPECT_THAT(inputChannel->GetState(), Eq(InputChannel::State::Ended));
+
+        application.Stop();
+    }
+
+    TEST_F(XcbInputDeviceKeyboardTests, TextEnteredFromXcbKeyPressEvents)
+    {
+        using testing::DoAll;
+        using testing::Eq;
+        using testing::Return;
+        using testing::SetArgPointee;
+        using testing::_;
+
+        // press a
+        // release a
+        // press shift
+        // press a
+        // release a
+        // release shift
+        const AZStd::array events
+        {
+            MakeEvent(xcb_key_press_event_t{
+                /*.response_type = */ XCB_KEY_PRESS,
+                /*.detail        = */ s_keycodeForAKey,
+                /*.sequence      = */ 0,
+                /*.time          = */ 0,
+                /*.root          = */ 0,
+                /*.event         = */ 0,
+                /*.child         = */ 0,
+                /*.root_x        = */ 0,
+                /*.root_y        = */ 0,
+                /*.event_x       = */ 0,
+                /*.event_y       = */ 0,
+                /*.state         = */ 0,
+                /*.same_screen   = */ 0,
+                /*.pad0          = */ 0
+            }),
+            MakeEvent(xcb_key_release_event_t{
+                /*.response_type = */ XCB_KEY_RELEASE,
+                /*.detail        = */ s_keycodeForAKey,
+                /*.sequence      = */ 0,
+                /*.time          = */ 0,
+                /*.root          = */ 0,
+                /*.event         = */ 0,
+                /*.child         = */ 0,
+                /*.root_x        = */ 0,
+                /*.root_y        = */ 0,
+                /*.event_x       = */ 0,
+                /*.event_y       = */ 0,
+                /*.state         = */ 0,
+                /*.same_screen   = */ 0,
+                /*.pad0          = */ 0
+            }),
+            MakeEvent(xcb_xkb_state_notify_event_t{
+                /*.response_type     = */ s_xkbEventCode,
+                /*.xkbType           = */ XCB_XKB_STATE_NOTIFY,
+                /*.sequence          = */ 0,
+                /*.time              = */ 0,
+                /*.deviceID          = */ s_coreDeviceId,
+                /*.mods              = */ XCB_MOD_MASK_SHIFT,
+                /*.baseMods          = */ XCB_MOD_MASK_SHIFT,
+                /*.latchedMods       = */ 0,
+                /*.lockedMods        = */ 0,
+                /*.group             = */ 0,
+                /*.baseGroup         = */ 0,
+                /*.latchedGroup      = */ 0,
+                /*.lockedGroup       = */ 0,
+                /*.compatState       = */ XCB_MOD_MASK_SHIFT,
+                /*.grabMods          = */ XCB_MOD_MASK_SHIFT,
+                /*.compatGrabMods    = */ XCB_MOD_MASK_SHIFT,
+                /*.lookupMods        = */ XCB_MOD_MASK_SHIFT,
+                /*.compatLoockupMods = */ XCB_MOD_MASK_SHIFT,
+                /*.ptrBtnState       = */ 0,
+                /*.changed           = */ 0,
+                /*.keycode           = */ s_keycodeForShiftLKey,
+                /*.eventType         = */ XCB_KEY_PRESS,
+                /*.requestMajor      = */ 0,
+                /*.requestMinor      = */ 0,
+            }),
+            MakeEvent(xcb_key_press_event_t{
+                /*.response_type = */ XCB_KEY_PRESS,
+                /*.detail        = */ s_keycodeForAKey,
+                /*.sequence      = */ 0,
+                /*.time          = */ 0,
+                /*.root          = */ 0,
+                /*.event         = */ 0,
+                /*.child         = */ 0,
+                /*.root_x        = */ 0,
+                /*.root_y        = */ 0,
+                /*.event_x       = */ 0,
+                /*.event_y       = */ 0,
+                /*.state         = */ 0,
+                /*.same_screen   = */ 0,
+                /*.pad0          = */ 0
+            }),
+            MakeEvent(xcb_key_release_event_t{
+                /*.response_type = */ XCB_KEY_RELEASE,
+                /*.detail        = */ s_keycodeForAKey,
+                /*.sequence      = */ 0,
+                /*.time          = */ 0,
+                /*.root          = */ 0,
+                /*.event         = */ 0,
+                /*.child         = */ 0,
+                /*.root_x        = */ 0,
+                /*.root_y        = */ 0,
+                /*.event_x       = */ 0,
+                /*.event_y       = */ 0,
+                /*.state         = */ 0,
+                /*.same_screen   = */ 0,
+                /*.pad0          = */ 0
+            }),
+            MakeEvent(xcb_xkb_state_notify_event_t{
+                /*.response_type     = */ s_xkbEventCode,
+                /*.xkbType           = */ XCB_XKB_STATE_NOTIFY,
+                /*.sequence          = */ 0,
+                /*.time              = */ 0,
+                /*.deviceID          = */ s_coreDeviceId,
+                /*.mods              = */ 0,
+                /*.baseMods          = */ 0,
+                /*.latchedMods       = */ 0,
+                /*.lockedMods        = */ 0,
+                /*.group             = */ 0,
+                /*.baseGroup         = */ 0,
+                /*.latchedGroup      = */ 0,
+                /*.lockedGroup       = */ 0,
+                /*.compatState       = */ 0,
+                /*.grabMods          = */ 0,
+                /*.compatGrabMods    = */ 0,
+                /*.lookupMods        = */ 0,
+                /*.compatLoockupMods = */ 0,
+                /*.ptrBtnState       = */ 0,
+                /*.changed           = */ 0,
+                /*.keycode           = */ s_keycodeForShiftLKey,
+                /*.eventType         = */ XCB_KEY_RELEASE,
+                /*.requestMajor      = */ 0,
+                /*.requestMinor      = */ 0,
+            }),
+        };
+
+        // Set the expectations for the events that will be generated
+        // nullptr entries represent when the event queue is empty, and will cause
+        // PumpSystemEventLoopUntilEmpty to return
+        // event pointers are freed by the calling code, so we malloc new copies
+        // here
+        EXPECT_CALL(m_interface, xcb_poll_for_event(&m_connection))
+            .WillOnce(ReturnMalloc<xcb_generic_event_t>(events[0]))
+            .WillOnce(Return(nullptr))
+            .WillOnce(ReturnMalloc<xcb_generic_event_t>(events[1]))
+            .WillOnce(Return(nullptr))
+            .WillOnce(ReturnMalloc<xcb_generic_event_t>(events[2]))
+            .WillOnce(ReturnMalloc<xcb_generic_event_t>(events[3]))
+            .WillOnce(Return(nullptr))
+            .WillOnce(ReturnMalloc<xcb_generic_event_t>(events[4]))
+            .WillOnce(ReturnMalloc<xcb_generic_event_t>(events[5]))
+            .WillRepeatedly(Return(nullptr))
+            ;
+
+        EXPECT_CALL(m_interface, xkb_state_key_get_utf8(&m_xkbState, s_keycodeForAKey, nullptr, 0))
+            .Times(2);
+        EXPECT_CALL(m_interface, xkb_state_key_get_utf8(m_matchesStateWithoutShift, s_keycodeForAKey, _, 2))
+            .Times(1);
+        EXPECT_CALL(m_interface, xkb_state_key_get_utf8(m_matchesStateWithShift, s_keycodeForAKey, _, 2))
+            .Times(1);
+
+        InputTextNotificationListener textListener;
+        EXPECT_CALL(textListener, OnInputTextEvent(StrEq("a"), _)).Times(1);
+        EXPECT_CALL(textListener, OnInputTextEvent(StrEq("A"), _)).Times(1);
+
+        Application application;
+        application.Start({}, {});
+
+        for (int i = 0; i < 4; ++i)
+        {
+            application.PumpSystemEventLoopUntilEmpty();
+            application.TickSystem();
+            application.Tick();
+        }
 
         application.Stop();
     }
