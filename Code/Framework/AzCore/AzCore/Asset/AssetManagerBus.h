@@ -70,11 +70,30 @@ namespace AZ
 
             static constexpr bool EnableEventQueue = true;
             using EventQueueMutexType = AZStd::mutex;
-            struct AssetCatalogRequestsQueuedFunctionDispatch
+            struct PostThreadDispatchInvoker
             {
-                void operator()(const EBusPolicies::PostDispatchTagType);
+                ~PostThreadDispatchInvoker();
             };
-            using ThreadDispatchPolicy = AssetCatalogRequestsQueuedFunctionDispatch;
+
+            template <typename DispatchMutex>
+            struct ThreadDispatchLockGuard
+            {
+                ThreadDispatchLockGuard(DispatchMutex& contextMutex)
+                    : m_lock{ contextMutex }
+                {}
+                ThreadDispatchLockGuard(DispatchMutex& contextMutex, AZStd::adopt_lock_t adopt_lock)
+                    : m_lock{ contextMutex, adopt_lock }
+                {}
+                ThreadDispatchLockGuard(const ThreadDispatchLockGuard&) = delete;
+                ThreadDispatchLockGuard& operator=(const ThreadDispatchLockGuard&) = delete;
+            private:
+                PostThreadDispatchInvoker m_threadPolicyInvoker;
+                using LockType = AZStd::conditional_t<LocklessDispatch, AZ::Internal::NullLockGuard<DispatchMutex>, AZStd::scoped_lock<DispatchMutex>>;
+                LockType m_lock;
+            };
+
+            template <typename DispatchMutex>
+            using DispatchLockGuard = ThreadDispatchLockGuard<DispatchMutex>;
             //////////////////////////////////////////////////////////////////////////
 
             virtual ~AssetCatalogRequests() = default;
@@ -208,9 +227,16 @@ namespace AZ
 
         using AssetCatalogRequestBus = AZ::EBus<AssetCatalogRequests>;
 
-        inline void AssetCatalogRequests::AssetCatalogRequestsQueuedFunctionDispatch::operator()(EBusPolicies::PostDispatchTagType)
+        AssetCatalogRequests::PostThreadDispatchInvoker::~PostThreadDispatchInvoker()
         {
-            AssetCatalogRequestBus::ExecuteQueuedEvents();
+            auto* context = AssetCatalogRequestBus::GetContext();
+            if (!AssetCatalogRequestBus::IsInDispatchThisThread(context))
+            {
+                if (AssetCatalogRequestBus::QueuedEventCount())
+                {
+                    AssetCatalogRequestBus::ExecuteQueuedEvents();
+                }
+            }
         }
 
         /*
