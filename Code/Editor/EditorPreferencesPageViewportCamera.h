@@ -86,6 +86,7 @@ private:
         AZStd::string m_pivotLookChannelId;
         AZStd::string m_pivotDollyChannelId;
         AZStd::string m_pivotPanChannelId;
+        AZStd::string m_focusChannelId;
     };
 
     CameraMovementSettings m_cameraMovementSettings;
