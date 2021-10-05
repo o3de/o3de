@@ -17,6 +17,7 @@
 
 namespace UnitTest
 {
+    // Global variables for communicating between Lua test code and C++
     AZ::EntityId g_globalEntityId = AZ::EntityId{};
     AZStd::string g_globalString = "";
     AzFramework::BehaviorComponentId g_globalComponentId = {};

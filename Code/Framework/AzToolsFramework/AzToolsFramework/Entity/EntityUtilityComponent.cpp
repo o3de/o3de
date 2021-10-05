@@ -24,8 +24,8 @@ namespace AzToolsFramework
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serializeContext->Class<ComponentDetails>()
-            ->Field("TypeInfo", &ComponentDetails::m_typeInfo)
-            ->Field("BaseClasses", &ComponentDetails::m_baseClasses);
+                ->Field("TypeInfo", &ComponentDetails::m_typeInfo)
+                ->Field("BaseClasses", &ComponentDetails::m_baseClasses);
 
             serializeContext->RegisterGenericType<AZStd::vector<ComponentDetails>>();
         }
@@ -36,27 +36,27 @@ namespace AzToolsFramework
                 ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
                 ->Attribute(AZ::Script::Attributes::Module, "entity")
                 ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::All)
-            ->Property("TypeInfo", BehaviorValueProperty(&ComponentDetails::m_typeInfo))
-            ->Property("BaseClasses", BehaviorValueProperty(&ComponentDetails::m_baseClasses))
-            ->Method("__repr__", [](const ComponentDetails& obj)
-            {
-                std::ostringstream result;
-                bool first = true;
-
-                for (const auto& baseClass : obj.m_baseClasses)
+                ->Property("TypeInfo", BehaviorValueProperty(&ComponentDetails::m_typeInfo))
+                ->Property("BaseClasses", BehaviorValueProperty(&ComponentDetails::m_baseClasses))
+                ->Method("__repr__", [](const ComponentDetails& obj)
                 {
-                    if (!first)
-                    {
-                        result << ", ";
-                    }
+                    std::ostringstream result;
+                    bool first = true;
 
-                    first = false;
-                    result << baseClass.c_str();
-                }
-                
-                return AZStd::string::format("%s, Base Classes: <%s>", obj.m_typeInfo.c_str(), result.str().c_str());
-            })
-            ->Attribute(AZ::Script::Attributes::Operator, AZ::Script::Attributes::OperatorType::ToString);
+                    for (const auto& baseClass : obj.m_baseClasses)
+                    {
+                        if (!first)
+                        {
+                            result << ", ";
+                        }
+
+                        first = false;
+                        result << baseClass.c_str();
+                    }
+                    
+                    return AZStd::string::format("%s, Base Classes: <%s>", obj.m_typeInfo.c_str(), result.str().c_str());
+                })
+                ->Attribute(AZ::Script::Attributes::Operator, AZ::Script::Attributes::OperatorType::ToString);
         }
     }
 
