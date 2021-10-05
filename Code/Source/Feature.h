@@ -84,6 +84,7 @@ namespace EMotionFX
 
             // Column offset for the first value for the given feature
             virtual size_t GetNumDimensions() const = 0;
+            virtual AZStd::string GetDimensionName([[maybe_unused]] size_t index, [[maybe_unused]] Skeleton* skeleton) const { return "Unknown"; }
             FeatureMatrix::Index GetColumnOffset() const { return m_featureColumnOffset; }
             void SetColumnOffset(FeatureMatrix::Index offset) { m_featureColumnOffset = offset; }
 

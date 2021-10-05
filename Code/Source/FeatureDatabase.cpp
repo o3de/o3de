@@ -275,6 +275,22 @@ namespace EMotionFX
             return frameDataObject;
         }
 
+        void FeatureDatabase::SaveAsCsv(const AZStd::string& filename, Skeleton* skeleton)
+        {
+            AZStd::vector<AZStd::string> columnNames;
+
+            for (Feature* feature: m_features)
+            {
+                const size_t numDimensions = feature->GetNumDimensions();
+                for (size_t dimension = 0; dimension < numDimensions; ++dimension)
+                {
+                    columnNames.push_back(feature->GetDimensionName(dimension, skeleton));
+                }
+            }
+
+            m_featureMatrix.SaveAsCsv(filename, columnNames);
+        }
+        
         size_t FeatureDatabase::CalcNumDataDimensionsForKdTree() const
         {
             size_t totalDimensions = 0;
