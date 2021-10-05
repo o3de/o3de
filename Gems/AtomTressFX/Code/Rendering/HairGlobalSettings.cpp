@@ -21,7 +21,7 @@ namespace AZ
                 if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
                 {
                     serializeContext->Class<HairGlobalSettings>()
-                        ->Version(2)
+                        ->Version(3)
                         ->Field("EnableShadows", &HairGlobalSettings::m_enableShadows)
                         ->Field("EnableDirectionalLights", &HairGlobalSettings::m_enableDirectionalLights)
                         ->Field("EnablePunctualLights", &HairGlobalSettings::m_enablePunctualLights)
@@ -31,9 +31,8 @@ namespace AZ
                         ->Field("EnableMarschner_R", &HairGlobalSettings::m_enableMarschner_R)
                         ->Field("EnableMarschner_TRT", &HairGlobalSettings::m_enableMarschner_TRT)
                         ->Field("EnableMarschner_TT", &HairGlobalSettings::m_enableMarschner_TT)
-                        ->Field("EnableDiffuseLobe", &HairGlobalSettings::m_enableDiffuseLobe)
-                        ->Field("EnableSpecularLobe", &HairGlobalSettings::m_enableSpecularLobe)
-                        ->Field("EnableTransmittanceLobe", &HairGlobalSettings::m_enableTransmittanceLobe)
+                        ->Field("EnableLongtitudeCoeff", &HairGlobalSettings::m_enableLongtitudeCoeff)
+                        ->Field("EnableAzimuthCoeff", &HairGlobalSettings::m_enableAzimuthCoeff)
                         ;
 
                     if (auto editContext = serializeContext->GetEditContext())
@@ -51,9 +50,8 @@ namespace AZ
                             ->DataElement(AZ::Edit::UIHandlers::Default, &HairGlobalSettings::m_enableMarschner_R, "Enable Marschner R", "Enable Marschner R.")
                             ->DataElement(AZ::Edit::UIHandlers::Default, &HairGlobalSettings::m_enableMarschner_TRT, "Enable Marschner TRT", "Enable Marschner TRT.")
                             ->DataElement(AZ::Edit::UIHandlers::Default, &HairGlobalSettings::m_enableMarschner_TT, "Enable Marschner TT", "Enable Marschner TT.")
-                            ->DataElement(AZ::Edit::UIHandlers::Default, &HairGlobalSettings::m_enableDiffuseLobe, "Enable Diffuse Lobe", "Enable Diffuse Lobe.")
-                            ->DataElement(AZ::Edit::UIHandlers::Default, &HairGlobalSettings::m_enableSpecularLobe, "Enable Specular Lobe", "Enable Specular Lobe.")
-                            ->DataElement(AZ::Edit::UIHandlers::Default, &HairGlobalSettings::m_enableTransmittanceLobe, "Enable Transmittance Lobe", "Enable Transmittance Lobe.")
+                            ->DataElement(AZ::Edit::UIHandlers::Default, &HairGlobalSettings::m_enableLongtitudeCoeff, "Enable Longtitude", "Enable Longtitude Contribution")
+                            ->DataElement(AZ::Edit::UIHandlers::Default, &HairGlobalSettings::m_enableAzimuthCoeff, "Enable Azimuth", "Enable Azimuth Contribution")
                             ;
                     }
                 }
