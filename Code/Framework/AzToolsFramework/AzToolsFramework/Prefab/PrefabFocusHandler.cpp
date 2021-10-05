@@ -104,6 +104,11 @@ namespace AzToolsFramework::Prefab
             return AZ::Failure(AZStd::string("Prefab Focus Handler: invalid instance to focus on."));
         }
 
+        if (!m_isInitialized)
+        {
+            Initialize();
+        }
+
         if (!m_focusedInstance.has_value() || &m_focusedInstance->get() != &focusedInstance->get())
         {
             // Close all container entities in the old path
