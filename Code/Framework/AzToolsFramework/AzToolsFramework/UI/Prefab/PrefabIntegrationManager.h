@@ -26,6 +26,8 @@
 
 namespace AzToolsFramework
 {
+    class ContainerEntityInterface;
+
     namespace Prefab
     {
         class PrefabFocusInterface;
@@ -134,6 +136,7 @@ namespace AzToolsFramework
 
             static const AZStd::string s_prefabFileExtension;
 
+            static ContainerEntityInterface* s_containerEntityInterface;
             static EditorEntityUiInterface* s_editorEntityUiInterface;
             static PrefabFocusInterface* s_prefabFocusInterface;
             static PrefabLoaderInterface* s_prefabLoaderInterface;
