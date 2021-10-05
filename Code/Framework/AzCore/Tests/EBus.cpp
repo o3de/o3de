@@ -4083,8 +4083,7 @@ namespace UnitTest
 
     ThreadDispatchTestBusTraits::PostThreadDispatchTestInvoker::~PostThreadDispatchTestInvoker()
     {
-        auto* context = ThreadDispatchTestBus::GetContext();
-        if (!ThreadDispatchTestBus::IsInDispatchThisThread(context))
+        if (!ThreadDispatchTestBus::IsInDispatchThisThread())
         {
             ++s_threadPostDispatchCalls;
         }
