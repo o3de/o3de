@@ -174,7 +174,7 @@ namespace SandboxEditor
             return SandboxEditor::CameraScrollSpeed();
         };
 
-        auto pivotFn = []()
+        auto pivotFn = []
         {
             // use the manipulator transform as the pivot point
             AZStd::optional<AZ::Transform> entityPivot;
