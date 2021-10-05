@@ -76,7 +76,7 @@ namespace Multiplayer
         int GetTickOrder() override;
         //! @}
 
-        bool IsHandshakeComplete() const;
+        bool IsHandshakeComplete(AzNetworking::IConnection* connection) const;
         bool HandleRequest(AzNetworking::IConnection* connection, const AzNetworking::IPacketHeader& packetHeader, MultiplayerPackets::Connect& packet);
         bool HandleRequest(AzNetworking::IConnection* connection, const AzNetworking::IPacketHeader& packetHeader, MultiplayerPackets::Accept& packet);
         bool HandleRequest(AzNetworking::IConnection* connection, const AzNetworking::IPacketHeader& packetHeader, MultiplayerPackets::ReadyForEntityUpdates& packet);
@@ -171,7 +171,6 @@ namespace Multiplayer
         double m_serverSendAccumulator = 0.0;
         float m_renderBlendFactor = 0.0f;
         float m_tickFactor = 0.0f;
-        bool m_didHandshake = false;
         bool m_spawnNetboundEntities = true;
 
 #if !defined(AZ_RELEASE_BUILD)
