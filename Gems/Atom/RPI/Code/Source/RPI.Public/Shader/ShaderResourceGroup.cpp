@@ -114,6 +114,10 @@ namespace AZ
         void ShaderResourceGroup::Compile()
         {
             m_shaderResourceGroup->Compile(m_data);
+
+            //Disable compilation for all resource types as a performance optimization
+            //No need to re-update SRG data on GPU timeline if nothing was updated.
+            m_data.DisableCompilationForAllResourceTypes();
         }
 
         bool ShaderResourceGroup::IsQueuedForCompile() const
