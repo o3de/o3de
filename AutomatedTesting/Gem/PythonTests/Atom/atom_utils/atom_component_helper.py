@@ -27,7 +27,7 @@ def create_screenshots_archive(screenshot_path):
     # Setup variables for naming the zip archive file.
     timestamp = datetime.datetime.now().timestamp()
     formatted_timestamp = datetime.datetime.utcfromtimestamp(timestamp).strftime("%Y-%m-%d_%H-%M-%S")
-    screenshots_file = os.path.join(screenshot_path, f'zip_archive_{formatted_timestamp}.zip')
+    screenshots_file = os.path.join(screenshot_path, f'screenshots_{formatted_timestamp}.zip')
 
     # Write all of the valid .png and .ppm files to the archive file.
     with zipfile.ZipFile(screenshots_file, 'w', compression=zipfile.ZIP_DEFLATED, allowZip64=True) as zip_archive:
