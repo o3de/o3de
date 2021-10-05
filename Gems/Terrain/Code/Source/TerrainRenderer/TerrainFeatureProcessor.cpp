@@ -43,6 +43,7 @@ namespace Terrain
     namespace
     {
         [[maybe_unused]] const char* TerrainFPName = "TerrainFeatureProcessor";
+        const AZ::Name TerrainHeightmapName = AZ::Name("TerrainHeightmap");
     }
 
     namespace MaterialInputs
@@ -144,19 +145,14 @@ namespace Terrain
         AzFramework::Terrain::TerrainDataRequestBus::BroadcastResult(
             queryResolution, &AzFramework::Terrain::TerrainDataRequests::GetTerrainHeightQueryResolution);
 
-        uint32_t width = aznumeric_cast<uint32_t>((float)m_dirtyRegion.GetXExtent() / queryResolution.GetX());
-        uint32_t height = aznumeric_cast<uint32_t>((float)m_dirtyRegion.GetYExtent() / queryResolution.GetY());
-        
-        uint32_t worldWidth = aznumeric_cast<uint32_t>((float)worldBounds.GetXExtent() / queryResolution.GetX());
-        uint32_t worldHeight = aznumeric_cast<uint32_t>((float)worldBounds.GetYExtent() / queryResolution.GetY());
-
         m_areaData.m_transform = transform;
         m_areaData.m_heightScale = worldBounds.GetZExtent();
         m_areaData.m_terrainBounds = worldBounds;
-        m_areaData.m_heightmapImageWidth = worldWidth;
-        m_areaData.m_heightmapImageHeight = worldHeight;
-        m_areaData.m_updateWidth = width;
-        m_areaData.m_updateHeight = height;
+        m_areaData.m_heightmapImageWidth = aznumeric_cast<uint32_t>(worldBounds.GetXExtent() / queryResolution.GetX());
+        m_areaData.m_heightmapImageHeight = aznumeric_cast<uint32_t>(worldBounds.GetYExtent() / queryResolution.GetY());
+        m_areaData.m_updateWidth = aznumeric_cast<uint32_t>(m_dirtyRegion.GetXExtent() / queryResolution.GetX());
+        m_areaData.m_updateHeight = aznumeric_cast<uint32_t>(m_dirtyRegion.GetYExtent() / queryResolution.GetY());
+        // Currently query resolution is multidimensional but the rendering system only supports this changing in one dimension.
         m_areaData.m_sampleSpacing = queryResolution.GetX();
         m_areaData.m_propertiesDirty = true;
     }
@@ -181,7 +177,7 @@ namespace Terrain
             AZ::RHI::ImageDescriptor imageDescriptor = AZ::RHI::ImageDescriptor::Create2D(
                 AZ::RHI::ImageBindFlags::ShaderRead, width, height, AZ::RHI::Format::R16_UNORM
             );
-            m_areaData.m_heightmapImage = AZ::RPI::AttachmentImage::Create(*imagePool.get(), imageDescriptor, AZ::Name("TerrainHeightmap"), nullptr, nullptr);
+            m_areaData.m_heightmapImage = AZ::RPI::AttachmentImage::Create(*imagePool.get(), imageDescriptor, TerrainHeightmapName, nullptr, nullptr);
             AZ_Error(TerrainFPName, m_areaData.m_heightmapImage, "Failed to initialize the heightmap image!");
         }
 
@@ -213,17 +209,20 @@ namespace Terrain
                         &terrainExists);
 
                     float clampedHeight = AZ::GetClamp((terrainHeight - worldBounds.GetMin().GetZ()) / worldBounds.GetExtents().GetZ(), 0.0f, 1.0f);
-                    constexpr uint16_t MaxUint16 = 0xFFFF;
 
-                    pixels.push_back(aznumeric_cast<uint16_t>(clampedHeight * MaxUint16));
+                    // Adjust the clamped height by half of the minimum difference between uint16 values so
+                    // converting to uint16 becomes a round operation instead of a floor.
+                    clampedHeight += 1.0f / 2 * AZStd::numeric_limits<uint16_t>::max();
+                    uint16_t uint16Height = aznumeric_cast<uint16_t>(clampedHeight * AZStd::numeric_limits<uint16_t>::max());
+                    pixels.push_back(uint16Height);
                 }
             }
         }
 
         if (m_areaData.m_heightmapImage)
         {
-            float left = (m_dirtyRegion.GetMin().GetX() - worldBounds.GetMin().GetX()) / queryResolution;
-            float top = (m_dirtyRegion.GetMin().GetY() - worldBounds.GetMin().GetY()) / queryResolution;
+            const float left = (m_dirtyRegion.GetMin().GetX() - worldBounds.GetMin().GetX()) / queryResolution;
+            const float top = (m_dirtyRegion.GetMin().GetY() - worldBounds.GetMin().GetY()) / queryResolution;
             AZ::RHI::ImageUpdateRequest imageUpdateRequest;
             imageUpdateRequest.m_imageSubresourcePixelOffset.m_left = aznumeric_cast<uint32_t>(left);
             imageUpdateRequest.m_imageSubresourcePixelOffset.m_top = aznumeric_cast<uint32_t>(top);
