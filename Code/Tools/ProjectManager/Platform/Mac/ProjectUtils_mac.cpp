@@ -9,6 +9,7 @@
 
 #include <QProcess>
 #include <QStandardPaths>
+#include <QDir>
 
 namespace O3DE::ProjectManager
 {
