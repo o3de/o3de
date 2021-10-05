@@ -27,6 +27,7 @@ AZ_POP_DISABLE_WARNING
 #include <ISystem.h>
 #include <IConsole.h>
 #include <AzCore/Debug/TraceMessageBus.h>
+#include <AzCore/IO/Path/Path.h>
 #endif
 
 class QPushButton;
@@ -135,7 +136,7 @@ namespace ScriptCanvasEditor
 
         AZ::Entity* m_scriptCanvasEntity = nullptr;
 
-        AZStd::string m_backupPath;
+        AZ::IO::Path m_backupPath;
 
         void FinalizeUpgrade();
         void DisconnectBuses();
