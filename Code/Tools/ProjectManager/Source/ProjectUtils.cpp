@@ -541,10 +541,10 @@ namespace O3DE::ProjectManager
             QVBoxLayout* layout = new QVBoxLayout();
 
             // pre-fill the field with the title and command
-            const QString text = QString("%1<br>%2 %3<br>").arg(title).arg(cmd).arg(arguments.join(' '));
+            const QString commandOutput = QString("%1<br>%2 %3<br>").arg(title).arg(cmd).arg(arguments.join(' '));
 
             // replace the label with a scrollable text edit
-            QTextEdit* detailTextEdit = new QTextEdit(text, &dialog);
+            QTextEdit* detailTextEdit = new QTextEdit(commandOutput, &dialog);
             detailTextEdit->setReadOnly(true);
             layout->addWidget(detailTextEdit);
             layout->setMargin(0);
@@ -552,7 +552,7 @@ namespace O3DE::ProjectManager
             progressLabel->setMinimumHeight(150);
             dialog.setLabel(progressLabel);
 
-            auto readCon = QObject::connect(&execProcess, &QProcess::readyReadStandardOutput,
+            auto readConnection = QObject::connect(&execProcess, &QProcess::readyReadStandardOutput,
                 [&]()
                 {
                     QScrollBar* scrollBar = detailTextEdit->verticalScrollBar();
@@ -568,7 +568,7 @@ namespace O3DE::ProjectManager
                     }
                 });
 
-            auto exitCon = QObject::connect(&execProcess,
+            auto exitConnection = QObject::connect(&execProcess,
                 QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished),
                 [&](int exitCode, [[maybe_unused]] QProcess::ExitStatus exitStatus)
                 {
@@ -590,8 +590,8 @@ namespace O3DE::ProjectManager
 
             dialog.exec();
 
-            QObject::disconnect(readCon);
-            QObject::disconnect(exitCon);
+            QObject::disconnect(readConnection);
+            QObject::disconnect(exitConnection);
 
             if (execProcess.state() == QProcess::Running)
             {
