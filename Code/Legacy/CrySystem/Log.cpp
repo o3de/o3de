@@ -910,7 +910,7 @@ void CLog::LogStringToFile(const char* szString, ELogType logType, bool bAdd, [[
     }
 #endif
 
-    if (m_pLogIncludeTime && gEnv && gEnv->pTimer)
+    if (m_pLogIncludeTime)
     {
         uint32 dwCVarState = m_pLogIncludeTime->GetIVal();
         //      char szTemp[MAX_TEMP_LENGTH_SIZE];

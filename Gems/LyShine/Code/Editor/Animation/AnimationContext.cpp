@@ -13,7 +13,6 @@
 #include "AnimationContext.h"
 
 #include <LyShine/Animation/IUiAnimation.h>
-#include "ITimer.h"
 #include "GameEngine.h"
 
 #include "Objects/SelectionGroup.h"

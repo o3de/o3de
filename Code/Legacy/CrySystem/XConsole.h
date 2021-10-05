@@ -14,6 +14,7 @@
 
 #include <IConsole.h>
 #include <CryCommon/StlUtils.h>
+#include <CryCommon/TimeValue.h>
 #include <AzFramework/Components/ConsoleBus.h>
 #include <AzFramework/CommandLine/CommandRegistrationBus.h>
 
