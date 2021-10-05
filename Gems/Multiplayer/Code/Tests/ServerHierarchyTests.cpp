@@ -394,8 +394,8 @@ namespace Multiplayer
         m_console->PerformCommand("bg_hierarchyEntityMaxLimit 2");
 
         // remake the hierarchy
-        m_root->m_entity->FindComponent<AzFramework::TransformComponent>()->SetParent(AZ::EntityId());
-        m_root->m_entity->FindComponent<AzFramework::TransformComponent>()->SetParent(m_root->m_entity->GetId());
+        m_child->m_entity->FindComponent<AzFramework::TransformComponent>()->SetParent(AZ::EntityId());
+        m_child->m_entity->FindComponent<AzFramework::TransformComponent>()->SetParent(m_root->m_entity->GetId());
 
         EXPECT_EQ(
             m_root->m_entity->FindComponent<NetworkHierarchyRootComponent>()->GetHierarchicalEntities().size(),
@@ -404,6 +404,17 @@ namespace Multiplayer
 
         m_console->PerformCommand((AZStd::string("bg_hierarchyEntityMaxLimit ") + AZStd::to_string(currentMaxLimit)).c_str());
         m_console->GetCvarValue<uint32_t>("bg_hierarchyEntityMaxLimit", currentMaxLimit);
+    }
+
+    TEST_F(ServerDeepHierarchyTests, ReattachMiddleChildRebuildInvokedTwice)
+    {
+        MockNetworkHierarchyCallbackHandler mock;
+        EXPECT_CALL(mock, OnNetworkHierarchyUpdated(m_root->m_entity->GetId())).Times(2);
+        
+        m_root->m_entity->FindComponent<NetworkHierarchyRootComponent>()->BindNetworkHierarchyChangedEventHandler(mock.m_changedHandler);
+
+        m_child->m_entity->FindComponent<AzFramework::TransformComponent>()->SetParent(AZ::EntityId());
+        m_child->m_entity->FindComponent<AzFramework::TransformComponent>()->SetParent(m_root->m_entity->GetId());
     }
 
     /*
@@ -533,11 +544,11 @@ namespace Multiplayer
             );
             EXPECT_EQ(
                 m_root->m_entity->FindComponent<NetworkHierarchyRootComponent>()->GetHierarchicalEntities()[2],
-                m_childOfChild->m_entity.get()
+                m_child2->m_entity.get()
             );
             EXPECT_EQ(
                 m_root->m_entity->FindComponent<NetworkHierarchyRootComponent>()->GetHierarchicalEntities()[3],
-                m_child2->m_entity.get()
+                m_childOfChild->m_entity.get()
             );
             EXPECT_EQ(
                 m_root->m_entity->FindComponent<NetworkHierarchyRootComponent>()->GetHierarchicalEntities()[4],
@@ -1229,5 +1240,18 @@ namespace Multiplayer
             m_root3->m_entity->FindComponent<NetworkHierarchyRootComponent>()->GetHierarchicalEntities().size(),
             3
         );
+    }
+
+    TEST_F(ServerHierarchyWithThreeRoots, ReattachMiddleChildWhileLastChildGetsLeaveEventOnce)
+    {
+        m_root2->m_entity->FindComponent<AzFramework::TransformComponent>()->SetParent(m_childOfChild->m_entity->GetId());
+        m_root3->m_entity->FindComponent<AzFramework::TransformComponent>()->SetParent(m_childOfChild->m_entity->GetId());
+
+        MockNetworkHierarchyCallbackHandler mock;
+        EXPECT_CALL(mock, OnNetworkHierarchyLeave());
+        
+        m_childOfChild3->m_entity->FindComponent<NetworkHierarchyChildComponent>()->BindNetworkHierarchyLeaveEventHandler(mock.m_leaveHandler);
+
+        m_child->m_entity->FindComponent<AzFramework::TransformComponent>()->SetParent(AZ::EntityId());
     }
 }

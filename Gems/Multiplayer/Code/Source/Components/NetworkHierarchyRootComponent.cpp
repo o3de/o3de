@@ -203,10 +203,9 @@ namespace Multiplayer
         AZStd::vector<AZ::Entity*> previousEntities;
         m_hierarchicalEntities.swap(previousEntities);
 
-        m_hierarchicalEntities.push_back(GetEntity()); // Add the root.
+        m_hierarchicalEntities.reserve(bg_hierarchyEntityMaxLimit);
 
-        uint32_t currentEntityCount = aznumeric_cast<uint32_t>(m_hierarchicalEntities.size());
-        RecursiveAttachHierarchicalEntities(GetEntityId(), currentEntityCount);
+        InternalBuildHierarchyList(GetEntity());
 
         bool hierarchyChanged = false;
 
@@ -244,6 +243,43 @@ namespace Multiplayer
         }
     }
 
+    void NetworkHierarchyRootComponent::InternalBuildHierarchyList(AZ::Entity* underEntity)
+    {
+        AZ::ComponentApplicationRequests* componentApplicationRequests = AZ::Interface<AZ::ComponentApplicationRequests>::Get();
+
+        AZStd::deque<AZ::Entity*, AZStd::allocator, 16> candidates;
+        candidates.push_back(underEntity);
+
+        while (!candidates.empty())
+        {
+            AZ::Entity* candidate = candidates.front();
+            candidates.pop_front();
+
+            if (candidate)
+            {
+                auto* hierarchyChildComponent = candidate->FindComponent<NetworkHierarchyChildComponent>();
+                auto* hierarchyRootComponent = candidate->FindComponent<NetworkHierarchyRootComponent>();
+
+                if ((hierarchyChildComponent && hierarchyChildComponent->IsHierarchyEnabled()) ||
+                    (hierarchyRootComponent && hierarchyRootComponent->IsHierarchyEnabled()))
+                {
+                    m_hierarchicalEntities.push_back(candidate);
+
+                    if (m_hierarchicalEntities.size() >= bg_hierarchyEntityMaxLimit)
+                    {
+                        return;
+                    }
+
+                    const AZStd::vector<AZ::EntityId> allChildren = candidate->GetTransform()->GetChildren();
+                    for (const AZ::EntityId& newChildId : allChildren)
+                    {
+                        candidates.push_back(componentApplicationRequests->FindEntity(newChildId));
+                    }
+                }
+            }
+        }
+    }
+
     void NetworkHierarchyRootComponent::SetRootForEntity(AZ::Entity* root, const AZ::Entity* childEntity)
     {
         if (auto* hierarchyChildComponent = childEntity->FindComponent<NetworkHierarchyChildComponent>())
@@ -254,52 +290,6 @@ namespace Multiplayer
         {
             hierarchyRootComponent->SetTopLevelHierarchyRootEntity(root);
         }
-    }
-
-    bool NetworkHierarchyRootComponent::RecursiveAttachHierarchicalEntities(AZ::EntityId underEntity, uint32_t& currentEntityCount)
-    {
-        AZStd::vector<AZ::EntityId> allChildren;
-        AZ::TransformBus::EventResult(allChildren, underEntity, &AZ::TransformBus::Events::GetChildren);
-
-        for (const AZ::EntityId& newChildId : allChildren)
-        {
-            if (!RecursiveAttachHierarchicalChild(newChildId, currentEntityCount))
-            {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    bool NetworkHierarchyRootComponent::RecursiveAttachHierarchicalChild(AZ::EntityId entity, uint32_t& currentEntityCount)
-    {
-        if (currentEntityCount >= bg_hierarchyEntityMaxLimit)
-        {
-            AZLOG_WARN("Entity %s is trying to build a network hierarchy that is too large. bg_hierarchyEntityMaxLimit is currently set to (%u)",
-                GetEntity()->GetName().c_str(), static_cast<uint32_t>(bg_hierarchyEntityMaxLimit));
-            return false;
-        }
-
-        if (AZ::Entity* childEntity = AZ::Interface<AZ::ComponentApplicationRequests>::Get()->FindEntity(entity))
-        {
-            auto* hierarchyChildComponent = childEntity->FindComponent<NetworkHierarchyChildComponent>();
-            auto* hierarchyRootComponent = childEntity->FindComponent<NetworkHierarchyRootComponent>();
-
-            if ((hierarchyChildComponent && hierarchyChildComponent->IsHierarchyEnabled()) ||
-                (hierarchyRootComponent && hierarchyRootComponent->IsHierarchyEnabled()))
-            {
-                m_hierarchicalEntities.push_back(childEntity);
-                ++currentEntityCount;
-
-                if (!RecursiveAttachHierarchicalEntities(entity, currentEntityCount))
-                {
-                    return false;
-                }
-            }
-        }
-
-        return true;
     }
 
     void NetworkHierarchyRootComponent::SetTopLevelHierarchyRootEntity(AZ::Entity* hierarchyRoot)

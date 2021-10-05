@@ -55,7 +55,6 @@ namespace Multiplayer
 
     NetworkHierarchyChildComponent::NetworkHierarchyChildComponent()
         : m_childChangedHandler([this](AZ::ChildChangeType type, AZ::EntityId child) { OnChildChanged(type, child); })
-        , m_parentChangedHandler([this](AZ::EntityId oldParent, AZ::EntityId parent) { OnParentChanged(oldParent, parent); })
         , m_hierarchyRootNetIdChanged([this](NetEntityId rootNetId) {OnHierarchyRootNetIdChanged(rootNetId); })
     {
 
@@ -75,7 +74,6 @@ namespace Multiplayer
         if (AzFramework::TransformComponent* transformComponent = GetEntity()->FindComponent<AzFramework::TransformComponent>())
         {
             transformComponent->BindChildChangedEventHandler(m_childChangedHandler);
-            transformComponent->BindParentChangedEventHandler(m_parentChangedHandler);
         }
     }
 
@@ -133,43 +131,36 @@ namespace Multiplayer
 
     void NetworkHierarchyChildComponent::SetTopLevelHierarchyRootEntity(AZ::Entity* hierarchyRoot)
     {
-        m_rootEntity = hierarchyRoot;
-        if (HasController() && GetNetBindComponent()->GetNetEntityRole() == NetEntityRole::Authority)
+        if (m_rootEntity != hierarchyRoot)
         {
-            NetworkHierarchyChildComponentController* controller = static_cast<NetworkHierarchyChildComponentController*>(GetController());
-            if (m_rootEntity)
+            m_rootEntity = hierarchyRoot;
+
+            if (HasController() && GetNetBindComponent()->GetNetEntityRole() == NetEntityRole::Authority)
             {
-                const NetEntityId netRootId = GetNetworkEntityManager()->GetNetEntityIdById(m_rootEntity->GetId());
-                controller->SetHierarchyRoot(netRootId);
+                NetworkHierarchyChildComponentController* controller = static_cast<NetworkHierarchyChildComponentController*>(GetController());
+                if (m_rootEntity)
+                {
+                    const NetEntityId netRootId = GetNetworkEntityManager()->GetNetEntityIdById(m_rootEntity->GetId());
+                    controller->SetHierarchyRoot(netRootId);
 
-                m_networkHierarchyChangedEvent.Signal(m_rootEntity->GetId());
+                    m_networkHierarchyChangedEvent.Signal(m_rootEntity->GetId());
+                }
+                else
+                {
+                    controller->SetHierarchyRoot(InvalidNetEntityId);
+
+                    m_networkHierarchyLeaveEvent.Signal();
+                }
             }
-            else
+
+            if (m_rootEntity == nullptr)
             {
-                controller->SetHierarchyRoot(InvalidNetEntityId);
-
-                m_networkHierarchyLeaveEvent.Signal();
+                NotifyChildrenHierarchyDisbanded();
             }
-        }
-
-        if (m_rootEntity == nullptr)
-        {
-            NotifyChildrenHierarchyDisbanded();
         }
     }
 
     void NetworkHierarchyChildComponent::OnChildChanged([[maybe_unused]] AZ::ChildChangeType type, [[maybe_unused]] AZ::EntityId child)
-    {
-        if (m_rootEntity)
-        {
-            if (NetworkHierarchyRootComponent* root = m_rootEntity->FindComponent<NetworkHierarchyRootComponent>())
-            {
-                root->RebuildHierarchy();
-            }
-        }
-    }
-
-    void NetworkHierarchyChildComponent::OnParentChanged([[maybe_unused]] AZ::EntityId oldParent, [[maybe_unused]] AZ::EntityId parent)
     {
         if (m_rootEntity)
         {
@@ -202,19 +193,24 @@ namespace Multiplayer
 
     void NetworkHierarchyChildComponent::NotifyChildrenHierarchyDisbanded()
     {
+        AZ::ComponentApplicationRequests* componentApplication = AZ::Interface<AZ::ComponentApplicationRequests>::Get();
+
         AZStd::vector<AZ::EntityId> allChildren;
         AZ::TransformBus::EventResult(allChildren, GetEntityId(), &AZ::TransformBus::Events::GetChildren);
         for (const AZ::EntityId& childEntityId : allChildren)
         {
-            if (const AZ::Entity* childEntity = AZ::Interface<AZ::ComponentApplicationRequests>::Get()->FindEntity(childEntityId))
+            if (const AZ::Entity* childEntity = componentApplication->FindEntity(childEntityId))
             {
-                if (auto* hierarchyChildComponent = childEntity->FindComponent<NetworkHierarchyChildComponent>())
+                for (Component* component : childEntity->GetComponents())
                 {
-                    hierarchyChildComponent->SetTopLevelHierarchyRootEntity(nullptr);
-                }
-                else if (auto* hierarchyRootComponent = childEntity->FindComponent<NetworkHierarchyRootComponent>())
-                {
-                    hierarchyRootComponent->SetTopLevelHierarchyRootEntity(nullptr);
+                    if (component->GetUnderlyingComponentType() == NetworkHierarchyChildComponent::TYPEINFO_Uuid())
+                    {
+                        static_cast<NetworkHierarchyChildComponent*>(component)->SetTopLevelHierarchyRootEntity(nullptr);
+                    }
+                    else if (component->GetUnderlyingComponentType() == NetworkHierarchyRootComponent::TYPEINFO_Uuid())
+                    {
+                        static_cast<NetworkHierarchyRootComponent*>(component)->SetTopLevelHierarchyRootEntity(nullptr);
+                    }
                 }
             }
         }
