@@ -9,6 +9,8 @@
 #include <ProjectUtils.h>
 #include <ProjectManagerDefs.h>
 #include <PythonBindingsInterface.h>
+#include <AzCore/Settings/SettingsRegistryMergeUtils.h>
+#include <AzCore/IO/Path/Path.h>
 
 #include <QFileDialog>
 #include <QDir>
@@ -537,5 +539,33 @@ namespace O3DE::ProjectManager
             QString resultOutput = execProcess.readAllStandardOutput();
             return AZ::Success(resultOutput);
         }
+
+        AZ::Outcome<QString, QString> GetProjectBuildPath(const QString& projectPath)
+        {
+            auto registry = AZ::SettingsRegistry::Get();
+
+            // the project_build_path should be in the user settings registry inside the project folder
+            AZ::IO::FixedMaxPath projectUserPath(projectPath.toUtf8().constData());
+            projectUserPath /= AZ::SettingsRegistryInterface::DevUserRegistryFolder;
+            if (!QDir(projectUserPath.c_str()).exists())
+            {
+                return AZ::Failure(QObject::tr("Failed to find the user registry folder %1").arg(projectUserPath.c_str()));
+            }
+
+            AZ::SettingsRegistryInterface::Specializations specializations;
+            if(!registry->MergeSettingsFolder(projectUserPath.Native(), specializations, AZ_TRAIT_OS_PLATFORM_CODENAME))
+            {
+                return AZ::Failure(QObject::tr("Failed to merge registry settings in user registry folder %1").arg(projectUserPath.c_str()));
+            }
+
+            AZ::IO::FixedMaxPath projectBuildPath;
+            if (!registry->Get(projectBuildPath.Native(), AZ::SettingsRegistryMergeUtils::ProjectBuildPath))
+            {
+                return AZ::Failure(QObject::tr("No project build path setting was found in the user registry folder %1").arg(projectUserPath.c_str()));
+            }
+
+            return AZ::Success(QString(projectBuildPath.c_str()));
+        }
+
     } // namespace ProjectUtils
 } // namespace O3DE::ProjectManager
