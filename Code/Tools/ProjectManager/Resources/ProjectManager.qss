@@ -496,11 +496,19 @@ QProgressBar::chunk {
     background-color: #333333;
 }
 
-/************** Filter tag widget **************/
+/************** Filter Tag widget **************/
 
 #FilterTagWidgetTextLabel {
     color: #94D2FF;
     font-size: 10px;
+}
+
+#TagWidget {
+    background-color: #333333;
+    padding:3px;
+    font-size:12px;
+    border-radius: 3px;
+    margin-right: 3px;
 }
 
 /************** Gems SubWidget **************/
