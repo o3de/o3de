@@ -24,7 +24,7 @@ namespace Multiplayer
         ;
     }
 
-    bool NetworkEntityAuthorityTracker::AddEntityAuthorityManager(ConstNetworkEntityHandle entityHandle, HostId newOwner)
+    bool NetworkEntityAuthorityTracker::AddEntityAuthorityManager(ConstNetworkEntityHandle entityHandle, const HostId& newOwner)
     {
         bool ret = false;
         auto timeoutData = m_timeoutDataMap.find(entityHandle.GetNetEntityId());
@@ -33,10 +33,10 @@ namespace Multiplayer
             AZLOG
             (
                 NET_AuthTracker,
-                "AuthTracker: Removing timeout for networkEntityId %u from %u, new owner is %u",
+                "AuthTracker: Removing timeout for networkEntityId %u from %s, new owner is %s",
                 aznumeric_cast<uint32_t>(entityHandle.GetNetEntityId()),
-                aznumeric_cast<uint32_t>(timeoutData->second.m_previousOwner),
-                aznumeric_cast<uint32_t>(newOwner)
+                timeoutData->second.m_previousOwner.GetString().c_str(),
+                newOwner.GetString().c_str()
             );
             m_timeoutDataMap.erase(timeoutData);
             ret = true;
@@ -48,10 +48,10 @@ namespace Multiplayer
             AZLOG
             (
                 NET_AuthTracker,
-                "AuthTracker: Assigning networkEntityId %u from %u to %u",
+                "AuthTracker: Assigning networkEntityId %u from %s to %s",
                 aznumeric_cast<uint32_t>(entityHandle.GetNetEntityId()),
-                aznumeric_cast<uint32_t>(iter->second.back()),
-                aznumeric_cast<uint32_t>(newOwner)
+                iter->second.back().GetString().c_str(),
+                newOwner.GetString().c_str()
             );
         }
         else
@@ -59,9 +59,9 @@ namespace Multiplayer
             AZLOG
             (
                 NET_AuthTracker,
-                "AuthTracker: Assigning networkEntityId %u to %u",
+                "AuthTracker: Assigning networkEntityId %u to %s",
                 aznumeric_cast<uint32_t>(entityHandle.GetNetEntityId()),
-                aznumeric_cast<uint32_t>(newOwner)
+                newOwner.GetString().c_str()
             );
         }
 
@@ -69,7 +69,7 @@ namespace Multiplayer
         return ret;
     }
 
-    void NetworkEntityAuthorityTracker::RemoveEntityAuthorityManager(ConstNetworkEntityHandle entityHandle, HostId previousOwner)
+    void NetworkEntityAuthorityTracker::RemoveEntityAuthorityManager(ConstNetworkEntityHandle entityHandle, const HostId& previousOwner)
     {
         auto mapIter = m_entityAuthorityMap.find(entityHandle.GetNetEntityId());
         if (mapIter != m_entityAuthorityMap.end())
@@ -87,7 +87,7 @@ namespace Multiplayer
                 }
             }
 
-            AZLOG(NET_AuthTracker, "AuthTracker: Removing networkEntityId %u from %u", aznumeric_cast<uint32_t>(entityHandle.GetNetEntityId()), aznumeric_cast<uint32_t>(previousOwner));
+            AZLOG(NET_AuthTracker, "AuthTracker: Removing networkEntityId %u from %s", aznumeric_cast<uint32_t>(entityHandle.GetNetEntityId()), previousOwner.GetString().c_str());
             if (auto localEnt = entityHandle.GetEntity())
             {
                 if (authorityStack.empty())
@@ -167,7 +167,7 @@ namespace Multiplayer
         return InvalidHostId;
     }
 
-    NetworkEntityAuthorityTracker::TimeoutData::TimeoutData(ConstNetworkEntityHandle entityHandle, HostId previousOwner)
+    NetworkEntityAuthorityTracker::TimeoutData::TimeoutData(ConstNetworkEntityHandle entityHandle, const HostId& previousOwner)
         : m_entityHandle(entityHandle)
         , m_previousOwner(previousOwner)
     {
@@ -205,9 +205,9 @@ namespace Multiplayer
                 {
                     AZLOG_ERROR
                     (
-                        "Timed out entity id %u during migration previous owner %u, removing it",
+                        "Timed out entity id %u during migration previous owner %s, removing it",
                         aznumeric_cast<uint32_t>(entityHandle.GetNetEntityId()),
-                        aznumeric_cast<uint32_t>(timeoutData->second.m_previousOwner)
+                        timeoutData->second.m_previousOwner.GetString().c_str()
                     );
                     m_networkEntityManager.MarkForRemoval(entityHandle);
                 }

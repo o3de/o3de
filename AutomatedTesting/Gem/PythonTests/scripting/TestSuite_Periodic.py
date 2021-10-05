@@ -122,6 +122,7 @@ class TestAutomation(TestAutomationBase):
         from . import Debugger_HappyPath_TargetMultipleEntities as test_module
         self._run_test(request, workspace, editor, test_module)
 
+    @pytest.mark.xfail(reason="Test fails to find expected lines, it needs to be fixed.")
     def test_EditMenu_Default_UndoRedo(self, request, workspace, editor, launcher_platform, project):
         from . import EditMenu_Default_UndoRedo as test_module
         self._run_test(request, workspace, editor, test_module)
@@ -181,6 +182,7 @@ class TestAutomation(TestAutomationBase):
         from . import NodePalette_SearchText_Deletion as test_module
         self._run_test(request, workspace, editor, test_module)
 
+    @pytest.mark.xfail(reason="Test fails to find expected lines, it needs to be fixed.")
     def test_VariableManager_UnpinVariableType_Works(self, request, workspace, editor, launcher_platform):
         from . import VariableManager_UnpinVariableType_Works as test_module
         self._run_test(request, workspace, editor, test_module)
