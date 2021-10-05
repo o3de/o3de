@@ -97,6 +97,20 @@ protected:
         }
     }
 
+    void WaitForProcessFinish()
+    {
+        int processingTime = 0;
+        while (processingTime < TEST_WAIT_MAXIMUM_TIME_MS)
+        {
+            if (m_gameliftClientTicketTracker->IsTrackerIdle())
+            {
+                return;
+            }
+            AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(TEST_WAIT_BUFFER_TIME_MS));
+            processingTime += TEST_WAIT_BUFFER_TIME_MS;
+        }
+    }
+
 public:
     AZStd::unique_ptr<TestAWSGameLiftClientLocalTicketTracker> m_gameliftClientTicketTracker;
     AZStd::shared_ptr<GameLiftClientMock> m_gameliftClientMockPtr;
@@ -181,7 +195,7 @@ TEST_F(AWSGameLiftClientLocalTicketTrackerTest, StartPolling_CallWithCompleteSta
         .WillOnce(::testing::Return(true));
 
     m_gameliftClientTicketTracker->StartPolling("ticket1", "player1");
-    AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(TEST_WAIT_BUFFER_TIME_MS));
+    WaitForProcessFinish();
     ASSERT_TRUE(m_gameliftClientTicketTracker->IsTrackerIdle());
 }
 
@@ -299,20 +313,41 @@ TEST_F(AWSGameLiftClientLocalTicketTrackerTest, StartPolling_CallButTicketCancel
     ASSERT_TRUE(m_gameliftClientTicketTracker->IsTrackerIdle());
 }
 
-TEST_F(AWSGameLiftClientLocalTicketTrackerTest, StartPolling_CallAndTicketIsInProgress_ProcessContinues)
+TEST_F(AWSGameLiftClientLocalTicketTrackerTest, StartPolling_CallAndTicketCompleteAtLast_ProcessContinuesAndStop)
 {
-    Aws::GameLift::Model::MatchmakingTicket ticket;
-    ticket.SetStatus(Aws::GameLift::Model::MatchmakingConfigurationStatus::QUEUED);
+    Aws::GameLift::Model::MatchmakingTicket ticket1;
+    ticket1.SetStatus(Aws::GameLift::Model::MatchmakingConfigurationStatus::QUEUED);
 
-    Aws::GameLift::Model::DescribeMatchmakingResult result;
-    result.AddTicketList(ticket);
+    Aws::GameLift::Model::DescribeMatchmakingResult result1;
+    result1.AddTicketList(ticket1);
+    Aws::GameLift::Model::DescribeMatchmakingOutcome outcome1(result1);
 
-    Aws::GameLift::Model::DescribeMatchmakingOutcome outcome(result);
+    Aws::GameLift::Model::GameSessionConnectionInfo connectionInfo;
+    connectionInfo.SetIpAddress("DummyIpAddress");
+    connectionInfo.SetPort(123);
+    connectionInfo.AddMatchedPlayerSessions(
+        Aws::GameLift::Model::MatchedPlayerSession()
+        .WithPlayerId("player1")
+        .WithPlayerSessionId("playersession1"));
+
+    Aws::GameLift::Model::MatchmakingTicket ticket2;
+    ticket2.SetStatus(Aws::GameLift::Model::MatchmakingConfigurationStatus::COMPLETED);
+    ticket2.SetGameSessionConnectionInfo(connectionInfo);
+
+    Aws::GameLift::Model::DescribeMatchmakingResult result2;
+    result2.AddTicketList(ticket2);
+    Aws::GameLift::Model::DescribeMatchmakingOutcome outcome2(result2);
+
     EXPECT_CALL(*m_gameliftClientMockPtr, DescribeMatchmaking(::testing::_))
+        .WillOnce(::testing::Return(outcome1))
+        .WillOnce(::testing::Return(outcome2));
+
+    SessionHandlingClientRequestsMock handlerMock;
+    EXPECT_CALL(handlerMock, RequestPlayerJoinSession(::testing::_))
         .Times(1)
-        .WillOnce(::testing::Return(outcome));
+        .WillOnce(::testing::Return(true));
 
     m_gameliftClientTicketTracker->StartPolling("ticket1", "player1");
-    AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(TEST_WAIT_BUFFER_TIME_MS));
-    ASSERT_FALSE(m_gameliftClientTicketTracker->IsTrackerIdle());
+    WaitForProcessFinish();
+    ASSERT_TRUE(m_gameliftClientTicketTracker->IsTrackerIdle());
 }

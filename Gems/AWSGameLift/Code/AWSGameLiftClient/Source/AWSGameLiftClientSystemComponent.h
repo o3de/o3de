@@ -48,8 +48,8 @@ namespace AWSGameLift
         void Deactivate() override;
         ////////////////////////////////////////////////////////////////////////
 
-        void SetGameLiftClientManager(AZStd::unique_ptr<AWSGameLiftClientManager> gameliftClientManager);
-        void SetGameLiftClientTicketTracker(AZStd::unique_ptr<AWSGameLiftClientLocalTicketTracker> gameliftClientTicketTracker);
+        void SetGameLiftClientManager(AZStd::unique_ptr<AWSGameLiftClientManager> gameliftManager);
+        void SetGameLiftClientTicketTracker(AZStd::unique_ptr<AWSGameLiftClientLocalTicketTracker> gameliftTicketTracker);
 
     private:
         static void ReflectGameLiftMatchmaking(AZ::ReflectContext* context);
@@ -59,8 +59,8 @@ namespace AWSGameLift
         static void ReflectSearchSessionsResponse(AZ::ReflectContext* context);
 
         AZStd::shared_ptr<Aws::GameLift::GameLiftClient> m_gameliftClient;
-        AZStd::unique_ptr<AWSGameLiftClientManager> m_gameliftClientManager;
-        AZStd::unique_ptr<AWSGameLiftClientLocalTicketTracker> m_gameliftClientTicketTracker;
+        AZStd::unique_ptr<AWSGameLiftClientManager> m_gameliftManager;
+        AZStd::unique_ptr<AWSGameLiftClientLocalTicketTracker> m_gameliftTicketTracker;
     };
 
 } // namespace AWSGameLift

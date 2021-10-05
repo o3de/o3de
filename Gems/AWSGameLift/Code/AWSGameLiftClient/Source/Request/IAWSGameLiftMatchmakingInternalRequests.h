@@ -14,16 +14,17 @@
 
 namespace AWSGameLift
 {
-    //! IAWSGameLiftMatchmakingTicketRequests
+    //! IAWSGameLiftMatchmakingInternalRequests
     //! GameLift Gem matchmaking internal interfaces which is used to communicate
-    //! with client side ticket tracker to sync matchmaking ticket data
-    class IAWSGameLiftMatchmakingTicketRequests
+    //! with client side ticket tracker to sync matchmaking ticket data and join
+    //! player to the match
+    class IAWSGameLiftMatchmakingInternalRequests
     {
     public:
-        AZ_RTTI(IAWSGameLiftMatchmakingTicketRequests, "{C2DA440E-74E0-411E-813D-5880B50B0C9E}");
+        AZ_RTTI(IAWSGameLiftMatchmakingInternalRequests, "{C2DA440E-74E0-411E-813D-5880B50B0C9E}");
 
-        IAWSGameLiftMatchmakingTicketRequests() = default;
-        virtual ~IAWSGameLiftMatchmakingTicketRequests() = default;
+        IAWSGameLiftMatchmakingInternalRequests() = default;
+        virtual ~IAWSGameLiftMatchmakingInternalRequests() = default;
 
         //! StartPolling
         //! Request to start process for polling matchmaking ticket based on given ticket id and player id

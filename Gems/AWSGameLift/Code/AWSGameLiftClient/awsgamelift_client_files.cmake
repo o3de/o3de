@@ -42,5 +42,5 @@ set(FILES
     Source/Request/AWSGameLiftStartMatchmakingRequest.cpp
     Source/Request/AWSGameLiftStopMatchmakingRequest.cpp
     Source/Request/IAWSGameLiftInternalRequests.h
-    Source/Request/IAWSGameLiftMatchmakingTicketRequests.h
+    Source/Request/IAWSGameLiftMatchmakingInternalRequests.h
 )

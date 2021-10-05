@@ -29,12 +29,12 @@ namespace AWSGameLift
 
     void AWSGameLiftClientLocalTicketTracker::ActivateTracker()
     {
-        AZ::Interface<IAWSGameLiftMatchmakingTicketRequests>::Register(this);
+        AZ::Interface<IAWSGameLiftMatchmakingInternalRequests>::Register(this);
     }
 
     void AWSGameLiftClientLocalTicketTracker::DeactivateTracker()
     {
-        AZ::Interface<IAWSGameLiftMatchmakingTicketRequests>::Unregister(this);
+        AZ::Interface<IAWSGameLiftMatchmakingInternalRequests>::Unregister(this);
         StopPolling();
     }
 
@@ -137,6 +137,7 @@ namespace AWSGameLift
             if (playerId.compare(matchedPlayer.GetPlayerId().c_str()) == 0)
             {
                 sessionConnectionConfig.m_playerSessionId = matchedPlayer.GetPlayerSessionId().c_str();
+                break;
             }
         }
         sessionConnectionConfig.m_port = static_cast<uint16_t>(connectionInfo.GetPort());

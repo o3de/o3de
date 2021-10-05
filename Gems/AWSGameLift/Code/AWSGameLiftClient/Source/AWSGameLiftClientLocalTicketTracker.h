@@ -11,7 +11,7 @@
 #include <AzCore/std/parallel/mutex.h>
 #include <AzCore/std/parallel/thread.h>
 
-#include <Request/IAWSGameLiftMatchmakingTicketRequests.h>
+#include <Request/IAWSGameLiftMatchmakingInternalRequests.h>
 
 #include <aws/gamelift/model/MatchmakingTicket.h>
 
@@ -23,12 +23,18 @@ namespace AWSGameLift
         Running
     };
 
+    //! AWSGameLiftClientLocalTicketTracker
+    //! GameLift client ticket tracker to describe submitted matchmaking ticket periodically,
+    //! and join player to the match once matchmaking ticket is complete.
+    //! All games in public release should use notifications regardless of volume.
+    //! The continuous polling approach here is only appropriate for games in development with low matchmaking usage. 
     class AWSGameLiftClientLocalTicketTracker
-        : public IAWSGameLiftMatchmakingTicketRequests
+        : public IAWSGameLiftMatchmakingInternalRequests
     {
     public:
         static constexpr const char AWSGameLiftClientLocalTicketTrackerName[] = "AWSGameLiftClientLocalTicketTracker";
-        // TODO: expose this config in a registry file
+        // Set ticket polling period to 10 seconds
+        // https://docs.aws.amazon.com/gamelift/latest/flexmatchguide/match-client.html#match-client-track
         static constexpr const uint64_t AWSGameLiftClientDefaultPollingPeriodInMS = 10000;
 
         AWSGameLiftClientLocalTicketTracker();
@@ -37,7 +43,7 @@ namespace AWSGameLift
         virtual void ActivateTracker();
         virtual void DeactivateTracker();
 
-        // IAWSGameLiftMatchmakingTicketRequests interface implementation
+        // IAWSGameLiftMatchmakingInternalRequests interface implementation
         void StartPolling(const AZStd::string& ticketId, const AZStd::string& playerId) override;
         void StopPolling() override;
 
