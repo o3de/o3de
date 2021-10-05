@@ -54,7 +54,8 @@ namespace ScriptCanvasEditor
             {
                 Idle,
                 Scanning,
-                Modifying,
+                ModifyAll,
+                ModifySingle
             };
 
             State m_state = State::Idle;

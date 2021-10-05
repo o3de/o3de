@@ -88,6 +88,22 @@ namespace ScriptCanvasEditor
             LogBus::Broadcast(&LogTraits::Clear);
         }
 
+        void Controller::EnableAllUpgradeButtons()
+        {
+            for (int row = 0; row < m_view->tableWidget->rowCount(); ++row)
+            {
+                if (QPushButton* button = qobject_cast<QPushButton*>(m_view->tableWidget->cellWidget(row, ColumnAction)))
+                {
+                    button->setEnabled(true);
+                }
+            }
+        }
+
+        QList<QTableWidgetItem*> Controller::FindTableItems(const AZ::Data::AssetInfo& info)
+        {
+            return m_view->tableWidget->findItems(info.m_relativePath.c_str(), Qt::MatchFlag::MatchExactly);
+        }
+
         void Controller::OnButtonPressClose()
         {
             reject();
@@ -106,7 +122,7 @@ namespace ScriptCanvasEditor
                     if (!scriptCanvasAsset)
                     {
                         AZ_Warning
-                            ( ScriptCanvas::k_VersionExplorerWindow.data()
+                        (ScriptCanvas::k_VersionExplorerWindow.data()
                             , false
                             , "InspectAsset: %s, AsestData failed to return ScriptCanvasAsset"
                             , asset.GetHint().c_str());
@@ -184,7 +200,7 @@ namespace ScriptCanvasEditor
                     if (graphComponent)
                     {
                         graphComponent->UpgradeGraph
-                            ( asset
+                        (asset
                             , m_view->forceUpgrade->isChecked() ? Graph::UpgradeRequest::Forced : Graph::UpgradeRequest::IfOutOfDate
                             , m_view->verbose->isChecked());
                     }
@@ -195,7 +211,7 @@ namespace ScriptCanvasEditor
             {
                 int result = QMessageBox::No;
                 QMessageBox mb
-                    ( QMessageBox::Warning
+                (QMessageBox::Warning
                     , QObject::tr("Failed to Save Upgraded File")
                     , QObject::tr("The upgraded file could not be saved because the file is read only.\n"
                         "Do you want to make it writeable and overwrite it?")
@@ -221,13 +237,14 @@ namespace ScriptCanvasEditor
 
         void Controller::OnUpgradeModificationBegin([[maybe_unused]] const ModifyConfiguration& config, const AZ::Data::AssetInfo& info)
         {
-            QList<QTableWidgetItem*> items = m_view->tableWidget->findItems(info.m_relativePath.c_str(), Qt::MatchFlag::MatchExactly);
+            QList<QTableWidgetItem*> items = FindTableItems(info);
             if (!items.isEmpty())
             {
                 for (auto* item : items)
                 {
                     int row = item->row();
                     SetRowBusy(row);
+                    m_view->tableWidget->setCellWidget(row, ColumnAction, nullptr);
                 }
             }
         }
@@ -245,21 +262,23 @@ namespace ScriptCanvasEditor
             {
                 VE_LOG("Failed to modify %s: %s", result.assetInfo.m_relativePath.c_str(), result.errorMessage.data());
             }
-            
-            QList<QTableWidgetItem*> items = m_view->tableWidget->findItems(info.m_relativePath.c_str(), Qt::MatchFlag::MatchExactly);
-            if (!items.isEmpty())
-            {
-                for (auto* item : items)
-                {
-                    int row = item->row();
 
-                    if (result.errorMessage.empty())
+            QList<QTableWidgetItem*> items = FindTableItems(info);
+            for (auto* item : items)
+            {
+                int row = item->row();
+
+                if (result.errorMessage.empty())
+                {
+                    SetRowSucceeded(row);
+                }
+                else
+                {
+                    SetRowFailed(row, "");
+
+                    if (QPushButton* button = qobject_cast<QPushButton*>(m_view->tableWidget->cellWidget(row, ColumnAction)))
                     {
-                        SetRowSucceeded(row);
-                    }
-                    else
-                    {
-                        SetRowFailed(row, "");
+                        button->setEnabled(false);
                     }
                 }
             }
@@ -305,15 +324,6 @@ namespace ScriptCanvasEditor
         {
             m_view->onlyShowOutdated->setEnabled(true);
 
-            // Enable all the Upgrade buttons
-            for (int row = 0; row < m_view->tableWidget->rowCount(); ++row)
-            {
-                if (QPushButton* button = qobject_cast<QPushButton*>(m_view->tableWidget->cellWidget(row, ColumnAction)))
-                {
-                    button->setEnabled(true);
-                }
-            }
-
             QString spinnerText = QStringLiteral("Scan Complete");
             spinnerText.append(QString::asprintf(" - Discovered: %zu, Failed: %zu, Upgradeable: %zu, Up-to-date: %zu"
                 , result.m_catalogAssets.size()
@@ -324,6 +334,7 @@ namespace ScriptCanvasEditor
             m_view->spinner->SetText(spinnerText);
             SetSpinnerIsBusy(false);
             m_view->progressBar->setVisible(false);
+            EnableAllUpgradeButtons();
 
             if (!result.m_unfiltered.empty())
             {
@@ -338,59 +349,67 @@ namespace ScriptCanvasEditor
 
         void Controller::OnScannedGraph(const AZ::Data::AssetInfo& assetInfo, [[maybe_unused]] Filtered filtered)
         {
-            m_view->tableWidget->insertRow(m_handledAssetCount);
-            QTableWidgetItem* rowName = new QTableWidgetItem(tr(assetInfo.m_relativePath.c_str()));
-            m_view->tableWidget->setItem(m_handledAssetCount, static_cast<int>(ColumnAsset), rowName);
-            SetRowSucceeded(m_handledAssetCount);
+            const int rowIndex = m_view->tableWidget->rowCount();
 
-            if (filtered == Filtered::No)
+            if (filtered == Filtered::No || !m_view->onlyShowOutdated->isChecked())
             {
-                QPushButton* rowGoToButton = new QPushButton(this);
-                rowGoToButton->setText("Upgrade");
-                rowGoToButton->setEnabled(false);
-                SetRowBusy(m_handledAssetCount);
-                connect
-                    ( rowGoToButton
-                    , &QPushButton::pressed
-                    , this
-                    , [this, assetInfo]()
+                m_view->tableWidget->insertRow(rowIndex);
+                QTableWidgetItem* rowName = new QTableWidgetItem(tr(assetInfo.m_relativePath.c_str()));
+                m_view->tableWidget->setItem(rowIndex, static_cast<int>(ColumnAsset), rowName);
+                SetRowSucceeded(rowIndex);
+
+                if (filtered == Filtered::No)
+                {
+                    QPushButton* upgradeButton = new QPushButton(this);
+                    upgradeButton->setText("Upgrade");
+                    upgradeButton->setEnabled(false);
+                    SetRowBusy(rowIndex);
+
+                    connect
+                        ( upgradeButton
+                        , &QPushButton::pressed
+                        , this
+                        , [this, assetInfo]()
                         {
                             this->OnButtonPressUpgradeSingle(assetInfo);
                         });
-                m_view->tableWidget->setCellWidget(m_handledAssetCount, static_cast<int>(ColumnAction), rowGoToButton);
+
+                    m_view->tableWidget->setCellWidget(rowIndex, static_cast<int>(ColumnAction), upgradeButton);
+                }
+
+                char resolvedBuffer[AZ_MAX_PATH_LEN] = { 0 };
+                AZStd::string path = AZStd::string::format("@devroot@/%s", assetInfo.m_relativePath.c_str());
+                AZ::IO::FileIOBase::GetInstance()->ResolvePath(path.c_str(), resolvedBuffer, AZ_MAX_PATH_LEN);
+                AZ::StringFunc::Path::GetFullPath(resolvedBuffer, path);
+                AZ::StringFunc::Path::Normalize(path);
+
+                bool result = false;
+                AZ::Data::AssetInfo info;
+                AZStd::string watchFolder;
+                QByteArray assetNameUtf8 = assetInfo.m_relativePath.c_str();
+                AzToolsFramework::AssetSystemRequestBus::BroadcastResult
+                    ( result
+                    , &AzToolsFramework::AssetSystemRequestBus::Events::GetSourceInfoBySourcePath
+                    , assetNameUtf8
+                    , info
+                    , watchFolder);
+                AZ_Error
+                    ( ScriptCanvas::k_VersionExplorerWindow.data()
+                    , result
+                    , "Failed to locate asset info for '%s'.", assetNameUtf8.constData());
+
+                QToolButton* browseButton = new QToolButton(this);
+                browseButton->setToolTip(AzQtComponents::fileBrowserActionName());
+                browseButton->setIcon(QIcon(":/stylesheet/img/UI20/browse-edit.svg"));
+
+                QString absolutePath = QDir(watchFolder.c_str()).absoluteFilePath(info.m_relativePath.c_str());
+                connect(browseButton, &QPushButton::clicked, [absolutePath] {
+                    AzQtComponents::ShowFileOnDesktop(absolutePath);
+                });
+
+                m_view->tableWidget->setCellWidget(rowIndex, static_cast<int>(ColumnBrowse), browseButton);
             }
 
-            char resolvedBuffer[AZ_MAX_PATH_LEN] = { 0 };
-            AZStd::string path = AZStd::string::format("@devroot@/%s", assetInfo.m_relativePath.c_str());
-            AZ::IO::FileIOBase::GetInstance()->ResolvePath(path.c_str(), resolvedBuffer, AZ_MAX_PATH_LEN);
-            AZ::StringFunc::Path::GetFullPath(resolvedBuffer, path);
-            AZ::StringFunc::Path::Normalize(path);
-
-            bool result = false;
-            AZ::Data::AssetInfo info;
-            AZStd::string watchFolder;
-            QByteArray assetNameUtf8 = assetInfo.m_relativePath.c_str();
-            AzToolsFramework::AssetSystemRequestBus::BroadcastResult
-                ( result
-                , &AzToolsFramework::AssetSystemRequestBus::Events::GetSourceInfoBySourcePath
-                , assetNameUtf8
-                , info
-                , watchFolder);
-            AZ_Error
-                ( ScriptCanvas::k_VersionExplorerWindow.data()
-                , result
-                , "Failed to locate asset info for '%s'.", assetNameUtf8.constData());
-
-            QToolButton* browseButton = new QToolButton(this);
-            browseButton->setToolTip(AzQtComponents::fileBrowserActionName());
-            browseButton->setIcon(QIcon(":/stylesheet/img/UI20/browse-edit.svg"));
-
-            QString absolutePath = QDir(watchFolder.c_str()).absoluteFilePath(info.m_relativePath.c_str());
-            connect(browseButton, &QPushButton::clicked, [absolutePath] {
-                AzQtComponents::ShowFileOnDesktop(absolutePath);
-            });
-
-            m_view->tableWidget->setCellWidget(m_handledAssetCount, static_cast<int>(ColumnBrowse), browseButton);
             OnScannedGraphResult(assetInfo);
         }
 
@@ -403,11 +422,12 @@ namespace ScriptCanvasEditor
 
         void Controller::OnScanLoadFailure(const AZ::Data::AssetInfo& info)
         {
-            m_view->tableWidget->insertRow(m_handledAssetCount);
+            const int rowIndex = m_view->tableWidget->rowCount();
+            m_view->tableWidget->insertRow(rowIndex);
             QTableWidgetItem* rowName = new QTableWidgetItem
                 ( tr(AZStd::string::format("Load Error: %s", info.m_relativePath.c_str()).c_str()));
-            m_view->tableWidget->setItem(m_handledAssetCount, static_cast<int>(ColumnAsset), rowName);
-            SetRowFailed(m_handledAssetCount, "Load failed");
+            m_view->tableWidget->setItem(rowIndex, static_cast<int>(ColumnAsset), rowName);
+            SetRowFailed(rowIndex, "Load failed");
             OnScannedGraphResult(info);
         }
 
@@ -425,8 +445,9 @@ namespace ScriptCanvasEditor
                 if (QPushButton* button = qobject_cast<QPushButton*>(m_view->tableWidget->cellWidget(row, ColumnAction)))
                 {
                     button->setEnabled(false);
-                    SetRowBusy(row);
                 }
+
+                SetRowBusy(row);
             }
 
             QString spinnerText = QStringLiteral("Upgrade in progress - ");
@@ -464,6 +485,8 @@ namespace ScriptCanvasEditor
             m_view->spinner->SetText(spinnerText);
             SetSpinnerIsBusy(false);
             AddLogEntries();
+            EnableAllUpgradeButtons();
+            m_view->scanButton->setEnabled(true);
         }
 
         void Controller::OnUpgradeDependenciesGathered(const AZ::Data::AssetInfo& info, Result result)
@@ -482,6 +505,11 @@ namespace ScriptCanvasEditor
                     else
                     {
                         SetRowFailed(row, "");
+                    }
+
+                    if (QPushButton* button = qobject_cast<QPushButton*>(m_view->tableWidget->cellWidget(row, ColumnAction)))
+                    {
+                        button->setEnabled(true);
                     }
                 }
             }

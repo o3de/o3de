@@ -22,6 +22,7 @@ AZ_POP_DISABLE_WARNING
 #endif
 
 class QPushButton;
+class QTableWidgetItem;
 
 namespace Ui
 {
@@ -61,6 +62,9 @@ namespace ScriptCanvasEditor
             int m_handledAssetCount = 0;
 
             void AddLogEntries();
+            void EnableAllUpgradeButtons();
+            QList<QTableWidgetItem*> FindTableItems(const AZ::Data::AssetInfo& assetInfo);
+
             void OnButtonPressClose();
             void OnButtonPressScan();
             void OnButtonPressUpgrade();

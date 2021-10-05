@@ -101,9 +101,9 @@ namespace ScriptCanvasEditor
                 return;
             }
 
-            auto results = m_scanner->TakeResult();
             if (modification.modifySingleAsset.m_assetId.IsValid())
             {
+                const auto& results = m_scanner->GetResult();
                 auto iter = AZStd::find_if
                     ( results.m_unfiltered.begin()
                     , results.m_unfiltered.end()
@@ -118,24 +118,32 @@ namespace ScriptCanvasEditor
                     return;
                 }
 
-                WorkingAsset singleEntry = *iter;
-                results.m_unfiltered.clear();
-                results.m_unfiltered.push_back(singleEntry);
+
+                m_state = State::ModifySingle;
+                m_modifier = AZStd::make_unique<Modifier>(modification, WorkingAssets{ *iter }, [this]() { OnModificationComplete(); });
+            }
+            else
+            {
+                auto results = m_scanner->TakeResult();
+                m_state = State::ModifyAll;
+                m_modifier = AZStd::make_unique<Modifier>(modification, AZStd::move(results.m_unfiltered), [this]() { OnModificationComplete(); });
             }
 
             m_modResults = {};
-            m_state = State::Modifying;
             m_log.Activate();
-            m_keepEditorAlive = AZStd::make_unique<EditorKeepAlive>();
-            
-            m_modifier = AZStd::make_unique<Modifier>(modification, AZStd::move(results.m_unfiltered), [this](){ OnModificationComplete(); });
+            m_keepEditorAlive = AZStd::make_unique<EditorKeepAlive>();            
         }
 
         void Model::OnModificationComplete()
         {
             ModelNotificationsBus::Broadcast(&ModelNotificationsTraits::OnUpgradeComplete, m_modifier->GetResult());
             m_modifier.reset();
-            m_scanner.reset();
+
+            if (m_state == State::ModifyAll)
+            {
+                m_scanner.reset();
+            }
+
             Idle();
         }
 
