@@ -8,7 +8,9 @@
 
 #include "EditorSystemComponent.h"
 #include <AzCore/Interface/Interface.h>
+#include <AzCore/IO/Path/Path.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzFramework/Physics/SystemBus.h>
 #include <AzFramework/Physics/Collision/CollisionEvents.h>
 #include <AzFramework/Physics/Common/PhysicsSimulatedBody.h>
@@ -67,7 +69,7 @@ namespace PhysX
                 assetId, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetIdByPath, relativePath.c_str(), assetType, true /*autoRegisterIfNotFound*/);
 
             AZ::Data::Asset<AZ::Data::AssetData> newAsset =
-                AZ::Data::AssetManager::Instance().CreateAsset(assetId, assetType, AZ::Data::AssetLoadBehavior::Default);
+                AZ::Data::AssetManager::Instance().FindOrCreateAsset(assetId, assetType, AZ::Data::AssetLoadBehavior::Default);
 
             if (auto* newMaterialLibraryData = azrtti_cast<Physics::MaterialLibraryAsset*>(newAsset.GetData()))
             {
@@ -140,7 +142,7 @@ namespace PhysX
                         physxSystem->UpdateMaterialLibrary(retrievedMaterialLibrary.value());
 
                         // After setting the default material library, save the physx configuration.
-                        auto saveCallback = []([[maybe_unused]] const PhysXSystemConfiguration& config, PhysXSettingsRegistryManager::Result result)
+                        auto saveCallback = []([[maybe_unused]] const PhysXSystemConfiguration& config, [[maybe_unused]] PhysXSettingsRegistryManager::Result result)
                         {
                             AZ_Warning("PhysX", result == PhysXSettingsRegistryManager::Result::Success,
                                 "Unable to save the PhysX configuration after setting default material library.");
@@ -244,11 +246,15 @@ namespace PhysX
             if (!resultAssetId.IsValid())
             {
                 // No file for the default material library, create it
-                const char* projectRoot = AZ::IO::FileIOBase::GetInstance()->GetAlias("@projectroot@");
-                AZStd::string fullPath;
-                AzFramework::StringFunc::Path::ConstructFull(projectRoot, DefaultAssetFilePath, assetExtension.c_str(), fullPath);
+                AZ::IO::Path fullPath;
+                if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
+                {
+                    settingsRegistry->Get(fullPath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_ProjectPath);
+                }
+                fullPath /= DefaultAssetFilePath;
+                fullPath.ReplaceExtension(AZ::IO::PathView(assetExtension));
 
-                if (auto materialLibraryOpt = CreateMaterialLibrary(fullPath, relativePath))
+                if (auto materialLibraryOpt = CreateMaterialLibrary(fullPath.Native(), relativePath))
                 {
                     return materialLibraryOpt;
                 }

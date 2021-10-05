@@ -459,7 +459,7 @@ namespace PhysX
                 const PhysXSystemConfiguration defaultConfig = PhysXSystemConfiguration::CreateDefault();
                 m_physXSystem->Initialize(&defaultConfig);
 
-                auto saveCallback = []([[maybe_unused]] const PhysXSystemConfiguration& config, PhysXSettingsRegistryManager::Result result)
+                auto saveCallback = []([[maybe_unused]] const PhysXSystemConfiguration& config, [[maybe_unused]] PhysXSettingsRegistryManager::Result result)
                 {
                     AZ_Warning("PhysX", result == PhysXSettingsRegistryManager::Result::Success,
                         "Unable to save the default PhysX configuration.");
@@ -478,7 +478,7 @@ namespace PhysX
                 const AzPhysics::SceneConfiguration defaultConfig = AzPhysics::SceneConfiguration::CreateDefault();
                 m_physXSystem->UpdateDefaultSceneConfiguration(defaultConfig);
 
-                auto saveCallback = []([[maybe_unused]] const AzPhysics::SceneConfiguration& config, PhysXSettingsRegistryManager::Result result)
+                auto saveCallback = []([[maybe_unused]] const AzPhysics::SceneConfiguration& config, [[maybe_unused]] PhysXSettingsRegistryManager::Result result)
                 {
                     AZ_Warning("PhysX", result == PhysXSettingsRegistryManager::Result::Success,
                         "Unable to save the default Scene configuration.");
@@ -499,7 +499,7 @@ namespace PhysX
                     const Debug::DebugConfiguration defaultConfig = Debug::DebugConfiguration::CreateDefault();
                     debug->Initialize(defaultConfig);
 
-                    auto saveCallback = []([[maybe_unused]] const Debug::DebugConfiguration& config, PhysXSettingsRegistryManager::Result result)
+                    auto saveCallback = []([[maybe_unused]] const Debug::DebugConfiguration& config, [[maybe_unused]] PhysXSettingsRegistryManager::Result result)
                     {
                         AZ_Warning("PhysX", result == PhysXSettingsRegistryManager::Result::Success,
                             "Unable to save the default PhysX Debug configuration.");
