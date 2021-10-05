@@ -46,5 +46,24 @@ namespace AZ
         private:
             AZStd::sys_time_t m_timeStamp;
         };
+
+        //! Utility type that updates the given variable with the lifetime of the object in cycles.
+        //! Useful for quick scope based timing.
+        struct VariableTimer
+        {
+            VariableTimer() = delete;
+            VariableTimer(AZStd::sys_time_t& variable)
+                : m_variable(variable)
+            {
+                m_timer.Stamp();
+            }
+            ~VariableTimer()
+            {
+                m_variable = m_timer.GetDeltaTimeInTicks();
+            }
+
+            AZStd::sys_time_t& m_variable;
+            Timer m_timer;
+        };
     }
 }
