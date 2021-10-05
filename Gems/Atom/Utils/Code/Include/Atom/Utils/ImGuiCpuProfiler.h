@@ -88,6 +88,12 @@ namespace AZ
             using GroupRegionName = AZ::RHI::CachedTimeRegion::GroupRegionName;
 
         public:
+            struct CpuTimingEntry
+            {
+                const AZStd::string& m_name;
+                double m_executeDuration;
+            };
+
             ImGuiCpuProfiler() = default;
             ~ImGuiCpuProfiler() = default;
 
@@ -121,11 +127,14 @@ namespace AZ
             // Sort the table by a given column, rearranges the pointers in m_tableData. 
             void SortTable(ImGuiTableSortSpecs* sortSpecs);
 
+            // gather the latest timing statistics
+            void CacheCpuTimingStatistics();
+
             // Get the profiling data from the last frame, only called when the profiler is not paused.
             void CollectFrameData();
 
             // Cull old data from internal storage, only called when profiler is not paused.
-            void CullFrameData(const AZ::RHI::CpuTimingStatistics& currentCpuTimingStatistics);
+            void CullFrameData();
 
             // Draws a single block onto the timeline into the specified row 
             void DrawBlock(const TimeRegion& block, u64 targetRow);
@@ -204,7 +213,8 @@ namespace AZ
             bool m_enableVisualizer = false;
 
             // Last captured CPU timing statistics
-            AZ::RHI::CpuTimingStatistics m_cpuTimingStatisticsWhenPause;
+            AZStd::vector<CpuTimingEntry> m_cpuTimingStatisticsWhenPause;
+            AZStd::sys_time_t m_frameToFrameTime{};
 
             AZStd::string m_lastCapturedFilePath;
 

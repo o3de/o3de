@@ -32,6 +32,23 @@ namespace AZ
                 return ResultCode::InvalidOperation;
             }
 #endif
+
+            if (auto statsProfiler = AZ::Interface<AZ::Statistics::StatisticalProfilerProxy>::Get(); statsProfiler)
+            {
+                auto& rhiMetrics = statsProfiler->GetProfiler(AZ_CRC_CE("RHI"));
+
+                const AZStd::string presentStatName("Present");
+                const AZ::Crc32 presentStatId(presentStatName.c_str());
+                rhiMetrics.GetStatsManager().AddStatistic(presentStatId, presentStatName, /*units=*/"clocks", /*failIfExist=*/false);
+
+                if (!GetName().IsEmpty())
+                {
+                    const AZStd::string commandQueueName(GetName().GetCStr());
+                    const AZ::Crc32 commandQueueId(commandQueueName.c_str());
+                    rhiMetrics.GetStatsManager().AddStatistic(commandQueueId, commandQueueName, /*units=*/"clocks", /*failIfExist=*/false);
+                }
+            }
+
             const ResultCode resultCode = InitInternal(device, descriptor);
 
             if (resultCode == ResultCode::Success)

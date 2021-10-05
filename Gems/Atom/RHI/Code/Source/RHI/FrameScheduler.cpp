@@ -35,6 +35,11 @@ namespace AZ
 {
     namespace RHI
     {
+        static constexpr AZ::Crc32 rhiMetricsId = AZ_CRC_CE("RHI");
+
+        static constexpr char frameTimeMetricName[] = "Frame to Frame Time";
+        static constexpr AZ::Crc32 frameTimeMetricId = AZ_CRC_CE(frameTimeMetricName);
+
         ResultCode FrameScheduler::Init(Device& device, const FrameSchedulerDescriptor& descriptor)
         {
             ResultCode resultCode = ResultCode::Success;
@@ -80,6 +85,12 @@ namespace AZ
             m_device = &device;
 
             m_taskGraphActive = AZ::Interface<AZ::TaskGraphActiveInterface>::Get();
+
+            if (auto statsProfiler = AZ::Interface<AZ::Statistics::StatisticalProfilerProxy>::Get(); statsProfiler)
+            {
+                auto& rhiMetrics = statsProfiler->GetProfiler(rhiMetricsId);
+                rhiMetrics.GetStatsManager().AddStatistic(frameTimeMetricId, frameTimeMetricName, /*units=*/"clocks", /*failIfExist=*/false);
+            }
 
             m_lastFrameEndTime = AZStd::GetTimeNowTicks();
 
@@ -278,7 +289,7 @@ namespace AZ
                         AZ::TaskDescriptor srgCompileEndDesc{"SrgCompileEnd", "Graphics"};
 
                         auto srgCompileEndTask = taskGraph.AddTask(
-                            srgCompileEndDesc, 
+                            srgCompileEndDesc,
                             [srgPool]()
                             {
                                 srgPool->CompileGroupsEnd();
@@ -460,7 +471,10 @@ namespace AZ
             }
 
             const AZStd::sys_time_t timeNowTicks = AZStd::GetTimeNowTicks();
-            m_cpuTimingStatistics.m_frameToFrameTime = timeNowTicks - m_lastFrameEndTime;
+            if (auto statsProfiler = AZ::Interface<AZ::Statistics::StatisticalProfilerProxy>::Get(); statsProfiler)
+            {
+                statsProfiler->PushSample(rhiMetricsId, frameTimeMetricId, static_cast<double>(timeNowTicks - m_lastFrameEndTime));
+            }
             m_lastFrameEndTime = timeNowTicks;
 
             return ResultCode::Success;
