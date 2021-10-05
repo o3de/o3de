@@ -76,22 +76,6 @@ bool CTimer::Init()
 {
     // if game code was accessing them by name there was something wrong anyway
 
-    REGISTER_CVAR2("t_Smoothing", &m_TimeSmoothing, DEFAULT_FRAME_SMOOTHING, 0,
-        "time smoothing\n"
-        "0=off, 1=on");
-
-    REGISTER_CVAR2("t_FixedStep", &m_fixed_time_step, 0, VF_NET_SYNCED | VF_DEV_ONLY,
-        "Game updated with this fixed frame time\n"
-        "0=off, number specifies the frame time in seconds\n"
-        "e.g. 0.033333(30 fps), 0.1(10 fps), 0.01(100 fps)");
-
-    REGISTER_CVAR2("t_MaxStep", &m_max_time_step, 0.25f, 0,
-        "Game systems clamped to this frame time");
-
-    // todo: reconsider exposing that as cvar (negative time, same value is used by Trackview, better would be another value multipled with the internal one)
-    REGISTER_CVAR2("t_Scale", &m_cvar_time_scale, 1.0f, VF_NET_SYNCED | VF_DEV_ONLY,
-        "Game time scaled by this - for variable slow motion");
-
     REGISTER_CVAR2("t_Debug", &m_TimeDebug, 0, 0, "Timer debug: 0 = off, 1 = events, 2 = verbose");
 
     // -----------------

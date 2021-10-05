@@ -6,7 +6,6 @@
  *
  */
 
-
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Math/Quaternion.h>
 #include <AzCore/Math/Transform.h>
@@ -198,7 +197,6 @@ CAnimSceneNode::CAnimSceneNode(const int id)
     m_lastCaptureKey = -1;
     m_bLastCapturingEnded = true;
     m_captureFrameCount = 0;
-    m_cvar_t_FixedStep = NULL;
     m_pCamNodeOnHoldForInterp = 0;
     m_CurrentSelectTrack = 0;
     m_CurrentSelectTrackKeyNumber = 0;
@@ -303,7 +301,6 @@ void CAnimSceneNode::Activate(bool bActivate)
             pSequenceTrack->GetKey(currKey, &key);
 
             IAnimSequence* pSequence = GetSequenceFromSequenceKey(key);
-            
             if (pSequence)
             {
                 if (bActivate)
@@ -327,11 +324,6 @@ void CAnimSceneNode::Activate(bool bActivate)
                 }
             }
         }
-    }
-
-    if (m_cvar_t_FixedStep == NULL)
-    {
-        m_cvar_t_FixedStep = gEnv->pConsole->GetCVar("t_FixedStep");
     }
 }
 
@@ -421,14 +413,15 @@ void CAnimSceneNode::Animate(SAnimContext& ec)
                 timeScale = .0f;
             }
             
-            // if set, disable fixed time step cvar so timewarping will have an affect. We never set it back though - that is
-            // likely a bug!
-            if (m_cvar_t_FixedStep && m_cvar_t_FixedStep->GetFVal() != .0f)
+            if (auto* timeSystem = AZ::Interface<AZ::ITime>::Get())
             {
-                m_cvar_t_FixedStep->Set(.0f);
+                m_simulationTickOverrideBackup = timeSystem->GetSimulationTickDeltaOverride();
+                // if set, disable fixed time step cvar so timewarping will have an affect.
+                timeSystem->SetSimulationTickDeltaOverride(AZ::ZeroTimeMs);
+
+                m_timeScaleBackup = timeSystem->GetSimulationTickScale();
+                timeSystem->SetSimulationTickScale(timeScale);
             }
-            gEnv->pTimer->SetTimeScale(timeScale, ITimer::eTSC_Trackview);
-            
         }
         break;
         case AnimParamType::FixedTimeStep:
@@ -439,9 +432,12 @@ void CAnimSceneNode::Animate(SAnimContext& ec)
             {
                 timeStep = 0;
             }
-            if (m_cvar_t_FixedStep)
+
+            if (auto* timeSystem = AZ::Interface<AZ::ITime>::Get())
             {
-                m_cvar_t_FixedStep->Set(timeStep);
+                m_simulationTickOverrideBackup = timeSystem->GetSimulationTickDeltaOverride();
+                // if set, disable fixed time step cvar so timewarping will have an affect.
+                timeSystem->SetSimulationTickDeltaOverride(AZ::SecondsToTimeMs(timeStep));
             }
         }
         break;
@@ -621,17 +617,18 @@ void CAnimSceneNode::OnReset()
     m_bLastCapturingEnded = true;
     m_captureFrameCount = 0;
 
-    if (GetTrackForParameter(AnimParamType::TimeWarp))
+    if (auto* timeSystem = AZ::Interface<AZ::ITime>::Get())
     {
-        gEnv->pTimer->SetTimeScale(1.0f, ITimer::eTSC_Trackview);
-        if (m_cvar_t_FixedStep)
+        if (GetTrackForParameter(AnimParamType::TimeWarp))
         {
-            m_cvar_t_FixedStep->Set(0);
+            timeSystem->SetSimulationTickScale(m_timeScaleBackup);
+            timeSystem->SetSimulationTickDeltaOverride(m_simulationTickOverrideBackup);
         }
-    }
-    if (GetTrackForParameter(AnimParamType::FixedTimeStep) && m_cvar_t_FixedStep)
-    {
-        m_cvar_t_FixedStep->Set(0);
+
+        if (GetTrackForParameter(AnimParamType::FixedTimeStep))
+        {
+            timeSystem->SetSimulationTickDeltaOverride(m_simulationTickOverrideBackup);
+        }
     }
 }
 
