@@ -496,6 +496,19 @@ QProgressBar::chunk {
     background-color: #333333;
 }
 
+#GemDependenciesDialog QLabel {
+    margin-bottom:10px;
+}
+
+#GemDependenciesDialog QCheckBox {
+    background-color: #333333;
+    border-radius: 3px;
+    spacing:3px;
+    margin-right:5px;
+    padding:4px;
+    margin-top:5px;
+}
+
 /************** Filter Tag widget **************/
 
 #FilterTagWidgetTextLabel {

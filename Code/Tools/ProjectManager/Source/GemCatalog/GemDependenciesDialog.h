@@ -14,12 +14,19 @@
 
 namespace O3DE::ProjectManager
 {
+    QT_FORWARD_DECLARE_CLASS(GemModel)
+
     class GemDependenciesDialog
         : public QDialog
     {
         Q_OBJECT // AUTOMOC
     public:
-        explicit GemDependenciesDialog(const QStringList& gems, QWidget *parent = nullptr);
+        explicit GemDependenciesDialog(GemModel* gemModel, QWidget *parent = nullptr);
         ~GemDependenciesDialog() = default;
+
+        bool ChangesMade() const;
+
+    private:
+        int m_gemsAdded = 0;
     };
 } // namespace O3DE::ProjectManager

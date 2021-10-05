@@ -11,6 +11,7 @@
 #include <GemCatalog/GemListHeaderWidget.h>
 #include <GemCatalog/GemSortFilterProxyModel.h>
 #include <GemCatalog/GemRequirementDialog.h>
+#include <GemCatalog/GemDependenciesDialog.h>
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QPushButton>
@@ -149,6 +150,22 @@ namespace O3DE::ProjectManager
             {
                 return false;
             }
+        }
+
+        if (m_gemModel->HasDependentGemsToRemove())
+        {
+            GemDependenciesDialog* dependenciesDialog = new GemDependenciesDialog(m_gemModel, this);
+            if(dependenciesDialog->exec() == QDialog::Rejected)
+            {
+                return false;
+            }
+
+            if (dependenciesDialog->ChangesMade())
+            {
+                toBeAdded = m_gemModel->GatherGemsToBeAdded();
+                toBeRemoved = m_gemModel->GatherGemsToBeRemoved();
+            }
+            dependenciesDialog->deleteLater();
         }
 
         for (const QModelIndex& modelIndex : toBeAdded)
