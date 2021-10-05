@@ -54,6 +54,7 @@ namespace ScriptCanvasEditor
             m_view->textEdit->setVerticalScrollBarPolicy(Qt::ScrollBarPolicy::ScrollBarAlwaysOn);
             connect(m_view->scanButton, &QPushButton::pressed, this, &Controller::OnButtonPressScan);
             connect(m_view->closeButton, &QPushButton::pressed, this, &Controller::OnButtonPressClose);
+            m_view->upgradeAllButton->setVisible(false);
             connect(m_view->upgradeAllButton, &QPushButton::pressed, this, &Controller::OnButtonPressUpgrade);
             m_view->progressBar->setValue(0);
             m_view->progressBar->setVisible(false);
@@ -237,15 +238,11 @@ namespace ScriptCanvasEditor
 
         void Controller::OnUpgradeModificationBegin([[maybe_unused]] const ModifyConfiguration& config, const AZ::Data::AssetInfo& info)
         {
-            QList<QTableWidgetItem*> items = FindTableItems(info);
-            if (!items.isEmpty())
+            for (auto* item : FindTableItems(info))
             {
-                for (auto* item : items)
-                {
-                    int row = item->row();
-                    SetRowBusy(row);
-                    m_view->tableWidget->setCellWidget(row, ColumnAction, nullptr);
-                }
+                int row = item->row();
+                SetRowBusy(row);
+                m_view->tableWidget->setCellWidget(row, ColumnAction, nullptr);
             }
         }
 
@@ -263,8 +260,7 @@ namespace ScriptCanvasEditor
                 VE_LOG("Failed to modify %s: %s", result.assetInfo.m_relativePath.c_str(), result.errorMessage.data());
             }
 
-            QList<QTableWidgetItem*> items = FindTableItems(info);
-            for (auto* item : items)
+            for (auto* item : FindTableItems(info))
             {
                 int row = item->row();
 
@@ -440,23 +436,32 @@ namespace ScriptCanvasEditor
             ( const ModifyConfiguration& config
             , [[maybe_unused]] const WorkingAssets& assets)
         {
-            for (int row = 0; row < m_view->tableWidget->rowCount(); ++row)
-            {
-                if (QPushButton* button = qobject_cast<QPushButton*>(m_view->tableWidget->cellWidget(row, ColumnAction)))
-                {
-                    button->setEnabled(false);
-                }
-
-                SetRowBusy(row);
-            }
-
             QString spinnerText = QStringLiteral("Upgrade in progress - ");
             if (config.modifySingleAsset.m_assetId.IsValid())
             {
                 spinnerText.append(" single graph");
+
+                if (assets.size() == 1)
+                {
+                    for (auto* item : FindTableItems(assets.front().info))
+                    {
+                        int row = item->row();
+                        SetRowBusy(row);
+                    }
+                }
             }
             else
             {
+                for (int row = 0; row < m_view->tableWidget->rowCount(); ++row)
+                {
+                    if (QPushButton* button = qobject_cast<QPushButton*>(m_view->tableWidget->cellWidget(row, ColumnAction)))
+                    {
+                        button->setEnabled(false);
+                    }
+
+                    SetRowBusy(row);
+                }
+
                 spinnerText.append(" all scanned graphs");
             }
 
@@ -491,26 +496,22 @@ namespace ScriptCanvasEditor
 
         void Controller::OnUpgradeDependenciesGathered(const AZ::Data::AssetInfo& info, Result result)
         {
-            QList<QTableWidgetItem*> items = m_view->tableWidget->findItems(info.m_relativePath.c_str(), Qt::MatchFlag::MatchExactly);
-            if (!items.isEmpty())
+            for (auto* item : FindTableItems(info))
             {
-                for (auto* item : items)
+                int row = item->row();
+
+                if (result == Result::Success)
                 {
-                    int row = item->row();
+                    SetRowSucceeded(row);
+                }
+                else
+                {
+                    SetRowFailed(row, "");
+                }
 
-                    if (result == Result::Success)
-                    {
-                        SetRowSucceeded(row);
-                    }
-                    else
-                    {
-                        SetRowFailed(row, "");
-                    }
-
-                    if (QPushButton* button = qobject_cast<QPushButton*>(m_view->tableWidget->cellWidget(row, ColumnAction)))
-                    {
-                        button->setEnabled(true);
-                    }
+                if (QPushButton* button = qobject_cast<QPushButton*>(m_view->tableWidget->cellWidget(row, ColumnAction)))
+                {
+                    button->setEnabled(true);
                 }
             }
 
