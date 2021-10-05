@@ -181,7 +181,7 @@ namespace AzToolsFramework
         using namespace AZ::JsonSerializationResult;
 
         AZ::JsonDeserializerSettings settings = AZ::JsonDeserializerSettings{};
-        settings.m_reporting = [](AZStd::string_view message, ResultCode result, AZStd::string_view) -> auto
+        settings.m_reporting = []([[maybe_unused]] AZStd::string_view message, ResultCode result, AZStd::string_view) -> auto
         {
             if (result.GetProcessing() == Processing::Halted)
             {
