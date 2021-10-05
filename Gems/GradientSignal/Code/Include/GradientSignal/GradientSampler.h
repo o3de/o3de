@@ -117,7 +117,7 @@ namespace GradientSignal
             // (One case where this was previously able to occur was in rapid updating of the Preview widget on the GradientSurfaceDataComponent
             // in the Editor when moving the threshold sliders back and forth rapidly)
             auto& surfaceDataContext = SurfaceData::SurfaceDataSystemRequestBus::GetOrCreateContext(false);
-            typename SurfaceData::SurfaceDataSystemRequestBus::Context::DispatchLockGuard scopeLock(surfaceDataContext, surfaceDataContext.m_contextMutex);
+            typename SurfaceData::SurfaceDataSystemRequestBus::Context::DispatchLockGuard scopeLock(surfaceDataContext.m_contextMutex);
 
             if (m_isRequestInProgress)
             {

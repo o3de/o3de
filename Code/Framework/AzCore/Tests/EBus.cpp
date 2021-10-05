@@ -4043,15 +4043,30 @@ namespace UnitTest
     {
         using MutexType = AZStd::recursive_mutex;
 
-        struct ThreadDispatchPolicyTest
+        struct PostThreadDispatchTestInvoker
         {
-            void operator()(AZ::EBusPolicies::PostDispatchTagType)
-            {
-                ++s_threadPostDispatchCalls;
-            }
+            ~PostThreadDispatchTestInvoker();
         };
 
-        using ThreadDispatchPolicy = ThreadDispatchPolicyTest;
+        template <typename DispatchMutex>
+        struct ThreadDispatchTestLockGuard
+        {
+            ThreadDispatchTestLockGuard(DispatchMutex& contextMutex)
+                : m_lock{ contextMutex }
+            {}
+            ThreadDispatchTestLockGuard(DispatchMutex& contextMutex, AZStd::adopt_lock_t adopt_lock)
+                : m_lock{ contextMutex, adopt_lock }
+            {}
+            ThreadDispatchTestLockGuard(const ThreadDispatchTestLockGuard&) = delete;
+            ThreadDispatchTestLockGuard& operator=(const ThreadDispatchTestLockGuard&) = delete;
+        private:
+            PostThreadDispatchTestInvoker m_threadPolicyInvoker;
+            using LockType = AZStd::conditional_t<LocklessDispatch, AZ::Internal::NullLockGuard<DispatchMutex>, AZStd::scoped_lock<DispatchMutex>>;
+            LockType m_lock;
+        };
+
+        template <typename DispatchMutex>
+        using DispatchLockGuard = ThreadDispatchTestLockGuard<DispatchMutex>;
 
         static inline AZStd::atomic<int32_t> s_threadPostDispatchCalls;
     };
@@ -4065,6 +4080,15 @@ namespace UnitTest
     };
 
     using ThreadDispatchTestBus = AZ::EBus<ThreadDispatchTestRequests, ThreadDispatchTestBusTraits>;
+
+    ThreadDispatchTestBusTraits::PostThreadDispatchTestInvoker::~PostThreadDispatchTestInvoker()
+    {
+        auto* context = ThreadDispatchTestBus::GetContext();
+        if (!ThreadDispatchTestBus::IsInDispatchThisThread(context))
+        {
+            ++s_threadPostDispatchCalls;
+        }
+    }
 
     class ThreadDispatchTestHandler
         : public ThreadDispatchTestBus::Handler
@@ -4118,7 +4142,7 @@ namespace UnitTest
             )
     );
 
-    TEST_P(ThreadDispatchParamFixture, ThreadDispatchPolicy_WithCallablePostDispatch_FunctionDispatchesWhenThreadCompletesWithEBus)
+    TEST_P(ThreadDispatchParamFixture, CustomDispatchLockGuard_InvokesPostDispatchFunction_AfterThreadHasFinishedDispatch)
     {
         ThreadDispatchTestBusTraits::s_threadPostDispatchCalls = 0;
         ThreadDispatchParams threadDispatchParams = GetParam();

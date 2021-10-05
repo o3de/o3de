@@ -20,7 +20,6 @@
 
 #include <AzCore/EBus/Internal/BusContainer.h>
 #include <AzCore/EBus/Internal/Debug.h>
-#include <AzCore/EBus/DispatchPolicies.h>
 #include <AzCore/EBus/Policies.h>
 
 #include <AzCore/std/parallel/scoped_lock.h>
@@ -191,10 +190,12 @@ namespace AZ
             static constexpr bool HasId = Traits::AddressPolicy != EBusAddressPolicy::Single;
 
             /**
-             * True if the ThreadDispatchPolicy type alias is a structure that implements
-             * the <ret-type> operator()(PostDispatchTagType) signature
-             */
-            static constexpr bool EnablePostDispatch = AZStd::is_invocable_v<typename Traits::ThreadDispatchPolicy, EBusPolicies::PostDispatchTagType>;
+            * Template Lock Guard class that wraps around the Mutex
+            * The EBus uses for Dispatching Events.
+            * This is not EBus Context Mutex when LocklessDispatch is set
+            */
+            template <typename DispatchMutex>
+            using DispatchLockGuard = typename Traits::template DispatchLockGuard<DispatchMutex>;
         };
 
         /**

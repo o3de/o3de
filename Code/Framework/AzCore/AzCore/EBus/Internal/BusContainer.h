@@ -115,7 +115,7 @@ namespace AZ
                 {
                     if (auto* context = Bus::GetContext())
                     {
-                        typename Bus::Context::DispatchLockGuard lock(*context, context->m_contextMutex);
+                        typename Bus::Context::DispatchLockGuard lock(context->m_contextMutex);
                         EBUS_DO_ROUTING(*context, &id, false, false);
 
                         auto& addresses = context->m_buses.m_addresses;
@@ -158,7 +158,7 @@ namespace AZ
                 {
                     if (auto* context = Bus::GetContext())
                     {
-                        typename Bus::Context::DispatchLockGuard lock(*context, context->m_contextMutex);
+                        typename Bus::Context::DispatchLockGuard lock(context->m_contextMutex);
                         EBUS_DO_ROUTING(*context, &id, false, false);
 
                         auto& addresses = context->m_buses.m_addresses;
@@ -201,7 +201,7 @@ namespace AZ
                 {
                     if (auto* context = Bus::GetContext())
                     {
-                        typename Bus::Context::DispatchLockGuard lock(*context, context->m_contextMutex);
+                        typename Bus::Context::DispatchLockGuard lock(context->m_contextMutex);
                         EBUS_DO_ROUTING(*context, &id, false, true);
 
                         auto& addresses = context->m_buses.m_addresses;
@@ -230,7 +230,7 @@ namespace AZ
                 {
                     if (auto* context = Bus::GetContext())
                     {
-                        typename Bus::Context::DispatchLockGuard lock(*context, context->m_contextMutex);
+                        typename Bus::Context::DispatchLockGuard lock(context->m_contextMutex);
                         EBUS_DO_ROUTING(*context, &id, false, true);
 
                         auto& addresses = context->m_buses.m_addresses;
@@ -261,7 +261,7 @@ namespace AZ
                     {
                         auto* context = Bus::GetContext();
                         EBUS_ASSERT(context, "Internal error: context deleted with bind ptr outstanding.");
-                        typename Bus::Context::DispatchLockGuard lock(*context, context->m_contextMutex);
+                        typename Bus::Context::DispatchLockGuard lock(context->m_contextMutex);
 
                         EBUS_DO_ROUTING(*context, &busPtr->m_busId, false, false);
 
@@ -297,7 +297,7 @@ namespace AZ
                     {
                         auto* context = Bus::GetContext();
                         EBUS_ASSERT(context, "Internal error: context deleted with bind ptr outstanding.");
-                        typename Bus::Context::DispatchLockGuard lock(*context, context->m_contextMutex);
+                        typename Bus::Context::DispatchLockGuard lock(context->m_contextMutex);
 
                         EBUS_DO_ROUTING(*context, &busPtr->m_busId, false, false);
 
@@ -333,7 +333,7 @@ namespace AZ
                     {
                         auto* context = Bus::GetContext();
                         EBUS_ASSERT(context, "Internal error: context deleted with bind ptr outstanding.");
-                        typename Bus::Context::DispatchLockGuard lock(*context, context->m_contextMutex);
+                        typename Bus::Context::DispatchLockGuard lock(context->m_contextMutex);
 
                         EBUS_DO_ROUTING(*context, &busPtr->m_busId, false, true);
 
@@ -355,7 +355,7 @@ namespace AZ
                     {
                         auto* context = Bus::GetContext();
                         EBUS_ASSERT(context, "Internal error: context deleted with bind ptr outstanding.");
-                        typename Bus::Context::DispatchLockGuard lock(*context, context->m_contextMutex);
+                        typename Bus::Context::DispatchLockGuard lock(context->m_contextMutex);
 
                         EBUS_DO_ROUTING(*context, &busPtr->m_busId, false, true);
 
@@ -377,7 +377,7 @@ namespace AZ
                 {
                     if (auto* context = Bus::GetContext())
                     {
-                        typename Bus::Context::DispatchLockGuard lock(*context, context->m_contextMutex);
+                        typename Bus::Context::DispatchLockGuard lock(context->m_contextMutex);
                         EBUS_DO_ROUTING(*context, nullptr, false, false);
 
                         auto& addresses = context->m_buses.m_addresses;
@@ -423,7 +423,7 @@ namespace AZ
                 {
                     if (auto* context = Bus::GetContext())
                     {
-                        typename Bus::Context::DispatchLockGuard lock(*context, context->m_contextMutex);
+                        typename Bus::Context::DispatchLockGuard lock(context->m_contextMutex);
                         EBUS_DO_ROUTING(*context, nullptr, false, false);
 
                         auto& addresses = context->m_buses.m_addresses;
@@ -469,7 +469,7 @@ namespace AZ
                 {
                     if (auto* context = Bus::GetContext())
                     {
-                        typename Bus::Context::DispatchLockGuard lock(*context, context->m_contextMutex);
+                        typename Bus::Context::DispatchLockGuard lock(context->m_contextMutex);
                         EBUS_DO_ROUTING(*context, nullptr, false, true);
 
                         auto& addresses = context->m_buses.m_addresses;
@@ -527,7 +527,7 @@ namespace AZ
                 {
                     if (auto* context = Bus::GetContext())
                     {
-                        typename Bus::Context::DispatchLockGuard lock(*context, context->m_contextMutex);
+                        typename Bus::Context::DispatchLockGuard lock(context->m_contextMutex);
                         EBUS_DO_ROUTING(*context, nullptr, false, true);
 
                         auto& addresses = context->m_buses.m_addresses;
@@ -587,7 +587,7 @@ namespace AZ
                 {
                     if (auto* context = Bus::GetContext())
                     {
-                        typename Bus::Context::DispatchLockGuard lock(*context, context->m_contextMutex);
+                        typename Bus::Context::DispatchLockGuard lock(context->m_contextMutex);
 
                         auto& addresses = context->m_buses.m_addresses;
                         auto addressIt = addresses.begin();
@@ -606,7 +606,7 @@ namespace AZ
                 {
                     if (auto* context = Bus::GetContext())
                     {
-                        typename Bus::Context::DispatchLockGuard lock(*context, context->m_contextMutex);
+                        typename Bus::Context::DispatchLockGuard lock(context->m_contextMutex);
 
                         auto& addresses = context->m_buses.m_addresses;
                         auto addressIt = addresses.find(id);
@@ -621,7 +621,7 @@ namespace AZ
                 {
                     if (auto* context = Bus::GetContext())
                     {
-                        typename Bus::Context::DispatchLockGuard lock(*context, context->m_contextMutex);
+                        typename Bus::Context::DispatchLockGuard lock(context->m_contextMutex);
 
                         if (ptr)
                         {
@@ -795,7 +795,7 @@ namespace AZ
                 {
                     if (auto* context = Bus::GetContext())
                     {
-                        typename Bus::Context::DispatchLockGuard lock(*context, context->m_contextMutex);
+                        typename Bus::Context::DispatchLockGuard lock(context->m_contextMutex);
                         EBUS_DO_ROUTING(*context, &id, false, false);
 
                         auto& addresses = context->m_buses.m_addresses;
@@ -812,7 +812,7 @@ namespace AZ
                 {
                     if (auto* context = Bus::GetContext())
                     {
-                        typename Bus::Context::DispatchLockGuard lock(*context, context->m_contextMutex);
+                        typename Bus::Context::DispatchLockGuard lock(context->m_contextMutex);
                         EBUS_DO_ROUTING(*context, &id, false, false);
 
                         auto& addresses = context->m_buses.m_addresses;
@@ -829,7 +829,7 @@ namespace AZ
                 {
                     if (auto* context = Bus::GetContext())
                     {
-                        typename Bus::Context::DispatchLockGuard lock(*context, context->m_contextMutex);
+                        typename Bus::Context::DispatchLockGuard lock(context->m_contextMutex);
                         EBUS_DO_ROUTING(*context, &id, false, true);
 
                         auto& addresses = context->m_buses.m_addresses;
@@ -846,7 +846,7 @@ namespace AZ
                 {
                     if (auto* context = Bus::GetContext())
                     {
-                        typename Bus::Context::DispatchLockGuard lock(*context, context->m_contextMutex);
+                        typename Bus::Context::DispatchLockGuard lock(context->m_contextMutex);
                         EBUS_DO_ROUTING(*context, &id, false, true);
 
                         auto& addresses = context->m_buses.m_addresses;
@@ -865,7 +865,7 @@ namespace AZ
                     {
                         auto* context = Bus::GetContext();
                         EBUS_ASSERT(context, "Internal error: context deleted with bind ptr outstanding.");
-                        typename Bus::Context::DispatchLockGuard lock(*context, context->m_contextMutex);
+                        typename Bus::Context::DispatchLockGuard lock(context->m_contextMutex);
 
                         EBUS_DO_ROUTING(*context, &busPtr->m_busId, false, false);
 
@@ -883,7 +883,7 @@ namespace AZ
                     {
                         auto* context = Bus::GetContext();
                         EBUS_ASSERT(context, "Internal error: context deleted with bind ptr outstanding.");
-                        typename Bus::Context::DispatchLockGuard lock(*context, context->m_contextMutex);
+                        typename Bus::Context::DispatchLockGuard lock(context->m_contextMutex);
 
                         EBUS_DO_ROUTING(*context, &busPtr->m_busId, false, false);
 
@@ -901,7 +901,7 @@ namespace AZ
                     {
                         auto* context = Bus::GetContext();
                         EBUS_ASSERT(context, "Internal error: context deleted with bind ptr outstanding.");
-                        typename Bus::Context::DispatchLockGuard lock(*context, context->m_contextMutex);
+                        typename Bus::Context::DispatchLockGuard lock(context->m_contextMutex);
 
                         EBUS_DO_ROUTING(*context, &busPtr->m_busId, false, true);
 
@@ -919,7 +919,7 @@ namespace AZ
                     {
                         auto* context = Bus::GetContext();
                         EBUS_ASSERT(context, "Internal error: context deleted with bind ptr outstanding.");
-                        typename Bus::Context::DispatchLockGuard lock(*context, context->m_contextMutex);
+                        typename Bus::Context::DispatchLockGuard lock(context->m_contextMutex);
 
                         EBUS_DO_ROUTING(*context, &busPtr->m_busId, false, true);
 
@@ -937,7 +937,7 @@ namespace AZ
                 {
                     if (auto* context = Bus::GetContext())
                     {
-                        typename Bus::Context::DispatchLockGuard lock(*context, context->m_contextMutex);
+                        typename Bus::Context::DispatchLockGuard lock(context->m_contextMutex);
                         EBUS_DO_ROUTING(*context, nullptr, false, false);
 
                         auto& addresses = context->m_buses.m_addresses;
@@ -975,7 +975,7 @@ namespace AZ
                 {
                     if (auto* context = Bus::GetContext())
                     {
-                        typename Bus::Context::DispatchLockGuard lock(*context, context->m_contextMutex);
+                        typename Bus::Context::DispatchLockGuard lock(context->m_contextMutex);
                         EBUS_DO_ROUTING(*context, nullptr, false, false);
 
                         auto& addresses = context->m_buses.m_addresses;
@@ -1013,7 +1013,7 @@ namespace AZ
                 {
                     if (auto* context = Bus::GetContext())
                     {
-                        typename Bus::Context::DispatchLockGuard lock(*context, context->m_contextMutex);
+                        typename Bus::Context::DispatchLockGuard lock(context->m_contextMutex);
                         EBUS_DO_ROUTING(*context, nullptr, false, true);
 
                         auto& addresses = context->m_buses.m_addresses;
@@ -1069,7 +1069,7 @@ namespace AZ
                 {
                     if (auto* context = Bus::GetContext())
                     {
-                        typename Bus::Context::DispatchLockGuard lock(*context, context->m_contextMutex);
+                        typename Bus::Context::DispatchLockGuard lock(context->m_contextMutex);
                         EBUS_DO_ROUTING(*context, nullptr, false, true);
 
                         auto& addresses = context->m_buses.m_addresses;
@@ -1127,7 +1127,7 @@ namespace AZ
                 {
                     if (auto* context = Bus::GetContext())
                     {
-                        typename Bus::Context::DispatchLockGuard lock(*context, context->m_contextMutex);
+                        typename Bus::Context::DispatchLockGuard lock(context->m_contextMutex);
 
                         auto& addresses = context->m_buses.m_addresses;
                         auto addressIt = addresses.begin();
@@ -1167,7 +1167,7 @@ namespace AZ
                 {
                     if (auto* context = Bus::GetContext())
                     {
-                        typename Bus::Context::DispatchLockGuard lock(*context, context->m_contextMutex);
+                        typename Bus::Context::DispatchLockGuard lock(context->m_contextMutex);
 
                         auto& addresses = context->m_buses.m_addresses;
                         auto addressIt = addresses.find(id);
@@ -1191,7 +1191,7 @@ namespace AZ
                 {
                     if (auto* context = Bus::GetContext())
                     {
-                        typename Bus::Context::DispatchLockGuard lock(*context, context->m_contextMutex);
+                        typename Bus::Context::DispatchLockGuard lock(context->m_contextMutex);
 
                         if (ptr)
                         {
@@ -1336,7 +1336,7 @@ namespace AZ
                 {
                     if (auto* context = Bus::GetContext())
                     {
-                        typename Bus::Context::DispatchLockGuard lock(*context, context->m_contextMutex);
+                        typename Bus::Context::DispatchLockGuard lock(context->m_contextMutex);
                         EBUS_DO_ROUTING(*context, nullptr, false, false);
 
                         auto& handlers = context->m_buses.m_handlers;
@@ -1371,7 +1371,7 @@ namespace AZ
                 {
                     if (auto* context = Bus::GetContext())
                     {
-                        typename Bus::Context::DispatchLockGuard lock(*context, context->m_contextMutex);
+                        typename Bus::Context::DispatchLockGuard lock(context->m_contextMutex);
                         EBUS_DO_ROUTING(*context, nullptr, false, false);
 
                         auto& handlers = context->m_buses.m_handlers;
@@ -1406,7 +1406,7 @@ namespace AZ
                 {
                     if (auto* context = Bus::GetContext())
                     {
-                        typename Bus::Context::DispatchLockGuard lock(*context, context->m_contextMutex);
+                        typename Bus::Context::DispatchLockGuard lock(context->m_contextMutex);
                         EBUS_DO_ROUTING(*context, nullptr, false, true);
 
                         auto& handlers = context->m_buses.m_handlers;
@@ -1427,7 +1427,7 @@ namespace AZ
                 {
                     if (auto* context = Bus::GetContext())
                     {
-                        typename Bus::Context::DispatchLockGuard lock(*context, context->m_contextMutex);
+                        typename Bus::Context::DispatchLockGuard lock(context->m_contextMutex);
                         EBUS_DO_ROUTING(*context, nullptr, false, true);
 
                         auto& handlers = context->m_buses.m_handlers;
@@ -1450,7 +1450,7 @@ namespace AZ
                 {
                     if (auto* context = Bus::GetContext())
                     {
-                        typename Bus::Context::DispatchLockGuard lock(*context, context->m_contextMutex);
+                        typename Bus::Context::DispatchLockGuard lock(context->m_contextMutex);
 
                         auto& handlers = context->m_buses.m_handlers;
                         auto handlerIt = handlers.begin();
@@ -1530,7 +1530,7 @@ namespace AZ
                 {
                     if (auto* context = Bus::GetContext())
                     {
-                        typename Bus::Context::DispatchLockGuard lock(*context, context->m_contextMutex);
+                        typename Bus::Context::DispatchLockGuard lock(context->m_contextMutex);
                         EBUS_DO_ROUTING(*context, nullptr, false, false);
 
                         auto handler = context->m_buses.m_handler;
@@ -1546,7 +1546,7 @@ namespace AZ
                 {
                     if (auto* context = Bus::GetContext())
                     {
-                        typename Bus::Context::DispatchLockGuard lock(*context, context->m_contextMutex);
+                        typename Bus::Context::DispatchLockGuard lock(context->m_contextMutex);
                         EBUS_DO_ROUTING(*context, nullptr, false, false);
 
                         auto handler = context->m_buses.m_handler;
@@ -1562,7 +1562,7 @@ namespace AZ
                 {
                     if (auto* context = Bus::GetContext())
                     {
-                        typename Bus::Context::DispatchLockGuard lock(*context, context->m_contextMutex);
+                        typename Bus::Context::DispatchLockGuard lock(context->m_contextMutex);
                         EBUS_DO_ROUTING(*context, nullptr, false, false);
 
                         auto handler = context->m_buses.m_handler;
@@ -1578,7 +1578,7 @@ namespace AZ
                 {
                     if (auto* context = Bus::GetContext())
                     {
-                        typename Bus::Context::DispatchLockGuard lock(*context, context->m_contextMutex);
+                        typename Bus::Context::DispatchLockGuard lock(context->m_contextMutex);
                         EBUS_DO_ROUTING(*context, nullptr, false, false);
 
                         auto handler = context->m_buses.m_handler;
@@ -1596,7 +1596,7 @@ namespace AZ
                 {
                     if (auto* context = Bus::GetContext())
                     {
-                        typename Bus::Context::DispatchLockGuard lock(*context, context->m_contextMutex);
+                        typename Bus::Context::DispatchLockGuard lock(context->m_contextMutex);
 
                         auto handler = context->m_buses.m_handler;
                         if (handler)
