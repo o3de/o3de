@@ -75,5 +75,5 @@ class TestAutomationAutoTestMode(EditorTestSuite):
         from .EditorScripts import Menus_FileMenuOptions as test_module
 
     
-    class test_Sample_Editor_Tests(EditorSharedTest):
+    class test_BasicEditorWorkflows_ExistingLevel_EntityComponentCRUD(EditorSharedTest):
         from .EditorScripts import BasicEditorWorkflows_ExistingLevel_EntityComponentCRUD as test_module

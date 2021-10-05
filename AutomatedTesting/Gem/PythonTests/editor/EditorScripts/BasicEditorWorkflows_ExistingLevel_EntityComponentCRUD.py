@@ -53,40 +53,19 @@ def BasicEditorWorkflows_ExistingLevel_EntityComponentCRUD():
             03. create child entity and set a name
             04. delete child entity
             05. add mesh component to parent entity
-            06. remove mesh component
             07. delete parent entity
             Close editor without saving
     """
     import os
     from editor_python_test_tools.utils import Report
-    from editor_python_test_tools.utils import TestHelper as helper
-    import editor_python_test_tools.hydra_editor_utils as hydra
+    from editor_python_test_tools.editor_entity_utils import EditorEntity
 
-    import azlmbr.math as math
-    import azlmbr.asset as asset
     import azlmbr.bus as bus
     import azlmbr.editor as editor
     import azlmbr.entity as entity
     import azlmbr.legacy.general as general
     import azlmbr.object
 
-    def search_entity(entity_to_search, entity_name):
-        """
-
-        :param entity_to_search: entity to be searched
-        :param entity_name: name of the entity used in the set command
-        :return: True if entity id exists in the entity_list
-                 False if entity id does not exist in the entity_list
-        """
-        entity_list = []
-        entity_search_filter = entity.SearchFilter()
-        entity_search_filter.names = entity_name
-        entity_list = entity.SearchBus(bus.Broadcast, 'SearchEntities', entity_search_filter)
-        if entity_list:
-            if entity_to_search in entity_list:
-                return True
-            return False
-        return False
 
     # 01. load an existing level
 
@@ -94,60 +73,39 @@ def BasicEditorWorkflows_ExistingLevel_EntityComponentCRUD():
     general.open_level_no_prompt(test_level)
     Report.result(Tests.load_level, general.get_current_level_name() == test_level)
 
+
     # 02. create parent entity and set name
     # Delete any exiting entity and Create a new Entity at the root level
+
     search_filter = azlmbr.entity.SearchFilter()
     all_entities = entity.SearchBus(azlmbr.bus.Broadcast, "SearchEntities", search_filter)
     editor.ToolsApplicationRequestBus(bus.Broadcast, "DeleteEntities", all_entities)
-    parent_entity = editor.ToolsApplicationRequestBus(bus.Broadcast, "CreateNewEntity", entity.EntityId())
-    Report.result(Tests.create_entity, parent_entity.IsValid())
+    parent_entity = EditorEntity.create_editor_entity("Parent_1")
+    Report.result(Tests.create_entity, parent_entity.exists())
 
-    # Setting a new name
-    parent_entity_name = "Parent_1"
-    editor.EditorEntityAPIBus(bus.Event, 'SetName', parent_entity, parent_entity_name)
-    Report.result(Tests.set_entity_name,
-                  editor.EditorEntityInfoRequestBus(bus.Event, 'GetName', parent_entity) == parent_entity_name)
 
     # 03. Create child Entity to above created parent entity and set a name
-    child_1_entity = editor.ToolsApplicationRequestBus(bus.Broadcast, 'CreateNewEntity', parent_entity)
-    Report.result(Tests.create_child_entity, child_1_entity.IsValid())
-    child_entity_name = "Child_1"
-    editor.EditorEntityAPIBus(bus.Event, 'SetName', child_1_entity, child_entity_name)
-    Report.result(Tests.set_entity_name,
-                  editor.EditorEntityInfoRequestBus(bus.Event, 'GetName', child_1_entity) == child_entity_name)
+
+    child_1_entity = EditorEntity.create_editor_entity("Child_1", parent_entity.id )
+    Report.result(Tests.create_child_entity, child_1_entity.exists())
+
 
     # 04. delete_Child_entity
-    editor.ToolsApplicationRequestBus(bus.Broadcast, 'DeleteEntityById', child_1_entity)
-    Report.result(Tests.delete_child_entity, search_entity(child_1_entity, "Child_1") == False)
+
+    child_1_entity.delete()
+    Report.result(Tests.delete_child_entity, not child_1_entity.exists())
+
 
     # 05. add mesh component to parent entity
-    type_id_list = editor.EditorComponentAPIBus(bus.Broadcast, 'FindComponentTypeIdsByEntityType', ["Mesh"],
-                                                entity.EntityType().Game)
-    if type_id_list is not None:
-        component_outcome = editor.EditorComponentAPIBus(bus.Broadcast, 'AddComponentsOfType', parent_entity,
-                                                         type_id_list)
-        Report.result(Tests.add_mesh_component, component_outcome.IsSuccess())
-    else:
-        Report.result(Tests.found_component_typeId, type_id_list is not None)
 
-    # 06. remove mesh component
-    outcome_get_component = editor.EditorComponentAPIBus(bus.Broadcast, 'GetComponentOfType', parent_entity,
-                                                         type_id_list[0])
-    if outcome_get_component.IsSuccess():
-        component_entity_pair = outcome_get_component.GetValue()
-        editor.EditorComponentAPIBus(bus.Broadcast, 'RemoveComponents', [component_entity_pair])
-        component_exists = editor.EditorComponentAPIBus(bus.Broadcast, 'HasComponentOfType', parent_entity,
-                                                        type_id_list[0])
-        mesh_test = True
-        if component_exists:
-            mesh_test = False
-        Report.result(Tests.remove_mesh_component, mesh_test)
-    else:
-        Report.result(Tests.found_component_typeId, outcome_get_component.IsSuccess())
+    parent_entity.add_component("Mesh")
+    Report.result(Tests.add_mesh_component, parent_entity.has_component("Mesh"))
+
 
     # 7. delete parent entity
-    editor.ToolsApplicationRequestBus(azlmbr.bus.Broadcast, 'DeleteEntityById', parent_entity)
-    Report.result(Tests.delete_entity, search_entity(parent_entity, "Parent_1") == False)
+
+    parent_entity.delete()
+    Report.result(Tests.delete_entity, not parent_entity.exists())
 
     # Close editor without saving
     editor.EditorToolsApplicationRequestBus(bus.Broadcast, 'ExitNoPrompt')
