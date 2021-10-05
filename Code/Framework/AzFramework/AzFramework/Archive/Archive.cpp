@@ -2140,7 +2140,7 @@ namespace AZ::IO
             }
 
             currentDirPattern = currentDir + AZ_FILESYSTEM_SEPARATOR_WILDCARD;
-            currentFilePattern = currentDir + AZ_CORRECT_FILESYSTEM_SEPARATOR_STRING + "levels.pak";
+            currentFilePattern = currentDir + AZ_CORRECT_FILESYSTEM_SEPARATOR_STRING + "level.pak";
 
             ZipDir::FileEntry* fileEntry = findFile.FindExact(currentFilePattern.c_str());
             if (fileEntry)
