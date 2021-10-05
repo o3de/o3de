@@ -699,7 +699,6 @@ namespace AzFramework
                 if (m_settingsRegistry->Get(pathAliases.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_ProjectPath))
                 {
                     fileIoBase->SetAlias("@projectroot@", pathAliases.c_str());
-                    fileIoBase->SetAlias("@projectsourceassets@", (pathAliases / "Assets").c_str());
                 }
             }
 

@@ -8,7 +8,9 @@
 
 #include "EditorSystemComponent.h"
 #include <AzCore/Interface/Interface.h>
+#include <AzCore/IO/Path/Path.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzFramework/Physics/SystemBus.h>
 #include <AzFramework/Physics/Collision/CollisionEvents.h>
 #include <AzFramework/Physics/Common/PhysicsSimulatedBody.h>
@@ -236,11 +238,16 @@ namespace PhysX
             if (!resultAssetId.IsValid())
             {
                 // No file for the default material library, create it
-                const char* assetRoot = AZ::IO::FileIOBase::GetInstance()->GetAlias("@projectsourceassets@");
-                AZStd::string fullPath;
-                AzFramework::StringFunc::Path::ConstructFull(assetRoot, DefaultAssetFilePath, assetExtension.c_str(), fullPath);
+                AZ::IO::Path fullPath;
+                if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
+                {
+                    settingsRegistry->Get(fullPath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_ProjectPath);
+                }
+                fullPath /= "Assets";
+                fullPath /= DefaultAssetFilePath;
+                fullPath.ReplaceExtension(AZ::IO::PathView(assetExtension));
 
-                if (auto materialLibraryOpt = CreateMaterialLibrary(fullPath, relativePath))
+                if (auto materialLibraryOpt = CreateMaterialLibrary(fullPath.Native(), relativePath))
                 {
                     return materialLibraryOpt;
                 }
@@ -261,7 +268,7 @@ namespace PhysX
         }
         else
         {
-            AZ_Warning("PhysX", false, 
+            AZ_Warning("PhysX", false,
                 "RetrieveDefaultMaterialLibrary: Number of extensions for the physics material library asset is %u"
                 " but should be 1. Please check if the asset registered itself with the asset system correctly",
                 assetTypeExtensions.size())
