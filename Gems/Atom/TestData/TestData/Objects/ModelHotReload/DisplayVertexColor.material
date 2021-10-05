@@ -1,0 +1,18 @@
+{
+    "description": "",
+    "materialType": "Materials/Types/StandardMultilayerPBR.materialtype",
+    "parentMaterial": "",
+    "propertyLayoutVersion": 3,
+    "properties": {
+        "blend": {
+            "blendSource": "BlendMaskVertexColors",
+            "debugDrawMode": "FinalBlendWeights",
+            "enableLayer2": true,
+            "enableLayer3": true,
+            "textureMap": ""
+        },
+        "parallax": {
+            "enable": false
+        }
+    }
+}

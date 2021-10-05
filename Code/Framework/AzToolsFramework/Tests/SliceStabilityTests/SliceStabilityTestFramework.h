@@ -142,8 +142,6 @@ namespace UnitTest
         /*
         * AssetSystemRequestBus
         */
-        const char* GetAbsoluteDevGameFolderPath() override { return ""; }
-        const char* GetAbsoluteDevRootFolderPath() override { return ""; }
         bool GetRelativeProductPathFromFullSourceOrProductPath([[maybe_unused]] const AZStd::string& fullPath, [[maybe_unused]] AZStd::string& relativeProductPath) override { return false; }
         bool GenerateRelativeSourcePath(
             [[maybe_unused]] const AZStd::string& sourcePath, [[maybe_unused]] AZStd::string& relativePath,

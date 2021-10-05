@@ -163,16 +163,17 @@ namespace SurfaceData
         // AssetManager::FindOrCreateAsset, it's possible for those locks to get locked in reverse on a loading thread, causing a deadlock.
         for (auto& assetId : surfaceTagAssetIds)
         {
-            m_surfaceTagNameAssets[assetId] = AZ::Data::AssetManager::Instance().GetAsset(
-                assetId, azrtti_typeid<EditorSurfaceTagListAsset>(), AZ::Data::AssetLoadBehavior::Default);
-
-            // If any assets are still loading (which they likely will be), listen for the OnAssetReady event and refresh the Editor
-            // UI as each one finishes loading.
-            if (!m_surfaceTagNameAssets[assetId].IsReady())
-            {
-                AZ::Data::AssetBus::MultiHandler::BusConnect(assetId);
-            }
+            LoadAsset(assetId);
         }
+    }
+
+    void EditorSurfaceDataSystemComponent::LoadAsset(const AZ::Data::AssetId& assetId)
+    {
+        m_surfaceTagNameAssets[assetId] = AZ::Data::AssetManager::Instance().GetAsset(
+            assetId, azrtti_typeid<EditorSurfaceTagListAsset>(), AZ::Data::AssetLoadBehavior::Default);
+
+        // Connect to the bus for this asset so we can monitor for both OnAssetReady and OnAssetReloaded events
+        AZ::Data::AssetBus::MultiHandler::BusConnect(assetId);
     }
 
     void EditorSurfaceDataSystemComponent::OnCatalogAssetAdded(const AZ::Data::AssetId& assetId)
@@ -180,48 +181,43 @@ namespace SurfaceData
         AZ::Data::AssetInfo assetInfo;
         AZ::Data::AssetCatalogRequestBus::BroadcastResult(assetInfo, &AZ::Data::AssetCatalogRequests::GetAssetInfoById, assetId);
 
-        const auto assetType = azrtti_typeid<EditorSurfaceTagListAsset>();
-        if (assetInfo.m_assetType == assetType)
+        if (assetInfo.m_assetType == azrtti_typeid<EditorSurfaceTagListAsset>())
         {
-            AZ::Data::AssetBus::MultiHandler::BusConnect(assetId);
+            // A new Surface Tag asset was added, so load it.
+            LoadAsset(assetId);
         }
     }
 
-    void EditorSurfaceDataSystemComponent::OnCatalogAssetChanged(const AZ::Data::AssetId& assetId)
+    void EditorSurfaceDataSystemComponent::OnCatalogAssetRemoved(const AZ::Data::AssetId& assetId, const AZ::Data::AssetInfo& assetInfo)
     {
-        AZ::Data::AssetInfo assetInfo;
-        AZ::Data::AssetCatalogRequestBus::BroadcastResult(assetInfo, &AZ::Data::AssetCatalogRequests::GetAssetInfoById, assetId);
-
-        const auto assetType = azrtti_typeid<EditorSurfaceTagListAsset>();
-        if (assetInfo.m_assetType == assetType)
+        if (assetInfo.m_assetType == azrtti_typeid<EditorSurfaceTagListAsset>())
         {
-            AZ::Data::AssetBus::MultiHandler::BusConnect(assetId);
+            // A Surface Tag asset was removed, so stop listening for it and remove it from our set of loaded assets.
+            // Note: This case should never really happen in practice - we're keeping the asset loaded, so the file will remain
+            // locked while the Editor is running and shouldn't be able to be deleted.
+            AZ::Data::AssetBus::MultiHandler::BusDisconnect(assetId);
+            m_surfaceTagNameAssets.erase(assetId);
         }
-    }
-
-    void EditorSurfaceDataSystemComponent::OnCatalogAssetRemoved(const AZ::Data::AssetId& assetId, const AZ::Data::AssetInfo& /*assetInfo*/)
-    {
-        m_surfaceTagNameAssets.erase(assetId);
     }
 
     void EditorSurfaceDataSystemComponent::OnAssetReloaded(AZ::Data::Asset<AZ::Data::AssetData> asset)
     {
-        OnAssetReady(asset);
+        AddAsset(asset);
     }
 
     void EditorSurfaceDataSystemComponent::OnAssetReady(AZ::Data::Asset<AZ::Data::AssetData> asset)
     {
-        AZ::Data::AssetBus::MultiHandler::BusDisconnect(asset.GetId());
         AddAsset(asset);
     }
 
     void EditorSurfaceDataSystemComponent::AddAsset(AZ::Data::Asset<AZ::Data::AssetData>& asset)
     {
-        const auto assetType = azrtti_typeid<EditorSurfaceTagListAsset>();
-        if (asset.GetType() == assetType)
+        if (asset.GetType() == azrtti_typeid<EditorSurfaceTagListAsset>())
         {
             m_surfaceTagNameAssets[asset.GetId()] = asset;
-            AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(&AzToolsFramework::PropertyEditorGUIMessages::RequestRefresh, AzToolsFramework::PropertyModificationRefreshLevel::Refresh_AttributesAndValues);
+            AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(
+                &AzToolsFramework::PropertyEditorGUIMessages::RequestRefresh,
+                AzToolsFramework::PropertyModificationRefreshLevel::Refresh_AttributesAndValues);
         }
     }
 }
