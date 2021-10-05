@@ -19,7 +19,7 @@
 #include <Multiplayer/Components/NetBindComponent.h>
 #include <Multiplayer/Components/NetworkHierarchyChildComponent.h>
 #include <Multiplayer/Components/NetworkHierarchyRootComponent.h>
-#include <NetworkEntity/EntityReplication/EntityReplicator.h>
+#include <Multiplayer/NetworkEntity/EntityReplication/EntityReplicator.h>
 
 namespace Multiplayer
 {
@@ -97,6 +97,11 @@ namespace Multiplayer
     {
     public:
         AZ::TimeMs GetElapsedTimeMs() const override
+        {
+            return {};
+        }
+
+        AZ::TimeUs GetElapsedTimeUs() const override
         {
             return {};
         }
@@ -215,7 +220,7 @@ namespace Multiplayer
         NetworkEntityTracker* GetNetworkEntityTracker() override { return &m_tracker; }
         NetworkEntityAuthorityTracker* GetNetworkEntityAuthorityTracker() override { return &m_authorityTracker; }
         MultiplayerComponentRegistry* GetMultiplayerComponentRegistry() override { return &m_multiplayerComponentRegistry; }
-        HostId GetHostId() const override { return {}; }
+        const HostId& GetHostId() const override { return m_hostId; }
         EntityList CreateEntitiesImmediate(
             [[maybe_unused]] const PrefabEntityId& prefabEntryId,
             [[maybe_unused]] NetEntityRole netEntityRole,
@@ -271,7 +276,7 @@ namespace Multiplayer
         NetworkEntityHandle AddEntityToEntityMap(NetEntityId netEntityId, AZ::Entity* entity) override
         {
             m_networkEntityMap[netEntityId] = entity;
-            return NetworkEntityHandle(entity, netEntityId, &m_tracker);
+            return NetworkEntityHandle(entity, &m_tracker);
         }
 
         ConstNetworkEntityHandle GetEntity(NetEntityId netEntityId) const override
@@ -300,9 +305,15 @@ namespace Multiplayer
             return {};
         }
 
+        void Initialize([[maybe_unused]] const HostId& hostId, [[maybe_unused]] AZStd::unique_ptr<IEntityDomain> entityDomain) override {}
+        bool IsInitialized() const override { return true; }
+        IEntityDomain* GetEntityDomain() const override { return nullptr; }
+        void DebugDraw() const override {}
+
         NetworkEntityTracker m_tracker;
         NetworkEntityAuthorityTracker m_authorityTracker;
         MultiplayerComponentRegistry m_multiplayerComponentRegistry;
+        HostId m_hostId;
     };
 
     class BenchmarkMultiplayer : public Multiplayer::IMultiplayer
@@ -313,7 +324,7 @@ namespace Multiplayer
         MultiplayerAgentType GetAgentType() const override { return {}; }
         void InitializeMultiplayer([[maybe_unused]] MultiplayerAgentType state) override {}
         bool StartHosting([[maybe_unused]] uint16_t port, [[maybe_unused]] bool isDedicated) override { return {}; }
-        bool Connect([[maybe_unused]] AZStd::string remoteAddress, [[maybe_unused]] uint16_t port) override { return {}; }
+        bool Connect([[maybe_unused]] const AZStd::string& remoteAddress, [[maybe_unused]] uint16_t port) override { return {}; }
         void Terminate([[maybe_unused]] AzNetworking::DisconnectReason reason) override {}
         void AddClientDisconnectedHandler([[maybe_unused]] ClientDisconnectedEvent::Handler& handler) override {}
         void AddConnectionAcquiredHandler([[maybe_unused]] ConnectionAcquiredEvent::Handler& handler) override {}
@@ -326,6 +337,14 @@ namespace Multiplayer
         INetworkEntityManager* GetNetworkEntityManager() override { return &m_manager; }
         void SetFilterEntityManager([[maybe_unused]] IFilterEntityManager* entityFilter) override {}
         IFilterEntityManager* GetFilterEntityManager() override { return {}; }
+        void AddClientMigrationStartEventHandler([[maybe_unused]] ClientMigrationStartEvent::Handler& handler) override {}
+        void AddClientMigrationEndEventHandler([[maybe_unused]] ClientMigrationEndEvent::Handler& handler) override {}
+        void AddNotifyClientMigrationHandler([[maybe_unused]] NotifyClientMigrationEvent::Handler& handler) override {}
+        void AddNotifyEntityMigrationEventHandler([[maybe_unused]] NotifyEntityMigrationEvent::Handler& handler) override {}
+        void SendNotifyClientMigrationEvent([[maybe_unused]] const HostId& hostId, [[maybe_unused]] uint64_t userIdentifier, [[maybe_unused]] ClientInputId lastClientInputId) override {}
+        void SendNotifyEntityMigrationEvent([[maybe_unused]] const ConstNetworkEntityHandle& entityHandle, [[maybe_unused]] const HostId& remoteHostId) override {}
+        void SetShouldSpawnNetworkEntities([[maybe_unused]] bool value) override {}
+        bool GetShouldSpawnNetworkEntities() const override { return true; }
 
         BenchmarkNetworkEntityManager& m_manager;
     };
