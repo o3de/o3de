@@ -13,5 +13,7 @@ set(FILES
     MockXcbInterface.h
     Printers.cpp
     Printers.h
+    XcbBaseTestFixture.cpp
+    XcbBaseTestFixture.h
     XcbInputDeviceKeyboardTests.cpp
 )

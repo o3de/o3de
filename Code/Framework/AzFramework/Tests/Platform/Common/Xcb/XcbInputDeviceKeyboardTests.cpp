@@ -6,6 +6,7 @@
  *
  */
 
+#include <gmock/gmock-actions.h>
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 
@@ -15,6 +16,7 @@
 #include <AzFramework/XcbInputDeviceKeyboard.h>
 #include "MockXcbInterface.h"
 #include "Actions.h"
+#include "XcbBaseTestFixture.h"
 
 template<typename T>
 xcb_generic_event_t MakeEvent(T event)
@@ -24,26 +26,74 @@ xcb_generic_event_t MakeEvent(T event)
 
 namespace AzFramework
 {
-    TEST(XcbInputDeviceKeyboard, InputChannelsUpdateStateFromXcbEvents)
+    // Sets up default behavior for mock keyboard responses to xcb methods
+    class XcbInputDeviceKeyboardTests
+        : public XcbBaseTestFixture
     {
-        using testing::Return;
+        void SetUp() override
+        {
+            using testing::Return;
+            using testing::SetArgPointee;
+            using testing::_;
+
+            XcbBaseTestFixture::SetUp();
+            EXPECT_CALL(m_interface, xkb_context_new(XKB_CONTEXT_NO_FLAGS))
+                .WillOnce(Return(&m_xkbContext));
+            EXPECT_CALL(m_interface, xkb_context_unref(&m_xkbContext))
+                .Times(1);
+
+            EXPECT_CALL(m_interface, xkb_x11_keymap_new_from_device(&m_xkbContext, &m_connection, s_coreDeviceId, XKB_KEYMAP_COMPILE_NO_FLAGS))
+                .WillOnce(Return(&m_xkbKeymap));
+            EXPECT_CALL(m_interface, xkb_keymap_unref(&m_xkbKeymap))
+                .Times(1);
+
+            EXPECT_CALL(m_interface, xkb_x11_state_new_from_device(&m_xkbKeymap, &m_connection, s_coreDeviceId))
+                .WillOnce(Return(&m_xkbState));
+            EXPECT_CALL(m_interface, xkb_state_unref(&m_xkbState))
+                .Times(1);
+
+            ON_CALL(m_interface, xkb_x11_setup_xkb_extension(&m_connection, 1, 0, XKB_X11_SETUP_XKB_EXTENSION_NO_FLAGS, _, _, _, _))
+                .WillByDefault(DoAll(
+                    SetArgPointee<6>(s_xkbEventCode), // Set the "base_event_out" argument to the xkbEventCode, the value to identify XKB events
+                    Return(1)
+                ));
+
+            constexpr unsigned int xcbXkbSelectEventsSequence = 1;
+            ON_CALL(m_interface, xcb_xkb_select_events(&m_connection, _, _, _, _, _, _, _))
+                .WillByDefault(Return(xcb_void_cookie_t{/*.sequence = */ xcbXkbSelectEventsSequence}));
+            ON_CALL(m_interface, xcb_request_check(&m_connection, testing::Field(&xcb_void_cookie_t::sequence, testing::Eq(xcbXkbSelectEventsSequence))))
+                .WillByDefault(Return(nullptr)); // indicates success
+
+            ON_CALL(m_interface, xkb_x11_get_core_keyboard_device_id(&m_connection))
+                .WillByDefault(Return(s_coreDeviceId));
+
+            ON_CALL(m_interface, xkb_state_key_get_one_sym(&m_xkbState, s_keycodeForAKey))
+                .WillByDefault(Return(XKB_KEY_a))
+                ;
+        }
+
+    protected:
+        xkb_context m_xkbContext{};
+        xkb_keymap m_xkbKeymap{};
+        xkb_state m_xkbState{};
+        static constexpr int32_t s_coreDeviceId{1};
+        static constexpr uint8_t s_xkbEventCode{85};
+        static constexpr xcb_keycode_t s_keycodeForAKey{38};
+    };
+
+    TEST_F(XcbInputDeviceKeyboardTests, InputChannelsUpdateStateFromXcbEvents)
+    {
+        using testing::DoAll;
         using testing::Eq;
+        using testing::Return;
+        using testing::SetArgPointee;
         using testing::_;
-        MockXcbInterface interface;
-
-        xcb_connection_t connection{};
-        xkb_context xkbContext{};
-        xkb_keymap xkbKeymap{};
-        xkb_state xkbState{};
-        const int32_t coreDeviceId{1};
-
-        constexpr xcb_keycode_t keycodeForAKey = 38;
 
         const AZStd::array events
         {
             MakeEvent(xcb_key_press_event_t{
                 /*.response_type = */ XCB_KEY_PRESS,
-                /*.detail        = */ keycodeForAKey,
+                /*.detail        = */ s_keycodeForAKey,
                 /*.sequence      = */ 0,
                 /*.time          = */ 0,
                 /*.root          = */ 0,
@@ -59,7 +109,7 @@ namespace AzFramework
             }),
             MakeEvent(xcb_key_release_event_t{
                 /*.response_type = */ XCB_KEY_RELEASE,
-                /*.detail        = */ keycodeForAKey,
+                /*.detail        = */ s_keycodeForAKey,
                 /*.sequence      = */ 0,
                 /*.time          = */ 0,
                 /*.root          = */ 0,
@@ -75,51 +125,28 @@ namespace AzFramework
             }),
         };
 
-        EXPECT_CALL(interface, xcb_connect(_, _))
-            .WillOnce(Return(&connection));
-        EXPECT_CALL(interface, xcb_disconnect(&connection))
-            .Times(1);
-
-        EXPECT_CALL(interface, xkb_context_new(XKB_CONTEXT_NO_FLAGS))
-            .WillOnce(Return(&xkbContext));
-        EXPECT_CALL(interface, xkb_context_unref(&xkbContext))
-            .Times(1);
-
-        EXPECT_CALL(interface, xkb_x11_keymap_new_from_device(&xkbContext, &connection, coreDeviceId, XKB_KEYMAP_COMPILE_NO_FLAGS))
-            .WillOnce(Return(&xkbKeymap));
-        EXPECT_CALL(interface, xkb_keymap_unref(&xkbKeymap))
-            .Times(1);
-
-        EXPECT_CALL(interface, xkb_x11_state_new_from_device(&xkbKeymap, &connection, coreDeviceId))
-            .WillOnce(Return(&xkbState));
-        EXPECT_CALL(interface, xkb_state_unref(&xkbState))
-            .Times(1);
-
-        EXPECT_CALL(interface, xcb_xkb_use_extension(&connection, 1, 0));
-        EXPECT_CALL(interface, xcb_xkb_use_extension_reply(&connection, _, _))
-            .WillOnce(ReturnMalloc<xcb_xkb_use_extension_reply_t>(
-                /* .response_type =*/static_cast<uint8_t>(XCB_XKB_USE_EXTENSION),
-                /* .supported =*/ static_cast<uint8_t>(1))
-            );
-        EXPECT_CALL(interface, xkb_x11_get_core_keyboard_device_id(&connection))
-            .WillRepeatedly(Return(coreDeviceId));
-
         // Set the expectations for the events that will be generated
         // nullptr entries represent when the event queue is empty, and will cause
         // PumpSystemEventLoopUntilEmpty to return
         // event pointers are freed by the calling code, so we malloc new copies
         // here
-        EXPECT_CALL(interface, xcb_poll_for_event(&connection))
+        EXPECT_CALL(m_interface, xcb_poll_for_event(&m_connection))
             .WillOnce(ReturnMalloc<xcb_generic_event_t>(events[0]))
             .WillOnce(Return(nullptr))
             .WillOnce(ReturnMalloc<xcb_generic_event_t>(events[1]))
             .WillOnce(Return(nullptr))
             ;
 
-        EXPECT_CALL(interface, xkb_state_key_get_one_sym(&xkbState, keycodeForAKey))
-            .WillOnce(Return(XKB_KEY_a))
-            .WillOnce(Return(XKB_KEY_a))
-            ;
+        EXPECT_CALL(m_interface, xkb_state_key_get_one_sym(&m_xkbState, s_keycodeForAKey))
+            .Times(2);
+
+        EXPECT_CALL(m_interface, xkb_state_key_get_utf8(&m_xkbState, s_keycodeForAKey, nullptr, 0))
+            .WillRepeatedly(Return(1));
+        EXPECT_CALL(m_interface, xkb_state_key_get_utf8(&m_xkbState, s_keycodeForAKey, _, 2))
+            .WillRepeatedly(DoAll(
+                SetArgPointee<2>('a'),
+                Return(1)
+            ));
 
         Application application;
         application.Start({}, {});
