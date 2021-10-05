@@ -16,8 +16,9 @@
 
 using namespace AWSGameLift;
 
+static constexpr const uint64_t TEST_RACKER_POLLING_PERIOD_MS = 100;
 static constexpr const uint64_t TEST_WAIT_BUFFER_TIME_MS = 10;
-static constexpr const uint64_t TEST_TRACKER_POLLING_PERIOD_MS = 30;
+static constexpr const uint64_t TEST_WAIT_MAXIMUM_TIME_MS = 10000;
 
 class TestAWSGameLiftClientLocalTicketTracker
     : public AWSGameLiftClientLocalTicketTracker
@@ -29,7 +30,7 @@ public:
     void SetUp()
     {
         ActivateTracker();
-        m_pollingPeriodInMS = TEST_TRACKER_POLLING_PERIOD_MS;
+        m_pollingPeriodInMS = TEST_RACKER_POLLING_PERIOD_MS;
     }
 
     void TearDown()
@@ -81,6 +82,21 @@ protected:
         m_gameliftClientMockPtr.reset();
     }
 
+    void WaitForProcessFinish(uint64_t expectedNum)
+    {
+        int processingTime = 0;
+        while (processingTime < TEST_WAIT_MAXIMUM_TIME_MS)
+        {
+            if (::UnitTest::TestRunner::Instance().m_numAssertsFailed == expectedNum)
+            {
+                AZ_TEST_STOP_TRACE_SUPPRESSION(expectedNum);
+                return;
+            }
+            AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(TEST_WAIT_BUFFER_TIME_MS));
+            processingTime += TEST_WAIT_BUFFER_TIME_MS;
+        }
+    }
+
 public:
     AZStd::unique_ptr<TestAWSGameLiftClientLocalTicketTracker> m_gameliftClientTicketTracker;
     AZStd::shared_ptr<GameLiftClientMock> m_gameliftClientMockPtr;
@@ -90,9 +106,18 @@ TEST_F(AWSGameLiftClientLocalTicketTrackerTest, StartPolling_CallWithoutClientSe
 {
     AZ::Interface<IAWSGameLiftInternalRequests>::Get()->SetGameLiftClient(nullptr);
     AZ_TEST_START_TRACE_SUPPRESSION;
-    m_gameliftClientTicketTracker->StartPolling("ticket1", "player1" );
-    AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(TEST_WAIT_BUFFER_TIME_MS));
-    AZ_TEST_STOP_TRACE_SUPPRESSION(1); // capture 1 error message
+    m_gameliftClientTicketTracker->StartPolling("ticket1", "player1");
+    WaitForProcessFinish(1);
+    ASSERT_FALSE(m_gameliftClientTicketTracker->IsTrackerIdle());
+}
+
+TEST_F(AWSGameLiftClientLocalTicketTrackerTest, StartPolling_MultipleCallsWithoutClientSetup_GetExpectedErrors)
+{
+    AZ::Interface<IAWSGameLiftInternalRequests>::Get()->SetGameLiftClient(nullptr);
+    AZ_TEST_START_TRACE_SUPPRESSION;
+    m_gameliftClientTicketTracker->StartPolling("ticket1", "player1");
+    m_gameliftClientTicketTracker->StartPolling("ticket1", "player1");
+    WaitForProcessFinish(1);
     ASSERT_FALSE(m_gameliftClientTicketTracker->IsTrackerIdle());
 }
 
@@ -107,8 +132,7 @@ TEST_F(AWSGameLiftClientLocalTicketTrackerTest, StartPolling_CallButWithFailedOu
 
     AZ_TEST_START_TRACE_SUPPRESSION;
     m_gameliftClientTicketTracker->StartPolling("ticket1", "player1");
-    AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(TEST_WAIT_BUFFER_TIME_MS));
-    AZ_TEST_STOP_TRACE_SUPPRESSION(1); // capture 1 error message
+    WaitForProcessFinish(1);
     ASSERT_FALSE(m_gameliftClientTicketTracker->IsTrackerIdle());
 }
 
@@ -125,8 +149,7 @@ TEST_F(AWSGameLiftClientLocalTicketTrackerTest, StartPolling_CallWithMoreThanOne
 
     AZ_TEST_START_TRACE_SUPPRESSION;
     m_gameliftClientTicketTracker->StartPolling("ticket1", "player1");
-    AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(TEST_WAIT_BUFFER_TIME_MS));
-    AZ_TEST_STOP_TRACE_SUPPRESSION(1); // capture 1 error message
+    WaitForProcessFinish(1);
     ASSERT_FALSE(m_gameliftClientTicketTracker->IsTrackerIdle());
 }
 
@@ -137,7 +160,8 @@ TEST_F(AWSGameLiftClientLocalTicketTrackerTest, StartPolling_CallWithCompleteSta
     connectionInfo.SetPort(123);
     connectionInfo.AddMatchedPlayerSessions(
         Aws::GameLift::Model::MatchedPlayerSession()
-        .WithPlayerId("player1").WithPlayerSessionId("playersession1"));
+        .WithPlayerId("player1")
+        .WithPlayerSessionId("playersession1"));
 
     Aws::GameLift::Model::MatchmakingTicket ticket;
     ticket.SetStatus(Aws::GameLift::Model::MatchmakingConfigurationStatus::COMPLETED);
@@ -181,8 +205,7 @@ TEST_F(AWSGameLiftClientLocalTicketTrackerTest, StartPolling_CallButNoPlayerSess
 
     AZ_TEST_START_TRACE_SUPPRESSION;
     m_gameliftClientTicketTracker->StartPolling("ticket1", "player1");
-    AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(TEST_WAIT_BUFFER_TIME_MS));
-    AZ_TEST_STOP_TRACE_SUPPRESSION(1); // capture 1 error message
+    WaitForProcessFinish(1);
     ASSERT_TRUE(m_gameliftClientTicketTracker->IsTrackerIdle());
 }
 
@@ -193,7 +216,8 @@ TEST_F(AWSGameLiftClientLocalTicketTrackerTest, StartPolling_CallButFailedToJoin
     connectionInfo.SetPort(123);
     connectionInfo.AddMatchedPlayerSessions(
         Aws::GameLift::Model::MatchedPlayerSession()
-        .WithPlayerId("player1").WithPlayerSessionId("playersession1"));
+        .WithPlayerId("player1")
+        .WithPlayerSessionId("playersession1"));
 
     Aws::GameLift::Model::MatchmakingTicket ticket;
     ticket.SetStatus(Aws::GameLift::Model::MatchmakingConfigurationStatus::COMPLETED);
@@ -214,8 +238,7 @@ TEST_F(AWSGameLiftClientLocalTicketTrackerTest, StartPolling_CallButFailedToJoin
 
     AZ_TEST_START_TRACE_SUPPRESSION;
     m_gameliftClientTicketTracker->StartPolling("ticket1", "player1");
-    AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(TEST_WAIT_BUFFER_TIME_MS));
-    AZ_TEST_STOP_TRACE_SUPPRESSION(1); // capture 1 error message
+    WaitForProcessFinish(1);
     ASSERT_TRUE(m_gameliftClientTicketTracker->IsTrackerIdle());
 }
 
@@ -234,8 +257,7 @@ TEST_F(AWSGameLiftClientLocalTicketTrackerTest, StartPolling_CallButTicketTimeOu
 
     AZ_TEST_START_TRACE_SUPPRESSION;
     m_gameliftClientTicketTracker->StartPolling("ticket1", "player1");
-    AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(TEST_WAIT_BUFFER_TIME_MS));
-    AZ_TEST_STOP_TRACE_SUPPRESSION(1); // capture 1 error message
+    WaitForProcessFinish(1);
     ASSERT_TRUE(m_gameliftClientTicketTracker->IsTrackerIdle());
 }
 
@@ -254,8 +276,7 @@ TEST_F(AWSGameLiftClientLocalTicketTrackerTest, StartPolling_CallButTicketFailed
 
     AZ_TEST_START_TRACE_SUPPRESSION;
     m_gameliftClientTicketTracker->StartPolling("ticket1", "player1");
-    AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(TEST_WAIT_BUFFER_TIME_MS));
-    AZ_TEST_STOP_TRACE_SUPPRESSION(1); // capture 1 error message
+    WaitForProcessFinish(1);
     ASSERT_TRUE(m_gameliftClientTicketTracker->IsTrackerIdle());
 }
 
@@ -274,8 +295,7 @@ TEST_F(AWSGameLiftClientLocalTicketTrackerTest, StartPolling_CallButTicketCancel
 
     AZ_TEST_START_TRACE_SUPPRESSION;
     m_gameliftClientTicketTracker->StartPolling("ticket1", "player1");
-    AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(TEST_WAIT_BUFFER_TIME_MS));
-    AZ_TEST_STOP_TRACE_SUPPRESSION(1); // capture 1 error message
+    WaitForProcessFinish(1);
     ASSERT_TRUE(m_gameliftClientTicketTracker->IsTrackerIdle());
 }
 

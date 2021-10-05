@@ -42,6 +42,11 @@ namespace AWSGameLift
         const AZStd::string& ticketId, const AZStd::string& playerId)
     {
         AZStd::lock_guard<AZStd::mutex> lock(m_trackerMutex);
+        if (m_status == TicketTrackerStatus::Running)
+        {
+            AZ_TracePrintf(AWSGameLiftClientLocalTicketTrackerName, "Matchmaking ticket tracker is running.");
+            return;
+        }
         m_status = TicketTrackerStatus::Running;
         m_trackerThread = AZStd::thread(AZStd::bind(
             &AWSGameLiftClientLocalTicketTracker::ProcessPolling, this, ticketId, playerId));
