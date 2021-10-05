@@ -26,7 +26,7 @@ namespace ScriptCanvasEditor
         {
             AZStd::function<void(AZ::Data::Asset<AZ::Data::AssetData>)> modification;
             AZStd::function<bool()> onReadOnlyFile;
-            bool modifySingleAsset = false;
+            AZ::Data::AssetInfo modifySingleAsset;
             bool backupGraphBeforeModification = false;
             bool successfulDependencyUpgradeRequired = true;
         };

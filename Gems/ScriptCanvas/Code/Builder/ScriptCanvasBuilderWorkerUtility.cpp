@@ -113,6 +113,7 @@ namespace ScriptCanvasBuilder
 
         if (!isSuccessOutcome.IsSuccess())
         {
+            // sanity check
             return AZ::Failure(isSuccessOutcome.TakeError());
         }
         auto& translation = translationResult.m_translations.find(ScriptCanvas::Translation::TargetFlags::Lua)->second;
@@ -481,6 +482,7 @@ namespace ScriptCanvasBuilder
             buildEntity->Activate();
         }
 
+        AZ_Assert(buildEntity->GetState() == AZ::Entity::State::Active, "build entity not active");
         return sourceGraph;
     }
 

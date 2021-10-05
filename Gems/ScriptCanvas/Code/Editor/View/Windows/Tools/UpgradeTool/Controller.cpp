@@ -132,6 +132,11 @@ namespace ScriptCanvasEditor
 
         void Controller::OnButtonPressUpgrade()
         {
+            OnButtonPressUpgradeImplementation({});
+        }
+
+        void Controller::OnButtonPressUpgradeImplementation(const AZ::Data::AssetInfo& assetInfo)
+        {
             auto simpleUpdate = [this](AZ::Data::Asset<AZ::Data::AssetData> asset)
             {
                 if (asset.GetType() == azrtti_typeid<ScriptCanvasAsset>())
@@ -202,10 +207,16 @@ namespace ScriptCanvasEditor
 
             SetLoggingPreferences();
             ModifyConfiguration config;
+            config.modifySingleAsset = assetInfo;
             config.modification = simpleUpdate;
             config.onReadOnlyFile = onReadyOnlyFile;
             config.backupGraphBeforeModification = m_view->makeBackupCheckbox->isChecked();
             ModelRequestsBus::Broadcast(&ModelRequestsTraits::Modify, config);
+        }
+
+        void Controller::OnButtonPressUpgradeSingle(const AZ::Data::AssetInfo& assetInfo)
+        {
+            OnButtonPressUpgradeImplementation(assetInfo);
         }
 
         void Controller::OnUpgradeModificationBegin([[maybe_unused]] const ModifyConfiguration& config, const AZ::Data::AssetInfo& info)
@@ -325,7 +336,7 @@ namespace ScriptCanvasEditor
             OnScannedGraph(info, Filtered::Yes);
         }
 
-        void Controller::OnScannedGraph(const AZ::Data::AssetInfo& assetInfo, Filtered filtered)
+        void Controller::OnScannedGraph(const AZ::Data::AssetInfo& assetInfo, [[maybe_unused]] Filtered filtered)
         {
             m_view->tableWidget->insertRow(m_handledAssetCount);
             QTableWidgetItem* rowName = new QTableWidgetItem(tr(assetInfo.m_relativePath.c_str()));
@@ -338,19 +349,14 @@ namespace ScriptCanvasEditor
                 rowGoToButton->setText("Upgrade");
                 rowGoToButton->setEnabled(false);
                 SetRowBusy(m_handledAssetCount);
-// \\ todo restore this
-//                 connect(rowGoToButton, &QPushButton::clicked, [this, rowGoToButton, assetInfo] {
-// 
-// //                     request upgrade of a single graph
-// //                     AZ::SystemTickBus::QueueFunction([this, rowGoToButton, assetInfo]() {
-// //                         // Queue the process state change because we can't connect to the SystemTick bus in a Qt lambda
-// //                         UpgradeSingle(rowGoToButton, spinner, assetInfo);
-// //                     });
-// // 
-// //                     AZ::SystemTickBus::ExecuteQueuedEvents();
-// 
-//                 });
-
+                connect
+                    ( rowGoToButton
+                    , &QPushButton::pressed
+                    , this
+                    , [this, assetInfo]()
+                        {
+                            this->OnButtonPressUpgradeSingle(assetInfo);
+                        });
                 m_view->tableWidget->setCellWidget(m_handledAssetCount, static_cast<int>(ColumnAction), rowGoToButton);
             }
 
@@ -424,7 +430,7 @@ namespace ScriptCanvasEditor
             }
 
             QString spinnerText = QStringLiteral("Upgrade in progress - ");
-            if (config.modifySingleAsset)
+            if (config.modifySingleAsset.m_assetId.IsValid())
             {
                 spinnerText.append(" single graph");
             }

@@ -101,11 +101,33 @@ namespace ScriptCanvasEditor
                 return;
             }
 
+            auto results = m_scanner->TakeResult();
+            if (modification.modifySingleAsset.m_assetId.IsValid())
+            {
+                auto iter = AZStd::find_if
+                    ( results.m_unfiltered.begin()
+                    , results.m_unfiltered.end()
+                    , [&modification](const auto& candidate)
+                    {
+                        return candidate.info.m_assetId == modification.modifySingleAsset.m_assetId;
+                    });
+
+                if (iter == results.m_unfiltered.end())
+                {
+                    AZ_Warning(ScriptCanvas::k_VersionExplorerWindow.data(), false, "Requested upgrade graph not found in scanned list.");
+                    return;
+                }
+
+                WorkingAsset singleEntry = *iter;
+                results.m_unfiltered.clear();
+                results.m_unfiltered.push_back(singleEntry);
+            }
+
             m_modResults = {};
             m_state = State::Modifying;
             m_log.Activate();
             m_keepEditorAlive = AZStd::make_unique<EditorKeepAlive>();
-            auto results = m_scanner->TakeResult();
+            
             m_modifier = AZStd::make_unique<Modifier>(modification, AZStd::move(results.m_unfiltered), [this](){ OnModificationComplete(); });
         }
 

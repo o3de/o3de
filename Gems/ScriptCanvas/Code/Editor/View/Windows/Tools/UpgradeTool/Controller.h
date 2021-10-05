@@ -64,6 +64,8 @@ namespace ScriptCanvasEditor
             void OnButtonPressClose();
             void OnButtonPressScan();
             void OnButtonPressUpgrade();
+            void OnButtonPressUpgradeImplementation(const AZ::Data::AssetInfo& assetInfo);
+            void OnButtonPressUpgradeSingle(const AZ::Data::AssetInfo& assetInfo);
 
             void OnGraphUpgradeComplete(AZ::Data::Asset<AZ::Data::AssetData>&, bool skipped) override;
                         
