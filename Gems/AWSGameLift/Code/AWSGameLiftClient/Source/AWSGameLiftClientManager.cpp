@@ -363,7 +363,7 @@ namespace AWSGameLift
     {
         AZ_UNUSED(startMatchmakingRequest);
 
-        return "";
+        return AZStd::string{};
     }
 
     void AWSGameLiftClientManager::StartMatchmakingAsync(const AzFramework::StartMatchmakingRequest& startMatchmakingRequest)

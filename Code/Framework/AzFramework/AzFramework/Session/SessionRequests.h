@@ -8,9 +8,14 @@
 
 #pragma once
 
-#include <AzCore/RTTI/ReflectContext.h>
+#include <AzCore/RTTI/RTTI.h>
 #include <AzCore/std/containers/unordered_map.h>
 #include <AzCore/std/string/string.h>
+
+namespace AZ
+{
+    class ReflectContext;
+}
 
 namespace AzFramework
 {
