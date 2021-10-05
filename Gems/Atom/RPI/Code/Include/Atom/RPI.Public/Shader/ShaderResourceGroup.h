@@ -134,7 +134,7 @@ namespace AZ
             AZStd::array_view<Data::Instance<Buffer>> GetBufferArray(RHI::ShaderInputNameIndex& inputIndex) const;
             AZStd::array_view<Data::Instance<Buffer>> GetBufferArray(RHI::ShaderInputBufferIndex inputIndex) const;
             
-            //! Reset image and buffer views it won't hold references for any RHI resources
+            //! Reset image and buffer views so that it won't hold references for any RHI resources
             void ResetViews();
 
             //////////////////////////////////////////////////////////////////////////
