@@ -38,23 +38,23 @@ def process_add_o3de_repo(file_name: str or pathlib.Path,
         manifest_download_list = []
         try:
             manifest_download_list.append((repo_data['engines'], 'engine.json'))
-        except Exception:
+        except KeyError:
             pass
         try:
             manifest_download_list.append((repo_data['projects'], 'project.json'))
-        except Exception:
+        except KeyError:
             pass
         try:
             manifest_download_list.append((repo_data['gems'], 'gem.json'))
-        except Exception:
+        except KeyError:
             pass
         try:
             manifest_download_list.append((repo_data['templates'], 'template.json'))
-        except Exception:
+        except KeyError:
             pass
         try:
             manifest_download_list.append((repo_data['restricted'], 'restricted.json'))
-        except Exception:
+        except KeyError:
             pass
 
         for o3de_object_uris, manifest_json in manifest_download_list:
@@ -72,7 +72,7 @@ def process_add_o3de_repo(file_name: str or pathlib.Path,
         repo_list = []
         try:
             repo_list.add(repo_data['repos'])
-        except Exception:
+        except KeyError:
             pass
 
         for repo in repo_list:
