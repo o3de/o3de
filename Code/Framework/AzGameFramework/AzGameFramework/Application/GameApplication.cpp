@@ -28,20 +28,22 @@ namespace AzGameFramework
         // can read from the FileIOBase instance if available
         m_settingsRegistry->SetUseFileIO(true);
 
-        // Attempt to mount the engine pak from the Executable Directory
-        // at the Assets alias, otherwise to attempting to mount the engine pak
-        // from the Cache folder
-        AZ::IO::FixedMaxPath enginePakPath = AZ::Utils::GetExecutableDirectory();
-        enginePakPath /= "engine.pak";
-        if (!m_archive->OpenPack("@products@", enginePakPath.Native()))
+        // Attempt to mount the engine pak to the project product asset alias
+        // Search Order:
+        // - Project Cache Root Directory
+        // - Executable Directory
+        bool enginePakOpened{};
+        AZ::IO::FixedMaxPath enginePakPath;
+        if (m_settingsRegistry->Get(enginePakPath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_CacheRootFolder))
         {
-            enginePakPath.clear();
-            if (m_settingsRegistry->Get(enginePakPath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_CacheRootFolder))
-            {
-                // fall back to checking Project Cache Root.
-                enginePakPath /= "engine.pak";
-                m_archive->OpenPack("@products@", enginePakPath.Native());
-            }
+            // fall back to checking Project Cache Root.
+            enginePakPath /= "engine.pak";
+            enginePakOpened = m_archive->OpenPack("@products@", enginePakPath.Native());
+        }
+        if (!enginePakOpened)
+        {
+            enginePakPath = AZ::IO::FixedMaxPath(AZ::Utils::GetExecutableDirectory()) / "engine.pak";
+            m_archive->OpenPack("@products@", enginePakPath.Native());
         }
     }
 
