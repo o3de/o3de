@@ -26,8 +26,8 @@ namespace EMStudio
         void SetupCameraController();
 
         AZStd::unique_ptr<AnimViewportRenderer> m_renderer;
-        AZStd::shared_ptr<AzFramework::RotateCameraInput> m_orbitRotateCamera;
-        AZStd::shared_ptr<AzFramework::TranslateCameraInput> m_orbitTranslateCamera;
-        AZStd::shared_ptr<AzFramework::OrbitDollyScrollCameraInput> m_orbitDollyScrollCamera;
+        AZStd::shared_ptr<AzFramework::RotateCameraInput> m_pivotRotateCamera;
+        AZStd::shared_ptr<AzFramework::TranslateCameraInput> m_pivotTranslateCamera;
+        AZStd::shared_ptr<AzFramework::PivotDollyScrollCameraInput> m_pivotDollyScrollCamera;
     };
 }

@@ -66,8 +66,6 @@ namespace EMStudio::ViewportUtil
 
     AzFramework::InputChannelId BuildRotateCameraInputId()
     {
-        AzFramework::InputChannelId inputChannelId(
-            EMStudio::ViewportUtil::GetRegistry(CameraOrbitLookIdSetting, AZStd::string("mouse_button_left")).c_str());
-        return inputChannelId;
+        return AzFramework::InputChannelId(GetRegistry(CameraOrbitLookIdSetting, AZStd::string("mouse_button_left")).c_str());
     }
 }
