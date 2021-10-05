@@ -67,7 +67,7 @@ namespace UnitTest
 
         AZ::IO::Path assetPath = AZStd::string_view{ AZ::Utils::GetProjectPath() };
         assetPath /= "Cache";
-        AZ::IO::FileIOBase::GetInstance()->SetAlias("@projectproductassets@", assetPath.c_str());
+        AZ::IO::FileIOBase::GetInstance()->SetAlias("@products@", assetPath.c_str());
 
         m_jsonRegistrationContext = AZStd::make_unique<AZ::JsonRegistrationContext>();
         m_jsonSystemComponent = AZStd::make_unique<AZ::JsonSystemComponent>();

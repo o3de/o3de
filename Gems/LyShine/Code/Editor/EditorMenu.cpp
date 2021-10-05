@@ -724,7 +724,7 @@ void EditorWindow::AddMenu_View_LanguageSetting(QMenu* viewMenu)
     // Iterate through the subdirectories of the localization folder. Each
     // directory corresponds to a different language containing localization
     // translations for that language.
-    AZStd::string fullLocPath(AZStd::string(gEnv->pFileIO->GetAlias("@projectproductassets@")) + "/" + AZStd::string(m_startupLocFolderName.toUtf8().constData()));
+    AZStd::string fullLocPath(AZStd::string(gEnv->pFileIO->GetAlias("@products@")) + "/" + AZStd::string(m_startupLocFolderName.toUtf8().constData()));
     QDir locDir(fullLocPath.c_str());
     locDir.setFilter(QDir::Dirs | QDir::NoDotAndDotDot);
     locDir.setSorting(QDir::Name);
@@ -754,7 +754,7 @@ void EditorWindow::AddMenu_View_LanguageSetting(QMenu* viewMenu)
         {
             // First try to locate the directory by name, without the "_xml"
             // suffix (in case it actually exists by this name).
-            QString fullLocPath(QString(gEnv->pFileIO->GetAlias("@projectproductassets@")) + "/" + m_startupLocFolderName + "/" + directoryName);
+            QString fullLocPath(QString(gEnv->pFileIO->GetAlias("@products@")) + "/" + m_startupLocFolderName + "/" + directoryName);
             QDir locDir(fullLocPath);
 
             // Try the directory with the expected suffix

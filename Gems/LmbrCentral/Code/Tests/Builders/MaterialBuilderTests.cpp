@@ -45,7 +45,7 @@ namespace UnitTest
 
             AZ::IO::Path assetRoot(AZ::Utils::GetProjectPath());
             assetRoot /= "Cache";
-            AZ::IO::FileIOBase::GetInstance()->SetAlias("@projectproductassets@", assetRoot.c_str());
+            AZ::IO::FileIOBase::GetInstance()->SetAlias("@products@", assetRoot.c_str());
         }
 
         void TearDown() override
@@ -234,7 +234,7 @@ namespace UnitTest
         AZStd::vector<const char*> expectedPaths = {
             "engineassets/textures/hex.dds",        // resolved from "/engineassets/textures/hex.dds"
             "engineassets/textures/hex_ddn.dds",    // resolved from "./engineassets/textures/hex_ddn.dds"
-            "engineassets/textures/hex_spec.dds"    // resolved from "@projectproductassets@/engineassets/textures/hex_spec.dds"
+            "engineassets/textures/hex_spec.dds"    // resolved from "@products@/engineassets/textures/hex_spec.dds"
         };
         TestSuccessCase("test_mat17.mtl", expectedPaths);
     }

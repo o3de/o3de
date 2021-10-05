@@ -74,11 +74,11 @@ namespace UnitTest
 
             m_application->Start(AzFramework::Application::Descriptor());
 
-            // By default @projectproductassets@ is setup to include the platform at the end. But this test is going to
+            // By default @products@ is setup to include the platform at the end. But this test is going to
             // loop over platforms and it will be included as part of the relative path of the file.
             // So the asset folder for these tests have to point to the cache project root folder, which
             // doesn't include the platform.
-            AZ::IO::FileIOBase::GetInstance()->SetAlias("@projectproductassets@", cacheProjectRootFolder.c_str());
+            AZ::IO::FileIOBase::GetInstance()->SetAlias("@products@", cacheProjectRootFolder.c_str());
 
             for (int idx = 0; idx < s_totalAssets; idx++)
             {

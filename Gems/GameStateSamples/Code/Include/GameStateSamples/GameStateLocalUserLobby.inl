@@ -223,7 +223,7 @@ namespace GameStateSamples
     ////////////////////////////////////////////////////////////////////////////////////////////////
     inline const char* GameStateLocalUserLobby::GetSignedInUserOverlayCanvasAssetPath()
     {
-        return "@projectproductassets@/ui/canvases/defaultsignedinusersoverlay.uicanvas";
+        return "@products@/ui/canvases/defaultsignedinusersoverlay.uicanvas";
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////

@@ -182,7 +182,7 @@ namespace GameStateSamples
     ////////////////////////////////////////////////////////////////////////////////////////////////
     inline const char* GameStateLevelPaused::GetPauseMenuCanvasAssetPath()
     {
-        return "@projectproductassets@/ui/canvases/defaultpausemenuscreen.uicanvas";
+        return "@products@/ui/canvases/defaultpausemenuscreen.uicanvas";
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////

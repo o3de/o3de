@@ -211,7 +211,7 @@ class Timeout:
         return time.time() > self.die_after
 
 
-screenshotsFolder = os.path.join(azlmbr.paths.projectproductassets, "Screenshots")
+screenshotsFolder = os.path.join(azlmbr.paths.products, "Screenshots")
 
 
 class ScreenshotHelper:

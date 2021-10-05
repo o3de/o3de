@@ -94,9 +94,9 @@ namespace AZ
             template<typename AssetDataT>
             Outcome<AZ::Data::Asset<AssetDataT>> LoadAsset(const AZ::Data::AssetId& assetId, [[maybe_unused]] const char* sourcePathForDebug)
             {
-                if (nullptr == AZ::IO::FileIOBase::GetInstance()->GetAlias("@projectproductassets@"))
+                if (nullptr == AZ::IO::FileIOBase::GetInstance()->GetAlias("@products@"))
                 {
-                    // The absence of "@projectproductassets@" is not necessarily the reason LoadAsset() can't be used in CreateJobs(), but it
+                    // The absence of "@products@" is not necessarily the reason LoadAsset() can't be used in CreateJobs(), but it
                     // is a symptom of calling LoadAsset() from CreateJobs() which is not supported.
                     AZ_Assert(false, "It appears AssetUtils::LoadAsset() is being called in CreateJobs(). It can only be used in ProcessJob().");
                     return AZ::Failure();

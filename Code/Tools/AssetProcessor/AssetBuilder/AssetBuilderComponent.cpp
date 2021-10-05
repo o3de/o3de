@@ -700,7 +700,7 @@ void AssetBuilderComponent::ProcessJob(const AssetBuilderSDK::ProcessJobFunction
     // Now set the paths and run the job.
     {
         // Save out the prior paths.
-        ScopedAliasSetter projectPlatformCacheAliasScope(*ioBase, "@projectproductassets@", newProjectCache.c_str());
+        ScopedAliasSetter projectPlatformCacheAliasScope(*ioBase, "@products@", newProjectCache.c_str());
         ScopedSettingsRegistrySetter cacheRootFolderScope(*settingsRegistry,
             AZ::SettingsRegistryMergeUtils::FilePathKey_CacheRootFolder, newProjectCache.Native());
 

@@ -433,7 +433,7 @@ namespace ScriptCanvasEditor
         GraphCanvas::AssetEditorAutomationRequestBus::Handler::BusConnect(ScriptCanvasEditor::AssetEditorId);
 
         AZStd::array<char, AZ::IO::MaxPathLength> unresolvedPath;
-        AZ::IO::FileIOBase::GetInstance()->ResolvePath("@projectproductassets@/translation/scriptcanvas_en_us.qm", unresolvedPath.data(), unresolvedPath.size());
+        AZ::IO::FileIOBase::GetInstance()->ResolvePath("@products@/translation/scriptcanvas_en_us.qm", unresolvedPath.data(), unresolvedPath.size());
 
         QString translationFilePath(unresolvedPath.data());
         if ( m_translator.load(QLocale::Language::English, translationFilePath) )

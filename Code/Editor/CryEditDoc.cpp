@@ -2159,7 +2159,7 @@ bool CCryEditDoc::LoadXmlArchiveArray(TDocMultiArchive& arrXmlAr, const QString&
         xmlAr.bLoading = true;
 
         // bound to the level folder, as if it were the assets folder.
-        // this mounts (whateverlevelname.ly) as @projectproductassets@/Levels/whateverlevelname/ and thus it works...
+        // this mounts (whateverlevelname.ly) as @products@/Levels/whateverlevelname/ and thus it works...
         bool openLevelPakFileSuccess = pIPak->OpenPack(levelPath.toUtf8().data(), absoluteLevelPath.toUtf8().data());
         if (!openLevelPakFileSuccess)
         {

@@ -1326,7 +1326,7 @@ namespace AssetProcessor
             //remove aliases if present
             normalisedAssetPath = AssetUtilities::NormalizeAndRemoveAlias(normalisedAssetPath);
 
-            if (!normalisedAssetPath.isEmpty()) // this happens if it comes in as just for example "@projectproductassets@/"
+            if (!normalisedAssetPath.isEmpty()) // this happens if it comes in as just for example "@products@/"
             {
                 AZStd::lock_guard<AZStd::mutex> lock(m_databaseMutex);
 

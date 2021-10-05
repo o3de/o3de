@@ -317,7 +317,7 @@ namespace GraphCanvas
 
     void StyleManager::LoadStyleSheet()
     {
-        AZStd::string file = AZStd::string::format("@projectproductassets@/%s", m_assetPath.c_str());
+        AZStd::string file = AZStd::string::format("@products@/%s", m_assetPath.c_str());
 
         AZ::IO::FileIOBase* fileBase = AZ::IO::FileIOBase::GetInstance();
 

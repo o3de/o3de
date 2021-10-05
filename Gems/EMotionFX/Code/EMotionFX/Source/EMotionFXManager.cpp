@@ -366,7 +366,7 @@ namespace EMotionFX
 
 
         // Initialize the asset cache folder path.
-        const char* assetCachePath = AZ::IO::FileIOBase::GetInstance()->GetAlias("@projectproductassets@");
+        const char* assetCachePath = AZ::IO::FileIOBase::GetInstance()->GetAlias("@products@");
         if (assetCachePath)
         {
             m_assetCacheFolder = assetCachePath;
@@ -386,7 +386,7 @@ namespace EMotionFX
         }
         else
         {
-            AZ_Warning("EMotionFX", false, "Failed to set asset cache path for alias '@projectproductassets@'.");
+            AZ_Warning("EMotionFX", false, "Failed to set asset cache path for alias '@products@'.");
         }
     }
 

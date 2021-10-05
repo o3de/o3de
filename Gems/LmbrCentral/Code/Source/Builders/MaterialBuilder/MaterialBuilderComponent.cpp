@@ -296,7 +296,7 @@ namespace MaterialBuilder
             AZStd::string resolvedPath;
             char fullPathBuffer[AZ_MAX_PATH_LEN] = {};
             // if there is an alias already at the front of the path, resolve it, and try to make it relative to the
-            //  cache (@projectproductassets@). If it can't, then error out.
+            //  cache (@products@). If it can't, then error out.
             // This case handles the possibility of aliases existing in texture paths in materials that is still supported
             //  by the legacy loading code, however it is not currently used, so the else path is always taken.
             if (aliasedPath[0] == '@')
@@ -308,7 +308,7 @@ namespace MaterialBuilder
                 }
                 resolvedPath = fullPathBuffer;
                 AzFramework::StringFunc::Path::Normalize(resolvedPath);
-                if (!AzFramework::StringFunc::Replace(resolvedPath, AZ::IO::FileIOBase::GetDirectInstance()->GetAlias("@projectproductassets@"), ""))
+                if (!AzFramework::StringFunc::Replace(resolvedPath, AZ::IO::FileIOBase::GetDirectInstance()->GetAlias("@products@"), ""))
                 {
                     AZ_Warning(s_materialBuilder, false, "Failed to resolve aliased texture path %s to be relative to the asset cache. Please make sure this alias resolves to a path within the asset cache.", aliasedPath.c_str());
                     return false;

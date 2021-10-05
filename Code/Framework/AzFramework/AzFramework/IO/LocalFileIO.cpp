@@ -294,7 +294,7 @@ namespace AZ
         void LocalFileIO::CheckInvalidWrite([[maybe_unused]] const char* path)
         {
 #if defined(AZ_ENABLE_TRACING)
-            const char* assetAliasPath = GetAlias("@projectproductassets@");
+            const char* assetAliasPath = GetAlias("@products@");
             if (path && assetAliasPath)
             {
                 const AZ::IO::PathView pathView(path);
@@ -487,8 +487,8 @@ namespace AZ
                 {
                     azstrncpy(resolvedPath, resolvedPathSize, path, pathLen + 1);
 
-                    //see if the absolute path matches the resolved value of @projectproductassets@, if it does lowercase the relative part
-                    LowerIfBeginsWith(resolvedPath, resolvedPathSize, GetAlias("@projectproductassets@"));
+                    //see if the absolute path matches the resolved value of @products@, if it does lowercase the relative part
+                    LowerIfBeginsWith(resolvedPath, resolvedPathSize, GetAlias("@products@"));
 
                     ToUnixSlashes(resolvedPath, resolvedPathSize);
                     return true;
@@ -499,16 +499,16 @@ namespace AZ
                 }
             }
 
-            constexpr AZStd::string_view productAssetAlias = "@projectproductassets@";
+            constexpr AZStd::string_view productAssetAlias = "@products@";
             // Add plus one for the path separator: <alias>/<path>
             constexpr size_t MaxPathSizeWithProductAssetAlias = AZ::IO::MaxPathLength + productAssetAlias.size() + 1;
             using RootedPathString = AZStd::fixed_string<MaxPathSizeWithProductAssetAlias>;
             RootedPathString rootedPathBuffer;
             const char* rootedPath = path;
-            // if the path does not begin with an alias, then it is assumed to begin with @projectproductassets@
+            // if the path does not begin with an alias, then it is assumed to begin with @products@
             if (path[0] != '@')
             {
-                if (GetAlias("@projectproductassets@"))
+                if (GetAlias("@products@"))
                 {
 
                     if (const size_t requiredSize = productAssetAlias.size() + strlen(path) + 1;
@@ -757,7 +757,7 @@ namespace AZ
                 resolvedPath[resolvedPathLen] = '\0';
 
                 // If the path started with one of the "asset cache" path aliases, lowercase the path
-                const char* projectPlatformCacheAliasPath = GetAlias("@projectproductassets@");
+                const char* projectPlatformCacheAliasPath = GetAlias("@products@");
 
                 const bool lowercasePath = projectPlatformCacheAliasPath != nullptr && AZ::StringFunc::StartsWith(resolvedPath, projectPlatformCacheAliasPath);
 

@@ -688,7 +688,7 @@ namespace AzFramework
                 pathAliases.clear();
                 if (m_settingsRegistry->Get(pathAliases.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_CacheRootFolder))
                 {
-                    fileIoBase->SetAlias("@projectproductassets@", pathAliases.c_str());
+                    fileIoBase->SetAlias("@products@", pathAliases.c_str());
                 }
                 pathAliases.clear();
                 if (m_settingsRegistry->Get(pathAliases.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_EngineRootFolder))

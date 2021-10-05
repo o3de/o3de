@@ -137,7 +137,7 @@ namespace UnitTest
 
                 if (auto fileIoBase = AZ::IO::FileIOBase::GetInstance(); fileIoBase != nullptr)
                 {
-                    fileIoBase->SetAlias("@projectproductassets@", m_tempDir.GetDirectory());
+                    fileIoBase->SetAlias("@products@", m_tempDir.GetDirectory());
                 }
             }
 

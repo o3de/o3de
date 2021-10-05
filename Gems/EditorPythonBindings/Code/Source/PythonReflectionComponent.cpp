@@ -200,7 +200,7 @@ namespace EditorPythonBindings
             });
 
             RegisterAliasIfExists(pathsModule, "@engroot@", "engroot");
-            RegisterAliasIfExists(pathsModule, "@projectproductassets@", "projectproductassets");
+            RegisterAliasIfExists(pathsModule, "@products@", "products");
             RegisterAliasIfExists(pathsModule, "@projectroot@", "projectroot");
             RegisterAliasIfExists(pathsModule, "@log@", "log");
 

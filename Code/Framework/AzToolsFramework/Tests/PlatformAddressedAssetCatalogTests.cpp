@@ -57,11 +57,11 @@ namespace UnitTest
             // in the unit tests.
             AZ::UserSettingsComponentRequestBus::Broadcast(&AZ::UserSettingsComponentRequests::DisableSaveOnFinalize);
 
-            // By default @projectproductassets@ is setup to include the platform at the end. But this test is going to
+            // By default @products@ is setup to include the platform at the end. But this test is going to
             // loop over all platforms and it will be included as part of the relative path of the file.
             // So the asset folder for these tests have to point to the cache project root folder, which
             // doesn't include the platform.
-            AZ::IO::FileIOBase::GetInstance()->SetAlias("@projectproductassets@", cacheProjectRootFolder.c_str());
+            AZ::IO::FileIOBase::GetInstance()->SetAlias("@products@", cacheProjectRootFolder.c_str());
 
             for (int platformNum = AzFramework::PlatformId::PC; platformNum < AzFramework::PlatformId::NumPlatformIds; ++platformNum)
             {

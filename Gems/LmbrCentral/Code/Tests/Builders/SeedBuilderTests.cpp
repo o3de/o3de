@@ -33,7 +33,7 @@ class SeedBuilderTests
         AZ::UserSettingsComponentRequestBus::Broadcast(&AZ::UserSettingsComponentRequests::DisableSaveOnFinalize);
 
         const char* dir = m_app.GetExecutableFolder();
-        AZ::IO::FileIOBase::GetInstance()->SetAlias("@projectproductassets@", dir);
+        AZ::IO::FileIOBase::GetInstance()->SetAlias("@products@", dir);
         AZ::UserSettingsComponentRequestBus::Broadcast(&AZ::UserSettingsComponentRequests::DisableSaveOnFinalize);
     }
 

@@ -907,12 +907,12 @@ void CSequenceBatchRenderDialog::CaptureItemStart()
     folder += "/";
     folder += itemText;
 
-    // If this is a relative path, prepend the @projectproductassets@ folder to match where the Renderer is going
+    // If this is a relative path, prepend the @products@ folder to match where the Renderer is going
     // to dump the frame buffer image captures.
     if (AzFramework::StringFunc::Path::IsRelative(folder.toUtf8().data()))
     {
         AZStd::string absolutePath;
-        AZStd::string assetsRoot = AZ::IO::FileIOBase::GetInstance()->GetAlias("@projectproductassets@");
+        AZStd::string assetsRoot = AZ::IO::FileIOBase::GetInstance()->GetAlias("@products@");
         AzFramework::StringFunc::Path::Join(assetsRoot.c_str(), folder.toUtf8().data(), absolutePath);
         folder = absolutePath.c_str();
     }

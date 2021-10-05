@@ -98,7 +98,7 @@ namespace UnitTest
             AZ::IO::FileIOBase::SetInstance(nullptr);
             AZ::IO::FileIOBase::SetInstance(m_data->m_localFileIO.get());
 
-            AZ::IO::FileIOBase::GetInstance()->SetAlias("@projectproductassets@", testAssetRoot);
+            AZ::IO::FileIOBase::GetInstance()->SetAlias("@products@", testAssetRoot);
 
             m_data->m_excludeFileQueryManager = AZStd::make_unique<FileTagQueryManagerTest>(FileTagType::Exclude);
             m_data->m_includeFileQueryManager = AZStd::make_unique<FileTagQueryManagerTest>(FileTagType::Include);
@@ -184,7 +184,7 @@ namespace UnitTest
     TEST_F(FileTagTest, FileTags_QueryByAbsoluteFilePath_Valid)
     {
         AZStd::string absoluteDummyFilePath = DummyFile;
-        EXPECT_TRUE(AzFramework::StringFunc::AssetDatabasePath::Join("@projectproductassets@", absoluteDummyFilePath.c_str(), absoluteDummyFilePath));
+        EXPECT_TRUE(AzFramework::StringFunc::AssetDatabasePath::Join("@products@", absoluteDummyFilePath.c_str(), absoluteDummyFilePath));
 
         AZStd::set<AZStd::string> tags = m_data->m_excludeFileQueryManager->GetTags(absoluteDummyFilePath);
 
@@ -196,7 +196,7 @@ namespace UnitTest
         ASSERT_EQ(tags.size(), 0);
 
         AZStd::string absoluteAnotherDummyFilePath = AnotherDummyFile;
-        EXPECT_TRUE(AzFramework::StringFunc::AssetDatabasePath::Join("@projectproductassets@", absoluteAnotherDummyFilePath.c_str(), absoluteAnotherDummyFilePath));
+        EXPECT_TRUE(AzFramework::StringFunc::AssetDatabasePath::Join("@products@", absoluteAnotherDummyFilePath.c_str(), absoluteAnotherDummyFilePath));
 
         tags = m_data->m_includeFileQueryManager->GetTags(absoluteAnotherDummyFilePath);
         ASSERT_EQ(tags.size(), 2);
@@ -213,7 +213,7 @@ namespace UnitTest
 
         // Set the customized alias
         AZStd::string customizedAliasFilePath;
-        const char* assetsAlias = AZ::IO::FileIOBase::GetInstance()->GetAlias("@projectproductassets@");
+        const char* assetsAlias = AZ::IO::FileIOBase::GetInstance()->GetAlias("@products@");
         AzFramework::StringFunc::AssetDatabasePath::Join(assetsAlias, "foo", customizedAliasFilePath);
         AZ::IO::FileIOBase::GetInstance()->SetAlias("@customizedalias@", customizedAliasFilePath.c_str());
 

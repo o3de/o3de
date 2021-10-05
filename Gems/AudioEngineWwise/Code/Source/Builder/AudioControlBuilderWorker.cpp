@@ -188,7 +188,7 @@ namespace AudioControlBuilder
                             }
 
                             // Prepend the bank name with the relative path to the wwise sounds folder to get relative path to the bank from
-                            //  the @projectproductassets@ alias and push that into the list of banks referenced.
+                            //  the @products@ alias and push that into the list of banks referenced.
                             AZStd::string soundsPrefix = Audio::Wwise::DefaultBanksPath;
                             banksReferenced.emplace_back(soundsPrefix + bankNameAttribute->value());
 

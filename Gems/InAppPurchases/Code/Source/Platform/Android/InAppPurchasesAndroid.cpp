@@ -224,7 +224,7 @@ namespace InAppPurchases
 
         AZ::IO::HandleType fileHandle = AZ::IO::InvalidHandle;
         AZ::u64 fileSize = 0;
-        if (!fileReader->Open("@projectproductassets@/product_ids.json", AZ::IO::OpenMode::ModeRead, fileHandle))
+        if (!fileReader->Open("@products@/product_ids.json", AZ::IO::OpenMode::ModeRead, fileHandle))
         {
             AZ_TracePrintf("LumberyardInAppBilling", "Unable to open file product_ids.json\n");
             return;

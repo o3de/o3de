@@ -5,11 +5,11 @@
                 "DeprecatedAliases": [
                     {
                         "OldAlias": "@assets@",
-                        "NewAlias": "@projectproductassets@"
+                        "NewAlias": "@products@"
                     },
                     {
                         "OldAlias": "@root@",
-                        "NewAlias": "@projectproductassets@"
+                        "NewAlias": "@products@"
                     },
                     {
                         "OldAlias": "@devassets@",

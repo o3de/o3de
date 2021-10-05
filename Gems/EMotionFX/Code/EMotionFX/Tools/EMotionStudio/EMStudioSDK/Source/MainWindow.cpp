@@ -1359,7 +1359,7 @@ namespace EMStudio
     void MainWindow::LoadCharacter(const AZ::Data::AssetId& actorAssetId, const AZ::Data::AssetId& animgraphId, const AZ::Data::AssetId& motionSetId)
     {
         m_characterFiles.clear();
-        AZStd::string cachePath = gEnv->pFileIO->GetAlias("@projectproductassets@");
+        AZStd::string cachePath = gEnv->pFileIO->GetAlias("@products@");
         AZStd::string filename;
         AzFramework::StringFunc::AssetDatabasePath::Normalize(cachePath);
 
@@ -2312,7 +2312,7 @@ namespace EMStudio
 
     void MainWindow::Activate(const AZ::Data::AssetId& actorAssetId, const EMotionFX::AnimGraph* animGraph, const EMotionFX::MotionSet* motionSet)
     {
-        AZStd::string cachePath = gEnv->pFileIO->GetAlias("@projectproductassets@");
+        AZStd::string cachePath = gEnv->pFileIO->GetAlias("@products@");
         AZStd::string filename;
         AzFramework::StringFunc::AssetDatabasePath::Normalize(cachePath);
 

@@ -33,14 +33,14 @@ namespace AzGameFramework
         // from the Cache folder
         AZ::IO::FixedMaxPath enginePakPath = AZ::Utils::GetExecutableDirectory();
         enginePakPath /= "engine.pak";
-        if (!m_archive->OpenPack("@projectproductassets@", enginePakPath.Native()))
+        if (!m_archive->OpenPack("@products@", enginePakPath.Native()))
         {
             enginePakPath.clear();
             if (m_settingsRegistry->Get(enginePakPath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_CacheRootFolder))
             {
                 // fall back to checking Project Cache Root.
                 enginePakPath /= "engine.pak";
-                m_archive->OpenPack("@projectproductassets@", enginePakPath.Native());
+                m_archive->OpenPack("@products@", enginePakPath.Native());
             }
         }
     }

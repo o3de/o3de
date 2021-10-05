@@ -45,7 +45,7 @@ namespace UnitTest
 
             AZ::IO::Path assetRoot(AZ::Utils::GetProjectPath());
             assetRoot /= "Cache";
-            AZ::IO::FileIOBase::GetInstance()->SetAlias("@projectproductassets@", assetRoot.c_str());
+            AZ::IO::FileIOBase::GetInstance()->SetAlias("@products@", assetRoot.c_str());
         }
 
         void TearDown() override

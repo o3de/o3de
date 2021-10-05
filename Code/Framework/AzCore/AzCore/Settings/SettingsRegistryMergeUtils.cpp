@@ -654,7 +654,7 @@ namespace AZ::SettingsRegistryMergeUtils
                 }
                 else
                 {
-                    // Cache: root - same as the @projectproductassets@ alias, this is the starting path for cache files.
+                    // Cache: root - same as the @products@ alias, this is the starting path for cache files.
                     path = normalizedProjectPath / "Cache";
                     registry.Set(FilePathKey_CacheProjectRootFolder, path.LexicallyNormal().Native());
                     path /= assetPlatform;

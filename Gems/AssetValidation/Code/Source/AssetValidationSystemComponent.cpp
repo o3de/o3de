@@ -149,7 +149,7 @@ namespace AssetValidation
         AZStd::string lowerAsset{ assetPath };
         AZStd::replace(lowerAsset.begin(), lowerAsset.end(), AZ_WRONG_DATABASE_SEPARATOR, AZ_CORRECT_DATABASE_SEPARATOR);
 
-        const AZStd::vector<AZStd::string> prefixes = { "./", "@projectproductassets@/" };
+        const AZStd::vector<AZStd::string> prefixes = { "./", "@products@/" };
         for (const AZStd::string& prefix : prefixes)
         {
             if (lowerAsset.starts_with(prefix))

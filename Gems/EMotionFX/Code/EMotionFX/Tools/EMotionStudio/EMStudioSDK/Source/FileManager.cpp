@@ -72,7 +72,7 @@ namespace EMStudio
     {
         AZStd::string filename;
 
-        AZStd::string assetCachePath = AZ::IO::FileIOBase::GetInstance()->GetAlias("@projectproductassets@");
+        AZStd::string assetCachePath = AZ::IO::FileIOBase::GetInstance()->GetAlias("@products@");
         AzFramework::StringFunc::AssetDatabasePath::Normalize(assetCachePath);
 
         AZStd::string relativePath;
@@ -373,7 +373,7 @@ namespace EMStudio
                 const ProductAssetBrowserEntry* product = azrtti_cast<const ProductAssetBrowserEntry*>(assetBrowserEntry);
 
                 filename.clear();
-                AZStd::string cachePath = AZ::IO::FileIOBase::GetInstance()->GetAlias("@projectproductassets@");
+                AZStd::string cachePath = AZ::IO::FileIOBase::GetInstance()->GetAlias("@products@");
                 AzFramework::StringFunc::AssetDatabasePath::Normalize(cachePath);
                 AzFramework::StringFunc::AssetDatabasePath::Join(cachePath.c_str(), product->GetRelativePath().c_str(), filename);
 

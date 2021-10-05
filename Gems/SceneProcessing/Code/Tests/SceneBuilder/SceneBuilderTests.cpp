@@ -41,7 +41,7 @@ protected:
         AZ::UserSettingsComponentRequestBus::Broadcast(&AZ::UserSettingsComponentRequests::DisableSaveOnFinalize);
 
         m_workingDirectory = m_app.GetExecutableFolder();
-        AZ::IO::FileIOBase::GetInstance()->SetAlias("@projectproductassets@", m_workingDirectory);
+        AZ::IO::FileIOBase::GetInstance()->SetAlias("@products@", m_workingDirectory);
     }
 
     void TearDown() override

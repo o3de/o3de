@@ -39,7 +39,7 @@ protected:
         assetRoot /= "Cache";
 
         AZ::IO::FileIOBase::GetInstance()->SetAlias("@root@", assetRoot.c_str());
-        AZ::IO::FileIOBase::GetInstance()->SetAlias("@projectproductassets@", assetRoot.c_str());
+        AZ::IO::FileIOBase::GetInstance()->SetAlias("@products@", assetRoot.c_str());
     }
 
     void TearDown() override

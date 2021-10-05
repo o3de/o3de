@@ -22,7 +22,7 @@
 
 namespace LmbrCentral
 {
-    const char bundleRoot[] = "@projectproductassets@";
+    const char bundleRoot[] = "@products@";
 
     void BundlingSystemComponent::Activate()
     {

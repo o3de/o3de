@@ -16,7 +16,7 @@ namespace CertificateManager
 {
     static bool ReadFileIntoString(const char* filename, AZStd::vector<char>& outBuffer)
     {
-        AZStd::string certificatePath = "@projectproductassets@/certificates/";
+        AZStd::string certificatePath = "@products@/certificates/";
         certificatePath.append(filename);
 
         AZ::IO::FileIOBase* fileBase = AZ::IO::FileIOBase::GetInstance();

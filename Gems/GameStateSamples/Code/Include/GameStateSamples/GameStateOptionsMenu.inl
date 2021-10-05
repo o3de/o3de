@@ -215,7 +215,7 @@ namespace GameStateSamples
     ////////////////////////////////////////////////////////////////////////////////////////////////
     inline const char* GameStateOptionsMenu::GetOptionsMenuCanvasAssetPath()
     {
-        return "@projectproductassets@/ui/canvases/defaultoptionsmenuscreen.uicanvas";
+        return "@products@/ui/canvases/defaultoptionsmenuscreen.uicanvas";
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////

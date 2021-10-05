@@ -253,10 +253,10 @@ namespace UnitTest
             AZ_TEST_ASSERT(serializeContext != nullptr);
             Audio::Wwise::ConfigurationSettings::Reflect(serializeContext);
 
-            // Set the @projectproductassets@ alias to the path where *this* cpp file lives.
+            // Set the @products@ alias to the path where *this* cpp file lives.
             AZStd::string rootFolder(AZ::Test::GetCurrentExecutablePath());
             AZ::StringFunc::Path::Join(rootFolder.c_str(), "Test.Assets/Gems/AudioEngineWwise", rootFolder);
-            m_fileIO->SetAlias("@projectproductassets@", rootFolder.c_str());
+            m_fileIO->SetAlias("@products@", rootFolder.c_str());
 
             // So we don't have to compute it in each test...
             AZStd::string defaultBanksPath(Audio::Wwise::DefaultBanksPath);

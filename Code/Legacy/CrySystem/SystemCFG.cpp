@@ -292,10 +292,10 @@ static bool ParseSystemConfig(const AZStd::string& strSysConfigFilePath, ILoadCo
             // to either root or assets/config.  this is done so that code can just request a simple file name and get its data
             if (
                 !(file.Open(filename.c_str(), "rb")) &&
-                !(file.Open((AZStd::string("@projectproductassets@/") + filename).c_str(), "rb")) &&
-                !(file.Open((AZStd::string("@projectproductassets@/") + filename).c_str(), "rb")) &&
-                !(file.Open((AZStd::string("@projectproductassets@/config/") + filename).c_str(), "rb")) &&
-                !(file.Open((AZStd::string("@projectproductassets@/config/spec/") + filename).c_str(), "rb"))
+                !(file.Open((AZStd::string("@products@/") + filename).c_str(), "rb")) &&
+                !(file.Open((AZStd::string("@products@/") + filename).c_str(), "rb")) &&
+                !(file.Open((AZStd::string("@products@/config/") + filename).c_str(), "rb")) &&
+                !(file.Open((AZStd::string("@products@/config/spec/") + filename).c_str(), "rb"))
                 )
             {
                 if (warnIfMissing)

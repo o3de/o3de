@@ -796,7 +796,7 @@ void CSystem::OpenBasicPaks()
     bBasicPaksLoaded = true;
 
     // open pak files
-    constexpr AZStd::string_view paksFolder = "@projectproductassets@/*.pak"; // (@projectproductassets@ assumed)
+    constexpr AZStd::string_view paksFolder = "@products@/*.pak"; // (@products@ assumed)
     m_env.pCryPak->OpenPacks(paksFolder);
 
     InlineInitializationProcessing("CSystem::OpenBasicPaks OpenPacks( paksFolder.c_str() )");
@@ -805,7 +805,7 @@ void CSystem::OpenBasicPaks()
     // Open engine packs
     //////////////////////////////////////////////////////////////////////////
 
-    const char* const assetsDir = "@projectproductassets@";
+    const char* const assetsDir = "@products@";
 
     // After game paks to have same search order as with files on disk
     m_env.pCryPak->OpenPack(assetsDir, "engine.pak");
@@ -874,7 +874,7 @@ void CSystem::OpenLanguageAudioPak([[maybe_unused]] const char* sLanguage)
 
     if (!AZ::StringFunc::Equal(sLocalizationFolder, "Languages", false))
     {
-        sLocalizationFolder = "@projectproductassets@";
+        sLocalizationFolder = "@products@";
     }
 
     // load localized pak with crc32 filenames on consoles to save memory.

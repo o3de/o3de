@@ -79,7 +79,7 @@ namespace
         // Normalize path
         EBUS_EVENT(AzFramework::ApplicationRequests::Bus, NormalizePathKeepCase, assetPath);
 
-        // Check for any leading slashes as the specified path should be a relative path to the @projectproductassets@ alias.
+        // Check for any leading slashes as the specified path should be a relative path to the @products@ alias.
         // This eliminates inconsistencies between lower level file opens on different platforms
         int numCharsToErase = 0;
         for (; numCharsToErase < assetPath.length(); ++numCharsToErase)

@@ -43,7 +43,7 @@ namespace AZ::IO
         //
 
         //! Creates a request to read a file.
-        //! @param relativePath Relative path to the file to load. This can include aliases such as @projectproductassets@.
+        //! @param relativePath Relative path to the file to load. This can include aliases such as @products@.
         //! @param outputBuffer The buffer that will hold the loaded data. This must be able to at least hold "size" number of bytes.
         //! @param outputBufferSize The size of the buffer that will hold the loaded data. This must be equal or larger than "size" number of bytes.
         //! @param readSize The number of bytes to read from the file at the relative path.
@@ -64,7 +64,7 @@ namespace AZ::IO
 
         //! Sets a request to the read command.
         //! @param request The request that will store the read command.
-        //! @param relativePath Relative path to the file to load. This can include aliases such as @projectproductassets@.
+        //! @param relativePath Relative path to the file to load. This can include aliases such as @products@.
         //! @param outputBuffer The buffer that will hold the loaded data. This must be able to at least hold "size" number of bytes.
         //! @param outputBufferSize The size of the buffer that will hold the loaded data. This must be equal or larger than "size" number of bytes.
         //! @param readSize The number of bytes to read from the file at the relative path.
@@ -85,7 +85,7 @@ namespace AZ::IO
             size_t offset = 0) = 0;
 
         //! Creates a request to the read command.
-        //! @param relativePath Relative path to the file to load. This can include aliases such as @projectproductassets@.
+        //! @param relativePath Relative path to the file to load. This can include aliases such as @products@.
         //! @param allocator The allocator used to reserve and release memory for the read request. Memory allocated this way will
         //!         be automatically freed when there are no more references to the FileRequestPtr. To avoid this, use GetReadRequestResult
         //!         to claim the pointer and use the provided allocator to release the memory at a later point.
@@ -108,7 +108,7 @@ namespace AZ::IO
 
         //! Sets a request to the read command.
         //! @param request The request that will store the read command.
-        //! @param relativePath Relative path to the file to load. This can include aliases such as @projectproductassets@.
+        //! @param relativePath Relative path to the file to load. This can include aliases such as @products@.
         //! @param allocator The allocator used to reserve and release memory for the read request. Memory allocated this way will
         //!         be automatically freed when there are no more references to the FileRequestPtr. To avoid this, use GetReadRequestResult
         //!         to claim the pointer and use the provided allocator to release the memory at a later point.
@@ -177,7 +177,7 @@ namespace AZ::IO
         //! DestroyDedicatedCache is called. Typical use of a dedicated cache is for files that have their own compression
         //! and are periodically visited to read a section, e.g. streaming video play or streaming audio banks. This
         //! request will fail if there are no nodes in Streamer's stack that deal with dedicated caches.
-        //! @param relativePath Relative path to the file to receive a dedicated cache. This can include aliases such as @projectproductassets@.
+        //! @param relativePath Relative path to the file to receive a dedicated cache. This can include aliases such as @products@.
         //! @return A smart pointer to the newly created request with the command to create a dedicated cache.
         virtual FileRequestPtr CreateDedicatedCache(AZStd::string_view relativePath) = 0;
 
@@ -186,25 +186,25 @@ namespace AZ::IO
         //! and are periodically visited to read a section, e.g. streaming video play or streaming audio banks. This
         //! request will fail if there are no nodes in Streamer's stack that deal with dedicated caches.
         //! @param request The request that will store the command to create a dedicated cache.
-        //! @param relativePath Relative path to the file to receive a dedicated cache. This can include aliases such as @projectproductassets@.
+        //! @param relativePath Relative path to the file to receive a dedicated cache. This can include aliases such as @products@.
         //! @return A reference to the provided request.
         virtual FileRequestPtr& CreateDedicatedCache(FileRequestPtr& request, AZStd::string_view relativePath) = 0;
 
         //! Destroy a dedicated cache created by CreateDedicatedCache. See CreateDedicatedCache for more details.
-        //! @param relativePath Relative path to the file that got a dedicated cache. This can include aliases such as @projectproductassets@.
+        //! @param relativePath Relative path to the file that got a dedicated cache. This can include aliases such as @products@.
         //! @return A smart pointer to the newly created request with the command to destroy a dedicated cache.
         virtual FileRequestPtr DestroyDedicatedCache(AZStd::string_view relativePath) = 0;
 
         //! Destroy a dedicated cache created by CreateDedicatedCache. See CreateDedicatedCache for more details.
         //! @param request The request that will store the command to destroy a dedicated cache.
-        //! @param relativePath Relative path to the file that got a dedicated cache. This can include aliases such as @projectproductassets@.
+        //! @param relativePath Relative path to the file that got a dedicated cache. This can include aliases such as @products@.
         //! @return A reference to the provided request.
         virtual FileRequestPtr& DestroyDedicatedCache(FileRequestPtr& request, AZStd::string_view relativePath) = 0;
 
         //! Clears a file from all caches in use by Streamer.
         //! Flushing the cache will cause the streaming stack to pause processing until it's idle before issuing the flush and resuming
         //! processing. This can result in a noticeable interruption.
-        //! @param relativePath Relative path to the file that will be cleared from all caches. This can include aliases such as @projectproductassets@.
+        //! @param relativePath Relative path to the file that will be cleared from all caches. This can include aliases such as @products@.
         //! @return A smart pointer to the newly created request with the command to flush a file from all caches.
         virtual FileRequestPtr FlushCache(AZStd::string_view relativePath) = 0;
 
@@ -212,7 +212,7 @@ namespace AZ::IO
         //! Flushing the cache will cause the streaming stack to pause processing until it's idle before issuing the flush and resuming
         //! processing. This can result in a noticeable interruption.
         //! @param request The request that will store the command to flush a file from all caches.
-        //! @param relativePath Relative path to the file that will be cleared from all caches. This can include aliases such as @projectproductassets@.
+        //! @param relativePath Relative path to the file that will be cleared from all caches. This can include aliases such as @products@.
         //! @return A reference to the provided request.
         virtual FileRequestPtr& FlushCache(FileRequestPtr& request, AZStd::string_view relativePath) = 0;
 

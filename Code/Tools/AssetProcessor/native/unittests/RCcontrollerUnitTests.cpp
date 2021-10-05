@@ -270,7 +270,7 @@ void RCcontrollerUnitTests::RunRCControllerTests()
 
     // EXACT MATCH TEST (with prefixes and such)
     NetworkRequestID requestID(1, 1234);
-    m_rcController.OnRequestCompileGroup(requestID, "pc", "@projectproductassets@/blah/test.dds", AZ::Data::AssetId());
+    m_rcController.OnRequestCompileGroup(requestID, "pc", "@products@/blah/test.dds", AZ::Data::AssetId());
     QCoreApplication::processEvents(QEventLoop::AllEvents);
 
     // this should have matched exactly one item, and when we finish that item, it should terminate:
