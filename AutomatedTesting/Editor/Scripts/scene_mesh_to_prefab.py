@@ -19,10 +19,6 @@ def log_exception_traceback():
     data = traceback.format_exception(exc_type, exc_value, exc_tb)
     print(str(data))
 
-def raise_error(message):
-    print (f'ERROR - {message}');
-    raise RuntimeError(f'[ERROR]: {message}');
-
 def get_mesh_node_names(sceneGraph):
     import azlmbr.scene as sceneApi
     import azlmbr.scene.graph
@@ -66,60 +62,78 @@ def update_manifest(scene):
     from scene_api import scene_data as sceneData
 
     graph = sceneData.SceneGraph(scene.graph)
+    # Get a list of all the mesh nodes, as well as all the nodes
     mesh_name_list, all_node_paths = get_mesh_node_names(graph)
     scene_manifest = sceneData.SceneManifest()
-    source_basepath = scene.watchFolder
-
+    
     clean_filename = scene.sourceFilename.replace('.', '_')
     
+    # Compute the filename of the scene file
+    source_basepath = scene.watchFolder
     source_relative_path = os.path.dirname(os.path.relpath(clean_filename, source_basepath))
     source_filename_only = os.path.basename(clean_filename)
 
     created_entities = []
 
+    # Loop every mesh node in the scene
     for activeMeshIndex in range(len(mesh_name_list)):
         mesh_name = mesh_name_list[activeMeshIndex]
         mesh_path = mesh_name.get_path()
-        mesh_group_name = '{}_{}'.format(source_filename_only, mesh_name.get_name()).replace('|', '_')
+        # Create a unique mesh group name using the filename + node name
+        mesh_group_name = '{}_{}'.format(source_filename_only, mesh_name.get_name())
+        # Remove forbidden filename characters from the name since this will become a file on disk later
+        mesh_group_name = "".join(char for char in mesh_group_name if char not in "|<>:\"/?*\\")
+        # Add the MeshGroup to the manifest and give it a unique ID
         mesh_group = scene_manifest.add_mesh_group(mesh_group_name)
         mesh_group['id'] = '{' + str(uuid.uuid5(uuid.NAMESPACE_DNS, source_filename_only + mesh_path)) + '}'
+        # Set our current node as the only node that is included in this MeshGroup
         scene_manifest.mesh_group_select_node(mesh_group, mesh_path)
 
+        # Explicitly remove all other nodes to prevent implicit inclusions
         for node in all_node_paths:
             if node != mesh_path:
                 scene_manifest.mesh_group_unselect_node(mesh_group, node)
 
+        # Create an editor entity
         entity_id = azlmbr.entity.EntityUtilityBus(azlmbr.bus.Broadcast, "CreateEditorReadyEntity", mesh_group_name)
+        # Add an EditorMeshComponent to the entity
         editor_mesh_component = azlmbr.entity.EntityUtilityBus(azlmbr.bus.Broadcast, "GetOrAddComponentByTypeName", entity_id, "AZ::Render::EditorMeshComponent")
+        # Set the ModelAsset assetHint to the relative path of the input asset + the name of the MeshGroup we just created + the azmodel extension
+        # The MeshGroup we created will be output as a product in the asset's path named mesh_group_name.azmodel
+        # The assetHint will be converted to an AssetId later during prefab loading
         json_update = json.dumps({
                             "Controller": { "Configuration": { "ModelAsset": {
                                 "assetHint": os.path.join(source_relative_path, mesh_group_name) + ".azmodel" }}}
                             });
+        # Apply the JSON above to the component we created
         result = azlmbr.entity.EntityUtilityBus(azlmbr.bus.Broadcast, "UpdateComponentForEntity", entity_id, editor_mesh_component, json_update)
 
         if not result:
-            raise_error("UpdateComponentForEntity failed")
-            return
+            raise RuntimeError("UpdateComponentForEntity failed")
 
+        # Keep track of the entity we set up, we'll add them all to the prefab we're creating later
         created_entities.append(entity_id)
 
+    # Create a prefab with all our entities
     prefab_filename = source_filename_only + ".prefab"
     created_template_id = azlmbr.prefab.PrefabSystemScriptingBus(azlmbr.bus.Broadcast, "CreatePrefab", created_entities, prefab_filename)
 
     if created_template_id == azlmbr.prefab.InvalidTemplateId:
-        raise_error("CreatePrefab {} failed".format(prefab_filename))
-        return
+        raise RuntimeError("CreatePrefab {} failed".format(prefab_filename))
 
+    # Convert the prefab to a JSON string
     output = azlmbr.prefab.PrefabLoaderScriptingBus(azlmbr.bus.Broadcast, "SaveTemplateToString", created_template_id)
 
     if output.IsSuccess():
         jsonString = output.GetValue()
         uuid = azlmbr.math.Uuid_CreateRandom().ToString()
         jsonResult = json.loads(jsonString)
+        # Add a PrefabGroup to the manifest and store the JSON on it
         scene_manifest.add_prefab_group(source_filename_only, uuid, jsonResult)
     else:
-        raise_error("SaveTemplateToString failed for template id {}, prefab {}".format(created_template_id, prefab_filename))
+        raise RuntimeError("SaveTemplateToString failed for template id {}, prefab {}".format(created_template_id, prefab_filename))
 
+    # Convert the manifest to a JSON string and return it
     new_manifest = scene_manifest.export()
 
     return new_manifest
@@ -130,7 +144,8 @@ def on_update_manifest(args):
     try:
         scene = args[0]
         return update_manifest(scene)
-    except:
+    except RuntimeError as err:
+        print (f'ERROR - {err}')
         log_exception_traceback()
 
     global sceneJobHandler
