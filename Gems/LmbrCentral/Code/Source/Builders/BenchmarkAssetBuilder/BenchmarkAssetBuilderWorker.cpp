@@ -253,10 +253,12 @@ namespace BenchmarkAssetBuilder
         // and 2 bytes of storage for text-based formats.
         // This is just an approximate total size because there's a bit of additional overhead
         // for asset headers and the other fields in the generated asset.
+#if defined(AZ_ENABLE_TRACING)
         uint64_t approximateTotalStorageBytes =
             (settingsPtr->m_assetStorageType == AZ::DataStream::StreamType::ST_BINARY)
             ? UINT64_C(1) * totalGeneratedBytes
             : UINT64_C(2) * totalGeneratedBytes;
+#endif
 
         AZ_TracePrintf(AssetBuilderSDK::InfoWindow,
             "Benchmark asset generation will generate %" PRIu64 " assets "

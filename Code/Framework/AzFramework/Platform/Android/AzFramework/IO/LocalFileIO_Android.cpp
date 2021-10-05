@@ -40,26 +40,6 @@ namespace AZ
 {
     namespace IO
     {
-        bool LocalFileIO::IsDirectory(const char* filePath)
-        {
-            ANDROID_IO_PROFILE_SECTION_ARGS("IsDir:%s", filePath);
-
-            char resolvedPath[AZ_MAX_PATH_LEN];
-            ResolvePath(filePath, resolvedPath, AZ_MAX_PATH_LEN);
-
-            if (AZ::Android::Utils::IsApkPath(resolvedPath))
-            {
-                return AZ::Android::APKFileHandler::IsDirectory(AZ::Android::Utils::StripApkPrefix(resolvedPath).c_str());
-            }
-
-            struct stat result;
-            if (stat(resolvedPath, &result) == 0)
-            {
-                return S_ISDIR(result.st_mode);
-            }
-            return false;
-        }
-
         Result LocalFileIO::Copy(const char* sourceFilePath, const char* destinationFilePath)
         {
             char resolvedSourcePath[AZ_MAX_PATH_LEN];

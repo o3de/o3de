@@ -52,7 +52,7 @@ namespace AzToolsFramework
             AZ::Interface<InstanceUpdateExecutorInterface>::Unregister(this);
         }
 
-        void InstanceUpdateExecutor::AddTemplateInstancesToQueue(TemplateId instanceTemplateId, InstanceOptionalReference instanceToExclude)
+        void InstanceUpdateExecutor::AddTemplateInstancesToQueue(TemplateId instanceTemplateId, bool immediate, InstanceOptionalReference instanceToExclude)
         {
             auto findInstancesResult =
                 m_templateInstanceMapperInterface->FindInstancesOwnedByTemplate(instanceTemplateId);
@@ -78,6 +78,11 @@ namespace AzToolsFramework
                 {
                     m_instancesUpdateQueue.emplace_back(instance);
                 }
+            }
+
+            if (immediate)
+            {
+                UpdateTemplateInstancesInQueue();
             }
         }
 
