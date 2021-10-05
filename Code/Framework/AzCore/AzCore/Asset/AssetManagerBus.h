@@ -227,10 +227,9 @@ namespace AZ
 
         using AssetCatalogRequestBus = AZ::EBus<AssetCatalogRequests>;
 
-        AssetCatalogRequests::PostThreadDispatchInvoker::~PostThreadDispatchInvoker()
+        inline AssetCatalogRequests::PostThreadDispatchInvoker::~PostThreadDispatchInvoker()
         {
-            auto* context = AssetCatalogRequestBus::GetContext();
-            if (!AssetCatalogRequestBus::IsInDispatchThisThread(context))
+            if (!AssetCatalogRequestBus::IsInDispatchThisThread())
             {
                 if (AssetCatalogRequestBus::QueuedEventCount())
                 {
