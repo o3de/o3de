@@ -150,6 +150,7 @@ namespace AtomToolsFramework
             ComparePropertyValues<AZ::Vector4>(valueA, valueB) ||
             ComparePropertyValues<AZ::Color>(valueA, valueB) ||
             ComparePropertyValues<AZ::Data::AssetId>(valueA, valueB) ||
+            ComparePropertyValues<AZ::Data::Asset<AZ::Data::AssetData>>(valueA, valueB) ||
             ComparePropertyValues<AZ::Data::Asset<AZ::RPI::ImageAsset>>(valueA, valueB) ||
             ComparePropertyValues<AZ::Data::Asset<AZ::RPI::StreamingImageAsset>>(valueA, valueB) ||
             ComparePropertyValues<AZ::Data::Asset<AZ::RPI::MaterialAsset>>(valueA, valueB) ||

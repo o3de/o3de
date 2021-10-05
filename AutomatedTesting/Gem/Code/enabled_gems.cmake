@@ -23,6 +23,7 @@ set(ENABLED_GEMS
     Metastream
     Camera
     EMotionFX
+    AtomTressFX
     PhysX
     CameraFramework
     StartingPointMovement

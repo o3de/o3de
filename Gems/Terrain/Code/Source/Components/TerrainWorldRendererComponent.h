@@ -27,13 +27,28 @@ namespace Terrain
 {
     class TerrainFeatureProcessor;
 
-    class TerrainWorldRendererConfig
+    struct TerrainWorldRendererConfig final
         : public AZ::ComponentConfig
     {
-    public:
         AZ_CLASS_ALLOCATOR(TerrainWorldRendererConfig, AZ::SystemAllocator, 0);
         AZ_RTTI(TerrainWorldRendererConfig, "{08C5863C-092D-4A69-8226-4978E4F6E343}", AZ::ComponentConfig);
         static void Reflect(AZ::ReflectContext* context);
+
+        enum class WorldSize : uint8_t
+        {
+            Unknown,
+
+            _512Meters,
+            _1024Meters,
+            _2048Meters,
+            _4096Meters,
+            _8192Meters,
+            _16384Meters,
+
+            WorldSizeCount,
+        };
+
+        WorldSize m_worldSize;
     };
 
 

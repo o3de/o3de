@@ -46,13 +46,14 @@ namespace AzToolsFramework
     }
 
     AZ::Outcome<void, AZStd::string> ViewportEditorModeTracker::ActivateMode(
-        const ViewportEditorModeInfo& viewportEditorModeInfo, ViewportEditorMode mode)
+        const ViewportEditorModeTrackerInfo& ViewportEditorModeTrackerInfo, ViewportEditorMode mode)
     {
-        auto& editorModes = m_viewportEditorModesMap[viewportEditorModeInfo.m_id];
+        auto& editorModes = m_viewportEditorModesMap[ViewportEditorModeTrackerInfo.m_id];
         if (editorModes.IsModeActive(mode))
         {
             return AZ::Failure(AZStd::string::format(
-                "Duplicate call to ActivateMode for mode '%u' on id '%i'", static_cast<AZ::u32>(mode), viewportEditorModeInfo.m_id));
+                "Duplicate call to ActivateMode for mode '%u' on id '%s'", static_cast<AZ::u32>(mode),
+                ViewportEditorModeTrackerInfo.m_id.ToString<AZStd::string>().c_str()));
         }
         
         if (const auto result = editorModes.ActivateMode(mode);
@@ -62,29 +63,30 @@ namespace AzToolsFramework
         }
 
         ViewportEditorModeNotificationsBus::Event(
-            viewportEditorModeInfo.m_id, &ViewportEditorModeNotificationsBus::Events::OnEditorModeActivated, editorModes, mode);
+            ViewportEditorModeTrackerInfo.m_id, &ViewportEditorModeNotificationsBus::Events::OnEditorModeActivated, editorModes, mode);
 
         return AZ::Success();
     }
 
     AZ::Outcome<void, AZStd::string> ViewportEditorModeTracker::DeactivateMode(
-        const ViewportEditorModeInfo& viewportEditorModeInfo, ViewportEditorMode mode)
+        const ViewportEditorModeTrackerInfo& ViewportEditorModeTrackerInfo, ViewportEditorMode mode)
     {
         ViewportEditorModes* editorModes = nullptr;
         bool modeWasActive = true;
-        if (m_viewportEditorModesMap.count(viewportEditorModeInfo.m_id))
+        if (m_viewportEditorModesMap.count(ViewportEditorModeTrackerInfo.m_id))
         {
-            editorModes = &m_viewportEditorModesMap.at(viewportEditorModeInfo.m_id);
+            editorModes = &m_viewportEditorModesMap.at(ViewportEditorModeTrackerInfo.m_id);
             if (!editorModes->IsModeActive(mode))
             {
                 return AZ::Failure(AZStd::string::format(
-                    "Duplicate call to DeactivateMode for mode '%u' on id '%i'", static_cast<AZ::u32>(mode), viewportEditorModeInfo.m_id));
+                    "Duplicate call to DeactivateMode for mode '%u' on id '%s'", static_cast<AZ::u32>(mode),
+                    ViewportEditorModeTrackerInfo.m_id.ToString<AZStd::string>().c_str()));
             }
         }
         else
         {
             modeWasActive = false;
-            editorModes = &m_viewportEditorModesMap[viewportEditorModeInfo.m_id];
+            editorModes = &m_viewportEditorModesMap[ViewportEditorModeTrackerInfo.m_id];
         }
 
         if(const auto result = editorModes->DeactivateMode(mode);
@@ -94,7 +96,7 @@ namespace AzToolsFramework
         }
 
         ViewportEditorModeNotificationsBus::Event(
-            viewportEditorModeInfo.m_id, &ViewportEditorModeNotificationsBus::Events::OnEditorModeDeactivated, *editorModes, mode);
+            ViewportEditorModeTrackerInfo.m_id, &ViewportEditorModeNotificationsBus::Events::OnEditorModeDeactivated, *editorModes, mode);
 
         if (modeWasActive)
         {
@@ -103,14 +105,14 @@ namespace AzToolsFramework
         else
         {
             return AZ::Failure(AZStd::string::format(
-                "Call to DeactivateMode for mode '%u' on id '%i' without precursor call to ActivateMode", static_cast<AZ::u32>(mode),
-                viewportEditorModeInfo.m_id));
+                "Call to DeactivateMode for mode '%u' on id '%s' without precursor call to ActivateMode", static_cast<AZ::u32>(mode),
+                ViewportEditorModeTrackerInfo.m_id.ToString<AZStd::string>().c_str()));
         }
     }
 
-    const ViewportEditorModesInterface* ViewportEditorModeTracker::GetViewportEditorModes(const ViewportEditorModeInfo& viewportEditorModeInfo) const
+    const ViewportEditorModesInterface* ViewportEditorModeTracker::GetViewportEditorModes(const ViewportEditorModeTrackerInfo& ViewportEditorModeTrackerInfo) const
     {
-        if (auto editorModes = m_viewportEditorModesMap.find(viewportEditorModeInfo.m_id);
+        if (auto editorModes = m_viewportEditorModesMap.find(ViewportEditorModeTrackerInfo.m_id);
             editorModes != m_viewportEditorModesMap.end())
         {
             return &editorModes->second;
@@ -126,8 +128,8 @@ namespace AzToolsFramework
         return m_viewportEditorModesMap.size();
     }
 
-    bool ViewportEditorModeTracker::IsViewportModeTracked(const ViewportEditorModeInfo& viewportEditorModeInfo) const
+    bool ViewportEditorModeTracker::IsViewportModeTracked(const ViewportEditorModeTrackerInfo& ViewportEditorModeTrackerInfo) const
     {
-        return m_viewportEditorModesMap.count(viewportEditorModeInfo.m_id) > 0;
+        return m_viewportEditorModesMap.count(ViewportEditorModeTrackerInfo.m_id) > 0;
     }
 } // namespace AzToolsFramework
