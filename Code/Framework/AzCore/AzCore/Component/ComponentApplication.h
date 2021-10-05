@@ -30,12 +30,14 @@
 #include <AzCore/std/string/conversions.h>
 #include <AzCore/std/string/osstring.h>
 
+
 namespace AZ
 {
     class BehaviorContext;
     class IConsole;
     class Module;
     class ModuleManager;
+    class TimeSystem;
 }
 namespace AZ::Debug
 {
@@ -237,7 +239,7 @@ namespace AZ
         /**
          * Ticks all components using the \ref AZ::TickBus during simulation time. May not tick if the application is not active (i.e. not in focus)
          */
-        virtual void Tick(float deltaOverride = -1.f);
+        virtual void Tick();
 
         /**
         * Ticks all using the \ref AZ::SystemTickBus at all times. Should always tick even if the application is not active.
@@ -359,8 +361,6 @@ namespace AZ
             }
         }
 
-        AZStd::chrono::system_clock::time_point     m_currentTime{ AZStd::chrono::system_clock::time_point::max() };
-        float                                       m_deltaTime{ 0.0f };
         AZStd::unique_ptr<ModuleManager>            m_moduleManager;
         AZStd::unique_ptr<SettingsRegistryInterface> m_settingsRegistry;
         EntityAddedEvent                            m_entityAddedEvent;
@@ -380,6 +380,8 @@ namespace AZ
         AZ::SettingsRegistryInterface::NotifyEventHandler m_projectPathChangedHandler;
         AZ::SettingsRegistryInterface::NotifyEventHandler m_projectNameChangedHandler;
         AZ::SettingsRegistryInterface::NotifyEventHandler m_commandLineUpdatedHandler;
+
+        AZStd::unique_ptr<AZ::TimeSystem> m_timeSystem;
 
         // ConsoleFunctorHandle is responsible for unregistering the Settings Registry Console
         // from the m_console member when it goes out of scope

@@ -8,43 +8,77 @@
 
 #pragma once
 
+#include <AzCore/RTTI/RTTI.h>
 #include <AzCore/Time/ITime.h>
-#include <AzCore/Component/Component.h>
-#include <AzCore/Console/IConsole.h>
 
 namespace AZ
 {
+    class ReflectContext;
+
     //! Implementation of the ITime system interface.
-    class TimeSystemComponent
-        : public AZ::Component
-        , public ITimeRequestBus::Handler
+    class TimeSystem
+        : public ITimeRequestBus::Handler
     {
     public:
-
-        AZ_COMPONENT(TimeSystemComponent, "{CE1C5E4F-7DC1-4248-B10C-AC55E8924A48}");
+        AZ_RTTI(AZ::TimeSystem, "{CE1C5E4F-7DC1-4248-B10C-AC55E8924A48}", AZ::ITime);
 
         static void Reflect(AZ::ReflectContext* context);
-        static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided);
-        static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible);
 
-        TimeSystemComponent();
-        virtual ~TimeSystemComponent();
-
-        //! AZ::Component overrides.
-        //! @{
-        void Activate() override;
-        void Deactivate() override;
-        //! @}
+        TimeSystem();
+        virtual ~TimeSystem();
 
         //! ITime overrides.
         //! @{
         TimeMs GetElapsedTimeMs() const override;
         TimeUs GetElapsedTimeUs() const override;
+        TimeMs GetRealElapsedTimeMs() const override;
+        TimeUs GetRealElapsedTimeUs() const override;
+        TimeMs GetSimulationTickDeltaTimeMs() const override;
+        TimeMs GetRealTickDeltaTimeMs() const override;
+        TimeMs GetLastSimulationTickTime() const override;
+        void SetSimulationTickDeltaOverride(TimeMs timeMs) override;
+        TimeMs GetSimulationTickDeltaOverride() const override;
+        void SetSimulationTickScale(float scale) override;
+        float GetSimulationTickScale() const override;
+        void SetSimulationTickRate(int rate) override;
+        int32_t GetSimulationTickRate() const override;
         //! @}
+        
+        //! Advances the Simulation and Real tick delta time counters.
+        //! This is called from the owner of the TimeSystem, ComponentApplication in Tick().
+        //! @return The delta in milliseconds from the last call to AdvanceTickDeltaTimes(). Value will be the same as GetSimulationTickDeltaTimeMs().
+        TimeMs AdvanceTickDeltaTimes();
 
+        //! If t_simulationTickRate is >0 this will try to have the game delta time run at a maximum of the rate set.
+        //! This is called from the owner of the TimeSystem, ComponentApplication in Tick().
+        //! example. If t_simulationTickRate is set to 60Fps, and the game tick delta is <17ms(60fps), this will add a sleep for the remaining time.
+        //! example. If t_simulationTickRate is set to 60Fps, and the game tick delta is >=17ms(60fps), this will not sleep at all.
+        //! @note It is not guaranteed to hit the requested tick rate exactly.
+        void ApplyTickRateLimiterIfNeeded();
     private:
+        //! Used to calculate the delta time between calls to GetElapsedTimeMs/TimeUs().
+        //! Mutable to allow GetElapsedTimeMs/TimeUs() to be a const functions.
+        mutable TimeUs m_lastInvokedTimeUs = AZ::TimeUs{ 0 };
 
-        mutable TimeUs m_lastInvokedTimeUs = TimeUs{0};
-        mutable TimeUs m_accumulatedTimeUs = TimeUs{0};
+        //! Accumulates the delta time of GetElapsedTimeMs/TimeUs() calls.
+        //! Mutable to allow GetElapsedTimeMs/TimeUs() to be a const functions.
+        mutable TimeUs m_accumulatedTimeUs = AZ::TimeUs{ 0 };
+
+        //! The current game tick delta time.
+        //! Can be affected by time system cvars.
+        //! Updated in AdvanceTickDeltaTimes().
+        TimeUs m_simulationTickDeltaTimeUs = AZ::TimeUs{ 0 };
+
+        //! The current real tick delta time.
+        //! Will not be affected by time system cvars.
+        //! Updated in AdvanceTickDeltaTimes().
+        TimeUs m_realTickDeltaTimeUs = AZ::TimeUs{ 0 };
+
+        TimeUs m_lastSimulationTickTimeUs = AZ::TimeUs{ 0 }; //!< Used to determine the game tick delta time (affected by cvars).
+        TimeUs m_lastRealTickTimeUs = AZ::TimeUs{ 0 }; //!< Used to determine the real game tick delta time (not affected by cvars).
+
+        TimeUs m_simulationTickDeltaOverride = AZ::TimeUs{ 0 }; //<! Stores the TimeUs value of the t_simulationTickDeltaOverride cvar.
+        TimeUs m_simulationTickLimitTimeUs = AZ::TimeUs{ 0 }; //<! Stores the TimeUs value of the t_simulationTickRate cvar.
+        int32_t m_simulationTickLimitRate = 0; //<! Stores the simulation rate limit in frames per second.
     };
 }

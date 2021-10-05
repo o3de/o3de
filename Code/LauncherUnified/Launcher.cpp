@@ -113,7 +113,7 @@ namespace
             }
 
             // Update the AzFramework application tick bus
-            gameApplication.Tick(gEnv->pTimer->GetFrameTime());
+            gameApplication.Tick();
 
             // Post-update CrySystem
             if (system)

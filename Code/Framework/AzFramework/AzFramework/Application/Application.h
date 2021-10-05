@@ -87,7 +87,7 @@ namespace AzFramework
          */
         virtual void Stop();
 
-        void Tick(float deltaOverride = -1.f) override;
+        void Tick() override;
 
 
         AZ::ComponentTypeList GetRequiredSystemComponents() const override;

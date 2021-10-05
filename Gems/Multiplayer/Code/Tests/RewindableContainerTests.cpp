@@ -12,7 +12,7 @@
 #include <Multiplayer/NetworkTime/RewindableObject.h>
 #include <Source/NetworkTime/NetworkTime.h>
 #include <AzCore/Console/LoggerSystemComponent.h>
-#include <AzCore/Time/TimeSystemComponent.h>
+#include <AzCore/Time/TimeSystem.h>
 #include <AzCore/UnitTest/TestTypes.h>
 
 namespace UnitTest
@@ -23,7 +23,7 @@ namespace UnitTest
     public:
         Multiplayer::NetworkTime m_networkTime;
         AZ::LoggerSystemComponent m_loggerComponent;
-        AZ::TimeSystemComponent m_timeComponent;
+        AZ::TimeSystem m_timeSystem;
     };
 
     static constexpr uint32_t RewindableContainerSize = 7;
