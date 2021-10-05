@@ -23,7 +23,7 @@
 
 namespace PhysX
 {
-    constexpr const char* DefaultAssetFilePath = "Physics/SurfaceTypeMaterialLibrary";
+    constexpr const char* DefaultAssetFilePath = "Assets/Physics/SurfaceTypeMaterialLibrary";
     constexpr const char* TemplateAssetFilename = "PhysX/TemplateMaterialLibrary";
 
     static AZStd::optional<AZ::Data::Asset<AZ::Data::AssetData>> GetMaterialLibraryTemplate()
@@ -67,7 +67,7 @@ namespace PhysX
                 assetId, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetIdByPath, relativePath.c_str(), assetType, true /*autoRegisterIfNotFound*/);
 
             AZ::Data::Asset<AZ::Data::AssetData> newAsset =
-                AZ::Data::AssetManager::Instance().GetAsset(assetId, assetType, AZ::Data::AssetLoadBehavior::Default);
+                AZ::Data::AssetManager::Instance().CreateAsset(assetId, assetType, AZ::Data::AssetLoadBehavior::Default);
 
             if (auto* newMaterialLibraryData = azrtti_cast<Physics::MaterialLibraryAsset*>(newAsset.GetData()))
             {
@@ -138,6 +138,9 @@ namespace PhysX
                     if (auto retrievedMaterialLibrary = RetrieveDefaultMaterialLibrary())
                     {
                         physxSystem->UpdateMaterialLibrary(retrievedMaterialLibrary.value());
+
+                        // After setting the default material library, save the physx configuration.
+                        physxSystem->GetSettingsRegistryManager().SaveSystemConfiguration(physxSystem->GetPhysXConfiguration(), {});
                     }
                 }
             }
@@ -236,9 +239,9 @@ namespace PhysX
             if (!resultAssetId.IsValid())
             {
                 // No file for the default material library, create it
-                const char* assetRoot = AZ::IO::FileIOBase::GetInstance()->GetAlias("@projectsourceassets@");
+                const char* projectRoot = AZ::IO::FileIOBase::GetInstance()->GetAlias("@projectroot@");
                 AZStd::string fullPath;
-                AzFramework::StringFunc::Path::ConstructFull(assetRoot, DefaultAssetFilePath, assetExtension.c_str(), fullPath);
+                AzFramework::StringFunc::Path::ConstructFull(projectRoot, DefaultAssetFilePath, assetExtension.c_str(), fullPath);
 
                 if (auto materialLibraryOpt = CreateMaterialLibrary(fullPath, relativePath))
                 {
