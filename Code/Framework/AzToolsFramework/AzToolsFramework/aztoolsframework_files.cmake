@@ -114,6 +114,10 @@ set(FILES
     Component/EditorLevelComponentAPIBus.h
     Component/EditorLevelComponentAPIComponent.cpp
     Component/EditorLevelComponentAPIComponent.h
+    ContainerEntity/ContainerEntityInterface.h
+    ContainerEntity/ContainerEntityNotificationBus.h
+    ContainerEntity/ContainerEntitySystemComponent.cpp
+    ContainerEntity/ContainerEntitySystemComponent.h
     Editor/EditorContextMenuBus.h
     Editor/EditorSettingsAPIBus.h
     Entity/EditorEntityStartStatus.h

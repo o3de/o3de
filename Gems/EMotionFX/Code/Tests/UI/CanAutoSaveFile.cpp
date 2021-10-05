@@ -26,7 +26,7 @@ namespace EMotionFX
         EMStudio::GetMainWindow()->ApplicationModeChanged("AnimGraph");
 
         // Load Rin anim graph.
-        const char* rinGraph = "@devroot@/Gems/EMotionFX/Code/Tests/TestAssets/Rin/rin.animgraph";
+        const char* rinGraph = "@engroot@/Gems/EMotionFX/Code/Tests/TestAssets/Rin/rin.animgraph";
         const AZStd::string rinGraphPath = ResolvePath(rinGraph);
         AZStd::string command = AZStd::string::format("LoadAnimGraph -filename \"%s\"", rinGraphPath.c_str());
         AZStd::string result;
