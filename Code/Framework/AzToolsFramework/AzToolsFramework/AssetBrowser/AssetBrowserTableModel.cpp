@@ -112,7 +112,7 @@ namespace AzToolsFramework
 
         int AssetBrowserTableModel::rowCount(const QModelIndex& parent) const
         {
-            return !parent.isValid() ? m_indexMap.size() : sourceModel()->rowCount(parent);
+            return !parent.isValid() ? m_indexMap.size() : 0;
         }
 
         int AssetBrowserTableModel::BuildTableModelMap(
