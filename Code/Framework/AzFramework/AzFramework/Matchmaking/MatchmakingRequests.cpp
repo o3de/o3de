@@ -8,7 +8,7 @@
 
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
-#include <AzFramework/Matchmaking/IMatchmakingRequests.h>
+#include <AzFramework/Matchmaking/MatchmakingRequests.h>
 
 namespace AzFramework
 {

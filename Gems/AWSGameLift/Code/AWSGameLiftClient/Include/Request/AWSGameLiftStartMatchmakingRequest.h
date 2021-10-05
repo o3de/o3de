@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include <AzFramework/Matchmaking/IMatchmakingRequests.h>
+#include <AzFramework/Matchmaking/MatchmakingRequests.h>
 
 namespace AWSGameLift
 {
