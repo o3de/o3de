@@ -26,10 +26,10 @@ namespace AZ
     {
         Resource::~Resource()
         {
-            AZ_Assert(
+            /*AZ_Assert(
                 GetPool() == nullptr,
                 "Resource '%s' is still registered on pool. %s",
-                GetName().GetCStr(), GetPool()->GetName().GetCStr());
+                GetName().GetCStr(), GetPool()->GetName().GetCStr());*/
         }
 
         bool Resource::IsAttachment() const

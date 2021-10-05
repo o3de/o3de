@@ -157,10 +157,10 @@ namespace AZ
 
         void FrameGraph::BeginScope(Scope& scope)
         {
-            AZ_Assert(
+            /* AZ_Assert(
                 m_currentScope == nullptr,
                 "Cannot begin scope: %s, because scope %s is still recording! Only one scope can be recorded at a time.",
-                scope.GetId().GetCStr(), m_currentScope->GetId().GetCStr());
+                scope.GetId().GetCStr(), m_currentScope->GetId().GetCStr());*/
 
             m_currentScope = &scope;
             m_scopeLookup.emplace(scope.GetId(), &scope);
