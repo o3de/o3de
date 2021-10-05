@@ -23,7 +23,7 @@ namespace LmbrCentral
 
 namespace Terrain
 {
-    class TerrainSurfaceGradientMapping
+    class TerrainSurfaceGradientMapping final
     {
     public:
         AZ_CLASS_ALLOCATOR(TerrainSurfaceGradientMapping, AZ::SystemAllocator, 0);
