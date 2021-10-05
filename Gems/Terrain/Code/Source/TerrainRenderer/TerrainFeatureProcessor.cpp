@@ -10,6 +10,7 @@
 
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/std/math.h>
 #include <AzCore/Math/Frustum.h>
 
 #include <Atom/Utils/Utils.h>
@@ -43,7 +44,7 @@ namespace Terrain
     namespace
     {
         [[maybe_unused]] const char* TerrainFPName = "TerrainFeatureProcessor";
-        const AZ::Name TerrainHeightmapName = AZ::Name("TerrainHeightmap");
+        const char* TerrainHeightmapChars = "TerrainHeightmap";
     }
 
     namespace MaterialInputs
@@ -159,6 +160,8 @@ namespace Terrain
 
     void TerrainFeatureProcessor::UpdateTerrainData()
     {
+        static const AZ::Name TerrainHeightmapName = AZ::Name(TerrainHeightmapChars);
+
         uint32_t width = m_areaData.m_updateWidth;
         uint32_t height = m_areaData.m_updateHeight;
         const AZ::Aabb& worldBounds = m_areaData.m_terrainBounds;
@@ -209,11 +212,9 @@ namespace Terrain
                         &terrainExists);
 
                     float clampedHeight = AZ::GetClamp((terrainHeight - worldBounds.GetMin().GetZ()) / worldBounds.GetExtents().GetZ(), 0.0f, 1.0f);
+                    float expandedHeight = AZStd::roundf(clampedHeight * AZStd::numeric_limits<uint16_t>::max());
+                    uint16_t uint16Height = aznumeric_cast<uint16_t>(expandedHeight);
 
-                    // Adjust the clamped height by half of the minimum difference between uint16 values so
-                    // converting to uint16 becomes a round operation instead of a floor.
-                    clampedHeight += 1.0f / 2 * AZStd::numeric_limits<uint16_t>::max();
-                    uint16_t uint16Height = aznumeric_cast<uint16_t>(clampedHeight * AZStd::numeric_limits<uint16_t>::max());
                     pixels.push_back(uint16Height);
                 }
             }
