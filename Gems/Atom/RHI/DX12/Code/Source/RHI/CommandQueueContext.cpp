@@ -7,7 +7,6 @@
  */
 
 #include <Atom/RHI/Device.h>
-#include <Atom/RHI.Reflect/CpuTimingStatistics.h>
 #include <AzCore/Debug/EventTraceDrillerBus.h>
 #include <RHI/CommandQueueContext.h>
 #include <RHI/Device.h>
@@ -183,7 +182,7 @@ namespace AZ
             return *m_commandQueues[static_cast<uint32_t>(hardwareQueueClass)];
         }
 
-        void CommandQueueContext::UpdateCpuTimingStatistics([[maybe_unused]] RHI::CpuTimingStatistics& cpuTimingStatistics) const
+        void CommandQueueContext::UpdateCpuTimingStatistics() const
         {
             if (auto statsProfiler = AZ::Interface<AZ::Statistics::StatisticalProfilerProxy>::Get(); statsProfiler)
             {

@@ -8,7 +8,6 @@
 
 #include <AzCore/Debug/EventTrace.h>
 #include <Atom/RHI/CommandQueue.h>
-#include <Atom/RHI.Reflect/CpuTimingStatistics.h>
 #include <RHI/Device.h>
 #include <RHI/CommandQueue.h>
 #include <RHI/SwapChain.h>
@@ -136,7 +135,7 @@ namespace AZ
             }
         }
 
-        void CommandQueueContext::UpdateCpuTimingStatistics([[maybe_unused]] RHI::CpuTimingStatistics& cpuTimingStatistics) const
+        void CommandQueueContext::UpdateCpuTimingStatistics() const
         {
             if (auto statsProfiler = AZ::Interface<AZ::Statistics::StatisticalProfilerProxy>::Get(); statsProfiler)
             {

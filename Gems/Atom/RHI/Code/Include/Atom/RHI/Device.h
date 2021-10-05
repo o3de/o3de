@@ -186,7 +186,7 @@ namespace AZ
             virtual void CompileMemoryStatisticsInternal(MemoryStatisticsBuilder& builder) = 0;
 
             //! Called when the device is reporting cpu timing statistics.
-            virtual void UpdateCpuTimingStatisticsInternal(CpuTimingStatistics& cpuTimingStatistics) const = 0;
+            virtual void UpdateCpuTimingStatisticsInternal() const = 0;
 
             //! Fills the capabilities for each format.
             virtual void FillFormatsCapabilitiesInternal(FormatCapabilitiesList& formatsCapabilities) = 0;

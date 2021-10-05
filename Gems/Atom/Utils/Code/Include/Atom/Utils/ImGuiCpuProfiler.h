@@ -12,17 +12,11 @@
 #include <AzCore/IO/Path/Path.h>
 #include <AzCore/Math/Random.h>
 
-#include <Atom/RHI.Reflect/CpuTimingStatistics.h>
 #include <Atom/RHI/CpuProfiler.h>
 
 
 namespace AZ
 {
-    namespace RHI
-    {
-        struct CpuTimingStatistics;
-    }
-
     namespace Render
     {
         //! Stores all the data associated with a row in the table. 
@@ -98,7 +92,7 @@ namespace AZ
             ~ImGuiCpuProfiler() = default;
 
             //! Draws the overall CPU profiling window, defaults to the statistical view
-            void Draw(bool& keepDrawing, const AZ::RHI::CpuTimingStatistics& cpuTimingStatistics);
+            void Draw(bool& keepDrawing);
 
         private:
             static constexpr float RowHeight = 35.0;

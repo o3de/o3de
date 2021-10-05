@@ -7,7 +7,6 @@
  */
 
 #include <Atom/Feature/Utils/ProfilingCaptureBus.h>
-#include <Atom/RHI.Reflect/CpuTimingStatistics.h>
 #include <Atom/RHI/CpuProfiler.h>
 #include <Atom/RHI/CpuProfilerImpl.h>
 #include <Atom/RPI.Edit/Common/JsonUtils.h>
@@ -116,7 +115,7 @@ namespace AZ
 
 
 
-        inline void ImGuiCpuProfiler::Draw(bool& keepDrawing, [[maybe_unused]] const AZ::RHI::CpuTimingStatistics& currentCpuTimingStatistics)
+        inline void ImGuiCpuProfiler::Draw(bool& keepDrawing)
         {
             // Cache the value to detect if it was changed by ImGui(user pressed 'x')
             const bool cachedShowCpuProfiler = keepDrawing;

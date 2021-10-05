@@ -13,7 +13,6 @@
 #include <RHI/Semaphore.h>
 #include <RHI/Conversion.h>
 #include <RHI/SwapChain.h>
-#include <Atom/RHI.Reflect/CpuTimingStatistics.h>
 
 namespace AZ
 {
@@ -363,7 +362,7 @@ namespace AZ
             return queueSelection.m_familyIndex != InvalidFamilyIndex;
         }
 
-        void CommandQueueContext::UpdateCpuTimingStatistics([[maybe_unused]] RHI::CpuTimingStatistics& cpuTimingStatistics) const
+        void CommandQueueContext::UpdateCpuTimingStatistics() const
         {
             if (auto statsProfiler = AZ::Interface<AZ::Statistics::StatisticalProfilerProxy>::Get(); statsProfiler)
             {
