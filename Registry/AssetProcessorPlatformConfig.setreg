@@ -172,9 +172,6 @@
                 "Exclude Build": {
                     "pattern": ".*/[Bb]uild/.*"
                 },
-                "Exclude Install": {
-                    "pattern": ".*/[Ii]nstall/.*"
-                },
                 "Exclude UserSettings": {
                     "pattern": ".*/UserSettings.xml"
                 },

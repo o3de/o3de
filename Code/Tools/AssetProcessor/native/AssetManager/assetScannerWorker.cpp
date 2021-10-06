@@ -111,10 +111,8 @@ void AssetScannerWorker::ScanForSourceFiles(const ScanFolderInfo& scanFolderInfo
             continue;
         }
 
-        QDir scanFolderRootDir(rootScanFolder.ScanPath());
-        QString relPath(scanFolderRootDir.relativeFilePath(absPath));
         // Filtering out excluded files
-        if (m_platformConfiguration->IsFileExcluded(relPath))
+        if (m_platformConfiguration->IsFileExcluded(absPath))
         {
             m_excludedList.insert(AZStd::move(assetFileInfo));
             continue;
