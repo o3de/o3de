@@ -242,6 +242,7 @@ PbrLightingOutput SkinPS_Common(VSOutput IN)
         float3 normalTS = GetTangentSpaceNormal(normalMapSample, uvMatrix, MaterialSrg::m_normalFactor);
     
         bool applyOverlay = true;
+        surface.vertexNormal = normalize(IN.m_normal);
         surface.normal = ApplyNormalMapOverlayWS(applyOverlay, IN.m_normal, normalTS, tangents[MaterialSrg::m_normalMapUvIndex], bitangents[MaterialSrg::m_normalMapUvIndex], 
             MaterialSrg::m_detail_normal_texture, MaterialSrg::m_sampler, IN.m_detailUv, MaterialSrg::m_detail_normal_flipX, MaterialSrg::m_detail_normal_flipY, 
             detailLayerNormalFactor, tangents[MaterialSrg::m_detail_allMapsUvIndex], bitangents[MaterialSrg::m_detail_allMapsUvIndex], MaterialSrg::m_detailUvMatrix);
