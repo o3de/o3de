@@ -56,6 +56,13 @@ namespace AzToolsFramework
         //! @return The highest closed entity container id if any, or entityId otherwise.
         virtual AZ::EntityId FindHighestSelectableEntity(AZ::EntityId entityId) const = 0;
 
+        //! Clears all open state information for Container Entities for the EntityContextId provided.
+        //! Used when context is switched, for example in the case of a new root prefab being loaded
+        //! in place of an old one.
+        //! @note Clear is meant to be called when no container is registered for the context provided.
+        //! @return An error message if any container was registered for the context, success otherwise.
+        virtual ContainerEntityOperationResult Clear(AzFramework::EntityContextId entityContextId) = 0;
+
     };
 
 } // namespace AzToolsFramework

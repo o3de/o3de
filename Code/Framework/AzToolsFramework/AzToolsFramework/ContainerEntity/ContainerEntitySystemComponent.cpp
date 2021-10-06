@@ -16,10 +16,12 @@ namespace AzToolsFramework
     void ContainerEntitySystemComponent::Activate()
     {
         AZ::Interface<ContainerEntityInterface>::Register(this);
+        EditorEntityContextNotificationBus::Handler::BusConnect();
     }
 
     void ContainerEntitySystemComponent::Deactivate()
     {
+        EditorEntityContextNotificationBus::Handler::BusDisconnect();
         AZ::Interface<ContainerEntityInterface>::Unregister(this);
     }
 
@@ -115,6 +117,28 @@ namespace AzToolsFramework
         }
 
         return highestSelectableEntityId;
+    }
+
+    void ContainerEntitySystemComponent::OnEntityStreamLoadSuccess()
+    {
+        // We don't yet support multiple entity contexts, so just use the default.
+
+        Clear(AzFramework::EntityContextId::CreateNull());
+    }
+
+    ContainerEntityOperationResult ContainerEntitySystemComponent::Clear([[maybe_unused]] AzFramework::EntityContextId entityContextId)
+    {
+        // We don't yet support multiple entity contexts, so clear everything.
+
+        if (!m_containers.empty())
+        {
+            return AZ::Failure(AZStd::string(
+                "Error in ContainerEntitySystemComponent::Clear - cannot clear container states if entities are still registered!"));
+        }
+
+        m_openContainers.clear();
+
+        return AZ::Success();
     }
 
 } // namespace AzToolsFramework
