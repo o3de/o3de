@@ -53,18 +53,11 @@ namespace AzNetworking
     {
         Close();
 
-        if (!SocketCreateInternal())
+        if (!SocketCreateInternal()
+         || !BindSocketForListenInternal(port)
+         || !(SetSocketNonBlocking(m_socketFd) && SetSocketNoDelay(m_socketFd)))
         {
-            return false;
-        }
-
-        if (!BindSocketForListenInternal(port))
-        {
-            return false;
-        }
-
-        if (!(SetSocketNonBlocking(m_socketFd) && SetSocketNoDelay(m_socketFd)))
-        {
+            Close();
             return false;
         }
 
@@ -75,18 +68,11 @@ namespace AzNetworking
     {
         Close();
 
-        if (!SocketCreateInternal())
+        if (!SocketCreateInternal()
+         || !BindSocketForConnectInternal(address)
+         || !(SetSocketNonBlocking(m_socketFd) && SetSocketNoDelay(m_socketFd)))
         {
-            return false;
-        }
-
-        if (!BindSocketForConnectInternal(address))
-        {
-            return false;
-        }
-
-        if (!(SetSocketNonBlocking(m_socketFd) && SetSocketNoDelay(m_socketFd)))
-        {
+            Close();
             return false;
         }
 

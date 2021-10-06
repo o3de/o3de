@@ -1367,9 +1367,6 @@ namespace AZ
 #endif
     }
 
-    //=========================================================================
-    // Tick
-    //=========================================================================
     void ComponentApplication::Tick(float deltaOverride /*= -1.f*/)
     {
         {
@@ -1397,9 +1394,6 @@ namespace AZ
         }
     }
 
-    //=========================================================================
-    // Tick
-    //=========================================================================
     void ComponentApplication::TickSystem()
     {
         AZ_PROFILE_SCOPE(System, "Component application tick");
@@ -1547,5 +1541,4 @@ namespace AZ
             AZ::SettingsRegistryScriptUtils::ReflectSettingsRegistryToBehaviorContext(*behaviorContext);
         }
     }
-
 } // namespace AZ

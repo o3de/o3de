@@ -44,7 +44,7 @@ namespace EMotionFX
 
         RecordProperty("test_case_id", "C16302179");
 
-        const AZStd::string motionAsset("@devroot@/Gems/EMotionFX/Code/Tests/TestAssets/Rin/rin_idle.motion");
+        const AZStd::string motionAsset("@engroot@/Gems/EMotionFX/Code/Tests/TestAssets/Rin/rin_idle.motion");
         const AZStd::string createAnimGraphCmd("CreateAnimGraph");
         const AZStd::string motionSetName("TestMotionSet");
         const AZStd::string createMotionSetCmd("CreateMotionSet -motionSetID 42 -name " + motionSetName);

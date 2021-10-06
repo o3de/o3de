@@ -197,7 +197,7 @@ namespace AWSCore
         subMenu->addAction(AddExternalLinkAction(
             AWSMetricsAdvancedTopicsActionText, AWSMetricsAdvancedTopicsUrl, ":/Notifications/link.svg"));
 
-        AZStd::string priorAlias = AZ::IO::FileIOBase::GetInstance()->GetAlias("@devroot@");
+        AZStd::string priorAlias = AZ::IO::FileIOBase::GetInstance()->GetAlias("@engroot@");
         AZStd::string configFilePath = priorAlias + "\\Gems\\AWSMetrics\\Code\\" + AZ::SettingsRegistryInterface::RegistryFolder;
         AzFramework::StringFunc::Path::Normalize(configFilePath);
 

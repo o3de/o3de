@@ -27,6 +27,7 @@ set(FILES
     Entity/EditorEntityHelpersTests.cpp
     Entity/EditorEntitySearchComponentTests.cpp
     Entity/EditorEntitySelectionTests.cpp
+    Entity/EntityUtilityComponentTests.cpp
     EntityIdQLabelTests.cpp
     EntityInspectorTests.cpp
     EntityOwnershipService/EntityOwnershipServiceTestFixture.cpp
@@ -91,6 +92,8 @@ set(FILES
     Prefab/SpawnableSortEntitiesTestFixture.cpp
     Prefab/SpawnableSortEntitiesTestFixture.h
     Prefab/SpawnableSortEntitiesTests.cpp
+    Prefab/PrefabScriptingTests.cpp
+    Prefab/ProceduralPrefabAssetTests.cpp
     PropertyIntCtrlCommonTests.h
     PropertyIntSliderCtrlTests.cpp
     PropertyIntSpinCtrlTests.cpp
