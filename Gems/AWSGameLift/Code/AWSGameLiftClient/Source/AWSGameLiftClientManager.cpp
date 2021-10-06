@@ -112,6 +112,16 @@ namespace AWSGameLift
         return AZ::Uuid::CreateRandom().ToString<AZStd::string>(includeBrackets, includeDashes);
     }
 
+    void AWSGameLiftClientManager::AcceptMatch(const AzFramework::AcceptMatchRequest& acceptMatchRequest)
+    {
+        AZ_UNUSED(acceptMatchRequest);
+    }
+
+    void AWSGameLiftClientManager::AcceptMatchAsync(const AzFramework::AcceptMatchRequest& acceptMatchRequest)
+    {
+        AZ_UNUSED(acceptMatchRequest);
+    }
+
     AZStd::string AWSGameLiftClientManager::CreateSession(const AzFramework::CreateSessionRequest& createSessionRequest)
     {
         AZStd::string result = "";
@@ -347,6 +357,28 @@ namespace AWSGameLift
             response = SearchSessionsActivity::SearchSessions(*gameliftClient, searchSessionsRequest);
         }
         return response;
+    }
+
+    AZStd::string AWSGameLiftClientManager::StartMatchmaking(const AzFramework::StartMatchmakingRequest& startMatchmakingRequest)
+    {
+        AZ_UNUSED(startMatchmakingRequest);
+
+        return AZStd::string{};
+    }
+
+    void AWSGameLiftClientManager::StartMatchmakingAsync(const AzFramework::StartMatchmakingRequest& startMatchmakingRequest)
+    {
+        AZ_UNUSED(startMatchmakingRequest);
+    }
+
+    void AWSGameLiftClientManager::StopMatchmaking(const AzFramework::StopMatchmakingRequest& stopMatchmakingRequest)
+    {
+        AZ_UNUSED(stopMatchmakingRequest);
+    }
+
+    void AWSGameLiftClientManager::StopMatchmakingAsync(const AzFramework::StopMatchmakingRequest& stopMatchmakingRequest)
+    {
+        AZ_UNUSED(stopMatchmakingRequest);
     }
 
     void AWSGameLiftClientManager::SetGameLiftClient(AZStd::shared_ptr<Aws::GameLift::GameLiftClient> gameliftClient)

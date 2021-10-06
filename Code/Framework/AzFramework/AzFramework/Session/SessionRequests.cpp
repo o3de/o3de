@@ -6,9 +6,10 @@
  *
  */
 
+#include <AzCore/RTTI/ReflectContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
-#include <AzFramework/Session/ISessionRequests.h>
+#include <AzFramework/Session/SessionRequests.h>
 #include <AzFramework/Session/SessionConfig.h>
 
 namespace AzFramework
