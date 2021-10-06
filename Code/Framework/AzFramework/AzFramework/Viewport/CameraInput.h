@@ -617,6 +617,60 @@ namespace AzFramework
         return true;
     }
 
+    //! Callback to use for FocusCameraInput when a free look camera is being used.
+    //! @note This is when offset is zero.
+    inline AZ::Vector3 FocusLook(float)
+    {
+        return AZ::Vector3::CreateZero();
+    }
+
+    //! Callback to use for FocusCameraInput when a pivot camera is being used.
+    //! @note This is when offset is non zero.
+    inline AZ::Vector3 FocusPivot(const float length)
+    {
+        return AZ::Vector3::CreateAxisY(-length);
+    }
+
+    using FocusOffsetFn = AZStd::function<AZ::Vector3(float)>;
+
+    //! A focus behavior to align the camera view to the position returned by the pivot function.
+    //! @note This only alters the camera orientation, the translation is unaffected.
+    class FocusCameraInput : public CameraInput
+    {
+    public:
+        using PivotFn = AZStd::function<AZ::Vector3()>;
+
+        FocusCameraInput(const InputChannelId& focusChannelId, FocusOffsetFn offsetFn);
+
+        // CameraInput overrides ...
+        bool HandleEvents(const InputEvent& event, const ScreenVector& cursorDelta, float scrollDelta) override;
+        Camera StepCamera(const Camera& targetCamera, const ScreenVector& cursorDelta, float scrollDelta, float deltaTime) override;
+
+        //! Override the default behavior for how a pivot point is calculated.
+        void SetPivotFn(PivotFn pivotFn);
+
+        void SetFocusInputChannelId(const InputChannelId& focusChannelId);
+
+    private:
+        InputChannelId m_focusChannelId; //!< Input channel to begin the focus camera input.
+        Camera m_nextCamera;
+        PivotFn m_pivotFn;
+        FocusOffsetFn m_offsetFn;
+    };
+
+    //! Provides a CameraInput type that can be implemented without needing to create a new type deriving from CameraInput.
+    //! This can be very useful for specific use cases that are less generally applicable.
+    class CustomCameraInput : public CameraInput
+    {
+    public:
+        // CameraInput overrides ...
+        bool HandleEvents(const InputEvent& event, const ScreenVector& cursorDelta, float scrollDelta) override;
+        Camera StepCamera(const Camera& targetCamera, const ScreenVector& cursorDelta, float scrollDelta, float deltaTime) override;
+
+        AZStd::function<bool(CameraInput&, const InputEvent&, const ScreenVector&, float)> m_handleEventsFn;
+        AZStd::function<Camera(CameraInput&, const Camera&, const ScreenVector&, float, float)> m_stepCameraFn;
+    };
+
     //! Map from a generic InputChannel event to a camera specific InputEvent.
     InputEvent BuildInputEvent(const InputChannel& inputChannel, const WindowSize& windowSize);
 } // namespace AzFramework

@@ -623,15 +623,24 @@ namespace AzFramework
     {
         Camera nextCamera = targetCamera;
 
-        const auto pivotDirection = targetCamera.m_offset.GetNormalized();
-        nextCamera.m_offset -= pivotDirection * delta;
-        const auto pivotDot = targetCamera.m_offset.Dot(nextCamera.m_offset);
-        const auto distance = nextCamera.m_offset.GetLength() * AZ::GetSign(pivotDot);
-
-        const auto minDistance = 0.01f;
-        if (distance < minDistance || pivotDot < 0.0f)
+        // handle case where pivot and offset may be the same to begin with
+        // choose negative y-axis for offset to default to moving the camera backwards from the pivot (standard centered pivot behavior)
+        const auto pivotDirection = [&targetCamera]
         {
-            nextCamera.m_offset = pivotDirection * minDistance;
+            if (const auto offsetLength = targetCamera.m_offset.GetLength(); AZ::IsCloseMag(offsetLength, 0.0f))
+            {
+                return -AZ::Vector3::CreateAxisY();
+            }
+            else
+            {
+                return targetCamera.m_offset / offsetLength;
+            }
+        }();
+
+        nextCamera.m_offset -= pivotDirection * delta;
+        if (pivotDirection.Dot(nextCamera.m_offset) < 0.0f)
+        {
+            nextCamera.m_offset = pivotDirection * 0.001f;
         }
 
         return nextCamera;
@@ -769,6 +778,73 @@ namespace AzFramework
         }
 
         return camera;
+    }
+
+    FocusCameraInput::FocusCameraInput(const InputChannelId& focusChannelId, FocusOffsetFn offsetFn)
+        : m_focusChannelId(focusChannelId)
+        , m_offsetFn(offsetFn)
+    {
+    }
+
+    bool FocusCameraInput::HandleEvents(
+        const InputEvent& event, [[maybe_unused]] const ScreenVector& cursorDelta, [[maybe_unused]] float scrollDelta)
+    {
+        if (const auto* input = AZStd::get_if<DiscreteInputEvent>(&event))
+        {
+            if (input->m_channelId == m_focusChannelId && input->m_state == InputChannel::State::Began)
+            {
+                BeginActivation();
+            }
+        }
+
+        return !Idle();
+    }
+
+    Camera FocusCameraInput::StepCamera(
+        const Camera& targetCamera,
+        [[maybe_unused]] const ScreenVector& cursorDelta,
+        [[maybe_unused]] float scrollDelta,
+        [[maybe_unused]] float deltaTime)
+    {
+        if (Beginning())
+        {
+            // as the camera starts, record the camera we would like to end up as
+            m_nextCamera.m_offset = m_offsetFn(m_pivotFn().GetDistance(targetCamera.Translation()));
+            const auto angles =
+                EulerAngles(AZ::Matrix3x3::CreateFromMatrix3x4(AZ::Matrix3x4::CreateLookAt(targetCamera.Translation(), m_pivotFn())));
+            m_nextCamera.m_pitch = angles.GetX();
+            m_nextCamera.m_yaw = angles.GetZ();
+            m_nextCamera.m_pivot = targetCamera.m_pivot;
+        }
+
+        // end the behavior when the camera is in alignment
+        if (AZ::IsCloseMag(targetCamera.m_pitch, m_nextCamera.m_pitch) && AZ::IsCloseMag(targetCamera.m_yaw, m_nextCamera.m_yaw))
+        {
+            EndActivation();
+        }
+
+        return m_nextCamera;
+    }
+
+    void FocusCameraInput::SetPivotFn(PivotFn pivotFn)
+    {
+        m_pivotFn = AZStd::move(pivotFn);
+    }
+
+    void FocusCameraInput::SetFocusInputChannelId(const InputChannelId& focusChannelId)
+    {
+        m_focusChannelId = focusChannelId;
+    }
+
+    bool CustomCameraInput::HandleEvents(const InputEvent& event, const ScreenVector& cursorDelta, const float scrollDelta)
+    {
+        return m_handleEventsFn(*this, event, cursorDelta, scrollDelta);
+    }
+
+    Camera CustomCameraInput::StepCamera(
+        const Camera& targetCamera, const ScreenVector& cursorDelta, const float scrollDelta, const float deltaTime)
+    {
+        return m_stepCameraFn(*this, targetCamera, cursorDelta, scrollDelta, deltaTime);
     }
 
     InputEvent BuildInputEvent(const InputChannel& inputChannel, const WindowSize& windowSize)
