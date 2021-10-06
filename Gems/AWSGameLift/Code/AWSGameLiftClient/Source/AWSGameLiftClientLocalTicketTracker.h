@@ -26,8 +26,8 @@ namespace AWSGameLift
     //! AWSGameLiftClientLocalTicketTracker
     //! GameLift client ticket tracker to describe submitted matchmaking ticket periodically,
     //! and join player to the match once matchmaking ticket is complete.
-    //! All games in public release should use notifications regardless of volume.
-    //! The continuous polling approach here is only appropriate for games in development with low matchmaking usage. 
+    //! For use in production, please see GameLifts guidance about matchmaking at volume.
+    //! The continuous polling approach here is only suitable for low volume matchmaking and is meant to aid with development only
     class AWSGameLiftClientLocalTicketTracker
         : public IAWSGameLiftMatchmakingInternalRequests
     {

@@ -376,9 +376,4 @@ namespace AWSGameLift
     {
         AZ_UNUSED(stopMatchmakingRequest);
     }
-
-    void AWSGameLiftClientManager::SetGameLiftClient(AZStd::shared_ptr<Aws::GameLift::GameLiftClient> gameliftClient)
-    {
-        m_gameliftClient.swap(gameliftClient);
-    }
 } // namespace AWSGameLift
