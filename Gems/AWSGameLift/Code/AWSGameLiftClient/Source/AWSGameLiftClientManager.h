@@ -13,14 +13,6 @@
 
 #include <Request/IAWSGameLiftRequests.h>
 
-namespace Aws
-{
-    namespace GameLift
-    {
-        class GameLiftClient;
-    }
-}
-
 namespace AWSGameLift
 {
     struct AWSGameLiftCreateSessionRequest;
@@ -127,13 +119,11 @@ namespace AWSGameLift
             "Missing AWS region for GameLift client.";
         static constexpr const char AWSGameLiftClientCredentialMissingErrorMessage[] =
             "Missing AWS credential for GameLift client.";
-        static constexpr const char AWSGameLiftClientMissingErrorMessage[] =
-            "GameLift client is not configured yet.";
 
         static constexpr const char AWSGameLiftCreateSessionRequestInvalidErrorMessage[] =
             "Invalid GameLift CreateSession or CreateSessionOnQueue request.";
 
-        AWSGameLiftClientManager();
+        AWSGameLiftClientManager() = default;
         virtual ~AWSGameLiftClientManager() = default;
 
         virtual void ActivateManager();
@@ -165,16 +155,10 @@ namespace AWSGameLift
         AzFramework::SearchSessionsResponse SearchSessions(const AzFramework::SearchSessionsRequest& searchSessionsRequest) const override;
         void LeaveSession() override;
 
-    protected:
-        // Use for automation tests only to inject mock objects. 
-        void SetGameLiftClient(AZStd::shared_ptr<Aws::GameLift::GameLiftClient> gameliftClient);
-
     private:
         AZStd::string CreateSessionHelper(const AWSGameLiftCreateSessionRequest& createSessionRequest);
         AZStd::string CreateSessionOnQueueHelper(const AWSGameLiftCreateSessionOnQueueRequest& createSessionOnQueueRequest);
         bool JoinSessionHelper(const AWSGameLiftJoinSessionRequest& joinSessionRequest);
         AzFramework::SearchSessionsResponse SearchSessionsHelper(const AWSGameLiftSearchSessionsRequest& searchSessionsRequest) const;
-
-        AZStd::shared_ptr<Aws::GameLift::GameLiftClient> m_gameliftClient;
     };
 } // namespace AWSGameLift
