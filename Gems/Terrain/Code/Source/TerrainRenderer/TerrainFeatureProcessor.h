@@ -17,6 +17,7 @@
 #include <Atom/RPI.Public/Image/AttachmentImage.h>
 #include <Atom/RPI.Public/MeshDrawPacket.h>
 #include <Atom/RPI.Public/Material/MaterialReloadNotificationBus.h>
+#include <Atom/Feature/Utils/IndexedDataVector.h>
 
 namespace AZ::RPI
 {
@@ -88,6 +89,7 @@ namespace Terrain
             AZ::Data::Instance<AZ::RPI::ShaderResourceGroup> m_srg; // Hold on to ref so it's not dropped
             AZ::Aabb m_aabb;
             AZStd::fixed_vector<AZ::RPI::MeshDrawPacket, AZ::RPI::ModelLodAsset::LodCountMax> m_drawPackets;
+            AZStd::fixed_vector<uint16_t, 4> m_macroMaterials;
         };
 
         struct MacroMaterialData
@@ -154,6 +156,6 @@ namespace Terrain
 
         AZStd::vector<SectorData> m_sectorData;
 
-        AZStd::vector<MacroMaterialData> m_macroMaterials;
+        AZ::Render::IndexedDataVector<MacroMaterialData> m_macroMaterials;
     };
 }
