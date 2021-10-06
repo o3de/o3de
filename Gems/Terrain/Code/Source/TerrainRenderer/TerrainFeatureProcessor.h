@@ -11,6 +11,7 @@
 #include <AzCore/Component/Component.h>
 
 #include <AzFramework/Terrain/TerrainDataRequestBus.h>
+#include <TerrainRenderer/TerrainMacroMaterialBus.h>
 
 #include <Atom/RPI.Public/FeatureProcessor.h>
 #include <Atom/RPI.Public/Image/AttachmentImage.h>
@@ -33,6 +34,7 @@ namespace Terrain
         : public AZ::RPI::FeatureProcessor
         , private AZ::RPI::MaterialReloadNotificationBus::Handler
         , private AzFramework::Terrain::TerrainDataNotificationBus::Handler
+        , private TerrainMacroMaterialNotificationBus::Handler
     {
     public:
         AZ_RTTI(TerrainFeatureProcessor, "{D7DAC1F9-4A9F-4D3C-80AE-99579BF8AB1C}", AZ::RPI::FeatureProcessor);
@@ -81,12 +83,30 @@ namespace Terrain
             AZStd::vector<uint16_t> m_indices;
         };
         
+        struct SectorData
+        {
+            AZ::Data::Instance<AZ::RPI::ShaderResourceGroup> m_srg; // Hold on to ref so it's not dropped
+            AZ::Aabb m_aabb;
+            AZStd::fixed_vector<AZ::RPI::MeshDrawPacket, AZ::RPI::ModelLodAsset::LodCountMax> m_drawPackets;
+        };
+
+        struct MacroMaterialData
+        {
+            AZ::EntityId m_entityId;
+            AZ::Aabb m_bounds = AZ::Aabb::CreateNull();
+            AZ::Data::Instance<AZ::RPI::Material> m_materialInstance;
+        };
+
         // AZ::RPI::MaterialReloadNotificationBus::Handler overrides...
         void OnMaterialReinitialized(const AZ::Data::Instance<AZ::RPI::Material>& material) override;
 
         // AzFramework::Terrain::TerrainDataNotificationBus overrides...
         void OnTerrainDataDestroyBegin() override;
         void OnTerrainDataChanged(const AZ::Aabb& dirtyRegion, TerrainDataChangedMask dataChangedMask) override;
+
+        // TerrainMacroMaterialNotificationBus overrides...
+        void OnTerrainMacroMaterialChanged(AZ::EntityId entityId, AZ::Data::Instance<AZ::RPI::Material> macroMaterial) override;
+        void OnTerrainMacroMaterialRegionChanged(AZ::EntityId entityId, const AZ::Aabb& oldRegion, const AZ::Aabb& newRegion) override;
 
         void Initialize();
         void InitializeTerrainPatch(uint16_t gridSize, float gridSpacing, PatchData& patchdata);
@@ -95,7 +115,9 @@ namespace Terrain
         void UpdateTerrainData();
 
         void ProcessSurfaces(const FeatureProcessor::RenderPacket& process);
-        
+        MacroMaterialData& FindOrCreateMacroMaterial(AZ::EntityId entityId);
+        void RemoveMacroMaterial(AZ::EntityId entityId);
+
         AZ::Outcome<AZ::Data::Asset<AZ::RPI::BufferAsset>> CreateBufferAsset(
             const void* data, const AZ::RHI::BufferViewDescriptor& bufferViewDescriptor, const AZStd::string& bufferName);
 
@@ -130,13 +152,8 @@ namespace Terrain
         TerrainAreaData m_areaData;
         AZ::Aabb m_dirtyRegion{ AZ::Aabb::CreateNull() };
 
-        struct SectorData
-        {
-            AZ::Data::Instance<AZ::RPI::ShaderResourceGroup> m_srg; // Hold on to ref so it's not dropped
-            AZ::Aabb m_aabb;
-            AZStd::fixed_vector<AZ::RPI::MeshDrawPacket, AZ::RPI::ModelLodAsset::LodCountMax> m_drawPackets;
-        };
-
         AZStd::vector<SectorData> m_sectorData;
+
+        AZStd::vector<MacroMaterialData> m_macroMaterials;
     };
 }
