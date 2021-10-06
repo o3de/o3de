@@ -34,7 +34,9 @@ namespace O3DE::ProjectManager
         setLayout(new FlowLayout(this));
 
         // layout margins cannot be set via qss 
-        layout()->setMargin(0);
+        constexpr int verticalMargin = 10;
+        constexpr int horizontalMargin = 0;
+        layout()->setContentsMargins(horizontalMargin, verticalMargin, horizontalMargin, verticalMargin);
 
         setAttribute(Qt::WA_StyledBackground, true);
     }
