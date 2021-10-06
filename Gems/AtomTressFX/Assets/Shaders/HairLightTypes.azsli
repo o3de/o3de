@@ -362,7 +362,7 @@ void ApplyDirectionalLights(Surface surface, inout LightingData lightingData)
         litRatio = DirectionalLightShadow::GetVisibility(
             shadowIndex,
             lightingData.shadowCoords,
-            surface.normal,
+            surface.vertexNormal,
             debugInfo);
     }
 
