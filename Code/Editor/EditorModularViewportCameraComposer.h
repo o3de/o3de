@@ -41,7 +41,7 @@ namespace SandboxEditor
         AZStd::shared_ptr<AzFramework::RotateCameraInput> m_firstPersonRotateCamera;
         AZStd::shared_ptr<AzFramework::PanCameraInput> m_firstPersonPanCamera;
         AZStd::shared_ptr<AzFramework::TranslateCameraInput> m_firstPersonTranslateCamera;
-        AZStd::shared_ptr<AzFramework::ScrollTranslationCameraInput> m_firstPersonScrollCamera;
+        AZStd::shared_ptr<AzFramework::LookScrollTranslationCameraInput> m_firstPersonScrollCamera;
         AZStd::shared_ptr<AzFramework::FocusCameraInput> m_firstPersonFocusCamera;
         AZStd::shared_ptr<AzFramework::OrbitCameraInput> m_orbitCamera;
         AZStd::shared_ptr<AzFramework::RotateCameraInput> m_orbitRotateCamera;

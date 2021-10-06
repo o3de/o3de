@@ -135,7 +135,7 @@ namespace SandboxEditor
         m_firstPersonRotateCamera->SetActivationEndedFn(showCursor);
 
         m_firstPersonPanCamera = AZStd::make_shared<AzFramework::PanCameraInput>(
-            SandboxEditor::CameraFreePanChannelId(), AzFramework::LookPan, AzFramework::TranslatePivot);
+            SandboxEditor::CameraFreePanChannelId(), AzFramework::LookPan, AzFramework::TranslatePivotLook);
 
         m_firstPersonPanCamera->m_panSpeedFn = []
         {
@@ -155,7 +155,7 @@ namespace SandboxEditor
         const auto translateCameraInputChannelIds = BuildTranslateCameraInputChannelIds();
 
         m_firstPersonTranslateCamera = AZStd::make_shared<AzFramework::TranslateCameraInput>(
-            translateCameraInputChannelIds, AzFramework::LookTranslation, AzFramework::TranslatePivot);
+            translateCameraInputChannelIds, AzFramework::LookTranslation, AzFramework::TranslatePivotLook);
 
         m_firstPersonTranslateCamera->m_translateSpeedFn = []
         {
@@ -167,7 +167,7 @@ namespace SandboxEditor
             return SandboxEditor::CameraBoostMultiplier();
         };
 
-        m_firstPersonScrollCamera = AZStd::make_shared<AzFramework::ScrollTranslationCameraInput>();
+        m_firstPersonScrollCamera = AZStd::make_shared<AzFramework::LookScrollTranslationCameraInput>();
 
         m_firstPersonScrollCamera->m_scrollSpeedFn = []
         {
@@ -217,7 +217,7 @@ namespace SandboxEditor
         };
 
         m_orbitTranslateCamera = AZStd::make_shared<AzFramework::TranslateCameraInput>(
-            translateCameraInputChannelIds, AzFramework::LookTranslation, AzFramework::TranslateOffset);
+            translateCameraInputChannelIds, AzFramework::LookTranslation, AzFramework::TranslateOffsetOrbit);
 
         m_orbitTranslateCamera->m_translateSpeedFn = []
         {
@@ -244,7 +244,7 @@ namespace SandboxEditor
         };
 
         m_orbitPanCamera = AZStd::make_shared<AzFramework::PanCameraInput>(
-            SandboxEditor::CameraOrbitPanChannelId(), AzFramework::LookPan, AzFramework::TranslateOffset);
+            SandboxEditor::CameraOrbitPanChannelId(), AzFramework::LookPan, AzFramework::TranslateOffsetOrbit);
 
         m_orbitPanCamera->m_panSpeedFn = []
         {

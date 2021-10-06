@@ -53,7 +53,7 @@ namespace UnitTest
             };
 
             m_firstPersonTranslateCamera = AZStd::make_shared<AzFramework::TranslateCameraInput>(
-                m_translateCameraInputChannelIds, AzFramework::LookTranslation, AzFramework::TranslatePivot);
+                m_translateCameraInputChannelIds, AzFramework::LookTranslation, AzFramework::TranslatePivotLook);
 
             m_orbitCamera = AZStd::make_shared<AzFramework::OrbitCameraInput>(m_orbitChannelId);
             m_orbitCamera->SetPivotFn(
@@ -70,7 +70,7 @@ namespace UnitTest
             };
 
             auto orbitTranslateCamera = AZStd::make_shared<AzFramework::TranslateCameraInput>(
-                m_translateCameraInputChannelIds, AzFramework::OrbitTranslation, AzFramework::TranslateOffset);
+                m_translateCameraInputChannelIds, AzFramework::OrbitTranslation, AzFramework::TranslateOffsetOrbit);
 
             m_orbitCamera->m_orbitCameras.AddCamera(orbitRotateCamera);
             m_orbitCamera->m_orbitCameras.AddCamera(orbitTranslateCamera);
