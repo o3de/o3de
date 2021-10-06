@@ -21,7 +21,7 @@ namespace ScriptCanvasEditor
 {
     namespace VersionExplorer
     {
-        //!Scoped utility to set and restore the "ed_KeepEditorActive" CVar in order to allow
+        //! Scoped utility to set and restore the "ed_KeepEditorActive" CVar in order to allow
         //! the upgrade tool to work even if the editor is not in the foreground
         class EditorKeepAlive
         {

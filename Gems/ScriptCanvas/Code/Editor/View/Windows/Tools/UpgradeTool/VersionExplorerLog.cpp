@@ -8,11 +8,6 @@
 
 #include <Editor/View/Windows/Tools/UpgradeTool/VersionExplorerLog.h>
 
-namespace LoggerCpp
-{
-
-}
-
 namespace ScriptCanvasEditor
 {
     namespace VersionExplorer

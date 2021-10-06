@@ -11,6 +11,7 @@
 #if !defined(Q_MOC_RUN)
 #include <AzCore/Component/EntityId.h>
 #include <AzCore/PlatformDef.h>
+#include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzQtComponents/Components/StyledDialog.h>
 #include <Editor/View/Windows/Tools/UpgradeTool/ModelTraits.h>
 #include <ISystem.h>
@@ -26,7 +27,7 @@ class QTableWidgetItem;
 
 namespace Ui
 {
-    class Controller;
+    class View;
 }
 
 namespace AzQtComponents
@@ -58,7 +59,7 @@ namespace ScriptCanvasEditor
             static constexpr int ColumnBrowse = 2;
             static constexpr int ColumnStatus = 3;
 
-            AZStd::unique_ptr<Ui::Controller> m_view;
+            AZStd::unique_ptr<Ui::View> m_view;
             int m_handledAssetCount = 0;
 
             void AddLogEntries();

@@ -261,7 +261,6 @@ set(FILES
     Editor/View/Windows/ScriptCanvasEditorResources.qrc
     Editor/View/Windows/Tools/UpgradeTool/Controller.cpp
     Editor/View/Windows/Tools/UpgradeTool/Controller.h
-    Editor/View/Windows/Tools/UpgradeTool/Controller.ui
     Editor/View/Windows/Tools/UpgradeTool/FileSaver.cpp
     Editor/View/Windows/Tools/UpgradeTool/FileSaver.h
     Editor/View/Windows/Tools/UpgradeTool/LogTraits.h
@@ -277,6 +276,7 @@ set(FILES
     Editor/View/Windows/Tools/UpgradeTool/UpgradeHelper.ui
     Editor/View/Windows/Tools/UpgradeTool/VersionExplorerLog.cpp
     Editor/View/Windows/Tools/UpgradeTool/VersionExplorerLog.h
+    Editor/View/Windows/Tools/UpgradeTool/View.ui
     Editor/Framework/ScriptCanvasGraphUtilities.inl
     Editor/Framework/ScriptCanvasGraphUtilities.h
     Editor/Framework/ScriptCanvasTraceUtilities.h

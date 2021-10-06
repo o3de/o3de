@@ -34,8 +34,8 @@
 #include <ScriptCanvas/Bus/EditorScriptCanvasBus.h>
 #include <ScriptCanvas/Components/EditorGraph.h>
 
-#include <Editor/View/Windows/Tools/UpgradeTool/ui_Controller.h>
-#include <Editor/View/Windows/Tools/UpgradeTool/moc_Controller.cpp>
+#include <Editor/View/Windows/Tools/UpgradeTool/ui_View.h>
+// #include <Editor/View/Windows/Tools/UpgradeTool/moc_View.cpp>
 
 namespace ScriptCanvasEditor
 {
@@ -43,7 +43,7 @@ namespace ScriptCanvasEditor
     {
         Controller::Controller(QWidget* parent)
             : AzQtComponents::StyledDialog(parent)
-            , m_view(new Ui::Controller())
+            , m_view(new Ui::View())
         {
             m_view->setupUi(this);
             m_view->tableWidget->horizontalHeader()->setVisible(false);
