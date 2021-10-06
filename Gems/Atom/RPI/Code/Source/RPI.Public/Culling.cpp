@@ -23,6 +23,7 @@
 #include <AzCore/Debug/Timer.h>
 #include <AzCore/Jobs/JobFunction.h>
 #include <AzCore/Jobs/Job.h>
+#include <AzCore/Task/TaskGraph.h>
 #include <Atom_RPI_Traits_Platform.h>
 
 #if AZ_TRAIT_MASKED_OCCLUSION_CULLING_SUPPORTED
@@ -702,6 +703,8 @@ namespace AZ
             AZ::Name visSceneName(AZStd::string::format("RenderCullScene[%s]", m_parentScene->GetName().GetCStr()));
             m_visScene = AZ::Interface<AzFramework::IVisibilitySystem>::Get()->CreateVisibilityScene(visSceneName);
 
+            m_taskGraphActive = AZ::Interface<AZ::TaskGraphActiveInterface>::Get();
+
 #ifdef AZ_CULL_DEBUG_ENABLED
             AZ_Assert(CountObjectsInScene() == 0, "The culling system should start with 0 entries in this scene.");
 #endif
@@ -719,13 +722,27 @@ namespace AZ
             }
         }
 
-        void CullingScene::BeginCulling(const AZStd::vector<ViewPtr>& views)
+        void CullingScene::BeginCullingTaskGraph(const AZStd::vector<ViewPtr>& views)
         {
-            AZ_PROFILE_SCOPE(RPI, "CullingScene: BeginCulling");
-            m_cullDataConcurrencyCheck.soft_lock();
+            AZ::TaskGraph taskGraph;
+            AZ::TaskDescriptor beginCullingDescriptor{"RPI_CullingScene_BeginCullingView", "Graphics"};
+            for (auto& view : views)
+            {
+                taskGraph.AddTask(
+                    beginCullingDescriptor,
+                    [&view]()
+                    {
+                        view->BeginCulling();
+                    });
+            }
 
-            m_debugCtx.ResetCullStats();
-            m_debugCtx.m_numCullablesInScene = GetNumCullables();
+            AZ::TaskGraphEvent waitForCompletion;
+            taskGraph.Submit(&waitForCompletion);
+            waitForCompletion.Wait();
+        }
+
+        void CullingScene::BeginCullingJobs(const AZStd::vector<ViewPtr>& views)
+        {
             AZ::JobCompletion beginCullingCompletion;
 
             for (auto& view : views)
@@ -741,6 +758,27 @@ namespace AZ
             }
 
             beginCullingCompletion.StartAndWaitForCompletion();
+        }
+
+        void CullingScene::BeginCulling(const AZStd::vector<ViewPtr>& views)
+        {
+            AZ_PROFILE_SCOPE(RPI, "CullingScene: BeginCulling");
+            m_cullDataConcurrencyCheck.soft_lock();
+
+            m_debugCtx.ResetCullStats();
+            m_debugCtx.m_numCullablesInScene = GetNumCullables();
+
+            auto taskGraphActiveInterface = AZ::Interface<AZ::TaskGraphActiveInterface>::Get();
+            m_taskGraphActive = taskGraphActiveInterface && taskGraphActiveInterface->IsTaskGraphActive();
+
+            if (m_taskGraphActive && m_taskGraphActive->IsTaskGraphActive())
+            {
+                BeginCullingTaskGraph(views);
+            }
+            else
+            {
+                BeginCullingJobs(views);
+            }
 
             AuxGeomDrawPtr auxGeom;
             if (m_debugCtx.m_debugDraw)

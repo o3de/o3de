@@ -38,6 +38,7 @@
 namespace AZ
 {
     class Job;
+    class TaskGraphActiveInterface;
 
     namespace RHI
     {
@@ -282,11 +283,16 @@ namespace AZ
         protected:
             size_t CountObjectsInScene();
 
+        private:
+            void BeginCullingTaskGraph(const AZStd::vector<ViewPtr>& views);
+            void BeginCullingJobs(const AZStd::vector<ViewPtr>& views);
+
             const Scene* m_parentScene = nullptr;
             AzFramework::IVisibilityScene* m_visScene = nullptr;
             CullingDebugContext m_debugCtx;
             AZStd::concurrency_checker m_cullDataConcurrencyCheck;
             OcclusionPlaneVector m_occlusionPlanes;
+            AZ::TaskGraphActiveInterface* m_taskGraphActive = nullptr;
         };
         
 
