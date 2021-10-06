@@ -75,6 +75,7 @@ namespace Terrain
         m_dirtyRegion = AZ::Aabb::CreateNull();
         Initialize();
         AzFramework::Terrain::TerrainDataNotificationBus::Handler::BusConnect();
+        TerrainMacroMaterialNotificationBus::Handler::BusConnect();
     }
 
     void TerrainFeatureProcessor::Initialize()
@@ -107,6 +108,7 @@ namespace Terrain
 
     void TerrainFeatureProcessor::Deactivate()
     {
+        TerrainMacroMaterialNotificationBus::Handler::BusDisconnect();
         AzFramework::Terrain::TerrainDataNotificationBus::Handler::BusDisconnect();
         AZ::RPI::MaterialReloadNotificationBus::Handler::BusDisconnect();
 
