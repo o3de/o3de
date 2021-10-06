@@ -50,6 +50,7 @@ namespace SandboxEditor
     constexpr AZStd::string_view CameraPivotLookIdSetting = "/Amazon/Preferences/Editor/Camera/PivotLookId";
     constexpr AZStd::string_view CameraPivotDollyIdSetting = "/Amazon/Preferences/Editor/Camera/PivotDollyId";
     constexpr AZStd::string_view CameraPivotPanIdSetting = "/Amazon/Preferences/Editor/Camera/PivotPanId";
+    constexpr AZStd::string_view CameraFocusIdSetting = "/Amazon/Preferences/Editor/Camera/FocusId";
 
     template<typename T>
     void SetRegistry(const AZStd::string_view setting, T&& value)
@@ -461,5 +462,15 @@ namespace SandboxEditor
     void SetCameraPivotPanChannelId(AZStd::string_view cameraPivotPanId)
     {
         SetRegistry(CameraPivotPanIdSetting, cameraPivotPanId);
+    }
+
+    AzFramework::InputChannelId CameraFocusChannelId()
+    {
+        return AzFramework::InputChannelId(GetRegistry(CameraFocusIdSetting, AZStd::string("keyboard_key_alphanumeric_X")).c_str());
+    }
+
+    void SetCameraFocusChannelId(AZStd::string_view cameraFocusId)
+    {
+        SetRegistry(CameraFocusIdSetting, cameraFocusId);
     }
 } // namespace SandboxEditor
