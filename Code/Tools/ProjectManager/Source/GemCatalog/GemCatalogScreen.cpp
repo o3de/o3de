@@ -135,7 +135,7 @@ namespace O3DE::ProjectManager
         }
     }
 
-    bool GemCatalogScreen::EnableDisableGemsForProject(const QString& projectPath)
+    GemCatalogScreen::EnableDisableGemsResult GemCatalogScreen::EnableDisableGemsForProject(const QString& projectPath)
     {
         IPythonBindings* pythonBindings = PythonBindingsInterface::Get();
         QVector<QModelIndex> toBeAdded = m_gemModel->GatherGemsToBeAdded();
@@ -143,10 +143,10 @@ namespace O3DE::ProjectManager
 
         if (m_gemModel->DoGemsToBeAddedHaveRequirements())
         {
-            GemRequirementDialog* confirmRequirementsDialog = new GemRequirementDialog(m_gemModel, toBeAdded, this);
+            GemRequirementDialog* confirmRequirementsDialog = new GemRequirementDialog(m_gemModel, this);
             if(confirmRequirementsDialog->exec() == QDialog::Rejected)
             {
-                return false;
+                return EnableDisableGemsResult::Cancel;
             }
         }
 
@@ -155,7 +155,7 @@ namespace O3DE::ProjectManager
             GemDependenciesDialog* dependenciesDialog = new GemDependenciesDialog(m_gemModel, this);
             if(dependenciesDialog->exec() == QDialog::Rejected)
             {
-                return false;
+                return EnableDisableGemsResult::Cancel;
             }
 
             toBeAdded = m_gemModel->GatherGemsToBeAdded();
@@ -171,7 +171,7 @@ namespace O3DE::ProjectManager
                 QMessageBox::critical(nullptr, "Operation failed",
                     QString("Cannot add gem %1 to project.\n\nError:\n%2").arg(GemModel::GetDisplayName(modelIndex), result.GetError().c_str()));
 
-                return false;
+                return EnableDisableGemsResult::Failed;
             }
         }
 
@@ -184,11 +184,11 @@ namespace O3DE::ProjectManager
                 QMessageBox::critical(nullptr, "Operation failed",
                     QString("Cannot remove gem %1 from project.\n\nError:\n%2").arg(GemModel::GetDisplayName(modelIndex), result.GetError().c_str()));
 
-                return false;
+                return EnableDisableGemsResult::Failed;
             }
         }
 
-        return true;
+        return EnableDisableGemsResult::Success;
     }
 
     ProjectManagerScreen GemCatalogScreen::GetScreenEnum()
