@@ -63,13 +63,13 @@ namespace CopyDependencyBuilder
         charBuffer.back() = 0;
 
         /* File Contents of EMFX Workspace file looks like
-        startScript="ImportActor -filename \"@assets@/animationsamples/advanced_rinlocomotion/actor/rinactor.actor\"\nCreateActorInstance
+        startScript="ImportActor -filename \"@products@/animationsamples/advanced_rinlocomotion/actor/rinactor.actor\"\nCreateActorInstance
         -actorID %LASTRESULT% -xPos 0.000000 -yPos 0.020660 -zPos 0.000000 -xScale 1.000000 -yScale 1.000000 -zScale 1.000000 -rot 0.00000000,
-        0.00000000,0.00000000,0.99997193\n LoadMotionSet -filename \"@assets@/AnimationSamples/Advanced_RinLocomotion/AnimationEditorFiles/Advanced_RinLocomotion.motionset\"
-        \nLoadAnimGraph -filename \"@assets@/AnimationSamples/Advanced_RinLocomotion/AnimationEditorFiles/Advanced_RinLocomotion.animgraph\"
+        0.00000000,0.00000000,0.99997193\n LoadMotionSet -filename \"@products@/AnimationSamples/Advanced_RinLocomotion/AnimationEditorFiles/Advanced_RinLocomotion.motionset\"
+        \nLoadAnimGraph -filename \"@products@/AnimationSamples/Advanced_RinLocomotion/AnimationEditorFiles/Advanced_RinLocomotion.animgraph\"
         \nActivateAnimGraph -actorInstanceID %LASTRESULT3% -animGraphID %LASTRESULT1% -motionSetID %LASTRESULT2% -visualizeScale 1.000000\n"
         */
-        AZStd::regex pathRegex(R"(\s+-filename\s+\\\"(?:@assets@\/)?(\S+)\\\")");
+        AZStd::regex pathRegex(R"(\s+-filename\s+\\\"(?:@products@\/)?(\S+)\\\")");
         AZStd::smatch matches;
         AZStd::string::const_iterator searchStart = charBuffer.begin();
         while (AZStd::regex_search(searchStart, matches, pathRegex))

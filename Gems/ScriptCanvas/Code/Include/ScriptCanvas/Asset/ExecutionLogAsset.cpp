@@ -85,7 +85,7 @@ namespace ScriptCanvas
 
     const char* ExecutionLogAsset::GetDefaultDirectoryRoot()
     {
-        return AZ::IO::FileIOBase::GetInstance()->GetAlias("@devroot@");
+        return AZ::IO::FileIOBase::GetInstance()->GetAlias("@engroot@");
     }
 
     ExecutionLogAsset::ExecutionLogAsset(const AZ::Data::AssetId& assetId, AZ::Data::AssetData::AssetStatus status)

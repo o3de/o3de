@@ -56,8 +56,6 @@ namespace UnitTest
         AZStd::unordered_map<AZStd::string, SourceInfo> m_sourceInfoMap;
 
         bool GetSourceInfoBySourcePath(const char* sourcePath, AZ::Data::AssetInfo& assetInfo, AZStd::string& watchFolder) override;
-        const char* GetAbsoluteDevGameFolderPath() override;
-        const char* GetAbsoluteDevRootFolderPath() override;
         bool GetRelativeProductPathFromFullSourceOrProductPath(const AZStd::string& fullPath, AZStd::string& relativeProductPath) override;
         bool GenerateRelativeSourcePath(
             const AZStd::string& sourcePath, AZStd::string& relativePath, AZStd::string& watchFolder) override;

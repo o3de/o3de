@@ -95,6 +95,7 @@ namespace SandboxEditor
                 cameras.AddCamera(m_firstPersonPanCamera);
                 cameras.AddCamera(m_firstPersonTranslateCamera);
                 cameras.AddCamera(m_firstPersonScrollCamera);
+                cameras.AddCamera(m_firstPersonFocusCamera);
                 cameras.AddCamera(m_pivotCamera);
             });
 
@@ -111,6 +112,7 @@ namespace SandboxEditor
                     viewportId, &AzToolsFramework::ViewportInteraction::ViewportMouseCursorRequestBus::Events::BeginCursorCapture);
             }
         };
+
         const auto showCursor = [viewportId = m_viewportId]
         {
             if (SandboxEditor::CameraCaptureCursorForLook())
@@ -172,19 +174,34 @@ namespace SandboxEditor
             return SandboxEditor::CameraScrollSpeed();
         };
 
+        const auto pivotFn = []
+        {
+            // use the manipulator transform as the pivot point
+            AZStd::optional<AZ::Transform> entityPivot;
+            AzToolsFramework::EditorTransformComponentSelectionRequestBus::EventResult(
+                entityPivot, AzToolsFramework::GetEntityContextId(),
+                &AzToolsFramework::EditorTransformComponentSelectionRequestBus::Events::GetManipulatorTransform);
+
+            if (entityPivot.has_value())
+            {
+                return entityPivot->GetTranslation();
+            }
+
+            // otherwise just use the identity
+            return AZ::Vector3::CreateZero();
+        };
+
+        m_firstPersonFocusCamera =
+            AZStd::make_shared<AzFramework::FocusCameraInput>(SandboxEditor::CameraFocusChannelId(), AzFramework::FocusLook);
+
+        m_firstPersonFocusCamera->SetPivotFn(pivotFn);
+
         m_pivotCamera = AZStd::make_shared<AzFramework::PivotCameraInput>(SandboxEditor::CameraPivotChannelId());
 
         m_pivotCamera->SetPivotFn(
-            []([[maybe_unused]] const AZ::Vector3& position, [[maybe_unused]] const AZ::Vector3& direction)
+            [pivotFn]([[maybe_unused]] const AZ::Vector3& position, [[maybe_unused]] const AZ::Vector3& direction)
             {
-                // use the manipulator transform as the pivot point
-                AZStd::optional<AZ::Transform> entityPivot;
-                AzToolsFramework::EditorTransformComponentSelectionRequestBus::EventResult(
-                    entityPivot, AzToolsFramework::GetEntityContextId(),
-                    &AzToolsFramework::EditorTransformComponentSelectionRequestBus::Events::GetManipulatorTransform);
-
-                // otherwise just use the identity
-                return entityPivot.value_or(AZ::Transform::CreateIdentity()).GetTranslation();
+                return pivotFn();
             });
 
         m_pivotRotateCamera = AZStd::make_shared<AzFramework::RotateCameraInput>(SandboxEditor::CameraPivotLookChannelId());
@@ -244,11 +261,17 @@ namespace SandboxEditor
             return SandboxEditor::CameraPanInvertedY();
         };
 
+        m_pivotFocusCamera =
+            AZStd::make_shared<AzFramework::FocusCameraInput>(SandboxEditor::CameraFocusChannelId(), AzFramework::FocusPivot);
+
+        m_pivotFocusCamera->SetPivotFn(pivotFn);
+
         m_pivotCamera->m_pivotCameras.AddCamera(m_pivotRotateCamera);
         m_pivotCamera->m_pivotCameras.AddCamera(m_pivotTranslateCamera);
         m_pivotCamera->m_pivotCameras.AddCamera(m_pivotDollyScrollCamera);
         m_pivotCamera->m_pivotCameras.AddCamera(m_pivotDollyMoveCamera);
         m_pivotCamera->m_pivotCameras.AddCamera(m_pivotPanCamera);
+        m_pivotCamera->m_pivotCameras.AddCamera(m_pivotFocusCamera);
     }
 
     void EditorModularViewportCameraComposer::OnEditorModularViewportCameraComposerSettingsChanged()
@@ -257,12 +280,14 @@ namespace SandboxEditor
         m_firstPersonTranslateCamera->SetTranslateCameraInputChannelIds(translateCameraInputChannelIds);
         m_firstPersonPanCamera->SetPanInputChannelId(SandboxEditor::CameraFreePanChannelId());
         m_firstPersonRotateCamera->SetRotateInputChannelId(SandboxEditor::CameraFreeLookChannelId());
+        m_firstPersonFocusCamera->SetFocusInputChannelId(SandboxEditor::CameraFocusChannelId());
 
         m_pivotCamera->SetPivotInputChannelId(SandboxEditor::CameraPivotChannelId());
         m_pivotTranslateCamera->SetTranslateCameraInputChannelIds(translateCameraInputChannelIds);
         m_pivotPanCamera->SetPanInputChannelId(SandboxEditor::CameraPivotPanChannelId());
         m_pivotRotateCamera->SetRotateInputChannelId(SandboxEditor::CameraPivotLookChannelId());
         m_pivotDollyMoveCamera->SetDollyInputChannelId(SandboxEditor::CameraPivotDollyChannelId());
+        m_pivotFocusCamera->SetFocusInputChannelId(SandboxEditor::CameraFocusChannelId());
     }
 
     void EditorModularViewportCameraComposer::OnViewportViewEntityChanged(const AZ::EntityId& viewEntityId)
