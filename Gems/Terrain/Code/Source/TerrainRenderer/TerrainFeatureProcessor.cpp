@@ -158,6 +158,33 @@ namespace Terrain
         m_areaData.m_propertiesDirty = true;
     }
 
+    void TerrainFeatureProcessor::OnTerrainMacroMaterialChanged(AZ::EntityId entityId, AZ::Data::Instance<AZ::RPI::Material> macroMaterial)
+    {
+        if (macroMaterial)
+        {
+            MacroMaterialData& data = FindOrCreateMacroMaterial(entityId);
+            data.m_materialInstance = macroMaterial;
+            if (data.m_bounds.IsValid())
+            {
+                // update sectors based on bounds.
+            }
+        }
+        else
+        {
+            RemoveMacroMaterial(entityId);
+        }
+    }
+
+    void TerrainFeatureProcessor::OnTerrainMacroMaterialRegionChanged(AZ::EntityId entityId, [[maybe_unused]] const AZ::Aabb& oldRegion, const AZ::Aabb& newRegion)
+    {
+        MacroMaterialData& data = FindOrCreateMacroMaterial(entityId);
+        if (data.m_materialInstance)
+        {
+            // update sectors based on bounds.
+        }
+        data.m_bounds = newRegion;
+    }
+
     void TerrainFeatureProcessor::UpdateTerrainData()
     {
         static const AZ::Name TerrainHeightmapName = AZ::Name(TerrainHeightmapChars);
@@ -529,5 +556,33 @@ namespace Terrain
     {
         // This will control the max rendering size. Actual terrain size can be much
         // larger but this will limit how much is rendered.
+    }
+    
+    TerrainFeatureProcessor::MacroMaterialData& TerrainFeatureProcessor::FindOrCreateMacroMaterial(AZ::EntityId entityId)
+    {
+        for (MacroMaterialData& data : m_macroMaterials)
+        {
+            if (data.m_entityId == entityId)
+            {
+                return data;
+            }
+        }
+        m_macroMaterials.push_back(MacroMaterialData());
+        m_macroMaterials.back().m_entityId = entityId;
+        return m_macroMaterials.back();
+    }
+
+    void TerrainFeatureProcessor::RemoveMacroMaterial(AZ::EntityId entityId)
+    {
+        for (MacroMaterialData& data : m_macroMaterials)
+        {
+            if (data.m_entityId == entityId)
+            {
+                data = m_macroMaterials.back();
+                m_macroMaterials.pop_back();
+                return;
+            }
+        }
+        AZ_Assert(false, "Entity Id not found in m_macroMaterials.")
     }
 }
