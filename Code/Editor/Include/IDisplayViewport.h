@@ -35,8 +35,6 @@ struct IDisplayViewport
     */
     virtual float GetDistanceToLine(const Vec3& lineP1, const Vec3& lineP2, const QPoint& point) const = 0;
 
-    virtual CBaseObjectsCache* GetVisibleObjectsCache() = 0;
-
     enum EAxis
     {
         AXIS_NONE,

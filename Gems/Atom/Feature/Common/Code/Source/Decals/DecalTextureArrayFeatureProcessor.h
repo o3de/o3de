@@ -89,6 +89,7 @@ namespace AZ
         private:
 
             // Number of size and format permutations
+            // This number should match the number of texture arrays in Decals/ViewSrg.azsli
             static constexpr int NumTextureArrays = 5;
             static constexpr const char* FeatureProcessorName = "DecalTextureArrayFeatureProcessor";
 
@@ -113,6 +114,7 @@ namespace AZ
             AZStd::optional<DecalLocation> AddMaterialToTextureArrays(const AZ::RPI::MaterialAsset* materialAsset);
 
             int FindTextureArrayWithSize(const RHI::Size& size) const;
+            void RemoveMaterialFromDecal(const uint16_t decalIndex);
             void SetDecalTextureLocation(const DecalHandle& handle, const DecalLocation location);
             void QueueMaterialLoadForDecal(const AZ::Data::AssetId material, const DecalHandle handle);
             bool RemoveDecalFromTextureArrays(const DecalLocation decalLocation);
@@ -128,7 +130,7 @@ namespace AZ
             // 4 textures @ 512x512
             IndexableList < AZStd::pair < AZ::RHI::Size, DecalTextureArray>> m_textureArrayList;
 
-            AZStd::array<RHI::ShaderInputImageIndex, NumTextureArrays> m_decalTextureArrayIndices;
+            AZStd::array<AZStd::array<RHI::ShaderInputImageIndex, DecalMapType_Num>, NumTextureArrays> m_decalTextureArrayIndices;
             GpuBufferHandler m_decalBufferHandler;
 
             AsyncLoadTracker<DecalHandle> m_materialLoadTracker;

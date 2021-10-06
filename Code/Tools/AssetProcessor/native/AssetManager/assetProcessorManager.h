@@ -440,8 +440,6 @@ namespace AssetProcessor
         AZStd::mutex m_sourceUUIDToSourceInfoMapMutex;
 
         QString m_normalizedCacheRootPath;
-        char m_absoluteDevFolderPath[AZ_MAX_PATH_LEN];
-        char m_absoluteDevGameFolderPath[AZ_MAX_PATH_LEN];
         QDir m_cacheRootDir;
         bool m_isCurrentlyScanning = false;
         bool m_quitRequested = false;

@@ -192,7 +192,7 @@ namespace AZ
 
         u32 EditorDecalComponent::OnConfigurationChanged()
         {
-            BaseClass::OnConfigurationChanged();
+            m_controller.ConfigurationChanged();
             return Edit::PropertyRefreshLevels::AttributesAndValues;
         }
 

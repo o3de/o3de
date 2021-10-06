@@ -9,7 +9,7 @@
 #pragma once
 
 #include <AzCore/EBus/Event.h>
-#include <AzFramework/Viewport/ViewportId.h>
+#include <AzFramework/Entity/EntityContextBus.h>
 #include <AzToolsFramework/ViewportUi/ViewportUiRequestBus.h>
 
 namespace AzToolsFramework
@@ -23,11 +23,11 @@ namespace AzToolsFramework
         Pick
     };
 
-    //! Viewport identifier and other relevant viewport data.
-    struct ViewportEditorModeInfo
+    //! Viewport editor mode tracker identifier and other relevant data.
+    struct ViewportEditorModeTrackerInfo
     {
-        using IdType = AzFramework::ViewportId;
-        IdType m_id = ViewportUi::DefaultViewportId; //!< The unique identifier for a given viewport.
+        using IdType = AzFramework::EntityContextId;
+        IdType m_id = AzFramework::EntityContextId::CreateNull(); //!< The unique identifier for a given viewport editor mode tracker.
     };
 
     //! Interface for the editor modes of a given viewport.
@@ -49,7 +49,7 @@ namespace AzToolsFramework
         // EBusTraits overrides
         static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Multiple;
         static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::ById;
-        using BusIdType = ViewportEditorModeInfo::IdType;
+        using BusIdType = ViewportEditorModeTrackerInfo::IdType;
         //////////////////////////////////////////////////////////////////////////
 
         //! Notifies subscribers of the a given viewport to the activation of the specified editor mode.

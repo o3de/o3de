@@ -411,10 +411,7 @@ namespace ScriptCanvasEditor
 
         case Qt::TextAlignmentRole:
         {
-            if (index.column() == ColumnIndex::Type)
-            {
-                return QVariant(Qt::AlignLeft | Qt::AlignVCenter);
-            }
+            return QVariant(Qt::AlignLeft | Qt::AlignVCenter);
         }
         break;
 
@@ -878,6 +875,11 @@ namespace ScriptCanvasEditor
         if (orientation == Qt::Horizontal && role == Qt::DisplayRole)
         {
             return tr(m_columnNames[section]);
+        }
+
+        if (role == Qt::TextAlignmentRole)
+        {
+            return QVariant(Qt::AlignLeft | Qt::AlignVCenter);
         }
 
         return QAbstractItemModel::headerData(section, orientation, role);

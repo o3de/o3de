@@ -276,7 +276,9 @@ namespace AZ::SettingsRegistryMergeUtils
             return engineRoot;
         }
 
-        return {};
+        // Fall back to using the project root as the engine root if the engine path could not be reconciled
+        // by checking the project.json "engine" string within o3de_manifest.json "engine_paths" object
+        return projectRoot;
     }
 
     AZ::IO::FixedMaxPath FindProjectRoot(SettingsRegistryInterface& settingsRegistry)
@@ -309,7 +311,13 @@ namespace AZ::SettingsRegistryMergeUtils
             return projectRoot;
         }
 
-        return {};
+        // Step 3 Check for a "Cache" directory by scanning upwards from the executable directory
+        if (auto candidateRoot = Internal::ScanUpRootLocator("Cache");
+            !candidateRoot.empty() && AZ::IO::SystemFile::IsDirectory(candidateRoot.c_str()))
+        {
+            projectRoot = AZStd::move(candidateRoot);
+        }
+        return projectRoot;
     }
 
     AZStd::string_view ConfigParserSettings::DefaultCommentPrefixFilter(AZStd::string_view line)
@@ -538,7 +546,7 @@ namespace AZ::SettingsRegistryMergeUtils
         AZ::IO::FixedMaxPath path = AZ::Utils::GetExecutableDirectory();
         registry.Set(FilePathKey_BinaryFolder, path.LexicallyNormal().Native());
 
-        // Engine root folder - corresponds to the @engroot@ and @devroot@ aliases
+        // Engine root folder - corresponds to the @engroot@ and @engroot@ aliases
         AZ::IO::FixedMaxPath engineRoot = FindEngineRoot(registry);
         registry.Set(FilePathKey_EngineRootFolder, engineRoot.LexicallyNormal().Native());
 
@@ -562,7 +570,7 @@ namespace AZ::SettingsRegistryMergeUtils
                 assetPlatform = AZ::OSPlatformToDefaultAssetPlatform(AZ_TRAIT_OS_PLATFORM_CODENAME);
             }
 
-            // Project path - corresponds to the @devassets@ alias
+            // Project path - corresponds to the @projectroot@ alias
             // NOTE: Here we append to engineRoot, but if projectPathValue is absolute then engineRoot is discarded.
             path = engineRoot / projectPathValue;
 
@@ -654,7 +662,7 @@ namespace AZ::SettingsRegistryMergeUtils
                 }
                 else
                 {
-                    // Cache: root - same as the @root@ alias, this is the starting path for cache files.
+                    // Cache: root - same as the @products@ alias, this is the starting path for cache files.
                     path = normalizedProjectPath / "Cache";
                     registry.Set(FilePathKey_CacheProjectRootFolder, path.LexicallyNormal().Native());
                     path /= assetPlatform;
@@ -717,7 +725,9 @@ namespace AZ::SettingsRegistryMergeUtils
         if (registry.Get(cacheRootPath, FilePathKey_CacheRootFolder))
         {
             mergePath = AZStd::move(cacheRootPath);
-            mergePath /= SettingsRegistryInterface::RegistryFolder;
+            AZStd::fixed_string<32> registryFolderLower(SettingsRegistryInterface::RegistryFolder);
+            AZStd::to_lower(registryFolderLower.begin(), registryFolderLower.end());
+            mergePath /= registryFolderLower;
             registry.MergeSettingsFolder(mergePath.Native(), specializations, platform, "", scratchBuffer);
         }
 

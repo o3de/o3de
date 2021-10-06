@@ -7,6 +7,7 @@
  */
 
 #include <AzCore/Module/DynamicModuleHandle.h>
+#include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <Source/SceneProcessingModule.h>
 

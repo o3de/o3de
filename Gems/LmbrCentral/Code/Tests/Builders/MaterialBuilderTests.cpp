@@ -35,7 +35,7 @@ namespace UnitTest
             m_app.reset(aznew AzToolsFramework::ToolsApplication);
             m_app->Start(AZ::ComponentApplication::Descriptor());
             // Without this, the user settings component would attempt to save on finalize/shutdown. Since the file is
-            // shared across the whole engine, if multiple tests are run in parallel, the saving could cause a crash 
+            // shared across the whole engine, if multiple tests are run in parallel, the saving could cause a crash
             // in the unit tests.
             AZ::UserSettingsComponentRequestBus::Broadcast(&AZ::UserSettingsComponentRequests::DisableSaveOnFinalize);
             AZ::Debug::TraceMessageBus::Handler::BusConnect();
@@ -45,8 +45,7 @@ namespace UnitTest
 
             AZ::IO::Path assetRoot(AZ::Utils::GetProjectPath());
             assetRoot /= "Cache";
-            AZ::IO::FileIOBase::GetInstance()->SetAlias("@root@", assetRoot.c_str());
-            AZ::IO::FileIOBase::GetInstance()->SetAlias("@assets@", assetRoot.c_str());
+            AZ::IO::FileIOBase::GetInstance()->SetAlias("@products@", assetRoot.c_str());
         }
 
         void TearDown() override
@@ -128,8 +127,8 @@ namespace UnitTest
 
     TEST_F(MaterialBuilderTests, MaterialBuilder_MalformedMaterial_NoChildren_ExpectFailure)
     {
-        // Should fail in MaterialBuilderWorker::GetResolvedTexturePathsFromMaterial after calling 
-        //  Internal::GetTexturePathsFromMaterial, which should return an AZ::Failure when both a Textures node and a 
+        // Should fail in MaterialBuilderWorker::GetResolvedTexturePathsFromMaterial after calling
+        //  Internal::GetTexturePathsFromMaterial, which should return an AZ::Failure when both a Textures node and a
         //  SubMaterials node are not found. No other AZ_Errors should be generated.
         TestFailureCase("test_mat2.mtl", 1);
     }
@@ -141,7 +140,7 @@ namespace UnitTest
 
     TEST_F(MaterialBuilderTests, MaterialBuilder_MalformedMaterial_EmptySubMaterialNode_ExpectFailure)
     {
-        // Should fail in MaterialBuilderWorker::GetResolvedTexturePathsFromMaterial after calling 
+        // Should fail in MaterialBuilderWorker::GetResolvedTexturePathsFromMaterial after calling
         //  Internal::GetTexturePathsFromMaterial, which should return an AZ::Failure when a SubMaterials node is present,
         //  but has no children Material node. No other AZ_Errors should be generated.
         TestFailureCase("test_mat4.mtl", 1);
@@ -154,9 +153,9 @@ namespace UnitTest
 
     TEST_F(MaterialBuilderTests, MaterialBuilder_MalformedMaterial_EmptyMaterialInSubMaterial_ExpectFailure)
     {
-        // Should fail in MaterialBuilderWorker::GetResolvedTexturePathsFromMaterial after calling 
+        // Should fail in MaterialBuilderWorker::GetResolvedTexturePathsFromMaterial after calling
         //  Internal::GetTexturePathsFromMaterial, which should return an AZ::Failure when a SubMaterials node is present,
-        //  but a child Material node has no child Textures node and no child SubMaterials node. No other AZ_Errors should 
+        //  but a child Material node has no child Textures node and no child SubMaterials node. No other AZ_Errors should
         //  be generated.
         TestFailureCase("test_mat6.mtl", 1);
     }
@@ -235,7 +234,7 @@ namespace UnitTest
         AZStd::vector<const char*> expectedPaths = {
             "engineassets/textures/hex.dds",        // resolved from "/engineassets/textures/hex.dds"
             "engineassets/textures/hex_ddn.dds",    // resolved from "./engineassets/textures/hex_ddn.dds"
-            "engineassets/textures/hex_spec.dds"    // resolved from "@assets@/engineassets/textures/hex_spec.dds"
+            "engineassets/textures/hex_spec.dds"    // resolved from "@products@/engineassets/textures/hex_spec.dds"
         };
         TestSuccessCase("test_mat17.mtl", expectedPaths);
     }

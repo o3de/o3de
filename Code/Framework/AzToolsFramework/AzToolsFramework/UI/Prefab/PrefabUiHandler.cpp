@@ -8,6 +8,8 @@
 
 #include <AzToolsFramework/UI/Prefab/PrefabUiHandler.h>
 
+#include <AzFramework/API/ApplicationAPI.h>
+
 #include <AzToolsFramework/Prefab/PrefabFocusInterface.h>
 #include <AzToolsFramework/Prefab/PrefabPublicInterface.h>
 #include <AzToolsFramework/UI/Outliner/EntityOutlinerListModel.hxx>
@@ -316,5 +318,18 @@ namespace AzToolsFramework
         QModelIndex lastChild = model->index(childCount - 1, EntityOutlinerListModel::ColumnName, index);
 
         return Internal_GetLastVisibleChild(model, lastChild);
+    }
+
+    void PrefabUiHandler::OnDoubleClick(AZ::EntityId entityId) const
+    {
+        bool prefabWipFeaturesEnabled = false;
+        AzFramework::ApplicationRequests::Bus::BroadcastResult(
+            prefabWipFeaturesEnabled, &AzFramework::ApplicationRequests::ArePrefabWipFeaturesEnabled);
+
+        if (prefabWipFeaturesEnabled)
+        {
+            // Focus on this prefab
+            m_prefabFocusInterface->FocusOnOwningPrefab(entityId);
+        }
     }
 }
