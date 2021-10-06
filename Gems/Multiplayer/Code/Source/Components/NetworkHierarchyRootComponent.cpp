@@ -139,11 +139,6 @@ namespace Multiplayer
         return m_hierarchicalEntities;
     }
 
-    const AZStd::vector<AZ::Entity*>& NetworkHierarchyRootComponent::GetHierarchicalEntitiesRef() const
-    {
-        return m_hierarchicalEntities;
-    }
-
     AZ::Entity* NetworkHierarchyRootComponent::GetHierarchicalRoot() const
     {
         if (m_rootEntity)
@@ -361,7 +356,10 @@ namespace Multiplayer
             return;
         }
 
-        const AZStd::vector<AZ::Entity*>& entities = component.GetHierarchicalEntitiesRef();
+        INetworkEntityManager* networkEntityManager = AZ::Interface<INetworkEntityManager>::Get();
+        AZ_Assert(networkEntityManager, "NetworkEntityManager must be created.");
+
+        const AZStd::vector<AZ::Entity*>& entities = component.m_hierarchicalEntities;
 
         auto* networkInput = input.FindComponentInput<NetworkHierarchyRootComponentNetworkInput>();
         networkInput->m_childInputs.clear();
@@ -371,21 +369,23 @@ namespace Multiplayer
         {
             if(child == component.GetEntity())
             {
-                return; // Avoid infinite recursion
+                continue; // Avoid infinite recursion
             }
 
-            auto* netComp = child->FindComponent<NetBindComponent>();
-            AZ_Assert(netComp, "No NetSystemComponent, this should be impossible");
+            NetEntityId childNetEntitydId = networkEntityManager->GetNetEntityIdById(child->GetId());
+            ConstNetworkEntityHandle childEntityHandle = networkEntityManager->GetEntity(childNetEntitydId);
+            NetBindComponent* netComp = childEntityHandle.GetNetBindComponent();
+
+            AZ_Assert(netComp, "No NetBindComponent, this should be impossible");
             // Validate we still have a controller and we aren't in the middle of removing them
             if (netComp->HasController())
             {
-                ConstNetworkEntityHandle childEntityHandle = netComp->GetEntityHandle();
-                NetworkSubInput subInput;
+                NetworkInputChild subInput;
                 subInput.Attach(childEntityHandle);
                 subInput.GetNetworkInput().SetClientInputId(input.GetClientInputId());
 
                 netComp->CreateInput(subInput.GetNetworkInput(), deltaTime);
-                    
+
                 // make sure our input sub commands have the same time as the original
                 subInput.GetNetworkInput().SetClientInputId(input.GetClientInputId());
                 networkInput->m_childInputs.emplace_back(subInput);
@@ -408,13 +408,13 @@ namespace Multiplayer
 
         if (auto* networkInput = input.FindComponentInput<NetworkHierarchyRootComponentNetworkInput>())
         {
-            for (NetworkSubInput& subInput : networkInput->m_childInputs)
+            for (NetworkInputChild& subInput : networkInput->m_childInputs)
             {
                 const ConstNetworkEntityHandle& childEntity = subInput.GetOwner();
                 if (auto* localChild = childEntity.GetEntity())
                 {
-                    auto* netComp = localChild->FindComponent<NetBindComponent>();
-                    AZ_Assert(netComp, "No NetSystemComponent, this should be impossible");
+                    auto* netComp = childEntity.GetNetBindComponent();
+                    AZ_Assert(netComp, "No NetBindComponent, this should be impossible");
                     // We do not rewind entity role changes, so make sure we are the correct role prior to processing
                     if (netComp->HasController())
                     {

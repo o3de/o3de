@@ -29,7 +29,6 @@ namespace Multiplayer
         friend class NetworkInputMigrationVector;
         friend class NetworkInputHistory;
         friend class NetworkInputChild;
-        friend class NetworkSubInput;
 
         NetworkInput(const NetworkInput&);
         NetworkInput& operator= (const NetworkInput&);
@@ -81,28 +80,4 @@ namespace Multiplayer
         ConstNetworkEntityHandle m_owner;
         bool m_wasAttached = false;
     };
-
-    // Used by the NetworkHierarchyRootComponent.  This component allows the gameplay programmer to specify dependent entities
-    // Since it is possible to for the Client/Server to disagree about the state of related entities, this input encodes the entity that
-    // is associated with it.
-    class NetworkSubInput final
-    {
-    public:
-        NetworkSubInput() = default;
-        NetworkSubInput(const NetworkSubInput&) = default;
-        NetworkSubInput(const ConstNetworkEntityHandle& entityHandle);
-
-        NetworkSubInput& operator=(const NetworkSubInput&) = default;
-
-        void Attach(const ConstNetworkEntityHandle& entityHandle);
-        const ConstNetworkEntityHandle& GetOwner() const;
-        NetworkInput& GetNetworkInput();
-        const NetworkInput& GetNetworkInput() const;
-
-        bool Serialize(AzNetworking::ISerializer& serializer);
-    private:
-        ConstNetworkEntityHandle m_owner;
-        NetworkInput m_networkInput;
-    };
-
 }

@@ -29,6 +29,8 @@ namespace Multiplayer
         , public NetworkHierarchyRequestBus::Handler
     {
         friend class NetworkHierarchyChildComponent;
+        friend class NetworkHierarchyRootComponentController;
+        friend class ServerToClientReplicationWindow;
     public:
         AZ_MULTIPLAYER_COMPONENT(Multiplayer::NetworkHierarchyRootComponent, s_networkHierarchyRootComponentConcreteUuid, Multiplayer::NetworkHierarchyRootComponentBase);
 
@@ -56,8 +58,6 @@ namespace Multiplayer
         void BindNetworkHierarchyChangedEventHandler(NetworkHierarchyChangedEvent::Handler& handler) override;
         void BindNetworkHierarchyLeaveEventHandler(NetworkHierarchyLeaveEvent::Handler& handler) override;
         //! @}
-
-        const AZStd::vector<AZ::Entity*>& GetHierarchicalEntitiesRef() const;
 
     protected:
         void SetTopLevelHierarchyRootEntity(AZ::Entity* hierarchyRoot);
@@ -103,7 +103,7 @@ namespace Multiplayer
     };
 
 
-    //! NetworkCharacterComponentController
+    //! NetworkHierarchyRootComponentController
     //! This is the network controller for NetworkHierarchyRootComponent.
     //! Class provides the ability to process input for hierarchies.
     class NetworkHierarchyRootComponentController

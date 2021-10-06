@@ -8,9 +8,11 @@
     OverrideInclude="Multiplayer/Components/NetworkHierarchyRootComponent.h"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 
+    <Include File="Source/NetworkInput/NetworkInputChild.h"/>
+  
     <ComponentRelation Constraint="Required" HasController="true" Name="NetworkTransformComponent" Namespace="Multiplayer" Include="Multiplayer/Components/NetworkTransformComponent.h" />
-
-    <NetworkInput Type="AZStd::vector&lt;NetworkSubInput&gt;" Name="ChildInputs" Init="" />
+  
+    <NetworkInput Type="AZStd::vector&lt;NetworkInputChild&gt;" Name="ChildInputs" Init="" />
 
     <NetworkProperty Type="NetEntityId" Name="hierarchyRoot" Init="InvalidNetEntityId" ReplicateFrom="Authority" ReplicateTo="Client" IsRewindable="false" IsPredictable="false" IsPublic="true" Container="Object" ExposeToEditor="false" ExposeToScript="false" GenerateEventBindings="true" />
 </Component>
