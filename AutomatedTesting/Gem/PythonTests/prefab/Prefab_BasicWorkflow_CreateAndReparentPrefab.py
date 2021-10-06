@@ -28,7 +28,7 @@ def Prefab_BasicWorkflow_CreateAndReparentPrefab():
         car_prefab_entities = [car_entity]
 
         # Checks for prefab creation passed or not 
-        car_prefab = Prefab.create_prefab(
+        _, car = Prefab.create_prefab(
             car_prefab_entities, CAR_PREFAB_FILE_NAME)
 
         # Creates another new Entity at the root level
@@ -36,12 +36,10 @@ def Prefab_BasicWorkflow_CreateAndReparentPrefab():
         wheel_prefab_entities = [wheel_entity]
 
         # Checks for wheel prefab creation passed or not 
-        wheel_prefab = Prefab.create_prefab(
+        _, wheel = Prefab.create_prefab(
             wheel_prefab_entities, WHEEL_PREFAB_FILE_NAME)
 
         # Checks for prefab reparenting passed or not 
-        car = car_prefab.instances[CAR_PREFAB_FILE_NAME]
-        wheel = wheel_prefab.instances[WHEEL_PREFAB_FILE_NAME]
         await wheel.ui_reparent_prefab_instance(car.container_entity.id)
 
     run_test()

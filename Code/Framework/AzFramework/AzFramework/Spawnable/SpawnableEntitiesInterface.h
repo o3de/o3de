@@ -154,7 +154,7 @@ namespace AzFramework
     public:
         friend class SpawnableEntitiesDefinition;
 
-        using Id = uint64_t;
+        using Id = uint32_t;
 
         EntitySpawnTicket() = default;
         EntitySpawnTicket(const EntitySpawnTicket&) = delete;
@@ -176,6 +176,7 @@ namespace AzFramework
     using EntitySpawnCallback = AZStd::function<void(EntitySpawnTicket::Id, SpawnableConstEntityContainerView)>;
     using EntityPreInsertionCallback = AZStd::function<void(EntitySpawnTicket::Id, SpawnableEntityContainerView)>;
     using EntityDespawnCallback = AZStd::function<void(EntitySpawnTicket::Id)>;
+    using RetrieveEntitySpawnTicketCallback = AZStd::function<void(EntitySpawnTicket*)>;
     using ReloadSpawnableCallback = AZStd::function<void(EntitySpawnTicket::Id, SpawnableConstEntityContainerView)>;
     using ListEntitiesCallback = AZStd::function<void(EntitySpawnTicket::Id, SpawnableConstEntityContainerView)>;
     using ListIndicesEntitiesCallback = AZStd::function<void(EntitySpawnTicket::Id, SpawnableConstIndexEntityContainerView)>;
@@ -220,10 +221,19 @@ namespace AzFramework
     struct DespawnAllEntitiesOptionalArgs final
     {
         //! Callback that's called when despawning entities has completed. This can be triggered from a different thread than the one that
-        //!     made the function call to despawn. The returned list of entities contains all the newly created entities.
+        //! made the function call to despawn.
         EntityDespawnCallback m_completionCallback;
         //! The priority at which this call will be executed.
         SpawnablePriority m_priority { SpawnablePriority_Default };
+    };
+
+    struct DespawnEntityOptionalArgs final
+    {
+        //! Callback that's called when despawning entity has completed. This can be triggered from a different thread than the one that
+        //! made the function call to despawn.
+        EntityDespawnCallback m_completionCallback;
+        //! The priority at which this call will be executed.
+        SpawnablePriority m_priority{ SpawnablePriority_Default };
     };
 
     struct ReloadSpawnableOptionalArgs final
@@ -291,9 +301,17 @@ namespace AzFramework
             EntitySpawnTicket& ticket, AZStd::vector<size_t> entityIndices, SpawnEntitiesOptionalArgs optionalArgs = {}) = 0;
         //! Removes all entities in the provided list from the environment.
         //! @param ticket The ticket previously used to spawn entities with.
-        //! @param priority The priority at which this call will be executed.
         //! @param optionalArgs Optional additional arguments, see DespawnAllEntitiesOptionalArgs.
         virtual void DespawnAllEntities(EntitySpawnTicket& ticket, DespawnAllEntitiesOptionalArgs optionalArgs = {}) = 0;
+        //! Removes the entity with the provided id from the spawned list of entities.
+        //! @param entityId the id of entity to despawn.
+        //! @param ticket The ticket previously used to spawn entities with.
+        //! @param optionalArgs Optional additional arguments, see DespawnEntityOptionalArgs.
+        virtual void DespawnEntity(AZ::EntityId entityId, EntitySpawnTicket& ticket, DespawnEntityOptionalArgs optionalArgs = {}) = 0;
+        //! Gets the EntitySpawnTicket associated with the entitySpawnTicketId.
+        //! @param entitySpawnTicketId the id of EntitySpawnTicket to get.
+        //! @param callback The callback to execute upon retrieving the ticket.
+        virtual void RetrieveEntitySpawnTicket(EntitySpawnTicket::Id entitySpawnTicketId, RetrieveEntitySpawnTicketCallback callback) = 0;
         //! Removes all entities in the provided list from the environment and reconstructs the entities from the provided spawnable.
         //! @param ticket Holds the information on the entities to reload.
         //! @param priority The priority at which this call will be executed.
@@ -361,6 +379,9 @@ namespace AzFramework
         {
             return reinterpret_cast<const T*>(ticket->m_payload);
         }
+
+        AZStd::unordered_map<EntitySpawnTicket::Id, EntitySpawnTicket*> m_entitySpawnTicketMap;
+        AZStd::recursive_mutex m_entitySpawnTicketMapMutex;
     };
 
     using SpawnableEntitiesInterface = AZ::Interface<SpawnableEntitiesDefinition>;

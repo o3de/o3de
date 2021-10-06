@@ -21,6 +21,7 @@
 
 #include <AzCore/IO/FileIO.h>
 #include <AzCore/IO/SystemFile.h>
+#include <AzCore/std/containers/unordered_set.h>
 #include <AzCore/std/string/conversions.h>
 #include <AzCore/StringFunc/StringFunc.h>
 
@@ -245,8 +246,10 @@ namespace O3DE::ProjectManager
         if (Py_IsInitialized())
         {
             AZ_Warning("python", false, "Python is already active");
-            return false;
+            return m_pythonStarted;
         }
+
+        m_pythonStarted = false;
 
         // set PYTHON_HOME
         AZStd::string pyBasePath = Platform::GetPythonHomePath(PY_PACKAGE, m_enginePath.c_str());
@@ -303,7 +306,8 @@ namespace O3DE::ProjectManager
             // make sure the engine is registered
             RegisterThisEngine();
 
-            return !PyErr_Occurred();
+            m_pythonStarted = !PyErr_Occurred();
+            return m_pythonStarted;
         }
         catch ([[maybe_unused]] const std::exception& e)
         {
@@ -919,6 +923,13 @@ namespace O3DE::ProjectManager
         {
             return AZ::Success(AZStd::move(templates));
         }
+    }
+
+    AZ::Outcome<void, AZStd::string> PythonBindings::AddGemRepo(const QString& repoUri)
+    {
+        // o3de scripts need method added
+        (void)repoUri;
+        return AZ::Failure<AZStd::string>("Adding Gem Repo not implemented yet in o3de scripts.");
     }
 
     GemRepoInfo PythonBindings::GemRepoInfoFromPath(pybind11::handle path, pybind11::handle pyEnginePath)

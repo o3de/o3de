@@ -21,9 +21,9 @@ set(ENABLED_GEMS
     QtForPython
     PythonAssetBuilder
     Metastream
-
     Camera
     EMotionFX
+    AtomTressFX
     PhysX
     CameraFramework
     StartingPointMovement
@@ -52,10 +52,7 @@ set(ENABLED_GEMS
     AWSCore
     AWSClientAuth
     AWSMetrics
-
-
-
-    
+    PrefabBuilder
     AudioSystem
     Multiplayer
 )

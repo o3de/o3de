@@ -1,0 +1,46 @@
+{
+    "description": "A material for providing terrain with low-fidelity color and normals.  This material will get blended with surface detail materials.",
+    "propertyLayout": {
+        "version": 1,
+        "groups": [
+            {
+                "id": "settings",
+                "displayName": "Settings"
+            }
+        ],
+        "properties": {
+            "macroColor": [
+                {
+                    "id": "useTexture",
+                    "displayName": "Use Texture",
+                    "description": "Whether to use the texture.",
+                    "type": "Bool",
+                    "defaultValue": true
+                }
+
+            ],
+            "macroNormal": [
+                {
+                    "id": "useTexture",
+                    "displayName": "Use Texture",
+                    "description": "Whether to use the texture.",
+                    "type": "Bool",
+                    "defaultValue": true
+                }
+            ]
+        }
+    },
+    "shaders": [
+        {
+            "file": "../../Shaders/Terrain/TerrainPBR_ForwardPass.shader"
+        },
+        {
+            "file": "../../Shaders/Terrain/Terrain_Shadowmap.shader"
+        },
+        {
+            "file": "../../Shaders/Terrain/Terrain_DepthPass.shader"
+        }
+    ],
+    "functors": [
+    ]
+}

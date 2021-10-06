@@ -78,7 +78,7 @@ namespace AWSCore
 
     void AWSCoreEditorMenu::InitializeResourceMappingToolAction()
     {
-#ifdef AWSCORE_EDITOR_RESOURCE_MAPPING_TOOL_ENABLED
+#if AWSCORE_EDITOR_RESOURCE_MAPPING_TOOL_ENABLED
         AWSCoreResourceMappingToolAction* resourceMappingTool =
             new AWSCoreResourceMappingToolAction(QObject::tr(AWSResourceMappingToolActionText), this);
         QObject::connect(resourceMappingTool, &QAction::triggered, this,
@@ -197,7 +197,7 @@ namespace AWSCore
         subMenu->addAction(AddExternalLinkAction(
             AWSMetricsAdvancedTopicsActionText, AWSMetricsAdvancedTopicsUrl, ":/Notifications/link.svg"));
 
-        AZStd::string priorAlias = AZ::IO::FileIOBase::GetInstance()->GetAlias("@devroot@");
+        AZStd::string priorAlias = AZ::IO::FileIOBase::GetInstance()->GetAlias("@engroot@");
         AZStd::string configFilePath = priorAlias + "\\Gems\\AWSMetrics\\Code\\" + AZ::SettingsRegistryInterface::RegistryFolder;
         AzFramework::StringFunc::Path::Normalize(configFilePath);
 

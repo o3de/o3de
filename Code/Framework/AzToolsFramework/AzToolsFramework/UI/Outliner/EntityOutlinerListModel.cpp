@@ -82,10 +82,13 @@ namespace AzToolsFramework
         , m_entityExpansionState()
         , m_entityFilteredState()
     {
+        m_focusModeInterface = AZ::Interface<FocusModeInterface>::Get();
+        AZ_Assert(m_focusModeInterface != nullptr, "EntityOutlinerListModel requires a FocusModeInterface instance on construction.");
     }
 
     EntityOutlinerListModel::~EntityOutlinerListModel()
     {
+        ContainerEntityNotificationBus::Handler::BusDisconnect();
         EditorEntityInfoNotificationBus::Handler::BusDisconnect();
         EditorEntityContextNotificationBus::Handler::BusDisconnect();
         ToolsApplicationEvents::Bus::Handler::BusDisconnect();
@@ -103,14 +106,15 @@ namespace AzToolsFramework
         EntityCompositionNotificationBus::Handler::BusConnect();
         AZ::EntitySystemBus::Handler::BusConnect();
 
+        AzFramework::EntityContextId editorEntityContextId = AzFramework::EntityContextId::CreateNull();
+        AzToolsFramework::EditorEntityContextRequestBus::BroadcastResult(
+            editorEntityContextId, &AzToolsFramework::EditorEntityContextRequestBus::Events::GetEditorEntityContextId);
+
+        ContainerEntityNotificationBus::Handler::BusConnect(editorEntityContextId);
+
         m_editorEntityUiInterface = AZ::Interface<AzToolsFramework::EditorEntityUiInterface>::Get();
         AZ_Assert(m_editorEntityUiInterface != nullptr,
             "EntityOutlinerListModel requires a EditorEntityUiInterface instance on Initialize.");
-
-        m_focusModeInterface = AZ::Interface<FocusModeInterface>::Get();
-        AZ_Assert(
-            m_focusModeInterface != nullptr,
-            "EntityOutlinerListModel requires a FocusModeInterface instance on Initialize.");
     }
 
     int EntityOutlinerListModel::rowCount(const QModelIndex& parent) const
@@ -1336,10 +1340,24 @@ namespace AzToolsFramework
         emit EnableSelectionUpdates(true);
     }
 
-    void EntityOutlinerListModel::OnEntityRuntimeActivationChanged(AZ::EntityId entityId, bool activeOnStart)
+    void EntityOutlinerListModel::OnEntityRuntimeActivationChanged(AZ::EntityId entityId, [[maybe_unused]] bool activeOnStart)
     {
-        AZ_UNUSED(activeOnStart);
         QueueEntityUpdate(entityId);
+    }
+
+    void EntityOutlinerListModel::OnContainerEntityStatusChanged(AZ::EntityId entityId, [[maybe_unused]] bool open)
+    {
+        QModelIndex changedIndex = GetIndexFromEntity(entityId);
+
+        // Trigger a refresh of all direct children so that they can be shown or hidden appropriately.
+        int numChildren = rowCount(changedIndex);
+        if (numChildren > 0)
+        {
+            emit dataChanged(index(0, 0, changedIndex), index(numChildren - 1, ColumnCount - 1, changedIndex));
+        }
+
+        // Always expand containers
+        QueueEntityToExpand(entityId, true);
     }
 
     void EntityOutlinerListModel::OnEntityInfoUpdatedRemoveChildBegin([[maybe_unused]] AZ::EntityId parentId, [[maybe_unused]] AZ::EntityId childId)
@@ -1347,7 +1365,10 @@ namespace AzToolsFramework
         //add/remove operations trigger selection change signals which assert and break undo/redo operations in progress in inspector etc.
         //so disallow selection updates until change is complete
         emit EnableSelectionUpdates(false);
-        beginResetModel();
+
+        auto parentIndex = GetIndexFromEntity(parentId);
+        auto childIndex = GetIndexFromEntity(childId);
+        beginRemoveRows(parentIndex, childIndex.row(), childIndex.row());
     }
 
     void EntityOutlinerListModel::OnEntityInfoUpdatedRemoveChildEnd(AZ::EntityId parentId, AZ::EntityId childId)
@@ -1355,7 +1376,7 @@ namespace AzToolsFramework
         (void)childId;
         AZ_PROFILE_FUNCTION(AzToolsFramework);
 
-        endResetModel();
+        endRemoveRows();
 
         //must refresh partial lock/visibility of parents
         m_isFilterDirty = true;

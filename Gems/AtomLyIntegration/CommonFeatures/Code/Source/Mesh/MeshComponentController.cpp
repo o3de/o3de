@@ -17,6 +17,7 @@
 
 #include <AzCore/Asset/AssetManager.h>
 #include <AzCore/Asset/AssetManagerBus.h>
+#include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/Debug/EventTrace.h>
 #include <AzCore/Serialization/SerializeContext.h>
 
@@ -31,6 +32,23 @@ namespace AZ
 {
     namespace Render
     {
+        namespace Internal
+        {
+            struct MeshComponentNotificationBusHandler final
+                : public MeshComponentNotificationBus::Handler
+                , public AZ::BehaviorEBusHandler
+            {
+                AZ_EBUS_BEHAVIOR_BINDER(
+                    MeshComponentNotificationBusHandler, "{8B8F4977-817F-4C7C-9141-0E5FF899E1BC}", AZ::SystemAllocator, OnModelReady);
+
+                void OnModelReady(
+                    [[maybe_unused]] const Data::Asset<RPI::ModelAsset>& modelAsset,
+                    [[maybe_unused]] const Data::Instance<RPI::Model>& model) override
+                {
+                    Call(FN_OnModelReady);
+                }
+            };
+        } // namespace Internal
 
         namespace MeshComponentControllerVersionUtility
         {
@@ -172,6 +190,12 @@ namespace AZ
                     ->VirtualProperty("MinimumScreenCoverage", "GetMinimumScreenCoverage", "SetMinimumScreenCoverage")
                     ->VirtualProperty("QualityDecayRate", "GetQualityDecayRate", "SetQualityDecayRate")
                     ;
+                
+                behaviorContext->EBus<MeshComponentNotificationBus>("MeshComponentNotificationBus")
+                    ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
+                    ->Attribute(AZ::Script::Attributes::Category, "render")
+                    ->Attribute(AZ::Script::Attributes::Module, "render")
+                    ->Handler<Internal::MeshComponentNotificationBusHandler>();
             }
         }
 
@@ -193,41 +217,13 @@ namespace AZ
             incompatible.push_back(AZ_CRC("MeshService", 0x71d8a455));
         }
 
-        // [GFX TODO] [ATOM-13339] Remove the ModelAsset id fix up function in MeshComponentController
-        // Model id was changed due to fix for [ATOM-13312]. We can remove this code when all the levels are updated.
-        void FixUpModelAsset(Data::Asset<RPI::ModelAsset>& modelAsset)
-        {
-            Data::AssetId assetId;
-            Data::AssetCatalogRequestBus::BroadcastResult(
-                assetId,
-                &Data::AssetCatalogRequestBus::Events::GetAssetIdByPath,
-                modelAsset.GetHint().c_str(),
-                AZ::RPI::ModelAsset::TYPEINFO_Uuid(),
-                false);
-            if (assetId != modelAsset.GetId())
-            {
-                if (assetId.IsValid())
-                {
-                    modelAsset = Data::Asset<RPI::ModelAsset>{ assetId, AZ::RPI::ModelAsset::TYPEINFO_Uuid(), modelAsset.GetHint().c_str() };
-                    modelAsset.SetAutoLoadBehavior(AZ::Data::AssetLoadBehavior::QueueLoad);
-                }
-                else
-                {
-                    AZ_Error("MeshComponentController", false, "Failed to find asset id for [%s] ", modelAsset.GetHint().c_str());
-                }
-            }
-        }
-
         MeshComponentController::MeshComponentController(const MeshComponentConfig& config)
             : m_configuration(config)
         {
-            FixUpModelAsset(m_configuration.m_modelAsset);
         }
 
         void MeshComponentController::Activate(const AZ::EntityComponentIdPair& entityComponentIdPair)
         {
-            FixUpModelAsset(m_configuration.m_modelAsset);
-
             const AZ::EntityId entityId = entityComponentIdPair.GetEntityId();
             m_entityComponentIdPair = entityComponentIdPair;
 
@@ -333,7 +329,7 @@ namespace AZ
             return model ? model->GetUvNames() : AZStd::unordered_set<AZ::Name>();
         }
 
-        void MeshComponentController::OnMaterialsUpdated([[maybe_unused]] const MaterialAssignmentMap& materials)
+        void MeshComponentController::OnMaterialsUpdated(const MaterialAssignmentMap& materials)
         {
             if (m_meshFeatureProcessor)
             {

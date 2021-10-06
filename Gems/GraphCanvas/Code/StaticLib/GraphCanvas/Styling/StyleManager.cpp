@@ -74,10 +74,10 @@ namespace
             m_paletteSwatches.push_back(QColor(0, 0, 0));
             m_sourcePixmap = new QPixmap(16, 16);
             m_sourcePixmap->fill(Qt::transparent);
-            
+
             QPainter painter(m_sourcePixmap);
             painter.setRenderHint(QPainter::RenderHint::Antialiasing);
-            
+
             QPen pen;
             pen.setWidth(4);
             pen.setColor(QColor(0, 0, 0));
@@ -257,7 +257,7 @@ namespace GraphCanvas
             QBitmap mask = m_sourcePixmap->createMaskFromColor(m_paletteSwatches[i], Qt::MaskOutColor);
             painter.setClipRegion(QRegion(mask));
 
-            QtDrawingUtils::FillArea(painter, drawRect, (*palettes[i%palettes.size()]));            
+            QtDrawingUtils::FillArea(painter, drawRect, (*palettes[i%palettes.size()]));
         }
 
         return pixmap;
@@ -317,7 +317,7 @@ namespace GraphCanvas
 
     void StyleManager::LoadStyleSheet()
     {
-        AZStd::string file = AZStd::string::format("@assets@/%s", m_assetPath.c_str());
+        AZStd::string file = AZStd::string::format("@products@/%s", m_assetPath.c_str());
 
         AZ::IO::FileIOBase* fileBase = AZ::IO::FileIOBase::GetInstance();
 
@@ -448,7 +448,7 @@ namespace GraphCanvas
             auto mapIter = m_dataPaletteMapping.find(dataType);
 
             if (mapIter == m_dataPaletteMapping.end())
-            {                
+            {
                 return "ObjectDataColorPalette";
             }
             else
@@ -852,7 +852,7 @@ namespace GraphCanvas
 
         return icon;
     }
-    
+
     void StyleManager::ClearStyles()
     {
         StyleManagerNotificationBus::Event(m_editorId, &StyleManagerNotifications::OnStylesUnloaded);

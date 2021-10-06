@@ -59,12 +59,14 @@ namespace AzToolsFramework
             void ClearStringFilter();
             void ClearTypeFilter();
 
+        public Q_SLOTS:
+            void UpdateSizeSlot(int newWidth);
+
         protected Q_SLOTS:
             void selectionChanged(const QItemSelection& selected, const QItemSelection& deselected) override;
             void rowsAboutToBeRemoved(const QModelIndex& parent, int start, int end) override;
             void layoutChangedSlot(const QList<QPersistentModelIndex> &parents = QList<QPersistentModelIndex>(),
                 QAbstractItemModel::LayoutChangeHint hint = QAbstractItemModel::NoLayoutChangeHint);
-
         private:
             QString m_name;
             QPointer<AssetBrowserTableModel> m_tableModel;

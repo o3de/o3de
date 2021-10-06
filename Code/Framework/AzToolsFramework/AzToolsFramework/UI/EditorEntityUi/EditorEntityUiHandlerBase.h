@@ -61,6 +61,9 @@ namespace AzToolsFramework
         virtual void PaintDescendantForeground(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index,
             const QModelIndex& descendantIndex) const;
 
+        //! Triggered when the entity is double clicked in the Outliner.
+        virtual void OnDoubleClick(AZ::EntityId entityId) const;
+
     private:
         EditorEntityUiHandlerId m_handlerId = 0;
     };

@@ -185,6 +185,15 @@ namespace O3DE::ProjectManager
         connect(projectButton, &ProjectButton::RemoveProject, this, &ProjectsScreen::HandleRemoveProject);
         connect(projectButton, &ProjectButton::DeleteProject, this, &ProjectsScreen::HandleDeleteProject);
         connect(projectButton, &ProjectButton::BuildProject, this, &ProjectsScreen::QueueBuildProject);
+        connect(projectButton, &ProjectButton::OpenCMakeGUI, this, 
+            [this](const ProjectInfo& projectInfo)
+            {
+                AZ::Outcome result = ProjectUtils::OpenCMakeGUI(projectInfo.m_path);
+                if (!result)
+                {
+                    QMessageBox::critical(this, tr("Failed to open CMake GUI"), result.GetError(), QMessageBox::Ok);
+                }
+            });
 
         return projectButton;
     }
@@ -308,7 +317,7 @@ namespace O3DE::ProjectManager
                     }
                     else
                     {
-                        projectIter.value()->SetProjectBuildButtonAction();
+                        projectIter.value()->ShowBuildRequired();
                     }
                 }
             }
@@ -358,8 +367,9 @@ namespace O3DE::ProjectManager
         painter.drawPixmap(backgroundRect, m_background);
 
         // Draw a semi-transparent overlay to darken down the colors.
-        painter.setCompositionMode (QPainter::CompositionMode_DestinationIn);
-        const float overlayTransparency = 0.7f;
+        // Use SourceOver, DestinationIn will make background transparent on Mac
+        painter.setCompositionMode (QPainter::CompositionMode_SourceOver);
+        const float overlayTransparency = 0.3f;
         painter.fillRect(backgroundRect, QColor(0, 0, 0, static_cast<int>(255.0f * overlayTransparency)));
     }
 
