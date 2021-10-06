@@ -207,6 +207,7 @@ protected:
         sessionConfig.m_terminationTime = 0;
         sessionConfig.m_creatorId = "dummyCreatorId";
         sessionConfig.m_sessionProperties["dummyKey"] = "dummyValue";
+        sessionConfig.m_matchmakingData = "dummyMatchmakingData";
         sessionConfig.m_sessionId = "dummyGameSessionId";
         sessionConfig.m_sessionName = "dummyGameSessionName";
         sessionConfig.m_ipAddress = "dummyIpAddress";
@@ -231,7 +232,7 @@ protected:
         request.m_configurationName = "dummyConfiguration";
         request.m_ticketId = DummyMatchmakingTicketId;
 
-        AWSGameLiftPlayerInformation player;
+        AWSGameLiftPlayer player;
         player.m_playerAttributes["dummy"] = "{\"N\": \"1\"}";
         player.m_playerId = DummyPlayerId;
         player.m_latencyInMs["us-east-1"] = 10;
@@ -812,7 +813,7 @@ TEST_F(AWSGameLiftClientManagerTest, StartMatchmaking_CallWithInvalidRequest_Get
 {
     AWSGameLiftStartMatchmakingRequest request;
     request.m_configurationName = "dummyConfiguration";
-    AWSGameLiftPlayerInformation player;
+    AWSGameLiftPlayer player;
     player.m_playerAttributes["dummy"] = "{\"A\": \"1\"}";
     request.m_players.emplace_back(player);
 
@@ -854,7 +855,7 @@ TEST_F(AWSGameLiftClientManagerTest, StartMatchmakingAsync_CallWithInvalidReques
 {
     AWSGameLiftStartMatchmakingRequest request;
     request.m_configurationName = "dummyConfiguration";
-    AWSGameLiftPlayerInformation player;
+    AWSGameLiftPlayer player;
     player.m_playerAttributes["dummy"] = "{\"A\": \"1\"}";
     request.m_players.emplace_back(player);
 
