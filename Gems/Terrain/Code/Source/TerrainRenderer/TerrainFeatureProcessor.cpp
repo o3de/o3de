@@ -179,12 +179,40 @@ namespace Terrain
 
     void TerrainFeatureProcessor::OnTerrainMacroMaterialRegionChanged(AZ::EntityId entityId, [[maybe_unused]] const AZ::Aabb& oldRegion, const AZ::Aabb& newRegion)
     {
-        MacroMaterialData& data = FindOrCreateMacroMaterial(entityId);
-        if (data.m_materialInstance)
+        MacroMaterialData& materialData = FindOrCreateMacroMaterial(entityId);
+        if (materialData.m_materialInstance)
         {
-            // update sectors based on bounds.
+            for (SectorData& sectorData : m_sectorData)
+            {
+                bool overlapsOld = sectorData.m_aabb.Overlaps(materialData.m_bounds);
+                bool overlapsNew = sectorData.m_aabb.Overlaps(newRegion);
+                if (overlapsOld && !overlapsNew)
+                {
+                    // Remove the macro material from this sector
+                    for (uint16_t& idx : sectorData.m_macroMaterials)
+                    {
+                        if (m_macroMaterials.GetData(idx).m_entityId == entityId)
+                        {
+                            idx = sectorData.m_macroMaterials.back();
+                            sectorData.m_macroMaterials.pop_back();
+                        }
+                    }
+                }
+                else if (overlapsNew && !overlapsOld)
+                {
+                    // Add the macro material to this sector
+                    if (sectorData.m_macroMaterials.size() < 4)
+                    {
+                        sectorData.m_macroMaterials.push_back(m_macroMaterials.GetIndexForData(&materialData));
+                    }
+                }
+                if (overlapsOld || overlapsNew)
+                {
+                    // Update sector srgs.
+                }
+            }
         }
-        data.m_bounds = newRegion;
+        materialData.m_bounds = newRegion;
     }
 
     void TerrainFeatureProcessor::UpdateTerrainData()
@@ -562,26 +590,29 @@ namespace Terrain
     
     TerrainFeatureProcessor::MacroMaterialData& TerrainFeatureProcessor::FindOrCreateMacroMaterial(AZ::EntityId entityId)
     {
-        for (MacroMaterialData& data : m_macroMaterials)
+        for (MacroMaterialData& data : m_macroMaterials.GetDataVector())
         {
             if (data.m_entityId == entityId)
             {
                 return data;
             }
         }
-        m_macroMaterials.push_back(MacroMaterialData());
-        m_macroMaterials.back().m_entityId = entityId;
-        return m_macroMaterials.back();
+
+        uint16_t slotId = m_macroMaterials.GetFreeSlotIndex();
+        AZ_Assert(slotId != m_macroMaterials.NoFreeSlot, "Ran out of indices for macro materials");
+
+        MacroMaterialData& data = m_macroMaterials.GetData(slotId);
+        data.m_entityId = entityId;
+        return data;
     }
 
     void TerrainFeatureProcessor::RemoveMacroMaterial(AZ::EntityId entityId)
     {
-        for (MacroMaterialData& data : m_macroMaterials)
+        for (MacroMaterialData& data : m_macroMaterials.GetDataVector())
         {
             if (data.m_entityId == entityId)
             {
-                data = m_macroMaterials.back();
-                m_macroMaterials.pop_back();
+                m_macroMaterials.RemoveData(&data);
                 return;
             }
         }
