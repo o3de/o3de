@@ -21,6 +21,9 @@ namespace AzToolsFramework
         // in the unit tests.
         AZ::UserSettingsComponentRequestBus::Broadcast(&AZ::UserSettingsComponentRequests::DisableSaveOnFinalize);
 
+        m_containerEntityInterface = AZ::Interface<ContainerEntityInterface>::Get();
+        ASSERT_TRUE(m_containerEntityInterface != nullptr);
+
         m_focusModeInterface = AZ::Interface<FocusModeInterface>::Get();
         ASSERT_TRUE(m_focusModeInterface != nullptr);
 

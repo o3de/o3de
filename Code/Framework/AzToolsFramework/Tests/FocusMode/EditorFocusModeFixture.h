@@ -14,6 +14,7 @@
 
 #include <AzTest/AzTest.h>
 
+#include <AzToolsFramework/ContainerEntity/ContainerEntityInterface.h>
 #include <AzToolsFramework/FocusMode/FocusModeInterface.h>
 #include <AzToolsFramework/UnitTest/AzToolsFrameworkTestHelpers.h>
 
@@ -29,6 +30,8 @@ namespace AzToolsFramework
         AZ::EntityId CreateEditorEntity(const char* name, AZ::EntityId parentId);
 
         AZStd::unordered_map<AZStd::string, AZ::EntityId> m_entityMap;
+
+        ContainerEntityInterface* m_containerEntityInterface = nullptr;
         FocusModeInterface* m_focusModeInterface = nullptr;
 
     public:
@@ -47,4 +50,5 @@ namespace AzToolsFramework
 
         inline static AZ::Vector3 CarEntityPosition = AZ::Vector3(5.0f, 15.0f, 0.0f);
     };
+
 }
