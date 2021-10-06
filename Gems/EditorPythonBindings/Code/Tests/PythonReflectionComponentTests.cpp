@@ -161,7 +161,7 @@ namespace UnitTest
                     ->Method("accept_vector_of_floats", &PythonReflectionContainerSimpleTypes::AcceptVectorOfFloats, nullptr, "")
                     ->Method("return_vector_of_doubles", &PythonReflectionContainerSimpleTypes::ReturnVectorOfDoubles, nullptr, "")
                     ->Method("accept_vector_of_doubles", &PythonReflectionContainerSimpleTypes::AcceptVectorOfDoubles, nullptr, "")
-                    ->Property("vector_of_s8", 
+                    ->Property("vector_of_s8",
                         [](PythonReflectionContainerSimpleTypes* self) { return self->m_s8ValueValues.ReturnValues(); },
                         [](PythonReflectionContainerSimpleTypes* self, const AZStd::vector<AZ::s8>& values) { return self->m_s8ValueValues.AcceptValues(values); })
                     ->Property("vector_of_u8",
@@ -792,7 +792,7 @@ namespace UnitTest
                 theAsset = reflectAny.access_any_ref()
                 if( reflectAny.compare_asset_ids(theAsset,testObject.theAsset) ):
                     print ('MutateAssetId')
-    
+
             )");
         }
         catch ([[maybe_unused]] const std::exception& e)
@@ -1429,7 +1429,6 @@ namespace UnitTest
         {
             Skip = 0,
             EngrootIs,
-            DevrootIs,
             pathResolvedTo,
         };
 
@@ -1441,10 +1440,6 @@ namespace UnitTest
                 if (AzFramework::StringFunc::StartsWith(message, "engroot is "))
                 {
                     return static_cast<int>(LogTypes::EngrootIs);
-                }
-                else if (AzFramework::StringFunc::StartsWith(message, "devroot is "))
-                {
-                    return static_cast<int>(LogTypes::DevrootIs);
                 }
                 else if (AzFramework::StringFunc::StartsWith(message, "path resolved to "))
                 {
@@ -1470,9 +1465,6 @@ namespace UnitTest
                 if (len(azlmbr.paths.engroot) != 0):
                    print ('engroot is {}'.format(azlmbr.paths.engroot))
 
-                if (len(azlmbr.paths.devroot) != 0):
-                    print ('devroot is {}'.format(azlmbr.paths.devroot))
-
                 path = azlmbr.paths.resolve_path('@engroot@/engineassets/texturemsg/defaultsolids.mtl')
                 if (path.find('@engroot@') == -1):
                     print ('path resolved to {}'.format(path))
@@ -1487,7 +1479,6 @@ namespace UnitTest
         e.Deactivate();
 
         EXPECT_EQ(m_testSink.m_evaluationMap[(int)LogTypes::EngrootIs], 1);
-        EXPECT_EQ(m_testSink.m_evaluationMap[(int)LogTypes::DevrootIs], 1);
         EXPECT_EQ(m_testSink.m_evaluationMap[(int)LogTypes::pathResolvedTo], 1);
     }
 }

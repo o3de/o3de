@@ -330,6 +330,14 @@ namespace AZ
             return m_samplers;
         }
 
+        void ShaderResourceGroupData::ResetViews()
+        {
+            m_imageViews.assign(m_imageViews.size(), nullptr);
+            m_bufferViews.assign(m_bufferViews.size(), nullptr);
+            m_imageViewsUnboundedArray.assign(m_imageViewsUnboundedArray.size(), nullptr);
+            m_bufferViewsUnboundedArray.assign(m_bufferViewsUnboundedArray.size(), nullptr);
+        }
+
         AZStd::array_view<uint8_t> ShaderResourceGroupData::GetConstantData() const
         {
             return m_constantsData.GetConstantData();

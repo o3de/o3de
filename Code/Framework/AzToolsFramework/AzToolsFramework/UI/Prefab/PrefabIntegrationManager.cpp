@@ -22,6 +22,7 @@
 #include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
 #include <AzToolsFramework/AssetBrowser/AssetSelectionModel.h>
 #include <AzToolsFramework/AssetBrowser/Entries/SourceAssetBrowserEntry.h>
+#include <AzToolsFramework/ContainerEntity/ContainerEntityInterface.h>
 #include <AzToolsFramework/Prefab/PrefabFocusInterface.h>
 #include <AzToolsFramework/Prefab/PrefabLoaderInterface.h>
 #include <AzToolsFramework/ToolsComponents/EditorLayerComponentBus.h>
@@ -56,7 +57,7 @@ namespace AzToolsFramework
 {
     namespace Prefab
     {
-        
+        ContainerEntityInterface* PrefabIntegrationManager::s_containerEntityInterface = nullptr;
         EditorEntityUiInterface* PrefabIntegrationManager::s_editorEntityUiInterface = nullptr;
         PrefabFocusInterface* PrefabIntegrationManager::s_prefabFocusInterface = nullptr;
         PrefabLoaderInterface* PrefabIntegrationManager::s_prefabLoaderInterface = nullptr;
@@ -89,6 +90,13 @@ namespace AzToolsFramework
 
         PrefabIntegrationManager::PrefabIntegrationManager()
         {
+            s_containerEntityInterface = AZ::Interface<ContainerEntityInterface>::Get();
+            if (s_containerEntityInterface == nullptr)
+            {
+                AZ_Assert(false, "Prefab - could not get ContainerEntityInterface on PrefabIntegrationManager construction.");
+                return;
+            }
+
             s_editorEntityUiInterface = AZ::Interface<EditorEntityUiInterface>::Get();
             if (s_editorEntityUiInterface == nullptr)
             {
@@ -307,7 +315,7 @@ namespace AzToolsFramework
             // temporarily null after QFileDialogs close, which we need in order to
             // be able to parent our message dialogs properly
             QWidget* activeWindow = QApplication::activeWindow();
-            const AZStd::string prefabFilesPath = "@devassets@/Prefabs";
+            const AZStd::string prefabFilesPath = "@projectroot@/Prefabs";
 
             // Remove Level entity if it's part of the list
             
@@ -1057,6 +1065,7 @@ namespace AzToolsFramework
 
         void PrefabIntegrationManager::OnPrefabComponentActivate(AZ::EntityId entityId)
         {
+            // Register entity to appropriate UI Handler for UI overrides
             if (s_prefabPublicInterface->IsLevelInstanceContainerEntity(entityId))
             {
                 s_editorEntityUiInterface->RegisterEntity(entityId, m_levelRootUiHandler.GetHandlerId());
@@ -1064,11 +1073,32 @@ namespace AzToolsFramework
             else
             {
                 s_editorEntityUiInterface->RegisterEntity(entityId, m_prefabUiHandler.GetHandlerId());
+
+                bool prefabWipFeaturesEnabled = false;
+                AzFramework::ApplicationRequests::Bus::BroadcastResult(
+                    prefabWipFeaturesEnabled, &AzFramework::ApplicationRequests::ArePrefabWipFeaturesEnabled);
+
+                if (prefabWipFeaturesEnabled)
+                {
+                    // Register entity as a container
+                    s_containerEntityInterface->RegisterEntityAsContainer(entityId);
+                }
             }
         }
 
         void PrefabIntegrationManager::OnPrefabComponentDeactivate(AZ::EntityId entityId)
         {
+            bool prefabWipFeaturesEnabled = false;
+            AzFramework::ApplicationRequests::Bus::BroadcastResult(
+                prefabWipFeaturesEnabled, &AzFramework::ApplicationRequests::ArePrefabWipFeaturesEnabled);
+
+            if (prefabWipFeaturesEnabled && !s_prefabPublicInterface->IsLevelInstanceContainerEntity(entityId))
+            {
+                // Unregister entity as a container
+                s_containerEntityInterface->UnregisterEntityAsContainer(entityId);
+            }
+
+            // Unregister entity from UI Handler
             s_editorEntityUiInterface->UnregisterEntity(entityId);
         }
 

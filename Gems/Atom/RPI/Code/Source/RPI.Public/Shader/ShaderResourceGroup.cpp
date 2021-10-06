@@ -580,6 +580,11 @@ namespace AZ
             return {};
         }
 
+        void ShaderResourceGroup::ResetViews()
+        {
+            m_data.ResetViews();
+        }
+
         const RHI::SamplerState& ShaderResourceGroup::GetSampler(RHI::ShaderInputNameIndex& inputIndex, uint32_t arrayIndex) const
         {
             inputIndex.ValidateOrFindSamplerIndex(GetLayout());

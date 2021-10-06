@@ -935,8 +935,9 @@ void SEditorSettings::LoadDefaultGamePaths()
         searchPaths[EDITOR_PATH_MATERIALS].push_back((Path::GetEditingGameDataFolder() + "/Materials").c_str());
     }
 
-    AZStd::string iconsPath;
-    AZ::StringFunc::Path::Join(Path::GetEditingRootFolder().c_str(), "Editor/UI/Icons", iconsPath);
+    auto iconsPath = AZ::IO::Path(AZ::Utils::GetEnginePath()) / "Assets";
+    iconsPath /= "Editor/UI/Icons";
+    iconsPath.MakePreferred();
     searchPaths[EDITOR_PATH_UI_ICONS].push_back(iconsPath.c_str());
 }
 

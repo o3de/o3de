@@ -126,17 +126,6 @@
 				</Class>
 			</Class>
 			<Class name="AZStd::pair" field="element" type="{941B5626-118F-55BC-925E-6E416A7520E4}">
-				<Class name="AZStd::string" field="value1" value="@devroot@/*.waf_files" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-				<Class name="FileTagData" field="value2" version="2" type="{5F66E43B-548B-4AA8-8CD8-F6924F6031E6}">
-					<Class name="unsigned char" field="FilePatternType" value="1" type="{72B9409A-7D1A-4831-9CFE-FCB3FADD3426}"/>
-					<Class name="AZStd::set" field="FileTags" type="{166F208E-DE97-53FE-B349-BDD9FE9B8693}">
-						<Class name="AZStd::string" field="element" value="ignore" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-						<Class name="AZStd::string" field="element" value="productdependency" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-					</Class>
-					<Class name="AZStd::string" field="Comment" value="" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-				</Class>
-			</Class>
-			<Class name="AZStd::pair" field="element" type="{941B5626-118F-55BC-925E-6E416A7520E4}">
 				<Class name="AZStd::string" field="value1" value="*/editor/leveltemplates.xml" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 				<Class name="FileTagData" field="value2" version="2" type="{5F66E43B-548B-4AA8-8CD8-F6924F6031E6}">
 					<Class name="unsigned char" field="FilePatternType" value="1" type="{72B9409A-7D1A-4831-9CFE-FCB3FADD3426}"/>
@@ -201,27 +190,6 @@
 				<Class name="AZStd::string" field="value1" value="*heightmap.dat" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 				<Class name="FileTagData" field="value2" version="2" type="{5F66E43B-548B-4AA8-8CD8-F6924F6031E6}">
 					<Class name="unsigned char" field="FilePatternType" value="1" type="{72B9409A-7D1A-4831-9CFE-FCB3FADD3426}"/>
-					<Class name="AZStd::set" field="FileTags" type="{166F208E-DE97-53FE-B349-BDD9FE9B8693}">
-						<Class name="AZStd::string" field="element" value="editoronly" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-					</Class>
-					<Class name="AZStd::string" field="Comment" value="" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-				</Class>
-			</Class>
-			<Class name="AZStd::pair" field="element" type="{941B5626-118F-55BC-925E-6E416A7520E4}">
-				<Class name="AZStd::string" field="value1" value="@devroot@/*wscript" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-				<Class name="FileTagData" field="value2" version="2" type="{5F66E43B-548B-4AA8-8CD8-F6924F6031E6}">
-					<Class name="unsigned char" field="FilePatternType" value="1" type="{72B9409A-7D1A-4831-9CFE-FCB3FADD3426}"/>
-					<Class name="AZStd::set" field="FileTags" type="{166F208E-DE97-53FE-B349-BDD9FE9B8693}">
-						<Class name="AZStd::string" field="element" value="ignore" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-						<Class name="AZStd::string" field="element" value="productdependency" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-					</Class>
-					<Class name="AZStd::string" field="Comment" value="" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-				</Class>
-			</Class>
-			<Class name="AZStd::pair" field="element" type="{941B5626-118F-55BC-925E-6E416A7520E4}">
-				<Class name="AZStd::string" field="value1" value=".*/assetprocessorplatformconfig.ini" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-				<Class name="FileTagData" field="value2" version="2" type="{5F66E43B-548B-4AA8-8CD8-F6924F6031E6}">
-					<Class name="unsigned char" field="FilePatternType" value="2" type="{72B9409A-7D1A-4831-9CFE-FCB3FADD3426}"/>
 					<Class name="AZStd::set" field="FileTags" type="{166F208E-DE97-53FE-B349-BDD9FE9B8693}">
 						<Class name="AZStd::string" field="element" value="editoronly" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 					</Class>
