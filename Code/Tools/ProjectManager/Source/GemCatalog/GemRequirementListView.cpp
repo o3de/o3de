@@ -8,7 +8,9 @@
 
 #include <GemCatalog/GemRequirementListView.h>
 #include <GemCatalog/GemRequirementDelegate.h>
-#include <QStandardItemModel>
+#include <GemCatalog/GemModel.h>
+#include <QMouseEvent>
+#include <QDesktopServices>
 
 namespace O3DE::ProjectManager
 {
