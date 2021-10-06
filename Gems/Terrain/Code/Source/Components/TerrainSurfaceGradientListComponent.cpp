@@ -34,7 +34,8 @@ namespace Terrain
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
 
                     ->DataElement(
-                        AZ::Edit::UIHandlers::Default, &TerrainSurfaceGradientMapping::m_gradientEntityId, "Gradient Entity", "ID of Entity providing a gradient.")
+                        AZ::Edit::UIHandlers::Default, &TerrainSurfaceGradientMapping::m_gradientEntityId,
+                        "Gradient Entity", "ID of Entity providing a gradient.")
                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::AttributesAndValues)
                     ->UIElement("GradientPreviewer", "Previewer")
                         ->Attribute(AZ::Edit::Attributes::NameLabelOverride, "")
@@ -69,7 +70,8 @@ namespace Terrain
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
 
                     ->DataElement(
-                        AZ::Edit::UIHandlers::Default, &TerrainSurfaceGradientListConfig::m_gradientSurfaceMappings, "Gradient to Surface Mappings", "Maps Gradient Entities to Surfaces.")
+                        AZ::Edit::UIHandlers::Default, &TerrainSurfaceGradientListConfig::m_gradientSurfaceMappings,
+                        "Gradient to Surface Mappings", "Maps Gradient Entities to Surfaces.")
                     ;
             }
         }
@@ -134,11 +136,12 @@ namespace Terrain
     void TerrainSurfaceGradientListComponent::Deactivate()
     {
         m_dependencyMonitor.Reset();
-        LmbrCentral::DependencyNotificationBus::Handler::BusDisconnect();
+
         Terrain::TerrainAreaSurfaceRequestBus::Handler::BusDisconnect();
+        LmbrCentral::DependencyNotificationBus::Handler::BusDisconnect();
 
         // Since this surface data will no longer exist, notify the terrain system to refresh the area.
-        TerrainSystemServiceRequestBus::Broadcast(&TerrainSystemServiceRequestBus::Events::RefreshArea, GetEntityId());
+        OnCompositionChanged();
     }
 
     bool TerrainSurfaceGradientListComponent::ReadInConfig(const AZ::ComponentConfig* baseConfig)
@@ -161,7 +164,9 @@ namespace Terrain
         return false;
     }
     
-    void TerrainSurfaceGradientListComponent::GetSurfaceWeights(const AZ::Vector3& inPosition, AzFramework::SurfaceData::OrderedSurfaceTagWeightSet& outSurfaceWeights) const
+    void TerrainSurfaceGradientListComponent::GetSurfaceWeights(
+        const AZ::Vector3& inPosition,
+        AzFramework::SurfaceData::OrderedSurfaceTagWeightSet& outSurfaceWeights) const
     {
         outSurfaceWeights.clear();
 
@@ -170,7 +175,8 @@ namespace Terrain
         for (const auto& mapping : m_configuration.m_gradientSurfaceMappings)
         {
             float weight = 0.0f;
-            GradientSignal::GradientRequestBus::EventResult(weight, mapping.m_gradientEntityId, &GradientSignal::GradientRequestBus::Events::GetValue, params);
+            GradientSignal::GradientRequestBus::EventResult(weight,
+                mapping.m_gradientEntityId, &GradientSignal::GradientRequestBus::Events::GetValue, params);
 
             AzFramework::SurfaceData::SurfaceTagWeight tagWeight;
             tagWeight.m_surfaceType = mapping.m_surfaceTag;
