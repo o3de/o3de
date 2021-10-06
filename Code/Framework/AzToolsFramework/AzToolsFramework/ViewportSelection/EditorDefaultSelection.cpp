@@ -29,7 +29,7 @@ namespace AzToolsFramework
     {
         AZ_Assert(
             AZ::Interface<ComponentModeCollectionInterface>::Get() == nullptr, "Unexpected registration of component mode collection.")
-            AZ::Interface<ComponentModeCollectionInterface>::Register(&m_componentModeCollection);
+        AZ::Interface<ComponentModeCollectionInterface>::Register(&m_componentModeCollection);
 
         ActionOverrideRequestBus::Handler::BusConnect(GetEntityContextId());
         ComponentModeFramework::ComponentModeSystemRequestBus::Handler::BusConnect();

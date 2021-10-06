@@ -55,14 +55,14 @@ class ViewportEditorModeNotificationsBusImpl
     : public AzToolsFramework::ViewportEditorModeNotificationsBus::Handler
 {
  public:
-    /// Set the function to be called when entering ComponentMode.
+    // Set the function to be called when entering ComponentMode.
     void SetEnteredComponentModeFunc(
         const AZStd::function<void(const AzToolsFramework::ViewportEditorModesInterface&)>& enteredComponentModeFunc)
     {
         m_enteredComponentModeFunc = enteredComponentModeFunc;
     }
 
-    /// Set the function to be called when leaving ComponentMode.
+    // Set the function to be called when leaving ComponentMode.
     void SetLeftComponentModeFunc(
         const AZStd::function<void(const AzToolsFramework::ViewportEditorModesInterface&)>& leftComponentModeFunc)
     {
