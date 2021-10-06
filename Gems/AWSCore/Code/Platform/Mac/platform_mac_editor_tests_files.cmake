@@ -6,6 +6,5 @@
 #
 #
 
-set(FILES
-    ../Common/GetCertsPath_Null.cpp
+set(FILES 
 )
