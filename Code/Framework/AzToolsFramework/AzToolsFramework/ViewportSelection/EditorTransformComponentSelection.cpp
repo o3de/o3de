@@ -1027,7 +1027,7 @@ namespace AzToolsFramework
         EditorTransformComponentSelectionRequestBus::Handler::BusConnect(entityContextId);
         ToolsApplicationNotificationBus::Handler::BusConnect();
         Camera::EditorCameraNotificationBus::Handler::BusConnect();
-        ComponentModeFramework::EditorComponentModeNotificationBus::Handler::BusConnect(entityContextId);
+        ViewportEditorModeNotificationsBus::Handler::BusConnect(entityContextId);
         EditorEntityContextNotificationBus::Handler::BusConnect();
         EditorEntityVisibilityNotificationBus::Router::BusRouterConnect();
         EditorEntityLockComponentNotificationBus::Router::BusRouterConnect();
@@ -1075,7 +1075,7 @@ namespace AzToolsFramework
         EditorEntityLockComponentNotificationBus::Router::BusRouterDisconnect();
         EditorEntityVisibilityNotificationBus::Router::BusRouterDisconnect();
         EditorEntityContextNotificationBus::Handler::BusDisconnect();
-        ComponentModeFramework::EditorComponentModeNotificationBus::Handler::BusDisconnect();
+        ViewportEditorModeNotificationsBus::Handler::BusDisconnect();
         Camera::EditorCameraNotificationBus::Handler::BusDisconnect();
         ToolsApplicationNotificationBus::Handler::BusDisconnect();
         EditorTransformComponentSelectionRequestBus::Handler::BusDisconnect();
@@ -3707,22 +3707,30 @@ namespace AzToolsFramework
         m_selectedEntityIdsAndManipulatorsDirty = true;
     }
 
-    void EditorTransformComponentSelection::EnteredComponentMode([[maybe_unused]] const AZStd::vector<AZ::Uuid>& componentModeTypes)
+    void EditorTransformComponentSelection::OnEditorModeActivated(
+        [[maybe_unused]] const ViewportEditorModesInterface& editorModeState, ViewportEditorMode mode)
     {
-        SetAllViewportUiVisible(false);
+        if (mode == ViewportEditorMode::Component)
+        {
+            SetAllViewportUiVisible(false);
 
-        EditorEntityLockComponentNotificationBus::Router::BusRouterDisconnect();
-        EditorEntityVisibilityNotificationBus::Router::BusRouterDisconnect();
-        ToolsApplicationNotificationBus::Handler::BusDisconnect();
+            EditorEntityLockComponentNotificationBus::Router::BusRouterDisconnect();
+            EditorEntityVisibilityNotificationBus::Router::BusRouterDisconnect();
+            ToolsApplicationNotificationBus::Handler::BusDisconnect();
+        }
     }
 
-    void EditorTransformComponentSelection::LeftComponentMode([[maybe_unused]] const AZStd::vector<AZ::Uuid>& componentModeTypes)
+    void EditorTransformComponentSelection::OnEditorModeDeactivated(
+        [[maybe_unused]] const ViewportEditorModesInterface& editorModeState, ViewportEditorMode mode)
     {
-        SetAllViewportUiVisible(true);
+        if (mode == ViewportEditorMode::Component)
+        {
+            SetAllViewportUiVisible(true);
 
-        ToolsApplicationNotificationBus::Handler::BusConnect();
-        EditorEntityVisibilityNotificationBus::Router::BusRouterConnect();
-        EditorEntityLockComponentNotificationBus::Router::BusRouterConnect();
+            ToolsApplicationNotificationBus::Handler::BusConnect();
+            EditorEntityVisibilityNotificationBus::Router::BusRouterConnect();
+            EditorEntityLockComponentNotificationBus::Router::BusRouterConnect();
+        }
     }
 
     void EditorTransformComponentSelection::CreateEntityManipulatorDeselectCommand(ScopedUndoBatch& undoBatch)
