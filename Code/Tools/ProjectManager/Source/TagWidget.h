@@ -14,8 +14,6 @@
 #include <QWidget>
 #endif
 
-QT_FORWARD_DECLARE_CLASS(QAbstractButton)
-
 namespace O3DE::ProjectManager
 {
     // Single tag
@@ -26,11 +24,7 @@ namespace O3DE::ProjectManager
 
     public:
         explicit TagWidget(const QString& text, QWidget* parent = nullptr);
-        explicit TagWidget(const QString& text, QAbstractButton* button, QWidget* parent = nullptr);
         ~TagWidget() = default;
-
-    private:
-        QAbstractButton* m_button = nullptr;
     };
 
     // Widget containing multiple tags, automatically wrapping based on the size

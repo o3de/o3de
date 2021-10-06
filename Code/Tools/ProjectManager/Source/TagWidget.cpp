@@ -9,7 +9,6 @@
 #include <TagWidget.h>
 #include <QVBoxLayout>
 #include <AzQtComponents/Components/FlowLayout.h>
-#include <QAbstractButton>
 
 namespace O3DE::ProjectManager
 {
@@ -17,14 +16,6 @@ namespace O3DE::ProjectManager
         : QLabel(text, parent)
     {
         setObjectName("TagWidget");
-    }
-
-    TagWidget::TagWidget(const QString& text, QAbstractButton* button, QWidget* parent)
-        : QLabel(text, parent)
-        , m_button(button)
-    {
-        setObjectName("TagWidget");
-        layout()->addWidget(button);
     }
 
     TagContainerWidget::TagContainerWidget(QWidget* parent)
