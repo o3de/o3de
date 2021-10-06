@@ -38,7 +38,6 @@ namespace O3DE::ProjectManager
         standardFont.setPixelSize(static_cast<int>(s_fontSize));
         QFontMetrics standardFontMetrics(standardFont);
 
-        painter->save();
         painter->setClipping(true);
         painter->setClipRect(fullRect);
         painter->setFont(options.font);
