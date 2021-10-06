@@ -66,6 +66,8 @@ set(FILES
     Source/AuxGeom/DynamicPrimitiveProcessor.h
     Source/AuxGeom/FixedShapeProcessor.cpp
     Source/AuxGeom/FixedShapeProcessor.h
+    Source/ColorGrading/LutGenerationPass.cpp
+    Source/ColorGrading/LutGenerationPass.h
     Source/CoreLights/CapsuleLightFeatureProcessor.h
     Source/CoreLights/CapsuleLightFeatureProcessor.cpp
     Source/CoreLights/CascadedShadowmapsPass.h
@@ -212,8 +214,6 @@ set(FILES
     Source/PostProcessing/BloomCompositePass.cpp
     Source/PostProcessing/BloomParentPass.h
     Source/PostProcessing/BloomParentPass.cpp
-    Source/PostProcessing/HDRColorGradingPass.cpp
-    Source/PostProcessing/HDRColorGradingPass.h
     Source/PostProcessing/DepthOfFieldCompositePass.h
     Source/PostProcessing/DepthOfFieldCompositePass.cpp
     Source/PostProcessing/DepthOfFieldBokehBlurPass.h
@@ -234,6 +234,8 @@ set(FILES
     Source/PostProcessing/EyeAdaptationPass.h
     Source/PostProcessing/FastDepthAwareBlurPasses.cpp
     Source/PostProcessing/FastDepthAwareBlurPasses.h
+    Source/PostProcessing/HDRColorGradingPass.cpp
+    Source/PostProcessing/HDRColorGradingPass.h
     Source/PostProcessing/LookModificationCompositePass.cpp
     Source/PostProcessing/LookModificationCompositePass.h
     Source/PostProcessing/LookModificationTransformPass.cpp

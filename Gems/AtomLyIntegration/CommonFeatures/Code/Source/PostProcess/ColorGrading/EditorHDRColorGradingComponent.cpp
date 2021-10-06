@@ -7,6 +7,7 @@
  */
 
 #include <PostProcess/ColorGrading/EditorHDRColorGradingComponent.h>
+#include <AzToolsFramework/API/EditorPythonRunnerRequestsBus.h>
 
 namespace AZ
 {
@@ -31,6 +32,12 @@ namespace AZ
                         ->Attribute(Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))
                         ->Attribute(Edit::Attributes::AutoExpand, true)
                         ->Attribute(Edit::Attributes::HelpPageURL, "https://") // [TODO ATOM-2672][PostFX] need to create page for PostProcessing.
+                        ->ClassElement(AZ::Edit::ClassElements::Group, "LUT Generation")
+                        ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
+                        ->UIElement(AZ::Edit::UIHandlers::Button, "Generate LUT", "Generates a LUT from the scene's enabled color grading blend.")
+                            ->Attribute(AZ::Edit::Attributes::NameLabelOverride, "")
+                            ->Attribute(AZ::Edit::Attributes::ButtonText, "Generate LUT")
+                            ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorHDRColorGradingComponent::GenerateLut)
                         ;
 
                     editContext->Class<HDRColorGradingComponentController>(
@@ -134,6 +141,69 @@ namespace AZ
         EditorHDRColorGradingComponent::EditorHDRColorGradingComponent(const HDRColorGradingComponentConfig& config)
             : BaseClass(config)
         {
+        }
+
+        void EditorHDRColorGradingComponent::OnTick([[maybe_unused]] float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time)
+        {
+            if (m_controller.m_configuration.m_generateLut && m_frameCounter)
+            {
+                --m_frameCounter;
+                return;
+            }
+            else if (m_controller.m_configuration.m_generateLut && m_lutGenerationInProgress)
+            {
+                const char* LutAttachment = "LutOutput";
+                const AZStd::vector<AZStd::string> LutGenerationPassHierarchy{ "LutGenerationPass" };
+
+                // capture frame
+                AZ::Render::FrameCaptureNotificationBus::Handler::BusConnect();
+
+                bool startedCapture = false;
+                AZ::Render::FrameCaptureRequestBus::BroadcastResult(
+                    startedCapture,
+                    &AZ::Render::FrameCaptureRequestBus::Events::CapturePassAttachment,
+                    LutGenerationPassHierarchy,
+                    AZStd::string(LutAttachment), TempTiffFilePath,
+                    AZ::RPI::PassAttachmentReadbackOption::Output);
+
+                m_lutGenerationInProgress = !startedCapture;
+            }
+        }
+
+        void EditorHDRColorGradingComponent::OnCaptureFinished([[maybe_unused]] AZ::Render::FrameCaptureResult result, [[maybe_unused]]const AZStd::string& info)
+        {
+            char resolvedInputFilePath[AZ_MAX_PATH_LEN] = { 0 };
+            AZ::IO::FileIOBase::GetDirectInstance()->ResolvePath(TempTiffFilePath, resolvedInputFilePath, AZ_MAX_PATH_LEN);
+            char resolvedOutputFilePath[AZ_MAX_PATH_LEN] = { 0 };
+            AZ::IO::FileIOBase::GetDirectInstance()->ResolvePath(GeneratedLutFilePath, resolvedOutputFilePath, AZ_MAX_PATH_LEN);
+
+            AZStd::vector<AZStd::string_view> pythonArgs
+            {
+                "--i", resolvedInputFilePath,
+                "--o", resolvedOutputFilePath
+            };
+
+            AzToolsFramework::EditorPythonRunnerRequestBus::Broadcast(
+                &AzToolsFramework::EditorPythonRunnerRequestBus::Events::ExecuteByFilenameWithArgs,
+                "@devroot@/Gems/Atom/Feature/Common/Editor/Scripts/ColorGrading/tiff_to_3dl_azasset.py", pythonArgs);
+
+            m_controller.m_configuration.m_generateLut = false;
+            m_controller.OnConfigChanged();
+
+            AZ::TickBus::Handler::BusDisconnect();
+            AZ::Render::FrameCaptureNotificationBus::Handler::BusDisconnect();
+        }
+
+        void EditorHDRColorGradingComponent::GenerateLut()
+        {
+            // turn on lut generation pass
+            m_lutGenerationInProgress = true;
+            m_controller.m_configuration.m_generateLut = true;
+            m_controller.OnConfigChanged();
+
+            m_frameCounter = FramesToWait;
+
+            AZ::TickBus::Handler::BusConnect();
         }
 
         u32 EditorHDRColorGradingComponent::OnConfigurationChanged()

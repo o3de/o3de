@@ -10,6 +10,7 @@
 // PARAM(NAME, MEMBER_NAME, DEFAULT_VALUE, ...)
 
 AZ_GFX_BOOL_PARAM(Enabled, m_enabled, false)
+AZ_GFX_BOOL_PARAM(GenerateLut, m_generateLut, false)
 AZ_GFX_FLOAT_PARAM(ColorGradingExposure, m_colorGradingExposure, 0.0)
 AZ_GFX_FLOAT_PARAM(ColorGradingContrast, m_colorGradingContrast, 0.0)
 AZ_GFX_FLOAT_PARAM(ColorGradingHueShift, m_colorGradingHueShift, 0.0)

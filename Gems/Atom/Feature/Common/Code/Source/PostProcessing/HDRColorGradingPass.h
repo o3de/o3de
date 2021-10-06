@@ -41,10 +41,9 @@ namespace AZ
             void FrameBeginInternal(FramePrepareParams params) override;
             bool IsEnabled() const override;
 
-        private:
             const HDRColorGradingSettings* GetHDRColorGradingSettings() const;
-            void SetSrgConstants();
-
+            virtual void SetSrgConstants();
+        private:
             RHI::ShaderInputNameIndex m_colorGradingExposureIndex = "m_colorGradingExposure";
             RHI::ShaderInputNameIndex m_colorGradingContrastIndex = "m_colorGradingContrast";
             RHI::ShaderInputNameIndex m_colorGradingHueShiftIndex = "m_colorGradingHueShift";
