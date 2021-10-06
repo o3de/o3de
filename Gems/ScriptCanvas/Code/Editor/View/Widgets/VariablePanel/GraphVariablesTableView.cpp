@@ -37,8 +37,6 @@
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <ScriptCanvas/Variable/GraphVariable.h>
 
-#pragma optimize("", off)
-
 namespace ScriptCanvasEditor
 {
 
@@ -1414,6 +1412,3 @@ namespace ScriptCanvasEditor
 
 #include <Editor/View/Widgets/VariablePanel/moc_GraphVariablesTableView.cpp>
 }
-
-
-#pragma optimize("", on)
