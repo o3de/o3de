@@ -148,7 +148,7 @@
                     "pattern": "(^|[^/]\\\\/)\\\\$tmp[0-9]*_.*"
                 },
                 "Exclude TmpAnimationCompression": {
-                    "pattern": "(^|[^/]\\\\/)Editor\\\\/Tmp\\\\/AnimationCompression(\\\\/.*)"
+                    "pattern": "(^|[^/]\\\\/)Editor\\\\/Tmp\\\\/AnimationCompression(\\\\/.*)?"
                 },
                 "Exclude EventLog": {
                     "pattern": "(^|[^/]\\\\/)Editor\\\\/.*eventlog\\\\.xml"
@@ -180,7 +180,7 @@
                 "Exclude UserSettings": {
                     "pattern": "(^|[^/]\\\\/)UserSettings.xml"
                 },
-                
+
                 // ------------------------------------------------------------------------------
                 // Large Worlds Test
                 // ------------------------------------------------------------------------------
