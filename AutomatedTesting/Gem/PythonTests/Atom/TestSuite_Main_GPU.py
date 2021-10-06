@@ -229,7 +229,6 @@ class TestMaterialEditor(object):
         Checks for the "Finished loading viewport configurations." success message post launch.
         """
         expected_lines = ["Finished loading viewport configurations."]
-        unexpected_lines = ["Traceback (most recent call last):"]
 
         hydra.launch_and_validate_results(
             request,
