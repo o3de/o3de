@@ -21,7 +21,7 @@ namespace O3DE::ProjectManager
     {
         Q_OBJECT // AUTOMOC
     public:
-        explicit GemRequirementDialog(GemModel* model, const QVector<QModelIndex>& gemsToAdd, QWidget *parent = nullptr);
+        explicit GemRequirementDialog(GemModel* model, QWidget *parent = nullptr);
         ~GemRequirementDialog() = default;
     };
 } // namespace O3DE::ProjectManager

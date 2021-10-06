@@ -19,7 +19,7 @@
 
 namespace O3DE::ProjectManager
 {
-    GemRequirementDialog::GemRequirementDialog(GemModel* model, const QVector<QModelIndex>& gemsToAdd, QWidget* parent)
+    GemRequirementDialog::GemRequirementDialog(GemModel* model, QWidget* parent)
         : QDialog(parent)
     {
         setWindowTitle(tr("Manual setup is required"));
@@ -52,7 +52,7 @@ namespace O3DE::ProjectManager
 
         vLayout->addSpacing(20);
 
-        GemRequirementFilterProxyModel* proxModel = new GemRequirementFilterProxyModel(model, gemsToAdd, this);
+        GemRequirementFilterProxyModel* proxModel = new GemRequirementFilterProxyModel(model, this);
 
         GemRequirementListView* m_gemListView = new GemRequirementListView(proxModel, proxModel->GetSelectionModel(), this);
         vLayout->addWidget(m_gemListView);
