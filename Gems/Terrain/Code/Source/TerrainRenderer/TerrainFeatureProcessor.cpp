@@ -186,7 +186,6 @@ namespace Terrain
 
         AZStd::vector<uint16_t> pixels;
         pixels.reserve(width * height);
-        const uint32_t pixelDataSize = width * height * sizeof(uint16_t);
 
         {
             // Block other threads from accessing the surface data bus while we are in GetHeightFromFloats (which may call into the SurfaceData bus).
