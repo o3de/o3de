@@ -35,9 +35,8 @@ namespace AZ
                 bool m_enableMarschner_R = true;
                 bool m_enableMarschner_TRT = true;
                 bool m_enableMarschner_TT = true;
-                bool m_enableDiffuseLobe = true;
-                bool m_enableSpecularLobe = true;
-                bool m_enableTransmittanceLobe = true;
+                bool m_enableLongtitudeCoeff = true;
+                bool m_enableAzimuthCoeff = true;
             };
         } // namespace Hair
     } // namespace Render
