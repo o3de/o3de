@@ -136,4 +136,7 @@ namespace SandboxEditor
 
     SANDBOX_API AzFramework::InputChannelId CameraPivotPanChannelId();
     SANDBOX_API void SetCameraPivotPanChannelId(AZStd::string_view cameraPivotPanId);
+
+    SANDBOX_API AzFramework::InputChannelId CameraFocusChannelId();
+    SANDBOX_API void SetCameraFocusChannelId(AZStd::string_view cameraFocusId);
 } // namespace SandboxEditor

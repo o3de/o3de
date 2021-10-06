@@ -226,27 +226,34 @@ namespace AZ
 
                 // Prepare materials array for the per pass srg
                 std::vector<const AMD::TressFXRenderParams*> hairObjectsRenderMaterials;
-                uint32_t obj = 0;
-                for (auto objIter = m_hairRenderObjects.begin(); objIter != m_hairRenderObjects.end(); ++objIter, ++obj)
+                uint32_t objectIndex = 0;
+                for (auto& renderObject : m_hairRenderObjects)
                 {
-                    HairRenderObject* renderObject = objIter->get();
                     if (!renderObject->IsEnabled())
                     {
                         continue;
                     }
-                    renderObject->Update();
+
+                    renderObject->SetRenderIndex(objectIndex);
 
                     // [To Do] Hair - update the following parameters for dynamic LOD control
                     // should change or when parameters are being changed on the editor side.
 //                         float Distance = sqrtf( m_activeScene.scene->GetCameraPos().x * m_activeScene.scene->GetCameraPos().x +
 //                                                  m_activeScene.scene->GetCameraPos().y * m_activeScene.scene->GetCameraPos().y +
 //                                                  m_activeScene.scene->GetCameraPos().z * m_activeScene.scene->GetCameraPos().z);
-//                    objIter->get()->UpdateRenderingParameters(
-//                              renderingSettings, m_nScreenWidth * m_nScreenHeight * AVE_FRAGS_PER_PIXEL, m_deltaTime, Distance);
+                    const float distanceFromCamera = 1.0f;      // fixed distance until LOD mechanism is worked on
+                    const float updateShadows = false;          // same here - currently cheap self shadow approx
+                    renderObject->UpdateRenderingParameters( nullptr, RESERVED_PIXELS_FOR_OIT, distanceFromCamera, updateShadows);
 
-                    // this will be used for the constant buffer
+                    // this will be used in the constant buffer to set the material array used by the resolve pass
                     hairObjectsRenderMaterials.push_back(renderObject->GetHairRenderParams());
+
+                    // The data update for the GPU bind - this should be the very last thing done after the
+                    // data has been read and / or altered on the CPU side.
+                    renderObject->Update();
+                    ++objectIndex;
                 }
+
                 FillHairMaterialsArray(hairObjectsRenderMaterials);
             }
 
@@ -532,4 +539,3 @@ namespace AZ
         } // namespace Hair
     } // namespace Render
 } // namespace AZ
-

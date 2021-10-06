@@ -6,46 +6,35 @@
  *
  */
 
-
-#include <AzCore/Serialization/SerializeContext.h>
-#include <AzCore/Serialization/EditContext.h>
-#include <AzCore/Jobs/JobFunction.h>
 #include <AzCore/EBus/Results.h>
+#include <AzCore/Jobs/JobFunction.h>
+#include <AzCore/Serialization/EditContext.h>
+#include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/Serialization/Utils.h>
 #include <AzCore/std/string/wildcard.h>
-
 #include <AzFramework/Entity/EntityContextBus.h>
-
+#include <AzFramework/IO/FileOperations.h>
 #include <AzToolsFramework/API/ViewPaneOptions.h>
+#include <AzToolsFramework/AssetBrowser/Entries/SourceAssetBrowserEntry.h>
 #include <AzToolsFramework/UI/PropertyEditor/GenericComboBoxCtrl.h>
-
-#include <GraphCanvas/GraphCanvasBus.h>
-
+#include <Editor/Framework/ScriptCanvasGraphUtilities.h>
+#include <Editor/Settings.h>
 #include <Editor/SystemComponent.h>
-
-#include <Editor/View/Windows/MainWindow.h>
 #include <Editor/View/Dialogs/NewGraphDialog.h>
 #include <Editor/View/Dialogs/SettingsDialog.h>
-#include <Editor/Settings.h>
-
+#include <Editor/View/Windows/MainWindow.h>
+#include <GraphCanvas/GraphCanvasBus.h>
+#include <LyViewPaneNames.h>
+#include <QMenu>
+#include <QMessageBox>
 #include <ScriptCanvas/Bus/EditorScriptCanvasBus.h>
+#include <ScriptCanvas/Components/EditorGraph.h>
+#include <ScriptCanvas/Components/EditorGraphVariableManagerComponent.h>
 #include <ScriptCanvas/Core/Datum.h>
 #include <ScriptCanvas/Data/DataRegistry.h>
 #include <ScriptCanvas/Libraries/Libraries.h>
 #include <ScriptCanvas/Variable/VariableCore.h>
-#include <ScriptCanvas/Components/EditorGraph.h>
-#include <ScriptCanvas/Components/EditorGraphVariableManagerComponent.h>
-
-#include <LyViewPaneNames.h>
-
-#include <QMenu>
-#include <QMessageBox>
-
 #include <ScriptCanvas/View/EditCtrls/GenericLineEditCtrl.h>
-#include <Editor/Framework/ScriptCanvasGraphUtilities.h>
-#include <AzToolsFramework/AssetBrowser/Entries/SourceAssetBrowserEntry.h>
-
-#include <AzFramework/IO/FileOperations.h>
-#include <AzCore/Serialization/Utils.h>
 
 namespace ScriptCanvasEditor
 {
@@ -54,6 +43,7 @@ namespace ScriptCanvasEditor
     SystemComponent::SystemComponent()
     {
         AzToolsFramework::AssetSeedManagerRequests::Bus::Handler::BusConnect();
+        m_versionExplorer = AZStd::make_unique<VersionExplorer::Model>();
     }
 
     SystemComponent::~SystemComponent()
@@ -61,7 +51,6 @@ namespace ScriptCanvasEditor
         AzToolsFramework::UnregisterViewPane(LyViewPane::ScriptCanvas);
         AzToolsFramework::EditorContextMenuBus::Handler::BusDisconnect();
         AzToolsFramework::EditorEvents::Bus::Handler::BusDisconnect();
-        AzFramework::AssetCatalogEventBus::Handler::BusDisconnect();
         AzToolsFramework::AssetSeedManagerRequests::Bus::Handler::BusDisconnect();
     }
 
@@ -141,16 +130,11 @@ namespace ScriptCanvasEditor
         {
             if (userSettings->m_showUpgradeDialog)
             {
-                AzFramework::AssetCatalogEventBus::Handler::BusConnect();
             }
             else
             {
                 m_upgradeDisabled = true;
             }
-        }
-        else
-        {
-            AzFramework::AssetCatalogEventBus::Handler::BusConnect();
         }
     }
 
@@ -172,7 +156,6 @@ namespace ScriptCanvasEditor
         AzToolsFramework::EditorEvents::Bus::Handler::BusDisconnect();
         ScriptCanvasExecutionBus::Handler::BusDisconnect();
         SystemRequestBus::Handler::BusDisconnect();
-        AzFramework::AssetCatalogEventBus::Handler::BusDisconnect();
 
         m_jobContext.reset();
         m_jobManager.reset();
@@ -395,64 +378,6 @@ namespace ScriptCanvasEditor
         Reporter reporter;
         RunEditorAsset(asset, reporter, mode);
         return reporter;
-    }
-
-    void SystemComponent::OnCatalogLoaded(const char* /*catalogFile*/)
-    {
-        // Enumerate all ScriptCanvas assets
-        AZ::Data::AssetCatalogRequestBus::Broadcast(&AZ::Data::AssetCatalogRequestBus::Events::EnumerateAssets,
-            nullptr,
-            [this](const AZ::Data::AssetId, const AZ::Data::AssetInfo& assetInfo) {
-
-                if (assetInfo.m_assetType == azrtti_typeid<ScriptCanvasAsset>())
-                {
-                    AddAssetToUpgrade(assetInfo);
-                }
-            },
-            nullptr
-            );
-    }
-
-    void SystemComponent::OnCatalogAssetAdded(const AZ::Data::AssetId& assetId)
-    {
-        if (IsUpgrading())
-        {
-            return;
-        }
-
-        auto assetInfo = ScriptCanvasEditor::AssetHelpers::GetAssetInfo(assetId);
-        AddAssetToUpgrade(assetInfo);
-    }
-
-    void SystemComponent::OnCatalogAssetRemoved(const AZ::Data::AssetId& assetId, const AZ::Data::AssetInfo& /*assetInfo*/)
-    {
-        if (IsUpgrading())
-        {
-            return;
-        }
-
-        AZStd::erase_if(m_assetsToConvert, [assetId](const AZ::Data::AssetInfo& assetToConvert)
-            {
-                return assetToConvert.m_assetId == assetId;
-            }
-        );
-    }
-
-    void SystemComponent::AddAssetToUpgrade(const AZ::Data::AssetInfo& assetInfo)
-    {
-        auto query = AZStd::find_if(m_assetsToConvert.begin(), m_assetsToConvert.end(), [assetInfo](const AZ::Data::AssetInfo& assetToConvert)
-            {
-                return assetToConvert.m_assetId == assetInfo.m_assetId;
-            }
-        );
-
-        if (query == m_assetsToConvert.end())
-        {
-            if (assetInfo.m_assetType == azrtti_typeid<ScriptCanvasAsset>())
-            {
-                m_assetsToConvert.push_back(assetInfo);
-            }
-        }
     }
 
     AzToolsFramework::AssetSeedManagerRequests::AssetTypePairs SystemComponent::GetAssetTypeMapping()
