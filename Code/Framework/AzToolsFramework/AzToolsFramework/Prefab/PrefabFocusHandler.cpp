@@ -8,6 +8,7 @@
 
 #include <AzToolsFramework/Prefab/PrefabFocusHandler.h>
 
+#include <AzToolsFramework/ContainerEntity/ContainerEntityInterface.h>
 #include <AzToolsFramework/Entity/EditorEntityHelpers.h>
 #include <AzToolsFramework/Entity/PrefabEditorEntityOwnershipInterface.h>
 #include <AzToolsFramework/Prefab/Instance/Instance.h>
@@ -35,6 +36,30 @@ namespace AzToolsFramework::Prefab
         EditorEntityContextNotificationBus::Handler::BusDisconnect();
     }
 
+    void PrefabFocusHandler::Initialize()
+    {
+        m_containerEntityInterface = AZ::Interface<ContainerEntityInterface>::Get();
+        AZ_Assert(
+            m_containerEntityInterface,
+            "Prefab - PrefabFocusHandler - "
+            "Container Entity Interface could not be found. "
+            "Check that it is being correctly initialized.");
+
+        m_focusModeInterface = AZ::Interface<FocusModeInterface>::Get();
+        AZ_Assert(
+            m_focusModeInterface,
+            "Prefab - PrefabFocusHandler - "
+            "Focus Mode Interface could not be found. "
+            "Check that it is being correctly initialized.");
+
+        m_instanceEntityMapperInterface = AZ::Interface<InstanceEntityMapperInterface>::Get();
+        AZ_Assert(
+            m_instanceEntityMapperInterface,
+            "Prefab - PrefabFocusHandler - "
+            "Instance Entity Mapper Interface could not be found. "
+            "Check that it is being correctly initialized.");
+    }
+
     PrefabFocusOperationResult PrefabFocusHandler::FocusOnOwningPrefab(AZ::EntityId entityId)
     {
         InstanceOptionalReference focusedInstance;
@@ -44,7 +69,7 @@ namespace AzToolsFramework::Prefab
             PrefabEditorEntityOwnershipInterface* prefabEditorEntityOwnershipInterface =
                 AZ::Interface<PrefabEditorEntityOwnershipInterface>::Get();
 
-            if(!prefabEditorEntityOwnershipInterface)
+            if (!prefabEditorEntityOwnershipInterface)
             {
                 return AZ::Failure(AZStd::string("Could not focus on root prefab instance - internal error "
                                                  "(PrefabEditorEntityOwnershipInterface unavailable)."));
@@ -79,8 +104,16 @@ namespace AzToolsFramework::Prefab
             return AZ::Failure(AZStd::string("Prefab Focus Handler: invalid instance to focus on."));
         }
 
+        if (!m_isInitialized)
+        {
+            Initialize();
+        }
+
         if (!m_focusedInstance.has_value() || &m_focusedInstance->get() != &focusedInstance->get())
         {
+            // Close all container entities in the old path
+            CloseInstanceContainers(m_instanceFocusVector);
+
             m_focusedInstance = focusedInstance;
             m_focusedTemplateId = focusedInstance->get().GetTemplateId();
 
@@ -103,12 +136,14 @@ namespace AzToolsFramework::Prefab
             }
             
             // Focus on the descendants of the container entity
-            if (FocusModeInterface* focusModeInterface = AZ::Interface<FocusModeInterface>::Get())
-            {
-                focusModeInterface->SetFocusRoot(containerEntityId);
-            }
+            m_focusModeInterface->SetFocusRoot(containerEntityId);
 
+            // Refresh path variables
             RefreshInstanceFocusList();
+
+            // Open all container entities in the new path
+            OpenInstanceContainers(m_instanceFocusVector);
+
             PrefabFocusNotificationBus::Broadcast(&PrefabFocusNotifications::OnPrefabFocusChanged);
         }
 
@@ -156,6 +191,11 @@ namespace AzToolsFramework::Prefab
 
     void PrefabFocusHandler::OnEntityStreamLoadSuccess()
     {
+        if (!m_isInitialized)
+        {
+            Initialize();
+        }
+
         // Focus on the root prefab (AZ::EntityId() will default to it)
         FocusOnOwningPrefab(AZ::EntityId());
     }
@@ -181,6 +221,28 @@ namespace AzToolsFramework::Prefab
         {
             m_instanceFocusPath.Append(instance->get().GetContainerEntity()->get().GetName());
             m_instanceFocusVector.emplace_back(instance);
+        }
+    }
+
+    void PrefabFocusHandler::OpenInstanceContainers(const AZStd::vector<InstanceOptionalReference>& instances) const
+    {
+        for (const InstanceOptionalReference& instance : instances)
+        {
+            if (instance.has_value())
+            {
+                m_containerEntityInterface->SetContainerOpenState(instance->get().GetContainerEntityId(), true);
+            }
+        }
+    }
+
+    void PrefabFocusHandler::CloseInstanceContainers(const AZStd::vector<InstanceOptionalReference>& instances) const
+    {
+        for (const InstanceOptionalReference& instance : instances)
+        {
+            if (instance.has_value())
+            {
+                m_containerEntityInterface->SetContainerOpenState(instance->get().GetContainerEntityId(), false);
+            }
         }
     }
 
