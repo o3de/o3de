@@ -16,6 +16,7 @@
 #include <Components/TerrainWorldRendererComponent.h>
 #include <Components/TerrainHeightGradientListComponent.h>
 #include <Components/TerrainLayerSpawnerComponent.h>
+#include <Components/TerrainSurfaceGradientListComponent.h>
 #include <Components/TerrainSurfaceDataSystemComponent.h>
 #include <Components/TerrainSurfaceMaterialsListComponent.h>
 
@@ -32,6 +33,7 @@ namespace Terrain
                 TerrainWorldRendererComponent::CreateDescriptor(),
                 TerrainHeightGradientListComponent::CreateDescriptor(),
                 TerrainLayerSpawnerComponent::CreateDescriptor(),
+                TerrainSurfaceGradientListComponent::CreateDescriptor(),
                 TerrainSurfaceDataSystemComponent::CreateDescriptor(),
             });
     }

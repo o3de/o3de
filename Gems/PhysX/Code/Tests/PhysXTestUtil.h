@@ -115,7 +115,11 @@ namespace PhysX
         }
         float GetHeightFromFloats(float, float, Sampler, bool*) const override { return {}; }
         AzFramework::SurfaceData::SurfaceTagWeight GetMaxSurfaceWeight(AZ::Vector3, Sampler, bool*) const override { return {}; }
+        AzFramework::SurfaceData::SurfaceTagWeight GetMaxSurfaceWeightFromVector2(const AZ::Vector2&, Sampler, bool*) const override { return {}; }
         AzFramework::SurfaceData::SurfaceTagWeight GetMaxSurfaceWeightFromFloats(float, float, Sampler, bool*) const override { return {}; }
+        void GetSurfaceWeights(const AZ::Vector3&, AzFramework::SurfaceData::OrderedSurfaceTagWeightSet&, Sampler, bool*) const override {}
+        void GetSurfaceWeightsFromVector2(const AZ::Vector2&, AzFramework::SurfaceData::OrderedSurfaceTagWeightSet&, Sampler, bool*) const override{};
+        void GetSurfaceWeightsFromFloats(float, float, AzFramework::SurfaceData::OrderedSurfaceTagWeightSet&, Sampler, bool*) const override {}
         const char* GetMaxSurfaceName(AZ::Vector3, Sampler, bool*) const override { return {}; }
         bool GetIsHoleFromFloats(float, float, Sampler) const override { return {}; }
         AZ::Vector3 GetNormal(AZ::Vector3, Sampler, bool*) const override { return {}; }

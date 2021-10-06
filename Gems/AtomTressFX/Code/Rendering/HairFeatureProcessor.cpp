@@ -135,6 +135,11 @@ namespace AZ
 
             void HairFeatureProcessor::EnablePasses(bool enable)
             {
+                if (!m_initialized)
+                {
+                    return;
+                }
+
                 for (auto& [passName, pass] : m_computePasses)
                 {
                     pass->SetEnabled(enable);
@@ -339,13 +344,13 @@ namespace AZ
                 resultSuccess &= InitPPLLFillPass();
                 resultSuccess &= InitPPLLResolvePass();
 
+                m_initialized = resultSuccess;
+
                 // Don't enable passes if no hair object was added yet (depending on activation order)
-                if (m_hairRenderObjects.empty())
+                if (m_initialized && m_hairRenderObjects.empty())
                 {
                     EnablePasses(false);
                 }
-
-                m_initialized = resultSuccess;
 
                 // this might not be an error - if the pass system is still empty / minimal
                 //  and these passes are not part of the minimal pipeline, they will not

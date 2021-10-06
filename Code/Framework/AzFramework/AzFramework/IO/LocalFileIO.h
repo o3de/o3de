@@ -61,6 +61,8 @@ namespace AZ
             void SetAlias(const char* alias, const char* path) override;
             void ClearAlias(const char* alias) override;
             const char* GetAlias(const char* alias) const override;
+            void SetDeprecatedAlias(AZStd::string_view oldAlias, AZStd::string_view newAlias) override;
+
             AZStd::optional<AZ::u64> ConvertToAlias(char* inOutBuffer, AZ::u64 bufferLength) const override;
             bool ConvertToAlias(AZ::IO::FixedMaxPath& convertedPath, const AZ::IO::PathView& path) const override;
             using FileIOBase::ConvertToAlias;
@@ -71,7 +73,7 @@ namespace AZ
 
             bool GetFilename(HandleType fileHandle, char* filename, AZ::u64 filenameSize) const override;
             bool ConvertToAbsolutePath(const char* path, char* absolutePath, AZ::u64 maxLength) const;
-            
+
         private:
             SystemFile* GetFilePointerFromHandle(HandleType fileHandle);
 
@@ -79,7 +81,6 @@ namespace AZ
 
             AZStd::optional<AZ::u64> ConvertToAliasBuffer(char* outBuffer, AZ::u64 outBufferLength, AZStd::string_view inBuffer) const;
             bool ResolveAliases(const char* path, char* resolvedPath, AZ::u64 resolvedPathSize) const;
-            bool IsAbsolutePath(const char* path) const;
 
             bool LowerIfBeginsWith(char* inOutBuffer, AZ::u64 bufferLen, const char* alias) const;
 
@@ -91,6 +92,7 @@ namespace AZ
             AZStd::atomic<HandleType> m_nextHandle;
             AZStd::unordered_map<HandleType, SystemFile> m_openFiles;
             AZStd::unordered_map<AZStd::string, AZStd::string> m_aliases;
+            AZStd::unordered_map<AZStd::string, AZStd::string> m_deprecatedAliases;
 
             void CheckInvalidWrite(const char* path);
         };

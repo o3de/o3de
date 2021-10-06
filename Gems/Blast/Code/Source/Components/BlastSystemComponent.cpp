@@ -292,7 +292,7 @@ namespace Blast
 
     void BlastSystemComponent::SaveConfiguration()
     {
-        auto assetRoot = AZ::IO::FileIOBase::GetInstance()->GetAlias("@devassets@");
+        auto assetRoot = AZ::IO::FileIOBase::GetInstance()->GetAlias("@projectroot@");
 
         if (!assetRoot)
         {
@@ -309,7 +309,7 @@ namespace Blast
 
     void BlastSystemComponent::CheckoutConfiguration()
     {
-        const auto assetRoot = AZ::IO::FileIOBase::GetInstance()->GetAlias("@devassets@");
+        const auto assetRoot = AZ::IO::FileIOBase::GetInstance()->GetAlias("@projectroot@");
 
         AZStd::string fullPath;
         AzFramework::StringFunc::Path::Join(assetRoot, DefaultConfigurationPath, fullPath);
