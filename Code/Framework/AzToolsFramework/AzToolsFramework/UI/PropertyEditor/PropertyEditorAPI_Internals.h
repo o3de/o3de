@@ -126,6 +126,11 @@ namespace AzToolsFramework
         virtual void ConsumeAttributes_Internal(QWidget* widget, InstanceDataNode* attrValue) = 0;
         virtual void WriteGUIValuesIntoProperty_Internal(QWidget* widget, InstanceDataNode* t) = 0;
         virtual void WriteGUIValuesIntoTempProperty_Internal(QWidget* widget, void* tempValue, const AZ::Uuid& propertyType, AZ::SerializeContext* serializeContext) = 0;
+        virtual bool ValidatePropertyChange_Internal(
+            QWidget* editorGUI,
+            const AZ::SerializeContext::ClassData* classMetaData,
+            AZ::SerializeContext* serializeContext,
+            AZStd::function<bool(void* tempValue, const AZ::Uuid& typeId)> callback) = 0;
         virtual void ReadValuesIntoGUI_Internal(QWidget* widget, InstanceDataNode* t) = 0;
         // we define this automatically for you, you don't have to override it.
         virtual bool HandlesType(const AZ::Uuid& id) const = 0;
@@ -256,6 +261,33 @@ namespace AzToolsFramework
             PropertyType* actualCast = static_cast<PropertyType*>(serializeContext->DownCast(tempValue, propertyType, desiredUUID));
             AZ_Assert(actualCast, "Could not cast from the existing type ID to the actual typeid required by the editor.");
             WriteGUIValuesIntoProperty(0, wid, *actualCast, nullptr);
+        }
+
+        virtual bool ValidatePropertyChange_Internal(
+            QWidget* editorGUI,
+            const AZ::SerializeContext::ClassData* classMetaData,
+            AZ::SerializeContext* serializeContext,
+            AZStd::function<bool(void* tempValue, const AZ::Uuid& typeId)> callback) override
+        {
+            if constexpr (std::is_abstract<PropertyType>::value)
+            {
+                void* tempValue = classMetaData->m_factory->Create("Validate Attribute");
+                WriteGUIValuesIntoTempProperty_Internal(
+                    editorGUI, tempValue, classMetaData->m_typeId, serializeContext);
+
+                bool validated = callback(tempValue, classMetaData->m_typeId);
+
+                classMetaData->m_factory->Destroy(tempValue);
+
+                return validated;
+            }
+            else
+            {
+                property_t temp;
+                WriteGUIValuesIntoProperty(0, reinterpret_cast<WidgetType*>(editorGUI), temp, nullptr);
+                const AZ::Uuid& desiredUUID = GetHandledType();
+                return callback(&temp, desiredUUID);
+            }
         }
 
         virtual void ReadValuesIntoGUI_Internal(QWidget* widget, InstanceDataNode* node) override

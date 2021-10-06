@@ -160,6 +160,20 @@ namespace AzToolsFramework
             WriteGUIValuesIntoProperty(0, reinterpret_cast<WidgetType*>(widget), tempValue, propertyType);
         }
 
+        virtual bool ValidatePropertyChange_Internal(
+            QWidget* editorGUI,
+            const AZ::SerializeContext::ClassData* classMetaData,
+            AZ::SerializeContext* serializeContext,
+            AZStd::function<bool(void* tempValue, const AZ::Uuid& typeId)> callback) override
+        {
+            (void)editorGUI;
+            (void)classMetaData;
+            (void)serializeContext;
+            (void)callback;
+
+            return false;
+        }
+
         void ReadValuesIntoGUI_Internal(QWidget* widget, InstanceDataNode* node) override
         {
             AZ_PROFILE_FUNCTION(AzToolsFramework);

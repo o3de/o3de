@@ -1403,13 +1403,13 @@ namespace AzToolsFramework
             {
                 if (rowWidget->second->ShouldPreValidatePropertyChange())
                 {
-                    void* tempValue = rowWidget->first->GetClassMetadata()->m_factory->Create("Validate Attribute");
+                    auto validateFunction = [&](void* tempValue, const AZ::Uuid& typeId) -> bool
+                    {
+                        return rowWidget->second->ValidatePropertyChange(tempValue, typeId);
+                    };
 
-                    handler->WriteGUIValuesIntoTempProperty_Internal(editorGUI, tempValue, rowWidget->first->GetClassMetadata()->m_typeId, rowWidget->first->GetSerializeContext());
-
-                    bool validated = rowWidget->second->ValidatePropertyChange(tempValue, rowWidget->first->GetClassMetadata()->m_typeId);
-
-                    rowWidget->first->GetClassMetadata()->m_factory->Destroy(tempValue);
+                    bool validated = handler->ValidatePropertyChange_Internal(
+                        editorGUI, rowWidget->first->GetClassMetadata(), rowWidget->first->GetSerializeContext(), validateFunction);
 
                     // Validate the change to make sure everything is okay before actually modifying the value on anything
                     if (!validated)
