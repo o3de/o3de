@@ -82,8 +82,11 @@ namespace Terrain
         void OnAssetReady(AZ::Data::Asset<AZ::Data::AssetData> asset) override;
         void OnAssetReloaded(AZ::Data::Asset<AZ::Data::AssetData> asset) override;
 
+        void HandleMaterialStateChange();
+
         TerrainMacroMaterialConfig m_configuration;
         AZ::Aabb m_cachedShapeBounds;
         AZ::Data::Instance<AZ::RPI::Material> m_macroMaterialInstance;
+        bool m_macroMaterialActive{ false };
     };
 }

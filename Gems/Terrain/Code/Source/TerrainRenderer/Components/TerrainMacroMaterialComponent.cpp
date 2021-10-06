@@ -137,23 +137,24 @@ namespace Terrain
         m_cachedShapeBounds = AZ::Aabb::CreateNull();
         m_configuration.m_materialAsset.QueueLoad();
 
+        // Don't mark our material as active until it's finished loading and is valid.
+        m_macroMaterialActive = false;
+
         // Listen for the material asset to complete loading.
         AZ::Data::AssetBus::Handler::BusConnect(m_configuration.m_materialAsset.GetId());
     }
 
     void TerrainMacroMaterialComponent::Deactivate()
     {
+        TerrainMacroMaterialRequestBus::Handler::BusDisconnect();
+
         AZ::Data::AssetBus::Handler::BusDisconnect();
         m_configuration.m_materialAsset.Release();
 
-        LmbrCentral::ShapeComponentNotificationsBus::Handler::BusDisconnect();
-        m_cachedShapeBounds = AZ::Aabb::CreateNull();
-
         m_macroMaterialInstance.reset();
-        TerrainMacroMaterialNotificationBus::Broadcast(
-            &TerrainMacroMaterialNotificationBus::Events::OnTerrainMacroMaterialChanged, GetEntityId(), m_macroMaterialInstance);
 
-        TerrainMacroMaterialRequestBus::Handler::BusDisconnect();
+        // Send out any notifications as appropriate based on the macro material destruction.
+        HandleMaterialStateChange();
     }
 
     bool TerrainMacroMaterialComponent::ReadInConfig(const AZ::ComponentConfig* baseConfig)
@@ -178,6 +179,10 @@ namespace Terrain
 
     void TerrainMacroMaterialComponent::OnShapeChanged([[maybe_unused]] ShapeComponentNotifications::ShapeChangeReasons reasons)
     {
+        // This should only get called while the macro material is active.  If it gets called while the macro material isn't active,
+        // we've got a bug where we haven't managed the bus connections properly.
+        AZ_Assert(m_macroMaterialActive, "The ShapeComponentNotificationBus connection is out of sync with the material load.");
+
         AZ::Aabb oldShapeBounds = m_cachedShapeBounds;
 
         LmbrCentral::ShapeComponentRequestsBus::EventResult(
@@ -188,32 +193,73 @@ namespace Terrain
             GetEntityId(), oldShapeBounds, m_cachedShapeBounds);
     }
 
+    void TerrainMacroMaterialComponent::HandleMaterialStateChange()
+    {
+        // We only want our component to appear active during the time that the macro material is loaded and valid.  The logic below
+        // will handle all transition possibilities to notify if we've become active, inactive, or just changed.  We'll also only
+        // keep a valid up-to-date copy of the shape bounds while the material is valid, since we don't need it any other time.
+
+        bool wasPreviouslyActive = m_macroMaterialActive;
+        bool isNowActive = (m_macroMaterialInstance != nullptr);
+
+        // Set our state to active or inactive, based on whether or not the macro material instance is now valid.
+        m_macroMaterialActive = isNowActive;
+
+        // Handle the different inactive/active transition possibilities.
+
+        if (!wasPreviouslyActive && !isNowActive)
+        {
+            // Do nothing, we haven't yet successfully loaded a valid material.
+        }
+        else if (!wasPreviouslyActive && isNowActive)
+        {
+            // We've transitioned from inactive to active, so send out a message saying that we've been created and start tracking the
+            // overall shape bounds.
+
+            // Get the current shape bounds.
+            LmbrCentral::ShapeComponentRequestsBus::EventResult(
+                m_cachedShapeBounds, GetEntityId(), &LmbrCentral::ShapeComponentRequestsBus::Events::GetEncompassingAabb);
+
+            // Start listening for terrain macro material requests.
+            TerrainMacroMaterialRequestBus::Handler::BusConnect(GetEntityId());
+
+            // Start listening for shape changes.
+            LmbrCentral::ShapeComponentNotificationsBus::Handler::BusConnect(GetEntityId());
+
+            TerrainMacroMaterialNotificationBus::Broadcast(
+                &TerrainMacroMaterialNotificationBus::Events::OnTerrainMacroMaterialCreated, GetEntityId(), m_macroMaterialInstance,
+                m_cachedShapeBounds);
+        }
+        else if (wasPreviouslyActive && !isNowActive)
+        {
+            // Stop listening to macro material requests or shape changes, and send out a notification that we no longer have a valid
+            // macro material.
+
+            TerrainMacroMaterialRequestBus::Handler::BusDisconnect();
+            LmbrCentral::ShapeComponentNotificationsBus::Handler::BusDisconnect();
+
+            m_cachedShapeBounds = AZ::Aabb::CreateNull();
+
+            TerrainMacroMaterialNotificationBus::Broadcast(
+                &TerrainMacroMaterialNotificationBus::Events::OnTerrainMacroMaterialDestroyed, GetEntityId());
+        }
+        else
+        {
+            // We were active both before and after, so just send out a material changed event.
+
+            TerrainMacroMaterialNotificationBus::Broadcast(
+                &TerrainMacroMaterialNotificationBus::Events::OnTerrainMacroMaterialChanged, GetEntityId(), m_macroMaterialInstance);
+        }
+    }
+
     void TerrainMacroMaterialComponent::OnAssetReady(AZ::Data::Asset<AZ::Data::AssetData> asset)
     {
-        // Stop listening to macro material requests or shape changes if we were previously listening.
-        // We'll connect again *only* if the macro material is valid.
-        TerrainMacroMaterialRequestBus::Handler::BusDisconnect();
-        LmbrCentral::ShapeComponentNotificationsBus::Handler::BusDisconnect();
-
         m_configuration.m_materialAsset = asset;
 
         if (m_configuration.m_materialAsset.Get()->GetMaterialTypeAsset().GetId() ==
             TerrainMacroMaterialConfig::GetTerrainMacroMaterialTypeAssetId())
         {
             m_macroMaterialInstance = AZ::RPI::Material::FindOrCreate(m_configuration.m_materialAsset);
-
-            // If the material is valid, start listening for terrain macro material requests and monitoring shape changes.
-            if (m_macroMaterialInstance)
-            {
-                // Start listening for terrain macro material requests.
-                TerrainMacroMaterialRequestBus::Handler::BusConnect(GetEntityId());
-
-                // Start listening for shape changes.
-                LmbrCentral::ShapeComponentNotificationsBus::Handler::BusConnect(GetEntityId());
-
-                // Refresh our cached bounds and notify any listeners that the shape has changed.
-                OnShapeChanged(ShapeComponentNotifications::ShapeChangeReasons::ShapeChanged);
-            }
         }
         else
         {
@@ -221,10 +267,10 @@ namespace Terrain
             m_macroMaterialInstance.reset();
         }
 
+        // Clear the material asset reference to make sure we don't prevent hot-reloading.
         m_configuration.m_materialAsset.Release();
 
-        TerrainMacroMaterialNotificationBus::Broadcast(
-            &TerrainMacroMaterialNotificationBus::Events::OnTerrainMacroMaterialChanged, GetEntityId(), m_macroMaterialInstance);
+        HandleMaterialStateChange();
     }
 
     void TerrainMacroMaterialComponent::OnAssetReloaded(AZ::Data::Asset<AZ::Data::AssetData> asset)
