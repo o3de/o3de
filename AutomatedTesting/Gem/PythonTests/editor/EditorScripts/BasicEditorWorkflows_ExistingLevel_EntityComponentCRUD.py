@@ -53,10 +53,9 @@ def BasicEditorWorkflows_ExistingLevel_EntityComponentCRUD():
             03. create child entity and set a name
             04. delete child entity
             05. add mesh component to parent entity
-            07. delete parent entity
-            Close editor without saving
+            06. delete parent entity
     """
-    import os
+
     from editor_python_test_tools.utils import Report
     from editor_python_test_tools.editor_entity_utils import EditorEntity
 
@@ -66,49 +65,34 @@ def BasicEditorWorkflows_ExistingLevel_EntityComponentCRUD():
     import azlmbr.legacy.general as general
     import azlmbr.object
 
-
     # 01. load an existing level
-
     test_level = 'Simple'
     general.open_level_no_prompt(test_level)
     Report.result(Tests.load_level, general.get_current_level_name() == test_level)
 
-
     # 02. create parent entity and set name
     # Delete any exiting entity and Create a new Entity at the root level
-
     search_filter = azlmbr.entity.SearchFilter()
     all_entities = entity.SearchBus(azlmbr.bus.Broadcast, "SearchEntities", search_filter)
     editor.ToolsApplicationRequestBus(bus.Broadcast, "DeleteEntities", all_entities)
     parent_entity = EditorEntity.create_editor_entity("Parent_1")
     Report.result(Tests.create_entity, parent_entity.exists())
 
-
     # 03. Create child Entity to above created parent entity and set a name
-
     child_1_entity = EditorEntity.create_editor_entity("Child_1", parent_entity.id )
     Report.result(Tests.create_child_entity, child_1_entity.exists())
 
-
     # 04. delete_Child_entity
-
     child_1_entity.delete()
     Report.result(Tests.delete_child_entity, not child_1_entity.exists())
 
-
     # 05. add mesh component to parent entity
-
     parent_entity.add_component("Mesh")
     Report.result(Tests.add_mesh_component, parent_entity.has_component("Mesh"))
 
-
-    # 7. delete parent entity
-
+    # 06. delete parent entity
     parent_entity.delete()
     Report.result(Tests.delete_entity, not parent_entity.exists())
-
-    # Close editor without saving
-    editor.EditorToolsApplicationRequestBus(bus.Broadcast, 'ExitNoPrompt')
 
 
 if __name__ == "__main__":
