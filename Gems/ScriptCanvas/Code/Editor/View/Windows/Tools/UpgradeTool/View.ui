@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>VersionExplorer</class>
- <widget class="QWidget" name="VersionExplorer">
+ <class>View</class>
+ <widget class="QWidget" name="View">
   <property name="windowModality">
    <enum>Qt::WindowModal</enum>
   </property>
