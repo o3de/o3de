@@ -174,7 +174,7 @@ namespace SandboxEditor
             return SandboxEditor::CameraScrollSpeed();
         };
 
-        auto pivotFn = []
+        const auto pivotFn = []
         {
             // use the manipulator transform as the pivot point
             AZStd::optional<AZ::Transform> entityPivot;
@@ -182,8 +182,13 @@ namespace SandboxEditor
                 entityPivot, AzToolsFramework::GetEntityContextId(),
                 &AzToolsFramework::EditorTransformComponentSelectionRequestBus::Events::GetManipulatorTransform);
 
+            if (entityPivot.has_value())
+            {
+                return entityPivot->GetTranslation();
+            }
+
             // otherwise just use the identity
-            return entityPivot.value_or(AZ::Transform::CreateIdentity()).GetTranslation();
+            return AZ::Vector3::CreateZero();
         };
 
         m_firstPersonFocusCamera =
