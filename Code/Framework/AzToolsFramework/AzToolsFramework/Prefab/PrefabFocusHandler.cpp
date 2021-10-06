@@ -230,7 +230,7 @@ namespace AzToolsFramework::Prefab
         {
             if (instance.has_value())
             {
-                m_containerEntityInterface->SetContainerOpenState(instance->get().GetContainerEntityId(), true);
+                m_containerEntityInterface->SetContainerOpen(instance->get().GetContainerEntityId(), true);
             }
         }
     }
@@ -241,7 +241,7 @@ namespace AzToolsFramework::Prefab
         {
             if (instance.has_value())
             {
-                m_containerEntityInterface->SetContainerOpenState(instance->get().GetContainerEntityId(), false);
+                m_containerEntityInterface->SetContainerOpen(instance->get().GetContainerEntityId(), false);
             }
         }
     }

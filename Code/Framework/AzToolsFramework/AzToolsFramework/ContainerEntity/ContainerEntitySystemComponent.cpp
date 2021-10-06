@@ -63,7 +63,7 @@ namespace AzToolsFramework
         return m_containers.contains(entityId);
     }
 
-    ContainerEntityOperationResult ContainerEntitySystemComponent::SetContainerOpenState(AZ::EntityId entityId, bool open)
+    ContainerEntityOperationResult ContainerEntitySystemComponent::SetContainerOpen(AZ::EntityId entityId, bool open)
     {
         if (!IsContainer(entityId))
         {
@@ -87,7 +87,7 @@ namespace AzToolsFramework
 
     bool ContainerEntitySystemComponent::IsContainerOpen(AZ::EntityId entityId) const
     {
-        // If the entity is not a container, it should behave as open.
+        // Non-container entities behave the same as open containers. This saves the caller an additional check.
         if(!m_containers.contains(entityId))
         {
             return true;
