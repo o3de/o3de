@@ -49,11 +49,14 @@ namespace Terrain
         static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::Single;
         //////////////////////////////////////////////////////////////////////////
 
-        virtual void OnTerrainMacroMaterialChanged([[maybe_unused]] AZ::Data::Instance<AZ::RPI::Material> macroMaterial)
+        virtual void OnTerrainMacroMaterialChanged(
+            [[maybe_unused]] AZ::EntityId macroMaterialEntity,
+            [[maybe_unused]] AZ::Data::Instance<AZ::RPI::Material> macroMaterial)
         {
         }
 
         virtual void OnTerrainMacroMaterialRegionChanged(
+            [[maybe_unused]] AZ::EntityId macroMaterialEntity,
             [[maybe_unused]] const AZ::Aabb& oldRegion,
             [[maybe_unused]] const AZ::Aabb& newRegion)
         {

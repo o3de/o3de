@@ -133,33 +133,25 @@ namespace Terrain
 
     void TerrainMacroMaterialComponent::Activate()
     {
-        // Start listening for terrain macro material requests.  We connect to this first, since some of the notifications below
-        // might result in calls to this bus.
-        TerrainMacroMaterialRequestBus::Handler::BusConnect(GetEntityId());
-
-        // Start listening for shape changes.
-        LmbrCentral::ShapeComponentNotificationsBus::Handler::BusConnect(GetEntityId());
-
-        // Refresh our cached bounds and notify any listeners that the shape has changed.
+        // Clear out our shape bounds and make sure the material is queued to load.
         m_cachedShapeBounds = AZ::Aabb::CreateNull();
-        OnShapeChanged(ShapeComponentNotifications::ShapeChangeReasons::ShapeChanged);
-
-        // Start loading the material and listen for its completion.
         m_configuration.m_materialAsset.QueueLoad();
+
+        // Listen for the material asset to complete loading.
         AZ::Data::AssetBus::Handler::BusConnect(m_configuration.m_materialAsset.GetId());
     }
 
     void TerrainMacroMaterialComponent::Deactivate()
     {
-        LmbrCentral::ShapeComponentNotificationsBus::Handler::BusDisconnect();
-
         AZ::Data::AssetBus::Handler::BusDisconnect();
         m_configuration.m_materialAsset.Release();
 
-        TerrainMacroMaterialNotificationBus::Broadcast(
-            &TerrainMacroMaterialNotificationBus::Events::OnTerrainMacroMaterialChanged, m_macroMaterialInstance);
-
+        LmbrCentral::ShapeComponentNotificationsBus::Handler::BusDisconnect();
         m_cachedShapeBounds = AZ::Aabb::CreateNull();
+
+        m_macroMaterialInstance.reset();
+        TerrainMacroMaterialNotificationBus::Broadcast(
+            &TerrainMacroMaterialNotificationBus::Events::OnTerrainMacroMaterialChanged, GetEntityId(), m_macroMaterialInstance);
 
         TerrainMacroMaterialRequestBus::Handler::BusDisconnect();
     }
@@ -193,17 +185,35 @@ namespace Terrain
 
         TerrainMacroMaterialNotificationBus::Broadcast(
             &TerrainMacroMaterialNotificationBus::Events::OnTerrainMacroMaterialRegionChanged,
-            oldShapeBounds, m_cachedShapeBounds);
+            GetEntityId(), oldShapeBounds, m_cachedShapeBounds);
     }
 
     void TerrainMacroMaterialComponent::OnAssetReady(AZ::Data::Asset<AZ::Data::AssetData> asset)
     {
+        // Stop listening to macro material requests or shape changes if we were previously listening.
+        // We'll connect again *only* if the macro material is valid.
+        TerrainMacroMaterialRequestBus::Handler::BusDisconnect();
+        LmbrCentral::ShapeComponentNotificationsBus::Handler::BusDisconnect();
+
         m_configuration.m_materialAsset = asset;
 
         if (m_configuration.m_materialAsset.Get()->GetMaterialTypeAsset().GetId() ==
             TerrainMacroMaterialConfig::GetTerrainMacroMaterialTypeAssetId())
         {
             m_macroMaterialInstance = AZ::RPI::Material::FindOrCreate(m_configuration.m_materialAsset);
+
+            // If the material is valid, start listening for terrain macro material requests and monitoring shape changes.
+            if (m_macroMaterialInstance)
+            {
+                // Start listening for terrain macro material requests.
+                TerrainMacroMaterialRequestBus::Handler::BusConnect(GetEntityId());
+
+                // Start listening for shape changes.
+                LmbrCentral::ShapeComponentNotificationsBus::Handler::BusConnect(GetEntityId());
+
+                // Refresh our cached bounds and notify any listeners that the shape has changed.
+                OnShapeChanged(ShapeComponentNotifications::ShapeChangeReasons::ShapeChanged);
+            }
         }
         else
         {
@@ -214,28 +224,12 @@ namespace Terrain
         m_configuration.m_materialAsset.Release();
 
         TerrainMacroMaterialNotificationBus::Broadcast(
-            &TerrainMacroMaterialNotificationBus::Events::OnTerrainMacroMaterialChanged, m_macroMaterialInstance);
+            &TerrainMacroMaterialNotificationBus::Events::OnTerrainMacroMaterialChanged, GetEntityId(), m_macroMaterialInstance);
     }
 
     void TerrainMacroMaterialComponent::OnAssetReloaded(AZ::Data::Asset<AZ::Data::AssetData> asset)
     {
-        m_configuration.m_materialAsset = asset;
-
-        if (m_configuration.m_materialAsset.Get()->GetMaterialTypeAsset().GetId() ==
-            TerrainMacroMaterialConfig::GetTerrainMacroMaterialTypeAssetId())
-        {
-            m_macroMaterialInstance = AZ::RPI::Material::FindOrCreate(m_configuration.m_materialAsset);
-        }
-        else
-        {
-            AZ_Error("Terrain", false, "Material '%s' has the wrong material type.", m_configuration.m_materialAsset.GetHint().c_str());
-            m_macroMaterialInstance.reset();
-        }
-
-        m_configuration.m_materialAsset.Release();
-
-        TerrainMacroMaterialNotificationBus::Broadcast(
-            &TerrainMacroMaterialNotificationBus::Events::OnTerrainMacroMaterialChanged, m_macroMaterialInstance);
+        OnAssetReady(asset);
     }
 
     void TerrainMacroMaterialComponent::GetTerrainMacroMaterialData(
