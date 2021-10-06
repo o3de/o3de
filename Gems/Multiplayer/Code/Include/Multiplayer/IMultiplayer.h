@@ -44,6 +44,7 @@ namespace Multiplayer
 
     using ClientDisconnectedEvent = AZ::Event<>;
     using ConnectionAcquiredEvent = AZ::Event<MultiplayerAgentDatum>;
+    using ServerAcceptanceReceivedEvent = AZ::Event<>;
     using SessionInitEvent = AZ::Event<AzNetworking::INetworkInterface*>;
     using SessionShutdownEvent = AZ::Event<AzNetworking::INetworkInterface*>;
 
@@ -101,6 +102,10 @@ namespace Multiplayer
         //! Adds a ConnectionAcquiredEvent Handler which is invoked when a new endpoint connects to the session.
         //! @param handler The ConnectionAcquiredEvent Handler to add
         virtual void AddConnectionAcquiredHandler(ConnectionAcquiredEvent::Handler& handler) = 0;
+
+        //! Adds a ServerAcceptanceReceived Handler which is invoked when the client receives the accept packet from the server.
+        //! @param handler The ServerAcceptanceReceived Handler to add
+        virtual void AddServerAcceptanceReceivedHandler(ServerAcceptanceReceivedEvent::Handler& handler) = 0;
 
         //! Adds a SessionInitEvent Handler which is invoked when a new network session starts.
         //! @param handler The SessionInitEvent Handler to add

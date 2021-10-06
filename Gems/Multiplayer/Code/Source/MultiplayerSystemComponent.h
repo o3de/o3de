@@ -111,6 +111,7 @@ namespace Multiplayer
         void AddConnectionAcquiredHandler(ConnectionAcquiredEvent::Handler& handler) override;
         void AddSessionInitHandler(SessionInitEvent::Handler& handler) override;
         void AddSessionShutdownHandler(SessionShutdownEvent::Handler& handler) override;
+        void AddServerAcceptanceReceivedHandler(ServerAcceptanceReceivedEvent::Handler& handler) override;
         bool StartHosting(uint16_t port, bool isDedicated = true) override;
         bool Connect(AZStd::string remoteAddress, uint16_t port) override;
         void Terminate(AzNetworking::DisconnectReason reason) override;
@@ -151,6 +152,7 @@ namespace Multiplayer
         SessionInitEvent m_initEvent;
         SessionShutdownEvent m_shutdownEvent;
         ConnectionAcquiredEvent m_connAcquiredEvent;
+        ServerAcceptanceReceivedEvent m_serverAcceptanceReceivedEvent;
         ClientDisconnectedEvent m_clientDisconnectedEvent;
 
         AZStd::queue<AZStd::string> m_pendingConnectionTickets;
