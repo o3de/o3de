@@ -9,6 +9,11 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 # This is because azlmbr.materialeditor only binds to MaterialEditor.exe and not Editor.exe
 # You need to launch this script with MaterialEditor.exe in order for azlmbr.materialeditor to appear.
 
+import os
+import sys
+
+sys.path.append(os.path.join(azlmbr.paths.projectroot, "Gem", "PythonTests"))
+
 
 def run():
     """
@@ -26,11 +31,9 @@ def run():
 
     :return: None
     """
-    import os
-
     import azlmbr.paths
 
-    from ..atom_utils import material_editor_utils as material_editor
+    from Atom.atom_utils import material_editor_utils as material_editor
 
     material_type_path = os.path.join(
         azlmbr.paths.engroot, "Gems", "Atom", "Feature", "Common", "Assets",
