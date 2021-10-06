@@ -24,7 +24,7 @@ namespace AzToolsFramework
             : public UndoSystem::URSequencePoint
         {
         public:
-            explicit PrefabUndoBase(const AZStd::string& undoOperationName);
+            explicit PrefabUndoBase(const AZStd::string& undoOperationName, InstanceOptionalConstReference instance);
 
             bool Changed() const override { return m_changed; }
 
@@ -37,6 +37,9 @@ namespace AzToolsFramework
             InstanceToTemplateInterface* m_instanceToTemplateInterface = nullptr;
 
             bool m_changed;
+
+        protected:
+            InstanceOptionalConstReference m_instance;
         };
 
         //! handles the addition and removal of entities from instances
@@ -44,7 +47,7 @@ namespace AzToolsFramework
             : public PrefabUndoBase
         {
         public:
-            explicit PrefabUndoInstance(const AZStd::string& undoOperationName);
+            PrefabUndoInstance(const AZStd::string& undoOperationName, InstanceOptionalConstReference instance);
 
             void Capture(
                 const PrefabDom& initialState,
@@ -64,7 +67,7 @@ namespace AzToolsFramework
             AZ_RTTI(PrefabUndoEntityUpdate, "{6D60C5A6-9535-45B3-8897-E5F6382FDC93}", PrefabUndoBase);
             AZ_CLASS_ALLOCATOR(PrefabUndoEntityUpdate, AZ::SystemAllocator, 0);
 
-            explicit PrefabUndoEntityUpdate(const AZStd::string& undoOperationName);
+            explicit PrefabUndoEntityUpdate(const AZStd::string& undoOperationName, InstanceOptionalConstReference instance);
 
             void Capture(
                 PrefabDom& initialState,
@@ -72,8 +75,6 @@ namespace AzToolsFramework
 
             void Undo() override;
             void Redo() override;
-            //! Overload to allow to apply the change, but prevent instanceToExclude from being refreshed.
-            void Redo(InstanceOptionalReference instanceToExclude);
 
         private:
             InstanceEntityMapperInterface* m_instanceEntityMapperInterface = nullptr;
@@ -92,7 +93,7 @@ namespace AzToolsFramework
                 LINKSTATUS
             };
 
-            explicit PrefabUndoInstanceLink(const AZStd::string& undoOperationName);
+            explicit PrefabUndoInstanceLink(const AZStd::string& undoOperationName, InstanceOptionalConstReference instance);
 
             //capture for add/remove
             void Capture(
@@ -128,7 +129,7 @@ namespace AzToolsFramework
             : public PrefabUndoBase
         {
         public:
-            explicit PrefabUndoLinkUpdate(const AZStd::string& undoOperationName);
+            explicit PrefabUndoLinkUpdate(const AZStd::string& undoOperationName, InstanceOptionalConstReference instance);
 
             //capture for add/remove
             void Capture(
@@ -137,11 +138,9 @@ namespace AzToolsFramework
 
             void Undo() override;
             void Redo() override;
-            //! Overload to allow to apply the change, but prevent instanceToExclude from being refreshed.
-            void Redo(InstanceOptionalReference instanceToExclude);
 
         private:
-            void UpdateLink(PrefabDom& linkDom, InstanceOptionalReference instanceToExclude = AZStd::nullopt);
+            void UpdateLink(PrefabDom& linkDom);
 
             LinkId m_linkId;
             PrefabDom m_linkDomNext;  //data for delete/update

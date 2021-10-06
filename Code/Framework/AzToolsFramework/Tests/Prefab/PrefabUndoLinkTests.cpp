@@ -31,7 +31,7 @@ namespace UnitTest
 
         //parent prefab2 to prefab 1 by creating a link
         //capture the link addition in undo node
-        PrefabUndoInstanceLink undoLink("Undo Link Add Node");
+        PrefabUndoInstanceLink undoLink("Undo Link Add Node", AZStd::nullopt);
         undoLink.Capture(firstTemplateId, secondTemplateId, aliases[0]);
         undoLink.Redo();
         m_instanceUpdateExecutorInterface->UpdateTemplateInstancesInQueue();
@@ -115,7 +115,7 @@ namespace UnitTest
         m_instanceToTemplateInterface->AppendEntityAliasToPatchPaths(patch, nestedContainerEntityId);
 
         //create an undo node to apply the patch and prep for undo
-        PrefabUndoInstanceLink undoInstanceLinkNode("Undo Link Patch");
+        PrefabUndoInstanceLink undoInstanceLinkNode("Undo Link Patch", AZStd::nullopt);
         undoInstanceLinkNode.Capture(rootTemplateId, nestedTemplateId, aliases[0], AZStd::move(patch), InvalidLinkId);
         undoInstanceLinkNode.Redo();
         m_instanceUpdateExecutorInterface->UpdateTemplateInstancesInQueue();
@@ -191,7 +191,7 @@ namespace UnitTest
         AZStd::vector<InstanceAlias> aliases = rootInstance->GetNestedInstanceAliases(nestedTemplateId);
 
         //create an undo node to apply the patch and prep for undo
-        PrefabUndoInstanceLink undoInstanceLinkNode("Undo Link Patch");
+        PrefabUndoInstanceLink undoInstanceLinkNode("Undo Link Patch", AZStd::nullopt);
         undoInstanceLinkNode.Capture(rootTemplateId, nestedTemplateId, aliases[0], AZStd::move(linkPatch), InvalidLinkId);
         undoInstanceLinkNode.Redo();
         m_instanceUpdateExecutorInterface->UpdateTemplateInstancesInQueue();
@@ -222,7 +222,7 @@ namespace UnitTest
         m_instanceToTemplateInterface->AppendEntityAliasToPatchPaths(updatePatch, nestedContainerEntityId);
 
         //create the update link undo/redo node
-        PrefabUndoLinkUpdate undoLinkUpdateNode("Undo Link Update");
+        PrefabUndoLinkUpdate undoLinkUpdateNode("Undo Link Update", AZStd::nullopt);
         undoLinkUpdateNode.Capture(updatePatch, linkId);
         undoLinkUpdateNode.Redo();
         m_instanceUpdateExecutorInterface->UpdateTemplateInstancesInQueue();
@@ -281,7 +281,7 @@ namespace UnitTest
         m_instanceToTemplateInterface->AppendEntityAliasToPatchPaths(updatePatchIntField, nestedContainerEntityId);
 
         //create the update link undo/redo node
-        PrefabUndoLinkUpdate undoIntFieldNode("Undo Link Update");
+        PrefabUndoLinkUpdate undoIntFieldNode("Undo Link Update", AZStd::nullopt);
         undoIntFieldNode.Capture(updatePatchIntField, linkId);
         undoIntFieldNode.Redo();
         m_instanceUpdateExecutorInterface->UpdateTemplateInstancesInQueue();

@@ -215,7 +215,7 @@ namespace AzToolsFramework
 
                         // We won't parent this undo node to the undo batch so that the newly created template and link will remain
                         // unaffected by undo actions. This is needed so that any future instantiations of the template will work.
-                        PrefabUndoLinkUpdate linkUpdate = PrefabUndoLinkUpdate(AZStd::to_string(static_cast<AZ::u64>(nestedInstanceContainerEntityId)));
+                        PrefabUndoLinkUpdate linkUpdate = PrefabUndoLinkUpdate(AZStd::to_string(static_cast<AZ::u64>(nestedInstanceContainerEntityId)), AZStd::nullopt);
                         linkUpdate.Capture(reparentPatch, nestedInstance->GetLinkId());
                         linkUpdate.Redo();
                     }
@@ -749,11 +749,10 @@ namespace AzToolsFramework
             const LinkId linkId, InstanceOptionalReference parentInstance)
         {
             // Save these changes as patches to the link
-            PrefabUndoLinkUpdate* linkUpdate = aznew PrefabUndoLinkUpdate(AZStd::to_string(static_cast<AZ::u64>(entityId)));
+            PrefabUndoLinkUpdate* linkUpdate = aznew PrefabUndoLinkUpdate(AZStd::to_string(static_cast<AZ::u64>(entityId)), parentInstance);
             linkUpdate->SetParent(undoBatch);
             linkUpdate->Capture(patch, linkId);
-
-            linkUpdate->Redo(parentInstance);
+            linkUpdate->Redo();
         }
 
         void PrefabPublicHandler::Internal_HandleEntityChange(
@@ -761,11 +760,10 @@ namespace AzToolsFramework
             PrefabDom& afterState, InstanceOptionalReference instance)
         {
             // Update the state of the entity
-            PrefabUndoEntityUpdate* state = aznew PrefabUndoEntityUpdate(AZStd::to_string(static_cast<AZ::u64>(entityId)));
+            PrefabUndoEntityUpdate* state = aznew PrefabUndoEntityUpdate(AZStd::to_string(static_cast<AZ::u64>(entityId)), instance);
             state->SetParent(undoBatch);
             state->Capture(beforeState, afterState, entityId);
-
-            state->Redo(instance);
+            state->Redo();
         }
 
         void PrefabPublicHandler::Internal_HandleInstanceChange(
@@ -1038,7 +1036,7 @@ namespace AzToolsFramework
                 DuplicateNestedEntitiesInInstance(commonOwningInstance->get(),
                     entities, instanceDomAfter, duplicatedEntityAndInstanceIds, duplicateEntityAliasMap);
 
-                PrefabUndoInstance* command = aznew PrefabUndoInstance("Entity/Instance duplication");
+                PrefabUndoInstance* command = aznew PrefabUndoInstance("Entity/Instance duplication", commonOwningInstance);
                 command->SetParent(undoBatch.GetUndoBatch());
                 command->Capture(instanceDomBefore, instanceDomAfter, commonOwningInstance->get().GetTemplateId());
                 command->RedoBatched();
@@ -1205,7 +1203,7 @@ namespace AzToolsFramework
                 Prefab::PrefabDom instanceDomAfter;
                 m_instanceToTemplateInterface->GenerateDomForInstance(instanceDomAfter, commonOwningInstance->get());
 
-                PrefabUndoInstance* command = aznew PrefabUndoInstance("Instance deletion");
+                PrefabUndoInstance* command = aznew PrefabUndoInstance("Instance deletion", commonOwningInstance);
                 command->Capture(instanceDomBefore, instanceDomAfter, commonOwningInstance->get().GetTemplateId());
                 command->SetParent(selCommand);
             }
@@ -1297,7 +1295,7 @@ namespace AzToolsFramework
                     Prefab::PrefabDom instanceDomAfter;
                     m_instanceToTemplateInterface->GenerateDomForInstance(instanceDomAfter, parentInstance);
 
-                    PrefabUndoInstance* command = aznew PrefabUndoInstance("Instance detachment");
+                    PrefabUndoInstance* command = aznew PrefabUndoInstance("Instance detachment", parentInstance);
                     command->Capture(instanceDomBefore, instanceDomAfter, parentTemplateId);
                     command->SetParent(undoBatch.GetUndoBatch());
                     {
