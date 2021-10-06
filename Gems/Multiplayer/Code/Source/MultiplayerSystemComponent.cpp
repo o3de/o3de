@@ -489,23 +489,13 @@ namespace Multiplayer
     {
         m_didHandshake = true;
 
-        // If this is an Editor then we're now accepting the connection to the EditorServer.
-        // In normal game clients SendReadyForEntityUpdates will be enabled once the appropriate level's root spawnable is loaded,
-        // but since we're in Editor, we're already in the level.
-        AZ::ApplicationTypeQuery applicationType;
-        AZ::ComponentApplicationBus::Broadcast(&AZ::ComponentApplicationRequests::QueryApplicationType, applicationType);
-        if (applicationType.IsEditor())
-        {
-            SendReadyForEntityUpdates(true);
-        }
-        else
-        {
-            AZ::CVarFixedString commandString = "sv_map " + packet.GetMap();
-            AZ::Interface<AZ::IConsole>::Get()->PerformCommand(commandString.c_str());
+        AZ::CVarFixedString commandString = "sv_map " + packet.GetMap();
+        AZ::Interface<AZ::IConsole>::Get()->PerformCommand(commandString.c_str());
 
-            AZ::CVarFixedString loadLevelString = "LoadLevel " + packet.GetMap();
-            AZ::Interface<AZ::IConsole>::Get()->PerformCommand(loadLevelString.c_str());
-        }
+        AZ::CVarFixedString loadLevelString = "LoadLevel " + packet.GetMap();
+        AZ::Interface<AZ::IConsole>::Get()->PerformCommand(loadLevelString.c_str());
+
+        m_serverAcceptanceReceivedEvent.Signal();
         return true;
     }
 
@@ -798,6 +788,11 @@ namespace Multiplayer
     void MultiplayerSystemComponent::AddConnectionAcquiredHandler(ConnectionAcquiredEvent::Handler& handler)
     {
         handler.Connect(m_connAcquiredEvent);
+    }
+
+    void MultiplayerSystemComponent::AddServerAcceptanceReceivedHandler(ServerAcceptanceReceivedEvent::Handler& handler)
+    {
+        handler.Connect(m_serverAcceptanceReceivedEvent);
     }
 
     void MultiplayerSystemComponent::AddSessionInitHandler(SessionInitEvent::Handler& handler)

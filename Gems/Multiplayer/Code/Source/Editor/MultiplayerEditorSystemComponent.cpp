@@ -62,6 +62,7 @@ namespace Multiplayer
     }
 
     MultiplayerEditorSystemComponent::MultiplayerEditorSystemComponent()
+        : m_serverAcceptanceReceivedHandler([this](){OnServerAcceptanceReceived();})
     {
         ;
     }
@@ -70,6 +71,7 @@ namespace Multiplayer
     {
         AzFramework::GameEntityContextEventBus::Handler::BusConnect();
         AzToolsFramework::EditorEvents::Bus::Handler::BusConnect();
+        AZ::Interface<IMultiplayer>::Get()->AddServerAcceptanceReceivedHandler(m_serverAcceptanceReceivedHandler);
     }
 
     void MultiplayerEditorSystemComponent::Deactivate()
@@ -244,5 +246,13 @@ namespace Multiplayer
 
     void MultiplayerEditorSystemComponent::OnGameEntitiesReset()
     {
+    }
+
+    void MultiplayerEditorSystemComponent::OnServerAcceptanceReceived()
+    {
+        // We're now accepting the connection to the EditorServer.
+        // In normal game clients SendReadyForEntityUpdates will be enabled once the appropriate level's root spawnable is loaded,
+        // but since we're in Editor, we're already in the level.
+        AZ::Interface<IMultiplayer>::Get()->SendReadyForEntityUpdates(true);
     }
 }
