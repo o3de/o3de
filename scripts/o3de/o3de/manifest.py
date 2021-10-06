@@ -197,7 +197,7 @@ def load_o3de_manifest(manifest_path: pathlib.Path = None) -> dict:
             return json_data
 
 
-def save_o3de_manifest(json_data: dict, manifest_path: pathlib.Path = None) -> None:
+def save_o3de_manifest(json_data: dict, manifest_path: pathlib.Path = None) -> bool:
     """
     Save the json dictionary to the supplied manifest file or ~/.o3de/o3de_manifest.json if None
 
@@ -206,16 +206,13 @@ def save_o3de_manifest(json_data: dict, manifest_path: pathlib.Path = None) -> N
     """
     if not manifest_path:
         manifest_path = get_o3de_manifest()
-    backup_name = utils.backup_file(manifest_path)
     with manifest_path.open('w') as s:
         try:
             s.write(json.dumps(json_data, indent=4) + '\n')
-        except Exception as e:
+            return True
+        except OSError as e:
             logger.error(f'Manifest json failed to save: {str(e)}')
-            os.unlink(manifest_path)
-            os.rename(backup_name, manifest_path)
-        finally:
-            os.unlink(backup_name)
+            return False
 
 
 def get_gems_from_subdirectories(external_subdirs: list) -> list:
@@ -237,13 +234,6 @@ def get_gems_from_subdirectories(external_subdirs: list) -> list:
                     gem_directories.append(pathlib.PurePath(root).as_posix())
 
     return gem_directories
-
-
-# Data query methods
-def get_this_engine() -> dict:
-    json_data = load_o3de_manifest()
-    engine_data = find_engine_data(json_data)
-    return engine_data
 
 
 def get_engines() -> list:
@@ -431,21 +421,32 @@ def get_templates_for_generic_creation():  # temporary until we have a better wa
 
     return list(filter(filter_project_and_gem_templates_out, get_all_templates()))
 
-def get_json_data(object_typename: str = None,
-                  object_path: str or pathlib.Path = None,
-                  object_validator = callable) -> dict or None:
-    if not object_typename or not object_validator:
-        logger.error(f'Missing object info.')
+def get_json_file_path(object_typename: str = None,
+                       object_path: str or pathlib.Path = None) -> pathlib.Path:
+    if not object_typename:
+        logger.error(f'Missing object typename.')
     
     if not object_path:
         logger.error(f'{object_typename} Path {object_path} has not been registered.')
         return None
 
     object_path = pathlib.Path(object_path).resolve()
-    object_json = object_path / f'{object_typename}.json'
+    return object_path / f'{object_typename}.json'
+
+
+def get_json_data_file(object_typename: str = None,
+                       object_json: str or pathlib.Path = None,
+                       object_validator = callable) -> dict or None:
+    if not object_typename:
+        logger.error(f'Missing object typename.')
+
     if not object_json.is_file():
         logger.error(f'{object_typename} json {object_json} is not present.')
         return None
+
+    if not object_validator:
+        logger.error(f'Missing object validator.')
+
     if not object_validator(object_json):
         logger.error(f'{object_typename} json {object_json} is not valid.')
         return None
@@ -454,11 +455,18 @@ def get_json_data(object_typename: str = None,
         try:
             object_json_data = json.load(f)
         except json.JSONDecodeError as e:
-            logger.warn(f'{object_json} failed to load: {str(e)}')
+            logger.warn(f'{object_json} failed to load: {e}')
         else:
             return object_json_data
 
     return None
+
+def get_json_data(object_typename: str = None,
+                  object_path: str or pathlib.Path = None,
+                  object_validator = callable) -> dict or None:
+    object_json = get_json_file_path(object_typename, object_path)
+
+    return get_json_data_file(object_typename, object_json, object_validator)
 
 
 def get_engine_json_data(engine_name: str = None,
@@ -527,22 +535,7 @@ def get_repo_json_data(repo_uri: str = None) -> dict or None:
 
     repo_json = get_repo_path(repo_uri=repo_uri)
 
-    if not repo_json.is_file():
-        logger.error(f'Repo json {repo_json} is not present.')
-        return None
-    if not validation.valid_o3de_repo_json(repo_json):
-        logger.error(f'Repo json {repo_json} is not valid.')
-        return None
-
-    with repo_json.open('r') as f:
-        try:
-            repo_json_data = json.load(f)
-        except json.JSONDecodeError as e:
-            logger.warn(f'{repo_json} failed to load: {str(e)}')
-        else:
-            return repo_json_data
-
-    return None
+    get_json_data_file("Repo", repo_json, validation.valid_o3de_repo_json)
 
 def get_repo_path(repo_uri: str = None, cache_folder: str = None) -> pathlib.Path:
     if not cache_folder:
