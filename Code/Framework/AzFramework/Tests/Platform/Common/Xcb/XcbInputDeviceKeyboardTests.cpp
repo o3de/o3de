@@ -91,6 +91,9 @@ namespace AzFramework
                     SetArgPointee<2>('A'),
                     Return(1)
                 ));
+
+            ON_CALL(m_interface, xkb_state_key_get_utf8(&m_xkbState, s_keycodeForShiftLKey, nullptr, 0))
+                .WillByDefault(Return(0));
         }
 
     private:
@@ -261,6 +264,24 @@ namespace AzFramework
                 /*.same_screen   = */ 0,
                 /*.pad0          = */ 0
             }),
+            // Pressing a modifier key will generate a key press event followed
+            // by a state notify event
+            MakeEvent(xcb_key_press_event_t{
+                /*.response_type = */ XCB_KEY_PRESS,
+                /*.detail        = */ s_keycodeForShiftLKey,
+                /*.sequence      = */ 0,
+                /*.time          = */ 0,
+                /*.root          = */ 0,
+                /*.event         = */ 0,
+                /*.child         = */ 0,
+                /*.root_x        = */ 0,
+                /*.root_y        = */ 0,
+                /*.event_x       = */ 0,
+                /*.event_y       = */ 0,
+                /*.state         = */ 0,
+                /*.same_screen   = */ 0,
+                /*.pad0          = */ 0
+            }),
             MakeEvent(xcb_xkb_state_notify_event_t{
                 /*.response_type     = */ s_xkbEventCode,
                 /*.xkbType           = */ XCB_XKB_STATE_NOTIFY,
@@ -319,6 +340,22 @@ namespace AzFramework
                 /*.same_screen   = */ 0,
                 /*.pad0          = */ 0
             }),
+            MakeEvent(xcb_key_release_event_t{
+                /*.response_type = */ XCB_KEY_RELEASE,
+                /*.detail        = */ s_keycodeForShiftLKey,
+                /*.sequence      = */ 0,
+                /*.time          = */ 0,
+                /*.root          = */ 0,
+                /*.event         = */ 0,
+                /*.child         = */ 0,
+                /*.root_x        = */ 0,
+                /*.root_y        = */ 0,
+                /*.event_x       = */ 0,
+                /*.event_y       = */ 0,
+                /*.state         = */ 0,
+                /*.same_screen   = */ 0,
+                /*.pad0          = */ 0
+            }),
             MakeEvent(xcb_xkb_state_notify_event_t{
                 /*.response_type     = */ s_xkbEventCode,
                 /*.xkbType           = */ XCB_XKB_STATE_NOTIFY,
@@ -353,15 +390,17 @@ namespace AzFramework
         // event pointers are freed by the calling code, so we malloc new copies
         // here
         EXPECT_CALL(m_interface, xcb_poll_for_event(&m_connection))
-            .WillOnce(ReturnMalloc<xcb_generic_event_t>(events[0]))
+            .WillOnce(ReturnMalloc<xcb_generic_event_t>(events[0])) // press a
             .WillOnce(Return(nullptr))
-            .WillOnce(ReturnMalloc<xcb_generic_event_t>(events[1]))
+            .WillOnce(ReturnMalloc<xcb_generic_event_t>(events[1])) // release a
             .WillOnce(Return(nullptr))
-            .WillOnce(ReturnMalloc<xcb_generic_event_t>(events[2]))
-            .WillOnce(ReturnMalloc<xcb_generic_event_t>(events[3]))
+            .WillOnce(ReturnMalloc<xcb_generic_event_t>(events[2])) // press shift
+            .WillOnce(ReturnMalloc<xcb_generic_event_t>(events[3])) // state notify shift is down
+            .WillOnce(ReturnMalloc<xcb_generic_event_t>(events[4])) // press a
             .WillOnce(Return(nullptr))
-            .WillOnce(ReturnMalloc<xcb_generic_event_t>(events[4]))
-            .WillOnce(ReturnMalloc<xcb_generic_event_t>(events[5]))
+            .WillOnce(ReturnMalloc<xcb_generic_event_t>(events[5])) // release a
+            .WillOnce(ReturnMalloc<xcb_generic_event_t>(events[6])) // release shift
+            .WillOnce(ReturnMalloc<xcb_generic_event_t>(events[7])) // state notify shift is up
             .WillRepeatedly(Return(nullptr))
             ;
 
@@ -370,6 +409,9 @@ namespace AzFramework
         EXPECT_CALL(m_interface, xkb_state_key_get_utf8(m_matchesStateWithoutShift, s_keycodeForAKey, _, 2))
             .Times(1);
         EXPECT_CALL(m_interface, xkb_state_key_get_utf8(m_matchesStateWithShift, s_keycodeForAKey, _, 2))
+            .Times(1);
+
+        EXPECT_CALL(m_interface, xkb_state_key_get_utf8(&m_xkbState, s_keycodeForShiftLKey, nullptr, 0))
             .Times(1);
 
         InputTextNotificationListener textListener;

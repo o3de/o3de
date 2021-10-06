@@ -148,8 +148,13 @@ namespace AzFramework
         if (responseType == XCB_KEY_PRESS)
         {
             const auto* keyPress = reinterpret_cast<xcb_key_press_event_t*>(event);
-
-            QueueRawTextEvent(TextFromKeycode(m_xkbState.get(), keyPress->detail));
+            {
+                auto text = TextFromKeycode(m_xkbState.get(), keyPress->detail);
+                if (!text.empty())
+                {
+                    QueueRawTextEvent(AZStd::move(text));
+                }
+            }
 
             if (const InputChannelId* key = InputChannelFromKeyEvent(keyPress->detail))
             {
