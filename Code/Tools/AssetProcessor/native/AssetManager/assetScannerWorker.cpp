@@ -113,6 +113,7 @@ void AssetScannerWorker::ScanForSourceFiles(const ScanFolderInfo& scanFolderInfo
 
         QDir scanFolderRootDir(rootScanFolder.ScanPath());
         QString relPath(scanFolderRootDir.relativeFilePath(absPath));
+        relPath.prepend("./");
         // Filtering out excluded files
         if (m_platformConfiguration->IsFileExcluded(relPath))
         {
