@@ -35,7 +35,6 @@
 #include <ScriptCanvas/Components/EditorGraph.h>
 
 #include <Editor/View/Windows/Tools/UpgradeTool/ui_View.h>
-// #include <Editor/View/Windows/Tools/UpgradeTool/moc_View.cpp>
 
 namespace ScriptCanvasEditor
 {
@@ -61,6 +60,11 @@ namespace ScriptCanvasEditor
 
             UpgradeNotificationsBus::Handler::BusConnect();
             ModelNotificationsBus::Handler::BusConnect();
+        }
+
+        Controller::~Controller()
+        {
+            delete m_view;
         }
 
         void Controller::AddLogEntries()

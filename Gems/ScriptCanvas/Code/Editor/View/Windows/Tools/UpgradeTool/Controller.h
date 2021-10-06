@@ -52,6 +52,7 @@ namespace ScriptCanvasEditor
             AZ_CLASS_ALLOCATOR(Controller, AZ::SystemAllocator, 0);
 
             explicit Controller(QWidget* parent = nullptr);
+            ~Controller();
 
         private:
             static constexpr int ColumnAsset = 0;
@@ -59,7 +60,7 @@ namespace ScriptCanvasEditor
             static constexpr int ColumnBrowse = 2;
             static constexpr int ColumnStatus = 3;
 
-            AZStd::unique_ptr<Ui::View> m_view;
+            Ui::View* m_view = nullptr;
             int m_handledAssetCount = 0;
 
             void AddLogEntries();
