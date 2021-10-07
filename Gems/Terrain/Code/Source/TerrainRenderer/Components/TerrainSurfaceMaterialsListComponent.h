@@ -8,10 +8,17 @@
 
 #pragma once
 
+#include <Atom/Feature/Material/MaterialAssignment.h>
+#include <Atom/RPI.Reflect/Material/MaterialAsset.h>
+#include <AtomLyIntegration/CommonFeatures/Material/EditorMaterialSystemComponentRequestBus.h>
+
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Component/Component.h>
 
+#include <LmbrCentral/Dependency/DependencyMonitor.h>
 #include <SurfaceData/SurfaceDataTypes.h>
+
+#include <TerrainRenderer/TerrainAreaMaterialRequestBus.h>
 
 
 namespace LmbrCentral
@@ -22,6 +29,22 @@ namespace LmbrCentral
 
 namespace Terrain
 {
+    struct TerrainSurfaceMaterialMapping final
+    {
+    public:
+        AZ_CLASS_ALLOCATOR(TerrainSurfaceMaterialMapping, AZ::SystemAllocator, 0);
+        AZ_RTTI(TerrainSurfaceMaterialMapping, "{37D2A586-CDDD-4FB7-A7D6-0B4CC575AB8C}");
+        static void Reflect(AZ::ReflectContext* context);
+
+        void MaterialChanged();
+
+        SurfaceData::SurfaceTag m_surfaceTag;
+        AZ::Data::Asset<AZ::RPI::MaterialAsset> m_materialAsset;
+        AZ::Data::Instance<AZ::RPI::Material> m_materialInstance;
+
+        bool m_dirty = false;
+    };
+
     class TerrainSurfaceMaterialsListConfig : public AZ::ComponentConfig
     {
     public:
@@ -29,12 +52,14 @@ namespace Terrain
         AZ_RTTI(TerrainSurfaceMaterialsListConfig, "{68A1CB1B-C835-4C3A-8D1C-08692E07711A}", AZ::ComponentConfig);
         static void Reflect(AZ::ReflectContext* context);
 
-         //AZStd::unorderd_map<AZ::EntityId> m_gradientEntities;
-        AZStd::vector<SurfaceData::SurfaceTag> m_tags;
+        AZStd::vector<TerrainSurfaceMaterialMapping> m_surfaceMaterials;
     };
 
     class TerrainSurfaceMaterialsListComponent
         : public AZ::Component
+        , private LmbrCentral::DependencyNotificationBus::Handler
+        , private TerrainAreaMaterialRequestBus::Handler
+        , private AZ::Data::AssetBus::Handler
     {
     public:
         template<typename, typename>
@@ -49,8 +74,6 @@ namespace Terrain
         TerrainSurfaceMaterialsListComponent() = default;
         ~TerrainSurfaceMaterialsListComponent() = default;
 
-        //void GetHeight(const AZ::Vector3& inPosition, AZ::Vector3& outPosition, bool& terrainExists) override;
-
         //////////////////////////////////////////////////////////////////////////
         // AZ::Component interface implementation
         void Activate() override;
@@ -58,24 +81,24 @@ namespace Terrain
         bool ReadInConfig(const AZ::ComponentConfig* baseConfig) override;
         bool WriteOutConfig(AZ::ComponentConfig* outBaseConfig) const override;
 
+    private:
+        void OnMaterialInstanceChanged();
+
         //////////////////////////////////////////////////////////////////////////
         // LmbrCentral::DependencyNotificationBus
-        //void OnCompositionChanged() override;
+        void OnCompositionChanged() override;
 
         //////////////////////////////////////////////////////////////////////////
-        // AzFramework::Terrain::TerrainDataNotificationBus
-       // void OnTerrainDataChanged(const AZ::Aabb& dirtyRegion, TerrainDataChangedMask dataChangedMask) override;
+        // TerrainAreaMaterialRequestBus
+        AZStd::vector<SurfaceMaterialMapping> GetSurfaceMaterialMappings() const override;
 
-    private:
+        //////////////////////////////////////////////////////////////////////////
+        // AZ::Data::AssetBus::Handler
+        void OnAssetReady(AZ::Data::Asset<AZ::Data::AssetData> asset) override;
+        void OnAssetReloaded(AZ::Data::Asset<AZ::Data::AssetData> asset) override;
+
         TerrainSurfaceMaterialsListConfig m_configuration;
 
-        /* void RefreshMinMaxHeights();
-
-         float m_cachedMinWorldHeight{ 0.0f };
-         float m_cachedMaxWorldHeight{ 0.0f };
-         AZ::Vector2 m_cachedHeightQueryResolution{ 1.0f, 1.0f };
-         AZ::Aabb m_cachedShapeBounds;
-
-         LmbrCentral::DependencyMonitor m_dependencyMonitor;*/
+        LmbrCentral::DependencyMonitor m_dependencyMonitor;
     };
 } // namespace Terrain

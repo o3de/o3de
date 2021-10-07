@@ -19,12 +19,15 @@ ly_add_target(
         PUBLIC
             AZ::AzCore
             AZ::AzFramework
+            AZ::AzToolsFramework
             Gem::Atom_RPI.Public
             Gem::Atom_Utils.Static
             Gem::Atom_Feature_Common
             Gem::GradientSignal
             Gem::SurfaceData
             Gem::LmbrCentral
+            Gem::AtomLyIntegration_CommonFeatures.Static
+            
 )
 
 ly_add_target(

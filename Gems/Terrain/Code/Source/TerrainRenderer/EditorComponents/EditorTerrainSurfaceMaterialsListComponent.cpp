@@ -6,7 +6,7 @@
  *
  */
 
-#include <EditorComponents/EditorTerrainSurfaceMaterialsListComponent.h>
+#include <Terrainrenderer/EditorComponents/EditorTerrainSurfaceMaterialsListComponent.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
 
@@ -14,7 +14,7 @@ namespace Terrain
 {
     void EditorTerrainSurfaceMaterialsListComponent::Reflect(AZ::ReflectContext* context)
     {
-        BaseClassType::ReflectSubClass<TerrainSurfaceMaterialsListComponent, BaseClassType>(context, 1,
+        BaseClassType::ReflectSubClass<EditorTerrainSurfaceMaterialsListComponent, BaseClassType>(context, 1,
             &LmbrCentral::EditorWrappedComponentBaseVersionConverter<typename BaseClassType::WrappedComponentType,
             typename BaseClassType::WrappedConfigType, 1>
         );

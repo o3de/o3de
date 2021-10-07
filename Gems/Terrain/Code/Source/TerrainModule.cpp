@@ -18,7 +18,7 @@
 #include <Components/TerrainLayerSpawnerComponent.h>
 #include <Components/TerrainSurfaceGradientListComponent.h>
 #include <Components/TerrainSurfaceDataSystemComponent.h>
-#include <Components/TerrainSurfaceMaterialsListComponent.h>
+#include <TerrainRenderer/Components/TerrainSurfaceMaterialsListComponent.h>
 
 namespace Terrain
 {

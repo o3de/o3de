@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include <Components/TerrainSurfaceMaterialsListComponent.h>
+#include <TerrainRenderer/Components/TerrainSurfaceMaterialsListComponent.h>
 #include <AzToolsFramework/ToolsComponents/EditorComponentBase.h>
 #include <LmbrCentral/Component/EditorWrappedComponentBase.h>
 

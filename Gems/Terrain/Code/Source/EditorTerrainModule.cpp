@@ -14,7 +14,7 @@
 #include <EditorComponents/EditorTerrainWorldComponent.h>
 #include <EditorComponents/EditorTerrainWorldDebuggerComponent.h>
 #include <EditorComponents/EditorTerrainWorldRendererComponent.h>
-#include <Editor/EditorTerrainSurfaceMaterialsListComponent.h>
+#include <TerrainRenderer/EditorComponents/EditorTerrainSurfaceMaterialsListComponent.h>
 
 namespace Terrain
 {
