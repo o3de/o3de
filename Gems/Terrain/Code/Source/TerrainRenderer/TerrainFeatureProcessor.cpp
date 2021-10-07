@@ -159,8 +159,25 @@ namespace Terrain
         m_areaData.m_sampleSpacing = queryResolution.GetX();
         m_areaData.m_propertiesDirty = true;
     }
+    
+    void TerrainFeatureProcessor::OnTerrainMacroMaterialCreated(AZ::EntityId entityId, MaterialInstance material, const AZ::Aabb& region)
+    {
+        MacroMaterialData& materialData = FindOrCreateMacroMaterial(entityId);
+        materialData.m_bounds = region;
+        materialData.m_materialInstance = material;
 
-    void TerrainFeatureProcessor::OnTerrainMacroMaterialChanged(AZ::EntityId entityId, AZ::Data::Instance<AZ::RPI::Material> macroMaterial)
+        // Update all sectors in region.
+        ForOverlappingSectors(materialData.m_bounds,
+            [&](SectorData& sectorData) {
+                if (sectorData.m_macroMaterials.size() < sectorData.m_macroMaterials.max_size())
+                {
+                    sectorData.m_macroMaterials.push_back(m_macroMaterials.GetIndexForData(&materialData));
+                }
+            }
+        );
+    }
+
+    void TerrainFeatureProcessor::OnTerrainMacroMaterialChanged(AZ::EntityId entityId, MaterialInstance macroMaterial)
     {
         if (macroMaterial)
         {
@@ -168,7 +185,7 @@ namespace Terrain
             data.m_materialInstance = macroMaterial;
             if (data.m_bounds.IsValid())
             {
-                // update sectors based on bounds.
+                // update sector srgs based on bounds.
             }
         }
         else
@@ -176,7 +193,7 @@ namespace Terrain
             RemoveMacroMaterial(entityId);
         }
     }
-
+    
     void TerrainFeatureProcessor::OnTerrainMacroMaterialRegionChanged(AZ::EntityId entityId, [[maybe_unused]] const AZ::Aabb& oldRegion, const AZ::Aabb& newRegion)
     {
         MacroMaterialData& materialData = FindOrCreateMacroMaterial(entityId);
@@ -201,7 +218,7 @@ namespace Terrain
                 else if (overlapsNew && !overlapsOld)
                 {
                     // Add the macro material to this sector
-                    if (sectorData.m_macroMaterials.size() < 4)
+                    if (sectorData.m_macroMaterials.size() < MaxMaterialsPerSector)
                     {
                         sectorData.m_macroMaterials.push_back(m_macroMaterials.GetIndexForData(&materialData));
                     }
@@ -213,6 +230,27 @@ namespace Terrain
             }
         }
         materialData.m_bounds = newRegion;
+    }
+
+    void TerrainFeatureProcessor::OnTerrainMacroMaterialDestroyed(AZ::EntityId entityId)
+    {
+        MacroMaterialData* materialData = FindMacroMaterial(entityId);
+        uint16_t destroyedMaterialIndex = m_macroMaterials.GetIndexForData(materialData);
+
+        if (materialData)
+        {
+            ForOverlappingSectors(materialData->m_bounds,
+                [&](SectorData& sectorData) {
+                for (uint16_t& idx : sectorData.m_macroMaterials)
+                {
+                    if (idx == destroyedMaterialIndex)
+                    {
+                        idx = sectorData.m_macroMaterials.back();
+                        sectorData.m_macroMaterials.pop_back();
+                    }
+                }
+            });
+        }
     }
 
     void TerrainFeatureProcessor::UpdateTerrainData()
@@ -571,7 +609,7 @@ namespace Terrain
         return success;
     }
     
-    void TerrainFeatureProcessor::OnMaterialReinitialized([[maybe_unused]] const AZ::Data::Instance<AZ::RPI::Material>& material)
+    void TerrainFeatureProcessor::OnMaterialReinitialized([[maybe_unused]] const MaterialInstance& material)
     {
         for (auto& sectorData : m_sectorData)
         {
@@ -588,14 +626,24 @@ namespace Terrain
         // larger but this will limit how much is rendered.
     }
     
-    TerrainFeatureProcessor::MacroMaterialData& TerrainFeatureProcessor::FindOrCreateMacroMaterial(AZ::EntityId entityId)
+    TerrainFeatureProcessor::MacroMaterialData* TerrainFeatureProcessor::FindMacroMaterial(AZ::EntityId entityId)
     {
         for (MacroMaterialData& data : m_macroMaterials.GetDataVector())
         {
             if (data.m_entityId == entityId)
             {
-                return data;
+                return &data;
             }
+        }
+        return nullptr;
+    }
+
+    TerrainFeatureProcessor::MacroMaterialData& TerrainFeatureProcessor::FindOrCreateMacroMaterial(AZ::EntityId entityId)
+    {
+        MacroMaterialData* dataPtr = FindMacroMaterial(entityId);
+        if (dataPtr != nullptr)
+        {
+            return *dataPtr;
         }
 
         uint16_t slotId = m_macroMaterials.GetFreeSlotIndex();
@@ -617,5 +665,17 @@ namespace Terrain
             }
         }
         AZ_Assert(false, "Entity Id not found in m_macroMaterials.")
+    }
+    
+    template<typename Callback>
+    void TerrainFeatureProcessor::ForOverlappingSectors(const AZ::Aabb& bounds, Callback callback)
+    {
+        for (SectorData& sectorData : m_sectorData)
+        {
+            if (sectorData.m_aabb.Overlaps(bounds))
+            {
+                callback(sectorData);
+            }
+        }
     }
 }
