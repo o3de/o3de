@@ -80,8 +80,8 @@ namespace AZ
                     ->Event("SetDebugColoringEnabled", &DirectionalLightRequestBus::Events::SetDebugColoringEnabled)
                     ->Event("GetShadowFilterMethod", &DirectionalLightRequestBus::Events::GetShadowFilterMethod)
                     ->Event("SetShadowFilterMethod", &DirectionalLightRequestBus::Events::SetShadowFilterMethod)
-                    ->Event("GetSofteningBoundaryWidth", &DirectionalLightRequestBus::Events::GetSofteningBoundaryWidth)
-                    ->Event("SetSofteningBoundaryWidth", &DirectionalLightRequestBus::Events::SetSofteningBoundaryWidth)
+                    ->Event("GetNormalOffsetBias", &DirectionalLightRequestBus::Events::GetNormalOffsetBias)
+                    ->Event("SetNormalOffsetBias", &DirectionalLightRequestBus::Events::SetNormalOffsetBias)
                     ->Event("GetFilteringSampleCount", &DirectionalLightRequestBus::Events::GetFilteringSampleCount)
                     ->Event("SetFilteringSampleCount", &DirectionalLightRequestBus::Events::SetFilteringSampleCount)
                     ->Event("GetShadowReceiverPlaneBiasEnabled", &DirectionalLightRequestBus::Events::GetShadowReceiverPlaneBiasEnabled)
@@ -99,7 +99,7 @@ namespace AZ
                     ->VirtualProperty("ViewFrustumCorrectionEnabled", "GetViewFrustumCorrectionEnabled", "SetViewFrustumCorrectionEnabled")
                     ->VirtualProperty("DebugColoringEnabled", "GetDebugColoringEnabled", "SetDebugColoringEnabled")
                     ->VirtualProperty("ShadowFilterMethod", "GetShadowFilterMethod", "SetShadowFilterMethod")
-                    ->VirtualProperty("SofteningBoundaryWidth", "GetSofteningBoundaryWidth", "SetSofteningBoundaryWidth")
+                    ->VirtualProperty("NormalOffsetBias", "GetNormalOffsetBias", "SetNormalOffsetBias")
                     ->VirtualProperty("FilteringSampleCount", "GetFilteringSampleCount", "SetFilteringSampleCount")
                     ->VirtualProperty("ShadowReceiverPlaneBiasEnabled", "GetShadowReceiverPlaneBiasEnabled", "SetShadowReceiverPlaneBiasEnabled");
                 ;
@@ -404,18 +404,18 @@ namespace AZ
             }
         }
 
-        float DirectionalLightComponentController::GetSofteningBoundaryWidth() const
+        float DirectionalLightComponentController::GetNormalOffsetBias() const
         {
-            return m_configuration.m_boundaryWidth;
+            return m_configuration.m_normalOffsetBias;
         }
 
-        void DirectionalLightComponentController::SetSofteningBoundaryWidth(float width)
+        void DirectionalLightComponentController::SetNormalOffsetBias(float width)
         {
-            width = GetMin(Shadow::MaxSofteningBoundaryWidth, GetMax(0.f, width));
-            m_configuration.m_boundaryWidth = width;
+          //  width = GetMin(Shadow::MaxSofteningBoundaryWidth, GetMax(0.f, width));
+            m_configuration.m_normalOffsetBias = width;
             if (m_featureProcessor)
             {
-                m_featureProcessor->SetShadowBoundaryWidth(m_lightHandle, width);
+                m_featureProcessor->SetNormalOffsetBias(m_lightHandle, width);
             }
         }
 
@@ -517,7 +517,7 @@ namespace AZ
             SetViewFrustumCorrectionEnabled(m_configuration.m_isCascadeCorrectionEnabled);
             SetDebugColoringEnabled(m_configuration.m_isDebugColoringEnabled);
             SetShadowFilterMethod(m_configuration.m_shadowFilterMethod);
-            SetSofteningBoundaryWidth(m_configuration.m_boundaryWidth);
+            SetNormalOffsetBias(m_configuration.m_normalOffsetBias);
             SetFilteringSampleCount(m_configuration.m_filteringSampleCount);
             SetShadowReceiverPlaneBiasEnabled(m_configuration.m_receiverPlaneBiasEnabled);
 

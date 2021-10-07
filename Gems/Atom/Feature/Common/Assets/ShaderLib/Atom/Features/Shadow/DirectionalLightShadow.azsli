@@ -10,7 +10,6 @@
 
 #include <scenesrg.srgi>
 #include <viewsrg.srgi>
-#include "JitterTablePcf.azsli"
 #include "Shadow.azsli"
 #include "ShadowmapAtlasLib.azsli"
 #include "BicubicPcfFilters.azsli"
@@ -81,12 +80,6 @@ class DirectionalLightShadow
     // result.x == true if the shadowCoord falls within the cascade.
     // result.y == true if the given coordinate is in shadow.
     bool2 IsShadowed(float3 shadowCoord, uint indexOfCascade);
-
-    // This checks if the point is shadowed or not for the given center coordinate and jitter.
-    bool IsShadowedWithJitter(
-        float3 jitterUnit,
-        float jitterDepthDiffBase,
-        uint jitterIndex);
 
     // This outputs visibility ratio (from 0.0 to 1.0) of the given coordinate
     // from the light origin without filtering.
@@ -187,75 +180,6 @@ bool2 DirectionalLightShadow::IsShadowed(float3 shadowCoord, uint indexOfCascade
         }
     }
     return bool2(false, false);
-}
-
-bool DirectionalLightShadow::IsShadowedWithJitter(
-    float3 jitterUnit,
-    float jitterDepthDiffBase,
-    uint jitterIndex)
-{
-    const uint cascadeCount = ViewSrg::m_directionalLightShadows[m_lightIndex].m_cascadeCount;
-    const float4x4 worldToLightViewMatrices[ViewSrg::MaxCascadeCount] =
-        ViewSrg::m_directionalLightShadows[m_lightIndex].m_worldToLightViewMatrices;
-    const float4x4 lightViewToShadowmapMatrices[ViewSrg::MaxCascadeCount] =
-        ViewSrg::m_directionalLightShadows[m_lightIndex].m_lightViewToShadowmapMatrices;
-    const float boundaryScale = 
-        ViewSrg::m_directionalLightShadows[m_lightIndex].m_boundaryScale;
-
-    const float2 jitterXY = g_jitterTablePcf[jitterIndex];
-
-    // jitterLightView is the jittering diff vector from the lighted point on the surface
-    // in the light view space.  It is remarked as "v_J" in the comment
-    // named "Calculate depth adjusting diff for jittered samples"
-    // just before the function GetJitterUnitVectorDepthDiffBase.
-    const float4 jitterLightView = float4(jitterXY, 0., 0.) * boundaryScale;
-
-    // It checks the jittered point is lit or shadowed from the detailed cascade
-    // to the less detailed one.
-    for (uint indexOfCascade = 0; indexOfCascade < cascadeCount; ++indexOfCascade)
-    {
-        // jitterShadowmap is the jittering diff vector in the shadowmap space.
-        const float4 jitterShadowmap = mul(lightViewToShadowmapMatrices[indexOfCascade], jitterLightView);
-
-        // Calculation of the jittering for Z-coordinate (light direction) is required
-        // to check lit/shadowed for the jittered point.
-        // jitterDepthDiff is the Z-coordinate of the jittering diff vector 
-        // in the shadowmap space.
-        float jitterDepthDiff = 0.;
-
-        // jitterDepthDiffBase is "1/tan(theta)" in the comment.
-        if (jitterDepthDiffBase != 0.)
-        {
-            // jitterUnitLightView is the unit vector in the light view space
-            // noted as "v_M" in the comment.
-            const float3 jitterUnitLightView = 
-                normalize(mul(worldToLightViewMatrices[indexOfCascade], float4(jitterUnit, 0.)).xyz);
-            const float lightViewToShadowmapZScale = -lightViewToShadowmapMatrices[indexOfCascade]._m22;
-            // jitterDepthDiff is the "d" in the note, and it is calculated by
-            //   d = (v_J . v_M) / tan(theta)
-            // in the light view space.  Furthermore it have to be converted 
-            // to the light clip space, which can be done by lightViewToShadowmapZScale.
-            jitterDepthDiff = 
-                dot(jitterLightView.xyz, jitterUnitLightView) * jitterDepthDiffBase *
-                lightViewToShadowmapZScale;
-        }
-        // jitteredCoord is the coordinate of the jittered point in the shadowmap space.
-        const float3 jitteredCoord = 
-            m_shadowCoords[indexOfCascade] + float3(jitterShadowmap.xy,  jitterDepthDiff);
-        // Check for the jittered point is lit or shadowed.
-        const bool2 checkedShadowed = IsShadowed(
-            jitteredCoord,
-            indexOfCascade);
-        // If check is done, return the lit/shadowed flag.
-        // Otherwise make it pend to the next cascade.
-        if (checkedShadowed.x)
-        {
-            m_debugInfo.m_cascadeIndex = indexOfCascade;
-            return checkedShadowed.y;
-        }
-    }
-    m_debugInfo.m_cascadeIndex = cascadeCount;
-    return false;
 }
 
 float DirectionalLightShadow::GetVisibilityFromLightNoFilter()
@@ -370,6 +294,7 @@ float DirectionalLightShadow::GetVisibilityFromLightEsmPcf()
     return 1.;
 }
 
+// MKR
 float DirectionalLightShadow::SamplePcfBicubic(float3 shadowCoord, uint indexOfCascade)
 {
     const uint filteringSampleCount = ViewSrg::m_directionalLightShadows[m_lightIndex].m_filteringSampleCount;

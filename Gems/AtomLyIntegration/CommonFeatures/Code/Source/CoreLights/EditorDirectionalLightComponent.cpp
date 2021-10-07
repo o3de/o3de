@@ -133,15 +133,14 @@ namespace AZ
                             ->EnumAttribute(ShadowFilterMethod::Esm, "ESM")
                             ->EnumAttribute(ShadowFilterMethod::EsmPcf, "ESM+PCF")
                             ->Attribute(Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
-                        ->DataElement(Edit::UIHandlers::Slider, &DirectionalLightComponentConfig::m_boundaryWidth, "Softening boundary width",
-                            "Width of the boundary between shadowed area and lit one. "
-                            "Units are in meters. "
-                            "If this is 0, softening edge is disabled.")
+                        ->DataElement(Edit::UIHandlers::Slider, &DirectionalLightComponentConfig::m_normalOffsetBias, "Normal Offset Bias",
+                            "Normal offset bias. "
+                            "Units are in ???. "
+                            "If this is 0, normal offset bias.")
                             ->Attribute(Edit::Attributes::Min, 0.f)
-                            ->Attribute(Edit::Attributes::Max, 0.1f)
+                            ->Attribute(Edit::Attributes::Max, 10.0f)
                             ->Attribute(Edit::Attributes::Suffix, " m")
                             ->Attribute(Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
-                        ->Attribute(Edit::Attributes::ReadOnly, &DirectionalLightComponentConfig::IsEsmDisabled)
                         ->DataElement(Edit::UIHandlers::Slider, &DirectionalLightComponentConfig::m_filteringSampleCount, "Filtering sample count",
                             "This is used only when the pixel is predicted as on the boundary. "
                             "Specific to PCF and ESM+PCF.")

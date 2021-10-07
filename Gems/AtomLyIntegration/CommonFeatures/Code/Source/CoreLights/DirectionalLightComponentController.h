@@ -76,8 +76,8 @@ namespace AZ
             void SetDebugColoringEnabled(bool enabled) override;
             ShadowFilterMethod GetShadowFilterMethod() const override;
             void SetShadowFilterMethod(ShadowFilterMethod method) override;
-            float GetSofteningBoundaryWidth() const override;
-            void SetSofteningBoundaryWidth(float width) override;
+            float GetNormalOffsetBias() const override;
+            void SetNormalOffsetBias(float width) override;
             uint32_t GetFilteringSampleCount() const override;
             void SetFilteringSampleCount(uint32_t count) override;
             bool GetShadowReceiverPlaneBiasEnabled() const override;

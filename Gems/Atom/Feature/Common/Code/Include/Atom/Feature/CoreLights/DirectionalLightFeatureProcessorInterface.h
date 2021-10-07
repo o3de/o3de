@@ -158,7 +158,7 @@ namespace AZ
             //! @param handle the light handle.
             //! @param width Boundary width. The shadow is gradually changed the degree of shadowed.
             //! If width == 0, softening edge is disabled. Units are in meters.
-            virtual void SetShadowBoundaryWidth(LightHandle handle, float boundaryWidth) = 0;
+            virtual void SetNormalOffsetBias(LightHandle handle, float boundaryWidth) = 0;
 
             //! Sets whether the directional shadowmap should use receiver plane bias.
             //! This attempts to reduce shadow acne when using large pcf filters.

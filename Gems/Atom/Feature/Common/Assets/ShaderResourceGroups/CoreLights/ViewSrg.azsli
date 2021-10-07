@@ -112,7 +112,7 @@ partial ShaderResourceGroup ViewSrg
         float m_boundaryScale;
         uint m_shadowmapSize; // width and height of shadowmap
         uint m_cascadeCount;
-        uint m_predictionSampleCount;
+        float m_normalOffsetBias;
         uint m_filteringSampleCount;
         uint m_debugFlags;
         uint m_shadowFilterMethod;

@@ -37,7 +37,7 @@ namespace AZ
                     ->Field("IsCascadeCorrectionEnabled", &DirectionalLightComponentConfig::m_isCascadeCorrectionEnabled)
                     ->Field("IsDebugColoringEnabled", &DirectionalLightComponentConfig::m_isDebugColoringEnabled)
                     ->Field("ShadowFilterMethod", &DirectionalLightComponentConfig::m_shadowFilterMethod)
-                    ->Field("SofteningBoundaryWidth", &DirectionalLightComponentConfig::m_boundaryWidth)
+                    ->Field("Normal Offset Bias", &DirectionalLightComponentConfig::m_normalOffsetBias)
                     ->Field("PcfFilteringSampleCount", &DirectionalLightComponentConfig::m_filteringSampleCount)
                     ->Field("ShadowReceiverPlaneBiasEnabled", &DirectionalLightComponentConfig::m_receiverPlaneBiasEnabled);
             }
