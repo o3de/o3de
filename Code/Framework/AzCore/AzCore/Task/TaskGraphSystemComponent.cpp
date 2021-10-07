@@ -15,7 +15,7 @@
 
 // Create a cvar as a central location for experimentation with switching from the Job system to TaskGraph system.
 AZ_CVAR(bool, cl_activateTaskGraph, false, nullptr, AZ::ConsoleFunctorFlags::Null, "Flag clients of TaskGraph to switch between jobs/taskgraph (Note does not disable task graph system)");
-AZ_CVAR(float, cl_taskGraphThreadsConcurrencyRatio, 0.75f, nullptr, AZ::ConsoleFunctorFlags::Null, "TaskGraph calculate the number of worker threads to spawn by scaling the number of hw threads, value is clamped between 0.0f and 1.0f");
+AZ_CVAR(float, cl_taskGraphThreadsConcurrencyRatio, 1.0f, nullptr, AZ::ConsoleFunctorFlags::Null, "TaskGraph calculate the number of worker threads to spawn by scaling the number of hw threads, value is clamped between 0.0f and 1.0f");
 AZ_CVAR(uint32_t, cl_taskGraphThreadsNumReserved, 2, nullptr, AZ::ConsoleFunctorFlags::Null, "TaskGraph number of hardware threads that are reserved for O3DE system threads");
 AZ_CVAR(uint32_t, cl_taskGraphThreadsMinNumber, 2, nullptr, AZ::ConsoleFunctorFlags::Null, "TaskGraph minimum number of worker threads to create after scaling the number of hw threads");
 
@@ -33,7 +33,7 @@ namespace AZ
             // min = cl_taskGraphThreadsMinNumber, 
             // max = number of hardware threads - cl_taskGraphThreadsNumReserved
             uint32_t scaledHardwareThreads = AZ::GetMax<uint32_t>( cl_taskGraphThreadsMinNumber, static_cast<uint32_t>(AZStd::floor( 0.5f + AZ::GetClamp<float>(cl_taskGraphThreadsConcurrencyRatio, 0.0f, 1.0f) * static_cast<float>(AZStd::thread::hardware_concurrency() - cl_taskGraphThreadsNumReserved))));
-        	m_taskExecutor = aznew TaskExecutor(scaledHardwareThreads);
+            m_taskExecutor = aznew TaskExecutor(scaledHardwareThreads);
             TaskExecutor::SetInstance(m_taskExecutor);
 			Interface<TaskGraphActiveInterface>::Register(this);
         }
