@@ -62,7 +62,6 @@ namespace AnimGraphParameterCommandsTests
         using ::MCore::GetStringIdPool;
         using ::MCore::ReflectionSerializer;
         using ::MCore::LogWarning;
-        using ::MCore::Array;
     } // namespace MCore
 
     namespace EMotionFX

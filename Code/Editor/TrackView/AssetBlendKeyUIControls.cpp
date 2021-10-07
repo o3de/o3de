@@ -41,7 +41,7 @@ public:
     CSmartVariable<float> mv_blendInTime;
     CSmartVariable<float> mv_blendOutTime;
 
-    virtual void OnCreateVars()
+    void OnCreateVars() override
     {
         // Init to an invalid id
         AZ::Data::AssetId assetId;
@@ -62,15 +62,15 @@ public:
         mv_timeScale->SetLimits(0.001f, 100.f);
     }
 
-    bool SupportTrackType([[maybe_unused]] const CAnimParamType& paramType, [[maybe_unused]] EAnimCurveType trackType, AnimValueType valueType) const
+    bool SupportTrackType([[maybe_unused]] const CAnimParamType& paramType, [[maybe_unused]] EAnimCurveType trackType, AnimValueType valueType) const override
     {
         return valueType == AnimValueType::AssetBlend;
     }
 
-    virtual bool OnKeySelectionChange(CTrackViewKeyBundle& selectedKeys);
-    virtual void OnUIChange(IVariable* pVar, CTrackViewKeyBundle& selectedKeys);
+    bool OnKeySelectionChange(CTrackViewKeyBundle& selectedKeys) override;
+    void OnUIChange(IVariable* pVar, CTrackViewKeyBundle& selectedKeys) override;
 
-    virtual unsigned int GetPriority() const { return 1; }
+    unsigned int GetPriority() const override { return 1; }
 
     static const GUID& GetClassID()
     {

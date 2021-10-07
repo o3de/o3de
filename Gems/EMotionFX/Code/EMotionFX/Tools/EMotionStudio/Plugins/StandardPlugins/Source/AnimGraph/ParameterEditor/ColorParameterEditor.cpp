@@ -63,7 +63,7 @@ namespace EMStudio
         if (!m_attributes.empty())
         {
             MCore::AttributeColor* attribute = static_cast<MCore::AttributeColor*>(m_attributes[0]);
-            m_currentValue = AZ::Color(attribute->GetValue().r, attribute->GetValue().g, attribute->GetValue().b, attribute->GetValue().a);
+            m_currentValue = AZ::Color(attribute->GetValue().m_r, attribute->GetValue().m_g, attribute->GetValue().m_b, attribute->GetValue().m_a);
         }
         else
         {

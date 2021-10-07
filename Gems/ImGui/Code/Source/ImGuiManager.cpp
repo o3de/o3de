@@ -81,59 +81,6 @@ namespace
         const auto& it = AZStd::find(touches.cbegin(), touches.cend(), inputChannelId);
         return it != touches.cend() ? static_cast<unsigned int>(it - touches.cbegin()) : UINT_MAX;
     }
-
-    /**
-    Utility function to map an AzFrameworkInput controller button to its integer index.
-
-    @param inputChannelId the ID for an AzFrameworkInput controller button.
-    @return the index of the indicated button, or -1 if not found.
-    */
-    unsigned int GetAzControllerButtonIndex(const InputChannelId& inputChannelId)
-    {
-        const auto& buttons = InputDeviceGamepad::Button::All;
-        const auto& triggers = InputDeviceGamepad::Trigger::All;
-        const auto& it = AZStd::find(buttons.cbegin(), buttons.cend(), inputChannelId);
-        if (it != buttons.cend())
-        {
-            return static_cast<unsigned int>(it - buttons.cbegin());
-        }
-        else
-        {
-            const auto& it2 = AZStd::find(triggers.cbegin(), triggers.cend(), inputChannelId);
-            if (it2 != triggers.cend())
-            {
-                return static_cast<unsigned int>(it2 - triggers.cbegin()) + AZ_ARRAY_SIZE(InputDeviceGamepad::Button::All);
-            }
-        }
-
-        return UINT_MAX;
-    }
-
-    /**
-    Utility function to map an AzFrameworkInput thumbstick movement to its integer index.
-
-    @param inputChannelId the ID for an AzFrameworkInput thumbstick movement.
-    @return the index of the indicated button, or -1 if not found.
-    */
-    unsigned int GetAzControllerThumbstickIndex(const InputChannelId& inputChannelId)
-    {
-        const auto& thumbstickMovements = InputDeviceGamepad::ThumbStickDirection::All;
-        const auto& it = AZStd::find(thumbstickMovements.cbegin(), thumbstickMovements.cend(), inputChannelId);
-        return it != thumbstickMovements.cend() ? static_cast<unsigned int>(it - thumbstickMovements.cbegin()) : UINT_MAX;
-    }
-
-    /**
-    Utility function to map an AzFrameworkInput thumbstick movement amountto its integer index.
-
-    @param inputChannelId the ID for an AzFrameworkInput thumbstick movement amount.
-    @return the index of the indicated button, or -1 if not found.
-    */
-    unsigned int GetAzControllerThumbstickAmountIndex(const InputChannelId& inputChannelId)
-    {
-        const auto& thumbstickMovementAmounts = InputDeviceGamepad::ThumbStickAxis1D::All;
-        const auto& it = AZStd::find(thumbstickMovementAmounts.cbegin(), thumbstickMovementAmounts.cend(), inputChannelId);
-        return it != thumbstickMovementAmounts.cend() ? static_cast<unsigned int>(it - thumbstickMovementAmounts.cbegin()) : UINT_MAX;
-    }
 }
 
 void ImGuiManager::Initialize()
@@ -409,7 +356,7 @@ void ImGuiManager::Render()
             break;
 
         case ImGuiResolutionMode::MatchToMaxRenderResolution:
-            if (backBufferWidth <= static_cast<int>(m_renderResolution.x))
+            if (backBufferWidth <= static_cast<AZ::u32>(m_renderResolution.x))
             {
                 renderRes[0] = backBufferWidth;
                 renderRes[1] = backBufferHeight;

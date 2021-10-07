@@ -41,6 +41,8 @@
 #define DX12_COMMANDLIST_TIMER_DETAIL(id)
 #endif
 
+#define PIX_MARKER_CMDLIST_COL 0xFF0000FF
+
 namespace AZ
 {
     namespace DX12
@@ -94,16 +96,22 @@ namespace AZ
         {
             SetName(name);
 
-            PIXBeginEvent(0xFF0000FF, name.GetCStr());
-            PIXBeginEvent(GetCommandList(), 0xFF0000FF, name.GetCStr());
+            PIXBeginEvent(PIX_MARKER_CMDLIST_COL, name.GetCStr());
+            if (RHI::Factory::Get().IsPixModuleLoaded() || RHI::Factory::Get().IsRenderDocModuleLoaded())
+            {
+                PIXBeginEvent(GetCommandList(), PIX_MARKER_CMDLIST_COL, name.GetCStr());
+            }
         }
 
         void CommandList::Close()
         {
             FlushBarriers();
-
-            PIXEndEvent(GetCommandList());
             PIXEndEvent();
+            if (RHI::Factory::Get().IsPixModuleLoaded() || RHI::Factory::Get().IsRenderDocModuleLoaded())
+            {
+                PIXEndEvent(GetCommandList());
+            }
+            
 
             CommandListBase::Close();
         }

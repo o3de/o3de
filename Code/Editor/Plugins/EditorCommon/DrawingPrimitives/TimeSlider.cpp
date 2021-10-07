@@ -12,6 +12,8 @@
 #include <QPainter>
 #include <QPalette>
 
+#include <AzCore/Casting/numeric_cast.h>
+
 namespace DrawingPrimitives
 {
     void DrawTimeSlider(QPainter& painter, const QPalette& palette, const STimeSliderOptions& options)

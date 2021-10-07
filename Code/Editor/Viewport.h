@@ -113,7 +113,7 @@ public:
     virtual void AddPostRenderer(IPostRenderer* pPostRenderer) = 0;
     virtual bool RemovePostRenderer(IPostRenderer* pPostRenderer) = 0;
 
-    virtual BOOL DestroyWindow() { return FALSE; }
+    virtual bool DestroyWindow() { return false; }
 
     /** Get type of this viewport.
     */
@@ -157,7 +157,7 @@ public:
 
     virtual Vec3 SnapToGrid(const Vec3& vec) = 0;
 
-    //! Get selection procision tolerance.
+    //! Get selection precision tolerance.
     virtual float GetSelectionTolerance() const = 0;
 
     //////////////////////////////////////////////////////////////////////////
@@ -165,16 +165,24 @@ public:
     //////////////////////////////////////////////////////////////////////////
     //! Set current view matrix,
     //! This is a matrix that transforms from world to view space.
-    virtual void SetViewTM(const Matrix34& tm) { m_viewTM = tm; };
+    virtual void SetViewTM([[maybe_unused]] const Matrix34& tm)
+    {
+        AZ_Error("CryLegacy", false, "QtViewport::SetViewTM not implemented");
+    }
 
     //! Get current view matrix.
     //! This is a matrix that transforms from world space to view space.
-    virtual const Matrix34& GetViewTM() const { return m_viewTM; };
+    const Matrix34& GetViewTM() const override
+    {
+        AZ_Error("CryLegacy", false, "QtViewport::GetViewTM not implemented");
+        static const Matrix34 m;
+        return m;
+    };
 
     //////////////////////////////////////////////////////////////////////////
     //! Get current screen matrix.
     //! Screen matrix transform from World space to Screen space.
-    virtual const Matrix34& GetScreenTM() const
+    const Matrix34& GetScreenTM() const override
     {
         return m_screenTM;
     }
@@ -182,9 +190,9 @@ public:
     virtual Vec3 MapViewToCP(const QPoint& point) = 0;
 
     //! Map viewport position to world space position.
-    virtual Vec3        ViewToWorld(const QPoint& vp, bool* pCollideWithTerrain = nullptr, bool onlyTerrain = false, bool bSkipVegetation = false, bool bTestRenderMesh = false, bool* collideWithObject = nullptr) const = 0;
+    Vec3        ViewToWorld(const QPoint& vp, bool* pCollideWithTerrain = nullptr, bool onlyTerrain = false, bool bSkipVegetation = false, bool bTestRenderMesh = false, bool* collideWithObject = nullptr) const override = 0;
     //! Convert point on screen to world ray.
-    virtual void        ViewToWorldRay(const QPoint& vp, Vec3& raySrc, Vec3& rayDir) const = 0;
+    void        ViewToWorldRay(const QPoint& vp, Vec3& raySrc, Vec3& rayDir) const override = 0;
     //! Get normal for viewport position
     virtual Vec3        ViewToWorldNormal(const QPoint& vp, bool onlyTerrain, bool bTestRenderMesh = false) = 0;
 
@@ -193,6 +201,7 @@ public:
 
     //! Performs hit testing of 2d point in view to find which object hit.
     virtual bool HitTest(const QPoint& point, HitContext& hitInfo) = 0;
+    virtual AZ::Vector3 GetHitLocation(const QPoint& point) = 0;
 
     virtual void MakeConstructionPlane(int axis) = 0;
 
@@ -252,7 +261,7 @@ public:
     virtual void SetCursorString(const QString& str) = 0;
 
     virtual void SetFocus() = 0;
-    virtual void Invalidate(BOOL bErase = 1) = 0;
+    virtual void Invalidate(bool bErase = true) = 0;
 
     // Is overridden by RenderViewport
     virtual void SetFOV([[maybe_unused]] float fov) {}
@@ -265,24 +274,16 @@ public:
 
     void SetViewPane(CLayoutViewPane* viewPane) { m_viewPane = viewPane; }
 
-    //Child classes can override these to provide extra logic that wraps
-    //widget rendering. Needed by the RenderViewport to handle raycasts 
-    //from screen-space to world-space. 
-    virtual void PreWidgetRendering() {}
-    virtual void PostWidgetRendering() {}
-
-    virtual CViewport *asCViewport() { return this; }
+    CViewport *asCViewport() override { return this; }
 
 protected:
     CLayoutViewPane* m_viewPane = nullptr;
     CViewManager* m_viewManager;
     AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
-    // Viewport matrix.
-    Matrix34 m_viewTM;
     // Screen Matrix
     Matrix34 m_screenTM;
     int m_nCurViewportID;
-    // Final game view matrix before drpping back to editor
+    // Final game view matrix before dropping back to editor
     Matrix34 m_gameTM;
     AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
 
@@ -335,7 +336,7 @@ public:
     void SetActiveWindow() override { activateWindow(); }
 
     //! Called while window is idle.
-    virtual void Update();
+    void Update() override;
 
     /** Set name of this viewport.
     */
@@ -343,24 +344,24 @@ public:
 
     /** Get name of viewport
     */
-    QString GetName() const;
+    QString GetName() const override;
 
-    virtual void SetFocus() { setFocus(); }
-    virtual void Invalidate([[maybe_unused]] BOOL bErase = 1) { update(); }
+    void SetFocus() override { setFocus(); }
+    void Invalidate([[maybe_unused]] bool bErase = 1) override { update(); }
 
     // Is overridden by RenderViewport
-    virtual void SetFOV([[maybe_unused]] float fov) {}
-    virtual float GetFOV() const;
+    void SetFOV([[maybe_unused]] float fov) override {}
+    float GetFOV() const override;
 
     // Must be overridden in derived classes.
     // Returns:
     //   e.g. 4.0/3.0
-    virtual float GetAspectRatio() const = 0;
-    virtual void GetDimensions(int* pWidth, int* pHeight) const;
-    virtual void ScreenToClient(QPoint& pPoint) const override;
+    float GetAspectRatio() const override = 0;
+    void GetDimensions(int* pWidth, int* pHeight) const override;
+    void ScreenToClient(QPoint& pPoint) const override;
 
-    virtual void ResetContent();
-    virtual void UpdateContent(int flags);
+    void ResetContent() override;
+    void UpdateContent(int flags) override;
 
     //! Set current zoom factor for this viewport.
     virtual void SetZoomFactor(float fZoomFactor);
@@ -372,10 +373,10 @@ public:
     virtual void OnDeactivate();
 
     //! Map world space position to viewport position.
-    virtual QPoint   WorldToView(const Vec3& wp) const override;
+    QPoint WorldToView(const Vec3& wp) const override;
 
     //! Map world space position to 3D viewport position.
-    virtual Vec3    WorldToView3D(const Vec3& wp, int nFlags = 0) const;
+    Vec3 WorldToView3D(const Vec3& wp, int nFlags = 0) const override;
 
     //! Map viewport position to world space position.
     virtual Vec3 ViewToWorld(const QPoint& vp, bool* pCollideWithTerrain = nullptr, bool onlyTerrain = false, bool bSkipVegetation = false, bool bTestRenderMesh = false, bool* collideWithObject = nullptr) const override;
@@ -390,17 +391,18 @@ public:
 
     //! This method return a vector (p2-p1) in world space alligned to construction plane and restriction axises.
     //! p1 and p2 must be given in world space and lie on construction plane.
-    virtual Vec3 GetCPVector(const Vec3& p1, const Vec3& p2, int axis);
+    using CViewport::GetCPVector;
+    Vec3 GetCPVector(const Vec3& p1, const Vec3& p2, int axis) override;
 
     //! Snap any given 3D world position to grid lines if snap is enabled.
     Vec3 SnapToGrid(const Vec3& vec) override;
-    virtual float GetGridStep() const;
+    float GetGridStep() const override;
 
     //! Returns the screen scale factor for a point given in world coordinates.
     //! This factor gives the width in world-space units at the point's distance of the viewport.
-    virtual float GetScreenScaleFactor([[maybe_unused]] const Vec3& worldPoint) const { return 1; };
+    float GetScreenScaleFactor([[maybe_unused]] const Vec3& worldPoint) const  override { return 1; };
 
-    void SetAxisConstrain(int axis);
+    void SetAxisConstrain(int axis) override;
 
     /// Take raw input and create a final mouse interaction.
     /// @attention Do not map **point** from widget to viewport explicitly,
@@ -412,7 +414,7 @@ public:
     // Selection.
     //////////////////////////////////////////////////////////////////////////
     //! Resets current selection region.
-    virtual void ResetSelectionRegion();
+    void ResetSelectionRegion() override;
     //! Set 2D selection rectangle.
     void SetSelectionRectangle(const QRect& rect) override;
 
@@ -420,16 +422,17 @@ public:
     QRect GetSelectionRectangle() const override { return m_selectedRect; };
     //! Called when dragging selection rectangle.
     void OnDragSelectRectangle(const QRect& rect, bool bNormalizeRect = false) override;
-    //! Get selection procision tolerance.
-    float GetSelectionTolerance() const { return m_selectionTolerance; }
+    //! Get selection precision tolerance.
+    float GetSelectionTolerance() const override { return m_selectionTolerance; }
     //! Center viewport on selection.
     void CenterOnSelection() override {}
     void CenterOnAABB([[maybe_unused]] const AABB& aabb) override {}
 
-    virtual void CenterOnSliceInstance() {}
+    void CenterOnSliceInstance() override {}
 
     //! Performs hit testing of 2d point in view to find which object hit.
     bool HitTest(const QPoint& point, HitContext& hitInfo) override;
+    AZ::Vector3 GetHitLocation(const QPoint& point) override;
 
     //! Do 2D hit testing of line in world space.
     // pToCameraDistance is an optional output parameter in which distance from the camera to the line is returned.
@@ -438,10 +441,10 @@ public:
     float GetDistanceToLine(const Vec3& lineP1, const Vec3& lineP2, const QPoint& point) const override;
 
     // Access to the member m_bAdvancedSelectMode so interested modules can know its value.
-    bool GetAdvancedSelectModeFlag();
+    bool GetAdvancedSelectModeFlag() override;
 
-    virtual void GetPerpendicularAxis(EAxis* pAxis, bool* pIs2D) const;
-    virtual const ::Plane* GetConstructionPlane() const { return &m_constructionPlane; }
+    void GetPerpendicularAxis(EAxis* pAxis, bool* pIs2D) const override;
+    const ::Plane* GetConstructionPlane() const override { return &m_constructionPlane; }
 
     //////////////////////////////////////////////////////////////////////////
 
@@ -449,7 +452,7 @@ public:
     //! Set construction plane from given position construction matrix refrence coord system and axis settings.
     //////////////////////////////////////////////////////////////////////////
     void MakeConstructionPlane(int axis) override;
-    virtual void SetConstructionMatrix(RefCoordSys coordSys, const Matrix34& xform);
+    void SetConstructionMatrix(RefCoordSys coordSys, const Matrix34& xform) override;
     virtual const Matrix34& GetConstructionMatrix(RefCoordSys coordSys);
     // Set simple construction plane origin.
     void SetConstructionOrigin(const Vec3& worldPos);
@@ -459,11 +462,11 @@ public:
 
     //////////////////////////////////////////////////////////////////////////
     // Undo for viewpot operations.
-    void BeginUndo();
-    void AcceptUndo(const QString& undoDescription);
-    void CancelUndo();
-    void RestoreUndo();
-    bool IsUndoRecording() const;
+    void BeginUndo() override;
+    void AcceptUndo(const QString& undoDescription) override;
+    void CancelUndo() override;
+    void RestoreUndo() override;
+    bool IsUndoRecording() const override;
     //////////////////////////////////////////////////////////////////////////
 
     //! Get prefered original size for this viewport.
@@ -471,39 +474,35 @@ public:
     virtual QSize GetIdealSize() const;
 
     //! Check if world space bounding box is visible in this view.
-    virtual bool IsBoundsVisible(const AABB& box) const;
+    bool IsBoundsVisible(const AABB& box) const override;
 
     //////////////////////////////////////////////////////////////////////////
 
-    void SetCursor(const QCursor& cursor)
+    void SetCursor(const QCursor& cursor) override
     {
         setCursor(cursor);
     }
 
     // Set`s current cursor string.
     void SetCurrentCursor(const QCursor& hCursor, const QString& cursorString);
-    virtual void SetCurrentCursor(EStdCursor stdCursor, const QString& cursorString);
-    void SetCurrentCursor(EStdCursor stdCursor);
-    virtual void SetCursorString(const QString& cursorString);
-    void ResetCursor();
-    void SetSupplementaryCursorStr(const QString& str);
+    void SetCurrentCursor(EStdCursor stdCursor, const QString& cursorString) override;
+    void SetCurrentCursor(EStdCursor stdCursor) override;
+    void SetCursorString(const QString& cursorString) override;
+    void ResetCursor() override;
+    void SetSupplementaryCursorStr(const QString& str) override;
 
-    //////////////////////////////////////////////////////////////////////////
-    // Return visble objects cache.
-    CBaseObjectsCache* GetVisibleObjectsCache() { return m_pVisibleObjectsCache; };
+    void RegisterRenderListener(IRenderListener*    piListener) override;
+    bool UnregisterRenderListener(IRenderListener*  piListener) override;
+    bool IsRenderListenerRegistered(IRenderListener*    piListener) override;
 
-    void RegisterRenderListener(IRenderListener*    piListener);
-    bool UnregisterRenderListener(IRenderListener*  piListener);
-    bool IsRenderListenerRegistered(IRenderListener*    piListener);
-
-    void AddPostRenderer(IPostRenderer* pPostRenderer);
-    bool RemovePostRenderer(IPostRenderer* pPostRenderer);
+    void AddPostRenderer(IPostRenderer* pPostRenderer) override;
+    bool RemovePostRenderer(IPostRenderer* pPostRenderer) override;
 
     void CaptureMouse() override { m_mouseCaptured = true;  QWidget::grabMouse(); }
     void ReleaseMouse() override { m_mouseCaptured = false;  QWidget::releaseMouse(); }
 
-    virtual void setRay(QPoint& vp, Vec3& raySrc, Vec3& rayDir);
-    virtual void setHitcontext(QPoint& vp, Vec3& raySrc, Vec3& rayDir);
+    void setRay(QPoint& vp, Vec3& raySrc, Vec3& rayDir) override;
+    void setHitcontext(QPoint& vp, Vec3& raySrc, Vec3& rayDir) override;
     QPoint m_vp;
     AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
     Vec3 m_raySrc;
@@ -564,12 +563,6 @@ protected:
     void dragLeaveEvent(QDragLeaveEvent* event) override;
     void dropEvent(QDropEvent* event) override;
 
-    //Child classes can override these to provide extra logic that wraps
-    //widget rendering. Needed by the RenderViewport to handle raycasts
-    //from screen-space to world-space.
-    virtual void PreWidgetRendering() {}
-    virtual void PostWidgetRendering() {}
-
     AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
     AzToolsFramework::ViewportUi::ViewportUiManager m_viewportUi;
     AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
@@ -614,8 +607,6 @@ protected:
 
     int m_nLastUpdateFrame;
     int m_nLastMouseMoveFrame;
-
-    CBaseObjectsCache* m_pVisibleObjectsCache;
 
     QRect m_rcClient;
 

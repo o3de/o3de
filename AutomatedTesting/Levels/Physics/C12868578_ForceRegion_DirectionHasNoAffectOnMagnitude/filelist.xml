@@ -1,6 +1,0 @@
-<download name="C12868578_ForceRegion_DirectionHasNoAffectOnMagnitude" type="Map">
- <index src="filelist.xml" dest="filelist.xml"/>
- <files>
-  <file src="level.pak" dest="level.pak" size="39343" md5="6ecbd00fe2e7d502712644d4ad3d8f45"/>
- </files>
-</download>

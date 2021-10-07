@@ -103,10 +103,6 @@ namespace AZ
                     }
                 }
 
-                if(!isBone)
-                {
-                    return Events::ProcessingResult::Ignored;
-                }
 
                 // If the current scene node (our eventual parent) contains bone data, we are not a root bone
                 AZStd::shared_ptr<SceneData::GraphData::BoneData> createdBoneData;

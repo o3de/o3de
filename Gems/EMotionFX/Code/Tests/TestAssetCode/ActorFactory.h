@@ -22,7 +22,7 @@ namespace EMotionFX
             actor->SetID(0);
             actor->GetSkeleton()->UpdateNodeIndexValues(0);
             actor->ResizeTransformData();
-            actor->PostCreateInit(/*makeGeomLodsCompatibleWithSkeletalLODs=*/false, /*generateOBBs=*/false, /*convertUnitType=*/false);
+            actor->PostCreateInit(/*makeGeomLodsCompatibleWithSkeletalLODs=*/false, /*convertUnitType=*/false);
             return actor;
         }
     };

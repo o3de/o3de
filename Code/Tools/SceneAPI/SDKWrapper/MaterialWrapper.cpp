@@ -12,21 +12,6 @@ namespace AZ
 {
     namespace SDKMaterial
     {
-        MaterialWrapper::MaterialWrapper(aiMaterial* assImpMaterial)
-            : m_assImpMaterial(assImpMaterial)
-        {
-        }
-
-        MaterialWrapper::~MaterialWrapper()
-        {
-            m_assImpMaterial = nullptr;
-        }
-
-        aiMaterial* MaterialWrapper::GetAssImpMaterial()
-        {
-            return m_assImpMaterial;
-        }
-
         AZStd::string MaterialWrapper::GetName() const
         {
             return AZStd::string();

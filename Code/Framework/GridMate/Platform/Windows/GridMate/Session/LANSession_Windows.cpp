@@ -6,22 +6,22 @@
  *
  */
 
-#include <GridMate/String/string.h>
 #include <WinSock2.h>
 #include <stdlib.h>
+#include <AzCore/std/string/conversions.h>
 
 namespace GridMate
 {
     namespace Platform
     {
-        void AssignExtendedName(GridMate::string& extendedName)
+        void AssignExtendedName(AZStd::string& extendedName)
         {
             char hostName[64];
             gethostname(hostName, AZ_ARRAY_SIZE(hostName));
 
             char procPath[256];
             char procName[256];
-            DWORD ret = GetModuleFileName(NULL, procPath, 256);
+            DWORD ret = GetModuleFileNameA(NULL, procPath, 256);
             if (ret > 0)
             {
                 ::_splitpath_s(procPath, 0, 0, 0, 0, procName, 256, 0, 0);
@@ -31,7 +31,7 @@ namespace GridMate
                 azsnprintf(procName, AZ_ARRAY_SIZE(procName), "Unknown");
             }
 
-            extendedName = GridMate::string::format("%s::%s", hostName, procName);
+            extendedName = AZStd::string::format("%s::%s", hostName, procName);
         }
     }
 }

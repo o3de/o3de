@@ -128,6 +128,7 @@
     <addaction name="action_GraphValidation"/>
     <addaction name="action_Debugging"/>
     <addaction name="separator"/>
+    <addaction name="action_UpgradeTool"/>
     <addaction name="action_ViewUnitTestManager"/>
     <addaction name="action_NodeStatistics"/>
     <addaction name="action_PresetsEditor"/>

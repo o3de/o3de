@@ -384,7 +384,7 @@ namespace AZStd
          */
         union
         {
-            AZ_ALIGN(char m_buffer[Internal::ANY_SBO_BUF_SIZE], 32); // Used for objects smaller than SBO_BUF_SIZE
+            alignas(32) char m_buffer[Internal::ANY_SBO_BUF_SIZE]; // Used for objects smaller than SBO_BUF_SIZE
             void* m_pointer; // Pointer to large objects
         };
         type_info m_typeInfo;

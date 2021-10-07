@@ -7,6 +7,7 @@
  */
 
 #include <AtomLyIntegration/CommonFeatures/Mesh/MeshComponentBus.h>
+#include <Atom/RPI.Reflect/Model/ModelAsset.h>
 
 #include <NvCloth/ITangentSpaceHelper.h>
 
@@ -66,7 +67,7 @@ namespace NvCloth
         MeshNodeInfo& meshNodeInfo,
         MeshClothInfo& meshClothInfo)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Cloth);
+        AZ_PROFILE_FUNCTION(Cloth);
 
         AZ::Data::Asset<AZ::RPI::ModelAsset> modelDataAsset;
         AZ::Render::MeshComponentRequestBus::EventResult(

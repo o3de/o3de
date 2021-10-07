@@ -163,7 +163,11 @@ namespace AzFramework
                     AZ_TracePrintfOnce("AssetSystemComponent", "Failed to find asset platform, setting 'pc'\n");
                     outputConnectionSettings.m_assetPlatform = "pc";
                 }
-                outputConnectionSettings.m_assetPlatform = assetsPlatform;
+                else
+                {
+                    outputConnectionSettings.m_assetPlatform = assetsPlatform;
+                }
+
                 if (outputConnectionSettings.m_assetPlatform.empty())
                 {
                     assetsPlatform = AzFramework::OSPlatformToDefaultAssetPlatform(AZ_TRAIT_OS_PLATFORM_CODENAME);

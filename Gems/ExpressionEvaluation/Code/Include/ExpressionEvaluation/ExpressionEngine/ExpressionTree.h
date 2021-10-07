@@ -11,6 +11,11 @@
 
 #include <ExpressionEvaluation/ExpressionEngine/ExpressionTypes.h>
 
+namespace AZ
+{
+    class ExpressionTreeVariableDescriptorSerializer;
+}
+
 namespace ExpressionEvaluation
 {
     // Holds all of the tokeniszed information from parsing an expression string.
@@ -20,8 +25,22 @@ namespace ExpressionEvaluation
     {
         // Friend class for reflection
         friend class ExpressionEvaluationSystemComponent;
+        friend class ExpressionTreeVariableDescriptorSerializer;
 
     public:
+        struct VariableDescriptor
+        {
+            AZ_TYPE_INFO(VariableDescriptor, "{5E1A0044-E0E7-46D3-8BC6-A22E226ADB83}");
+
+            VariableDescriptor()
+            {
+                m_supportedTypes.push_back(azrtti_typeid<double>());
+            }
+
+            AZStd::vector< AZ::Uuid > m_supportedTypes;
+            ExpressionVariable        m_value;
+        };
+
         AZ_RTTI(ExpressionTree, "{4CCF3DFD-2EA8-47CB-AF25-353BC034EF42}");
         AZ_CLASS_ALLOCATOR(ExpressionTree, AZ::SystemAllocator, 0);
 
@@ -147,18 +166,6 @@ namespace ExpressionEvaluation
 
     private:
 
-        struct VariableDescriptor
-        {
-            AZ_TYPE_INFO(VariableDescriptor, "{5E1A0044-E0E7-46D3-8BC6-A22E226ADB83}");
-
-            VariableDescriptor()
-            {
-                m_supportedTypes.push_back(azrtti_typeid<double>());
-            }
-
-            AZStd::vector< AZ::Uuid > m_supportedTypes;
-            ExpressionVariable        m_value;
-        };
         
         AZStd::unordered_map< AZ::Crc32, VariableDescriptor > m_variables;
         

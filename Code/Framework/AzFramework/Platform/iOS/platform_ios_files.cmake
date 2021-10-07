@@ -14,7 +14,6 @@ set(FILES
     AzFramework/Application/Application_iOS.mm
     ../Common/Unimplemented/AzFramework/Asset/AssetSystemComponentHelper_Unimplemented.cpp
     ../Common/UnixLike/AzFramework/IO/LocalFileIO_UnixLike.cpp
-    ../Common/Default/AzFramework/Network/AssetProcessorConnection_Default.cpp
     ../Common/Unimplemented/AzFramework/StreamingInstall/StreamingInstall_Unimplemented.cpp
     ../Common/Default/AzFramework/TargetManagement/TargetManagementComponent_Default.cpp
     AzFramework/Windowing/NativeWindow_ios.mm

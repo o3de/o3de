@@ -166,12 +166,19 @@ namespace AZ
             AZStd::array_view<ConstPtr<ImageView>> GetImageGroup() const;
             AZStd::array_view<ConstPtr<BufferView>> GetBufferGroup() const;
             AZStd::array_view<SamplerState> GetSamplerGroup() const;
+            
+            //! Reset image and buffer views setup for this ShaderResourceGroupData
+            //! So it won't hold references for any RHI resources
+            void ResetViews();
 
             //! Returns the opaque constant data populated by calls to SetConstant and SetConstantData.
             //! 
             //! CAUTION!
             //! Different platforms might follow different packing rules for the internally-managed SRG constant buffer.
             AZStd::array_view<uint8_t> GetConstantData() const;
+
+            //! Returns the underlying ConstantsData struct
+            const ConstantsData& GetConstantsData() const;
 
             //! Returns the shader resource layout for this group.
             const ShaderResourceGroupLayout* GetLayout() const;

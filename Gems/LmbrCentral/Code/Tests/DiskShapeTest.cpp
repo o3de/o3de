@@ -34,10 +34,10 @@ namespace
         0.5f, 1.0f, 2.0f, 4.0f, 8.0f,
     };
 
-    const uint32_t RayCount = 5;
+    const uint32_t RayCountDisk = 5;
 
     // Various normalized offset directions from center of disk along disk's surface.
-    const AZStd::array<AZ::Vector3, RayCount> OffsetsFromCenter =
+    const AZStd::array<AZ::Vector3, RayCountDisk> OffsetsFromCenterDisk =
     {
         AZ::Vector3(0.18f, -0.50f, 0.0f).GetNormalized(),
         AZ::Vector3(-0.08f,  0.59f, 0.0f).GetNormalized(),
@@ -47,7 +47,7 @@ namespace
     };
 
     // Various directions away from a point on the disk's surface
-    const AZStd::array<AZ::Vector3, RayCount> OffsetsFromSurface =
+    const AZStd::array<AZ::Vector3, RayCountDisk> OffsetsFromSurfaceDisk =
     {
         AZ::Vector3(0.69f,  0.38f,  0.09f).GetNormalized(),
         AZ::Vector3(-0.98f, -0.68f, -0.28f).GetNormalized(),
@@ -57,7 +57,7 @@ namespace
     };
 
     // Various distance away from the surface for the rays
-    const AZStd::array<float, RayCount> RayDistances =
+    const AZStd::array<float, RayCountDisk> RayDistancesDisk =
     {
         0.5f, 1.0f, 2.0f, 4.0f, 8.0f
     };
@@ -185,7 +185,7 @@ namespace UnitTest
         }
 
         // Offsets from center scaled down from the disk edge so that all the rays should hit
-        const AZStd::array<float, RayCount> offsetFromCenterScale =
+        const AZStd::array<float, RayCountDisk> offsetFromCenterScale =
         {
             0.8f,
             0.2f,
@@ -197,20 +197,20 @@ namespace UnitTest
         // Construct rays and test against the different disks
         for (uint32_t diskIndex = 0; diskIndex < DiskCount; ++diskIndex)
         {
-            for (uint32_t rayIndex = 0; rayIndex < RayCount; ++rayIndex)
+            for (uint32_t rayIndex = 0; rayIndex < RayCountDisk; ++rayIndex)
             {
-                AZ::Vector3 scaledOffsetFromCenter = OffsetsFromCenter[rayIndex] * DiskRadii[diskIndex] * offsetFromCenterScale[rayIndex];
+                AZ::Vector3 scaledOffsetFromCenter = OffsetsFromCenterDisk[rayIndex] * DiskRadii[diskIndex] * offsetFromCenterScale[rayIndex];
                 AZ::Vector3 positionOnDiskSurface = DiskTransforms[diskIndex].TransformPoint(scaledOffsetFromCenter);
-                AZ::Vector3 rayOrigin = positionOnDiskSurface + OffsetsFromSurface[rayIndex] * RayDistances[rayIndex];
+                AZ::Vector3 rayOrigin = positionOnDiskSurface + OffsetsFromSurfaceDisk[rayIndex] * RayDistancesDisk[rayIndex];
 
                 bool rayHit2 = false;
                 float distance2;
                 LmbrCentral::ShapeComponentRequestsBus::EventResult(
                     rayHit2, diskEntities[diskIndex].GetId(), &LmbrCentral::ShapeComponentRequests::IntersectRay,
-                    rayOrigin, -OffsetsFromSurface[rayIndex], distance2);
+                    rayOrigin, -OffsetsFromSurfaceDisk[rayIndex], distance2);
 
                 EXPECT_TRUE(rayHit2);
-                EXPECT_NEAR(distance2, RayDistances[rayIndex], 1e-4f);
+                EXPECT_NEAR(distance2, RayDistancesDisk[rayIndex], 1e-4f);
             }
         }
 
@@ -241,7 +241,7 @@ namespace UnitTest
         }
 
         // Offsets from center scaled up from the disk edge so that all the rays should miss
-        const AZStd::array<float, RayCount> offsetFromCenterScale =
+        const AZStd::array<float, RayCountDisk> offsetFromCenterScale =
         {
             1.8f,
             1.2f,
@@ -253,17 +253,17 @@ namespace UnitTest
         // Construct rays and test against the different disks
         for (uint32_t diskIndex = 0; diskIndex < DiskCount; ++diskIndex)
         {
-            for (uint32_t rayIndex = 0; rayIndex < RayCount; ++rayIndex)
+            for (uint32_t rayIndex = 0; rayIndex < RayCountDisk; ++rayIndex)
             {
-                AZ::Vector3 scaledOffsetFromCenter = OffsetsFromCenter[rayIndex] * DiskRadii[diskIndex] * offsetFromCenterScale[rayIndex];
+                AZ::Vector3 scaledOffsetFromCenter = OffsetsFromCenterDisk[rayIndex] * DiskRadii[diskIndex] * offsetFromCenterScale[rayIndex];
                 AZ::Vector3 positionOnDiskSurface = DiskTransforms[diskIndex].TransformPoint(scaledOffsetFromCenter);
-                AZ::Vector3 rayOrigin = positionOnDiskSurface + OffsetsFromSurface[rayIndex] * RayDistances[rayIndex];
+                AZ::Vector3 rayOrigin = positionOnDiskSurface + OffsetsFromSurfaceDisk[rayIndex] * RayDistancesDisk[rayIndex];
 
                 bool rayHit2 = false;
                 float distance2;
                 LmbrCentral::ShapeComponentRequestsBus::EventResult(
                     rayHit2, diskEntities[diskIndex].GetId(), &LmbrCentral::ShapeComponentRequests::IntersectRay,
-                    rayOrigin, -OffsetsFromSurface[rayIndex], distance2);
+                    rayOrigin, -OffsetsFromSurfaceDisk[rayIndex], distance2);
 
                 EXPECT_FALSE(rayHit2);
             }

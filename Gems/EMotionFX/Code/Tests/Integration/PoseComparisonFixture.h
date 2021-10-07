@@ -18,12 +18,12 @@ namespace EMotionFX
 
     struct PoseComparisonFixtureParams
     {
-        const char* actorFile = nullptr;
-        const char* animGraphFile = nullptr;
-        const char* motionSetFile = nullptr;
-        const char* recordingFile = nullptr;
+        const char* m_actorFile = nullptr;
+        const char* m_animGraphFile = nullptr;
+        const char* m_motionSetFile = nullptr;
+        const char* m_recordingFile = nullptr;
         PoseComparisonFixtureParams(const char* actorFile, const char* animGraphFile, const char* motionSetFile, const char* recordingFile)
-            : actorFile(actorFile), animGraphFile(animGraphFile), motionSetFile(motionSetFile), recordingFile(recordingFile)
+            : m_actorFile(actorFile), m_animGraphFile(animGraphFile), m_motionSetFile(motionSetFile), m_recordingFile(recordingFile)
         {}
     };
 

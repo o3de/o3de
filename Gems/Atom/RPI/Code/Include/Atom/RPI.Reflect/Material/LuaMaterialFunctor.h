@@ -83,14 +83,19 @@ namespace AZ
             AZ_TYPE_INFO(AZ::RPI::LuaMaterialFunctorCommonContext, "{2CCCB9A9-AD4F-447C-B587-E7A91CEA8088}");
 
             explicit LuaMaterialFunctorCommonContext(MaterialFunctor::RuntimeContext* runtimeContextImpl,
+                const MaterialPropertyFlags* materialPropertyDependencies,
                 const AZStd::string& propertyNamePrefix,
                 const AZStd::string& srgNamePrefix,
                 const AZStd::string& optionsNamePrefix);
 
             explicit LuaMaterialFunctorCommonContext(MaterialFunctor::EditorContext* editorContextImpl,
+                const MaterialPropertyFlags* materialPropertyDependencies,
                 const AZStd::string& propertyNamePrefix,
                 const AZStd::string& srgNamePrefix,
                 const AZStd::string& optionsNamePrefix);
+            
+            //! Returns false if PSO changes are not allowed, and may report errors or warnings
+            bool CheckPsoChangesAllowed();
 
         protected:
 
@@ -100,6 +105,12 @@ namespace AZ
             MaterialPropertyIndex GetMaterialPropertyIndex(const char* name, const char* functionName) const;
 
             const MaterialPropertyValue& GetMaterialPropertyValue(MaterialPropertyIndex propertyIndex) const;
+            
+            MaterialPropertyPsoHandling GetMaterialPropertyPsoHandling() const;
+
+            RHI::ConstPtr<MaterialPropertiesLayout> GetMaterialPropertiesLayout() const;
+
+            AZStd::string GetMaterialPropertyDependenciesString() const;
 
             // These are prefix strings that will be applied to every name lookup in the lua functor.
             // This allows the lua script to be reused in different contexts.
@@ -112,6 +123,8 @@ namespace AZ
             // Only one of these will be valid
             MaterialFunctor::RuntimeContext* m_runtimeContextImpl = nullptr;
             MaterialFunctor::EditorContext* m_editorContextImpl = nullptr;
+            const MaterialPropertyFlags* m_materialPropertyDependencies = nullptr;
+            bool m_psoChangesReported = false; //!< errors/warnings about PSO changes will only be reported once per execution of the functor
         };
 
         //! Wraps RHI::RenderStates for LuaMaterialFunctor access
@@ -241,7 +254,11 @@ namespace AZ
 
             static void Reflect(BehaviorContext* behaviorContext);
 
-            explicit LuaMaterialFunctorShaderItem(ShaderCollection::Item* shaderItem) : m_shaderItem(shaderItem) {}
+            LuaMaterialFunctorShaderItem() :
+                m_context(nullptr), m_shaderItem(nullptr) {}
+
+            explicit LuaMaterialFunctorShaderItem(LuaMaterialFunctorCommonContext* context, ShaderCollection::Item* shaderItem) :
+                m_context(context), m_shaderItem(shaderItem) {}
 
             LuaMaterialFunctorRenderStates GetRenderStatesOverride();
             void SetEnabled(bool enable);
@@ -253,6 +270,7 @@ namespace AZ
         private:
             void SetShaderOptionValue(const Name& name, AZStd::function<bool(ShaderOptionGroup*, ShaderOptionIndex)> setValueCommand);
 
+            LuaMaterialFunctorCommonContext* m_context = nullptr;
             ShaderCollection::Item* m_shaderItem = nullptr;
         };
 
@@ -265,6 +283,7 @@ namespace AZ
             static void Reflect(BehaviorContext* behaviorContext);
 
             explicit LuaMaterialFunctorRuntimeContext(MaterialFunctor::RuntimeContext* runtimeContextImpl,
+                const MaterialPropertyFlags* materialPropertyDependencies,
                 const AZStd::string& propertyNamePrefix,
                 const AZStd::string& srgNamePrefix,
                 const AZStd::string& optionsNamePrefix);
@@ -304,6 +323,7 @@ namespace AZ
             static void Reflect(BehaviorContext* behaviorContext);
 
             explicit LuaMaterialFunctorEditorContext(MaterialFunctor::EditorContext* editorContextImpl,
+                const MaterialPropertyFlags* materialPropertyDependencies,
                 const AZStd::string& propertyNamePrefix,
                 const AZStd::string& srgNamePrefix,
                 const AZStd::string& optionsNamePrefix);

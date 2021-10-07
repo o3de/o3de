@@ -144,7 +144,7 @@ namespace Vegetation
 
     void DescriptorWeightSelectorComponent::SelectDescriptors(const DescriptorSelectorParams& params, DescriptorPtrVec& descriptors) const
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Entity);
+        AZ_PROFILE_FUNCTION(Entity);
 
         switch (m_configuration.m_sortBehavior)
         {

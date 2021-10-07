@@ -371,7 +371,6 @@ namespace AZ::SceneAPI::Containers
         MOCK_CONST_METHOD0(GetAppRoot, const char*());
         MOCK_CONST_METHOD0(GetEngineRoot, const char*());
         MOCK_CONST_METHOD0(GetExecutableFolder, const char* ());
-        MOCK_METHOD0(GetDrillerManager, AZ::Debug::DrillerManager* ());
         MOCK_CONST_METHOD1(QueryApplicationType, void(AZ::ApplicationTypeQuery&));
     };
 

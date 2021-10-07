@@ -18,32 +18,24 @@
 
 namespace ScriptEventsLegacy
 {
-
-    class IValidator
-    {
-    public:
-        virtual AZ::Outcome<bool, AZStd::string> Validate() = 0;
-    };
-
-
     /**
-    * This class represents an EBus event parameter. 
+    * This class represents an EBus event parameter.
     * void Foo(parameterType parameterName)
-    *          ^^^^^^^^^^^^^^^^^^^^^^^^^^^ 
+    *          ^^^^^^^^^^^^^^^^^^^^^^^^^^^
     *          parameter
     */
     struct ParameterDefinition
     {
         AZ_TYPE_INFO(ParameterDefinition, "{6586FFB5-0FF6-424F-A542-C797E2FF3458}");
         AZ_CLASS_ALLOCATOR(ParameterDefinition, AZ::SystemAllocator, 0);
-        
+
         ParameterDefinition() = default;
         ParameterDefinition(const AZStd::string& name, const AZStd::string& tooltip, const AZ::Uuid& type)
             : m_name(name)
             , m_tooltip(tooltip)
-            , m_type(type) 
+            , m_type(type)
         {}
-        
+
         AZStd::string m_name;
         AZStd::string m_tooltip;
         AZ::Uuid m_type = AZ::BehaviorContext::GetVoidTypeId();
@@ -52,20 +44,20 @@ namespace ScriptEventsLegacy
     /**
     * This class represents an EBus event.
     * void          Foo        (parameterType parameterName, parameterType2 parameterName2)
-    * ^^^^          ^^^         ^^^^^^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ 
+    * ^^^^          ^^^         ^^^^^^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
     * m_returnType, m_name,     m_parameters
     */
     struct EventDefinition
     {
         AZ_TYPE_INFO(EventDefinition, "{211BB356-FA42-400F-B3DD-9326C6A686B6}");
         AZ_CLASS_ALLOCATOR(EventDefinition, AZ::SystemAllocator, 0);
-        
+
         EventDefinition() = default;
         EventDefinition(const AZStd::string& eventName, const AZStd::string& tooltip, const AZ::Uuid& returnValue, const AZStd::vector<ParameterDefinition>& parameters)
             : m_name(eventName)
             , m_tooltip(tooltip)
             , m_returnType(returnValue)
-            , m_parameters(parameters) 
+            , m_parameters(parameters)
         {}
 
         AZStd::string m_name;
@@ -86,7 +78,7 @@ namespace ScriptEventsLegacy
         TypeTraitsDefinition() = default;
         TypeTraitsDefinition(const AZ::Uuid& busIdType)
             : m_busIdType(busIdType) {}
-        
+
         AZ::Uuid m_busIdType = AZ::BehaviorContext::GetVoidTypeId();
     };
 

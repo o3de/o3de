@@ -27,7 +27,7 @@ namespace MessagePopup
         bool RemovePopup(AZ::u32 _popupID);
         void* GetPopupClientData(AZ::u32 _popupID);
         MessagePopupInfo* GetPopupInfo(AZ::u32 _popupID);
-        AZ::u32 GetNumActivePopups() const { return m_currentPopups.size(); }
+        AZ::u32 GetNumActivePopups() const { return static_cast<AZ::u32>(m_currentPopups.size()); }
 
     protected:
         //////////////////////////////////////////////////////////////////////////

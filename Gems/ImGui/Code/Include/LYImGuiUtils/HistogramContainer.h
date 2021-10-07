@@ -45,7 +45,7 @@ namespace ImGui
                 , bool autoExpandScale, bool startCollapsed = false, bool drawMostRecentValue = true);
 
             // How many values are in the container currently
-            int GetSize() { return m_values.size(); }
+            int GetSize() { return static_cast<int>(m_values.size()); }
 
             // What is the max size of the container
             int GetMaxSize() { return m_maxSize; }
@@ -57,7 +57,7 @@ namespace ImGui
             void PushValue(float val);
 
             // Get the last value pushed
-            float GetLastValue() { return GetValue(m_values.size() - 1); }
+            float GetLastValue() { return GetValue(static_cast<int>(m_values.size() - 1)); }
 
             // Get a Values at a particular index
             float GetValue(int index) { return index < m_values.size() ? m_values.at(index) : 0.0f; }

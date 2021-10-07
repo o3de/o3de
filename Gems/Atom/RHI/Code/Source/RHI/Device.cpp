@@ -6,7 +6,6 @@
  *
  */
 
-#include <Atom/RHI/CpuProfiler.h>
 #include <Atom/RHI/Device.h>
 #include <Atom/RHI/MemoryStatisticsBus.h>
 
@@ -77,7 +76,7 @@ namespace AZ
             
             m_physicalDevice = &physicalDevice;
 
-            const ResultCode resultCode = InitInternal(physicalDevice);
+            RHI::ResultCode resultCode = InitInternal(physicalDevice);
 
             if (resultCode == ResultCode::Success)
             {
@@ -90,33 +89,13 @@ namespace AZ
 
                 // Assume all formats that haven't been mapped yet are supported and map to themselves
                 FillRemainingSupportedFormats();
+
+                // Initialize limits and resources that are associated with them
+                resultCode = InitializeLimits();
             }
             else
             {
                 m_physicalDevice = nullptr;
-            }
-
-            return resultCode;
-        }
-    
-        ResultCode Device::PostInit(const DeviceDescriptor& descriptor)
-        {
-            if (Validation::IsEnabled())
-            {
-                if (!IsInitialized())
-                {
-                    AZ_Error("Device", false, "Device is not initialized.");
-                    return ResultCode::InvalidOperation;
-                }
-            }
-
-            m_descriptor = descriptor;
-            const ResultCode resultCode = PostInitInternal(descriptor);
-
-            if (resultCode != ResultCode::Success)
-            {
-                AZ_Error("Device", false, "Device is not initialized.");
-                return ResultCode::InvalidOperation;
             }
 
             return resultCode;
@@ -148,7 +127,7 @@ namespace AZ
         {
             if (ValidateIsInitialized() && ValidateIsInFrame())
             {
-                AZ_ATOM_PROFILE_FUNCTION("RHI", "Device: EndFrame");
+                AZ_PROFILE_SCOPE(RHI, "Device: EndFrame");
                 EndFrameInternal();
                 m_isInFrame = false;
                 return ResultCode::Success;
@@ -170,7 +149,7 @@ namespace AZ
         {
             if (ValidateIsInitialized() && ValidateIsNotInFrame())
             {
-                AZ_ATOM_PROFILE_FUNCTION("RHI", "Device: CompileMemoryStatistics");
+                AZ_PROFILE_SCOPE(RHI, "Device: CompileMemoryStatistics");
                 MemoryStatisticsBuilder builder;
                 builder.Begin(memoryStatistics, reportFlags);
                 CompileMemoryStatisticsInternal(builder);

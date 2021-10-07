@@ -13,7 +13,7 @@
 
 namespace EMotionFX
 {
-    const int ObjectEditor::m_propertyLabelWidth = 160;
+    const int ObjectEditor::s_propertyLabelWidth = 160;
 
     ObjectEditor::ObjectEditor(AZ::SerializeContext* serializeContext, QWidget* parent)
         : ObjectEditor(serializeContext, nullptr, parent)
@@ -30,7 +30,7 @@ namespace EMotionFX
         m_propertyEditor = aznew AzToolsFramework::ReflectedPropertyEditor(this);
         m_propertyEditor->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Maximum);
         m_propertyEditor->setObjectName("PropertyEditor");
-        m_propertyEditor->Setup(serializeContext, notify, false/*enableScrollbars*/, m_propertyLabelWidth);
+        m_propertyEditor->Setup(serializeContext, notify, false/*enableScrollbars*/, s_propertyLabelWidth);
 
         QVBoxLayout* mainLayout = new QVBoxLayout(this);
         mainLayout->setSizeConstraint(QLayout::SetMinimumSize);

@@ -16,7 +16,7 @@
 #include <QTimer>
 
 
-CFileChangeMonitor* CFileChangeMonitor::s_pFileMonitorInstance = NULL;
+CFileChangeMonitor* CFileChangeMonitor::s_pFileMonitorInstance = nullptr;
 
 //////////////////////////////////////////////////////////////////////////
 CFileChangeMonitor::CFileChangeMonitor(QObject* parent)
@@ -34,7 +34,7 @@ CFileChangeMonitor::~CFileChangeMonitor()
 
         if (pListener)
         {
-            pListener->SetMonitor(NULL);
+            pListener->SetMonitor(nullptr);
         }
     }
 
@@ -143,7 +143,7 @@ void CFileChangeMonitor::Unsubscribe(CFileChangeMonitorListener* pListener)
 {
     assert(pListener);
     m_listeners.erase(pListener);
-    pListener->SetMonitor(NULL);
+    pListener->SetMonitor(nullptr);
 }
 
 void CFileChangeMonitor::OnDirectoryChange(const QString &path)

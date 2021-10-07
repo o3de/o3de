@@ -48,7 +48,7 @@ public:
     static const char* kWipFeaturesFilename;
 
     // Used to register a callback function to update the state of features whitin the editor
-    // pbVisible, pbEnabled, pbSafeMode, pParams - if the pointer is NULL, then that attribute was not changed
+    // pbVisible, pbEnabled, pbSafeMode, pParams - if the pointer is nullptr, then that attribute was not changed
     typedef void (* TWipFeatureUpdateCallback)(int aFeatureId, const bool* const pbVisible, const bool* const pbEnabled, const bool* const pbSafeMode, const char* pParams);
 
     // wip feature registerer auto create object, used for static auto feature creation with the REGISTER_WIP_FEATURE macro
@@ -71,7 +71,7 @@ public:
             , m_bVisible(true)
             , m_bEnabled(true)
             , m_bSafeMode(false)
-            , m_pfnUpdateFeature(NULL)
+            , m_pfnUpdateFeature(nullptr)
             , m_bLoadedFromXml(false)
         {}
 

@@ -84,7 +84,7 @@ void CSettingsManagerDialog::OnReadBtnClick()
         ui->m_layoutListBox->clear();
 
         TToolNamesMap toolNames;
-        XmlNodeRef dummyNode = NULL;
+        XmlNodeRef dummyNode = nullptr;
 
         GetIEditor()->GetSettingsManager()->GetMatchingLayoutNames(toolNames, dummyNode, m_importFileStr);
 

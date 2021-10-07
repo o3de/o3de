@@ -220,6 +220,8 @@ class ObjectTreeDialog(QDialog):
             return
         for child in obj.children():
             object_type = type(child).__name__
+            if child.metaObject().className() != object_type:
+                object_type = f"{child.metaObject().className()} ({object_type})"
             object_name = child.objectName()
             text = icon_text = title = window_title = geometry_str = classes = "(N/A)"
             if isinstance(child, QtGui.QWindow):

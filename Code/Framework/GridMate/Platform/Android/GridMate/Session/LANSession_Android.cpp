@@ -6,19 +6,19 @@
  *
  */
 
-#include <GridMate/String/string.h>
 #include <unistd.h>
+#include <AzCore/std/string/string.h>
 
 namespace GridMate
 {
     namespace Platform
     {
-        void AssignExtendedName(GridMate::string& extendedName)
+        void AssignExtendedName(AZStd::string& extendedName)
         {
             char hostName[64];
             gethostname(hostName, AZ_ARRAY_SIZE(hostName));
 
-            extendedName = GridMate::string::format("%s", hostName);
+            extendedName = AZStd::string::format("%s", hostName);
         }
     }
 }

@@ -380,7 +380,6 @@ namespace AzToolsFramework::ViewportUi::Internal
         }
 
         PrepareWidgetForViewportUi(widget);
-        m_renderOverlay->setFocus();
     }
 
     void ViewportUiDisplay::SetUiOverlayContentsAnchored(QPointer<QWidget> widget, const Qt::Alignment alignment)
@@ -392,7 +391,6 @@ namespace AzToolsFramework::ViewportUi::Internal
 
         PrepareWidgetForViewportUi(widget);
         m_uiOverlayLayout.AddAnchoredWidget(widget, alignment);
-        m_renderOverlay->setFocus();
     }
 
     void ViewportUiDisplay::UpdateUiOverlayGeometry()

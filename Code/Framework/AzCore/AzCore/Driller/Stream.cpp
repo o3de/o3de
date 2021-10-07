@@ -677,7 +677,7 @@ namespace AZ
                         AZStd::endian_swap(crc32);
                     }
                     stringPtr = m_stringPool->Find(crc32);
-                    AZ_Assert(stringPtr != NULL, "Failed to find string with id 0x%08x in the string pool, proper stream read is impossible!", crc32);
+                    AZ_Assert(stringPtr != nullptr, "Failed to find string with id 0x%08x in the string pool, proper stream read is impossible!", crc32);
                     stringLength = static_cast<unsigned int>(strlen(stringPtr));
                 }
                 else if (m_isPooledString)
@@ -693,7 +693,7 @@ namespace AZ
             }
             else
             {
-                AZ_Assert(m_isPooledString == false && m_isPooledStringCrc32 == false, "This stream requires using of a string pool as the string is send only once and afterwards only the Crc32 is used!")
+                AZ_Assert(m_isPooledString == false && m_isPooledStringCrc32 == false, "This stream requires using of a string pool as the string is send only once and afterwards only the Crc32 is used!");
             }
             return srcData;
         }
@@ -710,7 +710,7 @@ namespace AZ
         //=========================================================================
         const DrillerDOMParser::Node* DrillerDOMParser::Node::GetTag(u32 tagName) const
         {
-            const Node* tagNode = NULL;
+            const Node* tagNode = nullptr;
             for (Node::NodeListType::const_iterator i = m_tags.begin(); i != m_tags.end(); ++i)
             {
                 if ((*i).m_name == tagName)
@@ -728,7 +728,7 @@ namespace AZ
         //=========================================================================
         const DrillerDOMParser::Data* DrillerDOMParser::Node::GetData(u32 dataName) const
         {
-            const Data* dataNode = NULL;
+            const Data* dataNode = nullptr;
             for (Node::DataListType::const_iterator i = m_data.begin(); i != m_data.end(); ++i)
             {
                 if (i->m_name == dataName)
@@ -749,7 +749,7 @@ namespace AZ
             , m_isPersistentInputData(isPersistentInputData)
         {
             m_root.m_name = 0;
-            m_root.m_parent = NULL;
+            m_root.m_parent = nullptr;
             m_topNode = &m_root;
         }
         static int g_numFree = 0;
@@ -850,14 +850,14 @@ namespace AZ
                 return;
             }
 
-            DrillerHandlerParser* childHandler = NULL;
+            DrillerHandlerParser* childHandler = nullptr;
             DrillerHandlerParser* currentHandler = m_stack.back();
             if (isOpen)
             {
-                if (currentHandler != NULL)
+                if (currentHandler != nullptr)
                 {
                     childHandler = currentHandler->OnEnterTag(name);
-                    AZ_Warning("Driller", !currentHandler->IsWarnOnUnsupportedTags() || childHandler != NULL, "Could not find handler for tag 0x%08x", name);
+                    AZ_Warning("Driller", !currentHandler->IsWarnOnUnsupportedTags() || childHandler != nullptr, "Could not find handler for tag 0x%08x", name);
                 }
                 m_stack.push_back(childHandler);
             }

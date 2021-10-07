@@ -9,7 +9,7 @@
 
 #include <AzCore/Math/Aabb.h>
 #include <AzCore/Memory/Memory.h>
-#include <AzCore/RTTI/TypeInfo.h>
+#include <AzCore/RTTI/TypeInfoSimple.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/string/string.h>
 

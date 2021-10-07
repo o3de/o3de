@@ -52,7 +52,7 @@ void CCaptureTrack::GetKeyInfo(int key, const char*& description, float& duratio
     char prefix[64] = "Frame";
     if (!m_keys[key].prefix.empty())
     {
-        cry_strcpy(prefix, m_keys[key].prefix.c_str());
+        azstrcpy(prefix, AZ_ARRAY_SIZE(prefix), m_keys[key].prefix.c_str());
     }
     description = buffer;
     if (!m_keys[key].folder.empty())

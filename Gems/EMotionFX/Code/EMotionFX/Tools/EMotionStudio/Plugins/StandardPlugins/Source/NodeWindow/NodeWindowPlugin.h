@@ -76,14 +76,14 @@ namespace EMStudio
 
         AZStd::vector<UpdateCallback*> m_callbacks;
 
-        MysticQt::DialogStack*              mDialogStack;
-        NodeHierarchyWidget*                mHierarchyWidget;
+        MysticQt::DialogStack*              m_dialogStack;
+        NodeHierarchyWidget*                m_hierarchyWidget;
         AzToolsFramework::ReflectedPropertyEditor* m_propertyWidget;
 
-        AZStd::string                       mString;
-        AZStd::string                       mTempGroupName;
-        AZStd::unordered_set<AZ::u32> m_visibleNodeIndices;
-        AZStd::unordered_set<AZ::u32> m_selectedNodeIndices;
+        AZStd::string                       m_string;
+        AZStd::string                       m_tempGroupName;
+        AZStd::unordered_set<size_t> m_visibleNodeIndices;
+        AZStd::unordered_set<size_t> m_selectedNodeIndices;
 
         AZStd::unique_ptr<ActorInfo>        m_actorInfo;
         AZStd::unique_ptr<NodeInfo>         m_nodeInfo;

@@ -39,7 +39,10 @@ namespace EMotionFX
 
             UIFixture::SetUp();
 
-            D6JointLimitConfiguration::Reflect(GetSerializeContext());
+            AZ::SerializeContext* serializeContext = GetSerializeContext();
+
+            Physics::MockPhysicsSystem::Reflect(serializeContext); // Required by Ragdoll plugin to fake PhysX Gem is available
+            D6JointLimitConfiguration::Reflect(serializeContext);
 
             EXPECT_CALL(m_jointHelpers, GetSupportedJointTypeIds)
                 .WillRepeatedly(testing::Return(AZStd::vector<AZ::TypeId>{ azrtti_typeid<D6JointLimitConfiguration>() }));

@@ -19,15 +19,15 @@ namespace AZ::IO
     {
         bool operator()(const INestedArchive* left, const INestedArchive* right) const
         {
-            return azstricmp(left->GetFullPath(), right->GetFullPath()) < 0;
+            return left->GetFullPath() < right->GetFullPath();
         }
         bool operator()(AZStd::string_view left, const INestedArchive* right) const
         {
-            return azstrnicmp(left.data(), right->GetFullPath(), left.size()) < 0;
+            return AZ::IO::PathView(left) < right->GetFullPath();
         }
         bool operator()(const INestedArchive* left, AZStd::string_view right) const
         {
-            return azstrnicmp(left->GetFullPath(), right.data(), right.size()) < 0;
+            return left->GetFullPath() < AZ::IO::PathView(right);
         }
     };
 
@@ -39,8 +39,8 @@ namespace AZ::IO
 
         NestedArchive(IArchive* pArchive, AZStd::string_view strBindRoot, ZipDir::CachePtr pCache, uint32_t nFlags = 0);
         ~NestedArchive() override;
-        
-        auto GetRootFolderHandle() -> Handle;
+
+        auto GetRootFolderHandle() -> Handle override;
 
         // Adds a new file to the zip or update an existing one
         // adds a directory (creates several nested directories if needed)
@@ -66,26 +66,30 @@ namespace AZ::IO
         int RemoveDir(AZStd::string_view szRelativePath) override;
         
         // deletes all files from the archive
-        int RemoveAll();
+        int RemoveAll() override;
+
+        // lists all the files in the archive
+        int ListAllFiles(AZStd::vector<AZ::IO::Path>& outFileEntries) override;
 
         // finds the file; you don't have to close the returned handle
-        Handle FindFile(AZStd::string_view szRelativePath);
+        Handle FindFile(AZStd::string_view szRelativePath) override;
 
         // returns the size of the file (unpacked) by the handle
-        uint64_t GetFileSize(Handle fileHandle);
+        uint64_t GetFileSize(Handle fileHandle) override;
 
         // reads the file into the preallocated buffer (must be at least the size of GetFileSize())
-        int ReadFile(Handle fileHandle, void* pBuffer);
+        int ReadFile(Handle fileHandle, void* pBuffer) override;
 
         // returns the full path to the archive file
-        const char* GetFullPath() const;
+        AZ::IO::PathView GetFullPath() const override;
+
+        uint32_t GetFlags() const override;
+        bool SetFlags(uint32_t nFlagsToSet) override;
+        bool ResetFlags(uint32_t nFlagsToReset) override;
+
+        bool SetPackAccessible(bool bAccessible) override;
+
         ZipDir::Cache* GetCache();
-
-        uint32_t GetFlags() const;
-        bool SetFlags(uint32_t nFlagsToSet);
-        bool ResetFlags(uint32_t nFlagsToReset);
-
-        bool SetPackAccessible(bool bAccessible);
 
     protected:
         // returns the pointer to the relative file path to be passed
@@ -93,9 +97,10 @@ namespace AZ::IO
         // returns nullptr if the file path is invalid
         AZ::IO::FixedMaxPathString AdjustPath(AZStd::string_view szRelativePath);
 
+
         ZipDir::CachePtr m_pCache;
         // the binding root may be empty string - in this case, the absolute path binding won't work
-        AZStd::string m_strBindRoot;
+        AZ::IO::Path m_strBindRoot;
         IArchive* m_archive{};
         uint32_t m_nFlags{};
     };

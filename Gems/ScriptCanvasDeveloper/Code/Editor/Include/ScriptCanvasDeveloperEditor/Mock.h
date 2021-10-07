@@ -118,7 +118,7 @@ namespace ScriptCanvasDeveloper
 
         private:
             //// ScriptCanvasEditor::EditorGraphNotificationBus
-            void OnGraphCanvasNodeDisplayed(AZ::EntityId graphCanvasEntityId);
+            void OnGraphCanvasNodeDisplayed(AZ::EntityId graphCanvasEntityId) override;
             ////
 
             AZStd::string m_nodeTitle;

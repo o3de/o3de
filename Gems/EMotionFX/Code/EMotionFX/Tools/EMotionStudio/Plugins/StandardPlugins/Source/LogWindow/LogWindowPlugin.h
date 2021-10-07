@@ -61,8 +61,8 @@ namespace EMStudio
     private:
         void AddFilter(const QString& name, MCore::LogCallback::ELogLevel level, bool enabled);
 
-        LogWindowCallback* mLogCallback;
-        AzQtComponents::FilteredSearchWidget* mSearchWidget;
+        LogWindowCallback* m_logCallback;
+        AzQtComponents::FilteredSearchWidget* m_searchWidget;
     };
 }   // namespace EMStudio
 

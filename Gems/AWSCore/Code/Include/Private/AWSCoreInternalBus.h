@@ -34,11 +34,6 @@ namespace AWSCore
         //! @return The path of AWS resource mapping config file
         virtual AZStd::string GetResourceMappingConfigFilePath() const = 0;
 
-        //! GetResourceMappingConfigFolderPath
-        //! Get the path of AWS resource mapping config folder
-        //! @return The path of AWS resource mapping config folder
-        virtual AZStd::string GetResourceMappingConfigFolderPath() const = 0;
-
         //! ReloadConfiguration
         //! Reload AWSCore configuration without restarting application
         virtual void ReloadConfiguration() = 0;

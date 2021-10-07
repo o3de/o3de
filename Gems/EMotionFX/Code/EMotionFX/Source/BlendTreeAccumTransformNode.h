@@ -83,9 +83,9 @@ namespace EMotionFX
             void Update() override;
 
         public:
-            Transform mAdditiveTransform = Transform::CreateIdentity();
-            uint32 mNodeIndex = InvalidIndex32;
-            float mDeltaTime = 0.0f;
+            Transform m_additiveTransform = Transform::CreateIdentity();
+            size_t m_nodeIndex = InvalidIndex;
+            float m_deltaTime = 0.0f;
         };
 
         BlendTreeAccumTransformNode();

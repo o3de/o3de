@@ -24,12 +24,27 @@ namespace Benchmark
         : public UnitTest::AllocatorsBenchmarkFixture
         , public UnitTest::TraceBusRedirector
     {
-    protected:
-        using ::benchmark::Fixture::SetUp;
-        using ::benchmark::Fixture::TearDown;
+        void internalSetUp(const benchmark::State& state);
+        void internalTearDown(const benchmark::State& state);
 
-        void SetUp(::benchmark::State& state) override;
-        void TearDown(::benchmark::State& state) override;
+    protected:
+        void SetUp(const benchmark::State& state) override
+        {
+            internalSetUp(state);
+        }
+        void SetUp(benchmark::State& state) override
+        {
+            internalSetUp(state);
+        }
+
+        void TearDown(const benchmark::State& state) override
+        {
+            internalTearDown(state);
+        }
+        void TearDown(benchmark::State& state) override
+        {
+            internalTearDown(state);
+        }
 
         AZ::Entity* CreateEntity(
             const char* entityName,

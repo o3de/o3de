@@ -49,12 +49,12 @@ namespace EMotionFX
         public:
             struct MaskInstance
             {
-                AZ::u32 m_inputPortNr;
-                AZStd::vector<AZ::u32> m_jointIndices;
+                size_t m_inputPortNr;
+                AZStd::vector<size_t> m_jointIndices;
             };
 
             AZStd::vector<MaskInstance> m_maskInstances;
-            AZStd::optional<AZ::u32> m_motionExtractionInputPortNr;
+            AZStd::optional<size_t> m_motionExtractionInputPortNr;
         };
 
         BlendTreeMaskNode();

@@ -1,0 +1,6 @@
+<download name="Material_RagdollBones" type="Map">
+ <index src="filelist.xml" dest="filelist.xml"/>
+ <files>
+  <file src="level.pak" dest="level.pak" size="9834" md5="59d7add8313334124a992d929a0173ad"/>
+ </files>
+</download>

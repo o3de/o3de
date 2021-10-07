@@ -42,7 +42,7 @@ public:
     CBitmapToolTip(QWidget* parent = nullptr);
     virtual ~CBitmapToolTip();
 
-    BOOL Create(const RECT& rect);
+    bool Create(const RECT& rect);
 
     // Attributes
 public:

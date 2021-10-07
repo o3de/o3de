@@ -44,7 +44,7 @@ namespace EMotionFX
          * @param attachment The actor instance that you want to attach to this node (for example a gun).
          * @param managedExternally Specify whether the parent transform (where we are attached to) propagates into the attachment actor instance.
          */
-        static AttachmentNode* Create(ActorInstance* attachToActorInstance, AZ::u32 attachToNodeIndex, ActorInstance* attachment, bool managedExternally = false);
+        static AttachmentNode* Create(ActorInstance* attachToActorInstance, size_t attachToNodeIndex, ActorInstance* attachment, bool managedExternally = false);
 
         /**
          * Get the attachment type ID.
@@ -72,7 +72,7 @@ namespace EMotionFX
          * This node is part of the actor from which the actor instance returned by GetAttachToActorInstance() is created.
          * @result The node index where we will attach this attachment to.
          */
-        AZ::u32 GetAttachToNodeIndex() const;
+        size_t GetAttachToNodeIndex() const;
 
         /**
          * Check whether the transformations of the attachment are modified by using a parent-child relationship in forward kinematics.
@@ -97,7 +97,7 @@ namespace EMotionFX
 
 
     protected:
-        AZ::u32 m_attachedToNode;       /**< The node where the attachment is linked to. */
+        size_t m_attachedToNode;       /**< The node where the attachment is linked to. */
         bool    m_isManagedExternally;  /**< Is this attachment basically managed (transformation wise) by something else? (like an Attachment component). The default is false. */
 
         /**
@@ -107,7 +107,7 @@ namespace EMotionFX
          * @param attachment The actor instance that you want to attach to this node (for example a gun).
          * @param managedExternally Specify whether the parent transform (where we are attached to) propagates into the attachment actor instance.
          */
-        AttachmentNode(ActorInstance* attachToActorInstance, AZ::u32 attachToNodeIndex, ActorInstance* attachment, bool managedExternally = false);
+        AttachmentNode(ActorInstance* attachToActorInstance, size_t attachToNodeIndex, ActorInstance* attachment, bool managedExternally = false);
 
         /**
          * The destructor.

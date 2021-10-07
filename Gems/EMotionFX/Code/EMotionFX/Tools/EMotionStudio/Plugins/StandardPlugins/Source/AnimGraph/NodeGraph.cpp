@@ -6,6 +6,7 @@
  *
  */
 
+#include "AzCore/std/numeric.h"
 #include <AzQtComponents/Utilities/Conversions.h>
 #include <EMotionFX/Source/AnimGraphNodeGroup.h>
 #include <EMotionFX/Source/AnimGraphReferenceNode.h>
@@ -41,55 +42,55 @@ namespace EMStudio
             parent = parent.parent();
         }
 
-        mErrorBlinkOffset = 0.0f;
-        mUseAnimation = true;
-        mDashOffset = 0.0f;
-        mScale = 1.0f;
-        mScrollOffset = QPoint(0, 0);
-        mScalePivot = QPoint(0, 0);
-        mMinStepSize = 1;
-        mMaxStepSize = 75;
-        mEntryNode      = nullptr;
+        m_errorBlinkOffset = 0.0f;
+        m_useAnimation = true;
+        m_dashOffset = 0.0f;
+        m_scale = 1.0f;
+        m_scrollOffset = QPoint(0, 0);
+        m_scalePivot = QPoint(0, 0);
+        m_minStepSize = 1;
+        m_maxStepSize = 75;
+        m_entryNode      = nullptr;
 
         // init connection creation
-        mConStartOffset = QPoint(0, 0);
-        mConEndOffset = QPoint(0, 0);
-        mConPortNr = MCORE_INVALIDINDEX32;
-        mConIsInputPort = true;
-        mConNode = nullptr;  // nullptr when no connection is being created
-        mConPort = nullptr;
-        mConIsValid = false;
-        mTargetPort = nullptr;
-        mRelinkConnection = nullptr;
-        mReplaceTransitionHead = nullptr;
-        mReplaceTransitionTail = nullptr;
-        mReplaceTransitionSourceNode = nullptr;
-        mReplaceTransitionTargetNode = nullptr;
-        mReplaceTransitionStartOffset = QPoint(0, 0);
-        mReplaceTransitionEndOffset = QPoint(0, 0);
+        m_conStartOffset = QPoint(0, 0);
+        m_conEndOffset = QPoint(0, 0);
+        m_conPortNr = InvalidIndex16;
+        m_conIsInputPort = true;
+        m_conNode = nullptr;  // nullptr when no connection is being created
+        m_conPort = nullptr;
+        m_conIsValid = false;
+        m_targetPort = nullptr;
+        m_relinkConnection = nullptr;
+        m_replaceTransitionHead = nullptr;
+        m_replaceTransitionTail = nullptr;
+        m_replaceTransitionSourceNode = nullptr;
+        m_replaceTransitionTargetNode = nullptr;
+        m_replaceTransitionStartOffset = QPoint(0, 0);
+        m_replaceTransitionEndOffset = QPoint(0, 0);
 
         // setup scroll interpolator
-        mStartScrollOffset = QPointF(0.0f, 0.0f);
-        mTargetScrollOffset = QPointF(0.0f, 0.0f);
-        mScrollTimer.setSingleShot(false);
-        connect(&mScrollTimer, &QTimer::timeout, this, &NodeGraph::UpdateAnimatedScrollOffset);
+        m_startScrollOffset = QPointF(0.0f, 0.0f);
+        m_targetScrollOffset = QPointF(0.0f, 0.0f);
+        m_scrollTimer.setSingleShot(false);
+        connect(&m_scrollTimer, &QTimer::timeout, this, &NodeGraph::UpdateAnimatedScrollOffset);
 
         // setup scale interpolator
-        mStartScale = 1.0f;
-        mTargetScale = 1.0f;
-        mScaleTimer.setSingleShot(false);
-        connect(&mScaleTimer, &QTimer::timeout, this, &NodeGraph::UpdateAnimatedScale);
+        m_startScale = 1.0f;
+        m_targetScale = 1.0f;
+        m_scaleTimer.setSingleShot(false);
+        connect(&m_scaleTimer, &QTimer::timeout, this, &NodeGraph::UpdateAnimatedScale);
 
-        mReplaceTransitionValid = false;
+        m_replaceTransitionValid = false;
 
         // Overlay
-        mFont.setPixelSize(12);
-        mTextOptions.setAlignment(Qt::AlignCenter);
-        mFontMetrics = new QFontMetrics(mFont);
+        m_font.setPixelSize(12);
+        m_textOptions.setAlignment(Qt::AlignCenter);
+        m_fontMetrics = new QFontMetrics(m_font);
 
         // Group nodes
         m_groupFont.setPixelSize(18);
-        m_groupFontMetrics = new QFontMetrics(mFont);
+        m_groupFontMetrics = new QFontMetrics(m_font);
     }
 
 
@@ -98,7 +99,7 @@ namespace EMStudio
     {
         m_graphNodeByModelIndex.clear();
 
-        delete mFontMetrics;
+        delete m_fontMetrics;
     }
 
     AZStd::vector<GraphNode*> NodeGraph::GetSelectedGraphNodes() const
@@ -137,8 +138,8 @@ namespace EMStudio
             GraphNode* graphNode = indexAndGraphNode.second.get();
 
             // get the number of connections and iterate through them
-            const uint32 numConnections = graphNode->GetNumConnections();
-            for (uint32 c = 0; c < numConnections; ++c)
+            const size_t numConnections = graphNode->GetNumConnections();
+            for (size_t c = 0; c < numConnections; ++c)
             {
                 NodeConnection* connection = graphNode->GetConnection(c);
                 if (connection->GetIsSelected())
@@ -212,7 +213,7 @@ namespace EMStudio
 
                 const QColor textColor = graphNode->GetIsHighlighted() ? QColor(0, 255, 0) : QColor(255, 255, 0);
                 painter.setPen(textColor);
-                painter.setFont(mFont);
+                painter.setFont(m_font);
 
                 QPoint textPosition = textRect.topLeft();
                 textPosition.setX(textPosition.x() + 3);
@@ -221,32 +222,32 @@ namespace EMStudio
                 // add the playspeed
                 if (plugin->GetIsDisplayFlagEnabled(AnimGraphPlugin::DISPLAYFLAG_PLAYSPEED))
                 {
-                    mQtTempString.asprintf("Play Speed = %.2f", emfxNode->GetPlaySpeed(animGraphInstance));
-                    painter.drawText(textPosition, mQtTempString);
+                    m_qtTempString.asprintf("Play Speed = %.2f", emfxNode->GetPlaySpeed(animGraphInstance));
+                    painter.drawText(textPosition, m_qtTempString);
                     textPosition.setY(textPosition.y() + heightSpacing);
                 }
 
                 // add the global weight
                 if (plugin->GetIsDisplayFlagEnabled(AnimGraphPlugin::DISPLAYFLAG_GLOBALWEIGHT))
                 {
-                    mQtTempString.asprintf("Global Weight = %.2f", uniqueData->GetGlobalWeight());
-                    painter.drawText(textPosition, mQtTempString);
+                    m_qtTempString.asprintf("Global Weight = %.2f", uniqueData->GetGlobalWeight());
+                    painter.drawText(textPosition, m_qtTempString);
                     textPosition.setY(textPosition.y() + heightSpacing);
                 }
 
                 // add the sync
                 if (plugin->GetIsDisplayFlagEnabled(AnimGraphPlugin::DISPLAYFLAG_SYNCSTATUS))
                 {
-                    mQtTempString.asprintf("Synced = %s", animGraphInstance->GetIsSynced(emfxNode->GetObjectIndex()) ? "Yes" : "No");
-                    painter.drawText(textPosition, mQtTempString);
+                    m_qtTempString.asprintf("Synced = %s", animGraphInstance->GetIsSynced(emfxNode->GetObjectIndex()) ? "Yes" : "No");
+                    painter.drawText(textPosition, m_qtTempString);
                     textPosition.setY(textPosition.y() + heightSpacing);
                 }
 
                 // add the play position
                 if (plugin->GetIsDisplayFlagEnabled(AnimGraphPlugin::DISPLAYFLAG_PLAYPOSITION))
                 {
-                    mQtTempString.asprintf("Play Time = %.3f / %.3f", uniqueData->GetCurrentPlayTime(), uniqueData->GetDuration());
-                    painter.drawText(textPosition, mQtTempString);
+                    m_qtTempString.asprintf("Play Time = %.3f / %.3f", uniqueData->GetCurrentPlayTime(), uniqueData->GetDuration());
+                    painter.drawText(textPosition, m_qtTempString);
                     textPosition.setY(textPosition.y() + heightSpacing);
                 }
             }
@@ -271,8 +272,8 @@ namespace EMStudio
                 EMotionFX::AnimGraphNode* emfxTargetNode = indexAndGraphNode.first.data(AnimGraphModel::ROLE_NODE_POINTER).value<EMotionFX::AnimGraphNode*>();
 
                 // iterate through all connections connected to this node
-                const uint32 numConnections = graphNode->GetNumConnections();
-                for (uint32 c = 0; c < numConnections; ++c)
+                const size_t numConnections = graphNode->GetNumConnections();
+                for (size_t c = 0; c < numConnections; ++c)
                 {
                     NodeConnection*             visualConnection = graphNode->GetConnection(c);
 
@@ -286,8 +287,8 @@ namespace EMStudio
                         continue;
                     }
 
-                    const uint32 inputPortNr = visualConnection->GetInputPortNr();
-                    const uint32 outputPortNr = visualConnection->GetOutputPortNr();
+                    const AZ::u16 inputPortNr = visualConnection->GetInputPortNr();
+                    const AZ::u16 outputPortNr = visualConnection->GetOutputPortNr();
                     MCore::Attribute* attribute = emfxSourceNode->GetOutputValue(animGraphInstance, outputPortNr);
 
                     // fill the string with data
@@ -410,7 +411,7 @@ namespace EMStudio
                         QPoint connectionAttachPoint = visualConnection->CalcFinalRect().center();
 
                         const int halfTextHeight = 6;
-                        const int textWidth = mFontMetrics->horizontalAdvance(m_tempStringA.c_str());
+                        const int textWidth = m_fontMetrics->horizontalAdvance(m_tempStringA.c_str());
                         const int halfTextWidth = textWidth / 2;
 
                         const QRect textRect(connectionAttachPoint.x() - halfTextWidth - 1, connectionAttachPoint.y() - halfTextHeight, textWidth + 4, halfTextHeight * 2);
@@ -428,11 +429,8 @@ namespace EMStudio
                         // draw the text
                         const QColor& color = visualConnection->GetTargetNode()->GetInputPort(visualConnection->GetInputPortNr())->GetColor();
                         painter.setPen(color);
-                        painter.setFont(mFont);
-                        // OLD:
-                        //painter.drawText( textPosition, mTempString.c_str() );
-                        // NEW:
-                        GraphNode::RenderText(painter, m_tempStringA.c_str(), color, mFont, *mFontMetrics, Qt::AlignCenter, textRect);
+                        painter.setFont(m_font);
+                        GraphNode::RenderText(painter, m_tempStringA.c_str(), color, m_font, *m_fontMetrics, Qt::AlignCenter, textRect);
                     }
                 }
             }
@@ -606,8 +604,8 @@ namespace EMStudio
             GraphNode* graphNode = indexAndGraphNode.second.get();
 
             // iterate over all connections
-            const uint32 numConnections = graphNode->GetNumConnections();
-            for (uint32 c = 0; c < numConnections; ++c)
+            const size_t numConnections = graphNode->GetNumConnections();
+            for (size_t c = 0; c < numConnections; ++c)
             {
                 NodeConnection* connection  = graphNode->GetConnection(c);
                 if (connection->CheckIfIsCloseTo(mousePos))
@@ -632,8 +630,8 @@ namespace EMStudio
             GraphNode* graphNode = indexAndGraphNode.second.get();
 
             // iterate over all connections
-            const uint32 numConnections = graphNode->GetNumConnections();
-            for (uint32 c = 0; c < numConnections; ++c)
+            const size_t numConnections = graphNode->GetNumConnections();
+            for (size_t c = 0; c < numConnections; ++c)
             {
                 NodeConnection* connection  = graphNode->GetConnection(c);
                 GraphNode*      sourceNode  = connection->GetSourceNode();
@@ -655,12 +653,12 @@ namespace EMStudio
                     connection->SetIsTailHighlighted(false);
                 }
 
-                if (mReplaceTransitionHead == connection)
+                if (m_replaceTransitionHead == connection)
                 {
                     connection->SetIsHeadHighlighted(true);
                 }
 
-                if (mReplaceTransitionTail == connection)
+                if (m_replaceTransitionTail == connection)
                 {
                     connection->SetIsTailHighlighted(true);
                 }
@@ -692,8 +690,8 @@ namespace EMStudio
     void NodeGraph::Render(const QItemSelectionModel& selectionModel, QPainter& painter, int32 width, int32 height, const QPoint& mousePos, float timePassedInSeconds)
     {
         // control the scroll speed of the dashed blend tree connections etc
-        mDashOffset -= 7.5f * timePassedInSeconds;
-        mErrorBlinkOffset += 5.0f * timePassedInSeconds;
+        m_dashOffset -= 7.5f * timePassedInSeconds;
+        m_errorBlinkOffset += 5.0f * timePassedInSeconds;
 
 #ifdef GRAPH_PERFORMANCE_FRAMEDURATION
         MCore::Timer timer;
@@ -705,11 +703,11 @@ namespace EMStudio
         //visibleRect.adjust(50, 50, -50, -50);
 
         // setup the transform
-        mTransform.reset();
-        mTransform.translate(mScalePivot.x(), mScalePivot.y());
-        mTransform.scale(mScale, mScale);
-        mTransform.translate(-mScalePivot.x() + mScrollOffset.x(), -mScalePivot.y() + mScrollOffset.y());
-        painter.setTransform(mTransform);
+        m_transform.reset();
+        m_transform.translate(m_scalePivot.x(), m_scalePivot.y());
+        m_transform.scale(m_scale, m_scale);
+        m_transform.translate(-m_scalePivot.x() + m_scrollOffset.x(), -m_scalePivot.y() + m_scrollOffset.y());
+        painter.setTransform(m_transform);
 
         // render the background
 #ifdef GRAPH_PERFORMANCE_INFO
@@ -743,10 +741,10 @@ namespace EMStudio
 
         // calculate the connection stepsize
         // the higher the value, the less lines it renders (so faster)
-        int32 stepSize = aznumeric_cast<int32>(((1.0f / (mScale * (mScale * 1.75f))) * 10) - 7);
-        stepSize = MCore::Clamp<int32>(stepSize, mMinStepSize, mMaxStepSize);
+        int32 stepSize = aznumeric_cast<int32>(((1.0f / (m_scale * (m_scale * 1.75f))) * 10) - 7);
+        stepSize = MCore::Clamp<int32>(stepSize, m_minStepSize, m_maxStepSize);
 
-        QRect scaledVisibleRect = mTransform.inverted().mapRect(visibleRect);
+        QRect scaledVisibleRect = m_transform.inverted().mapRect(visibleRect);
 
         bool renderShadow = false;
         if (GetScale() >= 0.3f)
@@ -790,35 +788,13 @@ namespace EMStudio
         StateConnection::RenderInterruptedTransitions(painter, GetAnimGraphModel(), *this);
 
         // render the entry state arrow
-        RenderEntryPoint(painter, mEntryNode);
+        RenderEntryPoint(painter, m_entryNode);
 
 #ifdef GRAPH_PERFORMANCE_FRAMEDURATION
         MCore::LogInfo("GraphRenderingTime: %.2f ms.", timer.GetTime() * 1000);
 #endif
 
         RenderTitlebar(painter, width);
-
-        // render FPS counter
-        //#ifdef GRAPH_PERFORMANCE_FRAMEDURATION
-        /*  static MCore::AnsiString tempFPSString;
-            static MCore::Timer fpsTimer;
-            static double fpsTimeElapsed = 0.0;
-            static uint32 fpsNumFrames = 0;
-            static uint32 lastFPS = 0;
-            fpsTimeElapsed += fpsTimer.GetTimeDelta();
-            fpsNumFrames++;
-            if (fpsTimeElapsed > 1.0f)
-            {
-                lastFPS         = fpsNumFrames;
-                fpsTimeElapsed  = 0.0;
-                fpsNumFrames    = 0;
-            }
-            tempFPSString.Format( "%i FPS", lastFPS );
-            painter.setPen( QColor(255, 255, 255) );
-            painter.resetTransform();
-            painter.drawText( 5, 20, tempFPSString.c_str() );
-            */
-        //#endif
     }
 
     void NodeGraph::RenderTitlebar(QPainter& painter, const QString& text, int32 width)
@@ -836,7 +812,7 @@ namespace EMStudio
 
         painter.setOpacity(1.0f);
         painter.setPen(QColor(233, 233, 233));
-        painter.setFont(mFont);
+        painter.setFont(m_font);
         painter.drawText(titleRect, text, QTextOption(Qt::AlignCenter));
 
         painter.restore();
@@ -898,8 +874,8 @@ namespace EMStudio
 
             AnimGraphModel::AddToItemSelection(newSelection, modelIndex, nodePreviouslySelected, nodeNewlySelected, toggleMode, overwriteCurSelection);
 
-            const uint32 numConnections = node->GetNumConnections();
-            for (uint32 c = 0; c < numConnections; ++c)
+            const size_t numConnections = node->GetNumConnections();
+            for (size_t c = 0; c < numConnections; ++c)
             {
                 NodeConnection* connection = node->GetConnection(c);
                 const bool connectionPreviouslySelected = std::find(oldSelectionModelIndices.begin(), oldSelectionModelIndices.end(), connection->GetModelIndex()) != oldSelectionModelIndices.end();
@@ -970,8 +946,8 @@ namespace EMStudio
         {
             GraphNode* node = indexAndGraphNode.second.get();
 
-            const uint32 numConnections = node->GetNumConnections();
-            for (uint32 c = 0; c < numConnections; ++c)
+            const size_t numConnections = node->GetNumConnections();
+            for (size_t c = 0; c < numConnections; ++c)
             {
                 NodeConnection* connection = node->GetConnection(c);
                 const bool isNewlySelected = connection->CheckIfIsCloseTo(point);
@@ -990,8 +966,8 @@ namespace EMStudio
         painter.setPen(QColor(40, 40, 40));
 
         // calculate the coordinates in 'zoomed out and scrolled' coordinates, of the window rect
-        QPoint upperLeft    = mTransform.inverted().map(QPoint(0, 0));
-        QPoint lowerRight   = mTransform.inverted().map(QPoint(width, height));
+        QPoint upperLeft    = m_transform.inverted().map(QPoint(0, 0));
+        QPoint lowerRight   = m_transform.inverted().map(QPoint(width, height));
 
         // calculate the start and end ranges in 'scrolled and zoomed out' coordinates
         // we need to render sub-grids covering that area
@@ -1007,7 +983,7 @@ namespace EMStudio
         */
 
         // calculate the alpha
-        float scale = mScale * mScale * 1.5f;
+        float scale = m_scale * m_scale * 1.5f;
         scale = MCore::Clamp<float>(scale, 0.0f, 1.0f);
         const int32 alpha = aznumeric_cast<int32>(MCore::CalcCosineInterpolationWeight(scale) * 255);
 
@@ -1016,16 +992,14 @@ namespace EMStudio
             return;
         }
 
-        //  mGridPen.setColor( QColor(58, 58, 58, alpha) );
-        //  mGridPen.setColor( QColor(46, 46, 46, alpha) );
-        mGridPen.setColor(QColor(61, 61, 61, alpha));
-        mSubgridPen.setColor(QColor(55, 55, 55, alpha));
+        m_gridPen.setColor(QColor(61, 61, 61, alpha));
+        m_subgridPen.setColor(QColor(55, 55, 55, alpha));
 
         // setup spacing and size of the grid
         const int32 spacing = 10;       // grid cell size of 20
 
         // draw subgridlines first
-        painter.setPen(mSubgridPen);
+        painter.setPen(m_subgridPen);
 
         // draw vertical lines
         for (int32 x = startX; x < endX; x += spacing)
@@ -1046,7 +1020,7 @@ namespace EMStudio
         }
 
         // draw render grid lines
-        painter.setPen(mGridPen);
+        painter.setPen(m_gridPen);
 
         // draw vertical lines
         for (int32 x = startX; x < endX; x += spacing)
@@ -1217,20 +1191,12 @@ namespace EMStudio
 
 
     // calc the number of selected nodes
-    uint32 NodeGraph::CalcNumSelectedNodes() const
+    size_t NodeGraph::CalcNumSelectedNodes() const
     {
-        uint32 result = 0;
-
-        for (const GraphNodeByModelIndex::value_type& indexAndGraphNode : m_graphNodeByModelIndex)
+        return AZStd::accumulate(begin(m_graphNodeByModelIndex), end(m_graphNodeByModelIndex), size_t{0}, [](size_t total, const auto& indexAndGraphNode)
         {
-            GraphNode* node = indexAndGraphNode.second.get();
-            if (node->GetIsSelected())
-            {
-                result++;
-            }
-        }
-
-        return result;
+            return total + indexAndGraphNode.second->GetIsSelected();
+        });
     }
 
 
@@ -1254,8 +1220,8 @@ namespace EMStudio
             if (includeConnections)
             {
                 // for all connections
-                const uint32 numConnections = node->GetNumConnections();
-                for (uint32 c = 0; c < numConnections; ++c)
+                const size_t numConnections = node->GetNumConnections();
+                for (size_t c = 0; c < numConnections; ++c)
                 {
                     if (node->GetConnection(c)->GetIsSelected())
                     {
@@ -1283,8 +1249,8 @@ namespace EMStudio
             result |= graphNode->GetRect();
 
             // for all connections
-            const uint32 numConnections = graphNode->GetNumConnections();
-            for (uint32 c = 0; c < numConnections; ++c)
+            const size_t numConnections = graphNode->GetNumConnections();
+            for (size_t c = 0; c < numConnections; ++c)
             {
                 result |= graphNode->GetConnection(c)->CalcRect();
             }
@@ -1321,8 +1287,8 @@ namespace EMStudio
             }
             else
             {
-                mScrollOffset = offset;
-                mScale = 1.0f;
+                m_scrollOffset = offset;
+                m_scale = 1.0f;
             }
         }
         else
@@ -1338,7 +1304,7 @@ namespace EMStudio
             }
             else
             {
-                mScrollOffset = offset;
+                m_scrollOffset = offset;
             }
 
             // set the zoom factor so it exactly fits
@@ -1362,7 +1328,7 @@ namespace EMStudio
 
             if (animate == false)
             {
-                mScale = MCore::Min<float>(widthZoom, heightZoom);
+                m_scale = MCore::Min<float>(widthZoom, heightZoom);
             }
             else
             {
@@ -1375,10 +1341,10 @@ namespace EMStudio
     // start an animated scroll to the given scroll offset
     void NodeGraph::ScrollTo(const QPointF& point)
     {
-        mStartScrollOffset  = mScrollOffset;
-        mTargetScrollOffset = point;
-        mScrollTimer.start(1000 / 60);
-        mScrollPreciseTimer.Stamp();
+        m_startScrollOffset  = m_scrollOffset;
+        m_targetScrollOffset = point;
+        m_scrollTimer.start(1000 / 60);
+        m_scrollPreciseTimer.Stamp();
     }
 
 
@@ -1387,16 +1353,15 @@ namespace EMStudio
     {
         const float duration = 0.75f; // duration in seconds
 
-        float timePassed = mScrollPreciseTimer.GetDeltaTimeInSeconds();
+        float timePassed = m_scrollPreciseTimer.GetDeltaTimeInSeconds();
         if (timePassed > duration)
         {
             timePassed = duration;
-            mScrollTimer.stop();
+            m_scrollTimer.stop();
         }
 
         const float t = timePassed / duration;
-        mScrollOffset = MCore::CosineInterpolate<QPointF>(mStartScrollOffset, mTargetScrollOffset, t).toPoint();
-        //mGraphWidget->update();
+        m_scrollOffset = MCore::CosineInterpolate<QPointF>(m_startScrollOffset, m_targetScrollOffset, t).toPoint();
     }
 
 
@@ -1405,16 +1370,15 @@ namespace EMStudio
     {
         const float duration = 0.75f; // duration in seconds
 
-        float timePassed = mScalePreciseTimer.GetDeltaTimeInSeconds();
+        float timePassed = m_scalePreciseTimer.GetDeltaTimeInSeconds();
         if (timePassed > duration)
         {
             timePassed = duration;
-            mScaleTimer.stop();
+            m_scaleTimer.stop();
         }
 
         const float t = timePassed / duration;
-        mScale = MCore::CosineInterpolate<float>(mStartScale, mTargetScale, t);
-        //mGraphWidget->update();
+        m_scale = MCore::CosineInterpolate<float>(m_startScale, m_targetScale, t);
     }
 
     //static float scaleExp = 1.0f;
@@ -1429,7 +1393,7 @@ namespace EMStudio
         //float t = -6 + (6 * scaleExp);
         //float newScale = 1/(1+exp(-t)) * 2;
 
-        float newScale = mScale + 0.35f;
+        float newScale = m_scale + 0.35f;
         newScale = MCore::Clamp<float>(newScale, sLowestScale, 1.0f);
         ZoomTo(newScale);
     }
@@ -1439,7 +1403,7 @@ namespace EMStudio
     // zoom out
     void NodeGraph::ZoomOut()
     {
-        float newScale = mScale - 0.35f;
+        float newScale = m_scale - 0.35f;
         //scaleExp -= 0.2f;
         //if (scaleExp < 0.01f)
         //scaleExp = 0.01f;
@@ -1455,10 +1419,10 @@ namespace EMStudio
     // zoom to a given amount
     void NodeGraph::ZoomTo(float scale)
     {
-        mStartScale     = mScale;
-        mTargetScale    = scale;
-        mScaleTimer.start(1000 / 60);
-        mScalePreciseTimer.Stamp();
+        m_startScale     = m_scale;
+        m_targetScale    = scale;
+        m_scaleTimer.start(1000 / 60);
+        m_scalePreciseTimer.Stamp();
         if (scale < sLowestScale)
         {
             sLowestScale = scale;
@@ -1469,14 +1433,14 @@ namespace EMStudio
     // stop an animated zoom
     void NodeGraph::StopAnimatedZoom()
     {
-        mScaleTimer.stop();
+        m_scaleTimer.stop();
     }
 
 
     // stop an animated scroll
     void NodeGraph::StopAnimatedScroll()
     {
-        mScrollTimer.stop();
+        m_scrollTimer.stop();
     }
 
 
@@ -1491,7 +1455,7 @@ namespace EMStudio
 
         if (sceneRect.isEmpty() == false)
         {
-            const int border = aznumeric_cast<int>(10.0f * (1.0f / mScale));
+            const int border = aznumeric_cast<int>(10.0f * (1.0f / m_scale));
             sceneRect.adjust(-border, -border, border, border);
             ZoomOnRect(sceneRect, width, height, animate);
         }
@@ -1499,7 +1463,7 @@ namespace EMStudio
 
 
     // find the port at a given location
-    NodePort* NodeGraph::FindPort(int32 x, int32 y, GraphNode** outNode, uint32* outPortNr, bool* outIsInputPort, bool includeInputPorts)
+    NodePort* NodeGraph::FindPort(int32 x, int32 y, GraphNode** outNode, AZ::u16* outPortNr, bool* outIsInputPort, bool includeInputPorts)
     {
         // get the number of nodes in the graph and iterate through them
         for (const GraphNodeByModelIndex::value_type& indexAndGraphNode : m_graphNodeByModelIndex)
@@ -1527,22 +1491,22 @@ namespace EMStudio
 
 
     // start creating a connection
-    void NodeGraph::StartCreateConnection(uint32 portNr, bool isInputPort, GraphNode* portNode, NodePort* port, const QPoint& startOffset)
+    void NodeGraph::StartCreateConnection(AZ::u16 portNr, bool isInputPort, GraphNode* portNode, NodePort* port, const QPoint& startOffset)
     {
-        mConPortNr          = portNr;
-        mConIsInputPort     = isInputPort;
-        mConNode            = portNode;
-        mConPort            = port;
-        mConStartOffset     = startOffset;
+        m_conPortNr          = portNr;
+        m_conIsInputPort     = isInputPort;
+        m_conNode            = portNode;
+        m_conPort            = port;
+        m_conStartOffset     = startOffset;
     }
 
 
     // start relinking a connection
-    void NodeGraph::StartRelinkConnection(NodeConnection* connection, uint32 portNr, GraphNode* node)
+    void NodeGraph::StartRelinkConnection(NodeConnection* connection, AZ::u16 portNr, GraphNode* node)
     {
-        mConPortNr              = portNr;
-        mConNode                = node;
-        mRelinkConnection       = connection;
+        m_conPortNr              = portNr;
+        m_conNode                = node;
+        m_relinkConnection       = connection;
 
         //MCore::LogInfo( "StartRelinkConnection: Connection=(%s->%s) portNr=%i, graphNode=%s", connection->GetSourceNode()->GetName(), connection->GetTargetNode()->GetName(), portNr, node->GetName()  );
     }
@@ -1550,53 +1514,53 @@ namespace EMStudio
 
     void NodeGraph::StartReplaceTransitionHead(NodeConnection* connection, QPoint startOffset, QPoint endOffset, GraphNode* sourceNode, GraphNode* targetNode)
     {
-        mReplaceTransitionHead = connection;
+        m_replaceTransitionHead = connection;
 
-        mReplaceTransitionStartOffset   = startOffset;
-        mReplaceTransitionEndOffset     = endOffset;
-        mReplaceTransitionSourceNode    = sourceNode;
-        mReplaceTransitionTargetNode    = targetNode;
+        m_replaceTransitionStartOffset   = startOffset;
+        m_replaceTransitionEndOffset     = endOffset;
+        m_replaceTransitionSourceNode    = sourceNode;
+        m_replaceTransitionTargetNode    = targetNode;
     }
 
 
     void NodeGraph::StartReplaceTransitionTail(NodeConnection* connection, QPoint startOffset, QPoint endOffset, GraphNode* sourceNode, GraphNode* targetNode)
     {
-        mReplaceTransitionTail = connection;
+        m_replaceTransitionTail = connection;
 
-        mReplaceTransitionStartOffset   = startOffset;
-        mReplaceTransitionEndOffset     = endOffset;
-        mReplaceTransitionSourceNode    = sourceNode;
-        mReplaceTransitionTargetNode    = targetNode;
+        m_replaceTransitionStartOffset   = startOffset;
+        m_replaceTransitionEndOffset     = endOffset;
+        m_replaceTransitionSourceNode    = sourceNode;
+        m_replaceTransitionTargetNode    = targetNode;
     }
 
 
     void NodeGraph::GetReplaceTransitionInfo(NodeConnection** outOldConnection, QPoint* outOldStartOffset, QPoint* outOldEndOffset, GraphNode** outOldSourceNode, GraphNode** outOldTargetNode)
     {
-        if (mReplaceTransitionHead)
+        if (m_replaceTransitionHead)
         {
-            *outOldConnection = mReplaceTransitionHead;
+            *outOldConnection = m_replaceTransitionHead;
         }
-        if (mReplaceTransitionTail)
+        if (m_replaceTransitionTail)
         {
-            *outOldConnection = mReplaceTransitionTail;
+            *outOldConnection = m_replaceTransitionTail;
         }
 
-        *outOldStartOffset = mReplaceTransitionStartOffset;
-        *outOldEndOffset   = mReplaceTransitionEndOffset;
-        *outOldSourceNode  = mReplaceTransitionSourceNode;
-        *outOldTargetNode  = mReplaceTransitionTargetNode;
+        *outOldStartOffset = m_replaceTransitionStartOffset;
+        *outOldEndOffset   = m_replaceTransitionEndOffset;
+        *outOldSourceNode  = m_replaceTransitionSourceNode;
+        *outOldTargetNode  = m_replaceTransitionTargetNode;
     }
 
 
     void NodeGraph::StopReplaceTransitionHead()
     {
-        mReplaceTransitionHead = nullptr;
+        m_replaceTransitionHead = nullptr;
     }
 
 
     void NodeGraph::StopReplaceTransitionTail()
     {
-        mReplaceTransitionTail = nullptr;
+        m_replaceTransitionTail = nullptr;
     }
 
 
@@ -1604,11 +1568,11 @@ namespace EMStudio
     // reset members
     void NodeGraph::StopRelinkConnection()
     {
-        mConPortNr              = MCORE_INVALIDINDEX32;
-        mConNode                = nullptr;
-        mRelinkConnection       = nullptr;
-        mConIsValid             = false;
-        mTargetPort             = nullptr;
+        m_conPortNr              = InvalidIndex16;
+        m_conNode                = nullptr;
+        m_relinkConnection       = nullptr;
+        m_conIsValid             = false;
+        m_targetPort             = nullptr;
     }
 
 
@@ -1616,12 +1580,12 @@ namespace EMStudio
     // reset members
     void NodeGraph::StopCreateConnection()
     {
-        mConPortNr          = MCORE_INVALIDINDEX32;
-        mConIsInputPort     = true;
-        mConNode            = nullptr;  // nullptr when no connection is being created
-        mConPort            = nullptr;
-        mTargetPort         = nullptr;
-        mConIsValid         = false;
+        m_conPortNr          = InvalidIndex16;
+        m_conIsInputPort     = true;
+        m_conNode            = nullptr;  // nullptr when no connection is being created
+        m_conPort            = nullptr;
+        m_targetPort         = nullptr;
+        m_conIsValid         = false;
     }
 
 
@@ -1640,8 +1604,8 @@ namespace EMStudio
             GraphNode* graphNode = indexAndGraphNode.second.get();
 
             // get the number of connections and iterate through them
-            const uint32 numConnections = graphNode->GetNumConnections();
-            for (uint32 j = 0; j < numConnections; ++j)
+            const size_t numConnections = graphNode->GetNumConnections();
+            for (size_t j = 0; j < numConnections; ++j)
             {
                 NodeConnection* connection = graphNode->GetConnection(j);
 
@@ -1672,9 +1636,6 @@ namespace EMStudio
         {
             // gather some information from the connection
             NodeConnection* connection      = GetRelinkConnection();
-            //GraphNode*        sourceNode      = connection->GetSourceNode();
-            //uint32            sourcePortNr    = connection->GetOutputPortNr();
-            //NodePort*     port            = sourceNode->GetOutputPort( connection->GetOutputPortNr() );
             QPoint          start           = connection->GetSourceRect().center();
             QPoint          end             = m_graphWidget->GetMousePos();
 
@@ -1701,10 +1662,10 @@ namespace EMStudio
                 }
 
                 // now check all ports to see if they would be valid
-                const uint32 numInputPorts = node->GetNumInputPorts();
-                for (uint32 i = 0; i < numInputPorts; ++i)
+                const AZ::u16 numInputPorts = node->GetNumInputPorts();
+                for (AZ::u16 i = 0; i < numInputPorts; ++i)
                 {
-                    if (CheckIfIsRelinkConnectionValid(mRelinkConnection, node, i, true))
+                    if (CheckIfIsRelinkConnectionValid(m_relinkConnection, node, i, true))
                     {
                         QPoint tempStart = end;
                         QPoint tempEnd = node->GetInputPort(i)->GetRect().center();
@@ -1718,9 +1679,9 @@ namespace EMStudio
             }
 
             // figure out the color of the connection line
-            if (mTargetPort)
+            if (m_targetPort)
             {
-                if (mConIsValid)
+                if (m_conIsValid)
                 {
                     painter.setPen(QColor(0, 255, 0));
                 }
@@ -1778,8 +1739,8 @@ namespace EMStudio
                 }
 
                 // now check all ports to see if they would be valid
-                const uint32 numInputPorts = node->GetNumInputPorts();
-                for (uint32 i = 0; i < numInputPorts; ++i)
+                const AZ::u16 numInputPorts = node->GetNumInputPorts();
+                for (AZ::u16 i = 0; i < numInputPorts; ++i)
                 {
                     if (m_graphWidget->CheckIfIsCreateConnectionValid(i, node, node->GetInputPort(i), true))
                     {
@@ -1793,8 +1754,8 @@ namespace EMStudio
                 }
 
                 // now check all ports to see if they would be valid
-                const uint32 numOutputPorts = node->GetNumOutputPorts();
-                for (uint32 a = 0; a < numOutputPorts; ++a)
+                const AZ::u16 numOutputPorts = node->GetNumOutputPorts();
+                for (AZ::u16 a = 0; a < numOutputPorts; ++a)
                 {
                     if (m_graphWidget->CheckIfIsCreateConnectionValid(a, node, node->GetOutputPort(a), false))
                     {
@@ -1812,14 +1773,13 @@ namespace EMStudio
         //------------------------------
 
         // update the end point
-        //start = mConPort->GetRect().center();
         start = GetCreateConnectionNode()->GetRect().topLeft() + GetCreateConnectionStartOffset();
         end   = m_graphWidget->GetMousePos();
 
         // figure out the color of the connection line
-        if (mTargetPort)
+        if (m_targetPort)
         {
-            if (mConIsValid)
+            if (m_conIsValid)
             {
                 painter.setPen(QColor(0, 255, 0));
             }
@@ -1864,10 +1824,10 @@ namespace EMStudio
 
 
     // check if this connection already exists
-    bool NodeGraph::CheckIfHasConnection(GraphNode* sourceNode, uint32 outputPortNr, GraphNode* targetNode, uint32 inputPortNr) const
+    bool NodeGraph::CheckIfHasConnection(GraphNode* sourceNode, AZ::u16 outputPortNr, GraphNode* targetNode, AZ::u16 inputPortNr) const
     {
-        const uint32 numConnections = targetNode->GetNumConnections();
-        for (uint32 i = 0; i < numConnections; ++i)
+        const size_t numConnections = targetNode->GetNumConnections();
+        for (size_t i = 0; i < numConnections; ++i)
         {
             NodeConnection* connection = targetNode->GetConnection(i);
 
@@ -1888,15 +1848,15 @@ namespace EMStudio
     }
 
 
-    NodeConnection* NodeGraph::FindInputConnection(GraphNode* targetNode, uint32 targetPortNr) const
+    NodeConnection* NodeGraph::FindInputConnection(GraphNode* targetNode, AZ::u16 targetPortNr) const
     {
-        if (targetNode == nullptr || targetPortNr == MCORE_INVALIDINDEX32)
+        if (targetNode == nullptr || targetPortNr == InvalidIndex16)
         {
             return nullptr;
         }
 
-        const uint32 numConnections = targetNode->GetNumConnections();
-        for (uint32 i = 0; i < numConnections; ++i)
+        const size_t numConnections = targetNode->GetNumConnections();
+        for (size_t i = 0; i < numConnections; ++i)
         {
             NodeConnection* connection = targetNode->GetConnection(i);
 
@@ -1967,8 +1927,8 @@ namespace EMStudio
                 const QModelIndex parentModelIndex = modelIndex.model()->parent(modelIndex);
                 EMotionFX::AnimGraphNode* parentNode = parentModelIndex.data(AnimGraphModel::ROLE_NODE_POINTER).value<EMotionFX::AnimGraphNode*>();
                 GraphNode* target = FindGraphNode(parentNode);
-                const uint32 sourcePort = connection->GetSourcePort();
-                const uint32 targetPort = connection->GetTargetPort();
+                const AZ::u16 sourcePort = connection->GetSourcePort();
+                const AZ::u16 targetPort = connection->GetTargetPort();
                 NodeConnection* visualConnection = new NodeConnection(this, modelIndex, target, targetPort, source, sourcePort);
                 target->AddConnection(visualConnection);
                 break;
@@ -1999,9 +1959,9 @@ namespace EMStudio
                 GraphNodeByModelIndex::const_iterator it = m_graphNodeByModelIndex.find(modelIndex);
                 if (it != m_graphNodeByModelIndex.end())
                 {
-                    if (it->second.get() == mEntryNode)
+                    if (it->second.get() == m_entryNode)
                     {
-                        mEntryNode = nullptr;
+                        m_entryNode = nullptr;
                     }
                     m_graphNodeByModelIndex.erase(it);
                 }
@@ -2013,9 +1973,9 @@ namespace EMStudio
                 // So we have to rely on the UI data.
                 for (const GraphNodeByModelIndex::value_type& target : m_graphNodeByModelIndex)
                 {
-                    MCore::Array<NodeConnection*>& connections = target.second->GetConnections();
-                    const uint32 connectionsCount = connections.GetLength();
-                    for (uint32 i = 0; i < connectionsCount; ++i)
+                    AZStd::vector<NodeConnection*>& connections = target.second->GetConnections();
+                    const size_t connectionsCount = connections.size();
+                    for (size_t i = 0; i < connectionsCount; ++i)
                     {
                         if (connections[i]->GetType() == StateConnection::TYPE_ID)
                         {
@@ -2023,7 +1983,7 @@ namespace EMStudio
                             if (visualStateConnection->GetModelIndex() == modelIndex)
                             {
                                 delete connections[i];
-                                connections.Remove(i);
+                                connections.erase(AZStd::next(begin(connections), i));
                                 break;
                             }
                         }
@@ -2086,13 +2046,12 @@ namespace EMStudio
                 GraphNode* targetGraphNode = FindGraphNode(targetNode);
 
                 bool foundConnection = false;
-                MCore::Array<NodeConnection*>& connections = targetGraphNode->GetConnections();
-                const uint32 connectionsCount = connections.GetLength();
-                for (uint32 i = 0; i < connectionsCount; ++i)
+                AZStd::vector<NodeConnection*>& connections = targetGraphNode->GetConnections();
+                for (NodeConnection* connection : connections)
                 {
-                    if (connections[i]->GetType() == StateConnection::TYPE_ID)
+                    if (connection->GetType() == StateConnection::TYPE_ID)
                     {
-                        StateConnection* visualStateConnection = static_cast<StateConnection*>(connections[i]);
+                        StateConnection* visualStateConnection = static_cast<StateConnection*>(connection);
                         if (visualStateConnection->GetModelIndex() == modelIndex)
                         {
                             SyncTransition(visualStateConnection, transition, targetGraphNode);
@@ -2110,17 +2069,15 @@ namespace EMStudio
                     {
                         GraphNode* visualNode = indexAndGraphNode.second.get();
 
-                        MCore::Array<NodeConnection*>& connections2 = visualNode->GetConnections();
-                        const uint32 connectionsCount2 = connections2.GetLength();
-                        for (uint32 i = 0; i < connectionsCount2; ++i)
+                        for (NodeConnection* connection : visualNode->GetConnections())
                         {
-                            if (connections2[i]->GetType() == StateConnection::TYPE_ID)
+                            if (connection->GetType() == StateConnection::TYPE_ID)
                             {
-                                StateConnection* visualStateConnection = static_cast<StateConnection*>(connections2[i]);
+                                StateConnection* visualStateConnection = static_cast<StateConnection*>(connection);
                                 if (visualStateConnection->GetModelIndex() == modelIndex)
                                 {
                                     // Transfer ownership from the previous visual node to where we relinked the transition to.
-                                    const bool connectionRemoveResult = visualNode->RemoveConnection(transition, false);
+                                    [[maybe_unused]] const bool connectionRemoveResult = visualNode->RemoveConnection(transition, false);
                                     AZ_Error("EMotionFX", connectionRemoveResult, "Removing connection failed.");
                                     targetGraphNode->AddConnection(visualStateConnection);
 
@@ -2176,13 +2133,12 @@ namespace EMStudio
         // We have to rely on the UI data.
         for (const GraphNodeByModelIndex::value_type& target : m_graphNodeByModelIndex)
         {
-            MCore::Array<NodeConnection*>& connections = target.second->GetConnections();
-            const uint32 connectionsCount = connections.GetLength();
-            for (uint32 i = 0; i < connectionsCount; ++i)
+            AZStd::vector<NodeConnection*>& connections = target.second->GetConnections();
+            for (NodeConnection* connection : connections)
             {
-                if (connections[i]->GetType() == StateConnection::TYPE_ID)
+                if (connection->GetType() == StateConnection::TYPE_ID)
                 {
-                    StateConnection* visualStateConnection = static_cast<StateConnection*>(connections[i]);
+                    StateConnection* visualStateConnection = static_cast<StateConnection*>(connection);
                     if (visualStateConnection->GetModelIndex() == modelIndex)
                     {
                         return visualStateConnection;
@@ -2205,13 +2161,12 @@ namespace EMStudio
                 GraphNode* target = FindGraphNode(parentModelIndex);
                 if (target)
                 {
-                    MCore::Array<NodeConnection*>& connections = target->GetConnections();
-                    const uint32 connectionsCount = connections.GetLength();
-                    for (uint32 i = 0; i < connectionsCount; ++i)
+                    AZStd::vector<NodeConnection*>& connections = target->GetConnections();
+                    for (NodeConnection* connection : connections)
                     {
-                        if (connections[i]->GetType() == NodeConnection::TYPE_ID)
+                        if (connection->GetType() == NodeConnection::TYPE_ID)
                         {
-                            NodeConnection* visualNodeConnection = static_cast<NodeConnection*>(connections[i]);
+                            NodeConnection* visualNodeConnection = static_cast<NodeConnection*>(connection);
                             if (visualNodeConnection->GetModelIndex() == modelIndex)
                             {
                                 return visualNodeConnection;
@@ -2239,8 +2194,8 @@ namespace EMStudio
                 graphNode->SetIsProcessed(graphNodeAnimGraphInstance->GetIsOutputReady(emfxNode->GetObjectIndex()));
                 graphNode->SetIsUpdated(graphNodeAnimGraphInstance->GetIsUpdateReady(emfxNode->GetObjectIndex()));
 
-                const uint32 numConnections = graphNode->GetNumConnections();
-                for (uint32 c = 0; c < numConnections; ++c)
+                const size_t numConnections = graphNode->GetNumConnections();
+                for (size_t c = 0; c < numConnections; ++c)
                 {
                     NodeConnection* connection = graphNode->GetConnection(c);
                     if (connection->GetType() == NodeConnection::TYPE_ID)
@@ -2255,8 +2210,8 @@ namespace EMStudio
                 graphNode->SetIsProcessed(false);
                 graphNode->SetIsUpdated(false);
 
-                const uint32 numConnections = graphNode->GetNumConnections();
-                for (uint32 c = 0; c < numConnections; ++c)
+                const size_t numConnections = graphNode->GetNumConnections();
+                for (size_t c = 0; c < numConnections; ++c)
                 {
                     NodeConnection* connection = graphNode->GetConnection(c);
                     if (connection->GetType() == NodeConnection::TYPE_ID)
@@ -2266,8 +2221,8 @@ namespace EMStudio
                 }
             }
 
-            const uint32 numConnections = graphNode->GetNumConnections();
-            for (uint32 c = 0; c < numConnections; ++c)
+            const size_t numConnections = graphNode->GetNumConnections();
+            for (size_t c = 0; c < numConnections; ++c)
             {
                 NodeConnection* connection = graphNode->GetConnection(c);
                 if (connection->GetType() == NodeConnection::TYPE_ID)
@@ -2287,12 +2242,12 @@ namespace EMStudio
     }
 
     // check if a connection is valid or not
-    bool NodeGraph::CheckIfIsRelinkConnectionValid(NodeConnection* connection, GraphNode* newTargetNode, uint32 newTargetPortNr, bool isTargetInput)
+    bool NodeGraph::CheckIfIsRelinkConnectionValid(NodeConnection* connection, GraphNode* newTargetNode, AZ::u16 newTargetPortNr, bool isTargetInput)
     {
         GraphNode* targetNode = connection->GetSourceNode();
         GraphNode* sourceNode = newTargetNode;
-        uint32 sourcePortNr = connection->GetOutputPortNr();
-        uint32 targetPortNr = newTargetPortNr;
+        AZ::u16 sourcePortNr = connection->GetOutputPortNr();
+        AZ::u16 targetPortNr = newTargetPortNr;
 
         // don't allow connection to itself
         if (sourceNode == targetNode)
@@ -2343,8 +2298,8 @@ namespace EMStudio
         graphNode->ResetBorderColor();
 
         // recurse through the inputs
-        const uint32 numConnections = startNode->GetNumConnections();
-        for (uint32 i = 0; i < numConnections; ++i)
+        const size_t numConnections = startNode->GetNumConnections();
+        for (size_t i = 0; i < numConnections; ++i)
         {
             EMotionFX::BlendTreeConnection* connection = startNode->GetConnection(i);
             RecursiveSetOpacity(connection->GetSourceNode(), opacity);
@@ -2460,8 +2415,8 @@ namespace EMStudio
         // get the number of node groups and iterate through them
         QRect nodeRect;
         QRect groupRect;
-        const uint32 numNodeGroups = animGraph->GetNumNodeGroups();
-        for (uint32 i = 0; i < numNodeGroups; ++i)
+        const size_t numNodeGroups = animGraph->GetNumNodeGroups();
+        for (size_t i = 0; i < numNodeGroups; ++i)
         {
             // get the current node group
             EMotionFX::AnimGraphNodeGroup* nodeGroup = animGraph->GetNodeGroup(i);
@@ -2473,7 +2428,7 @@ namespace EMStudio
             }
 
             // get the number of nodes inside the node group and skip the group in case there are no nodes in
-            const uint32 numNodes = nodeGroup->GetNumNodes();
+            const size_t numNodes = nodeGroup->GetNumNodes();
             if (numNodes == 0)
             {
                 continue;
@@ -2485,7 +2440,7 @@ namespace EMStudio
             int32 right = std::numeric_limits<int32>::lowest();
 
             bool nodesInGroupDisplayed = false;
-            for (uint32 j = 0; j < numNodes; ++j)
+            for (size_t j = 0; j < numNodes; ++j)
             {
                 // get the graph node by the id and skip it if the node is not inside the currently visible node graph
                 const EMotionFX::AnimGraphNodeId nodeId = nodeGroup->GetNode(j);
@@ -2526,11 +2481,7 @@ namespace EMStudio
 
                 // draw the name on top
                 color.setAlpha(255);
-                //painter.setPen( color );
-                //mTempString = nodeGroup->GetName();
-                //painter.setFont( m_groupFont );
                 GraphNode::RenderText(painter, nodeGroup->GetName(), color, m_groupFont, *m_groupFontMetrics, Qt::AlignLeft, textRect);
-                //painter.drawText( left - 7, top - 7, mTempString );
             }
         }   // for all node groups
     }

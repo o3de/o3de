@@ -26,7 +26,7 @@ public:
     CSmartVariable<QString> mv_value;
     CSmartVariable<bool> mv_notrigger_in_scrubbing;
 
-    virtual void OnCreateVars()
+    void OnCreateVars() override
     {
         AddVariable(mv_table, "Key Properties");
         AddVariable(mv_table, mv_event, "Event");
@@ -35,14 +35,14 @@ public:
         AddVariable(mv_deprecated, "Deprecated");
         AddVariable(mv_deprecated, mv_animation, "Animation");
     }
-    bool SupportTrackType(const CAnimParamType& paramType, [[maybe_unused]] EAnimCurveType trackType, [[maybe_unused]] AnimValueType valueType) const
+    bool SupportTrackType(const CAnimParamType& paramType, [[maybe_unused]] EAnimCurveType trackType, [[maybe_unused]] AnimValueType valueType) const override
     {
         return paramType == AnimParamType::Event;
     }
-    virtual bool OnKeySelectionChange(CTrackViewKeyBundle& selectedKeys);
-    virtual void OnUIChange(IVariable* pVar, CTrackViewKeyBundle& selectedKeys);
+    bool OnKeySelectionChange(CTrackViewKeyBundle& selectedKeys) override;
+    void OnUIChange(IVariable* pVar, CTrackViewKeyBundle& selectedKeys) override;
 
-    virtual unsigned int GetPriority() const { return 1; }
+    unsigned int GetPriority() const override { return 1; }
 
     static const GUID& GetClassID()
     {
@@ -73,8 +73,8 @@ bool CEventKeyUIControls::OnKeySelectionChange(CTrackViewKeyBundle& selectedKeys
         CAnimParamType paramType = keyHandle.GetTrack()->GetParameterType();
         if (paramType == AnimParamType::Event)
         {
-            mv_event.SetEnumList(NULL);
-            mv_animation.SetEnumList(NULL);
+            mv_event.SetEnumList(nullptr);
+            mv_animation.SetEnumList(nullptr);
 
             // Add <None> for empty, unset event
             mv_event->AddEnumItem(QObject::tr("<None>"), "");

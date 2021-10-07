@@ -19,7 +19,7 @@
 #include <QToolButton>
 
 // Editor
-#include "NewTerrainDialog.h"  
+#include "NewTerrainDialog.h"
 
 AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
 #include <ui_NewLevelDialog.h>
@@ -54,7 +54,7 @@ private:
 
 // CNewLevelDialog dialog
 
-CNewLevelDialog::CNewLevelDialog(QWidget* pParent /*=NULL*/)
+CNewLevelDialog::CNewLevelDialog(QWidget* pParent /*=nullptr*/)
     : QDialog(pParent)
     , m_bUpdate(false)
     , ui(new Ui::CNewLevelDialog)
@@ -69,7 +69,7 @@ CNewLevelDialog::CNewLevelDialog(QWidget* pParent /*=NULL*/)
 
     m_bIsResize = false;
 
-    
+
     ui->TITLE->setText(tr("Assign a name and location to the new level."));
     ui->STATIC1->setText(tr("Location:"));
     ui->STATIC2->setText(tr("Name:"));
@@ -98,7 +98,7 @@ CNewLevelDialog::CNewLevelDialog(QWidget* pParent /*=NULL*/)
 
     m_levelFolders = GetLevelsFolder();
     m_level = "";
-    // First of all, keyboard focus is related to widget tab order, and the default tab order is based on the order in which 
+    // First of all, keyboard focus is related to widget tab order, and the default tab order is based on the order in which
     // widgets are constructed. Therefore, creating more widgets changes the keyboard focus. That is why setFocus() is called last.
     // Secondly, using singleShot() allows setFocus() slot of the QLineEdit instance to be invoked right after the event system
     // is ready to do so. Therefore, it is better to use singleShot() than directly call setFocus().

@@ -21,8 +21,6 @@ namespace AZ
     {      
         ImageBindFlags GetImageBindFlags(ScopeAttachmentUsage usage, ScopeAttachmentAccess access);        
 
-        AZ_ASSERT_NO_ALIGNMENT_PADDING_BEGIN
-
         /**
          * Images are comprised of sub-resources corresponding to the number of mip-mip levels
          * and array slices. Image data is stored as pixels in opaque swizzled formats. Images
@@ -110,8 +108,6 @@ namespace AZ
             // [GFX TODO][ATOM-1518] Care matching with ImageViewDescriptor::m_isCubemap.
             uint32_t m_isCubemap = 0;
         };
-
-        AZ_ASSERT_NO_ALIGNMENT_PADDING_END
 
         /// Returns whether mip 'A' is more detailed than mip 'B'.
         inline bool IsMipMoreDetailedThan(uint32_t mipA, uint32_t mipB)

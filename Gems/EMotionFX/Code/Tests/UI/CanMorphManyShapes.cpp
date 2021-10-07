@@ -66,9 +66,9 @@ namespace EMotionFX
             );
             m_morphSetup->AddMorphTarget(morphTarget);
 
-            // Without this call, the bind pose does not know about newly added morph target (mMorphWeights.GetLength() == 0)
+            // Without this call, the bind pose does not know about newly added morph target (m_morphWeights.size() == 0)
             m_actor->ResizeTransformData();
-            m_actor->PostCreateInit(/*makeGeomLodsCompatibleWithSkeletalLODs=*/false, /*generateOBBs=*/false, /*convertUnitType=*/false);
+            m_actor->PostCreateInit(/*makeGeomLodsCompatibleWithSkeletalLODs=*/false, /*convertUnitType=*/false);
 
             m_animGraph = AZStd::make_unique<AnimGraph>();
 
@@ -99,7 +99,7 @@ namespace EMotionFX
             // InitAfterLoading() is called
             morphTargetNode->AddConnection(
                 parameterNode,
-                parameterNode->FindOutputPortIndex("FloatParam"),
+                aznumeric_caster(parameterNode->FindOutputPortIndex("FloatParam")),
                 BlendTreeMorphTargetNode::PORTID_INPUT_WEIGHT
             );
             finalNode->AddConnection(
@@ -161,13 +161,13 @@ namespace EMotionFX
         EXPECT_TRUE(morphTarget) << "Cannot access MorphTarget";
 
         // Switch the morphTarget to manual mode
-        morphTarget->mManualMode->click();
+        morphTarget->m_manualMode->click();
 
         // Set the slider to 0.5f;
-        morphTarget->mSliderWeight->slider()->setValue(0.5f);
+        morphTarget->m_sliderWeight->slider()->setValue(0.5f);
 
         // Get the instance of the MorphTargetInstance
-        EMotionFX::MorphSetupInstance::MorphTarget* morphTargetInstance = morphTarget->mMorphTargetInstance;
+        EMotionFX::MorphSetupInstance::MorphTarget* morphTargetInstance = morphTarget->m_morphTargetInstance;
         ASSERT_TRUE(morphTargetInstance) << "Cannot get Instance of Morph Target";
         EXPECT_EQ(morphTargetInstance->GetWeight(), 0.5f) << "Morph Taget Instance is not set to the correct value";
     }

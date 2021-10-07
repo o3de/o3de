@@ -54,6 +54,7 @@ namespace O3DE::ProjectManager
         QTabWidget* tabWidget = new QTabWidget();
         tabWidget->setObjectName("projectSettingsTab");
         tabWidget->tabBar()->setObjectName("projectSettingsTabBar");
+        tabWidget->tabBar()->setFocusPolicy(Qt::TabFocus);
         tabWidget->addTab(m_updateSettingsScreen, tr("General"));
 
         QPushButton* gemsButton = new QPushButton(tr("Configure Gems"), this);
@@ -241,7 +242,7 @@ namespace O3DE::ProjectManager
 
             if (!newProjectSettings.m_newPreviewImagePath.isEmpty())
             {
-                if (!ProjectUtils::ReplaceFile(
+                if (!ProjectUtils::ReplaceProjectFile(
                         QDir(newProjectSettings.m_path).filePath(newProjectSettings.m_iconPath), newProjectSettings.m_newPreviewImagePath))
                 {
                     QMessageBox::critical(this, tr("File replace failed"), tr("Failed to replace project preview image."));

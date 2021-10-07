@@ -56,7 +56,7 @@ namespace EMotionFX
             return;
         }
 
-        m_node = mAnimGraph->RecursiveFindNodeById(m_nodeId);
+        m_node = m_animGraph->RecursiveFindNodeById(m_nodeId);
     }
 
 
@@ -181,7 +181,7 @@ namespace EMotionFX
     void AnimGraphPlayTimeCondition::SetNodeId(AnimGraphNodeId nodeId)
     {
         m_nodeId = nodeId;
-        if (mAnimGraph)
+        if (m_animGraph)
         {
             Reinit();
         }

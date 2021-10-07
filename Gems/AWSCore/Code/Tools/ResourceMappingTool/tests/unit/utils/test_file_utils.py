@@ -44,6 +44,23 @@ class TestFileUtils(TestCase):
         mocked_path.exists.assert_called_once()
         assert not actual_result
 
+    def test_create_directory_return_true(self) -> None:
+        mocked_path: MagicMock = self._mock_path.return_value
+
+        actual_result: bool = file_utils.create_directory("dummy")
+        self._mock_path.assert_called_once()
+        mocked_path.mkdir.assert_called_once()
+        assert actual_result
+
+    def test_create_directory_return_false_when_exception_raised(self) -> None:
+        mocked_path: MagicMock = self._mock_path.return_value
+        mocked_path.mkdir.side_effect = FileExistsError()
+
+        actual_result: bool = file_utils.create_directory("dummy")
+        self._mock_path.assert_called_once()
+        mocked_path.mkdir.assert_called_once()
+        assert not actual_result
+
     def test_get_current_directory_path_return_expected_path_name(self) -> None:
         self._mock_path.cwd.return_value = TestFileUtils._expected_path_name
 

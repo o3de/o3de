@@ -62,7 +62,6 @@
 
 
 #if defined(EMOTIONFXANIMATION_EDITOR) // EMFX tools / editor includes
-#   include <IEditor.h>
 // Qt
 #   include <QtGui/QSurfaceFormat>
 // EMStudio tools and main window registration
@@ -115,7 +114,7 @@ namespace EMotionFX
         public:
             AZ_CLASS_ALLOCATOR(EMotionFXEventHandler, EMotionFXAllocator, 0);
 
-            const AZStd::vector<EventTypes> GetHandledEventTypes() const
+            const AZStd::vector<EventTypes> GetHandledEventTypes() const override
             {
                 return {
                            EVENT_TYPE_ON_EVENT,
@@ -132,7 +131,7 @@ namespace EMotionFX
             /// Dispatch motion events to listeners via ActorNotificationBus::OnMotionEvent.
             void OnEvent(const EMotionFX::EventInfo& emfxInfo) override
             {
-                const ActorInstance* actorInstance = emfxInfo.mActorInstance;
+                const ActorInstance* actorInstance = emfxInfo.m_actorInstance;
                 if (actorInstance)
                 {
                     const AZ::EntityId owningEntityId = actorInstance->GetEntityId();
@@ -140,11 +139,11 @@ namespace EMotionFX
                     // Fill engine-compatible structure to dispatch to game code.
                     MotionEvent motionEvent;
                     motionEvent.m_entityId = owningEntityId;
-                    motionEvent.m_actorInstance = emfxInfo.mActorInstance;
-                    motionEvent.m_motionInstance = emfxInfo.mMotionInstance;
-                    motionEvent.m_time = emfxInfo.mTimeValue;
+                    motionEvent.m_actorInstance = emfxInfo.m_actorInstance;
+                    motionEvent.m_motionInstance = emfxInfo.m_motionInstance;
+                    motionEvent.m_time = emfxInfo.m_timeValue;
                     // TODO
-                    for (const auto& eventData : emfxInfo.mEvent->GetEventDatas())
+                    for (const auto& eventData : emfxInfo.m_event->GetEventDatas())
                     {
                         if (const EMotionFX::TwoStringEventData* twoStringEventData = azrtti_cast<const EMotionFX::TwoStringEventData*>(eventData.get()))
                         {
@@ -153,8 +152,8 @@ namespace EMotionFX
                             break;
                         }
                     }
-                    motionEvent.m_globalWeight = emfxInfo.mGlobalWeight;
-                    motionEvent.m_localWeight = emfxInfo.mLocalWeight;
+                    motionEvent.m_globalWeight = emfxInfo.m_globalWeight;
+                    motionEvent.m_localWeight = emfxInfo.m_localWeight;
                     motionEvent.m_isEventStart = emfxInfo.IsEventStart();
 
                     // Queue the event to flush on the main thread.
@@ -469,9 +468,9 @@ namespace EMotionFX
 
             // Initialize MCore, which is EMotionFX's standard library of containers and systems.
             MCore::Initializer::InitSettings coreSettings;
-            coreSettings.mMemAllocFunction = &EMotionFXAlloc;
-            coreSettings.mMemReallocFunction = &EMotionFXRealloc;
-            coreSettings.mMemFreeFunction = &EMotionFXFree;
+            coreSettings.m_memAllocFunction = &EMotionFXAlloc;
+            coreSettings.m_memReallocFunction = &EMotionFXRealloc;
+            coreSettings.m_memFreeFunction = &EMotionFXFree;
             if (!MCore::Initializer::Init(&coreSettings))
             {
                 AZ_Error("EMotion FX Animation", false, "Failed to initialize EMotion FX SDK Core");
@@ -480,7 +479,7 @@ namespace EMotionFX
 
             // Initialize EMotionFX runtime.
             EMotionFX::Initializer::InitSettings emfxSettings;
-            emfxSettings.mUnitType = MCore::Distance::UNITTYPE_METERS;
+            emfxSettings.m_unitType = MCore::Distance::UNITTYPE_METERS;
 
             if (!EMotionFX::Initializer::Init(&emfxSettings))
             {
@@ -488,9 +487,9 @@ namespace EMotionFX
                 return;
             }
 
-            SetMediaRoot("@assets@");
-            // \todo Right now we're pointing at the @devassets@ location (source) and working from there, because .actor and .motion (motion) aren't yet processed through
-            // the scene pipeline. Once they are, we'll need to update various segments of the Tool to always read from the @assets@ cache, but write to the @devassets@ data/metadata.
+            SetMediaRoot("@products@");
+            // \todo Right now we're pointing at the @projectroot@ location (source) and working from there, because .actor and .motion (motion) aren't yet processed through
+            // the scene pipeline. Once they are, we'll need to update various segments of the Tool to always read from the @products@ cache, but write to the @projectroot@ data/metadata.
             EMotionFX::GetEMotionFX().InitAssetFolderPaths();
 
             // Register EMotionFX event handler
@@ -604,67 +603,15 @@ namespace EMotionFX
         }
 
         //////////////////////////////////////////////////////////////////////////
-#if defined (EMOTIONFXANIMATION_EDITOR)
-        void SystemComponent::UpdateAnimationEditorPlugins(float delta)
-        {
-            if (!EMStudio::GetManager())
-            {
-                return;
-            }
-
-            EMStudio::PluginManager* pluginManager = EMStudio::GetPluginManager();
-            if (!pluginManager)
-            {
-                return;
-            }
-
-            // Process the plugins.
-            const AZ::u32 numPlugins = pluginManager->GetNumActivePlugins();
-            for (AZ::u32 i = 0; i < numPlugins; ++i)
-            {
-                EMStudio::EMStudioPlugin* plugin = pluginManager->GetActivePlugin(i);
-                plugin->ProcessFrame(delta);
-            }
-        }
-#endif
-
-        //////////////////////////////////////////////////////////////////////////
         void SystemComponent::OnTick(float delta, AZ::ScriptTimePoint timePoint)
         {
             AZ_UNUSED(timePoint);
 
 #if defined (EMOTIONFXANIMATION_EDITOR)
             AZ_UNUSED(delta);
-            const float realDelta = m_updateTimer.StampAndGetDeltaTimeInSeconds();
+            delta = m_updateTimer.StampAndGetDeltaTimeInSeconds();
+#endif
 
-            // Flush events prior to updating EMotion FX.
-            ActorNotificationBus::ExecuteQueuedEvents();
-
-            if (CVars::emfx_updateEnabled)
-            {
-                // Main EMotionFX runtime update.
-                GetEMotionFX().Update(realDelta);
-            }
-
-            // Check if we are in game mode.
-            IEditor* editor = nullptr;
-            EBUS_EVENT_RESULT(editor, AzToolsFramework::EditorRequests::Bus, GetEditor);
-            const bool inGameMode = editor ? editor->IsInGameMode() : false;
-
-            // Update all the animation editor plugins (redraw viewports, timeline, and graph windows etc).
-            // But only update this when the main window is visible and we are in game mode.
-            const bool isEditorActive =
-                EMotionFX::GetEMotionFX().GetIsInEditorMode() &&
-                EMStudio::GetManager() &&
-                EMStudio::HasMainWindow() &&
-                !EMStudio::GetMainWindow()->visibleRegion().isEmpty() &&
-                !inGameMode;
-
-            if (isEditorActive)
-            {
-                UpdateAnimationEditorPlugins(realDelta);
-            }
-#else
             // Flush events prior to updating EMotion FX.
             ActorNotificationBus::ExecuteQueuedEvents();
 
@@ -673,12 +620,10 @@ namespace EMotionFX
                 // Main EMotionFX runtime update.
                 GetEMotionFX().Update(delta);
             }
-#endif
 
-            const float timeDelta = delta;
             const ActorManager* actorManager = GetEMotionFX().GetActorManager();
-            const AZ::u32 numActorInstances = actorManager->GetNumActorInstances();
-            for (AZ::u32 i = 0; i < numActorInstances; ++i)
+            const size_t numActorInstances = actorManager->GetNumActorInstances();
+            for (size_t i = 0; i < numActorInstances; ++i)
             {
                 const ActorInstance* actorInstance = actorManager->GetActorInstance(i);
 
@@ -704,12 +649,12 @@ namespace EMotionFX
                         // If we have a physics controller.
                         if (hasCustomMotionExtractionController || hasPhysicsController)
                         {
-                            const float deltaTimeInv = (timeDelta > 0.0f) ? (1.0f / timeDelta) : 0.0f;
+                            const float deltaTimeInv = (delta > 0.0f) ? (1.0f / delta) : 0.0f;
 
                             AZ::Transform currentTransform = AZ::Transform::CreateIdentity();
                             AZ::TransformBus::EventResult(currentTransform, entityId, &AZ::TransformBus::Events::GetWorldTM);
 
-                            const AZ::Vector3 actorInstancePosition = actorInstance->GetWorldSpaceTransform().mPosition;
+                            const AZ::Vector3 actorInstancePosition = actorInstance->GetWorldSpaceTransform().m_position;
                             const AZ::Vector3 positionDelta = actorInstancePosition - currentTransform.GetTranslation();
 
                             if (hasPhysicsController)
@@ -719,12 +664,12 @@ namespace EMotionFX
                             }
                             else if (hasCustomMotionExtractionController)
                             {
-                                MotionExtractionRequestBus::Event(entityId, &MotionExtractionRequestBus::Events::ExtractMotion, positionDelta, timeDelta);
+                                MotionExtractionRequestBus::Event(entityId, &MotionExtractionRequestBus::Events::ExtractMotion, positionDelta, delta);
                                 AZ::TransformBus::EventResult(currentTransform, entityId, &AZ::TransformBus::Events::GetWorldTM);
                             }
 
                             // Update the entity rotation.
-                            const AZ::Quaternion actorInstanceRotation = actorInstance->GetWorldSpaceTransform().mRotation;
+                            const AZ::Quaternion actorInstanceRotation = actorInstance->GetWorldSpaceTransform().m_rotation;
                             const AZ::Quaternion currentRotation = currentTransform.GetRotation();
                             if (!currentRotation.IsClose(actorInstanceRotation, AZ::Constants::FloatEpsilon))
                             {
@@ -884,7 +829,7 @@ namespace EMotionFX
 
             // Register EMotionFX window with the main editor.
             AzToolsFramework::ViewPaneOptions emotionFXWindowOptions;
-            emotionFXWindowOptions.isPreview = true;
+            emotionFXWindowOptions.isPreview = false;
             emotionFXWindowOptions.isDeletable = true;
             emotionFXWindowOptions.isDockable = false;
 #if AZ_TRAIT_EMOTIONFX_MAIN_WINDOW_DETACHED

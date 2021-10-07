@@ -44,7 +44,8 @@
                     "_msk",
                     "_blend"
                 ],
-                "PixelFormat": "EAC_R11",
+                "PixelFormat": "ASTC_4x4",
+                "MaxTextureSize": 2048,
                 "IsPowerOf2": true,
                 "MipMapSetting": {
                     "MipGenType": "Box"
@@ -67,7 +68,8 @@
                     "_msk",
                     "_blend"
                 ],
-                "PixelFormat": "EAC_R11",
+                "PixelFormat": "ASTC_4x4",
+                "MaxTextureSize": 2048,
                 "IsPowerOf2": true,
                 "MipMapSetting": {
                     "MipGenType": "Box"

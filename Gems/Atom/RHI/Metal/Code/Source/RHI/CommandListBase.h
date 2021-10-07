@@ -89,12 +89,14 @@ namespace AZ
             /// Cache multisample state. Used mainly to validate the MSAA image descriptor against the one passed into the pipelinestate
             RHI::MultisampleState       m_renderPassMultiSampleState;
             
+            //! Go through all the heaps and call UseHeap on them to make them resident for the upcoming pass.
+            void MakeHeapsResident(MTLRenderStages renderStages);
         private:
             
-            //! Go through all the heaps and call UseHeap on them to make them resident for the upcoming pass.
-            void MakeHeapsResident();
+            
 
             bool m_isEncoded                                    = false;
+            bool m_isNullDescHeapBound                          = false;
             RHI::HardwareQueueClass m_hardwareQueueClass        = RHI::HardwareQueueClass::Graphics;
             NSString* m_encoderScopeName                        = nullptr;
             id <MTLCommandBuffer> m_mtlCommandBuffer            = nil;

@@ -19,7 +19,7 @@
 
 namespace LuxCoreUI
 {
-    void LaunchLuxCoreUI(const AZStd::string& luxCoreExeFullPath, AZStd::string& commandLine);
+    void LaunchLuxCoreUI(const AZStd::string& luxCoreExeFullPath, const AZStd::string& commandLine);
 }
 
 namespace AZ

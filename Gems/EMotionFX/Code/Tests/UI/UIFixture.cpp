@@ -73,8 +73,8 @@ namespace EMotionFX
     {
         // Plugins have to be created after both the QApplication object and
         // after the SystemComponent
-        const uint32 numPlugins = EMStudio::GetPluginManager()->GetNumPlugins();
-        for (uint32 i = 0; i < numPlugins; ++i)
+        const size_t numPlugins = EMStudio::GetPluginManager()->GetNumPlugins();
+        for (size_t i = 0; i < numPlugins; ++i)
         {
             EMStudio::EMStudioPlugin* plugin = EMStudio::GetPluginManager()->GetPlugin(i);
             EMStudio::GetPluginManager()->CreateWindowOfType(plugin->GetName());

@@ -96,6 +96,10 @@ namespace AZStd
             && !is_convertible_v<const T&, const Element*>>>
         constexpr basic_fixed_string(const T& convertibleToView, size_type rhsOffset, size_type count);
 
+
+        // #12
+        constexpr basic_fixed_string(AZStd::nullptr_t) = delete;
+
         constexpr operator AZStd::basic_string_view<Element, Traits>() const;
 
         constexpr auto begin() -> iterator;
@@ -120,6 +124,7 @@ namespace AZStd
         constexpr auto operator=(const T& convertible_to_view)
             -> AZStd::enable_if_t<is_convertible_v<const T&, basic_string_view<Element, Traits>>
             && !is_convertible_v<const T&, const Element*>, basic_fixed_string&>;
+        constexpr auto operator=(AZStd::nullptr_t) -> basic_fixed_string& = delete;
 
         constexpr auto operator+=(const basic_fixed_string& rhs) -> basic_fixed_string&;
         constexpr auto operator+=(const_pointer ptr) -> basic_fixed_string&;

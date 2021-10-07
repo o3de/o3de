@@ -54,7 +54,7 @@ namespace AZ
                 {
                     transformedVertices.push_back(transform.TransformPoint(Vector3(vertex.GetX(), vertex.GetY(), 0.0f)));
                 }
-                GetFeatureProcessor()->SetPolygonPoints(GetLightHandle(), transformedVertices.data(), transformedVertices.size(), GetTransform().GetBasisZ());
+                GetFeatureProcessor()->SetPolygonPoints(GetLightHandle(), transformedVertices.data(), static_cast<uint32_t>(transformedVertices.size()), GetTransform().GetBasisZ());
             }
         }
 

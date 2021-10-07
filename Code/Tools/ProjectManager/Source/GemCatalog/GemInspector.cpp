@@ -8,6 +8,7 @@
 
 #include <GemCatalog/GemInspector.h>
 #include <GemCatalog/GemItemDelegate.h>
+
 #include <QFrame>
 #include <QLabel>
 #include <QSpacerItem>
@@ -58,7 +59,7 @@ namespace O3DE::ProjectManager
             m_mainWidget->hide();
         }
 
-        m_nameLabel->setText(m_model->GetName(modelIndex));
+        m_nameLabel->setText(m_model->GetDisplayName(modelIndex));
         m_creatorLabel->setText(m_model->GetCreator(modelIndex));
 
         m_summaryLabel->setText(m_model->GetSummary(modelIndex));
@@ -83,14 +84,13 @@ namespace O3DE::ProjectManager
             m_reqirementsTextLabel->hide();
         }
 
-        // Depending and conflicting gems
+        // Depending gems
         m_dependingGems->Update("Depending Gems", "The following Gems will be automatically enabled with this Gem.", m_model->GetDependingGemNames(modelIndex));
-        m_conflictingGems->Update("Conflicting Gems", "The following Gems will be automatically disabled with this Gem.", m_model->GetConflictingGemNames(modelIndex));
 
         // Additional information
         m_versionLabel->setText(QString("Gem Version: %1").arg(m_model->GetVersion(modelIndex)));
         m_lastUpdatedLabel->setText(QString("Last Updated: %1").arg(m_model->GetLastUpdated(modelIndex)));
-        m_binarySizeLabel->setText(QString("Binary Size:  %1 KB").arg(QString::number(m_model->GetBinarySizeInKB(modelIndex))));
+        m_binarySizeLabel->setText(QString("Binary Size:  %1 KB").arg(m_model->GetBinarySizeInKB(modelIndex)));
 
         m_mainWidget->adjustSize();
         m_mainWidget->show();
@@ -108,7 +108,7 @@ namespace O3DE::ProjectManager
     {
         // Gem name, creator and summary
         m_nameLabel = CreateStyledLabel(m_mainLayout, 18, s_headerColor);
-        m_creatorLabel = CreateStyledLabel(m_mainLayout, 12, s_creatorColor);
+        m_creatorLabel = CreateStyledLabel(m_mainLayout, 12, s_headerColor);
         m_mainLayout->addSpacing(5);
 
         // TODO: QLabel seems to have issues determining the right sizeHint() for our font with the given font size.
@@ -116,6 +116,8 @@ namespace O3DE::ProjectManager
         m_summaryLabel = CreateStyledLabel(m_mainLayout, 12, s_textColor);
         m_mainLayout->addWidget(m_summaryLabel);
         m_summaryLabel->setWordWrap(true);
+        m_summaryLabel->setTextInteractionFlags(Qt::TextBrowserInteraction);
+        m_summaryLabel->setOpenExternalLinks(true);
         m_mainLayout->addSpacing(5);
 
         // Directory and documentation links
@@ -161,6 +163,8 @@ namespace O3DE::ProjectManager
 
         m_reqirementsTextLabel = GemInspector::CreateStyledLabel(requrementsLayout, 10, s_textColor);
         m_reqirementsTextLabel->setWordWrap(true);
+        m_reqirementsTextLabel->setTextInteractionFlags(Qt::TextBrowserInteraction);
+        m_reqirementsTextLabel->setOpenExternalLinks(true);
 
         QSpacerItem* reqirementsSpacer = new QSpacerItem(0, 0, QSizePolicy::Expanding);
         requrementsLayout->addSpacerItem(reqirementsSpacer);
@@ -169,13 +173,9 @@ namespace O3DE::ProjectManager
 
         m_mainLayout->addSpacing(20);
 
-        // Depending and conflicting gems
+        // Depending gems
         m_dependingGems = new GemsSubWidget();
         m_mainLayout->addWidget(m_dependingGems);
-        m_mainLayout->addSpacing(20);
-
-        m_conflictingGems = new GemsSubWidget();
-        m_mainLayout->addWidget(m_conflictingGems);
         m_mainLayout->addSpacing(20);
 
         // Additional information
@@ -185,28 +185,5 @@ namespace O3DE::ProjectManager
         m_versionLabel = CreateStyledLabel(m_mainLayout, 12, s_textColor);
         m_lastUpdatedLabel = CreateStyledLabel(m_mainLayout, 12, s_textColor);
         m_binarySizeLabel = CreateStyledLabel(m_mainLayout, 12, s_textColor);
-    }
-
-    GemInspector::GemsSubWidget::GemsSubWidget(QWidget* parent)
-        : QWidget(parent)
-    {
-        m_layout = new QVBoxLayout();
-        m_layout->setAlignment(Qt::AlignTop);
-        m_layout->setMargin(0);
-        setLayout(m_layout);
-
-        m_titleLabel = GemInspector::CreateStyledLabel(m_layout, 16, s_headerColor);
-        m_textLabel = GemInspector::CreateStyledLabel(m_layout, 10, s_textColor);
-        m_textLabel->setWordWrap(true);
-
-        m_tagWidget = new TagContainerWidget();
-        m_layout->addWidget(m_tagWidget);
-    }
-
-    void GemInspector::GemsSubWidget::Update(const QString& title, const QString& text, const QStringList& gemNames)
-    {
-        m_titleLabel->setText(title);
-        m_textLabel->setText(text);
-        m_tagWidget->Update(gemNames);
     }
 } // namespace O3DE::ProjectManager

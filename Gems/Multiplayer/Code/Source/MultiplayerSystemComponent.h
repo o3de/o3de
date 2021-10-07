@@ -55,7 +55,7 @@ namespace Multiplayer
         static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible);
 
         MultiplayerSystemComponent();
-        ~MultiplayerSystemComponent() override = default;
+        ~MultiplayerSystemComponent() override;
 
         //! AZ::Component overrides.
         //! @{
@@ -76,6 +76,7 @@ namespace Multiplayer
         int GetTickOrder() override;
         //! @}
 
+        bool IsHandshakeComplete(AzNetworking::IConnection* connection) const;
         bool HandleRequest(AzNetworking::IConnection* connection, const AzNetworking::IPacketHeader& packetHeader, MultiplayerPackets::Connect& packet);
         bool HandleRequest(AzNetworking::IConnection* connection, const AzNetworking::IPacketHeader& packetHeader, MultiplayerPackets::Accept& packet);
         bool HandleRequest(AzNetworking::IConnection* connection, const AzNetworking::IPacketHeader& packetHeader, MultiplayerPackets::ReadyForEntityUpdates& packet);
@@ -89,7 +90,7 @@ namespace Multiplayer
         //! @{
         AzNetworking::ConnectResult ValidateConnect(const AzNetworking::IpAddress& remoteAddress, const AzNetworking::IPacketHeader& packetHeader, AzNetworking::ISerializer& serializer) override;
         void OnConnect(AzNetworking::IConnection* connection) override;
-        bool OnPacketReceived(AzNetworking::IConnection* connection, const AzNetworking::IPacketHeader& packetHeader, AzNetworking::ISerializer& serializer) override;
+        AzNetworking::PacketDispatchResult OnPacketReceived(AzNetworking::IConnection* connection, const AzNetworking::IPacketHeader& packetHeader, AzNetworking::ISerializer& serializer) override;
         void OnPacketLost(AzNetworking::IConnection* connection, AzNetworking::PacketId packetId) override;
         void OnDisconnect(AzNetworking::IConnection* connection, AzNetworking::DisconnectReason reason, AzNetworking::TerminationEndpoint endpoint) override;
         //! @}
@@ -104,13 +105,19 @@ namespace Multiplayer
         //! @{
         MultiplayerAgentType GetAgentType() const override;
         void InitializeMultiplayer(MultiplayerAgentType state) override;
+        bool StartHosting(uint16_t port, bool isDedicated = true) override;
+        bool Connect(const AZStd::string& remoteAddress, uint16_t port) override;
+        void Terminate(AzNetworking::DisconnectReason reason) override;
+        void AddClientMigrationStartEventHandler(ClientMigrationStartEvent::Handler& handler) override;
+        void AddClientMigrationEndEventHandler(ClientMigrationEndEvent::Handler& handler) override;
         void AddClientDisconnectedHandler(ClientDisconnectedEvent::Handler& handler) override;
+        void AddNotifyClientMigrationHandler(NotifyClientMigrationEvent::Handler& handler) override;
+        void AddNotifyEntityMigrationEventHandler(NotifyEntityMigrationEvent::Handler& handler) override;
         void AddConnectionAcquiredHandler(ConnectionAcquiredEvent::Handler& handler) override;
         void AddSessionInitHandler(SessionInitEvent::Handler& handler) override;
         void AddSessionShutdownHandler(SessionShutdownEvent::Handler& handler) override;
-        bool StartHosting(uint16_t port, bool isDedicated = true) override;
-        bool Connect(AZStd::string remoteAddress, uint16_t port) override;
-        void Terminate(AzNetworking::DisconnectReason reason) override;
+        void SendNotifyClientMigrationEvent(const HostId& hostId, uint64_t userIdentifier, ClientInputId lastClientInputId) override;
+        void SendNotifyEntityMigrationEvent(const ConstNetworkEntityHandle& entityHandle, const HostId& remoteHostId) override;
         void SendReadyForEntityUpdates(bool readyForEntityUpdates) override;
         AZ::TimeMs GetCurrentHostTimeMs() const override;
         float GetCurrentBlendFactor() const override;
@@ -118,6 +125,8 @@ namespace Multiplayer
         INetworkEntityManager* GetNetworkEntityManager() override;
         void SetFilterEntityManager(IFilterEntityManager* entityFilter) override;
         IFilterEntityManager* GetFilterEntityManager() override;
+        void SetShouldSpawnNetworkEntities(bool value) override;
+        bool GetShouldSpawnNetworkEntities() const override;
         //! @}
 
         //! Console commands.
@@ -147,8 +156,12 @@ namespace Multiplayer
 
         SessionInitEvent m_initEvent;
         SessionShutdownEvent m_shutdownEvent;
-        ConnectionAcquiredEvent m_connAcquiredEvent;
+        ConnectionAcquiredEvent m_connectionAcquiredEvent;
         ClientDisconnectedEvent m_clientDisconnectedEvent;
+        ClientMigrationStartEvent m_clientMigrationStartEvent;
+        ClientMigrationEndEvent m_clientMigrationEndEvent;
+        NotifyClientMigrationEvent m_notifyClientMigrationEvent;
+        NotifyEntityMigrationEvent m_notifyEntityMigrationEvent;
 
         AZStd::queue<AZStd::string> m_pendingConnectionTickets;
 
@@ -158,6 +171,7 @@ namespace Multiplayer
         double m_serverSendAccumulator = 0.0;
         float m_renderBlendFactor = 0.0f;
         float m_tickFactor = 0.0f;
+        bool m_spawnNetboundEntities = true;
 
 #if !defined(AZ_RELEASE_BUILD)
         MultiplayerEditorConnection m_editorConnectionListener;

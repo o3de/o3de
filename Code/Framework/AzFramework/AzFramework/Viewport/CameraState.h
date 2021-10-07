@@ -11,6 +11,11 @@
 #include <AzCore/Math/Vector2.h>
 #include <AzCore/Math/Vector3.h>
 
+namespace AZ
+{
+    class SerializeContext;
+} // namespace AZ
+
 namespace AzFramework
 {
     //! Represents the camera state populated by the viewport camera.

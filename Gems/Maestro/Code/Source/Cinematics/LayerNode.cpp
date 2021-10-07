@@ -138,13 +138,13 @@ void CLayerNode::Serialize(XmlNodeRef& xmlNode, bool bLoading, bool bLoadEmptyTr
 //-----------------------------------------------------------------------------
 unsigned int CLayerNode::GetParamCount() const
 {
-    return s_nodeParams.size();
+    return static_cast<unsigned int>(s_nodeParams.size());
 }
 
 //-----------------------------------------------------------------------------
 CAnimParamType CLayerNode::GetParamType(unsigned int nIndex) const
 {
-    if (nIndex >= 0 && nIndex < (int)s_nodeParams.size())
+    if (nIndex < (int)s_nodeParams.size())
     {
         return s_nodeParams[nIndex].paramType;
     }

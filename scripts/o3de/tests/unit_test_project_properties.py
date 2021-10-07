@@ -6,33 +6,41 @@
 #
 #
 
+import json
 import pytest
 import pathlib
 from unittest.mock import patch
 from o3de import project_properties
 
 
-TEST_DEFAULT_PROJECT_DATA = {
-    "template_name": "DefaultProject",
-    "restricted_name": "o3de",
-    "restricted_platform_relative_path": "Templates",
-    "origin": "The primary repo for DefaultProject goes here: i.e. http://www.mydomain.com",
-    "license": "What license DefaultProject uses goes here: i.e. https://opensource.org/licenses/MIT",
-    "display_name": "Default",
-    "summary": "A short description of DefaultProject.",
-    "included_gems": ["Atom","Camera","EMotionFX","UI","Maestro","Input","ImGui"],
-    "canonical_tags": [],
-    "user_tags": [
-        "DefaultProject"
+TEST_PROJECT_JSON_PAYLOAD = '''
+{
+    "project_name": "TestProject",
+    "origin": "The primary repo for TestProject goes here: i.e. http://www.mydomain.com",
+    "license": "What license TestProject uses goes here: i.e. https://opensource.org/licenses/MIT",
+    "display_name": "TestProject",
+    "summary": "A short description of TestProject.",
+    "canonical_tags": [
+        "Project"
     ],
-    "icon_path": "preview.png"
+    "user_tags": [
+        "TestProject"
+    ],
+    "icon_path": "preview.png",
+    "engine": "o3de-install",
+    "restricted_name": "projects",
+    "external_subdirectories": [
+        "D:/TestGem"
+    ]
 }
+'''
+
 
 @pytest.fixture(scope='class')
 def init_project_json_data(request):
     class ProjectJsonData:
         def __init__(self):
-            self.data = TEST_DEFAULT_PROJECT_DATA
+            self.data = json.loads(TEST_PROJECT_JSON_PAYLOAD)
     request.cls.project_json = ProjectJsonData()
 
 @pytest.mark.usefixtures('init_project_json_data')

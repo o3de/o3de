@@ -46,7 +46,7 @@ namespace AZ
         void            Reset()
         {
             m_usage = 0;
-            m_currentCharacter = ~0;
+            m_currentCharacter = std::numeric_limits<uint32_t>::max();
 
             m_characterWidth = 0;
             m_characterHeight = 0;
@@ -55,8 +55,6 @@ namespace AZ
 
             m_glyphBitmap.Clear();
         }
-
-        void GetMemoryUsage([[maybe_unused]] ICrySizer* sizer) const {}
     };
 
     //! The glyph cache maps UTF32 codepoints to their corresponding FreeType data.
@@ -79,7 +77,7 @@ namespace AZ
         int Create(int iCacheSize, int glyphBitmapWidth, int glyphBitmapHeight, FontSmoothMethod smoothMethod, FontSmoothAmount smoothAmount, float sizeRatio);
         int Release();
 
-        int LoadFontFromFile(const string& fileName);
+        int LoadFontFromFile(const AZStd::string& fileName);
         int LoadFontFromMemory(unsigned char* fileBuffer, int dataSize);
         int ReleaseFont();
 
@@ -109,8 +107,6 @@ namespace AZ
         //!
         //! \sa FontRenderer::GetGlyph, FontTexture::UpdateSlot
         int GetGlyph(GlyphBitmap** glyph, int* horizontalAdvance, int* width, int* height, int32_t& m_characterOffsetX, int32_t& m_characterOffsetY, uint32_t character, const AtomFont::GlyphSize& glyphSize = AtomFont::defaultGlyphSize, const FFont::FontHintParams& glyphFlags = FFont::FontHintParams());
-
-        void GetMemoryUsage([[maybe_unused]] ICrySizer* sizer) const {}
 
         bool GetMonospaced() const { return m_fontRenderer.GetMonospaced(); }
 

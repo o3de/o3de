@@ -16,10 +16,13 @@
 #ifndef AZFRAMEWORK_ENTITYCONTEXTBUS_H
 #define AZFRAMEWORK_ENTITYCONTEXTBUS_H
 
+#include <AzCore/Debug/Budget.h>
 #include <AzCore/EBus/EBus.h>
 #include <AzCore/Math/Uuid.h>
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Component/ComponentBus.h>
+
+AZ_DECLARE_BUDGET(AzFramework);
 
 namespace AZ
 {

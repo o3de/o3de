@@ -26,9 +26,9 @@
 
 namespace LyShine
 {
-    // LyShine depends on the LegacyAllocator and CryStringAllocator. This will be managed
+    // LyShine depends on the LegacyAllocator. This will be managed
     // by the LyShineSystemComponent
-    using LyShineAllocatorScope = AZ::AllocatorScope<AZ::LegacyAllocator, CryStringAllocator>;
+    using LyShineAllocatorScope = AZ::AllocatorScope<AZ::LegacyAllocator>;
 
     class LyShineSystemComponent
         : public AZ::Component
@@ -65,7 +65,7 @@ namespace LyShine
         // UiSystemBus interface implementation
         void RegisterComponentTypeForMenuOrdering(const AZ::Uuid& typeUuid) override;
         const AZStd::vector<AZ::Uuid>* GetComponentTypesForMenuOrdering() override;
-        const AZStd::list<AZ::ComponentDescriptor*>* GetLyShineComponentDescriptors();
+        const AZStd::list<AZ::ComponentDescriptor*>* GetLyShineComponentDescriptors() override;
         ////////////////////////////////////////////////////////////////////////
 
         ////////////////////////////////////////////////////////////////////////
@@ -89,7 +89,7 @@ namespace LyShine
 
         // CrySystemEventBus ///////////////////////////////////////////////////////
         void OnCrySystemInitialized(ISystem& system, const SSystemInitParams&) override;
-        virtual void OnCrySystemShutdown(ISystem&) override;
+        void OnCrySystemShutdown(ISystem&) override;
         ////////////////////////////////////////////////////////////////////////////
 
         void BroadcastCursorImagePathname();

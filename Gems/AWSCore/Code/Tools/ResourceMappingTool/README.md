@@ -89,3 +89,13 @@ you can create the virtualenv manually.
    ```
    $ python3 resource_mapping_tool.py
    ```
+## Tool Arguments
+* `--binaries-path` **[Optional]** Path to QT Binaries necessary for PySide,
+                    required if launching tool with engine python environment.
+* `--config-path`   **[Optional]** Path to resource mapping config directory,
+                    if not provided tool will use current directory.
+* `--debug`         **[Optional]** Execute on debug mode to enable DEBUG logging level.
+* `--log-path`      **[Optional]** Path to resource mapping tool logging directory,
+                    if not provided tool will store logging under tool source code directory.
+* `--profile`       **[Optional]** Named AWS profile to use for querying AWS resources,
+                    if not provided tool will use `default` aws profile.

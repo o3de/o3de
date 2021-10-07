@@ -29,8 +29,8 @@ namespace EMStudio
         MotionSetSelectionWindow(QWidget* parent, bool useSingleSelection = true, CommandSystem::SelectionList* selectionList = nullptr);
         virtual ~MotionSetSelectionWindow();
 
-        MCORE_INLINE MotionSetHierarchyWidget* GetHierarchyWidget()                                             { return mHierarchyWidget; }
-        void Update(EMotionFX::MotionSet* motionSet, CommandSystem::SelectionList* selectionList = nullptr)     { mHierarchyWidget->Update(motionSet, selectionList); }
+        MCORE_INLINE MotionSetHierarchyWidget* GetHierarchyWidget()                                             { return m_hierarchyWidget; }
+        void Update(EMotionFX::MotionSet* motionSet, CommandSystem::SelectionList* selectionList = nullptr)     { m_hierarchyWidget->Update(motionSet, selectionList); }
 
         void Select(const AZStd::vector<MotionSetSelectionItem>& selectedItems);
         void Select(const AZStd::vector<AZStd::string>& selectedMotionIds, EMotionFX::MotionSet* motionSet);
@@ -40,9 +40,9 @@ namespace EMStudio
         void OnSelectionChanged(AZStd::vector<MotionSetSelectionItem> selection);
 
     private:
-        MotionSetHierarchyWidget*   mHierarchyWidget;
-        QPushButton*                mOKButton;
-        QPushButton*                mCancelButton;
-        bool                        mUseSingleSelection;
+        MotionSetHierarchyWidget*   m_hierarchyWidget;
+        QPushButton*                m_okButton;
+        QPushButton*                m_cancelButton;
+        bool                        m_useSingleSelection;
     };
 } // namespace EMStudio

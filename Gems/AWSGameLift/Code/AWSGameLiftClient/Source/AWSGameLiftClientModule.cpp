@@ -42,4 +42,4 @@ namespace AWSGameLift
     };
 }// namespace AWSGameLift
 
-AZ_DECLARE_MODULE_CLASS(Gem_AWSGameLift_Client, AWSGameLift::AWSGameLiftClientModule)
+AZ_DECLARE_MODULE_CLASS(Gem_AWSGameLift_Clients, AWSGameLift::AWSGameLiftClientModule)

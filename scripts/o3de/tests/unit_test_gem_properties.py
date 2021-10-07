@@ -29,7 +29,8 @@ TEST_GEM_JSON_PAYLOAD = '''
         "TestGem"
     ],
     "icon_path": "preview.png",
-    "requirements": ""
+    "requirements": "",
+    "documentation_url": "https://o3de.org/docs/"
 }
 '''
 
@@ -44,24 +45,26 @@ def init_gem_json_data(request):
 @pytest.mark.usefixtures('init_gem_json_data')
 class TestEditGemProperties:
     @pytest.mark.parametrize("gem_path, gem_name, gem_new_name, gem_display, gem_origin,\
-                            gem_type, gem_summary, gem_icon, gem_requirements,\
+                            gem_type, gem_summary, gem_icon, gem_requirements, gem_documentation_url,\
                             add_tags, remove_tags, replace_tags, expected_tags, expected_result", [
         pytest.param(pathlib.PurePath('D:/TestProject'),
                      None, 'TestGem2', 'New Gem Name', 'O3DE', 'Code', 'Gem that exercises Default Gem Template',
-                     'preview.png', '',
+                     'new_preview.png', 'Do this extra thing', 'https://o3de.org/docs/user-guide/gems/',
                      ['Physics', 'Rendering', 'Scripting'], None, None, ['TestGem', 'Physics', 'Rendering', 'Scripting'],
                      0),
         pytest.param(None,
                      'TestGem2', None, 'New Gem Name', 'O3DE', 'Asset', 'Gem that exercises Default Gem Template',
-                     'preview.png', '', None, ['Physics'], None, ['TestGem', 'Rendering', 'Scripting'], 0),
+                     'new_preview.png', 'Do this extra thing', 'https://o3de.org/docs/user-guide/gems/', None,
+                     ['Physics'], None, ['TestGem', 'Rendering', 'Scripting'], 0),
         pytest.param(None,
                      'TestGem2', None, 'New Gem Name', 'O3DE', 'Tool', 'Gem that exercises Default Gem Template',
-                     'preview.png', '', None, None, ['Animation', 'TestGem'], ['Animation', 'TestGem'], 0)
+                     'new_preview.png', 'Do this extra thing', 'https://o3de.org/docs/user-guide/gems/', None,
+                     None, ['Animation', 'TestGem'], ['Animation', 'TestGem'], 0)
         ]
     )
     def test_edit_gem_properties(self, gem_path, gem_name, gem_new_name, gem_display, gem_origin,
-                                    gem_type, gem_summary, gem_icon, gem_requirements,
-                                    add_tags, remove_tags, replace_tags,
+                                    gem_type, gem_summary, gem_icon, gem_requirements, 
+                                    gem_documentation_url, add_tags, remove_tags, replace_tags,
                                     expected_tags, expected_result):
 
         def get_gem_json_data(gem_path: pathlib.Path) -> dict:
@@ -79,7 +82,7 @@ class TestEditGemProperties:
                 patch('o3de.manifest.get_registered', side_effect=get_gem_path) as get_registered_patch:
             result = gem_properties.edit_gem_props(gem_path, gem_name, gem_new_name, gem_display, gem_origin,
                                                    gem_type, gem_summary, gem_icon, gem_requirements,
-                                                   add_tags, remove_tags, replace_tags)
+                                                   gem_documentation_url, add_tags, remove_tags, replace_tags)
             assert result == expected_result
             if gem_new_name:
                 assert self.gem_json.data.get('gem_name', '') == gem_new_name
@@ -94,6 +97,8 @@ class TestEditGemProperties:
             if gem_icon:
                 assert self.gem_json.data.get('icon_path', '') == gem_icon
             if gem_requirements:
-                assert self.gem_json.data.get('requirments', '') == gem_requirements
+                assert self.gem_json.data.get('requirements', '') == gem_requirements
+            if gem_documentation_url:
+                assert self.gem_json.data.get('documentation_url', '') == gem_documentation_url
 
             assert set(self.gem_json.data.get('user_tags', [])) == set(expected_tags)

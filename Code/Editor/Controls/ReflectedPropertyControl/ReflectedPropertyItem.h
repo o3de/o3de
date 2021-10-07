@@ -122,7 +122,7 @@ protected:
 
 public:
     //! Get number of child nodes.
-    int GetChildCount() const { return m_childs.size(); };
+    int GetChildCount() const { return static_cast<int>(m_childs.size()); };
     //! Get Child by id.
     ReflectedPropertyItem* GetChild(int index) const { return m_childs[index]; }
     PropertyType GetType() const { return m_type; }

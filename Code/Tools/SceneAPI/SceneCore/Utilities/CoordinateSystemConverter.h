@@ -55,7 +55,7 @@ namespace AZ::SceneAPI
             AZ::Transform   m_targetTransform;
             AZ::Transform   m_conversionTransform;
             AZ::Transform   m_conversionTransformInversed;
-            AZ_POP_DISABLE_OVERRIDE_WARNING
+            AZ_POP_DISABLE_WARNING
             AZ::u32         m_targetBasisIndices[3];
             bool            m_needsConversion;
             bool            m_sourceRightHanded;

@@ -14,6 +14,7 @@
 #include <AzCore/Math/Vector2.h>
 #include <AzCore/Math/Vector3.h>
 #include <AzCore/Math/Vector4.h>
+#include <AzCore/Math/Matrix3x4.h>
 #include <AzCore/Math/Color.h>
 #include <AzCore/Math/Transform.h>
 #include <AzCore/Component/ComponentBus.h>
@@ -100,9 +101,11 @@ namespace AzFramework
         virtual AZ::u32 SetState(AZ::u32 state) { (void)state; return 0; }
         virtual void PushMatrix(const AZ::Transform& tm) { (void)tm; }
         virtual void PopMatrix() {}
+        virtual void PushPremultipliedMatrix(const AZ::Matrix3x4& matrix) { (void)matrix; }
+        virtual AZ::Matrix3x4 PopPremultipliedMatrix() { return AZ::Matrix3x4::CreateIdentity(); }
 
     protected:
-        ~DebugDisplayRequests() = default;
+        virtual ~DebugDisplayRequests() = default;
     };
 
     /// Inherit from DebugDisplayRequestBus::Handler to implement the DebugDisplayRequests interface.

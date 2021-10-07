@@ -114,13 +114,13 @@ void CCommentNode::Reflect(AZ::ReflectContext* context)
 //-----------------------------------------------------------------------------
 unsigned int CCommentNode::GetParamCount() const
 {
-    return s_nodeParameters.size();
+    return static_cast<unsigned int>(s_nodeParameters.size());
 }
 
 //-----------------------------------------------------------------------------
 CAnimParamType CCommentNode::GetParamType(unsigned int nIndex) const
 {
-    if (nIndex >= 0 && nIndex < (int)s_nodeParameters.size())
+    if (nIndex < s_nodeParameters.size())
     {
         return s_nodeParameters[nIndex].paramType;
     }

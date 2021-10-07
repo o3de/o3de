@@ -53,7 +53,7 @@ namespace PerforceConnection
 
         setEnabled(false);
 
-        int numSettingsToGet = m_retrievedSettings.size();
+        int numSettingsToGet = static_cast<int>(m_retrievedSettings.size());
 
         auto applySettingResultFunction = [this, &numSettingsToGet](AZStd::string setting, const SourceControlSettingInfo& info) -> void
         {

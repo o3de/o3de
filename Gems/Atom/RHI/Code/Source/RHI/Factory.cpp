@@ -8,23 +8,38 @@
 
 #include <Atom/RHI/Factory.h>
 #include <Atom/RHI/ResourceInvalidateBus.h>
+#include <Atom/RHI/RHIUtils.h>
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/Component/TickBus.h>
 
-#if defined(USE_RENDERDOC)
+#if defined(USE_RENDERDOC) || defined(USE_PIX)
 #include <AzCore/Module/DynamicModuleHandle.h>
-#include <Atom/RHI/RHIUtils.h>
 #include <Atom_RHI_Traits_Platform.h>
-
-static AZStd::unique_ptr<AZ::DynamicModuleHandle> s_renderDocModule;
-static RENDERDOC_API_1_1_2* s_renderDocApi = nullptr;
 #endif
 
+#if defined(USE_RENDERDOC)
+static AZStd::unique_ptr<AZ::DynamicModuleHandle> s_renderDocModule;
+static RENDERDOC_API_1_1_2* s_renderDocApi = nullptr;
+static bool s_isRenderDocDllLoaded = false;
+#endif
+
+#if defined(USE_PIX)
+static AZStd::unique_ptr<AZ::DynamicModuleHandle> s_pixModule;
+static bool s_isPixGpuCaptureDllLoaded = false;
+#endif
+
+static bool s_usingWarpDevice = false;
 
 namespace AZ
 {
     namespace RHI
     {
+        namespace Platform
+        {
+            bool IsPixDllInjected(const char* dllName);
+            AZStd::wstring GetLatestWinPixGpuCapturerPath();
+        }
+
         uint32_t Factory::GetComponentService()
         {
             return AZ_CRC("RHIService", 0x45d8e053);
@@ -42,6 +57,8 @@ namespace AZ
 
         Factory::Factory()
         {
+            AZStd::string preferredUserAdapterName = RHI::GetCommandLineValue("forceAdapter");
+            s_usingWarpDevice = preferredUserAdapterName == "Microsoft Basic Render Driver";
 #if defined(USE_RENDERDOC)
             // If RenderDoc is requested, we need to load the library as early as possible (before device queries/factories are made)
             bool enableRenderDoc = RHI::QueryCommandLineOption("enableRenderDoc");
@@ -53,6 +70,7 @@ namespace AZ
                 {
                     if (s_renderDocModule->Load(false))
                     {
+                        s_isRenderDocDllLoaded = true;
                         pRENDERDOC_GetAPI renderDocGetAPI = s_renderDocModule->GetFunction<pRENDERDOC_GetAPI>("RENDERDOC_GetAPI");
                         if (renderDocGetAPI)
                         {
@@ -78,8 +96,30 @@ namespace AZ
                     }
                 }
             }
-#endif // defined(USE_RENDERDOC)
+#endif
 
+#if defined(USE_PIX)
+            // If GPU capture is requested, we need to load the pix library as early as possible (before device queries/factories are made)
+            bool enablePixGPU = RHI::QueryCommandLineOption("enablePixGPU");
+            if (enablePixGPU && AZ_TRAIT_PIX_MODULE && !s_pixModule)
+            {
+                //Get the path to the latest pix install directory
+                AZStd::wstring pixGpuDllPath = Platform::GetLatestWinPixGpuCapturerPath();
+                AZStd::string dllPath;
+                AZStd::to_string(dllPath, pixGpuDllPath);
+                s_pixModule = DynamicModuleHandle::Create(dllPath.c_str());
+                if (s_pixModule)
+                {
+                    if (!s_pixModule->Load(false))
+                    {
+                        AZ_Printf("RHISystem", "Pix capture requested but module failed to load.\n");
+                    }
+                }
+            }
+
+            //Pix dll can still be injected even if we do not pass in enablePixGPU. This can be done if we launch the app from Pix.
+            s_isPixGpuCaptureDllLoaded = Platform::IsPixDllInjected(AZ_TRAIT_PIX_MODULE);
+#endif
         }
 
         void Factory::Register(Factory* instance)
@@ -117,6 +157,12 @@ namespace AZ
                 s_renderDocModule->Unload();
             }
 #endif
+#if defined(USE_PIX)
+            if (s_pixModule)
+            {
+                s_pixModule->Unload();
+            }
+#endif
         }
 
         bool Factory::IsReady()
@@ -137,5 +183,28 @@ namespace AZ
             return s_renderDocApi;
         }
 #endif
+
+        bool Factory::IsRenderDocModuleLoaded()
+        {
+#if defined(USE_RENDERDOC)
+            return s_isRenderDocDllLoaded;
+#else
+            return false;
+#endif
+        }
+
+        bool Factory::IsPixModuleLoaded()
+        {
+#if defined(USE_PIX)
+            return s_isPixGpuCaptureDllLoaded;
+#else
+            return false;
+#endif
+        }
+
+        bool Factory::UsingWarpDevice()
+        {
+            return s_usingWarpDevice;
+        }
     }
 }

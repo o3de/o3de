@@ -49,6 +49,7 @@ namespace UnitTest
         EXPECT_TRUE(m_instanceToTemplateInterface);
 
         GetApplication()->RegisterComponentDescriptor(PrefabTestComponent::CreateDescriptor());
+        GetApplication()->RegisterComponentDescriptor(PrefabTestComponentWithUnReflectedTypeMember::CreateDescriptor());
     }
 
     AZStd::unique_ptr<ToolsTestApplication> PrefabTestFixture::CreateTestApplication()

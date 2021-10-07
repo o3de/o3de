@@ -73,7 +73,6 @@ public:
     // AWSCoreInternalRequestBus interface implementation
     AZStd::string GetProfileName() const override { return m_profileName; }
     AZStd::string GetResourceMappingConfigFilePath() const override { return ""; }
-    AZStd::string GetResourceMappingConfigFolderPath() const override { return ""; }
     void ReloadConfiguration() override {}
 
     std::shared_ptr<EnvironmentAWSCredentialsProviderMock> m_environmentCredentialsProviderMock;

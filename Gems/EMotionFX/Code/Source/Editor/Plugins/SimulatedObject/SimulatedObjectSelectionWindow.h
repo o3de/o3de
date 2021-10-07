@@ -33,7 +33,7 @@ namespace EMStudio
 
     private:
         SimulatedObjectSelectionWidget*     m_simulatedObjectSelectionWidget = nullptr;
-        QPushButton*                        m_OKButton = nullptr;
+        QPushButton*                        m_okButton = nullptr;
         QPushButton*                        m_cancelButton = nullptr;
         bool                                m_accepted = false;
     };

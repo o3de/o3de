@@ -72,7 +72,7 @@ namespace AZ
 
             while (m_running)
             {
-                AZ_PROFILE_FUNCTION_STALL(AZ::Debug::ProfileCategory::AzCore);
+                AZ_PROFILE_FUNCTION(AzCore);
                 m_completionCondition.wait(uniqueLock, [this] { return !this->m_running; });
             }
         }

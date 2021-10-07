@@ -34,8 +34,8 @@ namespace EMStudio
         void SetEnableRendering(bool renderingEnabled);
 
     protected:
-        bool            mEnableRendering;
-        RenderPlugin*   mPlugin;
+        bool            m_enableRendering;
+        RenderPlugin*   m_plugin;
     };
 } // namespace EMStudio
 

@@ -112,7 +112,7 @@ namespace NvCloth
                         colliderConfig.get(),
                         static_cast<const Physics::SphereShapeConfiguration*>(shapeConfigPair.second.get()),
                         static_cast<int>(jointIndex),
-                        sphereCount);
+                        static_cast<int>(sphereCount));
 
                     sphereColliders.push_back(sphereCollider);
                     ++sphereCount;
@@ -144,9 +144,9 @@ namespace NvCloth
                         colliderConfig.get(),
                         static_cast<const Physics::CapsuleShapeConfiguration*>(shapeConfigPair.second.get()),
                         static_cast<int>(jointIndex),
-                        capsuleCount * 2, // Each capsule holds 2 sphere indices
-                        sphereCount + 0,  // First sphere index
-                        sphereCount + 1); // Second sphere index
+                        static_cast<int>(capsuleCount * 2), // Each capsule holds 2 sphere indices
+                        static_cast<int>(sphereCount + 0),  // First sphere index
+                        static_cast<int>(sphereCount + 1)); // Second sphere index
 
                     capsuleColliders.push_back(capsuleCollider);
                     ++capsuleCount;

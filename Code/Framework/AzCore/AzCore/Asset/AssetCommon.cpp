@@ -213,7 +213,7 @@ namespace AZ
 
         void AssetData::Acquire()
         {
-            AZ_Assert(m_useCount >= 0, "AssetData has been deleted")
+            AZ_Assert(m_useCount >= 0, "AssetData has been deleted");
 
             AcquireWeak();
             ++m_useCount;
@@ -456,7 +456,7 @@ namespace AZ
                 {
                     if (loadBehavior & (1 << thisFlag))
                     {
-                        returnFlags[thisFlag] = 1;
+                        returnFlags[thisFlag] = true;
                     }
                 }
                 return returnFlags;

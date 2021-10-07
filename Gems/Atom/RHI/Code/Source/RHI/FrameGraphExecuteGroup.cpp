@@ -71,7 +71,7 @@ namespace AZ
         {
             EndContextInternal(m_contexts[contextIndex], contextIndex);
 
-            const int32_t activeCount = --m_contextCountActive;
+            [[maybe_unused]] const int32_t activeCount = --m_contextCountActive;
             AZ_Assert(activeCount >= 0, "Asymmetric calls to FrameSchedulerExecuteContext:: Begin / End.");
             ++m_contextCountCompleted;
         }

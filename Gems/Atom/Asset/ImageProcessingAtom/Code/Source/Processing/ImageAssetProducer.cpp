@@ -97,8 +97,8 @@ namespace ImageProcessingAtom
         RHI::Format format = Utils::PixelFormatToRHIFormat(m_imageObject->GetPixelFormat(), m_imageObject->HasImageFlags(EIF_SRGBRead));
         RHI::ImageBindFlags bindFlag = RHI::ImageBindFlags::ShaderRead;
 
-        RHI::ImageDescriptor imageDesc = RHI::ImageDescriptor::Create2DArray(bindFlag, imageWidth, imageHeight, arraySize, format);
-        imageDesc.m_mipLevels = m_imageObject->GetMipCount();
+        RHI::ImageDescriptor imageDesc = RHI::ImageDescriptor::Create2DArray(bindFlag, imageWidth, imageHeight, static_cast<uint16_t>(arraySize), format);
+        imageDesc.m_mipLevels = static_cast<uint16_t>(m_imageObject->GetMipCount());
         if (m_imageObject->HasImageFlags(EIF_Cubemap))
         {
             imageDesc.m_isCubemap = true;
@@ -227,7 +227,7 @@ namespace ImageProcessingAtom
     {
         RPI::ImageMipChainAssetCreator builder;
         uint32_t arraySize = m_imageObject->HasImageFlags(EIF_Cubemap) ? 6 : 1;
-        builder.Begin(chainAssetId, mipLevels, arraySize);
+        builder.Begin(chainAssetId, static_cast<uint16_t>(mipLevels), static_cast<uint16_t>(arraySize));
 
         for (uint32_t mip = startMip; mip < startMip + mipLevels; mip++)
         {

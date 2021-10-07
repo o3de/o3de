@@ -72,7 +72,7 @@ namespace AZ
             AZ_Assert(resultCode == RHI::ResultCode::Success, "failed to create shader table buffer");
 
             MemoryView& shaderTableMemoryView = static_cast<Buffer*>(shaderTableBuffer.get())->GetMemoryView();
-            shaderTableMemoryView.SetName("RayTracingShaderTable");
+            shaderTableMemoryView.SetName(L"RayTracingShaderTable");
 
             // copy records
             RHI::BufferMapResponse mapResponse;
@@ -85,7 +85,7 @@ namespace AZ
                 uint8_t* nextRecord = RHI::AlignUp(mappedData + shaderRecordSize, D3D12_RAYTRACING_SHADER_RECORD_BYTE_ALIGNMENT);
 
                 AZStd::wstring shaderExportNameWstring;
-                AZStd::to_wstring(shaderExportNameWstring, record.m_shaderExportName.GetStringView().data(), record.m_shaderExportName.GetStringView().size());
+                AZStd::to_wstring(shaderExportNameWstring, record.m_shaderExportName.GetStringView());
                 void* shaderIdentifier = stateObjectProperties->GetShaderIdentifier(shaderExportNameWstring.c_str());
                 memcpy(mappedData, shaderIdentifier, D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES);
                 mappedData += D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES;

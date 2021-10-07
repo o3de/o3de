@@ -99,7 +99,7 @@ namespace AWSGameLift
                 session.m_currentPlayer = gameSession.GetCurrentPlayerSessionCount();
                 session.m_ipAddress = gameSession.GetIpAddress().c_str();
                 session.m_maxPlayer = gameSession.GetMaximumPlayerSessionCount();
-                session.m_port = gameSession.GetPort();
+                session.m_port = static_cast<uint16_t>(gameSession.GetPort());
                 session.m_sessionId = gameSession.GetGameSessionId().c_str();
                 session.m_sessionName = gameSession.GetName().c_str();
                 session.m_status = AWSGameLiftSessionStatusNames[(int)gameSession.GetStatus()];

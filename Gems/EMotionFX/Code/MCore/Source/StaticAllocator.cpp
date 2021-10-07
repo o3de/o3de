@@ -39,7 +39,7 @@ namespace MCore
         return 0;
     }
 
-    StaticAllocator::size_type StaticAllocator::get_max_size() const
+    StaticAllocator::size_type StaticAllocator::max_size() const
     {
         return 0;
     }

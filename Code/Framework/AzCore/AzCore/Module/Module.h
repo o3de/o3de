@@ -9,7 +9,6 @@
 #define AZCORE_MODULE_INCLUDE_H 1
 
 #include <AzCore/Component/Component.h>
-#include <AzCore/Debug/ProfileModuleInit.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/Module/Environment.h>
 #include <AzCore/Interface/Interface.h>
@@ -63,7 +62,7 @@ namespace AZ
          * DO NOT OVERRIDE. This method will return in the future, but at this point things reflected here are not unreflected for all ReflectContexts (Serialize, Editor, Network, Script, etc.)
          * Place all calls to non-component reflect functions inside of a component reflect function to ensure that your types are unreflected.
          */
-        virtual void Reflect(AZ::ReflectContext*) final { }
+        void Reflect(AZ::ReflectContext*) {}
 
         /**
          * Override to require specific components on the system entity.
@@ -78,9 +77,6 @@ namespace AZ
 
     protected:
         AZStd::list<AZ::ComponentDescriptor*> m_descriptors;
-
-    private:
-        AZ::Debug::ProfileModuleInitializer m_moduleProfilerInit;
     };
 } // namespace AZ
 
@@ -98,19 +94,26 @@ namespace AZ
 ///
 /// \param MODULE_NAME      Name of module.
 /// \param MODULE_CLASSNAME Name of AZ::Module class (include namespace).
+///
+/// Execute any deferred console commands after linking any new deferred functors
+/// This allows deferred console commands defined within the module to now execute
+/// at this point now that the module has been loaded
 #if defined(AZ_MONOLITHIC_BUILD)
 #   define AZ_DECLARE_MODULE_CLASS(MODULE_NAME, MODULE_CLASSNAME) \
     extern "C" AZ::Module * CreateModuleClass_##MODULE_NAME() { return aznew MODULE_CLASSNAME; }
 #else
 #   define AZ_DECLARE_MODULE_CLASS(MODULE_NAME, MODULE_CLASSNAME)                                \
     AZ_DECLARE_MODULE_INITIALIZATION                                                             \
-    extern "C" AZ_DLL_EXPORT AZ::Module * CreateModuleClass()                                    \
+    extern "C" AZ_DLL_EXPORT AZ::Module* CreateModuleClass()                                     \
     {                                                                                            \
-        AZ::ConsoleFunctorBase*& deferredHead = AZ::ConsoleFunctorBase::GetDeferredHead();       \
-        AZ::Interface<AZ::IConsole>::Get()->LinkDeferredFunctors(deferredHead);                  \
+        if (auto console = AZ::Interface<AZ::IConsole>::Get(); console != nullptr)               \
+        {                                                                                        \
+             console->LinkDeferredFunctors(AZ::ConsoleFunctorBase::GetDeferredHead());           \
+             console->ExecuteDeferredConsoleCommands();                                          \
+        }                                                                                        \
         return aznew MODULE_CLASSNAME;                                                           \
     }                                                                                            \
-    extern "C" AZ_DLL_EXPORT void DestroyModuleClass(AZ::Module * module) { delete module; }
+    extern "C" AZ_DLL_EXPORT void DestroyModuleClass(AZ::Module* module) { delete module; }
 #endif
 
 #endif // AZCORE_MODULE_INCLUDE_H

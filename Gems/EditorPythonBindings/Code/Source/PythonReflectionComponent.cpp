@@ -23,6 +23,7 @@
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzCore/Serialization/EditContextConstants.inl>
+#include <AzCore/Serialization/SerializeContext.h>
 
 #include <AzCore/PlatformDef.h>
 #include <AzCore/IO/SystemFile.h>
@@ -37,7 +38,7 @@ namespace EditorPythonBindings
         static constexpr const char* s_default = "default";
         static constexpr const char* s_globals = "globals";
 
-        // a structure for pybind11 to bind to hold constants, properties, and enums from the Behavior Context 
+        // a structure for pybind11 to bind to hold constants, properties, and enums from the Behavior Context
         struct StaticPropertyHolder final
         {
             AZ_CLASS_ALLOCATOR(StaticPropertyHolder, AZ::SystemAllocator, 0);
@@ -53,7 +54,7 @@ namespace EditorPythonBindings
                 if (m_behaviorContext == nullptr)
                 {
                     return false;
-                }               
+                }
 
                 m_fullName = PyModule_GetName(scope.ptr());
 
@@ -153,7 +154,7 @@ namespace EditorPythonBindings
                     StaticPropertyHolderMapEntry& entry = iter->second;
                     entry.second->AddProperty(propertyName, behaviorProperty);
                 }
-                PythonSymbolEventBus::Broadcast(&PythonSymbolEventBus::Events::LogGlobalProperty, scopeName, propertyName, behaviorProperty);
+                PythonSymbolEventBus::QueueBroadcast(&PythonSymbolEventBus::Events::LogGlobalProperty, scopeName, propertyName, behaviorProperty);
             }
 
             pybind11::module DetermineScope(pybind11::module scope, const AZStd::string& fullName)
@@ -198,12 +199,10 @@ namespace EditorPythonBindings
                 }
             });
 
-            RegisterAliasIfExists(pathsModule, "@devroot@", "devroot");
             RegisterAliasIfExists(pathsModule, "@engroot@", "engroot");
-            RegisterAliasIfExists(pathsModule, "@assets@", "assets");
-            RegisterAliasIfExists(pathsModule, "@devassets@", "devassets");
+            RegisterAliasIfExists(pathsModule, "@products@", "products");
+            RegisterAliasIfExists(pathsModule, "@projectroot@", "projectroot");
             RegisterAliasIfExists(pathsModule, "@log@", "log");
-            RegisterAliasIfExists(pathsModule, "@root@", "root");
 
             const char* executableFolder = nullptr;
             AZ::ComponentApplicationBus::BroadcastResult(executableFolder, &AZ::ComponentApplicationBus::Events::GetExecutableFolder);
@@ -302,7 +301,7 @@ namespace EditorPythonBindings
 
                 // log global method symbol
                 AZStd::string subModuleName = pybind11::cast<AZStd::string>(targetModule.attr("__name__"));
-                PythonSymbolEventBus::Broadcast(&PythonSymbolEventBus::Events::LogGlobalMethod, subModuleName, methodName, behaviorMethod);
+                PythonSymbolEventBus::QueueBroadcast(&PythonSymbolEventBus::Events::LogGlobalMethod, subModuleName, methodName, behaviorMethod);
             }
         }
 
@@ -325,7 +324,7 @@ namespace EditorPythonBindings
 
                 //  log global property symbol
                 AZStd::string subModuleName = pybind11::cast<AZStd::string>(globalsModule.attr("__name__"));
-                PythonSymbolEventBus::Broadcast(&PythonSymbolEventBus::Events::LogGlobalProperty, subModuleName, propertyName, behaviorProperty);
+                PythonSymbolEventBus::QueueBroadcast(&PythonSymbolEventBus::Events::LogGlobalProperty, subModuleName, propertyName, behaviorProperty);
 
                 if (behaviorProperty->m_getter && behaviorProperty->m_setter)
                 {
@@ -362,7 +361,7 @@ namespace EditorPythonBindings
         m_staticPropertyHolderMap.reset();
         EditorPythonBindings::EditorPythonBindingsNotificationBus::Handler::BusDisconnect();
     }
-    
+
     void PythonReflectionComponent::OnImportModule(PyObject* module)
     {
         pybind11::module parentModule = pybind11::cast<pybind11::module>(module);
@@ -377,7 +376,7 @@ namespace EditorPythonBindings
             PythonProxyBusManagement::CreateSubmodule(parentModule);
             Internal::RegisterPaths(parentModule);
 
-            PythonSymbolEventBus::Broadcast(&PythonSymbolEventBus::Events::Finalize);
+            PythonSymbolEventBus::QueueBroadcast(&PythonSymbolEventBus::Events::Finalize);
         }
     }
 }

@@ -146,6 +146,8 @@ set(FILES
     Components/Widgets/Eyedropper.h
     Components/Widgets/Eyedropper.cpp
     Components/Widgets/EyedropperConfig.ini
+    Components/Widgets/FileDialog.cpp
+    Components/Widgets/FileDialog.h
     Components/Widgets/FilteredSearchWidget.qss
     Components/Widgets/FilteredSearchWidgetConfig.ini
     Components/Widgets/GradientSlider.cpp
@@ -274,6 +276,8 @@ set(FILES
     Utilities/HandleDpiAwareness.cpp
     Utilities/HandleDpiAwareness.h
     Utilities/MouseHider.h
+    Utilities/PixmapScaleUtilities.cpp
+    Utilities/PixmapScaleUtilities.h
     Utilities/QtPluginPaths.cpp
     Utilities/QtPluginPaths.h
     Utilities/QtWindowUtilities.cpp

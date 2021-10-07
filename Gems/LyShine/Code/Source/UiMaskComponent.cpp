@@ -564,7 +564,7 @@ void UiMaskComponent::CreateOrResizeRenderTarget(const AZ::Vector2& pixelAligned
     // Create a render target that this element and its children will be rendered to
     AZ::EntityId canvasEntityId;
     EBUS_EVENT_ID_RESULT(canvasEntityId, GetEntityId(), UiElementBus, GetCanvasEntityId);
-    AZ::RHI::Size imageSize(renderTargetSize.GetX(), renderTargetSize.GetY(), 1);
+    AZ::RHI::Size imageSize(static_cast<uint32_t>(renderTargetSize.GetX()), static_cast<uint32_t>(renderTargetSize.GetY()), 1);
     EBUS_EVENT_ID_RESULT(m_contentAttachmentImageId, canvasEntityId, LyShine::RenderToTextureRequestBus, UseRenderTarget, AZ::Name(m_renderTargetName.c_str()), imageSize);
     if (m_contentAttachmentImageId.IsEmpty())
     {
@@ -722,7 +722,7 @@ void UiMaskComponent::RenderUsingGradientMask(LyShine::IRenderGraph* renderGraph
     // mask render target
     {
         // Start building the render to texture node in the render graph
-        LyShine::RenderGraph* lyRenderGraph = dynamic_cast<LyShine::RenderGraph*>(renderGraph);
+        LyShine::RenderGraph* lyRenderGraph = static_cast<LyShine::RenderGraph*>(renderGraph); // LYSHINE_ATOM_TODO - find a different solution from downcasting - GHI #3570
         lyRenderGraph->BeginRenderToTexture(maskAttachmentImage, m_viewportTopLeft, m_viewportSize, clearColor);
 
         // Render the visual component for this element (if there is one) plus the child mask element (if there is one)
@@ -735,7 +735,7 @@ void UiMaskComponent::RenderUsingGradientMask(LyShine::IRenderGraph* renderGraph
     // content render target
     {
         // Start building the render to texture node for the content render target in the render graph
-        LyShine::RenderGraph* lyRenderGraph = dynamic_cast<LyShine::RenderGraph*>(renderGraph);
+        LyShine::RenderGraph* lyRenderGraph = static_cast<LyShine::RenderGraph*>(renderGraph); // LYSHINE_ATOM_TODO - find a different solution from downcasting - GHI #3570
         lyRenderGraph->BeginRenderToTexture(contentAttachmentImage, m_viewportTopLeft, m_viewportSize, clearColor);
 
         // Render the "content" - the child elements excluding the child mask element (if any)
@@ -762,7 +762,7 @@ void UiMaskComponent::RenderUsingGradientMask(LyShine::IRenderGraph* renderGraph
             {
                 // go through all the cached vertices and update the alpha values
                 UCol desiredPackedColor = m_cachedPrimitive.m_vertices[0].color;
-                desiredPackedColor.a = desiredPackedAlpha;
+                desiredPackedColor.a = static_cast<uint8>(desiredPackedAlpha);
                 for (int i = 0; i < m_cachedPrimitive.m_numVertices; ++i)
                 {
                     m_cachedPrimitive.m_vertices[i].color = desiredPackedColor;
@@ -772,7 +772,7 @@ void UiMaskComponent::RenderUsingGradientMask(LyShine::IRenderGraph* renderGraph
 
         // Add a primitive to do the alpha mask
         {
-            LyShine::RenderGraph* lyRenderGraph = dynamic_cast<LyShine::RenderGraph*>(renderGraph);
+            LyShine::RenderGraph* lyRenderGraph = static_cast<LyShine::RenderGraph*>(renderGraph); // LYSHINE_ATOM_TODO - find a different solution from downcasting - GHI #3570
             if (lyRenderGraph)
             {
                 // Set the texture and other render state required

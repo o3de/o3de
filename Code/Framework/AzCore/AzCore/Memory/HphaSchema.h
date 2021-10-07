@@ -56,21 +56,22 @@ namespace AZ
         HphaSchema(const Descriptor& desc);
         virtual ~HphaSchema();
 
-        virtual pointer_type    Allocate(size_type byteSize, size_type alignment, int flags = 0, const char* name = 0, const char* fileName = 0, int lineNum = 0, unsigned int suppressStackRecord = 0);
-        virtual void            DeAllocate(pointer_type ptr, size_type byteSize = 0, size_type alignment = 0);
-        virtual pointer_type    ReAllocate(pointer_type ptr, size_type newSize, size_type newAlignment);
+        pointer_type    Allocate(size_type byteSize, size_type alignment, int flags = 0, const char* name = 0, const char* fileName = 0, int lineNum = 0, unsigned int suppressStackRecord = 0) override;
+        void            DeAllocate(pointer_type ptr, size_type byteSize = 0, size_type alignment = 0) override;
+        pointer_type    ReAllocate(pointer_type ptr, size_type newSize, size_type newAlignment) override;
         /// Resizes allocated memory block to the size possible and returns that size.
-        virtual size_type       Resize(pointer_type ptr, size_type newSize);
-        virtual size_type       AllocationSize(pointer_type ptr);
+        size_type       Resize(pointer_type ptr, size_type newSize) override;
+        size_type       AllocationSize(pointer_type ptr) override;
 
-        virtual size_type       NumAllocatedBytes() const;
-        virtual size_type       Capacity() const;
-        virtual size_type       GetMaxAllocationSize() const;
-        virtual size_type       GetUnAllocatedMemory(bool isPrint = false) const;
-        virtual IAllocatorAllocate* GetSubAllocator()                       { return m_desc.m_subAllocator; }
+        size_type       NumAllocatedBytes() const override;
+        size_type       Capacity() const override;
+        size_type       GetMaxAllocationSize() const override;
+        size_type       GetMaxContiguousAllocationSize() const override;
+        size_type       GetUnAllocatedMemory(bool isPrint = false) const override;
+        IAllocatorAllocate* GetSubAllocator() override                       { return m_desc.m_subAllocator; }
 
         /// Return unused memory to the OS (if we don't use fixed block). Don't call this unless you really need free memory, it is slow.
-        virtual void            GarbageCollect();
+        void            GarbageCollect() override;
 
     private:
         // [LY-84974][sconel@][2018-08-10] SliceStrike integration up to CL 671758

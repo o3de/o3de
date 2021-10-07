@@ -50,8 +50,8 @@ namespace TestImpact
         AZStd::vector<AZStd::string> coveringTests;
         sourceCoveringTests.reserve(1U << 16); // Reserve for approx. 65k source files
         const AZStd::string delim = "\n";
-        auto start = 0U;
-        auto end = sourceCoveringTestsListString.find(delim);
+        size_t start = 0U;
+        size_t end = sourceCoveringTestsListString.find(delim);
 
         while (end != AZStd::string::npos)
         {

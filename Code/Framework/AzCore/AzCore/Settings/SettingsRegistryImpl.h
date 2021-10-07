@@ -35,6 +35,10 @@ namespace AZ
         static constexpr size_t MaxRegistryFolderEntries = 128;
         
         SettingsRegistryImpl();
+        //! @param useFileIo - If true attempt to redirect
+        //! file read operations through the FileIOBase instance first before falling back to SystemFile
+        //! otherwise always use SystemFile
+        explicit SettingsRegistryImpl(bool useFileIo);
         AZ_DISABLE_COPY_MOVE(SettingsRegistryImpl);
         ~SettingsRegistryImpl() override = default;
 
@@ -47,6 +51,12 @@ namespace AZ
         [[nodiscard]] NotifyEventHandler RegisterNotifier(const NotifyCallback& callback) override;
         [[nodiscard]] NotifyEventHandler RegisterNotifier(NotifyCallback&& callback) override;
         void ClearNotifiers();
+
+        [[nodiscard]] PreMergeEventHandler RegisterPreMergeEvent(const PreMergeEventCallback& callback) override;
+        [[nodiscard]] PreMergeEventHandler RegisterPreMergeEvent(PreMergeEventCallback&& callback) override;
+        [[nodiscard]] PostMergeEventHandler RegisterPostMergeEvent(const PostMergeEventCallback& callback) override;
+        [[nodiscard]] PostMergeEventHandler RegisterPostMergeEvent(PostMergeEventCallback&& callback) override;
+        void ClearMergeEvents();
 
         bool Get(bool& result, AZStd::string_view path) const override;
         bool Get(s64& result, AZStd::string_view path) const override;
@@ -77,6 +87,8 @@ namespace AZ
         void SetApplyPatchSettings(const AZ::JsonApplyPatchSettings& applyPatchSettings) override;
         void GetApplyPatchSettings(AZ::JsonApplyPatchSettings& applyPatchSettings) override;
 
+        void SetUseFileIO(bool useFileIo) override;
+
     private:
         using TagList = AZStd::fixed_vector<size_t, Specializations::MaxCount + 1>;
         struct RegistryFile
@@ -89,7 +101,7 @@ namespace AZ
         using RegistryFileList = AZStd::fixed_vector<RegistryFile, MaxRegistryFolderEntries>;
 
         template<typename T>
-        bool SetValueInternal(AZStd::string_view path, T value, SettingsRegistryInterface::Type type);
+        bool SetValueInternal(AZStd::string_view path, T value);
         template<typename T>
         bool GetValueInternal(T& result, AZStd::string_view path) const;
         VisitResponse Visit(Visitor& visitor, StackedString& path, AZStd::string_view valueName,
@@ -98,14 +110,22 @@ namespace AZ
         // Compares if lhs is less than rhs in terms of processing order. This can also detect and report conflicts.
         bool IsLessThan(bool& collisionFound, const RegistryFile& lhs, const RegistryFile& rhs, const Specializations& specializations,
             const rapidjson::Pointer& historyPointer, AZStd::string_view folderPath);
-        bool ExtractFileDescription(RegistryFile& output, const char* filename, const Specializations& specializations);
+        bool ExtractFileDescription(RegistryFile& output, AZStd::string_view filename, const Specializations& specializations);
         bool MergeSettingsFileInternal(const char* path, Format format, AZStd::string_view rootKey, AZStd::vector<char>& scratchBuffer);
+
+        void SignalNotifier(AZStd::string_view jsonPath, Type type);
         
         mutable AZStd::recursive_mutex m_settingMutex;
+        mutable AZStd::recursive_mutex m_notifierMutex;
         NotifyEvent m_notifiers;
+        PreMergeEvent m_preMergeEvent;
+        PostMergeEvent m_postMergeEvent;
+
         rapidjson::Document m_settings;
         JsonSerializerSettings m_serializationSettings;
         JsonDeserializerSettings m_deserializationSettings;
         JsonApplyPatchSettings m_applyPatchSettings;
+
+        bool m_useFileIo{};
     };
 } // namespace AZ

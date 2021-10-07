@@ -34,7 +34,7 @@ namespace AZ
 
                 if (!isDataValid)
                 {
-                    AZ_Warning("BufferPoolBase", false, "Failed to map buffer '%s'.", buffer.GetName().GetCStr());
+                    AZ_Error("BufferPoolBase", false, "Failed to map buffer '%s'.", buffer.GetName().GetCStr());
                 }
                 ++buffer.m_mapRefCount;
                 ++m_mapRefCount;

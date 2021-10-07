@@ -10,6 +10,7 @@
 
 #if !defined(Q_MOC_RUN)
 #include "AssetDetailsPanel.h"
+#include <AzCore/std/smart_ptr/shared_ptr.h>
 #include <QScopedPointer>
 #endif
 

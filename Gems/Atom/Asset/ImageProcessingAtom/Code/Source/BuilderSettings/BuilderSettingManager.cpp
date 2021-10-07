@@ -37,7 +37,7 @@
 #include <AzFramework/Application/Application.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 
-#include <AtomCore/Serialization/Json/JsonUtils.h>
+#include <AzCore/Serialization/Json/JsonUtils.h>
 
 namespace ImageProcessingAtom
 {
@@ -244,7 +244,7 @@ namespace ImageProcessingAtom
         }
 
         AZ::IO::FixedMaxPath projectConfigFolder;
-        if (auto sourceGameRoot = fileIoBase->ResolvePath("@devassets@"); sourceGameRoot.has_value())
+        if (auto sourceGameRoot = fileIoBase->ResolvePath("@projectroot@"); sourceGameRoot.has_value())
         {
             projectConfigFolder = *sourceGameRoot;
             projectConfigFolder /= s_projectConfigRelativeFolder;

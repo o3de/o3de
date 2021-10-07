@@ -98,7 +98,6 @@ namespace AZ
 
             bool alreadyLoaded = false;
 
-#   ifdef _UNICODE
             wchar_t fileNameW[MAX_PATH];
             size_t numCharsConverted;
             errno_t wcharResult = mbstowcs_s(&numCharsConverted, fileNameW, m_fileName.c_str(), AZ_ARRAY_SIZE(fileNameW) - 1);
@@ -114,10 +113,6 @@ namespace AZ
                 m_handle = NULL;
                 return LoadStatus::LoadFailure;
             }
-#   else //!_UNICODE
-            alreadyLoaded = NULL != GetModuleHandleA(m_fileName.c_str());
-            m_handle = LoadLibraryA(m_fileName.c_str());
-#   endif // !_UNICODE
 
             if (m_handle)
             {

@@ -18,9 +18,6 @@
 //--------------------------------------------------------------------------------------
 // Modified from original
 
-//disable warning about doubles being converted down to float
-#pragma warning (disable : 4244 )
-
 #define VM_LARGE_FLOAT 3.7e37f
 
 #define VM_MIN(a, b)  (((a) < (b)) ? (a) : (b)) 
@@ -128,7 +125,7 @@
 
 //normalize vectors
 #define VM_NORM3_UNTYPED(d, s) {double __idsq; __idsq=1.0/sqrt(VM_DOTPROD3_UNTYPED(s,s)); d[0]=s[0]*__idsq; d[1]=s[1]*__idsq; d[2]=s[2]*__idsq; }
-#define VM_NORM3_UNTYPED_F32(d, s) {float __idsq; __idsq=1.0/sqrt(VM_DOTPROD3_UNTYPED(s,s)); d[0]=s[0]*__idsq; d[1]=s[1]*__idsq; d[2]=s[2]*__idsq; }
+#define VM_NORM3_UNTYPED_F32(d, s) {float __idsq; __idsq=1.0f/sqrt(VM_DOTPROD3_UNTYPED(s,s)); d[0]=s[0]*__idsq; d[1]=s[1]*__idsq; d[2]=s[2]*__idsq; }
 #define VM_NORM3(d, s)  VM_NORM3_UNTYPED_F32(((float *)(d)), ((float *)(s))) 
 
 #define VM_NORM4_UNTYPED(d, s) {double __idsq; __idsq=1.0/sqrt(VM_DOTPROD4_UNTYPED(s,s)); d[0]=s[0]*__idsq; d[1]=s[1]*__idsq; d[2]=s[2]*__idsq; d[3]=s[3]*__idsq; }

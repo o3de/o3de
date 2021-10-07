@@ -16,7 +16,6 @@
 
 #include <Atom/Feature/CoreLights/CoreLightsConstants.h>
 
-#include <Atom/RHI/CpuProfiler.h>
 #include <Atom/RHI/Factory.h>
 
 #include <Atom/RPI.Public/ColorManagement/TransformColor.h>
@@ -132,7 +131,7 @@ namespace AZ::Render
 
     void PolygonLightFeatureProcessor::Simulate(const FeatureProcessor::SimulatePacket& packet)
     {
-        AZ_ATOM_PROFILE_FUNCTION("RPI", "PolygonLightFeatureProcessor: Simulate");
+        AZ_PROFILE_SCOPE(RPI, "PolygonLightFeatureProcessor: Simulate");
         AZ_UNUSED(packet);
 
         if (m_deviceBufferNeedsUpdate)
@@ -145,7 +144,7 @@ namespace AZ::Render
                 // individual point as its own element instead of each array being its own element. Since all
                 // the arrays are stored in a contiguous vector, we can treat it as one giant array.
                 const LightPosition* firstPosition = m_polygonLightData.GetDataVector<1>().at(0).data();
-                m_lightPolygonPointBufferHandler.UpdateBuffer(firstPosition, m_polygonLightData.GetDataCount() * MaxPolygonPoints);
+                m_lightPolygonPointBufferHandler.UpdateBuffer(firstPosition, static_cast<uint32_t>(m_polygonLightData.GetDataCount() * MaxPolygonPoints));
             }
             m_deviceBufferNeedsUpdate = false;
         }
@@ -153,7 +152,7 @@ namespace AZ::Render
 
     void PolygonLightFeatureProcessor::Render(const PolygonLightFeatureProcessor::RenderPacket& packet)
     {
-        AZ_ATOM_PROFILE_FUNCTION("RPI", "PolygonLightFeatureProcessor: Render");
+        AZ_PROFILE_SCOPE(RPI, "PolygonLightFeatureProcessor: Render");
 
         for (const RPI::ViewPtr& view : packet.m_views)
         {

@@ -156,7 +156,7 @@ void HierarchyClipboard::CopySelectedItemsToClipboard(HierarchyWidget* widget,
         QMimeData* mimeData = pEditor->CreateQMimeData();
         {
             // Concatenate all the data we need into a single QByteArray.
-            QByteArray data(xml.c_str(), xml.size());
+            QByteArray data(xml.c_str(), static_cast<int>(xml.size()));
             mimeData->setData(UICANVASEDITOR_MIMETYPE, data);
         }
 

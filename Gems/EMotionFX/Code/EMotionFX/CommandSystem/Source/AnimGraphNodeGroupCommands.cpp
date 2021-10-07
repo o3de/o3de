@@ -71,9 +71,9 @@ namespace CommandSystem
     {
         AZStd::vector<EMotionFX::AnimGraphNodeId> result;
 
-        const uint32 numNodes = nodeGroup->GetNumNodes();
+        const size_t numNodes = nodeGroup->GetNumNodes();
         result.reserve(numNodes);
-        for (uint32 i = 0; i < numNodes; ++i)
+        for (size_t i = 0; i < numNodes; ++i)
         {
             result.push_back(nodeGroup->GetNode(i));
         }
@@ -91,8 +91,8 @@ namespace CommandSystem
         }
 
         // find the node group index
-        const uint32 groupIndex = animGraph->FindNodeGroupIndexByName(m_name.c_str());
-        if (groupIndex == MCORE_INVALIDINDEX32)
+        const size_t groupIndex = animGraph->FindNodeGroupIndexByName(m_name.c_str());
+        if (groupIndex == InvalidIndex)
         {
             outResult = AZStd::string::format("Node group \"%s\" can not be found.", m_name.c_str());
             return false;
@@ -149,8 +149,8 @@ namespace CommandSystem
                     }
 
                     // remove the node from all node groups
-                    const uint32 numNodeGroups = animGraph->GetNumNodeGroups();
-                    for (uint32 n = 0; n < numNodeGroups; ++n)
+                    const size_t numNodeGroups = animGraph->GetNumNodeGroups();
+                    for (size_t n = 0; n < numNodeGroups; ++n)
                     {
                         animGraph->GetNodeGroup(n)->RemoveNodeById(animGraphNode->GetId());
                     }
@@ -173,8 +173,8 @@ namespace CommandSystem
                     }
 
                     // remove the node from all node groups
-                    const uint32 numNodeGroups = animGraph->GetNumNodeGroups();
-                    for (uint32 n = 0; n < numNodeGroups; ++n)
+                    const size_t numNodeGroups = animGraph->GetNumNodeGroups();
+                    for (size_t n = 0; n < numNodeGroups; ++n)
                     {
                         animGraph->GetNodeGroup(n)->RemoveNodeById(animGraphNode->GetId());
                     }
@@ -334,8 +334,8 @@ namespace CommandSystem
         nodeGroup->SetColor(color.ToU32());
 
         // save the current dirty flag and tell the anim graph that something got changed
-        mOldDirtyFlag   = animGraph->GetDirtyFlag();
-        mOldName        = nodeGroup->GetName();
+        m_oldDirtyFlag   = animGraph->GetDirtyFlag();
+        m_oldName        = nodeGroup->GetName();
         animGraph->SetDirtyFlag(true);
         return true;
     }
@@ -349,7 +349,7 @@ namespace CommandSystem
             return false;
         }
 
-        AZStd::string commandString = AZStd::string::format("AnimGraphRemoveNodeGroup -animGraphID %i -name \"%s\"", animGraph->GetID(), mOldName.c_str());
+        AZStd::string commandString = AZStd::string::format("AnimGraphRemoveNodeGroup -animGraphID %i -name \"%s\"", animGraph->GetID(), m_oldName.c_str());
 
         // execute the command
         AZStd::string result;
@@ -359,7 +359,7 @@ namespace CommandSystem
         }
 
         // set the dirty flag back to the old value
-        animGraph->SetDirtyFlag(mOldDirtyFlag);
+        animGraph->SetDirtyFlag(m_oldDirtyFlag);
         return true;
     }
 
@@ -404,25 +404,25 @@ namespace CommandSystem
         parameters.GetValue("name", this, groupName);
 
         // find the node group index and remove it
-        const uint32 groupIndex = animGraph->FindNodeGroupIndexByName(groupName.c_str());
-        if (groupIndex == MCORE_INVALIDINDEX32)
+        const size_t groupIndex = animGraph->FindNodeGroupIndexByName(groupName.c_str());
+        if (groupIndex == InvalidIndex)
         {
-            outResult = AZStd::string::format("Cannot add node group to anim graph. Node group index %u is invalid.", groupIndex);
+            outResult = AZStd::string::format("Cannot add node group to anim graph. Node group index %zu is invalid.", groupIndex);
             return false;
         }
 
         // read out information for the command undo
         EMotionFX::AnimGraphNodeGroup* nodeGroup = animGraph->GetNodeGroup(groupIndex);
-        mOldName        = nodeGroup->GetName();
-        mOldColor       = nodeGroup->GetColor();
-        mOldIsVisible   = nodeGroup->GetIsVisible();
-        mOldNodeIds     = CommandAnimGraphAdjustNodeGroup::CollectNodeIdsFromGroup(nodeGroup);
+        m_oldName        = nodeGroup->GetName();
+        m_oldColor       = nodeGroup->GetColor();
+        m_oldIsVisible   = nodeGroup->GetIsVisible();
+        m_oldNodeIds     = CommandAnimGraphAdjustNodeGroup::CollectNodeIdsFromGroup(nodeGroup);
 
         // remove the node group
         animGraph->RemoveNodeGroup(groupIndex);
 
         // save the current dirty flag and tell the anim graph that something got changed
-        mOldDirtyFlag = animGraph->GetDirtyFlag();
+        m_oldDirtyFlag = animGraph->GetDirtyFlag();
         animGraph->SetDirtyFlag(true);
         return true;
     }
@@ -439,17 +439,17 @@ namespace CommandSystem
         
         MCore::CommandGroup commandGroup;
 
-        commandGroup.AddCommandString(AZStd::string::format("AnimGraphAddNodeGroup -animGraphID %i -name \"%s\" -updateUI %s",animGraph->GetID(), mOldName.c_str(), updateWindow.c_str()));
+        commandGroup.AddCommandString(AZStd::string::format("AnimGraphAddNodeGroup -animGraphID %i -name \"%s\" -updateUI %s",animGraph->GetID(), m_oldName.c_str(), updateWindow.c_str()));
 
         auto* command = aznew CommandAnimGraphAdjustNodeGroup(
             GetCommandManager()->FindCommand(CommandAnimGraphAdjustNodeGroup::s_commandName),
             /*animGraphId = */ animGraph->GetID(),
-            /*name = */ mOldName,
-            /*visible = */ mOldIsVisible,
+            /*name = */ m_oldName,
+            /*visible = */ m_oldIsVisible,
             /*newName = */ AZStd::nullopt,
-            /*nodeNames = */ CommandAnimGraphAdjustNodeGroup::GenerateNodeNameVector(animGraph, mOldNodeIds),
+            /*nodeNames = */ CommandAnimGraphAdjustNodeGroup::GenerateNodeNameVector(animGraph, m_oldNodeIds),
             /*nodeAction = */ CommandAnimGraphAdjustNodeGroup::NodeAction::Add,
-            /*color = */ mOldColor
+            /*color = */ m_oldColor
         );
 
         commandGroup.AddCommand(command);
@@ -461,7 +461,7 @@ namespace CommandSystem
         }
 
         // set the dirty flag back to the old value
-        animGraph->SetDirtyFlag(mOldDirtyFlag);
+        animGraph->SetDirtyFlag(m_oldDirtyFlag);
         return true;
     }
 
@@ -487,7 +487,7 @@ namespace CommandSystem
     void ClearNodeGroups(EMotionFX::AnimGraph* animGraph, MCore::CommandGroup* commandGroup)
     {
         // get number of node groups
-        const uint32 numNodeGroups = animGraph->GetNumNodeGroups();
+        const size_t numNodeGroups = animGraph->GetNumNodeGroups();
         if (numNodeGroups == 0)
         {
             return;
@@ -498,7 +498,7 @@ namespace CommandSystem
 
         // get rid of all node groups
         AZStd::string commandString;
-        for (uint32 i = 0; i < numNodeGroups; ++i)
+        for (size_t i = 0; i < numNodeGroups; ++i)
         {
             // get pointer to the current actor instance
             EMotionFX::AnimGraphNodeGroup* nodeGroup = animGraph->GetNodeGroup(i);

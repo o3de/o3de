@@ -8,7 +8,6 @@
 #include <AzCore/std/algorithm.h>
 #include <AzCore/std/sort.h>
 #include <AzCore/Debug/EventTrace.h>
-#include <Atom/RHI/CpuProfiler.h>
 #include <RHI/CommandQueueContext.h>
 #include <RHI/Device.h>
 #include <RHI/Semaphore.h>
@@ -42,7 +41,7 @@ namespace AZ
 
         void CommandQueueContext::End()
         {
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzRender);
+            AZ_PROFILE_SCOPE(RHI, "CommandQueueContext: End");
 
             for (auto& commandQueue : m_commandQueues)
             {
@@ -54,8 +53,7 @@ namespace AZ
             m_currentFrameIndex = (m_currentFrameIndex + 1) % GetFrameCount();
 
             {
-                AZ_PROFILE_SCOPE_IDLE(AZ::Debug::ProfileCategory::AzRender, "Wait on Fences");
-                AZ_ATOM_PROFILE_FUNCTION("RHI", "CommandQueueContext: Wait on Fences");
+                AZ_PROFILE_SCOPE(RHI, "Wait on Fences");
 
                 FencesPerQueue& nextFences = m_frameFences[m_currentFrameIndex];
                 for (auto& fence : nextFences)
@@ -79,7 +77,7 @@ namespace AZ
 
         void CommandQueueContext::WaitForIdle()
         {
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzRender);
+            AZ_PROFILE_SCOPE(RHI, "CommandQueueContext: WaitForIdle");
             for (auto& commandQueue : m_commandQueues)
             {
                 commandQueue->WaitForIdle();
@@ -304,7 +302,7 @@ namespace AZ
             {
                 uint32_t m_familyIndex = InvalidFamilyIndex;
                 bool m_newQueue = false;
-                uint32_t m_remainingFlags = ~0;
+                uint32_t m_remainingFlags = std::numeric_limits<uint32_t>::max();
 
                 bool operator>(const QueueSelection& other) const
                 {

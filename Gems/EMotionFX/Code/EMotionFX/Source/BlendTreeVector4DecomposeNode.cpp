@@ -72,7 +72,7 @@ namespace EMotionFX
     void BlendTreeVector4DecomposeNode::UpdateOutputPortValues(AnimGraphInstance* animGraphInstance)
     {
         // If there are no incoming connections, there is nothing to do.
-        if (mConnections.size() == 0)
+        if (m_connections.size() == 0)
         {
             return;
         }

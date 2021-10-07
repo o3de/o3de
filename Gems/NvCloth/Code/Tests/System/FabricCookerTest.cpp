@@ -140,9 +140,6 @@ namespace UnitTest
 
     TEST(NvClothSystem, FactoryCooker_CopyInternalCookedData_CopiedDataMatchesSource)
     {
-        const AZ::u32 data[] = { 0, 2, 45, 64, 125 };
-        const size_t numDataElements = sizeof(data) / sizeof(data[0]);
-
         nv::cloth::CookedData nvCookedData;
         nvCookedData.mNumParticles = 0;
 

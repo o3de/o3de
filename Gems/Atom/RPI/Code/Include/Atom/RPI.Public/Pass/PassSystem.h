@@ -75,6 +75,12 @@ namespace AZ
             const AZ::Name& GetTargetedPassDebuggingName() const override;
             void ConnectEvent(OnReadyLoadTemplatesEvent::Handler& handler) override;
             PassSystemState GetState() const override;
+            SwapChainPass* FindSwapChainPass(AzFramework::NativeWindowHandle windowHandle) const override;
+
+            // PassSystemInterface statistics related functions
+            void IncrementFrameDrawItemCount(u32 numDrawItems) override;
+            void IncrementFrameRenderPassCount() override;
+            PassSystemFrameStatistics GetFrameStatistics() override;
 
             // PassSystemInterface factory related functions...
             void AddPassCreator(Name className, PassCreator createFunction) override;
@@ -93,7 +99,6 @@ namespace AZ
             void RegisterPass(Pass* pass) override;
             void UnregisterPass(Pass* pass) override;
             AZStd::vector<Pass*> FindPasses(const PassFilter& passFilter) const override;
-            SwapChainPass* FindSwapChainPass(AzFramework::NativeWindowHandle windowHandle) const override;
 
         private:
             // Returns the root of the pass tree hierarchy
@@ -115,6 +120,9 @@ namespace AZ
             void QueueForBuild(Pass* pass) override;
             void QueueForRemoval(Pass* pass) override;
             void QueueForInitialization(Pass* pass) override;
+
+            // Resets the frame statistic counters
+            void ResetFrameStatistics();
 
             // Lists for queuing passes for various function calls
             // Name of the list reflects the pass function it will call
@@ -141,13 +149,16 @@ namespace AZ
             AZ::Name m_targetedPassDebugName;
 
             // Counts the number of passes
-            int32_t m_passCounter = 0;
+            u32 m_passCounter = 0;
 
             // Events
             OnReadyLoadTemplatesEvent m_loadTemplatesEvent;
 
             // Used to track what phase of execution the pass system is in
             PassSystemState m_state = PassSystemState::Unitialized;
+
+            // Counters used to gather statistics about the frame
+            PassSystemFrameStatistics m_frameStatistics;
         };
     }   // namespace RPI
 }   // namespace AZ

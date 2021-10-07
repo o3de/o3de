@@ -11,8 +11,6 @@ ly_get_list_relative_pal_filename(pal_source_dir ${CMAKE_CURRENT_LIST_DIR}/Platf
 include(${pal_source_dir}/PAL_${PAL_PLATFORM_NAME_LOWERCASE}.cmake)
 
 if(PAL_TRAIT_TEST_IMPACT_FRAMEWORK_SUPPORTED)
-    if(LY_TEST_IMPACT_INSTRUMENTATION_BIN)
-        add_subdirectory(Runtime)
-        add_subdirectory(Frontend)
-    endif()
+    add_subdirectory(Runtime)
+    add_subdirectory(Frontend)
 endif()

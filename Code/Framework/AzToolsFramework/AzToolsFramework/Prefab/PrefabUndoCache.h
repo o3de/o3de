@@ -32,6 +32,8 @@ namespace AzToolsFramework
         public:
             AZ_CLASS_ALLOCATOR(PrefabUndoCache, AZ::SystemAllocator, 0);
 
+            virtual ~PrefabUndoCache() = default;
+
             void Initialize();
             void Destroy();
 

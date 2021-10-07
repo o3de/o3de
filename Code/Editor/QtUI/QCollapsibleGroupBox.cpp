@@ -13,7 +13,7 @@
 QCollapsibleGroupBox::QCollapsibleGroupBox(QWidget* parent)
     : QGroupBox(parent)
     , m_collapsed(false)
-    , m_toggleButton(0)
+    , m_toggleButton(nullptr)
 {
     m_toggleButton = new QToolButton(this);
     m_toggleButton->setFixedSize(16, 16);

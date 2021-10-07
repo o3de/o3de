@@ -1,0 +1,203 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+#include <Atom/RPI/Math.azsli>
+
+#include <Atom/Features/SrgSemantics.azsli>
+
+#include <Atom/Features/PostProcessing/FullscreenPixelInfo.azsli>
+#include <Atom/Features/PostProcessing/FullscreenVertex.azsli>
+
+#include <Atom/Features/ColorManagement/TransformColor.azsli>
+#include <Atom/Features/PostProcessing/AcesColorSpaceConversion.azsli>
+#include <3rdParty/Features/PostProcessing/PSstyleColorBlends_Separable.azsli>
+#include <3rdParty/Features/PostProcessing/PSstyleColorBlends_NonSeparable.azsli>
+#include <3rdParty/Features/PostProcessing/KelvinToRgb.azsli>
+
+static const float FloatEpsilon = 1.192092896e-07; // 1.0 + FloatEpsilon != 1.0, smallest positive float   
+static const float FloatMin = FLOAT_32_MIN; // Min float number that is positive
+static const float FloatMax = FLOAT_32_MAX; // Max float number representable
+
+static const float AcesCcMidGrey = 0.4135884;
+
+ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
+{
+    // get the framebuffer
+    Texture2D<float4> m_framebuffer;
+
+    // framebuffer sampler
+    Sampler LinearSampler
+    {
+        MinFilter = Linear;
+        MagFilter = Linear;
+        MipFilter = Linear;
+        AddressU = Clamp;
+        AddressV = Clamp;
+        AddressW = Clamp;
+    };
+
+    float m_colorGradingExposure;
+    float m_colorGradingContrast;
+    float m_colorGradingHueShift;
+    float m_colorGradingPreSaturation;
+    float m_colorFilterIntensity;
+    float m_colorFilterMultiply;
+    float m_whiteBalanceKelvin;
+    float m_whiteBalanceTint;
+    float m_splitToneBalance;
+    float m_splitToneWeight;
+    float m_colorGradingPostSaturation;
+    float m_smhShadowsStart;
+    float m_smhShadowsEnd;
+    float m_smhHighlightsStart;
+    float m_smhHighlightsEnd;
+    float m_smhWeight;
+
+    float3 m_channelMixingRed;
+    float3 m_channelMixingGreen;
+    float3 m_channelMixingBlue;
+
+    float4 m_colorFilterSwatch;
+    float4 m_splitToneShadowsColor;
+    float4 m_splitToneHighlightsColor;
+
+    float4 m_smhShadowsColor;
+    float4 m_smhMidtonesColor;
+    float4 m_smhHighlightsColor;
+}
+
+float SaturateWithEpsilon(float value)
+{
+    return clamp(value, FloatEpsilon, 1.0f);
+}
+
+// Below are the color grading functions. These expect the frame color to be in ACEScg space.
+// Note that some functions may have some quirks in their implementation and is subject to change.
+float3 ColorGradePostExposure (float3 frameColor, float exposure) 
+{
+    frameColor *= pow(2.0f, exposure);
+    return frameColor;
+}
+
+// The contrast equation is performed in ACEScc (logarithmic) color space.
+float3 ColorGradingContrast (float3 frameColor, float midgrey, float amount) 
+{
+    const float contrastAdjustment = amount * 0.01f + 1.0f;
+    frameColor = TransformColor(frameColor.rgb, ColorSpaceId::ACEScg, ColorSpaceId::ACEScc);
+    frameColor = (frameColor - midgrey) * contrastAdjustment + midgrey;
+    return frameColor = TransformColor(frameColor.rgb, ColorSpaceId::ACEScc, ColorSpaceId::ACEScg);
+}
+
+// The swatchColor param expects a linear RGB value.
+float3 ColorGradeColorFilter (float3 frameColor, float3 swatchColor, float alpha) 
+{
+    swatchColor = TransformColor(swatchColor, ColorSpaceId::LinearSRGB, ColorSpaceId::ACEScg);
+    swatchColor *= pow(2.0f, PassSrg::m_colorFilterIntensity);
+    const float3 frameAdjust = frameColor * swatchColor;
+    return frameColor = lerp(frameColor, frameAdjust, alpha);
+}
+
+float3 ColorGradeHueShift (float3 frameColor, float amount) 
+{
+    float3 frameHsv = RgbToHsv(frameColor);
+    const float hue = frameHsv.x + amount;
+    frameHsv.x = RotateHue(hue, 0.0, 1.0);
+    return HsvToRgb(frameHsv);
+}
+
+float3 ColorGradeSaturation (float3 frameColor, float control) 
+{
+    const float vLuminance = CalculateLuminance(frameColor, ColorSpaceId::ACEScg);
+    return (frameColor - vLuminance) * control + vLuminance;
+}
+
+float3 ColorGradeKelvinColorTemp(float3 frameColor, float kelvin)
+{
+    const float3 kColor = TransformColor(KelvinToRgb(kelvin), ColorSpaceId::LinearSRGB, ColorSpaceId::ACEScg);
+    const float luminance = CalculateLuminance(frameColor, ColorSpaceId::ACEScg);
+    const float3 resHsl = RgbToHsl(frameColor.rgb * kColor.rgb);    // Apply Kelvin color and convert to HSL
+    return HslToRgb(float3(resHsl.xy, luminance));                  // Preserve luminance
+}
+
+// pow(f, e) won't work if f is negative, or may cause inf/NAN.
+float3 NoNanPow(float3 base, float3 power)
+{
+    return pow(max(abs(base), float3(FloatEpsilon, FloatEpsilon, FloatEpsilon)), power);
+}
+
+float3 ColorGradeSplitTone (float3 frameColor, float balance, float weight) 
+{
+    float3 frameSplitTone = NoNanPow(frameColor, 1.0 / 2.2);
+    const float t = SaturateWithEpsilon(CalculateLuminance(SaturateWithEpsilon(frameSplitTone), ColorSpaceId::ACEScg) + balance);
+    const float3 shadows = lerp(0.5, PassSrg::m_splitToneShadowsColor.rgb, 1.0 - t);
+    const float3 highlights = lerp(0.5, PassSrg::m_splitToneHighlightsColor.rgb, t);
+    frameSplitTone = BlendMode_SoftLight(frameSplitTone, shadows);
+    frameSplitTone = BlendMode_SoftLight(frameSplitTone, highlights);
+    frameSplitTone = NoNanPow(frameSplitTone, 2.2);
+    return lerp(frameColor.rgb, frameSplitTone.rgb, weight);
+}
+
+float3 ColorGradeChannelMixer (float3 frameColor) 
+{
+    return mul(float3x3(PassSrg::m_channelMixingRed.rgb,
+            PassSrg::m_channelMixingGreen.rgb,
+            PassSrg::m_channelMixingBlue.rgb),
+        frameColor);
+}
+
+float3 ColorGradeShadowsMidtonesHighlights (float3 frameColor, float shadowsStart, float shadowsEnd, 
+                                            float highlightsStart, float highlightsEnd, float weight,
+                                            float4 shadowsColor, float4 midtonesColor, float4 highlightsColor) 
+{
+    const float3 shadowsColorACEScg = TransformColor(shadowsColor.rgb, ColorSpaceId::LinearSRGB, ColorSpaceId::ACEScg);
+    const float3 midtonesColorACEScg = TransformColor(midtonesColor.rgb, ColorSpaceId::LinearSRGB, ColorSpaceId::ACEScg);
+    const float3 highlightsColorACEScg = TransformColor(highlightsColor.rgb, ColorSpaceId::LinearSRGB, ColorSpaceId::ACEScg);
+
+    const float cLuminance = CalculateLuminance(frameColor, ColorSpaceId::ACEScg);
+    const float shadowsWeight = 1.0 - smoothstep(shadowsStart, shadowsEnd, cLuminance);
+    const float highlightsWeight = smoothstep(highlightsStart, highlightsEnd, cLuminance);
+    const float midtonesWeight = 1.0 - shadowsWeight - highlightsWeight;
+
+    const float3 frameSmh = frameColor * shadowsColorACEScg * shadowsWeight +
+                       frameColor * midtonesColorACEScg * midtonesWeight +
+                       frameColor * highlightsColorACEScg * highlightsWeight;
+    return lerp(frameColor.rgb, frameSmh.rgb, weight);
+}
+
+float3 ColorGrade (float3 frameColor) 
+{
+    frameColor = ColorGradePostExposure(frameColor, PassSrg::m_colorGradingExposure);
+    frameColor = ColorGradeKelvinColorTemp(frameColor, PassSrg::m_whiteBalanceKelvin);
+    frameColor = ColorGradingContrast(frameColor, AcesCcMidGrey, PassSrg::m_colorGradingContrast);
+    frameColor = ColorGradeColorFilter(frameColor, PassSrg::m_colorFilterSwatch.rgb,
+                                         PassSrg::m_colorFilterMultiply);
+    frameColor = max(frameColor, 0.0);
+    frameColor = ColorGradeSaturation(frameColor, PassSrg::m_colorGradingPreSaturation);
+    frameColor = ColorGradeSplitTone(frameColor, PassSrg::m_splitToneBalance, PassSrg::m_splitToneWeight);
+    frameColor = ColorGradeChannelMixer(frameColor);
+    frameColor = max(frameColor, 0.0);
+    frameColor = ColorGradeShadowsMidtonesHighlights(frameColor, PassSrg::m_smhShadowsStart, PassSrg::m_smhShadowsEnd,
+                                                    PassSrg::m_smhHighlightsStart, PassSrg::m_smhHighlightsEnd, PassSrg::m_smhWeight,
+                                                    PassSrg::m_smhShadowsColor, PassSrg::m_smhMidtonesColor, PassSrg::m_smhHighlightsColor);
+    frameColor = ColorGradeHueShift(frameColor, PassSrg::m_colorGradingHueShift);
+    frameColor = ColorGradeSaturation(frameColor, PassSrg::m_colorGradingPostSaturation);
+    return frameColor.rgb;
+}
+
+PSOutput MainPS(VSOutput IN)
+{
+    PSOutput OUT;
+
+    // Fetch the pixel color from the input texture
+    float3 frameColor = PassSrg::m_framebuffer.Sample(PassSrg::LinearSampler, IN.m_texCoord).rgb;
+
+    OUT.m_color.rgb = ColorGrade(frameColor);
+    OUT.m_color.w = 1;
+
+    return OUT;
+}

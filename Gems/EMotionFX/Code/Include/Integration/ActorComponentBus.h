@@ -91,11 +91,12 @@ namespace EMotionFX
             /// Enables rendering of the actor.
             virtual bool GetRenderCharacter() const = 0;
             virtual void SetRenderCharacter(bool enable) = 0;
+            virtual bool GetRenderActorVisible() const = 0;
 
             /// Returns skinning method used by the actor.
             virtual SkinningMethod GetSkinningMethod() const = 0;
 
-            static const size_t s_invalidJointIndex = ~0;
+            static const size_t s_invalidJointIndex = std::numeric_limits<size_t>::max();
         };
 
         using ActorComponentRequestBus = AZ::EBus<ActorComponentRequests>;

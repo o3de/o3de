@@ -16,9 +16,9 @@
 
 namespace GridMate
 {
-    string Utils::GetMachineAddress(int familyType)
+    AZStd::string Utils::GetMachineAddress(int familyType)
     {
-        string machineName;
+        AZStd::string machineName;
         char name[MAX_PATH];
         int result = gethostname(name, sizeof(name));
         AZ_Error("GridMate", result == 0, "Failed in gethostname with result=%d, WSAGetLastError=%d!", result, WSAGetLastError());

@@ -19,7 +19,7 @@ namespace PhysX
     namespace Editor
     {
         static const char* const s_settingsDocumentationLink = "Learn more about <a href=%0>configuring PhysX</a>";
-        static const char* const s_settingsDocumentationAddress = "configuration/global";
+        static const char* const s_settingsDocumentationAddress = "configuring/configuration-global";
 
         SettingsWidget::SettingsWidget(QWidget* parent)
             : QWidget(parent)

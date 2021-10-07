@@ -37,7 +37,6 @@ namespace AZ
             void RegisterBuilder();
 
         private:
-            bool FindPassReferencedAssets(void* objectPtr, Uuid passAssetUuid, SerializeContext* context, AZStd::unordered_set<Data::AssetId> &referencedAssetList) const;
             bool m_isShuttingDown = false;
         };
 

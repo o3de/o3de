@@ -29,7 +29,6 @@ set(FILES
     Console/ConsoleTests.cpp
     Debug.cpp
     DLL.cpp
-    Driller.cpp
     EBus.cpp
     EntityIdTests.cpp
     EntityTests.cpp
@@ -38,6 +37,7 @@ set(FILES
     FileIOBaseTestTypes.h
     Geometry2DUtils.cpp
     Interface.cpp
+    IO/FileReaderTests.cpp
     IO/Path/PathTests.cpp
     IPC.cpp
     Jobs.cpp
@@ -60,13 +60,13 @@ set(FILES
     SerializeContextFixture.h
     Slice.cpp
     State.cpp
-    StatisticalProfiler.cpp
     Statistics.cpp
+    StatisticalProfiler.cpp
     StreamerTests.cpp
     StringFunc.cpp
     SystemFile.cpp
+    TaskTests.cpp
     TickBusTest.cpp
-    TimeDataStatistics.cpp
     UUIDTests.cpp
     XML.cpp
     Debug/AssetTracking.cpp
@@ -104,6 +104,7 @@ set(FILES
     Serialization/Json/JsonSerializationResultTests.cpp
     Serialization/Json/JsonSerializationTests.h
     Serialization/Json/JsonSerializationTests.cpp
+    Serialization/Json/JsonSerializationUtilsTests.cpp
     Serialization/Json/JsonSerializerConformityTests.h
     Serialization/Json/JsonSerializerMock.h
     Serialization/Json/MapSerializerTests.cpp
@@ -127,6 +128,7 @@ set(FILES
     Serialization/Json/UnorderedSetSerializerTests.cpp
     Serialization/Json/UnsupportedTypesSerializerTests.cpp
     Serialization/Json/UuidSerializerTests.cpp
+    Time/TimeTests.cpp
     Math/AabbTests.cpp
     Math/ColorTests.cpp
     Math/CrcTests.cpp

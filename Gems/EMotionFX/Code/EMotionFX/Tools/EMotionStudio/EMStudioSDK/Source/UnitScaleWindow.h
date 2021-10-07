@@ -30,16 +30,16 @@ namespace EMStudio
         UnitScaleWindow(QWidget* parent);
         ~UnitScaleWindow();
 
-        float GetScaleFactor() const            { return mScaleFactor; }
+        float GetScaleFactor() const            { return m_scaleFactor; }
 
     private slots:
         void OnOKButton();
         void OnCancelButton();
 
     private:
-        float                           mScaleFactor;
-        QPushButton*                    mOK;
-        QPushButton*                    mCancel;
-        AzQtComponents::DoubleSpinBox*  mScaleSpinBox;
+        float                           m_scaleFactor;
+        QPushButton*                    m_ok;
+        QPushButton*                    m_cancel;
+        AzQtComponents::DoubleSpinBox*  m_scaleSpinBox;
     };
 } // namespace EMStudio

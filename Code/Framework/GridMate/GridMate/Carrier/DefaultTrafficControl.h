@@ -12,6 +12,8 @@
 
 #include <GridMate/Containers/list.h>
 
+#include <AzCore/std/string/string.h>
+
 namespace GridMate
 {
     /**
@@ -145,7 +147,7 @@ namespace GridMate
             StatisticData   m_sdEffectiveLastSecond;        ///< Last second statistics for effective data.
             StatisticData   m_sdEffectiveCurrentSecond; ///< Elapsing second statistics for effective data.
 
-            string          m_address;          ///< Full address for this connection. (we need for debug only)
+            AZStd::string   m_address;          ///< Full address for this connection. (we need for debug only)
             unsigned int    m_recvPacketAllowance; ///< Current allowance for number of incoming packets
             bool            m_canReceiveData; ///< Able to receive data on this connection
 

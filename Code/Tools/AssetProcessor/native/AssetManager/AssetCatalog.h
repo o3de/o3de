@@ -88,8 +88,6 @@ namespace AssetProcessor
 
         //////////////////////////////////////////////////////////////////////////
         // AzToolsFramework::AssetSystem::AssetSystemRequestBus::Handler overrides
-        const char* GetAbsoluteDevGameFolderPath() override;
-        const char* GetAbsoluteDevRootFolderPath() override;
         bool GetRelativeProductPathFromFullSourceOrProductPath(const AZStd::string& fullPath, AZStd::string& relativeProductPath) override;
 
         //! Given a partial or full source file path, respond with its relative path and the watch folder it is relative to.
@@ -122,8 +120,8 @@ namespace AssetProcessor
 
         //////////////////////////////////////////////////////////////////////////
         // AzToolsFramework::ToolsAssetSystemBus::Handler
-        void RegisterSourceAssetType(const AZ::Data::AssetType& assetType, const char* assetFileFilter);
-        void UnregisterSourceAssetType(const AZ::Data::AssetType& assetType);
+        void RegisterSourceAssetType(const AZ::Data::AssetType& assetType, const char* assetFileFilter) override;
+        void UnregisterSourceAssetType(const AZ::Data::AssetType& assetType) override;
         //////////////////////////////////////////////////////////////////////////
 
         //! given some absolute path, please respond with its relative product path.  For now, this will be a
@@ -163,9 +161,9 @@ namespace AssetProcessor
         AZ::Outcome<AZStd::vector<AZ::Data::ProductDependency>, AZStd::string> GetAllProductDependenciesFilter(
             const AZ::Data::AssetId& id,
             const AZStd::unordered_set<AZ::Data::AssetId>& exclusionList,
-            const AZStd::vector<AZStd::string>& wildcardPatternExclusionList);
+            const AZStd::vector<AZStd::string>& wildcardPatternExclusionList) override;
 
-        bool DoesAssetIdMatchWildcardPattern(const AZ::Data::AssetId& assetId, const AZStd::string& wildcardPattern);
+        bool DoesAssetIdMatchWildcardPattern(const AZ::Data::AssetId& assetId, const AZStd::string& wildcardPattern) override;
 
         void AddAssetDependencies(
             const AZ::Data::AssetId& searchAssetId,
@@ -215,8 +213,6 @@ namespace AssetProcessor
 
         AZStd::vector<char> m_saveBuffer; // so that we don't realloc all the time
 
-        char m_absoluteDevFolderPath[AZ_MAX_PATH_LEN];
-        char m_absoluteDevGameFolderPath[AZ_MAX_PATH_LEN];
         QDir m_cacheRootDir;
     };
 }

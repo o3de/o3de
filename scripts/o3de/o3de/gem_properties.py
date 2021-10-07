@@ -53,6 +53,7 @@ def edit_gem_props(gem_path: pathlib.Path = None,
                    new_summary: str = None,
                    new_icon: str = None,
                    new_requirements: str = None,
+                   new_documentation_url: str = None,
                    new_tags: list or str = None,
                    remove_tags: list or str = None,
                    replace_tags: list or str = None,
@@ -90,7 +91,9 @@ def edit_gem_props(gem_path: pathlib.Path = None,
     if new_icon:
         update_key_dict['icon_path'] = new_icon
     if new_requirements:
-        update_key_dict['icon_requirements'] = new_requirements
+        update_key_dict['requirements'] = new_requirements
+    if new_documentation_url:
+        update_key_dict['documentation_url'] = new_documentation_url
 
     update_key_dict['user_tags'] = update_values_in_key_list(gem_json_data.get('user_tags', []), new_tags,
                                                      remove_tags, replace_tags)
@@ -110,6 +113,7 @@ def _edit_gem_props(args: argparse) -> int:
                           args.gem_summary,
                           args.gem_icon,
                           args.gem_requirements,
+                          args.gem_documentation_url,
                           args.add_tags,
                           args.remove_tags,
                           args.replace_tags)
@@ -129,20 +133,22 @@ def add_parser_args(parser):
     group.add_argument('-go', '--gem-origin', type=str, required=False,
                        help='Sets description for gem origin.')
     group.add_argument('-gt', '--gem-type', type=str, required=False, choices=['Code', 'Tool', 'Asset'],
-                       help='Sets the gem type. Can only be one of the selected choices')
+                       help='Sets the gem type. Can only be one of the selected choices.')
     group.add_argument('-gs', '--gem-summary', type=str, required=False,
                        help='Sets the summary description of the gem.')
     group.add_argument('-gi', '--gem-icon', type=str, required=False,
                        help='Sets the path to the projects icon resource.')
     group.add_argument('-gr', '--gem-requirements', type=str, required=False,
-                       help='Sets the description of the requirements needed to use the gem')
+                       help='Sets the description of the requirements needed to use the gem.')
+    group.add_argument('-gdu', '--gem-documentation-url', type=str, required=False,
+                       help='Sets the url for documentation of the gem.')
     group = parser.add_mutually_exclusive_group(required=False)
     group.add_argument('-at', '--add-tags', type=str, nargs='*', required=False,
-                       help='Adds tag(s) to user_tags property. Can be specified multiple times')
+                       help='Adds tag(s) to user_tags property. Can be specified multiple times.')
     group.add_argument('-dt', '--remove-tags', type=str, nargs='*', required=False,
-                       help='Removes tag(s) from the user_tags property. Can be specified multiple times')
+                       help='Removes tag(s) from the user_tags property. Can be specified multiple times.')
     group.add_argument('-rt', '--replace-tags', type=str, nargs='*', required=False,
-                       help='Replace tag(s) in user_tags property. Can be specified multiple times')
+                       help='Replace tag(s) in user_tags property. Can be specified multiple times.')
     parser.set_defaults(func=_edit_gem_props)
 
 

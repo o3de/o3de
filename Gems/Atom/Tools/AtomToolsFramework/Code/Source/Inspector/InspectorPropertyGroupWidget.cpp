@@ -9,6 +9,7 @@
 #include <AtomToolsFramework/Inspector/InspectorPropertyGroupWidget.h>
 #include <AzToolsFramework/UI/PropertyEditor/ReflectedPropertyEditor.hxx>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>
+#include <AzCore/Component/ComponentApplicationBus.h>
 
 namespace AtomToolsFramework
 {
@@ -19,7 +20,9 @@ namespace AtomToolsFramework
         AzToolsFramework::IPropertyEditorNotify* instanceNotificationHandler,
         QWidget* parent,
         const AZ::u32 saveStateKey,
-        const AzToolsFramework::InstanceDataHierarchy::ValueComparisonFunction& valueComparisonFunction)
+        const AzToolsFramework::InstanceDataHierarchy::ValueComparisonFunction& valueComparisonFunction,
+        const AzToolsFramework::IndicatorQueryFunction& indicatorQueryFunction,
+        int leafIndentSize)
         : InspectorGroupWidget(parent)
     {
         AZ::SerializeContext* context = nullptr;
@@ -32,13 +35,15 @@ namespace AtomToolsFramework
 
         m_propertyEditor = new AzToolsFramework::ReflectedPropertyEditor(this);
         m_propertyEditor->SetHideRootProperties(true);
-        m_propertyEditor->SetAutoResizeLabels(true);
+        m_propertyEditor->SetAutoResizeLabels(false);
+        m_propertyEditor->SetLeafIndentation(leafIndentSize);
         m_propertyEditor->SetValueComparisonFunction(valueComparisonFunction);
+        m_propertyEditor->SetIndicatorQueryFunction(indicatorQueryFunction);
         m_propertyEditor->SetSavedStateKey(saveStateKey);
         m_propertyEditor->Setup(context, instanceNotificationHandler, false);
         m_propertyEditor->AddInstance(instance, instanceClassId, nullptr, instanceToCompare);
         m_propertyEditor->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
-        m_propertyEditor->QueueInvalidation(AzToolsFramework::PropertyModificationRefreshLevel::Refresh_EntireTree);
+        m_propertyEditor->InvalidateAll();
 
         m_layout->addWidget(m_propertyEditor);
         setLayout(m_layout);

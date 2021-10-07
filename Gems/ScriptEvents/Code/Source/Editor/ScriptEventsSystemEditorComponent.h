@@ -46,7 +46,7 @@ namespace ScriptEventsEditor
 
         // AssetEditorValidationRequestBus::Handler
         AZ::Outcome<bool, AZStd::string> IsAssetDataValid(const AZ::Data::Asset<AZ::Data::AssetData>& asset) override;
-        void PreAssetSave(AZ::Data::Asset<AZ::Data::AssetData> asset);
+        void PreAssetSave(AZ::Data::Asset<AZ::Data::AssetData> asset) override;
         void BeforePropertyEdit(AzToolsFramework::InstanceDataNode* node, AZ::Data::Asset<AZ::Data::AssetData> asset) override;
 
         void SetSaveAsBinary(bool saveAsBinary) { m_saveAsBinary = saveAsBinary; }

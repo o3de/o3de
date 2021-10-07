@@ -170,7 +170,7 @@ namespace AzNetworking
             }
             timeoutItem->UpdateTimeoutTime(startTimeMs);
 
-            NetworkOutputSerializer serializer(buffer.GetBuffer(), buffer.GetSize());
+            NetworkOutputSerializer serializer(buffer.GetBuffer(), static_cast<uint32_t>(buffer.GetSize()));
             if (m_state == ConnectionState::Connecting)
             {
                 const ConnectResult connectResult = m_networkInterface.GetConnectionListener().ValidateConnect(GetRemoteAddress(), header, serializer);
@@ -198,7 +198,7 @@ namespace AzNetworking
     {
         TcpPacketEncodingBuffer buffer;
         {
-            NetworkInputSerializer serializer(buffer.GetBuffer(), buffer.GetCapacity());
+            NetworkInputSerializer serializer(buffer.GetBuffer(), static_cast<uint32_t>(buffer.GetCapacity()));
             if (!const_cast<IPacket&>(packet).Serialize(serializer))
             {
                 AZ_Assert(false, "SendReliablePacket: Unable to serialize packet [Type: %d]", packet.GetPacketType());
@@ -272,7 +272,7 @@ namespace AzNetworking
         {
             TcpPacketHeader header(packetType, aznumeric_cast<uint16_t>(payloadBuffer.GetSize()));
             header.SetPacketFlag(PacketFlag::Compressed, shouldCompress);
-            NetworkInputSerializer serializer(headerBuffer.GetBuffer(), headerBuffer.GetCapacity());
+            NetworkInputSerializer serializer(headerBuffer.GetBuffer(), static_cast<uint32_t>(headerBuffer.GetCapacity()));
             if (!header.Serialize(serializer))
             {
                 return false;
@@ -313,7 +313,7 @@ namespace AzNetworking
             m_networkInterface.GetMetrics().m_sendBytesCompressedDelta += (payloadSize - compressionMemBytesUsed);
 
             writeBuffer.Resize(aznumeric_cast<int32_t>(compressionMemBytesUsed));
-            payloadSize = writeBuffer.GetSize();
+            payloadSize = static_cast<uint32_t>(writeBuffer.GetSize());
             srcData = writeBuffer.GetBuffer();
         }
 

@@ -48,7 +48,7 @@ namespace AZ
             [[maybe_unused]] AZStd::string_view name,
             [[maybe_unused]] double value)
         {
-            AZ_PROFILE_DATAPOINT(AZ::Debug::ProfileCategory::AzCore, value,
+            AZ_PROFILE_DATAPOINT(AzCore, value,
                 "Streamer/%.*s/%.*s (Raw)",
                 aznumeric_cast<int>(owner.size()), owner.data(),
                 aznumeric_cast<int>(name.size()), name.data());

@@ -211,7 +211,6 @@ namespace AWSAttributionUnitTest
             m_localFileIO->ResolvePath("@user@/Registry/", m_resolvedSettingsPath.data(), m_resolvedSettingsPath.size());
             AZ::IO::SystemFile::DeleteDir(m_resolvedSettingsPath.data());
 
-            delete AZ::IO::FileIOBase::GetInstance();
             AZ::IO::FileIOBase::SetInstance(nullptr);
 
             AWSCoreFixture::TearDown();

@@ -601,7 +601,7 @@ class MPSession
 {
 public:
 
-    ~MPSession()
+    ~MPSession() override
     {
         CarrierEventBus::Handler::BusDisconnect();
     }
@@ -2007,7 +2007,7 @@ public:
         m_replicaId = m_sessions[sHost].GetReplicaMgr().AddPrimary(replica);
     }
 
-    ~Integ_ReplicaDriller()
+    ~Integ_ReplicaDriller() override
     {
         m_driller.BusDisconnect();
     }
@@ -2893,7 +2893,7 @@ public:
         m_replicaId = m_sessions[sHost].GetReplicaMgr().AddPrimary(replica);
     }
 
-    ~ReplicaACKfeedbackTestFixture()
+    ~ReplicaACKfeedbackTestFixture() override
     {
         m_driller.BusDisconnect();
     }

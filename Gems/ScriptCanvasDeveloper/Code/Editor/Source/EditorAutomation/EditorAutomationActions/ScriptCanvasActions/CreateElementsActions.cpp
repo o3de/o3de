@@ -539,8 +539,8 @@ namespace ScriptCanvasDeveloper
 
         AZ::Vector2 stepDirection = AZ::Vector2::CreateZero();
 
-        stepDirection.SetX(jutDirection.x() * stepSize.GetX());
-        stepDirection.SetY(jutDirection.y() * stepSize.GetY());
+        stepDirection.SetX(static_cast<float>(jutDirection.x() * stepSize.GetX()));
+        stepDirection.SetY(static_cast<float>(jutDirection.y() * stepSize.GetY()));
 
         m_scenePoint.setX(m_scenePoint.x() + stepDirection.GetX() * 2);
     }

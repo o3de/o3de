@@ -546,7 +546,7 @@ void CUndoAnimNodeReparent::AddParentsInChildren(CUiAnimViewAnimNode* pCurrentNo
 }
 
 //////////////////////////////////////////////////////////////////////////
-CUndoAnimNodeRename::CUndoAnimNodeRename(CUiAnimViewAnimNode* pNode, const string& oldName)
+CUndoAnimNodeRename::CUndoAnimNodeRename(CUiAnimViewAnimNode* pNode, const AZStd::string& oldName)
     : m_pNode(pNode)
     , m_newName(pNode->GetName())
     , m_oldName(oldName)
@@ -556,13 +556,13 @@ CUndoAnimNodeRename::CUndoAnimNodeRename(CUiAnimViewAnimNode* pNode, const strin
 //////////////////////////////////////////////////////////////////////////
 void CUndoAnimNodeRename::Undo([[maybe_unused]] bool bUndo)
 {
-    m_pNode->SetName(m_oldName);
+    m_pNode->SetName(m_oldName.c_str());
 }
 
 //////////////////////////////////////////////////////////////////////////
 void CUndoAnimNodeRename::Redo()
 {
-    m_pNode->SetName(m_newName);
+    m_pNode->SetName(m_newName.c_str());
 }
 
 //////////////////////////////////////////////////////////////////////////

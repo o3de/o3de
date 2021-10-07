@@ -31,14 +31,14 @@ namespace EMotionFX
         // Create an actor instance and make sure it is in the scheduler.
         ActorInstance* actorInstance = ActorInstance::Create(actor.get());
         EXPECT_EQ(scheduler->GetNumScheduleSteps(), 1) << "The actor instance should be part of the scheduler.";
-        EXPECT_EQ(scheduler->GetScheduleStep(0).mActorInstances.size(), 1) << "The step should hold exactly one actor instance.";
-        EXPECT_EQ(scheduler->GetScheduleStep(0).mActorInstances[0], actorInstance) << "The actor instance should be part of the step.";
+        EXPECT_EQ(scheduler->GetScheduleStep(0).m_actorInstances.size(), 1) << "The step should hold exactly one actor instance.";
+        EXPECT_EQ(scheduler->GetScheduleStep(0).m_actorInstances[0], actorInstance) << "The actor instance should be part of the step.";
 
         // Insert the actor instance manually again and make sure there is no duplicate.
         scheduler->RecursiveInsertActorInstance(actorInstance);
         EXPECT_EQ(scheduler->GetNumScheduleSteps(), 1) << "The actor instance should be part of the scheduler.";
-        EXPECT_EQ(scheduler->GetScheduleStep(0).mActorInstances.size(), 1) << "The step should hold exactly one actor instance.";
-        EXPECT_EQ(scheduler->GetScheduleStep(0).mActorInstances[0], actorInstance) << "The actor instance should be part of the step.";
+        EXPECT_EQ(scheduler->GetScheduleStep(0).m_actorInstances.size(), 1) << "The step should hold exactly one actor instance.";
+        EXPECT_EQ(scheduler->GetScheduleStep(0).m_actorInstances[0], actorInstance) << "The actor instance should be part of the step.";
 
         actorInstance->Destroy();
     }

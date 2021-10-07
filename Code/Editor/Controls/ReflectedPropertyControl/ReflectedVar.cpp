@@ -31,12 +31,6 @@ void ReflectedVarInit::setupReflection(AZ::SerializeContext* serializeContext)
         ->Field("description", &CReflectedVar::m_description)
         ->Field("varName", &CReflectedVar::m_varName);
 
-    serializeContext->Class <CReflectedVarAnimation, CReflectedVar >()
-        ->Version(1)
-        ->Field("animation", &CReflectedVarAnimation::m_animation)
-        ->Field("entityID", &CReflectedVarAnimation::m_entityID)
-        ;
-
     serializeContext->Class <CReflectedVarResource, CReflectedVar >()
         ->Version(1)
         ->Field("path", &CReflectedVarResource::m_path)
@@ -76,12 +70,6 @@ void ReflectedVarInit::setupReflection(AZ::SerializeContext* serializeContext)
     AZ::EditContext* ec = serializeContext->GetEditContext();
     if (ec)
     {
-        ec->Class< CReflectedVarAnimation >("VarAnimation", "Animation")
-            ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-            ->Attribute(AZ::Edit::Attributes::NameLabelOverride, &CReflectedVarAnimation::varName)
-            ->Attribute(AZ::Edit::Attributes::DescriptionTextOverride, &CReflectedVarAnimation::description)
-            ;
-
         ec->Class< CReflectedVarResource >("VarResource", "Resource")
             ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
             ->Attribute(AZ::Edit::Attributes::NameLabelOverride, &CReflectedVarResource::varName)
@@ -284,8 +272,6 @@ AZ::u32 CReflectedVarGenericProperty::handler()
         return AZ_CRC("ePropertyShader", 0xc40932f1);
     case ePropertyEquip:
         return AZ_CRC("ePropertyEquip", 0x66ffd290);
-    case ePropertyReverbPreset:
-        return AZ_CRC("ePropertyReverbPreset", 0x51469f38);
     case ePropertyDeprecated0:
         return AZ_CRC("ePropertyCustomAction", 0x4ffa5ba5);
     case ePropertyGameToken:

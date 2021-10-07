@@ -99,7 +99,6 @@ namespace UnitTest
         //create single entity
         AZ::Entity* newEntity = CreateEntity("New Entity", false);
         ASSERT_TRUE(newEntity);
-        AZ::EntityId entityId = newEntity->GetId();
 
         //create a first instance where the entity will be added
         AZStd::unique_ptr<Instance> testInstance = m_prefabSystemComponent->CreatePrefab({}, {}, "test/path");

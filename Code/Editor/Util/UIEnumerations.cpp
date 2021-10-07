@@ -55,15 +55,15 @@ CUIEnumerations::TDValuesContainer& CUIEnumerations::GetStandardNameContainer()
             {
                 oEnumerationItem = oEnumaration->getChild(nCurrentEnumarationItem);
 
-                const char* szKey(NULL);
-                const char* szValue(NULL);
+                const char* szKey(nullptr);
+                const char* szValue(nullptr);
                 oEnumerationItem->getAttributeByIndex(0, &szKey, &szValue);
 
                 cValues.push_back(szValue);
             }
 
-            const char* szKey(NULL);
-            const char* szValue(NULL);
+            const char* szKey(nullptr);
+            const char* szValue(nullptr);
             oEnumaration->getAttributeByIndex(0, &szKey, &szValue);
 
             cValuesContainer.insert(TDValuesContainer::value_type(szValue, cValues));

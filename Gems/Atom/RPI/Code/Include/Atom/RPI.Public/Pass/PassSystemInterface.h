@@ -67,6 +67,14 @@ namespace AZ
             FrameEnd,
         };
 
+        //! Frame counters used for collecting statistics
+        struct PassSystemFrameStatistics
+        {
+            u32 m_numRenderPassesExecuted = 0;
+            u32 m_totalDrawItemsRendered = 0;
+            u32 m_maxDrawItemsRenderedInAPass = 0;
+        };
+
         class PassSystemInterface
         {
             friend class Pass;
@@ -115,6 +123,27 @@ namespace AZ
             //! To break in your pass code for a specified pass name, use the macro below
             virtual void SetTargetedPassDebuggingName(const AZ::Name& targetPassName) = 0;
             virtual const AZ::Name& GetTargetedPassDebuggingName() const = 0;
+
+            //! Find the SwapChainPass associated with window Handle
+            virtual SwapChainPass* FindSwapChainPass(AzFramework::NativeWindowHandle windowHandle) const = 0;
+
+            using OnReadyLoadTemplatesEvent = AZ::Event<>;
+            //! Connect a handler to listen to the event that the pass system is ready to load pass templates
+            //! The event is triggered when pass system is initialized and asset system is ready.
+            //! The handler can add new pass templates or load pass template mappings from assets
+            virtual void ConnectEvent(OnReadyLoadTemplatesEvent::Handler& handler) = 0;
+
+            virtual PassSystemState GetState() const = 0;
+
+            // Passes call this function to notify the pass system that they are drawing X draw items this frame
+            // Used for Pass System statistics
+            virtual void IncrementFrameDrawItemCount(u32 numDrawItems) = 0;
+
+            // Increments the counter for the number of render passes executed this frame (does not include passes that are disabled) 
+            virtual void IncrementFrameRenderPassCount() = 0;
+
+            // Get frame statistics from the Pass System
+            virtual PassSystemFrameStatistics GetFrameStatistics() = 0;
 
             // --- Pass Factory related functionality ---
 
@@ -172,17 +201,6 @@ namespace AZ
             //! Find matching passes from registered passes with specified filter
             virtual AZStd::vector<Pass*> FindPasses(const PassFilter& passFilter) const = 0;
 
-            //! Find the SwapChainPass associated with window Handle
-            virtual SwapChainPass* FindSwapChainPass(AzFramework::NativeWindowHandle windowHandle) const = 0;
-
-            using OnReadyLoadTemplatesEvent = AZ::Event<>;
-            //! Connect a handler to listen to the event that the pass system is ready to load pass templates
-            //! The event is triggered when pass system is initialized and asset system is ready.
-            //! The handler can add new pass templates or load pass template mappings from assets
-            virtual void ConnectEvent(OnReadyLoadTemplatesEvent::Handler& handler) = 0;
-
-            virtual PassSystemState GetState() const = 0;
-
         private:
             // These functions are only meant to be used by the Pass class
 
@@ -200,7 +218,6 @@ namespace AZ
 
             //! Unregisters the pass with the pass library. Called in the Pass destructor.
             virtual void UnregisterPass(Pass* pass) = 0;
-
         };
                 
         namespace PassSystemEvents

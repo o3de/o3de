@@ -49,7 +49,7 @@ QString CSelectEAXPresetDlg::GetCurrPreset() const
     {
         return m_ui->listView->currentIndex().data().toString();
     }
-    // EXCEPTION: OCX Property Pages should return FALSE
+    // EXCEPTION: OCX Property Pages should return false
     return QString();
 }
 

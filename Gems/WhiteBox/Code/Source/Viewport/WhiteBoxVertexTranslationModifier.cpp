@@ -89,7 +89,7 @@ namespace WhiteBox
             const auto screenLength = std::fabs(currentAction.ScreenOffset().Dot(screenAxis));
             if (screenLength > maxLength)
             {
-                axisIndex = actionIndex;
+                axisIndex = static_cast<int>(actionIndex);
                 maxLength = screenLength;
             }
         }

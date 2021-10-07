@@ -41,14 +41,14 @@ namespace EMotionFX
 
 
     protected:
-        MotionLayerSystem*  mMotionSystem;  /**< The motion system where this layer pass works on. */
+        MotionLayerSystem*  m_motionSystem;  /**< The motion system where this layer pass works on. */
 
         /**
          * The constructor.
          * @param motionLayerSystem The motion layer system where this pass will be added to.
          */
         LayerPass(MotionLayerSystem* motionLayerSystem)
-            : BaseObject()                  { mMotionSystem = motionLayerSystem; }
+            : BaseObject()                  { m_motionSystem = motionLayerSystem; }
 
         /**
          * The destructor.

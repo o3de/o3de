@@ -6,6 +6,7 @@
  *
  */
 
+#include <AzCore/Debug/Profiler.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
@@ -180,7 +181,7 @@ namespace SurfaceData
 
     void SurfaceDataSystemComponent::GetSurfacePoints(const AZ::Vector3& inPosition, const SurfaceTagVector& desiredTags, SurfacePointList& surfacePointList) const
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Entity);
+        AZ_PROFILE_FUNCTION(Entity);
 
         const bool hasDesiredTags = HasValidTags(desiredTags);
         const bool hasModifierTags = hasDesiredTags && HasMatchingTags(desiredTags, m_registeredModifierTags);
@@ -228,8 +229,6 @@ namespace SurfaceData
 
     void SurfaceDataSystemComponent::GetSurfacePointsFromRegion(const AZ::Aabb& inRegion, const AZ::Vector2 stepSize, const SurfaceTagVector& desiredTags, SurfacePointListPerPosition& surfacePointListPerPosition) const
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Entity);
-
         AZStd::lock_guard<decltype(m_registrationMutex)> registrationLock(m_registrationMutex);
 
         surfacePointListPerPosition.clear();
@@ -317,7 +316,7 @@ namespace SurfaceData
 
     void SurfaceDataSystemComponent::CombineSortAndFilterNeighboringPoints(SurfacePointList& sourcePointList, bool hasDesiredTags, const SurfaceTagVector& desiredTags) const
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Entity);
+        AZ_PROFILE_FUNCTION(Entity);
 
         if (sourcePointList.empty())
         {

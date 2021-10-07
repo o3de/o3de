@@ -12,7 +12,9 @@
 
 #include <AzCore/Component/TickBus.h>
 #include <AzCore/Memory/OSAllocator.h>
+#include <AzCore/Name/Name.h>
 #include <AzCore/std/containers/map.h>
+#include <AzCore/std/containers/unordered_set.h>
 #include <AzCore/std/parallel/mutex.h>
 #include <AzCore/std/parallel/shared_mutex.h>
 #include <AzCore/std/smart_ptr/intrusive_refcount.h>
@@ -41,13 +43,13 @@ namespace AZ
             static constexpr uint32_t TimeRegionStackSize = 2048u;
 
             // Adds a region to the stack, gets called each time a region begins
-            void RegionStackPushBack(TimeRegion& timeRegion);
+            void RegionStackPushBack(CachedTimeRegion& timeRegion);
 
             // Pops a region from the stack, gets called each time a region ends
             void RegionStackPopBack();
 
             // Add a new cached time region. If the stack is empty, flush all entries to the cached map
-            void AddCachedRegion(CachedTimeRegion&& timeRegionCached);
+            void AddCachedRegion(const CachedTimeRegion& timeRegionCached);
 
             // Tries to flush the map to the passed parameter, only if the thread's mutex is unlocked
             void TryFlushCachedMap(CpuProfiler::ThreadTimeRegionMap& cachedRegionMap);
@@ -61,7 +63,7 @@ namespace AZ
 
             // Use fixed vectors to avoid re-allocating new elements
             // Keeps track of the regions that added and removed using the macro
-            AZStd::fixed_vector<TimeRegion*, TimeRegionStackSize> m_timeRegionStack;
+            AZStd::fixed_vector<CachedTimeRegion, TimeRegionStackSize> m_timeRegionStack;
 
             // Keeps track of regions that completed (i.e regions that was pushed and popped from the stack)
             // Intermediate storage point for the CachedTimeRegions, when the stack is empty, all entries will be
@@ -83,7 +85,8 @@ namespace AZ
         //! forwards the request to profile a region to the appropriate thread. The user is able to request all
         //! cached regions, which are stored on a per thread frequency.
         class CpuProfilerImpl final
-            : public CpuProfiler
+            : public AZ::Debug::Profiler
+            , public CpuProfiler
             , public SystemTickBus::Handler
         {
             friend class CpuTimingLocalStorage;
@@ -105,14 +108,22 @@ namespace AZ
             // m_timeRegionMap so that the next frame has up-to-date profiling data.
             void OnSystemTick() final override;
 
+            //! AZ::Debug::Profiler overrides...
+            void BeginRegion(const AZ::Debug::Budget* budget, const char* eventName)  final override;
+            void EndRegion(const AZ::Debug::Budget* budget) final override;
+
             //! CpuProfiler overrides...
-            void BeginTimeRegion(TimeRegion& timeRegion) final;
-            void EndTimeRegion() final;
-            const TimeRegionMap& GetTimeRegionMap() const final;
-            void SetProfilerEnabled(bool enabled) final;
-            bool IsProfilerEnabled() const final;
+            const TimeRegionMap& GetTimeRegionMap() const final override;
+            bool BeginContinuousCapture() final override;
+            bool EndContinuousCapture(AZStd::ring_buffer<TimeRegionMap>& flushTarget) final override;
+            bool IsContinuousCaptureInProgress() const final override;
+            void SetProfilerEnabled(bool enabled) final override;
+            bool IsProfilerEnabled() const final override;
 
         private:
+            static constexpr AZStd::size_t MaxFramesToSave = 2 * 60 * 120; // 2 minutes of 120fps
+            static constexpr AZStd::size_t MaxRegionStringPoolSize = 16384; // Max amount of unique strings to save in the pool before throwing warnings.
+
             // Lazily create and register the local thread data
             void RegisterThreadStorage();
 
@@ -134,7 +145,44 @@ namespace AZ
             AZStd::shared_mutex m_shutdownMutex;
 
             bool m_initialized = false;
+
+            AZStd::mutex m_continuousCaptureEndingMutex;
+
+            AZStd::atomic_bool m_continuousCaptureInProgress;
+
+            // Stores multiple frames of profiling data, size is controlled by MaxFramesToSave. Flushed when EndContinuousCapture is called.
+            // Ring buffer so that we can have fast append of new data + removal of old profiling data with good cache locality.
+            AZStd::ring_buffer<TimeRegionMap> m_continuousCaptureData;
         };
 
-    }; // namespace RPI
+        // Intermediate class to serialize Cpu TimedRegion data.
+        class CpuProfilingStatisticsSerializer
+        {
+        public:
+            class CpuProfilingStatisticsSerializerEntry
+            {
+            public:
+                AZ_TYPE_INFO(CpuProfilingStatisticsSerializer::CpuProfilingStatisticsSerializerEntry, "{26B78F65-EB96-46E2-BE7E-A1233880B225}");
+                static void Reflect(AZ::ReflectContext* context);
+
+                CpuProfilingStatisticsSerializerEntry() = default;
+                CpuProfilingStatisticsSerializerEntry(const RHI::CachedTimeRegion& cachedTimeRegion, AZStd::thread_id threadId);
+
+                Name m_groupName;
+                Name m_regionName;
+                uint16_t m_stackDepth;
+                AZStd::sys_time_t m_startTick;
+                AZStd::sys_time_t m_endTick;
+                size_t m_threadId;
+            };
+
+            AZ_TYPE_INFO(CpuProfilingStatisticsSerializer, "{D5B02946-0D27-474F-9A44-364C2706DD41}");
+            static void Reflect(AZ::ReflectContext* context);
+
+            CpuProfilingStatisticsSerializer() = default;
+            CpuProfilingStatisticsSerializer(const AZStd::ring_buffer<RHI::CpuProfiler::TimeRegionMap>& continuousData);
+
+            AZStd::vector<CpuProfilingStatisticsSerializerEntry> m_cpuProfilingStatisticsSerializerEntries;
+        };
+    }; // namespace RHI
 }; // namespace AZ

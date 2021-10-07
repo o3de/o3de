@@ -1488,7 +1488,6 @@ namespace GraphCanvas
 
     void GraphCanvasGraphicsView::SaveViewParams()
     {
-        QPointF centerPoint = mapToScene(rect().center());
         QPointF anchorPoint = mapToScene(rect().topLeft());
 
         m_viewParams.m_anchorPointX = aznumeric_cast<float>(anchorPoint.x());

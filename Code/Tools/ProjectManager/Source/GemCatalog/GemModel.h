@@ -28,15 +28,14 @@ namespace O3DE::ProjectManager
 
         void AddGem(const GemInfo& gemInfo);
         void Clear();
+        void UpdateGemDependencies();
 
         QModelIndex FindIndexByNameString(const QString& nameString) const;
-        void FindGemNamesByNameStrings(QStringList& inOutGemNames);
-        QStringList GetDependingGemUuids(const QModelIndex& modelIndex);
         QStringList GetDependingGemNames(const QModelIndex& modelIndex);
-        QStringList GetConflictingGemUuids(const QModelIndex& modelIndex);
-        QStringList GetConflictingGemNames(const QModelIndex& modelIndex);
+        bool HasDependentGems(const QModelIndex& modelIndex) const;
 
         static QString GetName(const QModelIndex& modelIndex);
+        static QString GetDisplayName(const QModelIndex& modelIndex);
         static QString GetCreator(const QModelIndex& modelIndex);
         static GemInfo::GemOrigin GetGemOrigin(const QModelIndex& modelIndex);
         static GemInfo::Platforms GetPlatforms(const QModelIndex& modelIndex);
@@ -50,35 +49,51 @@ namespace O3DE::ProjectManager
         static QStringList GetFeatures(const QModelIndex& modelIndex);
         static QString GetPath(const QModelIndex& modelIndex);
         static QString GetRequirement(const QModelIndex& modelIndex);
+        static GemModel* GetSourceModel(QAbstractItemModel* model);
+        static const GemModel* GetSourceModel(const QAbstractItemModel* model);
 
         static bool IsAdded(const QModelIndex& modelIndex);
+        static bool IsAddedDependency(const QModelIndex& modelIndex);
         static void SetIsAdded(QAbstractItemModel& model, const QModelIndex& modelIndex, bool isAdded);
+        static void SetIsAddedDependency(QAbstractItemModel& model, const QModelIndex& modelIndex, bool isAdded);
         static void SetWasPreviouslyAdded(QAbstractItemModel& model, const QModelIndex& modelIndex, bool wasAdded);
-        static bool NeedsToBeAdded(const QModelIndex& modelIndex);
-        static bool NeedsToBeRemoved(const QModelIndex& modelIndex);
+        static bool WasPreviouslyAdded(const QModelIndex& modelIndex);
+        static void SetWasPreviouslyAddedDependency(QAbstractItemModel& model, const QModelIndex& modelIndex, bool wasAdded);
+        static bool WasPreviouslyAddedDependency(const QModelIndex& modelIndex);
+        static bool NeedsToBeAdded(const QModelIndex& modelIndex, bool includeDependencies = false);
+        static bool NeedsToBeRemoved(const QModelIndex& modelIndex, bool includeDependencies = false);
         static bool HasRequirement(const QModelIndex& modelIndex);
+        static void UpdateDependencies(QAbstractItemModel& model, const QModelIndex& modelIndex);
 
         bool DoGemsToBeAddedHaveRequirements() const;
 
-        QVector<QModelIndex> GatherGemsToBeAdded() const;
-        QVector<QModelIndex> GatherGemsToBeRemoved() const;
+        QVector<QModelIndex> GatherGemDependencies(const QModelIndex& modelIndex) const;
+        QVector<QModelIndex> GatherDependentGems(const QModelIndex& modelIndex, bool addedOnly = false) const;
+        QVector<QModelIndex> GatherGemsToBeAdded(bool includeDependencies = false) const;
+        QVector<QModelIndex> GatherGemsToBeRemoved(bool includeDependencies = false) const;
 
-        int TotalAddedGems() const;
+        int TotalAddedGems(bool includeDependencies = false) const;
 
     private:
+        void FindGemDisplayNamesByNameStrings(QStringList& inOutGemNames);
+        void GetAllDependingGems(const QModelIndex& modelIndex, QSet<QModelIndex>& inOutGems);
+        QStringList GetDependingGems(const QModelIndex& modelIndex);
+
         enum UserRole
         {
             RoleName = Qt::UserRole,
+            RoleDisplayName,
             RoleCreator,
             RoleGemOrigin,
             RolePlatforms,
             RoleSummary,
             RoleWasPreviouslyAdded,
+            RoleWasPreviouslyAddedDependency,
             RoleIsAdded,
+            RoleIsAddedDependency,
             RoleDirectoryLink,
             RoleDocLink,
             RoleDependingGems,
-            RoleConflictingGems,
             RoleVersion,
             RoleLastUpdated,
             RoleBinarySize,
@@ -90,5 +105,7 @@ namespace O3DE::ProjectManager
 
         QHash<QString, QModelIndex> m_nameToIndexMap;
         QItemSelectionModel* m_selectionModel = nullptr;
+        QHash<QString, QSet<QModelIndex>> m_gemDependencyMap;
+        QHash<QString, QSet<QModelIndex>> m_gemReverseDependencyMap;
     };
 } // namespace O3DE::ProjectManager

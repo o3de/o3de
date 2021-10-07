@@ -8,7 +8,6 @@
 
 set(FILES
     test_Main.cpp
-    TestProfiler.cpp
     Tests.h
     Session.cpp
     Serialize.cpp
@@ -16,7 +15,6 @@ set(FILES
     ReplicaSmall.cpp
     ReplicaMedium.cpp
     ReplicaBehavior.cpp
-    Replica.cpp
     StreamSecureSocketDriverTests.cpp
     StreamSocketDriverTests.cpp
     CarrierStreamSocketDriverTests.cpp

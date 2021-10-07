@@ -452,7 +452,7 @@ void UiLayoutColumnComponent::ApplyLayoutWidth(float availableWidth)
     // Get the child element cell widths
     UiLayoutHelpers::LayoutCellSizes layoutCells;
     UiLayoutHelpers::GetLayoutCellWidths(GetEntityId(), m_ignoreDefaultLayoutCells, layoutCells);
-    int numChildren = layoutCells.size();
+    int numChildren = static_cast<int>(layoutCells.size());
     if (numChildren > 0)
     {
         // Set the child elements' transform properties based on the calculated child widths
@@ -492,7 +492,7 @@ void UiLayoutColumnComponent::ApplyLayoutHeight(float availableHeight)
     // Get the child element cell heights
     UiLayoutHelpers::LayoutCellSizes layoutCells;
     UiLayoutHelpers::GetLayoutCellHeights(GetEntityId(), m_ignoreDefaultLayoutCells, layoutCells);
-    int numChildren = layoutCells.size();
+    int numChildren = static_cast<int>(layoutCells.size());
     if (numChildren > 0)
     {
         // Calculate child heights

@@ -8,16 +8,13 @@
 // UiClipboard is responsible setting and getting clipboard data for the UI elements in a platform-independent way.
 
 #include "UiClipboard.h"
-#include <StringUtils.h>
 
-bool UiClipboard::SetText(const AZStd::string& text)
+bool UiClipboard::SetText([[maybe_unused]] const AZStd::string& text)
 {
-    AZ_UNUSED(text);
     return false;
 }
 
 AZStd::string UiClipboard::GetText()
 {
-    AZStd::string outText;
-    return outText;
+    return {};
 }

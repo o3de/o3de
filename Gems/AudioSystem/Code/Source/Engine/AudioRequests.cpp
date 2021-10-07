@@ -153,7 +153,7 @@ namespace Audio
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     void SAudioRequestDataInternal::Release()
     {
-        const int nCount = CryInterlockedDecrement(&m_nRefCounter);
+        const int nCount = m_nRefCounter.fetch_sub(1, AZStd::memory_order_acq_rel) - 1; // because we get the original value back
         AZ_Assert(nCount >= 0, "AudioRequests Release - Decremented reference counter too many times!");
 
         if (nCount == 0)

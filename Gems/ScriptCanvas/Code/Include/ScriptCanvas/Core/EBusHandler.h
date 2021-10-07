@@ -8,9 +8,12 @@
 
 #pragma once
 
+#include <AzCore/Debug/Budget.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 
 #include "Nodeable.h"
+
+AZ_DECLARE_BUDGET(ScriptCanvas);
 
 struct lua_State;
 

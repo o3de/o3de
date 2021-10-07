@@ -77,10 +77,6 @@ namespace
             // This closes the current document (level)
             currentLevel->OnNewDocument();
 
-            // Then we freeze the viewport's input
-            AzToolsFramework::ViewportInteraction::ViewportFreezeRequestBus::Broadcast(
-                &AzToolsFramework::ViewportInteraction::ViewportFreezeRequestBus::Events::FreezeViewportInput, true);
-
             // Then we need to tell the game engine there is no level to render anymore
             if (GetIEditor()->GetGameEngine())
             {
@@ -95,11 +91,6 @@ namespace
                 }
             }
         }
-    }
-
-    const char* PyGetGameFolder()
-    {
-        return Path::GetEditingGameDataFolder().c_str();
     }
 
     AZStd::string PyGetGameFolderAsString()
@@ -210,7 +201,7 @@ namespace
     const char* PyGetCurrentLevelName()
     {
         // Using static member to capture temporary data
-        static string tempLevelName;
+        static AZ::IO::FixedMaxPathString tempLevelName;
         tempLevelName = GetIEditor()->GetGameEngine()->GetLevelName().toUtf8().data();
         return tempLevelName.c_str();
     }
@@ -218,7 +209,7 @@ namespace
     const char* PyGetCurrentLevelPath()
     {
         // Using static member to capture temporary data
-        static string tempLevelPath;
+        static AZ::IO::FixedMaxPathString tempLevelPath;
         tempLevelPath = GetIEditor()->GetGameEngine()->GetLevelPath().toUtf8().data();
         return tempLevelPath.c_str();
     }
@@ -359,7 +350,7 @@ namespace
             {
                 AZ::TickBus::Handler::BusConnect();
             }
-            ~Ticker()
+            ~Ticker() override
             {
                 AZ::TickBus::Handler::BusDisconnect();
             }
@@ -405,6 +396,16 @@ inline namespace Commands
     int PyGetConfigPlatform()
     {
         return static_cast<int>(GetIEditor()->GetEditorConfigPlatform());
+    }
+
+    bool PyAttachDebugger()
+    {
+        return AZ::Debug::Trace::AttachDebugger();
+    }
+
+    bool PyWaitForDebugger(float timeoutSeconds = -1.f)
+    {
+        return AZ::Debug::Trace::WaitForDebugger(timeoutSeconds);
     }
 }
 
@@ -452,6 +453,9 @@ namespace AzToolsFramework
 
             addLegacyGeneral(behaviorContext->Method("start_process_detached", PyStartProcessDetached, nullptr, "Launches a detached process with an optional space separated list of arguments."));
             addLegacyGeneral(behaviorContext->Method("launch_lua_editor", PyLaunchLUAEditor, nullptr, "Launches the Lua editor, may receive a list of space separate file paths, or an empty string to only open the editor."));
+
+            addLegacyGeneral(behaviorContext->Method("attach_debugger", PyAttachDebugger, nullptr, "Prompts for attaching the debugger"));
+            addLegacyGeneral(behaviorContext->Method("wait_for_debugger", PyWaitForDebugger, behaviorContext->MakeDefaultValues(-1.f), "Pauses this thread execution until the debugger has been attached"));
 
             // this will put these methods into the 'azlmbr.legacy.checkout_dialog' module
             auto addCheckoutDialog = [](AZ::BehaviorContext::GlobalMethodBuilder methodBuilder)

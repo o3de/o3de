@@ -13,6 +13,7 @@
 #include <AzCore/std/string/string_view.h>
 
 #include <AzToolsFramework/Prefab/Instance/Instance.h>
+#include <AzToolsFramework/Prefab/PrefabFocusHandler.h>
 #include <AzToolsFramework/Prefab/PrefabPublicInterface.h>
 #include <AzToolsFramework/Prefab/PrefabSystemComponentInterface.h>
 #include <AzToolsFramework/Prefab/PrefabUndoCache.h>
@@ -42,8 +43,12 @@ namespace AzToolsFramework
             void UnregisterPrefabPublicHandlerInterface();
 
             // PrefabPublicInterface...
-            PrefabOperationResult CreatePrefab(const AZStd::vector<AZ::EntityId>& entityIds, AZ::IO::PathView absolutePath) override;
-            PrefabOperationResult InstantiatePrefab(AZStd::string_view filePath, AZ::EntityId parent, const AZ::Vector3& position) override;
+            CreatePrefabResult CreatePrefabInDisk(
+                const EntityIdList& entityIds, AZ::IO::PathView filePath) override;
+            CreatePrefabResult CreatePrefabInMemory(
+                const EntityIdList& entityIds, AZ::IO::PathView filePath) override;
+            InstantiatePrefabResult InstantiatePrefab(
+                AZStd::string_view filePath, AZ::EntityId parent, const AZ::Vector3& position) override;
             PrefabOperationResult SavePrefab(AZ::IO::Path filePath) override;
             PrefabEntityResult CreateEntity(AZ::EntityId parentId, const AZ::Vector3& position) override;
             
@@ -184,6 +189,9 @@ namespace AzToolsFramework
             InstanceToTemplateInterface* m_instanceToTemplateInterface = nullptr;
             PrefabLoaderInterface* m_prefabLoaderInterface = nullptr;
             PrefabSystemComponentInterface* m_prefabSystemComponentInterface = nullptr;
+
+            // Handles the Prefab Focus API that determines what prefab is being edited.
+            PrefabFocusHandler m_prefabFocusHandler;
 
             // Caches entity states for undo/redo purposes
             PrefabUndoCache m_prefabUndoCache;

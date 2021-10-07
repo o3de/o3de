@@ -33,28 +33,28 @@ namespace CommandSystem
          * Get current selection.
          * @return The selection list containing all selected actors, motions and nodes.
          */
-        MCORE_INLINE SelectionList& GetCurrentSelection()                                   { mCurrentSelection.MakeValid(); return mCurrentSelection; }
+        MCORE_INLINE SelectionList& GetCurrentSelection()                                   { m_currentSelection.MakeValid(); return m_currentSelection; }
 
         /**
          * Set current selection.
          * @param selection The selection list containing all selected actors, motions and nodes.
          */
-        MCORE_INLINE void SetCurrentSelection(SelectionList& selection)                     { mCurrentSelection.Clear(); mCurrentSelection.Add(selection); }
+        MCORE_INLINE void SetCurrentSelection(SelectionList& selection)                     { m_currentSelection.Clear(); m_currentSelection.Add(selection); }
 
-        MCORE_INLINE bool GetLockSelection() const                                          { return mLockSelection; }
-        void SetLockSelection(bool lockSelection)                                           { mLockSelection = lockSelection; }
+        MCORE_INLINE bool GetLockSelection() const                                          { return m_lockSelection; }
+        void SetLockSelection(bool lockSelection)                                           { m_lockSelection = lockSelection; }
 
-        void SetWorkspaceDirtyFlag(bool dirty)                                              { mWorkspaceDirtyFlag = dirty; }
-        MCORE_INLINE bool GetWorkspaceDirtyFlag() const                                     { return mWorkspaceDirtyFlag; }
+        void SetWorkspaceDirtyFlag(bool dirty)                                              { m_workspaceDirtyFlag = dirty; }
+        MCORE_INLINE bool GetWorkspaceDirtyFlag() const                                     { return m_workspaceDirtyFlag; }
 
         // Only true when user create or open a workspace.
         void SetUserOpenedWorkspaceFlag(bool flag);
         bool GetUserOpenedWorkspaceFlag() const                                             { return m_userOpenedWorkspaceFlag; }
 
     private:
-        SelectionList       mCurrentSelection;      /**< The current selected actors, motions and nodes. */
-        bool                mLockSelection;
-        bool                mWorkspaceDirtyFlag;
+        SelectionList       m_currentSelection;      /**< The current selected actors, motions and nodes. */
+        bool                m_lockSelection;
+        bool                m_workspaceDirtyFlag;
         bool                m_userOpenedWorkspaceFlag = false;
     };
 

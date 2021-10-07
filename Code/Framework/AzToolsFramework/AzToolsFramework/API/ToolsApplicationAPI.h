@@ -5,14 +5,10 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-
-#ifndef AZTOOLSFRAMEWORK_TOOLSAPPLICATIONAPI_H
-#define AZTOOLSFRAMEWORK_TOOLSAPPLICATIONAPI_H
-
-#include <AzCore/base.h>
-
 #pragma once
 
+#include <AzCore/base.h>
+#include <AzCore/Debug/Budget.h>
 #include <AzCore/EBus/EBus.h>
 #include <AzCore/Math/Aabb.h>
 #include <AzCore/Math/Uuid.h>
@@ -418,6 +414,9 @@ namespace AzToolsFramework
         //! Gets an existing entity id from a known id.
         virtual AZ::EntityId GetExistingEntity(AZ::u64 id) = 0;
 
+        //! Returns if an entity with the given id exists
+        virtual bool EntityExists(AZ::EntityId id) = 0;
+
         /*!
          * Delete all currently-selected entities.
          */
@@ -600,8 +599,8 @@ namespace AzToolsFramework
          * Open 3D Engine Internal use only.
          *
          * Run a specific redo command separate from the undo/redo system.
-         * In many cases before a modifcation on an entity takes place, it is first packaged into 
-         * undo/redo commands. Running the modification's redo command separete from the undo/redo 
+         * In many cases before a modification on an entity takes place, it is first packaged into 
+         * undo/redo commands. Running the modification's redo command separate from the undo/redo 
          * system simulates its execution, and avoids some code duplication.
          */
         virtual void RunRedoSeparately(UndoSystem::URSequencePoint* redoCommand) = 0;
@@ -765,12 +764,6 @@ namespace AzToolsFramework
         //! Spawn asset browser for the appropriate asset types.
         virtual void BrowseForAssets(AssetBrowser::AssetSelectionModel& /*selection*/) = 0;
 
-        /// Allow interception of selection / left-mouse clicks in ObjectMode, for customizing selection behavior.
-        virtual void HandleObjectModeSelection(const AZ::Vector2& /*point*/, int /*flags*/, bool& /*handled*/) {}
-
-        /// Allow interception of cursor, for customizing selection behavior.
-        virtual void UpdateObjectModeCursor(AZ::u32& /*cursorId*/, AZStd::string& /*cursorStr*/) {}
-
         /// Creates editor-side representation of an underlying entity.
         virtual void CreateEditorRepresentation(AZ::Entity* /*entity*/) { }
 
@@ -840,9 +833,6 @@ namespace AzToolsFramework
          * \return the path of the icon image
          */
         virtual AZStd::string GetComponentIconPath(const AZ::Uuid& /*componentType*/, AZ::Crc32 /*componentIconAttrib*/, AZ::Component* /*component*/) { return AZStd::string(); }
-
-        /// Resource Selector hook, returns a path for a resource.
-        virtual AZStd::string SelectResource(const AZStd::string& /*resourceType*/, const AZStd::string& /*previousValue*/) { return AZStd::string(); }
 
         /**
          * Calculate the navigation 2D radius in units of an agent given its Navigation Type Name
@@ -1092,4 +1082,5 @@ namespace AzToolsFramework
     }
 } // namespace AzToolsFramework
 
-#endif // AZTOOLSFRAMEWORK_TOOLSAPPLICATIONAPI_H
+AZ_DECLARE_BUDGET(AzToolsFramework);
+

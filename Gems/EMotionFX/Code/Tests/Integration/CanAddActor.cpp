@@ -33,14 +33,14 @@ namespace EMotionFX
         ASSERT_EQ(GetActorManager().GetNumActors(), 0);
 
         // Load an Actor
-        const char* actorCmd{ "ImportActor -filename @devroot@/Gems/EMotionFX/Code/Tests/TestAssets/Rin/rin.actor" };
+        const char* actorCmd{ "ImportActor -filename @engroot@/Gems/EMotionFX/Code/Tests/TestAssets/Rin/rin.actor" };
         {
             AZStd::string result;
             EXPECT_TRUE(CommandSystem::GetCommandManager()->ExecuteCommand(actorCmd, result)) << result.c_str();
         }
 
         // Ensure the Actor is correct
-        ASSERT_TRUE(GetActorManager().FindActorByName("rinactor"));
+        ASSERT_TRUE(GetActorManager().FindActorByName("rinActor"));
         EXPECT_EQ(GetActorManager().GetNumActors(), 1);
     }
 } // namespace EMotionFX

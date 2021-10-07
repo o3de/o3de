@@ -14,7 +14,6 @@ set(FILES
     AzFramework/Application/Application_Android.cpp
     ../Common/Unimplemented/AzFramework/Asset/AssetSystemComponentHelper_Unimplemented.cpp
     AzFramework/IO/LocalFileIO_Android.cpp
-    ../Common/Default/AzFramework/Network/AssetProcessorConnection_Default.cpp
     ../Common/Unimplemented/AzFramework/StreamingInstall/StreamingInstall_Unimplemented.cpp
     ../Common/Default/AzFramework/TargetManagement/TargetManagementComponent_Default.cpp
     AzFramework/Windowing/NativeWindow_Android.cpp

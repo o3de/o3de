@@ -304,7 +304,7 @@ class CUndoAnimNodeRename
     : public UiAnimUndoObject
 {
 public:
-    CUndoAnimNodeRename(CUiAnimViewAnimNode* pNode, const string& oldName);
+    CUndoAnimNodeRename(CUiAnimViewAnimNode* pNode, const AZStd::string& oldName);
 
 protected:
     virtual int GetSize() override { return sizeof(*this); };
@@ -315,8 +315,8 @@ protected:
 
 private:
     CUiAnimViewAnimNode* m_pNode;
-    string m_newName;
-    string m_oldName;
+    AZStd::string m_newName;
+    AZStd::string m_oldName;
 };
 
 /** Base class for track event transactions

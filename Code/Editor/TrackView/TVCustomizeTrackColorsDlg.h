@@ -56,7 +56,7 @@ private:
 
     inline void GetQColorFromXmlNode(QColor& colorOut, const XmlNodeRef& xmlNode) const
     {
-        QRgb rgb = -1;
+        QRgb rgb = std::numeric_limits<unsigned int>::max();
         xmlNode->getAttr("color", rgb);
         colorOut.setRgb(rgb);
     };

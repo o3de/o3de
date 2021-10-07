@@ -8,9 +8,14 @@
 
 #include <GemCatalog/GemItemDelegate.h>
 #include <GemCatalog/GemModel.h>
+#include <GemCatalog/GemSortFilterProxyModel.h>
 #include <QEvent>
+#include <QAbstractItemView>
 #include <QPainter>
 #include <QMouseEvent>
+#include <QHelpEvent>
+#include <QToolTip>
+#include <QHoverEvent>
 
 namespace O3DE::ProjectManager
 {
@@ -29,7 +34,7 @@ namespace O3DE::ProjectManager
     {
         QPixmap pixmap(iconPath);
         qreal aspectRatio = static_cast<qreal>(pixmap.width()) / pixmap.height();
-        m_platformIcons.insert(platform, QIcon(iconPath).pixmap(s_platformIconSize * aspectRatio, s_platformIconSize));
+        m_platformIcons.insert(platform, QIcon(iconPath).pixmap(static_cast<int>(static_cast<qreal>(s_platformIconSize) * aspectRatio), s_platformIconSize));
     }
 
     void GemItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& modelIndex) const
@@ -48,7 +53,7 @@ namespace O3DE::ProjectManager
         CalcRects(options, fullRect, itemRect, contentRect);
 
         QFont standardFont(options.font);
-        standardFont.setPixelSize(s_fontSize);
+        standardFont.setPixelSize(static_cast<int>(s_fontSize));
         QFontMetrics standardFontMetrics(standardFont);
 
         painter->save();
@@ -75,10 +80,10 @@ namespace O3DE::ProjectManager
         }
 
         // Gem name
-        QString gemName = GemModel::GetName(modelIndex);
+        QString gemName = GemModel::GetDisplayName(modelIndex);
         QFont gemNameFont(options.font);
         const int firstColumnMaxTextWidth = s_summaryStartX - 30;
-        gemNameFont.setPixelSize(s_gemNameFontSize);
+        gemNameFont.setPixelSize(static_cast<int>(s_gemNameFontSize));
         gemNameFont.setBold(true);
         gemName = QFontMetrics(gemNameFont).elidedText(gemName, Qt::TextElideMode::ElideRight, firstColumnMaxTextWidth);
         QRect gemNameRect = GetTextRect(gemNameFont, gemName, s_gemNameFontSize);
@@ -95,7 +100,6 @@ namespace O3DE::ProjectManager
         gemCreatorRect.moveTo(contentRect.left(), contentRect.top() + gemNameRect.height());
 
         painter->setFont(standardFont);
-        painter->setPen(m_linkColor);
         gemCreatorRect = painter->boundingRect(gemCreatorRect, Qt::TextSingleLine, gemCreator);
         painter->drawText(gemCreatorRect, Qt::TextSingleLine, gemCreator);
 
@@ -150,8 +154,7 @@ namespace O3DE::ProjectManager
                 return true;
             }
         }
-
-        if (event->type() == QEvent::MouseButtonPress)
+        else if (event->type() == QEvent::MouseButtonPress )
         {
             QMouseEvent* mouseEvent = static_cast<QMouseEvent*>(event);
 
@@ -170,6 +173,69 @@ namespace O3DE::ProjectManager
         return QStyledItemDelegate::editorEvent(event, model, option, modelIndex);
     }
 
+    QString GetGemNameList(const QVector<QModelIndex> modelIndices)
+    {
+        QString gemNameList;
+        for (int i = 0; i < modelIndices.size(); ++i)
+        {
+            if (!gemNameList.isEmpty())
+            {
+                if (i == modelIndices.size() - 1)
+                {
+                    gemNameList.append(" and ");
+                }
+                else
+                {
+                    gemNameList.append(", ");
+                }
+            }
+
+            gemNameList.append(GemModel::GetDisplayName(modelIndices[i]));
+        }
+
+        return gemNameList;
+    }
+
+    bool GemItemDelegate::helpEvent(QHelpEvent* event, QAbstractItemView* view, const QStyleOptionViewItem& option, const QModelIndex& index)
+    {
+        if (event->type() == QEvent::ToolTip)
+        {
+            QRect fullRect, itemRect, contentRect;
+            CalcRects(option, fullRect, itemRect, contentRect);
+            const QRect buttonRect = CalcButtonRect(contentRect);
+            if (buttonRect.contains(event->pos()))
+            {
+                if (!QToolTip::isVisible())
+                {
+                    if(GemModel::IsAddedDependency(index) && !GemModel::IsAdded(index))
+                    {
+                        const GemModel* gemModel = GemModel::GetSourceModel(index.model());
+                        AZ_Assert(gemModel, "Failed to obtain GemModel");
+
+                        // we only want to display the gems that must be de-selected to automatically
+                        // disable this dependency, so don't include any that haven't been selected (added) 
+                        constexpr bool addedOnly = true;
+                        QVector<QModelIndex> dependents = gemModel->GatherDependentGems(index, addedOnly);
+                        QString nameList = GetGemNameList(dependents);
+                        if (!nameList.isEmpty())
+                        {
+                            QToolTip::showText(event->globalPos(), tr("This gem is a dependency of %1.\nTo disable this gem, first disable %1.").arg(nameList));
+                        }
+                    }
+                }
+                return true;
+            }
+            else if (QToolTip::isVisible())
+            {
+                QToolTip::hideText();
+                event->ignore();
+                return true;
+            }
+        }
+
+        return QStyledItemDelegate::helpEvent(event, view, option, index);
+    }
+
     void GemItemDelegate::CalcRects(const QStyleOptionViewItem& option, QRect& outFullRect, QRect& outItemRect, QRect& outContentRect) const
     {
         outFullRect = QRect(option.rect);
@@ -179,7 +245,7 @@ namespace O3DE::ProjectManager
 
     QRect GemItemDelegate::GetTextRect(QFont& font, const QString& text, qreal fontSize) const
     {
-        font.setPixelSize(fontSize);
+        font.setPixelSize(static_cast<int>(fontSize));
         return QFontMetrics(font).boundingRect(text);
     }
 
@@ -209,7 +275,7 @@ namespace O3DE::ProjectManager
                     const QPixmap& pixmap = iterator.value();
                     painter->drawPixmap(contentRect.left() + startX, contentRect.bottom() - s_platformIconSize, pixmap);
                     qreal aspectRatio = static_cast<qreal>(pixmap.width()) / pixmap.height();
-                    startX += s_platformIconSize * aspectRatio + s_platformIconSize / 2.5;
+                    startX += static_cast<int>(s_platformIconSize * aspectRatio + s_platformIconSize / 2.5);
                 }
             }
         }
@@ -261,11 +327,17 @@ namespace O3DE::ProjectManager
         const QRect buttonRect = CalcButtonRect(contentRect);
         QPoint circleCenter;
 
-        const bool isAdded = GemModel::IsAdded(modelIndex);
-        if (isAdded)
+        if (GemModel::IsAdded(modelIndex))
         {
             painter->setBrush(m_buttonEnabledColor);
             painter->setPen(m_buttonEnabledColor);
+
+            circleCenter = buttonRect.center() + QPoint(buttonRect.width() / 2 - s_buttonBorderRadius + 1, 1);
+        }
+        else if (GemModel::IsAddedDependency(modelIndex))
+        {
+            painter->setBrush(m_buttonImplicitlyEnabledColor);
+            painter->setPen(m_buttonImplicitlyEnabledColor);
 
             circleCenter = buttonRect.center() + QPoint(buttonRect.width() / 2 - s_buttonBorderRadius + 1, 1);
         }

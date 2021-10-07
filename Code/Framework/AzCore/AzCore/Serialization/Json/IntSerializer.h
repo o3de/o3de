@@ -10,7 +10,7 @@
 
 #include <AzCore/Serialization/Json/BaseJsonSerializer.h>
 #include <AzCore/Memory/Memory.h>
-#include <AzCore/RTTI/TypeInfo.h>
+#include <AzCore/RTTI/RTTI.h>
 
 namespace AZ
 {

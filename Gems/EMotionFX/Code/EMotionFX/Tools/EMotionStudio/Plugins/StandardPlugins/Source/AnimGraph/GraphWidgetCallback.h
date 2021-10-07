@@ -27,13 +27,13 @@ namespace EMStudio
 
     public:
         // constructor and destructor
-        GraphWidgetCallback(NodeGraphWidget* graphWidget)   { mGraphWidget = graphWidget; }
+        GraphWidgetCallback(NodeGraphWidget* graphWidget)   { m_graphWidget = graphWidget; }
         virtual ~GraphWidgetCallback()                      {}
 
         virtual void DrawOverlay(QPainter& painter) = 0;
 
     protected:
-        NodeGraphWidget* mGraphWidget;
+        NodeGraphWidget* m_graphWidget;
     };
 }   // namespace EMStudio
 

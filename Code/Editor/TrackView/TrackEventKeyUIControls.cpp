@@ -26,21 +26,21 @@ public:
     CSmartVariableEnum<QString> mv_event;
     CSmartVariable<QString> mv_value;
 
-    virtual void OnCreateVars()
+    void OnCreateVars() override
     {
         AddVariable(mv_table, "Key Properties");
         AddVariable(mv_table, mv_event, "Track Event");
         mv_event->SetFlags(mv_event->GetFlags() | IVariable::UI_UNSORTED);
         AddVariable(mv_table, mv_value, "Value");
     }
-    bool SupportTrackType(const CAnimParamType& paramType, [[maybe_unused]] EAnimCurveType trackType, [[maybe_unused]] AnimValueType valueType) const
+    bool SupportTrackType(const CAnimParamType& paramType, [[maybe_unused]] EAnimCurveType trackType, [[maybe_unused]] AnimValueType valueType) const override
     {
         return paramType == AnimParamType::TrackEvent;
     }
-    virtual bool OnKeySelectionChange(CTrackViewKeyBundle& selectedKeys);
-    virtual void OnUIChange(IVariable* pVar, CTrackViewKeyBundle& selectedKeys);
+    bool OnKeySelectionChange(CTrackViewKeyBundle& selectedKeys) override;
+    void OnUIChange(IVariable* pVar, CTrackViewKeyBundle& selectedKeys) override;
 
-    virtual unsigned int GetPriority() const { return 1; }
+    unsigned int GetPriority() const override { return 1; }
 
     static const GUID& GetClassID()
     {
@@ -182,7 +182,7 @@ void CTrackEventKeyUIControls::BuildEventDropDown(QString& curEvent, const QStri
         {
             bool curEventExists = false;
             bool addedEventExists = false;
-            mv_event.SetEnumList(NULL);
+            mv_event.SetEnumList(nullptr);
             const int eventCount = sequence->GetTrackEventsCount();
 
             // Need to check if event exists before adding all events

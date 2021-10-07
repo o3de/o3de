@@ -55,7 +55,7 @@ namespace EMotionFX
             Importer::ActorSettings actorSettings;
             if (GetEMotionFX().GetEnableServerOptimization())
             {
-                actorSettings.mOptimizeForServer = true;
+                actorSettings.m_optimizeForServer = true;
             }
 
             assetData->m_emfxActor = EMotionFX::GetImporter().LoadActor(

@@ -122,7 +122,7 @@ namespace CommandSystem
         if (parameters.CheckIfHasParameter("weight") && morphTargetInstance)
         {
             const float value   = parameters.GetValueAsFloat("weight", this);
-            mOldWeight          = morphTargetInstance->GetWeight();
+            m_oldWeight          = morphTargetInstance->GetWeight();
             morphTargetInstance->SetWeight(value);
         }
 
@@ -130,7 +130,7 @@ namespace CommandSystem
         if (parameters.CheckIfHasParameter("manualMode") && morphTargetInstance)
         {
             const bool value        = parameters.GetValueAsBool("manualMode", this);
-            mOldManualModeEnabled   = morphTargetInstance->GetIsInManualMode();
+            m_oldManualModeEnabled   = morphTargetInstance->GetIsInManualMode();
             morphTargetInstance->SetManualMode(value);
         }
 
@@ -138,7 +138,7 @@ namespace CommandSystem
         if (parameters.CheckIfHasParameter("rangeMin") && morphTarget)
         {
             const float value   = parameters.GetValueAsFloat("rangeMin", this);
-            mOldRangeMin        = morphTarget->GetRangeMin();
+            m_oldRangeMin        = morphTarget->GetRangeMin();
             morphTarget->SetRangeMin(value);
         }
 
@@ -146,7 +146,7 @@ namespace CommandSystem
         if (parameters.CheckIfHasParameter("rangeMax") && morphTarget)
         {
             const float value   = parameters.GetValueAsFloat("rangeMax", this);
-            mOldRangeMax        = morphTarget->GetRangeMax();
+            m_oldRangeMax        = morphTarget->GetRangeMax();
             morphTarget->SetRangeMax(value);
         }
 
@@ -159,7 +159,7 @@ namespace CommandSystem
             parameters.GetValue("phonemeSets", this, &phonemeSetsString);
 
             // store old phoneme sets
-            mOldPhonemeSets = morphTarget->GetPhonemeSets();
+            m_oldPhonemeSets = morphTarget->GetPhonemeSets();
 
             // remove the phoneme set
             if (AzFramework::StringFunc::Equal(valueString.c_str(), "remove", false /* no case */))
@@ -203,7 +203,7 @@ namespace CommandSystem
         }
 
         // save the current dirty flag and tell the actor that something got changed
-        mOldDirtyFlag = actor->GetDirtyFlag();
+        m_oldDirtyFlag = actor->GetDirtyFlag();
         actor->SetDirtyFlag(true);
         return true;
     }
@@ -240,35 +240,35 @@ namespace CommandSystem
         // set the old weight of the morph target
         if (parameters.CheckIfHasParameter("weight") && morphTargetInstance)
         {
-            morphTargetInstance->SetWeight(mOldWeight);
+            morphTargetInstance->SetWeight(m_oldWeight);
         }
 
         // set the old manual mode
         if (parameters.CheckIfHasParameter("manualMode") && morphTargetInstance)
         {
-            morphTargetInstance->SetManualMode(mOldManualModeEnabled);
+            morphTargetInstance->SetManualMode(m_oldManualModeEnabled);
         }
 
         // set the old range min
         if (parameters.CheckIfHasParameter("rangeMin") && morphTarget)
         {
-            morphTarget->SetRangeMin(mOldRangeMin);
+            morphTarget->SetRangeMin(m_oldRangeMin);
         }
 
         // set the old range max
         if (parameters.CheckIfHasParameter("rangeMax") && morphTarget)
         {
-            morphTarget->SetRangeMax(mOldRangeMax);
+            morphTarget->SetRangeMax(m_oldRangeMax);
         }
 
         // set the old phoneme sets
         if (parameters.CheckIfHasParameter("phonemeAction") && morphTarget)
         {
-            morphTarget->SetPhonemeSets(mOldPhonemeSets);
+            morphTarget->SetPhonemeSets(m_oldPhonemeSets);
         }
 
         // set the dirty flag back to the old value
-        actor->SetDirtyFlag(mOldDirtyFlag);
+        actor->SetDirtyFlag(m_oldDirtyFlag);
         return true;
     }
 

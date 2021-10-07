@@ -44,7 +44,7 @@ namespace WhiteBox
                     ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c))
                     ->Attribute(
                         AZ::Edit::Attributes::HelpPageURL,
-                        "https://o3de.org/docs/user-guide/components/reference/white-box-collider/")
+                        "https://o3de.org/docs/user-guide/components/reference/shape/white-box-collider/")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default, &EditorWhiteBoxColliderComponent::m_physicsColliderConfiguration,

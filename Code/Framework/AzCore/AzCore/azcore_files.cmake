@@ -25,6 +25,7 @@ set(FILES
     Asset/AssetJsonSerializer.h
     Asset/AssetManager.cpp
     Asset/AssetManager.h
+    Asset/AssetManager_private.h
     Asset/AssetManagerBus.h
     Asset/AssetManagerComponent.cpp
     Asset/AssetManagerComponent.h
@@ -34,6 +35,7 @@ set(FILES
     Asset/AssetInternal/WeakAsset.h
     Casting/lossy_cast.h
     Casting/numeric_cast.h
+    Casting/numeric_cast_internal.h
     Component/Component.cpp
     Component/Component.h
     Component/ComponentApplication.cpp
@@ -92,21 +94,18 @@ set(FILES
     Debug/AssetTracking.h
     Debug/AssetTrackingTypesImpl.h
     Debug/AssetTrackingTypes.h
+    Debug/Budget.h
+    Debug/Budget.cpp
+    Debug/BudgetTracker.h
+    Debug/BudgetTracker.cpp
     Debug/LocalFileEventLogger.h
     Debug/LocalFileEventLogger.cpp
-    Debug/FrameProfiler.h
-    Debug/FrameProfilerBus.h
-    Debug/FrameProfilerComponent.cpp
-    Debug/FrameProfilerComponent.h
     Debug/IEventLogger.h
-    Debug/ProfileModuleInit.cpp
-    Debug/ProfileModuleInit.h
+    Debug/MemoryProfiler.h
     Debug/Profiler.cpp
+    Debug/Profiler.inl
     Debug/Profiler.h
     Debug/ProfilerBus.h
-    Debug/ProfilerDriller.cpp
-    Debug/ProfilerDriller.h
-    Debug/ProfilerDrillerBus.h
     Debug/StackTracer.h
     Debug/EventTrace.h
     Debug/EventTrace.cpp
@@ -167,6 +166,8 @@ set(FILES
     IO/FileIO.cpp
     IO/FileIO.h
     IO/FileIOEventBus.h
+    IO/FileReader.cpp
+    IO/FileReader.h
     IO/IOUtils.h
     IO/IOUtils.cpp
     IO/IStreamer.h
@@ -178,6 +179,8 @@ set(FILES
     IO/Path/Path.cpp
     IO/Path/Path.h
     IO/Path/Path.inl
+    IO/Path/PathIterable.inl
+    IO/Path/PathParser.inl
     IO/Path/Path_fwd.h
     IO/SystemFile.cpp
     IO/SystemFile.h
@@ -434,6 +437,7 @@ set(FILES
     Preprocessor/Sequences.h
     RTTI/RTTI.h
     RTTI/TypeInfo.h
+    RTTI/TypeInfoSimple.h
     RTTI/ReflectContext.h
     RTTI/ReflectContext.cpp
     RTTI/ReflectionManager.h
@@ -441,6 +445,7 @@ set(FILES
     RTTI/AttributeReader.h
     RTTI/AzStdOnDemandPrettyName.inl
     RTTI/AzStdOnDemandReflection.inl
+    RTTI/AzStdOnDemandReflectionSpecializations.cpp
     RTTI/AzStdOnDemandReflectionLuaFunctions.inl
     RTTI/BehaviorContext.cpp
     RTTI/BehaviorContext.h
@@ -462,6 +467,8 @@ set(FILES
     Script/ScriptTimePoint.h
     Script/ScriptProperty.h
     Script/ScriptProperty.cpp
+    Script/ScriptPropertySerializer.h
+    Script/ScriptPropertySerializer.cpp
     Script/ScriptPropertyTable.h
     Script/ScriptPropertyTable.cpp
     Script/ScriptPropertyWatcherBus.h
@@ -528,6 +535,8 @@ set(FILES
     Serialization/Json/JsonStringConversionUtils.h
     Serialization/Json/JsonSystemComponent.h
     Serialization/Json/JsonSystemComponent.cpp
+    Serialization/Json/JsonUtils.h
+    Serialization/Json/JsonUtils.cpp
     Serialization/Json/MapSerializer.h
     Serialization/Json/MapSerializer.cpp
     Serialization/Json/RegistrationContext.h
@@ -567,8 +576,6 @@ set(FILES
     Statistics/StatisticalProfilerProxySystemComponent.cpp
     Statistics/StatisticalProfilerProxySystemComponent.h
     Statistics/StatisticsManager.h
-    Statistics/TimeDataStatisticsManager.cpp
-    Statistics/TimeDataStatisticsManager.h
     StringFunc/StringFunc.cpp
     StringFunc/StringFunc.h
     UserSettings/UserSettings.cpp
@@ -616,6 +623,18 @@ set(FILES
     Socket/AzSocket_fwd.h
     Socket/AzSocket.cpp
     Socket/AzSocket.h
+    Task/Internal/Task.cpp
+    Task/Internal/Task.inl
+    Task/Internal/Task.h
+    Task/Internal/TaskConfig.h
+    Task/TaskDescriptor.h
+    Task/TaskExecutor.cpp
+    Task/TaskExecutor.h
+    Task/TaskGraph.cpp
+    Task/TaskGraph.h
+    Task/TaskGraph.inl
+    Task/TaskGraphSystemComponent.h
+    Task/TaskGraphSystemComponent.cpp
     Threading/ThreadSafeDeque.h
     Threading/ThreadSafeDeque.inl
     Threading/ThreadSafeObject.h

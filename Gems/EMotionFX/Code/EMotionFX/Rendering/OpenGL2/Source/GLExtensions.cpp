@@ -17,7 +17,7 @@ namespace RenderGL
     {
         bool ok = true;
 
-        ok &= bool((glMapBuffer = (_glMapBuffer)context->getProcAddress(QByteArray("glMapBuffer"))));
+        ok &= bool((m_glMapBuffer = (_glMapBuffer)context->getProcAddress(QByteArray("glMapBuffer"))));
 
         return ok;
     };

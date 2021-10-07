@@ -104,17 +104,17 @@ ApplicationManager::BeforeRunStatus GUIApplicationManager::BeforeRun()
     // The build process may leave behind some temporaries, try to delete them
     RemoveTemporaries();
 
-    QDir devRoot;
-    AssetUtilities::ComputeAssetRoot(devRoot);
+    QDir projectAssetRoot;
+    AssetUtilities::ComputeAssetRoot(projectAssetRoot);
 #if defined(EXTERNAL_CRASH_REPORTING)
-    CrashHandler::ToolsCrashHandler::InitCrashHandler("AssetProcessor", devRoot.absolutePath().toStdString());
+    CrashHandler::ToolsCrashHandler::InitCrashHandler("AssetProcessor", projectAssetRoot.absolutePath().toStdString());
 #endif
     AssetProcessor::MessageInfoBus::Handler::BusConnect();
 
     // we have to monitor both the cache folder and the database file and restart AP if either of them gets deleted
     // It is important to note that we are monitoring the parent folder and not the actual cache folder itself since
     // we want to handle the use case on Mac OS if the user moves the cache folder to the trash.
-    m_qtFileWatcher.addPath(devRoot.absolutePath());
+    m_qtFileWatcher.addPath(projectAssetRoot.absolutePath());
 
     QDir projectCacheRoot;
     AssetUtilities::ComputeProjectCacheRoot(projectCacheRoot);
@@ -615,7 +615,6 @@ void GUIApplicationManager::DirectoryChanged([[maybe_unused]] QString path)
 
 void GUIApplicationManager::FileChanged(QString path)
 {
-    QDir devRoot = ApplicationManager::GetSystemRoot();
     QDir projectCacheRoot;
     AssetUtilities::ComputeProjectCacheRoot(projectCacheRoot);
     QString assetDbPath = projectCacheRoot.filePath("assetdb.sqlite");

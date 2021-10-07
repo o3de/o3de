@@ -35,6 +35,7 @@ set(FILES
     Include/ScriptCanvas/Debugger/ValidationEvents/DataValidation/DynamicDataTypeEvent.h
     Include/ScriptCanvas/Debugger/ValidationEvents/DataValidation/InvalidExpressionEvent.h
     Include/ScriptCanvas/Debugger/ValidationEvents/DataValidation/InvalidRandomSignalEvent.h
+    Include/ScriptCanvas/Debugger/ValidationEvents/DataValidation/InvalidVariableTypeEvent.h
     Include/ScriptCanvas/Debugger/ValidationEvents/DataValidation/ScopedDataConnectionEvent.h
     Include/ScriptCanvas/Debugger/ValidationEvents/DataValidation/SlotReferenceEvent.h
     Include/ScriptCanvas/Debugger/ValidationEvents/DataValidation/UnknownEndpointEvent.h

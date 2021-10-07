@@ -198,8 +198,6 @@ public:
     void GetStreamInfo(int stream, void*& pStream, int& nElementSize) const;
     int  GetStreamSize(int stream) const { return m_streamSize[stream]; };
 
-    void SetFromMesh(CMesh& mesh);
-    void UpdateIndexedMesh(IIndexedMesh* pIndexedMesh) const;
     // Calculate per face normal.
     void CalcFaceNormals();
 

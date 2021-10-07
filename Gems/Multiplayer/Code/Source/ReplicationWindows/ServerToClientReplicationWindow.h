@@ -38,7 +38,7 @@ namespace Multiplayer
         // we sort lowest priority first, so that we can easily keep the biggest N priorities
         using ReplicationCandidateQueue = AZStd::priority_queue<PrioritizedReplicationCandidate>;
 
-        ServerToClientReplicationWindow(NetworkEntityHandle controlledEntity, const AzNetworking::IConnection* connection);
+        ServerToClientReplicationWindow(NetworkEntityHandle controlledEntity, AzNetworking::IConnection* connection);
 
         //! IReplicationWindow interface
         //! @{
@@ -47,6 +47,8 @@ namespace Multiplayer
         uint32_t GetMaxProxyEntityReplicatorSendCount() const override;
         bool IsInWindow(const ConstNetworkEntityHandle& entityPtr, NetEntityRole& outNetworkRole) const override;
         void UpdateWindow() override;
+        AzNetworking::PacketId SendEntityUpdateMessages(NetworkEntityUpdateVector& entityUpdateVector) override;
+        void SendEntityRpcs(NetworkEntityRpcVector& entityRpcVector, bool reliable) override;
         void DebugDraw() const override;
         //! @}
 
@@ -75,8 +77,7 @@ namespace Multiplayer
 
         //NetBindComponent* m_controlledNetBindComponent = nullptr;
 
-        const AzNetworking::IConnection* m_connection = nullptr;
-        float m_minPriorityReplicated = 0.0f; ///< Lowest replicated entity priority in last update
+        AzNetworking::IConnection* m_connection = nullptr;
 
         // Cached values to detect a poor network connection
         uint32_t m_lastCheckedSentPackets = 0;

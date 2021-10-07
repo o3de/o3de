@@ -22,3 +22,5 @@ function(ly_copy source_file target_directory)
 endfunction()
 
 @LY_COPY_COMMANDS@
+
+file(TOUCH @STAMP_OUTPUT_FILE@)

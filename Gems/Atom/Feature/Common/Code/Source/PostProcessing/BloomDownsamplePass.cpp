@@ -47,7 +47,7 @@ namespace AZ
         {
             RPI::Ptr<RPI::PassAttachment> outAttachment = m_ownedAttachments[0];
 
-            for (uint32_t i = 0; i < Render::Bloom::MaxStageCount; ++i)
+            for (uint16_t i = 0; i < Render::Bloom::MaxStageCount; ++i)
             {
                 // Create bindings
 

@@ -111,7 +111,7 @@ class CFileChangeMonitorListener
 {
 public:
     CFileChangeMonitorListener()
-        : m_pMonitor(NULL)
+        : m_pMonitor(nullptr)
     {
     }
 

@@ -49,8 +49,8 @@ public:
     void SetPlayCallback(const std::function<void()>& callback);
 
     // IUiAnimationContextListener
-    virtual void OnSequenceChanged(CUiAnimViewSequence* pNewSequence);
-    virtual void OnTimeChanged(float newTime);
+    void OnSequenceChanged(CUiAnimViewSequence* pNewSequence) override;
+    void OnTimeChanged(float newTime) override;
 
 protected:
     void showEvent(QShowEvent* event) override;
@@ -112,8 +112,8 @@ public:
     float GetFPS() const { return m_widget->GetFPS(); }
     void SetTickDisplayMode(EUiAVTickMode mode) { m_widget->SetTickDisplayMode(mode); }
 
-    virtual void OnSequenceChanged(CUiAnimViewSequence* pNewSequence) { m_widget->OnSequenceChanged(pNewSequence); }
-    virtual void OnTimeChanged(float newTime) { m_widget->OnTimeChanged(newTime); }
+    void OnSequenceChanged(CUiAnimViewSequence* pNewSequence) override { m_widget->OnSequenceChanged(pNewSequence); }
+    void OnTimeChanged(float newTime) override { m_widget->OnTimeChanged(newTime); }
 
     virtual void OnKeysChanged(CUiAnimViewSequence* pSequence) override { m_widget->OnKeysChanged(pSequence); }
     virtual void OnKeySelectionChanged(CUiAnimViewSequence* pSequence) override { m_widget->OnKeySelectionChanged(pSequence); }

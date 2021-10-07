@@ -263,6 +263,7 @@ class TestCreateTemplate:
             s.write(templated_contents)
 
         template_dest_path = engine_root / instantiated_name
+        # Skip registeration in test
         with patch('uuid.uuid4', return_value=uuid.uuid5(uuid.NAMESPACE_DNS, instantiated_name)) as uuid4_mock:
             result = create_from_template_func(template_dest_path, template_path=template_default_folder, force=True,
                                                           keep_license_text=keep_license_text, **create_from_template_kwargs)
@@ -345,7 +346,7 @@ class TestCreateTemplate:
         template_json_contents = json.dumps(template_json_dict, indent=4)
         self.instantiate_template_wrapper(tmpdir, engine_template.create_project, 'TestProject', concrete_contents,
                                           templated_contents, keep_license_text, force, expect_failure,
-                                          template_json_contents, template_file_map, project_name='TestProject')
+                                          template_json_contents, template_file_map, project_name='TestProject', no_register=True)
 
 
     @pytest.mark.parametrize(
@@ -379,6 +380,8 @@ class TestCreateTemplate:
                 "isTemplated": True,
                 "isOptional": False
             })
+        #Convert dict back to string
+        template_json_contents = json.dumps(template_json_dict, indent=4)
         self.instantiate_template_wrapper(tmpdir, engine_template.create_gem, 'TestGem', concrete_contents,
                                           templated_contents, keep_license_text, force, expect_failure,
-                                          template_json_contents, gem_name='TestGem')
+                                          template_json_contents, template_file_map, gem_name='TestGem', no_register=True)

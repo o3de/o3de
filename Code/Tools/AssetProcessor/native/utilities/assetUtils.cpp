@@ -57,9 +57,6 @@
 
 #include <sstream>
 
-// windows headers bring in a macro which conflicts GetCommandLine
-#undef GetCommandLine
-
 namespace AssetUtilsInternal
 {
     static const unsigned int g_RetryWaitInterval = 250; // The amount of time that we are waiting for retry.
@@ -72,11 +69,6 @@ namespace AssetUtilsInternal
 
     bool FileCopyMoveWithTimeout(QString sourceFile, QString outputFile, bool isCopy, unsigned int waitTimeInSeconds)
     {
-        if (waitTimeInSeconds < 0)
-        {
-            AZ_Warning("Asset Processor", waitTimeInSeconds >= 0, "Invalid timeout specified by the user");
-            waitTimeInSeconds = 0;
-        }
         bool failureOccurredOnce = false; // used for logging.
         bool operationSucceeded = false;
         QFile outFile(outputFile);
@@ -172,7 +164,10 @@ namespace AssetUtilsInternal
 
         AZ::SettingsRegistryMergeUtils::DumperSettings apDumperSettings;
         apDumperSettings.m_prettifyOutput = true;
+        AZ_PUSH_DISABLE_WARNING(5233, "-Wunknown-warning-option") // Older versions of MSVC toolchain require to pass constexpr in the
+                                                                  // capture. Newer versions issue unused warning
         apDumperSettings.m_includeFilter = [&AssetProcessorUserSettingsRootKey](AZStd::string_view path)
+        AZ_POP_DISABLE_WARNING
         {
             // The AssetUtils only updates the following keys in the registry
             // Dump them all out to the setreg file
@@ -1026,7 +1021,7 @@ namespace AssetUtilities
 
     AZStd::string ComputeJobLogFileName(const AzToolsFramework::AssetSystem::JobInfo& jobInfo)
     {
-        return AZStd::string::format("%s-%u-%" PRIu64 ".log", jobInfo.m_sourceFile.c_str(), jobInfo.GetHash(), jobInfo.m_jobRunKey);
+        return AZStd::string::format("%s-%u-%llu.log", jobInfo.m_sourceFile.c_str(), jobInfo.GetHash(), jobInfo.m_jobRunKey);
     }
 
     AZStd::string ComputeJobLogFileName(const AssetBuilderSDK::CreateJobsRequest& createJobsRequest)
@@ -1295,13 +1290,13 @@ namespace AssetUtilities
             // so we add the size of it too.
             // its also possible that it moved to a different file with the same modtime/hash AND size,
             // but with a different name.  So we add that too.
-            return AZStd::string::format("%" PRIX64 ":%" PRIu64 ":%s", fileIdentifier, fileStateInfo.m_fileSize, nameToUse.c_str());
+            return AZStd::string::format("%llX:%llu:%s", fileIdentifier, fileStateInfo.m_fileSize, nameToUse.c_str());
         }
     }
 
     AZStd::string ComputeJobLogFileName(const AssetProcessor::JobEntry& jobEntry)
     {
-        return AZStd::string::format("%s-%u-%" PRIu64 ".log", jobEntry.m_databaseSourceName.toUtf8().constData(), jobEntry.GetHash(), jobEntry.m_jobRunKey);
+        return AZStd::string::format("%s-%u-%llu.log", jobEntry.m_databaseSourceName.toUtf8().constData(), jobEntry.GetHash(), jobEntry.m_jobRunKey);
     }
 
     bool CreateTempRootFolder(QString startFolder, QDir& tempRoot)
@@ -1404,7 +1399,6 @@ namespace AssetUtilities
         QString inputName;
         QString platformName;
         QString jobDescription;
-        AZ::Uuid guid = AZ::Uuid::CreateNull();
 
         using namespace AzToolsFramework::AssetDatabase;
 

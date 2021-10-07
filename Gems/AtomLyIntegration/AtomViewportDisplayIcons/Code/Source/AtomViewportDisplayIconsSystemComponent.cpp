@@ -82,6 +82,8 @@ namespace AZ::Render
 
     void AtomViewportDisplayIconsSystemComponent::Activate()
     {
+        m_drawContextRegistered = false;
+
         AzToolsFramework::EditorViewportIconDisplay::Register(this);
 
         Bootstrap::NotificationBus::Handler::BusConnect();
@@ -97,9 +99,10 @@ namespace AZ::Render
         {
             return;
         } 
-        if (perViewportDynamicDrawInterface)
+        if (perViewportDynamicDrawInterface && m_drawContextRegistered)
         {
             perViewportDynamicDrawInterface->UnregisterDynamicDrawContext(m_drawContextName);
+            m_drawContextRegistered = false;
         }
 
         AzToolsFramework::EditorViewportIconDisplay::Unregister(this);
@@ -207,7 +210,7 @@ namespace AZ::Render
             createVertex(-0.5f, 0.5f,  0.f, 1.f)
         };
         AZStd::array<Indice, 6> indices = {0, 1, 2, 0, 2, 3};
-        dynamicDraw->DrawIndexed(&vertices, vertices.size(), &indices, indices.size(), RHI::IndexFormat::Uint16, drawSrg);
+        dynamicDraw->DrawIndexed(&vertices, static_cast<uint32_t>(vertices.size()), &indices, static_cast<uint32_t>(indices.size()), RHI::IndexFormat::Uint16, drawSrg);
     }
 
     QString AtomViewportDisplayIconsSystemComponent::FindAssetPath(const QString& path) const
@@ -366,6 +369,8 @@ namespace AZ::Render
                      {"TEXCOORD", RHI::Format::R32G32_FLOAT} });
                 drawContext->EndInit();
             });
+
+        m_drawContextRegistered = true;
 
         Data::AssetBus::Handler::BusDisconnect();
     }

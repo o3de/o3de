@@ -18,19 +18,19 @@
 #include <PhysX/UserDataTypes.h>
 #include <PhysX/Utils.h>
 #include <PhysX/PhysXLocks.h>
-#include <PhysX/Debug/PhysXDebugConfiguration.h>
 
 #include <AzFramework/Physics/PhysicsScene.h>
 #include <AzFramework/Physics/PhysicsSystem.h>
 #include <AzFramework/Physics/Ragdoll.h>
 #include <AzFramework/Physics/SystemBus.h>
 #include <AzFramework/Physics/Utils.h>
+#include <AzFramework/Components/CameraBus.h>
 
 #include <IRenderAuxGeom.h>
 #include <MathConversion.h>
 
 #include <IConsole.h>
-#include <StringUtils.h>
+#include <CryCommon/ISystem.h>
 
 #include <PhysX/Debug/PhysXDebugInterface.h>
 
@@ -347,7 +347,7 @@ namespace PhysXDebug
 
     static const physx::PxRenderBuffer& GetRenderBuffer(physx::PxScene* physxScene)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Physics);
+        AZ_PROFILE_FUNCTION(Physics);
         PHYSX_SCENE_READ_LOCK(physxScene);
         return physxScene->getRenderBuffer();
     }
@@ -439,7 +439,7 @@ namespace PhysXDebug
             return;
         }
 
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Physics);
+        AZ_PROFILE_FUNCTION(Physics);
         m_currentTime = time;
         bool dirty = true;
 
@@ -468,16 +468,25 @@ namespace PhysXDebug
         RenderBuffers();
     }
 
+    AZ::Vector3 GetViewCameraPosition()
+    {
+        using Camera::ActiveCameraRequestBus;
+
+        AZ::Transform tm = AZ::Transform::CreateIdentity();
+        ActiveCameraRequestBus::BroadcastResult(tm, &ActiveCameraRequestBus::Events::GetActiveCameraTransform);
+        return tm.GetTranslation();
+    }
+
     void SystemComponent::UpdateColliderVisualizationByProximity()
     {
         if (auto* debug = AZ::Interface<PhysX::Debug::PhysXDebugInterface>::Get();
             UseEditorPhysicsScene() && m_settings.m_visualizeCollidersByProximity
            && debug != nullptr)
         {
-            const CCamera& camera = gEnv->pSystem->GetViewCamera();
+            const AZ::Vector3& viewPos = GetViewCameraPosition();
             const PhysX::Debug::ColliderProximityVisualization data(
                 m_settings.m_visualizeCollidersByProximity,
-                LYVec3ToAZVec3(camera.GetPosition()),
+                viewPos,
                 m_culling.m_boxSize * 0.5f);
             debug->UpdateColliderProximityVisualization(data);
         }
@@ -561,7 +570,7 @@ namespace PhysXDebug
 
     static void physx_CullingBoxSize([[maybe_unused]] const AZ::ConsoleCommandContainer& arguments)
     {
-        const int argumentCount = arguments.size();
+        const size_t argumentCount = arguments.size();
         if (argumentCount == 1)
         {
             float newCullingBoxSize = (float)strtol(AZ::CVarFixedString(arguments[0]).c_str(), nullptr, 10);
@@ -577,9 +586,7 @@ namespace PhysXDebug
 
     static void physx_Debug([[maybe_unused]] const AZ::ConsoleCommandContainer& arguments)
     {
-        using namespace CryStringUtils;
-
-        const int argumentCount = arguments.size();
+        const size_t argumentCount = arguments.size();
 
         if (argumentCount == 1)
         {
@@ -613,7 +620,7 @@ namespace PhysXDebug
 
     void SystemComponent::ConfigurePhysXVisualizationParameters()
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Physics);
+        AZ_PROFILE_FUNCTION(Physics);
 
         if (physx::PxScene* physxScene = GetCurrentPxScene())
         {
@@ -660,11 +667,10 @@ namespace PhysXDebug
 
     void SystemComponent::ConfigureCullingBox()
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Physics);
+        AZ_PROFILE_FUNCTION(Physics);
 
         // Currently using the Cry view camera to support Editor, Game and Launcher modes. This will be updated in due course.
-        const CCamera& camera = gEnv->pSystem->GetViewCamera();
-        AZ::Vector3 cameraTranslation = LYVec3ToAZVec3(camera.GetPosition());
+        const AZ::Vector3 cameraTranslation = GetViewCameraPosition();
 
         if (!cameraTranslation.IsClose(AZ::Vector3::CreateZero()))
         {
@@ -688,7 +694,7 @@ namespace PhysXDebug
 
     void SystemComponent::GatherTriangles(const physx::PxRenderBuffer& rb)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Physics);
+        AZ_PROFILE_FUNCTION(Physics);
         if (!m_settings.m_visualizationEnabled)
         {
             return;
@@ -697,7 +703,7 @@ namespace PhysXDebug
         if (GetCurrentPxScene())
         {
             // Reserve vector capacity
-            const int numTriangles = rb.getNbTriangles();
+            const physx::PxU32 numTriangles = static_cast<physx::PxU32>(rb.getNbTriangles());
             m_trianglePoints.reserve(numTriangles * 3);
             m_triangleColors.reserve(numTriangles * 3);
 
@@ -722,7 +728,7 @@ namespace PhysXDebug
 
     void SystemComponent::GatherLines(const physx::PxRenderBuffer& rb)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Physics);
+        AZ_PROFILE_FUNCTION(Physics);
 
         if (!m_settings.m_visualizationEnabled)
         {
@@ -731,7 +737,7 @@ namespace PhysXDebug
 
         if (GetCurrentPxScene())
         {
-            const int numLines = rb.getNbLines();
+            const physx::PxU32 numLines = static_cast<physx::PxU32>(rb.getNbLines());
 
             // Reserve vector capacity
             m_linePoints.reserve(numLines * 2);
@@ -757,7 +763,7 @@ namespace PhysXDebug
 
     void SystemComponent::GatherJointLimits()
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Physics);
+        AZ_PROFILE_FUNCTION(Physics);
 
         physx::PxScene* scene = GetCurrentPxScene();
 
@@ -818,7 +824,7 @@ namespace PhysXDebug
 
     void SystemComponent::DrawDebugCullingBox(const AZ::Aabb& cullingBoxAabb)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Physics);
+        AZ_PROFILE_FUNCTION(Physics);
 
         if (m_settings.m_visualizationEnabled && m_culling.m_boxWireframe)
         {
@@ -836,7 +842,7 @@ namespace PhysXDebug
 
     AZ::Color SystemComponent::MapOriginalPhysXColorToUserDefinedValues(const physx::PxU32& originalColor)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Physics);
+        AZ_PROFILE_FUNCTION(Physics);
 
         // color mapping from PhysX to LY user preference: \PhysX_3.4\Include\common\PxRenderBuffer.h
         switch (static_cast<physx::PxDebugColor::Enum>(originalColor))
@@ -872,19 +878,19 @@ namespace PhysXDebug
 
     void SystemComponent::InitPhysXColorMappings()
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Physics);
-        m_colorMappings.m_defaultColor.FromU32(physx::PxDebugColor::eARGB_GREEN);
-        m_colorMappings.m_black.FromU32(physx::PxDebugColor::eARGB_BLACK);
-        m_colorMappings.m_red.FromU32(physx::PxDebugColor::eARGB_RED);
-        m_colorMappings.m_green.FromU32(physx::PxDebugColor::eARGB_GREEN);
-        m_colorMappings.m_blue.FromU32(physx::PxDebugColor::eARGB_BLUE);
-        m_colorMappings.m_yellow.FromU32(physx::PxDebugColor::eARGB_YELLOW);
-        m_colorMappings.m_magenta.FromU32(physx::PxDebugColor::eARGB_MAGENTA);
-        m_colorMappings.m_cyan.FromU32(physx::PxDebugColor::eARGB_CYAN);
-        m_colorMappings.m_white.FromU32(physx::PxDebugColor::eARGB_WHITE);
-        m_colorMappings.m_grey.FromU32(physx::PxDebugColor::eARGB_GREY);
-        m_colorMappings.m_darkRed.FromU32(physx::PxDebugColor::eARGB_DARKRED);
-        m_colorMappings.m_darkGreen.FromU32(physx::PxDebugColor::eARGB_DARKGREEN);
-        m_colorMappings.m_darkBlue.FromU32(physx::PxDebugColor::eARGB_DARKBLUE);
+        AZ_PROFILE_FUNCTION(Physics);
+        m_colorMappings.m_defaultColor.FromU32(static_cast<AZ::u32>(physx::PxDebugColor::eARGB_GREEN));
+        m_colorMappings.m_black.FromU32(static_cast<AZ::u32>(physx::PxDebugColor::eARGB_BLACK));
+        m_colorMappings.m_red.FromU32(static_cast<AZ::u32>(physx::PxDebugColor::eARGB_RED));
+        m_colorMappings.m_green.FromU32(static_cast<AZ::u32>(physx::PxDebugColor::eARGB_GREEN));
+        m_colorMappings.m_blue.FromU32(static_cast<AZ::u32>(physx::PxDebugColor::eARGB_BLUE));
+        m_colorMappings.m_yellow.FromU32(static_cast<AZ::u32>(physx::PxDebugColor::eARGB_YELLOW));
+        m_colorMappings.m_magenta.FromU32(static_cast<AZ::u32>(physx::PxDebugColor::eARGB_MAGENTA));
+        m_colorMappings.m_cyan.FromU32(static_cast<AZ::u32>(physx::PxDebugColor::eARGB_CYAN));
+        m_colorMappings.m_white.FromU32(static_cast<AZ::u32>(physx::PxDebugColor::eARGB_WHITE));
+        m_colorMappings.m_grey.FromU32(static_cast<AZ::u32>(physx::PxDebugColor::eARGB_GREY));
+        m_colorMappings.m_darkRed.FromU32(static_cast<AZ::u32>(physx::PxDebugColor::eARGB_DARKRED));
+        m_colorMappings.m_darkGreen.FromU32(static_cast<AZ::u32>(physx::PxDebugColor::eARGB_DARKGREEN));
+        m_colorMappings.m_darkBlue.FromU32(static_cast<AZ::u32>(physx::PxDebugColor::eARGB_DARKBLUE));
     }
 }

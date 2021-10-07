@@ -1001,7 +1001,7 @@ void ViewportWidget::RenderEditMode()
 
     // Render this canvas
     QSize scaledViewportSize = QtHelpers::GetDpiScaledViewportSize(*this);
-    AZ::Vector2 viewportSize(scaledViewportSize.width(), scaledViewportSize.height());
+    AZ::Vector2 viewportSize(static_cast<float>(scaledViewportSize.width()), static_cast<float>(scaledViewportSize.height()));
     EBUS_EVENT_ID(canvasEntityId, UiEditorCanvasBus, RenderCanvasInEditorViewport, false, viewportSize);
 
     m_draw2d->SetSortKey(topLayerKey);
@@ -1111,7 +1111,7 @@ void ViewportWidget::UpdatePreviewMode(float deltaTime)
     if (canvasEntityId.IsValid())
     {
         QSize scaledViewportSize = QtHelpers::GetDpiScaledViewportSize(*this);
-        AZ::Vector2 viewportSize(scaledViewportSize.width(), scaledViewportSize.height());
+        AZ::Vector2 viewportSize(static_cast<float>(scaledViewportSize.width()), static_cast<float>(scaledViewportSize.height()));
 
         // Get the canvas size
         AZ::Vector2 canvasSize = m_editorWindow->GetPreviewCanvasSize();
@@ -1153,7 +1153,7 @@ void ViewportWidget::RenderPreviewMode()
     if (canvasEntityId.IsValid())
     {
         QSize scaledViewportSize = QtHelpers::GetDpiScaledViewportSize(*this);
-        AZ::Vector2 viewportSize(scaledViewportSize.width(), scaledViewportSize.height());
+        AZ::Vector2 viewportSize(static_cast<float>(scaledViewportSize.width()), static_cast<float>(scaledViewportSize.height()));
 
         // Get the canvas size
         AZ::Vector2 canvasSize = m_editorWindow->GetPreviewCanvasSize();
@@ -1239,7 +1239,7 @@ void ViewportWidget::RenderViewportBackground()
 
     Draw2dHelper draw2d(m_draw2d.get());
     draw2d.SetImageColor(backgroundColor.GetAsVector3());
-    draw2d.DrawImage(image, AZ::Vector2(0.0f, 0.0f), AZ::Vector2(viewportSize.width(), viewportSize.height()));
+    draw2d.DrawImage(image, AZ::Vector2(0.0f, 0.0f), AZ::Vector2(static_cast<float>(viewportSize.width()), static_cast<float>(viewportSize.height())));
 }
 
 void ViewportWidget::SetupShortcuts()

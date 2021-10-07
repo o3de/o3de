@@ -34,12 +34,12 @@ namespace CommandSystem
 struct AnimGraphSelectionItem
 {
     AnimGraphSelectionItem(uint32 animGraphID, const AZStd::string& nodeName)
-        : mAnimGraphID(animGraphID)
-        , mNodeName(nodeName)
+        : m_animGraphId(animGraphID)
+        , m_nodeName(nodeName)
     {}
 
-    uint32          mAnimGraphID;
-    AZStd::string   mNodeName;
+    uint32          m_animGraphId;
+    AZStd::string   m_nodeName;
 };
 
 namespace EMotionFX

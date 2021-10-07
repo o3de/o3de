@@ -12,7 +12,7 @@ namespace AzNetworking
 {
     template <uint32_t SIZE>
     inline TcpRingBuffer<SIZE>::TcpRingBuffer()
-        : m_impl(m_buffer.data(), m_buffer.size())
+        : m_impl(m_buffer.data(), static_cast<uint32_t>(m_buffer.size()))
     {
         ;
     }

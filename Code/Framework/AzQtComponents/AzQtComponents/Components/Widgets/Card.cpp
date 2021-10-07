@@ -25,11 +25,6 @@
 
 namespace AzQtComponents
 {
-    namespace CardConstants
-    {
-        static const char* kPropertySelected = "selected";
-    }
-
     static QPixmap ApplyAlphaToPixmap(const QPixmap& pixmap, float alpha)
     {
         QImage image = pixmap.toImage().convertToFormat(QImage::Format_ARGB32);
@@ -347,7 +342,7 @@ namespace AzQtComponents
         config.toolTipPaddingInPixels = 5;
         config.headerIconSizeInPixels = CardHeader::defaultIconSize();
         config.rootLayoutSpacing = 0;
-        config.warningIcon = QStringLiteral(":/Cards/img/UI20/Cards/warning.svg");
+        config.warningIcon = QStringLiteral(":/Notifications/warning.svg");
         config.warningIconSize = {24, 24};
         config.disabledIconAlpha = 0.25;
 

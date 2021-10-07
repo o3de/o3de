@@ -56,8 +56,6 @@ namespace O3DE::ProjectManager
         QCoreApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);
         QCoreApplication::setAttribute(Qt::AA_DontCreateNativeWidgetSiblings);
 
-        QLocale::setDefault(QLocale(QLocale::English, QLocale::UnitedStates));
-
         QGuiApplication::setHighDpiScaleFactorRoundingPolicy(Qt::HighDpiScaleFactorRoundingPolicy::PassThrough);
         AzQtComponents::Utilities::HandleDpiAwareness(AzQtComponents::Utilities::SystemDpiAware);
 
@@ -70,17 +68,46 @@ namespace O3DE::ProjectManager
         }
 
         m_pythonBindings = AZStd::make_unique<PythonBindings>(GetEngineRoot());
-        if (!m_pythonBindings || !m_pythonBindings->PythonStarted())
+        AZ_Assert(m_pythonBindings, "Failed to create PythonBindings");
+        if (!m_pythonBindings->PythonStarted())
         {
-            if (interactive)
+            if (!interactive)
             {
-                QMessageBox::critical(nullptr, QObject::tr("Failed to start Python"),
-                    QObject::tr("This tool requires an O3DE engine with a Python runtime, "
-                        "but either Python is missing or mis-configured. Please rename "
-                        "your python/runtime folder to python/runtime_bak, then run "
-                        "python/get_python.bat to restore the Python runtime folder."));
+                return false;
             }
-            return false;
+
+            int result = QMessageBox::warning(nullptr, QObject::tr("Failed to start Python"),
+                QObject::tr("This tool requires an O3DE engine with a Python runtime, "
+                            "but either Python is missing or mis-configured.<br><br>Press 'OK' to "
+                            "run the %1 script automatically, or 'Cancel' "
+                            " if you want to manually resolve the issue by renaming your "
+                            " python/runtime folder and running %1 yourself.")
+                            .arg(GetPythonScriptPath),
+                QMessageBox::Cancel, QMessageBox::Ok);
+            if (result == QMessageBox::Ok)
+            {
+                auto getPythonResult = ProjectUtils::RunGetPythonScript(GetEngineRoot());
+                if (!getPythonResult.IsSuccess())
+                {
+                    QMessageBox::critical(
+                        nullptr, QObject::tr("Failed to run %1 script").arg(GetPythonScriptPath),
+                        QObject::tr("The %1 script failed, was canceled, or could not be run.  "
+                                    "Please rename your python/runtime folder and then run "
+                                    "<pre>%1</pre>").arg(GetPythonScriptPath));
+                }
+                else if (!m_pythonBindings->StartPython())
+                {
+                    QMessageBox::critical(
+                        nullptr, QObject::tr("Failed to start Python"),
+                        QObject::tr("Failed to start Python after running %1")
+                                    .arg(GetPythonScriptPath));
+                }
+            }
+
+            if (!m_pythonBindings->PythonStarted())
+            {
+                return false;
+            }
         }
 
         const AZ::CommandLine* commandLine = GetCommandLine();
@@ -170,9 +197,13 @@ namespace O3DE::ProjectManager
         // the decoration wrapper is intended to remember window positioning and sizing 
         auto wrapper = new AzQtComponents::WindowDecorationWrapper();
         wrapper->setGuest(m_mainWindow.data());
+
+        // show the main window here to apply the stylesheet before restoring geometry or we
+        // can end up with empty white space at the bottom of the window until the frame is resized again
+        m_mainWindow->show();
+
         wrapper->enableSaveRestoreGeometry("O3DE", "ProjectManager", "mainWindowGeometry");
         wrapper->showFromSettings();
-        m_mainWindow->show();
 
         qApp->setQuitOnLastWindowClosed(true);
 

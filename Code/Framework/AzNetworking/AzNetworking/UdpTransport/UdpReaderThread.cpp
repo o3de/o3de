@@ -177,7 +177,7 @@ namespace AzNetworking
                 }
 
                 IpAddress address;
-                const uint32_t bufferHead = receiveBuffer.GetSize();
+                const uint32_t bufferHead = static_cast<uint32_t>(receiveBuffer.GetSize());
                 if (bufferHead + MaxUdpTransmissionUnit >= receiveBuffer.GetCapacity())
                 {
                     AZLOG_INFO("Receive buffer full, leaving data on the socket. Size exceeded by %d",

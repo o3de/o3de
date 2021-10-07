@@ -7,7 +7,7 @@
  */
 #pragma once
 
-#include <AzCore/RTTI/TypeInfo.h>
+#include <AzCore/RTTI/TypeInfoSimple.h>
 #include <AzFramework/Asset/SimpleAsset.h>
 
 namespace AzFramework

@@ -1,6 +1,0 @@
-<download name="C5689529_Verify_Terrain_RigidBody_Collider_Mesh" type="Map">
- <index src="filelist.xml" dest="filelist.xml"/>
- <files>
-  <file src="level.pak" dest="level.pak" size="39342" md5="2c70c75ff8e5b882bda60a34ecdac967"/>
- </files>
-</download>

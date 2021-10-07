@@ -28,6 +28,7 @@ namespace AZ::SettingsRegistryMergeUtils
     inline static constexpr char FilePathsRootKey[] = "/Amazon/AzCore/Runtime/FilePaths";
     inline static constexpr char FilePathKey_BinaryFolder[] = "/Amazon/AzCore/Runtime/FilePaths/BinaryFolder";
     inline static constexpr char FilePathKey_EngineRootFolder[] = "/Amazon/AzCore/Runtime/FilePaths/EngineRootFolder";
+    inline static constexpr char FilePathKey_InstalledBinaryFolder[] = "/Amazon/AzCore/Runtime/FilePaths/InstalledBinariesFolder";
 
     //! Stores the absolute path to root of a project's cache.  No asset platform in this path, this is where the asset database file lives.
     //! i.e. <ProjectPath>/Cache
@@ -154,6 +155,15 @@ namespace AZ::SettingsRegistryMergeUtils
         //! structure which is forwarded to the SettingsRegistryInterface MergeCommandLineArgument function
         //! The structure contains a functor which returns true if a character is a valid delimiter
         SettingsRegistryInterface::CommandLineArgumentSettings m_commandLineSettings;
+
+        //! enumeration to indicate if AZ::IO::FileIOBase should be used to open the config file over AZ::IO::SystemFile
+        enum class FileReaderClass
+        {
+            UseFileIOIfAvailableFallbackToSystemFile,
+            UseSystemFileOnly,
+            UseFileIOOnly
+        };
+        FileReaderClass m_fileReaderClass = FileReaderClass::UseFileIOIfAvailableFallbackToSystemFile;
     };
     //! Loads basic configuration files which have structures similar to Windows INI files
     //! It is inspired by the Python configparser module: https://docs.python.org/3.10/library/configparser.html

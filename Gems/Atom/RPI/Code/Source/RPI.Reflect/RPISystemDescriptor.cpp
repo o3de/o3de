@@ -25,35 +25,12 @@ namespace AZ
                     ;
 
                 serializeContext->Class<RPISystemDescriptor>()
-                    ->Version(6) // ATOM-15472
-                    ->Field("RHISystemDescriptor", &RPISystemDescriptor::m_rhiSystemDescriptor)
+                    ->Version(7) // ATOM-16237
                     ->Field("CommonSrgsShaderAssetPath", &RPISystemDescriptor::m_commonSrgsShaderAssetPath)
                     ->Field("ImageSystemDescriptor", &RPISystemDescriptor::m_imageSystemDescriptor)
                     ->Field("GpuQuerySystemDescriptor", &RPISystemDescriptor::m_gpuQuerySystemDescriptor)
                     ->Field("DynamicDrawSystemDescriptor", &RPISystemDescriptor::m_dynamicDrawSystemDescriptor)
                     ;
-
-                if (AZ::EditContext* ec = serializeContext->GetEditContext())
-                {
-                    ec->Class<DynamicDrawSystemDescriptor>("Dynamic Draw System Settings", "Settings for the Dynamic Draw System")
-                        ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System", 0xc94d118b))
-                        ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                        ->DataElement(AZ::Edit::UIHandlers::Default, &DynamicDrawSystemDescriptor::m_dynamicBufferPoolSize, "Dynamic Buffer Pool Size", "The maxinum size of pool which is used to allocate dynamic buffers")
-                        ;
-
-                    ec->Class<RPISystemDescriptor>("RPI Settings", "Settings for runtime RPI system")
-                        ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System", 0xc94d118b))
-                        ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                        ->DataElement(AZ::Edit::UIHandlers::Default, &RPISystemDescriptor::m_commonSrgsShaderAssetPath, "Common Shader Asset Path For Scene & View SRGs",
-                            "Shader asset path used to get the Scene and View SRGs for all RPI scenes and views respectively")
-                        ->DataElement(AZ::Edit::UIHandlers::Default, &RPISystemDescriptor::m_rhiSystemDescriptor, "RHI System Config", "Configuration of Render Hardware Interface")
-                        ->DataElement(AZ::Edit::UIHandlers::Default, &RPISystemDescriptor::m_imageSystemDescriptor, "Image System Config", "Configuration of Image System")
-                        ->DataElement(AZ::Edit::UIHandlers::Default, &RPISystemDescriptor::m_gpuQuerySystemDescriptor, "Gpu Query System Config", "Configuration of Gpu Query System")
-                        ->DataElement(AZ::Edit::UIHandlers::Default, &RPISystemDescriptor::m_dynamicDrawSystemDescriptor, "Dynamic Draw System Config", "Configuration of Dynamic Draw System")
-                        ;
-                }
             }
         }
     } // namespace RPI

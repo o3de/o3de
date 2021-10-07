@@ -63,7 +63,7 @@ void SGameExporterSettings::SetHiQuality()
     nApplySS = 1;
 }
 
-CGameExporter* CGameExporter::m_pCurrentExporter = NULL;
+CGameExporter* CGameExporter::m_pCurrentExporter = nullptr;
 
 //////////////////////////////////////////////////////////////////////////
 // CGameExporter
@@ -76,7 +76,7 @@ CGameExporter::CGameExporter()
 
 CGameExporter::~CGameExporter()
 {
-    m_pCurrentExporter = NULL;
+    m_pCurrentExporter = nullptr;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -136,7 +136,7 @@ bool CGameExporter::Export(unsigned int flags, [[maybe_unused]] EEndian eExportE
             m_settings.SetHiQuality();
         }
 
-        CryAutoLock<CryMutex> autoLock(CGameEngine::GetPakModifyMutex());
+        AZStd::scoped_lock autoLock(CGameEngine::GetPakModifyMutex());
 
         // Close this pak file.
         if (!CloseLevelPack(m_levelPak, true))
@@ -252,11 +252,11 @@ void CGameExporter::ExportOcclusionMesh(const char* pszGamePath)
     {
         CMemoryBlock Temp;
         const size_t Size   =   FileIn.size();
-        Temp.Allocate(Size);
+        Temp.Allocate(static_cast<int>(Size));
         FileIn.read(reinterpret_cast<char*>(Temp.GetBuffer()), Size);
         FileIn.close();
         CCryMemFile FileOut;
-        FileOut.Write(Temp.GetBuffer(), Size);
+        FileOut.Write(Temp.GetBuffer(), static_cast<int>(Size));
         m_levelPak.m_pakFile.UpdateFile(levelDataFile.toUtf8().data(), FileOut);
     }
 }
@@ -281,13 +281,13 @@ void CGameExporter::ExportLevelData(const QString& path, bool /*bExportMission*/
     QString levelDataFile = path + "LevelData.xml";
     XmlString xmlData = root->getXML();
     CCryMemFile file;
-    file.Write(xmlData.c_str(), xmlData.length());
+    file.Write(xmlData.c_str(), static_cast<unsigned int>(xmlData.length()));
     m_levelPak.m_pakFile.UpdateFile(levelDataFile.toUtf8().data(), file);
 
     QString levelDataActionFile = path + "LevelDataAction.xml";
     XmlString xmlDataAction = rootAction->getXML();
     CCryMemFile fileAction;
-    fileAction.Write(xmlDataAction.c_str(), xmlDataAction.length());
+    fileAction.Write(xmlDataAction.c_str(), static_cast<unsigned int>(xmlDataAction.length()));
     m_levelPak.m_pakFile.UpdateFile(levelDataActionFile.toUtf8().data(), fileAction);
 
     AZStd::vector<char> entitySaveBuffer;
@@ -298,7 +298,7 @@ void CGameExporter::ExportLevelData(const QString& path, bool /*bExportMission*/
     {
         QString entitiesFile;
         entitiesFile = QStringLiteral("%1%2.entities_xml").arg(path, "Mission0");
-        m_levelPak.m_pakFile.UpdateFile(entitiesFile.toUtf8().data(), entitySaveBuffer.begin(), entitySaveBuffer.size());
+        m_levelPak.m_pakFile.UpdateFile(entitiesFile.toUtf8().data(), entitySaveBuffer.begin(), static_cast<int>(entitySaveBuffer.size()));
     }
 }
 
@@ -318,7 +318,7 @@ void CGameExporter::ExportLevelInfo(const QString& path)
     root->setAttr("Name", levelName.toUtf8().data());
     auto terrain = AzFramework::Terrain::TerrainDataRequestBus::FindFirstHandler();
     const AZ::Aabb terrainAabb = terrain ? terrain->GetTerrainAabb() : AZ::Aabb::CreateFromPoint(AZ::Vector3::CreateZero());
-    const AZ::Vector2 terrainGridResolution = terrain ? terrain->GetTerrainGridResolution() : AZ::Vector2::CreateOne();
+    const AZ::Vector2 terrainGridResolution = terrain ? terrain->GetTerrainHeightQueryResolution() : AZ::Vector2::CreateOne();
     const int compiledHeightmapSize = static_cast<int>(terrainAabb.GetXExtent() / terrainGridResolution.GetX());
     root->setAttr("HeightmapSize", compiledHeightmapSize);
 
@@ -329,7 +329,7 @@ void CGameExporter::ExportLevelInfo(const QString& path)
     XmlString xmlData = root->getXML();
 
     CCryMemFile file;
-    file.Write(xmlData.c_str(), xmlData.length());
+    file.Write(xmlData.c_str(), static_cast<unsigned int>(xmlData.length()));
     m_levelPak.m_pakFile.UpdateFile(filename.toUtf8().data(), file);
 }
 
@@ -342,7 +342,7 @@ void CGameExporter::ExportLevelResourceList(const QString& path)
     CCryMemFile memFile;
     for (const char* filename = pResList->GetFirst(); filename; filename = pResList->GetNext())
     {
-        memFile.Write(filename, strlen(filename));
+        memFile.Write(filename, static_cast<unsigned int>(strlen(filename)));
         memFile.Write("\n", 1);
     }
 
@@ -378,14 +378,14 @@ void CGameExporter::ExportFileList(const QString& path, const QString& levelName
 {
     // process the folder of the specified map name, producing a filelist.xml file
     //  that can later be used for map downloads
-    string newpath;
+    AZStd::string newpath;
 
-    QString filename = levelName;
-    string mapname = (filename + ".dds").toUtf8().data();
-    string metaname = (filename + ".xml").toUtf8().data();
+    AZStd::string filename = levelName.toUtf8().data();
+    AZStd::string mapname = (filename + ".dds");
+    AZStd::string metaname = (filename + ".xml");
 
     XmlNodeRef rootNode = gEnv->pSystem->CreateXmlNode("download");
-    rootNode->setAttr("name", filename.toUtf8().data());
+    rootNode->setAttr("name", filename.c_str());
     rootNode->setAttr("type", "Map");
     XmlNodeRef indexNode = rootNode->newChild("index");
     if (indexNode)
@@ -432,25 +432,6 @@ void CGameExporter::ExportFileList(const QString& path, const QString& levelName
                     newFileNode->setAttr("src", handle.m_filename.data());
                     newFileNode->setAttr("dest", handle.m_filename.data());
                     newFileNode->setAttr("size", handle.m_fileDesc.nSize);
-
-                    unsigned char md5[16];
-                    string filenameToHash = GetIEditor()->GetGameEngine()->GetLevelPath().toUtf8().data();
-                    filenameToHash += "/";
-                    filenameToHash += string{ handle.m_filename.data(), handle.m_filename.size() };
-                    if (gEnv->pCryPak->ComputeMD5(filenameToHash.data(), md5))
-                    {
-                        char md5string[33];
-                        sprintf_s(md5string, "%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x",
-                            md5[0], md5[1], md5[2], md5[3],
-                            md5[4], md5[5], md5[6], md5[7],
-                            md5[8], md5[9], md5[10], md5[11],
-                            md5[12], md5[13], md5[14], md5[15]);
-                        newFileNode->setAttr("md5", md5string);
-                    }
-                    else
-                    {
-                        newFileNode->setAttr("md5", "");
-                    }
                 }
             }
         } while (handle = gEnv->pCryPak->FindNext(handle));

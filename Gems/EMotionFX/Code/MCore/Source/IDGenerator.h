@@ -28,10 +28,10 @@ namespace MCore
          * This is thread safe.
          * @return The unique id.
          */
-        uint32 GenerateID();
+        size_t GenerateID();
 
     private:
-        AtomicUInt32    mNextID;    /**< The id used for the next GenerateID() call. */
+        AZStd::atomic<size_t>    m_nextId;    /**< The id used for the next GenerateID() call. */
 
         /**
          * Default constructor.

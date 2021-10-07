@@ -47,15 +47,12 @@ namespace EMotionFX
     Importer::Importer()
         : BaseObject()
     {
-        // set the memory category
-        mChunkProcessors.SetMemoryCategory(EMFX_MEMCATEGORY_IMPORTER);
-
         // register all standard chunks
         RegisterStandardChunks();
 
         // init some default values
-        mLoggingActive  = true;
-        mLogDetails     = false;
+        m_loggingActive  = true;
+        m_logDetails     = false;
     }
 
 
@@ -63,10 +60,9 @@ namespace EMotionFX
     Importer::~Importer()
     {
         // remove all chunk processors
-        const uint32 numProcessors = mChunkProcessors.GetLength();
-        for (uint32 i = 0; i < numProcessors; ++i)
+        for (ChunkProcessor* chunkProcessor : m_chunkProcessors)
         {
-            mChunkProcessors[i]->Destroy();
+            chunkProcessor->Destroy();
         }
     }
 
@@ -92,13 +88,13 @@ namespace EMotionFX
         }
 
         // check the FOURCC
-        if (header.mFourcc[0] != 'A' || header.mFourcc[1] != 'C' || header.mFourcc[2] != 'T' || header.mFourcc[3] != 'R')
+        if (header.m_fourcc[0] != 'A' || header.m_fourcc[1] != 'C' || header.m_fourcc[2] != 'T' || header.m_fourcc[3] != 'R')
         {
             return false;
         }
 
         // read the chunks
-        switch (header.mEndianType)
+        switch (header.m_endianType)
         {
         case 0:
             *outEndianType  = MCore::Endian::ENDIAN_LITTLE;
@@ -107,10 +103,9 @@ namespace EMotionFX
             *outEndianType  = MCore::Endian::ENDIAN_BIG;
             break;
         default:
-            MCore::LogError("Unsupported endian type used! (endian type = %d)", header.mEndianType);
+            MCore::LogError("Unsupported endian type used! (endian type = %d)", header.m_endianType);
             return false;
         }
-        ;
 
         // yes, it is a valid actor file!
         return true;
@@ -132,13 +127,13 @@ namespace EMotionFX
         }
 
         // check the FOURCC
-        if ((header.mFourcc[0] != 'M' || header.mFourcc[1] != 'O' || header.mFourcc[2] != 'T' || header.mFourcc[3] != ' '))
+        if ((header.m_fourcc[0] != 'M' || header.m_fourcc[1] != 'O' || header.m_fourcc[2] != 'T' || header.m_fourcc[3] != ' '))
         {
             return false;
         }
 
         // read the chunks
-        switch (header.mEndianType)
+        switch (header.m_endianType)
         {
         case 0:
             *outEndianType  = MCore::Endian::ENDIAN_LITTLE;
@@ -147,10 +142,9 @@ namespace EMotionFX
             *outEndianType  = MCore::Endian::ENDIAN_BIG;
             break;
         default:
-            MCore::LogError("Unsupported endian type used! (endian type = %d)", header.mEndianType);
+            MCore::LogError("Unsupported endian type used! (endian type = %d)", header.m_endianType);
             return false;
         }
-        ;
 
         // yes, it is a valid motion file!
         return true;
@@ -170,13 +164,13 @@ namespace EMotionFX
         }
 
         // check the FOURCC
-        if (header.mFourCC[0] != 'N' || header.mFourCC[1] != 'O' || header.mFourCC[2] != 'M' || header.mFourCC[3] != 'P')
+        if (header.m_fourCc[0] != 'N' || header.m_fourCc[1] != 'O' || header.m_fourCc[2] != 'M' || header.m_fourCc[3] != 'P')
         {
             return false;
         }
 
         // read the chunks
-        switch (header.mEndianType)
+        switch (header.m_endianType)
         {
         case 0:
             *outEndianType  = MCore::Endian::ENDIAN_LITTLE;
@@ -185,7 +179,7 @@ namespace EMotionFX
             *outEndianType  = MCore::Endian::ENDIAN_BIG;
             break;
         default:
-            MCore::LogError("Unsupported endian type used! (endian type = %d)", header.mEndianType);
+            MCore::LogError("Unsupported endian type used! (endian type = %d)", header.m_endianType);
             return false;
         }
 
@@ -291,8 +285,7 @@ namespace EMotionFX
         MCORE_ASSERT(f->GetIsOpen());
 
         // create the shared data
-        MCore::Array<SharedData*> sharedData;
-        sharedData.SetMemoryCategory(EMFX_MEMCATEGORY_IMPORTER);
+        AZStd::vector<SharedData*> sharedData;
         PrepareSharedData(sharedData);
 
         // verify if this is a valid actor file or not
@@ -312,7 +305,7 @@ namespace EMotionFX
             actorSettings = *settings;
         }
 
-        if (actorSettings.mOptimizeForServer)
+        if (actorSettings.m_optimizeForServer)
         {
             actorSettings.OptimizeForServer();
         }
@@ -326,17 +319,17 @@ namespace EMotionFX
 
         if (actor)
         {
-            actor->SetThreadIndex(actorSettings.mThreadIndex);
+            actor->SetThreadIndex(actorSettings.m_threadIndex);
 
             // set the scale mode
             // actor->SetScaleMode( scaleMode );
 
             // init the import parameters
             ImportParameters params;
-            params.mSharedData = &sharedData;
-            params.mEndianType = endianType;
-            params.mActorSettings = &actorSettings;
-            params.mActor = actor.get();
+            params.m_sharedData = &sharedData;
+            params.m_endianType = endianType;
+            params.m_actorSettings = &actorSettings;
+            params.m_actor = actor.get();
 
             // process all chunks
             while (ProcessChunk(f, params))
@@ -346,13 +339,13 @@ namespace EMotionFX
             actor->SetFileName(filename);
 
             // Generate an optimized version of skeleton for server.
-            if (actorSettings.mOptimizeForServer && actor->GetOptimizeSkeleton())
+            if (actorSettings.m_optimizeForServer && actor->GetOptimizeSkeleton())
             {
                 actor->GenerateOptimizedSkeleton();
             }
 
             // post create init
-            actor->PostCreateInit(actorSettings.mMakeGeomLODsCompatibleWithSkeletalLODs, false, actorSettings.mUnitTypeConvert);
+            actor->PostCreateInit(actorSettings.m_makeGeomLoDsCompatibleWithSkeletalLoDs, actorSettings.m_unitTypeConvert);
         }
 
         // close the file and return a pointer to the actor we loaded
@@ -360,7 +353,7 @@ namespace EMotionFX
 
         // get rid of shared data
         ResetSharedData(sharedData);
-        sharedData.Clear();
+        sharedData.clear();
 
         // return the created actor
         return actor;
@@ -374,7 +367,7 @@ namespace EMotionFX
         EBUS_EVENT(AzFramework::ApplicationRequests::Bus, NormalizePathKeepCase, filename);
 
         // check if we want to load the motion even if a motion with the given filename is already inside the motion manager
-        if (settings == nullptr || (settings && settings->mForceLoading == false))
+        if (settings == nullptr || (settings && settings->m_forceLoading == false))
         {
             // search the motion inside the motion manager and return it if it already got loaded
             Motion* motion = GetMotionManager().FindMotionByFileName(filename.c_str());
@@ -461,8 +454,7 @@ namespace EMotionFX
         MCORE_ASSERT(f->GetIsOpen());
 
         // create the shared data
-        MCore::Array<SharedData*> sharedData;
-        sharedData.SetMemoryCategory(EMFX_MEMCATEGORY_IMPORTER);
+        AZStd::vector<SharedData*> sharedData;
         PrepareSharedData(sharedData);
 
         // verify if this is a valid actor file or not
@@ -489,10 +481,10 @@ namespace EMotionFX
 
         // init the import parameters
         ImportParameters params;
-        params.mSharedData     = &sharedData;
-        params.mEndianType     = endianType;
-        params.mMotionSettings = &motionSettings;
-        params.mMotion         = motion;
+        params.m_sharedData     = &sharedData;
+        params.m_endianType     = endianType;
+        params.m_motionSettings = &motionSettings;
+        params.m_motion         = motion;
 
         // read the chunks
         while (ProcessChunk(f, params))
@@ -503,7 +495,7 @@ namespace EMotionFX
         motion->GetEventTable()->AutoCreateSyncTrack(motion);
 
         // scale to the EMotion FX unit type
-        if (motionSettings.mUnitTypeConvert)
+        if (motionSettings.m_unitTypeConvert)
         {
             motion->ScaleToUnitType(GetEMotionFX().GetUnitType());
         }
@@ -513,7 +505,7 @@ namespace EMotionFX
 
         // get rid of shared data
         ResetSharedData(sharedData);
-        sharedData.Clear();
+        sharedData.clear();
 
         return motion;
     }
@@ -671,8 +663,7 @@ namespace EMotionFX
         }
 
         // create the shared data
-        MCore::Array<SharedData*> sharedData;
-        sharedData.SetMemoryCategory(EMFX_MEMCATEGORY_IMPORTER);
+        AZStd::vector<SharedData*> sharedData;
         PrepareSharedData(sharedData);
 
         //-----------------------------------------------
@@ -680,7 +671,7 @@ namespace EMotionFX
         // load the file header
         FileFormat::NodeMap_Header fileHeader;
         f->Read(&fileHeader, sizeof(FileFormat::NodeMap_Header));
-        if (fileHeader.mFourCC[0] != 'N' || fileHeader.mFourCC[1] != 'O' || fileHeader.mFourCC[2] != 'M' || fileHeader.mFourCC[3] != 'P')
+        if (fileHeader.m_fourCc[0] != 'N' || fileHeader.m_fourCc[1] != 'O' || fileHeader.m_fourCc[2] != 'M' || fileHeader.m_fourCc[3] != 'P')
         {
             MCore::LogError("The node map file is not a valid node map file.");
             f->Close();
@@ -688,17 +679,17 @@ namespace EMotionFX
         }
 
         // get the endian type
-        MCore::Endian::EEndianType endianType = (MCore::Endian::EEndianType)fileHeader.mEndianType;
+        MCore::Endian::EEndianType endianType = (MCore::Endian::EEndianType)fileHeader.m_endianType;
 
         // create the node map
         NodeMap* nodeMap = NodeMap::Create();
 
         // init the import parameters
         ImportParameters params;
-        params.mSharedData          = &sharedData;
-        params.mEndianType          = endianType;
-        params.mNodeMap             = nodeMap;
-        params.mNodeMapSettings     = &nodeMapSettings;
+        params.m_sharedData          = &sharedData;
+        params.m_endianType          = endianType;
+        params.m_nodeMap             = nodeMap;
+        params.m_nodeMapSettings     = &nodeMapSettings;
 
         // process all chunks
         while (ProcessChunk(f, params))
@@ -710,7 +701,7 @@ namespace EMotionFX
 
         // get rid of shared data
         ResetSharedData(sharedData);
-        sharedData.Clear();
+        sharedData.clear();
 
         // return the created actor
         return nodeMap;
@@ -722,72 +713,61 @@ namespace EMotionFX
     void Importer::RegisterChunkProcessor(ChunkProcessor* processorToRegister)
     {
         MCORE_ASSERT(processorToRegister);
-        mChunkProcessors.Add(processorToRegister);
+        m_chunkProcessors.emplace_back(processorToRegister);
     }
 
 
     // add shared data object to the importer
-    void Importer::AddSharedData(MCore::Array<SharedData*>& sharedData, SharedData* data)
+    void Importer::AddSharedData(AZStd::vector<SharedData*>& sharedData, SharedData* data)
     {
         MCORE_ASSERT(data);
-        sharedData.Add(data);
+        sharedData.emplace_back(data);
     }
 
 
     // search for shared data
-    SharedData* Importer::FindSharedData(MCore::Array<SharedData*>* sharedDataArray, uint32 type)
+    SharedData* Importer::FindSharedData(AZStd::vector<SharedData*>* sharedDataArray, uint32 type)
     {
         // for all shared data
-        const uint32 numSharedData = sharedDataArray->GetLength();
-        for (uint32 i = 0; i < numSharedData; ++i)
+        const auto foundSharedData = AZStd::find_if(begin(*sharedDataArray), end(*sharedDataArray), [type](const SharedData* sharedData)
         {
-            SharedData* sharedData = sharedDataArray->GetItem(i);
-
-            // check if it's the type we are searching for
-            if (sharedData->GetType() == type)
-            {
-                return sharedData;
-            }
-        }
-
-        // nothing found
-        return nullptr;
+            return sharedData->GetType() == type;
+        });
+        return foundSharedData != end(*sharedDataArray) ? *foundSharedData : nullptr;
     }
 
 
     void Importer::SetLoggingEnabled(bool enabled)
     {
-        mLoggingActive = enabled;
+        m_loggingActive = enabled;
     }
 
 
     bool Importer::GetLogging() const
     {
-        return mLoggingActive;
+        return m_loggingActive;
     }
 
 
     void Importer::SetLogDetails(bool detailLoggingActive)
     {
-        mLogDetails = detailLoggingActive;
+        m_logDetails = detailLoggingActive;
 
         // set the processors logging flag
-        const int32 numProcessors = mChunkProcessors.GetLength();
-        for (int32 i = 0; i < numProcessors; i++)
+        for (ChunkProcessor* processor : m_chunkProcessors)
         {
-            ChunkProcessor* processor = mChunkProcessors[i];
-            processor->SetLogging((mLoggingActive && detailLoggingActive)); // only enable if logging is also enabled
+             processor->SetLogging(m_loggingActive && detailLoggingActive); // only enable if logging is also enabled
         }
     }
 
 
     bool Importer::GetLogDetails() const
     {
-        return mLogDetails;
+        return m_logDetails;
     }
 
 
-    void Importer::PrepareSharedData(MCore::Array<SharedData*>& sharedData)
+    void Importer::PrepareSharedData(AZStd::vector<SharedData*>& sharedData)
     {
         // create standard shared objects
         AddSharedData(sharedData, SharedHelperData::Create());
@@ -795,16 +775,14 @@ namespace EMotionFX
 
 
     // reset shared objects so that the importer is ready for use again
-    void Importer::ResetSharedData(MCore::Array<SharedData*>& sharedData)
+    void Importer::ResetSharedData(AZStd::vector<SharedData*>& sharedData)
     {
-        const int32 numSharedData = sharedData.GetLength();
-        for (int32 i = 0; i < numSharedData; i++)
+        for (SharedData* data : sharedData)
         {
-            SharedData* data = sharedData[i];
             data->Reset();
             data->Destroy();
         }
-        sharedData.Clear();
+        sharedData.clear();
     }
 
 
@@ -812,20 +790,11 @@ namespace EMotionFX
     ChunkProcessor* Importer::FindChunk(uint32 chunkID, uint32 version) const
     {
         // for all chunk processors
-        const uint32 numProcessors = mChunkProcessors.GetLength();
-        for (uint32 i = 0; i < numProcessors; ++i)
+        const auto foundProcessor = AZStd::find_if(begin(m_chunkProcessors), end(m_chunkProcessors), [chunkID, version](const ChunkProcessor* processor)
         {
-            ChunkProcessor* processor = mChunkProcessors[i];
-
-            // if this chunk is the type we are searching for AND it can process our chunk version, return it
-            if (processor->GetChunkID() == chunkID && processor->GetVersion() == version)
-            {
-                return processor;
-            }
-        }
-
-        // nothing found
-        return nullptr;
+            return processor->GetChunkID() == chunkID && processor->GetVersion() == version;
+        });
+        return foundProcessor != end(m_chunkProcessors) ? *foundProcessor : nullptr;
     }
 
 
@@ -833,7 +802,7 @@ namespace EMotionFX
     void Importer::RegisterStandardChunks()
     {
         // reserve space for 75 chunk processors
-        mChunkProcessors.Reserve(75);
+        m_chunkProcessors.reserve(75);
 
         // shared processors
         RegisterChunkProcessor(aznew ChunkProcessorMotionEventTrackTable());
@@ -846,7 +815,7 @@ namespace EMotionFX
         RegisterChunkProcessor(aznew ChunkProcessorActorInfo3());
         RegisterChunkProcessor(aznew ChunkProcessorActorProgMorphTarget());
         RegisterChunkProcessor(aznew ChunkProcessorActorNodeGroups());
-        RegisterChunkProcessor(aznew ChunkProcessorActorNodes());
+        RegisterChunkProcessor(aznew ChunkProcessorActorNodes2());
         RegisterChunkProcessor(aznew ChunkProcessorActorProgMorphTargets());
         RegisterChunkProcessor(aznew ChunkProcessorActorProgMorphTargets2());
         RegisterChunkProcessor(aznew ChunkProcessorActorNodeMotionSources());
@@ -884,40 +853,40 @@ namespace EMotionFX
             return false; // failed reading chunk
         }
         // convert endian
-        const MCore::Endian::EEndianType endianType = importParams.mEndianType;
-        MCore::Endian::ConvertUnsignedInt32(&chunk.mChunkID, endianType);
-        MCore::Endian::ConvertUnsignedInt32(&chunk.mSizeInBytes, endianType);
-        MCore::Endian::ConvertUnsignedInt32(&chunk.mVersion, endianType);
+        const MCore::Endian::EEndianType endianType = importParams.m_endianType;
+        MCore::Endian::ConvertUnsignedInt32(&chunk.m_chunkId, endianType);
+        MCore::Endian::ConvertUnsignedInt32(&chunk.m_sizeInBytes, endianType);
+        MCore::Endian::ConvertUnsignedInt32(&chunk.m_version, endianType);
 
         // try to find the chunk processor which can process this chunk
-        ChunkProcessor* processor = FindChunk(chunk.mChunkID, chunk.mVersion);
+        ChunkProcessor* processor = FindChunk(chunk.m_chunkId, chunk.m_version);
 
         // if we cannot find the chunk, skip the chunk
         if (processor == nullptr)
         {
             if (GetLogging())
             {
-                MCore::LogError("Importer::ProcessChunk() - Unknown chunk (ID=%d  Size=%d bytes Version=%d), skipping...", chunk.mChunkID, chunk.mSizeInBytes, chunk.mVersion);
+                MCore::LogError("Importer::ProcessChunk() - Unknown chunk (ID=%d  Size=%d bytes Version=%d), skipping...", chunk.m_chunkId, chunk.m_sizeInBytes, chunk.m_version);
             }
-            file->Forward(chunk.mSizeInBytes);
+            file->Forward(chunk.m_sizeInBytes);
 
             return true;
         }
 
         // get some shortcuts
-        Importer::ActorSettings* actorSettings = importParams.mActorSettings;
-        Importer::MotionSettings* skelMotionSettings = importParams.mMotionSettings;
+        Importer::ActorSettings* actorSettings = importParams.m_actorSettings;
+        Importer::MotionSettings* skelMotionSettings = importParams.m_motionSettings;
 
         // check if we still want to skip the chunk or not
         bool mustSkip = false;
 
         // check if we specified to ignore this chunk
-        if (actorSettings && actorSettings->mChunkIDsToIgnore.Contains(chunk.mChunkID))
+        if (actorSettings && AZStd::find(begin(actorSettings->m_chunkIDsToIgnore), end(actorSettings->m_chunkIDsToIgnore), chunk.m_chunkId) != end(actorSettings->m_chunkIDsToIgnore))
         {
             mustSkip = true;
         }
 
-        if (skelMotionSettings && skelMotionSettings->mChunkIDsToIgnore.Contains(chunk.mChunkID))
+        if (skelMotionSettings && AZStd::find(begin(skelMotionSettings->m_chunkIDsToIgnore), end(skelMotionSettings->m_chunkIDsToIgnore), chunk.m_chunkId) != end(skelMotionSettings->m_chunkIDsToIgnore))
         {
             mustSkip = true;
         }
@@ -928,10 +897,10 @@ namespace EMotionFX
             // if we're loading an actor
             if (actorSettings)
             {
-                if ((actorSettings->mLoadLimits                 == false && chunk.mChunkID == FileFormat::ACTOR_CHUNK_LIMIT) ||
-                    (actorSettings->mLoadMorphTargets           == false && chunk.mChunkID == FileFormat::ACTOR_CHUNK_STDPROGMORPHTARGET) ||
-                    (actorSettings->mLoadMorphTargets           == false && chunk.mChunkID == FileFormat::ACTOR_CHUNK_STDPMORPHTARGETS) ||
-                    (actorSettings->mLoadSimulatedObjects       == false && chunk.mChunkID == FileFormat::ACTOR_CHUNK_SIMULATEDOBJECTSETUP))
+                if ((actorSettings->m_loadLimits                 == false && chunk.m_chunkId == FileFormat::ACTOR_CHUNK_LIMIT) ||
+                    (actorSettings->m_loadMorphTargets           == false && chunk.m_chunkId == FileFormat::ACTOR_CHUNK_STDPROGMORPHTARGET) ||
+                    (actorSettings->m_loadMorphTargets           == false && chunk.m_chunkId == FileFormat::ACTOR_CHUNK_STDPMORPHTARGETS) ||
+                    (actorSettings->m_loadSimulatedObjects       == false && chunk.m_chunkId == FileFormat::ACTOR_CHUNK_SIMULATEDOBJECTSETUP))
                 {
                     mustSkip = true;
                 }
@@ -940,7 +909,7 @@ namespace EMotionFX
             // if we're loading a motion
             if (skelMotionSettings)
             {
-                if (skelMotionSettings->mLoadMotionEvents       == false && chunk.mChunkID == FileFormat::MOTION_CHUNK_MOTIONEVENTTABLE)
+                if (skelMotionSettings->m_loadMotionEvents       == false && chunk.m_chunkId == FileFormat::MOTION_CHUNK_MOTIONEVENTTABLE)
                 {
                     mustSkip = true;
                 }
@@ -950,7 +919,7 @@ namespace EMotionFX
         // if we want to skip this chunk
         if (mustSkip)
         {
-            file->Forward(chunk.mSizeInBytes);
+            file->Forward(chunk.m_sizeInBytes);
             return true;
         }
 
@@ -963,20 +932,29 @@ namespace EMotionFX
     void Importer::ValidateActorSettings(ActorSettings* settings)
     {
         // After atom: Make sure we are not loading the tangents and bitangents
-        if (!settings->mLayerIDsToIgnore.Contains(Mesh::ATTRIB_TANGENTS))
+        if (AZStd::find(begin(settings->m_layerIDsToIgnore), end(settings->m_layerIDsToIgnore), Mesh::ATTRIB_TANGENTS) == end(settings->m_layerIDsToIgnore))
         {
-            settings->mLayerIDsToIgnore.Add(Mesh::ATTRIB_TANGENTS);
+            settings->m_layerIDsToIgnore.emplace_back(Mesh::ATTRIB_TANGENTS);
         }
 
-        if (!settings->mLayerIDsToIgnore.Contains(Mesh::ATTRIB_BITANGENTS))
+        if (AZStd::find(begin(settings->m_layerIDsToIgnore), end(settings->m_layerIDsToIgnore), Mesh::ATTRIB_BITANGENTS) == end(settings->m_layerIDsToIgnore))
         {
-            settings->mLayerIDsToIgnore.Add(Mesh::ATTRIB_BITANGENTS);
+            settings->m_layerIDsToIgnore.emplace_back(Mesh::ATTRIB_BITANGENTS);
         }
 
         // make sure we load at least the position and normals and org vertex numbers
-        settings->mLayerIDsToIgnore.RemoveByValue(Mesh::ATTRIB_ORGVTXNUMBERS);
-        settings->mLayerIDsToIgnore.RemoveByValue(Mesh::ATTRIB_NORMALS);
-        settings->mLayerIDsToIgnore.RemoveByValue(Mesh::ATTRIB_POSITIONS);
+        if(const auto it = AZStd::find(begin(settings->m_layerIDsToIgnore), end(settings->m_layerIDsToIgnore), Mesh::ATTRIB_ORGVTXNUMBERS); it != end(settings->m_layerIDsToIgnore))
+        {
+            settings->m_layerIDsToIgnore.erase(it);
+        }
+        if(const auto it = AZStd::find(begin(settings->m_layerIDsToIgnore), end(settings->m_layerIDsToIgnore), Mesh::ATTRIB_NORMALS); it != end(settings->m_layerIDsToIgnore))
+        {
+            settings->m_layerIDsToIgnore.erase(it);
+        }
+        if(const auto it = AZStd::find(begin(settings->m_layerIDsToIgnore), end(settings->m_layerIDsToIgnore), Mesh::ATTRIB_POSITIONS); it != end(settings->m_layerIDsToIgnore))
+        {
+            settings->m_layerIDsToIgnore.erase(it);
+        }
     }
 
 
@@ -1117,7 +1095,7 @@ namespace EMotionFX
             file.Close();
             return false;
         }
-        outInfo->mEndianType = endianType;
+        outInfo->m_endianType = endianType;
 
         // as we seeked to the end of the header and we know the second chunk always is the time stamp, we can read this now
         FileFormat::FileChunk fileChunk;
@@ -1126,8 +1104,8 @@ namespace EMotionFX
         file.Read(&timeChunk, sizeof(FileFormat::FileTime));
 
         // convert endian
-        MCore::Endian::ConvertUnsignedInt32(&fileChunk.mChunkID, endianType);
-        MCore::Endian::ConvertUnsignedInt16(&timeChunk.mYear, endianType);
+        MCore::Endian::ConvertUnsignedInt32(&fileChunk.m_chunkId, endianType);
+        MCore::Endian::ConvertUnsignedInt16(&timeChunk.m_year, endianType);
 
         return true;
     }
@@ -1150,7 +1128,7 @@ namespace EMotionFX
             file.Close();
             return false;
         }
-        outInfo->mEndianType = endianType;
+        outInfo->m_endianType = endianType;
 
         // as we seeked to the end of the header and we know the second chunk always is the time stamp, we can read this now
         FileFormat::FileChunk fileChunk;
@@ -1159,8 +1137,8 @@ namespace EMotionFX
         file.Read(&timeChunk, sizeof(FileFormat::FileTime));
 
         // convert endian
-        MCore::Endian::ConvertUnsignedInt32(&fileChunk.mChunkID, endianType);
-        MCore::Endian::ConvertUnsignedInt16(&timeChunk.mYear, endianType);
+        MCore::Endian::ConvertUnsignedInt32(&fileChunk.m_chunkId, endianType);
+        MCore::Endian::ConvertUnsignedInt16(&timeChunk.m_year, endianType);
 
         return true;
     }

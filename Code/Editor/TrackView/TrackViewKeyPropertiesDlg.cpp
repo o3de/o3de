@@ -110,7 +110,7 @@ void CTrackViewKeyPropertiesDlg::PopulateVariables()
     m_wndProps->RemoveAllItems();
     m_wndProps->AddVarBlock(m_pVarBlock);
 
-    m_wndProps->SetUpdateCallback(AZStd::bind(&CTrackViewKeyPropertiesDlg::OnVarChange, this, AZStd::placeholders::_1));
+    m_wndProps->SetUpdateCallback([this](IVariable* var) { OnVarChange(var); });
     //m_wndProps->m_props.ExpandAll();
 
 
@@ -328,8 +328,8 @@ bool CTrackViewTrackPropsDlg::OnKeySelectionChange(CTrackViewKeyBundle& selected
     }
     else
     {
-        ui->PREVNEXT->setEnabled(FALSE);
-        ui->TIME->setEnabled(FALSE);
+        ui->PREVNEXT->setEnabled(false);
+        ui->TIME->setEnabled(false);
     }
     return true;
 }

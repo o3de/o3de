@@ -82,7 +82,7 @@ namespace EMotionFX
         const AnimGraph* targetAnimGraph = (animGraph ? animGraph : m_animGraphPlugin->GetActiveAnimGraph()); //AnimGraph to add Node to
         const AZStd::string cmd = "AnimGraphCreateNode AnimGraphID " + AZStd::to_string(targetAnimGraph->GetID()) + " -type " + type + " " + args;
         
-        AZ::u32 nodeCount = targetAnimGraph->GetNumNodes(); //node count before creating a new node
+        size_t nodeCount = targetAnimGraph->GetNumNodes(); //node count before creating a new node
 
         AZStd::string result;
         EXPECT_TRUE(CommandSystem::GetCommandManager()->ExecuteCommand(cmd, result)) << result.c_str();
@@ -112,7 +112,7 @@ namespace EMotionFX
 
         const EMotionFX::AnimGraphNode* currentNode = GetActiveNodeGraph()->GetModelIndex().data(EMStudio::AnimGraphModel::ROLE_NODE_POINTER).value<EMotionFX::AnimGraphNode*>();
 
-        const int numNodesAfter = currentNode->GetNumChildNodes();
+        const size_t numNodesAfter = currentNode->GetNumChildNodes();
         if (numNodesAfter == 0)
         {
             return nullptr;

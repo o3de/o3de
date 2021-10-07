@@ -123,7 +123,7 @@ public:
     void SetVariable(IVariable* pVariable) override;
     void SyncReflectedVarToIVar(IVariable* pVariable) override;
     void SyncIVarToReflectedVar(IVariable* pVariable) override;
-    virtual void OnVariableChange(IVariable* var);
+    void OnVariableChange(IVariable* var) override;
     CReflectedVar* GetReflectedVar() override { return m_reflectedVar.data(); }
 
 protected:
@@ -215,20 +215,6 @@ public:
 private:
 AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
     QScopedPointer<CReflectedVarColor > m_reflectedVar;
-AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
-};
-
-class EDITOR_CORE_API ReflectedVarAnimationAdapter
-    : public ReflectedVarAdapter
-{
-public:
-    void SetVariable(IVariable* pVariable) override;
-    void SyncReflectedVarToIVar(IVariable* pVariable) override;
-    void SyncIVarToReflectedVar(IVariable* pVariable) override;
-    CReflectedVar* GetReflectedVar() override { return m_reflectedVar.data(); }
-private:
-AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
-    QScopedPointer<CReflectedVarAnimation > m_reflectedVar;
 AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
 };
 

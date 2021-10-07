@@ -51,7 +51,7 @@ namespace EMStudio
         void OnSelectedItemChanged();
 
     private:
-        QListWidget*            mList;
-        ActionHistoryCallback*  mCallback;
+        QListWidget*            m_list;
+        ActionHistoryCallback*  m_callback;
     };
 }   // namespace EMStudio

@@ -25,7 +25,7 @@ namespace AZ
                 if (AZ::EditContext* editContext = serializeContext->GetEditContext())
                 {
                     editContext->Class<EditorRadiusWeightModifierComponent>(
-                        "Radius Weight Modifier", "Modifies PostFX override factor based on proximity of an influencer against this entity's bounding sphere")
+                        "PostFX Radius Weight Modifier", "Modifies PostFX override factor based on proximity of an influencer against this entity's bounding sphere")
                         ->ClassElement(Edit::ClassElements::EditorData, "")
                         ->Attribute(Edit::Attributes::Category, "Atom")
                         ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/Component_Placeholder.svg")

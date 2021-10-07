@@ -98,7 +98,7 @@ namespace UnitTest
         // If an entry is removed from the octree as an unintended side effect of updating an existing entry,
         // GetEntryCount can't be relied upon to report the actual entry count.
         // So manually count the entries when using the entry count for validation.
-        uint32_t manualEntryCount = 0;
+        size_t manualEntryCount = 0;
         visScene->EnumerateNoCull([&manualEntryCount](const AzFramework::IVisibilityScene::NodeData& nodeData) { manualEntryCount += nodeData.m_entries.size(); });
 
         EXPECT_EQ(manualEntryCount, expectedEntryCount);
@@ -409,7 +409,7 @@ namespace UnitTest
         }
 
         // Expect all the entries to be in the scene
-        ValidateEntryCountEqualsExpectedCount(m_octreeScene, visEntries.size());
+        ValidateEntryCountEqualsExpectedCount(m_octreeScene, static_cast<uint32_t>(visEntries.size()));
 
         // Update them, without making any actual changes
         for (AzFramework::VisibilityEntry& entry : visEntries)
@@ -418,6 +418,6 @@ namespace UnitTest
         }
 
         // Expect all the entries to be in the scene
-        ValidateEntryCountEqualsExpectedCount(m_octreeScene, visEntries.size());
+        ValidateEntryCountEqualsExpectedCount(m_octreeScene, static_cast<uint32_t>(visEntries.size()));
     }
 }

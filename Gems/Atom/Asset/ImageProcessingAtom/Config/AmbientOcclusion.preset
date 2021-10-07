@@ -28,7 +28,8 @@
                     "_amb",
                     "_ambientocclusion"
                 ],
-                "PixelFormat": "EAC_R11"
+                "MaxTextureSize": 2048,
+                "PixelFormat": "ASTC_4x4"
             },
             "ios": {
                 "UUID": "{02ED0ECE-B198-49D9-85BC-CEBA6C28546C}",
@@ -41,7 +42,8 @@
                     "_amb",
                     "_ambientocclusion"
                 ],
-                "PixelFormat": "EAC_R11"
+                "MaxTextureSize": 2048,
+                "PixelFormat": "ASTC_4x4"
             },
             "mac": {
                 "UUID": "{02ED0ECE-B198-49D9-85BC-CEBA6C28546C}",

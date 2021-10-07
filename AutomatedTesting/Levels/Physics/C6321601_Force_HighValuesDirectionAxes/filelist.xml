@@ -1,6 +1,0 @@
-<download name="C6321601_Force_HighValuesDirectionAxes" type="Map">
- <index src="filelist.xml" dest="filelist.xml"/>
- <files>
-  <file src="level.pak" dest="level.pak" size="39326" md5="d25fbf5ffb33f9c58109c1b36544e8a6"/>
- </files>
-</download>

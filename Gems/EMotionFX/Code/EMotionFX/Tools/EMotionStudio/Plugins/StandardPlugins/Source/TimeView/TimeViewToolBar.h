@@ -63,7 +63,7 @@ namespace EMStudio
         RecorderGroup::RecordingMode GetCurrentRecordingMode() const;
 
     private:
-        TimeViewPlugin* mPlugin = nullptr;
+        TimeViewPlugin* m_plugin = nullptr;
 
         RecorderGroup* m_recorderGroup;
         PlaybackControlsGroup* m_playbackControls;

@@ -1,6 +1,0 @@
-<download name="C5296614_PhysXMaterial_ColliderShape" type="Map">
- <index src="filelist.xml" dest="filelist.xml"/>
- <files>
-  <file src="level.pak" dest="level.pak" size="39321" md5="a27ec0a10de5301fe1c6036cf2d9bb37"/>
- </files>
-</download>

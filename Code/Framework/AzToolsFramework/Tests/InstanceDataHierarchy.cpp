@@ -104,15 +104,15 @@ namespace UnitTest
                 if (AZ::EditContext* edit = serializeContext->GetEditContext())
                 {
                     edit->Class<TestComponent>("Test Component", "A test component")
-                        ->DataElement(0, &TestComponent::m_float, "Float Field", "A float field")
-                        ->DataElement(0, &TestComponent::m_string, "String Field", "A string field")
-                        ->DataElement(0, &TestComponent::m_normalContainer, "Normal Container", "A container")
-                        ->DataElement(0, &TestComponent::m_pointerContainer, "Pointer Container", "A container")
-                        ->DataElement(0, &TestComponent::m_subData, "Struct Field", "A sub data type")
+                        ->DataElement(nullptr, &TestComponent::m_float, "Float Field", "A float field")
+                        ->DataElement(nullptr, &TestComponent::m_string, "String Field", "A string field")
+                        ->DataElement(nullptr, &TestComponent::m_normalContainer, "Normal Container", "A container")
+                        ->DataElement(nullptr, &TestComponent::m_pointerContainer, "Pointer Container", "A container")
+                        ->DataElement(nullptr, &TestComponent::m_subData, "Struct Field", "A sub data type")
                         ;
 
                     edit->Class<SubData>("Test Component", "A test component")
-                        ->DataElement(0, &SubData::m_int, "Int Field", "An int")
+                        ->DataElement(nullptr, &SubData::m_int, "Int Field", "An int")
                         ;
                 }
             }
@@ -156,7 +156,7 @@ namespace UnitTest
         {
         }
 
-        ~InstanceDataHierarchyBasicTest()
+        ~InstanceDataHierarchyBasicTest() override
         {
         }
 
@@ -481,7 +481,7 @@ namespace UnitTest
         {
         }
 
-        ~InstanceDataHierarchyCopyContainerChangesTest()
+        ~InstanceDataHierarchyCopyContainerChangesTest() override
         {
         }
 
@@ -680,8 +680,8 @@ namespace UnitTest
                         ;
 
                     edit->Class<EnumContainer>("Enum Container", "Test container that has an external enum")
-                        ->DataElement(0, &EnumContainer::m_enum, "Enum Field", "An enum value")
-                        ->DataElement(0, &EnumContainer::m_enumVector, "Enum Vector Field", "A vector of enum values")
+                        ->DataElement(nullptr, &EnumContainer::m_enum, "Enum Field", "An enum value")
+                        ->DataElement(nullptr, &EnumContainer::m_enumVector, "Enum Vector Field", "A vector of enum values")
                         ;
                 }
             }
@@ -776,21 +776,21 @@ namespace UnitTest
                 {
                     edit->Class<GroupTestComponent>("Group Test Component", "Testing normal groups and toggle groups")
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                        ->DataElement(0, &GroupTestComponent::m_float, "Float Field", "A float field")
+                        ->DataElement(nullptr, &GroupTestComponent::m_float, "Float Field", "A float field")
                         ->ClassElement(AZ::Edit::ClassElements::Group, "Normal Group")
-                        ->DataElement(0, &GroupTestComponent::m_groupFloat, "Float Field", "A float field")
-                        ->DataElement(0, &GroupTestComponent::m_subGroupForNormal, "Struct Field", "A sub data type")
+                        ->DataElement(nullptr, &GroupTestComponent::m_groupFloat, "Float Field", "A float field")
+                        ->DataElement(nullptr, &GroupTestComponent::m_subGroupForNormal, "Struct Field", "A sub data type")
                         ->GroupElementToggle("Group Toggle", &GroupTestComponent::m_groupToggle)
-                        ->DataElement(0, &GroupTestComponent::m_toggleGroupInt, "Normal Integer", "An Integer")
-                        ->DataElement(0, &GroupTestComponent::m_subGroupForToggle, "Struct Field", "A sub data type")
+                        ->DataElement(nullptr, &GroupTestComponent::m_toggleGroupInt, "Normal Integer", "An Integer")
+                        ->DataElement(nullptr, &GroupTestComponent::m_subGroupForToggle, "Struct Field", "A sub data type")
                         ;
 
                     edit->Class<SubData>("SubGroup Test Component", "Testing nested normal groups and toggle groups")
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->ClassElement(AZ::Edit::ClassElements::Group, "Normal SubGroup")
-                        ->DataElement(0, &SubData::m_int, "SubGroup Int Field", "An int")
+                        ->DataElement(nullptr, &SubData::m_int, "SubGroup Int Field", "An int")
                         ->GroupElementToggle("SubGroup Toggle", &SubData::m_bool)
-                        ->DataElement(0, &SubData::m_float, "SubGroup Float Field", "An int")
+                        ->DataElement(nullptr, &SubData::m_float, "SubGroup Float Field", "An int")
                         ;
                 }
             }
@@ -974,7 +974,7 @@ namespace UnitTest
             {
             }
 
-            void InsertAndVerifyKeys(AZ::SerializeContext::IDataContainer* container, void* key, void* instance, const AZ::SerializeContext::ClassElement* classElement) const
+            void InsertAndVerifyKeys(AZ::SerializeContext::IDataContainer* container, void* key, void* instance, const AZ::SerializeContext::ClassElement* classElement) const override
             {
                 T* keyContainer = reinterpret_cast<T*>(key);
                 for (const T& keyToInsert : keysToInsert)
@@ -1258,7 +1258,7 @@ namespace UnitTest
                 {
                     editContext->Class<UIElementContainer>("Test", "")
                         ->UIElement("TestHandler", "UIElement")
-                        ->DataElement(0, &UIElementContainer::m_data)
+                        ->DataElement(nullptr, &UIElementContainer::m_data)
                         ->UIElement(AZ_CRC("TestHandler2"), "UIElement2")
                     ;
                 }
@@ -1285,7 +1285,7 @@ namespace UnitTest
             Crc32 uiHandler = 0;
             EXPECT_EQ(it->ReadAttribute(AZ::Edit::UIHandlers::Handler, uiHandler), true);
             EXPECT_EQ(uiHandler, AZ_CRC("TestHandler"));
-            EXPECT_EQ(it->GetElementMetadata()->m_name, "UIElement");
+            EXPECT_STREQ(it->GetElementMetadata()->m_name, "UIElement");
             EXPECT_EQ(it->GetElementMetadata()->m_nameCrc, AZ_CRC("UIElement"));
 
             uiHandler = 0;
@@ -1293,7 +1293,7 @@ namespace UnitTest
             ++it;
             EXPECT_EQ(it->ReadAttribute(AZ::Edit::UIHandlers::Handler, uiHandler), true);
             EXPECT_EQ(uiHandler, AZ_CRC("TestHandler2"));
-            EXPECT_EQ(it->GetElementMetadata()->m_name, "UIElement2");
+            EXPECT_STREQ(it->GetElementMetadata()->m_name, "UIElement2");
             EXPECT_EQ(it->GetElementMetadata()->m_nameCrc, AZ_CRC("UIElement2"));
         }
     };
@@ -1322,8 +1322,8 @@ namespace UnitTest
                 {
                     // By default, DataElements accept multi-edit and UIElements do not
                     editContext->Class<AggregatedContainer>("Test", "")
-                        ->DataElement(0, &AggregatedContainer::m_aggregated)
-                        ->DataElement(0, &AggregatedContainer::m_notAggregated)
+                        ->DataElement(nullptr, &AggregatedContainer::m_aggregated)
+                        ->DataElement(nullptr, &AggregatedContainer::m_notAggregated)
                             ->Attribute(AZ::Edit::Attributes::AcceptsMultiEdit, false)
                         ->UIElement("TestHandler", "aggregatedUIElement")
                             ->Attribute(AZ::Edit::Attributes::AcceptsMultiEdit, true)
@@ -1356,21 +1356,21 @@ namespace UnitTest
 
                 auto it = children.begin();
 
-                EXPECT_EQ(it->GetElementMetadata()->m_name, "aggregatedDataElement");
+                EXPECT_STREQ(it->GetElementMetadata()->m_name, "aggregatedDataElement");
                 ++it;
 
                 if (i == 0)
                 {
-                    EXPECT_EQ(it->GetElementMetadata()->m_name, "notAggregatedDataElement");
+                    EXPECT_STREQ(it->GetElementMetadata()->m_name, "notAggregatedDataElement");
                     ++it;
                 }
 
-                EXPECT_EQ(it->GetElementMetadata()->m_name, "aggregatedUIElement");
+                EXPECT_STREQ(it->GetElementMetadata()->m_name, "aggregatedUIElement");
                 ++it;
 
                 if (i == 0)
                 {
-                    EXPECT_EQ(it->GetElementMetadata()->m_name, "notAggregatedUIElement");
+                    EXPECT_STREQ(it->GetElementMetadata()->m_name, "notAggregatedUIElement");
                     ++it;
                 }
             }
@@ -1505,11 +1505,11 @@ namespace UnitTest
             AZStd::string childName(child.GetElementMetadata()->m_name);
             if (childName.compare("GroupFloat") == 0)
             {
-                EXPECT_EQ(child.GetGroupElementMetadata()->m_description, "Normal Group");
+                EXPECT_STREQ(child.GetGroupElementMetadata()->m_description, "Normal Group");
             }
             if (childName.compare("ToggleGroupInt") == 0)
             {
-                EXPECT_EQ(child.GetGroupElementMetadata()->m_description, "Group Toggle");
+                EXPECT_STREQ(child.GetGroupElementMetadata()->m_description, "Group Toggle");
             }
             if ((childName.compare("SubDataNormal") == 0) || (childName.compare("SubDataToggle") == 0))
             {
@@ -1518,11 +1518,11 @@ namespace UnitTest
                     childName = subChild.GetElementMetadata()->m_name;
                     if (childName.compare("SubInt") == 0)
                     {
-                        EXPECT_EQ(subChild.GetGroupElementMetadata()->m_description, "Normal SubGroup");
+                        EXPECT_STREQ(subChild.GetGroupElementMetadata()->m_description, "Normal SubGroup");
                     }
                     if (childName.compare("SubFloat") == 0)
                     {
-                        EXPECT_EQ(subChild.GetGroupElementMetadata()->m_description, "SubGroup Toggle");
+                        EXPECT_STREQ(subChild.GetGroupElementMetadata()->m_description, "SubGroup Toggle");
                     }
                 }
             }
@@ -1552,7 +1552,7 @@ namespace UnitTest
             AZStd::string childName(child.GetElementMetadata()->m_name);
             if (childName.compare(paramName) == 0)
             {
-                EXPECT_EQ(child.GetParent()->GetClassMetadata()->m_name, "GroupTestComponent");
+                EXPECT_STREQ(child.GetParent()->GetClassMetadata()->m_name, "GroupTestComponent");
             }
             if ((childName.compare("SubDataNormal") == 0) || (childName.compare("SubDataToggle") == 0))
             {
@@ -1561,7 +1561,7 @@ namespace UnitTest
                     childName = subChild.GetElementMetadata()->m_name;
                     if (childName.compare(paramName) == 0)
                     {
-                        EXPECT_EQ(subChild.GetParent()->GetClassMetadata()->m_name, "SubData");
+                        EXPECT_STREQ(subChild.GetParent()->GetClassMetadata()->m_name, "SubData");
                     }
                 }
             }

@@ -29,8 +29,8 @@ namespace EMStudio
     template<class ManagerType, typename GetNumFunc, typename GetEntityFunc>
     bool HasEntityInEditor(const ManagerType& manager, const GetNumFunc& getNumEntitiesFunc, const GetEntityFunc& getEntityFunc)
     {
-        const uint32 numEntities = (manager.*getNumEntitiesFunc)();
-        for (uint32 i = 0; i < numEntities; ++i)
+        const size_t numEntities = (manager.*getNumEntitiesFunc)();
+        for (size_t i = 0; i < numEntities; ++i)
         {
             const auto& entity = (manager.*getEntityFunc)(i);
             if (!entity->GetIsOwnedByRuntime())

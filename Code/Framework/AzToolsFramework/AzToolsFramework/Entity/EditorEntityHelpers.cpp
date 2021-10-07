@@ -14,6 +14,7 @@
 #include <AzCore/std/algorithm.h>
 #include <AzCore/std/sort.h>
 #include <AzCore/RTTI/AttributeReader.h>
+#include <AzCore/Serialization/SerializeContext.h>
 #include <AzToolsFramework/Commands/EntityStateCommand.h>
 #include <AzToolsFramework/Entity/EditorEntityInfoBus.h>
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
@@ -323,7 +324,7 @@ namespace AzToolsFramework
 
     void AddEntityIdToSortInfo(const AZ::EntityId parentId, const AZ::EntityId childId, bool forceAddToBack)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
         AZ::EntityId sortEntityId = GetEntityIdForSortInfo(parentId);
 
         bool success = false;
@@ -336,7 +337,7 @@ namespace AzToolsFramework
 
     void AddEntityIdToSortInfo(const AZ::EntityId parentId, const AZ::EntityId childId, const AZ::EntityId beforeEntity)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
         AZ::EntityId sortEntityId = GetEntityIdForSortInfo(parentId);
 
         bool success = false;
@@ -349,7 +350,7 @@ namespace AzToolsFramework
 
     bool RecoverEntitySortInfo(const AZ::EntityId parentId, const AZ::EntityId childId, AZ::u64 sortIndex)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
 
         EntityOrderArray entityOrderArray;
         EditorEntitySortRequestBus::EventResult(entityOrderArray, GetEntityIdForSortInfo(parentId), &EditorEntitySortRequestBus::Events::GetChildEntityOrderArray);
@@ -372,7 +373,7 @@ namespace AzToolsFramework
 
     void RemoveEntityIdFromSortInfo(const AZ::EntityId parentId, const AZ::EntityId childId)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
         AZ::EntityId sortEntityId = GetEntityIdForSortInfo(parentId);
 
         bool success = false;
@@ -385,7 +386,7 @@ namespace AzToolsFramework
 
     bool SetEntityChildOrder(const AZ::EntityId parentId, const EntityIdList& children)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
         auto sortEntityId = GetEntityIdForSortInfo(parentId);
 
         bool success = false;
@@ -399,7 +400,7 @@ namespace AzToolsFramework
 
     EntityIdList GetEntityChildOrder(const AZ::EntityId parentId)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
         EntityIdList children;
         EditorEntityInfoRequestBus::EventResult(children, parentId, &EditorEntityInfoRequestBus::Events::GetChildren);
 
@@ -441,7 +442,7 @@ namespace AzToolsFramework
     //sort vector of entities by how they're arranged
     void SortEntitiesByLocationInHierarchy(EntityIdList& entityIds)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
         //cache locations for faster sort
         AZStd::unordered_map<AZ::EntityId, AZStd::list<AZ::u64>> locations;
         for (auto entityId : entityIds)
@@ -575,7 +576,7 @@ namespace AzToolsFramework
 
     bool IsSelected(const AZ::EntityId entityId)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
 
         bool selected = false;
         EditorEntityInfoRequestBus::EventResult(
@@ -585,7 +586,7 @@ namespace AzToolsFramework
 
     bool IsSelectableInViewport(const AZ::EntityId entityId)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
 
         bool visible = false;
         EditorEntityInfoRequestBus::EventResult(
@@ -602,7 +603,7 @@ namespace AzToolsFramework
         const AZ::EntityId entityId, const bool locked,
         const AZ::EntityId toggledEntityId, const bool toggledEntityWasLayer)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
 
         if (!entityId.IsValid())
         {
@@ -661,7 +662,7 @@ namespace AzToolsFramework
     // note: must be called on layer entity
     static void UnlockLayer(const AZ::EntityId entityId)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
 
         EditorLockComponentRequestBus::Event(
             entityId, &EditorLockComponentRequestBus::Events::SetLocked, false);
@@ -698,7 +699,7 @@ namespace AzToolsFramework
 
     void SetEntityLockState(const AZ::EntityId entityId, const bool locked)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
 
         // when an entity is unlocked, if it was in a locked layer(s), unlock those layers
         if (!locked)
@@ -736,7 +737,7 @@ namespace AzToolsFramework
 
     void ToggleEntityLockState(const AZ::EntityId entityId)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
 
         if (entityId.IsValid())
         {
@@ -772,7 +773,7 @@ namespace AzToolsFramework
 
     static void SetEntityVisibilityInternal(const AZ::EntityId entityId, const bool visibility)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
 
         bool layerEntity = false;
         Layers::EditorLayerComponentRequestBus::EventResult(
@@ -795,7 +796,7 @@ namespace AzToolsFramework
     // note: must be called on layer entity
     static void ShowLayer(const AZ::EntityId entityId)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
 
         SetEntityVisibilityInternal(entityId, true);
 
@@ -830,7 +831,7 @@ namespace AzToolsFramework
         const AZ::EntityId entityId, const bool visible,
         const AZ::EntityId toggledEntityId, const bool toggledEntityWasLayer)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
 
         if (!entityId.IsValid())
         {
@@ -879,7 +880,7 @@ namespace AzToolsFramework
 
     void SetEntityVisibility(const AZ::EntityId entityId, const bool visible)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
 
         // when an entity is set to visible, if it was in an invisible layer(s), make that layer visible
         if (visible)
@@ -917,7 +918,7 @@ namespace AzToolsFramework
 
     void ToggleEntityVisibility(const AZ::EntityId entityId)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
 
         if (entityId.IsValid())
         {
@@ -969,7 +970,7 @@ namespace AzToolsFramework
 
     bool IsEntitySetToBeVisible(const AZ::EntityId entityId)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
 
         // Visibility state is tracked in 5 places, see OutlinerListModel::dataForLock for info on 3 of these ways.
         // Visibility's fourth state over lock is the EditorVisibilityRequestBus has two sets of
@@ -1007,7 +1008,7 @@ namespace AzToolsFramework
 
     AZ::Vector3 GetWorldTranslation(const AZ::EntityId entityId)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
 
         AZ::Vector3 worldTranslation = AZ::Vector3::CreateZero();
         AZ::TransformBus::EventResult(
@@ -1018,7 +1019,7 @@ namespace AzToolsFramework
 
     AZ::Vector3 GetLocalTranslation(const AZ::EntityId entityId)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
 
         AZ::Vector3 localTranslation = AZ::Vector3::CreateZero();
         AZ::TransformBus::EventResult(
@@ -1324,7 +1325,7 @@ namespace AzToolsFramework
             AZ::SliceComponent::EntityAncestorList::const_iterator ancestorIter = ancestors.begin();
             // Skip the first, that would be a regular slice root and not a subslice root, which was already checked.
             ++ancestorIter;
-            for (ancestorIter; ancestorIter != ancestors.end(); ++ancestorIter)
+            for (; ancestorIter != ancestors.end(); ++ancestorIter)
             {
                 const AZ::SliceComponent::Ancestor& ancestor = *ancestorIter;
                 if (!ancestor.m_entity || !SliceUtilities::IsRootEntity(*ancestor.m_entity))

@@ -67,7 +67,7 @@ namespace EMotionFX
                 : AnimGraphNodeData(node, animGraphInstance) {}
 
         public:
-            int32 mDecisionIndex = -1;
+            int32 m_decisionIndex = -1;
         };
 
         BlendTreePoseSwitchNode();

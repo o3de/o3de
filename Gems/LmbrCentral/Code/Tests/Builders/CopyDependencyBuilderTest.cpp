@@ -69,7 +69,7 @@ namespace UnitTest
 
             AZ::IO::Path assetRoot(AZ::Utils::GetProjectPath());
             assetRoot /= "Cache";
-            AZ::IO::FileIOBase::GetInstance()->SetAlias("@root@", assetRoot.c_str());
+            AZ::IO::FileIOBase::GetInstance()->SetAlias("@products@", assetRoot.c_str());
 
             SerializeContext* serializeContext;
             ComponentApplicationBus::BroadcastResult(serializeContext, &ComponentApplicationRequests::GetSerializeContext);
@@ -114,7 +114,7 @@ namespace UnitTest
         {
             AssetBuilderSDK::ProductPathDependencySet resolvedPaths;
             AZStd::vector<AssetBuilderSDK::ProductDependency> productDependencies;
-        
+
             AssetBuilderSDK::ProcessJobRequest request;
             request.m_fullPath = GetFullPath(fileName);
             request.m_sourceFile = fileName;
@@ -211,20 +211,18 @@ namespace UnitTest
 
         //////////////////////////////////////////////////////////////////////////
         // AzToolsFramework::AssetSystem::AssetSystemRequestBus::Handler overrides
-        const char* GetAbsoluteDevGameFolderPath() override { return ""; }
-        const char* GetAbsoluteDevRootFolderPath() override { return ""; }
-        bool GetRelativeProductPathFromFullSourceOrProductPath([[maybe_unused]] const AZStd::string& fullPath, [[maybe_unused]] AZStd::string& relativeProductPath) { return true; }
+        bool GetRelativeProductPathFromFullSourceOrProductPath([[maybe_unused]] const AZStd::string& fullPath, [[maybe_unused]] AZStd::string& relativeProductPath) override { return true; }
         bool GenerateRelativeSourcePath(
             [[maybe_unused]] const AZStd::string& sourcePath, [[maybe_unused]] AZStd::string& relativePath,
-            [[maybe_unused]] AZStd::string& watchFolder) { return true; }
-        bool GetFullSourcePathFromRelativeProductPath([[maybe_unused]] const AZStd::string& relPath, [[maybe_unused]] AZStd::string& fullSourcePath) { return true; }
-        bool GetAssetInfoById([[maybe_unused]] const AZ::Data::AssetId& assetId, [[maybe_unused]] const AZ::Data::AssetType& assetType, [[maybe_unused]] const AZStd::string& platformName, [[maybe_unused]] AZ::Data::AssetInfo& assetInfo, [[maybe_unused]] AZStd::string& rootFilePath) { return true; }
-        bool GetSourceInfoBySourcePath([[maybe_unused]] const char* sourcePath, [[maybe_unused]] AZ::Data::AssetInfo& assetInfo, [[maybe_unused]] AZStd::string& watchFolder) { return true; }
-        bool GetSourceInfoBySourceUUID([[maybe_unused]] const AZ::Uuid& sourceUuid, [[maybe_unused]] AZ::Data::AssetInfo& assetInfo, [[maybe_unused]] AZStd::string& watchFolder) { return true; }
-        bool GetScanFolders([[maybe_unused]] AZStd::vector<AZStd::string>& scanFolders) { return true; }
-        bool IsAssetPlatformEnabled([[maybe_unused]] const char* platform) { return true; }
-        int GetPendingAssetsForPlatform([[maybe_unused]] const char* platform) { return 0; }
-        bool GetAssetsProducedBySourceUUID([[maybe_unused]] const AZ::Uuid& sourceUuid, [[maybe_unused]] AZStd::vector<AZ::Data::AssetInfo>& productsAssetInfo) { return true; }
+            [[maybe_unused]] AZStd::string& watchFolder) override { return true; }
+        bool GetFullSourcePathFromRelativeProductPath([[maybe_unused]] const AZStd::string& relPath, [[maybe_unused]] AZStd::string& fullSourcePath) override { return true; }
+        bool GetAssetInfoById([[maybe_unused]] const AZ::Data::AssetId& assetId, [[maybe_unused]] const AZ::Data::AssetType& assetType, [[maybe_unused]] const AZStd::string& platformName, [[maybe_unused]] AZ::Data::AssetInfo& assetInfo, [[maybe_unused]] AZStd::string& rootFilePath) override { return true; }
+        bool GetSourceInfoBySourcePath([[maybe_unused]] const char* sourcePath, [[maybe_unused]] AZ::Data::AssetInfo& assetInfo, [[maybe_unused]] AZStd::string& watchFolder) override { return true; }
+        bool GetSourceInfoBySourceUUID([[maybe_unused]] const AZ::Uuid& sourceUuid, [[maybe_unused]] AZ::Data::AssetInfo& assetInfo, [[maybe_unused]] AZStd::string& watchFolder) override { return true; }
+        bool GetScanFolders([[maybe_unused]] AZStd::vector<AZStd::string>& scanFolders) override { return true; }
+        bool IsAssetPlatformEnabled([[maybe_unused]] const char* platform) override { return true; }
+        int GetPendingAssetsForPlatform([[maybe_unused]] const char* platform) override { return 0; }
+        bool GetAssetsProducedBySourceUUID([[maybe_unused]] const AZ::Uuid& sourceUuid, [[maybe_unused]] AZStd::vector<AZ::Data::AssetInfo>& productsAssetInfo) override { return true; }
         bool GetAssetSafeFolders(AZStd::vector<AZStd::string>& assetSafeFolders) override
         {
             char resolvedBuffer[AZ_MAX_PATH_LEN] = { 0 };
@@ -428,7 +426,7 @@ namespace UnitTest
             "Fonts/fontexample-bolditalic.font"
         };
 
-        AZStd::string fileName = "Fonts/FontFamilyExample.fontfamily"; 
+        AZStd::string fileName = "Fonts/FontFamilyExample.fontfamily";
 
         FontBuilderWorker builderWorker;
 
@@ -445,7 +443,7 @@ namespace UnitTest
         AZStd::string fileName = "Fonts/FontExample.font";
 
         FontBuilderWorker builderWorker;
-    
+
         TestSuccessCase(&builderWorker, fileName, "Fonts/FontExample.ttf");
     }
 
@@ -667,7 +665,7 @@ namespace UnitTest
         builderWorker.AddSchemaFileDirectory(GetFullPath("Xmls/Schema/WithoutVersionConstraints/OptionalAttribute"));
 
         AZStd::vector<AssetBuilderSDK::ProductDependency> expectedProductDependencies;
-    
+
         TestSuccessCase(&builderWorker, fileName, expectedPaths, expectedProductDependencies);
     }
 
@@ -896,7 +894,7 @@ namespace UnitTest
         AssetBuilderSDK::CreateJobsResponse response;
 
         request.m_sourceFile = "Tests/Xmls/XmlExampleWithoutVersion.xml";
-        request.m_watchFolder = "@root@/../Gems/LmbrCentral/Code/";
+        request.m_watchFolder = "@engroot@/Gems/LmbrCentral/Code/";
 
         XmlBuilderWorker builderWorker;
         builderWorker.AddSchemaFileDirectory(GetFullPath("Xmls/Schema/WithoutVersionConstraints/FullFeatured"));

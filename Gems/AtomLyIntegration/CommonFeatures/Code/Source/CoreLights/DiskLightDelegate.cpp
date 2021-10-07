@@ -155,27 +155,11 @@ namespace AZ::Render
         }
     }
 
-    void DiskLightDelegate::SetPredictionSampleCount(uint32_t count)
-    {
-        if (GetShadowsEnabled() && GetLightHandle().IsValid())
-        {
-            GetFeatureProcessor()->SetPredictionSampleCount(GetLightHandle(), count);
-        }
-    }
-
     void DiskLightDelegate::SetFilteringSampleCount(uint32_t count)
     {
         if (GetShadowsEnabled() && GetLightHandle().IsValid())
         {
-            GetFeatureProcessor()->SetFilteringSampleCount(GetLightHandle(), count);
-        }
-    }
-
-    void DiskLightDelegate::SetPcfMethod(PcfMethod method)
-    {
-        if (GetShadowsEnabled() && GetLightHandle().IsValid())
-        {
-            GetFeatureProcessor()->SetPcfMethod(GetLightHandle(), method);
+            GetFeatureProcessor()->SetFilteringSampleCount(GetLightHandle(), static_cast<uint16_t>(count));
         }
     }
 

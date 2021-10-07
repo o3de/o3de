@@ -16,12 +16,24 @@
 #include <AzCore/std/typetraits/is_function.h>
 #include <AzCore/std/typetraits/is_trivially_copyable.h>
 #include <AzCore/std/typetraits/is_void.h>
+#include <AzCore/std/utils.h> // AZStd::addressof
 
 namespace AZStd
 {
     // alias std::pointer_traits into the AZStd::namespace 
     using std::pointer_traits;
+
+    //! Bring the names of uninitialized_default_construct and
+    //! uninitialized_default_construct_n into the AZStd namespace
+    using std::uninitialized_default_construct;
+    using std::uninitialized_default_construct_n;
+
+    //! uninitialized_value_construct and uninitialized_value_construct_n
+    //! are now brought into scope of the AZStd namespace
+    using std::uninitialized_value_construct;
+    using std::uninitialized_value_construct_n;
 }
+
 namespace AZStd::Internal
 {
     template <typename T, typename = void>
@@ -223,107 +235,6 @@ namespace AZStd
     }
 }
 
-namespace AZStd
-{
-    //! C++20 implementation of uninitialized_default_construct
-    //! Initializes objects by default-initialization via placement new
-    //! Ex. `new(declval<void*>()) T` - Notice no parenthesis after T
-    //! This performs default initialization instead of value initialization
-    //! Default initialization performs the following actions
-    //! # If T is a class type it considers constructors which can be invoked
-    //! with an empty argument list. The selected constructor is invoked
-    //! to provide the initial value of the object
-    //! # If T is an array type, then default initialization is performed
-    //! on each array element
-    //! # Otherwise nothing is done and objects with automatic storage duration(i.e scope)
-    //! are initialized with indeterminate values
-    //! For example given the following struct
-    //! struct Foo
-    //! {
-    //!     int mint;
-    //!     double bubble;
-    //! };
-    //! Invoking uninitialized_default_construct(FooPtr, FooPtr + 1)
-    //! Will default initialize the FooPtr object (Foo has an implicitly-defined default constructor)
-    //! The values of mint and bubble are indeterminate
-    template <typename ForwardIt>
-    constexpr auto uninitialized_default_construct(ForwardIt first, ForwardIt last)
-        -> enable_if_t<Internal::is_forward_iterator_v<ForwardIt>, void>
-    {
-        for (; first != last; ++first)
-        {
-            return ::new (AZStd::addressof(*first)) typename AZStd::iterator_traits<ForwardIt>::value_type;
-        }
-    }
-    // C++20 implementation of uninitialized_default_construct_n
-    // Constructs "n" objects starting at first via default-initialization
-    template <typename ForwardIt, typename Size>
-    constexpr auto uninitialized_default_construct_n(ForwardIt first, Size numElements)
-        -> enable_if_t<Internal::is_forward_iterator_v<ForwardIt>, ForwardIt>
-    {
-        for (; numElements  > 0; ++first, --numElements)
-        {
-            return ::new (AZStd::addressof(*first)) typename AZStd::iterator_traits<ForwardIt>::value_type;
-        }
-
-        return first;
-    }
-}
-
-namespace AZStd
-{
-    //! C++20 implementation of uninitialized_value_construct
-    //! Initializes objects by value-initialization via placement new
-    //! Ex. `new(declval<void*>()) T()` - Notice parenthesis are here after T
-    //! value-initialization of an object performs different rules depending
-    //! on the type of T
-    //! Value initialization performs the following actions
-    //! # If T is a class type with no default constructor or with a user-provided
-    //! constructor or a deleted default constructor, then default-initialization
-    //! is performed
-    //! # If T is a class type with a default constructor that is neither
-    //! user-provided nor deleted(i.e a class with an implicitly-defined or defaulted
-    //! default constructor), then the object is zero-initialized and then it is
-    //! default-initialized if it has a non-trivial default constructor
-    //! # If T is an array type, then value initialization is performed
-    //! on each array element
-    //! # Otherwise the object is zero-initialized
-    //! (i.e sets arithmetic and enum objects to 0, bool objects to false, pointers to nullptr)
-    //! For example given the following struct
-    //! struct Foo
-    //! {
-    //!     int mint;
-    //!     double bubble;
-    //! };
-    //! Invoking uninitialized_default_construct(FooPtr, FooPtr + 1)
-    //! Will value-initialize the FooPtr object.
-    //! The Foo has an implicitly-defined default constructor.
-    //! For aggregates such as int and double this will perform zero-initialization
-    //! which will set their values to 0
-    //! Therefore The values of mint will be 0 and and bubble 0.0
-    template <typename ForwardIt>
-    constexpr auto uninitialized_value_construct(ForwardIt first, ForwardIt last)
-        -> enable_if_t<Internal::is_forward_iterator_v<ForwardIt>, void>
-    {
-        for (; first != last; ++first)
-        {
-            return ::new (AZStd::addressof(*first)) typename AZStd::iterator_traits<ForwardIt>::value_type();
-        }
-    }
-    // C++20 implementation of uninitialized_default_construct_n
-    // Constructs "n" objects starting at the first via by value-initialization
-    template <typename ForwardIt, typename Size>
-    constexpr auto uninitialized_value_construct_n(ForwardIt first, Size numElements)
-        -> enable_if_t<Internal::is_forward_iterator_v<ForwardIt>, ForwardIt>
-    {
-        for (; numElements > 0; ++first, --numElements)
-        {
-            return ::new (AZStd::addressof(*first)) typename AZStd::iterator_traits<ForwardIt>::value_type();
-        }
-
-        return first;
-    }
-}
 
 namespace AZStd::Internal
 {

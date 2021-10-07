@@ -9,6 +9,7 @@
 #pragma once
 
 #include <AzCore/Module/Environment.h>
+#include <AzCore/RTTI/TypeInfo.h>
 #include <AzCore/std/parallel/shared_mutex.h>
 #include <AzCore/std/typetraits/is_constructible.h>
 #include <AzCore/std/typetraits/is_assignable.h>

@@ -34,11 +34,11 @@ namespace AzToolsFramework
 
             //////////////////////////////////////////////////////////////////////////
             // AZ::Component
-            virtual void Init();
-            virtual void Activate();
-            virtual void Deactivate();
+            void Init() override;
+            void Activate() override;
+            void Deactivate() override;
 
-            virtual PropertyHandlerBase* ResolvePropertyHandler(AZ::u32 handlerName, const AZ::Uuid& handlerType) override;
+            PropertyHandlerBase* ResolvePropertyHandler(AZ::u32 handlerName, const AZ::Uuid& handlerType) override;
 
             //////////////////////////////////////////////////////////////////////////
         private:
@@ -57,8 +57,8 @@ namespace AzToolsFramework
 
             //////////////////////////////////////////////////////////////////////////
             // PropertyTypeRegistrationMessages::Bus::Handler
-            virtual void RegisterPropertyType(PropertyHandlerBase* pHandler) override;
-            virtual void UnregisterPropertyType(PropertyHandlerBase* pHandler) override;
+            void RegisterPropertyType(PropertyHandlerBase* pHandler) override;
+            void UnregisterPropertyType(PropertyHandlerBase* pHandler) override;
             //////////////////////////////////////////////////////////////////////////
 
             typedef AZStd::unordered_multimap<AZ::u32, PropertyHandlerBase*> HandlerMap;

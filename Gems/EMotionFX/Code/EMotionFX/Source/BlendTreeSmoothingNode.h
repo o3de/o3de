@@ -48,8 +48,8 @@ namespace EMotionFX
             void Update() override;
 
         public:
-            float mFrameDeltaTime = 0.0f;
-            float mCurrentValue = 0.0f;
+            float m_frameDeltaTime = 0.0f;
+            float m_currentValue = 0.0f;
         };
 
         BlendTreeSmoothingNode();

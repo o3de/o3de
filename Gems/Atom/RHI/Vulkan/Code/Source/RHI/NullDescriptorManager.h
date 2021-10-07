@@ -30,6 +30,11 @@ namespace AZ
                 MultiSampleGeneral2D,
                 MultiSampleReadOnly2D,
 
+                // 2d image arrays
+                GeneralArray2D,
+                ReadOnlyArray2D,
+                StorageArray2D,
+
                 // cube images
                 GeneralCube,
                 ReadOnlyCube,

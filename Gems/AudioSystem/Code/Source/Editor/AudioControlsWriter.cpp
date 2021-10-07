@@ -356,8 +356,8 @@ namespace AudioControls
             {
                 if (!connectionNode.m_isValid)
                 {
-                    auto nodeCopy = SRawConnectionData::DeepCopyNode(connectionNode.m_xmlNode.get());
-                    node->append_node(nodeCopy.release());
+                    XmlAllocator& xmlAlloc(AudioControls::s_xmlAllocator);
+                    node->append_node(xmlAlloc.clone_node(connectionNode.m_xmlNode));
                 }
             }
 
@@ -371,7 +371,7 @@ namespace AudioControls
                         childNode != nullptr)
                     {
                         node->append_node(childNode);
-                        control->m_connectionNodes.push_back(SRawConnectionData(childNode, true));
+                        control->m_connectionNodes.emplace_back(childNode, true);
                     }
                 }
             }

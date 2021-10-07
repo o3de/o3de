@@ -50,7 +50,7 @@ namespace Benchmark
         SetupPrefabSystem();
     }
 
-    void BM_Prefab::SetUp(::benchmark::State & state)
+    void BM_Prefab::internalSetUp(const benchmark::State& state)
     {
         AZ::Debug::TraceMessageBus::Handler::BusConnect();
 
@@ -59,7 +59,7 @@ namespace Benchmark
         SetupPrefabSystem();
     }
 
-    void BM_Prefab::TearDown(::benchmark::State & state)
+    void BM_Prefab::internalTearDown(const benchmark::State& state)
     {
         m_paths = {};
 
@@ -85,7 +85,7 @@ namespace Benchmark
 
     void BM_Prefab::CreateEntities(const unsigned int entityCount, AZStd::vector<AZ::Entity*>& entities)
     {
-        for (int entityIndex = 0; entityIndex < entityCount; ++entityIndex)
+        for (unsigned int entityIndex = 0; entityIndex < entityCount; ++entityIndex)
         {
             AZStd::string entityName = "TestEntity";
             entityName = entityName + AZStd::to_string(entityIndex);
@@ -101,7 +101,7 @@ namespace Benchmark
     void BM_Prefab::CreateFakePaths(const unsigned int pathCount)
     {
         //setup fake paths
-        for (int number = 0; number < pathCount; ++number)
+        for (unsigned int number = 0; number < pathCount; ++number)
         {
             AZStd::string path = m_pathString;
             m_paths.push_back(path + AZStd::to_string(number) + "_" + AZStd::to_string(pathCount));
@@ -110,8 +110,8 @@ namespace Benchmark
 
     void BM_Prefab::SetUpMockValidatorForReadPrefab()
     {
-        int pathCount = m_paths.size();
-        for (int number = 0; number < pathCount; ++number)
+        const size_t pathCount = m_paths.size();
+        for (size_t number = 0; number < pathCount; ++number)
         {
             m_mockIOActionValidator->ReadPrefabDom(
                 m_paths[number], UnitTest::PrefabTestDomUtils::CreatePrefabDom());

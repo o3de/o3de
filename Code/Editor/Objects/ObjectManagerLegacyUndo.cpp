@@ -19,7 +19,6 @@
 #include "Objects/ObjectLoader.h"
 #include "Objects/SelectionGroup.h"
 
-
 //////////////////////////////////////////////////////////////////////////
 // CUndoBaseObjectNew implementation.
 //////////////////////////////////////////////////////////////////////////
@@ -204,7 +203,7 @@ CUndoBaseObjectBulkSelect::CUndoBaseObjectBulkSelect(const AZStd::unordered_set<
 
 void CUndoBaseObjectBulkSelect::Undo(bool bUndo)
 {
-    AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Editor);
+    AZ_PROFILE_FUNCTION(Editor);
     if (!bUndo)
     {
         return;
@@ -217,7 +216,7 @@ void CUndoBaseObjectBulkSelect::Undo(bool bUndo)
 
 void CUndoBaseObjectBulkSelect::Redo()
 {
-    AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Editor);
+    AZ_PROFILE_FUNCTION(Editor);
 
     AzToolsFramework::ToolsApplicationRequestBus::Broadcast(
         &AzToolsFramework::ToolsApplicationRequests::MarkEntitiesSelected,
@@ -256,7 +255,7 @@ CUndoBaseObjectClearSelection::CUndoBaseObjectClearSelection(const CSelectionGro
 
 void CUndoBaseObjectClearSelection::Undo(bool bUndo)
 {
-    AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Editor);
+    AZ_PROFILE_FUNCTION(Editor);
 
     if (!bUndo)
     {
@@ -270,7 +269,7 @@ void CUndoBaseObjectClearSelection::Undo(bool bUndo)
 
 void CUndoBaseObjectClearSelection::Redo() 
 {
-    AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Editor);
+    AZ_PROFILE_FUNCTION(Editor);
 
     AzToolsFramework::ToolsApplicationRequestBus::Broadcast(
         &AzToolsFramework::ToolsApplicationRequests::SetSelectedEntities,

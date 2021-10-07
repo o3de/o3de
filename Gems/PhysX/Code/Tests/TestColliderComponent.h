@@ -49,7 +49,7 @@ namespace UnitTest
             m_componentModeDelegate.Disconnect();
         }
 
-        void SetColliderOffset(const AZ::Vector3& offset) { m_offset = offset; }
+        void SetColliderOffset(const AZ::Vector3& offset) override { m_offset = offset; }
         AZ::Vector3 GetColliderOffset() override { return m_offset; }
         void SetColliderRotation(const AZ::Quaternion& rotation) override { m_rotation = rotation; }
         AZ::Quaternion GetColliderRotation() override { return m_rotation; }

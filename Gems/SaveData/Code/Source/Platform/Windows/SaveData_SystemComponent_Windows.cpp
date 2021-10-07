@@ -10,6 +10,7 @@
 
 #include <AzCore/IO/SystemFile.h>
 #include <AzCore/std/string/conversions.h>
+#include <AzCore/Utils/Utils.h>
 
 #include <AzCore/PlatformIncl.h>
 #include <shlobj.h>
@@ -61,7 +62,7 @@ namespace SaveData
 
         ////////////////////////////////////////////////////////////////////////////////////////////
         //! The absolute path to the application's save data dircetory.
-        AZStd::string m_saveDataDircetoryPathAbsolute = nullptr;
+        AZStd::string m_saveDataDircetoryPathAbsolute;
     };
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -99,7 +100,7 @@ namespace SaveData
     AZStd::string GetExecutableName()
     {
         char moduleFileName[AZ_MAX_PATH_LEN];
-        GetModuleFileNameA(nullptr, moduleFileName, AZ_MAX_PATH_LEN);
+        AZ::Utils::GetExecutablePath(moduleFileName, AZ_MAX_PATH_LEN);
 
         const AZStd::string moduleFileNameString(moduleFileName);
         const size_t executableNameStart = moduleFileNameString.find_last_of('\\') + 1;

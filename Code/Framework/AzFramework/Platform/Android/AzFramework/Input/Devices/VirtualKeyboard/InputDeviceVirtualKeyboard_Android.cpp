@@ -128,7 +128,7 @@ namespace AzFramework
         });
 
         // create the java instance
-        bool ret = m_keyboardHandler->CreateInstance("(Landroid/app/Activity;)V", AZ::Android::Utils::GetActivityRef());
+        [[maybe_unused]] bool ret = m_keyboardHandler->CreateInstance("(Landroid/app/Activity;)V", AZ::Android::Utils::GetActivityRef());
         AZ_Assert(ret, "Failed to create the KeyboardHandler Java instance.");
 
         // Connect to the raw input notifications bus

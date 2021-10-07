@@ -47,7 +47,7 @@ namespace AZ
             void ApplySettingsTo(BloomSettings* target, float alpha) const;
 
             // Generate getters and setters.
-#include <Atom/Feature/ParamMacros/StartParamFunctions.inl>
+#include <Atom/Feature/ParamMacros/StartParamFunctionsOverrideImpl.inl>
 #include <Atom/Feature/PostProcess/Bloom/BloomParams.inl>
 #include <Atom/Feature/ParamMacros/EndParams.inl>
 

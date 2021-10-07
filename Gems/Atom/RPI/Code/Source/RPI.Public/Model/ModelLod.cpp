@@ -264,8 +264,6 @@ namespace AZ
             const MaterialModelUvOverrideMap& materialModelUvMap,
             const MaterialUvNameMap& materialUvNameMap) const
         {
-            AZ_PROFILE_FUNCTION(Debug::ProfileCategory::AzRender);
-
             streamBufferViewsOut.clear();
 
             RHI::InputStreamLayoutBuilder layoutBuilder;
@@ -366,8 +364,6 @@ namespace AZ
             const MaterialModelUvOverrideMap& materialModelUvMap,
             const MaterialUvNameMap& materialUvNameMap) const
         {
-            AZ_PROFILE_FUNCTION(Debug::ProfileCategory::AzRender);
-
             const Mesh& mesh = m_meshes[meshIndex];
 
             auto defaultUv = FindDefaultUvStream(meshIndex, materialUvNameMap);

@@ -133,7 +133,7 @@ namespace EMStudio
         QHBoxLayout* m_toolbarLayout = nullptr;
         AZStd::array<QAction*, NUM_OPTIONS> m_actions{};
         AnimGraphPlugin* m_parentPlugin = nullptr;
-        NavigationLinkWidget* mNavigationLink = nullptr;
+        NavigationLinkWidget* m_navigationLink = nullptr;
         QStackedWidget m_viewportStack;
         QSplitter* m_viewportSplitter = nullptr;
 

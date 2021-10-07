@@ -16,6 +16,7 @@
 #include <Components/EditorClothComponent.h>
 #include <Components/ClothComponent.h>
 #include <Components/ClothComponentMesh/ClothComponentMesh.h>
+#include <Atom/RPI.Reflect/Model/ModelAsset.h>
 
 #include <Utils/AssetHelper.h>
 
@@ -48,7 +49,7 @@ namespace NvCloth
                         ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/Cloth.svg")
                         ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/Cloth.svg")
                         ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c))
-                        ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/cloth/")
+                        ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/physx/cloth/")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
 
                     ->UIElement(AZ::Edit::UIHandlers::CheckBox, "Simulate in editor",

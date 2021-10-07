@@ -493,7 +493,7 @@ void CanvasSizeToolbarSection::HandleIndexChanged()
 
 int CanvasSizeToolbarSection::GetCustomSizeIndex()
 {
-    return m_canvasSizePresets.size() - 1;
+    return static_cast<int>(m_canvasSizePresets.size() - 1);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////

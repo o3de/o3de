@@ -56,18 +56,18 @@ public:
     }
 
 protected:
-    virtual void Release() { delete this; };
-    virtual int GetSize() { return sizeof(*this); }; // Return size of xml state.
-    virtual QString GetDescription() { return "Entity Link"; };
-    virtual QString GetObjectName(){ return ""; };
+    void Release() override { delete this; };
+    int GetSize() override { return sizeof(*this); }; // Return size of xml state.
+    QString GetDescription() override { return "Entity Link"; };
+    QString GetObjectName() override{ return ""; };
 
-    virtual void Undo([[maybe_unused]] bool bUndo)
+    void Undo([[maybe_unused]] bool bUndo) override
     {
-        for (int i = 0, iLinkSize(m_Links.size()); i < iLinkSize; ++i)
+        for (int i = 0, iLinkSize = static_cast<int>(m_Links.size()); i < iLinkSize; ++i)
         {
             SLink& link = m_Links[i];
             CBaseObject* pObj = GetIEditor()->GetObjectManager()->FindObject(link.entityID);
-            if (pObj == NULL)
+            if (pObj == nullptr)
             {
                 continue;
             }
@@ -83,7 +83,7 @@ protected:
             pEntity->LoadLink(link.linkXmlNode->getChild(0));
         }
     }
-    virtual void Redo(){}
+    void Redo() override{}
 
 private:
 
@@ -109,7 +109,7 @@ public:
         , m_bAttach(bAttach)
     {}
 
-    virtual void Undo([[maybe_unused]] bool bUndo) override
+    void Undo([[maybe_unused]] bool bUndo) override
     {
         if (!m_bAttach)
         {
@@ -117,7 +117,7 @@ public:
         }
     }
 
-    virtual void Redo() override
+    void Redo() override
     {
         if (m_bAttach)
         {
@@ -138,8 +138,8 @@ private:
         }
     }
 
-    virtual int GetSize() { return sizeof(CUndoAttachEntity); }
-    virtual QString GetDescription() { return "Attachment Changed"; }
+    int GetSize() override { return sizeof(CUndoAttachEntity); }
+    QString GetDescription() override { return "Attachment Changed"; }
 
     GUID m_attachedEntityGUID;
     CEntityObject::EAttachmentType m_attachmentType;
@@ -167,7 +167,7 @@ CEntityObject::CEntityObject()
 {
     m_bLoadFailed = false;
 
-    m_visualObject = 0;
+    m_visualObject = nullptr;
 
     m_box.min.Set(0, 0, 0);
     m_box.max.Set(0, 0, 0);
@@ -225,30 +225,30 @@ CEntityObject::CEntityObject()
     mv_ratioLOD.SetLimits(0, 255);
     mv_viewDistanceMultiplier.SetLimits(0.0f, IRenderNode::VIEW_DISTANCE_MULTIPLIER_MAX);
 
-    m_physicsState = 0;
+    m_physicsState = nullptr;
 
     m_attachmentType = eAT_Pivot;
 
     // cache all the variable callbacks, must match order of enum defined in header
-    m_onSetCallbacksCache.push_back(AZStd::bind(&CEntityObject::OnAreaHeightChange, this, AZStd::placeholders::_1));
-    m_onSetCallbacksCache.push_back(AZStd::bind(&CEntityObject::OnAreaLightChange, this, AZStd::placeholders::_1));
-    m_onSetCallbacksCache.push_back(AZStd::bind(&CEntityObject::OnAreaLightSizeChange, this, AZStd::placeholders::_1));
-    m_onSetCallbacksCache.push_back(AZStd::bind(&CEntityObject::OnAreaWidthChange, this, AZStd::placeholders::_1));
-    m_onSetCallbacksCache.push_back(AZStd::bind(&CEntityObject::OnBoxHeightChange, this, AZStd::placeholders::_1));
-    m_onSetCallbacksCache.push_back(AZStd::bind(&CEntityObject::OnBoxLengthChange, this, AZStd::placeholders::_1));
-    m_onSetCallbacksCache.push_back(AZStd::bind(&CEntityObject::OnBoxProjectionChange, this, AZStd::placeholders::_1));
-    m_onSetCallbacksCache.push_back(AZStd::bind(&CEntityObject::OnBoxSizeXChange, this, AZStd::placeholders::_1));
-    m_onSetCallbacksCache.push_back(AZStd::bind(&CEntityObject::OnBoxSizeYChange, this, AZStd::placeholders::_1));
-    m_onSetCallbacksCache.push_back(AZStd::bind(&CEntityObject::OnBoxSizeZChange, this, AZStd::placeholders::_1));
-    m_onSetCallbacksCache.push_back(AZStd::bind(&CEntityObject::OnBoxWidthChange, this, AZStd::placeholders::_1));
-    m_onSetCallbacksCache.push_back(AZStd::bind(&CEntityObject::OnColorChange, this, AZStd::placeholders::_1));
-    m_onSetCallbacksCache.push_back(AZStd::bind(&CEntityObject::OnInnerRadiusChange, this, AZStd::placeholders::_1));
-    m_onSetCallbacksCache.push_back(AZStd::bind(&CEntityObject::OnOuterRadiusChange, this, AZStd::placeholders::_1));
-    m_onSetCallbacksCache.push_back(AZStd::bind(&CEntityObject::OnProjectInAllDirsChange, this, AZStd::placeholders::_1));
-    m_onSetCallbacksCache.push_back(AZStd::bind(&CEntityObject::OnProjectorFOVChange, this, AZStd::placeholders::_1));
-    m_onSetCallbacksCache.push_back(AZStd::bind(&CEntityObject::OnProjectorTextureChange, this, AZStd::placeholders::_1));
-    m_onSetCallbacksCache.push_back(AZStd::bind(&CEntityObject::OnPropertyChange, this, AZStd::placeholders::_1));
-    m_onSetCallbacksCache.push_back(AZStd::bind(&CEntityObject::OnRadiusChange, this, AZStd::placeholders::_1));
+    m_onSetCallbacksCache.emplace_back([this](IVariable* var) { OnAreaHeightChange(var); });
+    m_onSetCallbacksCache.emplace_back([this](IVariable* var) { OnAreaLightChange(var); });
+    m_onSetCallbacksCache.emplace_back([this](IVariable* var) { OnAreaLightSizeChange(var); });
+    m_onSetCallbacksCache.emplace_back([this](IVariable* var) { OnAreaWidthChange(var); });
+    m_onSetCallbacksCache.emplace_back([this](IVariable* var) { OnBoxHeightChange(var); });
+    m_onSetCallbacksCache.emplace_back([this](IVariable* var) { OnBoxLengthChange(var); });
+    m_onSetCallbacksCache.emplace_back([this](IVariable* var) { OnBoxProjectionChange(var); });
+    m_onSetCallbacksCache.emplace_back([this](IVariable* var) { OnBoxSizeXChange(var); });
+    m_onSetCallbacksCache.emplace_back([this](IVariable* var) { OnBoxSizeYChange(var); });
+    m_onSetCallbacksCache.emplace_back([this](IVariable* var) { OnBoxSizeZChange(var); });
+    m_onSetCallbacksCache.emplace_back([this](IVariable* var) { OnBoxWidthChange(var); });
+    m_onSetCallbacksCache.emplace_back([this](IVariable* var) { OnColorChange(var); });
+    m_onSetCallbacksCache.emplace_back([this](IVariable* var) { OnInnerRadiusChange(var); });
+    m_onSetCallbacksCache.emplace_back([this](IVariable* var) { OnOuterRadiusChange(var); });
+    m_onSetCallbacksCache.emplace_back([this](IVariable* var) { OnProjectInAllDirsChange(var); });
+    m_onSetCallbacksCache.emplace_back([this](IVariable* var) { OnProjectorFOVChange(var); });
+    m_onSetCallbacksCache.emplace_back([this](IVariable* var) { OnProjectorTextureChange(var); });
+    m_onSetCallbacksCache.emplace_back([this](IVariable* var) { OnPropertyChange(var); });
+    m_onSetCallbacksCache.emplace_back([this](IVariable* var) { OnRadiusChange(var); });
 }
 
 CEntityObject::~CEntityObject()
@@ -497,7 +497,7 @@ bool CEntityObject::HitTestRect(HitContext& hc)
 //////////////////////////////////////////////////////////////////////////
 int CEntityObject::MouseCreateCallback(CViewport* view, EMouseEvent event, QPoint& point, int flags)
 {
-    AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Editor);
+    AZ_PROFILE_FUNCTION(Entity);
 
     if (event == eMouseMove || event == eMouseLDown)
     {
@@ -540,7 +540,7 @@ IVariable* CEntityObject::FindVariableInSubBlock(CVarBlockPtr& properties, IVari
 //////////////////////////////////////////////////////////////////////////
 void CEntityObject::AdjustLightProperties(CVarBlockPtr& properties, const char* pSubBlock)
 {
-    IVariable* pSubBlockVar = pSubBlock ? properties->FindVariable(pSubBlock) : NULL;
+    IVariable* pSubBlockVar = pSubBlock ? properties->FindVariable(pSubBlock) : nullptr;
 
     if (IVariable* pRadius = FindVariableInSubBlock(properties, pSubBlockVar, "Radius"))
     {
@@ -933,16 +933,19 @@ void CEntityObject::Serialize(CObjectArchive& ar)
             {
                 XmlNodeRef eventTarget = eventTargets->getChild(i);
                 CEntityEventTarget et;
-                et.target = 0;
+                et.target = nullptr;
                 GUID targetId = GUID_NULL;
                 eventTarget->getAttr("TargetId", targetId);
                 eventTarget->getAttr("Event", et.event);
                 eventTarget->getAttr("SourceEvent", et.sourceEvent);
-                m_eventTargets.push_back(et);
+                m_eventTargets.emplace_back(AZStd::move(et));
                 if (targetId != GUID_NULL)
                 {
                     using namespace AZStd::placeholders;
-                    ar.SetResolveCallback(this, targetId, AZStd::bind(&CEntityObject::ResolveEventTarget, this, _1, _2), i);
+                    ar.SetResolveCallback(
+                        this, targetId,
+                        [this](CBaseObject* object, unsigned int index) { ResolveEventTarget(object, index); },
+                        i);
                 }
             }
         }
@@ -1029,7 +1032,7 @@ void CEntityObject::Serialize(CObjectArchive& ar)
             {
                 CEntityEventTarget& et = m_eventTargets[i];
                 GUID targetId = GUID_NULL;
-                if (et.target != 0)
+                if (et.target != nullptr)
                 {
                     targetId = et.target->GetId();
                 }
@@ -1060,7 +1063,7 @@ XmlNodeRef CEntityObject::Export([[maybe_unused]] const QString& levelPath, XmlN
 {
     if (m_bLoadFailed)
     {
-        return 0;
+        return nullptr;
     }
 
     // Do not export entity with bad id.
@@ -1217,7 +1220,7 @@ XmlNodeRef CEntityObject::Export([[maybe_unused]] const QString& levelPath, XmlN
     if (!m_links.empty())
     {
         XmlNodeRef linksNode = objNode->newChild("EntityLinks");
-        for (int i = 0, num = m_links.size(); i < num; i++)
+        for (size_t i = 0, num = m_links.size(); i < num; i++)
         {
             if (m_links[i].target)
             {
@@ -1268,7 +1271,7 @@ void CEntityObject::OnEvent(ObjectEvent event)
         IObjectManager* objMan = GetIEditor()->GetObjectManager();
         if (objMan && objMan->IsLightClass(this))
         {
-            OnPropertyChange(NULL);
+            OnPropertyChange(nullptr);
         }
         break;
     }
@@ -1283,7 +1286,7 @@ void CEntityObject::UpdateVisibility(bool bVisible)
     CBaseObject::UpdateVisibility(bVisible);
 
     bool bVisibleWithSpec = bVisible && !IsHiddenBySpec();
-    if (bVisibleWithSpec != m_bVisible)
+    if (bVisibleWithSpec != static_cast<bool>(m_bVisible))
     {
         m_bVisible = bVisibleWithSpec;
     }
@@ -1314,7 +1317,7 @@ IVariable* CEntityObject::GetLightVariable(const char* name0) const
             {
                 IVariable* pChild = pLightProperties->GetVariable(i);
 
-                if (pChild == NULL)
+                if (pChild == nullptr)
                 {
                     continue;
                 }
@@ -1341,7 +1344,7 @@ QString CEntityObject::GetLightAnimation() const
         {
             IVariable* pChild = pStyleGroup->GetVariable(i);
 
-            if (pChild == NULL)
+            if (pChild == nullptr)
             {
                 continue;
             }
@@ -1368,8 +1371,8 @@ void CEntityObject::PostClone(CBaseObject* pFromObject, CObjectCloneContext& ctx
     // Clone event targets.
     if (!pFromEntity->m_eventTargets.empty())
     {
-        int numTargets = pFromEntity->m_eventTargets.size();
-        for (int i = 0; i < numTargets; i++)
+        size_t numTargets = pFromEntity->m_eventTargets.size();
+        for (size_t i = 0; i < numTargets; i++)
         {
             CEntityEventTarget& et = pFromEntity->m_eventTargets[i];
             CBaseObject* pClonedTarget = ctx.FindClone(et.target);
@@ -1386,7 +1389,7 @@ void CEntityObject::PostClone(CBaseObject* pFromObject, CObjectCloneContext& ctx
     // Clone links.
     if (!pFromEntity->m_links.empty())
     {
-        int numTargets = pFromEntity->m_links.size();
+        int numTargets = static_cast<int>(pFromEntity->m_links.size());
         for (int i = 0; i < numTargets; i++)
         {
             CEntityLink& et = pFromEntity->m_links[i];
@@ -1413,7 +1416,7 @@ void CEntityObject::PostClone(CBaseObject* pFromObject, CObjectCloneContext& ctx
 void CEntityObject::ResolveEventTarget(CBaseObject* object, unsigned int index)
 {
     // Find target id.
-    assert(index >= 0 && index < m_eventTargets.size());
+    assert(index < m_eventTargets.size());
     if (object)
     {
         object->AddEventListener(this);
@@ -1437,7 +1440,7 @@ void CEntityObject::RemoveAllEntityLinks()
 {
     while (!m_links.empty())
     {
-        RemoveEntityLink(m_links.size() - 1);
+        RemoveEntityLink(static_cast<int>(m_links.size() - 1));
     }
     m_links.clear();
     SetModified(false);
@@ -1448,7 +1451,7 @@ void CEntityObject::ReleaseEventTargets()
 {
     while (!m_eventTargets.empty())
     {
-        RemoveEventTarget(m_eventTargets.size() - 1, false);
+        RemoveEventTarget(static_cast<int>(m_eventTargets.size() - 1), false);
     }
     m_eventTargets.clear();
     SetModified(false);
@@ -1518,7 +1521,7 @@ void CEntityObject::SaveLink(XmlNodeRef xmlNode)
     }
 
     XmlNodeRef linksNode = xmlNode->newChild("EntityLinks");
-    for (int i = 0, num = m_links.size(); i < num; i++)
+    for (size_t i = 0, num = m_links.size(); i < num; i++)
     {
         XmlNodeRef linkNode = linksNode->newChild("Link");
         linkNode->setAttr("TargetId", m_links[i].targetId);
@@ -1534,26 +1537,26 @@ void CEntityObject::OnObjectEvent(CBaseObject* target, int event)
     if (event == CBaseObject::ON_DELETE)
     {
         // Find this target in events list and remove.
-        int numTargets = m_eventTargets.size();
+        int numTargets = static_cast<int>(m_eventTargets.size());
         for (int i = 0; i < numTargets; i++)
         {
             if (m_eventTargets[i].target == target)
             {
                 RemoveEventTarget(i);
-                numTargets = m_eventTargets.size();
+                numTargets = static_cast<int>(m_eventTargets.size());
                 i--;
             }
         }
     }
     else if (event == CBaseObject::ON_PREDELETE)
     {
-        int numTargets = m_links.size();
+        int numTargets = static_cast<int>(m_links.size());
         for (int i = 0; i < numTargets; i++)
         {
             if (m_links[i].target == target)
             {
                 RemoveEntityLink(i);
-                numTargets = m_eventTargets.size();
+                numTargets = static_cast<int>(m_eventTargets.size());
                 i--;
             }
         }
@@ -1589,7 +1592,7 @@ int CEntityObject::AddEventTarget(CBaseObject* target, const QString& event, con
     m_eventTargets.push_back(et);
 
     SetModified(false);
-    return m_eventTargets.size() - 1;
+    return static_cast<int>(m_eventTargets.size() - 1);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1617,7 +1620,7 @@ void CEntityObject::RemoveEventTarget(int index, [[maybe_unused]] bool bUpdateSc
 //////////////////////////////////////////////////////////////////////////
 int CEntityObject::AddEntityLink(const QString& name, GUID targetEntityId)
 {
-    CEntityObject* target = 0;
+    CEntityObject* target = nullptr;
     if (targetEntityId != GUID_NULL)
     {
         CBaseObject* pObject = FindObject(targetEntityId);
@@ -1635,7 +1638,7 @@ int CEntityObject::AddEntityLink(const QString& name, GUID targetEntityId)
 
     StoreUndo("Add EntityLink");
 
-    CLineGizmo* pLineGizmo = 0;
+    CLineGizmo* pLineGizmo = nullptr;
 
     // Assign event target.
     if (target)
@@ -1659,13 +1662,13 @@ int CEntityObject::AddEntityLink(const QString& name, GUID targetEntityId)
 
     SetModified(false);
 
-    return m_links.size() - 1;
+    return static_cast<int>(m_links.size() - 1);
 }
 
 //////////////////////////////////////////////////////////////////////////
 bool CEntityObject::EntityLinkExists(const QString& name, GUID targetEntityId)
 {
-    for (int i = 0, num = m_links.size(); i < num; ++i)
+    for (size_t i = 0, num = m_links.size(); i < num; ++i)
     {
         if (m_links[i].targetId == targetEntityId && name.compare(m_links[i].name, Qt::CaseInsensitive) == 0)
         {
@@ -1968,7 +1971,7 @@ void CEntityObject::ResetCallbacks()
 
         //@FIXME Hack to display radii of properties.
         // wires properties from param block, to this entity internal variables.
-        IVariable* var = 0;
+        IVariable* var = nullptr;
         var = pProperties->FindVariable("Radius", false);
         if (var && (var->GetType() == IVariable::FLOAT || var->GetType() == IVariable::INT))
         {
@@ -2194,7 +2197,7 @@ template <typename T>
 T CEntityObject::GetEntityProperty(const char* pName, T defaultvalue) const
 {
     CVarBlock* pProperties = GetProperties2();
-    IVariable* pVariable = NULL;
+    IVariable* pVariable = nullptr;
     if (pProperties)
     {
         pVariable = pProperties->FindVariable(pName);
@@ -2228,7 +2231,7 @@ template <typename T>
 void CEntityObject::SetEntityProperty(const char* pName, T value)
 {
     CVarBlock* pProperties = GetProperties2();
-    IVariable* pVariable = NULL;
+    IVariable* pVariable = nullptr;
     if (pProperties)
     {
         pVariable = pProperties->FindVariable(pName);

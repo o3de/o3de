@@ -74,7 +74,7 @@ public:
         void flip() {* p ^= mask; }
     };
 
-    CBitArray() { m_base = NULL; m_bits = NULL; m_size = 0; m_numBits = 0; };
+    CBitArray() { m_base = nullptr; m_bits = nullptr; m_size = 0; m_numBits = 0; };
     CBitArray(int numBits)    { resize(numBits); };
     ~CBitArray()
     {
@@ -220,7 +220,7 @@ public:
         b.resize((compsize + 1) << 3);
         out = (char*)b.m_bits;
         in = (char*)m_bits;
-        *out++ = bsize;
+        *out++ = static_cast<char>(bsize);
         for (i = 0; i < bsize; i++)
         {
             *out++ = in[i];
@@ -239,7 +239,7 @@ public:
                     }
                 }
                 i--;
-                *out++ = countz;
+                *out++ = static_cast<char>(countz);
             }
         }
     }

@@ -27,7 +27,6 @@ enum ObjectEvent
     EVENT_OUTOFGAME,        //!< Signals that editor is switching out of the game mode.
     EVENT_REFRESH,          //!< Signals that editor is refreshing level.
     EVENT_DBLCLICK,         //!< Signals that object have been double clicked.
-    EVENT_KEEP_HEIGHT,  //!< Signals that object must preserve its height over changed terrain.
     EVENT_RELOAD_ENTITY,//!< Signals that entities scripts must be reloaded.
     EVENT_RELOAD_GEOM,  //!< Signals that all possible geometries should be reloaded.
     EVENT_UNLOAD_GEOM,  //!< Signals that all possible geometries should be unloaded.

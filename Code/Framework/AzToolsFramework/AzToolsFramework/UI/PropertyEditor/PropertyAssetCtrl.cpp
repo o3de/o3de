@@ -33,6 +33,7 @@ AZ_POP_DISABLE_WARNING
 #include <AzCore/Asset/AssetManager.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Asset/AssetTypeInfoBus.h>
+#include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/Utils/Utils.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <AzFramework/Asset/SimpleAsset.h>
@@ -349,7 +350,7 @@ namespace AzToolsFramework
 
         if (pAssetType)
         {
-            (*pAssetType) = 0;
+            (*pAssetType) = nullptr;
         }
 
         if (!pData)
@@ -529,7 +530,7 @@ namespace AzToolsFramework
         if (m_errorButton)
         {
             // If the button is already active, disconnect its pressed handler so we don't get multiple popups
-            disconnect(m_errorButton, &QPushButton::pressed, this, 0);
+            disconnect(m_errorButton, &QPushButton::pressed, this, nullptr);
         }
         else
         {
@@ -548,7 +549,7 @@ namespace AzToolsFramework
 
         // Connect pressed to opening the error dialog
         // Must capture this for call to QObject::connect
-        connect(m_errorButton, &QPushButton::pressed, this, [this, errorLog]() {
+        connect(m_errorButton, &QPushButton::pressed, this, [errorLog]() {
             // Create the dialog for the log panel, and set the layout
             QDialog* logDialog = new QDialog();
             logDialog->setMinimumSize(1024, 400);

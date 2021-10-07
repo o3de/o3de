@@ -20,6 +20,8 @@
 #include <ScriptEvents/ScriptEventDefinition.h>
 #include <ScriptEvents/ScriptEventSystem.h>
 
+AZ_DECLARE_BUDGET(ScriptCanvas);
+
 namespace ScriptEvents
 {
    class ScriptEventsSystemComponent

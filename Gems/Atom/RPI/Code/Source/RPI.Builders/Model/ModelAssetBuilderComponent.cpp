@@ -60,7 +60,6 @@
 
 namespace
 {
-    const uint32_t IndicesPerFace = 3;
     const AZ::RHI::Format IndicesFormat = AZ::RHI::Format::R32_UINT;
 
     const uint32_t PositionFloatsPerVert = 3;
@@ -84,11 +83,6 @@ namespace
 
     // Morph targets
     const char* ShaderSemanticName_MorphTargetDeltas = "MORPHTARGET_VERTEXDELTAS";
-    const AZ::RHI::Format MorphTargetVertexIndexFormat = AZ::RHI::Format::R32_UINT; // Single-component, 32-bit integer as vertex index
-    const char* ShaderSemanticName_MorphTargetPositionDeltas = "MORPHTARGET_POSITIONDELTAS";
-    const AZ::RHI::Format MorphTargetPositionDeltaFormat = AZ::RHI::Format::R16_UINT; // 16-bit integer per compressed position delta component
-    const char* ShaderSemanticName_MorphTargetNormalDeltas = "MORPHTARGET_NORMALDELTAS";
-    const AZ::RHI::Format MorphTargetNormalDeltaFormat = AZ::RHI::Format::R8_UINT; // 8-bit integer per compressed normal delta component
 
     // Cloth data
     const char* const ShaderSemanticName_ClothData = "CLOTH_DATA";
@@ -882,7 +876,7 @@ namespace AZ
                         processedMorphTargets = true;
                     }
 
-                    totalVertexCount += vertexCount;
+                    totalVertexCount += static_cast<uint32_t>(vertexCount);
                     productMeshList.emplace_back(productMesh);
                 }
             }
@@ -959,8 +953,7 @@ namespace AZ
             size_t numInfluencesAdded = 0;
             for (const auto& skinData : sourceMesh.m_skinData)
             {
-                const size_t numJoints = skinData->GetBoneCount();
-                const AZ::u32 controlPointIndex = sourceMeshData->GetControlPointIndex(vertexIndex);
+                const AZ::u32 controlPointIndex = sourceMeshData->GetControlPointIndex(static_cast<int>(vertexIndex));
                 const size_t numSkinInfluences = skinData->GetLinkCount(controlPointIndex);
 
                 size_t numInfluencesExcess = 0;
@@ -1195,15 +1188,15 @@ namespace AZ
                     mesh.m_skinWeights.size(), m_numSkinJointInfluencesPerVertex, m_numSkinJointInfluencesPerVertex);
                 const size_t numSkinInfluences = mesh.m_skinWeights.size();
 
-                uint32_t jointIndicesSizeInBytes = numSkinInfluences * sizeof(uint16_t);
+                uint32_t jointIndicesSizeInBytes = static_cast<uint32_t>(numSkinInfluences * sizeof(uint16_t));
                 meshView.m_skinJointIndicesView = RHI::BufferViewDescriptor::CreateRaw(0, jointIndicesSizeInBytes);
-                meshView.m_skinWeightsView = RHI::BufferViewDescriptor::CreateTyped(0, numSkinInfluences, SkinWeightFormat);
+                meshView.m_skinWeightsView = RHI::BufferViewDescriptor::CreateTyped(0, static_cast<uint32_t>(numSkinInfluences), SkinWeightFormat);
             }
 
             if (!mesh.m_morphTargetVertexData.empty())
             {
                 const size_t numTotalVertices = mesh.m_morphTargetVertexData.size();
-                meshView.m_morphTargetVertexDataView = RHI::BufferViewDescriptor::CreateStructured(0, numTotalVertices, sizeof(PackedCompressedMorphTargetDelta));
+                meshView.m_morphTargetVertexDataView = RHI::BufferViewDescriptor::CreateStructured(0, static_cast<uint32_t>(numTotalVertices), sizeof(PackedCompressedMorphTargetDelta));
             }
 
             if (!mesh.m_clothData.empty())
@@ -1235,7 +1228,8 @@ namespace AZ
             // ProductMesh. That large buffer gets set on the LOD directly
             // rather than a Mesh in the LOD.
             ProductMeshContentAllocInfo lodBufferInfo;
-            
+
+            bool isFirstMesh = true;
             for (const ProductMeshContent& mesh : lodMeshList)
             {
                 if (lodBufferInfo.m_uvSetFloatCounts.size() < mesh.m_uvSets.size())
@@ -1347,6 +1341,14 @@ namespace AZ
 
                 if (!mesh.m_skinJointIndices.empty() && !mesh.m_skinWeights.empty())
                 {
+                    if (!isFirstMesh && lodBufferInfo.m_skinInfluencesCount == 0)
+                    {
+                        AZ_Error(
+                            s_builderName, false,
+                            "Attempting to merge a mix of static and skinned meshes, this will fail on buffer generation later. Mesh with "
+                            "name %s is skinned, but previous meshes were not skinned.",
+                            mesh.m_name.GetCStr());
+                    }
                     AZ_Assert(mesh.m_skinJointIndices.size() == mesh.m_skinWeights.size(),
                         "Number of skin influence joint indices (%d) should match the number of weights (%d).",
                         mesh.m_skinJointIndices.size(), mesh.m_skinWeights.size());
@@ -1358,10 +1360,15 @@ namespace AZ
                     const size_t numPrevSkinInfluences = lodBufferInfo.m_skinInfluencesCount;
                     const size_t numNewSkinInfluences = mesh.m_skinWeights.size();
 
-                    meshView.m_skinJointIndicesView = RHI::BufferViewDescriptor::CreateRaw(/*byteOffset=*/numPrevSkinInfluences * sizeof(uint16_t), numNewSkinInfluences  * sizeof(uint16_t));
-                    meshView.m_skinWeightsView = RHI::BufferViewDescriptor::CreateTyped(/*elementOffset=*/numPrevSkinInfluences, numNewSkinInfluences, SkinWeightFormat);
+                    meshView.m_skinJointIndicesView = RHI::BufferViewDescriptor::CreateRaw(/*byteOffset=*/ static_cast<uint32_t>(numPrevSkinInfluences * sizeof(uint16_t)), static_cast<uint32_t>(numNewSkinInfluences  * sizeof(uint16_t)));
+                    meshView.m_skinWeightsView = RHI::BufferViewDescriptor::CreateTyped(/*elementOffset=*/ static_cast<uint32_t>(numPrevSkinInfluences), static_cast<uint32_t>(numNewSkinInfluences), SkinWeightFormat);
 
                     lodBufferInfo.m_skinInfluencesCount += numNewSkinInfluences;
+                }
+                else if (lodBufferInfo.m_skinInfluencesCount > 0)
+                {
+                    AZ_Error(s_builderName, false, "Attempting to merge a mix of static and skinned meshes, this will fail on buffer generation later. Mesh with name %s is not skinned, but previous meshes were skinned.",
+                        mesh.m_name.GetCStr());
                 }
 
                 if (!mesh.m_morphTargetVertexData.empty())
@@ -1369,12 +1376,13 @@ namespace AZ
                     const size_t numPrevVertexDeltas = lodBufferInfo.m_morphTargetVertexDeltaCount;
                     const size_t numNewVertexDeltas = mesh.m_morphTargetVertexData.size();
 
-                    meshView.m_morphTargetVertexDataView = RHI::BufferViewDescriptor::CreateStructured(/*elementOffset=*/numPrevVertexDeltas, numNewVertexDeltas, sizeof(PackedCompressedMorphTargetDelta));
+                    meshView.m_morphTargetVertexDataView = RHI::BufferViewDescriptor::CreateStructured(/*elementOffset=*/ static_cast<uint32_t>(numPrevVertexDeltas), static_cast<uint32_t>(numNewVertexDeltas), sizeof(PackedCompressedMorphTargetDelta));
 
                     lodBufferInfo.m_morphTargetVertexDeltaCount += numNewVertexDeltas;
                 }
 
                 meshViews.emplace_back(AZStd::move(meshView));
+                isFirstMesh = false;
             }
 
             // Now that we have the views settled, we can just merge the mesh
@@ -1807,7 +1815,7 @@ namespace AZ
                 if (iter != materialAssetsByUid.end())
                 {
                     ModelMaterialSlot materialSlot;
-                    materialSlot.m_stableId = meshView.m_materialUid;
+                    materialSlot.m_stableId = static_cast<AZ::RPI::ModelMaterialSlot::StableId>(meshView.m_materialUid);
                     materialSlot.m_displayName = iter->second.m_name;
                     materialSlot.m_defaultMaterialAsset = iter->second.m_asset;
 

@@ -20,6 +20,8 @@
 
 namespace PhysX
 {
+    AZ_CLASS_ALLOCATOR_IMPL(PhysX::StaticRigidBody, AZ::SystemAllocator, 0);
+
     StaticRigidBody::StaticRigidBody(const AzPhysics::StaticRigidBodyConfiguration& configuration)
     {
         CreatePhysXActor(configuration);
@@ -40,7 +42,7 @@ namespace PhysX
 
         // Invalidate user data so it sets m_pxStaticRigidBody->userData to nullptr.
         // It's appropriate to do this as m_pxStaticRigidBody is a shared pointer and
-        // techniqucally it could survive m_actorUserData life's spam.
+        // technically it could survive m_actorUserData life's span.
         m_actorUserData.Invalidate();
     }
 

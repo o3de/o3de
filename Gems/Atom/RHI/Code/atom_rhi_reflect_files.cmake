@@ -118,9 +118,7 @@ set(FILES
     Include/Atom/RHI.Reflect/SwapChainDescriptor.h
     Source/RHI.Reflect/SwapChainDescriptor.cpp
     Include/Atom/RHI.Reflect/ReflectSystemComponent.h
-    Include/Atom/RHI.Reflect/RHISystemDescriptor.h
     Source/RHI.Reflect/ReflectSystemComponent.cpp
-    Source/RHI.Reflect/RHISystemDescriptor.cpp
     Include/Atom/RHI.Reflect/AliasedHeapEnums.h
     Include/Atom/RHI.Reflect/TransientBufferDescriptor.h
     Include/Atom/RHI.Reflect/TransientImageDescriptor.h

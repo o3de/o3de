@@ -8,20 +8,19 @@
 
 #pragma once
 
-#include <RenderBus.h>
-#include <IMaterial.h>
+#include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/RTTI/TypeInfo.h>
+
+struct IMaterial;
 
 namespace AZ
 {
     class BehaviorContext;
 }
-
 namespace LmbrCentral
 {
     //! Wraps a IMaterial pointer in a way that BehaviorContext can use it
     class MaterialHandle
-        : public AZ::RenderNotificationsBus::Handler
     {
     public:
         AZ_CLASS_ALLOCATOR(MaterialHandle, AZ::SystemAllocator, 0);
@@ -29,13 +28,15 @@ namespace LmbrCentral
 
         MaterialHandle()
         {
-            AZ::RenderNotificationsBus::Handler::BusConnect();
         }
 
         MaterialHandle(const MaterialHandle& handle)
             : m_material(handle.m_material)
         {
-            AZ::RenderNotificationsBus::Handler::BusConnect();
+        }
+
+        ~MaterialHandle()
+        {
         }
 
         MaterialHandle& operator=(const MaterialHandle& rhs)
@@ -44,20 +45,7 @@ namespace LmbrCentral
             return *this;
         }
 
-        ~MaterialHandle() override
-        {
-            AZ::RenderNotificationsBus::Handler::BusDisconnect();
-        }
-
-        //! Handle the renderer's free resources event by nullifying m_material.
-        //! This is used to prevent material handles that may have been queued for release in the next frame
-        //! from having dangling pointers after the renderer has already shut down.
-        void OnRendererFreeResources([[maybe_unused]] int flags) override
-        {
-            m_material = nullptr;
-        }
-
-        _smart_ptr<IMaterial> m_material;
+        IMaterial* m_material;
 
         static void Reflect(AZ::BehaviorContext* behaviorContext);
         static void Reflect(AZ::SerializeContext* serializeContext);

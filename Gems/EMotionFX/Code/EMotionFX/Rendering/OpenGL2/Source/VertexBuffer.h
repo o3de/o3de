@@ -50,8 +50,8 @@ namespace RenderGL
         void Activate();
         void Deactivate();
 
-        MCORE_INLINE uint32 GetBufferID() const         { return mBufferID; }
-        MCORE_INLINE uint32 GetNumVertices() const      { return mNumVertices; }
+        MCORE_INLINE uint32 GetBufferID() const         { return m_bufferId; }
+        MCORE_INLINE uint32 GetNumVertices() const      { return m_numVertices; }
 
         bool Init(uint32 numBytesPerVertex, uint32 numVertices, EUsageMode usage, void* vertexData = nullptr);
 
@@ -59,8 +59,8 @@ namespace RenderGL
         void Unlock();
 
     private:
-        uint32      mBufferID;      // the buffer ID
-        uint32      mNumVertices;   // the number of vertices
+        uint32      m_bufferId;      // the buffer ID
+        uint32      m_numVertices;   // the number of vertices
 
         bool GetIsSuccess();
         bool GetHasError();

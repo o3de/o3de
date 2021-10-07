@@ -147,8 +147,8 @@ namespace CommandSystem
         RegisterCommand(new CommandRecorderClear());
 
         gCommandManager     = this;
-        mLockSelection      = false;
-        mWorkspaceDirtyFlag = false;
+        m_lockSelection      = false;
+        m_workspaceDirtyFlag = false;
     }
 
     CommandManager::~CommandManager()

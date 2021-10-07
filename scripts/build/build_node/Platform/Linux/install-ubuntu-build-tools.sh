@@ -112,6 +112,23 @@ else
 fi
 
 
+#
+# Add Amazon Corretto repository to install the necessary JDK for Jenkins and Android
+#
+
+CORRETTO_REPO_COUNT=$(cat /etc/apt/sources.list | grep ^dev | grep https://apt.corretto.aws | wc -l)
+
+if [ $CORRETTO -eq 0 ]
+then
+    echo Adding Corretto Repository for JDK
+    
+    wget -O- https://apt.corretto.aws/corretto.key | apt-key add - 
+    add-apt-repository 'deb https://apt.corretto.aws stable main'
+    apt-get update
+else
+    echo Corretto repo already set
+fi
+
 # Read from the package list and process each package
 PACKAGE_FILE_LIST=package-list.ubuntu-$UBUNTU_DISTRO.txt
 

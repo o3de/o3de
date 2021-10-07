@@ -14,10 +14,14 @@
 #include <Atom/RPI.Public/Shader/ShaderSystemInterface.h>
 #include <Atom/Feature/Material/MaterialAssignment.h>
 #include <Atom/Feature/TransformService/TransformServiceFeatureProcessor.h>
+#include <Atom/Feature/Mesh/ModelReloaderSystemInterface.h>
 #include <RayTracing/RayTracingFeatureProcessor.h>
 #include <AzCore/Asset/AssetCommon.h>
 #include <AtomCore/std/parallel/concurrency_checker.h>
 #include <AzCore/Console/Console.h>
+#include <AzFramework/Asset/AssetCatalogBus.h>
+
+#include <AzCore/Component/TickBus.h>
 
 namespace AZ
 {
@@ -38,6 +42,7 @@ namespace AZ
         private:
             class MeshLoader
                 : private Data::AssetBus::Handler
+                , private AzFramework::AssetCatalogEventBus::Handler
             {
             public:
                 using ModelChangedEvent = MeshFeatureProcessorInterface::ModelChangedEvent;
@@ -52,6 +57,15 @@ namespace AZ
                 void OnAssetReady(Data::Asset<Data::AssetData> asset) override;
                 void OnAssetError(Data::Asset<Data::AssetData> asset) override;
 
+                // AssetCatalogEventBus::Handler overrides...
+                void OnCatalogAssetChanged(const AZ::Data::AssetId& assetId) override;
+                void OnCatalogAssetAdded(const AZ::Data::AssetId& assetId) override;
+
+                void OnModelReloaded(Data::Asset<Data::AssetData> asset);
+                ModelReloadedEvent::Handler m_modelReloadedEventHandler { [&](Data::Asset<RPI::ModelAsset> modelAsset)
+                                                                  {
+                                                                             OnModelReloaded(modelAsset);
+                                                                  } };
                 MeshFeatureProcessorInterface::ModelChangedEvent m_modelChangedEvent;
                 Data::Asset<RPI::ModelAsset> m_modelAsset;
                 MeshDataInstance* m_parent = nullptr;
@@ -61,10 +75,11 @@ namespace AZ
             void Init(Data::Instance<RPI::Model> model);
             void BuildDrawPacketList(size_t modelLodIndex);
             void SetRayTracingData();
+            void RemoveRayTracingData();
             void SetSortKey(RHI::DrawItemSortKey sortKey);
-            RHI::DrawItemSortKey GetSortKey();
-            void SetLodOverride(RPI::Cullable::LodOverride lodOverride);
-            RPI::Cullable::LodOverride GetLodOverride();
+            RHI::DrawItemSortKey GetSortKey() const;
+            void SetMeshLodConfiguration(RPI::Cullable::LodConfiguration meshLodConfig);
+            RPI::Cullable::LodConfiguration GetMeshLodConfiguration() const;
             void UpdateDrawPackets(bool forceUpdate = false);
             void BuildCullable();
             void UpdateCullBounds(const TransformServiceFeatureProcessor* transformService);
@@ -153,10 +168,10 @@ namespace AZ
             AZ::Aabb GetLocalAabb(const MeshHandle& meshHandle) const override;
 
             void SetSortKey(const MeshHandle& meshHandle, RHI::DrawItemSortKey sortKey) override;
-            RHI::DrawItemSortKey GetSortKey(const MeshHandle& meshHandle) override;
+            RHI::DrawItemSortKey GetSortKey(const MeshHandle& meshHandle) const override;
 
-            void SetLodOverride(const MeshHandle& meshHandle, RPI::Cullable::LodOverride lodOverride) override;
-            RPI::Cullable::LodOverride GetLodOverride(const MeshHandle& meshHandle) override;
+            void SetMeshLodConfiguration(const MeshHandle& meshHandle, const RPI::Cullable::LodConfiguration& meshLodConfig) override;
+            RPI::Cullable::LodConfiguration GetMeshLodConfiguration(const MeshHandle& meshHandle) const override;
 
             void SetExcludeFromReflectionCubeMaps(const MeshHandle& meshHandle, bool excludeFromReflectionCubeMaps) override;
             void SetRayTracingEnabled(const MeshHandle& meshHandle, bool rayTracingEnabled) override;
