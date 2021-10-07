@@ -39,7 +39,7 @@ namespace AWSCore
         : public AZ::ComponentBus
     {
     public:
-        virtual ~HttpClientComponentNotifications() {}
+        ~HttpClientComponentNotifications() override = default;
         virtual void OnHttpRequestSuccess(int responseCode, AZStd::string responseBody) {}
         virtual void OnHttpRequestFailure(int responseCode) {}
     };
@@ -55,7 +55,7 @@ namespace AWSCore
     {
     public:
         AZ_COMPONENT(HttpClientComponent, "{23ECDBDF-129A-4670-B9B4-1E0B541ACD61}");
-        virtual ~HttpClientComponent() = default;
+        ~HttpClientComponent() override = default;
 
         void Init() override;
         void Activate() override;
