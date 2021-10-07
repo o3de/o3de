@@ -29,19 +29,34 @@ namespace AWSGameLift
             for (const AWSGameLiftPlayerInformation& playerInfo : startMatchmakingRequest.m_players)
             {
                 Aws::GameLift::Model::Player player;
+                if (!playerInfo.m_playerId.empty())
+                {
+                    player.SetPlayerId(playerInfo.m_playerId.c_str());
+                }
+
                 // Optional attributes
-                player.SetPlayerId(playerInfo.m_playerId.c_str());
-                player.SetTeam(playerInfo.m_team.c_str());
-
-                Aws::Map<Aws::String, int> regionToLatencyMap;
-                AWSGameLiftActivityUtils::GetRegionToLatencyMap(playerInfo.m_latencyInMs, regionToLatencyMap);
-                player.SetLatencyInMs(AZStd::move(regionToLatencyMap));
-
-                Aws::Map<Aws::String, Aws::GameLift::Model::AttributeValue> playerAttributes;
-                AWSGameLiftActivityUtils::GetPlayerAttributes(playerInfo.m_playerAttributes, playerAttributes);
-                player.SetPlayerAttributes(AZStd::move(playerAttributes));
+                if (!playerInfo.m_team.empty())
+                {
+                    player.SetTeam(playerInfo.m_team.c_str());
+                }
+                if (playerInfo.m_latencyInMs.size() > 0)
+                {
+                    Aws::Map<Aws::String, int> regionToLatencyMap;
+                    AWSGameLiftActivityUtils::GetRegionToLatencyMap(playerInfo.m_latencyInMs, regionToLatencyMap);
+                    player.SetLatencyInMs(AZStd::move(regionToLatencyMap));
+                }
+                if (playerInfo.m_playerAttributes.size() > 0)
+                {
+                    Aws::Map<Aws::String, Aws::GameLift::Model::AttributeValue> playerAttributes;
+                    AWSGameLiftActivityUtils::GetPlayerAttributes(playerInfo.m_playerAttributes, playerAttributes);
+                    player.SetPlayerAttributes(AZStd::move(playerAttributes));
+                }
+                players.emplace_back(player);
             }
-            request.SetPlayers(players);
+            if (startMatchmakingRequest.m_players.size() > 0)
+            {
+                request.SetPlayers(players);
+            }
 
             // Optional attributes
             if (!startMatchmakingRequest.m_ticketId.empty())
@@ -100,6 +115,7 @@ namespace AWSGameLift
             {
                 for (const AWSGameLiftPlayerInformation& playerInfo : gameliftStartMatchmakingRequest->m_players)
                 {
+                    isValid &= !playerInfo.m_playerId.empty();
                     isValid &= AWSGameLiftActivityUtils::ValidatePlayerAttributes(playerInfo.m_playerAttributes);
                 }
             }

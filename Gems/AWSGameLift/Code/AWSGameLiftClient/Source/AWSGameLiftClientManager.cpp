@@ -45,10 +45,22 @@ namespace AWSGameLift
 
         AZ::Interface<AzFramework::ISessionRequests>::Register(this);
         AWSGameLiftSessionRequestBus::Handler::BusConnect();
+
+        AZ::Interface<AzFramework::IMatchmakingAsyncRequests>::Register(this);
+        AWSGameLiftMatchmakingAsyncRequestBus::Handler::BusConnect();
+
+        AZ::Interface<AzFramework::IMatchmakingRequests>::Register(this);
+        AWSGameLiftMatchmakingRequestBus::Handler::BusConnect();
     }
 
     void AWSGameLiftClientManager::DeactivateManager()
     {
+        AWSGameLiftMatchmakingRequestBus::Handler::BusDisconnect();
+        AZ::Interface<AzFramework::IMatchmakingRequests>::Unregister(this);
+
+        AWSGameLiftMatchmakingAsyncRequestBus::Handler::BusDisconnect();
+        AZ::Interface<AzFramework::IMatchmakingAsyncRequests>::Unregister(this);
+
         AWSGameLiftSessionRequestBus::Handler::BusDisconnect();
         AZ::Interface<AzFramework::ISessionRequests>::Unregister(this);
 
