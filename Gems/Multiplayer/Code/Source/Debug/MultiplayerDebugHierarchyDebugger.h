@@ -16,7 +16,7 @@
 namespace Multiplayer
 {
     /**
-     * /brief Provides ImGui and debug draw hierarchy information at runtime.
+     * \brief Reports hierarchy information in the scene.
      */
     class MultiplayerDebugHierarchyReporter
         : public AZ::EntitySystemBus::Handler
@@ -25,17 +25,15 @@ namespace Multiplayer
         MultiplayerDebugHierarchyReporter();
         ~MultiplayerDebugHierarchyReporter() override;
 
-        //! Main update loop.
+        //! main update loop
         void OnImGuiUpdate();
 
-        //! Draws hierarchy information over hierarchy root entities.
+        //! Draws hierarchy information over hierarchy root entities
         void UpdateDebugOverlay();
 
         //! EntitySystemBus overrides.
-        //! @{
         void OnEntityActivated(const AZ::EntityId& entityId) override;
         void OnEntityDeactivated(const AZ::EntityId& entityId) override;
-        //! @}
 
     private:
         AZ::ScheduledEvent m_updateDebugOverlay;
@@ -53,7 +51,5 @@ namespace Multiplayer
         void CollectHierarchyRoots();
 
         char m_statusBuffer[100] = {};
-
-        float m_awarenessRadius = 1000.f;
     };
 }

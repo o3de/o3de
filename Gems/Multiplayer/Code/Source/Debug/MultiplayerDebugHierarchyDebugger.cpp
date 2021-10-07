@@ -6,10 +6,8 @@
  *
  */
 
-#include "MultiplayerDebugHierarchyReporter.h"
+#include "MultiplayerDebugHierarchyDebugger.h"
 
-#include <Atom/RPI.Public/ViewportContext.h>
-#include <Atom/RPI.Public/ViewportContextBus.h>
 #include <AzFramework/Entity/EntityDebugDisplayBus.h>
 #include <AzFramework/Visibility/IVisibilitySystem.h>
 #include <Multiplayer/Components/NetBindComponent.h>
@@ -39,9 +37,6 @@ namespace Multiplayer
     void MultiplayerDebugHierarchyReporter::OnImGuiUpdate()
     {
 #if defined(IMGUI_ENABLED)
-        ImGui::Text("Hierarchies");
-        ImGui::Separator();
-
         for (const auto& root : m_hierarchyRoots)
         {
             if (const auto* rootComponent = root.second.m_rootComponent)
@@ -51,7 +46,7 @@ namespace Multiplayer
                     const AZStd::vector<AZ::Entity*>& hierarchicalChildren = rootComponent->GetHierarchicalEntities();
 
                     if (ImGui::TreeNode(rootComponent->GetEntity()->GetName().c_str(),
-                        "[%s] %4zu members",
+                        "Hierarchy, Root entity name [%s]: %4zu members",
                         rootComponent->GetEntity()->GetName().c_str(),
                         hierarchicalChildren.size()))
                     {
@@ -101,16 +96,6 @@ namespace Multiplayer
                     }
                 }
             }
-        }
-
-        ImGui::Separator();
-        if (ImGui::InputFloat("Awareness Radius", &m_awarenessRadius))
-        {
-            CollectHierarchyRoots();
-        }
-        if (ImGui::Button("Refresh"))
-        {
-            CollectHierarchyRoots();
         }
 #endif
     }
@@ -181,18 +166,9 @@ namespace Multiplayer
 
     void MultiplayerDebugHierarchyReporter::CollectHierarchyRoots()
     {
-        m_hierarchyRoots.clear();
-        AZ::Sphere awarenessSphere(AZ::Vector3::CreateZero(), m_awarenessRadius);
-
-        const auto viewportContextManager = AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get();
-        if (const auto viewportContext = viewportContextManager->GetDefaultViewportContext())
-        {
-            awarenessSphere.SetCenter(viewportContext->GetCameraTransform().GetTranslation());
-        }
-
         AZStd::vector<AzFramework::VisibilityEntry*> gatheredEntries;
-        AZ::Interface<AzFramework::IVisibilitySystem>::Get()->GetDefaultVisibilityScene()->Enumerate(awarenessSphere,
-            [&gatheredEntries](const AzFramework::IVisibilityScene::NodeData& nodeData)
+        const AZ::Sphere awarenessSphere = AZ::Sphere(AZ::Vector3::CreateZero(), 1000.f);
+        AZ::Interface<AzFramework::IVisibilitySystem>::Get()->GetDefaultVisibilityScene()->Enumerate(awarenessSphere, [&gatheredEntries](const AzFramework::IVisibilityScene::NodeData& nodeData)
             {
                 gatheredEntries.reserve(gatheredEntries.size() + nodeData.m_entries.size());
                 for (AzFramework::VisibilityEntry* visEntry : nodeData.m_entries)
@@ -210,15 +186,12 @@ namespace Multiplayer
             const AZ::Entity* entity = static_cast<AZ::Entity*>(entry->m_userData);
             if (auto* rootComponent = entity->FindComponent<NetworkHierarchyRootComponent>())
             {
-                if (awarenessSphere.GetCenter().GetDistanceEstimate(entity->GetTransform()->GetWorldTranslation()) < m_awarenessRadius)
-                {
-                    HierarchyRootInfo info;
-                    info.m_rootComponent = rootComponent;
-                    rootComponent->BindNetworkHierarchyChangedEventHandler(info.m_changedEvent);
-                    rootComponent->BindNetworkHierarchyLeaveEventHandler(info.m_leaveEvent);
+                HierarchyRootInfo info;
+                info.m_rootComponent = rootComponent;
+                rootComponent->BindNetworkHierarchyChangedEventHandler(info.m_changedEvent);
+                rootComponent->BindNetworkHierarchyLeaveEventHandler(info.m_leaveEvent);
 
-                    m_hierarchyRoots.insert(AZStd::make_pair(rootComponent, info));
-                }
+                m_hierarchyRoots.insert(AZStd::make_pair(rootComponent, info));
             }
         }
     }
