@@ -163,7 +163,10 @@ namespace EMStudio
         auto sceneSystem = AzFramework::SceneSystemInterface::Get();
         AZ_Assert(sceneSystem, "AtomViewportRenderer was unable to get the scene system during destruction.");
         bool removeSuccess = sceneSystem->RemoveScene("AnimViewport");
-        AZ_Assert(removeSuccess, "AtomViewportRenderer should be removed.");
+        if (!removeSuccess)
+        {
+            AZ_Assert(false, "AtomViewportRenderer should be removed.");
+        }
 
         AZ::RPI::RPISystemInterface::Get()->UnregisterScene(m_scene);
         m_scene = nullptr;
