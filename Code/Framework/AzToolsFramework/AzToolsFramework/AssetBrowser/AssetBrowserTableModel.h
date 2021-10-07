@@ -21,7 +21,9 @@ namespace AzToolsFramework
         class AssetBrowserFilterModel;
         class AssetBrowserEntry;
 
-        class AssetBrowserTableModel : public QSortFilterProxyModel
+        class AssetBrowserTableModel
+            : public QSortFilterProxyModel
+            , public AssetBrowserComponentNotificationBus::Handler
         {
             Q_OBJECT
 
@@ -39,11 +41,16 @@ namespace AzToolsFramework
             QModelIndex parent(const QModelIndex& child) const override;
             QModelIndex sibling(int row, int column, const QModelIndex& idx) const override;
 
+            //////////////////////////////////////////////////////////////////////////
+            // AssetBrowserComponentNotificationBus
+            void OnAssetBrowserComponentReady() override;
+            //////////////////////////////////////////////////////////////////////////
+
         protected:
             int rowCount(const QModelIndex& parent = QModelIndex()) const override;
             QVariant headerData(int section, Qt::Orientation orientation, int role /* = Qt::DisplayRole */) const override;
             ////////////////////////////////////////////////////////////////////
-        private:
+
             AssetBrowserEntry* GetAssetEntry(QModelIndex index) const;
             int BuildTableModelMap(const QAbstractItemModel* model, const QModelIndex& parent = QModelIndex(), int row = 0);
 

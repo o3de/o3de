@@ -24,24 +24,12 @@ namespace AzToolsFramework
             AZ_Assert(
                 m_filterModel,
                 "Error in AssetBrowserTableModel initialization, class expects source model to be an AssetBrowserFilterModel.");
-            connect(sourceModel, &QAbstractItemModel::rowsInserted, this, &AssetBrowserTableModel::UpdateTableModelMaps);
-            connect(sourceModel, &QAbstractItemModel::rowsRemoved, this, &AssetBrowserTableModel::UpdateTableModelMaps);
-            connect(sourceModel, &QAbstractItemModel::modelAboutToBeReset, this, &AssetBrowserTableModel::beginResetModel);
-            connect(
-                sourceModel, &QAbstractItemModel::modelReset, this,
-                [this]()
-                {
-                    {
-                        QSignalBlocker sb(this);
-                        UpdateTableModelMaps();
-                    }
-                    endResetModel();
-                });
-            connect(sourceModel, &QAbstractItemModel::layoutChanged, this, &AssetBrowserTableModel::UpdateTableModelMaps);
-            connect(sourceModel, &QAbstractItemModel::dataChanged, this, &AssetBrowserTableModel::SourceDataChanged);
-
-
             QSortFilterProxyModel::setSourceModel(sourceModel);
+
+            connect(m_filterModel, &QAbstractItemModel::rowsInserted, this, &AssetBrowserTableModel::UpdateTableModelMaps);
+            connect(m_filterModel, &QAbstractItemModel::rowsRemoved, this, &AssetBrowserTableModel::UpdateTableModelMaps);
+            connect(m_filterModel, &QAbstractItemModel::layoutChanged, this, &AssetBrowserTableModel::UpdateTableModelMaps);
+            connect(m_filterModel, &QAbstractItemModel::dataChanged, this, &AssetBrowserTableModel::SourceDataChanged);
         }
 
         QModelIndex AssetBrowserTableModel::mapToSource(const QModelIndex& proxyIndex) const
@@ -89,6 +77,11 @@ namespace AzToolsFramework
             [[maybe_unused]] int row, [[maybe_unused]] int column, [[maybe_unused]] const QModelIndex& idx) const
         {
             return QModelIndex();
+        }
+
+        void AssetBrowserTableModel::OnAssetBrowserComponentReady()
+        {
+
         }
 
         void AssetBrowserTableModel::SourceDataChanged(const QModelIndex& topLeft, const QModelIndex& bottomRight)
@@ -162,28 +155,29 @@ namespace AzToolsFramework
 
         AssetBrowserEntry* AssetBrowserTableModel::GetAssetEntry(QModelIndex index) const
         {
-            if (index.isValid())
-            {
-                return static_cast<AssetBrowserEntry*>(index.internalPointer());
-            }
-            else
+            if (!index.isValid())
             {
                 AZ_Error("AssetBrowser", false, "Invalid Source Index provided to GetAssetEntry.");
                 return nullptr;
             }
+            return static_cast<AssetBrowserEntry*>(index.internalPointer());
         }
 
         void AssetBrowserTableModel::UpdateTableModelMaps()
         {
+            beginResetModel();
             emit layoutAboutToBeChanged();
-            m_indexMap.clear();
-            m_rowMap.clear();
 
+            if (!m_indexMap.isEmpty() || !m_rowMap.isEmpty())
+            {
+                m_indexMap.clear();
+                m_rowMap.clear();
+            }
             AzToolsFramework::EditorSettingsAPIBus::BroadcastResult(
                 m_numberOfItemsDisplayed, &AzToolsFramework::EditorSettingsAPIBus::Handler::GetMaxNumberOfItemsShownInSearchView);
-
             BuildTableModelMap(sourceModel());
             emit layoutChanged();
+            endResetModel();
         }
     } // namespace AssetBrowser
 } // namespace AzToolsFramework
