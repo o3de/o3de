@@ -6,6 +6,7 @@
  *
  */
 
+#include <AzQtComponents/AzQtComponents_Traits_Platform.h>
 #include <AzQtComponents/Components/Widgets/FileDialog.h>
 
 #include <QMessageBox>
