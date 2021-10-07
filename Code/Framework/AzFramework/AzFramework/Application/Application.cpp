@@ -28,6 +28,7 @@
 #include <AzCore/NativeUI/NativeUISystemComponent.h>
 #include <AzCore/Module/ModuleManagerBus.h>
 #include <AzCore/Interface/Interface.h>
+#include <AzCore/Task/TaskGraphSystemComponent.h>
 
 #include <AzFramework/Asset/SimpleAsset.h>
 #include <AzFramework/Asset/AssetBundleManifest.h>
@@ -76,11 +77,15 @@
 
 namespace AzFramework
 {
+
     namespace ApplicationInternal
     {
         static constexpr const char s_prefabSystemKey[] = "/Amazon/Preferences/EnablePrefabSystem";
         static constexpr const char s_prefabWipSystemKey[] = "/Amazon/Preferences/EnablePrefabSystemWipFeatures";
         static constexpr const char s_legacySlicesAssertKey[] = "/Amazon/Preferences/ShouldAssertForLegacySlicesUsage";
+        static constexpr const char* DeprecatedFileIOAliasesRoot = "/O3DE/AzCore/FileIO/DeprecatedAliases";
+        static constexpr const char* DeprecatedFileIOAliasesOldAliasKey = "OldAlias";
+        static constexpr const char* DeprecatedFileIOAliasesNewAliasKey = "NewAlias";
     }
 
     Application::Application()
@@ -295,6 +300,7 @@ namespace AzFramework
             azrtti_typeid<AZ::ScriptSystemComponent>(),
             azrtti_typeid<AZ::JobManagerComponent>(),
             azrtti_typeid<AZ::SliceSystemComponent>(),
+            azrtti_typeid<AZ::TaskGraphSystemComponent>(),
 
             azrtti_typeid<AzFramework::AssetCatalogComponent>(),
             azrtti_typeid<AzFramework::CustomAssetTypeComponent>(),
@@ -477,14 +483,16 @@ namespace AzFramework
         newThreadDesc.m_cpuId = AFFINITY_MASK_USERTHREADS;
         newThreadDesc.m_name = newThreadName;
         AZStd::binary_semaphore binarySemaphore;
-        AZStd::thread newThread([&workForNewThread, &binarySemaphore, &newThreadName]
-        {
-            AZ_PROFILE_SCOPE(AzFramework,
-                "Application::PumpSystemEventLoopWhileDoingWorkInNewThread:ThreadWorker %s", newThreadName);
+        AZStd::thread newThread(
+            newThreadDesc,
+            [&workForNewThread, &binarySemaphore, &newThreadName]
+            {
+                AZ_PROFILE_SCOPE(AzFramework,
+                    "Application::PumpSystemEventLoopWhileDoingWorkInNewThread:ThreadWorker %s", newThreadName);
 
-            workForNewThread();
-            binarySemaphore.release();
-        }, &newThreadDesc);
+                workForNewThread();
+                binarySemaphore.release();
+            });
         while (!binarySemaphore.try_acquire_for(eventPumpFrequency))
         {
             PumpSystemEventLoopUntilEmpty();
@@ -559,6 +567,68 @@ namespace AzFramework
         }
     }
 
+    struct DeprecatedAliasesKeyVisitor
+        : AZ::SettingsRegistryInterface::Visitor
+    {
+        using VisitResponse = AZ::SettingsRegistryInterface::VisitResponse;
+        using VisitAction = AZ::SettingsRegistryInterface::VisitAction;
+        using Type = AZ::SettingsRegistryInterface::Type;
+
+        using AZ::SettingsRegistryInterface::Visitor::Visit;
+
+        VisitResponse Traverse(AZStd::string_view path, AZStd::string_view,
+            VisitAction action, Type type) override
+        {
+            if (action == AZ::SettingsRegistryInterface::VisitAction::Begin)
+            {
+                if (type == AZ::SettingsRegistryInterface::Type::Array)
+                {
+                    m_parentArrayPath = path;
+                }
+
+                // Strip off last path segment from json path and check if is a child element of the array
+                if (AZ::StringFunc::TokenizeLast(path, '/');
+                    m_parentArrayPath == path)
+                {
+                    m_aliases.emplace_back();
+                }
+            }
+            else if (action == AZ::SettingsRegistryInterface::VisitAction::End)
+            {
+                if (type == AZ::SettingsRegistryInterface::Type::Array)
+                {
+                    m_parentArrayPath = AZStd::string{};
+                }
+            }
+
+            return AZ::SettingsRegistryInterface::VisitResponse::Continue;
+        }
+
+        void Visit(AZStd::string_view, AZStd::string_view valueName, Type, AZStd::string_view value) override
+        {
+            if (!m_aliases.empty())
+            {
+                if (valueName == ApplicationInternal::DeprecatedFileIOAliasesOldAliasKey)
+                {
+                    m_aliases.back().m_oldAlias = value;
+                }
+                else if (valueName == ApplicationInternal::DeprecatedFileIOAliasesNewAliasKey)
+                {
+                    m_aliases.back().m_newAlias = value;
+                }
+            }
+        }
+
+        struct AliasPair
+        {
+            AZStd::string m_oldAlias;
+            AZStd::string m_newAlias;
+        };
+        AZStd::vector<AliasPair> m_aliases;
+
+    private:
+        AZStd::string m_parentArrayPath;
+    };
 
     static void CreateUserCache(const AZ::IO::FixedMaxPath& cacheUserPath, AZ::IO::FileIOBase& fileIoBase)
     {
@@ -606,9 +676,8 @@ namespace AzFramework
 
     void Application::SetFileIOAliases()
     {
-        if (m_archiveFileIO)
+        if (auto fileIoBase = m_archiveFileIO.get(); fileIoBase)
         {
-            auto fileIoBase = m_archiveFileIO.get();
             // Set up the default file aliases based on the settings registry
             fileIoBase->SetAlias("@engroot@", GetEngineRoot());
             fileIoBase->SetAlias("@projectroot@", GetEngineRoot());
@@ -616,29 +685,20 @@ namespace AzFramework
 
             {
                 AZ::IO::FixedMaxPath pathAliases;
-                if (m_settingsRegistry->Get(pathAliases.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_CacheProjectRootFolder))
-                {
-                    fileIoBase->SetAlias("@projectcache@", pathAliases.c_str());
-                }
                 pathAliases.clear();
                 if (m_settingsRegistry->Get(pathAliases.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_CacheRootFolder))
                 {
-                    fileIoBase->SetAlias("@assets@", pathAliases.c_str());
-                    fileIoBase->SetAlias("@projectplatformcache@", pathAliases.c_str());
-                    fileIoBase->SetAlias("@root@", pathAliases.c_str()); // Deprecated Use @projectplatformcache@
+                    fileIoBase->SetAlias("@products@", pathAliases.c_str());
                 }
                 pathAliases.clear();
                 if (m_settingsRegistry->Get(pathAliases.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_EngineRootFolder))
                 {
                     fileIoBase->SetAlias("@engroot@", pathAliases.c_str());
-                    fileIoBase->SetAlias("@devroot@", pathAliases.c_str()); // Deprecated - Use @engroot@
                 }
                 pathAliases.clear();
                 if (m_settingsRegistry->Get(pathAliases.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_ProjectPath))
                 {
-                    fileIoBase->SetAlias("@devassets@", pathAliases.c_str()); // Deprecated - Use @projectsourceassets@
                     fileIoBase->SetAlias("@projectroot@", pathAliases.c_str());
-                    fileIoBase->SetAlias("@projectsourceassets@", (pathAliases / "Assets").c_str());
                 }
             }
 
@@ -659,6 +719,15 @@ namespace AzFramework
             }
             fileIoBase->SetAlias("@log@", projectLogPath.c_str());
             fileIoBase->CreatePath(projectLogPath.c_str());
+
+            DeprecatedAliasesKeyVisitor visitor;
+            if (m_settingsRegistry->Visit(visitor, ApplicationInternal::DeprecatedFileIOAliasesRoot))
+            {
+                for (const auto& [oldAlias, newAlias] : visitor.m_aliases)
+                {
+                    fileIoBase->SetDeprecatedAlias(oldAlias, newAlias);
+                }
+            }
         }
     }
 

@@ -30,12 +30,14 @@ set(FILES
     API/AssetDatabaseBus.h
     API/ComponentEntityObjectBus.h
     API/ComponentEntitySelectionBus.h
+    API/ComponentModeCollectionInterface.h
     API/EditorCameraBus.h
     API/EditorCameraBus.cpp
     API/EditorAnimationSystemRequestBus.h
     API/EditorEntityAPI.h
     API/EditorLevelNotificationBus.h
     API/ViewportEditorModeTrackerNotificationBus.h
+    API/ViewportEditorModeTrackerNotificationBus.cpp
     API/EditorVegetationRequestsBus.h
     API/EditorPythonConsoleBus.h
     API/EditorPythonRunnerRequestsBus.h
@@ -114,6 +116,10 @@ set(FILES
     Component/EditorLevelComponentAPIBus.h
     Component/EditorLevelComponentAPIComponent.cpp
     Component/EditorLevelComponentAPIComponent.h
+    ContainerEntity/ContainerEntityInterface.h
+    ContainerEntity/ContainerEntityNotificationBus.h
+    ContainerEntity/ContainerEntitySystemComponent.cpp
+    ContainerEntity/ContainerEntitySystemComponent.h
     Editor/EditorContextMenuBus.h
     Editor/EditorSettingsAPIBus.h
     Entity/EditorEntityStartStatus.h
@@ -151,6 +157,7 @@ set(FILES
     Fingerprinting/TypeFingerprinter.h
     Fingerprinting/TypeFingerprinter.cpp
     FocusMode/FocusModeInterface.h
+    FocusMode/FocusModeNotificationBus.h
     FocusMode/FocusModeSystemComponent.h
     FocusMode/FocusModeSystemComponent.cpp
     Logger/TraceLogger.cpp
@@ -636,6 +643,7 @@ set(FILES
     Prefab/PrefabFocusHandler.h
     Prefab/PrefabFocusHandler.cpp
     Prefab/PrefabFocusInterface.h
+    Prefab/PrefabFocusNotificationBus.h
     Prefab/PrefabIdTypes.h
     Prefab/PrefabLoader.h
     Prefab/PrefabLoader.cpp
@@ -734,6 +742,8 @@ set(FILES
     UI/Prefab/PrefabIntegrationInterface.h
     UI/Prefab/PrefabUiHandler.h
     UI/Prefab/PrefabUiHandler.cpp
+    UI/Prefab/PrefabViewportFocusPathHandler.h
+    UI/Prefab/PrefabViewportFocusPathHandler.cpp
     PythonTerminal/ScriptHelpDialog.cpp
     PythonTerminal/ScriptHelpDialog.h
     PythonTerminal/ScriptHelpDialog.ui

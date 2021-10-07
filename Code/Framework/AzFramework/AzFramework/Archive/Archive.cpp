@@ -1121,7 +1121,7 @@ namespace AZ::IO
 
         if (AZ::IO::FixedMaxPath pathBindRoot; !AZ::IO::FileIOBase::GetDirectInstance()->ResolvePath(pathBindRoot, szBindRoot))
         {
-            AZ::IO::FileIOBase::GetDirectInstance()->ResolvePath(pathBindRoot, "@assets@");
+            AZ::IO::FileIOBase::GetDirectInstance()->ResolvePath(pathBindRoot, "@products@");
             desc.m_pathBindRoot = pathBindRoot.LexicallyNormal().String();
         }
         else
@@ -1631,7 +1631,20 @@ namespace AZ::IO
             return nullptr;
         }
 
-        ZipDir::CacheFactory factory(ZipDir::ZD_INIT_FAST, nFactoryFlags);
+        ZipDir::InitMethod initType = ZipDir::InitMethod::Default;
+        if (!ZipDir::IsReleaseConfig)
+        {
+            if ((nFlags & INestedArchive::FLAGS_FULL_VALIDATE) != 0)
+            {
+                initType = ZipDir::InitMethod::FullValidation;
+            }
+            else if ((nFlags & INestedArchive::FLAGS_VALIDATE_HEADERS) != 0)
+            {
+                initType = ZipDir::InitMethod::ValidateHeaders;
+            }
+        }
+
+        ZipDir::CacheFactory factory(initType, nFactoryFlags);
 
         ZipDir::CachePtr cache = factory.New(szFullPath->c_str());
         if (cache)
@@ -1794,9 +1807,9 @@ namespace AZ::IO
         if (m_eRecordFileOpenList != IArchive::RFOM_Disabled)
         {
             // we only want to record ASSET access
-            // assets are identified as files that are relative to the resolved @assets@ alias path
+            // assets are identified as files that are relative to the resolved @products@ alias path
             auto fileIoBase = AZ::IO::FileIOBase::GetInstance();
-            const char* aliasValue = fileIoBase->GetAlias("@assets@");
+            const char* aliasValue = fileIoBase->GetAlias("@products@");
 
             if (AZ::IO::FixedMaxPath resolvedFilePath;
                 fileIoBase->ResolvePath(resolvedFilePath, szFilename)

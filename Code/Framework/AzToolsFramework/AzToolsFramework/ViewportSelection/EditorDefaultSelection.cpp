@@ -9,6 +9,7 @@
 #include "EditorDefaultSelection.h"
 
 #include <AzCore/std/smart_ptr/make_shared.h>
+#include <AzToolsFramework/API/ViewportEditorModeTrackerInterface.h>
 #include <AzToolsFramework/Manipulators/ManipulatorManager.h>
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
 #include <AzToolsFramework/ViewportSelection/EditorSelectionUtil.h>
@@ -19,21 +20,35 @@ namespace AzToolsFramework
 {
     AZ_CLASS_ALLOCATOR_IMPL(EditorDefaultSelection, AZ::SystemAllocator, 0)
 
-    EditorDefaultSelection::EditorDefaultSelection(const EditorVisibleEntityDataCache* entityDataCache)
+    EditorDefaultSelection::EditorDefaultSelection(
+        const EditorVisibleEntityDataCache* entityDataCache, ViewportEditorModeTrackerInterface* viewportEditorModeTracker)
         : m_phantomWidget(nullptr)
         , m_entityDataCache(entityDataCache)
+        , m_viewportEditorModeTracker(viewportEditorModeTracker)
+        , m_componentModeCollection(viewportEditorModeTracker)
     {
+        AZ_Assert(
+            AZ::Interface<ComponentModeCollectionInterface>::Get() == nullptr, "Unexpected registration of component mode collection.")
+        AZ::Interface<ComponentModeCollectionInterface>::Register(&m_componentModeCollection);
+
         ActionOverrideRequestBus::Handler::BusConnect(GetEntityContextId());
         ComponentModeFramework::ComponentModeSystemRequestBus::Handler::BusConnect();
 
         m_manipulatorManager = AZStd::make_shared<AzToolsFramework::ManipulatorManager>(AzToolsFramework::g_mainManipulatorManagerId);
         m_transformComponentSelection = AZStd::make_unique<EditorTransformComponentSelection>(entityDataCache);
+        m_viewportEditorModeTracker->ActivateMode({ GetEntityContextId() }, ViewportEditorMode::Default);
     }
 
     EditorDefaultSelection::~EditorDefaultSelection()
     {
         ComponentModeFramework::ComponentModeSystemRequestBus::Handler::BusDisconnect();
         ActionOverrideRequestBus::Handler::BusDisconnect();
+        m_viewportEditorModeTracker->DeactivateMode({ GetEntityContextId() }, ViewportEditorMode::Default);
+
+        AZ_Assert(
+            AZ::Interface<ComponentModeCollectionInterface>::Get() != nullptr,
+            "Unexpected unregistration of component mode collection.")
+        AZ::Interface<ComponentModeCollectionInterface>::Unregister(&m_componentModeCollection);
     }
 
     void EditorDefaultSelection::SetOverridePhantomWidget(QWidget* phantomOverrideWidget)

@@ -118,7 +118,7 @@ namespace UnitTest
             const PrefabDomValue& patches);
 
         void ValidateInstances(
-            const TemplateId& templateId,
+            TemplateId templateId,
             const PrefabDomValue& expectedContent,
             const PrefabDomPath& contentPath,
             bool isContentAnInstance = false,
@@ -147,12 +147,12 @@ namespace UnitTest
         void ComparePrefabDomValues(PrefabDomValueConstReference valueA, PrefabDomValueConstReference valueB);
 
         void ValidateEntitiesOfInstances(
-            const AzToolsFramework::Prefab::TemplateId& templateId,
+            AzToolsFramework::Prefab::TemplateId templateId,
             const AzToolsFramework::Prefab::PrefabDom& expectedPrefabDom,
             const AZStd::vector<EntityAlias>& entityAliases);
 
         void ValidateNestedInstancesOfInstances(
-            const AzToolsFramework::Prefab::TemplateId& templateId,
+            AzToolsFramework::Prefab::TemplateId templateId,
             const AzToolsFramework::Prefab::PrefabDom& expectedPrefabDom,
             const AZStd::vector<InstanceAlias>& nestedInstanceAliases);
 

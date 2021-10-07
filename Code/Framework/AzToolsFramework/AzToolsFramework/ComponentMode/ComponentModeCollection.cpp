@@ -8,8 +8,9 @@
 
 #include "ComponentModeCollection.h"
 
-#include <AzToolsFramework/Commands/ComponentModeCommand.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
+#include <AzToolsFramework/API/ViewportEditorModeTrackerInterface.h>
+#include <AzToolsFramework/Commands/ComponentModeCommand.h>
 
 namespace AzToolsFramework
 {
@@ -17,7 +18,7 @@ namespace AzToolsFramework
     {
         AZ_CLASS_ALLOCATOR_IMPL(ComponentModeCollection, AZ::SystemAllocator, 0)
 
-            static const char* const s_nextActiveComponentModeTitle = "Edit Next";
+        static const char* const s_nextActiveComponentModeTitle = "Edit Next";
         static const char* const s_previousActiveComponentModeTitle = "Edit Previous";
         static const char* const s_nextActiveComponentModeDesc = "Move to the next component";
         static const char* const s_prevActiveComponentModeDesc = "Move to the previous component";
@@ -119,6 +120,11 @@ namespace AzToolsFramework
             }
         };
 
+        ComponentModeCollection::ComponentModeCollection(ViewportEditorModeTrackerInterface* viewportEditorModeTracker)
+            : m_viewportEditorModeTracker(viewportEditorModeTracker)
+        {
+        }
+
         void ComponentModeCollection::AddComponentMode(
             const AZ::EntityComponentIdPair& entityComponentIdPair, const AZ::Uuid componentType,
             const ComponentModeFactoryFunction& componentModeBuilder)
@@ -197,6 +203,11 @@ namespace AzToolsFramework
             }
         }
 
+        const AZStd::vector<AZ::Uuid>& ComponentModeCollection::GetComponentTypes() const
+        {
+            return m_activeComponentTypes;
+        }
+
         void ComponentModeCollection::BeginComponentMode()
         {
             m_selectedComponentModeIndex = 0;
@@ -205,9 +216,7 @@ namespace AzToolsFramework
 
             // notify listeners the editor has entered ComponentMode - listeners may
             // wish to modify state to indicate this (e.g. appearance, functionality etc.)
-            EditorComponentModeNotificationBus::Event(
-                GetEntityContextId(), &EditorComponentModeNotifications::EnteredComponentMode,
-                m_activeComponentTypes);
+            m_viewportEditorModeTracker->ActivateMode({ GetEntityContextId() }, ViewportEditorMode::Component);
 
             // enable actions for the first/primary ComponentMode
             // note: if multiple ComponentModes are activated at the same time, actions
@@ -277,11 +286,7 @@ namespace AzToolsFramework
 
             // notify listeners the editor has left ComponentMode - listeners may
             // wish to modify state to indicate this (e.g. appearance, functionality etc.)
-            EditorComponentModeNotificationBus::Event(
-                GetEntityContextId(),
-                &EditorComponentModeNotifications::LeftComponentMode,
-                m_activeComponentTypes);
-
+            m_viewportEditorModeTracker->DeactivateMode({ GetEntityContextId() }, ViewportEditorMode::Component);
 
             // clear stored modes and builders for this ComponentMode
             // TLDR: avoid 'use after free' error
