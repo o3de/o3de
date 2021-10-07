@@ -27,6 +27,8 @@ namespace EMStudio
         : public DockWidgetPlugin
     {
     public:
+        AZ_CLASS_ALLOCATOR_DECL
+
         enum
         {
             CLASS_ID = 0x32b0c04d
@@ -49,10 +51,10 @@ namespace EMStudio
         void ReinitRenderer();
 
     private:
-        MCORE_DEFINECOMMANDCALLBACK(CreateActorInstanceCallback);
-        MCORE_DEFINECOMMANDCALLBACK(RemoveActorInstanceCallback);
-        CreateActorInstanceCallback* m_createActorInstanceCallback;
-        RemoveActorInstanceCallback* m_removeActorInstanceCallback;
+        MCORE_DEFINECOMMANDCALLBACK(ImportActorCallback);
+        MCORE_DEFINECOMMANDCALLBACK(RemoveActorCallback);
+        ImportActorCallback* m_importActorCallback;
+        RemoveActorCallback* m_removeActorCallback;
 
         QWidget* m_innerWidget;
         AnimViewportWidget* m_animViewportWidget;

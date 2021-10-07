@@ -98,7 +98,6 @@ namespace EMotionFX
 
             // Use this to alter the actor asset.
             virtual void SetActorAsset(AZ::Data::Asset<EMotionFX::Integration::ActorAsset> actorAsset) = 0;
-            // virtual AZ::Data::Asset<const EMotionFX::Integration::ActorAsset> GetAsset() const = 0;
 
             static const size_t s_invalidJointIndex = std::numeric_limits<size_t>::max();
         };

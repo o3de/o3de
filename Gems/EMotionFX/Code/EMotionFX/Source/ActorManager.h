@@ -42,7 +42,6 @@ namespace EMotionFX
         friend class EMotionFXManager;
 
     public:
-        using ActorAssetData = AZ::Data::Asset<Integration::ActorAsset>;
         static ActorManager* Create();
 
         /**

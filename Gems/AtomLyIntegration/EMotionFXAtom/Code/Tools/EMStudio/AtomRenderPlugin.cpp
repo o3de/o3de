@@ -11,11 +11,14 @@
 
 #include <Integration/Components/ActorComponent.h>
 #include <EMotionFX/CommandSystem/Source/CommandManager.h>
+#include <EMotionFX/Source/Allocators.h>
 #include <EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/EMStudioManager.h>
 #include <QHBoxLayout>
 
 namespace EMStudio
 {
+    AZ_CLASS_ALLOCATOR_IMPL(AtomRenderPlugin, EMotionFX::EditorAllocator, 0);
+
     AtomRenderPlugin::AtomRenderPlugin()
         : DockWidgetPlugin()
     {
@@ -74,6 +77,7 @@ namespace EMStudio
     void AtomRenderPlugin::ReinitRenderer()
     {
         m_animViewportWidget->GetAnimViewportRenderer()->Reinit();
+        m_animViewportWidget->ResetCameraPosition();
     }
 
     bool AtomRenderPlugin::Init()
@@ -89,10 +93,10 @@ namespace EMStudio
         verticalLayout->addWidget(m_animViewportWidget);
 
         // Register command callbacks.
-        m_createActorInstanceCallback = new CreateActorInstanceCallback(false);
-        m_removeActorInstanceCallback = new RemoveActorInstanceCallback(false);
-        EMStudioManager::GetInstance()->GetCommandManager()->RegisterCommandCallback("CreateActorInstance", m_createActorInstanceCallback);
-        EMStudioManager::GetInstance()->GetCommandManager()->RegisterCommandCallback("RemoveActorInstance", m_removeActorInstanceCallback);
+        m_importActorCallback = new ImportActorCallback(false);
+        m_removeActorCallback = new RemoveActorCallback(false);
+        EMStudioManager::GetInstance()->GetCommandManager()->RegisterCommandCallback("ImportActor", m_importActorCallback);
+        EMStudioManager::GetInstance()->GetCommandManager()->RegisterCommandCallback("RemoveActor", m_removeActorCallback);
 
         return true;
     }
@@ -113,23 +117,23 @@ namespace EMStudio
         return true;
     }
 
-    bool AtomRenderPlugin::CreateActorInstanceCallback::Execute(
+    bool AtomRenderPlugin::ImportActorCallback::Execute(
         [[maybe_unused]] MCore::Command* command, [[maybe_unused]] const MCore::CommandLine& commandLine)
     {
         return ReinitAtomRenderPlugin();
     }
-    bool AtomRenderPlugin::CreateActorInstanceCallback::Undo(
+    bool AtomRenderPlugin::ImportActorCallback::Undo(
         [[maybe_unused]] MCore::Command* command, [[maybe_unused]] const MCore::CommandLine& commandLine)
     {
         return ReinitAtomRenderPlugin();
     }
 
-    bool AtomRenderPlugin::RemoveActorInstanceCallback::Execute(
+    bool AtomRenderPlugin::RemoveActorCallback::Execute(
         [[maybe_unused]] MCore::Command* command, [[maybe_unused]] const MCore::CommandLine& commandLine)
     {
         return ReinitAtomRenderPlugin();
     }
-    bool AtomRenderPlugin::RemoveActorInstanceCallback::Undo(
+    bool AtomRenderPlugin::RemoveActorCallback::Undo(
         [[maybe_unused]] MCore::Command* command, [[maybe_unused]] const MCore::CommandLine& commandLine)
     {
         return ReinitAtomRenderPlugin();

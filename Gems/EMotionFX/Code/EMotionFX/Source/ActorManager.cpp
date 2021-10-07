@@ -31,7 +31,6 @@ namespace EMotionFX
         SetScheduler(MultiThreadScheduler::Create());
 
         // reserve memory
-        m_actorAssets.reserve(32);
         m_actorInstances.reserve(1024);
         m_rootActorInstances.reserve(1024);
     }
@@ -429,7 +428,7 @@ namespace EMotionFX
     }
 
 
-    ActorManager::ActorAssetData ActorManager::GetActorAsset(size_t nr) const
+    ActorAssetData ActorManager::GetActorAsset(size_t nr) const
     {
         return m_actorAssets[nr];
     }

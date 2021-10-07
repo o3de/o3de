@@ -90,6 +90,7 @@ namespace EMStudio
         AZStd::unique_ptr<ActorInfo>        m_actorInfo;
         AZStd::unique_ptr<NodeInfo>         m_nodeInfo;
 
+        // Use this flag to defer the reinit function to main thread.
         bool m_reinitRequested = false;
     };
 } // namespace EMStudio

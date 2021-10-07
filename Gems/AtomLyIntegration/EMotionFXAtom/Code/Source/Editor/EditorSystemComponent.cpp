@@ -34,6 +34,6 @@ namespace AZ::EMotionFXAtom
     void EditorSystemComponent::OnRegisterPlugin()
     {
         EMStudio::PluginManager* pluginManager = EMStudio::EMStudioManager::GetInstance()->GetPluginManager();
-        pluginManager->RegisterPlugin(new EMStudio::AtomRenderPlugin());
+        pluginManager->RegisterPlugin(aznew EMStudio::AtomRenderPlugin());
     }
 } // namespace AZ::EMotionFXAtom

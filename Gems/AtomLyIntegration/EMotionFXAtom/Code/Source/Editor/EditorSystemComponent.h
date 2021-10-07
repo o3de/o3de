@@ -22,7 +22,7 @@ namespace AZ::EMotionFXAtom
         static void Reflect(ReflectContext* context);
 
     protected:
-        // AZ::Component
+        // AZ::Component overrides
         void Activate() override;
         void Deactivate() override;
 

@@ -80,6 +80,8 @@ namespace EMotionFX
             const char* GetBrowserIcon() const override;
         };
     } // namespace Integration
+
+    using ActorAssetData = AZ::Data::Asset<Integration::ActorAsset>;
 } // namespace EMotionFX
 
 namespace AZ

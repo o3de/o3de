@@ -59,7 +59,6 @@ namespace EMStudio
         m_frameworkScene->SetSubsystem<AzFramework::EntityContext::SceneStorageType>(m_entityContext.get());
 
         // Create and register a scene with all available feature processors
-        // TODO: We don't need every procesors, only register the processor we are going to use.
         AZ::RPI::SceneDescriptor sceneDesc;
         m_scene = AZ::RPI::Scene::CreateScene(sceneDesc);
         m_scene->EnableAllFeatureProcessors();
