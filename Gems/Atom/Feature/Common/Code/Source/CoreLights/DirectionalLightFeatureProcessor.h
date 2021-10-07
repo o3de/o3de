@@ -94,8 +94,8 @@ namespace AZ
             {
                 0.f, 0.f, 0.f, 0.f
             };
-            float m_unused = 0.f;
             uint32_t m_shadowmapSize = 1; // width and height of shadowmap
+            float m_invShadowmapSize = 1.f;
             uint32_t m_cascadeCount = 1;
             float m_normalOffsetBias = 1.0f;
             uint32_t m_filteringSampleCount = 0;

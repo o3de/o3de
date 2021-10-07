@@ -427,7 +427,9 @@ namespace AZ
         {
             for (auto& it : m_shadowData)
             {
-                it.second.GetData(handle.GetIndex()).m_shadowmapSize = aznumeric_cast<uint32_t>(size);
+                DirectionalLightShadowData& shadowData = it.second.GetData(handle.GetIndex());
+                shadowData.m_shadowmapSize = aznumeric_cast<uint32_t>(size);
+                shadowData.m_invShadowmapSize = 1.0f / aznumeric_cast<float>(size);
             }
             SetShadowmapImageSizeArraySize(handle);
         }
