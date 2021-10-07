@@ -3588,6 +3588,21 @@ namespace AssetProcessor
                         resolvedDependencyList.append(m_platformConfig->FindWildcardMatches(absolutePath, relativeSearch, false, scanFolderInfo->RecurseSubFolders()));
                     }
 
+                    // Convert to relative paths
+                    for (QString& dependency : resolvedDependencyList)
+                    {
+                        QString relativePath, scanFolder;
+                        if (m_platformConfig->ConvertToRelativePath(dependency, relativePath, scanFolder))
+                        {
+                            dependency = relativePath;
+                        }
+                        else
+                        {
+                            AZ_Warning("AssetProcessor", false, "Failed to get relative path for wildcard dependency file %s.  Is the file within a scan folder?",
+                                dependency.toUtf8().constData());
+                        }
+                    }
+
                     resultDatabaseSourceName = encodedFileData.replace('\\', '/');
                     resultDatabaseSourceName = encodedFileData.replace('*', '%');
                 }
