@@ -31,7 +31,6 @@
     ],
     "steps": [
       "profile_vs2019",
-      "test_impact_analysis_profile_vs2019",
       "asset_profile_vs2019",
       "test_cpu_profile_vs2019"
     ]

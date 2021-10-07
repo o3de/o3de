@@ -27,4 +27,14 @@ namespace Multiplayer
     {
         m_providerTicket = ticket;
     }
+
+    inline bool ClientToServerConnectionData::DidHandshake() const
+    {
+        return m_didHandshake;
+    }
+
+    inline void ClientToServerConnectionData::SetDidHandshake(bool didHandshake)
+    {
+        m_didHandshake = didHandshake;
+    }
 }

@@ -53,16 +53,6 @@ namespace UnitTest
         return false;
     }
 
-    const char* AssetSystemStub::GetAbsoluteDevGameFolderPath()
-    {
-        return nullptr;
-    }
-
-    const char* AssetSystemStub::GetAbsoluteDevRootFolderPath()
-    {
-        return nullptr;
-    }
-
     bool AssetSystemStub::GetRelativeProductPathFromFullSourceOrProductPath([[maybe_unused]] const AZStd::string& fullPath, [[maybe_unused]] AZStd::string& relativeProductPath)
     {
         return false;

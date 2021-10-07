@@ -31,8 +31,8 @@ namespace AzNetworking
 
     AZ_CVAR(bool, net_UdpTimeoutConnections, true, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "Boolean value on whether we should timeout Udp connections");
     AZ_CVAR(AZ::TimeMs, net_UdpPacketTimeSliceMs, AZ::TimeMs{ 8 }, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "The number of milliseconds to allow for packet processing");
-    AZ_CVAR(AZ::TimeMs, net_UdpHearthbeatTimeMs, AZ::TimeMs{ 2 * 1000 }, nullptr, AZ::ConsoleFunctorFlags::Null, "Udp connection heartbeat frequency");
-    AZ_CVAR(AZ::TimeMs, net_UdpTimeoutTimeMs, AZ::TimeMs{ 10 * 1000 }, nullptr, AZ::ConsoleFunctorFlags::Null, "Time in milliseconds before we timeout an idle Udp connection");
+    AZ_CVAR(AZ::TimeMs, net_UdpHeartbeatTimeMs, AZ::TimeMs{ 2 * 1000 }, nullptr, AZ::ConsoleFunctorFlags::Null, "Udp connection heartbeat frequency");
+    AZ_CVAR(AZ::TimeMs, net_UdpDefaultTimeoutMs, AZ::TimeMs{ 10 * 1000 }, nullptr, AZ::ConsoleFunctorFlags::Null, "Time in milliseconds before we timeout an idle Udp connection");
     AZ_CVAR(AZ::TimeMs, net_MinPacketTimeoutMs, AZ::TimeMs{ 200 }, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "Minimum time to wait before timing out an unacked packet");
     AZ_CVAR(int32_t, net_MaxTimeoutsPerFrame, 1000, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "Maximum number of packet timeouts to allow to process in a single frame");
     AZ_CVAR(float, net_RttFudgeScalar, 2.0f, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "Scalar value to multiply computed Rtt by to determine an optimal packet timeout threshold");
@@ -61,6 +61,7 @@ namespace AzNetworking
         , m_connectionListener(connectionListener)
         , m_socket(net_UdpUseEncryption ? new DtlsSocket() : new UdpSocket())
         , m_readerThread(readerThread)
+        , m_timeoutMs(net_UdpDefaultTimeoutMs)
     {
         const AZ::CVarFixedString compressor = static_cast<AZ::CVarFixedString>(net_UdpCompressor);
         const AZ::Name compressorName = AZ::Name(compressor);
@@ -138,7 +139,7 @@ namespace AzNetworking
         }
 
         const ConnectionId connectionId = m_connectionSet.GetNextConnectionId();
-        const TimeoutId timeoutId = m_connectionTimeoutQueue.RegisterItem(aznumeric_cast<uint64_t>(connectionId), net_UdpHearthbeatTimeMs);
+        const TimeoutId timeoutId = m_connectionTimeoutQueue.RegisterItem(aznumeric_cast<uint64_t>(connectionId), m_timeoutMs);
 
         AZStd::unique_ptr<UdpConnection> connection = AZStd::make_unique<UdpConnection>(connectionId, remoteAddress, *this, ConnectionRole::Connector);
         UdpPacketEncodingBuffer dtlsData;
@@ -403,14 +404,14 @@ namespace AzNetworking
         return connection->Disconnect(reason, TerminationEndpoint::Local);
     }
 
-    void UdpNetworkInterface::SetTimeoutEnabled(bool timeoutEnabled)
+    void UdpNetworkInterface::SetTimeoutMs(AZ::TimeMs timeoutMs)
     {
-        m_timeoutEnabled = timeoutEnabled;
+        m_timeoutMs = timeoutMs;
     }
 
-    bool UdpNetworkInterface::IsTimeoutEnabled() const
+    AZ::TimeMs UdpNetworkInterface::GetTimeoutMs() const
     {
-        return m_timeoutEnabled;
+        return m_timeoutMs;
     }
 
     bool UdpNetworkInterface::IsEncrypted() const
@@ -681,7 +682,7 @@ namespace AzNetworking
 
         // How long should we sit in the timeout queue before heartbeating or disconnecting
         const ConnectionId connectionId = m_connectionSet.GetNextConnectionId();
-        const TimeoutId    timeoutId = m_connectionTimeoutQueue.RegisterItem(aznumeric_cast<uint64_t>(connectionId), net_UdpTimeoutTimeMs);
+        const TimeoutId    timeoutId = m_connectionTimeoutQueue.RegisterItem(aznumeric_cast<uint64_t>(connectionId), m_timeoutMs);
 
         AZLOG(Debug_UdpConnect, "Accepted new Udp Connection");
         AZStd::unique_ptr<UdpConnection> connection = AZStd::make_unique<UdpConnection>(connectionId, connectPacket.m_address, *this, ConnectionRole::Acceptor);
@@ -745,7 +746,7 @@ namespace AzNetworking
         {
             udpConnection->SendUnreliablePacket(CorePackets::HeartbeatPacket());
         }
-        else if (net_UdpTimeoutConnections && m_networkInterface.IsTimeoutEnabled())
+        else if (net_UdpTimeoutConnections && (m_networkInterface.GetTimeoutMs() > AZ::TimeMs{ 0 }))
         {
             udpConnection->Disconnect(DisconnectReason::Timeout, TerminationEndpoint::Local);
             return TimeoutResult::Delete;

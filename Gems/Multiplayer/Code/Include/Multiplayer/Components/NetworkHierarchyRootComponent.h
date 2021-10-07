@@ -96,5 +96,7 @@ namespace Multiplayer
         
         //! Set to false when deactivating or otherwise not to be included in hierarchy considerations.
         bool m_isHierarchyEnabled = true;
+
+        friend class HierarchyBenchmarkBase;
     };
 }
