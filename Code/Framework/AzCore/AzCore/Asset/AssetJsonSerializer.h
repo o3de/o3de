@@ -39,6 +39,10 @@ namespace AZ
         {
         public:
             AZ_RTTI(SerializedAssetTracker, "{1E067091-8C0A-44B1-A455-6E97663F6963}");
+            using AssetFixUp = AZStd::function<void(Asset<AssetData>& asset)>;
+
+            void SetAssetFixUp(AssetFixUp assetFixUpCallback);
+            void FixUpAsset(Asset<AssetData>& asset);
 
             void AddAsset(Asset<AssetData>* asset);
             AZStd::vector<Asset<AssetData>*>& GetTrackedAssets();
@@ -46,6 +50,7 @@ namespace AZ
 
         private:
             AZStd::vector<Asset<AssetData>*> m_serializedAssets;
+            AssetFixUp m_assetFixUpCallback;
         };
     } // namespace Data
 } // namespace AZ

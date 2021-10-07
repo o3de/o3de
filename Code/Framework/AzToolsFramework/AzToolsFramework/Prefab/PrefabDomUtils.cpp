@@ -252,6 +252,92 @@ namespace AzToolsFramework
                     entityIdMapper.SetEntityIdGenerationApproach(InstanceEntityIdMapper::EntityIdGenerationApproach::Random);
                 }
 
+#if true
+                // PoC 
+
+                // some assets may come in from the JSON serialzier with no AssetID, but have an asset hint
+                // this attempts to fix up the assets using the assetHint field
+                auto fixUpInvalidAssets = [](AZ::Data::Asset<AZ::Data::AssetData>& asset)
+                {
+                    if (!asset.GetId().IsValid() && !asset.GetHint().empty())
+                    {
+                        AZ::Data::AssetId assetId;
+                        AZ::Data::AssetCatalogRequestBus::BroadcastResult(
+                            assetId,
+                            &AZ::Data::AssetCatalogRequestBus::Events::GetAssetIdByPath,
+                            asset.GetHint().c_str(),
+                            AZ::Data::s_invalidAssetType,
+                            false);
+
+                        if (assetId.IsValid())
+                        {
+                            asset.Create(assetId, true);
+                        }
+                    }
+                };
+
+                auto tracker = AZ::Data::SerializedAssetTracker{};
+                tracker.SetAssetFixUp(fixUpInvalidAssets);
+
+                AZ::JsonDeserializerSettings settings;
+                // The InstanceEntityIdMapper is registered twice because it's used in several places during deserialization where one is
+                // specific for the InstanceEntityIdMapper and once for the generic JsonEntityIdMapper. Because the Json Serializer's meta
+                // data has strict typing and doesn't look for inheritance both have to be explicitly added so they're found both locations.
+                settings.m_metadata.Add(static_cast<AZ::JsonEntityIdSerializer::JsonEntityIdMapper*>(&entityIdMapper));
+                settings.m_metadata.Add(&entityIdMapper);
+                settings.m_metadata.Create<InstanceEntityScrubber>(newlyAddedEntities);
+                settings.m_metadata.Add(tracker);
+
+                AZStd::string scratchBuffer;
+                auto issueReportingCallback = [&scratchBuffer](
+                    AZStd::string_view message, AZ::JsonSerializationResult::ResultCode result,
+                    AZStd::string_view path) -> AZ::JsonSerializationResult::ResultCode
+                {
+                    return Internal::JsonIssueReporter(scratchBuffer, message, result, path);
+                };
+                settings.m_reporting = AZStd::move(issueReportingCallback);
+
+                AZ::JsonSerializationResult::ResultCode result = AZ::JsonSerialization::Load(instance, prefabDom, settings);
+
+                // some assets may come in from the JSON serialzier with no AssetID, but have an asset hint
+                // this attempts to fix up the assets using the assetHint field
+                //auto* assetTracker = settings.m_metadata.Find<AZ::Data::SerializedAssetTracker>();
+                //if (assetTracker)
+                //{
+                //    auto& trackedAssets = assetTracker->GetTrackedAssets();
+                //    for (AZ::Data::Asset<AZ::Data::AssetData>* asset : trackedAssets)
+                //    {
+                //        if (!asset->GetId().IsValid() && !asset->GetHint().empty())
+                //        {
+                //            AZ::Data::AssetId assetId;
+                //            AZ::Data::AssetCatalogRequestBus::BroadcastResult(
+                //                assetId,
+                //                &AZ::Data::AssetCatalogRequestBus::Events::GetAssetIdByPath,
+                //                asset->GetHint().c_str(),
+                //                AZ::Data::s_invalidAssetType,
+                //                false);
+                //            if (assetId.IsValid())
+                //            {
+                //                asset->Create(assetId, true);
+                //            }
+                //        }
+                //    }
+                //}
+
+                AZ::Data::AssetManager::Instance().ResumeAssetRelease();
+
+                if (result.GetProcessing() == AZ::JsonSerializationResult::Processing::Halted)
+                {
+                    AZ_Error(
+                        "Prefab", false,
+                        "Failed to de-serialize Prefab Instance from Prefab DOM. "
+                        "Unable to proceed.");
+
+                    return false;
+                }
+
+                return true;
+#else
                 AZ::JsonDeserializerSettings settings;
                 // The InstanceEntityIdMapper is registered twice because it's used in several places during deserialization where one is
                 // specific for the InstanceEntityIdMapper and once for the generic JsonEntityIdMapper. Because the Json Serializer's meta
@@ -311,6 +397,7 @@ namespace AzToolsFramework
                 }
 
                 return true;
+#endif
             }
 
             void GetTemplateSourcePaths(const PrefabDomValue& prefabDom, AZStd::unordered_set<AZ::IO::Path>& templateSourcePaths)

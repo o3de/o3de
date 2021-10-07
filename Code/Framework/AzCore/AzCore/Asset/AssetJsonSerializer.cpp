@@ -173,6 +173,7 @@ namespace AZ
 
             if (assetTracker)
             {
+                assetTracker->FixUpAsset(*instance);
                 assetTracker->AddAsset(instance);
             }
 
@@ -183,6 +184,19 @@ namespace AZ
                 defaulted ? "A default id was provided for Asset<T>, so no instance could be created." :
                 "Not enough information was available to create an instance of Asset<T> or data was corrupted.";
             return context.Report(result, message);
+        }
+
+        void SerializedAssetTracker::SetAssetFixUp(AssetFixUp assetFixUpCallback)
+        {
+            m_assetFixUpCallback = AZStd::move(assetFixUpCallback);
+        }
+
+        void SerializedAssetTracker::FixUpAsset(Asset<AssetData>& asset)
+        {
+            if (m_assetFixUpCallback)
+            {
+                m_assetFixUpCallback(asset);
+            }
         }
 
         void SerializedAssetTracker::AddAsset(Asset<AssetData>* asset)
