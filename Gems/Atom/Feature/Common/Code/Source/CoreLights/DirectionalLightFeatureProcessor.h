@@ -276,6 +276,13 @@ namespace AZ
             //! This sets width/height/depth/arrayCount of the shadowmap image on ShadowmapPass.
             void SetShadowmapImageSizeArraySize(LightHandle handle);
 
+            //! This updates the parameter of Gaussian filter used in ESM.
+            void UpdateFilterParameters(LightHandle handle);
+            //! This updates standard deviations for each cascade.
+            void UpdateStandardDeviations(LightHandle handle, const RPI::View* cameraView);
+            //! This updates filter offset and size for each cascade.
+            void UpdateFilterOffsetsCounts(LightHandle handle, const RPI::View* cameraView);
+
             //! This updates shadowmap position(origin and size) in the atlas for each cascade.
             void UpdateShadowmapPositionInAtlas(LightHandle handle, const RPI::View* cameraView);
             //! This set filter parameters to passes which execute filtering.
