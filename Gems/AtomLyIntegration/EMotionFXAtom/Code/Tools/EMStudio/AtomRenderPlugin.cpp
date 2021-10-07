@@ -137,5 +137,4 @@ namespace EMStudio
     {
         return ReinitAtomRenderPlugin();
     }
-
-}
+}// namespace EMStudio

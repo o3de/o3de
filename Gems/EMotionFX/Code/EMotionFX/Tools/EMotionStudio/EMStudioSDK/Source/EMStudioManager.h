@@ -154,7 +154,7 @@ namespace EMStudio
             void OnRemoveCommand(size_t historyIndex) override                                                                                                                                  { MCORE_UNUSED(historyIndex); }
             void OnSetCurrentCommand(size_t index) override                                                                                                                                     { MCORE_UNUSED(index); }
         };
-        EventProcessingCallback*    m_eventProcessingCallback;
+        EventProcessingCallback*    m_eventProcessingCallback = nullptr;
     };
 
     // Shortcuts

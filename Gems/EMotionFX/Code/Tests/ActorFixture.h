@@ -30,7 +30,7 @@ namespace EMotionFX
         AZStd::vector<AZStd::string> GetTestJointNames() const;
 
     protected:
-        Actor* GetActor();
+        Actor* GetActor() const;
 
         AZ::Data::Asset<Integration::ActorAsset> m_actorAsset;
         ActorInstance* m_actorInstance = nullptr;

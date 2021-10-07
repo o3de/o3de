@@ -53,10 +53,9 @@ namespace EMStudio
     private:
         MCORE_DEFINECOMMANDCALLBACK(ImportActorCallback);
         MCORE_DEFINECOMMANDCALLBACK(RemoveActorCallback);
-        ImportActorCallback* m_importActorCallback;
-        RemoveActorCallback* m_removeActorCallback;
-
-        QWidget* m_innerWidget;
-        AnimViewportWidget* m_animViewportWidget;
+        ImportActorCallback* m_importActorCallback = nullptr;
+        RemoveActorCallback* m_removeActorCallback = nullptr;
+        QWidget* m_innerWidget = nullptr;
+        AnimViewportWidget* m_animViewportWidget = nullptr;
     };
-}
+}// namespace EMStudio

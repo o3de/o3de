@@ -118,9 +118,9 @@ namespace EMotionFX
         if (FindActorIndex(actorAsset.GetId()) != InvalidIndex)
         {
             MCore::LogWarning(
-                "EMotionFX::ActorManager::RegisterActor() - The actor at location 0x%x has already been registered as actor, most likely "
+                "EMotionFX::ActorManager::RegisterActor() - The actor %s has already been registered as actor, most likely "
                 "already by the LoadActor of the importer.",
-                actorAsset->GetActor());
+                actorAsset->GetActor()->GetName());
             UnlockActors();
             return;
         }

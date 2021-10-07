@@ -28,7 +28,7 @@ namespace EMotionFX
 
         AZ::Data::AssetId actorAssetId("{5060227D-B6F4-422E-BF82-41AAC5F228A5}");
         m_actorAsset = TestActorAssets::CreateActorAssetAndRegister<JackNoMeshesActor>(actorAssetId);
-        m_actorInstance = ActorInstance::Create(m_actorAsset->GetActor());
+        m_actorInstance = ActorInstance::Create(GetActor());
     }
 
     void ActorFixture::TearDown()
@@ -76,7 +76,7 @@ namespace EMotionFX
 
         AZ::ObjectStream::FilterDescriptor loadFilter(nullptr, AZ::ObjectStream::FILTERFLAG_IGNORE_UNKNOWN_CLASSES);
         SimulatedObjectSetup* setup = AZ::Utils::LoadObjectFromBuffer<EMotionFX::SimulatedObjectSetup>(data.data(), data.size(), serializeContext, loadFilter);
-        setup->InitAfterLoad(m_actorAsset->GetActor());
+        setup->InitAfterLoad(GetActor());
         return setup;
     }
 
@@ -87,7 +87,7 @@ namespace EMotionFX
     }
 
 
-    Actor* ActorFixture::GetActor()
+    Actor* ActorFixture::GetActor() const
     {
         return m_actorAsset->GetActor();
     }
