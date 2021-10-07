@@ -148,7 +148,7 @@ namespace ScriptCanvasEditor
             , m_assetModel(assetModel)
             , m_categorizer(nodePaletteModel)
         {
-            UpgradeNotifications::Bus::Handler::BusConnect();
+            UpgradeNotificationsBus::Handler::BusConnect();
 
             if (m_assetModel)
             {
@@ -166,7 +166,7 @@ namespace ScriptCanvasEditor
 
             AzFramework::AssetCatalogEventBus::Handler::BusDisconnect();
             AZ::Data::AssetBus::MultiHandler::BusDisconnect();
-            UpgradeNotifications::Bus::Handler::BusDisconnect();
+            UpgradeNotificationsBus::Handler::BusDisconnect();
 
         }
 
@@ -384,15 +384,6 @@ namespace ScriptCanvasEditor
             // Disconnect from the AssetCatalogEventBus during the upgrade to avoid overlap
             // in asset processing
             AzFramework::AssetCatalogEventBus::Handler::BusDisconnect();
-        }
-
-        void ScriptCanvasRootPaletteTreeItem::OnUpgradeComplete()
-        {
-            ConnectLambdas();
-
-            AzFramework::AssetCatalogEventBus::Handler::BusConnect();
-
-            TraverseTree();
         }
 
         void ScriptCanvasRootPaletteTreeItem::OnUpgradeCancelled()
