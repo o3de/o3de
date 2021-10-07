@@ -92,7 +92,7 @@ namespace AzToolsFramework
             void PopulateViewportUi();
 
             // ComponentModeCollectionInterface overrides ...
-            const AZStd::vector<AZ::Uuid>& GetComponentTypes() const override;
+            AZStd::vector<AZ::Uuid> GetComponentTypes() const override;
 
         private:
             // Internal helper used by Select[|Prev|Next]ActiveComponentMode

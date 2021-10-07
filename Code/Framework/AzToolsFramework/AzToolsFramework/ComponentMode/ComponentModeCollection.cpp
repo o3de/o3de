@@ -203,9 +203,10 @@ namespace AzToolsFramework
             }
         }
 
-        const AZStd::vector<AZ::Uuid>& ComponentModeCollection::GetComponentTypes() const
+        AZStd::vector<AZ::Uuid> ComponentModeCollection::GetComponentTypes() const
         {
-            return m_activeComponentTypes;
+            // If in component mode, return the active component types, otherwise return an empty vector
+            return InComponentMode() ? m_activeComponentTypes : AZStd::vector<AZ::Uuid>{};
         }
 
         void ComponentModeCollection::BeginComponentMode()

@@ -5710,7 +5710,7 @@ namespace AzToolsFramework
         {
             DisableComponentActions(this, m_entityComponentActions);
             SetPropertyEditorState(m_gui, false);
-            const auto& componentModeTypes = m_componentModeCollection->GetComponentTypes();
+            const auto componentModeTypes = m_componentModeCollection->GetComponentTypes();
             m_disabled = true;
             
             if (!componentModeTypes.empty())
@@ -5735,7 +5735,7 @@ namespace AzToolsFramework
         {
             EnableComponentActions(this, m_entityComponentActions);
             SetPropertyEditorState(m_gui, true);
-            const auto& componentModeTypes = m_componentModeCollection->GetComponentTypes();
+            const auto componentModeTypes = m_componentModeCollection->GetComponentTypes();
             m_disabled = false;
 
             for (auto componentEditor : m_componentEditors)

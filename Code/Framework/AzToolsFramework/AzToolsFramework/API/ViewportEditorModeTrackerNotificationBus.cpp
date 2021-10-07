@@ -13,7 +13,7 @@ namespace AzToolsFramework
 {
     void ViewportEditorModeNotifications::Reflect(AZ::ReflectContext* context)
     {
-        if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
+        if (auto* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
         {
             behaviorContext->EBus<ViewportEditorModeNotificationsBus>("ViewportEditorModeNotificationsBus")
                 ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)

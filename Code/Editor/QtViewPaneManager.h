@@ -247,7 +247,7 @@ private:
 
     AZStd::unique_ptr<ViewportEditorModeNotificationsBusImpl>
         m_componentModeNotifications; //!< Helper for EditorComponentModeNotificationBus so
-                                                                                            //!< QtViewPaneManager does not need to inherit directly from it. */
+                                      //!< QtViewPaneManager does not need to inherit directly from it. */
 
     using EditorWindowRequestBusImpl = AzToolsFramework::EditorWindowRequestBusImpl;
     EditorWindowRequestBusImpl m_windowRequest;                         //!< Helper for EditorWindowRequestBus so

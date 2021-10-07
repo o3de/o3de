@@ -1191,8 +1191,8 @@ void LevelEditorMenuHandler::OnEditorModeActivated(
 {
     if (mode == ViewportEditorMode::Component)
     {
-        auto menuWrapper = m_actionManager->FindMenu(s_editMenuId);
-        if (!menuWrapper.isNull())
+        if (auto menuWrapper = m_actionManager->FindMenu(s_editMenuId);
+            !menuWrapper.isNull())
         {
             // copy of menu actions
             auto actions = menuWrapper.Get()->actions();
@@ -1222,8 +1222,8 @@ void LevelEditorMenuHandler::OnEditorModeDeactivated(
 
 void LevelEditorMenuHandler::AddEditMenuAction(QAction* action)
 {
-    auto menuWrapper = m_actionManager->FindMenu(s_editMenuId);
-    if (!menuWrapper.isNull())
+    if (auto menuWrapper = m_actionManager->FindMenu(s_editMenuId);
+        !menuWrapper.isNull())
     {
         menuWrapper.Get()->addAction(action);
     }
@@ -1247,8 +1247,8 @@ void LevelEditorMenuHandler::AddMenuAction(AZStd::string_view categoryId, QActio
 
 void LevelEditorMenuHandler::RestoreEditMenuToDefault()
 {
-    auto menuWrapper = m_actionManager->FindMenu(s_editMenuId);
-    if (!menuWrapper.isNull())
+    if (auto menuWrapper = m_actionManager->FindMenu(s_editMenuId);
+        !menuWrapper.isNull())
     {
         menuWrapper.Get()->clear();
         PopulateEditMenu(menuWrapper);
