@@ -58,9 +58,8 @@ example_stack = ExampleResources(
     env=env
 )
 
-if app.node.try_get_context('disable_access_log') != 'true':
-    # Add the core stack as a dependency of the feature stack since the feature stack
-    # requires the core stack outputs for deployment.
-    example_stack.add_dependency(core_construct.common_stack)
+# Add the core stack as a dependency of the feature stack since the feature stack
+# requires the core stack outputs for deployment.
+example_stack.add_dependency(core_construct.common_stack)
 
 app.synth()
