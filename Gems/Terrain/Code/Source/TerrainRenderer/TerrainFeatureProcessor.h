@@ -120,6 +120,7 @@ namespace Terrain
         bool InitializePatchModel();
 
         void UpdateTerrainData();
+        void PrepareMaterialData();
 
         void ProcessSurfaces(const FeatureProcessor::RenderPacket& process);
         
@@ -143,6 +144,10 @@ namespace Terrain
 
         AZ::RHI::ShaderInputConstantIndex m_modelToWorldIndex;
         AZ::RHI::ShaderInputConstantIndex m_terrainDataIndex;
+        AZ::RHI::ShaderInputConstantIndex m_macroMaterialDataIndex;
+        AZ::RHI::ShaderInputImageIndex m_macroColorMapIndex;
+        AZ::RHI::ShaderInputImageIndex m_macroNormalMapIndex;
+        AZ::RPI::MaterialPropertyIndex m_heightmapPropertyIndex;
 
         AZ::Data::Instance<AZ::RPI::Model> m_patchModel;
 
@@ -151,14 +156,14 @@ namespace Terrain
         {
             AZ::Transform m_transform{ AZ::Transform::CreateIdentity() };
             AZ::Aabb m_terrainBounds{ AZ::Aabb::CreateNull() };
-            float m_heightScale{ 0.0f };
             AZ::Data::Instance<AZ::RPI::AttachmentImage> m_heightmapImage;
             uint32_t m_heightmapImageWidth{ 0 };
             uint32_t m_heightmapImageHeight{ 0 };
             uint32_t m_updateWidth{ 0 };
             uint32_t m_updateHeight{ 0 };
-            bool m_propertiesDirty{ true };
             float m_sampleSpacing{ 0.0f };
+            bool m_heightmapUpdated{ true };
+            bool m_rebuildSectors{ true };
         };
 
         TerrainAreaData m_areaData;

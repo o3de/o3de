@@ -56,6 +56,9 @@ namespace Terrain
     {
         static const char* const ModelToWorld("m_modelToWorld");
         static const char* const TerrainData("m_terrainData");
+        static const char* const MacroMaterialData("m_macroMaterialData");
+        static const char* const MacroColorMap("m_macroColorMap");
+        static const char* const MacroNormalMap("m_macroNormalMap");
     }
 
 
@@ -75,7 +78,6 @@ namespace Terrain
         m_dirtyRegion = AZ::Aabb::CreateNull();
         Initialize();
         AzFramework::Terrain::TerrainDataNotificationBus::Handler::BusConnect();
-        TerrainMacroMaterialNotificationBus::Handler::BusConnect();
     }
 
     void TerrainFeatureProcessor::Initialize()
@@ -94,6 +96,10 @@ namespace Terrain
                     if (!materialAsset->GetObjectSrgLayout())
                     {
                         AZ_Error("TerrainFeatureProcessor", false, "No per-object ShaderResourceGroup found on terrain material.");
+                    }
+                    else
+                    {
+                        PrepareMaterialData();
                     }
                 }
             }
@@ -148,8 +154,15 @@ namespace Terrain
         AzFramework::Terrain::TerrainDataRequestBus::BroadcastResult(
             queryResolution, &AzFramework::Terrain::TerrainDataRequests::GetTerrainHeightQueryResolution);
 
+        // Sectors need to be rebuilt if the world bounds change in the x/y, or the sample spacing changes.
+        m_areaData.m_rebuildSectors =
+            m_areaData.m_terrainBounds.GetMin().GetX() != worldBounds.GetMin().GetX() ||
+            m_areaData.m_terrainBounds.GetMin().GetY() != worldBounds.GetMin().GetY() ||
+            m_areaData.m_terrainBounds.GetMax().GetX() != worldBounds.GetMax().GetX() ||
+            m_areaData.m_terrainBounds.GetMax().GetY() != worldBounds.GetMax().GetY() ||
+            m_areaData.m_sampleSpacing != queryResolution.GetX();
+
         m_areaData.m_transform = transform;
-        m_areaData.m_heightScale = worldBounds.GetZExtent();
         m_areaData.m_terrainBounds = worldBounds;
         m_areaData.m_heightmapImageWidth = aznumeric_cast<uint32_t>(worldBounds.GetXExtent() / queryResolution.GetX());
         m_areaData.m_heightmapImageHeight = aznumeric_cast<uint32_t>(worldBounds.GetYExtent() / queryResolution.GetY());
@@ -157,7 +170,7 @@ namespace Terrain
         m_areaData.m_updateHeight = aznumeric_cast<uint32_t>(m_dirtyRegion.GetYExtent() / queryResolution.GetY());
         // Currently query resolution is multidimensional but the rendering system only supports this changing in one dimension.
         m_areaData.m_sampleSpacing = queryResolution.GetX();
-        m_areaData.m_propertiesDirty = true;
+        m_areaData.m_heightmapUpdated = true;
     }
     
     void TerrainFeatureProcessor::OnTerrainMacroMaterialCreated(AZ::EntityId entityId, MaterialInstance material, const AZ::Aabb& region)
@@ -336,118 +349,147 @@ namespace Terrain
         m_dirtyRegion = AZ::Aabb::CreateNull();
     }
 
+    void TerrainFeatureProcessor::PrepareMaterialData()
+    {
+        TerrainMacroMaterialNotificationBus::Handler::BusConnect();
+        
+        const auto layout = m_materialInstance->GetAsset()->GetObjectSrgLayout();
+
+        m_modelToWorldIndex = layout->FindShaderInputConstantIndex(AZ::Name(ShaderInputs::ModelToWorld));
+        AZ_Error(TerrainFPName, m_modelToWorldIndex.IsValid(), "Failed to find shader input constant %s.", ShaderInputs::ModelToWorld);
+
+        m_terrainDataIndex = layout->FindShaderInputConstantIndex(AZ::Name(ShaderInputs::TerrainData));
+        AZ_Error(TerrainFPName, m_terrainDataIndex.IsValid(), "Failed to find shader input constant %s.", ShaderInputs::TerrainData);
+
+        m_macroMaterialDataIndex = layout->FindShaderInputConstantIndex(AZ::Name(ShaderInputs::MacroMaterialData));
+        AZ_Error(TerrainFPName, m_macroMaterialDataIndex.IsValid(), "Failed to find shader input constant %s.", ShaderInputs::MacroMaterialData);
+
+        m_macroColorMapIndex = layout->FindShaderInputImageIndex(AZ::Name(ShaderInputs::MacroColorMap));
+        AZ_Error(TerrainFPName, m_macroColorMapIndex.IsValid(), "Failed to find shader input constant %s.", ShaderInputs::MacroColorMap);
+
+        m_macroNormalMapIndex = layout->FindShaderInputImageIndex(AZ::Name(ShaderInputs::MacroNormalMap));
+        AZ_Error(TerrainFPName, m_macroNormalMapIndex.IsValid(), "Failed to find shader input constant %s.", ShaderInputs::MacroNormalMap);
+        
+        m_heightmapPropertyIndex = m_materialInstance->GetMaterialPropertiesLayout()->FindPropertyIndex(AZ::Name(MaterialInputs::HeightmapImage));
+        AZ_Error(TerrainFPName, m_heightmapPropertyIndex.IsValid(), "Failed to find material input constant %s.", MaterialInputs::HeightmapImage);
+    }
+
     void TerrainFeatureProcessor::ProcessSurfaces(const FeatureProcessor::RenderPacket& process)
     {
         AZ_PROFILE_FUNCTION(AzRender);
+        
+        AZ::Aabb& terrainBounds = m_areaData.m_terrainBounds;
 
-        if (!m_areaData.m_terrainBounds.IsValid())
+        if (!terrainBounds.IsValid())
         {
             return;
         }
-        
-        if (m_areaData.m_propertiesDirty && m_materialInstance && m_materialInstance->CanCompile())
+
+        if (m_materialInstance && m_materialInstance->CanCompile())
         {
-            UpdateTerrainData();
-
-            m_areaData.m_propertiesDirty = false;
-            m_sectorData.clear();
-
-            AZ::RPI::MaterialPropertyIndex heightmapPropertyIndex =
-                m_materialInstance->GetMaterialPropertiesLayout()->FindPropertyIndex(AZ::Name(MaterialInputs::HeightmapImage));
-            AZ_Error(TerrainFPName, heightmapPropertyIndex.IsValid(), "Failed to find material input constant %s.", MaterialInputs::HeightmapImage);
-            AZ::Data::Instance<AZ::RPI::Image> heightmapImage = m_areaData.m_heightmapImage;
-            m_materialInstance->SetPropertyValue(heightmapPropertyIndex, heightmapImage);
-            m_materialInstance->Compile();
-
-            const auto layout = m_materialInstance->GetAsset()->GetObjectSrgLayout();
-
-            m_modelToWorldIndex = layout->FindShaderInputConstantIndex(AZ::Name(ShaderInputs::ModelToWorld));
-            AZ_Error(TerrainFPName, m_modelToWorldIndex.IsValid(), "Failed to find shader input constant %s.", ShaderInputs::ModelToWorld);
-
-            m_terrainDataIndex = layout->FindShaderInputConstantIndex(AZ::Name(ShaderInputs::TerrainData));
-            AZ_Error(TerrainFPName, m_terrainDataIndex.IsValid(), "Failed to find shader input constant %s.", ShaderInputs::TerrainData);
-
-            float xFirstPatchStart =
-                m_areaData.m_terrainBounds.GetMin().GetX() - fmod(m_areaData.m_terrainBounds.GetMin().GetX(), GridMeters);
-            float xLastPatchStart = m_areaData.m_terrainBounds.GetMax().GetX() - fmod(m_areaData.m_terrainBounds.GetMax().GetX(), GridMeters);
-            float yFirstPatchStart =
-                m_areaData.m_terrainBounds.GetMin().GetY() - fmod(m_areaData.m_terrainBounds.GetMin().GetY(), GridMeters);
-            float yLastPatchStart = m_areaData.m_terrainBounds.GetMax().GetY() - fmod(m_areaData.m_terrainBounds.GetMax().GetY(), GridMeters);
-
-            for (float yPatch = yFirstPatchStart; yPatch <= yLastPatchStart; yPatch += GridMeters)
+            if (m_areaData.m_rebuildSectors)
             {
-                for (float xPatch = xFirstPatchStart; xPatch <= xLastPatchStart; xPatch += GridMeters)
+                // Something about the whole world changed, so the sectors need to be rebuilt
+
+                m_areaData.m_rebuildSectors = false;
+
+                m_sectorData.clear();
+                float xFirstPatchStart = terrainBounds.GetMin().GetX() - fmod(terrainBounds.GetMin().GetX(), GridMeters);
+                float xLastPatchStart = terrainBounds.GetMax().GetX() - fmod(terrainBounds.GetMax().GetX(), GridMeters);
+                float yFirstPatchStart = terrainBounds.GetMin().GetY() - fmod(terrainBounds.GetMin().GetY(), GridMeters);
+                float yLastPatchStart = terrainBounds.GetMax().GetY() - fmod(terrainBounds.GetMax().GetY(), GridMeters);
+            
+                const auto& materialAsset = m_materialInstance->GetAsset();
+                auto& shaderAsset = materialAsset->GetMaterialTypeAsset()->GetShaderAssetForObjectSrg();
+
+                for (float yPatch = yFirstPatchStart; yPatch <= yLastPatchStart; yPatch += GridMeters)
                 {
-                    const auto& materialAsset = m_materialInstance->GetAsset();
-                    auto& shaderAsset = materialAsset->GetMaterialTypeAsset()->GetShaderAssetForObjectSrg();
-                    auto objectSrg = AZ::RPI::ShaderResourceGroup::Create(shaderAsset, materialAsset->GetObjectSrgLayout()->GetName());
-                    if (!objectSrg)
+                    for (float xPatch = xFirstPatchStart; xPatch <= xLastPatchStart; xPatch += GridMeters)
                     {
-                        AZ_Warning("TerrainFeatureProcessor", false, "Failed to create a new shader resource group, skipping.");
-                        continue;
-                    }
-
-                    { // Update SRG
-                        
-                        AZStd::array<float, 2> uvMin = { 0.0f, 0.0f };
-                        AZStd::array<float, 2> uvMax = { 1.0f, 1.0f };
-
-                        uvMin[0] = (float)((xPatch - m_areaData.m_terrainBounds.GetMin().GetX()) / m_areaData.m_terrainBounds.GetXExtent());
-                        uvMin[1] = (float)((yPatch - m_areaData.m_terrainBounds.GetMin().GetY()) / m_areaData.m_terrainBounds.GetYExtent());
-
-                        uvMax[0] =
-                            (float)(((xPatch + GridMeters) - m_areaData.m_terrainBounds.GetMin().GetX()) / m_areaData.m_terrainBounds.GetXExtent());
-                        uvMax[1] =
-                            (float)(((yPatch + GridMeters) - m_areaData.m_terrainBounds.GetMin().GetY()) / m_areaData.m_terrainBounds.GetYExtent());
-
-                        AZStd::array<float, 2> uvStep =
+                        auto objectSrg = AZ::RPI::ShaderResourceGroup::Create(shaderAsset, materialAsset->GetObjectSrgLayout()->GetName());
+                        if (!objectSrg)
                         {
-                            1.0f / m_areaData.m_heightmapImageWidth, 1.0f / m_areaData.m_heightmapImageHeight,
-                        };
-
-                        AZ::Transform transform = m_areaData.m_transform;
-                        transform.SetTranslation(xPatch, yPatch, m_areaData.m_transform.GetTranslation().GetZ());
-
-                        AZ::Matrix3x4 matrix3x4 = AZ::Matrix3x4::CreateFromTransform(transform);
-
-                        objectSrg->SetConstant(m_modelToWorldIndex, matrix3x4);
-
-                        ShaderTerrainData terrainDataForSrg;
-                        terrainDataForSrg.m_sampleSpacing = m_areaData.m_sampleSpacing;
-                        terrainDataForSrg.m_heightScale = m_areaData.m_heightScale;
-                        terrainDataForSrg.m_uvMin = uvMin;
-                        terrainDataForSrg.m_uvMax = uvMax;
-                        terrainDataForSrg.m_uvStep = uvStep;
-                        objectSrg->SetConstant(m_terrainDataIndex, terrainDataForSrg);
-
-                        objectSrg->Compile();
-                    }
-
-                    m_sectorData.push_back();
-                    SectorData& sectorData = m_sectorData.back();
-
-                    for (auto& lod : m_patchModel->GetLods())
-                    {
-                        AZ::RPI::ModelLod& modelLod = *lod.get();
-                        sectorData.m_drawPackets.emplace_back(modelLod, 0, m_materialInstance, objectSrg);
-                        AZ::RPI::MeshDrawPacket& drawPacket = sectorData.m_drawPackets.back();
-
-                        // set the shader option to select forward pass IBL specular if necessary
-                        if (!drawPacket.SetShaderOption(AZ::Name("o_meshUseForwardPassIBLSpecular"), AZ::RPI::ShaderOptionValue{ false }))
-                        {
-                            AZ_Warning("MeshDrawPacket", false, "Failed to set o_meshUseForwardPassIBLSpecular on mesh draw packet");
+                            AZ_Warning("TerrainFeatureProcessor", false, "Failed to create a new shader resource group, skipping.");
+                            continue;
                         }
-                        uint8_t stencilRef = AZ::Render::StencilRefs::UseDiffuseGIPass | AZ::Render::StencilRefs::UseIBLSpecularPass;
-                        drawPacket.SetStencilRef(stencilRef);
-                        drawPacket.Update(*GetParentScene(), true);
-                    }
+                    
+                        m_sectorData.push_back();
+                        SectorData& sectorData = m_sectorData.back();
 
-                    sectorData.m_aabb =
-                        AZ::Aabb::CreateFromMinMax(
-                            AZ::Vector3(xPatch, yPatch, m_areaData.m_terrainBounds.GetMin().GetZ()),
-                            AZ::Vector3(xPatch + GridMeters, yPatch + GridMeters, m_areaData.m_terrainBounds.GetMax().GetZ())
-                        );
-                    sectorData.m_srg = objectSrg;
+                        for (auto& lod : m_patchModel->GetLods())
+                        {
+                            AZ::RPI::ModelLod& modelLod = *lod.get();
+                            sectorData.m_drawPackets.emplace_back(modelLod, 0, m_materialInstance, objectSrg);
+                            AZ::RPI::MeshDrawPacket& drawPacket = sectorData.m_drawPackets.back();
+
+                            // set the shader option to select forward pass IBL specular if necessary
+                            if (!drawPacket.SetShaderOption(AZ::Name("o_meshUseForwardPassIBLSpecular"), AZ::RPI::ShaderOptionValue{ false }))
+                            {
+                                AZ_Warning("MeshDrawPacket", false, "Failed to set o_meshUseForwardPassIBLSpecular on mesh draw packet");
+                            }
+                            uint8_t stencilRef = AZ::Render::StencilRefs::UseDiffuseGIPass | AZ::Render::StencilRefs::UseIBLSpecularPass;
+                            drawPacket.SetStencilRef(stencilRef);
+                            drawPacket.Update(*GetParentScene(), true);
+                        }
+
+                        sectorData.m_aabb =
+                            AZ::Aabb::CreateFromMinMax(
+                                AZ::Vector3(xPatch, yPatch, terrainBounds.GetMin().GetZ()),
+                                AZ::Vector3(xPatch + GridMeters, yPatch + GridMeters, terrainBounds.GetMax().GetZ())
+                            );
+                        sectorData.m_srg = objectSrg;
+                    }
+                }
+            }
+
+            if (m_areaData.m_heightmapUpdated)
+            {
+                // Currently when anything in the heightmap changes we're updating all the srgs, but this could probably
+                // be optimized to only update the srgs that changed.
+
+                UpdateTerrainData();
+
+                m_areaData.m_heightmapUpdated = false;
+
+                AZ::Data::Instance<AZ::RPI::Image> heightmapImage = m_areaData.m_heightmapImage;
+                m_materialInstance->SetPropertyValue(m_heightmapPropertyIndex, heightmapImage);
+                m_materialInstance->Compile();
+
+                for (SectorData& sectorData : m_sectorData)
+                {
+                    ShaderTerrainData terrainDataForSrg;
+
+                    float xPatch = sectorData.m_aabb.GetMin().GetX();
+                    float yPatch = sectorData.m_aabb.GetMin().GetY();
+
+                    terrainDataForSrg.m_uvMin = {
+                        (xPatch - terrainBounds.GetMin().GetX()) / terrainBounds.GetXExtent(),
+                        (yPatch - terrainBounds.GetMin().GetY()) / terrainBounds.GetYExtent()
+                    };
+                    
+                    terrainDataForSrg.m_uvMax = {
+                        ((xPatch + GridMeters) - terrainBounds.GetMin().GetX()) / terrainBounds.GetXExtent(),
+                        ((yPatch + GridMeters) - terrainBounds.GetMin().GetY()) / terrainBounds.GetYExtent()
+                    };
+
+                    terrainDataForSrg.m_uvStep =
+                    {
+                        1.0f / m_areaData.m_heightmapImageWidth,
+                        1.0f / m_areaData.m_heightmapImageHeight,
+                    };
+
+                    AZ::Transform transform = m_areaData.m_transform;
+                    transform.SetTranslation(xPatch, yPatch, m_areaData.m_transform.GetTranslation().GetZ());
+
+                    terrainDataForSrg.m_sampleSpacing = m_areaData.m_sampleSpacing;
+                    terrainDataForSrg.m_heightScale = terrainBounds.GetZExtent();
+
+                    sectorData.m_srg->SetConstant(m_terrainDataIndex, terrainDataForSrg);
+                    
+                    AZ::Matrix3x4 matrix3x4 = AZ::Matrix3x4::CreateFromTransform(transform);
+                    sectorData.m_srg->SetConstant(m_modelToWorldIndex, matrix3x4);
+
+                    sectorData.m_srg->Compile();
                 }
             }
         }
