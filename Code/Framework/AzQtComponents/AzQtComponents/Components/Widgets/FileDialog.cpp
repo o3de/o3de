@@ -117,8 +117,7 @@ namespace AzQtComponents
         QFileInfo   fileInfo(filePath);
         QString     defaultSuffix = filterExtensionsFull[0].mid(1);
 
-        // Compare the suffix (if any) to the suffixes in the current selected filter to determine if it needs to be added or not
-        QString     currentSuffix = fileInfo.completeSuffix();
+        // Iterate through the filter patterns to see if the current filename matches
         bool        extensionNeeded = true;
         for (const QString& filterExtensionFull: filterExtensionsFull)
         {
@@ -128,6 +127,7 @@ namespace AzQtComponents
 
             if (filterPattern.exactMatch(fileInfo.fileName()))
             {
+                // The filename matches one of the filter patterns already, the extension does not need to be added to the filename
                 extensionNeeded = false;
             }
         }
