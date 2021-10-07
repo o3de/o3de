@@ -408,12 +408,16 @@ namespace Multiplayer
 
         if (auto* networkInput = input.FindComponentInput<NetworkHierarchyRootComponentNetworkInput>())
         {
+            INetworkEntityManager* networkEntityManager = AZ::Interface<INetworkEntityManager>::Get();
+            AZ_Assert(networkEntityManager, "NetworkEntityManager must be created.");
+
             for (NetworkInputChild& subInput : networkInput->m_childInputs)
             {
-                const ConstNetworkEntityHandle& childEntity = subInput.GetOwner();
-                if (auto* localChild = childEntity.GetEntity())
+                const ConstNetworkEntityHandle& childEntityFromInput = subInput.GetOwner();
+                ConstNetworkEntityHandle localChildHandle = networkEntityManager->GetEntity(childEntityFromInput.GetNetEntityId());
+                if (localChildHandle.Exists())
                 {
-                    auto* netComp = childEntity.GetNetBindComponent();
+                    auto* netComp = localChildHandle.GetNetBindComponent();
                     AZ_Assert(netComp, "No NetBindComponent, this should be impossible");
                     // We do not rewind entity role changes, so make sure we are the correct role prior to processing
                     if (netComp->HasController())
