@@ -264,9 +264,6 @@ namespace AzToolsFramework
 
         if (eventType == QEvent::FocusIn || eventType == QEvent::FocusOut)
         {
-            // If our focus changes, go ahead and reset all input devices.
-            HandleFocusChange(event);
-
             // If we focus in on the source widget and the mouse is contained in its
             // bounds, refresh the cached cursor position to ensure it is up to date (this
             // ensures cursor positions are refreshed correctly with context menu focus changes)
