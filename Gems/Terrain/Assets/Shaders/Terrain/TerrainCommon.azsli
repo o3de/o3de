@@ -26,8 +26,24 @@ ShaderResourceGroup ObjectSrg : SRG_PerObject
         float m_heightScale;
     };
 
+    struct MacroMaterialData
+    {
+        float2 m_uvMin;
+        float2 m_uvMax;
+        float m_factor;
+        bool m_flipX;
+        bool m_flipY;
+        
+        float m_padding;
+    };
+
     TerrainData m_terrainData;
 
+    MacroMaterialData m_macroMaterialData[4];
+
+    Texture2D m_macroColorMap[4];
+    Texture2D m_macroNormalMap[4];
+    
     // The below shouldn't be in this SRG but needs to be for now because the lighting functions depend on them.
 
     //! Reflection Probe (smallest probe volume that overlaps the object position)
