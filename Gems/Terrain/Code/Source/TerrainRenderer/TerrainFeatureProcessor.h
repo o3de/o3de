@@ -55,6 +55,9 @@ namespace Terrain
         void SetWorldSize(AZ::Vector2 sizeInMeters);
 
     private:
+        
+        using MaterialInstance = AZ::Data::Instance<AZ::RPI::Material>;
+        static constexpr uint32_t MaxMaterialsPerSector = 4;
 
         struct ShaderTerrainData // Must align with struct in Object Srg
         {
@@ -89,26 +92,28 @@ namespace Terrain
             AZ::Data::Instance<AZ::RPI::ShaderResourceGroup> m_srg; // Hold on to ref so it's not dropped
             AZ::Aabb m_aabb;
             AZStd::fixed_vector<AZ::RPI::MeshDrawPacket, AZ::RPI::ModelLodAsset::LodCountMax> m_drawPackets;
-            AZStd::fixed_vector<uint16_t, 4> m_macroMaterials;
+            AZStd::fixed_vector<uint16_t, MaxMaterialsPerSector> m_macroMaterials;
         };
 
         struct MacroMaterialData
         {
             AZ::EntityId m_entityId;
             AZ::Aabb m_bounds = AZ::Aabb::CreateNull();
-            AZ::Data::Instance<AZ::RPI::Material> m_materialInstance;
+            MaterialInstance m_materialInstance;
         };
 
         // AZ::RPI::MaterialReloadNotificationBus::Handler overrides...
-        void OnMaterialReinitialized(const AZ::Data::Instance<AZ::RPI::Material>& material) override;
+        void OnMaterialReinitialized(const MaterialInstance& material) override;
 
         // AzFramework::Terrain::TerrainDataNotificationBus overrides...
         void OnTerrainDataDestroyBegin() override;
         void OnTerrainDataChanged(const AZ::Aabb& dirtyRegion, TerrainDataChangedMask dataChangedMask) override;
 
         // TerrainMacroMaterialNotificationBus overrides...
-        void OnTerrainMacroMaterialChanged(AZ::EntityId entityId, AZ::Data::Instance<AZ::RPI::Material> macroMaterial) override;
+        void OnTerrainMacroMaterialCreated(AZ::EntityId entityId, MaterialInstance material, const AZ::Aabb& region) override;
+        void OnTerrainMacroMaterialChanged(AZ::EntityId entityId, MaterialInstance material) override;
         void OnTerrainMacroMaterialRegionChanged(AZ::EntityId entityId, const AZ::Aabb& oldRegion, const AZ::Aabb& newRegion) override;
+        void OnTerrainMacroMaterialDestroyed(AZ::EntityId entityId) override;
 
         void Initialize();
         void InitializeTerrainPatch(uint16_t gridSize, float gridSpacing, PatchData& patchdata);
@@ -117,8 +122,13 @@ namespace Terrain
         void UpdateTerrainData();
 
         void ProcessSurfaces(const FeatureProcessor::RenderPacket& process);
+        
+        MacroMaterialData* FindMacroMaterial(AZ::EntityId entityId);
         MacroMaterialData& FindOrCreateMacroMaterial(AZ::EntityId entityId);
         void RemoveMacroMaterial(AZ::EntityId entityId);
+
+        template<typename Callback>
+        void ForOverlappingSectors(const AZ::Aabb& bounds, Callback callback);
 
         AZ::Outcome<AZ::Data::Asset<AZ::RPI::BufferAsset>> CreateBufferAsset(
             const void* data, const AZ::RHI::BufferViewDescriptor& bufferViewDescriptor, const AZStd::string& bufferName);
@@ -129,7 +139,7 @@ namespace Terrain
         static constexpr float GridMeters{ GridSpacing * GridSize };
 
         AZStd::unique_ptr<AZ::RPI::AssetUtils::AsyncAssetLoader> m_materialAssetLoader;
-        AZ::Data::Instance<AZ::RPI::Material> m_materialInstance;
+        MaterialInstance m_materialInstance;
 
         AZ::RHI::ShaderInputConstantIndex m_modelToWorldIndex;
         AZ::RHI::ShaderInputConstantIndex m_terrainDataIndex;
