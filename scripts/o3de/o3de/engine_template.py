@@ -59,6 +59,14 @@ binary_file_ext = {
     '.motionset'
 }
 
+cpp_file_ext = {
+    '.cpp',
+    '.h',
+    '.hpp',
+    '.hxx',
+    '.inl'
+}
+
 expect_license_info_ext = {
     '.cpp',
     '.h',
@@ -530,7 +538,7 @@ def create_template(source_path: pathlib.Path,
         """
         name, ext = os.path.splitext(file_path)
 
-        return ext == ".h" or ext == ".hpp" or ext == ".inl" or ext == ".cpp" or ext == ".hxx"
+        return ext.lower() in cpp_file_ext
 
     def _transform_into_template(s_data: object,
                                  prefer_sanitized_name: bool = False) -> (bool, str):
