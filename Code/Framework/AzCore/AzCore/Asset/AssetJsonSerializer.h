@@ -40,12 +40,12 @@ namespace AZ
         public:
             AZ_RTTI(SerializedAssetTracker, "{1E067091-8C0A-44B1-A455-6E97663F6963}");
 
-            void AddAsset(Asset<AssetData>& asset);
-            AZStd::vector<Asset<AssetData>>& GetTrackedAssets();
-            const AZStd::vector<Asset<AssetData>>& GetTrackedAssets() const;
+            void AddAsset(Asset<AssetData>* asset);
+            AZStd::vector<Asset<AssetData>*>& GetTrackedAssets();
+            const AZStd::vector<Asset<AssetData>*>& GetTrackedAssets() const;
 
         private:
-            AZStd::vector<Asset<AssetData>> m_serializedAssets;
+            AZStd::vector<Asset<AssetData>*> m_serializedAssets;
         };
     } // namespace Data
 } // namespace AZ

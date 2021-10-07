@@ -173,7 +173,7 @@ namespace AZ
 
             if (assetTracker)
             {
-                assetTracker->AddAsset(*instance);
+                assetTracker->AddAsset(instance);
             }
 
             bool success = result.GetOutcome() <= JSR::Outcomes::PartialSkip;
@@ -185,19 +185,20 @@ namespace AZ
             return context.Report(result, message);
         }
 
-        void SerializedAssetTracker::AddAsset(Asset<AssetData>& asset)
+        void SerializedAssetTracker::AddAsset(Asset<AssetData>* asset)
         {
             m_serializedAssets.emplace_back(asset);
         }
 
-        const AZStd::vector<Asset<AssetData>>& SerializedAssetTracker::GetTrackedAssets() const
+        const AZStd::vector<Asset<AssetData>*>& SerializedAssetTracker::GetTrackedAssets() const
         {
             return m_serializedAssets;
         }
 
-        AZStd::vector<Asset<AssetData>>& SerializedAssetTracker::GetTrackedAssets()
+        AZStd::vector<Asset<AssetData>*>& SerializedAssetTracker::GetTrackedAssets()
         {
             return m_serializedAssets;
         }
+
     } // namespace Data
 } // namespace AZ

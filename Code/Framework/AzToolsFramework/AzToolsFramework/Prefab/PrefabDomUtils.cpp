@@ -224,9 +224,16 @@ namespace AzToolsFramework
 
                     return false;
                 }
-                AZ::Data::SerializedAssetTracker* assetTracker = settings.m_metadata.Find<AZ::Data::SerializedAssetTracker>();
 
-                referencedAssets = AZStd::move(assetTracker->GetTrackedAssets());
+                // copy tracked assets to the referencedAssets container
+                AZ::Data::SerializedAssetTracker* assetTracker = settings.m_metadata.Find<AZ::Data::SerializedAssetTracker>();
+                auto& trackedAssets = assetTracker->GetTrackedAssets();
+                referencedAssets.resize_no_construct(referencedAssets.size() + trackedAssets.size());
+                for (AZ::Data::Asset<AZ::Data::AssetData>* asset : trackedAssets)
+                {
+                    referencedAssets.emplace_back(*asset);
+                }
+
                 return true;
             }
 
@@ -252,6 +259,7 @@ namespace AzToolsFramework
                 settings.m_metadata.Add(static_cast<AZ::JsonEntityIdSerializer::JsonEntityIdMapper*>(&entityIdMapper));
                 settings.m_metadata.Add(&entityIdMapper);
                 settings.m_metadata.Create<InstanceEntityScrubber>(newlyAddedEntities);
+                settings.m_metadata.Create<AZ::Data::SerializedAssetTracker>();
 
                 AZStd::string scratchBuffer;
                 auto issueReportingCallback = [&scratchBuffer](
@@ -263,6 +271,32 @@ namespace AzToolsFramework
                 settings.m_reporting = AZStd::move(issueReportingCallback);
                 
                 AZ::JsonSerializationResult::ResultCode result = AZ::JsonSerialization::Load(instance, prefabDom, settings);
+
+                // some assets may come in from the JSON serialzier with no AssetID, but have an asset hint
+                // this attempts to fix up the assets using the assetHint field
+                auto* assetTracker = settings.m_metadata.Find<AZ::Data::SerializedAssetTracker>();
+                if (assetTracker)
+                {
+                    auto& trackedAssets = assetTracker->GetTrackedAssets();
+                    for (AZ::Data::Asset<AZ::Data::AssetData>* asset : trackedAssets)
+                    {
+                        if (!asset->GetId().IsValid() && !asset->GetHint().empty())
+                        {
+                            AZ::Data::AssetId assetId;
+                            AZ::Data::AssetCatalogRequestBus::BroadcastResult(
+                                assetId,
+                                &AZ::Data::AssetCatalogRequestBus::Events::GetAssetIdByPath,
+                                asset->GetHint().c_str(),
+                                AZ::Data::s_invalidAssetType,
+                                false);
+
+                            if (assetId.IsValid())
+                            {
+                                asset->Create(assetId, true);
+                            }
+                        }
+                    }
+                }
 
                 AZ::Data::AssetManager::Instance().ResumeAssetRelease();
 
