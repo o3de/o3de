@@ -164,6 +164,7 @@ namespace Terrain
 
     void TerrainSurfaceMaterialsListComponent::OnCompositionChanged()
     {
+        // Check whether any materials assignments have changed.
         for (auto surfaceMaterialMapping : m_configuration.m_surfaceMaterials)
         {
             if (!surfaceMaterialMapping.m_dirty)
@@ -176,6 +177,7 @@ namespace Terrain
                 if (!surfaceMaterialMapping.m_materialInstance ||
                     surfaceMaterialMapping.m_materialInstance->GetAssetId() != surfaceMaterialMapping.m_materialAsset.GetId())
                 {
+                    // A material asset has been assigned: start loading an instance.
                     AZ::Data::AssetBus::Handler::BusConnect(surfaceMaterialMapping.m_materialAsset.GetId());
                     surfaceMaterialMapping.m_materialInstance = AZ::RPI::Material::FindOrCreate(surfaceMaterialMapping.m_materialAsset);
                 }
@@ -184,6 +186,7 @@ namespace Terrain
             {
                 if (surfaceMaterialMapping.m_materialInstance)
                 {
+                    // A material asset has been removed: reset the instance.
                     surfaceMaterialMapping.m_materialInstance.reset();
                     OnMaterialInstanceChanged();
                 }
@@ -209,14 +212,14 @@ namespace Terrain
 
     void TerrainSurfaceMaterialsListComponent::OnAssetReady(AZ::Data::Asset<AZ::Data::AssetData> asset)
     {
-        AZ::Data::AssetBus::Handler::BusDisconnect();
+        AZ::Data::AssetBus::Handler::BusDisconnect(asset.GetId());
 
         OnMaterialInstanceChanged();
     }
 
     void TerrainSurfaceMaterialsListComponent::OnAssetReloaded(AZ::Data::Asset<AZ::Data::AssetData> asset)
     {
-        AZ::Data::AssetBus::Handler::BusDisconnect();
+        AZ::Data::AssetBus::Handler::BusDisconnect(asset.GetId());
 
         OnMaterialInstanceChanged();
     }
