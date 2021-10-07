@@ -394,9 +394,9 @@ namespace Multiplayer
         m_syncRewindEvent.Signal();
     }
 
-    void NetBindComponent::NotifyServerMigration(const HostId& hostId, AzNetworking::ConnectionId connectionId)
+    void NetBindComponent::NotifyServerMigration(const HostId& remoteHostId, const HostId& migrateHostId, AzNetworking::ConnectionId connectionId)
     {
-        m_entityServerMigrationEvent.Signal(m_netEntityHandle, hostId, connectionId);
+        m_entityServerMigrationEvent.Signal(m_netEntityHandle, remoteHostId, migrateHostId, connectionId);
     }
 
     void NetBindComponent::NotifyPreRender(float deltaTime)

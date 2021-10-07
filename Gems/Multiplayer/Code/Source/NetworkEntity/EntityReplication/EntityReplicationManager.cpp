@@ -47,8 +47,9 @@ namespace Multiplayer
         , m_entityExitDomainEventHandler([this](const ConstNetworkEntityHandle& entityHandle) { OnEntityExitDomain(entityHandle); })
         , m_notifyEntityMigrationHandler([this](const ConstNetworkEntityHandle& entityHandle, const HostId& remoteHostId) { OnPostEntityMigration(entityHandle, remoteHostId); })
     {
-        // Set up our remote host identifier, we use the IP address of the host
+        // Set up our remote host identifier, by default we use the IP address of the remote host
         m_remoteHostId = connection.GetRemoteAddress();
+        m_migrateHostId = m_remoteHostId;
 
         // Our max payload size is whatever is passed in, minus room for a udp packetheader
         m_maxPayloadSize = connection.GetConnectionMtu() - UdpPacketHeaderSerializeSize - ReplicationManagerPacketOverhead;
@@ -65,7 +66,21 @@ namespace Multiplayer
             networkEntityManager->AddEntityExitDomainHandler(m_entityExitDomainEventHandler);
         }
 
-        GetMultiplayer()->AddNotifyEntityMigrationEventHandler(m_notifyEntityMigrationHandler);
+        if (m_updateMode == Mode::LocalServerToRemoteServer)
+        {
+            GetMultiplayer()->AddNotifyEntityMigrationEventHandler(m_notifyEntityMigrationHandler);
+        }
+    }
+
+    void EntityReplicationManager::SetMigrateHostId(const HostId& remoteHostId)
+    {
+        // Allows overriding the remote HostId
+        m_migrateHostId = remoteHostId;
+    }
+
+    const HostId& EntityReplicationManager::GetMigrateHostId() const
+    {
+        return m_migrateHostId;
     }
 
     const HostId& EntityReplicationManager::GetRemoteHostId() const
@@ -362,15 +377,28 @@ namespace Multiplayer
                 const bool changedRemoteRole = (remoteNetworkRole != entityReplicator->GetRemoteNetworkRole());
                 // Check if we've changed our bound local role - this can occur when we gain Autonomous or lose Autonomous on a client
                 bool changedLocalRole(false);
-                if (AZ::Entity* localEnt = entityReplicator->GetEntityHandle().GetEntity())
+                NetBindComponent* netBindComponent = entityReplicator->GetEntityHandle().GetNetBindComponent();
+                if (netBindComponent != nullptr)
                 {
-                    NetBindComponent* netBindComponent = entityReplicator->GetEntityHandle().GetNetBindComponent();
-                    AZ_Assert(netBindComponent != nullptr, "No NetBindComponent");
                     changedLocalRole = (netBindComponent->GetNetEntityRole() != entityReplicator->GetBoundLocalNetworkRole());
                 }
 
                 if (changedRemoteRole || changedLocalRole)
                 {
+                    const uint32_t intEntityId = static_cast<uint32_t>(netBindComponent->GetNetEntityId());
+                    if (changedLocalRole)
+                    {
+                        const char* oldRoleString = GetEnumString(entityReplicator->GetRemoteNetworkRole());
+                        const char* newRoleString = GetEnumString(remoteNetworkRole);
+                        AZLOG(NET_ReplicatorRoles, "Replicator %u changed local role, old role = %s, new role = %s", intEntityId, oldRoleString, newRoleString);
+                    }
+                    if (changedRemoteRole)
+                    {
+                        const char* oldRoleString = GetEnumString(entityReplicator->GetBoundLocalNetworkRole());
+                        const char* newRoleString = GetEnumString(netBindComponent->GetNetEntityRole());
+                        AZLOG(NET_ReplicatorRoles, "Replicator %u changed remote role, old role = %s, new role = %s", intEntityId, oldRoleString, newRoleString);
+                    }
+
                     // If we changed roles, we need to reset everything
                     if (!entityReplicator->IsMarkedForRemoval())
                     {
@@ -1107,7 +1135,7 @@ namespace Multiplayer
 
             if (m_updateMode == EntityReplicationManager::Mode::LocalServerToRemoteServer)
             {
-                netBindComponent->NotifyServerMigration(GetRemoteHostId(), GetConnection().GetConnectionId());
+                netBindComponent->NotifyServerMigration(GetRemoteHostId(), GetMigrateHostId(), GetConnection().GetConnectionId());
             }
 
             bool didSucceed = true;

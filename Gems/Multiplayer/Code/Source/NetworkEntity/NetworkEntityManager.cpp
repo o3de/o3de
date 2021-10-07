@@ -225,11 +225,19 @@ namespace Multiplayer
         {
             AZ::Entity* entity = it->second;
             NetBindComponent* netBindComponent = m_networkEntityTracker.GetNetBindComponent(entity);
+            AZ::Aabb entityBounds = AZ::Interface<AzFramework::IEntityBoundsUnion>::Get()->GetEntityWorldBoundsUnion(entity->GetId());
+            entityBounds.Expand(AZ::Vector3(0.01f));
             if (netBindComponent->GetNetEntityRole() == NetEntityRole::Authority)
             {
-                const AZ::Aabb entityBounds = AZ::Interface<AzFramework::IEntityBoundsUnion>::Get()->GetEntityWorldBoundsUnion(entity->GetId());
-                debugDisplay->DrawWireBox(entityBounds.GetMin(), entityBounds.GetMax());
+                debugDisplay->SetColor(AZ::Colors::Black);
+                debugDisplay->SetAlpha(0.5f);
             }
+            else
+            {
+                debugDisplay->SetColor(AZ::Colors::DeepSkyBlue);
+                debugDisplay->SetAlpha(0.25f);
+            }
+            debugDisplay->DrawWireBox(entityBounds.GetMin(), entityBounds.GetMax());
         }
 
         if (m_entityDomain != nullptr)

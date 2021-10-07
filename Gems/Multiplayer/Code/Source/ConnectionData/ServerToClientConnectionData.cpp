@@ -23,22 +23,16 @@ namespace Multiplayer
     ServerToClientConnectionData::ServerToClientConnectionData
     (
         AzNetworking::IConnection* connection,
-        AzNetworking::IConnectionListener& connectionListener,
-        NetworkEntityHandle controlledEntity
+        AzNetworking::IConnectionListener& connectionListener
     )
         : m_connection(connection)
         , m_controlledEntityRemovedHandler([this](const ConstNetworkEntityHandle&) { OnControlledEntityRemove(); })
-        , m_controlledEntityMigrationHandler([this](const ConstNetworkEntityHandle& entityHandle, const HostId& remoteHostId, AzNetworking::ConnectionId connectionId) { OnControlledEntityMigration(entityHandle, remoteHostId, connectionId); })
-        , m_controlledEntity(controlledEntity)
+        , m_controlledEntityMigrationHandler([this](const ConstNetworkEntityHandle& entityHandle, const HostId& remoteHostId, const HostId& migrateHostId, AzNetworking::ConnectionId connectionId)
+            {
+                OnControlledEntityMigration(entityHandle, remoteHostId, migrateHostId, connectionId);
+            })
         , m_entityReplicationManager(*connection, connectionListener, EntityReplicationManager::Mode::LocalServerToRemoteClient)
     {
-        NetBindComponent* netBindComponent = m_controlledEntity.GetNetBindComponent();
-        if (netBindComponent != nullptr)
-        {
-            netBindComponent->AddEntityStopEventHandler(m_controlledEntityRemovedHandler);
-            netBindComponent->AddEntityServerMigrationEventHandler(m_controlledEntityMigrationHandler);
-        }
-
         m_entityReplicationManager.SetMaxRemoteEntitiesPendingCreationCount(sv_ClientMaxRemoteEntitiesPendingCreationCount);
         m_entityReplicationManager.SetEntityPendingRemovalMs(sv_ClientEntityReplicatorPendingRemovalTimeMs);
     }
@@ -52,6 +46,20 @@ namespace Multiplayer
 
         m_entityReplicationManager.Clear(false);
         m_controlledEntityRemovedHandler.Disconnect();
+    }
+
+    void ServerToClientConnectionData::SetControlledEntity(NetworkEntityHandle primaryPlayerEntity)
+    {
+        m_controlledEntityRemovedHandler.Disconnect();
+        m_controlledEntityMigrationHandler.Disconnect();
+
+        m_controlledEntity = primaryPlayerEntity;
+        NetBindComponent* netBindComponent = m_controlledEntity.GetNetBindComponent();
+        if (netBindComponent != nullptr)
+        {
+            netBindComponent->AddEntityStopEventHandler(m_controlledEntityRemovedHandler);
+            netBindComponent->AddEntityServerMigrationEventHandler(m_controlledEntityMigrationHandler);
+        }
     }
 
     ConnectionDataType ServerToClientConnectionData::GetConnectionDataType() const
@@ -94,7 +102,8 @@ namespace Multiplayer
     void ServerToClientConnectionData::OnControlledEntityMigration
     (
         [[maybe_unused]] const ConstNetworkEntityHandle& entityHandle,
-        [[maybe_unused]] const HostId& remoteHostId,
+        const HostId& remoteHostId,
+        const HostId& migrateHostId,
         [[maybe_unused]] AzNetworking::ConnectionId connectionId
     )
     {
@@ -109,13 +118,13 @@ namespace Multiplayer
         }
 
         // Generate crypto-rand user identifier, send to both server and client so they can negotiate the autonomous entity to assume predictive control over after migration
-        const uint64_t randomUserIdentifier = AzNetworking::CryptoRand64();
+        const uint64_t temporaryUserIdentifier = AzNetworking::CryptoRand64();
 
         // Tell the new host that a client is about to (re)join
-        GetMultiplayer()->SendNotifyClientMigrationEvent(remoteHostId, randomUserIdentifier, migratedClientInputId);
+        GetMultiplayer()->SendNotifyClientMigrationEvent(remoteHostId, temporaryUserIdentifier, migratedClientInputId, m_controlledEntity.GetNetEntityId());
 
         // Tell the client who to join
-        MultiplayerPackets::ClientMigration clientMigration(remoteHostId, randomUserIdentifier, migratedClientInputId);
+        MultiplayerPackets::ClientMigration clientMigration(migrateHostId, temporaryUserIdentifier, migratedClientInputId);
         GetConnection()->SendReliablePacket(clientMigration);
 
         m_controlledEntity = NetworkEntityHandle();

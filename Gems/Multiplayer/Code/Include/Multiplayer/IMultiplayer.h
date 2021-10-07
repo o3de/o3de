@@ -45,7 +45,7 @@ namespace Multiplayer
     using ClientMigrationStartEvent = AZ::Event<ClientInputId>;
     using ClientMigrationEndEvent = AZ::Event<>;
     using ClientDisconnectedEvent = AZ::Event<>;
-    using NotifyClientMigrationEvent = AZ::Event<const HostId&, uint64_t, ClientInputId>;
+    using NotifyClientMigrationEvent = AZ::Event<const HostId&, uint64_t, ClientInputId, NetEntityId>;
     using NotifyEntityMigrationEvent = AZ::Event<const ConstNetworkEntityHandle&, const HostId&>;
     using ConnectionAcquiredEvent = AZ::Event<MultiplayerAgentDatum>;
     using SessionInitEvent = AZ::Event<AzNetworking::INetworkInterface*>;
@@ -131,10 +131,11 @@ namespace Multiplayer
         virtual void AddSessionShutdownHandler(SessionShutdownEvent::Handler& handler) = 0;
 
         //! Signals a NotifyClientMigrationEvent with the provided parameters.
-        //! @param hostId            the host id of the host the client is migrating to
-        //! @param userIdentifier    the user identifier the client will provide the new host to validate identity
-        //! @param lastClientInputId the last processed clientInputId by the current host
-        virtual void SendNotifyClientMigrationEvent(const HostId& hostId, uint64_t userIdentifier, ClientInputId lastClientInputId) = 0;
+        //! @param hostId             the host id of the host the client is migrating to
+        //! @param userIdentifier     the user identifier the client will provide the new host to validate identity
+        //! @param lastClientInputId  the last processed clientInputId by the current host
+        //! @param controlledEntityId the entityId of the clients autonomous entity
+        virtual void SendNotifyClientMigrationEvent(const HostId& hostId, uint64_t userIdentifier, ClientInputId lastClientInputId, NetEntityId controlledEntityId) = 0;
 
         //! Signals a NotifyEntityMigrationEvent with the provided parameters.
         //! @param entityHandle the network entity handle of the entity being migrated
@@ -175,6 +176,11 @@ namespace Multiplayer
         //! Returns a pointer to the user-defined filtering manager of entities.
         //! @return pointer to the filtered entity manager, or nullptr if not set
         virtual IFilterEntityManager* GetFilterEntityManager() = 0;
+
+        //! Registers a temp userId to allow a host to look up a players controlled entity in the event of a rejoin or migration event.
+        //! @param temporaryUserIdentifier the temporary user identifier used to identify a player across hosts
+        //! @param controlledEntityId      the controlled entityId of the players autonomous entity
+        virtual void RegisterPlayerIdentifierForRejoin(uint64_t temporaryUserIdentifier, NetEntityId controlledEntityId) = 0;
 
         //! Enables or disables automatic instantiation of netbound entities.
         //! This setting is controlled by the networking layer and should not be touched
