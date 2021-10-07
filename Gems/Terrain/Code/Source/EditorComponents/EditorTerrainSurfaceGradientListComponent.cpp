@@ -12,12 +12,12 @@
 
 namespace Terrain
 {
-    void EditorTerrainSurfaceGradientListComponent::Reflect(AZ::ReflectContext* /* context*/)
+    void EditorTerrainSurfaceGradientListComponent::Reflect(AZ::ReflectContext* context)
     {
-        /* BaseClassType::ReflectSubClass<EditorTerrainSurfaceGradientListComponent, BaseClassType>(
+        BaseClassType::ReflectSubClass<EditorTerrainSurfaceGradientListComponent, BaseClassType>(
             context, 1,
             &LmbrCentral::EditorWrappedComponentBaseVersionConverter<typename BaseClassType::WrappedComponentType,
             typename BaseClassType::WrappedConfigType, 1>
-        );*/
+        );
     }
 }
