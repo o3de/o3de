@@ -368,7 +368,7 @@ PbrLightingOutput ForwardPassPS_Common(VSOutput IN, bool isFrontFace, out float 
             const uint shadowIndex = ViewSrg::m_shadowIndexDirectionalLight;
             if (o_enableShadows && shadowIndex < SceneSrg::m_directionalLightCount)
             {
-                DirectionalLightShadow::GetShadowCoords(shadowIndex, IN.m_worldPosition, IN.m_shadowCoords);
+                DirectionalLightShadow::GetShadowCoords(shadowIndex, IN.m_worldPosition, IN.m_normal, IN.m_shadowCoords);
             }
         }
     }
