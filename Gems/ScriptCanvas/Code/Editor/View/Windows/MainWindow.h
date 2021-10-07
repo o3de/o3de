@@ -51,8 +51,7 @@
 
 #include <Editor/View/Widgets/AssetGraphSceneDataBus.h>
 
-#include <Editor/View/Windows/Tools/UpgradeTool/UpgradeTool.h>
-#include <Editor/View/Windows/Tools/UpgradeTool/VersionExplorer.h>
+#include <Editor/View/Windows/Tools/UpgradeTool/Controller.h>
 
 #if SCRIPTCANVAS_EDITOR
 #include <Include/EditorCoreAPI.h>
@@ -99,29 +98,24 @@ namespace ScriptCanvasEditor
 
     class ScriptCanvasAssetBrowserModel
         : public AzToolsFramework::AssetBrowser::AssetBrowserFilterModel
-        , private UpgradeNotifications::Bus::Handler
+        , private UpgradeNotificationsBus::Handler
     {
     public:
 
         explicit ScriptCanvasAssetBrowserModel(QObject* parent = nullptr)
             : AzToolsFramework::AssetBrowser::AssetBrowserFilterModel(parent)
         {
-            UpgradeNotifications::Bus::Handler::BusConnect();
+            UpgradeNotificationsBus::Handler::BusConnect();
         }
 
         ~ScriptCanvasAssetBrowserModel() override
         {
-            UpgradeNotifications::Bus::Handler::BusDisconnect();
+            UpgradeNotificationsBus::Handler::BusDisconnect();
         }
 
         void OnUpgradeStart() override
         {
             AzToolsFramework::AssetBrowser::AssetBrowserComponentNotificationBus::Handler::BusDisconnect();
-        }
-        
-        void OnUpgradeComplete() override
-        {
-            AzToolsFramework::AssetBrowser::AssetBrowserComponentNotificationBus::Handler::BusConnect();
         }
     };
 
@@ -806,7 +800,5 @@ namespace ScriptCanvasEditor
         Workspace* m_workspace;
 
         void OnSaveCallback(bool saveSuccess, AZ::Data::AssetPtr, AZ::Data::AssetId previousFileAssetId);
-
-        void PromptForUpgrade();
     };
 }

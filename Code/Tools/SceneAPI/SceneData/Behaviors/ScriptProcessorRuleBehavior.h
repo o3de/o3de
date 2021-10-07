@@ -37,6 +37,7 @@ namespace AZ::SceneAPI::Behaviors
         , public Events::AssetImportRequestBus::Handler
     {
     public:
+        
         AZ_COMPONENT(ScriptProcessorRuleBehavior, "{24054E73-1B92-43B0-AC13-174B2F0E3F66}", SceneCore::BehaviorComponent);
 
         ~ScriptProcessorRuleBehavior() override = default;
@@ -44,22 +45,21 @@ namespace AZ::SceneAPI::Behaviors
         SCENE_DATA_API void Activate() override;
         SCENE_DATA_API void Deactivate() override;
         static void Reflect(ReflectContext* context);
-
+        
         // AssetImportRequestBus::Handler
         SCENE_DATA_API Events::ProcessingResult UpdateManifest(
             Containers::Scene& scene,
             ManifestAction action,
             RequestingApplication requester) override;
 
-
+        SCENE_DATA_API void GetManifestDependencyPaths(AZStd::vector<AZStd::string>& paths) override;
     protected:
-        bool LoadPython(const AZ::SceneAPI::Containers::Scene& scene);
+        bool LoadPython(const AZ::SceneAPI::Containers::Scene& scene, AZStd::string& scriptPath);
         void UnloadPython();
         bool DoPrepareForExport(Events::PreExportEventContext& context);
 
     private:
         AzToolsFramework::EditorPythonEventsInterface* m_editorPythonEventsInterface = nullptr;
-        AZStd::string m_scriptFilename;
 
         struct ExportEventHandler;
         AZStd::shared_ptr<ExportEventHandler> m_exportEventHandler;

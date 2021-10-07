@@ -167,6 +167,10 @@ set(FILES
     Logging/MissingAssetLogger.cpp
     Logging/MissingAssetLogger.h
     Logging/MissingAssetNotificationBus.h
+    Matchmaking/IMatchmakingRequests.h
+    Matchmaking/MatchmakingRequests.cpp
+    Matchmaking/MatchmakingRequests.h
+    Matchmaking/MatchmakingNotifications.h
     Scene/Scene.h
     Scene/Scene.inl
     Scene/Scene.cpp
@@ -181,8 +185,9 @@ set(FILES
     Script/ScriptRemoteDebugging.cpp
     Script/ScriptRemoteDebugging.h
     Session/ISessionHandlingRequests.h
-    Session/ISessionRequests.cpp
     Session/ISessionRequests.h
+    Session/SessionRequests.cpp
+    Session/SessionRequests.h
     Session/SessionConfig.cpp
     Session/SessionConfig.h
     Session/SessionNotifications.h

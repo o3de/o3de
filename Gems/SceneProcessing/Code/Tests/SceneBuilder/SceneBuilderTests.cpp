@@ -11,11 +11,14 @@
 #include <AzCore/IO/Path/Path.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/UnitTest/TestTypes.h>
+#include <AzCore/UnitTest/Mocks/MockFileIOBase.h>
 #include <AzCore/UserSettings/UserSettingsComponent.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <AzToolsFramework/Application/ToolsApplication.h>
+#include <SceneAPI/SceneCore/Events/AssetImportRequest.h>
 #include <SceneBuilder/SceneBuilderWorker.h>
 #include <SceneAPI/SceneCore/Events/ExportProductList.h>
+#include <Tests/FileIOBaseTestTypes.h>
 
 using namespace AZ;
 using namespace SceneBuilder;
@@ -192,4 +195,201 @@ TEST_F(SceneBuilderTests, SceneBuilderWorker_ExportProductDependencies_ProductAn
     };
 
     TestSuccessCase(exportProduct, expectedPathDependencies, { dependencyId });
+}
+
+struct ImportHandler
+    : SceneAPI::Events::AssetImportRequestBus::Handler
+{
+    ImportHandler()
+    {
+        BusConnect();
+    }
+
+    ~ImportHandler() override
+    {
+        BusDisconnect();
+    }
+
+    void GetManifestDependencyPaths(AZStd::vector<AZStd::string>& paths) override
+    {
+        paths.emplace_back("/scriptFilename");
+        paths.emplace_back("/layer1/layer2/0/target");
+    }
+
+    void GetManifestExtension(AZStd::string& result) override
+    {
+        result = ".test";
+    }
+
+    void GetGeneratedManifestExtension(AZStd::string& result) override
+    {
+        result = ".test.gen";
+    }
+};
+
+using SourceDependencyTests = UnitTest::ScopedAllocatorSetupFixture;
+
+namespace SourceDependencyJson
+{
+    constexpr const char* TestJson = R"JSON(
+{
+    "values": [
+        {
+            "$type": "Test1",
+            "scriptFilename": "a/test/path.png"
+        },
+        {
+            "$type": "Test2",
+            "layer1" : {
+                "layer2" : [
+                    {
+                        "target": "value.png",
+                        "otherData": "value2.png"
+                    },
+                    {
+                        "target" : "wrong.png"
+                    }
+                ]
+            }
+        }
+    ]
+}
+    )JSON";
+}
+
+TEST_F(SourceDependencyTests, SourceDependencyTest)
+{
+    ImportHandler handler;
+    AZStd::vector<AssetBuilderSDK::SourceFileDependency> dependencies;
+
+    SceneBuilderWorker::PopulateSourceDependencies(SourceDependencyJson::TestJson, dependencies);
+
+    ASSERT_EQ(dependencies.size(), 2);
+    ASSERT_STREQ(dependencies[0].m_sourceFileDependencyPath.c_str(), "a/test/path.png");
+    ASSERT_STREQ(dependencies[1].m_sourceFileDependencyPath.c_str(), "value.png");
+}
+
+struct SettingsRegistryMock : AZ::Interface<SettingsRegistryInterface>::Registrar
+{
+    bool Get(FixedValueString& result, AZStd::string_view) const override
+    {
+        result = "cache";
+        return true;
+    }
+
+    void SetApplyPatchSettings(const AZ::JsonApplyPatchSettings& /*applyPatchSettings*/) override{}
+    void GetApplyPatchSettings(AZ::JsonApplyPatchSettings& /*applyPatchSettings*/) override{}
+
+    MOCK_CONST_METHOD1(GetType, Type (AZStd::string_view));
+    MOCK_CONST_METHOD2(Visit, bool (Visitor&, AZStd::string_view));
+    MOCK_CONST_METHOD2(Visit, bool (const VisitorCallback&, AZStd::string_view));
+    MOCK_METHOD1(RegisterNotifier, NotifyEventHandler (const NotifyCallback&));
+    MOCK_METHOD1(RegisterNotifier, NotifyEventHandler (NotifyCallback&&));
+    MOCK_METHOD1(RegisterPreMergeEvent, PreMergeEventHandler (const PreMergeEventCallback&));
+    MOCK_METHOD1(RegisterPreMergeEvent, PreMergeEventHandler (PreMergeEventCallback&&));
+    MOCK_METHOD1(RegisterPostMergeEvent, PostMergeEventHandler (const PostMergeEventCallback&));
+    MOCK_METHOD1(RegisterPostMergeEvent, PostMergeEventHandler (PostMergeEventCallback&&));
+    MOCK_CONST_METHOD2(Get, bool (bool&, AZStd::string_view));
+    MOCK_CONST_METHOD2(Get, bool (s64&, AZStd::string_view));
+    MOCK_CONST_METHOD2(Get, bool (u64&, AZStd::string_view));
+    MOCK_CONST_METHOD2(Get, bool (double&, AZStd::string_view));
+    MOCK_CONST_METHOD2(Get, bool (AZStd::string&, AZStd::string_view));
+    MOCK_CONST_METHOD3(GetObject, bool (void*, Uuid, AZStd::string_view));
+    MOCK_METHOD2(Set, bool (AZStd::string_view, bool));
+    MOCK_METHOD2(Set, bool (AZStd::string_view, s64));
+    MOCK_METHOD2(Set, bool (AZStd::string_view, u64));
+    MOCK_METHOD2(Set, bool (AZStd::string_view, double));
+    MOCK_METHOD2(Set, bool (AZStd::string_view, AZStd::string_view));
+    MOCK_METHOD2(Set, bool (AZStd::string_view, const char*));
+    MOCK_METHOD3(SetObject, bool (AZStd::string_view, const void*, Uuid));
+    MOCK_METHOD1(Remove, bool (AZStd::string_view));
+    MOCK_METHOD3(MergeCommandLineArgument, bool (AZStd::string_view, AZStd::string_view, const CommandLineArgumentSettings&));
+    MOCK_METHOD2(MergeSettings, bool (AZStd::string_view, Format));
+    MOCK_METHOD4(MergeSettingsFile, bool (AZStd::string_view, Format, AZStd::string_view, AZStd::vector<char>*));
+    MOCK_METHOD5(MergeSettingsFolder, bool (AZStd::string_view, const Specializations&, AZStd::string_view, AZStd::string_view, AZStd::vector<char>*));
+    MOCK_METHOD1(SetUseFileIO, void (bool));
+};
+
+struct SourceDependencyMockedIOTests : UnitTest::ScopedAllocatorSetupFixture
+    , UnitTest::SetRestoreFileIOBaseRAII
+{
+    SourceDependencyMockedIOTests()
+        : UnitTest::SetRestoreFileIOBaseRAII(m_ioMock)
+    {
+        
+    }
+
+    void SetUp() override
+    {
+        using namespace ::testing;
+
+        ON_CALL(m_ioMock, Open(_, _, _))
+            .WillByDefault(Invoke(
+                [](auto, auto, IO::HandleType& handle)
+                {
+                    handle = 1234;
+                    return AZ::IO::Result(AZ::IO::ResultCode::Success);
+                }));
+
+        ON_CALL(m_ioMock, Size(An<AZ::IO::HandleType>(), _)).WillByDefault(Invoke([](auto, AZ::u64& size)
+        {
+            size = strlen(SourceDependencyJson::TestJson);
+            return AZ::IO::ResultCode::Success;
+        }));
+
+        EXPECT_CALL(m_ioMock, Read(_, _, _, _, _))
+            .WillRepeatedly(Invoke(
+                [](auto, void* buffer, auto, auto, AZ::u64* bytesRead)
+                {
+                    memcpy(buffer, SourceDependencyJson::TestJson, strlen(SourceDependencyJson::TestJson));
+                    *bytesRead = strlen(SourceDependencyJson::TestJson);
+                    return AZ::IO::ResultCode::Success;
+                }));
+
+        EXPECT_CALL(m_ioMock, Close(_)).WillRepeatedly(Return(AZ::IO::ResultCode::Success));
+    }
+
+    IO::NiceFileIOBaseMock m_ioMock;
+};
+
+TEST_F(SourceDependencyMockedIOTests, RegularManifestHasPriority)
+{
+    ImportHandler handler;
+    SettingsRegistryMock settingsRegistry;
+
+    AssetBuilderSDK::CreateJobsRequest request;
+    AssetBuilderSDK::CreateJobsResponse response;
+
+    request.m_sourceFile = "file.fbx";
+
+    using namespace ::testing;
+
+    AZStd::string genPath = AZStd::string("cache").append(1, AZ_TRAIT_OS_PATH_SEPARATOR).append("file.fbx.test.gen");
+
+    EXPECT_CALL(m_ioMock, Exists(StrEq("file.fbx.test"))).WillRepeatedly(Return(true));
+    EXPECT_CALL(m_ioMock, Exists(StrEq(genPath.c_str()))).Times(Exactly(0));
+    
+    ASSERT_TRUE(SceneBuilderWorker::ManifestDependencyCheck(request, response));
+    ASSERT_EQ(response.m_sourceFileDependencyList.size(), 2);
+}
+
+TEST_F(SourceDependencyMockedIOTests, GeneratedManifestTest)
+{
+    ImportHandler handler;
+    SettingsRegistryMock settingsRegistry;
+
+    AssetBuilderSDK::CreateJobsRequest request;
+    AssetBuilderSDK::CreateJobsResponse response;
+
+    request.m_sourceFile = "file.fbx";
+
+    using namespace ::testing;
+
+    AZStd::string genPath = AZStd::string("cache").append(1, AZ_TRAIT_OS_PATH_SEPARATOR).append("file.fbx.test.gen");
+
+    EXPECT_CALL(m_ioMock, Exists(StrEq("file.fbx.test"))).WillRepeatedly(Return(false));
+    EXPECT_CALL(m_ioMock, Exists(StrEq(genPath.c_str()))).WillRepeatedly(Return(true));
+
+    ASSERT_TRUE(SceneBuilderWorker::ManifestDependencyCheck(request, response));
+    ASSERT_EQ(response.m_sourceFileDependencyList.size(), 2);
 }

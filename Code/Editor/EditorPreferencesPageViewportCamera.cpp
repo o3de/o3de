@@ -91,7 +91,8 @@ void CEditorPreferencesPage_ViewportCamera::Reflect(AZ::SerializeContext& serial
         ->Field("FreePan", &CameraInputSettings::m_freePanChannelId)
         ->Field("PivotLook", &CameraInputSettings::m_pivotLookChannelId)
         ->Field("PivotDolly", &CameraInputSettings::m_pivotDollyChannelId)
-        ->Field("PivotPan", &CameraInputSettings::m_pivotPanChannelId);
+        ->Field("PivotPan", &CameraInputSettings::m_pivotPanChannelId)
+        ->Field("Focus", &CameraInputSettings::m_focusChannelId);
 
     serialize.Class<CEditorPreferencesPage_ViewportCamera>()
         ->Version(1)
@@ -206,14 +207,17 @@ void CEditorPreferencesPage_ViewportCamera::Reflect(AZ::SerializeContext& serial
             ->DataElement(
                 AZ::Edit::UIHandlers::ComboBox, &CameraInputSettings::m_pivotPanChannelId, "Pivot Pan",
                 "Key/button to begin camera pivot pan")
+            ->Attribute(AZ::Edit::Attributes::StringList, &GetEditorInputNames)
+            ->DataElement(
+                AZ::Edit::UIHandlers::ComboBox, &CameraInputSettings::m_focusChannelId, "Focus", "Key/button to focus camera pivot")
             ->Attribute(AZ::Edit::Attributes::StringList, &GetEditorInputNames);
 
         editContext->Class<CEditorPreferencesPage_ViewportCamera>("Viewport Preferences", "Viewport Preferences")
             ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
             ->Attribute(AZ::Edit::Attributes::Visibility, AZ_CRC("PropertyVisibility_ShowChildrenOnly", 0xef428f20))
             ->DataElement(
-                AZ::Edit::UIHandlers::Default, &CEditorPreferencesPage_ViewportCamera::m_cameraMovementSettings,
-                "Camera Movement Settings", "Camera Movement Settings")
+                AZ::Edit::UIHandlers::Default, &CEditorPreferencesPage_ViewportCamera::m_cameraMovementSettings, "Camera Movement Settings",
+                "Camera Movement Settings")
             ->DataElement(
                 AZ::Edit::UIHandlers::Default, &CEditorPreferencesPage_ViewportCamera::m_cameraInputSettings, "Camera Input Settings",
                 "Camera Input Settings");
@@ -281,6 +285,7 @@ void CEditorPreferencesPage_ViewportCamera::OnApply()
     SandboxEditor::SetCameraPivotLookChannelId(m_cameraInputSettings.m_pivotLookChannelId);
     SandboxEditor::SetCameraPivotDollyChannelId(m_cameraInputSettings.m_pivotDollyChannelId);
     SandboxEditor::SetCameraPivotPanChannelId(m_cameraInputSettings.m_pivotPanChannelId);
+    SandboxEditor::SetCameraFocusChannelId(m_cameraInputSettings.m_focusChannelId);
 
     SandboxEditor::EditorModularViewportCameraComposerNotificationBus::Broadcast(
         &SandboxEditor::EditorModularViewportCameraComposerNotificationBus::Events::OnEditorModularViewportCameraComposerSettingsChanged);
@@ -316,4 +321,5 @@ void CEditorPreferencesPage_ViewportCamera::InitializeSettings()
     m_cameraInputSettings.m_pivotLookChannelId = SandboxEditor::CameraPivotLookChannelId().GetName();
     m_cameraInputSettings.m_pivotDollyChannelId = SandboxEditor::CameraPivotDollyChannelId().GetName();
     m_cameraInputSettings.m_pivotPanChannelId = SandboxEditor::CameraPivotPanChannelId().GetName();
+    m_cameraInputSettings.m_focusChannelId = SandboxEditor::CameraFocusChannelId().GetName();
 }
