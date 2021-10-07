@@ -411,13 +411,35 @@ namespace Multiplayer
             INetworkEntityManager* networkEntityManager = AZ::Interface<INetworkEntityManager>::Get();
             AZ_Assert(networkEntityManager, "NetworkEntityManager must be created.");
 
+            // Build a set of Net IDs for the children
+            AZStd::unordered_set<NetEntityId> currentChildren; // TODO: Cache inside the component if this becomes a performance issue.
+            NetworkHierarchyRootComponent& component = GetParent();
+            for (AZ::Entity* child : component.m_hierarchicalEntities)
+            {
+                if (child == component.GetEntity()) // Skip the root entity
+                {
+                    continue;
+                }
+                NetEntityId childNetEntitydId = networkEntityManager->GetNetEntityIdById(child->GetId()); // TODO: Cache net IDs in the component if this becomes a performance issue
+                currentChildren.insert(childNetEntitydId);
+            }
+
+            // Process the input for the child entities
             for (NetworkInputChild& subInput : networkInput->m_childInputs)
             {
-                const ConstNetworkEntityHandle& childEntityFromInput = subInput.GetOwner();
-                ConstNetworkEntityHandle localChildHandle = networkEntityManager->GetEntity(childEntityFromInput.GetNetEntityId());
-                if (localChildHandle.Exists())
+                const ConstNetworkEntityHandle& inputOwnerHandle = subInput.GetOwner();
+                NetEntityId inputOwnerNetEntitydId = inputOwnerHandle.GetNetEntityId();
+
+                if (currentChildren.count(inputOwnerNetEntitydId) == 0)
                 {
-                    auto* netComp = localChildHandle.GetNetBindComponent();
+                    // Skip the input for entities which are not a part of this hierarchy
+                    continue;
+                }
+
+                ConstNetworkEntityHandle localEntityHandle = networkEntityManager->GetEntity(inputOwnerNetEntitydId);
+                if (localEntityHandle.Exists())
+                {
+                    auto* netComp = localEntityHandle.GetNetBindComponent();
                     AZ_Assert(netComp, "No NetBindComponent, this should be impossible");
                     // We do not rewind entity role changes, so make sure we are the correct role prior to processing
                     if (netComp->HasController())
