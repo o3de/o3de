@@ -13,7 +13,7 @@
 #include <AzFramework/Asset/AssetCatalogBus.h>
 #include <AzToolsFramework/Thumbnails/Thumbnail.h>
 #include <AzToolsFramework/Thumbnails/ThumbnailerBus.h>
-#include <Thumbnails/Rendering/CommonThumbnailRenderer.h>
+#include <Thumbnails/Rendering/CommonPreviewRenderer.h>
 #endif
 
 namespace AZ

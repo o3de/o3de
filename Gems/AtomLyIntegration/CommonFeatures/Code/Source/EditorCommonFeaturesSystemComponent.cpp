@@ -194,7 +194,7 @@ namespace AZ
         void EditorCommonFeaturesSystemComponent::OnCatalogLoaded([[maybe_unused]] const char* catalogFile)
         {
             AZ::TickBus::QueueFunction([this](){
-                m_renderer = AZStd::make_unique<AZ::LyIntegration::Thumbnails::CommonThumbnailRenderer>();
+                m_renderer = AZStd::make_unique<AZ::LyIntegration::Thumbnails::CommonPreviewRenderer>();
                 m_previewerFactory = AZStd::make_unique<LyIntegration::CommonPreviewerFactory>();
             });
         }

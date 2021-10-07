@@ -13,7 +13,7 @@
 #include <Atom/RPI.Reflect/Asset/AssetUtils.h>
 #include <Atom/RPI.Reflect/Model/ModelAsset.h>
 #include <Atom/RPI.Reflect/System/AnyAsset.h>
-#include <AtomLyIntegration/CommonFeatures/Thumbnails/ThumbnailFeatureProcessorProviderBus.h>
+#include <AtomLyIntegration/CommonFeatures/Thumbnails/PreviewerFeatureProcessorProviderBus.h>
 #include <AzFramework/Entity/GameEntityContextComponent.h>
 #include <AzToolsFramework/Thumbnails/Thumbnail.h>
 #include <AzToolsFramework/Thumbnails/ThumbnailerBus.h>
@@ -37,30 +37,30 @@ namespace AZ
     {
         namespace Thumbnails
         {
-            class ThumbnailRendererStep;
+            class CommonPreviewRendererState;
 
             //! Provides custom rendering of material and model thumbnails
-            class CommonThumbnailRenderer
+            class CommonPreviewRenderer
                 : public AzToolsFramework::Thumbnailer::ThumbnailerRendererRequestBus::MultiHandler
                 , public SystemTickBus::Handler
-                , public ThumbnailFeatureProcessorProviderBus::Handler
+                , public PreviewerFeatureProcessorProviderBus::Handler
             {
             public:
-                AZ_CLASS_ALLOCATOR(CommonThumbnailRenderer, AZ::SystemAllocator, 0)
+                AZ_CLASS_ALLOCATOR(CommonPreviewRenderer, AZ::SystemAllocator, 0)
 
-                CommonThumbnailRenderer();
-                ~CommonThumbnailRenderer();
+                CommonPreviewRenderer();
+                ~CommonPreviewRenderer();
 
-                enum class Step : AZ::s8
+                enum class State : AZ::s8
                 {
                     None,
-                    FindThumbnailToRender,
-                    WaitForAssetsToLoad,
-                    Capture
+                    IdleState,
+                    LoadState,
+                    CaptureState
                 };
 
-                void SetStep(Step step);
-                Step GetStep() const;
+                void SetState(State state);
+                State GetState() const;
 
                 void SelectThumbnail();
                 void CancelThumbnail();
@@ -87,8 +87,8 @@ namespace AZ
                 //! SystemTickBus::Handler interface overrides...
                 void OnSystemTick() override;
 
-                //! Render::ThumbnailFeatureProcessorProviderBus::Handler interface overrides...
-                void GetCustomFeatureProcessors(AZStd::unordered_set<AZStd::string>& featureProcessors) const override;
+                //! Render::PreviewerFeatureProcessorProviderBus::Handler interface overrides...
+                void GetRequiredFeatureProcessors(AZStd::unordered_set<AZStd::string>& featureProcessors) const override;
 
                 static constexpr float AspectRatio = 1.0f;
                 static constexpr float NearDist = 0.001f;
@@ -114,8 +114,8 @@ namespace AZ
                 AZStd::queue<ThumbnailInfo> m_thumbnailInfoQueue;
                 ThumbnailInfo m_currentThubnailInfo;
 
-                AZStd::unordered_map<Step, AZStd::shared_ptr<ThumbnailRendererStep>> m_steps;
-                Step m_currentStep = CommonThumbnailRenderer::Step::None;
+                AZStd::unordered_map<State, AZStd::shared_ptr<CommonPreviewRendererState>> m_steps;
+                State m_currentState = CommonPreviewRenderer::State::None;
 
                 static constexpr const char* DefaultLightingPresetPath = "lightingpresets/thumbnail.lightingpreset.azasset";
                 const Data::AssetId DefaultLightingPresetAssetId = AZ::RPI::AssetUtils::GetAssetIdForProductPath(DefaultLightingPresetPath);

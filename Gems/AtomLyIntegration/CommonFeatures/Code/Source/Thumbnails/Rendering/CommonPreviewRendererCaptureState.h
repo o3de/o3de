@@ -10,7 +10,7 @@
 
 #include <Atom/Feature/Utils/FrameCaptureBus.h>
 #include <AzCore/Component/TickBus.h>
-#include <Thumbnails/Rendering/ThumbnailRendererSteps/ThumbnailRendererStep.h>
+#include <Thumbnails/Rendering/CommonPreviewRendererState.h>
 
 namespace AZ
 {
@@ -18,14 +18,14 @@ namespace AZ
     {
         namespace Thumbnails
         {
-            //! CaptureStep renders a thumbnail to a pixmap and notifies MaterialOrModelThumbnail once finished
-            class CaptureStep
-                : public ThumbnailRendererStep
+            //! CommonPreviewRendererCaptureState renders a thumbnail to a pixmap and notifies MaterialOrModelThumbnail once finished
+            class CommonPreviewRendererCaptureState
+                : public CommonPreviewRendererState
                 , private TickBus::Handler
                 , private Render::FrameCaptureNotificationBus::Handler
             {
             public:
-                CaptureStep(CommonThumbnailRenderer* renderer);
+                CommonPreviewRendererCaptureState(CommonPreviewRenderer* renderer);
 
                 void Start() override;
                 void Stop() override;

@@ -37,10 +37,10 @@
 #include <AzFramework/Scene/SceneSystemInterface.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
 #include <AzToolsFramework/Thumbnails/ThumbnailerBus.h>
-#include <Thumbnails/Rendering/CommonThumbnailRenderer.h>
-#include <Thumbnails/Rendering/ThumbnailRendererSteps/CaptureStep.h>
-#include <Thumbnails/Rendering/ThumbnailRendererSteps/FindThumbnailToRenderStep.h>
-#include <Thumbnails/Rendering/ThumbnailRendererSteps/WaitForAssetsToLoadStep.h>
+#include <Thumbnails/Rendering/CommonPreviewRenderer.h>
+#include <Thumbnails/Rendering/CommonPreviewRendererCaptureState.h>
+#include <Thumbnails/Rendering/CommonPreviewRendererIdleState.h>
+#include <Thumbnails/Rendering/CommonPreviewRendererLoadState.h>
 #include <Thumbnails/ThumbnailUtils.h>
 
 namespace AZ
@@ -49,13 +49,13 @@ namespace AZ
     {
         namespace Thumbnails
         {
-            CommonThumbnailRenderer::CommonThumbnailRenderer()
+            CommonPreviewRenderer::CommonPreviewRenderer()
             {
-                // CommonThumbnailRenderer supports both models and materials, but we connect on materialAssetType
+                // CommonPreviewRenderer supports both models and materials, but we connect on materialAssetType
                 // since MaterialOrModelThumbnail dispatches event on materialAssetType address too
                 AzToolsFramework::Thumbnailer::ThumbnailerRendererRequestBus::MultiHandler::BusConnect(RPI::MaterialAsset::RTTI_Type());
                 AzToolsFramework::Thumbnailer::ThumbnailerRendererRequestBus::MultiHandler::BusConnect(RPI::ModelAsset::RTTI_Type());
-                ThumbnailFeatureProcessorProviderBus::Handler::BusConnect();
+                PreviewerFeatureProcessorProviderBus::Handler::BusConnect();
                 SystemTickBus::Handler::BusConnect();
 
                 m_entityContext = AZStd::make_unique<AzFramework::EntityContext>();
@@ -63,8 +63,8 @@ namespace AZ
 
                 // Create and register a scene with all required feature processors
                 AZStd::unordered_set<AZStd::string> featureProcessors;
-                ThumbnailFeatureProcessorProviderBus::Broadcast(
-                    &ThumbnailFeatureProcessorProviderBus::Handler::GetCustomFeatureProcessors, featureProcessors);
+                PreviewerFeatureProcessorProviderBus::Broadcast(
+                    &PreviewerFeatureProcessorProviderBus::Handler::GetRequiredFeatureProcessors, featureProcessors);
 
                 RPI::SceneDescriptor sceneDesc;
                 sceneDesc.m_featureProcessorNames.assign(featureProcessors.begin(), featureProcessors.end());
@@ -118,19 +118,19 @@ namespace AZ
                 m_defaultMaterialAsset.Create(DefaultMaterialAssetId, true);
                 m_defaultModelAsset.Create(DefaultModelAssetId, true);
 
-                m_steps[CommonThumbnailRenderer::Step::FindThumbnailToRender] = AZStd::make_shared<FindThumbnailToRenderStep>(this);
-                m_steps[CommonThumbnailRenderer::Step::WaitForAssetsToLoad] = AZStd::make_shared<WaitForAssetsToLoadStep>(this);
-                m_steps[CommonThumbnailRenderer::Step::Capture] = AZStd::make_shared<CaptureStep>(this);
-                SetStep(CommonThumbnailRenderer::Step::FindThumbnailToRender);
+                m_steps[CommonPreviewRenderer::State::IdleState] = AZStd::make_shared<CommonPreviewRendererIdleState>(this);
+                m_steps[CommonPreviewRenderer::State::LoadState] = AZStd::make_shared<CommonPreviewRendererLoadState>(this);
+                m_steps[CommonPreviewRenderer::State::CaptureState] = AZStd::make_shared<CommonPreviewRendererCaptureState>(this);
+                SetState(CommonPreviewRenderer::State::IdleState);
             }
 
-            CommonThumbnailRenderer::~CommonThumbnailRenderer()
+            CommonPreviewRenderer::~CommonPreviewRenderer()
             {
                 AzToolsFramework::Thumbnailer::ThumbnailerRendererRequestBus::MultiHandler::BusDisconnect();
                 SystemTickBus::Handler::BusDisconnect();
-                ThumbnailFeatureProcessorProviderBus::Handler::BusDisconnect();
+                PreviewerFeatureProcessorProviderBus::Handler::BusDisconnect();
 
-                SetStep(CommonThumbnailRenderer::Step::None);
+                SetState(CommonPreviewRenderer::State::None);
 
                 if (m_modelEntity)
                 {
@@ -146,29 +146,29 @@ namespace AZ
                 m_frameworkScene->UnsetSubsystem(m_entityContext.get());
             }
 
-            void CommonThumbnailRenderer::SetStep(Step step)
+            void CommonPreviewRenderer::SetState(State state)
             {
-                auto stepItr = m_steps.find(m_currentStep);
+                auto stepItr = m_steps.find(m_currentState);
                 if (stepItr != m_steps.end())
                 {
                     stepItr->second->Stop();
                 }
 
-                m_currentStep = step;
+                m_currentState = state;
 
-                stepItr = m_steps.find(m_currentStep);
+                stepItr = m_steps.find(m_currentState);
                 if (stepItr != m_steps.end())
                 {
                     stepItr->second->Start();
                 }
             }
 
-            CommonThumbnailRenderer::Step CommonThumbnailRenderer::GetStep() const
+            CommonPreviewRenderer::State CommonPreviewRenderer::GetState() const
             {
-                return m_currentStep;
+                return m_currentState;
             }
 
-            void CommonThumbnailRenderer::SelectThumbnail()
+            void CommonPreviewRenderer::SelectThumbnail()
             {
                 if (!m_thumbnailInfoQueue.empty())
                 {
@@ -176,23 +176,23 @@ namespace AZ
                     m_currentThubnailInfo = m_thumbnailInfoQueue.front();
                     m_thumbnailInfoQueue.pop();
 
-                    SetStep(CommonThumbnailRenderer::Step::WaitForAssetsToLoad);
+                    SetState(CommonPreviewRenderer::State::LoadState);
                 }
             }
 
-            void CommonThumbnailRenderer::CancelThumbnail()
+            void CommonPreviewRenderer::CancelThumbnail()
             {
                 AzToolsFramework::Thumbnailer::ThumbnailerRendererNotificationBus::Event(
                     m_currentThubnailInfo.m_key, &AzToolsFramework::Thumbnailer::ThumbnailerRendererNotifications::ThumbnailFailedToRender);
-                SetStep(CommonThumbnailRenderer::Step::FindThumbnailToRender);
+                SetState(CommonPreviewRenderer::State::IdleState);
             }
 
-            void CommonThumbnailRenderer::CompleteThumbnail()
+            void CommonPreviewRenderer::CompleteThumbnail()
             {
-                SetStep(CommonThumbnailRenderer::Step::FindThumbnailToRender);
+                SetState(CommonPreviewRenderer::State::IdleState);
             }
 
-            void CommonThumbnailRenderer::LoadAssets()
+            void CommonPreviewRenderer::LoadAssets()
             {
                 // Determine if thumbnailkey contains a material asset or set a default material
                 const Data::AssetId materialAssetId = GetAssetId(m_currentThubnailInfo.m_key, RPI::MaterialAsset::RTTI_Type());
@@ -207,11 +207,11 @@ namespace AZ
                 m_lightingPresetAsset.Create(lightingPresetAssetId.IsValid() ? lightingPresetAssetId : DefaultLightingPresetAssetId, true);
             }
 
-            void CommonThumbnailRenderer::UpdateLoadAssets()
+            void CommonPreviewRenderer::UpdateLoadAssets()
             {
                 if (m_materialAsset.IsReady() && m_modelAsset.IsReady() && m_lightingPresetAsset.IsReady())
                 {
-                    SetStep(CommonThumbnailRenderer::Step::Capture);
+                    SetState(CommonPreviewRenderer::State::CaptureState);
                     return;
                 }
 
@@ -222,28 +222,28 @@ namespace AZ
                 }
             }
 
-            void CommonThumbnailRenderer::CancelLoadAssets()
+            void CommonPreviewRenderer::CancelLoadAssets()
             {
                 AZ_Warning(
-                    "CommonThumbnailRenderer", m_materialAsset.IsReady(), "Asset failed to load in time: %s",
+                    "CommonPreviewRenderer", m_materialAsset.IsReady(), "Asset failed to load in time: %s",
                     m_materialAsset.ToString<AZStd::string>().c_str());
                 AZ_Warning(
-                    "CommonThumbnailRenderer", m_modelAsset.IsReady(), "Asset failed to load in time: %s",
+                    "CommonPreviewRenderer", m_modelAsset.IsReady(), "Asset failed to load in time: %s",
                     m_modelAsset.ToString<AZStd::string>().c_str());
                 AZ_Warning(
-                    "CommonThumbnailRenderer", m_lightingPresetAsset.IsReady(), "Asset failed to load in time: %s",
+                    "CommonPreviewRenderer", m_lightingPresetAsset.IsReady(), "Asset failed to load in time: %s",
                     m_lightingPresetAsset.ToString<AZStd::string>().c_str());
                 CancelThumbnail();
             }
 
-            void CommonThumbnailRenderer::UpdateScene()
+            void CommonPreviewRenderer::UpdateScene()
             {
                 UpdateModel();
                 UpdateLighting();
                 UpdateCamera();
             }
 
-            void CommonThumbnailRenderer::UpdateModel()
+            void CommonPreviewRenderer::UpdateModel()
             {
                 Render::MaterialComponentRequestBus::Event(
                     m_modelEntity->GetId(), &Render::MaterialComponentRequestBus::Events::SetDefaultMaterialOverride,
@@ -253,7 +253,7 @@ namespace AZ
                     m_modelEntity->GetId(), &Render::MeshComponentRequestBus::Events::SetModelAsset, m_modelAsset);
             }
 
-            void CommonThumbnailRenderer::UpdateLighting()
+            void CommonPreviewRenderer::UpdateLighting()
             {
                 auto preset = m_lightingPresetAsset->GetDataAs<Render::LightingPreset>();
                 if (preset)
@@ -283,7 +283,7 @@ namespace AZ
                 }
             }
 
-            void CommonThumbnailRenderer::UpdateCamera()
+            void CommonPreviewRenderer::UpdateCamera()
             {
                 // Get bounding sphere of the model asset and estimate how far the camera needs to be see all of it
                 Vector3 center = {};
@@ -297,7 +297,7 @@ namespace AZ
                 m_view->SetCameraTransform(Matrix3x4::CreateFromTransform(cameraTransform));
             }
 
-            RPI::AttachmentReadback::CallbackFunction CommonThumbnailRenderer::GetCaptureCallback()
+            RPI::AttachmentReadback::CallbackFunction CommonPreviewRenderer::GetCaptureCallback()
             {
                 return [this](const RPI::AttachmentReadback::ReadbackResult& result)
                 {
@@ -320,7 +320,7 @@ namespace AZ
                 };
             }
 
-            bool CommonThumbnailRenderer::StartCapture()
+            bool CommonPreviewRenderer::StartCapture()
             {
                 if (auto renderToTexturePass = azrtti_cast<AZ::RPI::RenderToTexturePass*>(m_renderPipeline->GetRootPass().get()))
                 {
@@ -336,22 +336,22 @@ namespace AZ
                 return startedCapture;
             }
 
-            void CommonThumbnailRenderer::EndCapture()
+            void CommonPreviewRenderer::EndCapture()
             {
                 m_renderPipeline->RemoveFromRenderTick();
             }
 
-            bool CommonThumbnailRenderer::Installed() const
+            bool CommonPreviewRenderer::Installed() const
             {
                 return true;
             }
 
-            void CommonThumbnailRenderer::OnSystemTick()
+            void CommonPreviewRenderer::OnSystemTick()
             {
                 AzToolsFramework::Thumbnailer::ThumbnailerRendererRequestBus::ExecuteQueuedEvents();
             }
 
-            void CommonThumbnailRenderer::GetCustomFeatureProcessors(AZStd::unordered_set<AZStd::string>& featureProcessors) const
+            void CommonPreviewRenderer::GetRequiredFeatureProcessors(AZStd::unordered_set<AZStd::string>& featureProcessors) const
             {
                 featureProcessors.insert({
                     "AZ::Render::TransformServiceFeatureProcessor",
@@ -373,7 +373,7 @@ namespace AZ
                     "AZ::Render::SkyBoxFeatureProcessor" });
             }
             
-            void CommonThumbnailRenderer::RenderThumbnail(AzToolsFramework::Thumbnailer::SharedThumbnailKey thumbnailKey, int thumbnailSize)
+            void CommonPreviewRenderer::RenderThumbnail(AzToolsFramework::Thumbnailer::SharedThumbnailKey thumbnailKey, int thumbnailSize)
             {
                 m_thumbnailInfoQueue.push({ thumbnailKey, thumbnailSize });
             }

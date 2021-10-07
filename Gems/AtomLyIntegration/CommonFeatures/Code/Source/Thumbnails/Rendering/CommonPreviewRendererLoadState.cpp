@@ -6,10 +6,8 @@
  *
  */
 
-#include "Thumbnails/ThumbnailerBus.h"
-#include <Thumbnails/Rendering/CommonThumbnailRenderer.h>
-#include <Thumbnails/Rendering/ThumbnailRendererSteps/CaptureStep.h>
-#include <Thumbnails/Rendering/ThumbnailRendererSteps/WaitForAssetsToLoadStep.h>
+#include <Thumbnails/Rendering/CommonPreviewRenderer.h>
+#include <Thumbnails/Rendering/CommonPreviewRendererLoadState.h>
 
 namespace AZ
 {
@@ -17,24 +15,24 @@ namespace AZ
     {
         namespace Thumbnails
         {
-            WaitForAssetsToLoadStep::WaitForAssetsToLoadStep(CommonThumbnailRenderer* renderer)
-                : ThumbnailRendererStep(renderer)
+            CommonPreviewRendererLoadState::CommonPreviewRendererLoadState(CommonPreviewRenderer* renderer)
+                : CommonPreviewRendererState(renderer)
             {
             }
 
-            void WaitForAssetsToLoadStep::Start()
+            void CommonPreviewRendererLoadState::Start()
             {
                 m_renderer->LoadAssets();
                 m_timeRemainingS = TimeOutS;
                 TickBus::Handler::BusConnect();
             }
 
-            void WaitForAssetsToLoadStep::Stop()
+            void CommonPreviewRendererLoadState::Stop()
             {
                 TickBus::Handler::BusDisconnect();
             }
 
-            void WaitForAssetsToLoadStep::OnTick(float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time)
+            void CommonPreviewRendererLoadState::OnTick(float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time)
             {
                 m_timeRemainingS -= deltaTime;
                 if (m_timeRemainingS > 0.0f)

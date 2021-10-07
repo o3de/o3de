@@ -6,8 +6,8 @@
  *
  */
 
-#include <Thumbnails/Rendering/CommonThumbnailRenderer.h>
-#include <Thumbnails/Rendering/ThumbnailRendererSteps/CaptureStep.h>
+#include <Thumbnails/Rendering/CommonPreviewRenderer.h>
+#include <Thumbnails/Rendering/CommonPreviewRendererCaptureState.h>
 
 namespace AZ
 {
@@ -15,26 +15,26 @@ namespace AZ
     {
         namespace Thumbnails
         {
-            CaptureStep::CaptureStep(CommonThumbnailRenderer* renderer)
-                : ThumbnailRendererStep(renderer)
+            CommonPreviewRendererCaptureState::CommonPreviewRendererCaptureState(CommonPreviewRenderer* renderer)
+                : CommonPreviewRendererState(renderer)
             {
             }
 
-            void CaptureStep::Start()
+            void CommonPreviewRendererCaptureState::Start()
             {
                 m_ticksToCapture = 1;
                 m_renderer->UpdateScene();
                 TickBus::Handler::BusConnect();
             }
 
-            void CaptureStep::Stop()
+            void CommonPreviewRendererCaptureState::Stop()
             {
                 m_renderer->EndCapture();
                 TickBus::Handler::BusDisconnect();
                 Render::FrameCaptureNotificationBus::Handler::BusDisconnect();
             }
 
-            void CaptureStep::OnTick([[maybe_unused]] float deltaTime, [[maybe_unused]] ScriptTimePoint time)
+            void CommonPreviewRendererCaptureState::OnTick([[maybe_unused]] float deltaTime, [[maybe_unused]] ScriptTimePoint time)
             {
                 if (m_ticksToCapture-- <= 0)
                 {
@@ -47,7 +47,7 @@ namespace AZ
                 }
             }
 
-            void CaptureStep::OnCaptureFinished(
+            void CommonPreviewRendererCaptureState::OnCaptureFinished(
                 [[maybe_unused]] Render::FrameCaptureResult result, [[maybe_unused]] const AZStd::string& info)
             {
                 m_renderer->CompleteThumbnail();

@@ -14,22 +14,22 @@ namespace AZ
     {
         namespace Thumbnails
         {
-            class CommonThumbnailRenderer;
+            class CommonPreviewRenderer;
 
-            //! ThumbnailRendererStep decouples CommonThumbnailRenderer logic into easy-to-understand and debug pieces
-            class ThumbnailRendererStep
+            //! CommonPreviewRendererState decouples CommonPreviewRenderer logic into easy-to-understand and debug pieces
+            class CommonPreviewRendererState
             {
             public:
-                explicit ThumbnailRendererStep(CommonThumbnailRenderer* renderer) : m_renderer(renderer) {}
-                virtual ~ThumbnailRendererStep() = default;
+                explicit CommonPreviewRendererState(CommonPreviewRenderer* renderer) : m_renderer(renderer) {}
+                virtual ~CommonPreviewRendererState() = default;
 
-                //! Start is called when step begins execution
+                //! Start is called when state begins execution
                 virtual void Start() {}
-                //! Stop is called when step ends execution
+                //! Stop is called when state ends execution
                 virtual void Stop() {}
 
             protected:
-                CommonThumbnailRenderer* m_renderer;
+                CommonPreviewRenderer* m_renderer;
             };
         } // namespace Thumbnails
     } // namespace LyIntegration

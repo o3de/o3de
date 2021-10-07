@@ -11,10 +11,10 @@
 #include <AzCore/Component/Component.h>
 #include <AzFramework/Application/Application.h>
 #include <AzToolsFramework/API/EditorLevelNotificationBus.h>
-#include <AzToolsFramework/Entity/SliceEditorEntityOwnershipServiceBus.h>
 #include <AzToolsFramework/AssetBrowser/Previewer/PreviewerBus.h>
-#include <Thumbnails/Rendering/CommonThumbnailRenderer.h>
+#include <AzToolsFramework/Entity/SliceEditorEntityOwnershipServiceBus.h>
 #include <Source/Thumbnails/Preview/CommonPreviewerFactory.h>
+#include <Thumbnails/Rendering/CommonPreviewRenderer.h>
 
 namespace AZ
 {
@@ -73,7 +73,7 @@ namespace AZ
             AZStd::string m_atomLevelDefaultAssetPath{ "LevelAssets/default.slice" };
             float m_envProbeHeight{ 200.0f };
 
-            AZStd::unique_ptr<AZ::LyIntegration::Thumbnails::CommonThumbnailRenderer> m_renderer;
+            AZStd::unique_ptr<AZ::LyIntegration::Thumbnails::CommonPreviewRenderer> m_renderer;
             AZStd::unique_ptr<LyIntegration::CommonPreviewerFactory> m_previewerFactory;
         };
     } // namespace Render

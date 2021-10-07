@@ -8,7 +8,8 @@
 
 #pragma once
 
-#include <Thumbnails/Rendering/ThumbnailRendererSteps/ThumbnailRendererStep.h>
+#include <AzCore/Component/TickBus.h>
+#include <Thumbnails/Rendering/CommonPreviewRendererState.h>
 
 namespace AZ
 {
@@ -16,13 +17,13 @@ namespace AZ
     {
         namespace Thumbnails
         {
-            //! WaitForAssetsToLoadStep pauses further rendering until all assets used for rendering a thumbnail have been loaded
-            class WaitForAssetsToLoadStep
-                : public ThumbnailRendererStep
+            //! CommonPreviewRendererLoadState pauses further rendering until all assets used for rendering a thumbnail have been loaded
+            class CommonPreviewRendererLoadState
+                : public CommonPreviewRendererState
                 , private TickBus::Handler
             {
             public:
-                WaitForAssetsToLoadStep(CommonThumbnailRenderer* renderer);
+                CommonPreviewRendererLoadState(CommonPreviewRenderer* renderer);
 
                 void Start() override;
                 void Stop() override;

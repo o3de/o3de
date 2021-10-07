@@ -6,8 +6,8 @@
  *
  */
 
-#include <Thumbnails/Rendering/CommonThumbnailRenderer.h>
-#include <Thumbnails/Rendering/ThumbnailRendererSteps/FindThumbnailToRenderStep.h>
+#include <Thumbnails/Rendering/CommonPreviewRenderer.h>
+#include <Thumbnails/Rendering/CommonPreviewRendererIdleState.h>
 
 namespace AZ
 {
@@ -15,22 +15,22 @@ namespace AZ
     {
         namespace Thumbnails
         {
-            FindThumbnailToRenderStep::FindThumbnailToRenderStep(CommonThumbnailRenderer* renderer)
-                : ThumbnailRendererStep(renderer)
+            CommonPreviewRendererIdleState::CommonPreviewRendererIdleState(CommonPreviewRenderer* renderer)
+                : CommonPreviewRendererState(renderer)
             {
             }
 
-            void FindThumbnailToRenderStep::Start()
+            void CommonPreviewRendererIdleState::Start()
             {
                 TickBus::Handler::BusConnect();
             }
 
-            void FindThumbnailToRenderStep::Stop()
+            void CommonPreviewRendererIdleState::Stop()
             {
                 TickBus::Handler::BusDisconnect();
             }
 
-            void FindThumbnailToRenderStep::OnTick([[maybe_unused]] float deltaTime, [[maybe_unused]] ScriptTimePoint time)
+            void CommonPreviewRendererIdleState::OnTick([[maybe_unused]] float deltaTime, [[maybe_unused]] ScriptTimePoint time)
             {
                 m_renderer->SelectThumbnail();
             }

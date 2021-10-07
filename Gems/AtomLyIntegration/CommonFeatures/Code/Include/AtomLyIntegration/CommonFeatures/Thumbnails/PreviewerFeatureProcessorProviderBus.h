@@ -16,18 +16,18 @@ namespace AZ
     {
         namespace Thumbnails
         {
-            //! ThumbnailFeatureProcessorProviderRequests allows registering custom Feature Processors for thumbnail generation
+            //! PreviewerFeatureProcessorProviderRequests allows registering custom Feature Processors for thumbnail generation
             //! Duplicates will be ignored
-            //! You can check minimal feature processors that are already registered in CommonThumbnailRenderer.cpp
-            class ThumbnailFeatureProcessorProviderRequests
+            //! You can check minimal feature processors that are already registered in CommonPreviewRenderer.cpp
+            class PreviewerFeatureProcessorProviderRequests
                 : public AZ::EBusTraits
             {
             public:
                 //! Get a list of custom feature processors to register with thumbnail renderer
-                virtual void GetCustomFeatureProcessors(AZStd::unordered_set<AZStd::string>& featureProcessors) const = 0;
+                virtual void GetRequiredFeatureProcessors(AZStd::unordered_set<AZStd::string>& featureProcessors) const = 0;
             };
 
-            using ThumbnailFeatureProcessorProviderBus = AZ::EBus<ThumbnailFeatureProcessorProviderRequests>;
+            using PreviewerFeatureProcessorProviderBus = AZ::EBus<PreviewerFeatureProcessorProviderRequests>;
         } // namespace Thumbnails
     } // namespace LyIntegration
 } // namespace AZ
