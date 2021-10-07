@@ -104,19 +104,13 @@ set(FILES
     Source/Thumbnails/Preview/CommonPreviewerFactory.h
     Source/Thumbnails/Rendering/CommonThumbnailRenderer.cpp
     Source/Thumbnails/Rendering/CommonThumbnailRenderer.h
-    Source/Thumbnails/Rendering/ThumbnailRendererData.h
-    Source/Thumbnails/Rendering/ThumbnailRendererContext.h
     Source/Thumbnails/Rendering/ThumbnailRendererSteps/ThumbnailRendererStep.h
-    Source/Thumbnails/Rendering/ThumbnailRendererSteps/InitializeStep.cpp
-    Source/Thumbnails/Rendering/ThumbnailRendererSteps/InitializeStep.h
     Source/Thumbnails/Rendering/ThumbnailRendererSteps/FindThumbnailToRenderStep.cpp
     Source/Thumbnails/Rendering/ThumbnailRendererSteps/FindThumbnailToRenderStep.h
     Source/Thumbnails/Rendering/ThumbnailRendererSteps/WaitForAssetsToLoadStep.cpp
     Source/Thumbnails/Rendering/ThumbnailRendererSteps/WaitForAssetsToLoadStep.h
     Source/Thumbnails/Rendering/ThumbnailRendererSteps/CaptureStep.cpp
     Source/Thumbnails/Rendering/ThumbnailRendererSteps/CaptureStep.h
-    Source/Thumbnails/Rendering/ThumbnailRendererSteps/ReleaseResourcesStep.cpp
-    Source/Thumbnails/Rendering/ThumbnailRendererSteps/ReleaseResourcesStep.h
     Source/Scripting/EditorEntityReferenceComponent.cpp
     Source/Scripting/EditorEntityReferenceComponent.h
     Source/SurfaceData/EditorSurfaceDataMeshComponent.cpp

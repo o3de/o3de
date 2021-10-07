@@ -22,7 +22,7 @@ namespace AZ
                 , private TickBus::Handler
             {
             public:
-                FindThumbnailToRenderStep(ThumbnailRendererContext* context);
+                FindThumbnailToRenderStep(CommonThumbnailRenderer* renderer);
 
                 void Start() override;
                 void Stop() override;
@@ -31,8 +31,6 @@ namespace AZ
 
                 //! AZ::TickBus::Handler interface overrides...
                 void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
-
-                void PickNextThumbnail();
             };
         } // namespace Thumbnails
     } // namespace LyIntegration

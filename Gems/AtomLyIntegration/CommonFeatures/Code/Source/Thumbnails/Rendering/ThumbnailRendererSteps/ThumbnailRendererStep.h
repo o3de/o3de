@@ -14,13 +14,13 @@ namespace AZ
     {
         namespace Thumbnails
         {
-            class ThumbnailRendererContext;
+            class CommonThumbnailRenderer;
 
             //! ThumbnailRendererStep decouples CommonThumbnailRenderer logic into easy-to-understand and debug pieces
             class ThumbnailRendererStep
             {
             public:
-                explicit ThumbnailRendererStep(ThumbnailRendererContext* context) : m_context(context) {}
+                explicit ThumbnailRendererStep(CommonThumbnailRenderer* renderer) : m_renderer(renderer) {}
                 virtual ~ThumbnailRendererStep() = default;
 
                 //! Start is called when step begins execution
@@ -29,7 +29,7 @@ namespace AZ
                 virtual void Stop() {}
 
             protected:
-                ThumbnailRendererContext* m_context;
+                CommonThumbnailRenderer* m_renderer;
             };
         } // namespace Thumbnails
     } // namespace LyIntegration

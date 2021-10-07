@@ -24,7 +24,7 @@ namespace AZ
             {
             public:
                 //! Get a list of custom feature processors to register with thumbnail renderer
-                virtual const AZStd::vector<AZStd::string>& GetCustomFeatureProcessors() const = 0;
+                virtual void GetCustomFeatureProcessors(AZStd::unordered_set<AZStd::string>& featureProcessors) const = 0;
             };
 
             using ThumbnailFeatureProcessorProviderBus = AZ::EBus<ThumbnailFeatureProcessorProviderRequests>;

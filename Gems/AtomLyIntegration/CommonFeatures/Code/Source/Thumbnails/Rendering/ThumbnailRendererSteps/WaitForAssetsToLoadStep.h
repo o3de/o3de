@@ -8,7 +8,6 @@
 
 #pragma once
 
-#include <AzCore/Asset/AssetCommon.h>
 #include <Thumbnails/Rendering/ThumbnailRendererSteps/ThumbnailRendererStep.h>
 
 namespace AZ
@@ -20,29 +19,20 @@ namespace AZ
             //! WaitForAssetsToLoadStep pauses further rendering until all assets used for rendering a thumbnail have been loaded
             class WaitForAssetsToLoadStep
                 : public ThumbnailRendererStep
-                , private Data::AssetBus::Handler
                 , private TickBus::Handler
             {
             public:
-                WaitForAssetsToLoadStep(ThumbnailRendererContext* context);
+                WaitForAssetsToLoadStep(CommonThumbnailRenderer* renderer);
 
                 void Start() override;
                 void Stop() override;
 
             private:
-                void LoadNextAsset();
-
-                // AZ::Data::AssetBus::Handler
-                void OnAssetReady(Data::Asset<Data::AssetData> asset) override;
-                void OnAssetError(Data::Asset<Data::AssetData> asset) override;
-                void OnAssetCanceled(Data::AssetId assetId) override;
-
                 //! AZ::TickBus::Handler interface overrides...
                 void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
 
-                static constexpr float TimeOutS = 3.0f;
-                Data::AssetId m_assetId;
-                float m_timeRemainingS = 0;
+                static constexpr float TimeOutS = 5.0f;
+                float m_timeRemainingS = TimeOutS;
             };
         } // namespace Thumbnails
     } // namespace LyIntegration
