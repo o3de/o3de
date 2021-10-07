@@ -11,6 +11,8 @@
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Component/Component.h>
 #include <AzFramework/Terrain/TerrainDataRequestBus.h>
+#include <LmbrCentral/Dependency/DependencyMonitor.h>
+#include <LmbrCentral/Dependency/DependencyNotificationBus.h>
 #include <SurfaceData/SurfaceDataTypes.h>
 
 #include <Terrain/Ebuses/TerrainAreaSurfaceRequestBus.h>
@@ -47,6 +49,7 @@ namespace Terrain
     class TerrainSurfaceGradientListComponent
         : public AZ::Component
         , public Terrain::TerrainAreaSurfaceRequestBus::Handler
+        , private LmbrCentral::DependencyNotificationBus::Handler
     {
     public:
         template<typename, typename>
@@ -72,6 +75,11 @@ namespace Terrain
         void GetSurfaceWeights(const AZ::Vector3& inPosition, AzFramework::SurfaceData::OrderedSurfaceTagWeightSet& outSurfaceWeights) const override;
 
     private:
+        //////////////////////////////////////////////////////////////////////////
+        // LmbrCentral::DependencyNotificationBus
+        void OnCompositionChanged() override;
+
         TerrainSurfaceGradientListConfig m_configuration;
+        LmbrCentral::DependencyMonitor m_dependencyMonitor;
     };
 } // namespace Terrain

@@ -13,9 +13,8 @@
 
 #include <AWSGameLiftClientFixture.h>
 #include <AWSGameLiftClientManager.h>
+#include <AWSGameLiftClientLocalTicketTracker.h>
 #include <AWSGameLiftClientSystemComponent.h>
-
-#include <aws/gamelift/GameLiftClient.h>
 
 using namespace AWSGameLift;
 
@@ -30,6 +29,17 @@ public:
     MOCK_METHOD0(DeactivateManager, void());
 };
 
+class AWSGameLiftClientLocalTicketTrackerMock
+    : public AWSGameLiftClientLocalTicketTracker
+{
+public:
+    AWSGameLiftClientLocalTicketTrackerMock() = default;
+    ~AWSGameLiftClientLocalTicketTrackerMock() = default;
+
+    MOCK_METHOD0(ActivateTracker, void());
+    MOCK_METHOD0(DeactivateTracker, void());
+};
+
 class TestAWSGameLiftClientSystemComponent
     : public AWSGameLiftClientSystemComponent
 {
@@ -37,20 +47,29 @@ public:
     TestAWSGameLiftClientSystemComponent()
     {
         m_gameliftClientManagerMockPtr = nullptr;
+        m_gameliftClientTicketTrackerMockPtr = nullptr;
     }
     ~TestAWSGameLiftClientSystemComponent()
     {
         m_gameliftClientManagerMockPtr = nullptr;
+        m_gameliftClientTicketTrackerMockPtr = nullptr;
     }
 
     void SetUpMockManager()
     {
-        AZStd::unique_ptr<AWSGameLiftClientManagerMock> gameliftClientManagerMock = AZStd::make_unique<AWSGameLiftClientManagerMock>();
+        AZStd::unique_ptr<AWSGameLiftClientManagerMock> gameliftClientManagerMock =
+            AZStd::make_unique<AWSGameLiftClientManagerMock>();
         m_gameliftClientManagerMockPtr = gameliftClientManagerMock.get();
         SetGameLiftClientManager(AZStd::move(gameliftClientManagerMock));
+
+        AZStd::unique_ptr<AWSGameLiftClientLocalTicketTrackerMock> gameliftClientTicketTrackerMock =
+            AZStd::make_unique<AWSGameLiftClientLocalTicketTrackerMock>();
+        m_gameliftClientTicketTrackerMockPtr = gameliftClientTicketTrackerMock.get();
+        SetGameLiftClientTicketTracker(AZStd::move(gameliftClientTicketTrackerMock));
     }
 
     AWSGameLiftClientManagerMock* m_gameliftClientManagerMockPtr;
+    AWSGameLiftClientLocalTicketTrackerMock* m_gameliftClientTicketTrackerMockPtr;
 };
 
 class AWSCoreSystemComponentMock
@@ -145,8 +164,10 @@ TEST_F(AWSGameLiftClientSystemComponentTest, ActivateDeactivate_Call_GameLiftCli
 {
     m_entity->Init();
     EXPECT_CALL(*(m_gameliftClientSystemComponent->m_gameliftClientManagerMockPtr), ActivateManager()).Times(1);
+    EXPECT_CALL(*(m_gameliftClientSystemComponent->m_gameliftClientTicketTrackerMockPtr), ActivateTracker()).Times(1);
     m_entity->Activate();
 
     EXPECT_CALL(*(m_gameliftClientSystemComponent->m_gameliftClientManagerMockPtr), DeactivateManager()).Times(1);
+    EXPECT_CALL(*(m_gameliftClientSystemComponent->m_gameliftClientTicketTrackerMockPtr), DeactivateTracker()).Times(1);
     m_entity->Deactivate();
 }

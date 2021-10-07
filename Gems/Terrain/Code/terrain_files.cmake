@@ -26,9 +26,12 @@ set(FILES
     Source/Components/TerrainWorldRendererComponent.h
     Source/TerrainRenderer/Components/TerrainSurfaceMaterialsListComponent.cpp
     Source/TerrainRenderer/Components/TerrainSurfaceMaterialsListComponent.h
+    Source/TerrainRenderer/Components/TerrainMacroMaterialComponent.cpp
+    Source/TerrainRenderer/Components/TerrainMacroMaterialComponent.h
     Source/TerrainRenderer/TerrainFeatureProcessor.cpp
     Source/TerrainRenderer/TerrainFeatureProcessor.h
     Source/TerrainRenderer/TerrainAreaMaterialRequestBus.h
+    Source/TerrainRenderer/TerrainMacroMaterialBus.h
     Source/TerrainSystem/TerrainSystem.cpp
     Source/TerrainSystem/TerrainSystem.h
     Source/TerrainSystem/TerrainSystemBus.h
