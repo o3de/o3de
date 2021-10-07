@@ -140,6 +140,29 @@ namespace EMotionFX
             return 4;
         }
 
+        AZStd::string FeatureVelocity::GetDimensionName(size_t index, Skeleton* skeleton) const
+        {
+            AZStd::string result;
+
+            Node* joint = skeleton->GetNode(m_nodeIndex);
+            if (joint)
+            {
+                result = joint->GetName();
+                result += '.';
+            }
+
+            switch (index)
+            {
+                case 0: { result += "Velocity.DirX"; break; }
+                case 1: { result += "Velocity.DirY"; break; }
+                case 2: { result += "Velocity.DirZ"; break; }
+                case 3: { result += "Velocity.Speed"; break; }
+                default: { result += Feature::GetDimensionName(index, skeleton); }
+            }
+
+            return result;
+        }
+
         EMotionFX::MotionMatching::FeatureVelocity::Velocity FeatureVelocity::GetFeatureData(const FeatureMatrix& featureMatrix, size_t frameIndex) const
         {
             Velocity result;
