@@ -9,8 +9,6 @@
 #pragma once
 
 #include <AzCore/Component/Component.h>
-#include <AzCore/Math/Vector3.h>
-#include <TerrainSystem/TerrainSystem.h>
 
 namespace LmbrCentral
 {
@@ -54,7 +52,6 @@ namespace Terrain
 
     class TerrainWorldRendererComponent
         : public AZ::Component
-        , public AzFramework::Terrain::TerrainDataNotificationBus::Handler
     {
     public:
         template<typename, typename>
@@ -77,8 +74,6 @@ namespace Terrain
         bool WriteOutConfig(AZ::ComponentConfig* outBaseConfig) const override;
 
     protected:
-        void OnTerrainDataDestroyBegin() override;
-        void OnTerrainDataChanged(const AZ::Aabb& dirtyRegion, TerrainDataChangedMask dataChangedMask) override;
 
         AZ::RPI::Scene* GetScene() const;
 

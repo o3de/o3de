@@ -103,10 +103,6 @@ namespace AzToolsFramework
     static const char* const ResetEntityTransformDesc = "Reset transform based on manipulator mode";
     static const char* const ResetManipulatorTitle = "Reset Manipulator";
     static const char* const ResetManipulatorDesc = "Reset the manipulator to recenter it on the selected entity";
-    static const char* const ResetTransformLocalTitle = "Reset Transform (Local)";
-    static const char* const ResetTransformLocalDesc = "Reset transform to local space";
-    static const char* const ResetTransformWorldTitle = "Reset Transform (World)";
-    static const char* const ResetTransformWorldDesc = "Reset transform to world space";
 
     static const char* const EntityBoxSelectUndoRedoDesc = "Box Select Entities";
     static const char* const EntityDeselectUndoRedoDesc = "Deselect Entity";
@@ -2424,45 +2420,9 @@ namespace AzToolsFramework
 
         AddAction(
             m_actions, { QKeySequence(Qt::CTRL + Qt::Key_R) }, EditResetManipulator, ResetManipulatorTitle, ResetManipulatorDesc,
-            AZStd::bind(AZStd::mem_fn(&EditorTransformComponentSelection::DelegateClearManipulatorOverride), this));
-
-        AddAction(
-            m_actions, { QKeySequence(Qt::ALT + Qt::Key_R) }, EditResetLocal, ResetTransformLocalTitle, ResetTransformLocalDesc,
-            [this]()
+            [this]
             {
-                switch (m_mode)
-                {
-                case Mode::Rotation:
-                    ResetOrientationForSelectedEntitiesLocal();
-                    break;
-                case Mode::Scale:
-                    CopyScaleToSelectedEntitiesIndividualWorld(1.0f);
-                    break;
-                case Mode::Translation:
-                    // do nothing
-                    break;
-                }
-            });
-
-        AddAction(
-            m_actions, { QKeySequence(Qt::SHIFT + Qt::Key_R) }, EditResetWorld, ResetTransformWorldTitle, ResetTransformWorldDesc,
-            [this]()
-            {
-                switch (m_mode)
-                {
-                case Mode::Rotation:
-                    {
-                        // begin an undo batch so operations inside CopyOrientation... and
-                        // DelegateClear... are grouped into a single undo/redo
-                        ScopedUndoBatch undoBatch{ ResetTransformWorldTitle };
-                        CopyOrientationToSelectedEntitiesIndividual(AZ::Quaternion::CreateIdentity());
-                        ClearManipulatorOrientationOverride();
-                    }
-                    break;
-                case Mode::Scale:
-                case Mode::Translation:
-                    break;
-                }
+                DelegateClearManipulatorOverride();
             });
 
         AddAction(

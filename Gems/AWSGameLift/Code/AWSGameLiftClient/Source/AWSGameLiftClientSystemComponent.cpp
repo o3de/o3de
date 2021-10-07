@@ -6,6 +6,7 @@
  *
  */
 
+#include <AzCore/Interface/Interface.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/EditContextConstants.inl>
@@ -27,7 +28,8 @@ namespace AWSGameLift
 {
     AWSGameLiftClientSystemComponent::AWSGameLiftClientSystemComponent()
     {
-        m_gameliftClientManager = AZStd::make_unique<AWSGameLiftClientManager>();
+        m_gameliftManager = AZStd::make_unique<AWSGameLiftClientManager>();
+        m_gameliftTicketTracker = AZStd::make_unique<AWSGameLiftClientLocalTicketTracker>();
     }
 
     void AWSGameLiftClientSystemComponent::Reflect(AZ::ReflectContext* context)
@@ -90,12 +92,20 @@ namespace AWSGameLift
 
     void AWSGameLiftClientSystemComponent::Activate()
     {
-        m_gameliftClientManager->ActivateManager();
+        AZ::Interface<IAWSGameLiftInternalRequests>::Register(this);
+
+        m_gameliftClient.reset();
+        m_gameliftManager->ActivateManager();
+        m_gameliftTicketTracker->ActivateTracker();
     }
 
     void AWSGameLiftClientSystemComponent::Deactivate()
     {
-        m_gameliftClientManager->DeactivateManager();
+        m_gameliftTicketTracker->DeactivateTracker();
+        m_gameliftManager->DeactivateManager();
+        m_gameliftClient.reset();
+
+        AZ::Interface<IAWSGameLiftInternalRequests>::Unregister(this);
     }
     
     void AWSGameLiftClientSystemComponent::ReflectGameLiftMatchmaking(AZ::ReflectContext* context)
@@ -213,9 +223,25 @@ namespace AWSGameLift
         }
     }
 
-    void AWSGameLiftClientSystemComponent::SetGameLiftClientManager(AZStd::unique_ptr<AWSGameLiftClientManager> gameliftClientManager)
+    AZStd::shared_ptr<Aws::GameLift::GameLiftClient> AWSGameLiftClientSystemComponent::GetGameLiftClient() const
     {
-        m_gameliftClientManager.reset();
-        m_gameliftClientManager = AZStd::move(gameliftClientManager);
+        return m_gameliftClient;
+    }
+
+    void AWSGameLiftClientSystemComponent::SetGameLiftClient(AZStd::shared_ptr<Aws::GameLift::GameLiftClient> gameliftClient)
+    {
+        m_gameliftClient.swap(gameliftClient);
+    }
+
+    void AWSGameLiftClientSystemComponent::SetGameLiftClientManager(AZStd::unique_ptr<AWSGameLiftClientManager> gameliftManager)
+    {
+        m_gameliftManager.reset();
+        m_gameliftManager = AZStd::move(gameliftManager);
+    }
+
+    void AWSGameLiftClientSystemComponent::SetGameLiftClientTicketTracker(AZStd::unique_ptr<AWSGameLiftClientLocalTicketTracker> gameliftTicketTracker)
+    {
+        m_gameliftTicketTracker.reset();
+        m_gameliftTicketTracker = AZStd::move(gameliftTicketTracker);
     }
 } // namespace AWSGameLift

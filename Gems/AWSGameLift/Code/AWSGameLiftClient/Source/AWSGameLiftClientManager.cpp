@@ -17,11 +17,13 @@
 #include <ResourceMapping/AWSResourceMappingBus.h>
 
 #include <AWSGameLiftClientManager.h>
+#include <AWSGameLiftSessionConstants.h>
 #include <Activity/AWSGameLiftCreateSessionActivity.h>
 #include <Activity/AWSGameLiftCreateSessionOnQueueActivity.h>
 #include <Activity/AWSGameLiftJoinSessionActivity.h>
 #include <Activity/AWSGameLiftLeaveSessionActivity.h>
 #include <Activity/AWSGameLiftSearchSessionsActivity.h>
+#include <Request/IAWSGameLiftInternalRequests.h>
 
 #include <aws/core/auth/AWSCredentialsProvider.h>
 
@@ -30,11 +32,6 @@ namespace AWSGameLift
 #if defined(AWSGAMELIFT_DEV)
     AZ_CVAR(AZ::CVarFixedString, cl_gameliftLocalEndpoint, "", nullptr, AZ::ConsoleFunctorFlags::Null, "The local endpoint to test with GameLiftLocal SDK.");
 #endif
-
-    AWSGameLiftClientManager::AWSGameLiftClientManager()
-    {
-        m_gameliftClient.reset();
-    }
 
     void AWSGameLiftClientManager::ActivateManager()
     {
@@ -62,8 +59,7 @@ namespace AWSGameLift
 
     bool AWSGameLiftClientManager::ConfigureGameLiftClient(const AZStd::string& region)
     {
-        m_gameliftClient.reset();
-
+        AZ::Interface<IAWSGameLiftInternalRequests>::Get()->SetGameLiftClient(nullptr);
         Aws::Client::ClientConfiguration clientConfig;
         // Set up client endpoint or region
         AZStd::string localEndpoint = "";
@@ -103,7 +99,8 @@ namespace AWSGameLift
             AZ_Error(AWSGameLiftClientManagerName, false, AWSGameLiftClientCredentialMissingErrorMessage);
             return false;
         }
-        m_gameliftClient = AZStd::make_shared<Aws::GameLift::GameLiftClient>(credentialResult.result, clientConfig);
+        AZ::Interface<IAWSGameLiftInternalRequests>::Get()->SetGameLiftClient(
+            AZStd::make_shared<Aws::GameLift::GameLiftClient>(credentialResult.result, clientConfig));
         return true;
     }
 
@@ -194,15 +191,15 @@ namespace AWSGameLift
     AZStd::string AWSGameLiftClientManager::CreateSessionHelper(
         const AWSGameLiftCreateSessionRequest& createSessionRequest)
     {
-        AZStd::shared_ptr<Aws::GameLift::GameLiftClient> gameLiftClient = m_gameliftClient;
+        auto gameliftClient = AZ::Interface<IAWSGameLiftInternalRequests>::Get()->GetGameLiftClient();
         AZStd::string result = "";
-        if (!gameLiftClient)
+        if (!gameliftClient)
         {
             AZ_Error(AWSGameLiftClientManagerName, false, AWSGameLiftClientMissingErrorMessage);
         }
         else
         {
-            result = CreateSessionActivity::CreateSession(*gameLiftClient, createSessionRequest);
+            result = CreateSessionActivity::CreateSession(*gameliftClient, createSessionRequest);
         }
         return result;
     }
@@ -210,7 +207,7 @@ namespace AWSGameLift
     AZStd::string AWSGameLiftClientManager::CreateSessionOnQueueHelper(
         const AWSGameLiftCreateSessionOnQueueRequest& createSessionOnQueueRequest)
     {
-        AZStd::shared_ptr<Aws::GameLift::GameLiftClient> gameliftClient = m_gameliftClient;
+        auto gameliftClient = AZ::Interface<IAWSGameLiftInternalRequests>::Get()->GetGameLiftClient();
         AZStd::string result;
         if (!gameliftClient)
         {
@@ -265,7 +262,7 @@ namespace AWSGameLift
 
     bool AWSGameLiftClientManager::JoinSessionHelper(const AWSGameLiftJoinSessionRequest& joinSessionRequest)
     {
-        AZStd::shared_ptr<Aws::GameLift::GameLiftClient> gameliftClient = m_gameliftClient;
+        auto gameliftClient = AZ::Interface<IAWSGameLiftInternalRequests>::Get()->GetGameLiftClient();
         bool result = false;
         if (!gameliftClient)
         {
@@ -345,8 +342,7 @@ namespace AWSGameLift
     AzFramework::SearchSessionsResponse AWSGameLiftClientManager::SearchSessionsHelper(
         const AWSGameLiftSearchSessionsRequest& searchSessionsRequest) const
     {
-        AZStd::shared_ptr<Aws::GameLift::GameLiftClient> gameliftClient = m_gameliftClient;
-
+        auto gameliftClient = AZ::Interface<IAWSGameLiftInternalRequests>::Get()->GetGameLiftClient();
         AzFramework::SearchSessionsResponse response;
         if (!gameliftClient)
         {
@@ -379,10 +375,5 @@ namespace AWSGameLift
     void AWSGameLiftClientManager::StopMatchmakingAsync(const AzFramework::StopMatchmakingRequest& stopMatchmakingRequest)
     {
         AZ_UNUSED(stopMatchmakingRequest);
-    }
-
-    void AWSGameLiftClientManager::SetGameLiftClient(AZStd::shared_ptr<Aws::GameLift::GameLiftClient> gameliftClient)
-    {
-        m_gameliftClient.swap(gameliftClient);
     }
 } // namespace AWSGameLift

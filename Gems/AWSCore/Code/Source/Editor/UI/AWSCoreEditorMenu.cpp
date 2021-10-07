@@ -78,7 +78,7 @@ namespace AWSCore
 
     void AWSCoreEditorMenu::InitializeResourceMappingToolAction()
     {
-#ifdef AWSCORE_EDITOR_RESOURCE_MAPPING_TOOL_ENABLED
+#if AWSCORE_EDITOR_RESOURCE_MAPPING_TOOL_ENABLED
         AWSCoreResourceMappingToolAction* resourceMappingTool =
             new AWSCoreResourceMappingToolAction(QObject::tr(AWSResourceMappingToolActionText), this);
         QObject::connect(resourceMappingTool, &QAction::triggered, this,
