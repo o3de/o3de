@@ -11,6 +11,8 @@
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/Serialization/SerializeContext.h>
 
+#include <AzFramework/Entity/EntityContextBus.h>
+
 namespace AzToolsFramework
 {
     //! Outcome object that returns an error message in case of failure to allow caller to handle internal errors.
