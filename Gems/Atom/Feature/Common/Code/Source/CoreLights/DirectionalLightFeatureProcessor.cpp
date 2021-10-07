@@ -583,11 +583,11 @@ namespace AZ
             m_shadowBufferNeedsUpdate = true;
         }
 
-        void DirectionalLightFeatureProcessor::SetNormalOffsetBias(LightHandle handle, float boundaryWidth)
+        void DirectionalLightFeatureProcessor::SetNormalOffsetBias(LightHandle handle, float normalOffsetBias)
         {
             for (auto& it : m_shadowData)
             {
-                it.second.GetData(handle.GetIndex()).m_boundaryScale = boundaryWidth / 2.f;
+                it.second.GetData(handle.GetIndex()).m_normalOffsetBias = normalOffsetBias;
             }
             m_shadowBufferNeedsUpdate = true;
         }
