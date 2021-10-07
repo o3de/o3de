@@ -63,10 +63,9 @@ namespace AzQtComponents
 
                     if (updatedFilePath.exists())
                     {
-                        QMessageBox::StandardButton overwriteSelection = QMessageBox::warning(parent, 
-                                                                                              QObject::tr("File exists"),
-                                                                                              QObject::tr("%1 exists. Do you want to overwrite the existing file?").arg(updatedFilePath.fileName()),
-                                                                                              QMessageBox::Yes | QMessageBox::No);
+                        QMessageBox::StandardButton overwriteSelection = QMessageBox::question(parent, 
+                                                                                               QObject::tr("File exists"),
+                                                                                               QObject::tr("%1 exists. Do you want to overwrite the existing file?").arg(updatedFilePath.fileName()));
                         shouldPromptAgain = (overwriteSelection == QMessageBox::No);
                     }
                 }
@@ -114,11 +113,11 @@ namespace AzQtComponents
         }
 
         // If there are multiple suffixes in the selected filter, then default to the first one if a suffix needs to be appended
-        QFileInfo   fileInfo(filePath);
-        QString     defaultSuffix = filterExtensionsFull[0].mid(1);
+        QString defaultSuffix = filterExtensionsFull[0].mid(1);
 
         // Iterate through the filter patterns to see if the current filename matches
-        bool        extensionNeeded = true;
+        QFileInfo fileInfo(filePath);
+        bool extensionNeeded = true;
         for (const QString& filterExtensionFull: filterExtensionsFull)
         {
             QRegExp filterPattern(filterExtensionFull, 
