@@ -77,7 +77,6 @@ namespace EMStudio
     void AtomRenderPlugin::ReinitRenderer()
     {
         m_animViewportWidget->GetAnimViewportRenderer()->Reinit();
-        m_animViewportWidget->ResetCameraPosition();
     }
 
     bool AtomRenderPlugin::Init()
