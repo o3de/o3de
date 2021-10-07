@@ -397,7 +397,7 @@ namespace AZ::SettingsRegistryMergeUtils
     bool MergeSettingsToRegistry_ConfigFile(SettingsRegistryInterface& registry, AZStd::string_view filePath,
         const ConfigParserSettings& configParserSettings)
     {
-        auto configPath = FindEngineRoot(registry) / filePath;
+        AZ::IO::FixedMaxPath configPath{ filePath };
         IO::FileReader configFile;
         bool configFileOpened{};
         switch (configParserSettings.m_fileReaderClass)
