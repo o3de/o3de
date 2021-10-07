@@ -31,6 +31,7 @@ namespace O3DE::ProjectManager
 
         // PythonBindings overrides
         bool PythonStarted() override;
+        bool StartPython() override;
 
         // Engine
         AZ::Outcome<EngineInfo> GetEngineInfo() override;
@@ -57,6 +58,7 @@ namespace O3DE::ProjectManager
         AZ::Outcome<QVector<ProjectTemplateInfo>> GetProjectTemplates(const QString& projectPath = {}) override;
 
         // Gem Repos
+        AZ::Outcome<void, AZStd::string> AddGemRepo(const QString& repoUri) override;
         AZ::Outcome<QVector<GemRepoInfo>, AZStd::string> GetAllGemRepoInfos() override;
 
     private:
@@ -69,7 +71,6 @@ namespace O3DE::ProjectManager
         ProjectInfo ProjectInfoFromPath(pybind11::handle path);
         ProjectTemplateInfo ProjectTemplateInfoFromPath(pybind11::handle path, pybind11::handle pyProjectPath);
         bool RegisterThisEngine();
-        bool StartPython();
         bool StopPython();
 
 

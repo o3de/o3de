@@ -86,6 +86,7 @@ private:
         AZStd::string m_orbitLookChannelId;
         AZStd::string m_orbitDollyChannelId;
         AZStd::string m_orbitPanChannelId;
+        AZStd::string m_focusChannelId;
     };
 
     CameraMovementSettings m_cameraMovementSettings;

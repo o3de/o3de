@@ -12,21 +12,18 @@
  * that Open 3D Engine uses to dispatch notifications and receive requests.
  * EBuses are configurable and support many different use cases.
  * For more information about %EBuses, see AZ::EBus in this guide and
- * [Event Bus](http://docs.aws.amazon.com/lumberyard/latest/developerguide/asset-pipeline-ebus.html)
+ * [Event Bus](https://o3de.org/docs/user-guide/engine/ebus/)
  * in the *Open 3D Engine Developer Guide*.
  */
 
 #pragma once
 
 #include <AzCore/EBus/BusImpl.h>
+#include <AzCore/EBus/Environment.h>
 #include <AzCore/EBus/Results.h>
 #include <AzCore/EBus/Internal/Debug.h>
 
- // Included for backwards compatibility purposes
-#include <AzCore/std/smart_ptr/unique_ptr.h>
-#include <AzCore/std/containers/unordered_set.h>
 #include <AzCore/std/typetraits/is_same.h>
-// End backwards compat
 
 #include <AzCore/std/utils.h>
 #include <AzCore/std/parallel/scoped_lock.h>
@@ -65,7 +62,7 @@ namespace AZ
      * @endcode
      *
      * For more information about %EBuses, see EBus in this guide and
-     * [Event Bus](http://docs.aws.amazon.com/lumberyard/latest/developerguide/asset-pipeline-ebus.html)
+     * [Event Bus](https://o3de.org/docs/user-guide/engine/ebus/)
      * in the *Open 3D Engine Developer Guide*.
      */
     struct EBusTraits
@@ -90,14 +87,14 @@ namespace AZ
          * For available settings, see AZ::EBusHandlerPolicy.
          * By default, an EBus supports any number of handlers.
          */
-        static const EBusHandlerPolicy HandlerPolicy = EBusHandlerPolicy::Multiple;
+        static constexpr EBusHandlerPolicy HandlerPolicy = EBusHandlerPolicy::Multiple;
 
         /**
          * Defines how many addresses exist on the EBus.
          * For available settings, see AZ::EBusAddressPolicy.
          * By default, an EBus uses a single address.
          */
-        static const EBusAddressPolicy AddressPolicy = EBusAddressPolicy::Single;
+        static constexpr EBusAddressPolicy AddressPolicy = EBusAddressPolicy::Single;
 
         /**
          * The type of ID that is used to address the EBus.
@@ -152,14 +149,14 @@ namespace AZ
          * `<BusName>::ExecuteQueuedEvents()`.
          * By default, the event queue is disabled.
          */
-        static const bool EnableEventQueue = false;
+        static constexpr bool EnableEventQueue = false;
 
         /**
          * Specifies whether the bus should accept queued messages by default or not.
          * If set to false, Bus::AllowFunctionQueuing(true) must be called before events are accepted.
          * Used only when #EnableEventQueue is true.
          */
-        static const bool EventQueueingActiveByDefault = true;
+        static constexpr bool EventQueueingActiveByDefault = true;
 
         /**
          * Specifies whether the EBus supports queueing functions which take reference
@@ -168,7 +165,7 @@ namespace AZ
          * You should only use this if you know that the data being passed as arguments will
          * outlive the dispatch of the queued event.
          */
-        static const bool EnableQueuedReferences = false;
+        static constexpr bool EnableQueuedReferences = false;
 
         /**
          * Locking primitive that is used when adding and removing
@@ -197,7 +194,7 @@ namespace AZ
         * to do.
         * By default, the standard policy is used, which locks around all dispatches
         */
-        static const bool LocklessDispatch = false;
+        static constexpr bool LocklessDispatch = false;
 
         /**
          * Specifies where EBus data is stored.
@@ -262,8 +259,8 @@ namespace AZ
      *
      * EBuses are configurable and support many different use cases.
      * For more information about EBuses, see
-     * [Event Bus](http://docs.aws.amazon.com/lumberyard/latest/developerguide/asset-pipeline-ebus.html)
-     * and [Components and EBuses: Best Practices ](http://docs.aws.amazon.com/lumberyard/latest/developerguide/component-entity-system-pg-components-ebuses-best-practices.html)
+     * [Event Bus](https://o3de.org/docs/user-guide/engine/ebus/)
+     * and [Components and EBuses: Best Practices ](https://o3de.org/docs/user-guide/components/development/entity-system-pg-components-ebuses-best-practices/)
      * in the *Open 3D Engine Developer Guide*.
      *
      * ## How Components Use EBuses

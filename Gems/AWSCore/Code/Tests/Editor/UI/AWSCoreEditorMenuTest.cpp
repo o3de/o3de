@@ -32,7 +32,7 @@ class AWSCoreEditorMenuTest
     {
         AWSCoreEditorUIFixture::SetUp();
         AWSCoreFixture::SetUp();
-        m_localFileIO->SetAlias("@devroot@", "dummy engine root");
+        m_localFileIO->SetAlias("@engroot@", "dummy engine root");
     }
 
     void TearDown() override

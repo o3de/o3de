@@ -61,7 +61,7 @@ static AZStd::vector<AZStd::string> GetEditorInputNames()
 void CEditorPreferencesPage_ViewportCamera::Reflect(AZ::SerializeContext& serialize)
 {
     serialize.Class<CameraMovementSettings>()
-        ->Version(2)
+        ->Version(3)
         ->Field("TranslateSpeed", &CameraMovementSettings::m_translateSpeed)
         ->Field("RotateSpeed", &CameraMovementSettings::m_rotateSpeed)
         ->Field("BoostMultiplier", &CameraMovementSettings::m_boostMultiplier)
@@ -78,7 +78,7 @@ void CEditorPreferencesPage_ViewportCamera::Reflect(AZ::SerializeContext& serial
         ->Field("PanInvertedY", &CameraMovementSettings::m_panInvertedY);
 
     serialize.Class<CameraInputSettings>()
-        ->Version(1)
+        ->Version(2)
         ->Field("TranslateForward", &CameraInputSettings::m_translateForwardChannelId)
         ->Field("TranslateBackward", &CameraInputSettings::m_translateBackwardChannelId)
         ->Field("TranslateLeft", &CameraInputSettings::m_translateLeftChannelId)
@@ -91,7 +91,8 @@ void CEditorPreferencesPage_ViewportCamera::Reflect(AZ::SerializeContext& serial
         ->Field("FreePan", &CameraInputSettings::m_freePanChannelId)
         ->Field("OrbitLook", &CameraInputSettings::m_orbitLookChannelId)
         ->Field("OrbitDolly", &CameraInputSettings::m_orbitDollyChannelId)
-        ->Field("OrbitPan", &CameraInputSettings::m_orbitPanChannelId);
+        ->Field("OrbitPan", &CameraInputSettings::m_orbitPanChannelId)
+        ->Field("Focus", &CameraInputSettings::m_focusChannelId);
 
     serialize.Class<CEditorPreferencesPage_ViewportCamera>()
         ->Version(1)
@@ -206,14 +207,17 @@ void CEditorPreferencesPage_ViewportCamera::Reflect(AZ::SerializeContext& serial
             ->DataElement(
                 AZ::Edit::UIHandlers::ComboBox, &CameraInputSettings::m_orbitPanChannelId, "Orbit Pan",
                 "Key/button to begin camera orbit pan")
+            ->Attribute(AZ::Edit::Attributes::StringList, &GetEditorInputNames)
+            ->DataElement(
+                AZ::Edit::UIHandlers::ComboBox, &CameraInputSettings::m_focusChannelId, "Focus", "Key/button to focus camera orbit")
             ->Attribute(AZ::Edit::Attributes::StringList, &GetEditorInputNames);
 
         editContext->Class<CEditorPreferencesPage_ViewportCamera>("Viewport Preferences", "Viewport Preferences")
             ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
             ->Attribute(AZ::Edit::Attributes::Visibility, AZ_CRC("PropertyVisibility_ShowChildrenOnly", 0xef428f20))
             ->DataElement(
-                AZ::Edit::UIHandlers::Default, &CEditorPreferencesPage_ViewportCamera::m_cameraMovementSettings,
-                "Camera Movement Settings", "Camera Movement Settings")
+                AZ::Edit::UIHandlers::Default, &CEditorPreferencesPage_ViewportCamera::m_cameraMovementSettings, "Camera Movement Settings",
+                "Camera Movement Settings")
             ->DataElement(
                 AZ::Edit::UIHandlers::Default, &CEditorPreferencesPage_ViewportCamera::m_cameraInputSettings, "Camera Input Settings",
                 "Camera Input Settings");
@@ -281,6 +285,7 @@ void CEditorPreferencesPage_ViewportCamera::OnApply()
     SandboxEditor::SetCameraOrbitLookChannelId(m_cameraInputSettings.m_orbitLookChannelId);
     SandboxEditor::SetCameraOrbitDollyChannelId(m_cameraInputSettings.m_orbitDollyChannelId);
     SandboxEditor::SetCameraOrbitPanChannelId(m_cameraInputSettings.m_orbitPanChannelId);
+    SandboxEditor::SetCameraFocusChannelId(m_cameraInputSettings.m_focusChannelId);
 
     SandboxEditor::EditorModularViewportCameraComposerNotificationBus::Broadcast(
         &SandboxEditor::EditorModularViewportCameraComposerNotificationBus::Events::OnEditorModularViewportCameraComposerSettingsChanged);
@@ -316,4 +321,5 @@ void CEditorPreferencesPage_ViewportCamera::InitializeSettings()
     m_cameraInputSettings.m_orbitLookChannelId = SandboxEditor::CameraOrbitLookChannelId().GetName();
     m_cameraInputSettings.m_orbitDollyChannelId = SandboxEditor::CameraOrbitDollyChannelId().GetName();
     m_cameraInputSettings.m_orbitPanChannelId = SandboxEditor::CameraOrbitPanChannelId().GetName();
+    m_cameraInputSettings.m_focusChannelId = SandboxEditor::CameraFocusChannelId().GetName();
 }

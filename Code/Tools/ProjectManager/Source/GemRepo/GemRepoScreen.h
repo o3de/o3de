@@ -16,6 +16,8 @@ QT_FORWARD_DECLARE_CLASS(QLabel)
 QT_FORWARD_DECLARE_CLASS(QPushButton)
 QT_FORWARD_DECLARE_CLASS(QHeaderView)
 QT_FORWARD_DECLARE_CLASS(QTableWidget)
+QT_FORWARD_DECLARE_CLASS(QFrame)
+QT_FORWARD_DECLARE_CLASS(QStackedWidget)
 
 namespace O3DE::ProjectManager
 {
@@ -35,8 +37,17 @@ namespace O3DE::ProjectManager
 
         GemRepoModel* GetGemRepoModel() const { return m_gemRepoModel; }
 
+    public slots:
+        void HandleAddRepoButton();
+
     private:
         void FillModel();
+        QFrame* CreateNoReposContent();
+        QFrame* CreateReposContent();
+
+        QStackedWidget* m_contentStack = nullptr;
+        QFrame* m_noRepoContent;
+        QFrame* m_repoContent;
 
         QTableWidget* m_gemRepoHeaderTable = nullptr;
         QHeaderView* m_gemRepoListHeader = nullptr;
@@ -46,6 +57,5 @@ namespace O3DE::ProjectManager
 
         QLabel* m_lastAllUpdateLabel;
         QPushButton* m_AllUpdateButton;
-        QPushButton* m_AddRepoButton;
     };
 } // namespace O3DE::ProjectManager

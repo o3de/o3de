@@ -7,7 +7,10 @@
  */
 
 #include <Source/ConnectionData/ServerToClientConnectionData.h>
+#include <Source/AutoGen/Multiplayer.AutoPackets.h>
+#include <Multiplayer/Components/LocalPredictionPlayerInputComponent.h>
 #include <Multiplayer/IMultiplayer.h>
+#include <AzNetworking/Utilities/EncryptionCommon.h>
 
 namespace Multiplayer
 {
@@ -25,7 +28,7 @@ namespace Multiplayer
     )
         : m_connection(connection)
         , m_controlledEntityRemovedHandler([this](const ConstNetworkEntityHandle&) { OnControlledEntityRemove(); })
-        , m_controlledEntityMigrationHandler([this](const ConstNetworkEntityHandle& entityHandle, HostId remoteHostId, AzNetworking::ConnectionId connectionId) { OnControlledEntityMigration(entityHandle, remoteHostId, connectionId); })
+        , m_controlledEntityMigrationHandler([this](const ConstNetworkEntityHandle& entityHandle, const HostId& remoteHostId, AzNetworking::ConnectionId connectionId) { OnControlledEntityMigration(entityHandle, remoteHostId, connectionId); })
         , m_controlledEntity(controlledEntity)
         , m_entityReplicationManager(*connection, connectionListener, EntityReplicationManager::Mode::LocalServerToRemoteClient)
     {
@@ -66,7 +69,7 @@ namespace Multiplayer
         return m_entityReplicationManager;
     }
 
-    void ServerToClientConnectionData::Update(AZ::TimeMs hostTimeMs)
+    void ServerToClientConnectionData::Update()
     {
         m_entityReplicationManager.ActivatePendingEntities();
 
@@ -76,7 +79,7 @@ namespace Multiplayer
             // potentially false if we just migrated the player, if that is the case, don't send any more updates
             if (netBindComponent != nullptr && (netBindComponent->GetNetEntityRole() == NetEntityRole::Authority))
             {
-                m_entityReplicationManager.SendUpdates(hostTimeMs);
+                m_entityReplicationManager.SendUpdates();
             }
         }
     }
@@ -91,40 +94,32 @@ namespace Multiplayer
     void ServerToClientConnectionData::OnControlledEntityMigration
     (
         [[maybe_unused]] const ConstNetworkEntityHandle& entityHandle,
-        [[maybe_unused]] HostId remoteHostId,
+        [[maybe_unused]] const HostId& remoteHostId,
         [[maybe_unused]] AzNetworking::ConnectionId connectionId
     )
     {
-        //Multiplayer::ServerAddrInfo serverAddr;
-        //if (gNovaGame->GetMultiplayerworkAgent().GetServerToServerNetwork().GetServerAddrInfoFromConnectionId(newConnectionId, serverAddr) == false)
-        //{
-        //    AZLOG_WARN("MigrateClient::Failed to find servershard address, userID:%d", static_cast<uint32_t>(GetUserId()));
-        //    return;
-        //}
-        //
-        //Multiplayer::GameTimePoint migratedClientGameTimePoint;
-        //
-        //if (m_ControlledEntity != nullptr)
-        //{
-        //    if (const PlayerNetworkInputComponent::Authority* pComponent = Multiplayer::FindController<PlayerNetworkInputComponent::Authority>(m_ControlledEntity))
-        //    {
-        //        migratedClientGameTimePoint = pComponent->GetLastInputId().GetServerGameTimePoint();
-        //    }
-        //}
-        //
-        // generate crypto-rand user identifier, send to both server and client so they can negotiate the autonomous entity to assume predictive control over after migration
-        //const uint64_t randomUserIdentifier = 0;
-        //
-        //// Tell the server a new client is about to join
-        //MultiplayerPackets::NotifyClientMigration notifyClientMigration(randomUserIdentifier);
-        //gNovaGame->GetMultiplayerworkAgent().GetServerToServerNetwork().SendReliablePacket(newConnectionId, notifyClientMigration);
-        //
-        //// Tell the client who to join
-        //MultiplayerPackets::ClientMigration clientMigration(randomUserIdentifier, serverAddr, migratedClientGameTimePoint);
-        //GetConnection()->SendReliablePacket(clientMigration);
-        //
-        //m_controlledEntity = nullptr;
-        //m_canSendUpdates = false;
+        ClientInputId migratedClientInputId = ClientInputId{ 0 };
+        if (m_controlledEntity != nullptr)
+        {
+            auto controller = m_controlledEntity.FindController<LocalPredictionPlayerInputComponentController>();
+            if (controller != nullptr)
+            {
+                migratedClientInputId = controller->GetLastInputId();
+            }
+        }
+
+        // Generate crypto-rand user identifier, send to both server and client so they can negotiate the autonomous entity to assume predictive control over after migration
+        const uint64_t randomUserIdentifier = AzNetworking::CryptoRand64();
+
+        // Tell the new host that a client is about to (re)join
+        GetMultiplayer()->SendNotifyClientMigrationEvent(remoteHostId, randomUserIdentifier, migratedClientInputId);
+
+        // Tell the client who to join
+        MultiplayerPackets::ClientMigration clientMigration(remoteHostId, randomUserIdentifier, migratedClientInputId);
+        GetConnection()->SendReliablePacket(clientMigration);
+
+        m_controlledEntity = NetworkEntityHandle();
+        m_canSendUpdates = false;
     }
 
     void ServerToClientConnectionData::OnGameplayStarted()

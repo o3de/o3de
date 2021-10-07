@@ -329,6 +329,11 @@ namespace AzToolsFramework
                 return AZ::Failure(AZStd::string("Could not instantiate prefab - internal error "
                                                  "(PrefabEditorEntityOwnershipInterface unavailable)."));
             }
+            if (!prefabEditorEntityOwnershipInterface->IsRootPrefabAssigned())
+            {
+                return AZ::Failure(AZStd::string("Could not instantiate prefab - no root prefab assigned. "
+                "Currently, prefabs can only be instantiated inside a level"));
+            }
 
             InstanceOptionalReference instanceToParentUnder;
 
@@ -1036,7 +1041,7 @@ namespace AzToolsFramework
                 PrefabUndoInstance* command = aznew PrefabUndoInstance("Entity/Instance duplication");
                 command->SetParent(undoBatch.GetUndoBatch());
                 command->Capture(instanceDomBefore, instanceDomAfter, commonOwningInstance->get().GetTemplateId());
-                command->Redo();
+                command->RedoBatched();
 
                 DuplicateNestedInstancesInInstance(commonOwningInstance->get(),
                     instances, instanceDomAfter, duplicatedEntityAndInstanceIds, newInstanceAliasToOldInstanceMap);

@@ -28,6 +28,7 @@
                     "_bump"
                 ],
                 "PixelFormat": "ASTC_4x4",
+                "MaxTextureSize": 2048,
                 "IsPowerOf2": true,
                 "MipRenormalize": true,
                 "MipMapSetting": {
@@ -43,6 +44,7 @@
                     "_bump"
                 ],
                 "PixelFormat": "ASTC_4x4",
+                "MaxTextureSize": 2048,
                 "IsPowerOf2": true,
                 "MipRenormalize": true,
                 "MipMapSetting": {

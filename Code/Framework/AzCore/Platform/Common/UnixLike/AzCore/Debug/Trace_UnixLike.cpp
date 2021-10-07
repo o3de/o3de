@@ -38,7 +38,7 @@ namespace AZ
                 {
                     return false;
                 }
-                for (size_t i = tracerPidOffset; i < numRead; ++i)
+                for (size_t i = tracerPidOffset + tracerPidString.length(); i < numRead; ++i)
                 {
                     if (!::isspace(processStatusView[i]))
                     {

@@ -8,6 +8,7 @@
 
 #include <TerrainSystem/TerrainSystem.h>
 #include <AzCore/std/parallel/shared_mutex.h>
+#include <AzCore/std/sort.h>
 #include <SurfaceData/SurfaceDataTypes.h>
 #include <SurfaceData/SurfaceDataSystemRequestBus.h>
 #include <LmbrCentral/Shape/ShapeComponentBus.h>
@@ -15,6 +16,8 @@
 #include <Atom/RPI.Public/Scene.h>
 #include <Atom/RPI.Public/FeatureProcessorFactory.h>
 #include <TerrainRenderer/TerrainFeatureProcessor.h>
+
+#include <Terrain/Ebuses/TerrainAreaSurfaceRequestBus.h>
 
 using namespace Terrain;
 
@@ -114,18 +117,6 @@ void TerrainSystem::Deactivate()
     m_terrainSettingsDirty = true;
     m_requestedSettings.m_systemActive = false;
 
-    if (auto rpi = AZ::RPI::RPISystemInterface::Get(); rpi)
-    {
-        if (auto defaultScene = rpi->GetDefaultScene(); defaultScene)
-        {
-            const AZ::RPI::Scene* scene = defaultScene.get();
-            if (auto terrainFeatureProcessor = scene->GetFeatureProcessor<TerrainFeatureProcessor>(); terrainFeatureProcessor)
-            {
-                terrainFeatureProcessor->RemoveTerrainData();
-            }
-        }
-    }
-
     AzFramework::Terrain::TerrainDataNotificationBus::Broadcast(
         &AzFramework::Terrain::TerrainDataNotificationBus::Events::OnTerrainDataDestroyEnd);
 }
@@ -217,6 +208,7 @@ float TerrainSystem::GetHeightSynchronous(float x, float y, Sampler sampler, boo
         break;
     }
 
+    // For now, always set terrainExists to true, as we don't have a way to author data for terrain holes yet.
     if (terrainExistsPtr)
     {
         *terrainExistsPtr = terrainExists;
@@ -307,33 +299,134 @@ AZ::Vector3 TerrainSystem::GetNormalFromFloats(float x, float y, Sampler sampler
 
 
 AzFramework::SurfaceData::SurfaceTagWeight TerrainSystem::GetMaxSurfaceWeight(
-    [[maybe_unused]] AZ::Vector3 position, [[maybe_unused]] Sampler sampleFilter, [[maybe_unused]] bool* terrainExistsPtr) const
+    const AZ::Vector3 position, Sampler sampleFilter, bool* terrainExistsPtr) const
 {
-    if (terrainExistsPtr)
-    {
-        *terrainExistsPtr = true;
-    }
+    return GetMaxSurfaceWeightFromFloats(position.GetX(), position.GetY(), sampleFilter, terrainExistsPtr);
+}
 
-    return AzFramework::SurfaceData::SurfaceTagWeight();
+AzFramework::SurfaceData::SurfaceTagWeight TerrainSystem::GetMaxSurfaceWeightFromVector2(const AZ::Vector2& inPosition, Sampler sampleFilter, bool* terrainExistsPtr) const
+{
+    return GetMaxSurfaceWeightFromFloats(inPosition.GetX(), inPosition.GetY(), sampleFilter, terrainExistsPtr);
 }
 
 AzFramework::SurfaceData::SurfaceTagWeight TerrainSystem::GetMaxSurfaceWeightFromFloats(
-    [[maybe_unused]] float x,
-    [[maybe_unused]] float y,
-    [[maybe_unused]] Sampler sampleFilter,
-    [[maybe_unused]] bool* terrainExistsPtr) const
+    const float x, const float y, Sampler sampleFilter, bool* terrainExistsPtr) const
 {
     if (terrainExistsPtr)
     {
         *terrainExistsPtr = true;
     }
 
-    return AzFramework::SurfaceData::SurfaceTagWeight();
+    AzFramework::SurfaceData::OrderedSurfaceTagWeightSet weightSet;
+
+    GetOrderedSurfaceWeights(x, y, sampleFilter, weightSet, terrainExistsPtr);
+
+    if (weightSet.empty())
+    {
+        return {};
+    }
+
+    return *weightSet.begin();
 }
 
-const char* TerrainSystem::GetMaxSurfaceName(
-    [[maybe_unused]] AZ::Vector3 position, [[maybe_unused]] Sampler sampleFilter, [[maybe_unused]] bool* terrainExistsPtr) const
+AZ::EntityId TerrainSystem::FindBestAreaEntityAtPosition(float x, float y, AZ::Aabb& bounds) const
 {
+    AZ::Vector3 inPosition = AZ::Vector3(x, y, 0);
+
+    // Find the highest priority layer that encompasses this position
+    AZStd::shared_lock<AZStd::shared_mutex> lock(m_areaMutex);
+
+    // The areas are sorted into priority order: the first area that contains inPosition is the most suitable.
+    for (const auto& [areaId, areaBounds] : m_registeredAreas)
+    {
+        inPosition.SetZ(areaBounds.GetMin().GetZ());
+        if (areaBounds.Contains(inPosition))
+        {
+            bounds = areaBounds;
+            return areaId;
+        }
+    }
+
+    return AZ::EntityId();
+}
+
+void TerrainSystem::GetOrderedSurfaceWeights(
+    const float x,
+    const float y,
+    [[maybe_unused]] Sampler sampler,
+    AzFramework::SurfaceData::OrderedSurfaceTagWeightSet& outSurfaceWeights,
+    bool* terrainExistsPtr) const
+{
+    AZ::Aabb bounds;
+    AZ::EntityId bestAreaId = FindBestAreaEntityAtPosition(x, y, bounds);
+
+    if (terrainExistsPtr)
+    {
+        GetHeightFromFloats(x, y, AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT, terrainExistsPtr);
+    }
+
+    outSurfaceWeights.clear();
+
+    if (!bestAreaId.IsValid())
+    {
+        return;
+    }
+
+    const AZ::Vector3 inPosition = AZ::Vector3(x, y, 0.0f);
+
+    // Get all the surfaces with weights at the given point.
+    Terrain::TerrainAreaSurfaceRequestBus::Event(
+        bestAreaId, &Terrain::TerrainAreaSurfaceRequestBus::Events::GetSurfaceWeights, inPosition, outSurfaceWeights);
+}
+
+void TerrainSystem::GetSurfaceWeights(
+    const AZ::Vector3& inPosition,
+    AzFramework::SurfaceData::OrderedSurfaceTagWeightSet& outSurfaceWeights,
+    Sampler sampleFilter,
+    bool* terrainExistsPtr) const
+{
+    if (terrainExistsPtr)
+    {
+        *terrainExistsPtr = true;
+    }
+
+    GetOrderedSurfaceWeights(inPosition.GetX(), inPosition.GetY(), sampleFilter, outSurfaceWeights, terrainExistsPtr);
+}
+
+void TerrainSystem::GetSurfaceWeightsFromVector2(
+    const AZ::Vector2& inPosition,
+    AzFramework::SurfaceData::OrderedSurfaceTagWeightSet& outSurfaceWeights,
+    Sampler sampleFilter,
+    bool* terrainExistsPtr) const
+{
+    // For now, always set terrainExists to true, as we don't have a way to author data for terrain holes yet.
+    if (terrainExistsPtr)
+    {
+        *terrainExistsPtr = true;
+    }
+
+    GetOrderedSurfaceWeights(inPosition.GetX(), inPosition.GetY(), sampleFilter, outSurfaceWeights, terrainExistsPtr);
+}
+
+void TerrainSystem::GetSurfaceWeightsFromFloats(
+    float x,
+    float y,
+    AzFramework::SurfaceData::OrderedSurfaceTagWeightSet& outSurfaceWeights,
+    Sampler sampleFilter,
+    bool* terrainExistsPtr) const
+{
+    // For now, always set terrainExists to true, as we don't have a way to author data for terrain holes yet.
+    if (terrainExistsPtr)
+    {
+        *terrainExistsPtr = true;
+    }
+
+    GetOrderedSurfaceWeights(x, y, sampleFilter, outSurfaceWeights, terrainExistsPtr);
+}
+
+const char* TerrainSystem::GetMaxSurfaceName([[maybe_unused]] AZ::Vector3 position, [[maybe_unused]] Sampler sampleFilter, [[maybe_unused]] bool* terrainExistsPtr) const
+{
+    // For now, always set terrainExists to true, as we don't have a way to author data for terrain holes yet.
     if (terrainExistsPtr)
     {
         *terrainExistsPtr = true;
@@ -343,14 +436,6 @@ const char* TerrainSystem::GetMaxSurfaceName(
 }
 
 /*
-void TerrainSystem::GetSurfaceWeights(
-    [[maybe_unused]] const AZ::Vector3& inPosition,
-    [[maybe_unused]] Sampler sampleFilter,
-    [[maybe_unused]] SurfaceData::SurfaceTagWeightMap& outSurfaceWeights)
-{
-    // TODO: implement
-}
-
 void TerrainSystem::GetSurfacePoint(
     const AZ::Vector3& inPosition, [[maybe_unused]] Sampler sampleFilter, SurfaceData::SurfacePoint& outSurfacePoint)
 {
@@ -505,60 +590,6 @@ void TerrainSystem::OnTick(float /*deltaTime*/, AZ::ScriptTimePoint /*time*/)
         }
 
         m_currentSettings = m_requestedSettings;
-    }
-
-    if (m_currentSettings.m_systemActive && m_terrainHeightDirty)
-    {
-        AZStd::shared_lock<AZStd::shared_mutex> lock(m_areaMutex);
-
-        // Block other threads from accessing the surface data bus while we are in GetValue (which may call into the SurfaceData bus).
-        // We lock our surface data mutex *before* checking / setting "isRequestInProgress" so that we prevent race conditions
-        // that create false detection of cyclic dependencies when multiple requests occur on different threads simultaneously.
-        // (One case where this was previously able to occur was in rapid updating of the Preview widget on the
-        // GradientSurfaceDataComponent in the Editor when moving the threshold sliders back and forth rapidly)
-        auto& surfaceDataContext = SurfaceData::SurfaceDataSystemRequestBus::GetOrCreateContext(false);
-        typename SurfaceData::SurfaceDataSystemRequestBus::Context::DispatchLockGuard scopeLock(surfaceDataContext.m_contextMutex);
-
-        AZ::Transform transform = AZ::Transform::CreateTranslation(m_currentSettings.m_worldBounds.GetCenter());
-
-        uint32_t width = aznumeric_cast<uint32_t>(
-            (float)m_currentSettings.m_worldBounds.GetXExtent() / m_currentSettings.m_heightQueryResolution.GetX());
-        uint32_t height = aznumeric_cast<uint32_t>(
-            (float)m_currentSettings.m_worldBounds.GetYExtent() / m_currentSettings.m_heightQueryResolution.GetY());
-        AZStd::vector<float> pixels;
-        pixels.resize_no_construct(width * height);
-        const uint32_t pixelDataSize = width * height * sizeof(float);
-        memset(pixels.data(), 0, pixelDataSize);
-
-        for (uint32_t y = 0; y < height; y++)
-        {
-            for (uint32_t x = 0; x < width; x++)
-            {
-                bool terrainExists;
-                float terrainHeight = GetTerrainAreaHeight(
-                    (x * m_currentSettings.m_heightQueryResolution.GetX()) + m_currentSettings.m_worldBounds.GetMin().GetX(),
-                    (y * m_currentSettings.m_heightQueryResolution.GetY()) + m_currentSettings.m_worldBounds.GetMin().GetY(),
-                    terrainExists);
-
-                pixels[(y * width) + x] =
-                    (terrainHeight - m_currentSettings.m_worldBounds.GetMin().GetZ()) /
-                    m_currentSettings.m_worldBounds.GetExtents().GetZ();
-            }
-        }
-        
-        if (auto rpi = AZ::RPI::RPISystemInterface::Get(); rpi)
-        {
-            if (auto defaultScene = rpi->GetDefaultScene(); defaultScene)
-            {
-                const AZ::RPI::Scene* scene = defaultScene.get();
-                if (auto terrainFeatureProcessor = scene->GetFeatureProcessor<TerrainFeatureProcessor>(); terrainFeatureProcessor)
-                {
-                    terrainFeatureProcessor->UpdateTerrainData(
-                        transform, m_currentSettings.m_worldBounds, m_currentSettings.m_heightQueryResolution.GetX(), width, height,
-                        pixels);
-                }
-            }
-        }
     }
 
     if (terrainSettingsChanged || m_terrainHeightDirty)

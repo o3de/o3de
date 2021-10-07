@@ -26,6 +26,9 @@
 #include <AzToolsFramework/UI/SearchWidget/SearchCriteriaWidget.hxx>
 #include <AzToolsFramework/Editor/EditorSettingsAPIBus.h>
 
+//AzCore
+#include <AzCore/Component/ComponentApplicationBus.h>
+
 // Editor
 #include "Clipboard.h"
 
