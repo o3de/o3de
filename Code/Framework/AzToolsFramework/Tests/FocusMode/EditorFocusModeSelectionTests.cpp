@@ -6,55 +6,10 @@
  *
  */
 
-#include <Tests/FocusMode/EditorFocusModeFixture.h>
-
-#include <AzCore/Component/TransformBus.h>
-#include <AzCore/std/string/string.h>
-
-#include <AzFramework/Viewport/ViewportScreen.h>
-
-#include <AzManipulatorTestFramework/AzManipulatorTestFramework.h>
-#include <AzManipulatorTestFramework/AzManipulatorTestFrameworkTestHelpers.h>
-#include <AzManipulatorTestFramework/DirectManipulatorViewportInteraction.h>
-#include <AzManipulatorTestFramework/ImmediateModeActionDispatcher.h>
-#include <AzManipulatorTestFramework/IndirectManipulatorViewportInteraction.h>
-
-#include <AzToolsFramework/Component/EditorComponentAPIBus.h>
-#include <AzToolsFramework/Manipulators/LinearManipulator.h>
-#include <AzToolsFramework/Manipulators/ManipulatorManager.h>
-#include <AzToolsFramework/ViewportSelection/EditorVisibleEntityDataCache.h>
-
+#include <Tests/FocusMode/EditorFocusModeSelectionFixture.h>
 
 namespace AzToolsFramework
 {
-    class EditorFocusModeSelectionFixture
-        : public UnitTest::IndirectCallManipulatorViewportInteractionFixtureMixin<EditorFocusModeFixture>
-    {
-    public:
-        void ClickAtWorldPositionOnViewport(const AZ::Vector3& worldPosition)
-        {
-            // Calculate the world position in screen space
-            const auto carScreenPosition = AzFramework::WorldToScreen(worldPosition, m_cameraState);
-
-            // Click the entity in the viewport
-            m_actionDispatcher->CameraState(m_cameraState)->MousePosition(carScreenPosition)->MouseLButtonDown()->MouseLButtonUp();
-        }
-    };
-
-    void ClearSelectedEntities()
-    {
-        AzToolsFramework::ToolsApplicationRequestBus::Broadcast(
-            &AzToolsFramework::ToolsApplicationRequestBus::Events::SetSelectedEntities, AzToolsFramework::EntityIdList());
-    }
-
-    AzToolsFramework::EntityIdList GetSelectedEntities()
-    {
-        AzToolsFramework::EntityIdList selectedEntities;
-        AzToolsFramework::ToolsApplicationRequestBus::BroadcastResult(
-            selectedEntities, &AzToolsFramework::ToolsApplicationRequestBus::Events::GetSelectedEntities);
-        return selectedEntities;
-    }
-
     TEST_F(EditorFocusModeSelectionFixture, EditorFocusModeSelectionTests_SelectEntityWithFocusOnLevel)
     {
         // Clear the focus, disabling focus mode
@@ -69,6 +24,9 @@ namespace AzToolsFramework
         auto selectedEntitiesAfter = GetSelectedEntities();
         EXPECT_EQ(selectedEntitiesAfter.size(), 1);
         EXPECT_EQ(selectedEntitiesAfter.front(), m_entityMap[CarEntityName]);
+
+        // Restore default state for other tests.
+        ClearSelectedEntities();
     }
 
     TEST_F(EditorFocusModeSelectionFixture, EditorFocusModeSelectionTests_SelectEntityWithFocusOnAncestor)
@@ -88,6 +46,9 @@ namespace AzToolsFramework
 
         // Clear the focus, disabling focus mode
         m_focusModeInterface->ClearFocusRoot(AzFramework::EntityContextId::CreateNull());
+
+        // Restore default state for other tests.
+        ClearSelectedEntities();
     }
 
     TEST_F(EditorFocusModeSelectionFixture, EditorFocusModeSelectionTests_SelectEntityWithFocusOnItself)
@@ -107,6 +68,9 @@ namespace AzToolsFramework
 
         // Clear the focus, disabling focus mode
         m_focusModeInterface->ClearFocusRoot(AzFramework::EntityContextId::CreateNull());
+
+        // Restore default state for other tests.
+        ClearSelectedEntities();
     }
 
     TEST_F(EditorFocusModeSelectionFixture, EditorFocusModeSelectionTests_SelectEntityWithFocusOnSibling)
@@ -125,6 +89,9 @@ namespace AzToolsFramework
 
         // Clear the focus, disabling focus mode
         m_focusModeInterface->ClearFocusRoot(AzFramework::EntityContextId::CreateNull());
+
+        // Restore default state for other tests.
+        ClearSelectedEntities();
     }
 
     TEST_F(EditorFocusModeSelectionFixture, EditorFocusModeSelectionTests_SelectEntityWithFocusOnDescendant)
@@ -143,5 +110,8 @@ namespace AzToolsFramework
 
         // Clear the focus, disabling focus mode
         m_focusModeInterface->ClearFocusRoot(AzFramework::EntityContextId::CreateNull());
+
+        // Restore default state for other tests.
+        ClearSelectedEntities();
     }
 }
