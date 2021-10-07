@@ -107,6 +107,7 @@ namespace EMotionFX
             static void Reflect(AZ::ReflectContext* context);
 
             size_t GetNumDimensions() const override;
+            AZStd::string GetDimensionName(size_t index, Skeleton* skeleton) const override;
             Sample GetFeatureData(const FeatureMatrix& featureMatrix, size_t frameIndex, size_t sampleIndex) const;
             void SetFeatureData(FeatureMatrix& featureMatrix, size_t frameIndex, size_t sampleIndex, const Sample& sample);
 

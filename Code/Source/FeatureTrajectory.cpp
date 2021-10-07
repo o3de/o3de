@@ -375,6 +375,45 @@ namespace EMotionFX
             return CalcNumSamplesPerFrame() * Sample::s_componentsPerSample;
         }
 
+        AZStd::string FeatureTrajectory::GetDimensionName(size_t index, Skeleton* skeleton) const
+        {
+            AZStd::string result = "Trajectory";
+
+            const int sampleIndex = aznumeric_cast<int>(index) / aznumeric_cast<int>(Sample::s_componentsPerSample);
+            const int componentIndex = index % Sample::s_componentsPerSample;
+            const int midSampleIndex = (int)CalcMidFrameDataIndex();
+
+            if (sampleIndex == midSampleIndex)
+            {
+                result += ".Current.";
+            }
+            else if (sampleIndex < midSampleIndex)
+            {
+                result += AZStd::string::format(".Past%i.", sampleIndex - m_numPastSamples);
+            }
+            else
+            {
+                result += AZStd::string::format(".Future%i.", sampleIndex - m_numPastSamples);
+            }
+
+            switch (componentIndex)
+            {
+                case 0: { result += "PosX"; break; }
+                case 1: { result += "PosY"; break; }
+                case 2: { result += "PosZ"; break; }
+                case 3: { result += "DirX"; break; }
+                case 4: { result += "DirY"; break; }
+                case 5: { result += "DirZ"; break; }
+                case 6: { result += "FacingDirX"; break; }
+                case 7: { result += "FacingDirY"; break; }
+                case 8: { result += "FacingDirZ"; break; }
+                case 9: { result += "Speed"; break; }
+                default: { result += Feature::GetDimensionName(index, skeleton); }
+            }
+
+            return result;
+        }
+
         FeatureTrajectory::Sample FeatureTrajectory::GetFeatureData(const FeatureMatrix& featureMatrix, size_t frameIndex, size_t sampleIndex) const
         {
             Sample result;

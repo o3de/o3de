@@ -15,6 +15,8 @@
 #include <AzCore/Memory/Memory.h>
 #include <AzCore/RTTI/RTTI.h>
 #include <AzCore/Math/Vector3.h>
+#include <AzCore/std/containers/vector.h>
+#include <AzCore/std/string/string.h>
 
 #pragma warning (push, 1)
 #pragma warning (disable:4834) // C4834: discarding return value of function with 'nodiscard' attribute
@@ -42,6 +44,8 @@ namespace EMotionFX::MotionMatching
         virtual ~FeatureMatrix() = default;
 
         void Clear();
+
+        void SaveAsCsv(const AZStd::string& filename, const AZStd::vector<AZStd::string>& columnNames = {});
 
         size_t CalcMemoryUsageInBytes() const;
 

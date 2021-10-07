@@ -118,6 +118,28 @@ namespace EMotionFX
             return 3;
         }
 
+        AZStd::string FeaturePosition::GetDimensionName(size_t index, Skeleton* skeleton) const
+        {
+            AZStd::string result;
+
+            Node* joint = skeleton->GetNode(m_nodeIndex);
+            if (joint)
+            {
+                result = joint->GetName();
+                result += '.';
+            }
+
+            switch (index)
+            {
+                case 0: { result += "PosX"; break; }
+                case 1: { result += "PosY"; break; }
+                case 2: { result += "PosZ"; break; }
+                default: { result += Feature::GetDimensionName(index, skeleton); }
+            }
+
+            return result;
+        }
+
         AZ::Vector3 FeaturePosition::GetFeatureData(const FeatureMatrix& featureMatrix, size_t frameIndex) const
         {
             return featureMatrix.GetVector3(frameIndex, m_featureColumnOffset);

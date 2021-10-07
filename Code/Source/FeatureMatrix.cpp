@@ -12,6 +12,8 @@
 
 #include <Allocators.h>
 #include <FeatureMatrix.h>
+#include <iostream>
+#include <fstream>
 
 namespace EMotionFX::MotionMatching
 {
@@ -20,6 +22,30 @@ namespace EMotionFX::MotionMatching
     void FeatureMatrix::Clear()
     {
         resize(0, 0);
+    }
+
+    const static Eigen::IOFormat g_eigenCsvFormat(Eigen::StreamPrecision, Eigen::DontAlignCols, ", ", "\n");
+    void FeatureMatrix::SaveAsCsv(const AZStd::string& filename, const AZStd::vector<AZStd::string>& columnNames)
+    {
+        std::ofstream file(filename.c_str());
+
+        // Save column names in the first row
+        if (!columnNames.empty())
+        {
+            for (size_t i = 0; i < columnNames.size(); ++i)
+            {
+                if (i != 0)
+                {
+                    file << ",";
+                }
+
+                file << columnNames[i].c_str();
+            }
+            file << "\n";
+        }
+
+        // Save coefficients
+        file << format(g_eigenCsvFormat);
     }
 
     AZ::Vector3 FeatureMatrix::GetVector3(Index row, Index startColumn) const
