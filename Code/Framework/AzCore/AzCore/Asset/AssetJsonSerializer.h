@@ -44,12 +44,12 @@ namespace AZ
             void SetAssetFixUp(AssetFixUp assetFixUpCallback);
             void FixUpAsset(Asset<AssetData>& asset);
 
-            void AddAsset(Asset<AssetData>* asset);
-            AZStd::vector<Asset<AssetData>*>& GetTrackedAssets();
-            const AZStd::vector<Asset<AssetData>*>& GetTrackedAssets() const;
+            void AddAsset(Asset<AssetData> asset);
+            AZStd::vector<Asset<AssetData>>& GetTrackedAssets();
+            const AZStd::vector<Asset<AssetData>>& GetTrackedAssets() const;
 
         private:
-            AZStd::vector<Asset<AssetData>*> m_serializedAssets;
+            AZStd::vector<Asset<AssetData>> m_serializedAssets;
             AssetFixUp m_assetFixUpCallback;
         };
     } // namespace Data
