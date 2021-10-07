@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include <AzFramework/Session/ISessionRequests.h>
+#include <AzFramework/Session/SessionRequests.h>
 
 namespace AWSGameLift
 {
