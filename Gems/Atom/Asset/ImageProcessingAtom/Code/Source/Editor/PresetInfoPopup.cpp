@@ -82,7 +82,6 @@ namespace ImageProcessingAtomEditor
         presetInfoText += "\n";
         presetInfoText += QString("Suppress Engine Reduce: %1\n").arg(presetSettings->m_suppressEngineReduce ? "True" : "False");
         presetInfoText += QString("Discard Alpha: %1\n").arg(presetSettings->m_discardAlpha ? "True" : "False");
-        presetInfoText += QString("Is Power Of 2: %1\n").arg(presetSettings->m_isPowerOf2 ? "True" : "False");
         presetInfoText += QString("Is Color Chart: %1\n").arg(presetSettings->m_isColorChart ? "True" : "False");
         presetInfoText += QString("High Pass Mip: %1\n").arg(presetSettings->m_highPassMip);
         presetInfoText += QString("Gloss From Normal: %1\n").arg(presetSettings->m_glossFromNormals);
