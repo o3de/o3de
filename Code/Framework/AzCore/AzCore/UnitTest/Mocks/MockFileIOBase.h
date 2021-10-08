@@ -52,6 +52,7 @@ namespace AZ
             MOCK_METHOD2(SetAlias,    void(const char* alias, const char* path));
             MOCK_METHOD1(ClearAlias,  void(const char* alias));
             MOCK_CONST_METHOD1(GetAlias,    const char*(const char* alias));
+            MOCK_METHOD2(SetDeprecatedAlias, void(AZStd::string_view, AZStd::string_view));
             MOCK_CONST_METHOD2(ConvertToAlias, AZStd::optional<AZ::u64>(char* inOutBuffer, AZ::u64 bufferLength));
             MOCK_CONST_METHOD2(ConvertToAlias, bool(AZ::IO::FixedMaxPath& aliasPath, const AZ::IO::PathView& path));
             MOCK_CONST_METHOD3(ResolvePath, bool(const char* path, char* resolvedPath, AZ::u64 resolvedPathSize));

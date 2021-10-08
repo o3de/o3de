@@ -16,7 +16,8 @@
 #include <MCore/Source/MultiThreadManager.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/smart_ptr/weak_ptr.h>
-
+#include <Source/Integration/Assets/ActorAsset.h>
+#include <Source/Integration/System/SystemCommon.h>
 
 namespace EMotionFX
 {
@@ -47,7 +48,7 @@ namespace EMotionFX
          * Register an actor.
          * @param actor The actor to register.
          */
-        void RegisterActor(AZStd::shared_ptr<Actor> actor);
+        void RegisterActor(ActorAssetData actorAsset);
 
         /**
          * Unregister all actors.
@@ -60,14 +61,14 @@ namespace EMotionFX
          * Unregister a specific actor.
          * @param actor The actor you passed to the RegisterActor function sometime before.
          */
-        void UnregisterActor(const AZStd::shared_ptr<Actor>& actor);
+        void UnregisterActor(AZ::Data::AssetId actorAssetID);
 
         /**
          * Get the number of registered actors.
          * This does not include the clones that have been optionally created.
          * @result The number of registered actors.
          */
-        MCORE_INLINE size_t GetNumActors() const { return m_actors.size(); }
+        MCORE_INLINE size_t GetNumActors() const { return m_actorAssets.size(); }
 
         /**
          * Get a given actor.
@@ -78,6 +79,7 @@ namespace EMotionFX
          * @result A reference to the actor object that contains the array of Actor objects.
          */
         Actor* GetActor(size_t nr) const;
+        ActorAssetData GetActorAsset(size_t nr) const;
 
         /**
          * Find the given actor by name.
@@ -99,7 +101,8 @@ namespace EMotionFX
          * @param actor The actor object you once passed to RegisterActor.
          * @result Returns the actor number, which is in range of [0..GetNumActors()-1], or returns MCORE_INVALIDINDEX32 when not found.
          */
-        size_t FindActorIndex(Actor* actor) const;
+        size_t FindActorIndex(AZ::Data::AssetId assetId) const;
+        size_t FindActorIndex(const Actor* actor) const;
 
         /**
          * Find the actor number for a given actor name.
@@ -160,7 +163,7 @@ namespace EMotionFX
          */
         Actor* FindActorByID(uint32 id) const;
 
-        AZStd::shared_ptr<Actor> FindSharedActorByID(uint32 id) const;
+        AZ::Data::AssetId FindAssetIdByActorId(uint32 id) const;
 
         /**
          * Check if the given actor instance is registered.
@@ -255,9 +258,9 @@ namespace EMotionFX
         void UnlockActors();
 
     private:
-        AZStd::vector<ActorInstance*>    m_actorInstances;        /**< The registered actor instances. */
-        AZStd::vector<AZStd::shared_ptr<Actor>> m_actors;       /**< The registered actors. */
-        AZStd::vector<ActorInstance*>    m_rootActorInstances;    /**< Root actor instances (roots of all attachment chains). */
+        AZStd::vector<ActorInstance*>   m_actorInstances;        /**< The registered actor instances. */
+        AZStd::vector<ActorAssetData>   m_actorAssets;
+        AZStd::vector<ActorInstance*>   m_rootActorInstances;    /**< Root actor instances (roots of all attachment chains). */
         ActorUpdateScheduler*           m_scheduler;             /**< The update scheduler to use. */
         MCore::MutexRecursive           m_actorLock;             /**< The multithread lock for touching the actors array. */
         MCore::MutexRecursive           m_actorInstanceLock;     /**< The multithread lock for touching the actor instances array. */

@@ -28,7 +28,6 @@ ly_add_target(
             3rdParty::lz4
             3rdParty::md5
             3rdParty::tiff
-            3rdParty::zlib
             3rdParty::zstd
             Legacy::CryCommon
             Legacy::CrySystem.XMLBinary

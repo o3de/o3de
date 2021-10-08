@@ -11,9 +11,9 @@
 
 #include "PathUtil.h"
 
-#include <AzCore/IO/SystemFile.h> // for AZ_MAX_PATH_LEN
+#include <AzCore/Settings/SettingsRegistryMergeUtils.h>
+#include <AzCore/Utils/Utils.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h> // for ebus events
-#include <AzFramework/StringFunc/StringFunc.h>
 #include <AzFramework/API/ApplicationAPI.h>
 #include <AzCore/std/string/conversions.h>
 #include <AzFramework/IO/LocalFileIO.h>
@@ -179,7 +179,7 @@ namespace Path
         EBUS_EVENT_RESULT(engineRoot, AzFramework::ApplicationRequests::Bus, GetEngineRoot);
         return QString(engineRoot);
     }
-    
+
     //////////////////////////////////////////////////////////////////////////
     QString& ReplaceFilename(const QString& strFilepath, const QString& strFilename, QString& strOutputFilename, bool bCallCaselessPath)
     {
@@ -216,30 +216,21 @@ namespace Path
     //////////////////////////////////////////////////////////////////////////
     QString GetResolvedUserSandboxFolder()
     {
-        char resolvedPath[AZ_MAX_PATH_LEN] = { 0 };
-        gEnv->pFileIO->ResolvePath(GetUserSandboxFolder().toUtf8().data(), resolvedPath, AZ_MAX_PATH_LEN);
-        return QString::fromLatin1(resolvedPath);
+        AZ::IO::FixedMaxPath userSandboxFolderPath;
+        gEnv->pFileIO->ResolvePath(userSandboxFolderPath, GetUserSandboxFolder().toUtf8().constData());
+        return QString::fromUtf8(userSandboxFolderPath.c_str(), static_cast<int>(userSandboxFolderPath.Native().size()));
     }
 
     // internal function, you should use GetEditingGameDataFolder instead.
     AZStd::string GetGameAssetsFolder()
     {
-        const char* resultValue = nullptr;
-        EBUS_EVENT_RESULT(resultValue, AzToolsFramework::AssetSystemRequestBus, GetAbsoluteDevGameFolderPath);
-        if (!resultValue)
+        AZ::IO::Path projectPath;
+        if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
         {
-            if ((gEnv) && (gEnv->pFileIO))
-            {
-                resultValue = gEnv->pFileIO->GetAlias("@devassets@");
-            }
+            settingsRegistry->Get(projectPath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_ProjectPath);
         }
 
-        if (!resultValue)
-        {
-            resultValue = ".";
-        }
-
-        return resultValue;
+        return projectPath.Native();
     }
 
     /// Get the data folder
@@ -256,26 +247,6 @@ namespace Path
         str += "Mods\\";
         str += s_currentModName.c_str();
         return str;
-    }
-
-    //! Get the root folder (in source control or other writable assets) where you should save root data.
-    AZStd::string GetEditingRootFolder()
-    {
-        const char* resultValue = nullptr;
-        EBUS_EVENT_RESULT(resultValue, AzToolsFramework::AssetSystemRequestBus, GetAbsoluteDevRootFolderPath);
-
-        if (!resultValue)
-        {
-            if ((gEnv) && (gEnv->pFileIO))
-            {
-                resultValue = gEnv->pFileIO->GetAlias("@devassets@");
-            }
-        }
-        if (!resultValue)
-        {
-            resultValue = ".";
-        }
-        return resultValue;
     }
 
 
@@ -335,165 +306,60 @@ namespace Path
             return "";
         }
 
-        bool relPathfound = false;
+        bool relPathFound = false;
         AZStd::string relativePath;
         AZStd::string fullAssetPath(fullPath.toUtf8().data());
-        EBUS_EVENT_RESULT(relPathfound, AzToolsFramework::AssetSystemRequestBus, GetRelativeProductPathFromFullSourceOrProductPath, fullAssetPath, relativePath);
+        EBUS_EVENT_RESULT(relPathFound, AzToolsFramework::AssetSystemRequestBus, GetRelativeProductPathFromFullSourceOrProductPath, fullAssetPath, relativePath);
 
-        if (relPathfound)
+        if (relPathFound)
         {
             // do not normalize this path, it will already be an appropriate asset ID.
             return CaselessPaths(relativePath.c_str());
         }
 
-        char rootpath[_MAX_PATH] = { 0 };
-        azstrcpy(rootpath, _MAX_PATH, Path::GetEditingRootFolder().c_str());
-
-        if (bRelativeToGameFolder)
-        {
-            azstrcpy(rootpath, _MAX_PATH, Path::GetEditingGameDataFolder().c_str());
-        }
-
-        QString rootPathNormalized(rootpath);
-        QString srcPathNormalized(fullPath);
-
-#if defined(AZ_PLATFORM_WINDOWS)
-        // avoid confusing PathRelativePathTo
-        rootPathNormalized.replace('/', '\\');
-        srcPathNormalized.replace('/', '\\');
-#endif
+        AZ::IO::FixedMaxPath rootPath = bRelativeToGameFolder ? AZ::Utils::GetProjectPath() : AZ::Utils::GetEnginePath();
+        AZ::IO::FixedMaxPath resolvedFullPath;
+        AZ::IO::FileIOBase::GetDirectInstance()->ResolvePath(resolvedFullPath, fullPath.toUtf8().constData());
 
         // Create relative path
-        char resolvedSrcPath[AZ_MAX_PATH_LEN] = { 0 };
-        AZ::IO::FileIOBase::GetDirectInstance()->ResolvePath(srcPathNormalized.toUtf8().data(), resolvedSrcPath, AZ_MAX_PATH_LEN);
-        QByteArray path = QDir(rootPathNormalized).relativeFilePath(resolvedSrcPath).toUtf8();
-        if (path.isEmpty())
-        {
-            return fullPath;
-        }
 
-        // The following code is required because the windows PathRelativePathTo function will always return "./SomePath" instead of just "SomePath"
-        // Only remove single dot (.) and slash parts of a path, never the double dot (..)
-        const char* pBuffer = path.data();
-        bool bHasDot = false;
-        while (*pBuffer && pBuffer != path.end())
-        {
-            switch (*pBuffer)
-            {
-            case '.':
-                if (bHasDot)
-                {
-                    // Found a double dot, rewind and stop removing
-                    pBuffer--;
-                    break;
-                }
-            // Fall through intended
-            case '/':
-            case '\\':
-                bHasDot = (*pBuffer == '.');
-                pBuffer++;
-                continue;
-            }
-            break;
-        }
-
-        QString relPath = pBuffer;
-        return CaselessPaths(relPath);
+        return CaselessPaths(resolvedFullPath.LexicallyProximate(rootPath).MakePreferred().c_str());
     }
 
     QString GamePathToFullPath(const QString& path)
     {
         using namespace AzToolsFramework;
-        AZ_Warning("GamePathToFullPath", path.size() <= AZ_MAX_PATH_LEN, "Path exceeds maximum path length of %d", AZ_MAX_PATH_LEN);
-        if ((gEnv) && (gEnv->pFileIO) && gEnv->pCryPak && path.size() <= AZ_MAX_PATH_LEN)
+        AZ_Warning("GamePathToFullPath", path.size() <= AZ::IO::MaxPathLength, "Path exceeds maximum path length of %zu", AZ::IO::MaxPathLength);
+        if (path.size() <= AZ::IO::MaxPathLength)
         {
             // first, adjust the file name for mods:
-            bool fullPathfound = false;
-            AZStd::string assetFullPath;
-            AZStd::string adjustedFilePath = path.toUtf8().data();
-            AssetSystemRequestBus::BroadcastResult(fullPathfound, &AssetSystemRequestBus::Events::GetFullSourcePathFromRelativeProductPath, adjustedFilePath, assetFullPath);
-            if (fullPathfound)
+            bool fullPathFound = false;
+            AZ::IO::Path assetFullPath;
+            AZ::IO::Path adjustedFilePath = path.toUtf8().constData();
+            AssetSystemRequestBus::BroadcastResult(fullPathFound, &AssetSystemRequestBus::Events::GetFullSourcePathFromRelativeProductPath,
+                adjustedFilePath.Native(), assetFullPath.Native());
+            if (fullPathFound)
             {
-                //if the bus message succeeds than normalize and lowercase the path
-                AzFramework::StringFunc::Path::Normalize(assetFullPath);
-                return assetFullPath.c_str();
+                //if the bus message succeeds than normalize
+                return assetFullPath.LexicallyNormal().c_str();
             }
-            // if the bus message didn't succeed, 'guess' the source assets:
+            // if the bus message didn't succeed, check if he path exist as a resolved path
             else
             {
                 // Not all systems have been converted to use local paths. Some editor files save XML files directly, and a full or correctly aliased path is already passed in.
                 // If the path passed in exists already, then return the resolved filepath
                 if (AZ::IO::FileIOBase::GetDirectInstance()->Exists(adjustedFilePath.c_str()))
                 {
-                    char resolvedPath[AZ_MAX_PATH_LEN + PathUtil::maxAliasLength] = { 0 };
-                    AZ::IO::FileIOBase::GetDirectInstance()->ResolvePath(adjustedFilePath.c_str(), resolvedPath, AZ_MAX_PATH_LEN + PathUtil::maxAliasLength);
-                    return QString::fromUtf8(resolvedPath);
+                    AZ::IO::FixedMaxPath resolvedPath;
+                    AZ::IO::FileIOBase::GetDirectInstance()->ResolvePath(resolvedPath, adjustedFilePath);
+                    return QString::fromUtf8(resolvedPath.c_str(), static_cast<int>(resolvedPath.Native().size()));
                 }
-                // if we get here it means that the Asset Processor does not know about this file.  most of the time we should never get here
-                // the rest of this code just does a bunch of heuristic guesses in case of missing files or if the user has hand-edited
-                // the asset cache by moving files in via some other means or external process.
-                if (adjustedFilePath[0] != '@')
-                {
-                    const char* prefix = (adjustedFilePath[0] == '/' || adjustedFilePath[0] == '\\') ? "@devassets@" : "@devassets@/";
-                    adjustedFilePath = prefix + adjustedFilePath;
-                }
-
-                char szAdjustedFile[AZ_MAX_PATH_LEN + PathUtil::maxAliasLength] = { 0 };
-                gEnv->pFileIO->ResolvePath(adjustedFilePath.c_str(), szAdjustedFile, AZ_ARRAY_SIZE(szAdjustedFile));
-
-                if ((azstrnicmp(szAdjustedFile, "@devassets@", 11) == 0) && ((szAdjustedFile[11] == '/') || (szAdjustedFile[11] == '\\')))
-                {
-                    if (!gEnv->pCryPak->IsFileExist(szAdjustedFile))
-                    {
-                        AZStd::string newName(szAdjustedFile);
-                        AzFramework::StringFunc::Replace(newName, "@devassets@", "@devroot@/engine", false);
-                        
-                        if (gEnv->pCryPak->IsFileExist(newName.c_str()))
-                        {
-                            azstrcpy(szAdjustedFile, AZ_ARRAY_SIZE(szAdjustedFile), newName.c_str());
-                        }
-                        else
-                        {
-                            // getting tricky here, try @devroot@ alone, in case its 'editor'
-                            AzFramework::StringFunc::Replace(newName, "@devassets@", "@devroot@", false);
-                            if (gEnv->pCryPak->IsFileExist(szAdjustedFile))
-                            {
-                                azstrcpy(szAdjustedFile, AZ_ARRAY_SIZE(szAdjustedFile), newName.c_str());
-                            }
-                            // give up, best guess is just @devassets@
-                        }
-                    }
-                }
-
-                // we should very rarely actually get to this point in the code.
-
-                // szAdjustedFile may contain an alias at this point. (@assets@/blah.whatever)
-                // there is a case in which the loose asset exists only within a pak file for some reason
-                // this is not recommended but it is possible.in that case, we want to return the original szAdjustedFile
-                // without touching it or resolving it so that crypak can open it successfully.
-                char adjustedPath[AZ_MAX_PATH_LEN + PathUtil::maxAliasLength] = { 0 };
-                if (gEnv->pFileIO->ResolvePath(szAdjustedFile, adjustedPath, AZ_MAX_PATH_LEN + PathUtil::maxAliasLength)) // resolve to full path
-                {
-                    if ((gEnv->pCryPak->IsFileExist(adjustedPath)) || (!gEnv->pCryPak->IsFileExist(szAdjustedFile)))
-                    {
-                        // note that if we get here, then EITHER
-                        // the file exists as a loose asset in the actual adjusted path
-                        // OR the file does not exist in the original passed-in aliased name (like '@assets@/whatever')
-                        // in which case we may as well just resolve the path to a full path and return it.
-                        assetFullPath = adjustedPath;
-                        AzFramework::StringFunc::Path::Normalize(assetFullPath);
-                        azstrcpy(szAdjustedFile, AZ_MAX_PATH_LEN + PathUtil::maxAliasLength, assetFullPath.c_str());
-                    }
-                    // if the above case succeeded then it means that the file does NOT exist loose
-                    // but DOES exist in a pak, in which case we leave szAdjustedFile with the alias on the front of it, meaning
-                    // fopens via crypak will actually succeed.
-                }
-                return szAdjustedFile;
+                return path;
             }
         }
         else
         {
-            return "";
+            return QString{};
         }
     }
 

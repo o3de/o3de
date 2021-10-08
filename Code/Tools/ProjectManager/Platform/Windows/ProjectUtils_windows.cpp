@@ -130,5 +130,14 @@ namespace O3DE::ProjectManager
             return AZ::Success();
         }
 
+        AZ::Outcome<QString, QString> RunGetPythonScript(const QString& engineRoot)
+        {
+            const QString batPath = QString("%1/python/get_python.bat").arg(engineRoot);
+            return ExecuteCommandResultModalDialog(
+                "cmd.exe",
+                QStringList{"/c", batPath},
+                QProcessEnvironment::systemEnvironment(),
+                QObject::tr("Running get_python script..."));
+        }
     } // namespace ProjectUtils
 } // namespace O3DE::ProjectManager
