@@ -17,7 +17,6 @@
 #include <Editor/InputDialogValidatable.h>
 #include <EMotionFX/CommandSystem/Source/CommandManager.h>
 #include <EMotionFX/Source/Actor.h>
-#include <EMotionFX/Source/AutoRegisteredActor.h>
 #include <EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/DockWidgetPlugin.h>
 #include <EMotionStudio/EMStudioSDK/Source/EMStudioPlugin.h>
 #include <EMotionStudio/EMStudioSDK/Source/EMStudioManager.h>
