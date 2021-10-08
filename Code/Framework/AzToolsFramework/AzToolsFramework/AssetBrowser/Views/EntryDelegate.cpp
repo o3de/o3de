@@ -21,6 +21,7 @@ AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option") // 4251: class 'Q
 #include <QPainter>
 AZ_POP_DISABLE_WARNING
 
+#pragma optimize("", off)
 namespace AzToolsFramework
 {
     namespace AssetBrowser
@@ -225,29 +226,27 @@ namespace AzToolsFramework
                         const QModelIndex indexBelow = viewModel->index(index.row() + 1, index.column());
                         const QModelIndex indexAbove = viewModel->index(index.row() - 1, index.column());
 
-                        auto aboveEntry = qvariant_cast<const AssetBrowserEntry*>(indexBelow.data(AssetBrowserModel::Roles::EntryRole));
-                        auto belowEntry = qvariant_cast<const AssetBrowserEntry*>(indexAbove.data(AssetBrowserModel::Roles::EntryRole));
+                        auto bellowEntry = qvariant_cast<const AssetBrowserEntry*>(indexBelow.data(AssetBrowserModel::Roles::EntryRole));
+                        auto aboveEntry = qvariant_cast<const AssetBrowserEntry*>(indexAbove.data(AssetBrowserModel::Roles::EntryRole));
 
+                        auto bellowSourceEntry = azrtti_cast<const SourceAssetBrowserEntry*>(bellowEntry);
                         auto aboveSourceEntry = azrtti_cast<const SourceAssetBrowserEntry*>(aboveEntry);
-                        auto belowSourceEntry = azrtti_cast<const SourceAssetBrowserEntry*>(belowEntry);
 
-                        // if current index is the last entry in the view
-                        // or the index above it is a Source Entry and
-                        // the index below is invalid or is valid but it is also a source entry
+                        // The index below is a Source Entry and
+                        // the index above is invalid or is valid but it is also a source entry
                         // then the current index is the only child.
-                        if (index.row() == viewModel->rowCount() - 1 ||
-                            (indexBelow.isValid() && aboveSourceEntry &&
-                             (!indexAbove.isValid() || (indexAbove.isValid() && belowSourceEntry))))
+                        if ((indexBelow.isValid() && bellowSourceEntry &&
+                             (!indexAbove.isValid() || (indexAbove.isValid() && aboveSourceEntry))))
                         {
                             DrawBranchPixMap(EntryBranchType::OneChild, painter, branchIconTopLeft, iconSize); // Draw One Child Icon
                         }
-                        else if (indexBelow.isValid() && aboveSourceEntry) // The index above is a source entry
+                        else if (index.row() == viewModel->rowCount() - 1 || indexBelow.isValid() && bellowSourceEntry) //is the last entry or The index bellow is a source entry
                         {
-                            DrawBranchPixMap(EntryBranchType::Last, painter, branchIconTopLeft, iconSize); // Draw First child Icon
+                            DrawBranchPixMap(EntryBranchType::Last, painter, branchIconTopLeft, iconSize); // Draw Last child Icon
                         }
-                        else if (indexAbove.isValid() && belowSourceEntry) // The index below is a source entry
+                        else if (indexAbove.isValid() && aboveSourceEntry) // The index above is a source entry
                         {
-                            DrawBranchPixMap(EntryBranchType::First, painter, branchIconTopLeft, iconSize); // Draw Last Child Icon
+                            DrawBranchPixMap(EntryBranchType::First, painter, branchIconTopLeft, iconSize); // Draw First Child Icon
                         }
                         else //the index above and below are also child entries
                         {
@@ -286,7 +285,6 @@ namespace AzToolsFramework
                     absoluteIconPath = AZ::IO::FixedMaxPath(AZ::Utils::GetEnginePath()) / TreeIconPathLast;
                     break;
                 case AzToolsFramework::AssetBrowser::EntryBranchType::OneChild:
-                default:
                     absoluteIconPath = AZ::IO::FixedMaxPath(AZ::Utils::GetEnginePath()) / TreeIconPathOneChild;
                     break;
                 }
@@ -311,5 +309,5 @@ namespace AzToolsFramework
 
     } // namespace AssetBrowser
 } // namespace AzToolsFramework
-
+#pragma optimize("",on)
 #include "AssetBrowser/Views/moc_EntryDelegate.cpp"
