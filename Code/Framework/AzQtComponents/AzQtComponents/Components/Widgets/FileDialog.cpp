@@ -10,7 +10,7 @@
 #include <AzQtComponents/Components/Widgets/FileDialog.h>
 
 #include <QMessageBox>
-#include <QRegExp>
+#include <QRegularExpression>
 
 namespace AzQtComponents
 {
@@ -38,10 +38,11 @@ namespace AzQtComponents
                 QString fileName = fileInfo.fileName();
 
                 // Check if the filename has any invalid characters
-                QRegExp validFileNameRegex("^[a-zA-Z0-9_\\-./]*$");
+                QRegularExpression validFileNameRegex("^[a-zA-Z0-9_\\-./]*$");
+                QRegularExpressionMatch validFileNameMatch = validFileNameRegex.match(fileName);
 
                 // If the filename had invalid characters, then show a warning message and then we will re-prompt the save filename dialog
-                if (!validFileNameRegex.exactMatch(fileName))
+                if (!validFileNameMatch.hasMatch())
                 {
                     QMessageBox::warning(parent, QObject::tr("Invalid filename"),
                         QObject::tr("O3DE assets are restricted to alphanumeric characters, hyphens (-), underscores (_), and dots (.)\n\n%1").arg(fileName));
@@ -88,14 +89,6 @@ namespace AzQtComponents
             return false;
         }
 
-        // Parse out the filter extension(s) which will exist inside parenthesis, and will be comma or space delimited.
-        int firstParen = selectedFilter.lastIndexOf('(');
-        int lastParen = selectedFilter.lastIndexOf(')');
-        if ((firstParen<0) || (lastParen<=firstParen))
-        {
-            return false;
-        }
-
         // According to the QT documentation for QFileDialog, the selected filter will come in the form
         // <Filter Name> (<filter pattern1> <filter pattern2> .. <filter patternN> )
         // 
@@ -103,10 +96,14 @@ namespace AzQtComponents
         // "Images (*.gif *.png *.jpg)"
         // 
         // Extract the contents of the <filter pattern>(s) inside the parenthesis and split them based on a whitespace or comma
-        const QRegExp filterContentSeperators("[\\s,]");
-        int filterExtensionsLength = lastParen - firstParen - 1;
-        QString filterExtensionsString = selectedFilter.mid(firstParen + 1, filterExtensionsLength);
-        QStringList filterExtensionsFull = filterExtensionsString.split(filterContentSeperators, Qt::SkipEmptyParts);
+        const QRegularExpression filterContent(".*\\((?<filters>[^\\)]+)\\)");
+        QRegularExpressionMatch filterContentMatch = filterContent.match(selectedFilter);
+        if (!filterContentMatch.hasMatch())
+        {
+            return false;
+        }
+        QString filterExtensionsString = filterContentMatch.captured("filters");
+        QStringList filterExtensionsFull = filterExtensionsString.split(" ", Qt::SkipEmptyParts);
         if (filterExtensionsFull.length() <= 0)
         {
             return false;
@@ -118,13 +115,12 @@ namespace AzQtComponents
         // Iterate through the filter patterns to see if the current filename matches
         QFileInfo fileInfo(filePath);
         bool extensionNeeded = true;
-        for (const QString& filterExtensionFull: filterExtensionsFull)
+        for (const QString& filterExtensionFull : filterExtensionsFull)
         {
-            QRegExp filterPattern(filterExtensionFull, 
-                                  AZ_TRAIT_AZQTCOMPONENTS_FILE_DIALOG_FILTER_CASE_SENSITIVITY, 
-                                  AZ_TRAIT_AZQTCOMPONENTS_FILE_DIALOG_FILTER_REGEX_SYNTAX);
-
-            if (filterPattern.exactMatch(fileInfo.fileName()))
+            QString wildcardExpression = QRegularExpression::wildcardToRegularExpression(filterExtensionFull);
+            QRegularExpression filterPattern(wildcardExpression, AZ_TRAIT_AZQTCOMPONENTS_FILE_DIALOG_FILTER_CASE_SENSITIVITY);
+            QRegularExpressionMatch filterPatternMatch = filterPattern.match(fileInfo.fileName());
+            if (filterPatternMatch.hasMatch())
             {
                 // The filename matches one of the filter patterns already, the extension does not need to be added to the filename
                 extensionNeeded = false;

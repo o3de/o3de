@@ -37,27 +37,9 @@ TEST(AzQtComponents, ApplyMissingExtension_UpdateMissingExtensionMultipleExtensi
     EXPECT_STRCASEEQ("testFile.jpg", testPath.toUtf8().constData());
 }
 
-TEST(AzQtComponents, ApplyMissingExtension_UpdateMissingExtensionMultipleExtensionFilterWithComma_Success)
-{
-    const QString textFiler{"Image Files (*.jpg, *.bmp, *.png)"};
-    QString testPath{"testFile"};
-    bool result = AzQtComponents::FileDialog::ApplyMissingExtension(textFiler, testPath);
-    EXPECT_TRUE(result);
-    EXPECT_STRCASEEQ("testFile.jpg", testPath.toUtf8().constData());
-}
-
 TEST(AzQtComponents, ApplyMissingExtension_NoUpdateMissingExtensionMultipleExtensionFilter_Success)
 {
     const QString textFiler{"Image Files (*.jpg *.bmp *.png)"};
-    QString testPath{"testFile.png"};
-    bool result = AzQtComponents::FileDialog::ApplyMissingExtension(textFiler, testPath);
-    EXPECT_FALSE(result);
-    EXPECT_STRCASEEQ("testFile.png", testPath.toUtf8().constData());
-}
-
-TEST(AzQtComponents, ApplyMissingExtension_NoUpdateMissingExtensionMultipleExtensionFilterWithComma_Success)
-{
-    const QString textFiler{"Image Files (*.jpg, *.bmp, *.png)"};
     QString testPath{"testFile.png"};
     bool result = AzQtComponents::FileDialog::ApplyMissingExtension(textFiler, testPath);
     EXPECT_FALSE(result);
