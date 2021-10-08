@@ -366,7 +366,7 @@ namespace AZ
         {
             if (auto statsProfiler = AZ::Interface<AZ::Statistics::StatisticalProfilerProxy>::Get(); statsProfiler)
             {
-                auto& rhiMetrics = statsProfiler->GetProfiler(AZ_CRC_CE("RHI"));
+                auto& rhiMetrics = statsProfiler->GetProfiler(rhiMetricsId);
 
                 AZStd::sys_time_t presentDuration = 0;
                 for (const RHI::Ptr<CommandQueue>& commandQueue : m_commandQueues)

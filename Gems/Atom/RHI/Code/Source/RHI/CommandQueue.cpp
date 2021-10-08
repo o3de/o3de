@@ -35,7 +35,7 @@ namespace AZ
 
             if (auto statsProfiler = AZ::Interface<AZ::Statistics::StatisticalProfilerProxy>::Get(); statsProfiler)
             {
-                auto& rhiMetrics = statsProfiler->GetProfiler(AZ_CRC_CE("RHI"));
+                auto& rhiMetrics = statsProfiler->GetProfiler(rhiMetricsId);
 
                 static constexpr AZStd::string_view presentStatName("Present");
                 static constexpr AZ::Crc32 presentStatId(presentStatName);

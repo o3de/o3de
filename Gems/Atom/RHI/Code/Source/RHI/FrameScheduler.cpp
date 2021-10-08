@@ -35,9 +35,7 @@ namespace AZ
 {
     namespace RHI
     {
-        static constexpr AZ::Crc32 rhiMetricsId = AZ_CRC_CE("RHI");
-
-        const constexpr char* frameTimeMetricName = "Frame to Frame Time";
+        static constexpr const char* frameTimeMetricName = "Frame to Frame Time";
         static constexpr AZ::Crc32 frameTimeMetricId = AZ_CRC_CE(frameTimeMetricName);
 
         ResultCode FrameScheduler::Init(Device& device, const FrameSchedulerDescriptor& descriptor)
