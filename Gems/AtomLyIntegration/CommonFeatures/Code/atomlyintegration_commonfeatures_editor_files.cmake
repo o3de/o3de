@@ -102,6 +102,8 @@ set(FILES
     Source/Thumbnails/Preview/CommonPreviewer.ui
     Source/Thumbnails/Preview/CommonPreviewerFactory.cpp
     Source/Thumbnails/Preview/CommonPreviewerFactory.h
+    Source/Thumbnails/Rendering/CommonPreviewContent.cpp
+    Source/Thumbnails/Rendering/CommonPreviewContent.h
     Source/Thumbnails/Rendering/CommonPreviewRenderer.cpp
     Source/Thumbnails/Rendering/CommonPreviewRenderer.h
     Source/Thumbnails/Rendering/CommonPreviewRendererState.h

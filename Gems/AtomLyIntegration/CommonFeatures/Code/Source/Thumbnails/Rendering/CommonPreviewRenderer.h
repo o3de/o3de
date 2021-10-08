@@ -10,13 +10,11 @@
 
 #include <Atom/RPI.Public/Base.h>
 #include <Atom/RPI.Public/Pass/AttachmentReadback.h>
-#include <Atom/RPI.Reflect/Asset/AssetUtils.h>
-#include <Atom/RPI.Reflect/Model/ModelAsset.h>
-#include <Atom/RPI.Reflect/System/AnyAsset.h>
 #include <AtomLyIntegration/CommonFeatures/Thumbnails/PreviewerFeatureProcessorProviderBus.h>
 #include <AzFramework/Entity/GameEntityContextComponent.h>
 #include <AzToolsFramework/Thumbnails/Thumbnail.h>
 #include <AzToolsFramework/Thumbnails/ThumbnailerBus.h>
+#include <Thumbnails/Rendering/CommonPreviewContent.h>
 #include <Thumbnails/Thumbnail.h>
 
 namespace AzFramework
@@ -46,10 +44,20 @@ namespace AZ
                 , public PreviewerFeatureProcessorProviderBus::Handler
             {
             public:
-                AZ_CLASS_ALLOCATOR(CommonPreviewRenderer, AZ::SystemAllocator, 0)
+                AZ_CLASS_ALLOCATOR(CommonPreviewRenderer, AZ::SystemAllocator, 0);
 
                 CommonPreviewRenderer();
                 ~CommonPreviewRenderer();
+
+                                struct CaptureRequest
+                {
+                    int m_size = 512;
+                    AZStd::shared_ptr<CommonPreviewContent> m_content;
+                    AZStd::function<void()> m_captureFailedCallback;
+                    AZStd::function<void(const QImage&)> m_captureCompleteCallback;
+                };
+
+                void AddCaptureRequest(const CaptureRequest& captureRequest);
 
                 enum class State : AZ::s8
                 {
@@ -62,39 +70,34 @@ namespace AZ
                 void SetState(State state);
                 State GetState() const;
 
-                void SelectThumbnail();
-                void CancelThumbnail();
-                void CompleteThumbnail();
+                void SelectCaptureRequest();
+                void CancelCaptureRequest();
+                void CompleteCaptureRequest();
 
                 void LoadAssets();
                 void UpdateLoadAssets();
                 void CancelLoadAssets();
 
                 void UpdateScene();
-                void UpdateModel();
-                void UpdateLighting();
-                void UpdateCamera();
 
-                RPI::AttachmentReadback::CallbackFunction GetCaptureCallback();
                 bool StartCapture();
                 void EndCapture();
 
             private:
-                //! ThumbnailerRendererRequestsBus::Handler interface overrides...
-                void RenderThumbnail(AzToolsFramework::Thumbnailer::SharedThumbnailKey thumbnailKey, int thumbnailSize) override;
-                bool Installed() const override;
-
                 //! SystemTickBus::Handler interface overrides...
                 void OnSystemTick() override;
 
                 //! Render::PreviewerFeatureProcessorProviderBus::Handler interface overrides...
                 void GetRequiredFeatureProcessors(AZStd::unordered_set<AZStd::string>& featureProcessors) const override;
 
+                //! ThumbnailerRendererRequestsBus::Handler interface overrides...
+                void RenderThumbnail(AzToolsFramework::Thumbnailer::SharedThumbnailKey thumbnailKey, int thumbnailSize) override;
+                bool Installed() const override;
+
                 static constexpr float AspectRatio = 1.0f;
                 static constexpr float NearDist = 0.001f;
                 static constexpr float FarDist = 100.0f;
                 static constexpr float FieldOfView = Constants::HalfPi;
-                static constexpr float CameraRotationAngle = Constants::QuarterPi / 2.0f;
 
                 RPI::ScenePtr m_scene;
                 AZStd::string m_sceneName = "Material Thumbnail Scene";
@@ -105,36 +108,12 @@ namespace AZ
                 AZStd::vector<AZStd::string> m_passHierarchy;
                 AZStd::unique_ptr<AzFramework::EntityContext> m_entityContext;
 
-                //! Incoming thumbnail requests are appended to this queue and processed one at a time in OnTick function.
-                struct ThumbnailInfo
-                {
-                    AzToolsFramework::Thumbnailer::SharedThumbnailKey m_key;
-                    int m_size = 512;
-                };
-                AZStd::queue<ThumbnailInfo> m_thumbnailInfoQueue;
-                ThumbnailInfo m_currentThubnailInfo;
+                //! Incoming requests are appended to this queue and processed one at a time in OnTick function.
+                AZStd::queue<CaptureRequest> m_captureRequestQueue;
+                CaptureRequest m_currentCaptureRequest;
 
-                AZStd::unordered_map<State, AZStd::shared_ptr<CommonPreviewRendererState>> m_steps;
+                AZStd::unordered_map<State, AZStd::shared_ptr<CommonPreviewRendererState>> m_states;
                 State m_currentState = CommonPreviewRenderer::State::None;
-
-                static constexpr const char* DefaultLightingPresetPath = "lightingpresets/thumbnail.lightingpreset.azasset";
-                const Data::AssetId DefaultLightingPresetAssetId = AZ::RPI::AssetUtils::GetAssetIdForProductPath(DefaultLightingPresetPath);
-                Data::Asset<RPI::AnyAsset> m_defaultLightingPresetAsset;
-                Data::Asset<RPI::AnyAsset> m_lightingPresetAsset;
-
-                //! Model asset about to be rendered
-                static constexpr const char* DefaultModelPath = "models/sphere.azmodel";
-                const Data::AssetId DefaultModelAssetId = AZ::RPI::AssetUtils::GetAssetIdForProductPath(DefaultModelPath);
-                Data::Asset<RPI::ModelAsset> m_defaultModelAsset;
-                Data::Asset<RPI::ModelAsset> m_modelAsset;
-
-                //! Material asset about to be rendered
-                static constexpr const char* DefaultMaterialPath = "materials/basic_grey.azmaterial";
-                const Data::AssetId DefaultMaterialAssetId = AZ::RPI::AssetUtils::GetAssetIdForProductPath(DefaultMaterialPath);
-                Data::Asset<RPI::MaterialAsset> m_defaultMaterialAsset;
-                Data::Asset<RPI::MaterialAsset> m_materialAsset;
-
-                Entity* m_modelEntity = nullptr;
             };
         } // namespace Thumbnails
     } // namespace LyIntegration

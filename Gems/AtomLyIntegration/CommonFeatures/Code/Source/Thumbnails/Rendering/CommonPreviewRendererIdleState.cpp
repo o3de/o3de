@@ -32,7 +32,7 @@ namespace AZ
 
             void CommonPreviewRendererIdleState::OnTick([[maybe_unused]] float deltaTime, [[maybe_unused]] ScriptTimePoint time)
             {
-                m_renderer->SelectThumbnail();
+                m_renderer->SelectCaptureRequest();
             }
         } // namespace Thumbnails
     } // namespace LyIntegration

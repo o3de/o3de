@@ -16,14 +16,14 @@ namespace AZ
     {
         namespace Thumbnails
         {
-            //! PreviewerFeatureProcessorProviderRequests allows registering custom Feature Processors for thumbnail generation
+            //! PreviewerFeatureProcessorProviderRequests allows registering custom Feature Processors for preview image generation
             //! Duplicates will be ignored
             //! You can check minimal feature processors that are already registered in CommonPreviewRenderer.cpp
             class PreviewerFeatureProcessorProviderRequests
                 : public AZ::EBusTraits
             {
             public:
-                //! Get a list of custom feature processors to register with thumbnail renderer
+                //! Get a list of custom feature processors to register with preview image renderer
                 virtual void GetRequiredFeatureProcessors(AZStd::unordered_set<AZStd::string>& featureProcessors) const = 0;
             };
 

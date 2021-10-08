@@ -50,7 +50,7 @@ namespace AZ
             void CommonPreviewRendererCaptureState::OnCaptureFinished(
                 [[maybe_unused]] Render::FrameCaptureResult result, [[maybe_unused]] const AZStd::string& info)
             {
-                m_renderer->CompleteThumbnail();
+                m_renderer->CompleteCaptureRequest();
             }
         } // namespace Thumbnails
     } // namespace LyIntegration

@@ -6,33 +6,17 @@
  *
  */
 
-#include <Atom/Feature/ImageBasedLights/ImageBasedLightFeatureProcessorInterface.h>
-#include <Atom/Feature/PostProcess/PostProcessFeatureProcessorInterface.h>
-#include <Atom/Feature/SkyBox/SkyBoxFeatureProcessorInterface.h>
 #include <Atom/Feature/Utils/FrameCaptureBus.h>
-#include <Atom/Feature/Utils/LightingPreset.h>
 #include <Atom/RPI.Public/Pass/Specific/RenderToTexturePass.h>
 #include <Atom/RPI.Public/RPISystemInterface.h>
 #include <Atom/RPI.Public/RenderPipeline.h>
 #include <Atom/RPI.Public/Scene.h>
 #include <Atom/RPI.Public/Shader/ShaderResourceGroup.h>
 #include <Atom/RPI.Public/View.h>
-#include <Atom/RPI.Reflect/Asset/AssetUtils.h>
-#include <Atom/RPI.Reflect/Material/MaterialAsset.h>
-#include <Atom/RPI.Reflect/Model/ModelAsset.h>
 #include <Atom/RPI.Reflect/System/RenderPipelineDescriptor.h>
 #include <Atom/RPI.Reflect/System/SceneDescriptor.h>
-#include <AtomLyIntegration/CommonFeatures/Material/MaterialComponentBus.h>
-#include <AtomLyIntegration/CommonFeatures/Material/MaterialComponentConstants.h>
-#include <AtomLyIntegration/CommonFeatures/Mesh/MeshComponentBus.h>
-#include <AtomLyIntegration/CommonFeatures/Mesh/MeshComponentConstants.h>
-#include <AzCore/Asset/AssetCommon.h>
-#include <AzCore/Component/Entity.h>
-#include <AzCore/Component/TransformBus.h>
-#include <AzCore/EBus/Results.h>
 #include <AzCore/Math/MatrixUtils.h>
 #include <AzCore/Math/Transform.h>
-#include <AzFramework/Components/TransformComponent.h>
 #include <AzFramework/Scene/Scene.h>
 #include <AzFramework/Scene/SceneSystemInterface.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
@@ -51,8 +35,7 @@ namespace AZ
         {
             CommonPreviewRenderer::CommonPreviewRenderer()
             {
-                // CommonPreviewRenderer supports both models and materials, but we connect on materialAssetType
-                // since MaterialOrModelThumbnail dispatches event on materialAssetType address too
+                // CommonPreviewRenderer supports both models and materials
                 AzToolsFramework::Thumbnailer::ThumbnailerRendererRequestBus::MultiHandler::BusConnect(RPI::MaterialAsset::RTTI_Type());
                 AzToolsFramework::Thumbnailer::ThumbnailerRendererRequestBus::MultiHandler::BusConnect(RPI::ModelAsset::RTTI_Type());
                 PreviewerFeatureProcessorProviderBus::Handler::BusConnect();
@@ -72,7 +55,7 @@ namespace AZ
 
                 // Bind m_frameworkScene to the entity context's AzFramework::Scene
                 auto sceneSystem = AzFramework::SceneSystemInterface::Get();
-                AZ_Assert(sceneSystem, "Thumbnail system failed to get scene system implementation.");
+                AZ_Assert(sceneSystem, "Failed to get scene system implementation.");
 
                 Outcome<AZStd::shared_ptr<AzFramework::Scene>, AZStd::string> createSceneOutcome = sceneSystem->CreateScene(m_sceneName);
                 AZ_Assert(createSceneOutcome, createSceneOutcome.GetError().c_str());
@@ -104,23 +87,9 @@ namespace AZ
                 m_view->SetViewToClipMatrix(viewToClipMatrix);
                 m_renderPipeline->SetDefaultView(m_view);
 
-                // Create preview model
-                AzFramework::EntityContextRequestBus::EventResult(
-                    m_modelEntity, m_entityContext->GetContextId(), &AzFramework::EntityContextRequestBus::Events::CreateEntity,
-                    "ThumbnailPreviewModel");
-                m_modelEntity->CreateComponent(Render::MeshComponentTypeId);
-                m_modelEntity->CreateComponent(Render::MaterialComponentTypeId);
-                m_modelEntity->CreateComponent(azrtti_typeid<AzFramework::TransformComponent>());
-                m_modelEntity->Init();
-                m_modelEntity->Activate();
-
-                m_defaultLightingPresetAsset.Create(DefaultLightingPresetAssetId, true);
-                m_defaultMaterialAsset.Create(DefaultMaterialAssetId, true);
-                m_defaultModelAsset.Create(DefaultModelAssetId, true);
-
-                m_steps[CommonPreviewRenderer::State::IdleState] = AZStd::make_shared<CommonPreviewRendererIdleState>(this);
-                m_steps[CommonPreviewRenderer::State::LoadState] = AZStd::make_shared<CommonPreviewRendererLoadState>(this);
-                m_steps[CommonPreviewRenderer::State::CaptureState] = AZStd::make_shared<CommonPreviewRendererCaptureState>(this);
+                m_states[CommonPreviewRenderer::State::IdleState] = AZStd::make_shared<CommonPreviewRendererIdleState>(this);
+                m_states[CommonPreviewRenderer::State::LoadState] = AZStd::make_shared<CommonPreviewRendererLoadState>(this);
+                m_states[CommonPreviewRenderer::State::CaptureState] = AZStd::make_shared<CommonPreviewRendererCaptureState>(this);
                 SetState(CommonPreviewRenderer::State::IdleState);
             }
 
@@ -131,13 +100,8 @@ namespace AZ
                 PreviewerFeatureProcessorProviderBus::Handler::BusDisconnect();
 
                 SetState(CommonPreviewRenderer::State::None);
-
-                if (m_modelEntity)
-                {
-                    AzFramework::EntityContextRequestBus::Event(
-                        m_entityContext->GetContextId(), &AzFramework::EntityContextRequestBus::Events::DestroyEntity, m_modelEntity);
-                    m_modelEntity = nullptr;
-                }
+                m_currentCaptureRequest = {};
+                m_captureRequestQueue = {};
 
                 m_scene->Deactivate();
                 m_scene->RemoveRenderPipeline(m_renderPipeline->GetId());
@@ -146,18 +110,23 @@ namespace AZ
                 m_frameworkScene->UnsetSubsystem(m_entityContext.get());
             }
 
+            void CommonPreviewRenderer::AddCaptureRequest(const CaptureRequest& captureRequest)
+            {
+                m_captureRequestQueue.push(captureRequest);
+            }
+
             void CommonPreviewRenderer::SetState(State state)
             {
-                auto stepItr = m_steps.find(m_currentState);
-                if (stepItr != m_steps.end())
+                auto stepItr = m_states.find(m_currentState);
+                if (stepItr != m_states.end())
                 {
                     stepItr->second->Stop();
                 }
 
                 m_currentState = state;
 
-                stepItr = m_steps.find(m_currentState);
-                if (stepItr != m_steps.end())
+                stepItr = m_states.find(m_currentState);
+                if (stepItr != m_states.end())
                 {
                     stepItr->second->Start();
                 }
@@ -168,54 +137,43 @@ namespace AZ
                 return m_currentState;
             }
 
-            void CommonPreviewRenderer::SelectThumbnail()
+            void CommonPreviewRenderer::SelectCaptureRequest()
             {
-                if (!m_thumbnailInfoQueue.empty())
+                if (!m_captureRequestQueue.empty())
                 {
-                    // pop the next thumbnailkey to be rendered from the queue
-                    m_currentThubnailInfo = m_thumbnailInfoQueue.front();
-                    m_thumbnailInfoQueue.pop();
+                    // pop the next request to be rendered from the queue
+                    m_currentCaptureRequest = m_captureRequestQueue.front();
+                    m_captureRequestQueue.pop();
 
                     SetState(CommonPreviewRenderer::State::LoadState);
                 }
             }
 
-            void CommonPreviewRenderer::CancelThumbnail()
+            void CommonPreviewRenderer::CancelCaptureRequest()
             {
-                AzToolsFramework::Thumbnailer::ThumbnailerRendererNotificationBus::Event(
-                    m_currentThubnailInfo.m_key, &AzToolsFramework::Thumbnailer::ThumbnailerRendererNotifications::ThumbnailFailedToRender);
+                m_currentCaptureRequest.m_captureFailedCallback();
                 SetState(CommonPreviewRenderer::State::IdleState);
             }
 
-            void CommonPreviewRenderer::CompleteThumbnail()
+            void CommonPreviewRenderer::CompleteCaptureRequest()
             {
                 SetState(CommonPreviewRenderer::State::IdleState);
             }
 
             void CommonPreviewRenderer::LoadAssets()
             {
-                // Determine if thumbnailkey contains a material asset or set a default material
-                const Data::AssetId materialAssetId = GetAssetId(m_currentThubnailInfo.m_key, RPI::MaterialAsset::RTTI_Type());
-                m_materialAsset.Create(materialAssetId.IsValid() ? materialAssetId : DefaultMaterialAssetId, true);
-
-                // Determine if thumbnailkey contains a model asset or set a default model
-                const Data::AssetId modelAssetId = GetAssetId(m_currentThubnailInfo.m_key, RPI::ModelAsset::RTTI_Type());
-                m_modelAsset.Create(modelAssetId.IsValid() ? modelAssetId : DefaultModelAssetId, true);
-
-                // Determine if thumbnailkey contains a lighting preset asset or set a default lighting preset
-                const Data::AssetId lightingPresetAssetId = GetAssetId(m_currentThubnailInfo.m_key, RPI::AnyAsset::RTTI_Type());
-                m_lightingPresetAsset.Create(lightingPresetAssetId.IsValid() ? lightingPresetAssetId : DefaultLightingPresetAssetId, true);
+                m_currentCaptureRequest.m_content->Load();
             }
 
             void CommonPreviewRenderer::UpdateLoadAssets()
             {
-                if (m_materialAsset.IsReady() && m_modelAsset.IsReady() && m_lightingPresetAsset.IsReady())
+                if (m_currentCaptureRequest.m_content->IsReady())
                 {
                     SetState(CommonPreviewRenderer::State::CaptureState);
                     return;
                 }
 
-                if (m_materialAsset.IsError() || m_modelAsset.IsError() || m_lightingPresetAsset.IsError())
+                if (m_currentCaptureRequest.m_content->IsError())
                 {
                     CancelLoadAssets();
                     return;
@@ -224,107 +182,35 @@ namespace AZ
 
             void CommonPreviewRenderer::CancelLoadAssets()
             {
-                AZ_Warning(
-                    "CommonPreviewRenderer", m_materialAsset.IsReady(), "Asset failed to load in time: %s",
-                    m_materialAsset.ToString<AZStd::string>().c_str());
-                AZ_Warning(
-                    "CommonPreviewRenderer", m_modelAsset.IsReady(), "Asset failed to load in time: %s",
-                    m_modelAsset.ToString<AZStd::string>().c_str());
-                AZ_Warning(
-                    "CommonPreviewRenderer", m_lightingPresetAsset.IsReady(), "Asset failed to load in time: %s",
-                    m_lightingPresetAsset.ToString<AZStd::string>().c_str());
-                CancelThumbnail();
+                m_currentCaptureRequest.m_content->ReportErrors();
+                CancelCaptureRequest();
             }
 
             void CommonPreviewRenderer::UpdateScene()
             {
-                UpdateModel();
-                UpdateLighting();
-                UpdateCamera();
-            }
-
-            void CommonPreviewRenderer::UpdateModel()
-            {
-                Render::MaterialComponentRequestBus::Event(
-                    m_modelEntity->GetId(), &Render::MaterialComponentRequestBus::Events::SetDefaultMaterialOverride,
-                    m_materialAsset.GetId());
-
-                Render::MeshComponentRequestBus::Event(
-                    m_modelEntity->GetId(), &Render::MeshComponentRequestBus::Events::SetModelAsset, m_modelAsset);
-            }
-
-            void CommonPreviewRenderer::UpdateLighting()
-            {
-                auto preset = m_lightingPresetAsset->GetDataAs<Render::LightingPreset>();
-                if (preset)
-                {
-                    auto iblFeatureProcessor = m_scene->GetFeatureProcessor<Render::ImageBasedLightFeatureProcessorInterface>();
-                    auto postProcessFeatureProcessor = m_scene->GetFeatureProcessor<Render::PostProcessFeatureProcessorInterface>();
-                    auto postProcessSettingInterface = postProcessFeatureProcessor->GetOrCreateSettingsInterface(EntityId());
-                    auto exposureControlSettingInterface = postProcessSettingInterface->GetOrCreateExposureControlSettingsInterface();
-                    auto directionalLightFeatureProcessor =
-                        m_scene->GetFeatureProcessor<Render::DirectionalLightFeatureProcessorInterface>();
-                    auto skyboxFeatureProcessor = m_scene->GetFeatureProcessor<Render::SkyBoxFeatureProcessorInterface>();
-                    skyboxFeatureProcessor->Enable(true);
-                    skyboxFeatureProcessor->SetSkyboxMode(Render::SkyBoxMode::Cubemap);
-
-                    Camera::Configuration cameraConfig;
-                    cameraConfig.m_fovRadians = FieldOfView;
-                    cameraConfig.m_nearClipDistance = NearDist;
-                    cameraConfig.m_farClipDistance = FarDist;
-                    cameraConfig.m_frustumWidth = 100.0f;
-                    cameraConfig.m_frustumHeight = 100.0f;
-
-                    AZStd::vector<Render::DirectionalLightFeatureProcessorInterface::LightHandle> lightHandles;
-
-                    preset->ApplyLightingPreset(
-                        iblFeatureProcessor, skyboxFeatureProcessor, exposureControlSettingInterface, directionalLightFeatureProcessor,
-                        cameraConfig, lightHandles);
-                }
-            }
-
-            void CommonPreviewRenderer::UpdateCamera()
-            {
-                // Get bounding sphere of the model asset and estimate how far the camera needs to be see all of it
-                Vector3 center = {};
-                float radius = {};
-                m_modelAsset->GetAabb().GetAsSphere(center, radius);
-
-                const auto distance = radius + NearDist;
-                const auto cameraRotation = Quaternion::CreateFromAxisAngle(Vector3::CreateAxisZ(), CameraRotationAngle);
-                const auto cameraPosition = center - cameraRotation.TransformVector(Vector3(0.0f, distance, 0.0f));
-                const auto cameraTransform = Transform::CreateFromQuaternionAndTranslation(cameraRotation, cameraPosition);
-                m_view->SetCameraTransform(Matrix3x4::CreateFromTransform(cameraTransform));
-            }
-
-            RPI::AttachmentReadback::CallbackFunction CommonPreviewRenderer::GetCaptureCallback()
-            {
-                return [this](const RPI::AttachmentReadback::ReadbackResult& result)
-                {
-                    if (result.m_dataBuffer)
-                    {
-                        QImage image(
-                            result.m_dataBuffer.get()->data(), result.m_imageDescriptor.m_size.m_width,
-                            result.m_imageDescriptor.m_size.m_height, QImage::Format_RGBA8888);
-
-                        AzToolsFramework::Thumbnailer::ThumbnailerRendererNotificationBus::Event(
-                            m_currentThubnailInfo.m_key,
-                            &AzToolsFramework::Thumbnailer::ThumbnailerRendererNotifications::ThumbnailRendered, QPixmap::fromImage(image));
-                    }
-                    else
-                    {
-                        AzToolsFramework::Thumbnailer::ThumbnailerRendererNotificationBus::Event(
-                            m_currentThubnailInfo.m_key,
-                            &AzToolsFramework::Thumbnailer::ThumbnailerRendererNotifications::ThumbnailFailedToRender);
-                    }
-                };
+                m_currentCaptureRequest.m_content->UpdateScene();
             }
 
             bool CommonPreviewRenderer::StartCapture()
             {
+                auto captureCallback =
+                    [currentCaptureRequest = m_currentCaptureRequest](const RPI::AttachmentReadback::ReadbackResult& result)
+                {
+                    if (result.m_dataBuffer)
+                    {
+                        currentCaptureRequest.m_captureCompleteCallback(QImage(
+                            result.m_dataBuffer.get()->data(), result.m_imageDescriptor.m_size.m_width,
+                            result.m_imageDescriptor.m_size.m_height, QImage::Format_RGBA8888));
+                    }
+                    else
+                    {
+                        currentCaptureRequest.m_captureFailedCallback();
+                    }
+                };
+
                 if (auto renderToTexturePass = azrtti_cast<AZ::RPI::RenderToTexturePass*>(m_renderPipeline->GetRootPass().get()))
                 {
-                    renderToTexturePass->ResizeOutput(m_currentThubnailInfo.m_size, m_currentThubnailInfo.m_size);
+                    renderToTexturePass->ResizeOutput(m_currentCaptureRequest.m_size, m_currentCaptureRequest.m_size);
                 }
 
                 m_renderPipeline->AddToRenderTickOnce();
@@ -332,18 +218,13 @@ namespace AZ
                 bool startedCapture = false;
                 Render::FrameCaptureRequestBus::BroadcastResult(
                     startedCapture, &Render::FrameCaptureRequestBus::Events::CapturePassAttachmentWithCallback, m_passHierarchy,
-                    AZStd::string("Output"), GetCaptureCallback(), RPI::PassAttachmentReadbackOption::Output);
+                    AZStd::string("Output"), captureCallback, RPI::PassAttachmentReadbackOption::Output);
                 return startedCapture;
             }
 
             void CommonPreviewRenderer::EndCapture()
             {
                 m_renderPipeline->RemoveFromRenderTick();
-            }
-
-            bool CommonPreviewRenderer::Installed() const
-            {
-                return true;
             }
 
             void CommonPreviewRenderer::OnSystemTick()
@@ -372,10 +253,32 @@ namespace AZ
                     "AZ::Render::PostProcessFeatureProcessor",
                     "AZ::Render::SkyBoxFeatureProcessor" });
             }
-            
+
             void CommonPreviewRenderer::RenderThumbnail(AzToolsFramework::Thumbnailer::SharedThumbnailKey thumbnailKey, int thumbnailSize)
             {
-                m_thumbnailInfoQueue.push({ thumbnailKey, thumbnailSize });
+                AddCaptureRequest(
+                    { thumbnailSize,
+                      AZStd::make_shared<CommonPreviewContent>(
+                          m_scene, m_view, m_entityContext->GetContextId(),
+                          GetAssetId(thumbnailKey, RPI::ModelAsset::RTTI_Type()),
+                          GetAssetId(thumbnailKey, RPI::MaterialAsset::RTTI_Type()),
+                          GetAssetId(thumbnailKey, RPI::AnyAsset::RTTI_Type())),
+                          [thumbnailKey]()
+                          {
+                              AzToolsFramework::Thumbnailer::ThumbnailerRendererNotificationBus::Event(
+                                  thumbnailKey, &AzToolsFramework::Thumbnailer::ThumbnailerRendererNotifications::ThumbnailFailedToRender);
+                          },
+                          [thumbnailKey](const QImage& image)
+                          {
+                              AzToolsFramework::Thumbnailer::ThumbnailerRendererNotificationBus::Event(
+                                  thumbnailKey, &AzToolsFramework::Thumbnailer::ThumbnailerRendererNotifications::ThumbnailRendered,
+                                  QPixmap::fromImage(image));
+                          } });
+            }
+
+            bool CommonPreviewRenderer::Installed() const
+            {
+                return true;
             }
         } // namespace Thumbnails
     } // namespace LyIntegration
