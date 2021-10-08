@@ -9,8 +9,8 @@
 
     "RasterState" :
     {
-        "depthBias" : "10",
-        "depthBiasSlopeScale" : "4"        
+        "depthBias" : "0",
+        "depthBiasSlopeScale" : "0"        
     },
 
     "ProgramSettings":

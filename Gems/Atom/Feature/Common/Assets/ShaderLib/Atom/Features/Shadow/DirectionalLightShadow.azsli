@@ -115,27 +115,31 @@ void DirectionalLightShadow::GetShadowCoords(
     out float3 shadowCoords[ViewSrg::MaxCascadeCount])
 {
     // http://web.archive.org/web/20140810230446/https://www.dissidentlogic.com/old/#Normal%20Offset%20Shadows
-    const float shadowmapSize = 2.0f * ViewSrg::m_directionalLightShadows[lightIndex].m_invShadowmapSize;
+    const float shadowmapSize = 2.0f / ViewSrg::m_directionalLightShadows[lightIndex].m_shadowmapSize;
+    const float shadowBias = ViewSrg::m_directionalLightShadows[lightIndex].m_shadowBias;
 
-    const float4x4 depthBiasMatrices[ViewSrg::MaxCascadeCount] = 
-        ViewSrg::m_directionalLightShadows[lightIndex].m_depthBiasMatrices;
+    const float4x4 depthBiasMatrices[ViewSrg::MaxCascadeCount] = ViewSrg::m_directionalLightShadows[lightIndex].m_depthBiasMatrices;
+    const float4x4 lightViewToShadowmapMatrices[ViewSrg::MaxCascadeCount] = ViewSrg::m_directionalLightShadows[lightIndex].m_lightViewToShadowmapMatrices;
+    const float4x4 worldToLightViewMatrices[ViewSrg::MaxCascadeCount] = ViewSrg::m_directionalLightShadows[lightIndex].m_worldToLightViewMatrices;
+
     const uint cascadeCount = ViewSrg::m_directionalLightShadows[lightIndex].m_cascadeCount;
-
     const float normalOffsetBias = ViewSrg::m_directionalLightShadows[lightIndex].m_normalOffsetBias;
 
-    float4 ShadowOffset;
+    float3 shadowOffset = 0;
     if (o_directional_shadow_filtering_method == ShadowFilterMethod::Pcf)
     {
-        const float ShadowNormalOffset = 1.0f; // MKR - wtf is ths?
-        ShadowOffset = float4(worldNormal * ShadowNormalOffset * normalOffsetBias * shadowmapSize, 0);  
+        shadowOffset = float3(worldNormal * normalOffsetBias * shadowmapSize);  
     }
 
     for (uint index = 0; index < cascadeCount; ++index)
     {
         const float4x4 depthBiasMatrix = depthBiasMatrices[index];
-        const float4 shadowCoordHomogeneous = mul(depthBiasMatrix, 
-            float4(worldPosition + ShadowOffset.xyz, 1.));
-        shadowCoords[index] = shadowCoordHomogeneous.xyz / shadowCoordHomogeneous.w;
+        
+        float4 lightSpacePos = mul(worldToLightViewMatrices[index], float4(worldPosition + shadowOffset, 1.));
+        lightSpacePos.z += shadowBias;
+        
+        const float4 clipSpacePos = mul(lightViewToShadowmapMatrices[index], lightSpacePos);                
+        shadowCoords[index] = clipSpacePos.xyz / clipSpacePos.w;
     }
 }
 
@@ -247,23 +251,20 @@ float DirectionalLightShadow::GetVisibilityFromLightEsm()
     {
         const float3 shadowCoord = m_shadowCoords[indexOfCascade];
         const float distanceMin = ViewSrg::m_esmsDirectional[indexOfCascade].m_lightDistanceOfCameraViewFrustum;
-        bool2 checkedShadowed = IsShadowed(shadowCoord, indexOfCascade);
+        const bool2 checkedShadowed = IsShadowed(shadowCoord, indexOfCascade);
         const float depthDiff = shadowCoord.z - distanceMin;
         if (checkedShadowed.x && depthDiff >= 0)
         {
             const float distanceWithinCameraView = depthDiff / (1. - distanceMin);
             const float3 coord = float3(shadowCoord.xy, indexOfCascade);
-            const float occluder = expShadowmap.Sample(PassSrg::LinearSampler, coord).r;                        
-            const float exponent = -EsmExponentialShift * (distanceWithinCameraView - occluder);
-            float ratio = exp(exponent);
 
-            ratio = SampleESM(expShadowmap, PassSrg::LinearSampler, coord, distanceWithinCameraView, EsmExponentialShift);
-
+            const float ratio = SampleESM(expShadowmap, PassSrg::LinearSampler, coord, distanceWithinCameraView, EsmExponentialShift);
+        
             m_debugInfo.m_cascadeIndex = indexOfCascade;
             return saturate(ratio);
         }
     }
-
+    
     m_debugInfo.m_cascadeIndex = cascadeCount;
     return 1.;
 }
@@ -308,12 +309,11 @@ float DirectionalLightShadow::GetVisibilityFromLightEsmPcf()
     return 1.;
 }
 
-// MKR
 float DirectionalLightShadow::SamplePcfBicubic(float3 shadowCoord, uint indexOfCascade)
 {
     const uint filteringSampleCount = ViewSrg::m_directionalLightShadows[m_lightIndex].m_filteringSampleCount;
     const float size = ViewSrg::m_directionalLightShadows[m_lightIndex].m_shadowmapSize;
-        
+    
     const uint cascadeCount = ViewSrg::m_directionalLightShadows[m_lightIndex].m_cascadeCount;
     Texture2DArray<float> shadowmap = PassSrg::m_directionalLightShadowmap;
 

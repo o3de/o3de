@@ -154,8 +154,10 @@ namespace AZ
             virtual void SetShadowFilterMethod(ShadowFilterMethod method) = 0;
 
             virtual float GetNormalOffsetBias() const = 0;
-
             virtual void SetNormalOffsetBias(float width) = 0;
+
+            virtual float GetShadowBias() const = 0;
+            virtual void SetShadowBias(float width) = 0;
 
             //! This gets the sample count for filtering of the shadow boundary.
             //! @return Sample Count for filtering (up to 64)

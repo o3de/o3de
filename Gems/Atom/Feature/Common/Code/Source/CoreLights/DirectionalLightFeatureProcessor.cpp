@@ -429,7 +429,6 @@ namespace AZ
             {
                 DirectionalLightShadowData& shadowData = it.second.GetData(handle.GetIndex());
                 shadowData.m_shadowmapSize = aznumeric_cast<uint32_t>(size);
-                shadowData.m_invShadowmapSize = 1.0f / aznumeric_cast<float>(size);
             }
             SetShadowmapImageSizeArraySize(handle);
         }
@@ -591,6 +590,15 @@ namespace AZ
             for (auto& it : m_shadowData)
             {
                 it.second.GetData(handle.GetIndex()).m_normalOffsetBias = normalOffsetBias;
+            }
+            m_shadowBufferNeedsUpdate = true;
+        }
+
+        void DirectionalLightFeatureProcessor::SetShadowBias(LightHandle handle, float bias)
+        {
+            for (auto& it : m_shadowData)
+            {
+                it.second.GetData(handle.GetIndex()).m_shadowBias = bias;
             }
             m_shadowBufferNeedsUpdate = true;
         }

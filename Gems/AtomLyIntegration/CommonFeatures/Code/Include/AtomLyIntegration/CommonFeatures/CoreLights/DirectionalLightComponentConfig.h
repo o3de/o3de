@@ -102,6 +102,7 @@ namespace AZ
             ShadowFilterMethod m_shadowFilterMethod = ShadowFilterMethod::None;
 
             float m_normalOffsetBias = 1.0f;
+            float m_shadowBias = 0.01f;
 
             //! Sample Count for filtering (from 4 to 64)
             //! It is used only when the pixel is predicted as on the boundary.

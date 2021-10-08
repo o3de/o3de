@@ -77,7 +77,9 @@ namespace AZ
             ShadowFilterMethod GetShadowFilterMethod() const override;
             void SetShadowFilterMethod(ShadowFilterMethod method) override;
             float GetNormalOffsetBias() const override;
+            float GetShadowBias() const override;
             void SetNormalOffsetBias(float width) override;
+            void SetShadowBias(float width) override;
             uint32_t GetFilteringSampleCount() const override;
             void SetFilteringSampleCount(uint32_t count) override;
             bool GetShadowReceiverPlaneBiasEnabled() const override;

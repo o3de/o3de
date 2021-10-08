@@ -110,7 +110,7 @@ partial ShaderResourceGroup ViewSrg
         float4x4 m_worldToLightViewMatrices[MaxCascadeCount];
         float m_slopeBiasBase[MaxCascadeCount];
         uint m_shadowmapSize; // width and height of shadowmap
-        float m_invShadowmapSize; // inverse of m_shadowmapSize 
+        float m_shadowBias; 
         uint m_cascadeCount;
         float m_normalOffsetBias;
         uint m_filteringSampleCount;

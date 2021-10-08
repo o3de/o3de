@@ -82,6 +82,8 @@ namespace AZ
                     ->Event("SetShadowFilterMethod", &DirectionalLightRequestBus::Events::SetShadowFilterMethod)
                     ->Event("GetNormalOffsetBias", &DirectionalLightRequestBus::Events::GetNormalOffsetBias)
                     ->Event("SetNormalOffsetBias", &DirectionalLightRequestBus::Events::SetNormalOffsetBias)
+                    ->Event("GetShadowBias", &DirectionalLightRequestBus::Events::GetShadowBias)
+                    ->Event("SetShadowBias", &DirectionalLightRequestBus::Events::SetShadowBias)
                     ->Event("GetFilteringSampleCount", &DirectionalLightRequestBus::Events::GetFilteringSampleCount)
                     ->Event("SetFilteringSampleCount", &DirectionalLightRequestBus::Events::SetFilteringSampleCount)
                     ->Event("GetShadowReceiverPlaneBiasEnabled", &DirectionalLightRequestBus::Events::GetShadowReceiverPlaneBiasEnabled)
@@ -100,6 +102,7 @@ namespace AZ
                     ->VirtualProperty("DebugColoringEnabled", "GetDebugColoringEnabled", "SetDebugColoringEnabled")
                     ->VirtualProperty("ShadowFilterMethod", "GetShadowFilterMethod", "SetShadowFilterMethod")
                     ->VirtualProperty("NormalOffsetBias", "GetNormalOffsetBias", "SetNormalOffsetBias")
+                    ->VirtualProperty("ShadowBias", "GetShadowBias", "SetShadowBias")
                     ->VirtualProperty("FilteringSampleCount", "GetFilteringSampleCount", "SetFilteringSampleCount")
                     ->VirtualProperty("ShadowReceiverPlaneBiasEnabled", "GetShadowReceiverPlaneBiasEnabled", "SetShadowReceiverPlaneBiasEnabled");
                 ;
@@ -409,6 +412,11 @@ namespace AZ
             return m_configuration.m_normalOffsetBias;
         }
 
+        float DirectionalLightComponentController::GetShadowBias() const
+        {
+            return m_configuration.m_shadowBias;
+        }
+
         void DirectionalLightComponentController::SetNormalOffsetBias(float width)
         {
           //  width = GetMin(Shadow::MaxSofteningBoundaryWidth, GetMax(0.f, width));
@@ -416,6 +424,15 @@ namespace AZ
             if (m_featureProcessor)
             {
                 m_featureProcessor->SetNormalOffsetBias(m_lightHandle, width);
+            }
+        }
+
+        void DirectionalLightComponentController::SetShadowBias(float width)
+        {
+            m_configuration.m_shadowBias = width;
+            if (m_featureProcessor)
+            {
+                m_featureProcessor->SetShadowBias(m_lightHandle, width);
             }
         }
 
@@ -518,6 +535,7 @@ namespace AZ
             SetDebugColoringEnabled(m_configuration.m_isDebugColoringEnabled);
             SetShadowFilterMethod(m_configuration.m_shadowFilterMethod);
             SetNormalOffsetBias(m_configuration.m_normalOffsetBias);
+            SetShadowBias(m_configuration.m_shadowBias);
             SetFilteringSampleCount(m_configuration.m_filteringSampleCount);
             SetShadowReceiverPlaneBiasEnabled(m_configuration.m_receiverPlaneBiasEnabled);
 

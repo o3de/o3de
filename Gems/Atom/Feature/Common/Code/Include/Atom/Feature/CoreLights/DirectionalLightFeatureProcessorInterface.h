@@ -160,6 +160,8 @@ namespace AZ
             //! If width == 0, softening edge is disabled. Units are in meters.
             virtual void SetNormalOffsetBias(LightHandle handle, float boundaryWidth) = 0;
 
+            virtual void SetShadowBias(LightHandle handle, float bias) = 0;
+
             //! Sets whether the directional shadowmap should use receiver plane bias.
             //! This attempts to reduce shadow acne when using large pcf filters.
             virtual void SetShadowReceiverPlaneBiasEnabled(LightHandle handle, bool enable) = 0;

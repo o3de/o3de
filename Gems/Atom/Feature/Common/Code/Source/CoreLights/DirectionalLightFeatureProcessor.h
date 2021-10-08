@@ -95,7 +95,7 @@ namespace AZ
                 0.f, 0.f, 0.f, 0.f
             };
             uint32_t m_shadowmapSize = 1; // width and height of shadowmap
-            float m_invShadowmapSize = 1.f;
+            float m_shadowBias = 0.01f;
             uint32_t m_cascadeCount = 1;
             float m_normalOffsetBias = 1.0f;
             uint32_t m_filteringSampleCount = 0;
@@ -218,6 +218,7 @@ namespace AZ
             void SetShadowFilterMethod(LightHandle handle, ShadowFilterMethod method) override;
             void SetFilteringSampleCount(LightHandle handle, uint16_t count) override;
             void SetNormalOffsetBias(LightHandle handle, float boundaryWidth) override;
+            void SetShadowBias(LightHandle handle, float boundaryWidth) override;
             void SetShadowReceiverPlaneBiasEnabled(LightHandle handle, bool enable) override;
 
             const Data::Instance<RPI::Buffer> GetLightBuffer() const;

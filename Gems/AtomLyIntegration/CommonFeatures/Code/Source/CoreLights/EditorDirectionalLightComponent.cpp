@@ -139,8 +139,17 @@ namespace AZ
                             "If this is 0, normal offset bias.")
                             ->Attribute(Edit::Attributes::Min, 0.f)
                             ->Attribute(Edit::Attributes::Max, 10.0f)
-                            ->Attribute(Edit::Attributes::Suffix, " m")
                             ->Attribute(Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
+
+                        ->DataElement(
+                            Edit::UIHandlers::Slider, &DirectionalLightComponentConfig::m_shadowBias, "Shadow Bias",
+                            "Shadow bias. "
+                            "Units are in ???. "
+                            "If this is 0, normal offset bias.")
+                            ->Attribute(Edit::Attributes::Min, 0.f)
+                            ->Attribute(Edit::Attributes::Max, 0.2)
+                            ->Attribute(Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
+
                         ->DataElement(Edit::UIHandlers::Slider, &DirectionalLightComponentConfig::m_filteringSampleCount, "Filtering sample count",
                             "This is used only when the pixel is predicted as on the boundary. "
                             "Specific to PCF and ESM+PCF.")
