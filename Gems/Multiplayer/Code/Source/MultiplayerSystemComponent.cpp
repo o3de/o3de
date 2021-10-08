@@ -497,6 +497,8 @@ namespace Multiplayer
         AZ::Interface<AZ::IConsole>::Get()->PerformCommand(commandString.c_str());
         AZ::CVarFixedString loadLevelString = "LoadLevel " + packet.GetMap();
         AZ::Interface<AZ::IConsole>::Get()->PerformCommand(loadLevelString.c_str());
+
+        m_serverAcceptanceReceivedEvent.Signal();
         return true;
     }
 
@@ -832,6 +834,11 @@ namespace Multiplayer
     void MultiplayerSystemComponent::AddConnectionAcquiredHandler(ConnectionAcquiredEvent::Handler& handler)
     {
         handler.Connect(m_connectionAcquiredEvent);
+    }
+
+    void MultiplayerSystemComponent::AddServerAcceptanceReceivedHandler(ServerAcceptanceReceivedEvent::Handler& handler)
+    {
+        handler.Connect(m_serverAcceptanceReceivedEvent);
     }
 
     void MultiplayerSystemComponent::AddSessionInitHandler(SessionInitEvent::Handler& handler)

@@ -41,6 +41,7 @@ namespace AzToolsFramework
 {
     class EditorEntityUiInterface;
     class EntityOutlinerListModel;
+    class EntityOutlinerContainerProxyModel;
     class EntityOutlinerSortFilterProxyModel;
 
     namespace EntityOutliner
@@ -117,6 +118,7 @@ namespace AzToolsFramework
 
         Ui::EntityOutlinerWidgetUI* m_gui;
         EntityOutlinerListModel* m_listModel;
+        EntityOutlinerContainerProxyModel* m_containerModel;
         EntityOutlinerSortFilterProxyModel* m_proxyModel;
         AZ::u64 m_selectionContextId;
         AZStd::vector<AZ::EntityId> m_selectedEntityIds;

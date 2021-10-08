@@ -878,6 +878,11 @@ namespace AZ
                 const AMD::TressFXRenderingSettings* parameters, const int nodePoolSize,
                 float distance, bool shadowUpdate /*= false*/)
             {
+                if (!parameters)
+                {
+                    parameters = m_renderSettings;
+                }
+
                 // Update Render Parameters
                 // If you alter FiberRadius make sure to change it also in the material properties
                 // passed by the Feature Processor for the shading. 
@@ -888,7 +893,7 @@ namespace AZ
 
                 // original TressFX lighting parameters - two specular lobes approximating
                 // the Marschner R and and TRT lobes + diffuse component. 
-                m_renderCB->MatKValue = {{{0.f, parameters->m_HairKDiffuse, parameters->m_HairKSpec1, parameters->m_HairSpecExp1}}};
+                m_renderCB->MatKValue = { {{0.f, parameters->m_HairKDiffuse, parameters->m_HairKSpec1, parameters->m_HairSpecExp1}} };
                 m_renderCB->HairKs2 = parameters->m_HairKSpec2;
                 m_renderCB->HairEx2 = parameters->m_HairSpecExp2;
 
@@ -903,11 +908,13 @@ namespace AZ
                 m_strandCB->TipPercentage = parameters->m_TipPercentage;
                 m_strandCB->StrandUVTilingFactor = parameters->m_StrandUVTilingFactor;
                 m_strandCB->FiberRatio = parameters->m_FiberRatio;
+                m_strandCB->EnableThinTip = parameters->m_EnableThinTip;
+                m_strandCB->EnableStrandUV = parameters->m_EnableStrandUV;
 
                 // Reset LOD hair density for the frame
                 m_LODHairDensity = 1.f;
+                float fiberRadius = parameters->m_FiberRadius;
 
-                float FiberRadius = parameters->m_FiberRadius;
                 if (parameters->m_EnableHairLOD)
                 {
                     float MinLODDist = shadowUpdate ?
@@ -922,23 +929,18 @@ namespace AZ
                         float DistanceRatio = AZStd::min((distance - MinLODDist) / AZStd::max(MaxLODDist - MinLODDist, 0.00001f), 1.f);
 
                         // Lerp: x + s(y-x)
-                        float MaxLODFiberRadius = FiberRadius * (shadowUpdate ? parameters->m_ShadowLODWidthMultiplier : parameters->m_LODWidthMultiplier);
-                        FiberRadius = FiberRadius + (DistanceRatio * (MaxLODFiberRadius - FiberRadius));
+                        float MaxLODFiberRadius = fiberRadius * (shadowUpdate ? parameters->m_ShadowLODWidthMultiplier : parameters->m_LODWidthMultiplier);
+                        fiberRadius = fiberRadius + (DistanceRatio * (MaxLODFiberRadius - fiberRadius));
 
                         // Lerp: x + s(y-x)
                         m_LODHairDensity = 1.f + (DistanceRatio * ((shadowUpdate ? parameters->m_ShadowLODPercent : parameters->m_LODPercent) - 1.f));
                     }
                 }
 
-                m_strandCB->FiberRadius = FiberRadius;
-
-                m_strandCB->NumVerticesPerStrand = m_NumVerticesPerStrand;  // Always constant
-                m_strandCB->EnableThinTip = parameters->m_EnableThinTip;
+                m_strandCB->FiberRadius = fiberRadius;
+                m_strandCB->NumVerticesPerStrand = m_NumVerticesPerStrand;  // Constant through the run per object
                 m_strandCB->NodePoolSize = nodePoolSize;
-                m_strandCB->RenderParamsIndex = m_RenderIndex;              // Always constant
-
-                m_strandCB->EnableStrandUV = parameters->m_EnableStrandUV;
-                m_strandCB->EnableStrandTangent = parameters->m_EnableStrandTangent;
+                m_strandCB->RenderParamsIndex = m_RenderIndex;      // Per Objects specific according to its index in the FP
             }
 
             //!=====================================================================================
@@ -977,8 +979,10 @@ namespace AZ
                 UpdateSimulationParameters(simSettings, SIMULATION_TIME_STEP); 
 
                 // [To Do] Hair - change to be dynamically calculated
-                const float distanceFromCamera = 1.0; 
+                const float distanceFromCamera = 1.0f; 
                 const float updateShadows = false;
+                m_renderSettings = renderSettings;
+                m_simSettings = simSettings;
                 UpdateRenderingParameters(renderSettings, RESERVED_PIXELS_FOR_OIT, distanceFromCamera, updateShadows);
 
                 if (!GetShaders())

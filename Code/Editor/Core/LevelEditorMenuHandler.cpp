@@ -487,8 +487,6 @@ void LevelEditorMenuHandler::PopulateEditMenu(ActionManager::MenuWrapper& editMe
     editMenu.AddAction(AzToolsFramework::EditPivot);
     editMenu.AddAction(AzToolsFramework::EditReset);
     editMenu.AddAction(AzToolsFramework::EditResetManipulator);
-    editMenu.AddAction(AzToolsFramework::EditResetLocal);
-    editMenu.AddAction(AzToolsFramework::EditResetWorld);
 
     // Hide Selection
     editMenu.AddAction(AzToolsFramework::HideSelection);

@@ -262,11 +262,10 @@ namespace UnitTestUtils
 
             AZ::IO::FileIOBase::SetInstance(m_localFileIO);
 
-            m_localFileIO->SetAlias("@assets@", (newDir + QString("/ALIAS/assets")).toUtf8().constData());
+            m_localFileIO->SetAlias("@products@", (newDir + QString("/ALIAS/assets")).toUtf8().constData());
             m_localFileIO->SetAlias("@log@", (newDir + QString("/ALIAS/logs")).toUtf8().constData());
             m_localFileIO->SetAlias("@usercache@", (newDir + QString("/ALIAS/cache")).toUtf8().constData());
             m_localFileIO->SetAlias("@user@", (newDir + QString("/ALIAS/user")).toUtf8().constData());
-            m_localFileIO->SetAlias("@root@", (newDir + QString("/ALIAS/root")).toUtf8().constData());
         }
 
         ~ScopedDir()
