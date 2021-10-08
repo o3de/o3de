@@ -11,7 +11,6 @@
 #include <AzCore/std/smart_ptr/shared_ptr.h>
 #include <AzCore/Component/TickBus.h>
 
-#include <AzFramework/Asset/AssetCatalogBus.h>
 #include <AzFramework/Scene/Scene.h>
 #include <AzFramework/Scene/SceneSystemInterface.h>
 #include <AzFramework/Windowing/NativeWindow.h>
@@ -29,6 +28,7 @@
 #include <Atom/Bootstrap/DefaultWindowBus.h>
 #include <Atom/Bootstrap/BootstrapRequestBus.h>
 
+#include <IGem.h>
 
 namespace AZ
 {
@@ -40,11 +40,11 @@ namespace AZ
                 : public Component
                 , public TickBus::Handler
                 , public AzFramework::WindowNotificationBus::Handler
-                , public AzFramework::AssetCatalogEventBus::Handler
                 , public AzFramework::WindowSystemNotificationBus::Handler
                 , public AzFramework::WindowSystemRequestBus::Handler
                 , public Render::Bootstrap::DefaultWindowBus::Handler
                 , public Render::Bootstrap::RequestBus::Handler
+                , public CryHooksModule
             {
             public:
                 AZ_COMPONENT(BootstrapSystemComponent, "{1EAFD87D-A64A-4612-93D8-B3AFFA70F09B}");
@@ -70,6 +70,8 @@ namespace AZ
                 AZ::RPI::ScenePtr GetOrCreateAtomSceneFromAzScene(AzFramework::Scene* scene) override;
                 bool EnsureDefaultRenderPipelineInstalledForScene(AZ::RPI::ScenePtr scene, AZ::RPI::ViewportContextPtr viewportContext) override;
 
+                void OnSystemEvent(ESystemEvent event, UINT_PTR wparam, UINT_PTR lparam) override;
+
             protected:
                 // Component overrides ...
                 void Activate() override;
@@ -82,13 +84,12 @@ namespace AZ
                 void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
                 int GetTickOrder() override;
 
-                // AzFramework::AssetCatalogEventBus::Handler overrides ...
-                void OnCatalogLoaded(const char* catalogFile) override;
-
                 // AzFramework::WindowSystemNotificationBus::Handler overrides ...
                 void OnWindowCreated(AzFramework::NativeWindowHandle windowHandle) override;
 
             private:
+                void Initialize();
+
                 void CreateDefaultRenderPipeline();
                 void CreateDefaultScene();
                 void DestroyDefaultScene();

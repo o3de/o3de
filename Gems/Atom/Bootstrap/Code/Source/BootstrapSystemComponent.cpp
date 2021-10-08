@@ -129,7 +129,6 @@ namespace AZ
                     m_createDefaultScene = false;
                 }
 
-                AzFramework::AssetCatalogEventBus::Handler::BusConnect();
                 TickBus::Handler::BusConnect();
 
                 // Listen for window system requests (e.g. requests for default window handle)
@@ -150,7 +149,6 @@ namespace AZ
                 AzFramework::WindowSystemRequestBus::Handler::BusDisconnect();
                 AzFramework::WindowSystemNotificationBus::Handler::BusDisconnect();
                 TickBus::Handler::BusDisconnect();
-                AzFramework::AssetCatalogEventBus::Handler::BusDisconnect();
 
                 m_brdfTexture = nullptr;
                 RemoveRenderPipeline();
@@ -161,7 +159,19 @@ namespace AZ
                 m_windowHandle = nullptr;
             }
 
-            void BootstrapSystemComponent::OnCatalogLoaded(const char* /*catalogFile*/)
+            void BootstrapSystemComponent::OnSystemEvent(ESystemEvent event, UINT_PTR /*wparam*/, UINT_PTR /*lparam*/)
+            {
+                switch (event)
+                {
+                case ESYSTEM_EVENT_GAME_POST_INIT:
+                    {
+                        Initialize();
+                        break;
+                    }
+                }
+            }
+
+            void BootstrapSystemComponent::Initialize()
             {
                 if (m_isAssetCatalogLoaded)
                 {
