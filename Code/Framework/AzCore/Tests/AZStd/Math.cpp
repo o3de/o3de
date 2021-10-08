@@ -25,7 +25,6 @@ namespace UnitTest
         using ::testing::Eq;
         using T = TypeParam;
 
-        constexpr T inf = AZStd::numeric_limits<T>::infinity();
         constexpr T maxNumber = AZStd::numeric_limits<T>::max();
         constexpr T eps = AZStd::numeric_limits<T>::epsilon();
         constexpr T a{ 42 };
