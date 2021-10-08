@@ -25,20 +25,20 @@ TEST_DIRECTORY = os.path.join(os.path.dirname(__file__), "tests")
 class TestAtomEditorComponentsMain(object):
     """Holds tests for Atom components."""
 
+    @pytest.mark.test_case_id("C32078118")  # Decal
+    @pytest.mark.test_case_id("C32078119")  # DepthOfField
+    @pytest.mark.test_case_id("C32078121")  # Exposure Control
+    @pytest.mark.test_case_id("C32078115")  # Global Skylight (IBL)
+    @pytest.mark.test_case_id("C32078125")  # Physical Sky
+    @pytest.mark.test_case_id("C32078127")  # PostFX Layer
+    @pytest.mark.test_case_id("C32078131")  # PostFX Radius Weight Modifier
+    @pytest.mark.test_case_id("C32078117")  # Light
+    @pytest.mark.test_case_id("C36525660")  # Display Mapper
+    @pytest.mark.test_case_id("C32078128")  # Reflection Probe
     def test_AtomEditorComponents_AddedToEntity(self, request, editor, level, workspace, project, launcher_platform):
         """
         Please review the hydra script run by this test for more specific test info.
-        Tests the following Atom components and verifies all "expected_lines" appear in Editor.log:
-        1. Display Mapper
-        2. Light
-        3. PostFX Radius Weight Modifier
-        4. PostFX Layer
-        5. Physical Sky
-        6. Global Skylight (IBL)
-        7. Exposure Control
-        8. Directional Light
-        9. DepthOfField
-        10. Decal
+        Tests the Atom components & verifies all "expected_lines" appear in Editor.log
         """
         cfg_args = [level]
 
@@ -197,6 +197,7 @@ class TestAtomEditorComponentsMain(object):
             cfg_args=cfg_args,
         )
 
+    @pytest.mark.test_case_id("C34525095")
     def test_AtomEditorComponents_LightComponent(
             self, request, editor, workspace, project, launcher_platform, level):
         """
