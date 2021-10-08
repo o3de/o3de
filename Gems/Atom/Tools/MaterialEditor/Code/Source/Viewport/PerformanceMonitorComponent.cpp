@@ -98,7 +98,7 @@ namespace MaterialEditor
         double frameTime = AZ::RHI::RHISystemInterface::Get()->GetCpuFrameTime();
         if (frameTime > 0)
         {
-            m_cpuFrameTimeMs.PushSample((frameTime * 1000) / aznumeric_cast<double>(AZStd::GetTimeTicksPerSecond()));
+            m_cpuFrameTimeMs.PushSample(frameTime);
         }
 
         AZ::RHI::Ptr<AZ::RPI::ParentPass> rootPass = AZ::RPI::PassSystemInterface::Get()->GetRootPass();

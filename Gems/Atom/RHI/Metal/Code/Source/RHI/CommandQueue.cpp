@@ -116,7 +116,7 @@ namespace AZ
                      @autoreleasepool
                      {
                          AZ_PROFILE_SCOPE(RHI, "ExecuteWork");
-                         AZ::Debug::VariableTimer executionTimer(m_lastExecuteDuration);
+                         AZ::Debug::ScopedTimer executionTimer(m_lastExecuteDuration);
                          
                          if (request.m_signalFenceValue > 0)
                          {
@@ -129,7 +129,7 @@ namespace AZ
                          }
                          
                          {
-                             AZ::Debug::VariableTimer presentTimer(m_lastPresentDuration);
+                             AZ::Debug::ScopedTimer presentTimer(m_lastPresentDuration);
                          
                              for (RHI::SwapChain* swapChain : request.m_swapChainsToPresent)
                              {

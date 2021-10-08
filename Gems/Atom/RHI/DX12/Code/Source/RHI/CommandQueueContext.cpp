@@ -191,7 +191,7 @@ namespace AZ
                 AZStd::sys_time_t presentDuration = 0;
                 for (const RHI::Ptr<CommandQueue>& commandQueue : m_commandQueues)
                 {
-                    const AZ::Crc32 commandQueueId(commandQueue->GetName().GetCStr());
+                    const AZ::Crc32 commandQueueId(commandQueue->GetName().GetHash());
                     rhiMetrics.PushSample(commandQueueId, static_cast<double>(commandQueue->GetLastExecuteDuration()));
                     presentDuration += commandQueue->GetLastPresentDuration();
                 }

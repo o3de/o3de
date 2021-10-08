@@ -139,7 +139,7 @@ namespace AZ
             QueueCommand([=](void* commandQueue)
             {
                 AZ_PROFILE_SCOPE(RHI, "ExecuteWork");
-                AZ::Debug::VariableTimer executionTimer(m_lastExecuteDuration);
+                AZ::Debug::ScopedTimer executionTimer(m_lastExecuteDuration);
 
                 static const uint32_t CommandListCountMax = 128;
                 ID3D12CommandQueue* dx12CommandQueue = static_cast<ID3D12CommandQueue*>(commandQueue);
@@ -185,7 +185,7 @@ namespace AZ
                     dx12CommandQueue->Signal(fence->Get(), fence->GetPendingValue());
                 }
 
-                AZ::Debug::VariableTimer presentTimer(m_lastPresentDuration);
+                AZ::Debug::ScopedTimer presentTimer(m_lastPresentDuration);
                 for (RHI::SwapChain* swapChain : request.m_swapChainsToPresent)
                 {
                     swapChain->Present();

@@ -37,7 +37,7 @@ namespace AZ
     {
         static constexpr AZ::Crc32 rhiMetricsId = AZ_CRC_CE("RHI");
 
-        static constexpr char frameTimeMetricName[] = "Frame to Frame Time";
+        const constexpr char* frameTimeMetricName = "Frame to Frame Time";
         static constexpr AZ::Crc32 frameTimeMetricId = AZ_CRC_CE(frameTimeMetricName);
 
         ResultCode FrameScheduler::Init(Device& device, const FrameSchedulerDescriptor& descriptor)
@@ -610,7 +610,7 @@ namespace AZ
                 {
                     auto& rhiMetrics = statsProfiler->GetProfiler(rhiMetricsId);
                     const auto* frameTimeStat = rhiMetrics.GetStatistic(frameTimeMetricId);
-                    return frameTimeStat->GetMostRecentSample();
+                    return (frameTimeStat->GetMostRecentSample() * 1000) / aznumeric_cast<double>(AZStd::GetTimeTicksPerSecond());
                 }
             }
             return 0;

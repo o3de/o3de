@@ -47,7 +47,7 @@ namespace AZ
             QueueCommand([=](void* queue) 
             {
                 AZ_PROFILE_SCOPE(RHI, "ExecuteWork");
-                AZ::Debug::VariableTimer executionTimer(m_lastExecuteDuration);
+                AZ::Debug::ScopedTimer executionTimer(m_lastExecuteDuration);
 
                 Queue* vulkanQueue = static_cast<Queue*>(queue);
 
@@ -81,7 +81,7 @@ namespace AZ
                 }
 
                 {
-                    AZ::Debug::VariableTimer presentTimer(m_lastPresentDuration);
+                    AZ::Debug::ScopedTimer presentTimer(m_lastPresentDuration);
 
                     // present the image of the current frame.
                     for (RHI::SwapChain* swapChain : request.m_swapChainsToPresent)

@@ -49,15 +49,14 @@ namespace AZ
 
         //! Utility type that updates the given variable with the lifetime of the object in cycles.
         //! Useful for quick scope based timing.
-        struct VariableTimer
+        struct ScopedTimer
         {
-            VariableTimer() = delete;
-            VariableTimer(AZStd::sys_time_t& variable)
+            explicit ScopedTimer(AZStd::sys_time_t& variable)
                 : m_variable(variable)
             {
                 m_timer.Stamp();
             }
-            ~VariableTimer()
+            ~ScopedTimer()
             {
                 m_variable = m_timer.GetDeltaTimeInTicks();
             }

@@ -457,7 +457,6 @@ namespace AZ
                 serializationSettings.m_keepDefaults = true;
 
                 double frameTime = AZ::RHI::RHISystemInterface::Get()->GetCpuFrameTime();
-                frameTime = (frameTime * 1000) / aznumeric_cast<double>(AZStd::GetTimeTicksPerSecond());
                 AZ_Warning("ProfilingCaptureSystemComponent", frameTime > 0, "Failed to get Cpu frame time");
 
                 CpuFrameTimeSerializer serializer(frameTime);

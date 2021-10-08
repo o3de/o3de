@@ -37,14 +37,14 @@ namespace AZ
             {
                 auto& rhiMetrics = statsProfiler->GetProfiler(AZ_CRC_CE("RHI"));
 
-                const AZStd::string presentStatName("Present");
-                const AZ::Crc32 presentStatId(presentStatName.c_str());
+                static constexpr AZStd::string_view presentStatName("Present");
+                static constexpr AZ::Crc32 presentStatId(presentStatName);
                 rhiMetrics.GetStatsManager().AddStatistic(presentStatId, presentStatName, /*units=*/"clocks", /*failIfExist=*/false);
 
                 if (!GetName().IsEmpty())
                 {
                     const AZStd::string commandQueueName(GetName().GetCStr());
-                    const AZ::Crc32 commandQueueId(commandQueueName.c_str());
+                    const AZ::Crc32 commandQueueId(GetName().GetHash());
                     rhiMetrics.GetStatsManager().AddStatistic(commandQueueId, commandQueueName, /*units=*/"clocks", /*failIfExist=*/false);
                 }
             }
