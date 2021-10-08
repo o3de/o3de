@@ -6,7 +6,7 @@
  *
  */
 
-#include <Atom/Features/PBR/DefaultObjectSrg.azsli>
-#include <DepthPassCommon.azsli>
+#include <Atom/Features/Skin/SkinObjectSrg.azsli>
+#include <MeshMotionVectorCommon.azsli>
 
-// Use the depth pass shader with the default object srg
+// Use the mesh motion vector with the skin object srg

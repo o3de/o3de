@@ -9,7 +9,7 @@
 #include "Skin_Common.azsli"
 
 // SRGs
-#include <Atom/Features/PBR/DefaultObjectSrg.azsli>
+#include <Atom/Features/Skin/SkinObjectSrg.azsli>
 #include <Atom/Features/PBR/ForwardPassSrg.azsli>
 
 // Pass Output

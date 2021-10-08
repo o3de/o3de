@@ -10,7 +10,7 @@
 *
 */
 
-#include <Atom/Features/PBR/DefaultObjectSrg.azsli>
+#include <Atom/Features/Skin/SkinObjectSrg.azsli>
 #include <ShadowmapCommon.azsli>
 
-// Use the shadowmap shader with the default object srg
+// Use the shadowmap shader with the skin object srg
