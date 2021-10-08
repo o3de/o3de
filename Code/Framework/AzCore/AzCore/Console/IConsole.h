@@ -31,7 +31,8 @@ namespace AZ
 
         using FunctorVisitor = AZStd::function<void(ConsoleFunctorBase*)>;
 
-        inline static constexpr AZStd::string_view ConsoleRootCommandKey = "/Amazon/AzCore/Runtime/ConsoleCommands";
+        inline static constexpr AZStd::string_view ConsoleRuntimeCommandKey = "/Amazon/AzCore/Runtime/ConsoleCommands";
+        inline static constexpr AZStd::string_view ConsoleAutoexecCommandKey = "/O3DE/Autoexec/ConsoleCommands";
 
         IConsole() = default;
         virtual ~IConsole() = default;
