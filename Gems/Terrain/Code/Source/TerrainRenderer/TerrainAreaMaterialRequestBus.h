@@ -12,19 +12,12 @@
 
 #include <SurfaceData/SurfaceDataTypes.h>
 
+#include <Atom/RPI.Public/Material/Material.h>
+
+#include <TerrainRenderer/Components/TerrainSurfaceMaterialsListComponent.h>
+
 namespace Terrain
 {
-
-    struct SurfaceMaterialMapping
-    {
-        //AZ_TYPE_INFO(SurfaceMaterial, "{7061051D-922F-49FC-852D-CAA56BE92AB0}");
-
-        SurfaceData::SurfaceTag m_surfaceTag;
-        AZ::Data::Instance<AZ::RPI::Material> m_materialInstance;
-
-       // static void Reflect(AZ::ReflectContext* context);
-    };
-
     //! This bus provides retrieval of information from Terrain Surfaces.
     class TerrainAreaMaterialRequests
         : public AZ::ComponentBus
@@ -38,7 +31,7 @@ namespace Terrain
         virtual ~TerrainAreaMaterialRequests() = default;
 
         //! Get the Material asset assigned to a particular surface tag.
-        virtual AZStd::vector<SurfaceMaterialMapping> GetSurfaceMaterialMappings() const = 0;
+        virtual AZStd::vector<struct TerrainSurfaceMaterialMapping> GetSurfaceMaterialMappings(AZ::Aabb& region) const = 0;
     };
 
     using TerrainAreaMaterialRequestBus = AZ::EBus<TerrainAreaMaterialRequests>;
@@ -53,7 +46,30 @@ namespace Terrain
         static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::Single;
         //////////////////////////////////////////////////////////////////////////
 
-        virtual void OnTerrainSurfaceMaterialMappingChanged([[maybe_unused]] const AZ::EntityId& entityId)
+        virtual void OnTerrainSurfaceMaterialMappingCreated(
+            [[maybe_unused]] AZ::EntityId entityId,
+            [[maybe_unused]] SurfaceData::SurfaceTag surface,
+            [[maybe_unused]] AZ::Data::Instance<AZ::RPI::Material> material)
+        {
+        }
+
+        virtual void OnTerrainSurfaceMaterialMappingDestroyed(
+            [[maybe_unused]] AZ::EntityId entityId,
+            [[maybe_unused]] SurfaceData::SurfaceTag surface)
+        {
+        }
+
+        virtual void OnTerrainSurfaceMaterialMappingChanged(
+            [[maybe_unused]] AZ::EntityId entityId,
+            [[maybe_unused]] SurfaceData::SurfaceTag surface,
+            [[maybe_unused]] AZ::Data::Instance<AZ::RPI::Material> material)
+        {
+        }
+
+        virtual void OnTerrainSurfaceMaterialMappingRegionChanged(
+            [[maybe_unused]] AZ::EntityId entityId,
+            [[maybe_unused]] const AZ::Aabb& oldRegion,
+            [[maybe_unused]] const AZ::Aabb& newRegion)
         {
         }
     };

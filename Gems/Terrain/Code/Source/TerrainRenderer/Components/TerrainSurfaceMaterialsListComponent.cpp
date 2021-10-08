@@ -18,8 +18,6 @@
 #include <AzCore/Math/Aabb.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
 
-#include <AzToolsFramework/API/ToolsApplicationAPI.h>
-
 #include <GradientSignal/Ebuses/GradientRequestBus.h>
 #include <SurfaceData/SurfaceDataProviderRequestBus.h>
 
@@ -40,25 +38,18 @@ namespace Terrain
 
             if (auto edit = serialize->GetEditContext())
             {
-                edit->Class<TerrainSurfaceMaterialMapping>("Terrain Surface Gradient Mapping", "Mapping between a gradient and a surface.")
+                edit->Class<TerrainSurfaceMaterialMapping>("Terrain Surface Gradient Mapping", "Mapping between a surface and a material.")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::Show)
-                    ->DataElement(
-                        AZ::Edit::UIHandlers::Default, &TerrainSurfaceMaterialMapping::m_surfaceTag, "Surface Tag",
-                        "Surface type to map to a material.")
+
+                    ->DataElement(AZ::Edit::UIHandlers::ComboBox, &TerrainSurfaceMaterialMapping::m_surfaceTag, "Surface Tag", "Surface type to map to a material.")
                     ->DataElement(AZ::Edit::UIHandlers::Default, &TerrainSurfaceMaterialMapping::m_materialAsset, "Material Asset", "")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->Attribute(AZ::Edit::Attributes::ShowProductAssetFileName, true)
-                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, &TerrainSurfaceMaterialMapping::MaterialChanged)
                     ;
             }
         }
-    }
-
-    void TerrainSurfaceMaterialMapping::MaterialChanged()
-    {
-        m_dirty = true;
     }
 
     void TerrainSurfaceMaterialsListConfig::Reflect(AZ::ReflectContext* context)
@@ -75,14 +66,14 @@ namespace Terrain
             if (edit)
             {
                 edit->Class<TerrainSurfaceMaterialsListConfig>(
-                        "Terrain Surface Material List Component", "Provide mapping between gradients and render materials.")
+                        "Terrain Surface Material List Component", "Provide mapping between surfaces and render materials.")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::Show)
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
 
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default, &TerrainSurfaceMaterialsListConfig::m_surfaceMaterials,
-                        "Gradient to Material Mappings", "Maps Gradient Entities to Materials.");
+                        "Gradient to Material Mappings", "Maps surfaces to materials.");
             }
         }
     }
@@ -99,8 +90,7 @@ namespace Terrain
 
     void TerrainSurfaceMaterialsListComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& services)
     {
-        services.push_back(AZ_CRC_CE("TerrainAreaService"));
-        services.push_back(AZ_CRC_CE("BoxShapeService"));
+        services.push_back(AZ_CRC_CE("AxisAlignedBoxShapeService"));
     }
 
     void TerrainSurfaceMaterialsListComponent::Reflect(AZ::ReflectContext* context)
@@ -122,24 +112,132 @@ namespace Terrain
 
     void TerrainSurfaceMaterialsListComponent::Activate()
     {
-        LmbrCentral::DependencyNotificationBus::Handler::BusConnect(GetEntityId());
-        TerrainAreaMaterialRequestBus::Handler::BusConnect(GetEntityId());
+        m_cachedAabb = AZ::Aabb::CreateNull();
 
-        m_dependencyMonitor.Reset();
-        m_dependencyMonitor.ConnectOwner(GetEntityId());
-        m_dependencyMonitor.ConnectDependency(GetEntityId());
-
-        OnCompositionChanged();
+        // Set all the materials as inactive and start loading.
+        for (auto& surfaceMaterialMapping : m_configuration.m_surfaceMaterials)
+        {
+            if (surfaceMaterialMapping.m_materialAsset.GetId().IsValid())
+            {
+                surfaceMaterialMapping.m_active = false;
+                surfaceMaterialMapping.m_materialAsset.QueueLoad();
+                AZ::Data::AssetBus::Handler::BusConnect(surfaceMaterialMapping.m_materialAsset.GetId());
+            }
+        }
     }
 
     void TerrainSurfaceMaterialsListComponent::Deactivate()
     {
-        m_dependencyMonitor.Reset();
-
         TerrainAreaMaterialRequestBus::Handler::BusDisconnect();
-        LmbrCentral::DependencyNotificationBus::Handler::BusDisconnect();
 
-        OnCompositionChanged();
+        for (auto& surfaceMaterialMapping : m_configuration.m_surfaceMaterials)
+        {
+            if (surfaceMaterialMapping.m_materialAsset.GetId().IsValid())
+            {
+                AZ::Data::AssetBus::Handler::BusDisconnect(surfaceMaterialMapping.m_materialAsset.GetId());
+                surfaceMaterialMapping.m_materialAsset.Release();
+                surfaceMaterialMapping.m_materialInstance.reset();
+                surfaceMaterialMapping.m_activeMaterialAssetId = AZ::Data::AssetId();
+            }
+        }
+
+        HandleMaterialStateChanges();
+    }
+
+    int TerrainSurfaceMaterialsListComponent::CountMaterialIDInstances(AZ::Data::AssetId id) const
+    {
+        int count = 0;
+
+        for (const auto& surfaceMaterialMapping : m_configuration.m_surfaceMaterials)
+        {
+            if (surfaceMaterialMapping.m_activeMaterialAssetId == id)
+            {
+                count++;
+            }
+        }
+
+        return count;
+    }
+
+    void TerrainSurfaceMaterialsListComponent::HandleMaterialStateChanges()
+    {
+        bool anyMaterialIsActive = false;
+        bool anyMaterialWasAlreadyActive = false;
+
+        for (auto& surfaceMaterialMapping : m_configuration.m_surfaceMaterials)
+        {
+            const bool wasPreviouslyActive = surfaceMaterialMapping.m_active;
+            const bool isNowActive = (surfaceMaterialMapping.m_materialInstance != nullptr);
+
+            if (wasPreviouslyActive)
+            {
+                anyMaterialWasAlreadyActive = true;
+            }
+
+            if (isNowActive)
+            {
+                anyMaterialIsActive = true;
+            }
+
+            surfaceMaterialMapping.m_active = isNowActive;
+
+            if (!wasPreviouslyActive && !isNowActive)
+            {
+                // A material has been assigned but has not yet completed loading.
+            }
+            else if (!wasPreviouslyActive && isNowActive)
+            {
+                // Remember the asset id so we can disconnect from the AssetBus if the material asset is removed.
+                surfaceMaterialMapping.m_activeMaterialAssetId = surfaceMaterialMapping.m_materialAsset.GetId();
+
+                TerrainAreaMaterialNotificationBus::Broadcast(
+                    &TerrainAreaMaterialNotificationBus::Events::OnTerrainSurfaceMaterialMappingCreated, GetEntityId(),
+                    surfaceMaterialMapping.m_surfaceTag,
+                    surfaceMaterialMapping.m_materialInstance);
+            }
+            else if (wasPreviouslyActive && !isNowActive)
+            {
+                // Don't disconnect from the AssetBus if this material is mapped more than once.
+                if (CountMaterialIDInstances(surfaceMaterialMapping.m_activeMaterialAssetId) == 1)
+                {
+                    AZ::Data::AssetBus::Handler::BusDisconnect(surfaceMaterialMapping.m_activeMaterialAssetId);
+                }
+
+                surfaceMaterialMapping.m_activeMaterialAssetId = AZ::Data::AssetId();
+
+                TerrainAreaMaterialNotificationBus::Broadcast(
+                    &TerrainAreaMaterialNotificationBus::Events::OnTerrainSurfaceMaterialMappingDestroyed, GetEntityId(),
+                    surfaceMaterialMapping.m_surfaceTag);
+            }
+            else
+            {
+                TerrainAreaMaterialNotificationBus::Broadcast(
+                    &TerrainAreaMaterialNotificationBus::Events::OnTerrainSurfaceMaterialMappingChanged, GetEntityId(),
+                    surfaceMaterialMapping.m_surfaceTag,
+                    surfaceMaterialMapping.m_materialInstance);
+            }
+        }
+
+        if (!anyMaterialWasAlreadyActive && anyMaterialIsActive)
+        {
+            // Cache the current shape bounds.
+            LmbrCentral::ShapeComponentRequestsBus::EventResult(
+                m_cachedAabb, GetEntityId(), &LmbrCentral::ShapeComponentRequestsBus::Events::GetEncompassingAabb);
+
+            // Start listening for data requests.
+            TerrainAreaMaterialRequestBus::Handler::BusConnect(GetEntityId());
+
+            // Start listening for shape changes.
+            LmbrCentral::ShapeComponentNotificationsBus::Handler::BusConnect(GetEntityId());
+
+        }
+        else if (anyMaterialWasAlreadyActive && !anyMaterialIsActive)
+        {
+            // All materials have been deactivated, stop listening for requests and notifications.
+            m_cachedAabb = AZ::Aabb::CreateNull();
+            LmbrCentral::ShapeComponentNotificationsBus::Handler::BusDisconnect();
+            TerrainAreaMaterialRequestBus::Handler::BusConnect(GetEntityId());
+        }
     }
 
     bool TerrainSurfaceMaterialsListComponent::ReadInConfig(const AZ::ComponentConfig* baseConfig)
@@ -162,70 +260,44 @@ namespace Terrain
         return false;
     }
 
-    void TerrainSurfaceMaterialsListComponent::OnCompositionChanged()
-    {
-        // Check whether any materials assignments have changed.
-        for (auto surfaceMaterialMapping : m_configuration.m_surfaceMaterials)
-        {
-            if (!surfaceMaterialMapping.m_dirty)
-            {
-                continue;
-            }
+    void TerrainSurfaceMaterialsListComponent::OnShapeChanged([[maybe_unused]] ShapeComponentNotifications::ShapeChangeReasons reasons)
+     {
+         AZ::Aabb oldAabb = m_cachedAabb;
 
-            if (surfaceMaterialMapping.m_materialAsset.GetId().IsValid())
-            {
-                if (!surfaceMaterialMapping.m_materialInstance ||
-                    surfaceMaterialMapping.m_materialInstance->GetAssetId() != surfaceMaterialMapping.m_materialAsset.GetId())
-                {
-                    // A material asset has been assigned: start loading an instance.
-                    AZ::Data::AssetBus::Handler::BusConnect(surfaceMaterialMapping.m_materialAsset.GetId());
-                    surfaceMaterialMapping.m_materialInstance = AZ::RPI::Material::FindOrCreate(surfaceMaterialMapping.m_materialAsset);
-                }
-            }
-            else
-            {
-                if (surfaceMaterialMapping.m_materialInstance)
-                {
-                    // A material asset has been removed: reset the instance.
-                    surfaceMaterialMapping.m_materialInstance.reset();
-                    OnMaterialInstanceChanged();
-                }
-            }
-            surfaceMaterialMapping.m_dirty = false;
-        }
+         LmbrCentral::ShapeComponentRequestsBus::EventResult(
+             m_cachedAabb, GetEntityId(), &LmbrCentral::ShapeComponentRequestsBus::Events::GetEncompassingAabb);
+
+         TerrainAreaMaterialNotificationBus::Broadcast(
+             &TerrainAreaMaterialNotificationBus::Events::OnTerrainSurfaceMaterialMappingRegionChanged, GetEntityId(), oldAabb,
+             m_cachedAabb);
      }
 
-    AZStd::vector<SurfaceMaterialMapping> TerrainSurfaceMaterialsListComponent::GetSurfaceMaterialMappings() const
+    AZStd::vector<TerrainSurfaceMaterialMapping> TerrainSurfaceMaterialsListComponent::GetSurfaceMaterialMappings(
+         AZ::Aabb& region) const
     {
-         AZStd::vector<SurfaceMaterialMapping> mappings;
+        region = m_cachedAabb;
 
-         for (auto inMapping : m_configuration.m_surfaceMaterials)
-         {
-             SurfaceMaterialMapping outMapping;
-             outMapping.m_surfaceTag = inMapping.m_surfaceTag;
-             outMapping.m_materialInstance = inMapping.m_materialInstance;
-             mappings.emplace_back(outMapping);
-         }
-
-         return mappings;
+        return m_configuration.m_surfaceMaterials;
     }
 
     void TerrainSurfaceMaterialsListComponent::OnAssetReady(AZ::Data::Asset<AZ::Data::AssetData> asset)
     {
-        AZ::Data::AssetBus::Handler::BusDisconnect(asset.GetId());
-
-        OnMaterialInstanceChanged();
+        // Find the missing material instance with the correct id.
+        for (auto& surfaceMaterialMapping : m_configuration.m_surfaceMaterials)
+        {
+            if (surfaceMaterialMapping.m_materialAsset.GetId() == asset.GetId() &&
+                (!surfaceMaterialMapping.m_materialInstance ||
+                    surfaceMaterialMapping.m_materialInstance->GetAssetId() != surfaceMaterialMapping.m_materialAsset.GetId()))
+            {
+                surfaceMaterialMapping.m_materialInstance = AZ::RPI::Material::FindOrCreate(surfaceMaterialMapping.m_materialAsset);
+                surfaceMaterialMapping.m_materialAsset.Release();
+            }
+        }
+        HandleMaterialStateChanges();
     }
 
     void TerrainSurfaceMaterialsListComponent::OnAssetReloaded(AZ::Data::Asset<AZ::Data::AssetData> asset)
     {
-        AZ::Data::AssetBus::Handler::BusDisconnect(asset.GetId());
-
-        OnMaterialInstanceChanged();
-    }
-
-    void TerrainSurfaceMaterialsListComponent::OnMaterialInstanceChanged()
-    {
-        TerrainAreaMaterialNotificationBus::Broadcast(&TerrainAreaMaterialNotificationBus::Events::OnTerrainSurfaceMaterialMappingChanged, GetEntityId());
+        OnAssetReady(asset);
     }
 } // namespace Terrain

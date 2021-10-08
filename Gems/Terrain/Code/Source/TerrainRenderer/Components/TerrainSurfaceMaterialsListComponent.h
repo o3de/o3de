@@ -11,13 +11,10 @@
 #include <Atom/Feature/Material/MaterialAssignment.h>
 #include <Atom/RPI.Reflect/Material/MaterialAsset.h>
 #include <AtomLyIntegration/CommonFeatures/Material/EditorMaterialSystemComponentRequestBus.h>
-
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Component/Component.h>
-
-#include <LmbrCentral/Dependency/DependencyMonitor.h>
+#include <LmbrCentral/Shape/ShapeComponentBus.h>
 #include <SurfaceData/SurfaceDataTypes.h>
-
 #include <TerrainRenderer/TerrainAreaMaterialRequestBus.h>
 
 
@@ -36,13 +33,12 @@ namespace Terrain
         AZ_RTTI(TerrainSurfaceMaterialMapping, "{37D2A586-CDDD-4FB7-A7D6-0B4CC575AB8C}");
         static void Reflect(AZ::ReflectContext* context);
 
-        void MaterialChanged();
-
         SurfaceData::SurfaceTag m_surfaceTag;
+        AZ::Data::AssetId m_activeMaterialAssetId;
         AZ::Data::Asset<AZ::RPI::MaterialAsset> m_materialAsset;
         AZ::Data::Instance<AZ::RPI::Material> m_materialInstance;
 
-        bool m_dirty = false;
+        bool m_active = false;
     };
 
     class TerrainSurfaceMaterialsListConfig : public AZ::ComponentConfig
@@ -57,9 +53,9 @@ namespace Terrain
 
     class TerrainSurfaceMaterialsListComponent
         : public AZ::Component
-        , private LmbrCentral::DependencyNotificationBus::Handler
         , private TerrainAreaMaterialRequestBus::Handler
         , private AZ::Data::AssetBus::Handler
+        , private LmbrCentral::ShapeComponentNotificationsBus::Handler
     {
     public:
         template<typename, typename>
@@ -82,15 +78,16 @@ namespace Terrain
         bool WriteOutConfig(AZ::ComponentConfig* outBaseConfig) const override;
 
     private:
-        void OnMaterialInstanceChanged();
+        void HandleMaterialStateChanges();
+        int CountMaterialIDInstances(AZ::Data::AssetId id) const;
 
-        //////////////////////////////////////////////////////////////////////////
-        // LmbrCentral::DependencyNotificationBus
-        void OnCompositionChanged() override;
+        ////////////////////////////////////////////////////////////////////////
+        // ShapeComponentNotificationsBus
+        void OnShapeChanged(ShapeComponentNotifications::ShapeChangeReasons reasons) override;
 
         //////////////////////////////////////////////////////////////////////////
         // TerrainAreaMaterialRequestBus
-        AZStd::vector<SurfaceMaterialMapping> GetSurfaceMaterialMappings() const override;
+        AZStd::vector<TerrainSurfaceMaterialMapping> GetSurfaceMaterialMappings(AZ::Aabb& region) const override;
 
         //////////////////////////////////////////////////////////////////////////
         // AZ::Data::AssetBus::Handler
@@ -99,6 +96,6 @@ namespace Terrain
 
         TerrainSurfaceMaterialsListConfig m_configuration;
 
-        LmbrCentral::DependencyMonitor m_dependencyMonitor;
+        AZ::Aabb m_cachedAabb;
     };
 } // namespace Terrain
