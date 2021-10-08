@@ -6,10 +6,11 @@
  *
  */
 
+#include <Atom/RPI.Reflect/Material/MaterialAsset.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <QtConcurrent/QtConcurrent>
-#include <Source/Material/MaterialThumbnail.h>
-#include <Source/Thumbnails/ThumbnailUtils.h>
+#include <Thumbnails/MaterialThumbnail.h>
+#include <Thumbnails/ThumbnailUtils.h>
 
 namespace AZ
 {
@@ -40,9 +41,7 @@ namespace AZ
             void MaterialThumbnail::LoadThread()
             {
                 AzToolsFramework::Thumbnailer::ThumbnailerRendererRequestBus::QueueEvent(
-                    RPI::MaterialAsset::RTTI_Type(),
-                    &AzToolsFramework::Thumbnailer::ThumbnailerRendererRequests::RenderThumbnail,
-                    m_key,
+                    RPI::MaterialAsset::RTTI_Type(), &AzToolsFramework::Thumbnailer::ThumbnailerRendererRequests::RenderThumbnail, m_key,
                     MaterialThumbnailSize);
                 // wait for response from thumbnail renderer
                 m_renderWait.acquire();
@@ -68,8 +67,7 @@ namespace AZ
 
             void MaterialThumbnail::OnCatalogAssetChanged([[maybe_unused]] const AZ::Data::AssetId& assetId)
             {
-                if (m_assetId == assetId &&
-                    m_state == State::Ready)
+                if (m_assetId == assetId && m_state == State::Ready)
                 {
                     m_state = State::Unloaded;
                     Load();
@@ -88,7 +86,7 @@ namespace AZ
 
             int MaterialThumbnailCache::GetPriority() const
             {
-                // Material thumbnails override default source thumbnails, so carry higher priority
+                // Thumbnails override default source thumbnails, so carry higher priority
                 return 1;
             }
 
@@ -99,14 +97,10 @@ namespace AZ
 
             bool MaterialThumbnailCache::IsSupportedThumbnail(AzToolsFramework::Thumbnailer::SharedThumbnailKey key) const
             {
-                return
-                    GetAssetId(key, RPI::MaterialAsset::RTTI_Type()).IsValid() &&
-                    // in case it's a source scene file, it will contain both material and model products
-                    // model thumbnails are handled by MeshThumbnail
-                    !GetAssetId(key, RPI::ModelAsset::RTTI_Type()).IsValid();
+                return GetAssetId(key, RPI::MaterialAsset::RTTI_Type()).IsValid();
             }
         } // namespace Thumbnails
     } // namespace LyIntegration
 } // namespace AZ
 
-#include <Material/moc_MaterialThumbnail.cpp>
+#include <Thumbnails/moc_MaterialThumbnail.cpp>

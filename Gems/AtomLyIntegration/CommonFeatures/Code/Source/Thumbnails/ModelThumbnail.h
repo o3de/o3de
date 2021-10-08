@@ -21,18 +21,16 @@ namespace AZ
     {
         namespace Thumbnails
         {
-            /**
-             * Custom material or model thumbnail that detects when an asset changes and updates the thumbnail
-             */
-            class MeshThumbnail
+            //! Custom thumbnail that detects when an asset changes and updates the thumbnail
+            class ModelThumbnail
                 : public AzToolsFramework::Thumbnailer::Thumbnail
                 , public AzToolsFramework::Thumbnailer::ThumbnailerRendererNotificationBus::Handler
                 , private AzFramework::AssetCatalogEventBus::Handler
             {
                 Q_OBJECT
             public:
-                MeshThumbnail(AzToolsFramework::Thumbnailer::SharedThumbnailKey key);
-                ~MeshThumbnail() override;
+                ModelThumbnail(AzToolsFramework::Thumbnailer::SharedThumbnailKey key);
+                ~ModelThumbnail() override;
 
                 //! AzToolsFramework::ThumbnailerRendererNotificationBus::Handler overrides...
                 void ThumbnailRendered(QPixmap& thumbnailImage) override;
@@ -49,20 +47,17 @@ namespace AZ
                 Data::AssetId m_assetId;
             };
 
-            /**
-             * Cache configuration for large material thumbnails
-             */
-            class MeshThumbnailCache
-                : public AzToolsFramework::Thumbnailer::ThumbnailCache<MeshThumbnail>
+            //! Cache configuration for large thumbnails
+            class ModelThumbnailCache : public AzToolsFramework::Thumbnailer::ThumbnailCache<ModelThumbnail>
             {
             public:
-                MeshThumbnailCache();
-                ~MeshThumbnailCache() override;
+                ModelThumbnailCache();
+                ~ModelThumbnailCache() override;
 
                 int GetPriority() const override;
                 const char* GetProviderName() const override;
 
-                static constexpr const char* ProviderName = "Mesh Thumbnails";
+                static constexpr const char* ProviderName = "Model Thumbnails";
 
             protected:
                 bool IsSupportedThumbnail(AzToolsFramework::Thumbnailer::SharedThumbnailKey key) const override;

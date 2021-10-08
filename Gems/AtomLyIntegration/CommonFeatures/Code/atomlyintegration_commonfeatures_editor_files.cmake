@@ -45,8 +45,6 @@ set(FILES
     Source/Material/EditorMaterialSystemComponent.h
     Source/Material/MaterialBrowserInteractions.h
     Source/Material/MaterialBrowserInteractions.cpp
-    Source/Material/MaterialThumbnail.cpp
-    Source/Material/MaterialThumbnail.h
     Source/Mesh/EditorMeshComponent.h
     Source/Mesh/EditorMeshComponent.cpp
     Source/Mesh/EditorMeshStats.h
@@ -55,8 +53,6 @@ set(FILES
     Source/Mesh/EditorMeshSystemComponent.h
     Source/Mesh/EditorMeshStatsSerializer.cpp
     Source/Mesh/EditorMeshStatsSerializer.h
-    Source/Mesh/MeshThumbnail.h
-    Source/Mesh/MeshThumbnail.cpp
     Source/OcclusionCullingPlane/EditorOcclusionCullingPlaneComponent.h
     Source/OcclusionCullingPlane/EditorOcclusionCullingPlaneComponent.cpp
     Source/PostProcess/EditorPostFxLayerComponent.cpp
@@ -102,7 +98,6 @@ set(FILES
     Source/Thumbnails/Preview/CommonPreviewer.ui
     Source/Thumbnails/Preview/CommonPreviewerFactory.cpp
     Source/Thumbnails/Preview/CommonPreviewerFactory.h
-    Source/Thumbnails/Rendering/CommonPreviewContent.cpp
     Source/Thumbnails/Rendering/CommonPreviewContent.h
     Source/Thumbnails/Rendering/CommonPreviewRenderer.cpp
     Source/Thumbnails/Rendering/CommonPreviewRenderer.h
@@ -113,6 +108,16 @@ set(FILES
     Source/Thumbnails/Rendering/CommonPreviewRendererLoadState.h
     Source/Thumbnails/Rendering/CommonPreviewRendererCaptureState.cpp
     Source/Thumbnails/Rendering/CommonPreviewRendererCaptureState.h
+    Source/Thumbnails/CommonThumbnailPreviewContent.cpp
+    Source/Thumbnails/CommonThumbnailPreviewContent.h
+    Source/Thumbnails/CommonThumbnailRenderer.cpp
+    Source/Thumbnails/CommonThumbnailRenderer.h
+    Source/Thumbnails/MaterialThumbnail.cpp
+    Source/Thumbnails/MaterialThumbnail.h
+    Source/Thumbnails/ModelThumbnail.cpp
+    Source/Thumbnails/ModelThumbnail.h
+    Source/Thumbnails/LightingPresetThumbnail.cpp
+    Source/Thumbnails/LightingPresetThumbnail.h
     Source/Scripting/EditorEntityReferenceComponent.cpp
     Source/Scripting/EditorEntityReferenceComponent.h
     Source/SurfaceData/EditorSurfaceDataMeshComponent.cpp

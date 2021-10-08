@@ -16,11 +16,9 @@
 #include <AzFramework/Application/Application.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzToolsFramework/API/ViewPaneOptions.h>
-#include <AzToolsFramework/Thumbnails/ThumbnailContext.h>
 #include <Editor/LyViewPaneNames.h>
 #include <Material/EditorMaterialComponentInspector.h>
 #include <Material/EditorMaterialSystemComponent.h>
-#include <Material/MaterialThumbnail.h>
 
 // Disables warning messages triggered by the Qt library
 // 4251: class needs to have dll-interface to be used by clients of class 
@@ -72,11 +70,6 @@ namespace AZ
             incompatible.push_back(AZ_CRC("EditorMaterialSystem", 0x5c93bc4e));
         }
 
-        void EditorMaterialSystemComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
-        {
-            required.push_back(AZ_CRC("ThumbnailerService", 0x65422b97));
-        }
-
         void EditorMaterialSystemComponent::GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent)
         {
             AZ_UNUSED(dependent);
@@ -90,24 +83,20 @@ namespace AZ
         void EditorMaterialSystemComponent::Activate()
         {
             EditorMaterialSystemComponentRequestBus::Handler::BusConnect();
-            AzFramework::ApplicationLifecycleEvents::Bus::Handler::BusConnect();
             AzToolsFramework::AssetBrowser::AssetBrowserInteractionNotificationBus::Handler::BusConnect();
             AzToolsFramework::EditorMenuNotificationBus::Handler::BusConnect();
             AzToolsFramework::EditorEvents::Bus::Handler::BusConnect();
 
-            SetupThumbnails();
             m_materialBrowserInteractions.reset(aznew MaterialBrowserInteractions);
         }
 
         void EditorMaterialSystemComponent::Deactivate()
         {
             EditorMaterialSystemComponentRequestBus::Handler::BusDisconnect();
-            AzFramework::ApplicationLifecycleEvents::Bus::Handler::BusDisconnect();
             AzToolsFramework::AssetBrowser::AssetBrowserInteractionNotificationBus::Handler::BusDisconnect();
             AzToolsFramework::EditorMenuNotificationBus::Handler::BusDisconnect();
             AzToolsFramework::EditorEvents::Bus::Handler::BusDisconnect(); 
 
-            TeardownThumbnails();
             m_materialBrowserInteractions.reset();
 
             if (m_openMaterialEditorAction)
@@ -154,11 +143,6 @@ namespace AZ
             }
         }
 
-        void EditorMaterialSystemComponent::OnApplicationAboutToStop()
-        {
-            TeardownThumbnails();
-        }
-        
         void EditorMaterialSystemComponent::OnPopulateToolMenuItems()
         {
             if (!m_openMaterialEditorAction)
@@ -199,26 +183,6 @@ namespace AZ
             inspectorOptions.showOnToolsToolbar = false;
             AzToolsFramework::RegisterViewPane<AZ::Render::EditorMaterialComponentInspector::MaterialPropertyInspector>(
                 "Material Property Inspector", LyViewPane::CategoryTools, inspectorOptions);
-        }
-
-        void EditorMaterialSystemComponent::SetupThumbnails()
-        {
-            using namespace AzToolsFramework::Thumbnailer;
-            using namespace LyIntegration;
-
-            ThumbnailerRequestsBus::Broadcast(
-                &ThumbnailerRequests::RegisterThumbnailProvider, MAKE_TCACHE(Thumbnails::MaterialThumbnailCache),
-                ThumbnailContext::DefaultContext);
-        }
-
-        void EditorMaterialSystemComponent::TeardownThumbnails()
-        {
-            using namespace AzToolsFramework::Thumbnailer;
-            using namespace LyIntegration;
-
-            ThumbnailerRequestsBus::Broadcast(
-                &ThumbnailerRequests::UnregisterThumbnailProvider, Thumbnails::MaterialThumbnailCache::ProviderName,
-                ThumbnailContext::DefaultContext);
         }
 
         AzToolsFramework::AssetBrowser::SourceFileDetails EditorMaterialSystemComponent::GetSourceFileDetails(

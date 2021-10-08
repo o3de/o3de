@@ -9,12 +9,18 @@
 #include <EditorCommonFeaturesSystemComponent.h>
 #include <SkinnedMesh/SkinnedMeshDebugDisplay.h>
 
-#include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/EditContextConstants.inl>
+#include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/Utils/Utils.h>
 #include <AzFramework/API/ApplicationAPI.h>
 #include <AzToolsFramework/API/EditorCameraBus.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
+#include <AzToolsFramework/Thumbnails/ThumbnailContext.h>
+
+#include <Thumbnails/MaterialThumbnail.h>
+#include <Thumbnails/ModelThumbnail.h>
+#include <Thumbnails/LightingPresetThumbnail.h>
 
 #include <IEditor.h>
 
@@ -68,7 +74,7 @@ namespace AZ
 
         void EditorCommonFeaturesSystemComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
         {
-            AZ_UNUSED(required);
+            required.push_back(AZ_CRC_CE("ThumbnailerService"));
         }
 
         void EditorCommonFeaturesSystemComponent::GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent)
@@ -98,8 +104,7 @@ namespace AZ
             AzToolsFramework::AssetBrowser::PreviewerRequestBus::Handler::BusDisconnect();
 
             m_skinnedMeshDebugDisplay.reset();
-            m_previewerFactory.reset();
-            m_renderer.reset();
+            TeardownThumbnails();
         }
 
         void EditorCommonFeaturesSystemComponent::OnNewLevelCreated()
@@ -194,8 +199,7 @@ namespace AZ
         void EditorCommonFeaturesSystemComponent::OnCatalogLoaded([[maybe_unused]] const char* catalogFile)
         {
             AZ::TickBus::QueueFunction([this](){
-                m_renderer = AZStd::make_unique<AZ::LyIntegration::Thumbnails::CommonPreviewRenderer>();
-                m_previewerFactory = AZStd::make_unique<LyIntegration::CommonPreviewerFactory>();
+                SetupThumbnails();
             });
         }
 
@@ -207,7 +211,49 @@ namespace AZ
 
         void EditorCommonFeaturesSystemComponent::OnApplicationAboutToStop()
         {
+            TeardownThumbnails();
+        }
+
+        void EditorCommonFeaturesSystemComponent::SetupThumbnails()
+        {
+            using namespace AzToolsFramework::Thumbnailer;
+            using namespace LyIntegration;
+
+            ThumbnailerRequestsBus::Broadcast(
+                &ThumbnailerRequests::RegisterThumbnailProvider, MAKE_TCACHE(Thumbnails::MaterialThumbnailCache),
+                ThumbnailContext::DefaultContext);
+
+            ThumbnailerRequestsBus::Broadcast(
+                &ThumbnailerRequests::RegisterThumbnailProvider, MAKE_TCACHE(Thumbnails::ModelThumbnailCache),
+                ThumbnailContext::DefaultContext);
+
+            ThumbnailerRequestsBus::Broadcast(
+                &ThumbnailerRequests::RegisterThumbnailProvider, MAKE_TCACHE(Thumbnails::LightingPresetThumbnailCache),
+                ThumbnailContext::DefaultContext);
+
+            m_renderer = AZStd::make_unique<AZ::LyIntegration::Thumbnails::CommonThumbnailRenderer>();
+            m_previewerFactory = AZStd::make_unique<LyIntegration::CommonPreviewerFactory>();
+        }
+
+        void EditorCommonFeaturesSystemComponent::TeardownThumbnails()
+        {
+            using namespace AzToolsFramework::Thumbnailer;
+            using namespace LyIntegration;
+
+            ThumbnailerRequestsBus::Broadcast(
+                &ThumbnailerRequests::UnregisterThumbnailProvider, Thumbnails::MaterialThumbnailCache::ProviderName,
+                ThumbnailContext::DefaultContext);
+
+            ThumbnailerRequestsBus::Broadcast(
+                &ThumbnailerRequests::UnregisterThumbnailProvider, Thumbnails::ModelThumbnailCache::ProviderName,
+                ThumbnailContext::DefaultContext);
+
+            ThumbnailerRequestsBus::Broadcast(
+                &ThumbnailerRequests::UnregisterThumbnailProvider, Thumbnails::LightingPresetThumbnailCache::ProviderName,
+                ThumbnailContext::DefaultContext);
+
             m_renderer.reset();
+            m_previewerFactory.reset();
         }
     } // namespace Render
 } // namespace AZ

@@ -19,13 +19,10 @@
 #include <AzCore/Math/Transform.h>
 #include <AzFramework/Scene/Scene.h>
 #include <AzFramework/Scene/SceneSystemInterface.h>
-#include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
-#include <AzToolsFramework/Thumbnails/ThumbnailerBus.h>
 #include <Thumbnails/Rendering/CommonPreviewRenderer.h>
 #include <Thumbnails/Rendering/CommonPreviewRendererCaptureState.h>
 #include <Thumbnails/Rendering/CommonPreviewRendererIdleState.h>
 #include <Thumbnails/Rendering/CommonPreviewRendererLoadState.h>
-#include <Thumbnails/ThumbnailUtils.h>
 
 namespace AZ
 {
@@ -35,11 +32,7 @@ namespace AZ
         {
             CommonPreviewRenderer::CommonPreviewRenderer()
             {
-                // CommonPreviewRenderer supports both models and materials
-                AzToolsFramework::Thumbnailer::ThumbnailerRendererRequestBus::MultiHandler::BusConnect(RPI::MaterialAsset::RTTI_Type());
-                AzToolsFramework::Thumbnailer::ThumbnailerRendererRequestBus::MultiHandler::BusConnect(RPI::ModelAsset::RTTI_Type());
                 PreviewerFeatureProcessorProviderBus::Handler::BusConnect();
-                SystemTickBus::Handler::BusConnect();
 
                 m_entityContext = AZStd::make_unique<AzFramework::EntityContext>();
                 m_entityContext->InitContext();
@@ -95,8 +88,6 @@ namespace AZ
 
             CommonPreviewRenderer::~CommonPreviewRenderer()
             {
-                AzToolsFramework::Thumbnailer::ThumbnailerRendererRequestBus::MultiHandler::BusDisconnect();
-                SystemTickBus::Handler::BusDisconnect();
                 PreviewerFeatureProcessorProviderBus::Handler::BusDisconnect();
 
                 SetState(CommonPreviewRenderer::State::None);
@@ -108,6 +99,21 @@ namespace AZ
                 RPI::RPISystemInterface::Get()->UnregisterScene(m_scene);
                 m_frameworkScene->UnsetSubsystem(m_scene);
                 m_frameworkScene->UnsetSubsystem(m_entityContext.get());
+            }
+
+            RPI::ScenePtr CommonPreviewRenderer::GetScene() const
+            {
+                return m_scene;
+            }
+
+            RPI::ViewPtr CommonPreviewRenderer::GetView() const
+            {
+                return m_view;
+            }
+
+            AZ::Uuid CommonPreviewRenderer::GetEntityContextId() const
+            {
+                return m_entityContext->GetContextId();
             }
 
             void CommonPreviewRenderer::AddCaptureRequest(const CaptureRequest& captureRequest)
@@ -227,11 +233,6 @@ namespace AZ
                 m_renderPipeline->RemoveFromRenderTick();
             }
 
-            void CommonPreviewRenderer::OnSystemTick()
-            {
-                AzToolsFramework::Thumbnailer::ThumbnailerRendererRequestBus::ExecuteQueuedEvents();
-            }
-
             void CommonPreviewRenderer::GetRequiredFeatureProcessors(AZStd::unordered_set<AZStd::string>& featureProcessors) const
             {
                 featureProcessors.insert({
@@ -252,33 +253,6 @@ namespace AZ
                     "AZ::Render::ImageBasedLightFeatureProcessor",
                     "AZ::Render::PostProcessFeatureProcessor",
                     "AZ::Render::SkyBoxFeatureProcessor" });
-            }
-
-            void CommonPreviewRenderer::RenderThumbnail(AzToolsFramework::Thumbnailer::SharedThumbnailKey thumbnailKey, int thumbnailSize)
-            {
-                AddCaptureRequest(
-                    { thumbnailSize,
-                      AZStd::make_shared<CommonPreviewContent>(
-                          m_scene, m_view, m_entityContext->GetContextId(),
-                          GetAssetId(thumbnailKey, RPI::ModelAsset::RTTI_Type()),
-                          GetAssetId(thumbnailKey, RPI::MaterialAsset::RTTI_Type()),
-                          GetAssetId(thumbnailKey, RPI::AnyAsset::RTTI_Type())),
-                          [thumbnailKey]()
-                          {
-                              AzToolsFramework::Thumbnailer::ThumbnailerRendererNotificationBus::Event(
-                                  thumbnailKey, &AzToolsFramework::Thumbnailer::ThumbnailerRendererNotifications::ThumbnailFailedToRender);
-                          },
-                          [thumbnailKey](const QImage& image)
-                          {
-                              AzToolsFramework::Thumbnailer::ThumbnailerRendererNotificationBus::Event(
-                                  thumbnailKey, &AzToolsFramework::Thumbnailer::ThumbnailerRendererNotifications::ThumbnailRendered,
-                                  QPixmap::fromImage(image));
-                          } });
-            }
-
-            bool CommonPreviewRenderer::Installed() const
-            {
-                return true;
             }
         } // namespace Thumbnails
     } // namespace LyIntegration

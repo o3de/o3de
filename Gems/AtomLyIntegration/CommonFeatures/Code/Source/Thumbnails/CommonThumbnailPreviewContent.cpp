@@ -23,7 +23,7 @@
 #include <AzCore/Math/Transform.h>
 #include <AzFramework/Components/TransformComponent.h>
 #include <AzFramework/Entity/EntityContextBus.h>
-#include <Thumbnails/Rendering/CommonPreviewContent.h>
+#include <Thumbnails/CommonThumbnailPreviewContent.h>
 
 namespace AZ
 {
@@ -31,7 +31,7 @@ namespace AZ
     {
         namespace Thumbnails
         {
-            CommonPreviewContent::CommonPreviewContent(
+            CommonThumbnailPreviewContent::CommonThumbnailPreviewContent(
                 RPI::ScenePtr scene,
                 RPI::ViewPtr view,
                 AZ::Uuid entityContextId,
@@ -65,7 +65,7 @@ namespace AZ
                 m_lightingPresetAsset.Create(lightingPresetAssetId.IsValid() ? lightingPresetAssetId : DefaultLightingPresetAssetId, false);
             }
 
-            CommonPreviewContent::~CommonPreviewContent()
+            CommonThumbnailPreviewContent::~CommonThumbnailPreviewContent()
             {
                 if (m_modelEntity)
                 {
@@ -75,44 +75,46 @@ namespace AZ
                 }
             }
 
-            void CommonPreviewContent::Load()
+            void CommonThumbnailPreviewContent::Load()
             {
                 m_modelAsset.QueueLoad();
                 m_materialAsset.QueueLoad();
                 m_lightingPresetAsset.QueueLoad();
             }
 
-            bool CommonPreviewContent::IsReady() const
+            bool CommonThumbnailPreviewContent::IsReady() const
             {
-                return m_modelAsset.IsReady() && m_materialAsset.IsReady() && m_lightingPresetAsset.IsReady();
+                return (!m_modelAsset.GetId().IsValid() || m_modelAsset.IsReady()) &&
+                    (!m_materialAsset.GetId().IsValid() || m_materialAsset.IsReady()) &&
+                    (!m_lightingPresetAsset.GetId().IsValid() || m_lightingPresetAsset.IsReady());
             }
 
-            bool CommonPreviewContent::IsError() const
+            bool CommonThumbnailPreviewContent::IsError() const
             {
                 return m_modelAsset.IsError() || m_materialAsset.IsError() || m_lightingPresetAsset.IsError();
             }
 
-            void CommonPreviewContent::ReportErrors()
+            void CommonThumbnailPreviewContent::ReportErrors()
             {
                 AZ_Warning(
-                    "CommonPreviewContent", m_modelAsset.IsReady(), "Asset failed to load in time: %s",
-                    m_modelAsset.ToString<AZStd::string>().c_str());
+                    "CommonThumbnailPreviewContent", !m_modelAsset.GetId().IsValid() || m_modelAsset.IsReady(),
+                    "Asset failed to load in time: %s", m_modelAsset.ToString<AZStd::string>().c_str());
                 AZ_Warning(
-                    "CommonPreviewContent", m_materialAsset.IsReady(), "Asset failed to load in time: %s",
-                    m_materialAsset.ToString<AZStd::string>().c_str());
+                    "CommonThumbnailPreviewContent", !m_materialAsset.GetId().IsValid() || m_materialAsset.IsReady(),
+                    "Asset failed to load in time: %s", m_materialAsset.ToString<AZStd::string>().c_str());
                 AZ_Warning(
-                    "CommonPreviewContent", m_lightingPresetAsset.IsReady(), "Asset failed to load in time: %s",
-                    m_lightingPresetAsset.ToString<AZStd::string>().c_str());
+                    "CommonThumbnailPreviewContent", !m_lightingPresetAsset.GetId().IsValid() || m_lightingPresetAsset.IsReady(),
+                    "Asset failed to load in time: %s", m_lightingPresetAsset.ToString<AZStd::string>().c_str());
             }
 
-            void CommonPreviewContent::UpdateScene()
+            void CommonThumbnailPreviewContent::UpdateScene()
             {
                 UpdateModel();
                 UpdateLighting();
                 UpdateCamera();
             }
 
-            void CommonPreviewContent::UpdateModel()
+            void CommonThumbnailPreviewContent::UpdateModel()
             {
                 Render::MeshComponentRequestBus::Event(
                     m_modelEntity->GetId(), &Render::MeshComponentRequestBus::Events::SetModelAsset, m_modelAsset);
@@ -122,7 +124,7 @@ namespace AZ
                     m_materialAsset.GetId());
             }
 
-            void CommonPreviewContent::UpdateLighting()
+            void CommonThumbnailPreviewContent::UpdateLighting()
             {
                 auto preset = m_lightingPresetAsset->GetDataAs<Render::LightingPreset>();
                 if (preset)
@@ -152,7 +154,7 @@ namespace AZ
                 }
             }
 
-            void CommonPreviewContent::UpdateCamera()
+            void CommonThumbnailPreviewContent::UpdateCamera()
             {
                 // Get bounding sphere of the model asset and estimate how far the camera needs to be see all of it
                 Vector3 center = {};

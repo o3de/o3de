@@ -8,10 +8,8 @@
 #pragma once
 
 #include <AzCore/Component/Component.h>
-#include <AzFramework/Application/Application.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
-#include <AzToolsFramework/Thumbnails/Thumbnail.h>
 #include <AzToolsFramework/Viewport/ActionBus.h>
 
 #include <AtomLyIntegration/CommonFeatures/Material/EditorMaterialSystemComponentRequestBus.h>
@@ -26,7 +24,6 @@ namespace AZ
         class EditorMaterialSystemComponent
             : public AZ::Component
             , private EditorMaterialSystemComponentRequestBus::Handler
-            , private AzFramework::ApplicationLifecycleEvents::Bus::Handler
             , private AzToolsFramework::AssetBrowser::AssetBrowserInteractionNotificationBus::Handler
             , private AzToolsFramework::EditorMenuNotificationBus::Handler
             , private AzToolsFramework::EditorEvents::Bus::Handler
@@ -38,7 +35,6 @@ namespace AZ
 
             static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided);
             static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible);
-            static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required);
             static void GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent);
 
         protected:
@@ -52,9 +48,6 @@ namespace AZ
             void OpenMaterialEditor(const AZStd::string& sourcePath) override;
             void OpenMaterialInspector(const AZ::EntityId& entityId, const AZ::Render::MaterialAssignmentId& materialAssignmentId) override;
 
-            // AzFramework::ApplicationLifecycleEvents overrides...
-            void OnApplicationAboutToStop() override;
-
             //! AssetBrowserInteractionNotificationBus::Handler overrides...
             AzToolsFramework::AssetBrowser::SourceFileDetails GetSourceFileDetails(const char* fullSourceFileName) override;
 
@@ -64,9 +57,6 @@ namespace AZ
 
             // AztoolsFramework::EditorEvents::Bus::Handler overrides...
             void NotifyRegisterViews() override;
-
-            void SetupThumbnails();
-            void TeardownThumbnails();
 
             QAction* m_openMaterialEditorAction = nullptr;
 

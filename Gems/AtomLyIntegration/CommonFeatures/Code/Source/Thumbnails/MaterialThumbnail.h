@@ -13,7 +13,6 @@
 #include <AzFramework/Asset/AssetCatalogBus.h>
 #include <AzToolsFramework/Thumbnails/Thumbnail.h>
 #include <AzToolsFramework/Thumbnails/ThumbnailerBus.h>
-#include <Thumbnails/Rendering/CommonPreviewRenderer.h>
 #endif
 
 namespace AZ
@@ -22,9 +21,7 @@ namespace AZ
     {
         namespace Thumbnails
         {
-            /**
-             * Custom material or model thumbnail that detects when an asset changes and updates the thumbnail
-             */
+            //! Custom thumbnail that detects when an asset changes and updates the thumbnail
             class MaterialThumbnail
                 : public AzToolsFramework::Thumbnailer::Thumbnail
                 , public AzToolsFramework::Thumbnailer::ThumbnailerRendererNotificationBus::Handler
@@ -50,11 +47,8 @@ namespace AZ
                 Data::AssetId m_assetId;
             };
 
-            /**
-             * Cache configuration for large material thumbnails
-             */
-            class MaterialThumbnailCache
-                : public AzToolsFramework::Thumbnailer::ThumbnailCache<MaterialThumbnail>
+            //! Cache configuration for large thumbnails
+            class MaterialThumbnailCache : public AzToolsFramework::Thumbnailer::ThumbnailCache<MaterialThumbnail>
             {
             public:
                 MaterialThumbnailCache();

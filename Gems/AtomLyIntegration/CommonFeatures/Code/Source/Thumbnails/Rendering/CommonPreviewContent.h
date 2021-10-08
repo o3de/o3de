@@ -8,11 +8,7 @@
 
 #pragma once
 
-#include <Atom/RPI.Public/Base.h>
-#include <Atom/RPI.Reflect/Asset/AssetUtils.h>
-#include <Atom/RPI.Reflect/Material/MaterialAsset.h>
-#include <Atom/RPI.Reflect/Model/ModelAsset.h>
-#include <Atom/RPI.Reflect/System/AnyAsset.h>
+#include <AzCore/Memory/Memory.h>
 
 namespace AZ
 {
@@ -20,59 +16,19 @@ namespace AZ
     {
         namespace Thumbnails
         {
-            //! Provides custom rendering of material and model thumbnails
+            //! Provides custom rendering of preeview images
             class CommonPreviewContent
             {
             public:
                 AZ_CLASS_ALLOCATOR(CommonPreviewContent, AZ::SystemAllocator, 0);
 
-                CommonPreviewContent(
-                    RPI::ScenePtr scene,
-                    RPI::ViewPtr view,
-                    AZ::Uuid entityContextId,
-                    const Data::AssetId& modelAssetId,
-                    const Data::AssetId& materialAssetId,
-                    const Data::AssetId& lightingPresetAssetId);
-                ~CommonPreviewContent();
-
-                void Load();
-                bool IsReady() const;
-                bool IsError() const;
-                void ReportErrors();
-                void UpdateScene();
-
-            private:
-                void UpdateModel();
-                void UpdateLighting();
-                void UpdateCamera();
-
-                static constexpr float AspectRatio = 1.0f;
-                static constexpr float NearDist = 0.001f;
-                static constexpr float FarDist = 100.0f;
-                static constexpr float FieldOfView = Constants::HalfPi;
-                static constexpr float CameraRotationAngle = Constants::QuarterPi / 2.0f;
-
-                RPI::ScenePtr m_scene;
-                RPI::ViewPtr m_view;
-                AZ::Uuid m_entityContextId;
-                Entity* m_modelEntity = nullptr;
-
-                static constexpr const char* DefaultLightingPresetPath = "lightingpresets/thumbnail.lightingpreset.azasset";
-                const Data::AssetId DefaultLightingPresetAssetId = AZ::RPI::AssetUtils::GetAssetIdForProductPath(DefaultLightingPresetPath);
-                Data::Asset<RPI::AnyAsset> m_defaultLightingPresetAsset;
-                Data::Asset<RPI::AnyAsset> m_lightingPresetAsset;
-
-                //! Model asset about to be rendered
-                static constexpr const char* DefaultModelPath = "models/sphere.azmodel";
-                const Data::AssetId DefaultModelAssetId = AZ::RPI::AssetUtils::GetAssetIdForProductPath(DefaultModelPath);
-                Data::Asset<RPI::ModelAsset> m_defaultModelAsset;
-                Data::Asset<RPI::ModelAsset> m_modelAsset;
-
-                //! Material asset about to be rendered
-                static constexpr const char* DefaultMaterialPath = "materials/basic_grey.azmaterial";
-                const Data::AssetId DefaultMaterialAssetId = AZ::RPI::AssetUtils::GetAssetIdForProductPath(DefaultMaterialPath);
-                Data::Asset<RPI::MaterialAsset> m_defaultMaterialAsset;
-                Data::Asset<RPI::MaterialAsset> m_materialAsset;
+                CommonPreviewContent() = default;
+                virtual ~CommonPreviewContent() = default;
+                virtual void Load() = 0;
+                virtual bool IsReady() const = 0;
+                virtual bool IsError() const = 0;
+                virtual void ReportErrors() = 0;
+                virtual void UpdateScene() = 0;
             };
         } // namespace Thumbnails
     } // namespace LyIntegration
