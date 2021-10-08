@@ -42,8 +42,6 @@
 #define s_nodeParams s_nodeParamsSene
 #define AddSupportedParam AddSupportedParamScene
 
-float const kDefaultCameraFOV = 60.0f;
-
 namespace {
     bool s_nodeParamsInitialized = false;
     StaticInstance<std::vector<CAnimNode::SParamInfo>> s_nodeParams;
@@ -91,13 +89,13 @@ namespace {
             AZ::Quaternion quat = LYQuaternionToAZQuaternion(localRotation);
             AZ::TransformBus::Event(m_cameraEntityId, &AZ::TransformBus::Events::SetLocalRotationQuaternion, quat);
         }
-        float GetFoV() const
+        float GetFoV() const override
         {
             float retFoV = DEFAULT_FOV;
             Camera::CameraRequestBus::EventResult(retFoV, m_cameraEntityId, &Camera::CameraComponentRequests::GetFovDegrees);
             return retFoV;
         }
-        float GetNearZ() const
+        float GetNearZ() const override
         {
             float retNearZ = DEFAULT_NEAR;
             Camera::CameraRequestBus::EventResult(retNearZ, m_cameraEntityId, &Camera::CameraComponentRequests::GetNearClipDistance);
@@ -697,7 +695,6 @@ void CAnimSceneNode::InterpolateCameras(SCameraParams& retInterpolatedCameraPara
         return;
     }
 
-    static const float EPSILON_TIME = 0.01f;            // consider times within EPSILON_TIME of beginning of blend time to be at the beginning of blend time
     float interpolatedFoV;
 
     ISceneCamera* secondCamera = static_cast<ISceneCamera*>(new CComponentEntitySceneCamera(secondKey.cameraAzEntityId));

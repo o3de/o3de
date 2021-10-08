@@ -237,7 +237,7 @@ namespace ScriptCanvasTesting
             return result;
         }
 
-        void Void(AZStd::string_view value)
+        void Void(AZStd::string_view value) override
         {
             Call(FN_Void, value);
         }

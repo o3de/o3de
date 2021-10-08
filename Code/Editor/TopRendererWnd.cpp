@@ -26,27 +26,6 @@
 #define GL_RGBA 0x1908
 #define GL_BGRA 0x80E1
 
-// Used to give each static object type a different color
-static uint32 sVegetationColors[16] =
-{
-    0xFFFF0000,
-    0xFF00FF00,
-    0xFF0000FF,
-    0xFFFFFFFF,
-    0xFFFF00FF,
-    0xFFFFFF00,
-    0xFF00FFFF,
-    0xFF7F00FF,
-    0xFF7FFF7F,
-    0xFFFF7F00,
-    0xFF00FF7F,
-    0xFF7F7F7F,
-    0xFFFF0000,
-    0xFF00FF00,
-    0xFF0000FF,
-    0xFFFFFFFF,
-};
-
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction
 //////////////////////////////////////////////////////////////////////

@@ -5,9 +5,19 @@
     "origin": "Amazon Web Services, Inc.",
     "type": "Code",
     "summary": "AWS Client Auth provides client authentication and AWS authorization solution.",
-    "canonical_tags": ["Gem"],
-    "user_tags": ["AWS", "Network", "SDK"],
+    "canonical_tags": [
+        "Gem"
+    ],
+    "user_tags": [
+        "AWS",
+        "Network",
+        "SDK"
+    ],
     "icon_path": "preview.png",
     "requirements": "",
-    "documentation_url": "https://o3de.org/docs/user-guide/gems/reference/aws/aws-client-auth/"
+    "documentation_url": "https://o3de.org/docs/user-guide/gems/reference/aws/aws-client-auth/",
+    "dependencies": [
+        "AWSCore",
+        "HttpRequestor"
+    ]
 }

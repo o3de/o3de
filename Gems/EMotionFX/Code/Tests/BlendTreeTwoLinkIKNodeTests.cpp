@@ -165,8 +165,6 @@ namespace EMotionFX
             if (weight)
             {
                 const AZ::Vector3 expectedPosition(goalX, goalY, goalZ);
-                const AZ::Vector3 dist = (expectedPosition - testJointNewPos).GetAbs();
-                const float length = dist.GetLength();
                 EXPECT_TRUE(PosePositionCompareClose(testJointNewPos, expectedPosition, 0.0001f))
                     << "Joint position should be similar to expected position.";
             }

@@ -19,7 +19,7 @@
 
 namespace MaterialBuilder
 {
-    const char s_materialBuilder[] = "MaterialBuilder";
+    [[maybe_unused]] const char s_materialBuilder[] = "MaterialBuilder";
 
     namespace Internal
     {
@@ -28,7 +28,7 @@ namespace MaterialBuilder
         const char g_nodeNameTexture[] = "Texture";
         const char g_nodeNameTextures[] = "Textures";
         const char g_attributeFileName[] = "File";
-        
+
         const int g_numSourceImageFormats = 9;
         const char* g_sourceImageFormats[g_numSourceImageFormats] = { ".tif", ".tiff", ".bmp", ".gif", ".jpg", ".jpeg", ".tga", ".png", ".dds" };
         bool IsSupportedImageExtension(const AZStd::string& extension)
@@ -66,7 +66,7 @@ namespace MaterialBuilder
             return actualFileName;
         }
 
-        // Parses the material XML for all texture paths 
+        // Parses the material XML for all texture paths
         AZ::Outcome<AZStd::string, AZStd::string> GetTexturePathsFromMaterial(AZ::rapidxml::xml_node<char>* materialNode, AZStd::vector<AZStd::string>& paths)
         {
             AZ::Outcome<AZStd::string, AZStd::string> resultOutcome = AZ::Failure(AZStd::string(""));
@@ -94,7 +94,7 @@ namespace MaterialBuilder
                             // do an initial clean-up of the path taken from the file, similar to MaterialHelpers::SetTexturesFromXml
                             AZStd::string texturePath = CleanLegacyPathingFromTexturePath(rawTexturePath);
                             paths.emplace_back(AZStd::move(texturePath));
-                        }                        
+                        }
 
                         textureNode = textureNode->next_sibling(g_nodeNameTexture);
                     } while (textureNode);
@@ -112,7 +112,7 @@ namespace MaterialBuilder
                     return AZ::Failure(AZStd::string("SubMaterials node exists but does not have any child Material nodes."));
                 }
 
-                do 
+                do
                 {
                     // grab the texture paths from the submaterial, or error out if necessary
                     AZ::Outcome<AZStd::string, AZStd::string> subMaterialTexturePathsResult = GetTexturePathsFromMaterial(subMaterialNode, paths);
@@ -142,7 +142,7 @@ namespace MaterialBuilder
         }
 
         // find a sequence of digits with a string starting from lastDigitIndex, and try to parse that sequence to and int
-        //  and store it in outAnimIndex. 
+        //  and store it in outAnimIndex.
         bool ParseFilePathForCompleteNumber(const AZStd::string& filePath, int& lastDigitIndex, int& outAnimIndex)
         {
             int firstAnimIndexDigit = lastDigitIndex;
@@ -162,7 +162,7 @@ namespace MaterialBuilder
         AZ::Outcome<void, AZStd::string> GetAllTexturesInTextureSequence(const AZStd::string& path, AZStd::vector<AZStd::string>& texturesInSequence)
         {
             // Taken from CShaderMan::mfReadTexSequence
-            // All comments next to variable declarations in this function are the original variable names in 
+            // All comments next to variable declarations in this function are the original variable names in
             //  CShaderMan::mfReadTexSequence, to help keep track of how these variables relate to the original function
             AZStd::string prefix;
             AZStd::string postfix;
@@ -172,7 +172,7 @@ namespace MaterialBuilder
             AzFramework::StringFunc::Path::GetExtension(filePath.c_str(), extension);
             AzFramework::StringFunc::Path::StripExtension(filePath);
 
-            // unsure if it is actually possible to enter here or the original version with '$' as the indicator 
+            // unsure if it is actually possible to enter here or the original version with '$' as the indicator
             //  for texture sequences, but they check for both just in case, so this will match the behavior.
             char separator = '#';           // chSep
             int firstSeparatorIndex = static_cast<int>(filePath.find(separator));
@@ -186,7 +186,7 @@ namespace MaterialBuilder
                 separator = '$';
             }
 
-            // we don't actually care about getting the speed of the animation, so just remove everything from the 
+            // we don't actually care about getting the speed of the animation, so just remove everything from the
             //  end of the string starting with the last open parenthesis
             size_t speedStartIndex = filePath.find_last_of('(');
             if (speedStartIndex != AZStd::string::npos)
@@ -195,7 +195,7 @@ namespace MaterialBuilder
                 AzFramework::StringFunc::Append(filePath, '\0');
             }
 
-            // try to find where the digits start after the separator (there can be any number of separators 
+            // try to find where the digits start after the separator (there can be any number of separators
             //  between the texture name prefix and where the digit range starts)
             int firstAnimIndexDigit = -1;   // m
             int numSeparators = 0;          // j
@@ -219,7 +219,7 @@ namespace MaterialBuilder
             {
                 return AZ::Failure(AZStd::string("Failed to find separator '#' or '$' in texture path."));
             }
-            
+
             // store off everything before the separator
             prefix = AZStd::move(filePath.substr(0, firstSeparatorIndex));
 
@@ -242,7 +242,7 @@ namespace MaterialBuilder
 
                 // reset to the start of the next index
                 ++lastDigitIndex;
-                
+
                 // find the length of the end index, then parse that to an int
                 if (!ParseFilePathForCompleteNumber(filePath, lastDigitIndex, endAnimIndex))
                 {
@@ -262,8 +262,8 @@ namespace MaterialBuilder
 
             return AZ::Success();
         }
-        
-        // Determine which product path to use based on the path stored in the texture, and make it relative to 
+
+        // Determine which product path to use based on the path stored in the texture, and make it relative to
         //  the cache.
         bool ResolveMaterialTexturePath(const AZStd::string& path, AZStd::string& outPath)
         {
@@ -272,7 +272,7 @@ namespace MaterialBuilder
             //if its a source image format try to load the dds
             AZStd::string extension;
             bool hasExtension = AzFramework::StringFunc::Path::GetExtension(path.c_str(), extension);
-                        
+
             // Replace all supported extensions with DDS if it has an extension. If the extension exists but is not supported, fail out.
             if (hasExtension && IsSupportedImageExtension(extension))
             {
@@ -286,17 +286,17 @@ namespace MaterialBuilder
 
             AZStd::to_lower(aliasedPath.begin(), aliasedPath.end());
             AzFramework::StringFunc::Path::Normalize(aliasedPath);
-            
+
             AZStd::string currentFolderSpecifier = AZStd::string::format(".%c", AZ_CORRECT_FILESYSTEM_SEPARATOR);
             if (AzFramework::StringFunc::StartsWith(aliasedPath, currentFolderSpecifier))
             {
                 AzFramework::StringFunc::Strip(aliasedPath, currentFolderSpecifier.c_str(), false, true);
             }
-            
+
             AZStd::string resolvedPath;
             char fullPathBuffer[AZ_MAX_PATH_LEN] = {};
-            // if there is an alias already at the front of the path, resolve it, and try to make it relative to the 
-            //  cache (@assets@). If it can't, then error out.
+            // if there is an alias already at the front of the path, resolve it, and try to make it relative to the
+            //  cache (@products@). If it can't, then error out.
             // This case handles the possibility of aliases existing in texture paths in materials that is still supported
             //  by the legacy loading code, however it is not currently used, so the else path is always taken.
             if (aliasedPath[0] == '@')
@@ -308,7 +308,7 @@ namespace MaterialBuilder
                 }
                 resolvedPath = fullPathBuffer;
                 AzFramework::StringFunc::Path::Normalize(resolvedPath);
-                if (!AzFramework::StringFunc::Replace(resolvedPath, AZ::IO::FileIOBase::GetDirectInstance()->GetAlias("@assets@"), ""))
+                if (!AzFramework::StringFunc::Replace(resolvedPath, AZ::IO::FileIOBase::GetDirectInstance()->GetAlias("@products@"), ""))
                 {
                     AZ_Warning(s_materialBuilder, false, "Failed to resolve aliased texture path %s to be relative to the asset cache. Please make sure this alias resolves to a path within the asset cache.", aliasedPath.c_str());
                     return false;
@@ -318,7 +318,7 @@ namespace MaterialBuilder
             {
                 resolvedPath = AZStd::move(aliasedPath);
             }
-            
+
             // AP deferred path resolution requires UNIX separators and no leading separators, so clean up and convert here
             if (AzFramework::StringFunc::StartsWith(resolvedPath, AZ_CORRECT_FILESYSTEM_SEPARATOR_STRING))
             {
@@ -357,7 +357,7 @@ namespace MaterialBuilder
 
         // (optimization) this builder does not emit source dependencies:
         builderDescriptor.m_flags |= AssetBuilderSDK::AssetBuilderDesc::BF_EmitsNoDependencies;
-        
+
         m_materialBuilder.BusConnect(builderDescriptor.m_busId);
 
         EBUS_EVENT(AssetBuilderSDK::AssetBuilderBus, RegisterBuilderInformation, builderDescriptor);
@@ -548,10 +548,10 @@ namespace MaterialBuilder
             }
         }
 
-        // for each texture in the file 
+        // for each texture in the file
         for (const AZStd::string& texPath : texturePaths)
         {
-            // if the texture path starts with a '$' then it is a special runtime defined texture, so it it doesn't have 
+            // if the texture path starts with a '$' then it is a special runtime defined texture, so it it doesn't have
             //  an actual asset on disk to depend on. If the texture path doesn't have an extension, then it is a texture
             //  that is determined at runtime (such as 'nearest_cubemap'), so also ignore those, as other things pull in
             //  those dependencies.
@@ -567,7 +567,7 @@ namespace MaterialBuilder
                 AZ_Warning(s_materialBuilder, false, "Failed to resolve texture path %s to a product path when gathering dependencies for %s. Registering dependencies on this texture path will be skipped.", texPath.c_str(), path.c_str());
                 continue;
             }
-            
+
             resolvedPaths.emplace_back(AZStd::move(resolvedPath));
         }
 

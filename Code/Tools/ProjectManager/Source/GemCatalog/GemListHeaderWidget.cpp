@@ -60,11 +60,14 @@ namespace O3DE::ProjectManager
         QLabel* showCountLabel = new QLabel();
         showCountLabel->setObjectName("GemCatalogHeaderShowCountLabel");
         topLayout->addWidget(showCountLabel);
-        connect(proxyModel, &GemSortFilterProxyModel::OnInvalidated, this, [=]
-            {
+
+        auto refreshGemCountUI = [=]() {
                 const int numGemsShown = proxyModel->rowCount();
                 showCountLabel->setText(QString(tr("showing %1 Gems")).arg(numGemsShown));
-            });
+            };
+
+        connect(proxyModel, &GemSortFilterProxyModel::OnInvalidated, this, refreshGemCountUI);
+        connect(proxyModel->GetSourceModel(), &GemModel::dataChanged, this, refreshGemCountUI);
 
         topLayout->addSpacing(GemItemDelegate::s_contentMargins.right() + GemItemDelegate::s_borderWidth);
 

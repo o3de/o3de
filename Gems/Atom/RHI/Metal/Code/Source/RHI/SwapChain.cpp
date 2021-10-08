@@ -6,10 +6,10 @@
  *
  */
 
+#include <AzCore/Debug/Profiler.h>
 #include <AzCore/std/string/conversions.h>
 #include <AzCore/std/string/string.h>
 #include <AzFramework/Windowing/WindowBus.h>
-#include <Atom/RHI/CpuProfiler.h>
 #include <RHI/Device.h>
 #include <RHI/Image.h>
 #include <RHI/SwapChain.h>
@@ -123,9 +123,6 @@ namespace AZ
 
         RHI::ResultCode SwapChain::InitImageInternal(const InitImageRequest& request)
         {
-            const RHI::SwapChainDescriptor& descriptor = GetDescriptor();
-            Device& device = GetDevice();
-            
             Name name(AZStd::string::format("SwapChainImage_%d", request.m_imageIndex));
             Image& image = static_cast<Image&>(*request.m_image);
             
@@ -195,7 +192,7 @@ namespace AZ
     
         id<MTLTexture> SwapChain::RequestDrawable(bool isFrameCaptureEnabled)
         {
-            AZ_ATOM_PROFILE_FUNCTION("RHI", "SwapChain::RequestDrawable");
+            AZ_PROFILE_SCOPE(RHI, "SwapChain::RequestDrawable");
             m_metalView.metalLayer.framebufferOnly = !isFrameCaptureEnabled;
             const uint32_t currentImageIndex = GetCurrentImageIndex();
             if(m_drawables[currentImageIndex])

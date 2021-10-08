@@ -19,6 +19,7 @@
 #include <QWidgetAction>
 #include <QComboBox>
 
+#include <AzToolsFramework/UI/Prefab/PrefabViewportFocusPathHandler.h>
 #include <AzQtComponents/Components/Widgets/SpinBox.h>
 
 #include <HMDBus.h>
@@ -77,7 +78,7 @@ Q_SIGNALS:
 protected:
     virtual void OnInitDialog();
 
-    virtual void OnEditorNotifyEvent(EEditorNotifyEvent event);
+    void OnEditorNotifyEvent(EEditorNotifyEvent event) override;
     void OnSystemEvent(ESystemEvent event, UINT_PTR wparam, UINT_PTR lparam) override;
 
     void OnMaximize();
@@ -175,6 +176,8 @@ protected:
     AzQtComponents::DoubleSpinBox* m_angleSpinBox = nullptr;
     QWidgetAction* m_gridSizeActionWidget = nullptr;
     QWidgetAction* m_angleSizeActionWidget = nullptr;
+
+    AzToolsFramework::Prefab::PrefabViewportFocusPathHandler* m_prefabViewportFocusPathHandler = nullptr;
 
     QScopedPointer<Ui::ViewportTitleDlg> m_ui;
 };

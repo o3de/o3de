@@ -27,38 +27,14 @@ namespace AZ
             return Interface<CpuProfiler>::Get();
         }
 
-        // --- TimeRegion ---
-
-        TimeRegion::TimeRegion(const GroupRegionName* groupRegionName) :
-            CachedTimeRegion(groupRegionName)
-        {
-            if (CpuProfiler::Get())
-            {
-                CpuProfiler::Get()->BeginTimeRegion(*this);
-            }
-        }
-
-        TimeRegion::~TimeRegion()
-        {
-            EndRegion();
-        }
-
-        void TimeRegion::EndRegion()
-        {
-            if (CpuProfiler::Get())
-            {
-                CpuProfiler::Get()->EndTimeRegion();
-            }
-        }
-
         // --- CachedTimeRegion ---
 
-        CachedTimeRegion::CachedTimeRegion(const GroupRegionName* groupRegionName)
+        CachedTimeRegion::CachedTimeRegion(const GroupRegionName& groupRegionName)
         {
             m_groupRegionName = groupRegionName;
         }
 
-        CachedTimeRegion::CachedTimeRegion(const GroupRegionName* groupRegionName, uint16_t stackDepth, uint64_t startTick, uint64_t endTick)
+        CachedTimeRegion::CachedTimeRegion(const GroupRegionName& groupRegionName, uint16_t stackDepth, uint64_t startTick, uint64_t endTick)
         {
             m_groupRegionName = groupRegionName;
             m_stackDepth = stackDepth;
@@ -92,6 +68,7 @@ namespace AZ
 
         void CpuProfilerImpl::Init()
         {
+            Interface<AZ::Debug::Profiler>::Register(this);
             Interface<CpuProfiler>::Register(this);
             m_initialized = true;
             SystemTickBus::Handler::BusConnect();
@@ -106,6 +83,7 @@ namespace AZ
             }
             // When this call is made, no more thread profiling calls can be performed anymore
             Interface<CpuProfiler>::Unregister(this);
+            Interface<AZ::Debug::Profiler>::Unregister(this);
 
             // Wait for the remaining threads that might still be processing its profiling calls
             AZStd::unique_lock<AZStd::shared_mutex> shutdownLock(m_shutdownMutex);
@@ -121,7 +99,7 @@ namespace AZ
             SystemTickBus::Handler::BusDisconnect();
         }
 
-        void CpuProfilerImpl::BeginTimeRegion(TimeRegion& timeRegion)
+        void CpuProfilerImpl::BeginRegion(const AZ::Debug::Budget* budget, const char* eventName)
         {
             // Try to lock here, the shutdownMutex will only be contested when the CpuProfiler is shutting down.
             if (m_shutdownMutex.try_lock_shared())
@@ -132,6 +110,7 @@ namespace AZ
                     RegisterThreadStorage();
 
                     // Push it to the stack
+                    CachedTimeRegion timeRegion({budget->Name(), eventName});
                     ms_threadLocalStorage->RegionStackPushBack(timeRegion);
                 }
 
@@ -139,12 +118,13 @@ namespace AZ
             }
         }
 
-        void CpuProfilerImpl::EndTimeRegion()
+        void CpuProfilerImpl::EndRegion([[maybe_unused]] const AZ::Debug::Budget* budget)
         {
             // Try to lock here, the shutdownMutex will only be contested when the CpuProfiler is shutting down.
             if (m_shutdownMutex.try_lock_shared())
             {
-                if (m_enabled)
+                // guard against enabling mid-marker
+                if (m_enabled && ms_threadLocalStorage != nullptr)
                 {
                     ms_threadLocalStorage->RegionStackPopBack();
                 }
@@ -232,19 +212,6 @@ namespace AZ
             return m_enabled;
         }
 
-        const CachedTimeRegion::GroupRegionName& CpuProfilerImpl::InsertDynamicName(const char* groupName, const AZStd::string& regionName)
-        {
-            AZStd::scoped_lock lock(m_dynamicNameMutex);
-            AZ_Warning("CpuProfiler", m_regionNameStringPool.size() < MaxRegionStringPoolSize,
-                "Stored dynamic region names are accumulating. Consider removing a AZ_ATOM_PROFILE_DYNAMIC invocation.");
-            auto [regionNameItr, wasRegionInserted] =  m_regionNameStringPool.insert(regionName);
-
-            CachedTimeRegion::GroupRegionName newGroupRegionName(groupName, regionNameItr->c_str());
-            auto [groupRegionNameItr, wasGroupRegionInserted] = m_dynamicGroupRegionNamePool.insert(newGroupRegionName);
-
-            return *groupRegionNameItr;
-        }
-
         void CpuProfilerImpl::OnSystemTick()
         {
             if (!m_enabled)
@@ -307,7 +274,7 @@ namespace AZ
             m_deleteFlag = true;
         }
 
-        void CpuTimingLocalStorage::RegionStackPushBack(TimeRegion& timeRegion)
+        void CpuTimingLocalStorage::RegionStackPushBack(CachedTimeRegion& timeRegion)
         {
             // If it was (re)enabled, clear the lists first
             if (m_clearContainers)
@@ -323,13 +290,13 @@ namespace AZ
             timeRegion.m_stackDepth = static_cast<uint16_t>(m_stackLevel);
 
             AZ_Assert(m_timeRegionStack.size() < TimeRegionStackSize, "Adding too many time regions to the stack. Increase the size of TimeRegionStackSize.");
-            m_timeRegionStack.push_back(&timeRegion);
+            m_timeRegionStack.push_back(timeRegion);
 
             // Increment the stack
             m_stackLevel++;
 
             // Set the starting time at the end, to avoid recording the minor overhead
-            timeRegion.m_startTick = AZStd::GetTimeNowTicks();
+            m_timeRegionStack.back().m_startTick = AZStd::GetTimeNowTicks();
         }
 
         void CpuTimingLocalStorage::RegionStackPopBack()
@@ -344,23 +311,23 @@ namespace AZ
             const AZStd::sys_time_t endRegionTime = AZStd::GetTimeNowTicks();
 
             AZ_Assert(!m_timeRegionStack.empty(), "Trying to pop an element in the stack, but it's empty.");
-            TimeRegion* back = m_timeRegionStack.back();
+            CachedTimeRegion back = m_timeRegionStack.back();
             m_timeRegionStack.pop_back();
 
             // Set the ending time
-            back->m_endTick = endRegionTime;
+            back.m_endTick = endRegionTime;
 
             // Decrement the stack
             m_stackLevel--;
 
             // Add an entry to the cached region
-            AddCachedRegion(CachedTimeRegion(back->m_groupRegionName, back->m_stackDepth, back->m_startTick, back->m_endTick));
+            AddCachedRegion(back);
         }
 
         // Gets called when region ends and all data is set
-        void CpuTimingLocalStorage::AddCachedRegion(CachedTimeRegion&& timeRegionCached)
+        void CpuTimingLocalStorage::AddCachedRegion(const CachedTimeRegion& timeRegionCached)
         {
-            if (m_hitSizeLimitMap[timeRegionCached.m_groupRegionName->m_regionName])
+            if (m_hitSizeLimitMap[timeRegionCached.m_groupRegionName.m_regionName])
             {
                 return;
             }
@@ -379,12 +346,12 @@ namespace AZ
                 // Add the cached regions to the map
                 for (auto& cachedTimeRegion : m_cachedTimeRegions)
                 {
-                    const AZStd::string regionName = cachedTimeRegion.m_groupRegionName->m_regionName;
+                    const AZStd::string regionName = cachedTimeRegion.m_groupRegionName.m_regionName;
                     AZStd::vector<CachedTimeRegion>& regionVec = m_cachedTimeRegionMap[regionName];
                     regionVec.push_back(cachedTimeRegion);
                     if (regionVec.size() >= TimeRegionStackSize)
                     {
-                        m_hitSizeLimitMap[cachedTimeRegion.m_groupRegionName->m_regionName] = true;
+                        m_hitSizeLimitMap.insert_or_assign(AZStd::move(regionName), true);
                     }
                 }
 
@@ -448,8 +415,8 @@ namespace AZ
         CpuProfilingStatisticsSerializer::CpuProfilingStatisticsSerializerEntry::CpuProfilingStatisticsSerializerEntry(
             const RHI::CachedTimeRegion& cachedTimeRegion, AZStd::thread_id threadId)
         {
-            m_groupName = cachedTimeRegion.m_groupRegionName->m_groupName;
-            m_regionName = cachedTimeRegion.m_groupRegionName->m_regionName;
+            m_groupName = cachedTimeRegion.m_groupRegionName.m_groupName;
+            m_regionName = cachedTimeRegion.m_groupRegionName.m_regionName;
             m_stackDepth = cachedTimeRegion.m_stackDepth;
             m_startTick = cachedTimeRegion.m_startTick;
             m_endTick = cachedTimeRegion.m_endTick;

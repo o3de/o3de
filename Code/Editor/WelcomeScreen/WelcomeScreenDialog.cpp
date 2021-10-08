@@ -34,6 +34,7 @@
 // AzQtComponents
 #include <AzQtComponents/Components/Widgets/CheckBox.h>
 #include <AzQtComponents/Components/WindowDecorationWrapper.h>
+#include <AzQtComponents/Utilities/PixmapScaleUtilities.h>
 
 // Editor
 #include "Settings.h"
@@ -79,8 +80,11 @@ WelcomeScreenDialog::WelcomeScreenDialog(QWidget* pParent)
     {
         projectPreviewPath = ":/WelcomeScreenDialog/DefaultProjectImage.png";
     }
+    
     ui->activeProjectIcon->setPixmap(
-        QPixmap(projectPreviewPath).scaled(
+        AzQtComponents::ScalePixmapForScreenDpi(
+            QPixmap(projectPreviewPath),
+            screen(),
             ui->activeProjectIcon->size(),
             Qt::KeepAspectRatioByExpanding,
             Qt::SmoothTransformation

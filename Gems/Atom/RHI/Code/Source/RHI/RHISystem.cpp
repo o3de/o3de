@@ -6,18 +6,19 @@
  *
  */
 
-#include <Atom/RHI/CpuProfiler.h>
 #include <Atom/RHI/Device.h>
 #include <Atom/RHI/Factory.h>
 #include <Atom/RHI/RHISystem.h>
 #include <Atom/RHI/RHIUtils.h>
 
+#include <AzCore/Debug/Profiler.h>
 #include <AzCore/Interface/Interface.h>
 
 #include <AzFramework/API/ApplicationAPI.h>
 #include <AzFramework/CommandLine/CommandLine.h>
 #include <Atom/RHI.Reflect/PlatformLimitsDescriptor.h>
 #include <AzCore/Settings/SettingsRegistryImpl.h>
+#include <AzCore/std/string/conversions.h>
 
 AZ_DEFINE_BUDGET(RHI);
 
@@ -36,7 +37,7 @@ namespace AZ
             m_device = InitInternalDevice();
         }
     
-        void RHISystem::Init(const RHISystemDescriptor& descriptor)
+        void RHISystem::Init()
         {
             m_cpuProfiler.Init();
 
@@ -86,14 +87,6 @@ namespace AZ
                 
             frameSchedulerDescriptor.m_platformLimitsDescriptor = platformLimitsDescriptor;
             m_frameScheduler.Init(*m_device, frameSchedulerDescriptor);
-
-            // Register draw list tags declared from content.
-            for (const Name& drawListName : descriptor.m_drawListTags)
-            {
-                RHI::DrawListTag drawListTag = m_drawListTagRegistry->AcquireTag(drawListName);
-
-                AZ_Warning("RHISystem", drawListTag.IsValid(), "Failed to register draw list tag '%s'. Registry at capacity.", drawListName.GetCStr());
-            }
         }
 
         RHI::Ptr<RHI::Device> RHISystem::InitInternalDevice()
@@ -109,6 +102,8 @@ namespace AZ
             }
 
             AZStd::string preferredUserAdapterName = RHI::GetCommandLineValue("forceAdapter");
+            AZStd::to_lower(preferredUserAdapterName.begin(), preferredUserAdapterName.end());
+            bool findPreferredUserDevice = preferredUserAdapterName.size() > 0;
 
             RHI::PhysicalDevice* preferredUserDevice{};
             RHI::PhysicalDevice* preferredVendorDevice{};
@@ -118,12 +113,15 @@ namespace AZ
                 const RHI::PhysicalDeviceDescriptor& descriptor = physicalDevice->GetDescriptor();
 
                 AZ_Printf("RHISystem", "\tEnumerated physical device: %s\n", descriptor.m_description.c_str());
-
-                if (!preferredUserDevice && descriptor.m_description == preferredUserAdapterName)
+                if (findPreferredUserDevice)
                 {
-                    preferredUserDevice = physicalDevice.get();
+                    AZStd::string descriptorLowerCase = descriptor.m_description;
+                    AZStd::to_lower( descriptorLowerCase.begin(), descriptorLowerCase.end());
+                    if (!preferredUserDevice && descriptorLowerCase.contains(preferredUserAdapterName))
+                    {
+                        preferredUserDevice = physicalDevice.get();
+                    }
                 }
-
                 // Record the first nVidia or AMD device we find.
                 if (!preferredVendorDevice && (descriptor.m_vendorId == RHI::VendorId::AMD || descriptor.m_vendorId == RHI::VendorId::nVidia))
                 {
@@ -155,7 +153,7 @@ namespace AZ
             // Some GPU drivers have known issues and it is recommended to update or use other versions.
             auto settingsRegistry = AZ::SettingsRegistry::Get();
             PhysicalDeviceDriverValidator physicalDriverValidator;
-            if (!(settingsRegistry && settingsRegistry->GetObject(physicalDriverValidator, "/Amazon/Atom/RHI/PhysicalDeviceDriverInfo")))
+            if (!(settingsRegistry && settingsRegistry->GetObject(physicalDriverValidator, "/O3DE/Atom/RHI/PhysicalDeviceDriverInfo")))
             {
                 AZ_Printf("RHISystem", "Failed to get settings registry for GPU driver Info.");
             }
@@ -195,8 +193,7 @@ namespace AZ
 
         void RHISystem::FrameUpdate(FrameGraphCallback frameGraphCallback)
         {
-            AZ_PROFILE_FUNCTION(RHI);
-            AZ_ATOM_PROFILE_FUNCTION("RHI", "RHISystem: FrameUpdate");
+            AZ_PROFILE_SCOPE(RHI, "RHISystem: FrameUpdate");
 
             {
                 AZ_PROFILE_SCOPE(RHI, "main per-frame work");
@@ -209,7 +206,7 @@ namespace AZ
                  * own RHI scopes to the frame scheduler. This happens prior to the RPI pass graph registration.
                  */
                 {
-                    AZ_ATOM_PROFILE_TIME_GROUP_REGION("RHI", "RHISystem: FrameUpdate: OnFramePrepare");
+                    AZ_PROFILE_SCOPE(RHI, "RHISystem: FrameUpdate: OnFramePrepare");
                     RHISystemNotificationBus::Broadcast(&RHISystemNotificationBus::Events::OnFramePrepare, m_frameScheduler);
                 }
 

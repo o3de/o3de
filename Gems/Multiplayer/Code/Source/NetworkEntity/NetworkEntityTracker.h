@@ -15,6 +15,8 @@
 
 namespace Multiplayer
 {
+    class NetBindComponent;
+
     //! @class NetworkEntityTracker
     //! @brief The responsibly of this class is to allow entity netEntityId's to be looked up.
     class NetworkEntityTracker
@@ -23,20 +25,31 @@ namespace Multiplayer
 
         using EntityMap = AZStd::unordered_map<NetEntityId, AZ::Entity*>;
         using NetEntityIdMap = AZStd::unordered_map<AZ::EntityId, NetEntityId>;
+        using NetBindingMap = AZStd::unordered_map<AZ::Entity*, NetBindComponent*>;
         using iterator = EntityMap::iterator;
         using const_iterator = EntityMap::const_iterator;
 
         NetworkEntityTracker() = default;
 
-        //! Adds a networked entity to the tracker
+        //! Adds a networked entity to the tracker.
         //! @param netEntityId the networkId of the entity to add
         //! @param entity pointer to the entity corresponding to the networkId
         void Add(NetEntityId netEntityId, AZ::Entity* entity);
+
+        //! Registers a new NetBindComponent with the NetworkEntityTracker.
+        //! @param entity    pointer to the entity we are registering the NetBindComponent for
+        //! @param component pointer to the NetBindComponent being registered
+        void RegisterNetBindComponent(AZ::Entity* entity, NetBindComponent* component);
+
+        //! Unregisters a NetBindComponent from the NetworkEntityTracker.
+        //! @param component pointer to the NetBindComponent being removed
+        void UnregisterNetBindComponent(NetBindComponent* component);
 
         //! Returns an entity handle which can validate entity existence.
         NetworkEntityHandle Get(NetEntityId netEntityId);
         ConstNetworkEntityHandle Get(NetEntityId netEntityId) const;
 
+        //! Returns Net Entity ID for a given AZ Entity ID.
         NetEntityId Get(const AZ::EntityId& entityId) const;
 
         //! Returns true if the netEntityId exists.
@@ -45,8 +58,13 @@ namespace Multiplayer
         //! Get a raw pointer of an entity.
         AZ::Entity *GetRaw(NetEntityId netEntityId) const;
 
-        //! Moves the given iterator out of the entity holder and returns the ptr
+        //! Moves the given iterator out of the entity holder and returns the ptr.
         AZ::Entity *Move(EntityMap::iterator iter);
+
+        //! Retrieves the NetBindComponent for the provided AZ::Entity, nullptr if the entity does not have netbinding.
+        //! @param entity pointer to the entity to retrieve the NetBindComponent for
+        //! @return pointer to the entities NetBindComponent, or nullptr if the entity doesn't exist or does not have netbinding
+        NetBindComponent* GetNetBindComponent(AZ::Entity* rawEntity) const;
 
         //! Container overloads
         //!@{
@@ -78,6 +96,7 @@ namespace Multiplayer
 
         EntityMap m_entityMap;
         NetEntityIdMap m_netEntityIdMap;
+        NetBindingMap m_netBindingMap;
         uint32_t m_deleteChangeDirty = 0;
         uint32_t m_addChangeDirty = 0;
     };

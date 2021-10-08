@@ -6,7 +6,9 @@
  *
  */
 
+#include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/RTTI/AttributeReader.h>
+#include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/Json/JsonSerializer.h>
 #include <AzCore/Serialization/Json/BaseJsonSerializer.h>
 #include <AzCore/Serialization/Json/JsonSerialization.h>
@@ -161,7 +163,6 @@ namespace AZ
         using namespace JsonSerializationResult;
 
         StoreTypeId storeTypeId = StoreTypeId::No;
-        Uuid resolvedTypeId = classData.m_typeId;
         const SerializeContext::ClassData* resolvedClassData = &classData;
         AZStd::any defaultPointerObject;
 

@@ -124,10 +124,9 @@ AllocateConstIntCVar(CLyShine, CV_ui_RunUnitTestsOnStartup);
 #endif
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-CLyShine::CLyShine(ISystem* system)
+CLyShine::CLyShine([[maybe_unused]] ISystem* system)
     : AzFramework::InputChannelEventListener(AzFramework::InputChannelEventListener::GetPriorityUI())
     , AzFramework::InputTextEventListener(AzFramework::InputTextEventListener::GetPriorityUI())
-    , m_system(system)
     , m_draw2d(new CDraw2d)
     , m_uiRenderer(new UiRenderer)
     , m_uiCanvasManager(new UiCanvasManager)

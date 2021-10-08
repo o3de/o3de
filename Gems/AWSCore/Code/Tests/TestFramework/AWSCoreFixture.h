@@ -130,10 +130,12 @@ public:
         m_settingsRegistry.reset();
 
         AZ::IO::FileIOBase::SetInstance(nullptr);
-        
+
+        delete m_localFileIO;
+        m_localFileIO = nullptr;
+
         if (m_otherFileIO)
         {
-            delete m_localFileIO;
             AZ::IO::FileIOBase::SetInstance(m_otherFileIO);
         }
 

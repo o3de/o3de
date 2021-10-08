@@ -37,6 +37,7 @@ set(FILES
     FileIOBaseTestTypes.h
     Geometry2DUtils.cpp
     Interface.cpp
+    IO/FileReaderTests.cpp
     IO/Path/PathTests.cpp
     IPC.cpp
     Jobs.cpp
@@ -60,6 +61,7 @@ set(FILES
     Slice.cpp
     State.cpp
     Statistics.cpp
+    StatisticalProfiler.cpp
     StreamerTests.cpp
     StringFunc.cpp
     SystemFile.cpp
@@ -126,6 +128,7 @@ set(FILES
     Serialization/Json/UnorderedSetSerializerTests.cpp
     Serialization/Json/UnsupportedTypesSerializerTests.cpp
     Serialization/Json/UuidSerializerTests.cpp
+    Time/TimeTests.cpp
     Math/AabbTests.cpp
     Math/ColorTests.cpp
     Math/CrcTests.cpp

@@ -99,7 +99,7 @@ void SRemoteThreadedObject::Start(const char* name)
     desc.m_name = name;
 
     auto function = AZStd::bind(&SRemoteThreadedObject::ThreadFunction, this);
-    m_thread = AZStd::thread(function, &desc);
+    m_thread = AZStd::thread(desc, function);
 }
 
 void SRemoteThreadedObject::WaitForThread()
@@ -239,6 +239,11 @@ void SRemoteServer::Run()
 
     while (m_bAcceptClients)
     {
+        AZTIMEVAL timeout { 1, 0 };
+        if (!AZ::AzSock::IsRecvPending(m_socket, &timeout))
+        {
+            continue;
+        }
         AZ::AzSock::AzSocketAddress clientAddress;
         sClient = AZ::AzSock::Accept(m_socket, clientAddress);
         if (!m_bAcceptClients || !AZ::AzSock::IsAzSocketValid(sClient))

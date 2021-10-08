@@ -48,10 +48,9 @@ float3 GetIblSpecular(
     {
         if (ObjectSrg::m_reflectionProbeData.m_useParallaxCorrection)
         {
-            reflectDir = ApplyParallaxCorrection(
-                ObjectSrg::m_reflectionProbeData.m_outerAabbMin,
-                ObjectSrg::m_reflectionProbeData.m_outerAabbMax,
-                ObjectSrg::m_reflectionProbeData.m_aabbPos,
+            reflectDir = ApplyParallaxCorrectionOBB(
+                ObjectSrg::GetReflectionProbeWorldMatrixInverse(),
+                ObjectSrg::m_reflectionProbeData.m_outerObbHalfLengths,
                 position,
                 reflectDir);
         }
@@ -60,11 +59,10 @@ float3 GetIblSpecular(
         probeSpecular *= (specularF0 * brdf.x + brdf.y);
     
         // compute blend amount based on world position in the reflection probe volume
-        float blendAmount = ComputeLerpBetweenInnerOuterAABBs(
-            ObjectSrg::m_reflectionProbeData.m_innerAabbMin,
-            ObjectSrg::m_reflectionProbeData.m_innerAabbMax,
-            ObjectSrg::m_reflectionProbeData.m_outerAabbMax,
-            ObjectSrg::m_reflectionProbeData.m_aabbPos,
+        float blendAmount = ComputeLerpBetweenInnerOuterOBBs(
+            ObjectSrg::GetReflectionProbeWorldMatrixInverse(),
+            ObjectSrg::m_reflectionProbeData.m_innerObbHalfLengths,
+            ObjectSrg::m_reflectionProbeData.m_outerObbHalfLengths,
             position);
     
         outSpecular = lerp(outSpecular, probeSpecular, blendAmount);

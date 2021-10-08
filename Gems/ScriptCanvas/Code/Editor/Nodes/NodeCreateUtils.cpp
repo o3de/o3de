@@ -408,7 +408,7 @@ namespace ScriptCanvasEditor::Nodes
         AZ::BehaviorAzEventDescription behaviorAzEventDesc;
         AZ::AttributeReader azEventDescAttributeReader(nullptr, azEventDescAttribute);
         azEventDescAttributeReader.Read<decltype(behaviorAzEventDesc)>(behaviorAzEventDesc);
-        if(behaviorAzEventDesc.m_eventName.empty())
+        if (behaviorAzEventDesc.m_eventName.empty())
         {
             AZ_Error("NodeUtils", false, "Cannot create an AzEvent node with empty event name")
             return {};

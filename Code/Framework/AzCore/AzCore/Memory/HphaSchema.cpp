@@ -784,17 +784,17 @@ namespace AZ {
         // size == 0 acts as free
         void* realloc(void* ptr, size_t size)
         {
-            if (ptr == NULL)
+            if (ptr == nullptr)
             {
                 return alloc(size);
             }
             if (size == 0)
             {
                 free(ptr);
-                return NULL;
+                return nullptr;
             }
             debug_check(ptr);
-            void* newPtr = NULL;
+            void* newPtr = nullptr;
             if (ptr_in_bucket(ptr))
             {
                 if (is_small_allocation(size)) // no point to check m_isPoolAllocations as if it's false pointer can't be in a bucket.
@@ -853,21 +853,21 @@ namespace AZ {
             {
                 return realloc(ptr, size);
             }
-            if (ptr == NULL)
+            if (ptr == nullptr)
             {
                 return alloc(size, alignment);
             }
             if (size == 0)
             {
                 free(ptr);
-                return NULL;
+                return nullptr;
             }
             if ((size_t)ptr & (alignment - 1))
             {
                 void* newPtr = alloc(size, alignment);
                 if (!newPtr)
                 {
-                    return NULL;
+                    return nullptr;
                 }
                 size_t count = this->size(ptr);
                 if (count > size)
@@ -879,7 +879,7 @@ namespace AZ {
                 return newPtr;
             }
             debug_check(ptr);
-            void* newPtr = NULL;
+            void* newPtr = nullptr;
             if (ptr_in_bucket(ptr))
             {
                 if (is_small_allocation(size) && alignment <= MAX_SMALL_ALLOCATION) // no point to check m_isPoolAllocations as if it was false, pointer can't be in a bucket
@@ -931,7 +931,7 @@ namespace AZ {
         // returns the size of the resulting memory block
         inline size_t resize(void* ptr, size_t size)
         {
-            if (ptr == NULL)
+            if (ptr == nullptr)
             {
                 return 0;
             }
@@ -957,7 +957,7 @@ namespace AZ {
         // query the size of the memory block
         inline size_t size(void* ptr) const
         {
-            if (ptr == NULL)
+            if (ptr == nullptr)
             {
                 return 0;
             }
@@ -993,7 +993,7 @@ namespace AZ {
         // free the memory block
         inline void free(void* ptr)
         {
-            if (ptr == NULL)
+            if (ptr == nullptr)
             {
                 return;
             }
@@ -1009,7 +1009,7 @@ namespace AZ {
         // free the memory block supplying the original size with DEFAULT_ALIGNMENT
         inline void free(void* ptr, size_t origSize)
         {
-            if (ptr == NULL)
+            if (ptr == nullptr)
             {
                 return;
             }
@@ -1027,7 +1027,7 @@ namespace AZ {
         // free the memory block supplying the original size and alignment
         inline void free(void* ptr, size_t origSize, size_t oldAlignment)
         {
-            if (ptr == NULL)
+            if (ptr == nullptr)
             {
                 return;
             }
@@ -1069,6 +1069,7 @@ namespace AZ {
         /// returns allocation size for the pointer if it belongs to the allocator. result is undefined if the pointer doesn't belong to the allocator.
         size_t  AllocationSize(void* ptr);
         size_t  GetMaxAllocationSize() const;
+        size_t  GetMaxContiguousAllocationSize() const;
         size_t  GetUnAllocatedMemory(bool isPrint) const;
 
         void*   SystemAlloc(size_t size, size_t align);
@@ -1134,10 +1135,10 @@ namespace AZ {
         // If m_systemChunkSize is specified, use that size for allocating tree blocks from the OS
         // m_treePageAlignment should be OS_VIRTUAL_PAGE_SIZE in all cases with this trait as we work 
         // with virtual memory addresses when the tree grows and we cannot specify an alignment in all cases
-        : m_treePageSize(desc.m_fixedMemoryBlock != NULL ? desc.m_pageSize :
+        : m_treePageSize(desc.m_fixedMemoryBlock != nullptr ? desc.m_pageSize :
             desc.m_systemChunkSize != 0 ? desc.m_systemChunkSize : OS_VIRTUAL_PAGE_SIZE)
         , m_treePageAlignment(desc.m_pageSize)
-        , m_poolPageSize(desc.m_fixedMemoryBlock != NULL ? desc.m_poolPageSize : OS_VIRTUAL_PAGE_SIZE)
+        , m_poolPageSize(desc.m_fixedMemoryBlock != nullptr ? desc.m_poolPageSize : OS_VIRTUAL_PAGE_SIZE)
         , m_subAllocator(desc.m_subAllocator)
     {
 #ifdef DEBUG_ALLOCATOR
@@ -1246,7 +1247,7 @@ namespace AZ {
                 return p;
             }
         }
-        return NULL;
+        return nullptr;
     }
 
     const HpAllocator::page* HpAllocator::bucket::get_free_page() const
@@ -1259,7 +1260,7 @@ namespace AZ {
                 return p;
             }
         }
-        return NULL;
+        return nullptr;
     }
 
     void* HpAllocator::bucket::alloc(page* p)
@@ -1359,7 +1360,7 @@ namespace AZ {
             p = bucket_grow(bsize, mBuckets[bi].marker());
             if (!p)
             {
-                return NULL;
+                return nullptr;
             }
             mBuckets[bi].add_free_page(p);
         }
@@ -1385,7 +1386,7 @@ namespace AZ {
             p = bucket_grow(bsize, mBuckets[bi].marker());
             if (!p)
             {
-                return NULL;
+                return nullptr;
             }
             mBuckets[bi].add_free_page(p);
         }
@@ -1406,7 +1407,7 @@ namespace AZ {
         void* newPtr = bucket_alloc(size);
         if (!newPtr)
         {
-            return NULL;
+            return nullptr;
         }
         memcpy(newPtr, ptr, AZStd::GetMin(elemSize - MEMORY_GUARD_SIZE, size - MEMORY_GUARD_SIZE));
         bucket_free(ptr);
@@ -1426,7 +1427,7 @@ namespace AZ {
         void* newPtr = bucket_alloc_direct(bucket_spacing_function(AZ::SizeAlignUp(size, alignment)));
         if (!newPtr)
         {
-            return NULL;
+            return nullptr;
         }
         memcpy(newPtr, ptr, AZStd::GetMin(elemSize - MEMORY_GUARD_SIZE, size - MEMORY_GUARD_SIZE));
         bucket_free(ptr);
@@ -1638,7 +1639,7 @@ namespace AZ {
         // create a dummy block to avoid prev() NULL checks and allow easy block shifts
         // potentially this dummy block might grow (due to shift_block) but not more than sizeof(free_node)
         block_header* front = (block_header*)mem;
-        front->prev(0);
+        front->prev(nullptr);
         front->size(0);
         front->set_used();
         block_header* back = (block_header*)front->mem();
@@ -1777,7 +1778,7 @@ namespace AZ {
             newBl = tree_grow(size);
             if (!newBl)
             {
-                return NULL;
+                return nullptr;
             }
         }
         HPPA_ASSERT(!newBl->used());
@@ -1956,7 +1957,7 @@ namespace AZ {
             tree_free(ptr);
             return newPtr;
         }
-        return NULL;
+        return nullptr;
     }
 
     void* HpAllocator::tree_realloc_aligned(void* ptr, size_t size, size_t alignment)
@@ -2044,7 +2045,7 @@ namespace AZ {
             tree_free(ptr);
             return newPtr;
         }
-        return NULL;
+        return nullptr;
     }
 
     size_t HpAllocator::tree_resize(void* ptr, size_t size)
@@ -2121,7 +2122,7 @@ namespace AZ {
         HPPA_ASSERT(!bl->used());
         HPPA_ASSERT(bl->prev() && bl->prev()->used());
         HPPA_ASSERT(bl->next() && bl->next()->used());
-        if (bl->prev()->prev() == NULL && bl->next()->size() == 0)
+        if (bl->prev()->prev() == nullptr && bl->next()->size() == 0)
         {
             tree_detach(bl);
             char* memStart = (char*)bl->prev();
@@ -2299,6 +2300,11 @@ namespace AZ {
         maxSize = AZStd::GetMax(bucket_get_max_allocation(), maxSize);
         maxSize = AZStd::GetMax(tree_get_max_allocation(), maxSize);
         return maxSize;
+    }
+
+    size_t HpAllocator::GetMaxContiguousAllocationSize() const
+    {
+        return AZ_CORE_MAX_ALLOCATOR_SIZE;
     }
 
     //=========================================================================
@@ -2539,11 +2545,11 @@ namespace AZ {
         if (m_desc.m_fixedMemoryBlockByteSize > 0)
         {
             AZ_Assert((m_desc.m_fixedMemoryBlockByteSize & (m_desc.m_pageSize - 1)) == 0, "Memory block size %d MUST be multiples of the of the page size %d!", m_desc.m_fixedMemoryBlockByteSize, m_desc.m_pageSize);
-            if (m_desc.m_fixedMemoryBlock == NULL)
+            if (m_desc.m_fixedMemoryBlock == nullptr)
             {
-                AZ_Assert(m_desc.m_subAllocator != NULL, "Sub allocator must point to a valid allocator if m_fixedMemoryBlock is NOT allocated (NULL)!");
+                AZ_Assert(m_desc.m_subAllocator != nullptr, "Sub allocator must point to a valid allocator if m_fixedMemoryBlock is NOT allocated (NULL)!");
                 m_desc.m_fixedMemoryBlock = m_desc.m_subAllocator->Allocate(m_desc.m_fixedMemoryBlockByteSize, m_desc.m_fixedMemoryBlockAlignment, 0, "HphaSchema", __FILE__, __LINE__, 1);
-                AZ_Assert(m_desc.m_fixedMemoryBlock != NULL, "Failed to allocate %d bytes!", m_desc.m_fixedMemoryBlockByteSize);
+                AZ_Assert(m_desc.m_fixedMemoryBlock != nullptr, "Failed to allocate %d bytes!", m_desc.m_fixedMemoryBlockByteSize);
                 m_ownMemoryBlock = true;
             }
             AZ_Assert((reinterpret_cast<size_t>(m_desc.m_fixedMemoryBlock) & static_cast<size_t>(desc.m_fixedMemoryBlockAlignment - 1)) == 0, "Memory block must be page size (%d bytes) aligned!", desc.m_fixedMemoryBlockAlignment);
@@ -2570,7 +2576,7 @@ namespace AZ {
         if (m_ownMemoryBlock)
         {
             m_desc.m_subAllocator->DeAllocate(m_desc.m_fixedMemoryBlock, m_desc.m_fixedMemoryBlockByteSize, m_desc.m_fixedMemoryBlockAlignment);
-            m_desc.m_fixedMemoryBlock = NULL;
+            m_desc.m_fixedMemoryBlock = nullptr;
         }
     }
 
@@ -2587,7 +2593,7 @@ namespace AZ {
         (void)lineNum;
         (void)suppressStackRecord;
         pointer_type address = m_allocator->alloc(byteSize, alignment);
-        if (address == NULL)
+        if (address == nullptr)
         {
             GarbageCollect();
             address = m_allocator->alloc(byteSize, alignment);
@@ -2603,7 +2609,7 @@ namespace AZ {
     HphaSchema::ReAllocate(pointer_type ptr, size_type newSize, size_type newAlignment)
     {
         pointer_type address = m_allocator->realloc(ptr, newSize, newAlignment);
-        if (address == NULL && newSize > 0)
+        if (address == nullptr && newSize > 0)
         {
             GarbageCollect();
             address = m_allocator->realloc(ptr, newSize, newAlignment);
@@ -2618,7 +2624,7 @@ namespace AZ {
     void
     HphaSchema::DeAllocate(pointer_type ptr, size_type size, size_type alignment)
     {
-        if (ptr == 0)
+        if (ptr == nullptr)
         {
             return;
         }
@@ -2675,6 +2681,11 @@ namespace AZ {
     HphaSchema::GetMaxAllocationSize() const
     {
         return m_allocator->GetMaxAllocationSize();
+    }
+
+    auto HphaSchema::GetMaxContiguousAllocationSize() const -> size_type
+    {
+        return m_allocator->GetMaxContiguousAllocationSize();
     }
 
     //=========================================================================

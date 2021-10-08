@@ -997,7 +997,7 @@ namespace UnitTest
             myclass_base_list.clear();
             auto reverseIterBegin = myclass_base_list.rbegin();
             auto reverseIterEnd = myclass_base_list.rend();
-            EXPECT_EQ(reverseIterEnd, reverseIterEnd);
+            EXPECT_EQ(reverseIterBegin, reverseIterEnd);
         }
     }
 }

@@ -990,7 +990,7 @@ namespace AZ
         template<class T>
         u8 Asset<T>::GetFlags() const
         {
-            AZ_Warning("Asset", false, "Deprecated - replaced by GetAutoLoadBehavior")
+            AZ_Warning("Asset", false, "Deprecated - replaced by GetAutoLoadBehavior");
             return static_cast<u8>(m_loadBehavior);
         }
 
@@ -1012,7 +1012,7 @@ namespace AZ
         template<class T>
         bool Asset<T>::SetFlags(u8 flags)
         {
-            AZ_Warning("Asset", false, "Deprecated - replaced by SetAutoLoadBehavior")
+            AZ_Warning("Asset", false, "Deprecated - replaced by SetAutoLoadBehavior");
             if (!m_assetData)
             {
                 AZ_Assert(flags < static_cast<u8>(AssetLoadBehavior::Count), "Flags value is out of range");

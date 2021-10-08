@@ -190,7 +190,6 @@ namespace AZ
             if (majorVersion >= 1 && minorVersion >= 2)
             {
                 vulkan12Features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES;
-                VkPhysicalDeviceVulkan12Features physicalDeviceVulkan12Features = physicalDevice.GetPhysicalDeviceVulkan12Features();
                 vulkan12Features.drawIndirectCount = physicalDevice.GetPhysicalDeviceVulkan12Features().drawIndirectCount;
                 vulkan12Features.shaderFloat16 = physicalDevice.GetPhysicalDeviceVulkan12Features().shaderFloat16;
                 vulkan12Features.shaderInt8 = physicalDevice.GetPhysicalDeviceVulkan12Features().shaderInt8;
@@ -236,8 +235,6 @@ namespace AZ
 
             //Load device features now that we have loaded all extension info
             physicalDevice.LoadSupportedFeatures();
-
-            InitFeaturesAndLimits(physicalDevice);
             return RHI::ResultCode::Success;
         }
 
@@ -247,6 +244,8 @@ namespace AZ
             commandQueueContextDescriptor.m_frameCountMax = RHI::Limits::Device::FrameCountMax;
             RHI::ResultCode result = m_commandQueueContext.Init(*this, commandQueueContextDescriptor);
             RETURN_RESULT_IF_UNSUCCESSFUL(result);
+
+            InitFeaturesAndLimits(static_cast<const Vulkan::PhysicalDevice&>(GetPhysicalDevice()));
 
             // Initialize member variables.
             ReleaseQueue::Descriptor releaseQueueDescriptor;

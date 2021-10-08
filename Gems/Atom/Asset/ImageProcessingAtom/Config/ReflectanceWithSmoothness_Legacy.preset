@@ -22,7 +22,8 @@
                 "FileMasks": [
                     "_spec"
                 ],
-                "PixelFormat": "ETC2a",
+                "PixelFormat": "ASTC_4x4",
+                "MaxTextureSize": 2048,
                 "IsPowerOf2": true,
                 "MipMapSetting": {
                     "MipGenType": "Box"
@@ -35,6 +36,7 @@
                     "_spec"
                 ],
                 "PixelFormat": "ASTC_4x4",
+                "MaxTextureSize": 2048,
                 "IsPowerOf2": true,
                 "MipMapSetting": {
                     "MipGenType": "Box"

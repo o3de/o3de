@@ -84,7 +84,7 @@ namespace GameStateSamples
         }
 
     protected:
-        void OnCrySystemInitialized(ISystem& system, const SSystemInitParams& systemInitParams)
+        void OnCrySystemInitialized(ISystem& system, const SSystemInitParams& systemInitParams) override
         {
             CryHooksModule::OnCrySystemInitialized(system, systemInitParams);
 

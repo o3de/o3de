@@ -7,6 +7,7 @@
  */
 #include "EditorLayerComponent.h"
 #include <AzCore/IO/FileIO.h>
+#include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/RTTI/ReflectContext.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/EditContext.h>
@@ -377,11 +378,11 @@ namespace AzToolsFramework
             // If this layer is being loaded, it won't have a level save dependency yet, so clear that flag.
             m_mustSaveLevelWhenLayerSaves = false;
             QString fullPathName = levelPakFile;
-            if (fullPathName.contains("@devassets@"))
+            if (fullPathName.contains("@projectroot@"))
             {
                 AZ::IO::FileIOBase* fileIO = AZ::IO::FileIOBase::GetInstance();
                 // Resolving the path through resolvepath would normalize and lowcase it, and in this case, we don't want that.
-                fullPathName.replace("@devassets@", fileIO->GetAlias("@devassets@"));
+                fullPathName.replace("@projectroot@", fileIO->GetAlias("@projectroot@"));
             }
 
             QFileInfo fileNameInfo(fullPathName);

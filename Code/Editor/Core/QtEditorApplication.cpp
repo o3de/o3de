@@ -425,7 +425,7 @@ namespace Editor
                 AZStd::array<BYTE, sizeof(RAWINPUT)> rawInputBytesArray;
                 LPBYTE rawInputBytes = rawInputBytesArray.data();
 
-                const UINT bytesCopied = GetRawInputData((HRAWINPUT)msg->lParam, RID_INPUT, rawInputBytes, &rawInputSize, rawInputHeaderSize);
+                [[maybe_unused]] const UINT bytesCopied = GetRawInputData((HRAWINPUT)msg->lParam, RID_INPUT, rawInputBytes, &rawInputSize, rawInputHeaderSize);
                 CRY_ASSERT(bytesCopied == rawInputSize);
 
                 RAWINPUT* rawInput = (RAWINPUT*)rawInputBytes;

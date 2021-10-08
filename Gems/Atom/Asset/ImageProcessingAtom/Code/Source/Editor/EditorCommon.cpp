@@ -103,6 +103,10 @@ namespace ImageProcessingAtomEditor
         {
             readableString = "PC";
         }
+        else if (platformStrLowerCase == "linux")
+        {
+            readableString = "Linux";
+        }
         else if (platformStrLowerCase == "android")
         {
             readableString = "Android";

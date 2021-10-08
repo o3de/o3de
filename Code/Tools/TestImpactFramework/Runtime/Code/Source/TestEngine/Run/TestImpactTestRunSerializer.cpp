@@ -154,8 +154,6 @@ namespace TestImpact
             const AZStd::chrono::milliseconds suiteDuration = AZStd::chrono::milliseconds{suite[TestRunFields::Keys[TestRunFields::DurationKey]].GetUint()};
 
             // Suite enabled
-            const bool enabled = suite[TestRunFields::Keys[TestRunFields::EnabledKey]].GetBool();
-
             testSuites.emplace_back(TestRunSuite{
                 suite[TestRunFields::Keys[TestRunFields::NameKey]].GetString(),
                 suite[TestRunFields::Keys[TestRunFields::EnabledKey]].GetBool(),

@@ -40,12 +40,12 @@ namespace AZ
                 AZ_TYPE_INFO(AZ::RPI::MaterialTypeSourceData::PropertyConnection, "{C2F37C26-D7EF-4142-A650-EF50BB18610F}");
 
                 PropertyConnection() = default;
-                PropertyConnection(MaterialPropertyOutputType type, AZStd::string_view nameId, int32_t shaderIndex = -1);
+                PropertyConnection(MaterialPropertyOutputType type, AZStd::string_view fieldName, int32_t shaderIndex = -1);
 
                 MaterialPropertyOutputType m_type = MaterialPropertyOutputType::Invalid;
 
                 //! The name of a specific shader setting. This will either be a ShaderResourceGroup input or a ShaderOption, depending on m_type
-                AZStd::string m_nameId;
+                AZStd::string m_fieldName;
 
                 //! For m_type==ShaderOption, this is either the index of a specific shader in m_shaderCollection, or -1 which means every shader in m_shaderCollection.
                 //! For m_type==ShaderInput, this field is not used.
@@ -58,8 +58,8 @@ namespace AZ
             {
                 AZ_TYPE_INFO(AZ::RPI::MaterialTypeSourceData::GroupDefinition, "{B2D0FC5C-72A3-435E-A194-1BFDABAC253D}");
 
-                //! The unique name of the property group. A property's full ID will be groupNameId.propertyNameId.
-                AZStd::string m_nameId;
+                //! The unique name of the property group. The full property ID will be groupName.propertyName
+                AZStd::string m_name;
 
                 // Editor metadata ...
                 AZStd::string m_displayName;
@@ -74,7 +74,7 @@ namespace AZ
                 static const float DefaultMax;
                 static const float DefaultStep;
 
-                AZStd::string m_nameId; //!< The name of the property within the property group. The full ID will be groupNameId.propertyNameId.
+                AZStd::string m_name; //!< The name of the property within the property group. The full property ID will be groupName.propertyName.
 
                 MaterialPropertyVisibility m_visibility = MaterialPropertyVisibility::Default;
 
@@ -130,7 +130,7 @@ namespace AZ
                 AZStd::vector<GroupDefinition> m_groups;
 
                 //! Collection of all available user-facing properties
-                AZStd::map<AZStd::string /*group name ID*/, PropertyList> m_properties;
+                AZStd::map<AZStd::string /*group name*/, PropertyList> m_properties;
             };
 
             AZStd::string m_description;
@@ -151,9 +151,9 @@ namespace AZ
             //! Copy over UV custom names to the properties enum values.
             void ResolveUvEnums();
 
-            const GroupDefinition* FindGroup(AZStd::string_view groupNameId) const;
+            const GroupDefinition* FindGroup(AZStd::string_view groupName) const;
 
-            const PropertyDefinition* FindProperty(AZStd::string_view groupNameId, AZStd::string_view propertyNameId) const;
+            const PropertyDefinition* FindProperty(AZStd::string_view groupName, AZStd::string_view propertyName) const;
 
             //! Construct a complete list of group definitions, including implicit groups, arranged in the same order as the source data
             //! Groups with the same name will be consolidated into a single entry

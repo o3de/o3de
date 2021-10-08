@@ -58,10 +58,10 @@ namespace PhysX
     {
         if (m_shapeType == ShapeType::Cylinder)
         {
-            return AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::Show;
+            return AZ::Edit::PropertyVisibility::Show;
         }
         
-        return AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::Hide;
+        return AZ::Edit::PropertyVisibility::Hide;
     }
 
     void EditorShapeColliderComponent::Reflect(AZ::ReflectContext* context)
@@ -676,7 +676,6 @@ namespace PhysX
         LmbrCentral::ShapeComponentNotificationsBus::Handler::BusDisconnect();
         AZ::TransformNotificationBus::Handler::BusDisconnect();
         AzToolsFramework::EntitySelectionEvents::Bus::Handler::BusDisconnect();
-        AzFramework::EntityDebugDisplayEventBus::Handler::BusDisconnect();
         AzToolsFramework::Components::EditorComponentBase::Deactivate();
 
         if (m_sceneInterface && m_editorBodyHandle != AzPhysics::InvalidSimulatedBodyHandle)

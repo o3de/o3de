@@ -33,7 +33,8 @@ namespace UnitTest
         CompareInstances(*firstInstance, *secondInstance, true, false);
     }
 
-    TEST_F(PrefabInstantiateTest, PrefabInstantiate_TripleNestingTemplate_InstantiateSucceeds)
+    // TODO: Issue #3398 will re-enable
+    TEST_F(PrefabInstantiateTest, DISABLED_PrefabInstantiate_TripleNestingTemplate_InstantiateSucceeds)
     {
         AZ::Entity* newEntity = CreateEntity("New Entity");
         AzToolsFramework::EditorEntityContextRequestBus::Broadcast(
@@ -43,11 +44,11 @@ namespace UnitTest
         ASSERT_TRUE(firstInstance);
 
         AZStd::unique_ptr<AzToolsFramework::Prefab::Instance> secondInstance = m_prefabSystemComponent->CreatePrefab({},
-            MakeInstanceList( AZStd::move(firstInstance) ), "test/path2");
+            MakeInstanceList(AZStd::move(firstInstance)), "test/path2");
         ASSERT_TRUE(secondInstance);
 
         AZStd::unique_ptr<AzToolsFramework::Prefab::Instance> thirdInstance = m_prefabSystemComponent->CreatePrefab({},
-            MakeInstanceList( AZStd::move(secondInstance) ), "test/path3");
+            MakeInstanceList(AZStd::move(secondInstance)), "test/path3");
         ASSERT_TRUE(thirdInstance);
 
         //Instantiate it

@@ -13,7 +13,7 @@ endif()
 unset(minimum_supported_toolset)
 
 include(cmake/Platform/Common/Configurations_common.cmake)
-include(cmake/Platform/Common/VisualStudio_common.cmake)
+include(cmake/Platform/Common/MSVC/VisualStudio_common.cmake)
 
 # Verify that it wasn't invoked with an unsupported target/host architecture. Currently only supports x64/x64
 if(CMAKE_VS_PLATFORM_NAME AND NOT CMAKE_VS_PLATFORM_NAME STREQUAL "x64")
@@ -33,19 +33,30 @@ ly_append_configurations_options(
         /nologo         # Suppress Copyright and version number message
         /W4             # Warning level 4
         /WX             # Warnings as errors
+        /permissive-    # Conformance with standard
         
-        # Disabling some warnings
+        ###################
+        # Disabled warnings (please do not disable any others without first consulting sig-build)
+        ###################
         /wd4201 # nonstandard extension used: nameless struct/union. This actually became part of the C++11 std, MS has an open issue: https://developercommunity.visualstudio.com/t/warning-level-4-generates-a-bogus-warning-c4201-no/103064
 
-        # Enabling warnings that are disabled by default from /W4
+        ###################
+        # Enabled warnings (that are disabled by default from /W4)
+        ###################
         # https://docs.microsoft.com/en-us/cpp/preprocessor/compiler-warnings-that-are-off-by-default?view=vs-2019
+        /we4263 # 'function': member function does not override any base class virtual member function
+        /we4264 # 'virtual_function': no override available for virtual member function from base 'class'; function is hidden
+        /we4265 # 'class': class has virtual functions, but destructor is not virtual
+        /we4266 # 'function': no override available for virtual member function from base 'type'; function is hidden
         /we4296 # 'operator': expression is always false
-        # /we4426 # optimization flags changed after including header, may be due to #pragma optimize()
-        # /we4464 # relative include path contains '..'
-        # /we4619 # #pragma warning: there is no warning number 'number'
-        # /we4777 # 'function' : format string 'string' requires an argument of type 'type1', but variadic argument number has type 'type2'
-        # /we5031 # #pragma warning(pop): likely mismatch, popping warning state pushed in different file
-        # /WE5032 # detected #pragma warning(push) with no corresponding #pragma warning(pop)
+        /we4426 # optimization flags changed after including header, may be due to #pragma optimize()
+        /we4437 # dynamic_cast from virtual base 'class1' to 'class2' could fail in some contexts
+        #/we4619 # #pragma warning: there is no warning number 'number'. Unfortunately some versions of MSVC 16.X dont filter this warning coming from external headers and Qt has a bad warning in QtCore/qvector.h(340,12)
+        /we4774 # 'string' : format string expected in argument number is not a string literal
+        /we4777 # 'function' : format string 'string' requires an argument of type 'type1', but variadic argument number has type 'type2
+        /we5031 # #pragma warning(pop): likely mismatch, popping warning state pushed in different file
+        /we5032 # detected #pragma warning(push) with no corresponding #pragma warning(pop)
+        /we5233 # explicit lambda capture 'identifier' is not used
 
         /Zc:forScope    # Force Conformance in for Loop Scope
         /diagnostics:caret # Compiler diagnostic options: includes the column where the issue was found and places a caret (^) under the location in the line of code where the issue was detected.

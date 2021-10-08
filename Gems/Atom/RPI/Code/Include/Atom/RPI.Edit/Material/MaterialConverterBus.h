@@ -32,6 +32,10 @@ namespace AZ
 
             virtual bool IsEnabled() const = 0;
 
+            //! Returns true if material property names should be included in azmaterials. This allows unlinking of dependencies for some
+            //! file types to materialtype files (e.g. fbx). 
+            virtual bool ShouldIncludeMaterialPropertyNames() const = 0;
+
             //! Converts data from a IMaterialData object to an Atom MaterialSourceData.
             //! Only works when IsEnabled() is true.
             //! @return true if the MaterialSourceData output was populated with converted material data.

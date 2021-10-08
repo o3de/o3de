@@ -11,8 +11,11 @@
 #include <AzCore/Console/Console.h>
 #include <AzFramework/Entity/EntityDebugDisplayBus.h>
 #include <AzFramework/Viewport/CameraState.h>
+#include <AzFramework/Viewport/ViewportScreen.h>
 #include <AzFramework/Visibility/BoundsBus.h>
 #include <AzToolsFramework/API/EditorViewportIconDisplayInterface.h>
+#include <AzToolsFramework/ContainerEntity/ContainerEntityInterface.h>
+#include <AzToolsFramework/FocusMode/FocusModeInterface.h>
 #include <AzToolsFramework/ToolsComponents/EditorEntityIconComponentBus.h>
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
 #include <AzToolsFramework/Viewport/ViewportTypes.h>
@@ -111,16 +114,23 @@ namespace AzToolsFramework
         }
     }
 
+    EditorHelpers::EditorHelpers(const EditorVisibleEntityDataCache* entityDataCache)
+        : m_entityDataCache(entityDataCache)
+    {
+        m_focusModeInterface = AZ::Interface<FocusModeInterface>::Get();
+        AZ_Assert(
+            m_focusModeInterface,
+            "EditorHelpers - "
+            "Focus Mode Interface could not be found. "
+            "Check that it is being correctly initialized.");
+    }
+
     AZ::EntityId EditorHelpers::HandleMouseInteraction(
         const AzFramework::CameraState& cameraState, const ViewportInteraction::MouseInteractionEvent& mouseInteraction)
     {
         AZ_PROFILE_FUNCTION(AzToolsFramework);
 
         const int viewportId = mouseInteraction.m_mouseInteraction.m_interactionId.m_viewportId;
-
-        // set the widget context before calls to ViewportWorldToScreen so we are not
-        // going to constantly be pushing/popping the widget context
-        ViewportInteraction::WidgetContextGuard widgetContextGuard(viewportId);
 
         const bool helpersVisible = HelpersVisible();
 
@@ -145,7 +155,7 @@ namespace AzToolsFramework
                     const AZ::Vector3& entityPosition = m_entityDataCache->GetVisibleEntityPosition(entityCacheIndex);
 
                     // selecting based on 2d icon - should only do it when visible and not selected
-                    const AzFramework::ScreenPoint screenPosition = GetScreenPosition(viewportId, entityPosition);
+                    const AzFramework::ScreenPoint screenPosition = AzFramework::WorldToScreen(entityPosition, cameraState);
 
                     const float distSqFromCamera = cameraState.m_position.GetDistanceSq(entityPosition);
                     const auto iconRange = static_cast<float>(GetIconScale(distSqFromCamera) * s_iconSize * 0.5f);
@@ -174,6 +184,20 @@ namespace AzToolsFramework
                     }
                 }
             }
+        }
+
+        // Verify if the entity Id corresponds to an entity that is focused; if not, halt selection.
+        if (!m_focusModeInterface->IsInFocusSubTree(entityIdUnderCursor))
+        {
+            return AZ::EntityId();
+        }
+
+        // Container Entity support - if the entity that is being selected is part of a closed container,
+        // change the selection to the container instead.
+        ContainerEntityInterface* containerEntityInterface = AZ::Interface<ContainerEntityInterface>::Get();
+        if (containerEntityInterface)
+        {
+            return containerEntityInterface->FindHighestSelectableEntity(entityIdUnderCursor);
         }
 
         return entityIdUnderCursor;

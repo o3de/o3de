@@ -43,7 +43,7 @@ namespace Presence
         ////////////////////////////////////////////////////////////////////////
         //! PresenceRequestBus interface implementation
         void SetPresence(const SetPresenceParams& params) override;
-        void QueryPresence(const QueryPresenceParams& params);
+        void QueryPresence(const QueryPresenceParams& params) override;
 
     public:
         ////////////////////////////////////////////////////////////////////////

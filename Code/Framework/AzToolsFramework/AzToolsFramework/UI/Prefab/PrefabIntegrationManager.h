@@ -15,17 +15,22 @@
 #include <AzToolsFramework/AssetBrowser/AssetBrowserSourceDropBus.h>
 #include <AzToolsFramework/Editor/EditorContextMenuBus.h>
 #include <AzToolsFramework/Prefab/PrefabPublicInterface.h>
+#include <AzToolsFramework/Prefab/PrefabSystemComponentInterface.h>
 #include <AzToolsFramework/UI/Prefab/LevelRootUiHandler.h>
-#include <AzToolsFramework/UI/Prefab/PrefabEditManager.h>
+
 #include <AzToolsFramework/UI/Prefab/PrefabIntegrationBus.h>
 #include <AzToolsFramework/UI/Prefab/PrefabIntegrationInterface.h>
 #include <AzToolsFramework/UI/Prefab/PrefabUiHandler.h>
 
+#include <AzQtComponents/Components/Widgets/Card.h>
+
 namespace AzToolsFramework
 {
+    class ContainerEntityInterface;
+
     namespace Prefab
     {
-
+        class PrefabFocusInterface;
         class PrefabLoaderInterface;
 
         //! Structure for saving/retrieving user settings related to prefab workflows.
@@ -49,6 +54,7 @@ namespace AzToolsFramework
             , public AssetBrowser::AssetBrowserSourceDropBus::Handler
             , public PrefabInstanceContainerNotificationBus::Handler
             , public PrefabIntegrationInterface
+            , public QObject
         {
         public:
             AZ_CLASS_ALLOCATOR(PrefabIntegrationManager, AZ::SystemAllocator, 0);
@@ -72,11 +78,10 @@ namespace AzToolsFramework
 
             // PrefabIntegrationInterface...
             AZ::EntityId CreateNewEntityAtPosition(const AZ::Vector3& position, AZ::EntityId parentId) override;
+            int ExecuteClosePrefabDialog(TemplateId templateId) override;
+            void ExecuteSavePrefabDialog(TemplateId templateId, bool useSaveAllPrefabsPreference) override;
 
         private:
-            // Manages the Edit Mode UI for prefabs
-            PrefabEditManager m_prefabEditManager;
-
             // Used to handle the UI for the level root
             LevelRootUiHandler m_levelRootUiHandler;
 
@@ -86,6 +91,7 @@ namespace AzToolsFramework
             // Context menu item handlers
             static void ContextMenu_CreatePrefab(AzToolsFramework::EntityIdList selectedEntities);
             static void ContextMenu_InstantiatePrefab();
+            static void ContextMenu_InstantiateProceduralPrefab();
             static void ContextMenu_EditPrefab(AZ::EntityId containerEntity);
             static void ContextMenu_SavePrefab(AZ::EntityId containerEntity);
             static void ContextMenu_DeleteSelected();
@@ -96,6 +102,7 @@ namespace AzToolsFramework
                 const AZStd::string& suggestedName, const char* initialTargetDirectory, AZ::u32 prefabUserSettingsId, QWidget* activeWindow,
                 AZStd::string& outPrefabName, AZStd::string& outPrefabFilePath);
             static bool QueryUserForPrefabFilePath(AZStd::string& outPrefabFilePath);
+            static bool QueryUserForProceduralPrefabAsset(AZStd::string& outPrefabAssetPath);
             static void WarnUserOfError(AZStd::string_view title, AZStd::string_view message);
 
             // Path and filename generation
@@ -124,12 +131,19 @@ namespace AzToolsFramework
 
             static AZ::u32 GetSliceFlags(const AZ::Edit::ElementData* editData, const AZ::Edit::ClassData* classData);
 
+            AZStd::shared_ptr<QDialog> ConstructClosePrefabDialog(TemplateId templateId);
+            AZStd::unique_ptr<AzQtComponents::Card> ConstructUnsavedPrefabsCard(TemplateId templateId);
+            AZStd::unique_ptr<QDialog> ConstructSavePrefabDialog(TemplateId templateId, bool useSaveAllPrefabsPreference);
+            void SavePrefabsInDialog(QDialog* unsavedPrefabsDialog);
+
             static const AZStd::string s_prefabFileExtension;
 
+            static ContainerEntityInterface* s_containerEntityInterface;
             static EditorEntityUiInterface* s_editorEntityUiInterface;
-            static PrefabPublicInterface* s_prefabPublicInterface;
-            static PrefabEditInterface* s_prefabEditInterface;
+            static PrefabFocusInterface* s_prefabFocusInterface;
             static PrefabLoaderInterface* s_prefabLoaderInterface;
+            static PrefabPublicInterface* s_prefabPublicInterface;
+            static PrefabSystemComponentInterface* s_prefabSystemComponentInterface;
         };
     }
 }

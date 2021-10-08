@@ -132,7 +132,6 @@ namespace AzToolsFramework
         QPointer<QAbstractItemModel> m_dataModel;
         QPointer<QItemSelectionModel> m_selectionModel;
         AZStd::intrusive_ptr<QTreeViewStateSaverData> m_data;
-        bool m_defaultToExpandIndexes = false;
 
         Q_DISABLE_COPY(QTreeViewStateSaver)
     };

@@ -55,6 +55,8 @@ namespace GraphCanvas
 
     struct AssetEditorWindowConfig
     {
+        virtual ~AssetEditorWindowConfig() = default;
+
         /// General AssetEditor config parameters
         EditorId m_editorId;
         AZStd::string_view m_baseStyleSheet;

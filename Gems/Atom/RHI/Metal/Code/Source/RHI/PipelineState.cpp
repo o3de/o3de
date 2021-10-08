@@ -188,7 +188,7 @@ namespace AZ
             }
             else
             {
-                const char * errorStr = [ error.localizedDescription UTF8String ];
+                [[maybe_unused]] const char * errorStr = [ error.localizedDescription UTF8String ];
                 AZ_Error("PipelineState", false, "Failed to compile compute pipeline state with error: %s.", errorStr);
                 return RHI::ResultCode::Fail;
             }
@@ -221,7 +221,7 @@ namespace AZ
             }
             else
             {
-                const char * errorStr = [ error.localizedDescription UTF8String ];
+                [[maybe_unused]] const char * errorStr = [ error.localizedDescription UTF8String ];
                 AZ_Error("PipelineState", false, "Failed to compile compute pipeline state with error: %s.", errorStr);
                 return RHI::ResultCode::Fail;
             }

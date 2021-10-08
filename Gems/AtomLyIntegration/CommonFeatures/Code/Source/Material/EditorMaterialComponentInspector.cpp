@@ -27,19 +27,16 @@
 #include <AzToolsFramework/Thumbnails/ThumbnailContext.h>
 #include <AzToolsFramework/Thumbnails/ThumbnailWidget.h>
 #include <AzToolsFramework/Thumbnails/ThumbnailerBus.h>
-
 #include <AtomLyIntegration/CommonFeatures/Material/EditorMaterialSystemComponentRequestBus.h>
+#include <AtomLyIntegration/CommonFeatures/Material/MaterialComponentBus.h>
+#include <AtomLyIntegration/CommonFeatures/Material/MaterialComponentConfig.h>
 
 AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option") // disable warnings spawned by QT
 #include <QApplication>
-#include <QDialog>
-#include <QDialogButtonBox>
 #include <QFileInfo>
-#include <QHBoxLayout>
 #include <QLabel>
 #include <QMenu>
 #include <QToolButton>
-#include <QVBoxLayout>
 #include <QWidget>
 AZ_POP_DISABLE_WARNING
 
@@ -49,26 +46,65 @@ namespace AZ
     {
         namespace EditorMaterialComponentInspector
         {
-            MaterialPropertyInspector::MaterialPropertyInspector(
-                const AZStd::string& slotName, const AZ::Data::AssetId& assetId, PropertyChangedCallback propertyChangedCallback,
-                QWidget* parent)
+            MaterialPropertyInspector::MaterialPropertyInspector(QWidget* parent)
                 : AtomToolsFramework::InspectorWidget(parent)
-                , m_slotName(slotName)
-                , m_materialAssetId(assetId)
-                , m_propertyChangedCallback(propertyChangedCallback)
             {
+                // Create the menu button
+                QToolButton* menuButton = new QToolButton(this);
+                menuButton->setAutoRaise(true);
+                menuButton->setIcon(QIcon(":/Cards/img/UI20/Cards/menu_ico.svg"));
+                menuButton->setVisible(true);
+                QObject::connect(menuButton, &QToolButton::clicked, this, [this]() { OpenMenu(); });
+                AddHeading(menuButton);
+
+                m_messageLabel = new QLabel(this);
+                m_messageLabel->setWordWrap(true);
+                m_messageLabel->setVisible(true);
+                m_messageLabel->setAlignment(Qt::AlignCenter);
+                m_messageLabel->setText(tr("Material not available"));
+                AddHeading(m_messageLabel);
+
+                AZ::EntitySystemBus::Handler::BusConnect();
             }
 
             MaterialPropertyInspector::~MaterialPropertyInspector()
             {
                 AtomToolsFramework::InspectorRequestBus::Handler::BusDisconnect();
+                AZ::EntitySystemBus::Handler::BusDisconnect();
+                AZ::TickBus::Handler::BusDisconnect();
+                MaterialComponentNotificationBus::Handler::BusDisconnect();
             }
 
-            bool MaterialPropertyInspector::LoadMaterial()
+            bool MaterialPropertyInspector::LoadMaterial(
+                const AZ::EntityId& entityId, const AZ::Render::MaterialAssignmentId& materialAssignmentId)
             {
-                if (!EditorMaterialComponentUtil::LoadMaterialEditDataFromAssetId(m_materialAssetId, m_editData))
+                UnloadMaterial();
+
+                m_entityId = entityId;
+                m_materialAssignmentId = materialAssignmentId;
+                MaterialComponentNotificationBus::Handler::BusDisconnect();
+                MaterialComponentNotificationBus::Handler::BusConnect(m_entityId);
+
+                AZ::Data::AssetId materialAssetId = {};
+                MaterialComponentRequestBus::EventResult(
+                    materialAssetId, m_entityId, &MaterialComponentRequestBus::Events::GetMaterialOverride, m_materialAssignmentId);
+                if (!materialAssetId.IsValid())
+                {
+                    MaterialComponentRequestBus::EventResult(
+                        materialAssetId, m_entityId, &MaterialComponentRequestBus::Events::GetDefaultMaterialAssetId,
+                        m_materialAssignmentId);
+                }
+
+               if (!materialAssetId.IsValid())
+                {
+                    UnloadMaterial();
+                    return false;
+                }
+
+                if (!EditorMaterialComponentUtil::LoadMaterialEditDataFromAssetId(materialAssetId, m_editData))
                 {
                     AZ_Warning("AZ::Render::EditorMaterialComponentInspector", false, "Failed to load material data.");
+                    UnloadMaterial();
                     return false;
                 }
 
@@ -77,6 +113,7 @@ namespace AZ
                 if (!m_materialInstance)
                 {
                     AZ_Error("AZ::Render::EditorMaterialComponentInspector", false, "Material instance could not be created.");
+                    UnloadMaterial();
                     return false;
                 }
 
@@ -102,7 +139,26 @@ namespace AZ
                     }
                 }
 
+                Populate();
+                m_messageLabel->setVisible(false);
                 return true;
+            }
+
+            void MaterialPropertyInspector::UnloadMaterial()
+            {
+                Reset();
+                m_editData = EditorMaterialComponentUtil::MaterialEditData();
+                m_materialInstance = {};
+                m_dirtyPropertyFlags.set();
+                m_editorFunctors = {};
+                m_internalEditNotification = {};
+                m_messageLabel->setVisible(true);
+                m_messageLabel->setText(tr("Material not available"));
+            }
+
+            bool MaterialPropertyInspector::IsLoaded() const
+            {
+                return m_entityId.IsValid() && m_materialInstance && m_editData.m_materialAsset.IsReady();
             }
 
             void MaterialPropertyInspector::Reset()
@@ -110,14 +166,16 @@ namespace AZ
                 m_activeProperty = {};
                 m_groups = {};
                 m_dirtyPropertyFlags.set();
+                m_internalEditNotification = {};
 
+                AZ::TickBus::Handler::BusDisconnect();
                 AtomToolsFramework::InspectorRequestBus::Handler::BusDisconnect();
                 AtomToolsFramework::InspectorWidget::Reset();
             }
 
             void MaterialPropertyInspector::AddDetailsGroup()
             {
-                const AZStd::string& groupNameId = "Details";
+                const AZStd::string& groupName = "Details";
                 const AZStd::string& groupDisplayName = "Details";
                 const AZStd::string& groupDescription = "";
 
@@ -150,9 +208,18 @@ namespace AZ
                 QFileInfo materialTypeSourceFileInfo(m_editData.m_materialTypeSourcePath.c_str());
                 QFileInfo materialParentSourceFileInfo(AZ::RPI::AssetUtils::GetSourcePathByAssetId(m_editData.m_materialParentAsset.GetId()).c_str());
 
+                AZStd::string entityName;
+                AZ::ComponentApplicationBus::BroadcastResult(
+                    entityName, &AZ::ComponentApplicationBus::Events::GetEntityName, m_entityId);
+
+                AZStd::string slotName;
+                MaterialComponentRequestBus::EventResult(
+                    slotName, m_entityId, &MaterialComponentRequestBus::Events::GetMaterialSlotLabel, m_materialAssignmentId);
+
                 QString materialInfo;
                 materialInfo += tr("<table>");
-                materialInfo += tr("<tr><td><b>Material Slot&emsp;</b></td><td>%1</td></tr>").arg(m_slotName.c_str());
+                materialInfo += tr("<tr><td><b>Entity&emsp;</b></td><td>%1</td></tr>").arg(entityName.c_str());
+                materialInfo += tr("<tr><td><b>Material Slot&emsp;</b></td><td>%1</td></tr>").arg(slotName.c_str());
                 if (!materialFileInfo.fileName().isEmpty())
                 {
                     materialInfo += tr("<tr><td><b>Material&emsp;</b></td><td>%1</td></tr>").arg(materialFileInfo.fileName());
@@ -174,15 +241,15 @@ namespace AZ
 
                 propertyGroupContainer->layout()->addWidget(materialInfoWidget);
 
-                AddGroup(groupNameId, groupDisplayName, groupDescription, propertyGroupContainer);
+                AddGroup(groupName, groupDisplayName, groupDescription, propertyGroupContainer);
             }
 
             void MaterialPropertyInspector::AddUvNamesGroup()
             {
-                const AZStd::string groupNameId = AZ::RPI::UvGroupName;
+                const AZStd::string groupName = AZ::RPI::UvGroupName;
                 const AZStd::string groupDisplayName = "UV Sets";
                 const AZStd::string groupDescription = "UV set names in this material, which can be renamed to match those in the model.";
-                auto& group = m_groups[groupNameId];
+                auto& group = m_groups[groupName];
 
                 const RPI::MaterialUvNameMap& uvNameMap = m_editData.m_materialAsset->GetMaterialTypeAsset()->GetUvNameMap();
                 group.m_properties.reserve(uvNameMap.size());
@@ -196,8 +263,8 @@ namespace AZ
 
                     propertyConfig = {};
                     propertyConfig.m_dataType = AtomToolsFramework::DynamicPropertyType::String;
-                    propertyConfig.m_id = AZ::RPI::MaterialPropertyId(groupNameId, shaderInputStr).GetCStr();
-                    propertyConfig.m_nameId = shaderInputStr;
+                    propertyConfig.m_id = AZ::RPI::MaterialPropertyId(groupName, shaderInputStr).GetCStr();
+                    propertyConfig.m_name = shaderInputStr;
                     propertyConfig.m_displayName = shaderInputStr;
                     propertyConfig.m_groupName = groupDisplayName;
                     propertyConfig.m_description = shaderInputStr;
@@ -209,17 +276,10 @@ namespace AZ
                 }
 
                 // Passing in same group as main and comparison instance to enable custom value comparison for highlighting modified properties
-                const AZ::Crc32 saveStateKey(AZStd::string::format(
-                    "MaterialPropertyInspector::PropertyGroup::%s::%s", m_materialAssetId.ToString<AZStd::string>().c_str(),
-                    groupNameId.c_str()));
                 auto propertyGroupWidget = new AtomToolsFramework::InspectorPropertyGroupWidget(
-                    &group, &group, group.TYPEINFO_Uuid(), this, this, saveStateKey,
-                    [this](const AzToolsFramework::InstanceDataNode* source, const AzToolsFramework::InstanceDataNode* target) {
-                        AZ_UNUSED(source);
-                        const AtomToolsFramework::DynamicProperty* property = AtomToolsFramework::FindDynamicPropertyForInstanceDataNode(target);
-                        return property && AtomToolsFramework::ArePropertyValuesEqual(property->GetValue(), property->GetConfig().m_parentValue);
-                    });
-                AddGroup(groupNameId, groupDisplayName, groupDescription, propertyGroupWidget);
+                    &group, &group, group.TYPEINFO_Uuid(), this, this, GetGroupSaveStateKey(groupName), {},
+                    [this](const auto node) { return GetInstanceNodePropertyIndicator(node); }, 0);
+                AddGroup(groupName, groupDisplayName, groupDescription, propertyGroupWidget);
             }
 
             void MaterialPropertyInspector::Populate()
@@ -232,13 +292,13 @@ namespace AZ
                 // Copy all of the properties from the material asset to the source data that will be exported
                 for (const auto& groupDefinition : m_editData.m_materialTypeSourceData.GetGroupDefinitionsInDisplayOrder())
                 {
-                    const AZStd::string& groupNameId = groupDefinition.m_nameId;
-                    const AZStd::string& groupDisplayName = !groupDefinition.m_displayName.empty() ? groupDefinition.m_displayName : groupNameId;
+                    const AZStd::string& groupName = groupDefinition.m_name;
+                    const AZStd::string& groupDisplayName = !groupDefinition.m_displayName.empty() ? groupDefinition.m_displayName : groupName;
                     const AZStd::string& groupDescription = !groupDefinition.m_description.empty() ? groupDefinition.m_description : groupDisplayName;
-                    auto& group = m_groups[groupNameId];
+                    auto& group = m_groups[groupName];
 
                     const auto& propertyLayout = m_editData.m_materialTypeSourceData.m_propertyLayout;
-                    const auto& propertyListItr = propertyLayout.m_properties.find(groupNameId);
+                    const auto& propertyListItr = propertyLayout.m_properties.find(groupName);
                     if (propertyListItr != propertyLayout.m_properties.end())
                     {
                         group.m_properties.reserve(propertyListItr->second.size());
@@ -247,7 +307,7 @@ namespace AZ
                             AtomToolsFramework::DynamicPropertyConfig propertyConfig;
 
                             // Assign id before conversion so it can be used in dynamic description
-                            propertyConfig.m_id = AZ::RPI::MaterialPropertyId(groupNameId, propertyDefinition.m_nameId).GetFullName();
+                            propertyConfig.m_id = AZ::RPI::MaterialPropertyId(groupName, propertyDefinition.m_name).GetFullName();
 
                             AtomToolsFramework::ConvertToPropertyConfig(propertyConfig, propertyDefinition);
 
@@ -262,35 +322,91 @@ namespace AZ
                     }
 
                     // Passing in same group as main and comparison instance to enable custom value comparison for highlighting modified properties
-                    const AZ::Crc32 saveStateKey(AZStd::string::format(
-                        "MaterialPropertyInspector::PropertyGroup::%s::%s", m_materialAssetId.ToString<AZStd::string>().c_str(),
-                        groupNameId.c_str()));
                     auto propertyGroupWidget = new AtomToolsFramework::InspectorPropertyGroupWidget(
-                        &group, &group, group.TYPEINFO_Uuid(), this, this, saveStateKey,
-                        [this](const AzToolsFramework::InstanceDataNode* source, const AzToolsFramework::InstanceDataNode* target) {
-                            AZ_UNUSED(source);
-                            const AtomToolsFramework::DynamicProperty* property = AtomToolsFramework::FindDynamicPropertyForInstanceDataNode(target);
-                            return property && AtomToolsFramework::ArePropertyValuesEqual(property->GetValue(), property->GetConfig().m_parentValue);
-                        });
-                    AddGroup(groupNameId, groupDisplayName, groupDescription, propertyGroupWidget);
+                        &group, &group, group.TYPEINFO_Uuid(), this, this, GetGroupSaveStateKey(groupName), {},
+                        [this](const auto node) { return GetInstanceNodePropertyIndicator(node); }, 0);
+                    AddGroup(groupName, groupDisplayName, groupDescription, propertyGroupWidget);
                 }
 
                 AddGroupsEnd();
 
-                m_dirtyPropertyFlags.set();
-                RunEditorMaterialFunctors();
+                LoadOverridesFromEntity();
             }
 
-            void MaterialPropertyInspector::RunPropertyChangedCallback()
+            void MaterialPropertyInspector::LoadOverridesFromEntity()
             {
-                if (m_propertyChangedCallback)
+                if (!IsLoaded())
                 {
-                    m_propertyChangedCallback(m_editData.m_materialPropertyOverrideMap);
+                    return;
+                }
+
+                m_editData.m_materialPropertyOverrideMap.clear();
+                MaterialComponentRequestBus::EventResult(
+                    m_editData.m_materialPropertyOverrideMap, m_entityId, &MaterialComponentRequestBus::Events::GetPropertyOverrides,
+                    m_materialAssignmentId);
+
+                for (auto& group : m_groups)
+                {
+                    for (auto& property : group.second.m_properties)
+                    {
+                        const AtomToolsFramework::DynamicPropertyConfig& propertyConfig = property.GetConfig();
+                        const auto overrideItr = m_editData.m_materialPropertyOverrideMap.find(propertyConfig.m_id);
+                        const auto& editValue = overrideItr != m_editData.m_materialPropertyOverrideMap.end() ? overrideItr->second : propertyConfig.m_originalValue;
+
+                        // This first converts to an acceptable runtime type in case the value came from script
+                        const auto propertyIndex = m_materialInstance->FindPropertyIndex(property.GetId());
+                        if (!propertyIndex.IsNull())
+                        {
+                            const auto runtimeValue = AtomToolsFramework::ConvertToRuntimeType(editValue);
+                            if (runtimeValue.IsValid())
+                            {
+                                property.SetValue(AtomToolsFramework::ConvertToEditableType(runtimeValue));
+                            }
+                        }
+                        else
+                        {
+                            property.SetValue(editValue);
+                        }
+
+                        UpdateMaterialInstanceProperty(property);
+                    }
+                }
+
+                m_dirtyPropertyFlags.set();
+                RunEditorMaterialFunctors();
+                RebuildAll();
+            }
+
+            void MaterialPropertyInspector::SaveOverridesToEntity(bool commitChanges)
+            {
+                if (!IsLoaded())
+                {
+                    return;
+                }
+
+                MaterialComponentRequestBus::Event(
+                    m_entityId, &MaterialComponentRequestBus::Events::SetPropertyOverrides, m_materialAssignmentId,
+                    m_editData.m_materialPropertyOverrideMap);
+
+                if (commitChanges)
+                {
+                    AzToolsFramework::ScopedUndoBatch undoBatch("Material slot changed.");
+                    AzToolsFramework::ToolsApplicationRequests::Bus::Broadcast(
+                        &AzToolsFramework::ToolsApplicationRequests::Bus::Events::AddDirtyEntity, m_entityId);
+
+                    m_internalEditNotification = true;
+                    MaterialComponentNotificationBus::Event(m_entityId, &MaterialComponentNotifications::OnMaterialsEdited);
+                    m_internalEditNotification = false;
                 }
             }
 
             void MaterialPropertyInspector::RunEditorMaterialFunctors()
             {
+                if (!IsLoaded())
+                {
+                    return;
+                }
+
                 AZStd::unordered_set<AZ::Name> changedPropertyNames;
                 AZStd::unordered_set<AZ::Name> changedPropertyGroupNames;
 
@@ -337,11 +453,13 @@ namespace AZ
                 // Apply any changes to material property meta data back to the editor property configurations
                 for (auto& groupPair : m_groups)
                 {
-                    AZ::Name groupName{groupPair.first};
+                    AZ::Name groupName{ groupPair.first };
 
                     if (changedPropertyGroupNames.find(groupName) != changedPropertyGroupNames.end())
                     {
-                        SetGroupVisible(groupPair.first, propertyGroupDynamicMetadata[groupName].m_visibility == AZ::RPI::MaterialPropertyGroupVisibility::Enabled);
+                        SetGroupVisible(
+                            groupPair.first,
+                            propertyGroupDynamicMetadata[groupName].m_visibility == AZ::RPI::MaterialPropertyGroupVisibility::Enabled);
                     }
 
                     for (auto& property : groupPair.second.m_properties)
@@ -355,12 +473,12 @@ namespace AZ
 
                         if (oldReadOnly != propertyConfig.m_readOnly)
                         {
-                            RefreshAll();
+                            RefreshGroup(groupPair.first);
                         }
 
                         if (oldVisible != propertyConfig.m_visible)
                         {
-                            RebuildAll();
+                            RebuildGroup(groupPair.first);
                         }
                     }
                 }
@@ -368,63 +486,50 @@ namespace AZ
 
             void MaterialPropertyInspector::UpdateMaterialInstanceProperty(const AtomToolsFramework::DynamicProperty& property)
             {
-                if (m_materialInstance)
+                if (!IsLoaded())
                 {
-                    const auto propertyIndex = m_materialInstance->FindPropertyIndex(property.GetId());
-                    if (!propertyIndex.IsNull())
-                    {
-                        m_dirtyPropertyFlags.set(propertyIndex.GetIndex());
+                    return;
+                }
 
-                        const auto runtimeValue = AtomToolsFramework::ConvertToRuntimeType(property.GetValue());
-                        if (runtimeValue.IsValid())
-                        {
-                            m_materialInstance->SetPropertyValue(propertyIndex, runtimeValue);
-                        }
+                const auto propertyIndex = m_materialInstance->FindPropertyIndex(property.GetId());
+                if (!propertyIndex.IsNull())
+                {
+                    m_dirtyPropertyFlags.set(propertyIndex.GetIndex());
+
+                    const auto runtimeValue = AtomToolsFramework::ConvertToRuntimeType(property.GetValue());
+                    if (runtimeValue.IsValid())
+                    {
+                        m_materialInstance->SetPropertyValue(propertyIndex, runtimeValue);
                     }
                 }
             }
 
-            void MaterialPropertyInspector::SetOverrides(const MaterialPropertyOverrideMap& propertyOverrideMap)
+            AZ::Crc32 MaterialPropertyInspector::GetGroupSaveStateKey(const AZStd::string& groupName) const
             {
-                m_editData.m_materialPropertyOverrideMap = propertyOverrideMap;
+                return AZ::Crc32(AZStd::string::format(
+                    "MaterialPropertyInspector::PropertyGroup::%s::%s", m_editData.m_materialAssetId.ToString<AZStd::string>().c_str(),
+                    groupName.c_str()));
+            }
 
-                for (auto& group : m_groups)
+            bool MaterialPropertyInspector::IsInstanceNodePropertyModifed(const AzToolsFramework::InstanceDataNode* node) const
+            {
+                const AtomToolsFramework::DynamicProperty* property = AtomToolsFramework::FindDynamicPropertyForInstanceDataNode(node);
+                return property && !AtomToolsFramework::ArePropertyValuesEqual(property->GetValue(), property->GetConfig().m_parentValue);
+            }
+
+            const char* MaterialPropertyInspector::GetInstanceNodePropertyIndicator(const AzToolsFramework::InstanceDataNode* node) const
+            {
+                if (IsInstanceNodePropertyModifed(node))
                 {
-                    for (auto& property : group.second.m_properties)
-                    {
-                        const AtomToolsFramework::DynamicPropertyConfig& propertyConfig = property.GetConfig();
-                        const auto overrideItr = m_editData.m_materialPropertyOverrideMap.find(propertyConfig.m_id);
-                        const auto& editValue = overrideItr != m_editData.m_materialPropertyOverrideMap.end() ? overrideItr->second : propertyConfig.m_originalValue;
-
-                        // This first converts to an acceptable runtime type in case the value came from script
-                        const auto propertyIndex = m_materialInstance->FindPropertyIndex(property.GetId());
-                        if (!propertyIndex.IsNull())
-                        {
-                            const auto runtimeValue = AtomToolsFramework::ConvertToRuntimeType(editValue);
-                            if (runtimeValue.IsValid())
-                            {
-                                property.SetValue(AtomToolsFramework::ConvertToEditableType(runtimeValue));
-                            }
-                        }
-                        else
-                        {
-                            property.SetValue(editValue);
-                        }
-
-                        UpdateMaterialInstanceProperty(property);
-                    }
+                    return ":/PropertyEditor/Resources/changed_data_item.png";
                 }
-
-                m_dirtyPropertyFlags.set();
-                RunPropertyChangedCallback();
-                RunEditorMaterialFunctors();
-                RebuildAll();
+                return ":/PropertyEditor/Resources/blank.png";
             }
 
             bool MaterialPropertyInspector::SaveMaterial() const
             {
                 const QString defaultPath = AtomToolsFramework::GetUniqueFileInfo(
-                    QString(AZ::IO::FileIOBase::GetInstance()->GetAlias("@devassets@")) +
+                    QString(AZ::IO::FileIOBase::GetInstance()->GetAlias("@projectroot@")) +
                     AZ_CORRECT_FILESYSTEM_SEPARATOR + "Materials" +
                     AZ_CORRECT_FILESYSTEM_SEPARATOR + "untitled." +
                     AZ::RPI::MaterialSourceData::Extension).absoluteFilePath();
@@ -446,7 +551,8 @@ namespace AZ
 
             bool MaterialPropertyInspector::SaveMaterialToSource() const
             {
-                const QString saveFilePath = AtomToolsFramework::GetSaveFileInfo(m_editData.m_materialSourcePath.c_str()).absoluteFilePath();
+                const QString saveFilePath =
+                    AtomToolsFramework::GetSaveFileInfo(m_editData.m_materialSourcePath.c_str()).absoluteFilePath();
                 if (saveFilePath.isEmpty())
                 {
                     return false;
@@ -463,13 +569,13 @@ namespace AZ
 
             bool MaterialPropertyInspector::HasMaterialSource() const
             {
-                return !m_editData.m_materialSourcePath.empty() &&
+                return IsLoaded() && !m_editData.m_materialSourcePath.empty() &&
                     AZ::StringFunc::Path::IsExtension(m_editData.m_materialSourcePath.c_str(), AZ::RPI::MaterialSourceData::Extension);
             }
 
             bool MaterialPropertyInspector::HasMaterialParentSource() const
             {
-                return !m_editData.m_materialParentSourcePath.empty() &&
+                return IsLoaded() && !m_editData.m_materialParentSourcePath.empty() &&
                     AZ::StringFunc::Path::IsExtension(
                         m_editData.m_materialParentSourcePath.c_str(), AZ::RPI::MaterialSourceData::Extension);
             }
@@ -479,7 +585,7 @@ namespace AZ
                 if (HasMaterialSource())
                 {
                     EditorMaterialSystemComponentRequestBus::Broadcast(
-                        &EditorMaterialSystemComponentRequestBus::Events::OpenInMaterialEditor, m_editData.m_materialSourcePath);
+                        &EditorMaterialSystemComponentRequestBus::Events::OpenMaterialEditor, m_editData.m_materialSourcePath);
                 }
             }
 
@@ -488,8 +594,40 @@ namespace AZ
                 if (HasMaterialParentSource())
                 {
                     EditorMaterialSystemComponentRequestBus::Broadcast(
-                        &EditorMaterialSystemComponentRequestBus::Events::OpenInMaterialEditor, m_editData.m_materialParentSourcePath);
+                        &EditorMaterialSystemComponentRequestBus::Events::OpenMaterialEditor, m_editData.m_materialParentSourcePath);
                 }
+            }
+
+            void MaterialPropertyInspector::OpenMenu()
+            {
+                QAction* action = nullptr;
+
+                QMenu menu(this);
+                action = menu.addAction("Clear Overrides", [this] {
+                    MaterialComponentRequestBus::Event(
+                        m_entityId, &MaterialComponentRequestBus::Events::SetPropertyOverrides, m_materialAssignmentId,
+                        MaterialPropertyOverrideMap());
+                    QueueUpdateUI();
+                });
+                action->setEnabled(IsLoaded());
+
+                menu.addSeparator();
+
+                action = menu.addAction("Save Material", [this] { SaveMaterial(); });
+                action->setEnabled(IsLoaded());
+
+                action = menu.addAction("Save Material To Source", [this] { SaveMaterialToSource(); });
+                action->setEnabled(HasMaterialSource());
+
+                menu.addSeparator();
+
+                action = menu.addAction("Open Source Material In Editor", [this] { OpenMaterialSourceInEditor(); });
+                action->setEnabled(HasMaterialSource());
+
+                action = menu.addAction("Open Parent Material In Editor", [this] { OpenMaterialParentSourceInEditor(); });
+                action->setEnabled(HasMaterialParentSource());
+
+                menu.exec(QCursor::pos());
             }
 
             const EditorMaterialComponentUtil::MaterialEditData& MaterialPropertyInspector::GetEditData() const
@@ -501,7 +639,8 @@ namespace AZ
             {
                 // For some reason the reflected property editor notifications are not symmetrical
                 // This function is called continuously anytime a property changes until the edit has completed
-                // Because of that, we have to track whether or not we are continuing to edit the same property to know when editing has started and ended
+                // Because of that, we have to track whether or not we are continuing to edit the same property to know when editing has
+                // started and ended
                 const AtomToolsFramework::DynamicProperty* property = AtomToolsFramework::FindDynamicPropertyForInstanceDataNode(pNode);
                 if (property)
                 {
@@ -521,15 +660,16 @@ namespace AZ
                     {
                         m_editData.m_materialPropertyOverrideMap[m_activeProperty->GetId()] = m_activeProperty->GetValue();
                         UpdateMaterialInstanceProperty(*m_activeProperty);
-                        RunPropertyChangedCallback();
+                        SaveOverridesToEntity(false);
                     }
                 }
             }
 
             void MaterialPropertyInspector::SetPropertyEditingComplete(AzToolsFramework::InstanceDataNode* pNode)
             {
-                // As above, there are symmetrical functions on the notification interface for when editing begins and ends and has been completed but they are not being called following that pattern.
-                // when this function executes the changes to the property are ready to be committed or reverted
+                // As above, there are symmetrical functions on the notification interface for when editing begins and ends and has been
+                // completed but they are not being called following that pattern. when this function executes the changes to the property
+                // are ready to be committed or reverted
                 const AtomToolsFramework::DynamicProperty* property = AtomToolsFramework::FindDynamicPropertyForInstanceDataNode(pNode);
                 if (property)
                 {
@@ -537,85 +677,97 @@ namespace AZ
                     {
                         m_editData.m_materialPropertyOverrideMap[m_activeProperty->GetId()] = m_activeProperty->GetValue();
                         UpdateMaterialInstanceProperty(*m_activeProperty);
-                        RunPropertyChangedCallback();
+                        SaveOverridesToEntity(true);
                         RunEditorMaterialFunctors();
                         m_activeProperty = nullptr;
                     }
                 }
             }
 
-            bool OpenInspectorDialog(
-                const AZStd::string& slotName, const AZ::Data::AssetId& assetId, MaterialPropertyOverrideMap propertyOverrideMap,
-                PropertyChangedCallback propertyChangedCallback)
+            void MaterialPropertyInspector::OnEntityInitialized(const AZ::EntityId& entityId)
             {
-                QWidget* activeWindow = nullptr;
-                AzToolsFramework::EditorWindowRequestBus::BroadcastResult(activeWindow, &AzToolsFramework::EditorWindowRequests::GetAppMainWindow);
-
-                // Constructing a dialog with a table to display all configurable material export items
-                QDialog dialog(activeWindow);
-                dialog.setWindowTitle("Material Inspector");
-
-                MaterialPropertyInspector* inspector = new MaterialPropertyInspector(slotName, assetId, propertyChangedCallback, &dialog);
-                if (!inspector->LoadMaterial())
+                if (m_entityId == entityId)
                 {
-                    return false;
+                    UnloadMaterial();
+                }
+            }
+
+            void MaterialPropertyInspector::OnEntityDestroyed(const AZ::EntityId& entityId)
+            {
+                if (m_entityId == entityId)
+                {
+                    UnloadMaterial();
+                }
+            }
+
+            void MaterialPropertyInspector::OnEntityActivated(const AZ::EntityId& entityId)
+            {
+                if (m_entityId == entityId)
+                {
+                    QueueUpdateUI();
+                }
+            }
+
+            void MaterialPropertyInspector::OnEntityDeactivated(const AZ::EntityId& entityId)
+            {
+                if (m_entityId == entityId)
+                {
+                    UnloadMaterial();
+                }
+            }
+
+            void MaterialPropertyInspector::OnEntityNameChanged(const AZ::EntityId& entityId, const AZStd::string& name)
+            {
+                AZ_UNUSED(name);
+                if (m_entityId == entityId)
+                {
+                    QueueUpdateUI();
+                }
+            }
+
+            void MaterialPropertyInspector::OnTick(float deltaTime, ScriptTimePoint time)
+            {
+                AZ_UNUSED(time);
+                AZ_UNUSED(deltaTime);
+                UpdateUI();
+                AZ::TickBus::Handler::BusDisconnect();
+            }
+
+            void MaterialPropertyInspector::OnMaterialsEdited()
+            {
+                if (!m_internalEditNotification)
+                {
+                    QueueUpdateUI();
+                }
+            }
+
+            void MaterialPropertyInspector::UpdateUI()
+            {
+                AZ::Data::AssetId materialAssetId = {};
+                MaterialComponentRequestBus::EventResult(
+                    materialAssetId, m_entityId, &MaterialComponentRequestBus::Events::GetMaterialOverride, m_materialAssignmentId);
+                if (!materialAssetId.IsValid())
+                {
+                    MaterialComponentRequestBus::EventResult(
+                        materialAssetId, m_entityId, &MaterialComponentRequestBus::Events::GetDefaultMaterialAssetId, m_materialAssignmentId);
                 }
 
-                inspector->Populate();
-                inspector->SetOverrides(propertyOverrideMap);
+                if (IsLoaded() && m_editData.m_materialAssetId == materialAssetId)
+                {
+                    LoadOverridesFromEntity();
+                }
+                else
+                {
+                    LoadMaterial(m_entityId, m_materialAssignmentId);
+                }
+            }
 
-                // Create the menu button
-                QToolButton* menuButton = new QToolButton(&dialog);
-                menuButton->setAutoRaise(true);
-                menuButton->setIcon(QIcon(":/Cards/img/UI20/Cards/menu_ico.svg"));
-                menuButton->setVisible(true);
-                QObject::connect(menuButton, &QToolButton::clicked, &dialog, [&]() {
-                    QAction* action = nullptr;
-
-                    QMenu menu(&dialog);
-                    action = menu.addAction("Clear Overrides", [&] { inspector->SetOverrides(MaterialPropertyOverrideMap()); });
-                    action = menu.addAction("Revert Changes", [&] { inspector->SetOverrides(propertyOverrideMap); });
-
-                    menu.addSeparator();
-                    action = menu.addAction("Save Material", [&] { inspector->SaveMaterial(); });
-                    action = menu.addAction("Save Material To Source", [&] { inspector->SaveMaterialToSource(); });
-                    action->setEnabled(inspector->HasMaterialSource());
-
-                    menu.addSeparator();
-                    action = menu.addAction("Open Source Material In Editor", [&] { inspector->OpenMaterialSourceInEditor(); });
-                    action->setEnabled(inspector->HasMaterialSource());
-                    action = menu.addAction("Open Parent Material In Editor", [&] { inspector->OpenMaterialParentSourceInEditor(); });
-                    action->setEnabled(inspector->HasMaterialParentSource());
-                    menu.exec(QCursor::pos());
-                });
-
-                QDialogButtonBox* buttonBox = new QDialogButtonBox(&dialog);
-                buttonBox->setStandardButtons(QDialogButtonBox::Cancel | QDialogButtonBox::Ok);
-                QObject::connect(buttonBox, &QDialogButtonBox::accepted, &dialog, &QDialog::accept);
-                QObject::connect(buttonBox, &QDialogButtonBox::rejected, &dialog, &QDialog::reject);
-
-                QObject::connect(&dialog, &QDialog::rejected, &dialog, [&] { inspector->SetOverrides(propertyOverrideMap); });
-
-                QVBoxLayout* dialogLayout = new QVBoxLayout(&dialog);
-                dialogLayout->addWidget(menuButton);
-                dialogLayout->addWidget(inspector);
-                dialogLayout->addWidget(buttonBox);
-                dialog.setLayout(dialogLayout);
-                dialog.setModal(true);
-
-                // Forcing the initial dialog size to accomodate typical content.
-                // Temporarily settng fixed size because dialog.show/exec invokes WindowDecorationWrapper::showEvent.
-                // This forces the dialog to be centered and sized based on the layout of content.
-                // Resizing the dialog after show will not be centered and moving the dialog programatically doesn't m0ve the custmk frame. 
-                dialog.setFixedSize(500, 800);
-                dialog.show();
-
-                // Removing fixed size to allow drag resizing
-                dialog.setMinimumSize(0, 0);
-                dialog.setMaximumSize(QWIDGETSIZE_MAX, QWIDGETSIZE_MAX);
-
-                // Return true if the user press the export button
-                return dialog.exec() == QDialog::Accepted;
+            void MaterialPropertyInspector::QueueUpdateUI()
+            {
+                if (!AZ::TickBus::Handler::BusIsConnected())
+                {
+                    AZ::TickBus::Handler::BusConnect();
+                }
             }
         } // namespace EditorMaterialComponentInspector
     } // namespace Render

@@ -32,7 +32,7 @@ namespace AZ
                 timespec wait;
                 wait.tv_sec = 0;
                 wait.tv_nsec = 5000;
-                int result = ::gethostuuid(hostId, &wait);
+                [[maybe_unused]] int result = ::gethostuuid(hostId, &wait);
                 AZ_Error("System", result == 0, "gethostuuid() failed with code %d", result);  
                 Sha1 hash;
                 AZ::u32 digest[5] = { 0 };

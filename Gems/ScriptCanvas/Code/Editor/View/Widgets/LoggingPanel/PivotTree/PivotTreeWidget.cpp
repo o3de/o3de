@@ -14,7 +14,7 @@
 // Disable warnings in moc code
 AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option")
 #include <Editor/View/Widgets/LoggingPanel/PivotTree/ui_PivotTreeWidget.h>
-AZ_POP_DISABLE_OVERRIDE_WARNING
+AZ_POP_DISABLE_WARNING
 
 namespace ScriptCanvasEditor
 {

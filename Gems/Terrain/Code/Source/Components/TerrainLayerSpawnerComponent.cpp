@@ -78,7 +78,7 @@ namespace Terrain
 
     void TerrainLayerSpawnerComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& services)
     {
-        services.push_back(AZ_CRC("BoxShapeService"));
+        services.push_back(AZ_CRC_CE("AxisAlignedBoxShapeService"));
     }
 
     void TerrainLayerSpawnerComponent::Reflect(AZ::ReflectContext* context)
@@ -104,18 +104,18 @@ namespace Terrain
     {
         AZ::TransformNotificationBus::Handler::BusConnect(GetEntityId());
         LmbrCentral::ShapeComponentNotificationsBus::Handler::BusConnect(GetEntityId());
-        TerrainAreaRequestBus::Handler::BusConnect(GetEntityId());
+        TerrainSpawnerRequestBus::Handler::BusConnect(GetEntityId());
 
         TerrainSystemServiceRequestBus::Broadcast(&TerrainSystemServiceRequestBus::Events::RegisterArea, GetEntityId());
     }
 
     void TerrainLayerSpawnerComponent::Deactivate()
     {
-        TerrainAreaRequestBus::Handler::BusDisconnect();
         TerrainSystemServiceRequestBus::Broadcast(&TerrainSystemServiceRequestBus::Events::UnregisterArea, GetEntityId());
-
-        AZ::TransformNotificationBus::Handler::BusDisconnect();
+        TerrainSpawnerRequestBus::Handler::BusDisconnect();
         LmbrCentral::ShapeComponentNotificationsBus::Handler::BusDisconnect();
+        AZ::TransformNotificationBus::Handler::BusDisconnect();
+        
     }
 
     bool TerrainLayerSpawnerComponent::ReadInConfig(const AZ::ComponentConfig* baseConfig)
@@ -147,10 +147,16 @@ namespace Terrain
     {
         RefreshArea();
     }
-
-    void TerrainLayerSpawnerComponent::RegisterArea()
+    
+    void TerrainLayerSpawnerComponent::GetPriority(AZ::u32& outLayer, AZ::u32& outPriority)
     {
-        TerrainSystemServiceRequestBus::Broadcast(&TerrainSystemServiceRequestBus::Events::RegisterArea, GetEntityId());
+        outLayer = m_configuration.m_layer;
+        outPriority = m_configuration.m_priority;
+    }
+
+    bool TerrainLayerSpawnerComponent::GetUseGroundPlane()
+    {
+        return m_configuration.m_useGroundPlane;
     }
 
     void TerrainLayerSpawnerComponent::RefreshArea()

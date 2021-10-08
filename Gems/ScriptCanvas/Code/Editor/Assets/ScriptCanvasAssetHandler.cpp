@@ -93,6 +93,49 @@ namespace ScriptCanvasEditor
         }
     }
 
+    AZ::Outcome<void, AZStd::string> LoadScriptCanvasDataFromJson
+        ( ScriptCanvas::ScriptCanvasData& dataTarget
+        , AZStd::string_view source
+        , AZ::SerializeContext& serializeContext)
+    {
+        namespace JSRU = AZ::JsonSerializationUtils;
+        using namespace ScriptCanvas;
+
+        AZ::JsonDeserializerSettings settings;
+        settings.m_serializeContext = &serializeContext;
+        settings.m_metadata.Create<SerializationListeners>();
+
+        auto loadResult = JSRU::LoadObjectFromStringByType
+            ( &dataTarget
+            , azrtti_typeid<ScriptCanvasData>()
+            , source
+            , &settings);
+
+        if (!loadResult.IsSuccess())
+        {
+            return loadResult;
+        }
+                    
+        if (auto graphData = dataTarget.ModGraph())
+        {
+            auto listeners = settings.m_metadata.Find<SerializationListeners>();
+            AZ_Assert(listeners, "Failed to find SerializationListeners");
+
+            ScriptCanvasAssetHandlerCpp::CollectNodes(graphData->GetGraphData()->m_nodes, *listeners);
+
+            for (auto listener : *listeners)
+            {
+                listener->OnDeserialize();
+            }
+        }
+        else
+        {
+            return AZ::Failure(AZStd::string("Failed to find graph data after loading source"));
+        }
+
+        return AZ::Success();
+    }
+
     AZ::Data::AssetHandler::LoadResult ScriptCanvasAssetHandler::LoadAssetData
         ( const AZ::Data::Asset<AZ::Data::AssetData>& assetTarget
         , AZStd::shared_ptr<AZ::Data::AssetDataStream> streamSource
@@ -110,8 +153,9 @@ namespace ScriptCanvasEditor
         {
             streamSource->Seek(0U, AZ::IO::GenericStream::ST_SEEK_BEGIN);
             auto& scriptCanvasDataTarget = scriptCanvasAssetTarget->GetScriptCanvasData();
-            AZStd::vector<AZ::u8> byteBuffer;
+            AZStd::vector<char> byteBuffer;
             byteBuffer.resize_no_construct(streamSource->GetLength());
+            // this duplicate stream is to allow for trying again if the JSON read fails
             AZ::IO::ByteContainerStream<decltype(byteBuffer)> byteStreamSource(&byteBuffer);
             const size_t bytesRead = streamSource->Read(byteBuffer.size(), byteBuffer.data());
             scriptCanvasDataTarget.m_scriptCanvasEntity.reset(nullptr);
@@ -123,46 +167,44 @@ namespace ScriptCanvasEditor
                 settings.m_serializeContext = m_serializeContext;
                 settings.m_metadata.Create<SerializationListeners>();
                 // attempt JSON deserialization...
-                if (JSRU::LoadObjectFromStreamByType
-                        ( &scriptCanvasDataTarget
-                        , azrtti_typeid<ScriptCanvasData>()
-                        , byteStreamSource
-                        , &settings).IsSuccess())
+                auto jsonResult = LoadScriptCanvasDataFromJson
+                    ( scriptCanvasDataTarget
+                    , AZStd::string_view{ byteBuffer.begin(), byteBuffer.size() }
+                    , *m_serializeContext);
+
+                if (jsonResult.IsSuccess())
                 {
-                    if (auto graphData = scriptCanvasAssetTarget->GetScriptCanvasGraph()
-                        ? scriptCanvasAssetTarget->GetScriptCanvasGraph()->GetGraphData()
-                        : nullptr)
-                    {
-                        auto listeners = settings.m_metadata.Find<SerializationListeners>();
-                        AZ_Assert(listeners, "Failed to create SerializationListeners");
-
-                        ScriptCanvasAssetHandlerCpp::CollectNodes(graphData->m_nodes, *listeners);
-
-                        for (auto listener : *listeners)
-                        {
-                            listener->OnDeserialize();
-                        }
-
-                        return AZ::Data::AssetHandler::LoadResult::LoadComplete;
-                    }
-                    else
-                    {
-                        AZ_Warning("ScriptCanvas", false, "ScriptCanvasAssetHandler::LoadAssetData failed to load graph data from JOSON");
-                    }
+                    return AZ::Data::AssetHandler::LoadResult::LoadComplete;
                 }
 #if defined(OBJECT_STREAM_EDITOR_ASSET_LOADING_SUPPORT_ENABLED)////
                 else
-                {// ...if there is a failure, check if it is saved in the old format
+                {
+                    // ...if there is a failure, check if it is saved in the old format
                     byteStreamSource.Seek(0U, AZ::IO::GenericStream::ST_SEEK_BEGIN);
                     // tolerate unknown classes in the editor.  Let the asset processor warn about bad nodes...
                     if (AZ::Utils::LoadObjectFromStreamInPlace
-                    (byteStreamSource
+                        ( byteStreamSource
                         , scriptCanvasDataTarget
                         , m_serializeContext
                         , AZ::ObjectStream::FilterDescriptor(assetLoadFilterCB, AZ::ObjectStream::FILTERFLAG_IGNORE_UNKNOWN_CLASSES)))
                     {
+                        AZ_Warning
+                            ( "ScriptCanvas"
+                            , false
+                            , "ScriptCanvasAssetHandler::LoadAssetData failed to load graph data from JSON, %s, consider converting to JSON"
+                                " by opening it and saving it, or running the graph update tool from the editor0"
+                            , jsonResult.GetError().c_str());
                         return AZ::Data::AssetHandler::LoadResult::LoadComplete;
                     }
+                }
+#else
+                else
+                {
+                    AZ_Warning
+                        ( "ScriptCanvas"
+                        , false
+                        , "ScriptCanvasAssetHandler::LoadAssetData failed to load graph data from JSON %s"
+                        , jsonResult.GetError().c_str()");
                 }
 #endif//defined(OBJECT_STREAM_EDITOR_ASSET_LOADING_SUPPORT_ENABLED)
             }

@@ -1200,8 +1200,6 @@ namespace LUAEditor
 
     void LUAViewWidget::focusInEvent(QFocusEvent* pEvent)
     {
-        pEvent;
-
         QWidget::focusInEvent(pEvent);
         m_gui->m_luaTextEdit->setFocus();
     }

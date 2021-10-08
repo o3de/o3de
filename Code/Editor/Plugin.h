@@ -13,6 +13,7 @@
 #include "Include/IEditorClassFactory.h"
 
 #include "Util/GuidUtil.h"
+#include <map>
 
 //! Derive from this class to decrease the amount of work for creating a new class description
 //! Provides standard reference counter implementation for IUnknown

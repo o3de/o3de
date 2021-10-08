@@ -9,7 +9,7 @@
 
 #include <AzCore/Serialization/SerializeContext.h>
 #include "ScreenFaderTrack.h"
-#include <IRenderer.h>
+#include <ITexture.h>
 
 //-----------------------------------------------------------------------------
 CScreenFaderTrack::CScreenFaderTrack()

@@ -84,8 +84,9 @@ namespace AZ
             static TypeId genericComponentWrapperTypeId("{68D358CA-89B9-4730-8BA6-E181DEA28FDE}");
             for (auto& [componentKey, component] : componentMap)
             {
-                // if underlying type is genericComponentWrapperTypeId, the template is null and the component should not be addded
-                if (component->GetUnderlyingComponentType() != genericComponentWrapperTypeId)
+                // if the component didn't serialize (i.e. is null) or the underlying type is genericComponentWrapperTypeId, the
+                // template is null and the component should not be addded
+                if (component && (component->GetUnderlyingComponentType() != genericComponentWrapperTypeId))
                 {
                     entityInstance->m_components.emplace_back(component);
                 }
@@ -94,12 +95,9 @@ namespace AZ
             result.Combine(componentLoadResult);
         }
 
-        {
-            JSR::ResultCode runtimeActiveLoadResult =
-                ContinueLoadingFromJsonObjectField(&entityInstance->m_isRuntimeActiveByDefault,
-                    azrtti_typeid<decltype(entityInstance->m_isRuntimeActiveByDefault)>(),
-                    inputValue, "IsRuntimeActive", context);
-        }
+        ContinueLoadingFromJsonObjectField(&entityInstance->m_isRuntimeActiveByDefault,
+            azrtti_typeid<decltype(entityInstance->m_isRuntimeActiveByDefault)>(),
+            inputValue, "IsRuntimeActive", context);
 
         return context.Report(
             result,

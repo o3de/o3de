@@ -105,7 +105,6 @@ namespace AZ
                 }
                 break;
                 }
-                AZ::Matrix4x4 inverse = currentCoordMatrix.GetInverseTransform();
                 AZ::Matrix4x4 adjustmatrix = targetCoordMatrix * currentCoordMatrix.GetInverseTransform();
                 m_adjustTransform.reset(new DataTypes::MatrixType(AssImpSDKWrapper::AssImpTypeConverter::ToTransform(adjustmatrix)));
                 m_adjustTransformInverse.reset(new DataTypes::MatrixType(m_adjustTransform->GetInverseFull()));

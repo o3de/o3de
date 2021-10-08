@@ -9,7 +9,6 @@
 #include "EditorNavigationUtil.h"
 
 #include <IPathfinder.h>
-#include <physinterface.h>
 #include <MathConversion.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
@@ -47,7 +46,7 @@ namespace LmbrCentral
             Call(FN_OnTraversalStarted, requestId);
         }
 
-        void OnTraversalPathUpdate(PathfindRequest::NavigationRequestId requestId, const AZ::Vector3& nextPathPosition, const AZ::Vector3& inflectionPosition) override 
+        void OnTraversalPathUpdate(PathfindRequest::NavigationRequestId requestId, const AZ::Vector3& nextPathPosition, const AZ::Vector3& inflectionPosition) override
         {
             Call(FN_OnTraversalPathUpdate, requestId, nextPathPosition, inflectionPosition);
         }
@@ -460,7 +459,7 @@ namespace LmbrCentral
 
             const bool usesAZCharacterPhysics = Physics::CharacterRequestBus::FindFirstHandler(entityId) != nullptr;
             m_usesCharacterPhysics = usesLegacyCharacterPhysics || usesAZCharacterPhysics;
-            
+
             AZ_Warning("NavigationComponent",
                 usesAZCharacterPhysics || Physics::RigidBodyRequestBus::FindFirstHandler(entityId),
                 "Entity %s cannot be moved physically because it is missing a physics component", GetEntity()->GetName().c_str());
@@ -748,7 +747,7 @@ namespace LmbrCentral
 
             PathFollowResult result;
 
-            const bool arrived = pathFollower->Update(
+            [[maybe_unused]] const bool arrived = pathFollower->Update(
                 result,
                 AZVec3ToLYVec3(agentPosition),
                 AZVec3ToLYVec3(agentVelocity),
@@ -791,10 +790,10 @@ namespace LmbrCentral
                     m_lastResponseCache.SetNextPathPosition(nextPathPosition);
                     m_lastResponseCache.SetInflectionPosition(inflectionPosition);
 
-                    // when using the custom movement method we just update the path and rely on 
+                    // when using the custom movement method we just update the path and rely on
                     // the user to move the entity
                     NavigationComponentNotificationBus::Event(m_entity->GetId(),
-                        &NavigationComponentNotificationBus::Events::OnTraversalPathUpdate, 
+                        &NavigationComponentNotificationBus::Events::OnTraversalPathUpdate,
                         m_lastResponseCache.GetRequestId(),
                         nextPathPosition, inflectionPosition);
 
@@ -808,7 +807,7 @@ namespace LmbrCentral
 
                     if (m_usesCharacterPhysics)
                     {
-                        Physics::CharacterRequestBus::Event(GetEntityId(), 
+                        Physics::CharacterRequestBus::Event(GetEntityId(),
                             &Physics::CharacterRequestBus::Events::AddVelocity, targetVelocity);
                     }
                     else

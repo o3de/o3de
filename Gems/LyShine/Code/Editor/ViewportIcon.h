@@ -20,7 +20,7 @@ public:
 
     void DrawImageAligned(Draw2dHelper& draw2d, AZ::Vector2& pivot, float opacity);
 
-    void DrawImageTiled(Draw2dHelper& draw2d, IDraw2d::VertexPosColUV* verts, float opacity);
+    void DrawImageTiled(Draw2dHelper& draw2d, CDraw2d::VertexPosColUV* verts);
 
     void Draw(Draw2dHelper& draw2d, AZ::Vector2 anchorPos, const AZ::Matrix4x4& transform, float iconRot = 0.0f, AZ::Color color = AZ::Color(1.0f, 1.0f, 1.0f, 1.0f)) const;
 

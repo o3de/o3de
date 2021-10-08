@@ -90,7 +90,7 @@ namespace AZ
             void Collect();
             
         private:
-            CommandListPool* m_commandListPool = nullptr;
+            [[maybe_unused]] CommandListPool* m_commandListPool = nullptr;
             AZStd::vector<CommandList*> m_activeLists;
             
             AZStd::array<CommandListPool, RHI::HardwareQueueClassCount> m_commandListPools;

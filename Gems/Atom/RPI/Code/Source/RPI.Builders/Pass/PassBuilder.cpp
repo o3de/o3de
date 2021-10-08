@@ -28,7 +28,7 @@ namespace AZ
     {
         namespace
         {
-            static const char* PassBuilderName = "PassBuilder";
+            [[maybe_unused]] static const char* PassBuilderName = "PassBuilder";
             static const char* PassBuilderJobKey = "Pass Asset Builder";
             static const char* PassAssetExtension = "pass";
         }

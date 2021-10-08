@@ -33,7 +33,7 @@ class LevelEditorMenuHandler
 {
     Q_OBJECT
 public:
-    LevelEditorMenuHandler(MainWindow* mainWindow, QtViewPaneManager* const viewPaneManager, QSettings& settings);
+    LevelEditorMenuHandler(MainWindow* mainWindow, QtViewPaneManager* const viewPaneManager);
     ~LevelEditorMenuHandler();
 
     void Initialize();
@@ -106,7 +106,6 @@ private:
     ActionManager::MenuWrapper m_toolsMenu;
 
     QMenu* m_mostRecentLevelsMenu = nullptr;
-    QMenu* m_mostRecentProjectsMenu = nullptr;
     QMenu* m_editmenu = nullptr;
 
     ActionManager::MenuWrapper m_viewPanesMenu;
@@ -117,7 +116,6 @@ private:
     int m_viewPaneVersion = 0;
 
     QList<QMenu*> m_topLevelMenus;
-    QSettings& m_settings;
 };
 
 #endif // LEVELEDITORMENUHANDLER_H

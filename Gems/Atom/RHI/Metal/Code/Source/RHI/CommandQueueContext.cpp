@@ -7,7 +7,6 @@
  */
 
 #include <AzCore/Debug/EventTrace.h>
-#include <Atom/RHI/CpuProfiler.h>
 #include <Atom/RHI/CommandQueue.h>
 #include <Atom/RHI.Reflect/CpuTimingStatistics.h>
 #include <RHI/Device.h>
@@ -79,8 +78,8 @@ namespace AZ
 
         void CommandQueueContext::End()
         {
-            AZ_PROFILE_FUNCTION(RHI);
-            
+            AZ_PROFILE_SCOPE(RHI, "CommandQueueContext: End");
+
             QueueGpuSignals(m_frameFences[m_currentFrameIndex]);
             for (uint32_t hardwareQueueIdx = 0; hardwareQueueIdx < RHI::HardwareQueueClassCount; ++hardwareQueueIdx)
             {
@@ -92,7 +91,6 @@ namespace AZ
 
             {
                 AZ_PROFILE_SCOPE(RHI, "Wait and Reset Fence");
-                AZ_ATOM_PROFILE_TIME_GROUP_REGION("RHI", "CommandQueueContext: Wait on Fences");
 
                 //Synchronize the CPU with the GPU by waiting on the fence until signalled by the GPU. CPU can only go upto
                 //RHI::Limits::Device::FrameCountMax frames ahead of the GPU

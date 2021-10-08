@@ -8,6 +8,7 @@
 
 #include <AzCore/Component/TransformBus.h>
 #include <AzFramework/Components/TransformComponent.h>
+#include <EMotionFX/Source/ActorManager.h>
 #include <EMotionFX/Source/AnimGraphMotionNode.h>
 #include <EMotionFX/Source/MotionSet.h>
 #include <EMotionFX/Source/Motion.h>
@@ -131,8 +132,6 @@ namespace EMotionFX
         bool hasCustomMotionExtractionController = Integration::MotionExtractionRequestBus::FindFirstHandler(m_entityId) != nullptr;
 
         EXPECT_TRUE(hasCustomMotionExtractionController) << "MotionExtractionBus is not found.";
-
-        const float deltaTimeInv = (timeDelta > 0.0f) ? (1.0f / timeDelta) : 0.0f;
 
         AZ::Transform currentTransform = AZ::Transform::CreateIdentity();
         AZ::TransformBus::EventResult(currentTransform, m_entityId, &AZ::TransformBus::Events::GetWorldTM);

@@ -44,6 +44,7 @@ namespace JsonSerializationTests
             features.m_supportsPartialInitialization = false;
         }
 
+        using JsonSerializerConformityTestDescriptor<Map>::Reflect;
         void Reflect(AZStd::unique_ptr<AZ::SerializeContext>& context) override
         {
             context->RegisterGenericType<Map>();
@@ -169,7 +170,7 @@ namespace JsonSerializationTests
             return AZStd::shared_ptr<Map>(new Map{}, &Delete);
         }
 
-        AZStd::shared_ptr<Map> CreatePartialDefaultInstance()
+        AZStd::shared_ptr<Map> CreatePartialDefaultInstance() override
         {
             auto instance = AZStd::shared_ptr<Map>(new Map{}, &Delete);
             instance->emplace(AZStd::make_pair(aznew SimpleClass(), aznew SimpleClass(188, 188.0)));
@@ -247,6 +248,7 @@ namespace JsonSerializationTests
             features.m_supportsPartialInitialization = true;
         }
 
+        using MapBaseTestDescription<T<SimpleClass*, SimpleClass*>, Serializer>::Reflect;
         void Reflect(AZStd::unique_ptr<AZ::SerializeContext>& context) override
         {
             SimpleClass::Reflect(context, true);

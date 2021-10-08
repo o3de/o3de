@@ -1202,7 +1202,7 @@ namespace UnitTest
             AZ_COMPONENT(HiddenComponent, "{E4D2AD8B-3930-46FC-837A-8DDFCA0FB1AF}", AzToolsFramework::Components::EditorComponentBase);
 
             static Component* s_wasDeleted;
-            virtual ~HiddenComponent()
+            ~HiddenComponent() override
             {
                 s_wasDeleted = this;
             }

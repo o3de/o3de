@@ -5,6 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+
 #pragma once
 
 #include <AzCore/Component/ComponentApplicationBus.h>
@@ -196,14 +197,14 @@ namespace AZ
 
         //////////////////////////////////////////////////////////////////////////
         // ComponentApplicationRequests
-        void RegisterComponentDescriptor(const ComponentDescriptor* descriptor) override final;
-        void UnregisterComponentDescriptor(const ComponentDescriptor* descriptor) override final;
-        void RegisterEntityAddedEventHandler(EntityAddedEvent::Handler& handler) override final;
-        void RegisterEntityRemovedEventHandler(EntityRemovedEvent::Handler& handler) override final;
-        void RegisterEntityActivatedEventHandler(EntityActivatedEvent::Handler& handler) override final;
-        void RegisterEntityDeactivatedEventHandler(EntityDeactivatedEvent::Handler& handler) override final;
-        void SignalEntityActivated(Entity* entity) override final;
-        void SignalEntityDeactivated(Entity* entity) override final;
+        void RegisterComponentDescriptor(const ComponentDescriptor* descriptor) final;
+        void UnregisterComponentDescriptor(const ComponentDescriptor* descriptor) final;
+        void RegisterEntityAddedEventHandler(EntityAddedEvent::Handler& handler) final;
+        void RegisterEntityRemovedEventHandler(EntityRemovedEvent::Handler& handler) final;
+        void RegisterEntityActivatedEventHandler(EntityActivatedEvent::Handler& handler) final;
+        void RegisterEntityDeactivatedEventHandler(EntityDeactivatedEvent::Handler& handler) final;
+        void SignalEntityActivated(Entity* entity) final;
+        void SignalEntityDeactivated(Entity* entity) final;
         bool AddEntity(Entity* entity) override;
         bool RemoveEntity(Entity* entity) override;
         bool DeleteEntity(const EntityId& id) override;

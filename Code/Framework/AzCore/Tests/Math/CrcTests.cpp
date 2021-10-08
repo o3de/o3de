@@ -56,7 +56,7 @@ namespace Benchmark
         // This function only exist to calculate AZ::Crc32 values at compile time
         for (auto _ : state)
         {
-            constexpr auto resultArray = Crc32Internal::GenerateTestCrc32Values();
+            [[maybe_unused]] constexpr auto resultArray = Crc32Internal::GenerateTestCrc32Values();
         }
     }
 

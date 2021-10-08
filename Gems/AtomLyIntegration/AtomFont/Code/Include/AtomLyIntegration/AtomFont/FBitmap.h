@@ -52,8 +52,6 @@ namespace AZ
         void SetRenderData(void* renderData) { m_renderData = renderData; };
         void* GetRenderData() { return m_renderData; };
 
-        void GetMemoryUsage ([[maybe_unused]] class ICrySizer* sizer) {};
-
         unsigned char* GetData() { return m_data; }
 
     public:

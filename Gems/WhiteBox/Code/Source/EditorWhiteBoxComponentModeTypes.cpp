@@ -11,6 +11,8 @@
 #include <AzCore/Debug/Profiler.h>
 #include <AzFramework/Entity/EntityDebugDisplayBus.h>
 
+AZ_DECLARE_BUDGET(AzToolsFramework);
+
 namespace WhiteBox
 {
     void DrawEdges(

@@ -33,7 +33,7 @@ namespace AZ
 
                 QWidget* CreateGUI(QWidget* parent) override;
                 u32 GetHandlerName() const override;
-                bool AutoDelete() const;
+                bool AutoDelete() const override;
 
                 bool IsDefaultHandler() const override;
                 

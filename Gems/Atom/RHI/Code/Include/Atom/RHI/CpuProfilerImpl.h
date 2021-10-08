@@ -43,13 +43,13 @@ namespace AZ
             static constexpr uint32_t TimeRegionStackSize = 2048u;
 
             // Adds a region to the stack, gets called each time a region begins
-            void RegionStackPushBack(TimeRegion& timeRegion);
+            void RegionStackPushBack(CachedTimeRegion& timeRegion);
 
             // Pops a region from the stack, gets called each time a region ends
             void RegionStackPopBack();
 
             // Add a new cached time region. If the stack is empty, flush all entries to the cached map
-            void AddCachedRegion(CachedTimeRegion&& timeRegionCached);
+            void AddCachedRegion(const CachedTimeRegion& timeRegionCached);
 
             // Tries to flush the map to the passed parameter, only if the thread's mutex is unlocked
             void TryFlushCachedMap(CpuProfiler::ThreadTimeRegionMap& cachedRegionMap);
@@ -63,7 +63,7 @@ namespace AZ
 
             // Use fixed vectors to avoid re-allocating new elements
             // Keeps track of the regions that added and removed using the macro
-            AZStd::fixed_vector<TimeRegion*, TimeRegionStackSize> m_timeRegionStack;
+            AZStd::fixed_vector<CachedTimeRegion, TimeRegionStackSize> m_timeRegionStack;
 
             // Keeps track of regions that completed (i.e regions that was pushed and popped from the stack)
             // Intermediate storage point for the CachedTimeRegions, when the stack is empty, all entries will be
@@ -85,7 +85,8 @@ namespace AZ
         //! forwards the request to profile a region to the appropriate thread. The user is able to request all
         //! cached regions, which are stored on a per thread frequency.
         class CpuProfilerImpl final
-            : public CpuProfiler
+            : public AZ::Debug::Profiler
+            , public CpuProfiler
             , public SystemTickBus::Handler
         {
             friend class CpuTimingLocalStorage;
@@ -107,16 +108,17 @@ namespace AZ
             // m_timeRegionMap so that the next frame has up-to-date profiling data.
             void OnSystemTick() final override;
 
+            //! AZ::Debug::Profiler overrides...
+            void BeginRegion(const AZ::Debug::Budget* budget, const char* eventName)  final override;
+            void EndRegion(const AZ::Debug::Budget* budget) final override;
+
             //! CpuProfiler overrides...
-            void BeginTimeRegion(TimeRegion& timeRegion) final override;
-            void EndTimeRegion() final override;
             const TimeRegionMap& GetTimeRegionMap() const final override;
             bool BeginContinuousCapture() final override;
             bool EndContinuousCapture(AZStd::ring_buffer<TimeRegionMap>& flushTarget) final override;
             bool IsContinuousCaptureInProgress() const final override;
             void SetProfilerEnabled(bool enabled) final override;
             bool IsProfilerEnabled() const final override;
-            const CachedTimeRegion::GroupRegionName& InsertDynamicName(const char* groupName, const AZStd::string& regionName) final override;
 
         private:
             static constexpr AZStd::size_t MaxFramesToSave = 2 * 60 * 120; // 2 minutes of 120fps
@@ -132,15 +134,6 @@ namespace AZ
             // Set of registered threads when created
             AZStd::vector<RHI::Ptr<CpuTimingLocalStorage>, AZ::OSStdAllocator> m_registeredThreads;
             AZStd::mutex m_threadRegisterMutex;
-
-            // Pool for GroupRegionNames that are generated at runtime through AZ_ATOM_PROFILE_DYNAMIC. Each unique
-            // combination of group name and region name submitted will be stored in this pool to emulate static lifetime.
-            AZStd::unordered_set<CachedTimeRegion::GroupRegionName, CachedTimeRegion::GroupRegionName::Hash> m_dynamicGroupRegionNamePool;
-
-            // String pool for storing region names submitted at runtime. Each call to AZ_ATOM_PROFILE_DYNAMIC will either construct
-            // a string in this pool or use an already-existing entry.
-            AZStd::unordered_set<AZStd::string> m_regionNameStringPool;
-            AZStd::mutex m_dynamicNameMutex;
 
             // Thread local storage, gets lazily allocated when a thread is created
             static thread_local CpuTimingLocalStorage* ms_threadLocalStorage;

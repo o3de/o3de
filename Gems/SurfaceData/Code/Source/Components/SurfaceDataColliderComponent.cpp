@@ -184,8 +184,6 @@ namespace SurfaceData
 
     bool SurfaceDataColliderComponent::DoRayTrace(const AZ::Vector3& inPosition, bool queryPointOnly, AZ::Vector3& outPosition, AZ::Vector3& outNormal) const
     {
-        AZ_PROFILE_FUNCTION(Entity);
-
         AZStd::lock_guard<decltype(m_cacheMutex)> lock(m_cacheMutex);
 
         // test AABB as first pass to claim the point

@@ -9,6 +9,7 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <CryCommon/ISystem.h>
+#include <CryCommon/ITimer.h>
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 inline void Gestures::RecognizerRotate::Config::Reflect(AZ::ReflectContext* context)
@@ -100,7 +101,7 @@ inline bool Gestures::RecognizerRotate::OnDownEvent(const AZ::Vector2& screenPos
     }
 
     m_currentPositions[pointerIndex] = screenPosition;
-    m_lastUpdateTimes[pointerIndex] = gEnv->pTimer->GetFrameStartTime().GetValue();
+    m_lastUpdateTimes[pointerIndex] = (gEnv && gEnv->pTimer) ? gEnv->pTimer->GetFrameStartTime().GetValue() : 0;
     if (m_lastUpdateTimes[0] != m_lastUpdateTimes[1])
     {
         // We need to wait until both touches have been updated this frame.

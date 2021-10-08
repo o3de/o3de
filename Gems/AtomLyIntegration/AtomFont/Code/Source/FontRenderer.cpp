@@ -256,7 +256,7 @@ int AZ::FontRenderer::GetGlyph(GlyphBitmap* glyphBitmap, int* horizontalAdvance,
     // might happen if font characters are too big or cache dimenstions in font.xml is too small "<font path="VeraMono.ttf" w="320" h="368"/>"
     const bool charWidthFits = static_cast<int>(iX + m_glyph->bitmap.width) <= textureSlotBufferWidth;
     const bool charHeightFits = static_cast<int>(iY + m_glyph->bitmap.rows) <= textureSlotBufferHeight;
-    const bool charFitsInSlot = charWidthFits && charHeightFits;
+    [[maybe_unused]] const bool charFitsInSlot = charWidthFits && charHeightFits;
     AZ_Error("Font", charFitsInSlot, "Character code %d doesn't fit in font texture; check 'sizeRatio' attribute in font XML or adjust this character's sizing in the font.", characterCode);
 
     // Since we might be re-rendering/overwriting a glyph that already exists
@@ -311,8 +311,7 @@ Vec2 AZ::FontRenderer::GetKerning(uint32_t leftGlyph, uint32_t rightGlyph)
 #if !defined(_RELEASE)
         if (0 != ftError)
         {
-            AZStd::string warnMsg = AZStd::string::format("FT_Get_Kerning returned %d", ftError);
-            CryWarning(VALIDATOR_MODULE_SYSTEM, VALIDATOR_WARNING, warnMsg.c_str());
+            CryWarning(VALIDATOR_MODULE_SYSTEM, VALIDATOR_WARNING, "FT_Get_Kerning returned %d", ftError);
         }
 #endif
     }

@@ -14,12 +14,17 @@ function(ly_copy source_file target_directory)
     if("${source_file}" MATCHES "qt/plugins" AND "${target_filename_ext}" STREQUAL ".so")
         get_filename_component(target_filename "${source_file}" NAME)
         file(RPATH_CHANGE FILE "${target_directory}/${target_filename}" OLD_RPATH "\$ORIGIN/../../lib" NEW_RPATH "\$ORIGIN/..")
+    elseif("${source_file}" MATCHES "lrelease")
+        get_filename_component(target_filename "${source_file}" NAME)
+        file(RPATH_CHANGE FILE "${target_directory}/${target_filename}" OLD_RPATH "\$ORIGIN/../lib" NEW_RPATH "\$ORIGIN")
     endif()
 endfunction()]])
 
 function(ly_install_code_function_override)
     string(CONFIGURE "${ly_copy_template}" ly_copy_function_linux @ONLY)
-    install(CODE "${ly_copy_function_linux}")
+    install(CODE "${ly_copy_function_linux}" 
+        COMPONENT ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME}
+    )
 endfunction()
 
 include(cmake/Platform/Common/Install_common.cmake)

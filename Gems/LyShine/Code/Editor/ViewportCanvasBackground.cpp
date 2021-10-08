@@ -50,7 +50,7 @@ void ViewportCanvasBackground::Draw(Draw2dHelper& draw2d, const AZ::Vector2& can
     // now draw the same as Stretched but with UV's adjusted
     const AZ::Vector2 uvs[4] = { AZ::Vector2(0, 0), AZ::Vector2(uvScale.GetX(), 0), AZ::Vector2(uvScale.GetX(), uvScale.GetY()), AZ::Vector2(0, uvScale.GetY()) };
     AZ::Color colorWhite(1.0f, 1.0f, 1.0f, 1.0f);
-    IDraw2d::VertexPosColUV verts[4];
+    CDraw2d::VertexPosColUV verts[4];
     for (int i = 0; i < 4; ++i)
     {
         verts[i].position = positions[i];
@@ -58,5 +58,5 @@ void ViewportCanvasBackground::Draw(Draw2dHelper& draw2d, const AZ::Vector2& can
         verts[i].uv = uvs[i];
     }
 
-    m_canvasBackground->DrawImageTiled(draw2d, verts, 1.0f);
+    m_canvasBackground->DrawImageTiled(draw2d, verts);
 }

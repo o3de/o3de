@@ -25,6 +25,9 @@ ly_add_target(
             AZ::AzCore
             AZ::AzFramework
             AZ::AzNetworking
+        PRIVATE
+            Gem::EMotionFXStaticLib
+            Gem::PhysX.Static
     AUTOGEN_RULES
         *.AutoPackets.xml,AutoPackets_Header.jinja,$path/$fileprefix.AutoPackets.h
         *.AutoPackets.xml,AutoPackets_Inline.jinja,$path/$fileprefix.AutoPackets.inl
@@ -175,6 +178,10 @@ if (PAL_TRAIT_BUILD_TESTS_SUPPORTED)
     )
     ly_add_googletest(
         NAME Gem::Multiplayer.Tests
+    )
+    ly_add_googlebenchmark(
+        NAME Gem::Multiplayer.Benchmarks
+        TARGET Gem::Multiplayer.Tests
     )
     
     if (PAL_TRAIT_BUILD_HOST_TOOLS)

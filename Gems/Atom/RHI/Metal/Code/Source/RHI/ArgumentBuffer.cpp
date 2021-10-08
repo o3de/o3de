@@ -431,7 +431,7 @@ namespace AZ
                     }
                     else
                     {
-                        bool isBoundToGraphics = RHI::CheckBitsAny(visMaskIt->second, RHI::ShaderStageMask::Vertex) || RHI::CheckBitsAny(visMaskIt->second, RHI::ShaderStageMask::Fragment);
+                        [[maybe_unused]] bool isBoundToGraphics = RHI::CheckBitsAny(visMaskIt->second, RHI::ShaderStageMask::Vertex) || RHI::CheckBitsAny(visMaskIt->second, RHI::ShaderStageMask::Fragment);
                         AZ_Assert(isBoundToGraphics, "The visibility mask %i is not set for Vertex or fragment stage", visMaskIt->second);
                         CollectResourcesForGraphics(commandEncoder, visMaskIt->second, it.second, resourcesToMakeResidentGraphics);
                     }

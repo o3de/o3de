@@ -189,11 +189,6 @@ namespace AZ
             m_commandQueueContext.UpdateCpuTimingStatistics(cpuTimingStatistics);
         }
 
-        void Device::BeginFrameInternal()
-        {
-            m_commandQueueContext.Begin();
-        }
-
         void Device::EndFrameInternal()
         {
             AZ_TRACE_METHOD();
@@ -629,6 +624,21 @@ namespace AZ
         bool Device::IsAftermathInitialized() const
         {
             return m_isAftermathInitialized;
+        }
+
+        RHI::ResultCode Device::CompactSRGMemory()
+        {
+            if (m_isDescriptorHeapCompactionNeeded)
+            {
+                m_isDescriptorHeapCompactionNeeded = false;
+                return m_descriptorContext->CompactDescriptorHeap();
+            }
+            return RHI::ResultCode::Success;
+        }
+
+        void Device::DescriptorHeapCompactionNeeded()
+        {
+            m_isDescriptorHeapCompactionNeeded = true;
         }
     }
 }

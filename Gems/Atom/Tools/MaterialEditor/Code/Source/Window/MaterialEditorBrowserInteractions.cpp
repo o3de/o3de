@@ -106,7 +106,7 @@ namespace MaterialEditor
         menu->addAction("Create Material...", [entry]()
             {
                 const QString defaultPath = AtomToolsFramework::GetUniqueFileInfo(
-                    QString(AZ::IO::FileIOBase::GetInstance()->GetAlias("@devassets@")) +
+                    QString(AZ::IO::FileIOBase::GetInstance()->GetAlias("@projectroot@")) +
                     AZ_CORRECT_FILESYSTEM_SEPARATOR + "Materials" +
                     AZ_CORRECT_FILESYSTEM_SEPARATOR + "untitled." +
                     AZ::RPI::MaterialSourceData::Extension).absoluteFilePath();
@@ -125,7 +125,7 @@ namespace MaterialEditor
                 QDesktopServices::openUrl(QUrl::fromLocalFile(entry->GetFullPath().c_str()));
             });
 
-        menu->addAction("Duplicate...", [entry, caller]()
+        menu->addAction("Duplicate...", [entry]()
             {
                 const QFileInfo duplicateFileInfo(AtomToolsFramework::GetDuplicationFileInfo(entry->GetFullPath().c_str()));
                 if (!duplicateFileInfo.absoluteFilePath().isEmpty())
@@ -156,7 +156,7 @@ namespace MaterialEditor
                 AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Broadcast(&AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Events::OpenDocument, entry->GetFullPath());
             });
 
-        menu->addAction("Duplicate...", [entry, caller]()
+        menu->addAction("Duplicate...", [entry]()
             {
                 const QFileInfo duplicateFileInfo(AtomToolsFramework::GetDuplicationFileInfo(entry->GetFullPath().c_str()));
                 if (!duplicateFileInfo.absoluteFilePath().isEmpty())
@@ -182,7 +182,7 @@ namespace MaterialEditor
         menu->addAction("Create Child Material...", [entry]()
             {
                 const QString defaultPath = AtomToolsFramework::GetUniqueFileInfo(
-                    QString(AZ::IO::FileIOBase::GetInstance()->GetAlias("@devassets@")) +
+                    QString(AZ::IO::FileIOBase::GetInstance()->GetAlias("@projectroot@")) +
                     AZ_CORRECT_FILESYSTEM_SEPARATOR + "Materials" +
                     AZ_CORRECT_FILESYSTEM_SEPARATOR + "untitled." +
                     AZ::RPI::MaterialSourceData::Extension).absoluteFilePath();
@@ -285,7 +285,7 @@ namespace MaterialEditor
                 });
 
             // add get latest action
-            m_getLatestAction = sourceControlMenu->addAction("Get Latest", [path, this]()
+            m_getLatestAction = sourceControlMenu->addAction("Get Latest", [path]()
                 {
                     SourceControlCommandBus::Broadcast(&SourceControlCommandBus::Events::RequestLatest, path.c_str(),
                         [](bool, const SourceControlFileInfo&) {});

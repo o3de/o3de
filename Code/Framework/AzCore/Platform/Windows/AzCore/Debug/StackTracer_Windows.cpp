@@ -478,7 +478,7 @@ namespace AZ {
                 DWORD displacement;
                 if (g_SymGetLineFromAddr64(g_currentProcess, pc, &displacement, &line) && line.FileName[0] != 0)
                 {
-                    azsnprintf(textLine, textLineSize, "%s (%d) : ", line.FileName, line.LineNumber);
+                    azsnprintf(textLine, textLineSize, "%s (%ld) : ", line.FileName, line.LineNumber);
                 }
                 else
                 {

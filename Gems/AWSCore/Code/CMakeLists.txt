@@ -6,18 +6,18 @@
 #
 #
 
-ly_get_list_relative_pal_filename(pal_editor_include_dir ${CMAKE_CURRENT_LIST_DIR}/Include/Private/Editor/Platform/${PAL_PLATFORM_NAME})
-ly_get_list_relative_pal_filename(pal_cafile_include_dir ${CMAKE_CURRENT_LIST_DIR}/Source/Framework/Platform/${PAL_PLATFORM_NAME})
+ly_get_list_relative_pal_filename(pal_dir ${CMAKE_CURRENT_LIST_DIR}/Platform/${PAL_PLATFORM_NAME})
 
 ly_add_target(
     NAME AWSCore.Static STATIC
     NAMESPACE Gem
     FILES_CMAKE
         awscore_files.cmake
-         ${pal_cafile_include_dir}/platform_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake
+         ${pal_dir}/platform_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake
     INCLUDE_DIRECTORIES
         PUBLIC
             Include/Public
+            ${pal_dir}
         PRIVATE
             Include/Private
     BUILD_DEPENDENCIES
@@ -45,8 +45,19 @@ ly_add_target(
 )
 
 # clients and servers will use the above Gem::AWSCore module.
-ly_create_alias(NAME AWSCore.Servers NAMESPACE Gem TARGETS Gem::AWSCore)
-ly_create_alias(NAME AWSCore.Clients NAMESPACE Gem TARGETS Gem::AWSCore)
+ly_create_alias(
+    NAME AWSCore.Servers
+    NAMESPACE Gem
+    TARGETS
+        Gem::AWSCore
+)
+
+ly_create_alias(
+    NAME AWSCore.Clients
+    NAMESPACE Gem
+    TARGETS
+        Gem::AWSCore
+)
 
 if (PAL_TRAIT_BUILD_HOST_TOOLS)
     ly_add_target(
@@ -54,11 +65,11 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
         NAMESPACE Gem
         FILES_CMAKE
             awscore_editor_files.cmake
-            ${pal_editor_include_dir}/platform_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake
+            ${pal_dir}/platform_${PAL_PLATFORM_NAME_LOWERCASE}_editor_files.cmake
         INCLUDE_DIRECTORIES
             PRIVATE
                 Include/Private
-                ${pal_editor_include_dir}
+                ${pal_dir}
             PUBLIC
                 Include/Public
         BUILD_DEPENDENCIES
@@ -84,8 +95,6 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
             PRIVATE
                 AZ::AzCore
                 Gem::AWSCore.Editor.Static
-        RUNTIME_DEPENDENCIES
-            Gem::AWSCore
     )
 
     # This target is not a real gem module
@@ -106,8 +115,21 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
     ly_add_dependencies(AWSCore.Editor AWSCore.ResourceMappingTool)
 
     # Builders and Tools (such as the Editor use AWSCore.Editor) use the .Editor module above.
-    ly_create_alias(NAME AWSCore.Tools NAMESPACE Gem TARGETS Gem::AWSCore.Editor)
-    ly_create_alias(NAME AWSCore.Builders NAMESPACE Gem TARGETS Gem::AWSCore.Editor)
+    ly_create_alias(
+        NAME AWSCore.Tools
+        NAMESPACE Gem
+        TARGETS
+            Gem::AWSCore
+            Gem::AWSCore.Editor
+    )
+
+    ly_create_alias(
+        NAME AWSCore.Builders
+        NAMESPACE Gem
+        TARGETS
+            Gem::AWSCore
+            Gem::AWSCore.Editor
+    )
 
 endif()
 
@@ -142,12 +164,12 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
             NAMESPACE Gem
             FILES_CMAKE
                 awscore_editor_tests_files.cmake
-                ${pal_editor_include_dir}/platform_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake
-                Tests/Editor/Platform/${PAL_PLATFORM_NAME}/awscore_editor_tests_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake
+                ${pal_dir}/platform_${PAL_PLATFORM_NAME_LOWERCASE}_editor_files.cmake
+                ${pal_dir}/platform_${PAL_PLATFORM_NAME_LOWERCASE}_editor_tests_files.cmake
             INCLUDE_DIRECTORIES
                 PRIVATE
                     Include/Private
-                    ${pal_editor_include_dir}
+                    ${pal_dir}
                     Include/Public
                     Tests
             COMPILE_DEFINITIONS

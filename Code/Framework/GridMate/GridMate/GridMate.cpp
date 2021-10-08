@@ -36,7 +36,7 @@ namespace GridMate
         AZ_CLASS_ALLOCATOR(GridMateImpl, GridMateAllocator, 0);
 
         GridMateImpl(const GridMateDesc& desc);
-        virtual ~GridMateImpl();
+        ~GridMateImpl() override;
 
         void Update() override;
 

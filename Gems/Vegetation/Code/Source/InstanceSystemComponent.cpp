@@ -582,7 +582,7 @@ namespace Vegetation
         }
 
         //offloading garbage collection to job to save time deallocating tasks on main thread
-        auto garbageCollectionJob = AZ::CreateJobFunction([removedTasksPtr]() mutable {}, true);
+        auto garbageCollectionJob = AZ::CreateJobFunction([]() mutable {}, true);
         garbageCollectionJob->Start();
     }
 

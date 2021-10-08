@@ -6,11 +6,26 @@
  *
  */
 
+#include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/Json/JsonSerialization.h>
 #include <ScriptCanvas/Asset/RuntimeAsset.h>
 #include <ScriptCanvas/Serialization/DatumSerializer.h>
 
 using namespace ScriptCanvas;
+
+namespace DatumSerializerCpp
+{
+    bool IsEventInput(const AZ::Uuid& inputType)
+    {
+        AZ::BehaviorContext* behaviorContext = nullptr;
+        AZ::ComponentApplicationBus::BroadcastResult(behaviorContext, &AZ::ComponentApplicationRequests::GetBehaviorContext);
+        AZ_Assert(behaviorContext, "Can't serialize data properly without checking the type, for which we need behavior context!");
+        auto bcClassIter = behaviorContext->m_typeToClassMap.find(inputType);
+        return bcClassIter != behaviorContext->m_typeToClassMap.end()
+            && bcClassIter->second->m_azRtti
+            && bcClassIter->second->m_azRtti->GetGenericTypeId() == azrtti_typeid<AZ::Event>();
+    }
+}
 
 namespace AZ
 {
@@ -57,7 +72,7 @@ namespace AZ
             return context.Report
                 ( JSR::Tasks::ReadField
                 , JSR::Outcomes::Missing
-                , "DatumSerializer::Load failed to load the 'isNullPointer'' member");
+                , "DatumSerializer::Load failed to load the 'isNullPointer' member");
         }
 
         if (isNullPointerMember->value.GetBool())
@@ -110,7 +125,7 @@ namespace AZ
         {
             listeners->push_back(outputDatum);
         }
-        
+
         return context.Report(result, result.GetProcessing() != JSR::Processing::Halted
             ? "DatumSerializer Load finished loading Datum"
             : "DatumSerializer Load failed to load Datum");
@@ -130,13 +145,13 @@ namespace AZ
 
         auto inputScriptDataPtr = reinterpret_cast<const Datum*>(inputValue);
         auto defaultScriptDataPtr = reinterpret_cast<const Datum*>(defaultValue);
-       
+
         if (defaultScriptDataPtr)
         {
             if (*inputScriptDataPtr == *defaultScriptDataPtr)
             {
                 return context.Report
-                    ( JSR::Tasks::WriteValue, JSR::Outcomes::DefaultsUsed, "DatumSerializer Store used defaults for Datum");
+                (JSR::Tasks::WriteValue, JSR::Outcomes::DefaultsUsed, "DatumSerializer Store used defaults for Datum");
             }
         }
 
@@ -159,11 +174,13 @@ namespace AZ
             , azrtti_typeid<decltype(inputScriptDataPtr->GetType())>()
             , context));
 
+
         // datum storage begin
         auto inputObjectSource = inputScriptDataPtr->GetAsDanger();
-        outputValue.AddMember("isNullPointer", rapidjson::Value(inputObjectSource == nullptr), context.GetJsonAllocator());
+        const bool isNullPointer = inputObjectSource == nullptr || DatumSerializerCpp::IsEventInput(inputScriptDataPtr->GetType().GetAZType());
+        outputValue.AddMember("isNullPointer", rapidjson::Value(isNullPointer), context.GetJsonAllocator());
 
-        if (inputObjectSource)
+        if (!isNullPointer)
         {
             rapidjson::Value typeValue;
             result.Combine(StoreTypeId(typeValue, inputScriptDataPtr->GetType().GetAZType(), context));

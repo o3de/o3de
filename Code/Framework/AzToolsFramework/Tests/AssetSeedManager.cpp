@@ -37,10 +37,10 @@ namespace // anonymous
 
     bool Search(const AzToolsFramework::AssetFileInfoList& assetList, const AZ::Data::AssetId& assetId)
     {
-        return AZStd::find_if(assetList.m_fileInfoList.begin(), assetList.m_fileInfoList.end(), 
-            [&](AzToolsFramework::AssetFileInfo fileInfo) 
-            { 
-                return fileInfo.m_assetId == assetId; 
+        return AZStd::find_if(assetList.m_fileInfoList.begin(), assetList.m_fileInfoList.end(),
+            [&](AzToolsFramework::AssetFileInfo fileInfo)
+            {
+                return fileInfo.m_assetId == assetId;
             });
     }
 }
@@ -74,11 +74,11 @@ namespace UnitTest
 
             m_application->Start(AzFramework::Application::Descriptor());
 
-            // By default @assets@ is setup to include the platform at the end. But this test is going to
+            // By default @products@ is setup to include the platform at the end. But this test is going to
             // loop over platforms and it will be included as part of the relative path of the file.
             // So the asset folder for these tests have to point to the cache project root folder, which
             // doesn't include the platform.
-            AZ::IO::FileIOBase::GetInstance()->SetAlias("@assets@", cacheProjectRootFolder.c_str());
+            AZ::IO::FileIOBase::GetInstance()->SetAlias("@products@", cacheProjectRootFolder.c_str());
 
             for (int idx = 0; idx < s_totalAssets; idx++)
             {
@@ -158,17 +158,17 @@ namespace UnitTest
             m_assetRegistry->RegisterAssetDependency(assets[5], AZ::Data::ProductDependency(assets[6], 0));
             m_assetRegistry->RegisterAssetDependency(assets[6], AZ::Data::ProductDependency(assets[7], 0));
 
-            // asset8 -> asset6 
+            // asset8 -> asset6
             m_assetRegistry->RegisterAssetDependency(assets[8], AZ::Data::ProductDependency(assets[6], 0));
 
-            // asset10 -> asset11 
+            // asset10 -> asset11
             m_assetRegistry->RegisterAssetDependency(assets[10], AZ::Data::ProductDependency(assets[11], 0));
 
-            // asset11 -> asset10 
+            // asset11 -> asset10
             m_assetRegistry->RegisterAssetDependency(assets[11], AZ::Data::ProductDependency(assets[10], 0));
 
             // Without this, the user settings component would attempt to save on finalize/shutdown. Since the file is
-            // shared across the whole engine, if multiple tests are run in parallel, the saving could cause a crash 
+            // shared across the whole engine, if multiple tests are run in parallel, the saving could cause a crash
             // in the unit tests.
             AZ::UserSettingsComponentRequestBus::Broadcast(&AZ::UserSettingsComponentRequests::DisableSaveOnFinalize);
 
@@ -203,10 +203,6 @@ namespace UnitTest
 
             const AZStd::string engroot = AZ::Test::GetEngineRootPath();
             AZ::IO::FileIOBase::GetInstance()->SetAlias("@engroot@", engroot.c_str());
-
-            AZ::IO::Path assetRoot(AZ::Utils::GetProjectPath());
-            assetRoot /= "Cache";
-            AZ::IO::FileIOBase::GetInstance()->SetAlias("@root@", assetRoot.c_str());
         }
 
         void TearDown() override
@@ -219,7 +215,7 @@ namespace UnitTest
             delete m_application;
         }
 
-        AZ::Data::AssetInfo GetAssetInfoById(const AZ::Data::AssetId& id) 
+        AZ::Data::AssetInfo GetAssetInfoById(const AZ::Data::AssetId& id) override
         {
             auto foundIter = m_assetRegistry->m_assetIdToInfo.find(id);
             if (foundIter != m_assetRegistry->m_assetIdToInfo.end())
@@ -540,7 +536,7 @@ namespace UnitTest
             EXPECT_TRUE(Search(assetList, assets[7]));
             EXPECT_TRUE(Search(assetList, assets[8]));
 
-            // Removing the android flag from the asset should still produce the same result 
+            // Removing the android flag from the asset should still produce the same result
             m_assetSeedManager->RemoveSeedAsset(assets[8], AzFramework::PlatformFlags::Platform_ANDROID);
 
             assetList = m_assetSeedManager->GetDependencyList(AzFramework::PlatformId::PC);
@@ -564,7 +560,7 @@ namespace UnitTest
             EXPECT_TRUE(Search(assetList, assets[3]));
             EXPECT_TRUE(Search(assetList, assets[4]));
 
-            // Adding the android flag again to the asset 
+            // Adding the android flag again to the asset
             m_assetSeedManager->AddSeedAsset(assets[8], AzFramework::PlatformFlags::Platform_ANDROID);
             assetList = m_assetSeedManager->GetDependencyList(AzFramework::PlatformId::ANDROID_ID);
 
@@ -624,7 +620,7 @@ namespace UnitTest
 
             EXPECT_EQ(assetList1.m_fileInfoList[0].m_assetId, assetList2.m_fileInfoList[0].m_assetId);
             EXPECT_GE(assetList2.m_fileInfoList[0].m_modificationTime, assetList1.m_fileInfoList[0].m_modificationTime); // file mod time should change
-            
+
             // file hash should not change
             for (int idx = 0; idx < 5; idx++)
             {
@@ -680,7 +676,7 @@ namespace UnitTest
             m_assetSeedManager->AddSeedAsset(assets[validFileIndex], AzFramework::PlatformFlags::Platform_PC, m_assetsPath[invalidFileIndex]);
 
             const AzFramework::AssetSeedList& oldSeedList = m_assetSeedManager->GetAssetSeedList();
-            
+
             for (const auto& seedInfo : oldSeedList)
             {
                 if (seedInfo.m_assetId == assets[validFileIndex])

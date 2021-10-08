@@ -236,7 +236,7 @@ namespace AzToolsFramework
         AZ_Assert(container, "This node is NOT a container node!");
         const AZ::SerializeContext::ClassElement* containerClassElement = container->GetElement(container->GetDefaultElementNameCrc());
 
-        AZ_Assert(containerClassElement != NULL, "We should have a valid default element in the container, otherwise we don't know what elements to make!");
+        AZ_Assert(containerClassElement != nullptr, "We should have a valid default element in the container, otherwise we don't know what elements to make!");
         if (!containerClassElement)
         {
             return false;
@@ -261,7 +261,7 @@ namespace AzToolsFramework
                     AZ_Assert(newDataAddress, "Faliled to create new element for the continer!");
                     // cast to base type (if needed)
                     void* basePtr = m_context->DownCast(newDataAddress, classData->m_typeId, containerClassElement->m_typeId, classData->m_azRtti, containerClassElement->m_azRtti);
-                    AZ_Assert(basePtr != NULL, "Can't cast container element %s to %s, make sure classes are registered in the system and not generics!", classData->m_name, containerClassElement->m_name);
+                    AZ_Assert(basePtr != nullptr, "Can't cast container element %s to %s, make sure classes are registered in the system and not generics!", classData->m_name, containerClassElement->m_name);
                     *reinterpret_cast<void**>(dataAddress) = basePtr; // store the pointer in the class
                     /// Store the element in the container
                     container->StoreElement(GetInstance(i), dataAddress);
@@ -608,7 +608,7 @@ namespace AzToolsFramework
         AZ_Assert(sc, "sc can't be NULL!");
         AZ_Assert(m_rootInstances.size() > 0, "No root instances have been added to this hierarchy!");
 
-        m_curParentNode = NULL;
+        m_curParentNode = nullptr;
         m_isMerging = false;
         m_instances.clear();
         m_children.clear();
@@ -636,7 +636,7 @@ namespace AzToolsFramework
 
         for (size_t i = 1; i < m_rootInstances.size(); ++i)
         {
-            m_curParentNode = NULL;
+            m_curParentNode = nullptr;
             m_isMerging = true;
             m_matched = false;
             sc->EnumerateInstanceConst(
@@ -956,7 +956,7 @@ namespace AzToolsFramework
             }
         }
 
-        InstanceDataNode* node = NULL;
+        InstanceDataNode* node = nullptr;
         // Extra steps need to be taken when we are merging
         if (m_isMerging)
         {

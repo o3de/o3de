@@ -23,8 +23,8 @@ using namespace AZ;
 // [3/21/2011]
 //=========================================================================
 ZLib::ZLib(IAllocator* workMemAllocator)
-    : m_strDeflate(NULL)
-    , m_strInflate(NULL)
+    : m_strDeflate(nullptr)
+    , m_strInflate(nullptr)
 {
     m_workMemoryAllocator = workMemAllocator ? workMemAllocator->GetAllocationSource() : nullptr;
     if (!m_workMemoryAllocator)
@@ -75,7 +75,7 @@ void ZLib::FreeMem(void* userData, void* address)
 //=========================================================================
 void ZLib::StartCompressor(unsigned int compressionLevel)
 {
-    AZ_Assert(m_strDeflate == NULL, "Compressor already started!");
+    AZ_Assert(m_strDeflate == nullptr, "Compressor already started!");
     m_strDeflate = reinterpret_cast< z_stream* >(AllocateMem(m_workMemoryAllocator, 1, sizeof(z_stream)));
     m_strDeflate->zalloc = &ZLib::AllocateMem;
     m_strDeflate->zfree = &ZLib::FreeMem;
@@ -91,10 +91,10 @@ void ZLib::StartCompressor(unsigned int compressionLevel)
 //=========================================================================
 void ZLib::StopCompressor()
 {
-    AZ_Assert(m_strDeflate != NULL, "Compressor not started!");
+    AZ_Assert(m_strDeflate != nullptr, "Compressor not started!");
     deflateEnd(m_strDeflate);
     FreeMem(m_workMemoryAllocator, m_strDeflate);
-    m_strDeflate = NULL;
+    m_strDeflate = nullptr;
 }
 
 //=========================================================================
@@ -103,7 +103,7 @@ void ZLib::StopCompressor()
 //=========================================================================
 void ZLib::ResetCompressor()
 {
-    AZ_Assert(m_strDeflate != NULL, "Compressor not started!");
+    AZ_Assert(m_strDeflate != nullptr, "Compressor not started!");
     int r = deflateReset(m_strDeflate);
     (void)r;
     AZ_Assert(r == Z_OK, "ZLib inconsistent state - deflateReset() failed !!!\n");
@@ -115,7 +115,7 @@ void ZLib::ResetCompressor()
 //=========================================================================
 unsigned int ZLib::Compress(const void* data, unsigned int& dataSize, void* compressedData, unsigned int compressedDataSize, FlushType flushType)
 {
-    AZ_Assert(m_strDeflate != NULL, "Compressor not started!");
+    AZ_Assert(m_strDeflate != nullptr, "Compressor not started!");
     m_strDeflate->avail_in = dataSize;
     m_strDeflate->next_in = (unsigned char*)data;
     m_strDeflate->avail_out = compressedDataSize;
@@ -158,7 +158,7 @@ unsigned int ZLib::Compress(const void* data, unsigned int& dataSize, void* comp
 //=========================================================================
 unsigned int ZLib::GetMinCompressedBufferSize(unsigned int sourceDataSize)
 {
-    AZ_Assert(m_strDeflate != NULL, "Compressor not started!");
+    AZ_Assert(m_strDeflate != nullptr, "Compressor not started!");
     return static_cast<unsigned int>(deflateBound(m_strDeflate, sourceDataSize));
 }
 
@@ -168,7 +168,7 @@ unsigned int ZLib::GetMinCompressedBufferSize(unsigned int sourceDataSize)
 //=========================================================================
 void ZLib::StartDecompressor(Header* header)
 {
-    AZ_Assert(m_strInflate == NULL, "Decompressor already started!");
+    AZ_Assert(m_strInflate == nullptr, "Decompressor already started!");
     m_strInflate = reinterpret_cast< z_stream* >(AllocateMem(m_workMemoryAllocator, 1, sizeof(z_stream)));
     m_strInflate->zalloc = &ZLib::AllocateMem;
     m_strInflate->zfree = &ZLib::FreeMem;
@@ -188,10 +188,10 @@ void ZLib::StartDecompressor(Header* header)
 //=========================================================================
 void ZLib::StopDecompressor()
 {
-    AZ_Assert(m_strInflate != NULL, "Decompressor not started!");
+    AZ_Assert(m_strInflate != nullptr, "Decompressor not started!");
     inflateEnd(m_strInflate);
     FreeMem(m_workMemoryAllocator, m_strInflate);
-    m_strInflate = NULL;
+    m_strInflate = nullptr;
 }
 
 //=========================================================================
@@ -200,7 +200,7 @@ void ZLib::StopDecompressor()
 //=========================================================================
 void ZLib::ResetDecompressor(Header* header)
 {
-    AZ_Assert(m_strInflate != NULL, "Decompressor not started!");
+    AZ_Assert(m_strInflate != nullptr, "Decompressor not started!");
     int r = inflateReset(m_strInflate);
     (void)r;
     AZ_Assert(r == Z_OK, "ZLib inconsistent state - inflateReset() failed !!!\n");
@@ -229,7 +229,7 @@ void ZLib::SetupDecompressHeader(Header header)
 //=========================================================================
 unsigned int ZLib::Decompress(const void* compressedData, unsigned int compressedDataSize, void* data, unsigned int& dataSize, FlushType flushType)
 {
-    AZ_Assert(m_strInflate != NULL, "Decompressor not started!");
+    AZ_Assert(m_strInflate != nullptr, "Decompressor not started!");
     m_strInflate->avail_in = compressedDataSize;
     m_strInflate->next_in = (unsigned char*)compressedData;
     m_strInflate->avail_out = dataSize;

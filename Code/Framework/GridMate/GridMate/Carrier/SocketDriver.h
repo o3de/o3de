@@ -88,11 +88,11 @@ namespace GridMate
         bool operator==(const SocketDriverAddress& rhs) const;
         bool operator!=(const SocketDriverAddress& rhs) const;
 
-        virtual AZStd::string ToString() const;
-        virtual AZStd::string ToAddress() const;
-        virtual AZStd::string GetIP() const;
-        virtual unsigned int  GetPort() const;
-        virtual const void* GetTargetAddress(unsigned int& addressSize) const;
+        AZStd::string ToString() const override;
+        AZStd::string ToAddress() const override;
+        AZStd::string GetIP() const override;
+        unsigned int  GetPort() const override;
+        const void* GetTargetAddress(unsigned int& addressSize) const override;
 
         union
         {
@@ -117,11 +117,11 @@ namespace GridMate
         * Platform specific functionality.
         */
         /// Return maximum number of active connections at the same time.
-        virtual unsigned int GetMaxNumConnections() const       { return 32; }
+        unsigned int GetMaxNumConnections() const override       { return 32; }
         /// Return maximum data size we can send/receive at once in bytes, supported by the platform.
-        virtual unsigned int GetMaxSendSize() const;
+        unsigned int GetMaxSendSize() const override;
         /// Return packet overhead size in bytes.
-        virtual unsigned int GetPacketOverheadSize() const;
+        unsigned int GetPacketOverheadSize() const override;
 
         /**
          * User should implement create and bind a UDP socket. This socket will be used for all communications.
@@ -132,39 +132,39 @@ namespace GridMate
          * \param receiveBufferSize socket receive buffer size in bytes, use 0 for default values.
          * \param sendBufferSize socket send buffer size, use 0 for default values.
          */
-        virtual ResultCode  Initialize(int familyType = BSD_AF_INET, const char* address = nullptr, unsigned int port = 0, bool isBroadcast = false, unsigned int receiveBufferSize = 0, unsigned int sendBufferSize = 0);
+        ResultCode  Initialize(int familyType = BSD_AF_INET, const char* address = nullptr, unsigned int port = 0, bool isBroadcast = false, unsigned int receiveBufferSize = 0, unsigned int sendBufferSize = 0) override;
 
         /// Returns communication port (must be called after Initialize, otherwise it will return 0)
-        virtual unsigned int GetPort() const;
+        unsigned int GetPort() const override;
 
         /// Send data to a user defined address
-        virtual ResultCode  Send(const AZStd::intrusive_ptr<DriverAddress>& to, const char* data, unsigned int dataSize);
+        ResultCode  Send(const AZStd::intrusive_ptr<DriverAddress>& to, const char* data, unsigned int dataSize) override;
         /**
         * Receives a datagram and stores the source address. maxDataSize must be >= than GetMaxSendSize(). Returns the num of of received bytes.
         * \note If a datagram from a new connection is received, NewConnectionCB will be called. If it rejects the connection the returned from pointer
         * will be NULL while the actual data will be returned.
         */
-        virtual unsigned int Receive(char* data, unsigned int maxDataSize, AZStd::intrusive_ptr<DriverAddress>& from, ResultCode* resultCode = 0);
+        unsigned int Receive(char* data, unsigned int maxDataSize, AZStd::intrusive_ptr<DriverAddress>& from, ResultCode* resultCode = 0) override;
         /**
          *  Wait for data to be to the ready for receive. Time out is the maximum time to wait
          * before this function returns. If left to default value it will be in blocking mode (wait until data is ready to be received).
          * \returns true if there is data to be received (always true if timeOut == 0), otherwise false.
          */
-        virtual bool WaitForData(AZStd::chrono::microseconds timeOut = AZStd::chrono::microseconds(0));
+        bool WaitForData(AZStd::chrono::microseconds timeOut = AZStd::chrono::microseconds(0)) override;
 
         /**
          * When you enter wait for data mode, for many reasons you might want to stop wait for data.
          * If you implement this function you need to make sure it's a thread safe function.
          */
-        virtual void StopWaitForData();
+        void StopWaitForData() override;
 
         /// Return true if WaitForData was interrupted before the timeOut expired, otherwise false.
-        virtual bool WasStopeedWaitingForData()                 { return m_isStoppedWaitForData; }
+        bool WasStopeedWaitingForData() override                 { return m_isStoppedWaitForData; }
 
         /// @{ Address conversion functionality. They MUST implemented thread safe. Generally this is not a problem since they just part local data.
         ///  Create address from ip and port. If ip == NULL we will assign a broadcast address.
-        virtual AZStd::string  IPPortToAddress(const char* ip, unsigned int port) const                               { return IPPortToAddressString(ip, port); }
-        virtual bool    AddressToIPPort(const AZStd::string& address, AZStd::string& ip, unsigned int& port) const    { return AddressStringToIPPort(address, ip, port); }
+        AZStd::string  IPPortToAddress(const char* ip, unsigned int port) const override                               { return IPPortToAddressString(ip, port); }
+        bool    AddressToIPPort(const AZStd::string& address, AZStd::string& ip, unsigned int& port) const override    { return AddressStringToIPPort(address, ip, port); }
         /// Create address for the socket driver from IP and port
         static AZStd::string   IPPortToAddressString(const char* ip, unsigned int port);
         /// Decompose an address to IP and port
@@ -174,7 +174,7 @@ namespace GridMate
         static BSDSocketFamilyType  AddressFamilyType(const char* ip)           { return AddressFamilyType(AZStd::string(ip)); }
         /// @}
 
-        virtual AZStd::intrusive_ptr<DriverAddress> CreateDriverAddress(const AZStd::string& address) = 0;
+        AZStd::intrusive_ptr<DriverAddress> CreateDriverAddress(const AZStd::string& address) override = 0;
         /// Additional CreateDriverAddress function should be implemented.
         virtual AZStd::intrusive_ptr<DriverAddress> CreateDriverAddress(const sockaddr* sockAddr) = 0;
 
@@ -352,10 +352,10 @@ namespace GridMate
         * \note Driver address allocates internal resources, use it only when you intend to communicate. Otherwise operate with
         * the string address.
         */
-        virtual AZStd::intrusive_ptr<DriverAddress> CreateDriverAddress(const AZStd::string& address);
-        virtual AZStd::intrusive_ptr<DriverAddress> CreateDriverAddress(const sockaddr* addr);
+        AZStd::intrusive_ptr<DriverAddress> CreateDriverAddress(const AZStd::string& address) override;
+        AZStd::intrusive_ptr<DriverAddress> CreateDriverAddress(const sockaddr* addr) override;
         /// Called only from the DriverAddress when the use count becomes 0
-        virtual void    DestroyDriverAddress(DriverAddress* address);
+        void    DestroyDriverAddress(DriverAddress* address) override;
 
         typedef AZStd::unordered_set<SocketDriverAddress, SocketDriverAddress::Hasher> AddressSetType;
         AddressSetType  m_addressMap;

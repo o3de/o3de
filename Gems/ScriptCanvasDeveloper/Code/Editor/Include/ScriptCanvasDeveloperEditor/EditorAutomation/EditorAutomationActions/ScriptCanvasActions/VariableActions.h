@@ -96,7 +96,7 @@ namespace ScriptCanvasDeveloper
         bool IsMissingPrecondition() override;
         EditorAutomationAction* GenerateMissingPreconditionAction() override;
 
-        void SetupAction();
+        void SetupAction() override;
 
         // GraphCanvas::SceneNotificationBus
         void OnNodeAdded(const AZ::EntityId& nodeId, bool isPaste) override;
@@ -146,7 +146,7 @@ namespace ScriptCanvasDeveloper
         ShowGraphVariablesAction() = default;
         ~ShowGraphVariablesAction() override = default;
 
-        void SetupAction();
+        void SetupAction() override;
 
         ActionReport GenerateReport() const override;
     };

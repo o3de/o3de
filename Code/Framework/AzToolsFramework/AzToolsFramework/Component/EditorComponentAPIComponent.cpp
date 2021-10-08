@@ -262,7 +262,7 @@ namespace AzToolsFramework
             m_serializeContext->EnumerateDerived<AZ::Component>(
                 [&typeNameList, entityType](const AZ::SerializeContext::ClassData* componentClass, const AZ::Uuid& knownType) -> bool
                 {
-                    AZ_UNUSED(knownType)
+                    AZ_UNUSED(knownType);
 
                         if (!componentClass->m_editData)
                         {

@@ -106,7 +106,7 @@ namespace AZ
 
                 m_allAllocatorRecords.push_back(allocator->GetRecords());
 
-                if (m_output == NULL)
+                if (m_output == nullptr)
                 {
                     return;                    // we have no active output
                 }
@@ -154,7 +154,7 @@ namespace AZ
             delete allocatorRecords;
             allocator->SetRecords(nullptr);
 
-            if (m_output == NULL)
+            if (m_output == nullptr)
             {
                 return;                    // we have no active output
             }
@@ -173,7 +173,7 @@ namespace AZ
             if (records)
             {
                 const AllocationInfo* info = records->RegisterAllocation(address, byteSize, alignment, name, fileName, lineNum, stackSuppressCount + 1);
-                if (m_output == NULL)
+                if (m_output == nullptr)
                 {
                     return;                   // we have no active output
                 }
@@ -226,7 +226,7 @@ namespace AZ
             {
                 records->UnregisterAllocation(address, byteSize, alignment, info);
 
-                if (m_output == NULL)
+                if (m_output == nullptr)
                 {
                     return;                    // we have no active output
                 }
@@ -261,7 +261,7 @@ namespace AZ
             {
                 records->ResizeAllocation(address, newSize);
 
-                if (m_output == NULL)
+                if (m_output == nullptr)
                 {
                     return;                    // we have no active output
                 }

@@ -7,6 +7,7 @@
  */
 
 #include <AzCore/Component/Entity.h>
+#include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/RTTI/BehaviorContext.h>
@@ -243,6 +244,14 @@ namespace EMotionFX
         }
 
         //////////////////////////////////////////////////////////////////////////
+        bool EditorActorComponent::GetRenderActorVisible() const
+        {
+            if (m_renderActorInstance)
+            {
+                return m_renderActorInstance->IsVisible();
+            }
+            return false;
+        }
         size_t EditorActorComponent::GetNumJoints() const
         {
             const Actor* actor = m_actorAsset->GetActor();
@@ -683,7 +692,6 @@ namespace EMotionFX
             const size_t lodLevel = m_actorInstance->GetLODLevel();
             Actor* actor = m_actorAsset.Get()->GetActor();
             const size_t numNodes = actor->GetNumNodes();
-            const size_t numLods = actor->GetNumLODLevels();
             for (size_t nodeIndex = 0; nodeIndex < numNodes; ++nodeIndex)
             {
                 Mesh* mesh = actor->GetMesh(lodLevel, nodeIndex);

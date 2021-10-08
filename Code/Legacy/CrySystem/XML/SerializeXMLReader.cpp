@@ -104,23 +104,6 @@ bool CSerializeXMLReaderImpl::Value(const char* name, CTimeValue& value)
     return true;
 }
 
-bool CSerializeXMLReaderImpl::Value(const char* name, XmlNodeRef& value)
-{
-    DefaultValue(value); // Set input value to default.
-    if (m_nErrors)
-    {
-        return false;
-    }
-
-    if (BeginOptionalGroup(name, true))
-    {
-        value = CurNode()->getChild(0);
-        EndGroup();
-    }
-
-    return true;
-}
-
 void CSerializeXMLReaderImpl::BeginGroup(const char* szName)
 {
     if (m_nErrors)
@@ -172,33 +155,4 @@ void CSerializeXMLReaderImpl::EndGroup()
         m_nodeStack.pop_back();
     }
     assert(!m_nodeStack.empty());
-}
-
-//////////////////////////////////////////////////////////////////////////
-AZStd::string CSerializeXMLReaderImpl::GetStackInfo() const
-{
-    AZStd::string str;
-    for (int i = 0; i < (int)m_nodeStack.size(); i++)
-    {
-        const char* name = m_nodeStack[i].m_node->getAttr(TAG_SCRIPT_NAME);
-        if (name && name[0])
-        {
-            str += name;
-        }
-        else
-        {
-            str += m_nodeStack[i].m_node->getTag();
-        }
-        if (i != m_nodeStack.size() - 1)
-        {
-            str += "/";
-        }
-    }
-    return str;
-}
-
-void CSerializeXMLReaderImpl::GetMemoryUsage(ICrySizer* pSizer) const
-{
-    pSizer->Add(*this);
-    pSizer->AddContainer(m_nodeStack);
 }

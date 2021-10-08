@@ -15,7 +15,10 @@
 #include <Atom/RPI.Edit/Material/MaterialTypeSourceData.h>
 #include <Atom/RPI.Edit/Common/JsonReportingHelper.h>
 #include <Atom/RPI.Edit/Common/JsonFileLoadContext.h>
+#include <Atom/RPI.Edit/Common/JsonUtils.h>
 #include <AzCore/Serialization/Json/JsonUtils.h>
+#include <AzCore/Serialization/Json/BaseJsonSerializer.h>
+#include <AzCore/Serialization/Json/JsonSerializationResult.h>
 
 #include <AzCore/std/string/string.h>
 
@@ -64,7 +67,7 @@ namespace AZ
                 AZ::Outcome<rapidjson::Document, AZStd::string> loadOutcome;
                 if (document == nullptr)
                 {
-                    loadOutcome = AZ::JsonSerializationUtils::ReadJsonFile(filePath);
+                    loadOutcome = AZ::JsonSerializationUtils::ReadJsonFile(filePath, AZ::RPI::JsonUtils::DefaultMaxFileSize);
                     if (!loadOutcome.IsSuccess())
                     {
                         AZ_Error("AZ::RPI::JsonUtils", false, "%s", loadOutcome.GetError().c_str());
@@ -96,6 +99,29 @@ namespace AZ
                 else
                 {
                     return AZ::Success(AZStd::move(materialType));
+                }
+            }
+
+            void CheckForUnrecognizedJsonFields(const AZStd::string_view* acceptedFieldNames, uint32_t acceptedFieldNameCount, const rapidjson::Value& object, JsonDeserializerContext& context, JsonSerializationResult::ResultCode &result)
+            {
+                for (auto iter = object.MemberBegin(); iter != object.MemberEnd(); ++iter)
+                {
+                    bool matched = false;
+
+                    for (uint32_t i = 0; i < acceptedFieldNameCount; ++i)
+                    {
+                        if (iter->name.GetString() == acceptedFieldNames[i])
+                        {
+                            matched = true;
+                            break;
+                        }
+                    }
+
+                    if (!matched)
+                    {
+                        ScopedContextPath subPath{context, iter->name.GetString()};
+                        result.Combine(context.Report(JsonSerializationResult::Tasks::ReadField, JsonSerializationResult::Outcomes::Skipped, "Skipping unrecognized field"));
+                    }
                 }
             }
         }

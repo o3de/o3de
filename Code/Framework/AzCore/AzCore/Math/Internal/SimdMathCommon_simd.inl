@@ -339,7 +339,6 @@ namespace AZ
             {
                 const typename VecType::FloatType x_eq_0 = VecType::CmpEq(x, VecType::ZeroFloat());
                 const typename VecType::FloatType x_ge_0 = VecType::CmpGtEq(x, VecType::ZeroFloat());
-                const typename VecType::FloatType x_le_0 = VecType::CmpLtEq(x, VecType::ZeroFloat());
                 const typename VecType::FloatType x_lt_0 = VecType::CmpLt(x, VecType::ZeroFloat());
 
                 const typename VecType::FloatType y_eq_0 = VecType::CmpEq(y, VecType::ZeroFloat());
@@ -363,7 +362,6 @@ namespace AZ
                 typename VecType::FloatType swap_sign_mask_offset = VecType::And(x_lt_0, y_lt_0);
                 swap_sign_mask_offset = VecType::And(swap_sign_mask_offset, VecType::CastToFloat(FastLoadConstant<VecType>(Simd::g_negateMask)));
 
-                const typename VecType::FloatType offset0 = VecType::ZeroFloat();
                 typename VecType::FloatType offset1 = FastLoadConstant<VecType>(g_Pi);
                 offset1 = VecType::Xor(offset1, swap_sign_mask_offset);
 

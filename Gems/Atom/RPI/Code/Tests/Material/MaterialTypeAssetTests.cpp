@@ -47,6 +47,7 @@ namespace UnitTest
                     ;
             }
 
+            using AZ::RPI::MaterialFunctor::Process;
             void Process(AZ::RPI::MaterialFunctor::RuntimeContext& context) override
             {
                 // This code isn't actually called in the unit test, but we include it here just to demonstrate what a real functor might look like.
@@ -74,6 +75,7 @@ namespace UnitTest
                     ;
             }
 
+            using AZ::RPI::MaterialFunctor::Process;
             void Process(AZ::RPI::MaterialFunctor::RuntimeContext& context) override
             {
                 // This code isn't actually called in the unit test, but we include it here just to demonstrate what a real functor might look like.
@@ -413,7 +415,7 @@ namespace UnitTest
             EXPECT_EQ(1, creator.GetErrorCount());
         };
 
-        auto expectCreatorWarning = [this](AZStd::function<void(MaterialTypeAssetCreator& creator)> passBadInput)
+        auto expectCreatorWarning = [](AZStd::function<void(MaterialTypeAssetCreator& creator)> passBadInput)
         {
             MaterialTypeAssetCreator creator;
             creator.Begin(Uuid::CreateRandom());
@@ -442,47 +444,47 @@ namespace UnitTest
             creator.SetPropertyValue(Name{ "MyBool" }, m_testImageAsset);
         });
 
-        expectCreatorError([this](MaterialTypeAssetCreator& creator)
+        expectCreatorError([](MaterialTypeAssetCreator& creator)
         {
             creator.SetPropertyValue(Name{ "MyInt" }, 0.0f);
         });
 
-        expectCreatorError([this](MaterialTypeAssetCreator& creator)
+        expectCreatorError([](MaterialTypeAssetCreator& creator)
         {
             creator.SetPropertyValue(Name{ "MyUInt" }, -1);
         });
 
-        expectCreatorError([this](MaterialTypeAssetCreator& creator)
+        expectCreatorError([](MaterialTypeAssetCreator& creator)
         {
             creator.SetPropertyValue(Name{ "MyFloat" }, 10u);
         });
 
-        expectCreatorError([this](MaterialTypeAssetCreator& creator)
+        expectCreatorError([](MaterialTypeAssetCreator& creator)
         {
             creator.SetPropertyValue(Name{ "MyFloat2" }, 1.0f);
         });
 
-        expectCreatorError([this](MaterialTypeAssetCreator& creator)
+        expectCreatorError([](MaterialTypeAssetCreator& creator)
         {
             creator.SetPropertyValue(Name{ "MyFloat3" }, AZ::Vector4{});
         });
 
-        expectCreatorError([this](MaterialTypeAssetCreator& creator)
+        expectCreatorError([](MaterialTypeAssetCreator& creator)
         {
             creator.SetPropertyValue(Name{ "MyFloat4" }, AZ::Vector3{});
         });
 
-        expectCreatorError([this](MaterialTypeAssetCreator& creator)
+        expectCreatorError([](MaterialTypeAssetCreator& creator)
         {
             creator.SetPropertyValue(Name{ "MyColor" }, MaterialPropertyValue(false));
         });
 
-        expectCreatorError([this](MaterialTypeAssetCreator& creator)
+        expectCreatorError([](MaterialTypeAssetCreator& creator)
         {
             creator.SetPropertyValue(Name{ "MyImage" }, true);
         });
 
-        expectCreatorError([this](MaterialTypeAssetCreator& creator)
+        expectCreatorError([](MaterialTypeAssetCreator& creator)
         {
             creator.SetPropertyValue(Name{ "MyEnum" }, -1);
         });

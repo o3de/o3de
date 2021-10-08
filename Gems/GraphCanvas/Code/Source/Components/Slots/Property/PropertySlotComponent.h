@@ -27,9 +27,9 @@ namespace GraphCanvas
         ~PropertySlotComponent();
         
         // Component
-        void Init();
-        void Activate();
-        void Deactivate();
+        void Init() override;
+        void Activate() override;
+        void Deactivate() override;
         ////
 
         // Slot RequestBus
@@ -38,7 +38,7 @@ namespace GraphCanvas
         ////
 
         // PropertySlotBus
-        const AZ::Crc32& GetPropertyId() const;
+        const AZ::Crc32& GetPropertyId() const override;
         ////
 
     private:

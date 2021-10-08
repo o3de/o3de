@@ -17,8 +17,6 @@
 
 namespace AZ::Debug
 {
-    constexpr static const char* BudgetTrackerEnvName = "budgetTrackerEnv";
-
     struct BudgetTracker::BudgetTrackerImpl
     {
         AZStd::unordered_map<const char*, Budget> m_budgets;

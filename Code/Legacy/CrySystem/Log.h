@@ -11,6 +11,13 @@
 
 #include <ILog.h>
 #include <MultiThread_Containers.h>
+#include <list>
+#include <AzCore/std/string/fixed_string.h>
+#include <AzCore/IO/SystemFile.h>
+
+struct IConsole;
+struct ICVar;
+struct ISystem;
 
 //////////////////////////////////////////////////////////////////////
 #if defined(ANDROID) || defined(AZ_PLATFORM_MAC)
@@ -105,7 +112,6 @@ private: // -------------------------------------------------------------------
         ELogType logType;
         bool bAdd;
         Destination destination;
-        void GetMemoryUsage([[maybe_unused]] ICrySizer* pSizer) const {}
     };
 
     void CheckAndPruneBackupLogs() const;
@@ -193,17 +199,6 @@ private: // -------------------------------------------------------------------
 #endif
 
 public: // -------------------------------------------------------------------
-
-    void GetMemoryUsage(ICrySizer* pSizer) const
-    {
-        pSizer->AddObject(this, sizeof(*this));
-        pSizer->AddObject(m_pLogVerbosity);
-        pSizer->AddObject(m_pLogWriteToFile);
-        pSizer->AddObject(m_pLogWriteToFileVerbosity);
-        pSizer->AddObject(m_pLogVerbosityOverridesWriteToFile);
-        pSizer->AddObject(m_pLogSpamDelay);
-        pSizer->AddObject(m_threadSafeMsgQueue);
-    }
     // checks the verbosity of the message and returns NULL if the message must NOT be
     // logged, or the pointer to the part of the message that should be logged
     const char* CheckAgainstVerbosity(const char* pText, bool& logtofile, bool& logtoconsole, const uint8 DefaultVerbosity = 2);

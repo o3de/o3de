@@ -222,6 +222,9 @@ void UpdateFPExceptionsMaskForThreads()
 //////////////////////////////////////////////////////////////////////////
 int DebugCallStack::handleException(EXCEPTION_POINTERS* exception_pointer)
 {
+    AZ_TracePrintf("Exit", "Exception with exit code: 0x%x", exception_pointer->ExceptionRecord->ExceptionCode);
+    AZ::Debug::Trace::PrintCallstack("Exit");
+
     if (gEnv == NULL)
     {
         return EXCEPTION_EXECUTE_HANDLER;
@@ -284,7 +287,7 @@ int DebugCallStack::handleException(EXCEPTION_POINTERS* exception_pointer)
         char excAddr[80];
         WriteLineToLog("<CRITICAL EXCEPTION>");
         sprintf_s(excAddr, "0x%04X:0x%p", exception_pointer->ContextRecord->SegCs, exception_pointer->ExceptionRecord->ExceptionAddress);
-        sprintf_s(excCode, "0x%08X", exception_pointer->ExceptionRecord->ExceptionCode);
+        sprintf_s(excCode, "0x%08lX", exception_pointer->ExceptionRecord->ExceptionCode);
         WriteLineToLog("Exception: %s, at Address: %s", excCode, excAddr);
     }
 
@@ -372,7 +375,7 @@ void DebugCallStack::LogExceptionInfo(EXCEPTION_POINTERS* pex)
         const char* logAlias = gEnv->pFileIO->GetAlias("@log@");
         if (!logAlias)
         {
-            logAlias = gEnv->pFileIO->GetAlias("@root@");
+            logAlias = gEnv->pFileIO->GetAlias("@products@");
         }
         if (logAlias)
         {
@@ -445,7 +448,7 @@ void DebugCallStack::LogExceptionInfo(EXCEPTION_POINTERS* pex)
     else
     {
         sprintf_s(excAddr, "0x%04X:0x%p", pex->ContextRecord->SegCs, pex->ExceptionRecord->ExceptionAddress);
-        sprintf_s(excCode, "0x%08X", pex->ExceptionRecord->ExceptionCode);
+        sprintf_s(excCode, "0x%08lX", pex->ExceptionRecord->ExceptionCode);
         excName = TranslateExceptionCode(pex->ExceptionRecord->ExceptionCode);
         azstrcpy(desc, AZ_ARRAY_SIZE(desc), "");
         sprintf_s(excDesc, "%s\r\n%s", excName, desc);

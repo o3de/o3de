@@ -65,7 +65,7 @@ namespace UnitTest
         {
             // clearing up memory
             m_notificationSink = EditorPythonBindingsNotificationBusSink();
-            m_testSink = PythonTraceMessageSink();
+            m_testSink.CleanUp();
 
             // shutdown time!
             PythonTestingFixture::TearDown();
@@ -333,7 +333,7 @@ sys.version
         {
             // clearing up memory
             m_notificationSink = EditorPythonBindingsNotificationBusSink();
-            m_testSink = PythonTraceMessageSink();
+            m_testSink.CleanUp();
 
             // shutdown time!
             PythonTestingFixture::TearDown();

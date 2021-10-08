@@ -58,28 +58,6 @@ namespace UnitTest
         return true;
     }
 
-    class TestModularCameraViewportContextImpl : public AtomToolsFramework::ModularCameraViewportContext
-    {
-    public:
-        AZ::Transform GetCameraTransform() const override
-        {
-            return m_cameraTransform;
-        }
-
-        void SetCameraTransform(const AZ::Transform& transform) override
-        {
-            m_cameraTransform = transform;
-        }
-
-        void ConnectViewMatrixChangedHandler(AZ::RPI::ViewportContext::MatrixChangedEvent::Handler&) override
-        {
-            // noop
-        }
-
-    private:
-        AZ::Transform m_cameraTransform = AZ::Transform::CreateIdentity();
-    };
-
     class ModularViewportCameraControllerFixture : public AllocatorsTestFixture
     {
     public:
@@ -139,13 +117,14 @@ namespace UnitTest
             m_viewportMouseCursorRequests.Connect(TestViewportId, m_inputChannelMapper.get());
 
             // create editor modular camera
-            auto controller = CreateModularViewportCameraController(TestViewportId);
+            m_editorModularViewportCameraComposer = AZStd::make_unique<SandboxEditor::EditorModularViewportCameraComposer>(TestViewportId);
+            auto controller = m_editorModularViewportCameraComposer->CreateModularViewportCameraController();
 
             // set some overrides for the test
             controller->SetCameraViewportContextBuilderCallback(
                 [this](AZStd::unique_ptr<AtomToolsFramework::ModularCameraViewportContext>& cameraViewportContext)
                 {
-                    cameraViewportContext = AZStd::make_unique<TestModularCameraViewportContextImpl>();
+                    cameraViewportContext = AZStd::make_unique<AtomToolsFramework::PlaceholderModularCameraViewportContextImpl>();
                     m_cameraViewportContextView = cameraViewportContext.get();
                 });
 
@@ -169,6 +148,7 @@ namespace UnitTest
 
         void HaltCollaborators()
         {
+            m_editorModularViewportCameraComposer.reset();
             m_mockWindowRequests.Disconnect();
             m_viewportMouseCursorRequests.Disconnect();
             m_cameraViewportContextView = nullptr;
@@ -212,6 +192,7 @@ namespace UnitTest
         ViewportMouseCursorRequestImpl m_viewportMouseCursorRequests;
         AtomToolsFramework::ModularCameraViewportContext* m_cameraViewportContextView = nullptr;
         AZStd::unique_ptr<AZ::SettingsRegistryInterface> m_settingsRegistry;
+        AZStd::unique_ptr<SandboxEditor::EditorModularViewportCameraComposer> m_editorModularViewportCameraComposer;
     };
 
     const AzFramework::ViewportId ModularViewportCameraControllerFixture::TestViewportId = AzFramework::ViewportId(0);

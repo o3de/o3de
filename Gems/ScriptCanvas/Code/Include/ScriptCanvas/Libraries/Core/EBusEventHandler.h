@@ -102,7 +102,7 @@ namespace ScriptCanvas
 
                 AZ::Outcome<AZStd::string, void> GetFunctionCallName(const Slot* /*slot*/) const override;
                 bool IsEBusAddressed() const override;
-                AZStd::optional<size_t> GetEventIndex(AZStd::string eventName) const;
+                AZStd::optional<size_t> GetEventIndex(AZStd::string eventName) const override;
                 const EBusEventEntry* FindEvent(const AZStd::string& name) const;
                 AZStd::string GetEBusName() const override;
                 bool IsAutoConnected() const override;
@@ -138,7 +138,7 @@ namespace ScriptCanvas
 
                 void SetAutoConnectToGraphOwner(bool enabled);
 
-                void OnDeserialize();
+                void OnDeserialize() override;
 
 #if defined(OBJECT_STREAM_EDITOR_ASSET_LOADING_SUPPORT_ENABLED)////
                 void OnWriteEnd();

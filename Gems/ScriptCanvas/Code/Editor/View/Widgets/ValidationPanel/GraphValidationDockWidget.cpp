@@ -810,7 +810,6 @@ namespace ScriptCanvasEditor
             const ScriptCanvas::ValidationEvent* validationEvent = model->FindItemForIndex(m_proxyModel->mapToSource(modelIndex));
         
             AZ::EntityId graphCanvasMemberId;
-            QRectF focusArea;
 
             if (const ScriptCanvas::FocusOnEntityEffect* focusOnEntityEffect = azrtti_cast<const ScriptCanvas::FocusOnEntityEffect*>(validationEvent))
             {

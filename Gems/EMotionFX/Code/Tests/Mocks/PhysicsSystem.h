@@ -8,6 +8,8 @@
 
 #pragma once
 
+#include <AzCore/RTTI/RTTI.h>
+#include <AzCore/Serialization/SerializeContext.h>
 #include <AzFramework/Physics/SystemBus.h>
 #include <AzFramework/Physics/PhysicsScene.h>
 #include <AzFramework/Physics/PhysicsSystem.h>
@@ -20,6 +22,20 @@ namespace Physics
         , AZ::Interface<Physics::System>::Registrar
     {
     public:
+        // This uses the same uuid as the production PhysX::SystemComponent.
+        // The Ragdoll UI uses this UUID to see if physx is available.
+        AZ_RTTI(MockPhysicsSystem, "{85F90819-4D9A-4A77-AB89-68035201F34B}");
+
+        static void Reflect(AZ::ReflectContext* context)
+        {
+            if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+            {
+                serializeContext->Class<MockPhysicsSystem>()
+                    ->Version(0)
+                    ;
+            }
+        }
+
         MockPhysicsSystem()
         {
             BusConnect();

@@ -21,7 +21,7 @@ namespace AZ
     {
         namespace AtomShaderConfig
         {
-            static constexpr char AtomShaderConfigName[] = "AtomShaderConfig";
+            [[maybe_unused]] static constexpr char AtomShaderConfigName[] = "AtomShaderConfig";
 
             bool MutateToFirstAbsoluteFolderThatExists(AZStd::string& relativeFolder, AZStd::vector<AZStd::string>& watchFolders)
             {

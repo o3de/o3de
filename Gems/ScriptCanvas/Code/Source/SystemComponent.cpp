@@ -34,7 +34,7 @@
 
 namespace ScriptCanvasSystemComponentCpp
 {
-#if !defined(_RELEASE) && !defined(PERFORMANCE_BUILD)
+#if !defined(_RELEASE)
     const int k_infiniteLoopDetectionMaxIterations = 1000000;
     const int k_maxHandlerStackDepth = 25;
 #else
@@ -260,7 +260,7 @@ namespace ScriptCanvas
         }
 
         LockType lock(m_ownedObjectsByAddressMutex);
-        auto emplaceResult = m_ownedObjectsByAddress.emplace(object, behaviorContextObject);
+        [[maybe_unused]] auto emplaceResult = m_ownedObjectsByAddress.emplace(object, behaviorContextObject);
 
         AZ_Assert(emplaceResult.second, "Adding second owned reference to memory");
     }

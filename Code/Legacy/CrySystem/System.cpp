@@ -19,6 +19,8 @@
 #include "CryLibrary.h"
 #include <CryPath.h>
 #include <CrySystemBus.h>
+#include <CryCommon/IFont.h>
+#include <CryCommon/MiniQueue.h>
 #include <AzFramework/API/ApplicationAPI.h>
 #include <AzFramework/API/ApplicationAPI_Platform.h>
 #include <AzFramework/Input/Devices/Keyboard/InputDeviceKeyboard.h>
@@ -27,6 +29,7 @@
 #include <AzCore/Debug/Trace.h>
 #include <AzCore/Debug/IEventLogger.h>
 #include <AzCore/Interface/Interface.h>
+#include <AzCore/std/algorithm.h>
 #include <AzFramework/Logging/MissingAssetLogger.h>
 #include <AzFramework/Entity/EntityDebugDisplayBus.h>
 #include <AzCore/Interface/Interface.h>
@@ -122,14 +125,12 @@ LRESULT WINAPI WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 #include "Log.h"
 
 #include "XML/xml.h"
-#include "XML/ReadWriteXMLSink.h"
 
 #include "LocalizedStringManager.h"
 #include "XML/XmlUtils.h"
 #include "SystemEventDispatcher.h"
 #include "HMDBus.h"
 
-#include "zlib.h"
 #include "RemoteConsole/RemoteConsole.h"
 
 #include <PNoise3.h>
@@ -165,60 +166,6 @@ SSystemCVars g_cvars;
 #include <AzCore/Module/Environment.h>
 #include <AzCore/Component/ComponentApplication.h>
 #include "AZCoreLogSink.h"
-
-#if defined(ANDROID)
-namespace
-{
-    struct Callstack
-    {
-        Callstack()
-            : addrs(NULL)
-            , ignore(0)
-            , count(0)
-        {
-        }
-        Callstack(void** addrs, size_t ignore, size_t count)
-        {
-            this->addrs = addrs;
-            this->ignore = ignore;
-            this->count = count;
-        }
-        void** addrs;
-        size_t ignore;
-        size_t count;
-    };
-
-    static _Unwind_Reason_Code trace_func(struct _Unwind_Context* context, void* arg)
-    {
-        Callstack* cs = static_cast<Callstack*>(arg);
-        if (cs->count)
-        {
-            void* ip = (void*) _Unwind_GetIP(context);
-            if (ip)
-            {
-                if (cs->ignore)
-                {
-                    cs->ignore--;
-                }
-                else
-                {
-                    cs->addrs[0] = ip;
-                    cs->addrs++;
-                    cs->count--;
-                }
-            }
-        }
-        return _URC_NO_REASON;
-    }
-
-    static int Backtrace(void** addrs, size_t ignore, size_t size)
-    {
-        Callstack cs(addrs, ignore, size);
-        _Unwind_Backtrace(trace_func, (void*) &cs);
-        return size - cs.count;
-    }
-}
-#endif
 
 /////////////////////////////////////////////////////////////////////////////////
 // System Implementation.
@@ -257,7 +204,6 @@ CSystem::CSystem(SharedEnvironmentInstance* pSharedEnvironment)
     // Initialize global environment interface pointers.
     m_env.pSystem = this;
     m_env.pTimer = &m_Time;
-    m_env.pNameTable = &m_nameTable;
     m_env.bIgnoreAllAsserts = false;
     m_env.bNoAssertDialog = false;
 
@@ -392,9 +338,6 @@ CSystem::~CSystem()
 //////////////////////////////////////////////////////////////////////////
 void CSystem::Release()
 {
-    //Disconnect the render bus
-    AZ::RenderNotificationsBus::Handler::BusDisconnect();
-
     delete this;
 }
 
@@ -605,29 +548,6 @@ void CSystem::Quit()
         logger->Flush();
     }
 
-    /*
-    * TODO: This call to _exit, _Exit, TerminateProcess etc. needs to
-    * eventually be removed. This causes an extremely early exit before we
-    * actually perform cleanup. When this gets called most managers are
-    * simply never deleted and we leave it to the OS to clean up our mess
-    * which is just really bad practice. However there are LOTS of issues
-    * with shutdown at the moment. Removing this will simply cause
-    * a crash when either the Editor or Launcher initiate shutdown. Both
-    * applications crash differently too. Bugs will be logged about those
-    * issues.
-    */
-#if defined(AZ_RESTRICTED_PLATFORM)
-#define AZ_RESTRICTED_SECTION SYSTEM_CPP_SECTION_4
-#include AZ_RESTRICTED_FILE(System_cpp)
-#endif
-#if defined(AZ_RESTRICTED_SECTION_IMPLEMENTED)
-#undef AZ_RESTRICTED_SECTION_IMPLEMENTED
-#elif defined(WIN32) || defined(WIN64)
-    TerminateProcess(GetCurrentProcess(), m_env.retCode);
-#else
-    exit(m_env.retCode);
-#endif
-
 #ifdef WIN32
     //Post a WM_QUIT message to the Win32 api which causes the message loop to END
     //This is not the same as handling a WM_DESTROY event which destroys a window
@@ -695,7 +615,7 @@ void CSystem::SleepIfNeeded()
     allowStallCatchup = true;
 
     float totalElapsed = (now - prevNow.Front()).GetSeconds();
-    float wantSleepTime = CLAMP(minTime * (prevNow.Size() - 1) - totalElapsed, 0, (minTime - elapsed) * 0.9f);
+    float wantSleepTime = AZStd::clamp(minTime * (prevNow.Size() - 1) - totalElapsed, 0.0f, (minTime - elapsed) * 0.9f);
     static float sleepTime = 0;
     sleepTime = (15 * sleepTime + wantSleepTime) / 16;
     int sleepMS = (int)(1000.0f * sleepTime + 0.5f);
@@ -1032,15 +952,12 @@ IXmlUtils* CSystem::GetXmlUtils()
 //////////////////////////////////////////////////////////////////////////
 XmlNodeRef CSystem::LoadXmlFromFile(const char* sFilename, bool bReuseStrings)
 {
-    LOADING_TIME_PROFILE_SECTION_ARGS(sFilename);
-
     return m_pXMLUtils->LoadXmlFromFile(sFilename, bReuseStrings);
 }
 
 //////////////////////////////////////////////////////////////////////////
 XmlNodeRef CSystem::LoadXmlFromBuffer(const char* buffer, size_t size, bool bReuseStrings, bool bSuppressWarnings)
 {
-    LOADING_TIME_PROFILE_SECTION
     return m_pXMLUtils->LoadXmlFromBuffer(buffer, size, bReuseStrings, bSuppressWarnings);
 }
 
@@ -1250,9 +1167,6 @@ ILocalizationManager* CSystem::GetLocalizationManager()
 //////////////////////////////////////////////////////////////////////////
 void CSystem::debug_GetCallStackRaw(void** callstack, uint32& callstackLength)
 {
-    uint32 callstackCapacity = callstackLength;
-    uint32 nNumStackFramesToSkip = 1;
-
     memset(callstack, 0, sizeof(void*) * callstackLength);
 
 #if !defined(ANDROID)
@@ -1260,6 +1174,8 @@ void CSystem::debug_GetCallStackRaw(void** callstack, uint32& callstackLength)
 #endif
 
 #if AZ_LEGACY_CRYSYSTEM_TRAIT_CAPTURESTACK
+    uint32 nNumStackFramesToSkip = 1;
+    uint32 callstackCapacity = callstackLength;
     if (callstackCapacity > 0x40)
     {
         callstackCapacity = 0x40;
@@ -1523,7 +1439,7 @@ void CSystem::SetSystemGlobalState(const ESystemGlobalState systemGlobalState)
         if (gEnv && gEnv->pTimer)
         {
             const CTimeValue endTime = gEnv->pTimer->GetAsyncTime();
-            const float numSeconds = endTime.GetDifferenceInSeconds(s_startTime);
+            [[maybe_unused]] const float numSeconds = endTime.GetDifferenceInSeconds(s_startTime);
             CryLog("SetGlobalState %d->%d '%s'->'%s' %3.1f seconds",
                 m_systemGlobalState, systemGlobalState,
                 CSystem::GetSystemGlobalStateName(m_systemGlobalState), CSystem::GetSystemGlobalStateName(systemGlobalState),
@@ -1708,10 +1624,10 @@ bool CSystem::HandleMessage([[maybe_unused]] HWND hWnd, UINT uMsg, WPARAM wParam
         AZStd::array<BYTE, sizeof(RAWINPUT)> rawInputBytesArray;
         LPBYTE rawInputBytes = rawInputBytesArray.data();
 
-        const UINT bytesCopied = GetRawInputData((HRAWINPUT)lParam, RID_INPUT, rawInputBytes, &rawInputSize, rawInputHeaderSize);
+        [[maybe_unused]] const UINT bytesCopied = GetRawInputData((HRAWINPUT)lParam, RID_INPUT, rawInputBytes, &rawInputSize, rawInputHeaderSize);
         CRY_ASSERT(bytesCopied == rawInputSize);
 
-        RAWINPUT* rawInput = (RAWINPUT*)rawInputBytes;
+        [[maybe_unused]] RAWINPUT* rawInput = (RAWINPUT*)rawInputBytes;
         CRY_ASSERT(rawInput);
 
         AzFramework::RawInputNotificationBusWindows::Broadcast(&AzFramework::RawInputNotificationsWindows::OnRawInputEvent, *rawInput);

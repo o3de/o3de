@@ -644,7 +644,7 @@ namespace AZ
         NameDictionary::Create();
 
         // Call this and child class's reflects
-        ReflectionEnvironment::GetReflectionManager()->Reflect(azrtti_typeid(this), AZStd::bind(&ComponentApplication::Reflect, this, AZStd::placeholders::_1));
+        ReflectionEnvironment::GetReflectionManager()->Reflect(azrtti_typeid(this), [this](ReflectContext* context) {Reflect(context); });
 
         RegisterCoreComponents();
         TickBus::AllowFunctionQueuing(true);
@@ -970,7 +970,12 @@ namespace AZ
     {
         if (ReflectionEnvironment::GetReflectionManager())
         {
-            ReflectionEnvironment::GetReflectionManager()->Reflect(descriptor->GetUuid(), AZStd::bind(&ComponentDescriptor::Reflect, descriptor, AZStd::placeholders::_1));
+            ReflectionEnvironment::GetReflectionManager()->Reflect(
+                descriptor->GetUuid(),
+                [descriptor](ReflectContext* context)
+                {
+                    descriptor->Reflect(context);
+                });
         }
     }
 
@@ -1244,6 +1249,8 @@ namespace AZ
 
                 return AZ::SettingsRegistryInterface::VisitResponse::Continue;
             }
+
+            using SettingsRegistryInterface::Visitor::Visit;
             void Visit(AZStd::string_view path, AZStd::string_view valueName, AZ::SettingsRegistryInterface::Type, bool value) override
             {
                 // By default the auto load option is true
@@ -1266,7 +1273,7 @@ namespace AZ
             void Visit(AZStd::string_view path, AZStd::string_view, AZ::SettingsRegistryInterface::Type, AZStd::string_view value) override
             {
                 // Remove last path segment and check if the key corresponds to the Modules array
-                AZStd::optional<AZStd::string_view> moduleIndex = AZ::StringFunc::TokenizeLast(path, "/");
+                AZ::StringFunc::TokenizeLast(path, "/");
                 if (path.ends_with("/Modules"))
                 {
                     // Remove the "Modules" path segment to be at the GemName key
@@ -1360,9 +1367,6 @@ namespace AZ
 #endif
     }
 
-    //=========================================================================
-    // Tick
-    //=========================================================================
     void ComponentApplication::Tick(float deltaOverride /*= -1.f*/)
     {
         {
@@ -1390,9 +1394,6 @@ namespace AZ
         }
     }
 
-    //=========================================================================
-    // Tick
-    //=========================================================================
     void ComponentApplication::TickSystem()
     {
         AZ_PROFILE_SCOPE(System, "Component application tick");
@@ -1540,5 +1541,4 @@ namespace AZ
             AZ::SettingsRegistryScriptUtils::ReflectSettingsRegistryToBehaviorContext(*behaviorContext);
         }
     }
-
 } // namespace AZ

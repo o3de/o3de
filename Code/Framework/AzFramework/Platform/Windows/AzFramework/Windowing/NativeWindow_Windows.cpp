@@ -234,11 +234,13 @@ namespace AzFramework
             GetRawInputData((HRAWINPUT)lParam, RID_INPUT, NULL, &rawInputSize, rawInputHeaderSize);
 
             LPBYTE rawInputBytes = new BYTE[rawInputSize];
-            const UINT bytesCopied = GetRawInputData((HRAWINPUT)lParam, RID_INPUT, rawInputBytes, &rawInputSize, rawInputHeaderSize);
+            GetRawInputData((HRAWINPUT)lParam, RID_INPUT, rawInputBytes, &rawInputSize, rawInputHeaderSize);
 
             RAWINPUT* rawInput = (RAWINPUT*)rawInputBytes;
             AzFramework::RawInputNotificationBusWindows::Broadcast(
                 &AzFramework::RawInputNotificationBusWindows::Events::OnRawInputEvent, *rawInput);
+
+            delete [] rawInputBytes;
             break;
         }
         case WM_CHAR:

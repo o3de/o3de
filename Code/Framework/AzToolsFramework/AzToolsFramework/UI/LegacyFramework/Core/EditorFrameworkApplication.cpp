@@ -48,7 +48,7 @@
 
 AZ_PUSH_DISABLE_WARNING(4251, "-Wunknown-warning-option") // 'QFileInfo::d_ptr': class 'QSharedDataPointer<QFileInfoPrivate>' needs to have dll-interface to be used by clients of class 'QFileInfo'
 #include <QFileInfo>
-AZ_POP_DISABLE_OVERRIDE_WARNING
+AZ_POP_DISABLE_WARNING
 #include <QSharedMemory>
 #include <QStandardPaths>
 #include <QtWidgets/QApplication>
@@ -237,7 +237,7 @@ namespace LegacyFramework
         {
             m_applicationEntity->Deactivate();
             delete m_applicationEntity;
-            m_applicationEntity = NULL;
+            m_applicationEntity = nullptr;
         }
 
         AZ::SystemTickBus::ExecuteQueuedEvents();
@@ -249,7 +249,7 @@ namespace LegacyFramework
 #endif
 
         delete m_ptrCommandLineParser;
-        m_ptrCommandLineParser = NULL;
+        m_ptrCommandLineParser = nullptr;
 
         CoreMessageBus::Handler::BusDisconnect();
         FrameworkApplicationMessages::Handler::BusDisconnect();
@@ -269,7 +269,7 @@ namespace LegacyFramework
         {
             m_applicationEntity->Deactivate();
             delete m_applicationEntity;
-            m_applicationEntity = NULL;
+            m_applicationEntity = nullptr;
         }
     }
 

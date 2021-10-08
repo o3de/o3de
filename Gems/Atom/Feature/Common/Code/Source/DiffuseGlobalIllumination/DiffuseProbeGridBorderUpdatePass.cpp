@@ -67,27 +67,10 @@ namespace AZ
             srgLayout = shader->FindShaderResourceGroupLayout(RPI::SrgBindingSlot::Pass);
 
             // retrieve the number of threads per thread group from the shader
-            const auto numThreads = shader->GetAsset()->GetAttribute(RHI::ShaderStage::Compute, Name{ "numthreads" });
-            if (numThreads)
+            const auto outcome = RPI::GetComputeShaderNumThreads(shader->GetAsset(), dispatchArgs);
+            if (!outcome.IsSuccess())
             {
-                const RHI::ShaderStageAttributeArguments& args = *numThreads;
-                bool validArgs = args.size() == 3;
-                if (validArgs)
-                {
-                    validArgs &= args[0].type() == azrtti_typeid<int>();
-                    validArgs &= args[1].type() == azrtti_typeid<int>();
-                    validArgs &= args[2].type() == azrtti_typeid<int>();
-                }
-
-                if (!validArgs)
-                {
-                    AZ_Error("PassSystem", false, "[DiffuseProbeGridBorderUpdatePass '%s']: Shader '%s' contains invalid numthreads arguments.", GetPathName().GetCStr(), shaderFilePath.c_str());
-                    return;
-                }
-
-                dispatchArgs.m_threadsPerGroupX = static_cast<uint16_t>(AZStd::any_cast<int>(args[0]));
-                dispatchArgs.m_threadsPerGroupY = static_cast<uint16_t>(AZStd::any_cast<int>(args[1]));
-                dispatchArgs.m_threadsPerGroupZ = static_cast<uint16_t>(AZStd::any_cast<int>(args[2]));
+                AZ_Error("PassSystem", false, "[DiffuseProbeGridBorderUpdatePass '%s']: Shader '%s' contains invalid numthreads arguments:\n%s", GetPathName().GetCStr(), shaderFilePath.c_str(), outcome.GetError().c_str());
             }
         }
 

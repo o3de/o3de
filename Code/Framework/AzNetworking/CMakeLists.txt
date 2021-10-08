@@ -25,7 +25,6 @@ ly_add_target(
     BUILD_DEPENDENCIES
         PRIVATE
             AZ::AzCore
-            3rdParty::zlib
             3rdParty::zstd
             3rdParty::OpenSSL
         PUBLIC

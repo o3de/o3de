@@ -31,7 +31,7 @@ namespace AZ
             {
             }
         protected:
-            virtual void Process()
+            void Process() override
             {
                 m_notifyFlag->store(true, AZStd::memory_order_release);
             }

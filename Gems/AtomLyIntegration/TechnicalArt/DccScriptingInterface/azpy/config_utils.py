@@ -7,15 +7,16 @@
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
 #
-# -- This line is 75 characters -------------------------------------------
+# note: this module should reamin py2.7 compatible (Maya) so no f'strings
+# --------------------------------------------------------------------------
 import sys
 import os
 import re
 import site
 import logging as _logging
+# -------------------------------------------------------------------------
 
-from pathlib import Path  # note: we provide this in py2.7
-# so using it here suggests some boostrapping has occured before using azpy
+
 # --------------------------------------------------------------------------
 _PACKAGENAME = 'azpy.config_utils'
 
@@ -28,8 +29,31 @@ _LOGGER.debug('Initializing: {0}.'.format({_PACKAGENAME}))
 
 __all__ = ['get_os', 'return_stub', 'get_stub_check_path',
            'get_dccsi_config', 'get_current_project']
+# -------------------------------------------------------------------------
 
-# note: this module should reamin py2.7 compatible (Maya) so no f'strings
+
+# -------------------------------------------------------------------------
+# just a quick check to ensure what paths have code access
+_G_DEBUG = False  # enable for debug prints
+if _G_DEBUG:
+    known_paths = list()
+    for p in sys.path:
+        known_paths.append(p)
+    _LOGGER.debug(known_paths)
+
+# this import can fail in Maya 2020 (and earlier) stuck on py2.7
+# wrapped in a try, to trap and providing messaging to help user correct
+try:
+    from pathlib import Path  # note: we provide this in py2.7
+    # so using it here suggests some boostrapping has occured before using azpy
+except Exception as e:
+    _LOGGER.warning('Maya 2020 and below, use py2.7')
+    _LOGGER.warning('py2.7 does not include pathlib')
+    _LOGGER.warning('Try installing the O3DE DCCsi py2.7 requirements.txt')
+    _LOGGER.warning("See instructions: 'C:\\< your o3de engine >\\Gems\\AtomLyIntegration\\TechnicalArt\\DccScriptingInterface\\SDK\Maya\\readme.txt'")
+    _LOGGER.warning("Other code in this module with fail!!!")
+    _LOGGER.error(e)
+    pass  # fail gracefully, note: code accesing Path will fail!
 # -------------------------------------------------------------------------
 
 

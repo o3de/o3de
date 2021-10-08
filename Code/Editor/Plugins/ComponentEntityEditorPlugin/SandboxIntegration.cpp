@@ -142,8 +142,7 @@ void GetSelectedEntitiesSetWithFlattenedHierarchy(AzToolsFramework::EntityIdSet&
 }
 
 SandboxIntegrationManager::SandboxIntegrationManager()
-    : m_inObjectPickMode(false)
-    , m_startedUndoRecordingNestingLevel(0)
+    : m_startedUndoRecordingNestingLevel(0)
     , m_dc(nullptr)
     , m_notificationWindowManager(new AzToolsFramework::SliceOverridesNotificationWindowManager())
 {
@@ -528,7 +527,6 @@ void SandboxIntegrationManager::EntityParentChanged(
         oldAncestor = nextParentId;
     } while (oldAncestor.IsValid());
 
-    AZ::EntityId newAncestors = newParentId;
     AZ::EntityId newAncestor = newParentId;
 
     bool isGoingToRootScene = false;
@@ -721,7 +719,7 @@ void SandboxIntegrationManager::PopulateEditorGlobalContextMenu(QMenu* menu, con
         if (selected.size() > 0)
         {
             action = menu->addAction(QObject::tr("Find in Entity Outliner"));
-            QObject::connect(action, &QAction::triggered, [this, selected]
+            QObject::connect(action, &QAction::triggered, [selected]
             {
                 AzToolsFramework::EditorEntityContextNotificationBus::Broadcast(&EditorEntityContextNotification::OnFocusInEntityOutliner, selected);
             });
@@ -842,7 +840,7 @@ void SandboxIntegrationManager::SetupLayerContextMenu(QMenu* menu)
 
             QAction* findLayerAssetAction = menu->addAction(QObject::tr("Find layer in Asset Browser"));
             findLayerAssetAction->setToolTip(QObject::tr("Selects this layer in the Asset Browser"));
-            QObject::connect(findLayerAssetAction, &QAction::triggered, [this, fullFilePath] {
+            QObject::connect(findLayerAssetAction, &QAction::triggered, [fullFilePath] {
                 QtViewPaneManager::instance()->OpenPane(LyViewPane::AssetBrowser);
 
                 AzToolsFramework::AssetBrowser::AssetBrowserViewRequestBus::Broadcast(
@@ -999,62 +997,6 @@ void SandboxIntegrationManager::SetupSliceContextMenu_Modify(QMenu* menu, const 
     });
 
     revertAction->setEnabled(canRevert);
-}
-
-void SandboxIntegrationManager::HandleObjectModeSelection(const AZ::Vector2& point, [[maybe_unused]] int flags, bool& handled)
-{
-    // Todo - Use a custom "edit tool". This will eliminate the need for this bus message entirely, which technically
-    // makes this feature less intrusive on Sandbox.
-    // UPDATE: This is now provided by EditorPickEntitySelection when the new Viewport Interaction Model changes are enabled.
-    if (m_inObjectPickMode)
-    {
-        CViewport* view = GetIEditor()->GetViewManager()->GetGameViewport();
-        const QPoint viewPoint(static_cast<int>(point.GetX()), static_cast<int>(point.GetY()));
-
-        HitContext hitInfo;
-        hitInfo.view = view;
-        if (view->HitTest(viewPoint, hitInfo))
-        {
-            if (hitInfo.object && (hitInfo.object->GetType() == OBJTYPE_AZENTITY))
-            {
-                CComponentEntityObject* entityObject = static_cast<CComponentEntityObject*>(hitInfo.object);
-                AzToolsFramework::EditorPickModeRequestBus::Broadcast(
-                    &AzToolsFramework::EditorPickModeRequests::PickModeSelectEntity, entityObject->GetAssociatedEntityId());
-            }
-        }
-
-        AzToolsFramework::EditorPickModeRequestBus::Broadcast(
-            &AzToolsFramework::EditorPickModeRequests::StopEntityPickMode);
-
-        handled = true;
-    }
-}
-
-void SandboxIntegrationManager::UpdateObjectModeCursor(AZ::u32& cursorId, AZStd::string& cursorStr)
-{
-    if (m_inObjectPickMode)
-    {
-        cursorId = static_cast<AZ::u64>(STD_CURSOR_HAND);
-        cursorStr = "Pick an entity...";
-    }
-}
-
-void SandboxIntegrationManager::OnEntityPickModeStarted()
-{
-    m_inObjectPickMode = true;
-
-    // Currently this object pick mode is activated only via PropertyEntityIdCtrl picker.
-    // When the picker button is clicked, we transfer focus to the viewport so the
-    // spacebar can still be used to activate selection helpers.
-    if (CViewport* view = GetIEditor()->GetViewManager()->GetGameViewport())
-    {
-        view->SetFocus();
-    }
-}
-
-void SandboxIntegrationManager::OnEntityPickModeStopped()
-{
-    m_inObjectPickMode = false;
 }
 
 void SandboxIntegrationManager::CreateEditorRepresentation(AZ::Entity* entity)
@@ -1740,8 +1682,7 @@ void SandboxIntegrationManager::GoToEntitiesInViewports(const AzToolsFramework::
 
             AtomToolsFramework::ModularViewportCameraControllerRequestBus::Event(
                 viewportContext->GetId(),
-                &AtomToolsFramework::ModularViewportCameraControllerRequestBus::Events::InterpolateToTransform, nextCameraTransform,
-                distanceToLookAt);
+                &AtomToolsFramework::ModularViewportCameraControllerRequestBus::Events::InterpolateToTransform, nextCameraTransform);
         }
     }
 }
@@ -1954,7 +1895,7 @@ void SandboxIntegrationManager::MakeSliceFromEntities(const AzToolsFramework::En
     AzToolsFramework::ToolsApplicationRequestBus::BroadcastResult(entitiesAndDescendants,
         &AzToolsFramework::ToolsApplicationRequestBus::Events::GatherEntitiesAndAllDescendents, entities);
 
-    const AZStd::string slicesAssetsPath = "@devassets@/Slices";
+    const AZStd::string slicesAssetsPath = "@projectroot@/Slices";
 
     if (!gEnv->pFileIO->Exists(slicesAssetsPath.c_str()))
     {

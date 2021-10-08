@@ -107,7 +107,8 @@ namespace AZ
             ( rapidjson::Value& outputValue
             , const void* inputValue
             , const void* defaultValue
-            , const Uuid& valueTypeId, JsonSerializerContext& context) override
+            , [[maybe_unused]] const Uuid& valueTypeId
+            , JsonSerializerContext& context) override
         {
             namespace JSR = JsonSerializationResult;
 

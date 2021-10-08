@@ -120,7 +120,7 @@ namespace Audio
         void FreeAudioProxy(IAudioProxy* const pIAudioProxy) override;
 
         TAudioSourceId CreateAudioSource(const SAudioInputConfig& sourceConfig) override;
-        void DestroyAudioSource(TAudioSourceId sourceId);
+        void DestroyAudioSource(TAudioSourceId sourceId) override;
 
         // When AUDIO_RELEASE is defined, these two functions always return nullptr
         const char* GetAudioControlName(const EAudioControlType controlType, const TATLIDType atlID) const override;

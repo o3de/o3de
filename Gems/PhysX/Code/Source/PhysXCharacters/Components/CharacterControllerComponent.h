@@ -108,7 +108,7 @@ namespace PhysX
         // CharacterControllerRequestBus
         void Resize(float height) override;
         float GetHeight() override;
-        void SetHeight(float height);
+        void SetHeight(float height) override;
         float GetRadius() override;
         void SetRadius(float radius) override;
         float GetHalfSideExtent() override;

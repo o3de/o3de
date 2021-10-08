@@ -184,7 +184,6 @@ namespace EMotionFX
         void VerifyAfterOperation()
         {
             const AZStd::vector<AZ::TypeId> conditionTypeIds = GetConditionTypeIds();
-            const size_t numConditionTypes = conditionTypeIds.size();
             const bool cutMode = GetParam();
             if (cutMode)
             {
@@ -419,7 +418,6 @@ namespace EMotionFX
         AZStd::string result;
         MCore::CommandGroup commandGroup;
         const bool cutMode = GetParam();
-        const AnimGraphConnectionId oldtransitionId = m_transition->GetId();
 
         // Add transition actions to the node.
         AnimGraphParameterAction* action1 = aznew AnimGraphParameterAction();

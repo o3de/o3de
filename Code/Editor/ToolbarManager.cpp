@@ -1217,7 +1217,6 @@ void EditableQToolBar::dropEvent(QDropEvent* ev)
         return;
     }
 
-    const int actionId = action->data().toInt();
     QWidget* beforeWidget = insertPositionForDrop(ev->pos());
     QAction* beforeAction = beforeWidget ? ActionForWidget(beforeWidget) : nullptr;
 
