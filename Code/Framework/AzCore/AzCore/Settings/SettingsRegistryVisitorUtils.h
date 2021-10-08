@@ -24,6 +24,8 @@ namespace AZ::SettingsRegistryVisitorUtils
 
         FieldVisitor();
 
+        // Bring the base class visitor functions into scope
+        using AZ::SettingsRegistryInterface::Visitor::Visit;
         virtual void Visit(AZStd::string_view path, AZStd::string_view arrayIndex, Type type) = 0;
 
     protected:
@@ -32,8 +34,6 @@ namespace AZ::SettingsRegistryVisitorUtils
         using AggregateTypes = AZStd::fixed_vector<Type, 2>;
         FieldVisitor(const AggregateTypes& aggregateTypes);
     private:
-        // Make the base class Visit functions private
-        using AZ::SettingsRegistryInterface::Visitor::Visit;
         VisitResponse Traverse(AZStd::string_view path, AZStd::string_view valueName,
             VisitAction action, Type type) override;
 

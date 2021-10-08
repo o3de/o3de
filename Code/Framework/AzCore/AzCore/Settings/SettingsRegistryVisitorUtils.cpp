@@ -83,6 +83,7 @@ namespace AZ::SettingsRegistryVisitorUtils
         struct VisitFieldVisitor
             : BaseVisitor
         {
+            using BaseVisitor::Visit;
             VisitFieldVisitor(const VisitorCallback& visitCallback)
                 : m_visitCallback{ visitCallback }
             {}
