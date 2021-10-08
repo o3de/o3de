@@ -49,7 +49,15 @@ namespace Terrain
 
     namespace MaterialInputs
     {
+        // Terrain material
         static const char* const HeightmapImage("settings.heightmapImage");
+
+        // Macro material
+        static const char* const MacroColorTextureMap("baseColor.textureMap");
+        static const char* const MacroNormalTextureMap("normal.textureMap");
+        static const char* const MacroNormalFlipX("normal.flipX");
+        static const char* const MacroNormalFlipY("normal.flipY");
+        static const char* const MacroNormalFactor("normal.factor");
     }
 
     namespace ShaderInputs
@@ -57,6 +65,7 @@ namespace Terrain
         static const char* const ModelToWorld("m_modelToWorld");
         static const char* const TerrainData("m_terrainData");
         static const char* const MacroMaterialData("m_macroMaterialData");
+        static const char* const MacroMaterialCount("m_macroMaterialCount");
         static const char* const MacroColorMap("m_macroColorMap");
         static const char* const MacroNormalMap("m_macroNormalMap");
     }
@@ -74,8 +83,6 @@ namespace Terrain
 
     void TerrainFeatureProcessor::Activate()
     {
-        m_areaData = {};
-        m_dirtyRegion = AZ::Aabb::CreateNull();
         Initialize();
         AzFramework::Terrain::TerrainDataNotificationBus::Handler::BusConnect();
     }
@@ -120,6 +127,11 @@ namespace Terrain
 
         m_patchModel = {};
         m_areaData = {};
+        m_dirtyRegion = AZ::Aabb::CreateNull();
+        m_sectorData.clear();
+        m_macroMaterials.Clear();
+        m_materialAssetLoader = {};
+        m_materialInstance = {};
     }
 
     void TerrainFeatureProcessor::Render(const AZ::RPI::FeatureProcessor::RenderPacket& packet)
@@ -134,7 +146,7 @@ namespace Terrain
     
     void TerrainFeatureProcessor::OnTerrainDataChanged(const AZ::Aabb& dirtyRegion, TerrainDataChangedMask dataChangedMask)
     {
-        if (dataChangedMask != TerrainDataChangedMask::HeightData && dataChangedMask != TerrainDataChangedMask::Settings)
+        if ((dataChangedMask & (TerrainDataChangedMask::HeightData | TerrainDataChangedMask::Settings)) == 0)
         {
             return;
         }
@@ -155,7 +167,7 @@ namespace Terrain
             queryResolution, &AzFramework::Terrain::TerrainDataRequests::GetTerrainHeightQueryResolution);
 
         // Sectors need to be rebuilt if the world bounds change in the x/y, or the sample spacing changes.
-        m_areaData.m_rebuildSectors =
+        m_areaData.m_rebuildSectors = m_areaData.m_rebuildSectors ||
             m_areaData.m_terrainBounds.GetMin().GetX() != worldBounds.GetMin().GetX() ||
             m_areaData.m_terrainBounds.GetMin().GetY() != worldBounds.GetMin().GetY() ||
             m_areaData.m_terrainBounds.GetMax().GetX() != worldBounds.GetMax().GetX() ||
@@ -177,7 +189,8 @@ namespace Terrain
     {
         MacroMaterialData& materialData = FindOrCreateMacroMaterial(entityId);
         materialData.m_bounds = region;
-        materialData.m_materialInstance = material;
+
+        UpdateMacroMaterialData(materialData, material);
 
         // Update all sectors in region.
         ForOverlappingSectors(materialData.m_bounds,
@@ -195,11 +208,7 @@ namespace Terrain
         if (macroMaterial)
         {
             MacroMaterialData& data = FindOrCreateMacroMaterial(entityId);
-            data.m_materialInstance = macroMaterial;
-            if (data.m_bounds.IsValid())
-            {
-                // update sector srgs based on bounds.
-            }
+            UpdateMacroMaterialData(data, macroMaterial);
         }
         else
         {
@@ -210,48 +219,42 @@ namespace Terrain
     void TerrainFeatureProcessor::OnTerrainMacroMaterialRegionChanged(AZ::EntityId entityId, [[maybe_unused]] const AZ::Aabb& oldRegion, const AZ::Aabb& newRegion)
     {
         MacroMaterialData& materialData = FindOrCreateMacroMaterial(entityId);
-        if (materialData.m_materialInstance)
+        for (SectorData& sectorData : m_sectorData)
         {
-            for (SectorData& sectorData : m_sectorData)
+            bool overlapsOld = sectorData.m_aabb.Overlaps(materialData.m_bounds);
+            bool overlapsNew = sectorData.m_aabb.Overlaps(newRegion);
+            if (overlapsOld && !overlapsNew)
             {
-                bool overlapsOld = sectorData.m_aabb.Overlaps(materialData.m_bounds);
-                bool overlapsNew = sectorData.m_aabb.Overlaps(newRegion);
-                if (overlapsOld && !overlapsNew)
+                // Remove the macro material from this sector
+                for (uint16_t& idx : sectorData.m_macroMaterials)
                 {
-                    // Remove the macro material from this sector
-                    for (uint16_t& idx : sectorData.m_macroMaterials)
+                    if (m_macroMaterials.GetData(idx).m_entityId == entityId)
                     {
-                        if (m_macroMaterials.GetData(idx).m_entityId == entityId)
-                        {
-                            idx = sectorData.m_macroMaterials.back();
-                            sectorData.m_macroMaterials.pop_back();
-                        }
+                        idx = sectorData.m_macroMaterials.back();
+                        sectorData.m_macroMaterials.pop_back();
                     }
                 }
-                else if (overlapsNew && !overlapsOld)
+            }
+            else if (overlapsNew && !overlapsOld)
+            {
+                // Add the macro material to this sector
+                if (sectorData.m_macroMaterials.size() < MaxMaterialsPerSector)
                 {
-                    // Add the macro material to this sector
-                    if (sectorData.m_macroMaterials.size() < MaxMaterialsPerSector)
-                    {
-                        sectorData.m_macroMaterials.push_back(m_macroMaterials.GetIndexForData(&materialData));
-                    }
-                }
-                if (overlapsOld || overlapsNew)
-                {
-                    // Update sector srgs.
+                    sectorData.m_macroMaterials.push_back(m_macroMaterials.GetIndexForData(&materialData));
                 }
             }
         }
+        m_areaData.m_macroMaterialsUpdated = true;
         materialData.m_bounds = newRegion;
     }
 
     void TerrainFeatureProcessor::OnTerrainMacroMaterialDestroyed(AZ::EntityId entityId)
     {
         MacroMaterialData* materialData = FindMacroMaterial(entityId);
-        uint16_t destroyedMaterialIndex = m_macroMaterials.GetIndexForData(materialData);
 
         if (materialData)
         {
+            uint16_t destroyedMaterialIndex = m_macroMaterials.GetIndexForData(materialData);
             ForOverlappingSectors(materialData->m_bounds,
                 [&](SectorData& sectorData) {
                 for (uint16_t& idx : sectorData.m_macroMaterials)
@@ -264,6 +267,8 @@ namespace Terrain
                 }
             });
         }
+        
+        m_areaData.m_macroMaterialsUpdated = true;
     }
 
     void TerrainFeatureProcessor::UpdateTerrainData()
@@ -350,9 +355,7 @@ namespace Terrain
     }
 
     void TerrainFeatureProcessor::PrepareMaterialData()
-    {
-        TerrainMacroMaterialNotificationBus::Handler::BusConnect();
-        
+    {   
         const auto layout = m_materialInstance->GetAsset()->GetObjectSrgLayout();
 
         m_modelToWorldIndex = layout->FindShaderInputConstantIndex(AZ::Name(ShaderInputs::ModelToWorld));
@@ -363,6 +366,9 @@ namespace Terrain
 
         m_macroMaterialDataIndex = layout->FindShaderInputConstantIndex(AZ::Name(ShaderInputs::MacroMaterialData));
         AZ_Error(TerrainFPName, m_macroMaterialDataIndex.IsValid(), "Failed to find shader input constant %s.", ShaderInputs::MacroMaterialData);
+        
+        m_macroMaterialCountIndex = layout->FindShaderInputConstantIndex(AZ::Name(ShaderInputs::MacroMaterialCount));
+        AZ_Error(TerrainFPName, m_macroMaterialCountIndex.IsValid(), "Failed to find shader input constant %s.", ShaderInputs::MacroMaterialCount);
 
         m_macroColorMapIndex = layout->FindShaderInputImageIndex(AZ::Name(ShaderInputs::MacroColorMap));
         AZ_Error(TerrainFPName, m_macroColorMapIndex.IsValid(), "Failed to find shader input constant %s.", ShaderInputs::MacroColorMap);
@@ -372,6 +378,51 @@ namespace Terrain
         
         m_heightmapPropertyIndex = m_materialInstance->GetMaterialPropertiesLayout()->FindPropertyIndex(AZ::Name(MaterialInputs::HeightmapImage));
         AZ_Error(TerrainFPName, m_heightmapPropertyIndex.IsValid(), "Failed to find material input constant %s.", MaterialInputs::HeightmapImage);
+        
+        TerrainMacroMaterialRequestBus::EnumerateHandlers(
+            [&](TerrainMacroMaterialRequests* handler)
+            {
+                MaterialInstance macroMaterial;
+                AZ::Aabb bounds;
+                handler->GetTerrainMacroMaterialData(macroMaterial, bounds);
+                AZ::EntityId entityId = *(Terrain::TerrainMacroMaterialRequestBus::GetCurrentBusId());
+                OnTerrainMacroMaterialCreated(entityId, macroMaterial, bounds);
+                return true;
+            }
+        );
+        TerrainMacroMaterialNotificationBus::Handler::BusConnect();
+    }
+
+    void TerrainFeatureProcessor::UpdateMacroMaterialData(MacroMaterialData& macroMaterialData, MaterialInstance material)
+    {
+        // Since we're using an actual macro material instance for now, get the values from it that we care about.
+        const auto materialLayout = material->GetMaterialPropertiesLayout();
+
+        AZ::RPI::MaterialPropertyIndex macroColorTextureMapIndex = materialLayout->FindPropertyIndex(AZ::Name(MaterialInputs::MacroColorTextureMap));
+        AZ_Error(TerrainFPName, macroColorTextureMapIndex.IsValid(), "Failed to find shader input constant %s.", MaterialInputs::MacroColorTextureMap);
+            
+        AZ::RPI::MaterialPropertyIndex macroNormalTextureMapIndex = materialLayout->FindPropertyIndex(AZ::Name(MaterialInputs::MacroNormalTextureMap));
+        AZ_Error(TerrainFPName, macroNormalTextureMapIndex.IsValid(), "Failed to find shader input constant %s.", MaterialInputs::MacroNormalTextureMap);
+
+        AZ::RPI::MaterialPropertyIndex macroNormalFlipXIndex = materialLayout->FindPropertyIndex(AZ::Name(MaterialInputs::MacroNormalFlipX));
+        AZ_Error(TerrainFPName, macroNormalFlipXIndex.IsValid(), "Failed to find shader input constant %s.", MaterialInputs::MacroNormalFlipX);
+
+        AZ::RPI::MaterialPropertyIndex macroNormalFlipYIndex = materialLayout->FindPropertyIndex(AZ::Name(MaterialInputs::MacroNormalFlipY));
+        AZ_Error(TerrainFPName, macroNormalFlipYIndex.IsValid(), "Failed to find shader input constant %s.", MaterialInputs::MacroNormalFlipY);
+
+        AZ::RPI::MaterialPropertyIndex macroNormalFactorIndex = materialLayout->FindPropertyIndex(AZ::Name(MaterialInputs::MacroNormalFactor));
+        AZ_Error(TerrainFPName, macroNormalFactorIndex.IsValid(), "Failed to find shader input constant %s.", MaterialInputs::MacroNormalFactor);
+
+        macroMaterialData.m_colorImage = material->GetPropertyValue(macroColorTextureMapIndex).GetValue<AZ::Data::Instance<AZ::RPI::Image>>();
+        macroMaterialData.m_normalImage = material->GetPropertyValue(macroNormalTextureMapIndex).GetValue<AZ::Data::Instance<AZ::RPI::Image>>();
+        macroMaterialData.m_normalFlipX = material->GetPropertyValue(macroNormalFlipXIndex).GetValue<bool>();
+        macroMaterialData.m_normalFlipY = material->GetPropertyValue(macroNormalFlipYIndex).GetValue<bool>();
+        macroMaterialData.m_normalFactor = material->GetPropertyValue(macroNormalFactorIndex).GetValue<float>();
+
+        if (macroMaterialData.m_bounds.IsValid())
+        {
+            m_areaData.m_macroMaterialsUpdated = true;
+        }
     }
 
     void TerrainFeatureProcessor::ProcessSurfaces(const FeatureProcessor::RenderPacket& process)
@@ -440,20 +491,43 @@ namespace Terrain
                         sectorData.m_srg = objectSrg;
                     }
                 }
+
+                if (m_areaData.m_macroMaterialsUpdated)
+                {
+                    // sectors were rebuilt, so any cached macro materail data needs to be regenerated
+                    for (SectorData& sectorData : m_sectorData)
+                    {
+                        for (MacroMaterialData& macroMaterialData : m_macroMaterials.GetDataVector())
+                        {
+                            if (macroMaterialData.m_bounds.Overlaps(sectorData.m_aabb))
+                            {
+                                sectorData.m_macroMaterials.push_back(m_macroMaterials.GetIndexForData(&macroMaterialData));
+                                if (sectorData.m_macroMaterials.size() == 4)
+                                {
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
             }
 
             if (m_areaData.m_heightmapUpdated)
             {
-                // Currently when anything in the heightmap changes we're updating all the srgs, but this could probably
-                // be optimized to only update the srgs that changed.
-
                 UpdateTerrainData();
-
-                m_areaData.m_heightmapUpdated = false;
 
                 AZ::Data::Instance<AZ::RPI::Image> heightmapImage = m_areaData.m_heightmapImage;
                 m_materialInstance->SetPropertyValue(m_heightmapPropertyIndex, heightmapImage);
                 m_materialInstance->Compile();
+            }
+
+            if (m_areaData.m_heightmapUpdated || m_areaData.m_macroMaterialsUpdated)
+            {
+                // Currently when anything in the heightmap changes we're updating all the srgs, but this could probably
+                // be optimized to only update the srgs that changed.
+
+                m_areaData.m_heightmapUpdated = false;
+                m_areaData.m_macroMaterialsUpdated = false;
 
                 for (SectorData& sectorData : m_sectorData)
                 {
@@ -485,8 +559,40 @@ namespace Terrain
                     terrainDataForSrg.m_heightScale = terrainBounds.GetZExtent();
 
                     sectorData.m_srg->SetConstant(m_terrainDataIndex, terrainDataForSrg);
-                    
-                    AZ::Matrix3x4 matrix3x4 = AZ::Matrix3x4::CreateFromTransform(transform);
+
+                    AZStd::array<ShaderMacroMaterialData, MaxMaterialsPerSector> macroMaterialData;
+                    for (uint32_t i = 0; i < sectorData.m_macroMaterials.size(); ++i)
+                    {
+                        MacroMaterialData& materialData = m_macroMaterials.GetData(sectorData.m_macroMaterials.at(i));
+                        ShaderMacroMaterialData& shaderData = macroMaterialData.at(i);
+                        const AZ::Aabb& materialBounds = materialData.m_bounds;
+
+                        shaderData.m_uvMin = {
+                            (xPatch - materialBounds.GetMin().GetX()) / materialBounds.GetXExtent(),
+                            (yPatch - materialBounds.GetMin().GetY()) / materialBounds.GetYExtent()
+                        };
+                        shaderData.m_uvMax = {
+                            ((xPatch + GridMeters) - materialBounds.GetMin().GetX()) / materialBounds.GetXExtent(),
+                            ((yPatch + GridMeters) - materialBounds.GetMin().GetY()) / materialBounds.GetYExtent()
+                        };
+                        shaderData.m_normalFactor = materialData.m_normalFactor;
+                        shaderData.m_flipNormalX = materialData.m_normalFlipX;
+                        shaderData.m_flipNormalY = materialData.m_normalFlipY;
+
+                        const AZ::RHI::ImageView* colorImageView = materialData.m_colorImage ? materialData.m_colorImage->GetImageView() : nullptr;
+                        sectorData.m_srg->SetImageView(m_macroColorMapIndex, colorImageView, i);
+                        
+                        const AZ::RHI::ImageView* normalImageView = materialData.m_normalImage ? materialData.m_normalImage->GetImageView() : nullptr;
+                        sectorData.m_srg->SetImageView(m_macroNormalMapIndex, normalImageView, i);
+
+                        // set flags for which images are used.
+                        shaderData.m_mapsInUse = (colorImageView ? 0b01 : 0b00) | (normalImageView ? 0b10 : 0b00);
+                    }
+
+                    sectorData.m_srg->SetConstantArray(m_macroMaterialDataIndex, macroMaterialData);
+                    sectorData.m_srg->SetConstant(m_macroMaterialCountIndex, aznumeric_cast<uint32_t>(sectorData.m_macroMaterials.size()));
+
+                    const AZ::Matrix3x4 matrix3x4 = AZ::Matrix3x4::CreateFromTransform(transform);
                     sectorData.m_srg->SetConstant(m_modelToWorldIndex, matrix3x4);
 
                     sectorData.m_srg->Compile();
