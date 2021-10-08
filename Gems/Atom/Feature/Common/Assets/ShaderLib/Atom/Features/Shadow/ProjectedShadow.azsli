@@ -316,10 +316,15 @@ bool ProjectedShadow::IsShadowed(float3 shadowPosition)
 void ProjectedShadow::SetShadowPosition()
 {
     const float4x4 depthBiasMatrix = ViewSrg::m_projectedShadows[m_shadowIndex].m_depthBiasMatrix;
-    float4 shadowPositionHomogeneous = mul(depthBiasMatrix, float4(m_worldPosition, 1));
+    const float normalOffsetBias = ViewSrg::m_projectedShadows[m_shadowIndex].m_normalOffsetBias;
+    const float shadowmapSize = 2.0f / ViewSrg::m_projectedFilterParams[m_shadowIndex].m_shadowmapSize;    
+    const float3 shadowOffset = float3(m_normalVector * normalOffsetBias * shadowmapSize);  
+    float4 shadowPositionHomogeneous = mul(depthBiasMatrix, float4(m_worldPosition + shadowOffset, 1));
+
     m_shadowPosition = shadowPositionHomogeneous.xyz / shadowPositionHomogeneous.w;
     
     m_bias = ViewSrg::m_projectedShadows[m_shadowIndex].m_bias / shadowPositionHomogeneous.w;
+    
 }
 
 float3 ProjectedShadow::GetAtlasPosition(float2 texturePosition)
