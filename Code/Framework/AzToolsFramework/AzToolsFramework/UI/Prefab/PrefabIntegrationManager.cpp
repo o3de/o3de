@@ -24,11 +24,11 @@
 #include <AzToolsFramework/AssetBrowser/AssetSelectionModel.h>
 #include <AzToolsFramework/AssetBrowser/Entries/SourceAssetBrowserEntry.h>
 #include <AzToolsFramework/ContainerEntity/ContainerEntityInterface.h>
-#include <AzToolsFramework/Prefab/PrefabFocusInterface.h>
+#include <AzToolsFramework/Prefab/EditorPrefabComponent.h>
+#include <AzToolsFramework/Prefab/Instance/InstanceEntityMapperInterface.h>
+#include <AzToolsFramework/Prefab/PrefabFocusPublicInterface.h>
 #include <AzToolsFramework/Prefab/PrefabLoaderInterface.h>
 #include <AzToolsFramework/Prefab/Procedural/ProceduralPrefabAsset.h>
-#include <AzToolsFramework/Prefab/Instance/InstanceEntityMapperInterface.h>
-#include <AzToolsFramework/Prefab/EditorPrefabComponent.h>
 #include <AzToolsFramework/ToolsComponents/EditorLayerComponentBus.h>
 #include <AzToolsFramework/UI/EditorEntityUi/EditorEntityUiInterface.h>
 #include <AzToolsFramework/UI/Prefab/PrefabIntegrationInterface.h>
@@ -38,7 +38,6 @@
 #include <AzQtComponents/Components/FlowLayout.h>
 #include <AzQtComponents/Components/StyleManager.h>
 #include <AzQtComponents/Components/Widgets/CardHeader.h>
-
 
 #include <QApplication>
 #include <QCheckBox>
@@ -56,14 +55,13 @@
 #include <QVBoxLayout>
 #include <QWidget>
 
-
 namespace AzToolsFramework
 {
     namespace Prefab
     {
         ContainerEntityInterface* PrefabIntegrationManager::s_containerEntityInterface = nullptr;
         EditorEntityUiInterface* PrefabIntegrationManager::s_editorEntityUiInterface = nullptr;
-        PrefabFocusInterface* PrefabIntegrationManager::s_prefabFocusInterface = nullptr;
+        PrefabFocusPublicInterface* PrefabIntegrationManager::s_prefabFocusPublicInterface = nullptr;
         PrefabLoaderInterface* PrefabIntegrationManager::s_prefabLoaderInterface = nullptr;
         PrefabPublicInterface* PrefabIntegrationManager::s_prefabPublicInterface = nullptr;
         PrefabSystemComponentInterface* PrefabIntegrationManager::s_prefabSystemComponentInterface = nullptr;
@@ -129,10 +127,10 @@ namespace AzToolsFramework
                 return;
             }
 
-            s_prefabFocusInterface = AZ::Interface<PrefabFocusInterface>::Get();
-            if (s_prefabFocusInterface == nullptr)
+            s_prefabFocusPublicInterface = AZ::Interface<PrefabFocusPublicInterface>::Get();
+            if (s_prefabFocusPublicInterface == nullptr)
             {
-                AZ_Assert(false, "Prefab - could not get PrefabFocusInterface on PrefabIntegrationManager construction.");
+                AZ_Assert(false, "Prefab - could not get PrefabFocusPublicInterface on PrefabIntegrationManager construction.");
                 return;
             }
 
@@ -247,7 +245,7 @@ namespace AzToolsFramework
                         // Edit Prefab
                         if (prefabWipFeaturesEnabled)
                         {
-                            bool beingEdited = s_prefabFocusInterface->IsOwningPrefabBeingFocused(selectedEntity);
+                            bool beingEdited = s_prefabFocusPublicInterface->IsOwningPrefabBeingFocused(selectedEntity);
 
                             if (!beingEdited)
                             {
@@ -483,7 +481,7 @@ namespace AzToolsFramework
 
         void PrefabIntegrationManager::ContextMenu_EditPrefab(AZ::EntityId containerEntity)
         {
-            s_prefabFocusInterface->FocusOnOwningPrefab(containerEntity);
+            s_prefabFocusPublicInterface->FocusOnOwningPrefab(containerEntity);
         }
 
         void PrefabIntegrationManager::ContextMenu_SavePrefab(AZ::EntityId containerEntity)
