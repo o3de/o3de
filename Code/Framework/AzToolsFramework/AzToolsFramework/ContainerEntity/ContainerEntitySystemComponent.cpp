@@ -99,7 +99,16 @@ namespace AzToolsFramework
 
     AZ::EntityId ContainerEntitySystemComponent::FindHighestSelectableEntity(AZ::EntityId entityId) const
     {
+        if (!entityId.IsValid())
+        {
+            return entityId;
+        }
+
+        // Return the highest closed container, or the entity if none is found.
         AZ::EntityId highestSelectableEntityId = entityId;
+
+        // Skip the queried entity, as we only want to check its ancestors.
+        AZ::TransformBus::EventResult(entityId, entityId, &AZ::TransformBus::Events::GetParentId);
 
         // Go up the hierarchy until you hit the root
         while (entityId.IsValid())
@@ -115,6 +124,32 @@ namespace AzToolsFramework
         }
 
         return highestSelectableEntityId;
+    }
+
+    bool ContainerEntitySystemComponent::IsUnderClosedContainerEntity(AZ::EntityId entityId) const
+    {
+        if (!entityId.IsValid())
+        {
+            return false;
+        }
+
+        // Skip the queried entity, as we only want to check its ancestors.
+        AZ::TransformBus::EventResult(entityId, entityId, &AZ::TransformBus::Events::GetParentId);
+
+        // Go up the hierarchy until you hit the root.
+        while (entityId.IsValid())
+        {
+            if (!IsContainerOpen(entityId))
+            {
+                // One of the ancestors is a container and it's closed.
+                return true;
+            }
+
+            AZ::TransformBus::EventResult(entityId, entityId, &AZ::TransformBus::Events::GetParentId);
+        }
+
+        // All ancestors are either regular entities or open containers.
+        return false;
     }
 
 } // namespace AzToolsFramework

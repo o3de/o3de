@@ -56,6 +56,9 @@ namespace AzToolsFramework
         //! @return The highest closed entity container id if any, or entityId otherwise.
         virtual AZ::EntityId FindHighestSelectableEntity(AZ::EntityId entityId) const = 0;
 
+        //! Returns true if one of the ancestors of entityId is a closed container entity.
+        virtual bool IsUnderClosedContainerEntity(AZ::EntityId entityId) const = 0;
+
     };
 
 } // namespace AzToolsFramework
