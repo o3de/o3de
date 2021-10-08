@@ -78,6 +78,18 @@ namespace TestImpact
             StdContent&& std,
             AZStd::chrono::high_resolution_clock::time_point exitTime)>;
 
+    //! Callback for process standard output/error buffer consumption in real-time.
+    //! @note The full standard output/error data is available to all capturing processes at their end of life regardless of this callback.
+    //! @param processId The id of the process that attempted to launch.
+    //! @param stdOutput The total accumulated standard output buffer.
+    //! @param stdError The total accumulated standard error buffer.
+    //! @param stdDelta The standard output/error buffer data since the last callback.
+    using ProcessStdBufferCallback = AZStd::function<ProcessCallbackResult(
+        ProcessId processId,
+        const AZStd::string& stdOutput,
+        const AZStd::string& stdError,
+        StdContent&& stdDelta)>;
+
     //! Schedules a batch of processes for launch using a round robin approach to distribute the in-flight processes over
     //! the specified number of concurrent process slots.
     class ProcessScheduler
@@ -95,13 +107,15 @@ namespace TestImpact
         //! @param scheduleTimeout The maximum duration the scheduler may run before forcefully terminating all in-flight processes.
         //! @param processLaunchCallback The process launch callback function.
         //! @param processExitCallback The process exit callback function.
+        //! @param processStdBufferCallback The process standard buffer callback function.
         //! @returns The state that triggered the end of the schedule sequence.
         ProcessSchedulerResult Execute(
             const AZStd::vector<ProcessInfo>& processes,
             AZStd::optional<AZStd::chrono::milliseconds> processTimeout,
             AZStd::optional<AZStd::chrono::milliseconds> scheduleTimeout,
             ProcessLaunchCallback processLaunchCallback,
-            ProcessExitCallback processExitCallback);
+            ProcessExitCallback processExitCallback,
+            AZStd::optional<ProcessStdBufferCallback> processStdBufferCallback);
 
     private:
         class ExecutionState;

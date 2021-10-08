@@ -18,7 +18,7 @@ namespace TestImpact
         : public TestRunner<AdditionalInfo, TestRun>
     {
     public:
-        using TestRunner =  TestRunner<AdditionalInfo, TestRun>;
+        using TestRunner = TestRunner<AdditionalInfo, TestRun>;
         using TestRunner::TestRunner;
     };
 

@@ -34,7 +34,7 @@ namespace TestImpact
             const AZStd::vector<typename JobRunner::JobInfo>& jobInfos,
             AZStd::optional<AZStd::chrono::milliseconds> runTimeout,
             AZStd::optional<AZStd::chrono::milliseconds> runnerTimeout,
-            AZStd::optional<typename JobRunner::ClientJobCallback> clientCallback)
+            AZStd::optional<typename JobRunner::JobCallback> clientCallback)
         {
             const auto payloadGenerator = [](const typename JobRunner::JobDataMap& jobDataMap)
             {
@@ -61,8 +61,13 @@ namespace TestImpact
             };
 
             return JobRunner::ExecuteJobs(
-                jobInfos, payloadGenerator, StdOutputRouting::None, StdErrorRouting::None, runTimeout, runnerTimeout, clientCallback,
-                AZStd::nullopt);
+                jobInfos,
+                payloadGenerator,
+                StdOutputRouting::None,
+                StdErrorRouting::None,
+                runTimeout,
+                runnerTimeout,
+                clientCallback);
         }
     };
 } // namespace TestImpact

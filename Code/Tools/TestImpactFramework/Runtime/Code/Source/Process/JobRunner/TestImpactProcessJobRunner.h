@@ -13,6 +13,7 @@
 #include <AzCore/std/containers/unordered_map.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/functional.h>
+#include <AzCore/std/optional.h>
 #include <AzCore/std/string/string.h>
 
 namespace TestImpact
@@ -23,6 +24,16 @@ namespace TestImpact
     //! @param std The standard output and standard error of the process running the job.
     template<typename Job>
     using JobCallback = AZStd::function<ProcessCallbackResult(const typename Job::Info& jobInfo, const JobMeta& meta, StdContent&& std)>;
+
+    //! Callback for job standard output/error buffer consumption in real-time.
+    //! @note The full standard output/error data is available to all capturing jobs at their end of life regardless of this callback.
+    //! @param jobInfo The job information associated with this job.
+    //! @param stdOutput The total accumulated standard output buffer.
+    //! @param stdError The total accumulated standard error buffer.
+    //! @param stdDelta The standard output/error buffer data since the last callback.
+    template<typename Job>
+    using JobStdBufferCallback = AZStd::function<ProcessCallbackResult(
+        const typename Job::Info& jobInfo, const AZStd::string& stdOutput, const AZStd::string& stdError, StdContent&& stdDelta)>;
 
     //! The payloads produced by the job-specific payload producer in the form of a map associating each job id with the job's payload.
     template<typename Job>
@@ -65,7 +76,8 @@ namespace TestImpact
             StdErrorRouting stdErrRouting,
             AZStd::optional<AZStd::chrono::milliseconds> jobTimeout,
             AZStd::optional<AZStd::chrono::milliseconds> runnerTimeout,
-            JobCallback<typename JobT> jobCallback);
+            JobCallback<typename JobT> jobCallback,
+            AZStd::optional<JobStdBufferCallback<typename JobT>> stdBufferCallback);
 
     private:
         ProcessScheduler m_processScheduler;
@@ -89,7 +101,8 @@ namespace TestImpact
         StdErrorRouting stdErrRouting,
         AZStd::optional<AZStd::chrono::milliseconds> jobTimeout,
         AZStd::optional<AZStd::chrono::milliseconds> runnerTimeout,
-        JobCallback<typename JobT> jobCallback)
+        JobCallback<typename JobT> jobCallback,
+        AZStd::optional<JobStdBufferCallback<typename JobT>> stdBufferCallback)
     {
         AZStd::vector<ProcessInfo> processes;
         AZStd::unordered_map<JobT::Info::IdType, AZStd::pair<JobMeta, const typename JobT::Info*>> metas;
@@ -127,13 +140,13 @@ namespace TestImpact
 
         // Wrapper around low-level process exit callback to gather job meta-data and present a simplified callback interface to the client
         const ProcessExitCallback processExitCallback = [&jobCallback, &metas](
-            TestImpact::ProcessId pid,
+            TestImpact::ProcessId processId,
             TestImpact::ExitCondition exitCondition,
             TestImpact::ReturnCode returnCode,
             TestImpact::StdContent&& std,
             AZStd::chrono::high_resolution_clock::time_point exitTime)
         {
-            auto& [meta, jobInfo] = metas.at(pid);
+            auto& [meta, jobInfo] = metas.at(processId);
             meta.m_returnCode = returnCode;
             meta.m_duration = AZStd::chrono::duration_cast<AZStd::chrono::milliseconds>(exitTime - *meta.m_startTime);
             if (exitCondition == ExitCondition::Gracefull && returnCode == 0)
@@ -156,13 +169,27 @@ namespace TestImpact
             return jobCallback(*jobInfo, meta, AZStd::move(std));
         };
 
+        // Wrapper around low-level process std buffer callback to present a simplified callback interface to the client
+        const AZStd::optional<ProcessStdBufferCallback> processStdBufferCallback = stdBufferCallback.has_value()
+            ? AZStd::optional<ProcessStdBufferCallback>([&stdBufferCallback, &metas](
+                ProcessId processId,
+                const AZStd::string& stdOutput,
+                const AZStd::string& stdError,
+                StdContent&& stdDelta)
+            {
+                auto& [meta, jobInfo] = metas.at(processId);
+                return (*stdBufferCallback)(*jobInfo, stdOutput, stdError, AZStd::move(stdDelta));
+            })
+            : AZStd::nullopt;
+
         // Schedule all jobs for execution
         const auto result = m_processScheduler.Execute(
             processes,
             jobTimeout,
             runnerTimeout,
             processLaunchCallback,
-            processExitCallback);
+            processExitCallback,
+            processStdBufferCallback);
 
         // Hand off the jobs to the client for payload generation
         auto payloadMap = payloadMapProducer(metas);

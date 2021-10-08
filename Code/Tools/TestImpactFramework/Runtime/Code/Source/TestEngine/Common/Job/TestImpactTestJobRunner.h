@@ -45,8 +45,7 @@ namespace TestImpact
         using Command = typename JobInfo::Command;
         using JobPayload = Payload;
         using Job = Job<JobInfo, Payload>;
-        using ClientJobCallback = AZStd::function<ProcessCallbackResult(const JobInfo& jobInfo, const JobMeta& meta)>;
-        using DerivedJobCallback = JobCallback<Job>;
+        using JobCallback = JobCallback<Job>;
         using JobDataMap = JobDataMap<Job>;
 
         //! Constructs the job runner with the specified parameters common to all job runs of this runner.
@@ -63,7 +62,6 @@ namespace TestImpact
         //! @param jobTimeout The maximum duration a job may be in-flight for before being forcefully terminated (nullopt if no timeout).
         //! @param runnerTimeout The maximum duration the runner may run before forcefully terminating all in-flight jobs (nullopt if no timeout).
         //! @param clientCallback The optional callback function provided by the client to be called upon job state change.
-        //! @param clientCallback The optional callback function provided by the derived job runner to be called upon job state change.
         //! @returns The result of the run sequence and the jobs that the sequence produced.
         AZStd::pair<ProcessSchedulerResult, AZStd::vector<Job>> ExecuteJobs(
             const AZStd::vector<JobInfo>& jobInfos,
@@ -72,12 +70,10 @@ namespace TestImpact
             StdErrorRouting stdErrRouting,
             AZStd::optional<AZStd::chrono::milliseconds> jobTimeout,
             AZStd::optional<AZStd::chrono::milliseconds> runnerTimeout,
-            AZStd::optional<ClientJobCallback> clientCallback,
-            AZStd::optional<DerivedJobCallback> derivedJobCallback);
+            AZStd::optional<JobCallback> clientCallback);
 
     private:
         JobRunner<Job> m_jobRunner;
-        const AZStd::optional<DerivedJobCallback> m_derivedJobCallback;
     };
 
     template<typename Data, typename Payload>
@@ -94,30 +90,31 @@ namespace TestImpact
         StdErrorRouting stdErrRouting,
         AZStd::optional<AZStd::chrono::milliseconds> jobTimeout,
         AZStd::optional<AZStd::chrono::milliseconds> runnerTimeout,
-        AZStd::optional<ClientJobCallback> clientCallback,
-        AZStd::optional<DerivedJobCallback> derivedJobCallback)
+        AZStd::optional<JobCallback> clientCallback)
     {
         // Callback to handle job exception policies and client/derived callbacks
-        const auto jobCallback = [&clientCallback, &derivedJobCallback](const JobInfo& jobInfo, const JobMeta& meta, StdContent&& std)
+        const auto jobCallback = [&clientCallback](const JobInfo& jobInfo, const JobMeta& meta, StdContent&& std)
         {
-            auto callbackResult = ProcessCallbackResult::Continue;
-            if (derivedJobCallback.has_value())
-            {
-                callbackResult = (*derivedJobCallback)(jobInfo, meta, AZStd::move(std));
-            }
-
             if (clientCallback.has_value())
             {
-                if (const auto result = (*clientCallback)(jobInfo, meta);
+                if (const auto result = (*clientCallback)(jobInfo, meta, AZStd::move(std));
                     result == ProcessCallbackResult::Abort)
                 {
-                    callbackResult = ProcessCallbackResult::Abort;
+                    return ProcessCallbackResult::Abort;
                 }
             }
 
-            return callbackResult;
+            return ProcessCallbackResult::Continue;
         };
 
-        return m_jobRunner.Execute(jobInfos, payloadMapProducer, stdOutRouting, stdErrRouting, jobTimeout, runnerTimeout, jobCallback);
+        return m_jobRunner.Execute(
+            jobInfos,
+            payloadMapProducer,
+            stdOutRouting,
+            stdErrRouting,
+            jobTimeout,
+            runnerTimeout,
+            jobCallback,
+            AZStd::nullopt); // <--- STD BUFFER CALLBACK
     }
 } // namespace TestImpact

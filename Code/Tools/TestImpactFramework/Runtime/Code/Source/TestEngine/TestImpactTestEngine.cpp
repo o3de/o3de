@@ -143,7 +143,8 @@ namespace TestImpact
             {
             }
 
-            [[nodiscard]] ProcessCallbackResult operator()(const typename JobInfo& jobInfo, const TestImpact::JobMeta& meta)
+            [[nodiscard]] ProcessCallbackResult operator()(
+                const typename JobInfo& jobInfo, const TestImpact::JobMeta& meta, [[maybe_unused]]StdContent&& std)
             {
                 const auto id = jobInfo.GetId().m_value;
                 const auto& args = jobInfo.GetCommand().m_args;

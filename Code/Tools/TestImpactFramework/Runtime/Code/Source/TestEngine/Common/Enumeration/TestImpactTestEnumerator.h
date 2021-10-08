@@ -43,7 +43,7 @@ namespace TestImpact
             const AZStd::vector<typename JobRunner::JobInfo>& jobInfos,
             AZStd::optional<AZStd::chrono::milliseconds> enumerationTimeout,
             AZStd::optional<AZStd::chrono::milliseconds> enumeratorTimeout,
-            AZStd::optional<typename JobRunner::ClientJobCallback> clientCallback)
+            AZStd::optional<typename JobRunner::JobCallback> clientCallback)
         {
             AZStd::vector<typename JobRunner::Job> cachedJobs;
             AZStd::vector<typename JobRunner::JobInfo> jobQueue;

@@ -20,6 +20,12 @@
 
 #include <vector>
 
+/*
+
+    DO STD BUFFER CALLBACK TESTS
+
+*/
+
 namespace UnitTest
 {
     using SchedulerPermutation = AZStd::tuple
@@ -340,8 +346,8 @@ namespace UnitTest
             AZStd::nullopt,
             AZStd::nullopt,
             m_processLaunchCallback,
-            m_processExitCallback
-            );
+            m_processExitCallback,
+            AZStd::nullopt);
 
         EXPECT_EQ(result, TestImpact::ProcessSchedulerResult::Graceful);
 
@@ -382,8 +388,8 @@ namespace UnitTest
             AZStd::nullopt,
             AZStd::nullopt,
             m_processLaunchCallback,
-            m_processExitCallback
-        );
+            m_processExitCallback,
+            AZStd::nullopt);
 
         EXPECT_EQ(result, TestImpact::ProcessSchedulerResult::Graceful);
 
@@ -428,8 +434,8 @@ namespace UnitTest
             AZStd::chrono::milliseconds(100),
             AZStd::nullopt,
             m_processLaunchCallback,
-            m_processExitCallback
-        );
+            m_processExitCallback,
+            AZStd::nullopt);
 
         EXPECT_EQ(result, TestImpact::ProcessSchedulerResult::Graceful);
 
@@ -489,9 +495,9 @@ namespace UnitTest
             AZStd::nullopt,
             AZStd::nullopt,
             abortingLaunchCallback,
-            m_processExitCallback
-        );
-
+            m_processExitCallback,
+            AZStd::nullopt);
+      
         //EXPECT_EQ(result, TestImpact::ProcessSchedulerResult::Graceful);
 
         for (size_t pid = 0; pid < m_numProcessesToLaunch; pid++)
@@ -555,8 +561,8 @@ namespace UnitTest
             AZStd::nullopt,
             AZStd::nullopt,
             m_processLaunchCallback,
-            abortingExitCallback
-        );
+            abortingExitCallback,
+            AZStd::nullopt);
 
         //EXPECT_EQ(result, TestImpact::ProcessSchedulerResult::Graceful);
 
@@ -618,8 +624,8 @@ namespace UnitTest
             AZStd::nullopt,
             AZStd::chrono::milliseconds(100),
             m_processLaunchCallback,
-            m_processExitCallback
-        );
+            m_processExitCallback,
+            AZStd::nullopt);
 
         EXPECT_EQ(result, TestImpact::ProcessSchedulerResult::Timeout);
 
@@ -667,8 +673,8 @@ namespace UnitTest
             AZStd::nullopt,
             AZStd::nullopt,
             m_processLaunchCallback,
-            m_processExitCallback
-        );
+            m_processExitCallback,
+            AZStd::nullopt);
 
         EXPECT_EQ(result, TestImpact::ProcessSchedulerResult::Graceful);
 
@@ -701,8 +707,8 @@ namespace UnitTest
             AZStd::nullopt,
             AZStd::nullopt,
             m_processLaunchCallback,
-            m_processExitCallback
-        );
+            m_processExitCallback,
+            AZStd::nullopt);
 
         EXPECT_EQ(result, TestImpact::ProcessSchedulerResult::Graceful);
 

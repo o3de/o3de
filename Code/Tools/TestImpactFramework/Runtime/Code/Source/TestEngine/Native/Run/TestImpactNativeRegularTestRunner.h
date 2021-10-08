@@ -18,7 +18,7 @@
 
 namespace TestImpact
 {
-    struct NativeRegularTestRunJobData
+    class NativeRegularTestRunJobData
         : public NativeTestRunJobData<TestRunJobData>
     {
         using NativeTestRunJobData<TestRunJobData>::NativeTestRunJobData;
