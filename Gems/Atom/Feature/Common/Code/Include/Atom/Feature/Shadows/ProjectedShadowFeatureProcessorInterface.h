@@ -58,6 +58,9 @@ namespace AZ::Render
         virtual void SetSofteningBoundaryWidthAngle(ShadowId id, float boundaryWidthRadians) = 0;
         //! Sets the sample count for filtering of the shadow boundary, max 64.
         virtual void SetFilteringSampleCount(ShadowId id, uint16_t count) = 0;
+
+        virtual void SetNormalOffsetBias(ShadowId id, float normalOffsetBias) = 0;
+
         //! Sets all of the shadow properites in one call
         virtual void SetShadowProperties(ShadowId id, const ProjectedShadowDescriptor& descriptor) = 0;
         //! Gets the current shadow properties. Useful for updating several properties at once in SetShadowProperties() without having to set every property.

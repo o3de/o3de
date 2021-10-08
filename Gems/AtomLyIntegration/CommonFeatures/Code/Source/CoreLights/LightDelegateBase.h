@@ -59,6 +59,7 @@ namespace AZ
             void SetSofteningBoundaryWidthAngle([[maybe_unused]] float widthInDegrees) override {};
             void SetFilteringSampleCount([[maybe_unused]] uint32_t count) override {};
             void SetEsmExponent([[maybe_unused]] float esmExponent) override{};
+            void SetNormalOffsetBias([[maybe_unused]] float normalOffsetBias) override{};
 
         protected:
             void InitBase(EntityId entityId);

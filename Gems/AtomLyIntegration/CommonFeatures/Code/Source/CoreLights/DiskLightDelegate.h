@@ -47,6 +47,7 @@ namespace AZ
             void SetSofteningBoundaryWidthAngle(float widthInDegrees) override;
             void SetFilteringSampleCount(uint32_t count) override;
             void SetEsmExponent(float exponent) override;
+            void SetNormalOffsetBias(float normalOffsetBias) override;
 
         private:
 

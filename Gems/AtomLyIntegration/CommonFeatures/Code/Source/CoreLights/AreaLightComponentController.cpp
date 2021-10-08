@@ -310,6 +310,7 @@ namespace AZ::Render
                 m_lightShapeDelegate->SetSofteningBoundaryWidthAngle(m_configuration.m_boundaryWidthInDegrees);
                 m_lightShapeDelegate->SetFilteringSampleCount(m_configuration.m_filteringSampleCount);
                 m_lightShapeDelegate->SetEsmExponent(m_configuration.m_esmExponent);
+                m_lightShapeDelegate->SetNormalOffsetBias(m_configuration.m_normalOffsetBias);
             }
         }
     }
@@ -552,12 +553,26 @@ namespace AZ::Render
         return m_configuration.m_esmExponent;
     }
 
+    float AreaLightComponentController::GetNormalOffsetBias() const
+    {
+        return m_configuration.m_normalOffsetBias;
+    }
+
     void AreaLightComponentController::SetEsmExponent(float esmExponent)
     {
         m_configuration.m_esmExponent = esmExponent;
         if (m_lightShapeDelegate)
         {
             m_lightShapeDelegate->SetEsmExponent(esmExponent);
+        }
+    }
+
+    void AreaLightComponentController::SetNormalOffsetBias(float normalOffsetBias)
+    {
+        m_configuration.m_normalOffsetBias = normalOffsetBias;
+        if (m_lightShapeDelegate)
+        {
+            m_lightShapeDelegate->SetNormalOffsetBias(normalOffsetBias);
         }
     }
 

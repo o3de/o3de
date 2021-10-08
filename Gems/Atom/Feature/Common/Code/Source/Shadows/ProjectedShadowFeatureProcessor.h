@@ -55,6 +55,7 @@ namespace AZ::Render
         const ProjectedShadowDescriptor& GetShadowProperties(ShadowId id) override;
 
         void SetEsmExponent(ShadowId id, float exponent);
+        void SetNormalOffsetBias(ShadowId id, float normalOffsetBias) override;
 
     private:
 
@@ -70,7 +71,8 @@ namespace AZ::Render
             AZStd::array<float, 2> m_unprojectConstants = { {0, 0} };
             float m_bias;
             float m_esmExponent = 87.0f;
-            float m_padding[3];
+            float m_normalOffsetBias = 1.0f;
+            float m_padding[2];
         };
 
         // CPU data used for constructing & updating ShadowData

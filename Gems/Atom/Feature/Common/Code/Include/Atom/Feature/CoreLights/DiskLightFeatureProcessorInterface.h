@@ -96,6 +96,7 @@ namespace AZ
             virtual void SetFilteringSampleCount(LightHandle handle, uint16_t count) = 0;
             //! Sets the Esm exponent to use. Higher values produce a steeper falloff in the border areas between light and shadow.
             virtual void SetEsmExponent(LightHandle handle, float exponent) = 0;
+            virtual void SetNormalOffsetBias(LightHandle handle, float normalOffsetBias) = 0;
 
             //! Sets all of the the disk data for the provided LightHandle.
             virtual void SetDiskData(LightHandle handle, const DiskLightData& data) = 0;

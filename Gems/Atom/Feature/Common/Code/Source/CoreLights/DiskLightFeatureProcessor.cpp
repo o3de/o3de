@@ -338,6 +338,11 @@ namespace AZ
             SetShadowSetting(handle, &ProjectedShadowFeatureProcessor::SetEsmExponent, exponent);
         }
 
+        void DiskLightFeatureProcessor::SetNormalOffsetBias(LightHandle handle, float normalOffsetBias)
+        {
+            SetShadowSetting(handle, &ProjectedShadowFeatureProcessor::SetNormalOffsetBias, normalOffsetBias);
+        }
+
         void DiskLightFeatureProcessor::UpdateShadow(LightHandle handle)
         {
             const DiskLightData& diskLight = m_diskLightData.GetData(handle.GetIndex());

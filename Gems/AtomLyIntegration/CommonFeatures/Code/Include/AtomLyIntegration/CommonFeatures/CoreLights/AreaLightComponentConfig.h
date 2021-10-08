@@ -62,6 +62,7 @@ namespace AZ
             float m_boundaryWidthInDegrees = 0.25f;
             uint16_t m_filteringSampleCount = 12;
             float m_esmExponent = 87.0f;
+            float m_normalOffsetBias = 1.0f;
 
             // The following functions provide information to an EditContext...
 

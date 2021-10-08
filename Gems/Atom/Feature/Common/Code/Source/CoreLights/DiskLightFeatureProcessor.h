@@ -56,6 +56,7 @@ namespace AZ
             void SetSofteningBoundaryWidthAngle(LightHandle handle, float boundaryWidthRadians) override;
             void SetFilteringSampleCount(LightHandle handle, uint16_t count) override;
             void SetEsmExponent(LightHandle handle, float esmExponent) override;
+            void SetNormalOffsetBias(LightHandle handle, float normalOffsetBias) override;
 
             void SetDiskData(LightHandle handle, const DiskLightData& data) override;
 

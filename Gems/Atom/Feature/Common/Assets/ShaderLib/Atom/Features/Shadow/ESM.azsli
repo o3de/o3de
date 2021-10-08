@@ -6,6 +6,8 @@
  *
  */
  
+#pragma once
+ 
 #include <Atom/Features/Math/Filter.azsli> // BilinearFilter()
 
  

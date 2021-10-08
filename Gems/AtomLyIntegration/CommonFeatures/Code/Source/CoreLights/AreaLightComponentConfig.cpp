@@ -39,7 +39,7 @@ namespace AZ
                     ->Field("Softening Boundary Width", &AreaLightComponentConfig::m_boundaryWidthInDegrees)
                     ->Field("Filtering Sample Count", &AreaLightComponentConfig::m_filteringSampleCount)
                     ->Field("Esm Exponent", &AreaLightComponentConfig::m_esmExponent)
-                    ;
+                    ->Field("Normal Offset Bias", &AreaLightComponentConfig::m_normalOffsetBias);
             }
         }
         

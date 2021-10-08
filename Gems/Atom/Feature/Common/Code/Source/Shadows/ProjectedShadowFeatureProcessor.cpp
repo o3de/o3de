@@ -172,6 +172,14 @@ namespace AZ::Render
         m_deviceBufferNeedsUpdate = true;
     }
 
+    void ProjectedShadowFeatureProcessor::SetNormalOffsetBias(ShadowId id, float normalOffsetBias)
+    {
+        AZ_Assert(id.IsValid(), "Invalid ShadowId passed to ProjectedShadowFeatureProcessor::SetNormalOffsetBias().");
+        ShadowData& shadowData = m_shadowData.GetElement<ShadowDataIndex>(id.GetIndex());
+        shadowData.m_normalOffsetBias = normalOffsetBias;
+        m_deviceBufferNeedsUpdate = true;
+    }
+
     void ProjectedShadowFeatureProcessor::SetShadowFilterMethod(ShadowId id, ShadowFilterMethod method)
     {
         AZ_Assert(id.IsValid(), "Invalid ShadowId passed to ProjectedShadowFeatureProcessor::SetShadowFilterMethod().");

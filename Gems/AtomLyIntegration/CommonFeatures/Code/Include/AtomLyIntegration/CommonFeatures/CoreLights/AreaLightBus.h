@@ -139,6 +139,11 @@ namespace AZ
             //! Sets the Esm exponent. Higher values produce a steeper falloff between light and shadow.
             virtual void SetEsmExponent(float exponent) = 0;
 
+            //! Gets the normal offset bias. 
+            virtual float GetNormalOffsetBias() const = 0;
+
+            //! Sets the normal offset bias. 
+            virtual void SetNormalOffsetBias(float normalOffsetBias) = 0;
         };
 
         //! The EBus for requests to for setting and getting light component properties.

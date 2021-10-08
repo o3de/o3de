@@ -217,7 +217,7 @@ namespace AZ
             void SetDebugFlags(LightHandle handle, DebugDrawFlags flags) override;
             void SetShadowFilterMethod(LightHandle handle, ShadowFilterMethod method) override;
             void SetFilteringSampleCount(LightHandle handle, uint16_t count) override;
-            void SetNormalOffsetBias(LightHandle handle, float boundaryWidth) override;
+            void SetNormalOffsetBias(LightHandle handle, float normalOffsetBias) override;
             void SetShadowBias(LightHandle handle, float boundaryWidth) override;
             void SetShadowReceiverPlaneBiasEnabled(LightHandle handle, bool enable) override;
 

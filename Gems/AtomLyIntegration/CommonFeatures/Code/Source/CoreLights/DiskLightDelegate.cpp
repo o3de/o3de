@@ -171,5 +171,12 @@ namespace AZ::Render
         }
     }
 
+    void DiskLightDelegate::SetNormalOffsetBias(float normalOffsetBias)
+    {
+        if (GetShadowsEnabled() && GetLightHandle().IsValid())
+        {
+            GetFeatureProcessor()->SetNormalOffsetBias(GetLightHandle(), normalOffsetBias);
+        }
+    }
     
 } // namespace AZ::Render

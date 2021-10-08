@@ -115,4 +115,12 @@ namespace AZ::Render
             GetFeatureProcessor()->SetEsmExponent(GetLightHandle(), esmExponent);
         }
     }
+
+    void SphereLightDelegate::SetNormalOffsetBias(float normalOffsetBias)
+    {
+        if (GetShadowsEnabled() && GetLightHandle().IsValid())
+        {
+            GetFeatureProcessor()->SetEsmExponent(GetLightHandle(), normalOffsetBias);
+        }
+    }
 } // namespace AZ::Render
