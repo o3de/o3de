@@ -160,7 +160,7 @@ namespace Terrain
         m_dirtyRegion.AddAabb(regionToUpdate);
         m_dirtyRegion.Clamp(worldBounds);
 
-        AZ::Transform transform = AZ::Transform::CreateTranslation(worldBounds.GetCenter());
+        const AZ::Transform transform = AZ::Transform::CreateTranslation(worldBounds.GetCenter());
         
         AZ::Vector2 queryResolution = AZ::Vector2(1.0f);
         AzFramework::Terrain::TerrainDataRequestBus::BroadcastResult(
@@ -278,9 +278,9 @@ namespace Terrain
         uint32_t width = m_areaData.m_updateWidth;
         uint32_t height = m_areaData.m_updateHeight;
         const AZ::Aabb& worldBounds = m_areaData.m_terrainBounds;
-        float queryResolution = m_areaData.m_sampleSpacing;
+        const float queryResolution = m_areaData.m_sampleSpacing;
 
-        AZ::RHI::Size worldSize = AZ::RHI::Size(m_areaData.m_heightmapImageWidth, m_areaData.m_heightmapImageHeight, 1);
+        const AZ::RHI::Size worldSize = AZ::RHI::Size(m_areaData.m_heightmapImageWidth, m_areaData.m_heightmapImageHeight, 1);
 
         if (!m_areaData.m_heightmapImage || m_areaData.m_heightmapImage->GetDescriptor().m_size != worldSize)
         {
@@ -289,7 +289,7 @@ namespace Terrain
             height = worldSize.m_height;
             m_dirtyRegion = worldBounds;
 
-            AZ::Data::Instance<AZ::RPI::AttachmentImagePool> imagePool = AZ::RPI::ImageSystemInterface::Get()->GetSystemAttachmentPool();
+            const AZ::Data::Instance<AZ::RPI::AttachmentImagePool> imagePool = AZ::RPI::ImageSystemInterface::Get()->GetSystemAttachmentPool();
             AZ::RHI::ImageDescriptor imageDescriptor = AZ::RHI::ImageDescriptor::Create2D(
                 AZ::RHI::ImageBindFlags::ShaderRead, width, height, AZ::RHI::Format::R16_UNORM
             );
@@ -323,9 +323,9 @@ namespace Terrain
                         AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT,
                         &terrainExists);
 
-                    float clampedHeight = AZ::GetClamp((terrainHeight - worldBounds.GetMin().GetZ()) / worldBounds.GetExtents().GetZ(), 0.0f, 1.0f);
-                    float expandedHeight = AZStd::roundf(clampedHeight * AZStd::numeric_limits<uint16_t>::max());
-                    uint16_t uint16Height = aznumeric_cast<uint16_t>(expandedHeight);
+                    const float clampedHeight = AZ::GetClamp((terrainHeight - worldBounds.GetMin().GetZ()) / worldBounds.GetExtents().GetZ(), 0.0f, 1.0f);
+                    const float expandedHeight = AZStd::roundf(clampedHeight * AZStd::numeric_limits<uint16_t>::max());
+                    const uint16_t uint16Height = aznumeric_cast<uint16_t>(expandedHeight);
 
                     pixels.push_back(uint16Height);
                 }
@@ -398,19 +398,19 @@ namespace Terrain
         // Since we're using an actual macro material instance for now, get the values from it that we care about.
         const auto materialLayout = material->GetMaterialPropertiesLayout();
 
-        AZ::RPI::MaterialPropertyIndex macroColorTextureMapIndex = materialLayout->FindPropertyIndex(AZ::Name(MaterialInputs::MacroColorTextureMap));
+        const AZ::RPI::MaterialPropertyIndex macroColorTextureMapIndex = materialLayout->FindPropertyIndex(AZ::Name(MaterialInputs::MacroColorTextureMap));
         AZ_Error(TerrainFPName, macroColorTextureMapIndex.IsValid(), "Failed to find shader input constant %s.", MaterialInputs::MacroColorTextureMap);
             
-        AZ::RPI::MaterialPropertyIndex macroNormalTextureMapIndex = materialLayout->FindPropertyIndex(AZ::Name(MaterialInputs::MacroNormalTextureMap));
+        const AZ::RPI::MaterialPropertyIndex macroNormalTextureMapIndex = materialLayout->FindPropertyIndex(AZ::Name(MaterialInputs::MacroNormalTextureMap));
         AZ_Error(TerrainFPName, macroNormalTextureMapIndex.IsValid(), "Failed to find shader input constant %s.", MaterialInputs::MacroNormalTextureMap);
 
-        AZ::RPI::MaterialPropertyIndex macroNormalFlipXIndex = materialLayout->FindPropertyIndex(AZ::Name(MaterialInputs::MacroNormalFlipX));
+        const AZ::RPI::MaterialPropertyIndex macroNormalFlipXIndex = materialLayout->FindPropertyIndex(AZ::Name(MaterialInputs::MacroNormalFlipX));
         AZ_Error(TerrainFPName, macroNormalFlipXIndex.IsValid(), "Failed to find shader input constant %s.", MaterialInputs::MacroNormalFlipX);
 
-        AZ::RPI::MaterialPropertyIndex macroNormalFlipYIndex = materialLayout->FindPropertyIndex(AZ::Name(MaterialInputs::MacroNormalFlipY));
+        const AZ::RPI::MaterialPropertyIndex macroNormalFlipYIndex = materialLayout->FindPropertyIndex(AZ::Name(MaterialInputs::MacroNormalFlipY));
         AZ_Error(TerrainFPName, macroNormalFlipYIndex.IsValid(), "Failed to find shader input constant %s.", MaterialInputs::MacroNormalFlipY);
 
-        AZ::RPI::MaterialPropertyIndex macroNormalFactorIndex = materialLayout->FindPropertyIndex(AZ::Name(MaterialInputs::MacroNormalFactor));
+        const AZ::RPI::MaterialPropertyIndex macroNormalFactorIndex = materialLayout->FindPropertyIndex(AZ::Name(MaterialInputs::MacroNormalFactor));
         AZ_Error(TerrainFPName, macroNormalFactorIndex.IsValid(), "Failed to find shader input constant %s.", MaterialInputs::MacroNormalFactor);
 
         macroMaterialData.m_colorImage = material->GetPropertyValue(macroColorTextureMapIndex).GetValue<AZ::Data::Instance<AZ::RPI::Image>>();
@@ -429,7 +429,7 @@ namespace Terrain
     {
         AZ_PROFILE_FUNCTION(AzRender);
         
-        AZ::Aabb& terrainBounds = m_areaData.m_terrainBounds;
+        const AZ::Aabb& terrainBounds = m_areaData.m_terrainBounds;
 
         if (!terrainBounds.IsValid())
         {
@@ -445,13 +445,13 @@ namespace Terrain
                 m_areaData.m_rebuildSectors = false;
 
                 m_sectorData.clear();
-                float xFirstPatchStart = terrainBounds.GetMin().GetX() - fmod(terrainBounds.GetMin().GetX(), GridMeters);
-                float xLastPatchStart = terrainBounds.GetMax().GetX() - fmod(terrainBounds.GetMax().GetX(), GridMeters);
-                float yFirstPatchStart = terrainBounds.GetMin().GetY() - fmod(terrainBounds.GetMin().GetY(), GridMeters);
-                float yLastPatchStart = terrainBounds.GetMax().GetY() - fmod(terrainBounds.GetMax().GetY(), GridMeters);
+                const float xFirstPatchStart = terrainBounds.GetMin().GetX() - fmod(terrainBounds.GetMin().GetX(), GridMeters);
+                const float xLastPatchStart = terrainBounds.GetMax().GetX() - fmod(terrainBounds.GetMax().GetX(), GridMeters);
+                const float yFirstPatchStart = terrainBounds.GetMin().GetY() - fmod(terrainBounds.GetMin().GetY(), GridMeters);
+                const float yLastPatchStart = terrainBounds.GetMax().GetY() - fmod(terrainBounds.GetMax().GetY(), GridMeters);
             
                 const auto& materialAsset = m_materialInstance->GetAsset();
-                auto& shaderAsset = materialAsset->GetMaterialTypeAsset()->GetShaderAssetForObjectSrg();
+                const auto& shaderAsset = materialAsset->GetMaterialTypeAsset()->GetShaderAssetForObjectSrg();
 
                 for (float yPatch = yFirstPatchStart; yPatch <= yLastPatchStart; yPatch += GridMeters)
                 {
@@ -478,7 +478,7 @@ namespace Terrain
                             {
                                 AZ_Warning("MeshDrawPacket", false, "Failed to set o_meshUseForwardPassIBLSpecular on mesh draw packet");
                             }
-                            uint8_t stencilRef = AZ::Render::StencilRefs::UseDiffuseGIPass | AZ::Render::StencilRefs::UseIBLSpecularPass;
+                            const uint8_t stencilRef = AZ::Render::StencilRefs::UseDiffuseGIPass | AZ::Render::StencilRefs::UseIBLSpecularPass;
                             drawPacket.SetStencilRef(stencilRef);
                             drawPacket.Update(*GetParentScene(), true);
                         }
@@ -516,7 +516,7 @@ namespace Terrain
             {
                 UpdateTerrainData();
 
-                AZ::Data::Instance<AZ::RPI::Image> heightmapImage = m_areaData.m_heightmapImage;
+                const AZ::Data::Instance<AZ::RPI::Image> heightmapImage = m_areaData.m_heightmapImage;
                 m_materialInstance->SetPropertyValue(m_heightmapPropertyIndex, heightmapImage);
                 m_materialInstance->Compile();
             }
@@ -533,8 +533,8 @@ namespace Terrain
                 {
                     ShaderTerrainData terrainDataForSrg;
 
-                    float xPatch = sectorData.m_aabb.GetMin().GetX();
-                    float yPatch = sectorData.m_aabb.GetMin().GetY();
+                    const float xPatch = sectorData.m_aabb.GetMin().GetX();
+                    const float yPatch = sectorData.m_aabb.GetMin().GetY();
 
                     terrainDataForSrg.m_uvMin = {
                         (xPatch - terrainBounds.GetMin().GetX()) / terrainBounds.GetXExtent(),
@@ -563,7 +563,7 @@ namespace Terrain
                     AZStd::array<ShaderMacroMaterialData, MaxMaterialsPerSector> macroMaterialData;
                     for (uint32_t i = 0; i < sectorData.m_macroMaterials.size(); ++i)
                     {
-                        MacroMaterialData& materialData = m_macroMaterials.GetData(sectorData.m_macroMaterials.at(i));
+                        const MacroMaterialData& materialData = m_macroMaterials.GetData(sectorData.m_macroMaterials.at(i));
                         ShaderMacroMaterialData& shaderData = macroMaterialData.at(i);
                         const AZ::Aabb& materialBounds = materialData.m_bounds;
 
@@ -609,12 +609,12 @@ namespace Terrain
             {
                 if ((view->GetUsageFlags() & AZ::RPI::View::UsageFlags::UsageCamera) > 0)
                 {
-                    AZ::Vector3 cameraPosition = view->GetCameraTransform().GetTranslation();
-                    AZ::Vector2 cameraPositionXY = AZ::Vector2(cameraPosition.GetX(), cameraPosition.GetY());
-                    AZ::Vector2 sectorCenterXY = AZ::Vector2(sectorData.m_aabb.GetCenter().GetX(), sectorData.m_aabb.GetCenter().GetY());
+                    const AZ::Vector3 cameraPosition = view->GetCameraTransform().GetTranslation();
+                    const AZ::Vector2 cameraPositionXY = AZ::Vector2(cameraPosition.GetX(), cameraPosition.GetY());
+                    const AZ::Vector2 sectorCenterXY = AZ::Vector2(sectorData.m_aabb.GetCenter().GetX(), sectorData.m_aabb.GetCenter().GetY());
 
-                    float sectorDistance = sectorCenterXY.GetDistance(cameraPositionXY);
-                    float lodForCamera = floorf(AZ::GetMax(0.0f, log2f(sectorDistance / (GridMeters * 4.0f))));
+                    const float sectorDistance = sectorCenterXY.GetDistance(cameraPositionXY);
+                    const float lodForCamera = floorf(AZ::GetMax(0.0f, log2f(sectorDistance / (GridMeters * 4.0f))));
                     lodChoice = AZ::GetMin(lodChoice, aznumeric_cast<uint8_t>(lodForCamera));
                 }
             }
@@ -625,7 +625,7 @@ namespace Terrain
                 AZ::Frustum viewFrustum = AZ::Frustum::CreateFromMatrixColumnMajor(view->GetWorldToClipMatrix());
                 if (viewFrustum.IntersectAabb(sectorData.m_aabb) != AZ::IntersectResult::Exterior)
                 {
-                    uint8_t lodToRender = AZ::GetMin(lodChoice, aznumeric_cast<uint8_t>(sectorData.m_drawPackets.size() - 1));
+                    const uint8_t lodToRender = AZ::GetMin(lodChoice, aznumeric_cast<uint8_t>(sectorData.m_drawPackets.size() - 1));
                     view->AddDrawPacket(sectorData.m_drawPackets.at(lodToRender).GetRHIDrawPacket());
                 }
             }
@@ -638,9 +638,8 @@ namespace Terrain
         patchdata.m_uvs.clear();
         patchdata.m_indices.clear();
 
-        uint16_t gridVertices = gridSize + 1; // For m_gridSize quads, (m_gridSize + 1) vertices are needed.
-        size_t size = gridVertices * gridVertices;
-        size *= size;
+        const uint16_t gridVertices = gridSize + 1; // For m_gridSize quads, (m_gridSize + 1) vertices are needed.
+        const size_t size = gridVertices * gridVertices;
 
         patchdata.m_positions.reserve(size);
         patchdata.m_uvs.reserve(size);
@@ -660,10 +659,10 @@ namespace Terrain
         {
             for (uint16_t x = 0; x < gridSize; ++x)
             {
-                uint16_t topLeft = y * gridVertices + x;
-                uint16_t topRight = topLeft + 1;
-                uint16_t bottomLeft = (y + 1) * gridVertices + x;
-                uint16_t bottomRight = bottomLeft + 1;
+                const uint16_t topLeft = y * gridVertices + x;
+                const uint16_t topRight = topLeft + 1;
+                const uint16_t bottomLeft = (y + 1) * gridVertices + x;
+                const uint16_t bottomRight = bottomLeft + 1;
 
                 patchdata.m_indices.emplace_back(topLeft);
                 patchdata.m_indices.emplace_back(topRight);
@@ -712,14 +711,14 @@ namespace Terrain
             PatchData patchData;
             InitializeTerrainPatch(gridSize, gridSpacing, patchData);
 
-            auto positionBufferViewDesc = AZ::RHI::BufferViewDescriptor::CreateTyped(0, aznumeric_cast<uint32_t>(patchData.m_positions.size()), AZ::RHI::Format::R32G32_FLOAT);
-            auto positionsOutcome = CreateBufferAsset(patchData.m_positions.data(), positionBufferViewDesc, "TerrainPatchPositions");
+            const auto positionBufferViewDesc = AZ::RHI::BufferViewDescriptor::CreateTyped(0, aznumeric_cast<uint32_t>(patchData.m_positions.size()), AZ::RHI::Format::R32G32_FLOAT);
+            const auto positionsOutcome = CreateBufferAsset(patchData.m_positions.data(), positionBufferViewDesc, "TerrainPatchPositions");
         
-            auto uvBufferViewDesc = AZ::RHI::BufferViewDescriptor::CreateTyped(0, aznumeric_cast<uint32_t>(patchData.m_uvs.size()), AZ::RHI::Format::R32G32_FLOAT);
-            auto uvsOutcome = CreateBufferAsset(patchData.m_uvs.data(), uvBufferViewDesc, "TerrainPatchUvs");
+            const auto uvBufferViewDesc = AZ::RHI::BufferViewDescriptor::CreateTyped(0, aznumeric_cast<uint32_t>(patchData.m_uvs.size()), AZ::RHI::Format::R32G32_FLOAT);
+            const auto uvsOutcome = CreateBufferAsset(patchData.m_uvs.data(), uvBufferViewDesc, "TerrainPatchUvs");
         
-            auto indexBufferViewDesc = AZ::RHI::BufferViewDescriptor::CreateTyped(0, aznumeric_cast<uint32_t>(patchData.m_indices.size()), AZ::RHI::Format::R16_UINT);
-            auto indicesOutcome = CreateBufferAsset(patchData.m_indices.data(), indexBufferViewDesc, "TerrainPatchIndices");
+            const auto indexBufferViewDesc = AZ::RHI::BufferViewDescriptor::CreateTyped(0, aznumeric_cast<uint32_t>(patchData.m_indices.size()), AZ::RHI::Format::R16_UINT);
+            const auto indicesOutcome = CreateBufferAsset(patchData.m_indices.data(), indexBufferViewDesc, "TerrainPatchIndices");
 
             if (!positionsOutcome.IsSuccess() || !uvsOutcome.IsSuccess() || !indicesOutcome.IsSuccess())
             {
@@ -794,7 +793,7 @@ namespace Terrain
             return *dataPtr;
         }
 
-        uint16_t slotId = m_macroMaterials.GetFreeSlotIndex();
+        const uint16_t slotId = m_macroMaterials.GetFreeSlotIndex();
         AZ_Assert(slotId != m_macroMaterials.NoFreeSlot, "Ran out of indices for macro materials");
 
         MacroMaterialData& data = m_macroMaterials.GetData(slotId);
