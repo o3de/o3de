@@ -3,8 +3,6 @@ Copyright (c) Contributors to the Open 3D Engine Project.
 For complete copyright and license terms please see the LICENSE at the root of this distribution.
 
 SPDX-License-Identifier: Apache-2.0 OR MIT
-
-Main suite tests for the Atom renderer.
 """
 import logging
 import os
@@ -25,7 +23,6 @@ TEST_DIRECTORY = os.path.join(os.path.dirname(__file__), "tests")
 class TestAtomEditorComponentsMain(object):
     """Holds tests for Atom components."""
 
-    @pytest.mark.xfail(reason="This test is being marked xfail as it failed during an unrelated development run. See LYN-7530 for more details.")
     def test_AtomEditorComponents_AddedToEntity(self, request, editor, level, workspace, project, launcher_platform):
         """
         Please review the hydra script run by this test for more specific test info.
@@ -162,21 +159,6 @@ class TestAtomEditorComponentsMain(object):
             "Display Mapper_test: Entity deleted: True",
             "Display Mapper_test: UNDO entity deletion works: True",
             "Display Mapper_test: REDO entity deletion works: True",
-            # Reflection Probe Component
-            "Reflection Probe Entity successfully created",
-            "Reflection Probe_test: Component added to the entity: True",
-            "Reflection Probe_test: Component removed after UNDO: True",
-            "Reflection Probe_test: Component added after REDO: True",
-            "Reflection Probe_test: Entered game mode: True",
-            "Reflection Probe_test: Exit game mode: True",
-            "Reflection Probe_test: Entity disabled initially: True",
-            "Reflection Probe_test: Entity enabled after adding required components: True",
-            "Reflection Probe_test: Cubemap is generated: True",
-            "Reflection Probe_test: Entity is hidden: True",
-            "Reflection Probe_test: Entity is shown: True",
-            "Reflection Probe_test: Entity deleted: True",
-            "Reflection Probe_test: UNDO entity deletion works: True",
-            "Reflection Probe_test: REDO entity deletion works: True",
         ]
 
         unexpected_lines = [
