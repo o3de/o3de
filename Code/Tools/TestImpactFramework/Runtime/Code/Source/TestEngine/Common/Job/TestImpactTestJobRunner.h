@@ -45,7 +45,7 @@ namespace TestImpact
         using Command = typename JobInfo::Command;
         using JobPayload = Payload;
         using Job = Job<JobInfo, Payload>;
-        using JobCallback = JobCallback<Job>;
+        using JobCallback = AZStd::function<ProcessCallbackResult(const JobInfo& jobInfo, const JobMeta& meta, AZStd::string&& stdOut, AZStd::string&& stdErr)>;
         using JobDataMap = JobDataMap<Job>;
 
         //! Constructs the job runner with the specified parameters common to all job runs of this runner.
@@ -97,7 +97,8 @@ namespace TestImpact
         {
             if (clientCallback.has_value())
             {
-                if (const auto result = (*clientCallback)(jobInfo, meta, AZStd::move(std));
+                if (const auto result =
+                        (*clientCallback)(jobInfo, meta, AZStd::move(std.m_out.value_or("")), AZStd::move(std.m_err.value_or("")));
                     result == ProcessCallbackResult::Abort)
                 {
                     return ProcessCallbackResult::Abort;

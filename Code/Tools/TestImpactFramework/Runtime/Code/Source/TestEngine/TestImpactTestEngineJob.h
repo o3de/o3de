@@ -19,7 +19,13 @@ namespace TestImpact
         : public JobMetaWrapper
     {
     public:
-        TestEngineJob(const TestTarget* testTarget, const AZStd::string& commandString, const JobMeta& jobMeta, Client::TestRunResult testResult);
+        TestEngineJob(
+            const TestTarget* testTarget,
+            const AZStd::string& commandString,
+            const JobMeta& jobMeta,
+            Client::TestRunResult testResult,
+            AZStd::string&& stdOut,
+            AZStd::string&& stdErr);
 
         //! Returns the test target that was run for this job.
         const TestTarget* GetTestTarget() const;
@@ -30,9 +36,17 @@ namespace TestImpact
         //! Returns the command string that was used to execute this job.
         const AZStd::string& GetCommandString() const;
 
+        //! Returns the standard output of this job (if captured).
+        const AZStd::string& GetStdOutput() const;
+
+        //! Returns the standard error of this job (if captured).
+        const AZStd::string& GetStdError() const;
+
     private:
         const TestTarget* m_testTarget;
         AZStd::string m_commandString;
         Client::TestRunResult m_testResult;
+        AZStd::string m_stdOut;
+        AZStd::string m_stdErr;
     };
 } // namespace TestImpact
