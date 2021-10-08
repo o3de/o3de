@@ -34,7 +34,7 @@ namespace AWSCore
             "Failed to launch Resource Mapping Tool, please check <a href=\"file:///%s\">logs</a> for details.";
 
         AWSCoreEditorMenu(const QString& text);
-        ~AWSCoreEditorMenu();
+        ~AWSCoreEditorMenu() override;
 
     private:
         QAction* AddExternalLinkAction(const AZStd::string& name, const AZStd::string& url, const AZStd::string& icon = "");

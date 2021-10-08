@@ -146,8 +146,10 @@ namespace Multiplayer
         // Start the configured server if it's available
         AzFramework::ProcessLauncher::ProcessLaunchInfo processLaunchInfo;
         processLaunchInfo.m_commandlineParameters = AZStd::string::format(
-            R"("%s" --project-path "%s" --editorsv_isDedicated true --sv_defaultPlayerSpawnAsset "%s")", serverPath.c_str(),
-            AZ::Utils::GetProjectPath().c_str(), static_cast<AZ::CVarFixedString>(sv_defaultPlayerSpawnAsset).c_str());
+            R"("%s" --project-path "%s" --editorsv_isDedicated true --sv_defaultPlayerSpawnAsset "%s")",
+            serverPath.c_str(),
+            AZ::Utils::GetProjectPath().c_str(),
+            static_cast<AZ::CVarFixedString>(sv_defaultPlayerSpawnAsset).c_str());
         processLaunchInfo.m_showWindow = true;
         processLaunchInfo.m_processPriority = AzFramework::ProcessPriority::PROCESSPRIORITY_NORMAL;
 

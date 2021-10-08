@@ -224,6 +224,8 @@ namespace AZ
 
     void Debug::Trace::Terminate(int exitCode)
     {
+        AZ_TracePrintf("Exit", "Called Terminate() with exit code: 0x%x", exitCode);
+        AZ::Debug::Trace::PrintCallstack("Exit");
         Platform::Terminate(exitCode);
     }
 
