@@ -308,11 +308,11 @@ namespace AZ
 
     void TaskExecutor::SetInstance(TaskExecutor* executor)
     {
-        if (!executor)
+        if (!executor) // allow unsetting the executor
         {
             s_executor.Reset();
         }
-        else if (!s_executor) // ignore any calls to set after the first (this happens in unit tests that create new system entities)
+        else if (!s_executor) // ignore any extra executors after the first (this happens during unit tests)
         {
             s_executor = AZ::Environment::CreateVariable<TaskExecutor*>(s_executorName, executor);
         }

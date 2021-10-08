@@ -34,6 +34,7 @@
 #include <EMotionFX/Source/MotionEventTrack.h>
 #include <EMotionFX/Source/AnimGraphSyncTrack.h>
 #include <EMotionFX/Source/AnimGraph.h>
+#include <EMotionFX/Source/ActorManager.h>
 
 #include <EMotionFX/Source/PhysicsSetup.h>
 #include <EMotionFX/Source/SimulatedObjectSetup.h>
@@ -45,6 +46,7 @@
 #include <EMotionFX/Source/PoseData.h>
 #include <EMotionFX/Source/PoseDataRagdoll.h>
 
+#include <Integration/AnimationBus.h>
 #include <Integration/EMotionFXBus.h>
 #include <Integration/Assets/ActorAsset.h>
 #include <Integration/Assets/MotionAsset.h>
@@ -69,7 +71,6 @@
 #   include <AzToolsFramework/API/ViewPaneOptions.h>
 #   include <AzCore/std/string/wildcard.h>
 #   include <QApplication>
-#   include <EMotionStudio/EMStudioSDK/Source/EMStudioManager.h>
 #   include <EMotionStudio/EMStudioSDK/Source/MainWindow.h>
 #   include <EMotionStudio/EMStudioSDK/Source/PluginManager.h>
 // EMStudio plugins
@@ -528,7 +529,7 @@ namespace EMotionFX
 
             if (EMStudio::GetManager())
             {
-                EMStudio::Initializer::Shutdown();
+                m_emstudioManager.reset();
                 MysticQt::Initializer::Shutdown();
             }
 
@@ -798,6 +799,8 @@ namespace EMotionFX
             pluginManager->RegisterPlugin(new EMotionFX::RagdollNodeInspectorPlugin());
             pluginManager->RegisterPlugin(new EMotionFX::ClothJointInspectorPlugin());
             pluginManager->RegisterPlugin(new EMotionFX::SimulatedObjectWidget());
+
+            SystemNotificationBus::Broadcast(&SystemNotificationBus::Events::OnRegisterPlugin);
         }
 
         //////////////////////////////////////////////////////////////////////////
@@ -813,7 +816,7 @@ namespace EMotionFX
             char** argv = nullptr;
 
             MysticQt::Initializer::Init("", editorAssetsPath.c_str());
-            EMStudio::Initializer::Init(qApp, argc, argv);
+            m_emstudioManager = AZStd::make_unique<EMStudio::EMStudioManager>(qApp, argc, argv);
 
             InitializeEMStudioPlugins();
 

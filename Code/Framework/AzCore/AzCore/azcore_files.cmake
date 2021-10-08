@@ -639,6 +639,8 @@ set(FILES
     Threading/ThreadSafeDeque.inl
     Threading/ThreadSafeObject.h
     Threading/ThreadSafeObject.inl
+    Threading/ThreadUtils.h
+    Threading/ThreadUtils.cpp
     Time/ITime.h
     Time/TimeSystemComponent.cpp
     Time/TimeSystemComponent.h
