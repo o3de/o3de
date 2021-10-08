@@ -29,15 +29,19 @@ namespace AZ::SettingsRegistryVisitorUtils
         virtual void Visit(AZStd::string_view path, AZStd::string_view arrayIndex, Type type) = 0;
 
     protected:
-        // AggregateTypes should only be populated with Type::Object or Type::Array
-        // It is meant for filtering the field type of the root path
-        using AggregateTypes = AZStd::fixed_vector<Type, 2>;
-        FieldVisitor(const AggregateTypes& aggregateTypes);
+        // VisitFieldType is used for filtering the type of referenced by the root path
+        enum class VisitFieldType
+        {
+            Array,
+            Object,
+            ArrayOrObject
+        };
+        FieldVisitor(const VisitFieldType visitFieldType);
     private:
         VisitResponse Traverse(AZStd::string_view path, AZStd::string_view valueName,
             VisitAction action, Type type) override;
 
-        AggregateTypes m_aggregateTypes{ Type::Object, Type::Array };
+        VisitFieldType m_visitFieldType{ VisitFieldType::ArrayOrObject };
         AZStd::optional<AZ::SettingsRegistryInterface::FixedValueString> m_rootPath;
     };
 

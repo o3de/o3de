@@ -13,8 +13,8 @@ namespace AZ::SettingsRegistryVisitorUtils
 {
     // Field Visitor implementation
     FieldVisitor::FieldVisitor() = default;
-    FieldVisitor::FieldVisitor(const AggregateTypes& aggregateTypes)
-        : m_aggregateTypes{ aggregateTypes }
+    FieldVisitor::FieldVisitor(VisitFieldType visitFieldType)
+        : m_visitFieldType{ visitFieldType }
     {
     }
 
@@ -35,8 +35,24 @@ namespace AZ::SettingsRegistryVisitorUtils
             // to Continue to recurse into is fields
             if (!m_rootPath.has_value())
             {
-                if (auto findIter = AZStd::find(m_aggregateTypes.begin(), m_aggregateTypes.end(), type);
-                    findIter != m_aggregateTypes.end())
+                bool visitableFieldType{};
+                switch (m_visitFieldType)
+                {
+                case VisitFieldType::Array:
+                    visitableFieldType = type == Type::Array;
+                    break;
+                case VisitFieldType::Object:
+                    visitableFieldType = type == Type::Object;
+                    break;
+                case VisitFieldType::ArrayOrObject:
+                    visitableFieldType = type == Type::Array || type ==Type::Object;
+                    break;
+                default:
+                    AZ_Error("FieldVisitor", false, "The field visitation type value is invalid");
+                    break;
+                }
+
+                if (visitableFieldType)
                 {
                     m_rootPath = path;
                     visitResponse = VisitResponse::Continue;
@@ -66,13 +82,13 @@ namespace AZ::SettingsRegistryVisitorUtils
 
     // Array Visitor implementation
     ArrayVisitor::ArrayVisitor()
-        : FieldVisitor(AggregateTypes{ Type::Array })
+        : FieldVisitor(VisitFieldType::Array)
     {
     }
 
     // Object Visitor implementation
     ObjectVisitor::ObjectVisitor()
-        : FieldVisitor(AggregateTypes{ Type::Object })
+        : FieldVisitor(VisitFieldType::Object)
     {
     }
 
