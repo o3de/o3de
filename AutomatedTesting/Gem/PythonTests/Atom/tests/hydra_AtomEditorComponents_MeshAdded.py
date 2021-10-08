@@ -76,9 +76,7 @@ def AtomEditorComponents_Mesh_AddedToEntity():
 
     import os
 
-    # import azlmbr.asset as asset
     import azlmbr.legacy.general as general
-    import azlmbr.math as math
 
     from editor_python_test_tools.asset_utils import Asset
     from editor_python_test_tools.editor_entity_utils import EditorEntity
