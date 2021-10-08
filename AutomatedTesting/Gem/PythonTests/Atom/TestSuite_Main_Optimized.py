@@ -45,5 +45,8 @@ class TestAutomation(EditorTestSuite):
     class AtomEditorComponents_ReflectionProbeAdded(EditorSharedTest):
         from Atom.tests import hydra_AtomEditorComponents_ReflectionProbeAdded as test_module
 
+    class AtomEditorComponents_MeshAdded(EditorSharedTest):
+        from Atom.tests import hydra_AtomEditorComponents_MeshAdded as test_module
+
     class ShaderAssetBuilder_RecompilesShaderAsChainOfDependenciesChanges(EditorSharedTest):
         from Atom.tests import hydra_ShaderAssetBuilder_RecompilesShaderAsChainOfDependenciesChanges as test_module
