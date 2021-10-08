@@ -1599,9 +1599,7 @@ namespace AssetProcessor
                     isRoot,
                     isRecursive,
                     platforms,
-                    gemOrder,
-                    /*scanFolderId*/ 0,
-                    /*canSaveNewAssets*/ true));
+                    gemOrder));
             }
         }
     }
