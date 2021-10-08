@@ -220,15 +220,18 @@ class TestPerformanceBenchmarkSuite(object):
 @pytest.mark.system
 class TestMaterialEditor(object):
 
-    @pytest.mark.parametrize("cfg_args", ["-rhi=dx12", "-rhi=Vulkan"])
+    @pytest.mark.parametrize("cfg_args,expected_lines", [
+        pytest.param("-rhi=dx12", ["Registering dx12 RHI"]),
+        pytest.param("-rhi=Vulkan", ["Registering vulkan RHI"])
+    ])
     @pytest.mark.parametrize("exe_file_name", ["MaterialEditor"])
     def test_MaterialEditorLaunch_AllRHIOptionsSucceed(
-            self, request, workspace, project, launcher_platform, generic_launcher, exe_file_name, cfg_args):
+            self, request, workspace, project, launcher_platform, generic_launcher, exe_file_name, cfg_args,
+            expected_lines):
         """
         Tests each valid RHI option (Null RHI excluded) can be launched with the MaterialEditor.
-        Checks for the "Finished loading viewport configurations." success message post launch.
+        Checks for the specific expected_lines messaging for each RHI type.
         """
-        expected_lines = ["Finished loading viewport configurations."]
 
         hydra.launch_and_validate_results(
             request,
