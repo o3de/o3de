@@ -93,6 +93,10 @@ namespace JsonSerializationTests
 
         void TearDown() override
         {
+            m_jsonRegistrationContext->EnableRemoveReflection();
+            m_jsonRegistrationContext->Serializer<AZ::Data::AssetJsonSerializer>()->HandlesType<AZ::Data::Asset>();
+            m_jsonRegistrationContext->DisableRemoveReflection();
+
             AZ::Data::AssetManager::Instance().UnregisterHandler(&m_assetHandler);
             AZ::Data::AssetManager::Destroy();
 
