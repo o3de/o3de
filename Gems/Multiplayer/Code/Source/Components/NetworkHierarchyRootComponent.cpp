@@ -452,4 +452,29 @@ namespace Multiplayer
         }
     }
 
+    bool NetworkHierarchyRootComponent::SerializeEntityCorrection(AzNetworking::ISerializer& serializer)
+    {
+        bool result = true;
+
+        INetworkEntityManager* networkEntityManager = AZ::Interface<INetworkEntityManager>::Get();
+        AZ_Assert(networkEntityManager, "NetworkEntityManager must be created.");
+
+        for (AZ::Entity* child : m_hierarchicalEntities)
+        {
+            if (child == GetEntity())
+            {
+                // Skip the root entity
+                continue;
+            }
+
+            NetEntityId childNetEntitydId = networkEntityManager->GetNetEntityIdById(child->GetId());
+            ConstNetworkEntityHandle childEntityHandle = networkEntityManager->GetEntity(childNetEntitydId);
+            NetBindComponent* netBindComponent = childEntityHandle.GetNetBindComponent();
+            AZ_Assert(netBindComponent, "No NetBindComponent, this should be impossible");
+
+            result = result && netBindComponent->SerializeEntityCorrection(serializer);
+        }
+
+        return result;
+    }
 }

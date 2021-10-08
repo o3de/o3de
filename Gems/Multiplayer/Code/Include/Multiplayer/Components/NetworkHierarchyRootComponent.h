@@ -59,6 +59,8 @@ namespace Multiplayer
         void BindNetworkHierarchyLeaveEventHandler(NetworkHierarchyLeaveEvent::Handler& handler) override;
         //! @}
 
+        bool SerializeEntityCorrection(AzNetworking::ISerializer& serializer);
+
     protected:
         void SetTopLevelHierarchyRootEntity(AZ::Entity* hierarchyRoot);
 
