@@ -423,11 +423,8 @@ def get_templates_for_generic_creation():  # temporary until we have a better wa
 
 def get_json_file_path(object_typename: str,
                        object_path: str or pathlib.Path = None) -> pathlib.Path:
-    if not object_typename:
-        logger.error('Missing object typename.')
-        return None
-    
-    if not object_path:
+    if not object_typename or not object_path:
+        logger.error('Must specify an object typename and object path.')
         return None
 
     object_path = pathlib.Path(object_path).resolve()
@@ -439,9 +436,11 @@ def get_json_data_file(object_json: pathlib.Path,
                        object_validator = callable) -> dict or None:
     if not object_typename:
         logger.error('Missing object typename.')
+        return None
 
     if not object_json:
-        logger.error(f'No object_json provided for {object_typename}')
+        logger.error(f'No object json provided for {object_typename}')
+        return None
 
     if not object_json.is_file():
         logger.error(f'{object_typename} json {object_json} is not present.')
@@ -449,6 +448,7 @@ def get_json_data_file(object_json: pathlib.Path,
 
     if not object_validator:
         logger.error('Missing object validator.')
+        return None
 
     if not object_validator(object_json):
         logger.error(f'{object_typename} json {object_json} is not valid.')
@@ -472,6 +472,7 @@ def get_json_data(object_typename: str = None,
 
     if not object_json and object_name:
         logger.error(f'{object_name} has not been registered.')
+        return None
 
     return get_json_data_file(object_json, object_typename, object_validator)
 
