@@ -27,6 +27,7 @@ namespace AZ::RPI
     }
     class Material;
     class Model;
+    class StreamingImage;
 }
 
 namespace Terrain
@@ -67,7 +68,17 @@ namespace Terrain
             float m_sampleSpacing;
             float m_heightScale;
         };
-        
+
+        struct ShaderMacroMaterialData
+        {
+            AZStd::array<float, 2> m_uvMin;
+            AZStd::array<float, 2> m_uvMax;
+            float m_normalFactor;
+            uint32_t m_flipNormalX{ 0 }; // bool in shader
+            uint32_t m_flipNormalY{ 0 }; // bool in shader
+            uint32_t m_mapsInUse{ 0b00 }; // 0b01 = color, 0b10 = normal
+        };
+
         struct VertexPosition
         {
             float m_posx;
@@ -99,7 +110,12 @@ namespace Terrain
         {
             AZ::EntityId m_entityId;
             AZ::Aabb m_bounds = AZ::Aabb::CreateNull();
-            MaterialInstance m_materialInstance;
+
+            AZ::Data::Instance<AZ::RPI::Image> m_colorImage;
+            AZ::Data::Instance<AZ::RPI::Image> m_normalImage;
+            bool m_normalFlipX{ false };
+            bool m_normalFlipY{ false };
+            float m_normalFactor{ 0.0f };
         };
 
         // AZ::RPI::MaterialReloadNotificationBus::Handler overrides...
@@ -121,6 +137,7 @@ namespace Terrain
 
         void UpdateTerrainData();
         void PrepareMaterialData();
+        void UpdateMacroMaterialData(MacroMaterialData& macroMaterialData, MaterialInstance material);
 
         void ProcessSurfaces(const FeatureProcessor::RenderPacket& process);
         
@@ -145,6 +162,7 @@ namespace Terrain
         AZ::RHI::ShaderInputConstantIndex m_modelToWorldIndex;
         AZ::RHI::ShaderInputConstantIndex m_terrainDataIndex;
         AZ::RHI::ShaderInputConstantIndex m_macroMaterialDataIndex;
+        AZ::RHI::ShaderInputConstantIndex m_macroMaterialCountIndex;
         AZ::RHI::ShaderInputImageIndex m_macroColorMapIndex;
         AZ::RHI::ShaderInputImageIndex m_macroNormalMapIndex;
         AZ::RPI::MaterialPropertyIndex m_heightmapPropertyIndex;
@@ -163,6 +181,7 @@ namespace Terrain
             uint32_t m_updateHeight{ 0 };
             float m_sampleSpacing{ 0.0f };
             bool m_heightmapUpdated{ true };
+            bool m_macroMaterialsUpdated{ true };
             bool m_rebuildSectors{ true };
         };
 

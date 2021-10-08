@@ -20,13 +20,7 @@
                     "name": "textureMap",
                     "displayName": "Texture",
                     "description": "Base color of the macro material",
-                    "type": "Image"/*,
-                    
-                    "connection": {
-                        "type": "ShaderInput",
-                        "name": "m_baseColor"
-                    }
-                    */
+                    "type": "Image"
                 }
             ],
             "normal": [
@@ -34,48 +28,21 @@
                     "name": "textureMap",
                     "displayName": "Texture",
                     "description": "Texture for defining surface normal direction. These will override normals generated from the geometry.",
-                    "type": "Image"/*,
-                    
-                    "connection": {
-                        "type": "ShaderInput",
-                        "name": "m_normalMap"
-                    }
-                    */
+                    "type": "Image"
                 },
-                /*
-                {
-                    "name": "useTexture",
-                    "displayName": "Use Texture",
-                    "description": "Whether to use the texture, or just rely on vertex normals.",
-                    "type": "Bool",
-                    "defaultValue": true
-                },
-                */
                 {
                     "name": "flipX",
                     "displayName": "Flip X Channel",
                     "description": "Flip tangent direction for this normal map.",
                     "type": "Bool",
-                    "defaultValue": false/*,
-                    
-                    "connection": {
-                        "type": "ShaderInput",
-                        "name": "m_flipNormalX"
-                    }
-                    */
+                    "defaultValue": false
                 },
                 {
                     "name": "flipY",
                     "displayName": "Flip Y Channel",
                     "description": "Flip bitangent direction for this normal map.",
                     "type": "Bool",
-                    "defaultValue": false/*,
-                    
-                    "connection": {
-                        "type": "ShaderInput",
-                        "name": "m_flipNormalY"
-                    }
-                    */
+                    "defaultValue": false
                 },
                 {
                     "name": "factor",
@@ -84,13 +51,7 @@
                     "type": "Float",
                     "defaultValue": 1.0,
                     "min": 0.0,
-                    "softMax": 2.0/*,
-                    
-                    "connection": {
-                        "type": "ShaderInput",
-                        "name": "m_normalFactor"
-                    }
-                    */
+                    "softMax": 2.0
                 }
             ]
         }
@@ -98,16 +59,5 @@
     "shaders": [
     ],
     "functors": [
-        /*
-        {
-            "type": "UseTexture",
-            "args": {
-                "textureProperty": "normal.textureMap",
-                "useTextureProperty": "normal.useTexture",
-                "dependentProperties": ["normal.factor", "normal.flipX", "normal.flipY"],
-                "shaderOption": "o_normal_useTexture"    
-            }
-        }
-        */
     ]
 }
