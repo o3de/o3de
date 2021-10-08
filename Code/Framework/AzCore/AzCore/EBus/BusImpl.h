@@ -192,10 +192,10 @@ namespace AZ
             /**
             * Template Lock Guard class that wraps around the Mutex
             * The EBus uses for Dispatching Events.
-            * This is not EBus Context Mutex when LocklessDispatch is set
+            * This is not the EBus Context Mutex if LocklessDispatch is true
             */
             template <typename DispatchMutex>
-            using DispatchLockGuard = typename Traits::template DispatchLockGuard<DispatchMutex>;
+            using DispatchLockGuard = typename Traits::template DispatchLockGuard<DispatchMutex, Traits::LocklessDispatch>;
         };
 
         /**
@@ -468,7 +468,7 @@ namespace AZ
             using BusPtr = typename Traits::BusPtr;
 
             /**
-             * Helper to queue an event by BusIdType only when function queueing is enabled 
+             * Helper to queue an event by BusIdType only when function queueing is enabled
              * @param id            Address ID. Handlers that are connected to this ID will receive the event.
              * @param func          Function pointer of the event to dispatch.
              * @param args          Function arguments that are passed to each handler.

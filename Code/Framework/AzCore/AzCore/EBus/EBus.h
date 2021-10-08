@@ -241,9 +241,12 @@ namespace AZ
         * Template Lock Guard class that wraps around the Mutex
         * The EBus Context uses the LockGuard when dispatching
         * (either AZStd::scoped_lock<MutexType> or NullLockGuard<MutexType>)
+        * The IsLocklessDispatch bool is there to defer evaluation of the LocklessDispatch constant
+        * Otherwise the value above in EBusTraits.h is always used and not the value
+        * that the derived trait class sets.
         */
-        template <typename DispatchMutex>
-        using DispatchLockGuard = AZStd::conditional_t<LocklessDispatch, AZ::Internal::NullLockGuard<DispatchMutex>, AZStd::scoped_lock<DispatchMutex>>;
+        template <typename DispatchMutex, bool IsLocklessDispatch>
+        using DispatchLockGuard = AZStd::conditional_t<IsLocklessDispatch, AZ::Internal::NullLockGuard<DispatchMutex>, AZStd::scoped_lock<DispatchMutex>>;
     };
 
     namespace Internal

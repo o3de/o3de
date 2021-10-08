@@ -2088,7 +2088,7 @@ namespace UnitTest
         DisconnectNextHandlerByIdImpl multiHandler2;
         multiHandler2.BusConnect(DisconnectNextHandlerByIdImpl::firstBusAddress);
         multiHandler2.BusConnect(DisconnectNextHandlerByIdImpl::secondBusAddress);
-        
+
         // Set the first handler m_nextHandler field to point to the second handler
         multiHandler1.m_nextHandler = &multiHandler2;
 
@@ -2807,7 +2807,7 @@ namespace UnitTest
                     AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(m_val % m_maxSleep));
                 }
             }
-            
+
             void DoConnect() override
             {
                 MyEventGroupBus::Handler::BusConnect(m_id);
@@ -2854,7 +2854,7 @@ namespace UnitTest
                 }
 
                 MyEventGroupBus::Event(id, &MyEventGroupBus::Events::Calculate, i, i * 2, i << 4);
-                
+
                 LocklessConnectorBus::Event(id, &LocklessConnectorBus::Events::DoDisconnect);
 
                 bool failed = (AZStd::find_if(&sentinel[0], end, [](char s) { return s != 0; }) != end);
@@ -2891,7 +2891,7 @@ namespace UnitTest
         {
             MyEventGroupImpl()
             {
-                
+
             }
 
             ~MyEventGroupImpl() override
@@ -3614,7 +3614,7 @@ namespace UnitTest
             {
                 AZStd::this_thread::yield();
             }
-                
+
             EXPECT_GE(AZStd::chrono::system_clock::now(), endTime);
         };
         AZStd::thread connectThread([&connectHandler, &waitHandler]()
@@ -3813,7 +3813,7 @@ namespace UnitTest
     struct LastHandlerDisconnectHandler
         : public LastHandlerDisconnectBus::Handler
     {
-        void OnEvent() override 
+        void OnEvent() override
         {
             ++m_numOnEvents;
             BusDisconnect();
@@ -3854,7 +3854,7 @@ namespace UnitTest
     struct DisconnectAssertHandler
         : public DisconnectAssertBus::Handler
     {
-        
+
     };
 
     TEST_F(EBus, HandlerDestroyedWithoutDisconnect_Asserts)
@@ -4065,7 +4065,7 @@ namespace UnitTest
             LockType m_lock;
         };
 
-        template <typename DispatchMutex>
+        template <typename DispatchMutex, bool IsLocklessDispatch>
         using DispatchLockGuard = ThreadDispatchTestLockGuard<DispatchMutex>;
 
         static inline AZStd::atomic<int32_t> s_threadPostDispatchCalls;
@@ -4555,7 +4555,7 @@ namespace Benchmark
             Bus::ExecuteQueuedEvents();
         }
         s_benchmarkEBusEnv<Bus>.Disconnect(state);
-        
+
     }
     BUS_BENCHMARK_REGISTER_ALL(BM_EBus_ExecuteBroadcast);
 
