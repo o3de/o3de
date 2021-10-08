@@ -346,7 +346,7 @@ namespace UnitTest
         HaltCollaborators();
     }
 
-    // test to verify deltas are positions are handled correctly when the widget is moved
+    // test to verify deltas and cursor positions are handled correctly when the widget is moved
     TEST_F(ModularViewportCameraControllerFixture, CameraDoesNotStutterAfterWidgetIsMoved)
     {
         // Given
@@ -356,7 +356,7 @@ namespace UnitTest
         const float deltaTime = 1.0f / 60.0f;
 
         // When
-        // move to the center of the screen
+        // move cursor to the center of the screen
         auto start = QPoint(WidgetSize.width() / 2, WidgetSize.height() / 2);
         MouseMove(m_rootWidget.get(), start, QPoint(0, 0));
         m_controllerList->UpdateViewport({ TestViewportId, AzFramework::FloatSeconds(deltaTime), AZ::ScriptTimePoint() });
@@ -372,7 +372,7 @@ namespace UnitTest
         const auto offset = QPoint(500, 500);
         m_rootWidget->move(offset);
 
-        // move mouse back to widget center
+        // move cursor back to widget center
         MouseMove(m_rootWidget.get(), start, QPoint(0, 0));
         m_controllerList->UpdateViewport({ TestViewportId, AzFramework::FloatSeconds(deltaTime), AZ::ScriptTimePoint() });
 
