@@ -21,14 +21,19 @@ namespace AZ::SettingsRegistryVisitorUtils
         using VisitResponse = AZ::SettingsRegistryInterface::VisitResponse;
         using VisitAction = AZ::SettingsRegistryInterface::VisitAction;
         using Type = AZ::SettingsRegistryInterface::Type;
-        using AggregateTypes = AZStd::fixed_vector<Type, 2>;
+
         FieldVisitor();
-        FieldVisitor(const AggregateTypes& aggregateTypes);
 
         virtual void Visit(AZStd::string_view path, AZStd::string_view arrayIndex, Type type) = 0;
+
+    protected:
+        // AggregateTypes should only be populated with Type::Object or Type::Array
+        // It is meant for filtering the field type of the root path
+        using AggregateTypes = AZStd::fixed_vector<Type, 2>;
+        FieldVisitor(const AggregateTypes& aggregateTypes);
     private:
         // Make the base class Visit functions private
-        using Visitor::Visit;
+        using AZ::SettingsRegistryInterface::Visitor::Visit;
         VisitResponse Traverse(AZStd::string_view path, AZStd::string_view valueName,
             VisitAction action, Type type) override;
 
@@ -57,7 +62,7 @@ namespace AZ::SettingsRegistryVisitorUtils
         AZ::SettingsRegistryInterface::Type)>;
 
     //! Invokes the visitor callback for each element of either the array or object at @path
-    //! If @path is not an array or objewct, then no elements are visited
+    //! If @path is not an array or object, then no elements are visited
     //! This function will not recurse into children of elements
     //! @visitCallback functor that is invoked for each array or object element found
     bool VisitField(AZ::SettingsRegistryInterface& settingsRegistry, const VisitorCallback& visitCallback, AZStd::string_view path);

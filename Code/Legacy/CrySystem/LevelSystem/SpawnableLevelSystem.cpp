@@ -29,7 +29,7 @@
 
 namespace LegacyLevelSystem
 {
-    constexpr AZStd::string_view DeferredLevelLoadQueueKey = "/O3DE/Runtime/SpawnableLevelSystem/DeferredLevelLoadQueue";
+    constexpr AZStd::string_view DeferredLoadLevelKey = "/O3DE/Runtime/SpawnableLevelSystem/DeferredLoadLevel";
     //------------------------------------------------------------------------
     static void LoadLevel(const AZ::ConsoleCommandContainer& arguments)
     {
@@ -46,18 +46,7 @@ namespace LegacyLevelSystem
             // Defer the level load until later by storing it in the SettingsRegistry
             if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
             {
-                size_t deferredLevelLoadQueueSize{};
-                auto GetLevelLoadDeferredQueueSize = [&deferredLevelLoadQueueSize]
-                (AZStd::string_view, AZStd::string_view, AZ::SettingsRegistryInterface::Type)
-                {
-                    ++deferredLevelLoadQueueSize;
-                };
-
-                AZ::SettingsRegistryVisitorUtils::VisitArray(*settingsRegistry, GetLevelLoadDeferredQueueSize, DeferredLevelLoadQueueKey);
-                AZ::SettingsRegistryInterface::FixedValueString nextDeferredLevelLoadQueueKey{ DeferredLevelLoadQueueKey };
-                nextDeferredLevelLoadQueueKey += '/';
-                nextDeferredLevelLoadQueueKey += AZStd::to_string(deferredLevelLoadQueueSize);
-                settingsRegistry->Set(nextDeferredLevelLoadQueueKey, arguments.front());
+                settingsRegistry->Set(DeferredLoadLevelKey, arguments.front());
             }
         }
     }
@@ -101,24 +90,16 @@ namespace LegacyLevelSystem
         // load the last level in the queue, since only one level can be loaded at a time
         if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
         {
-            AZ::SettingsRegistryInterface::FixedValueString deferredLevelName;
-            auto GetLastDeferredLevelName = [settingsRegistry, &deferredLevelName]
-            (AZStd::string_view path, AZStd::string_view, AZ::SettingsRegistryInterface::Type)
-            {
-                deferredLevelName.clear();
-                settingsRegistry->Get(deferredLevelName, path);
-            };
-
-            if (AZ::SettingsRegistryVisitorUtils::VisitArray(*settingsRegistry, GetLastDeferredLevelName, DeferredLevelLoadQueueKey) &&
-                !deferredLevelName.empty())
+            if (AZ::SettingsRegistryInterface::FixedValueString deferredLevelName;
+                settingsRegistry->Get(deferredLevelName, DeferredLoadLevelKey) && !deferredLevelName.empty())
             {
                 // since this is the constructor any derived classes vtables aren't setup yet
                 // call this class LoadLevel function
                 AZ_TracePrintf("SpawnableLevelSystem", "The Level System is now available."
                     " Loading level %s which could not be loaded earlier\n", deferredLevelName.c_str());
                 SpawnableLevelSystem::LoadLevel(deferredLevelName.c_str());
-                // Delete the array key for deferred level load queue
-                settingsRegistry->Remove(DeferredLevelLoadQueueKey);
+                // Delete the key with the deferred level name
+                settingsRegistry->Remove(DeferredLoadLevelKey);
             }
         }
     }
