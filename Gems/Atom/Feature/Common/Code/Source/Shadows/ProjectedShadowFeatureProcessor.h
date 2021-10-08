@@ -69,9 +69,9 @@ namespace AZ::Render
             uint32_t m_predictionSampleCount = 0; // sample count to judge whether it is on the shadow boundary or not.
             uint32_t m_filteringSampleCount = 0;
             AZStd::array<float, 2> m_unprojectConstants = { {0, 0} };
-            float m_bias;
+            float m_bias; // reduce shadow map acne by biasing along z in shadowmap space
             float m_esmExponent = 87.0f;
-            float m_normalOffsetBias = 1.0f;
+            float m_normalOffsetBias = 1.0f; // reduce shadow map acne by biasing along the geometric normal
             float m_padding[2];
         };
 

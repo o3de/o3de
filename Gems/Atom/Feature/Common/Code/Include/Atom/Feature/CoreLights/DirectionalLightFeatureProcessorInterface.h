@@ -154,12 +154,12 @@ namespace AZ
             //! @param count Sample Count for filtering (up to 64)
             virtual void SetFilteringSampleCount(LightHandle handle, uint16_t count) = 0;
 
-            //! This specifies the width of boundary between shadowed area and lit area.
-            //! @param handle the light handle.
-            //! @param width Boundary width. The shadow is gradually changed the degree of shadowed.
-            //! If width == 0, softening edge is disabled. Units are in meters.
-            virtual void SetNormalOffsetBias(LightHandle handle, float boundaryWidth) = 0;
+            //! Reduces shadow acne by biasing the shadow map lookup along the geometric normal.
+            //! @param normalOffsetBias Amount of biasing.
+            virtual void SetNormalOffsetBias(LightHandle handle, float normalOffsetBias) = 0;
 
+            //! Reduces shadow acne by biasing along the z direction in shadow map space.
+            //! @param bias Amount of biasing.
             virtual void SetShadowBias(LightHandle handle, float bias) = 0;
 
             //! Sets whether the directional shadowmap should use receiver plane bias.

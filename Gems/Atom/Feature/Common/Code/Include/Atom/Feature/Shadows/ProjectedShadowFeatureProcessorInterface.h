@@ -58,7 +58,7 @@ namespace AZ::Render
         virtual void SetSofteningBoundaryWidthAngle(ShadowId id, float boundaryWidthRadians) = 0;
         //! Sets the sample count for filtering of the shadow boundary, max 64.
         virtual void SetFilteringSampleCount(ShadowId id, uint16_t count) = 0;
-
+        //! Reduces shadow acne by biasing the shadow map lookup along the geometric normal.
         virtual void SetNormalOffsetBias(ShadowId id, float normalOffsetBias) = 0;
 
         //! Sets all of the shadow properites in one call

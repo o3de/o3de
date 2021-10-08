@@ -134,19 +134,19 @@ namespace AZ
                             ->EnumAttribute(ShadowFilterMethod::EsmPcf, "ESM+PCF")
                             ->Attribute(Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
                         ->DataElement(Edit::UIHandlers::Slider, &DirectionalLightComponentConfig::m_normalOffsetBias, "Normal Offset Bias",
-                            "Normal offset bias. "
-                            "Units are in ???. "
-                            "If this is 0, normal offset bias.")
-                            ->Attribute(Edit::Attributes::Min, 0.f)
+                            "Used to reduce shadow acne by biasing along the direction of the geometric normal."
+                            "Use this in combination with the Shadow Bias slider to reduce shadow acne."
+                            "Larger values increase the amount biasing.")
+                        ->Attribute(Edit::Attributes::Min, 0.f)
                             ->Attribute(Edit::Attributes::Max, 10.0f)
                             ->Attribute(Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
 
                         ->DataElement(
                             Edit::UIHandlers::Slider, &DirectionalLightComponentConfig::m_shadowBias, "Shadow Bias",
-                            "Shadow bias. "
-                            "Units are in ???. "
-                            "If this is 0, normal offset bias.")
-                            ->Attribute(Edit::Attributes::Min, 0.f)
+                            "Used to reduce shadow acne by biasing along the z direction in shadow map space."
+                            "Use this in combination with the Normal Offset Bias slider to reduce shadow acne."
+                            "Larger values increase the amount biasing.")
+                        ->Attribute(Edit::Attributes::Min, 0.f)
                             ->Attribute(Edit::Attributes::Max, 0.2)
                             ->Attribute(Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
 

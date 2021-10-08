@@ -139,10 +139,10 @@ namespace AZ
             //! Sets the Esm exponent. Higher values produce a steeper falloff between light and shadow.
             virtual void SetEsmExponent(float exponent) = 0;
 
-            //! Gets the normal offset bias. 
+            //! Gets the normal offset bias. Reduces shadow acne by biasing shadow lookup along the direction of the geometric normal.
             virtual float GetNormalOffsetBias() const = 0;
 
-            //! Sets the normal offset bias. 
+            //! Sets the normal offset bias. Reduces shadow acne by biasing shadow lookup along the direction of the geometric normal.
             virtual void SetNormalOffsetBias(float normalOffsetBias) = 0;
         };
 

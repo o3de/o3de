@@ -153,11 +153,21 @@ namespace AZ
             //! @param method filter method.
             virtual void SetShadowFilterMethod(ShadowFilterMethod method) = 0;
 
+            //! Reduces shadow acne by biasing shadow lookup along the direction of the geometric normal.
+            //! @return Amount of biasing.            
             virtual float GetNormalOffsetBias() const = 0;
-            virtual void SetNormalOffsetBias(float width) = 0;
 
+            //! Reduces shadow acne by biasing shadow lookup along the direction of the geometric normal.
+            //! @param normalOffsetBias Amount of biasing.
+            virtual void SetNormalOffsetBias(float normalOffsetBias) = 0;
+
+            //! Reduces shadow acne by biasing along the z direction in shadow map space.
+            //! @return Amount of biasing.
             virtual float GetShadowBias() const = 0;
-            virtual void SetShadowBias(float width) = 0;
+
+            //! Reduces shadow acne by biasing along the z direction in shadow map space.
+            //! @param bias Amount of biasing.
+            virtual void SetShadowBias(float bias) = 0;
 
             //! This gets the sample count for filtering of the shadow boundary.
             //! @return Sample Count for filtering (up to 64)

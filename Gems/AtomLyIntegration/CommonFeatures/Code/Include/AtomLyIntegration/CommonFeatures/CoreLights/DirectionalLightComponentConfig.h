@@ -101,7 +101,10 @@ namespace AZ
             //! Method of shadow's filtering.
             ShadowFilterMethod m_shadowFilterMethod = ShadowFilterMethod::None;
 
+            //! Reduces shadow acne by biasing along the z direction in shadow map space.            
             float m_normalOffsetBias = 1.0f;
+
+            //! Reduces shadow acne by biasing along the z direction in shadow map space.
             float m_shadowBias = 0.01f;
 
             //! Sample Count for filtering (from 4 to 64)

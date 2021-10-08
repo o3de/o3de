@@ -417,13 +417,12 @@ namespace AZ
             return m_configuration.m_shadowBias;
         }
 
-        void DirectionalLightComponentController::SetNormalOffsetBias(float width)
+        void DirectionalLightComponentController::SetNormalOffsetBias(float normalOffsetBias)
         {
-          //  width = GetMin(Shadow::MaxSofteningBoundaryWidth, GetMax(0.f, width));
-            m_configuration.m_normalOffsetBias = width;
+            m_configuration.m_normalOffsetBias = normalOffsetBias;
             if (m_featureProcessor)
             {
-                m_featureProcessor->SetNormalOffsetBias(m_lightHandle, width);
+                m_featureProcessor->SetNormalOffsetBias(m_lightHandle, normalOffsetBias);
             }
         }
 

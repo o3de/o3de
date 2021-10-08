@@ -182,9 +182,9 @@ namespace AZ
                             ->Attribute(Edit::Attributes::ReadOnly, &AreaLightComponentConfig::IsEsmDisabled)
                         ->DataElement(
                             Edit::UIHandlers::Slider, &AreaLightComponentConfig::m_normalOffsetBias, "Normal Offset Bias",
-                            "Normal offset bias. "
-                            "Units are in ???. "
-                            "If this is 0, normal offset bias.")
+                            "Used to reduce shadow acne by biasing along the direction of the geometric normal."
+                            "Use this in combination with the Bias slider to reduce shadow acne."
+                            "Larger values increase the amount biasing.")
                         ->Attribute(Edit::Attributes::Min, 0.f)
                         ->Attribute(Edit::Attributes::Max, 10.0f)
                         ->Attribute(Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)

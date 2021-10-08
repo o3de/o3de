@@ -95,8 +95,10 @@ namespace AZ
                 0.f, 0.f, 0.f, 0.f
             };
             uint32_t m_shadowmapSize = 1; // width and height of shadowmap
+            // reduce shadow acne by biasing along z in shadow-map space
             float m_shadowBias = 0.01f;
             uint32_t m_cascadeCount = 1;
+            // reduce shadow acne by biasing along the geometric normal
             float m_normalOffsetBias = 1.0f;
             uint32_t m_filteringSampleCount = 0;
             uint32_t m_debugFlags = 0;
