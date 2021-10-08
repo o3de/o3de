@@ -237,7 +237,7 @@ class TestMaterialEditor(object):
             request,
             TEST_DIRECTORY,
             generic_launcher,
-            editor_script="hydra_GPUTest_MaterialEditorRHIOptions.py",
+            editor_script="",
             run_python="--runpython",
             timeout=60,
             expected_lines=expected_lines,
