@@ -6,11 +6,11 @@
  *
  */
 
-#include <Atom/RPI.Reflect/Model/ModelAsset.h>
+#include <Atom/RPI.Reflect/Material/MaterialAsset.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <QtConcurrent/QtConcurrent>
-#include <Thumbnails/ModelThumbnail.h>
-#include <Thumbnails/ThumbnailUtils.h>
+#include <Previewer/MaterialThumbnail.h>
+#include <Previewer/ThumbnailUtils.h>
 
 namespace AZ
 {
@@ -18,18 +18,18 @@ namespace AZ
     {
         namespace Thumbnails
         {
-            static constexpr const int ModelThumbnailSize = 512; // 512 is the default size in render to texture pass
+            static constexpr const int MaterialThumbnailSize = 512; // 512 is the default size in render to texture pass
 
             //////////////////////////////////////////////////////////////////////////
-            // ModelThumbnail
+            // MaterialThumbnail
             //////////////////////////////////////////////////////////////////////////
-            ModelThumbnail::ModelThumbnail(AzToolsFramework::Thumbnailer::SharedThumbnailKey key)
+            MaterialThumbnail::MaterialThumbnail(AzToolsFramework::Thumbnailer::SharedThumbnailKey key)
                 : Thumbnail(key)
             {
-                m_assetId = GetAssetId(key, RPI::ModelAsset::RTTI_Type());
+                m_assetId = GetAssetId(key, RPI::MaterialAsset::RTTI_Type());
                 if (!m_assetId.IsValid())
                 {
-                    AZ_Error("ModelThumbnail", false, "Failed to find matching assetId for the thumbnailKey.");
+                    AZ_Error("MaterialThumbnail", false, "Failed to find matching assetId for the thumbnailKey.");
                     m_state = State::Failed;
                     return;
                 }
@@ -38,34 +38,34 @@ namespace AZ
                 AzFramework::AssetCatalogEventBus::Handler::BusConnect();
             }
 
-            void ModelThumbnail::LoadThread()
+            void MaterialThumbnail::LoadThread()
             {
                 AzToolsFramework::Thumbnailer::ThumbnailerRendererRequestBus::QueueEvent(
-                    RPI::ModelAsset::RTTI_Type(), &AzToolsFramework::Thumbnailer::ThumbnailerRendererRequests::RenderThumbnail, m_key,
-                    ModelThumbnailSize);
+                    RPI::MaterialAsset::RTTI_Type(), &AzToolsFramework::Thumbnailer::ThumbnailerRendererRequests::RenderThumbnail, m_key,
+                    MaterialThumbnailSize);
                 // wait for response from thumbnail renderer
                 m_renderWait.acquire();
             }
 
-            ModelThumbnail::~ModelThumbnail()
+            MaterialThumbnail::~MaterialThumbnail()
             {
                 AzToolsFramework::Thumbnailer::ThumbnailerRendererNotificationBus::Handler::BusDisconnect();
                 AzFramework::AssetCatalogEventBus::Handler::BusDisconnect();
             }
 
-            void ModelThumbnail::ThumbnailRendered(QPixmap& thumbnailImage)
+            void MaterialThumbnail::ThumbnailRendered(QPixmap& thumbnailImage)
             {
                 m_pixmap = thumbnailImage;
                 m_renderWait.release();
             }
 
-            void ModelThumbnail::ThumbnailFailedToRender()
+            void MaterialThumbnail::ThumbnailFailedToRender()
             {
                 m_state = State::Failed;
                 m_renderWait.release();
             }
 
-            void ModelThumbnail::OnCatalogAssetChanged([[maybe_unused]] const AZ::Data::AssetId& assetId)
+            void MaterialThumbnail::OnCatalogAssetChanged([[maybe_unused]] const AZ::Data::AssetId& assetId)
             {
                 if (m_assetId == assetId && m_state == State::Ready)
                 {
@@ -75,32 +75,32 @@ namespace AZ
             }
 
             //////////////////////////////////////////////////////////////////////////
-            // ModelThumbnailCache
+            // MaterialThumbnailCache
             //////////////////////////////////////////////////////////////////////////
-            ModelThumbnailCache::ModelThumbnailCache()
-                : ThumbnailCache<ModelThumbnail>()
+            MaterialThumbnailCache::MaterialThumbnailCache()
+                : ThumbnailCache<MaterialThumbnail>()
             {
             }
 
-            ModelThumbnailCache::~ModelThumbnailCache() = default;
+            MaterialThumbnailCache::~MaterialThumbnailCache() = default;
 
-            int ModelThumbnailCache::GetPriority() const
+            int MaterialThumbnailCache::GetPriority() const
             {
                 // Thumbnails override default source thumbnails, so carry higher priority
                 return 1;
             }
 
-            const char* ModelThumbnailCache::GetProviderName() const
+            const char* MaterialThumbnailCache::GetProviderName() const
             {
                 return ProviderName;
             }
 
-            bool ModelThumbnailCache::IsSupportedThumbnail(AzToolsFramework::Thumbnailer::SharedThumbnailKey key) const
+            bool MaterialThumbnailCache::IsSupportedThumbnail(AzToolsFramework::Thumbnailer::SharedThumbnailKey key) const
             {
-                return GetAssetId(key, RPI::ModelAsset::RTTI_Type()).IsValid();
+                return GetAssetId(key, RPI::MaterialAsset::RTTI_Type()).IsValid();
             }
         } // namespace Thumbnails
     } // namespace LyIntegration
 } // namespace AZ
 
-#include <Thumbnails/moc_ModelThumbnail.cpp>
+#include <Previewer/moc_MaterialThumbnail.cpp>

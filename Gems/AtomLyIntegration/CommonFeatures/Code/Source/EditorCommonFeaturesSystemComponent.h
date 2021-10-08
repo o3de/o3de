@@ -13,8 +13,8 @@
 #include <AzToolsFramework/API/EditorLevelNotificationBus.h>
 #include <AzToolsFramework/AssetBrowser/Previewer/PreviewerBus.h>
 #include <AzToolsFramework/Entity/SliceEditorEntityOwnershipServiceBus.h>
-#include <Source/Thumbnails/Preview/CommonPreviewerFactory.h>
-#include <Thumbnails/CommonThumbnailRenderer.h>
+#include <Previewer/CommonPreviewerFactory.h>
+#include <Previewer/CommonThumbnailRenderer.h>
 
 namespace AZ
 {

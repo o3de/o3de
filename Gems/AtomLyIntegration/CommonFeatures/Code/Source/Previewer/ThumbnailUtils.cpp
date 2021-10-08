@@ -11,7 +11,7 @@
 #include <AssetBrowser/Thumbnails/SourceThumbnail.h>
 #include <Atom/RPI.Reflect/Material/MaterialAsset.h>
 #include <Atom/RPI.Reflect/Model/ModelAsset.h>
-#include <Thumbnails/ThumbnailUtils.h>
+#include <Previewer/ThumbnailUtils.h>
 
 namespace AZ
 {

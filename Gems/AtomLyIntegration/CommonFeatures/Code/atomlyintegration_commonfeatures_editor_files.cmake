@@ -90,23 +90,23 @@ set(FILES
     Source/SkyBox/EditorHDRiSkyboxComponent.h
     Source/SkyBox/EditorPhysicalSkyComponent.cpp
     Source/SkyBox/EditorPhysicalSkyComponent.h
-    Source/Thumbnails/ThumbnailUtils.h
-    Source/Thumbnails/ThumbnailUtils.cpp
-    Source/Thumbnails/Preview/CommonPreviewer.cpp
-    Source/Thumbnails/Preview/CommonPreviewer.h
-    Source/Thumbnails/Preview/CommonPreviewer.ui
-    Source/Thumbnails/Preview/CommonPreviewerFactory.cpp
-    Source/Thumbnails/Preview/CommonPreviewerFactory.h
-    Source/Thumbnails/CommonThumbnailPreviewContent.cpp
-    Source/Thumbnails/CommonThumbnailPreviewContent.h
-    Source/Thumbnails/CommonThumbnailRenderer.cpp
-    Source/Thumbnails/CommonThumbnailRenderer.h
-    Source/Thumbnails/MaterialThumbnail.cpp
-    Source/Thumbnails/MaterialThumbnail.h
-    Source/Thumbnails/ModelThumbnail.cpp
-    Source/Thumbnails/ModelThumbnail.h
-    Source/Thumbnails/LightingPresetThumbnail.cpp
-    Source/Thumbnails/LightingPresetThumbnail.h
+    Source/Previewer/ThumbnailUtils.h
+    Source/Previewer/ThumbnailUtils.cpp
+    Source/Previewer/CommonPreviewer.cpp
+    Source/Previewer/CommonPreviewer.h
+    Source/Previewer/CommonPreviewer.ui
+    Source/Previewer/CommonPreviewerFactory.cpp
+    Source/Previewer/CommonPreviewerFactory.h
+    Source/Previewer/CommonPreviewContent.cpp
+    Source/Previewer/CommonPreviewContent.h
+    Source/Previewer/CommonThumbnailRenderer.cpp
+    Source/Previewer/CommonThumbnailRenderer.h
+    Source/Previewer/MaterialThumbnail.cpp
+    Source/Previewer/MaterialThumbnail.h
+    Source/Previewer/ModelThumbnail.cpp
+    Source/Previewer/ModelThumbnail.h
+    Source/Previewer/LightingPresetThumbnail.cpp
+    Source/Previewer/LightingPresetThumbnail.h
     Source/Scripting/EditorEntityReferenceComponent.cpp
     Source/Scripting/EditorEntityReferenceComponent.h
     Source/SurfaceData/EditorSurfaceDataMeshComponent.cpp

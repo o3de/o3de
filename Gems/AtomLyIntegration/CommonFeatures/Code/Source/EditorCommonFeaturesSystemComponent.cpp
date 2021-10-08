@@ -18,9 +18,9 @@
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/Thumbnails/ThumbnailContext.h>
 
-#include <Thumbnails/MaterialThumbnail.h>
-#include <Thumbnails/ModelThumbnail.h>
-#include <Thumbnails/LightingPresetThumbnail.h>
+#include <Previewer/MaterialThumbnail.h>
+#include <Previewer/ModelThumbnail.h>
+#include <Previewer/LightingPresetThumbnail.h>
 
 #include <IEditor.h>
 

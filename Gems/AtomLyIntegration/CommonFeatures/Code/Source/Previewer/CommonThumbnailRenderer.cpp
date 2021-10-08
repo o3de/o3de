@@ -8,9 +8,9 @@
 
 #include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
 #include <AzToolsFramework/Thumbnails/ThumbnailerBus.h>
-#include <Thumbnails/CommonThumbnailPreviewContent.h>
-#include <Thumbnails/CommonThumbnailRenderer.h>
-#include <Thumbnails/ThumbnailUtils.h>
+#include <Previewer/CommonPreviewContent.h>
+#include <Previewer/CommonThumbnailRenderer.h>
+#include <Previewer/ThumbnailUtils.h>
 
 namespace AZ
 {
@@ -37,7 +37,7 @@ namespace AZ
             {
                 m_previewRenderer.AddCaptureRequest(
                     { thumbnailSize,
-                      AZStd::make_shared<CommonThumbnailPreviewContent>(
+                      AZStd::make_shared<CommonPreviewContent>(
                           m_previewRenderer.GetScene(),
                           m_previewRenderer.GetView(),
                           m_previewRenderer.GetEntityContextId(),

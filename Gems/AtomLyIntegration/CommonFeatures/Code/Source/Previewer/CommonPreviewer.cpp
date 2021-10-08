@@ -7,21 +7,19 @@
  */
 
 #include <AzCore/IO/FileIO.h>
-
+#include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserEntry.h>
-#include <AzToolsFramework/Thumbnails/ThumbnailContext.h>
-#include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzToolsFramework/Thumbnails/Thumbnail.h>
-
-#include <Thumbnails/Preview/CommonPreviewer.h>
-#include <Thumbnails/ThumbnailUtils.h>
+#include <AzToolsFramework/Thumbnails/ThumbnailContext.h>
+#include <Previewer/CommonPreviewer.h>
+#include <Previewer/ThumbnailUtils.h>
 
 // Disables warning messages triggered by the Qt library
 // 4251: class needs to have dll-interface to be used by clients of class 
 // 4800: forcing value to bool 'true' or 'false' (performance warning)
 AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option")
-#include <Thumbnails/Preview/ui_CommonPreviewer.h>
+#include <Previewer/ui_CommonPreviewer.h>
 #include <QString>
 #include <QResizeEvent>
 AZ_POP_DISABLE_WARNING
@@ -73,4 +71,4 @@ namespace AZ
     } // namespace LyIntegration
 } // namespace AZ
 
-#include <Thumbnails/Preview/moc_CommonPreviewer.cpp>
+#include <Previewer/moc_CommonPreviewer.cpp>

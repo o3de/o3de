@@ -11,9 +11,9 @@
 #include <Atom/RPI.Reflect/Model/ModelAsset.h>
 #include <Atom/RPI.Reflect/System/AnyAsset.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserEntry.h>
-#include <Source/Thumbnails/Preview/CommonPreviewer.h>
-#include <Source/Thumbnails/Preview/CommonPreviewerFactory.h>
-#include <Source/Thumbnails/ThumbnailUtils.h>
+#include <Previewer/CommonPreviewer.h>
+#include <Previewer/CommonPreviewerFactory.h>
+#include <Previewer/ThumbnailUtils.h>
 
 namespace AZ
 {
