@@ -307,5 +307,10 @@ namespace AZ
             SetShadowSetting(handle, &ProjectedShadowFeatureProcessor::SetEsmExponent, esmExponent);
         }
 
+        void PointLightFeatureProcessor::SetNormalOffsetBias(LightHandle handle, float normalOffsetBias)
+        {
+            SetShadowSetting(handle, &ProjectedShadowFeatureProcessor::SetNormalOffsetBias, normalOffsetBias);
+        }
+
     } // namespace Render
 } // namespace AZ

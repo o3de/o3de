@@ -89,7 +89,8 @@ partial ShaderResourceGroup ViewSrg
         float2 m_unprojectConstants;
         float m_bias;
         float m_esmExponent;
-        float3 m_padding;
+        float m_normalOffsetBias;
+        float2 m_padding;
     };
 
     StructuredBuffer<ProjectedShadow> m_projectedShadows;

@@ -120,7 +120,7 @@ namespace AZ::Render
     {
         if (GetShadowsEnabled() && GetLightHandle().IsValid())
         {
-            GetFeatureProcessor()->SetEsmExponent(GetLightHandle(), normalOffsetBias);
+            GetFeatureProcessor()->SetNormalOffsetBias(GetLightHandle(), normalOffsetBias);
         }
     }
 } // namespace AZ::Render
