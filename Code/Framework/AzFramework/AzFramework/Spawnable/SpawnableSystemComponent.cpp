@@ -45,8 +45,7 @@ namespace AzFramework
 
     void SpawnableSystemComponent::OnTick(float /*deltaTime*/, AZ::ScriptTimePoint /*time*/)
     {
-        m_entitiesManager.ProcessQueue(
-            SpawnableEntitiesManager::CommandQueuePriority::High | SpawnableEntitiesManager::CommandQueuePriority::Regular);
+        ProcessSpawnableQueue();
         RootSpawnableNotificationBus::ExecuteQueuedEvents();
     }
 
@@ -119,6 +118,12 @@ namespace AzFramework
             m_rootSpawnableContainer.Clear();
         }
         m_rootSpawnableId = AZ::Data::AssetId();
+    }
+
+    void SpawnableSystemComponent::ProcessSpawnableQueue()
+    {
+        m_entitiesManager.ProcessQueue(
+            SpawnableEntitiesManager::CommandQueuePriority::High | SpawnableEntitiesManager::CommandQueuePriority::Regular);
     }
 
     void SpawnableSystemComponent::OnRootSpawnableAssigned([[maybe_unused]] AZ::Data::Asset<Spawnable> rootSpawnable,

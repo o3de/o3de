@@ -57,6 +57,7 @@ AZ_POP_DISABLE_WARNING
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <AzFramework/Terrain/TerrainDataRequestBus.h>
 #include <AzFramework/ProjectManager/ProjectManager.h>
+#include <AzFramework/Spawnable/RootSpawnableInterface.h>
 
 // AzToolsFramework
 #include <AzToolsFramework/Component/EditorComponentAPIBus.h>
@@ -3019,6 +3020,15 @@ CCryEditApp::ECreateLevelResult CCryEditApp::CreateLevel(const QString& levelNam
         bool bIsDocModified = GetIEditor()->GetDocument()->IsModified();
         OnSwitchPhysics();
         GetIEditor()->GetDocument()->SetModifiedFlag(bIsDocModified);
+
+        if (usePrefabSystemForLevels)
+        {
+            auto* rootSpawnableInterface = AzFramework::RootSpawnableInterface::Get();
+            if (rootSpawnableInterface)
+            {
+                rootSpawnableInterface->ProcessSpawnableQueue();
+            }
+        }
     }
 
     const QScopedValueRollback<bool> rollback(m_creatingNewLevel);
