@@ -59,7 +59,7 @@ namespace AZ
             s_instance = Environment::FindVariable<NameDictionary*>(NameDictionaryInstanceName);
         }
 
-        return s_instance && *s_instance;
+        return s_instance.IsConstructed();
     }
 
     NameDictionary& NameDictionary::Instance()
