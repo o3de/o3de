@@ -54,6 +54,7 @@
                         "Attachment": "Input"
                     },
                     "ImageDescriptor": {
+                        // ESM seems to need 32-bits for artifact free directional shadows, even with log-blur
                         "Format": "R32_FLOAT"
                     }
                 }
