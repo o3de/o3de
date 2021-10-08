@@ -129,6 +129,11 @@
                     "order": 30000,
                     "include": "tools,renderer"
                 },
+                "ScanFolder Engine/Registry": {
+                    "watch": "@ENGINEROOT@/Registry",
+                    "recursive": 1,
+                    "order": 40000
+                },
 
                 // Excludes files that match the pattern or glob 
                 // if you use a pattern, remember to escape your backslashes (\\)
