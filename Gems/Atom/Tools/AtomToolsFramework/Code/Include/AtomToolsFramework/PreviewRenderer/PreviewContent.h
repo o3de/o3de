@@ -10,26 +10,20 @@
 
 #include <AzCore/Memory/Memory.h>
 
-namespace AZ
+namespace AtomToolsFramework
 {
-    namespace LyIntegration
+    //! Provides custom rendering of previefw images
+    class PreviewContent
     {
-        namespace Thumbnails
-        {
-            //! Provides custom rendering of preeview images
-            class CommonPreviewContent
-            {
-            public:
-                AZ_CLASS_ALLOCATOR(CommonPreviewContent, AZ::SystemAllocator, 0);
+    public:
+        AZ_CLASS_ALLOCATOR(PreviewContent, AZ::SystemAllocator, 0);
 
-                CommonPreviewContent() = default;
-                virtual ~CommonPreviewContent() = default;
-                virtual void Load() = 0;
-                virtual bool IsReady() const = 0;
-                virtual bool IsError() const = 0;
-                virtual void ReportErrors() = 0;
-                virtual void UpdateScene() = 0;
-            };
-        } // namespace Thumbnails
-    } // namespace LyIntegration
-} // namespace AZ
+        PreviewContent() = default;
+        virtual ~PreviewContent() = default;
+        virtual void Load() = 0;
+        virtual bool IsReady() const = 0;
+        virtual bool IsError() const = 0;
+        virtual void ReportErrors() = 0;
+        virtual void UpdateScene() = 0;
+    };
+} // namespace AtomToolsFramework

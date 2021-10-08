@@ -9,7 +9,6 @@
 set(FILES
     Include/AtomLyIntegration/CommonFeatures/Material/EditorMaterialSystemComponentRequestBus.h
     Include/AtomLyIntegration/CommonFeatures/ReflectionProbe/EditorReflectionProbeBus.h
-    Include/AtomLyIntegration/CommonFeatures/Thumbnails/PreviewerFeatureProcessorProviderBus.h
     Source/Module.cpp
     Source/Animation/EditorAttachmentComponent.h
     Source/Animation/EditorAttachmentComponent.cpp
@@ -98,16 +97,6 @@ set(FILES
     Source/Thumbnails/Preview/CommonPreviewer.ui
     Source/Thumbnails/Preview/CommonPreviewerFactory.cpp
     Source/Thumbnails/Preview/CommonPreviewerFactory.h
-    Source/Thumbnails/Rendering/CommonPreviewContent.h
-    Source/Thumbnails/Rendering/CommonPreviewRenderer.cpp
-    Source/Thumbnails/Rendering/CommonPreviewRenderer.h
-    Source/Thumbnails/Rendering/CommonPreviewRendererState.h
-    Source/Thumbnails/Rendering/CommonPreviewRendererIdleState.cpp
-    Source/Thumbnails/Rendering/CommonPreviewRendererIdleState.h
-    Source/Thumbnails/Rendering/CommonPreviewRendererLoadState.cpp
-    Source/Thumbnails/Rendering/CommonPreviewRendererLoadState.h
-    Source/Thumbnails/Rendering/CommonPreviewRendererCaptureState.cpp
-    Source/Thumbnails/Rendering/CommonPreviewRendererCaptureState.h
     Source/Thumbnails/CommonThumbnailPreviewContent.cpp
     Source/Thumbnails/CommonThumbnailPreviewContent.h
     Source/Thumbnails/CommonThumbnailRenderer.cpp

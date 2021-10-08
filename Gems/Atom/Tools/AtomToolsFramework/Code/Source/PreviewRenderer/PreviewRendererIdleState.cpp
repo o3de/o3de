@@ -6,34 +6,28 @@
  *
  */
 
-#include <Thumbnails/Rendering/CommonPreviewRenderer.h>
-#include <Thumbnails/Rendering/CommonPreviewRendererIdleState.h>
+#include <AtomToolsFramework/PreviewRenderer/PreviewRenderer.h>
+#include <PreviewRenderer/PreviewRendererIdleState.h>
 
-namespace AZ
+namespace AtomToolsFramework
 {
-    namespace LyIntegration
+    PreviewRendererIdleState::PreviewRendererIdleState(PreviewRenderer* renderer)
+        : PreviewRendererState(renderer)
     {
-        namespace Thumbnails
-        {
-            CommonPreviewRendererIdleState::CommonPreviewRendererIdleState(CommonPreviewRenderer* renderer)
-                : CommonPreviewRendererState(renderer)
-            {
-            }
+    }
 
-            void CommonPreviewRendererIdleState::Start()
-            {
-                TickBus::Handler::BusConnect();
-            }
+    void PreviewRendererIdleState::Start()
+    {
+        AZ::TickBus::Handler::BusConnect();
+    }
 
-            void CommonPreviewRendererIdleState::Stop()
-            {
-                TickBus::Handler::BusDisconnect();
-            }
+    void PreviewRendererIdleState::Stop()
+    {
+        AZ::TickBus::Handler::BusDisconnect();
+    }
 
-            void CommonPreviewRendererIdleState::OnTick([[maybe_unused]] float deltaTime, [[maybe_unused]] ScriptTimePoint time)
-            {
-                m_renderer->SelectCaptureRequest();
-            }
-        } // namespace Thumbnails
-    } // namespace LyIntegration
-} // namespace AZ
+    void PreviewRendererIdleState::OnTick([[maybe_unused]] float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time)
+    {
+        m_renderer->SelectCaptureRequest();
+    }
+} // namespace AtomToolsFramework

@@ -9,38 +9,31 @@
 #pragma once
 
 #include <Atom/Feature/Utils/FrameCaptureBus.h>
+#include <AtomToolsFramework/PreviewRenderer/PreviewRendererState.h>
 #include <AzCore/Component/TickBus.h>
-#include <Thumbnails/Rendering/CommonPreviewRendererState.h>
 
-namespace AZ
+namespace AtomToolsFramework
 {
-    namespace LyIntegration
+    //! PreviewRendererCaptureState renders a thumbnail to a pixmap and notifies MaterialOrModelThumbnail once finished
+    class PreviewRendererCaptureState final
+        : public PreviewRendererState
+        , public AZ::TickBus::Handler
+        , public AZ::Render::FrameCaptureNotificationBus::Handler
     {
-        namespace Thumbnails
-        {
-            //! CommonPreviewRendererCaptureState renders a thumbnail to a pixmap and notifies MaterialOrModelThumbnail once finished
-            class CommonPreviewRendererCaptureState
-                : public CommonPreviewRendererState
-                , private TickBus::Handler
-                , private Render::FrameCaptureNotificationBus::Handler
-            {
-            public:
-                CommonPreviewRendererCaptureState(CommonPreviewRenderer* renderer);
+    public:
+        PreviewRendererCaptureState(PreviewRenderer* renderer);
 
-                void Start() override;
-                void Stop() override;
+        void Start() override;
+        void Stop() override;
 
-            private:
-                //! AZ::TickBus::Handler interface overrides...
-                void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
+    private:
+        //! AZ::TickBus::Handler interface overrides...
+        void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
 
-                //! Render::FrameCaptureNotificationBus::Handler overrides...
-                void OnCaptureFinished(Render::FrameCaptureResult result, const AZStd::string& info) override;
+        //! AZ::Render::FrameCaptureNotificationBus::Handler overrides...
+        void OnCaptureFinished(AZ::Render::FrameCaptureResult result, const AZStd::string& info) override;
 
-                //! This is necessary to suspend capture to allow a frame for Material and Mesh components to assign materials
-                int m_ticksToCapture = 0;
-            };
-        } // namespace Thumbnails
-    } // namespace LyIntegration
-} // namespace AZ
-
+        //! This is necessary to suspend capture to allow a frame for Material and Mesh components to assign materials
+        int m_ticksToCapture = 0;
+    };
+} // namespace AtomToolsFramework

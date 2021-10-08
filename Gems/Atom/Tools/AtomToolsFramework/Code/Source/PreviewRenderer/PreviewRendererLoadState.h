@@ -9,33 +9,26 @@
 #pragma once
 
 #include <AzCore/Component/TickBus.h>
-#include <Thumbnails/Rendering/CommonPreviewRendererState.h>
+#include <AtomToolsFramework/PreviewRenderer/PreviewRendererState.h>
 
-namespace AZ
+namespace AtomToolsFramework
 {
-    namespace LyIntegration
+    //! PreviewRendererLoadState pauses further rendering until all assets used for rendering a thumbnail have been loaded
+    class PreviewRendererLoadState final
+        : public PreviewRendererState
+        , public AZ::TickBus::Handler
     {
-        namespace Thumbnails
-        {
-            //! CommonPreviewRendererLoadState pauses further rendering until all assets used for rendering a thumbnail have been loaded
-            class CommonPreviewRendererLoadState
-                : public CommonPreviewRendererState
-                , private TickBus::Handler
-            {
-            public:
-                CommonPreviewRendererLoadState(CommonPreviewRenderer* renderer);
+    public:
+        PreviewRendererLoadState(PreviewRenderer* renderer);
 
-                void Start() override;
-                void Stop() override;
+        void Start() override;
+        void Stop() override;
 
-            private:
-                //! AZ::TickBus::Handler interface overrides...
-                void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
+    private:
+        //! AZ::TickBus::Handler interface overrides...
+        void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
 
-                static constexpr float TimeOutS = 5.0f;
-                float m_timeRemainingS = TimeOutS;
-            };
-        } // namespace Thumbnails
-    } // namespace LyIntegration
-} // namespace AZ
-
+        static constexpr float TimeOutS = 5.0f;
+        float m_timeRemainingS = TimeOutS;
+    };
+} // namespace AtomToolsFramework

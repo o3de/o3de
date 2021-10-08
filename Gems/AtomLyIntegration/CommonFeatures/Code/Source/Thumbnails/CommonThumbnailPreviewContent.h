@@ -13,7 +13,7 @@
 #include <Atom/RPI.Reflect/Material/MaterialAsset.h>
 #include <Atom/RPI.Reflect/Model/ModelAsset.h>
 #include <Atom/RPI.Reflect/System/AnyAsset.h>
-#include <Thumbnails/Rendering/CommonPreviewContent.h>
+#include <AtomToolsFramework/PreviewRenderer/PreviewContent.h>
 
 namespace AZ
 {
@@ -23,7 +23,7 @@ namespace AZ
         {
             //! Provides custom rendering of material and model previews
             class CommonThumbnailPreviewContent final
-                : public CommonPreviewContent
+                : public AtomToolsFramework::PreviewContent
             {
             public:
                 AZ_CLASS_ALLOCATOR(CommonThumbnailPreviewContent, AZ::SystemAllocator, 0);

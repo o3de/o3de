@@ -6,44 +6,38 @@
  *
  */
 
-#include <Thumbnails/Rendering/CommonPreviewRenderer.h>
-#include <Thumbnails/Rendering/CommonPreviewRendererLoadState.h>
+#include <AtomToolsFramework/PreviewRenderer/PreviewRenderer.h>
+#include <PreviewRenderer/PreviewRendererLoadState.h>
 
-namespace AZ
+namespace AtomToolsFramework
 {
-    namespace LyIntegration
+    PreviewRendererLoadState::PreviewRendererLoadState(PreviewRenderer* renderer)
+        : PreviewRendererState(renderer)
     {
-        namespace Thumbnails
+    }
+
+    void PreviewRendererLoadState::Start()
+    {
+        m_renderer->LoadAssets();
+        m_timeRemainingS = TimeOutS;
+        AZ::TickBus::Handler::BusConnect();
+    }
+
+    void PreviewRendererLoadState::Stop()
+    {
+        AZ::TickBus::Handler::BusDisconnect();
+    }
+
+    void PreviewRendererLoadState::OnTick(float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time)
+    {
+        m_timeRemainingS -= deltaTime;
+        if (m_timeRemainingS > 0.0f)
         {
-            CommonPreviewRendererLoadState::CommonPreviewRendererLoadState(CommonPreviewRenderer* renderer)
-                : CommonPreviewRendererState(renderer)
-            {
-            }
-
-            void CommonPreviewRendererLoadState::Start()
-            {
-                m_renderer->LoadAssets();
-                m_timeRemainingS = TimeOutS;
-                TickBus::Handler::BusConnect();
-            }
-
-            void CommonPreviewRendererLoadState::Stop()
-            {
-                TickBus::Handler::BusDisconnect();
-            }
-
-            void CommonPreviewRendererLoadState::OnTick(float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time)
-            {
-                m_timeRemainingS -= deltaTime;
-                if (m_timeRemainingS > 0.0f)
-                {
-                    m_renderer->UpdateLoadAssets();
-                }
-                else
-                {
-                    m_renderer->CancelLoadAssets();
-                }
-            }
-        } // namespace Thumbnails
-    } // namespace LyIntegration
-} // namespace AZ
+            m_renderer->UpdateLoadAssets();
+        }
+        else
+        {
+            m_renderer->CancelLoadAssets();
+        }
+    }
+} // namespace AtomToolsFramework

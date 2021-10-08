@@ -10,10 +10,10 @@
 
 #include <Atom/RPI.Public/Base.h>
 #include <Atom/RPI.Public/Pass/AttachmentReadback.h>
-#include <AtomLyIntegration/CommonFeatures/Thumbnails/PreviewerFeatureProcessorProviderBus.h>
+#include <AtomToolsFramework/PreviewRenderer/PreviewContent.h>
+#include <AtomToolsFramework/PreviewRenderer/PreviewRendererState.h>
+#include <AtomToolsFramework/PreviewRenderer/PreviewerFeatureProcessorProviderBus.h>
 #include <AzFramework/Entity/GameEntityContextComponent.h>
-#include <Thumbnails/Rendering/CommonPreviewContent.h>
-#include <Thumbnails/Rendering/CommonPreviewRendererState.h>
 
 namespace AzFramework
 {
@@ -22,85 +22,78 @@ namespace AzFramework
 
 class QImage;
 
-namespace AZ
+namespace AtomToolsFramework
 {
-    namespace LyIntegration
+    //! Provides custom rendering of preview images
+    class PreviewRenderer final : public PreviewerFeatureProcessorProviderBus::Handler
     {
-        namespace Thumbnails
+    public:
+        AZ_CLASS_ALLOCATOR(PreviewRenderer, AZ::SystemAllocator, 0);
+
+        PreviewRenderer();
+        ~PreviewRenderer();
+
+        struct CaptureRequest final
         {
-            //! Provides custom rendering of material and model thumbnails
-            class CommonPreviewRenderer final
-                : public PreviewerFeatureProcessorProviderBus::Handler
-            {
-            public:
-                AZ_CLASS_ALLOCATOR(CommonPreviewRenderer, AZ::SystemAllocator, 0);
+            int m_size = 512;
+            AZStd::shared_ptr<PreviewContent> m_content;
+            AZStd::function<void()> m_captureFailedCallback;
+            AZStd::function<void(const QImage&)> m_captureCompleteCallback;
+        };
 
-                CommonPreviewRenderer();
-                ~CommonPreviewRenderer();
+        AZ::RPI::ScenePtr GetScene() const;
+        AZ::RPI::ViewPtr GetView() const;
+        AZ::Uuid GetEntityContextId() const;
 
-                struct CaptureRequest final
-                {
-                    int m_size = 512;
-                    AZStd::shared_ptr<CommonPreviewContent> m_content;
-                    AZStd::function<void()> m_captureFailedCallback;
-                    AZStd::function<void(const QImage&)> m_captureCompleteCallback;
-                };
+        void AddCaptureRequest(const CaptureRequest& captureRequest);
 
-                RPI::ScenePtr GetScene() const;
-                RPI::ViewPtr GetView() const;
-                AZ::Uuid GetEntityContextId() const;
+        enum class State : AZ::s8
+        {
+            None,
+            IdleState,
+            LoadState,
+            CaptureState
+        };
 
-                void AddCaptureRequest(const CaptureRequest& captureRequest);
+        void SetState(State state);
+        State GetState() const;
 
-                enum class State : AZ::s8
-                {
-                    None,
-                    IdleState,
-                    LoadState,
-                    CaptureState
-                };
+        void SelectCaptureRequest();
+        void CancelCaptureRequest();
+        void CompleteCaptureRequest();
 
-                void SetState(State state);
-                State GetState() const;
+        void LoadAssets();
+        void UpdateLoadAssets();
+        void CancelLoadAssets();
 
-                void SelectCaptureRequest();
-                void CancelCaptureRequest();
-                void CompleteCaptureRequest();
+        void UpdateScene();
 
-                void LoadAssets();
-                void UpdateLoadAssets();
-                void CancelLoadAssets();
+        bool StartCapture();
+        void EndCapture();
 
-                void UpdateScene();
+    private:
+        //! AZ::Render::PreviewerFeatureProcessorProviderBus::Handler interface overrides...
+        void GetRequiredFeatureProcessors(AZStd::unordered_set<AZStd::string>& featureProcessors) const override;
 
-                bool StartCapture();
-                void EndCapture();
+        static constexpr float AspectRatio = 1.0f;
+        static constexpr float NearDist = 0.001f;
+        static constexpr float FarDist = 100.0f;
+        static constexpr float FieldOfView = AZ::Constants::HalfPi;
 
-            private:
-                //! Render::PreviewerFeatureProcessorProviderBus::Handler interface overrides...
-                void GetRequiredFeatureProcessors(AZStd::unordered_set<AZStd::string>& featureProcessors) const override;
+        AZ::RPI::ScenePtr m_scene;
+        AZStd::string m_sceneName = "Preview Renderer Scene";
+        AZStd::string m_pipelineName = "Preview Renderer Pipeline";
+        AZStd::shared_ptr<AzFramework::Scene> m_frameworkScene;
+        AZ::RPI::RenderPipelinePtr m_renderPipeline;
+        AZ::RPI::ViewPtr m_view;
+        AZStd::vector<AZStd::string> m_passHierarchy;
+        AZStd::unique_ptr<AzFramework::EntityContext> m_entityContext;
 
-                static constexpr float AspectRatio = 1.0f;
-                static constexpr float NearDist = 0.001f;
-                static constexpr float FarDist = 100.0f;
-                static constexpr float FieldOfView = Constants::HalfPi;
+        //! Incoming requests are appended to this queue and processed one at a time in OnTick function.
+        AZStd::queue<CaptureRequest> m_captureRequestQueue;
+        CaptureRequest m_currentCaptureRequest;
 
-                RPI::ScenePtr m_scene;
-                AZStd::string m_sceneName = "Material Thumbnail Scene";
-                AZStd::string m_pipelineName = "Material Thumbnail Pipeline";
-                AZStd::shared_ptr<AzFramework::Scene> m_frameworkScene;
-                RPI::RenderPipelinePtr m_renderPipeline;
-                RPI::ViewPtr m_view;
-                AZStd::vector<AZStd::string> m_passHierarchy;
-                AZStd::unique_ptr<AzFramework::EntityContext> m_entityContext;
-
-                //! Incoming requests are appended to this queue and processed one at a time in OnTick function.
-                AZStd::queue<CaptureRequest> m_captureRequestQueue;
-                CaptureRequest m_currentCaptureRequest;
-
-                AZStd::unordered_map<State, AZStd::shared_ptr<CommonPreviewRendererState>> m_states;
-                State m_currentState = CommonPreviewRenderer::State::None;
-            };
-        } // namespace Thumbnails
-    } // namespace LyIntegration
-} // namespace AZ
+        AZStd::unordered_map<State, AZStd::shared_ptr<PreviewRendererState>> m_states;
+        State m_currentState = PreviewRenderer::State::None;
+    };
+} // namespace AtomToolsFramework

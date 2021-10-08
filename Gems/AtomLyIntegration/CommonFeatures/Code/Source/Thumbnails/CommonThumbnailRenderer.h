@@ -8,10 +8,10 @@
 
 #pragma once
 
+#include <AtomToolsFramework/PreviewRenderer/PreviewRenderer.h>
 #include <AzCore/Component/TickBus.h>
 #include <AzToolsFramework/Thumbnails/Thumbnail.h>
 #include <AzToolsFramework/Thumbnails/ThumbnailerBus.h>
-#include <Thumbnails/Rendering/CommonPreviewRenderer.h>
 #include <Thumbnails/Thumbnail.h>
 
 namespace AZ
@@ -39,7 +39,7 @@ namespace AZ
                 //! SystemTickBus::Handler interface overrides...
                 void OnSystemTick() override;
 
-                CommonPreviewRenderer m_previewRenderer;
+                AtomToolsFramework::PreviewRenderer m_previewRenderer;
             };
         } // namespace Thumbnails
     } // namespace LyIntegration
