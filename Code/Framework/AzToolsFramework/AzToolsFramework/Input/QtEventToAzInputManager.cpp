@@ -372,15 +372,7 @@ namespace AzToolsFramework
 
     void QtEventToAzInputMapper::HandleMouseMoveEvent(const QPoint& globalCursorPosition)
     {
-        const QPoint cursorDelta = [this, globalCursorPosition]
-        {
-            if (m_previousGlobalCursorPosition.has_value())
-            {
-                return globalCursorPosition - m_previousGlobalCursorPosition.value();
-            }
-
-            return QPoint(0, 0);
-        }();
+        const QPoint cursorDelta = globalCursorPosition - m_previousGlobalCursorPosition;
 
         m_mouseDevice->m_cursorPositionData2D->m_normalizedPosition =
             WidgetPositionToNormalizedPosition(m_sourceWidget->mapFromGlobal(globalCursorPosition));
@@ -390,11 +382,8 @@ namespace AzToolsFramework
 
         if (m_capturingCursor)
         {
-            if (m_previousGlobalCursorPosition.has_value())
-            {
-                // Reset our cursor position to the previous point
-                AzQtComponents::SetCursorPos(m_previousGlobalCursorPosition.value());
-            }
+            // Reset our cursor position to the previous point
+            AzQtComponents::SetCursorPos(m_previousGlobalCursorPosition);
         }
         else
         {

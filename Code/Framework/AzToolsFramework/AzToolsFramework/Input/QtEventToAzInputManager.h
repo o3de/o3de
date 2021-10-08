@@ -157,7 +157,7 @@ namespace AzToolsFramework
         // A lookup table for AZ input channel ID -> physical input channel on our mouse or keyboard device.
         AZStd::unordered_map<AzFramework::InputChannelId, AzFramework::InputChannel*> m_channels;
         // Where the mouse cursor was at the last cursor event.
-        AZStd::optional<QPoint> m_previousGlobalCursorPosition;
+        QPoint m_previousGlobalCursorPosition;
         // The source widget to map events from, used to calculate the relative mouse position within the widget bounds.
         QWidget* m_sourceWidget;
         // Flags whether or not Qt events should currently be processed.
