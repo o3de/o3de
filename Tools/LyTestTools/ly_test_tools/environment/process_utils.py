@@ -465,3 +465,17 @@ def close_windows_process(pid, timeout=20, raise_on_missing=False):
     # Wait for asyncronous termination
     waiter.wait_for(lambda: pid not in psutil.pids(), timeout=timeout,
                     exc=TimeoutError(f"Process {pid} never terminated"))
+
+
+def get_display_env():
+    """
+    Fetches environment variables with an appropriate display (monitor) configured,
+      useful for subprocess calls to UI applications
+    :return: A dictionary containing environment variables (per os.environ)
+    """
+    env = os.environ.copy()
+    if not ly_test_tools.WINDOWS:
+        if 'DISPLAY' not in env.keys():
+            # assume Display 1 is available in another session
+            env['DISPLAY'] = ':1'
+    return env
