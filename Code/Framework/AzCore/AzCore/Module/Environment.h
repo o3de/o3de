@@ -254,7 +254,12 @@ namespace AZ
             template<class... Args>
             void ConstructImpl(Args&&... args)
             {
+                // Use std::launder to ensure that the compiler treats the T* reinterpret_cast as a new object
+            #if __cpp_lib_launder
                 AZStd::construct_at(std::launder(reinterpret_cast<T*>(&m_value)), AZStd::forward<Args>(args)...);
+            #else
+                AZStd::construct_at(reinterpret_cast<T*>(&m_value), AZStd::forward<Args>(args)...);
+            #endif
             }
             static void DestructDispatchNoLock(EnvironmentVariableHolderBase *base, DestroyTarget selfDestruct)
             {
@@ -268,7 +273,12 @@ namespace AZ
                 AZ_Assert(self->m_isConstructed, "Variable is not constructed. Please check your logic and guard if needed!");
                 self->m_isConstructed = false;
                 self->m_moduleOwner = nullptr;
+                // Use std::launder to ensure that the compiler treats the T* reinterpret_cast as a new object
+            #if __cpp_lib_launder
                 AZStd::destroy_at(std::launder(reinterpret_cast<T*>(&self->m_value)));
+            #else
+                AZStd::destroy_at(reinterpret_cast<T*>(&self->m_value));
+            #endif
             }
         public:
             EnvironmentVariableHolder(u32 guid, bool isOwnershipTransfer, Environment::AllocatorInterface* allocator)
