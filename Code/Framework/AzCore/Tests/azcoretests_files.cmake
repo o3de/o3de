@@ -75,11 +75,12 @@ set(FILES
     Name/NameJsonSerializerTests.cpp
     Name/NameTests.cpp
     RTTI/TypeSafeIntegralTests.cpp
-    SettingsRegistryTests.cpp
-    SettingsRegistryMergeUtilsTests.cpp
     Settings/CommandLineTests.cpp
+    Settings/SettingsRegistryTests.cpp
     Settings/SettingsRegistryConsoleUtilsTests.cpp
+    Settings/SettingsRegistryMergeUtilsTests.cpp
     Settings/SettingsRegistryScriptUtilsTests.cpp
+    Settings/SettingsRegistryVisitorUtilsTests.cpp
     Streamer/BlockCacheTests.cpp
     Streamer/DedicatedCacheTests.cpp
     Streamer/FullDecompressorTests.cpp
