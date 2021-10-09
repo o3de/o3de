@@ -22,49 +22,62 @@ namespace AZ
     public:
         AZ_RTTI(BaseJsonImporter, "{7B225807-7B43-430F-8B11-C794DCF5ACA5}");
 
-        virtual JsonSerializationResult::ResultCode Load(rapidjson::Value& importedValueOut, const rapidjson::Value& importDirective, rapidjson::Pointer pathToImportDirective, rapidjson::Document::AllocatorType& allocator);
-        virtual JsonSerializationResult::ResultCode Store(rapidjson::Value& importDirectiveOut, const rapidjson::Value& importedValue, rapidjson::Pointer pathToImportDirective, rapidjson::Document::AllocatorType& allocator, AZStd::string& importFilename);
-        virtual void SetLoadedJsonPath(AZStd::string& loadedJsonPath);
+        typedef AZStd::vector<AZStd::pair<rapidjson::Pointer, AZStd::string>> ImportDirectivesList;
+        typedef AZStd::unordered_set<AZStd::string> ImportedFilesList;
+
+        virtual JsonSerializationResult::ResultCode ResolveImport(rapidjson::Value& importedValueOut,
+            const rapidjson::Value& importDirective, const AZ::IO::FixedMaxPath& importedFilePath,
+            rapidjson::Document::AllocatorType& allocator);
+
+        virtual JsonSerializationResult::ResultCode RestoreImport(rapidjson::Value& importDirectiveOut,
+            const rapidjson::Value& currentValue, const rapidjson::Value& importedValue,
+            rapidjson::Document::AllocatorType& allocator, const AZStd::string& importFilename);
+
+        void AddImportDirective(const rapidjson::Pointer& jsonPtr, const AZStd::string& importFile);
+        const ImportDirectivesList& GetImportDirectives();
+
+        void AddImportedFile(const AZStd::string& importedFile);
+        const ImportedFilesList& GetImportedFiles();
 
         virtual ~BaseJsonImporter() = default;
 
     protected:
-        IO::FixedMaxPath m_loadedJsonPath;
+
+        ImportDirectivesList m_importDirectives;
+        ImportedFilesList m_importedFiles;
     };
 
 
     class JsonImportResolver final
     {
-        friend class JsonDeserializer;
-        friend class JsonSerializer;
-
     public:
-        AZ_RTTI(BaseJsonImporter, "{E855633D-95F6-4EE3-A4AD-4FF29176C4F2}");
+
+        static const AZ::u8 TRACK_NONE = 0;
+        static const AZ::u8 TRACK_DEPENDENCIES = (1<<0);
+        static const AZ::u8 TRACK_IMPORTS = (1<<1);
+        static const AZ::u8 TRACK_ALL = (TRACK_DEPENDENCIES | TRACK_IMPORTS);
+
+        typedef AZStd::vector<AZ::IO::FixedMaxPath> ImportPathStack;
 
         JsonImportResolver() = delete;
+        JsonImportResolver& operator=(const JsonImportResolver& rhs) = delete;
+        JsonImportResolver& operator=(JsonImportResolver&& rhs) = delete;
+        JsonImportResolver(const JsonImportResolver& rhs) = delete;
+        JsonImportResolver(JsonImportResolver&& rhs) = delete;
+        ~JsonImportResolver() = delete;
 
-        JsonImportResolver(AZStd::string& loadedJsonPath)
-        {
-            m_importerObj.reset(new BaseJsonImporter);
-            m_importerObj->SetLoadedJsonPath(loadedJsonPath);
-        }
-        
-        JsonImportResolver(BaseJsonImporter* jsonImporter)
-        {
-            m_importerObj.reset(jsonImporter);
-        }
+        static bool ResolveImports(rapidjson::Value& jsonDoc,
+            rapidjson::Document::AllocatorType& allocator, ImportPathStack& importPathStack,
+            BaseJsonImporter* importer, StackedString& element, AZ::u8 loadFlags = TRACK_ALL);
 
-        ~JsonImportResolver()
-        {
-            m_importerObj.reset();
-        }
-
-        bool LoadImports(rapidjson::Value& jsonDoc, StackedString& element, rapidjson::Document::AllocatorType& allocator);
-        bool StoreImports(rapidjson::Value& jsonDoc, StackedString& element, rapidjson::Document::AllocatorType& allocator);
+        static bool RestoreImports(rapidjson::Value& jsonDoc,
+            rapidjson::Document::AllocatorType& allocator, const AZ::IO::FixedMaxPath& loadedJsonPath,
+            BaseJsonImporter* importer);
         
     private:
 
-        AZStd::unique_ptr<BaseJsonImporter> m_importerObj;
-        AZStd::vector<AZStd::pair<rapidjson::Pointer, AZStd::string>> m_importPaths;
+        static bool ResolveNestedImports(rapidjson::Value& jsonDoc,
+            rapidjson::Document::AllocatorType& allocator, ImportPathStack& importPathStack,
+            BaseJsonImporter* importer, const AZ::IO::FixedMaxPath& importPath);
     };
 } // namespace AZ

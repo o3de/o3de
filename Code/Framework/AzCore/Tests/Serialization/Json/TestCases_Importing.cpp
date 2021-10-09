@@ -21,8 +21,14 @@ namespace JsonSerializationTests
         AZ_RTTI(JsonImporterCustom, "{003F5896-71E0-4A50-A14F-08C319B06AD0}");
 
 
-        AZ::JsonSerializationResult::ResultCode Load(rapidjson::Value& importedValueOut, const rapidjson::Value& importDirective, rapidjson::Pointer pathToImportDirective, rapidjson::Document::AllocatorType& allocator) override;
-        AZ::JsonSerializationResult::ResultCode Store(rapidjson::Value& importDirectiveOut, const rapidjson::Value& importedValue, rapidjson::Pointer pathToImportDirective, rapidjson::Document::AllocatorType& allocator, AZStd::string& importFilename) override;
+        AZ::JsonSerializationResult::ResultCode ResolveImport(rapidjson::Value& importedValueOut,
+            const rapidjson::Value& importDirective, const AZ::IO::FixedMaxPath& importedFilePath,
+            rapidjson::Document::AllocatorType& allocator) override;
+        
+        AZ::JsonSerializationResult::ResultCode RestoreImport(rapidjson::Value& importDirectiveOut,
+            const rapidjson::Value& currentValue, const rapidjson::Value& importedValue,
+            rapidjson::Document::AllocatorType& allocator, const AZStd::string& importFilename) override;
+        
         JsonImporterCustom(JsonImportingTests* tests)
         {
             testClass = tests;
@@ -86,57 +92,53 @@ namespace JsonSerializationTests
             m_jsonDocument->Parse(input);
             ASSERT_FALSE(m_jsonDocument->HasParseError());
 
-            JsonImporterCustom* importerObj = new JsonImporterCustom(this);
-            AZStd::unique_ptr<AZ::JsonImportResolver> importResolver(new AZ::JsonImportResolver(importerObj));
-
             AZ::StackedString pathLoad(AZ::StackedString::Format::JsonPointer);
-            importResolver->LoadImports(m_jsonDocument->GetObject(), pathLoad, m_jsonDocument->GetAllocator());
+            AZ::IO::FixedMaxPath filePath;
+            AZ::JsonImportResolver::ImportPathStack importPathStack;
+            importPathStack.push_back(filePath);
+            JsonImporterCustom* importerObj = new JsonImporterCustom(this);
+
+            AZ::JsonImportResolver::ResolveImports(m_jsonDocument->GetObject(), m_jsonDocument->GetAllocator(), importPathStack, importerObj, pathLoad);
 
             rapidjson::Document expectedOutcome;
             expectedOutcome.Parse(expectedImportedValue);
             ASSERT_FALSE(expectedOutcome.HasParseError());
 
             Expect_DocStrEq(m_jsonDocument->GetObject(), expectedOutcome.GetObject());
-            
+
             rapidjson::Document originalInput;
             originalInput.Parse(input);
             ASSERT_FALSE(originalInput.HasParseError());
             
-            AZ::StackedString pathStore(AZ::StackedString::Format::JsonPointer);
-            importResolver->StoreImports(m_jsonDocument->GetObject(), pathStore, m_jsonDocument->GetAllocator());
+            AZ::JsonImportResolver::RestoreImports(m_jsonDocument->GetObject(), m_jsonDocument->GetAllocator(), filePath, importerObj);
             
             Expect_DocStrEq(m_jsonDocument->GetObject(), originalInput.GetObject());
+            
+            m_jsonDocument->SetObject();
+            delete importerObj;
         }
     };
 
-    AZ::JsonSerializationResult::ResultCode JsonImporterCustom::Load(rapidjson::Value& importedValueOut, const rapidjson::Value& importDirective, rapidjson::Pointer pathToImportDirective, rapidjson::Document::AllocatorType& allocator)
+    AZ::JsonSerializationResult::ResultCode JsonImporterCustom::ResolveImport(rapidjson::Value& importedValueOut,
+            const rapidjson::Value& importDirective, const AZ::IO::FixedMaxPath& importedFilePath,
+            rapidjson::Document::AllocatorType& allocator)
     {
         AZ::JsonSerializationResult::ResultCode resultCode(AZ::JsonSerializationResult::Tasks::Import);
-        AZ::IO::FixedMaxPath filePath;
+        
+        rapidjson::Value importedDoc;
+        testClass->GetTestDocument(importedFilePath.String(), importedDoc, allocator);
+
         rapidjson::Value patch;
-        bool hasPatch = false;
         if (importDirective.IsObject())
         {
-            auto filenameField = importDirective.FindMember("filename");
-            if (filenameField != importDirective.MemberEnd())
-            {
-                filePath.Append(filenameField->value.GetString());
-            }
             auto patchField = importDirective.FindMember("patch");
             if (patchField != importDirective.MemberEnd())
             {
                 patch.CopyFrom(patchField->value, allocator);
-                hasPatch = true;
             }
         }
-        else
-        {
-            filePath.Append(importDirective.GetString());
-        }
-        
-        rapidjson::Value importedDoc;
-        testClass->GetTestDocument(filePath.String(), importedDoc, allocator);
-        if (hasPatch)
+
+        if ((patch.IsObject() && patch.MemberCount() > 0) || (patch.IsArray() && !patch.Empty()))
         {
             AZ::JsonSerialization::ApplyPatch(importedDoc, allocator, patch, AZ::JsonMergeApproach::JsonMergePatch);
         }
@@ -145,17 +147,15 @@ namespace JsonSerializationTests
         return resultCode;
     }
 
-    AZ::JsonSerializationResult::ResultCode JsonImporterCustom::Store(rapidjson::Value& importDirectiveOut, const rapidjson::Value& importedValue, rapidjson::Pointer pathToImportDirective, rapidjson::Document::AllocatorType& allocator, AZStd::string& importFilename)
+    AZ::JsonSerializationResult::ResultCode JsonImporterCustom::RestoreImport(rapidjson::Value& importDirectiveOut,
+            const rapidjson::Value& currentValue, const rapidjson::Value& importedValue,
+            rapidjson::Document::AllocatorType& allocator, const AZStd::string& importFilename)
     {
         AZ::JsonSerializationResult::ResultCode resultCode(AZ::JsonSerializationResult::Tasks::Import);
-        AZ::IO::FixedMaxPath filePath;
-        filePath.Append(importFilename.c_str());
 
-        rapidjson::Value importedDoc;
-        testClass->GetTestDocument(filePath.String(), importedDoc, allocator);
         rapidjson::Value patch;
-        AZ::JsonSerialization::CreatePatch(patch, allocator, importedDoc, importedValue, AZ::JsonMergeApproach::JsonMergePatch);
-        if (patch.IsObject())
+        AZ::JsonSerialization::CreatePatch(patch, allocator, currentValue, importedValue, AZ::JsonMergeApproach::JsonMergePatch);
+        if ((patch.IsObject() && patch.MemberCount() > 0) || (patch.IsArray() && !patch.Empty()))
         {
             importDirectiveOut.AddMember(rapidjson::StringRef("filename"), rapidjson::StringRef(importFilename.c_str()), allocator);
             importDirectiveOut.AddMember(rapidjson::StringRef("patch"), patch, allocator);
