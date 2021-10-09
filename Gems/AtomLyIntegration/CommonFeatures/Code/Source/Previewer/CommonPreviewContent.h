@@ -8,8 +8,8 @@
 
 #pragma once
 
+#include <Atom/Feature/Material/MaterialAssignment.h>
 #include <Atom/RPI.Public/Base.h>
-#include <Atom/RPI.Reflect/Asset/AssetUtils.h>
 #include <Atom/RPI.Reflect/Material/MaterialAsset.h>
 #include <Atom/RPI.Reflect/Model/ModelAsset.h>
 #include <Atom/RPI.Reflect/System/AnyAsset.h>
@@ -31,7 +31,8 @@ namespace AZ
                 AZ::Uuid entityContextId,
                 const Data::AssetId& modelAssetId,
                 const Data::AssetId& materialAssetId,
-                const Data::AssetId& lightingPresetAssetId);
+                const Data::AssetId& lightingPresetAssetId,
+                const Render::MaterialPropertyOverrideMap& materialPropertyOverrides);
 
             ~CommonPreviewContent() override;
 
@@ -57,22 +58,10 @@ namespace AZ
             AZ::Uuid m_entityContextId;
             Entity* m_modelEntity = nullptr;
 
-            static constexpr const char* DefaultLightingPresetPath = "lightingpresets/thumbnail.lightingpreset.azasset";
-            const Data::AssetId DefaultLightingPresetAssetId = AZ::RPI::AssetUtils::GetAssetIdForProductPath(DefaultLightingPresetPath);
-            Data::Asset<RPI::AnyAsset> m_defaultLightingPresetAsset;
-            Data::Asset<RPI::AnyAsset> m_lightingPresetAsset;
-
-            //! Model asset about to be rendered
-            static constexpr const char* DefaultModelPath = "models/sphere.azmodel";
-            const Data::AssetId DefaultModelAssetId = AZ::RPI::AssetUtils::GetAssetIdForProductPath(DefaultModelPath);
-            Data::Asset<RPI::ModelAsset> m_defaultModelAsset;
             Data::Asset<RPI::ModelAsset> m_modelAsset;
-
-            //! Material asset about to be rendered
-            static constexpr const char* DefaultMaterialPath = "materials/basic_grey.azmaterial";
-            const Data::AssetId DefaultMaterialAssetId = AZ::RPI::AssetUtils::GetAssetIdForProductPath(DefaultMaterialPath);
-            Data::Asset<RPI::MaterialAsset> m_defaultMaterialAsset;
             Data::Asset<RPI::MaterialAsset> m_materialAsset;
+            Data::Asset<RPI::AnyAsset> m_lightingPresetAsset;
+            Render::MaterialPropertyOverrideMap m_materialPropertyOverrides;
         };
     } // namespace LyIntegration
 } // namespace AZ

@@ -20,7 +20,7 @@ namespace AzFramework
     class Scene;
 }
 
-class QImage;
+class QPixmap;
 
 namespace AtomToolsFramework
 {
@@ -30,7 +30,7 @@ namespace AtomToolsFramework
     public:
         AZ_CLASS_ALLOCATOR(PreviewRenderer, AZ::SystemAllocator, 0);
 
-        PreviewRenderer();
+        PreviewRenderer(const AZStd::string& sceneName, const AZStd::string& pipelineName);
         ~PreviewRenderer();
 
         struct CaptureRequest final
@@ -38,14 +38,14 @@ namespace AtomToolsFramework
             int m_size = 512;
             AZStd::shared_ptr<PreviewContent> m_content;
             AZStd::function<void()> m_captureFailedCallback;
-            AZStd::function<void(const QImage&)> m_captureCompleteCallback;
+            AZStd::function<void(const QPixmap&)> m_captureCompleteCallback;
         };
+
+        void AddCaptureRequest(const CaptureRequest& captureRequest);
 
         AZ::RPI::ScenePtr GetScene() const;
         AZ::RPI::ViewPtr GetView() const;
         AZ::Uuid GetEntityContextId() const;
-
-        void AddCaptureRequest(const CaptureRequest& captureRequest);
 
         enum class State : AZ::s8
         {
@@ -81,8 +81,6 @@ namespace AtomToolsFramework
         static constexpr float FieldOfView = AZ::Constants::HalfPi;
 
         AZ::RPI::ScenePtr m_scene;
-        AZStd::string m_sceneName = "Preview Renderer Scene";
-        AZStd::string m_pipelineName = "Preview Renderer Pipeline";
         AZStd::shared_ptr<AzFramework::Scene> m_frameworkScene;
         AZ::RPI::RenderPipelinePtr m_renderPipeline;
         AZ::RPI::ViewPtr m_view;

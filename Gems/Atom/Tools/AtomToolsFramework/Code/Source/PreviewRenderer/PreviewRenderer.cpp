@@ -24,9 +24,12 @@
 #include <PreviewRenderer/PreviewRendererIdleState.h>
 #include <PreviewRenderer/PreviewRendererLoadState.h>
 
+#include <QImage>
+#include <QPixmap>
+
 namespace AtomToolsFramework
 {
-    PreviewRenderer::PreviewRenderer()
+    PreviewRenderer::PreviewRenderer(const AZStd::string& sceneName, const AZStd::string& pipelineName)
     {
         PreviewerFeatureProcessorProviderBus::Handler::BusConnect();
 
@@ -46,7 +49,7 @@ namespace AtomToolsFramework
         auto sceneSystem = AzFramework::SceneSystemInterface::Get();
         AZ_Assert(sceneSystem, "Failed to get scene system implementation.");
 
-        AZ::Outcome<AZStd::shared_ptr<AzFramework::Scene>, AZStd::string> createSceneOutcome = sceneSystem->CreateScene(m_sceneName);
+        AZ::Outcome<AZStd::shared_ptr<AzFramework::Scene>, AZStd::string> createSceneOutcome = sceneSystem->CreateScene(sceneName);
         AZ_Assert(createSceneOutcome, createSceneOutcome.GetError().c_str());
 
         m_frameworkScene = createSceneOutcome.TakeValue();
@@ -56,7 +59,7 @@ namespace AtomToolsFramework
         // Create a render pipeline from the specified asset for the window context and add the pipeline to the scene
         AZ::RPI::RenderPipelineDescriptor pipelineDesc;
         pipelineDesc.m_mainViewTagName = "MainCamera";
-        pipelineDesc.m_name = m_pipelineName;
+        pipelineDesc.m_name = pipelineName;
         pipelineDesc.m_rootPassTemplate = "MainPipelineRenderToTexture";
 
         // We have to set the samples to 4 to match the pipeline passes' setting, otherwise it may lead to device lost issue
@@ -66,7 +69,7 @@ namespace AtomToolsFramework
         m_scene->AddRenderPipeline(m_renderPipeline);
         m_scene->Activate();
         AZ::RPI::RPISystemInterface::Get()->RegisterScene(m_scene);
-        m_passHierarchy.push_back(m_pipelineName);
+        m_passHierarchy.push_back(pipelineName);
         m_passHierarchy.push_back("CopyToSwapChain");
 
         // Connect camera to pipeline's default view after camera entity activated
@@ -97,6 +100,11 @@ namespace AtomToolsFramework
         m_frameworkScene->UnsetSubsystem(m_entityContext.get());
     }
 
+    void PreviewRenderer::AddCaptureRequest(const CaptureRequest& captureRequest)
+    {
+        m_captureRequestQueue.push(captureRequest);
+    }
+
     AZ::RPI::ScenePtr PreviewRenderer::GetScene() const
     {
         return m_scene;
@@ -110,11 +118,6 @@ namespace AtomToolsFramework
     AZ::Uuid PreviewRenderer::GetEntityContextId() const
     {
         return m_entityContext->GetContextId();
-    }
-
-    void PreviewRenderer::AddCaptureRequest(const CaptureRequest& captureRequest)
-    {
-        m_captureRequestQueue.push(captureRequest);
     }
 
     void PreviewRenderer::SetState(State state)
@@ -199,9 +202,9 @@ namespace AtomToolsFramework
         {
             if (result.m_dataBuffer)
             {
-                currentCaptureRequest.m_captureCompleteCallback(QImage(
+                currentCaptureRequest.m_captureCompleteCallback(QPixmap::fromImage(QImage(
                     result.m_dataBuffer.get()->data(), result.m_imageDescriptor.m_size.m_width, result.m_imageDescriptor.m_size.m_height,
-                    QImage::Format_RGBA8888));
+                    QImage::Format_RGBA8888)));
             }
             else
             {

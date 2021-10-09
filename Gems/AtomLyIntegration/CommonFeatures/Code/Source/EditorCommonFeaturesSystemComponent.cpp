@@ -98,9 +98,9 @@ namespace AZ
 
         void EditorCommonFeaturesSystemComponent::Deactivate()
         {
-            AzToolsFramework::EditorLevelNotificationBus::Handler::BusDisconnect();
             AzFramework::ApplicationLifecycleEvents::Bus::Handler::BusDisconnect();
             AzFramework::AssetCatalogEventBus::Handler::BusDisconnect();
+            AzToolsFramework::EditorLevelNotificationBus::Handler::BusDisconnect();
             AzToolsFramework::AssetBrowser::PreviewerRequestBus::Handler::BusDisconnect();
 
             m_skinnedMeshDebugDisplay.reset();

@@ -9,6 +9,7 @@
 #pragma once
 
 #if !defined(Q_MOC_RUN)
+#include <AtomLyIntegration/CommonFeatures/Material/EditorMaterialSystemComponentNotificationBus.h>
 #include <AtomLyIntegration/CommonFeatures/Material/MaterialComponentBus.h>
 #include <AtomToolsFramework/DynamicProperty/DynamicPropertyGroup.h>
 #include <AtomToolsFramework/Inspector/InspectorWidget.h>
@@ -39,6 +40,7 @@ namespace AZ
                 , public AZ::EntitySystemBus::Handler
                 , public AZ::TickBus::Handler
                 , public MaterialComponentNotificationBus::Handler
+                , public EditorMaterialSystemComponentNotificationBus::Handler
            {
                 Q_OBJECT
             public:
@@ -89,11 +91,19 @@ namespace AZ
                 //! MaterialComponentNotificationBus::Handler overrides...
                 void OnMaterialsEdited() override;
 
-                void UpdateUI();
-                void QueueUpdateUI();
+                //! EditorMaterialSystemComponentNotificationBus::Handler overrides...
+                void OnRenderMaterialPreviewComplete(
+                    const AZ::EntityId& entityId,
+                    const AZ::Render::MaterialAssignmentId& materialAssignmentId,
+                    const QPixmap& pixmap) override;
 
-                void AddDetailsGroup();
+                void UpdateUI();
+
+                void CreateHeading();
+                void UpdateHeading();
+
                 void AddUvNamesGroup();
+                void AddPropertiesGroup();
 
                 void LoadOverridesFromEntity();
                 void SaveOverridesToEntity(bool commitChanges);
@@ -115,7 +125,10 @@ namespace AZ
                 AZ::RPI::MaterialPropertyFlags m_dirtyPropertyFlags = {};
                 AZStd::unordered_map<AZStd::string, AtomToolsFramework::DynamicPropertyGroup> m_groups = {};
                 bool m_internalEditNotification = {};
-                QLabel* m_messageLabel = {};
+                bool m_updateUI = {};
+                bool m_updatePreview = {};
+                QLabel* m_overviewText = {};
+                QLabel* m_overviewImage = {};
            };
         } // namespace EditorMaterialComponentInspector
     } // namespace Render

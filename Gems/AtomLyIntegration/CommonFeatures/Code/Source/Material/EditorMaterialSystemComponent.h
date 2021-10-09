@@ -7,13 +7,14 @@
  */
 #pragma once
 
+#include <AtomLyIntegration/CommonFeatures/Material/EditorMaterialSystemComponentRequestBus.h>
+#include <AtomToolsFramework/PreviewRenderer/PreviewRenderer.h>
+#include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Component/Component.h>
+#include <AzFramework/Application/Application.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
 #include <AzToolsFramework/Viewport/ActionBus.h>
-
-#include <AtomLyIntegration/CommonFeatures/Material/EditorMaterialSystemComponentRequestBus.h>
-
 #include <Material/MaterialBrowserInteractions.h>
 
 namespace AZ
@@ -21,12 +22,14 @@ namespace AZ
     namespace Render
     {
         //! System component that manages launching and maintaining connections with the material editor.
-        class EditorMaterialSystemComponent
+        class EditorMaterialSystemComponent final
             : public AZ::Component
-            , private EditorMaterialSystemComponentRequestBus::Handler
-            , private AzToolsFramework::AssetBrowser::AssetBrowserInteractionNotificationBus::Handler
-            , private AzToolsFramework::EditorMenuNotificationBus::Handler
-            , private AzToolsFramework::EditorEvents::Bus::Handler
+            , public EditorMaterialSystemComponentRequestBus::Handler
+            , public AzToolsFramework::AssetBrowser::AssetBrowserInteractionNotificationBus::Handler
+            , public AzToolsFramework::EditorMenuNotificationBus::Handler
+            , public AzToolsFramework::EditorEvents::Bus::Handler
+            , public AzFramework::AssetCatalogEventBus::Handler
+            , public AzFramework::ApplicationLifecycleEvents::Bus::Handler
         {
         public:
             AZ_COMPONENT(EditorMaterialSystemComponent, "{96652157-DA0B-420F-B49C-0207C585144C}");
@@ -47,6 +50,8 @@ namespace AZ
             //! EditorMaterialSystemComponentRequestBus::Handler overrides...
             void OpenMaterialEditor(const AZStd::string& sourcePath) override;
             void OpenMaterialInspector(const AZ::EntityId& entityId, const AZ::Render::MaterialAssignmentId& materialAssignmentId) override;
+            void RenderMaterialPreview(
+                const AZ::EntityId& entityId, const AZ::Render::MaterialAssignmentId& materialAssignmentId) override;
 
             //! AssetBrowserInteractionNotificationBus::Handler overrides...
             AzToolsFramework::AssetBrowser::SourceFileDetails GetSourceFileDetails(const char* fullSourceFileName) override;
@@ -58,9 +63,16 @@ namespace AZ
             // AztoolsFramework::EditorEvents::Bus::Handler overrides...
             void NotifyRegisterViews() override;
 
-            QAction* m_openMaterialEditorAction = nullptr;
 
+            // AzFramework::AssetCatalogEventBus::Handler overrides ...
+            void OnCatalogLoaded(const char* catalogFile) override;
+
+            // AzFramework::ApplicationLifecycleEvents overrides...
+            void OnApplicationAboutToStop() override;
+
+            QAction* m_openMaterialEditorAction = nullptr;
             AZStd::unique_ptr<MaterialBrowserInteractions> m_materialBrowserInteractions;
+            AZStd::unique_ptr<AtomToolsFramework::PreviewRenderer> m_previewRenderer;
         };
     } // namespace Render
 } // namespace AZ

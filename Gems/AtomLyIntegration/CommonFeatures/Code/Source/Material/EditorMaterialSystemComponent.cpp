@@ -6,7 +6,10 @@
  *
  */
 
+#include <AtomLyIntegration/CommonFeatures/Material/EditorMaterialSystemComponentNotificationBus.h>
 #include <Atom/RHI/Factory.h>
+#include <Atom/RPI.Reflect/Asset/AssetUtils.h>
+#include <AtomLyIntegration/CommonFeatures/Material/MaterialComponentBus.h>
 #include <AtomToolsFramework/Util/Util.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/EditContextConstants.inl>
@@ -19,6 +22,7 @@
 #include <Editor/LyViewPaneNames.h>
 #include <Material/EditorMaterialComponentInspector.h>
 #include <Material/EditorMaterialSystemComponent.h>
+#include <Previewer/CommonPreviewContent.h>
 
 // Disables warning messages triggered by the Qt library
 // 4251: class needs to have dll-interface to be used by clients of class 
@@ -28,6 +32,8 @@ AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option")
 #include <QApplication>
 #include <QDockWidget>
 #include <QObject>
+#include <QPixmap>
+#include <QImage>
 #include <QProcessEnvironment>
 AZ_POP_DISABLE_WARNING
 
@@ -86,17 +92,20 @@ namespace AZ
             AzToolsFramework::AssetBrowser::AssetBrowserInteractionNotificationBus::Handler::BusConnect();
             AzToolsFramework::EditorMenuNotificationBus::Handler::BusConnect();
             AzToolsFramework::EditorEvents::Bus::Handler::BusConnect();
-
-            m_materialBrowserInteractions.reset(aznew MaterialBrowserInteractions);
+            AzFramework::AssetCatalogEventBus::Handler::BusConnect();
+            AzFramework::ApplicationLifecycleEvents::Bus::Handler::BusConnect();
         }
 
         void EditorMaterialSystemComponent::Deactivate()
         {
+            AzFramework::ApplicationLifecycleEvents::Bus::Handler::BusDisconnect();
+            AzFramework::AssetCatalogEventBus::Handler::BusDisconnect();
             EditorMaterialSystemComponentRequestBus::Handler::BusDisconnect();
             AzToolsFramework::AssetBrowser::AssetBrowserInteractionNotificationBus::Handler::BusDisconnect();
             AzToolsFramework::EditorMenuNotificationBus::Handler::BusDisconnect();
             AzToolsFramework::EditorEvents::Bus::Handler::BusDisconnect(); 
 
+            m_previewRenderer.reset();
             m_materialBrowserInteractions.reset();
 
             if (m_openMaterialEditorAction)
@@ -143,6 +152,47 @@ namespace AZ
             }
         }
 
+        void EditorMaterialSystemComponent::RenderMaterialPreview(
+            const AZ::EntityId& entityId, const AZ::Render::MaterialAssignmentId& materialAssignmentId)
+        {
+            static constexpr const char* DefaultModelPath = "models/sphere.azmodel";
+            static constexpr const char* DefaultLightingPresetPath = "lightingpresets/thumbnail.lightingpreset.azasset";
+
+            if (m_previewRenderer)
+            {
+                AZ::Data::AssetId materialAssetId = {};
+                MaterialComponentRequestBus::EventResult(
+                    materialAssetId, entityId, &MaterialComponentRequestBus::Events::GetMaterialOverride, materialAssignmentId);
+                if (!materialAssetId.IsValid())
+                {
+                    MaterialComponentRequestBus::EventResult(
+                        materialAssetId, entityId, &MaterialComponentRequestBus::Events::GetDefaultMaterialAssetId, materialAssignmentId);
+                }
+
+                AZ::Render::MaterialPropertyOverrideMap propertyOverrides;
+                AZ::Render::MaterialComponentRequestBus::EventResult(
+                    propertyOverrides, entityId, &AZ::Render::MaterialComponentRequestBus::Events::GetPropertyOverrides,
+                    materialAssignmentId);
+
+                m_previewRenderer->AddCaptureRequest(
+                    { 128,
+                      AZStd::make_shared<AZ::LyIntegration::CommonPreviewContent>(
+                          m_previewRenderer->GetScene(), m_previewRenderer->GetView(), m_previewRenderer->GetEntityContextId(),
+                          AZ::RPI::AssetUtils::GetAssetIdForProductPath(DefaultModelPath), materialAssetId,
+                          AZ::RPI::AssetUtils::GetAssetIdForProductPath(DefaultLightingPresetPath), propertyOverrides),
+                      []()
+                      {
+                          // failed
+                      },
+                      [entityId, materialAssignmentId](const QPixmap& pixmap)
+                      {
+                          AZ::Render::EditorMaterialSystemComponentNotificationBus::Broadcast(
+                              &AZ::Render::EditorMaterialSystemComponentNotificationBus::Events::OnRenderMaterialPreviewComplete, entityId,
+                              materialAssignmentId, pixmap);
+                      } });
+            }
+        }
+
         void EditorMaterialSystemComponent::OnPopulateToolMenuItems()
         {
             if (!m_openMaterialEditorAction)
@@ -183,6 +233,21 @@ namespace AZ
             inspectorOptions.showOnToolsToolbar = false;
             AzToolsFramework::RegisterViewPane<AZ::Render::EditorMaterialComponentInspector::MaterialPropertyInspector>(
                 "Material Property Inspector", LyViewPane::CategoryTools, inspectorOptions);
+        }
+
+        void EditorMaterialSystemComponent::OnCatalogLoaded([[maybe_unused]] const char* catalogFile)
+        {
+            AZ::TickBus::QueueFunction([this](){
+                m_materialBrowserInteractions.reset(aznew MaterialBrowserInteractions);
+                m_previewRenderer.reset(aznew AtomToolsFramework::PreviewRenderer(
+                    "EditorMaterialSystemComponent Preview Scene", "EditorMaterialSystemComponent Preview Pipeline"));
+            });
+        }
+
+        void EditorMaterialSystemComponent::OnApplicationAboutToStop()
+        {
+            m_previewRenderer.reset();
+            m_materialBrowserInteractions.reset();
         }
 
         AzToolsFramework::AssetBrowser::SourceFileDetails EditorMaterialSystemComponent::GetSourceFileDetails(

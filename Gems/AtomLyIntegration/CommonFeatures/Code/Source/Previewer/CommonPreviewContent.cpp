@@ -35,10 +35,12 @@ namespace AZ
             AZ::Uuid entityContextId,
             const Data::AssetId& modelAssetId,
             const Data::AssetId& materialAssetId,
-            const Data::AssetId& lightingPresetAssetId)
+            const Data::AssetId& lightingPresetAssetId,
+            const Render::MaterialPropertyOverrideMap& materialPropertyOverrides)
             : m_scene(scene)
             , m_view(view)
             , m_entityContextId(entityContextId)
+            , m_materialPropertyOverrides(materialPropertyOverrides)
         {
             // Create preview model
             AzFramework::EntityContextRequestBus::EventResult(
@@ -49,13 +51,9 @@ namespace AZ
             m_modelEntity->Init();
             m_modelEntity->Activate();
 
-            m_defaultModelAsset.Create(DefaultModelAssetId, true);
-            m_defaultMaterialAsset.Create(DefaultMaterialAssetId, true);
-            m_defaultLightingPresetAsset.Create(DefaultLightingPresetAssetId, true);
-
-            m_modelAsset.Create(modelAssetId.IsValid() ? modelAssetId : DefaultModelAssetId, false);
-            m_materialAsset.Create(materialAssetId.IsValid() ? materialAssetId : DefaultMaterialAssetId, false);
-            m_lightingPresetAsset.Create(lightingPresetAssetId.IsValid() ? lightingPresetAssetId : DefaultLightingPresetAssetId, false);
+            m_modelAsset.Create(modelAssetId);
+            m_materialAsset.Create(materialAssetId);
+            m_lightingPresetAsset.Create(lightingPresetAssetId);
         }
 
         CommonPreviewContent::~CommonPreviewContent()
@@ -113,35 +111,44 @@ namespace AZ
                 m_modelEntity->GetId(), &Render::MeshComponentRequestBus::Events::SetModelAsset, m_modelAsset);
 
             Render::MaterialComponentRequestBus::Event(
-                m_modelEntity->GetId(), &Render::MaterialComponentRequestBus::Events::SetDefaultMaterialOverride, m_materialAsset.GetId());
+                m_modelEntity->GetId(), &Render::MaterialComponentRequestBus::Events::SetMaterialOverride,
+                Render::DefaultMaterialAssignmentId, m_materialAsset.GetId());
+
+            Render::MaterialComponentRequestBus::Event(
+                m_modelEntity->GetId(), &Render::MaterialComponentRequestBus::Events::SetPropertyOverrides,
+                Render::DefaultMaterialAssignmentId, m_materialPropertyOverrides);
         }
 
         void CommonPreviewContent::UpdateLighting()
         {
-            auto preset = m_lightingPresetAsset->GetDataAs<Render::LightingPreset>();
-            if (preset)
+            if (m_lightingPresetAsset.IsReady())
             {
-                auto iblFeatureProcessor = m_scene->GetFeatureProcessor<Render::ImageBasedLightFeatureProcessorInterface>();
-                auto postProcessFeatureProcessor = m_scene->GetFeatureProcessor<Render::PostProcessFeatureProcessorInterface>();
-                auto postProcessSettingInterface = postProcessFeatureProcessor->GetOrCreateSettingsInterface(EntityId());
-                auto exposureControlSettingInterface = postProcessSettingInterface->GetOrCreateExposureControlSettingsInterface();
-                auto directionalLightFeatureProcessor = m_scene->GetFeatureProcessor<Render::DirectionalLightFeatureProcessorInterface>();
-                auto skyboxFeatureProcessor = m_scene->GetFeatureProcessor<Render::SkyBoxFeatureProcessorInterface>();
-                skyboxFeatureProcessor->Enable(true);
-                skyboxFeatureProcessor->SetSkyboxMode(Render::SkyBoxMode::Cubemap);
+                auto preset = m_lightingPresetAsset->GetDataAs<Render::LightingPreset>();
+                if (preset)
+                {
+                    auto iblFeatureProcessor = m_scene->GetFeatureProcessor<Render::ImageBasedLightFeatureProcessorInterface>();
+                    auto postProcessFeatureProcessor = m_scene->GetFeatureProcessor<Render::PostProcessFeatureProcessorInterface>();
+                    auto postProcessSettingInterface = postProcessFeatureProcessor->GetOrCreateSettingsInterface(EntityId());
+                    auto exposureControlSettingInterface = postProcessSettingInterface->GetOrCreateExposureControlSettingsInterface();
+                    auto directionalLightFeatureProcessor =
+                        m_scene->GetFeatureProcessor<Render::DirectionalLightFeatureProcessorInterface>();
+                    auto skyboxFeatureProcessor = m_scene->GetFeatureProcessor<Render::SkyBoxFeatureProcessorInterface>();
+                    skyboxFeatureProcessor->Enable(true);
+                    skyboxFeatureProcessor->SetSkyboxMode(Render::SkyBoxMode::Cubemap);
 
-                Camera::Configuration cameraConfig;
-                cameraConfig.m_fovRadians = FieldOfView;
-                cameraConfig.m_nearClipDistance = NearDist;
-                cameraConfig.m_farClipDistance = FarDist;
-                cameraConfig.m_frustumWidth = 100.0f;
-                cameraConfig.m_frustumHeight = 100.0f;
+                    Camera::Configuration cameraConfig;
+                    cameraConfig.m_fovRadians = FieldOfView;
+                    cameraConfig.m_nearClipDistance = NearDist;
+                    cameraConfig.m_farClipDistance = FarDist;
+                    cameraConfig.m_frustumWidth = 100.0f;
+                    cameraConfig.m_frustumHeight = 100.0f;
 
-                AZStd::vector<Render::DirectionalLightFeatureProcessorInterface::LightHandle> lightHandles;
+                    AZStd::vector<Render::DirectionalLightFeatureProcessorInterface::LightHandle> lightHandles;
 
-                preset->ApplyLightingPreset(
-                    iblFeatureProcessor, skyboxFeatureProcessor, exposureControlSettingInterface, directionalLightFeatureProcessor,
-                    cameraConfig, lightHandles);
+                    preset->ApplyLightingPreset(
+                        iblFeatureProcessor, skyboxFeatureProcessor, exposureControlSettingInterface, directionalLightFeatureProcessor,
+                        cameraConfig, lightHandles);
+                }
             }
         }
 
@@ -157,8 +164,8 @@ namespace AZ
 
             const auto distance = radius + NearDist;
             const auto cameraRotation = Quaternion::CreateFromAxisAngle(Vector3::CreateAxisZ(), CameraRotationAngle);
-            const auto cameraPosition = center - cameraRotation.TransformVector(Vector3(0.0f, distance, 0.0f));
-            const auto cameraTransform = Transform::CreateFromQuaternionAndTranslation(cameraRotation, cameraPosition);
+            const auto cameraPosition = center + cameraRotation.TransformVector(Vector3(0.0f, distance, 0.0f));
+            const auto cameraTransform = Transform::CreateLookAt(cameraPosition, center);
             m_view->SetCameraTransform(Matrix3x4::CreateFromTransform(cameraTransform));
         }
     } // namespace LyIntegration

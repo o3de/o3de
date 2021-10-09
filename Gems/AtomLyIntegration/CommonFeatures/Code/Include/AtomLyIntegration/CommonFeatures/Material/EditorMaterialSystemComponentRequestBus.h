@@ -5,6 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+
 #pragma once
 
 #include <Atom/Feature/Material/MaterialAssignmentId.h>
@@ -17,8 +18,7 @@ namespace AZ
     namespace Render
     {
         //! EditorMaterialSystemComponentRequests provides an interface to communicate with MaterialEditor
-        class EditorMaterialSystemComponentRequests
-            : public AZ::EBusTraits
+        class EditorMaterialSystemComponentRequests : public AZ::EBusTraits
         {
         public:
             // Only a single handler is allowed
@@ -30,6 +30,10 @@ namespace AZ
 
             //! Open material instance editor
             virtual void OpenMaterialInspector(
+                const AZ::EntityId& entityId, const AZ::Render::MaterialAssignmentId& materialAssignmentId) = 0;
+
+            //! Generate a material preview image
+            virtual void RenderMaterialPreview(
                 const AZ::EntityId& entityId, const AZ::Render::MaterialAssignmentId& materialAssignmentId) = 0;
         };
         using EditorMaterialSystemComponentRequestBus = AZ::EBus<EditorMaterialSystemComponentRequests>;

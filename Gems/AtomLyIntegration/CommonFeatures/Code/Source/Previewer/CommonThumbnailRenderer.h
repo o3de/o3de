@@ -8,6 +8,10 @@
 
 #pragma once
 
+#include <Atom/RPI.Reflect/Asset/AssetUtils.h>
+#include <Atom/RPI.Reflect/Material/MaterialAsset.h>
+#include <Atom/RPI.Reflect/Model/ModelAsset.h>
+#include <Atom/RPI.Reflect/System/AnyAsset.h>
 #include <AtomToolsFramework/PreviewRenderer/PreviewRenderer.h>
 #include <AzCore/Component/TickBus.h>
 #include <AzToolsFramework/Thumbnails/Thumbnail.h>
@@ -39,7 +43,19 @@ namespace AZ
                 //! SystemTickBus::Handler interface overrides...
                 void OnSystemTick() override;
 
-                AtomToolsFramework::PreviewRenderer m_previewRenderer;
+                static constexpr const char* DefaultLightingPresetPath = "lightingpresets/thumbnail.lightingpreset.azasset";
+                const Data::AssetId DefaultLightingPresetAssetId = AZ::RPI::AssetUtils::GetAssetIdForProductPath(DefaultLightingPresetPath);
+                Data::Asset<RPI::AnyAsset> m_defaultLightingPresetAsset;
+
+                static constexpr const char* DefaultModelPath = "models/sphere.azmodel";
+                const Data::AssetId DefaultModelAssetId = AZ::RPI::AssetUtils::GetAssetIdForProductPath(DefaultModelPath);
+                Data::Asset<RPI::ModelAsset> m_defaultModelAsset;
+
+                static constexpr const char* DefaultMaterialPath = "";
+                const Data::AssetId DefaultMaterialAssetId;
+                Data::Asset<RPI::MaterialAsset> m_defaultMaterialAsset;
+
+                AZStd::unique_ptr<AtomToolsFramework::PreviewRenderer> m_previewRenderer;
             };
         } // namespace Thumbnails
     } // namespace LyIntegration

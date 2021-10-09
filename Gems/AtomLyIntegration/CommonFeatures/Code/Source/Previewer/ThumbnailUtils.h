@@ -21,7 +21,10 @@ namespace AZ
         namespace Thumbnails
         {
             //! Get assetId by assetType that belongs to either source or product thumbnail key
-            Data::AssetId GetAssetId(AzToolsFramework::Thumbnailer::SharedThumbnailKey key, const Data::AssetType& assetType);
+            Data::AssetId GetAssetId(
+                AzToolsFramework::Thumbnailer::SharedThumbnailKey key,
+                const Data::AssetType& assetType,
+                const Data::AssetId& defaultAssetId = {});
 
             //! Word wrap function for previewer QLabel, since by default it does not break long words such as filenames, so manual word wrap needed
             QString WordWrap(const QString& string, int maxLength);

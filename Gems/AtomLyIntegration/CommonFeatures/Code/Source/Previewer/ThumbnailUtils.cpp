@@ -19,10 +19,11 @@ namespace AZ
     {
         namespace Thumbnails
         {
-            Data::AssetId GetAssetId(AzToolsFramework::Thumbnailer::SharedThumbnailKey key, const Data::AssetType& assetType)
+            Data::AssetId GetAssetId(
+                AzToolsFramework::Thumbnailer::SharedThumbnailKey key,
+                const Data::AssetType& assetType,
+                const Data::AssetId& defaultAssetId)
             {
-                static const Data::AssetId invalidAssetId;
-
                 // if it's a source thumbnail key, find first product with a matching asset type
                 auto sourceKey = azrtti_cast<const AzToolsFramework::AssetBrowser::SourceThumbnailKey*>(key.data());
                 if (sourceKey)
@@ -32,7 +33,7 @@ namespace AZ
                     AzToolsFramework::AssetSystemRequestBus::BroadcastResult(foundIt, &AzToolsFramework::AssetSystemRequestBus::Events::GetAssetsProducedBySourceUUID, sourceKey->GetSourceUuid(), productsAssetInfo);
                     if (!foundIt)
                     {
-                        return invalidAssetId;
+                        return defaultAssetId;
                     }
                     auto assetInfoIt = AZStd::find_if(productsAssetInfo.begin(), productsAssetInfo.end(),
                         [&assetType](const Data::AssetInfo& assetInfo)
@@ -41,7 +42,7 @@ namespace AZ
                         });
                     if (assetInfoIt == productsAssetInfo.end())
                     {
-                        return invalidAssetId;
+                        return defaultAssetId;
                     }
 
                     return assetInfoIt->m_assetId;
@@ -53,7 +54,7 @@ namespace AZ
                 {
                     return productKey->GetAssetId();
                 }
-                return invalidAssetId;
+                return defaultAssetId;
             }
 
 

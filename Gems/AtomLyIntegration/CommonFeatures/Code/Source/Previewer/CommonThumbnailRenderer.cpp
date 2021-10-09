@@ -20,6 +20,13 @@ namespace AZ
         {
             CommonThumbnailRenderer::CommonThumbnailRenderer()
             {
+                m_previewRenderer.reset(aznew AtomToolsFramework::PreviewRenderer(
+                    "CommonThumbnailRenderer Preview Scene", "CommonThumbnailRenderer Preview Pipeline"));
+
+                m_defaultModelAsset.Create(DefaultModelAssetId, true);
+                m_defaultMaterialAsset.Create(DefaultMaterialAssetId, true);
+                m_defaultLightingPresetAsset.Create(DefaultLightingPresetAssetId, true);
+
                 // CommonThumbnailRenderer supports both models and materials
                 AzToolsFramework::Thumbnailer::ThumbnailerRendererRequestBus::MultiHandler::BusConnect(RPI::MaterialAsset::RTTI_Type());
                 AzToolsFramework::Thumbnailer::ThumbnailerRendererRequestBus::MultiHandler::BusConnect(RPI::ModelAsset::RTTI_Type());
@@ -35,26 +42,24 @@ namespace AZ
 
             void CommonThumbnailRenderer::RenderThumbnail(AzToolsFramework::Thumbnailer::SharedThumbnailKey thumbnailKey, int thumbnailSize)
             {
-                m_previewRenderer.AddCaptureRequest(
+                m_previewRenderer->AddCaptureRequest(
                     { thumbnailSize,
                       AZStd::make_shared<CommonPreviewContent>(
-                          m_previewRenderer.GetScene(),
-                          m_previewRenderer.GetView(),
-                          m_previewRenderer.GetEntityContextId(),
-                          GetAssetId(thumbnailKey, RPI::ModelAsset::RTTI_Type()),
-                          GetAssetId(thumbnailKey, RPI::MaterialAsset::RTTI_Type()),
-                          GetAssetId(thumbnailKey, RPI::AnyAsset::RTTI_Type())),
-                          [thumbnailKey]()
-                          {
-                              AzToolsFramework::Thumbnailer::ThumbnailerRendererNotificationBus::Event(
-                                  thumbnailKey, &AzToolsFramework::Thumbnailer::ThumbnailerRendererNotifications::ThumbnailFailedToRender);
-                          },
-                          [thumbnailKey](const QImage& image)
-                          {
-                              AzToolsFramework::Thumbnailer::ThumbnailerRendererNotificationBus::Event(
-                                  thumbnailKey, &AzToolsFramework::Thumbnailer::ThumbnailerRendererNotifications::ThumbnailRendered,
-                                  QPixmap::fromImage(image));
-                          } });
+                          m_previewRenderer->GetScene(), m_previewRenderer->GetView(), m_previewRenderer->GetEntityContextId(),
+                          GetAssetId(thumbnailKey, RPI::ModelAsset::RTTI_Type(), DefaultModelAssetId),
+                          GetAssetId(thumbnailKey, RPI::MaterialAsset::RTTI_Type(), DefaultMaterialAssetId),
+                          GetAssetId(thumbnailKey, RPI::AnyAsset::RTTI_Type(), DefaultLightingPresetAssetId),
+                          Render::MaterialPropertyOverrideMap()),
+                      [thumbnailKey]()
+                      {
+                          AzToolsFramework::Thumbnailer::ThumbnailerRendererNotificationBus::Event(
+                              thumbnailKey, &AzToolsFramework::Thumbnailer::ThumbnailerRendererNotifications::ThumbnailFailedToRender);
+                      },
+                      [thumbnailKey](const QPixmap& pixmap)
+                      {
+                          AzToolsFramework::Thumbnailer::ThumbnailerRendererNotificationBus::Event(
+                              thumbnailKey, &AzToolsFramework::Thumbnailer::ThumbnailerRendererNotifications::ThumbnailRendered, pixmap);
+                      } });
             }
 
             bool CommonThumbnailRenderer::Installed() const

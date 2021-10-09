@@ -315,6 +315,9 @@ namespace AZ
             AzToolsFramework::ToolsApplicationRequests::Bus::Broadcast(
                 &AzToolsFramework::ToolsApplicationRequests::Bus::Events::AddDirtyEntity, m_entityId);
 
+            EditorMaterialSystemComponentRequestBus::Broadcast(
+                &EditorMaterialSystemComponentRequestBus::Events::RenderMaterialPreview, m_entityId, m_id);
+
             MaterialComponentNotificationBus::Event(m_entityId, &MaterialComponentNotifications::OnMaterialsEdited);
 
             AzToolsFramework::ToolsApplicationEvents::Bus::Broadcast(
