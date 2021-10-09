@@ -51,6 +51,9 @@ namespace AZ
         friend Name;
         friend Internal::NameData;
         friend UnitTest::NameDictionaryTester;
+        template<typename T, typename... Args> friend constexpr auto AZStd::construct_at(T*, Args&&... args)
+            -> AZStd::enable_if_t<is_void_v<void_t<decltype(new (declval<void*>()) T(AZStd::forward<Args>(args)...))>>, T*>;
+        template<typename T> constexpr friend void AZStd::destroy_at(T*);
         
     public:
 

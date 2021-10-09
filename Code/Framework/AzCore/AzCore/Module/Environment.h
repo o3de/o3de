@@ -251,16 +251,10 @@ namespace AZ
         class EnvironmentVariableHolder
             : public EnvironmentVariableHolderBase
         {
-            void ConstructImpl(const AZStd::true_type& /* AZStd::has_trivial_constructor<T> */)
-            {
-                memset(&m_value, 0, sizeof(T));
-            }
-
             template<class... Args>
-            void ConstructImpl(const AZStd::false_type& /* AZStd::has_trivial_constructor<T> */, Args&&... args)
+            void ConstructImpl(Args&&... args)
             {
-                // Construction of non-trivial types is left up to the type's constructor.
-                new(&m_value) T(AZStd::forward<Args>(args)...);
+                AZStd::construct_at(std::launder(reinterpret_cast<T*>(&m_value)), AZStd::forward<Args>(args)...);
             }
             static void DestructDispatchNoLock(EnvironmentVariableHolderBase *base, DestroyTarget selfDestruct)
             {
@@ -274,10 +268,7 @@ namespace AZ
                 AZ_Assert(self->m_isConstructed, "Variable is not constructed. Please check your logic and guard if needed!");
                 self->m_isConstructed = false;
                 self->m_moduleOwner = nullptr;
-                if constexpr(!AZStd::is_trivially_destructible_v<T>)
-                {
-                    reinterpret_cast<T*>(&self->m_value)->~T();
-                }
+                AZStd::destroy_at(std::launder(reinterpret_cast<T*>(&self->m_value)));
             }
         public:
             EnvironmentVariableHolder(u32 guid, bool isOwnershipTransfer, Environment::AllocatorInterface* allocator)
@@ -303,24 +294,13 @@ namespace AZ
                 UnregisterAndDestroy(DestructDispatchNoLock, moduleRelease);
             }
 
-            void Construct()
-            {
-                AZStd::lock_guard<AZStd::spin_mutex> lock(m_mutex);
-                if (!m_isConstructed)
-                {
-                    ConstructImpl(AZStd::is_trivially_constructible<T>{});
-                    m_isConstructed = true;
-                    m_moduleOwner = Environment::GetModuleId();
-                }
-            }
-
             template <class... Args>
             void Construct(Args&&... args)
             {
                 AZStd::lock_guard<AZStd::spin_mutex> lock(m_mutex);
                 if (!m_isConstructed)
                 {
-                    ConstructImpl(typename AZStd::false_type(), AZStd::forward<Args>(args)...);
+                    ConstructImpl(AZStd::forward<Args>(args)...);
                     m_isConstructed = true;
                     m_moduleOwner = Environment::GetModuleId();
                 }
@@ -333,7 +313,7 @@ namespace AZ
             }
 
             // variable storage
-            typename AZStd::aligned_storage<sizeof(T), AZStd::alignment_of<T>::value>::type m_value;
+            AZStd::aligned_storage_for_t<T> m_value;
             static int s_moduleUseCount;
         };
 
@@ -466,6 +446,11 @@ namespace AZ
         void Set(const T& value)
         {
             Get() = value;
+        }
+
+        void Set(T&& value)
+        {
+            Get() = AZStd::move(value);
         }
 
         explicit operator bool() const
