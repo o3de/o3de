@@ -147,7 +147,7 @@ namespace AZ
                             "Use this in combination with the Normal Offset Bias slider to reduce shadow acne."
                             "Larger values increase the amount biasing.")
                         ->Attribute(Edit::Attributes::Min, 0.f)
-                            ->Attribute(Edit::Attributes::Max, 0.2)
+                            ->Attribute(Edit::Attributes::Max, 1.0f)
                             ->Attribute(Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
 
                         ->DataElement(Edit::UIHandlers::Slider, &DirectionalLightComponentConfig::m_filteringSampleCount, "Filtering sample count",

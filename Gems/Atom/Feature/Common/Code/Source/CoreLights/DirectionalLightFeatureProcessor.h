@@ -281,10 +281,8 @@ namespace AZ
 
             //! This updates the parameter of Gaussian filter used in ESM.
             void UpdateFilterParameters(LightHandle handle);
-            //! This updates standard deviations for each cascade.
-            void UpdateStandardDeviations(LightHandle handle, const RPI::View* cameraView);
-            //! This updates filter offset and size for each cascade.
-            void UpdateFilterOffsetsCounts(LightHandle handle, const RPI::View* cameraView);
+
+            void UpdateFilterEnabled(LightHandle handle, const RPI::View* cameraView);
 
             //! This updates shadowmap position(origin and size) in the atlas for each cascade.
             void UpdateShadowmapPositionInAtlas(LightHandle handle, const RPI::View* cameraView);

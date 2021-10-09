@@ -103,8 +103,6 @@ namespace AZ::Render
             
         //! Functions to update the parameter of Gaussian filter used in ESM.
         void UpdateFilterParameters();
-        void UpdateStandardDeviations();
-        void UpdateFilterOffsetsCounts();
         void SetFilterParameterToPass();
         bool FilterMethodIsEsm(const ShadowData& shadowData) const;
 

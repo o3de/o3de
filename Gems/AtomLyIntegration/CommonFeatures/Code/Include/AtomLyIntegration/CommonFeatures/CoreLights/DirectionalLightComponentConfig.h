@@ -105,7 +105,7 @@ namespace AZ
             float m_normalOffsetBias = 1.0f;
 
             //! Reduces shadow acne by biasing along the z direction in shadow map space.
-            float m_shadowBias = 0.01f;
+            float m_shadowBias = 0.2f;
 
             //! Sample Count for filtering (from 4 to 64)
             //! It is used only when the pixel is predicted as on the boundary.

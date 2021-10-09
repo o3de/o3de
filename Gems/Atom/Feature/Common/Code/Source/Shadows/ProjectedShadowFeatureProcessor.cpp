@@ -376,96 +376,11 @@ namespace AZ::Render
     {
         if (m_filterParameterNeedsUpdate)
         {
-            UpdateStandardDeviations();
-            UpdateFilterOffsetsCounts();
             SetFilterParameterToPass();
             m_filterParameterNeedsUpdate = false;
         }
     }
     
-    void ProjectedShadowFeatureProcessor::UpdateStandardDeviations()
-    {
-        if (m_esmShadowmapsPasses.empty())
-        {
-            AZ_Error("ProjectedShadowFeatureProcessor", false, "Cannot find a required pass.");
-            return;
-        }
-
-        AZStd::vector<float> standardDeviations(m_shadowProperties.GetDataCount());
-
-        for (uint32_t i = 0; i < m_shadowProperties.GetDataCount(); ++i)
-        {
-            ShadowProperty& shadowProperty = m_shadowProperties.GetDataVector().at(i);
-            const ShadowData& shadow = m_shadowData.GetElement<ShadowDataIndex>(shadowProperty.m_shadowId.GetIndex());
-            if (!FilterMethodIsEsm(shadow))
-            {
-                continue;
-            }
-            const FilterParameter& filter = m_shadowData.GetElement<FilterParamIndex>(shadowProperty.m_shadowId.GetIndex());
-            const float boundaryWidthAngle = shadow.m_boundaryScale * 2.0f;
-            const float fieldOfView = GetMax(shadowProperty.m_desc.m_fieldOfViewYRadians, MinimumFieldOfView);
-            const float ratioToEntireWidth = boundaryWidthAngle / fieldOfView;
-            const float widthInPixels = ratioToEntireWidth * filter.m_shadowmapSize;
-            standardDeviations.at(i) = widthInPixels / (2.0f * GaussianMathFilter::ReliableSectionFactor);
-        }
-        if (standardDeviations.empty())
-        {
-            for (EsmShadowmapsPass* esmPass : m_esmShadowmapsPasses)
-            {
-                esmPass->SetEnabledComputation(false);
-            }
-            return;
-        }
-        for (EsmShadowmapsPass* esmPass : m_esmShadowmapsPasses)
-        {
-            esmPass->SetEnabledComputation(true);
-            esmPass->SetFilterParameters(standardDeviations);
-        }
-    }
-    
-    void ProjectedShadowFeatureProcessor::UpdateFilterOffsetsCounts()
-    {
-        if (m_esmShadowmapsPasses.empty())
-        {
-            AZ_Error("ProjectedShadowFeatureProcessor", false, "Cannot find a required pass.");
-            return;
-        }
-
-        // Get array of filter counts for the camera view.
-        const AZStd::array_view<uint32_t> filterCounts = m_esmShadowmapsPasses.front()->GetFilterCounts();
-
-        // Create array of filter offsets.
-        AZStd::vector<uint32_t> filterOffsets;
-        filterOffsets.reserve(filterCounts.size());
-        uint32_t filterOffset = 0;
-        for (const uint32_t count : filterCounts)
-        {
-            filterOffsets.push_back(filterOffset);
-            filterOffset += count;
-        }
-        
-        auto& shadowProperties = m_shadowProperties.GetDataVector();
-        for (uint32_t i = 0; i < shadowProperties.size(); ++i)
-        {
-            ShadowProperty& shadowProperty = shadowProperties.at(i);
-            const ShadowId shadowId = shadowProperty.m_shadowId;
-            ShadowData& shadowData = m_shadowData.GetElement<ShadowDataIndex>(shadowId.GetIndex());
-            FilterParameter& filterData = m_shadowData.GetElement<FilterParamIndex>(shadowId.GetIndex());
-
-            if (FilterMethodIsEsm(shadowData))
-            {
-                filterData.m_parameterOffset = filterOffsets[i];
-                filterData.m_parameterCount = filterCounts[i];
-            }
-            else
-            {
-                // If filter is not required, reset offsets and counts of filter in ESM data.
-                filterData.m_parameterOffset = 0;
-                filterData.m_parameterCount = 0;
-            }
-        }
-    }
-
     void ProjectedShadowFeatureProcessor::SetFilterParameterToPass()
     {
         static uint32_t nameIndex = 0;
