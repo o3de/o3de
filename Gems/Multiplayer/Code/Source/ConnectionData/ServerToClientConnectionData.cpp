@@ -27,9 +27,9 @@ namespace Multiplayer
     )
         : m_connection(connection)
         , m_controlledEntityRemovedHandler([this](const ConstNetworkEntityHandle&) { OnControlledEntityRemove(); })
-        , m_controlledEntityMigrationHandler([this](const ConstNetworkEntityHandle& entityHandle, const HostId& remoteHostId, const HostId& migrateHostId, AzNetworking::ConnectionId connectionId)
+        , m_controlledEntityMigrationHandler([this](const ConstNetworkEntityHandle& entityHandle, const HostId& remoteHostId)
             {
-                OnControlledEntityMigration(entityHandle, remoteHostId, migrateHostId, connectionId);
+                OnControlledEntityMigration(entityHandle, remoteHostId);
             })
         , m_entityReplicationManager(*connection, connectionListener, EntityReplicationManager::Mode::LocalServerToRemoteClient)
     {
@@ -102,9 +102,7 @@ namespace Multiplayer
     void ServerToClientConnectionData::OnControlledEntityMigration
     (
         [[maybe_unused]] const ConstNetworkEntityHandle& entityHandle,
-        const HostId& remoteHostId,
-        const HostId& migrateHostId,
-        [[maybe_unused]] AzNetworking::ConnectionId connectionId
+        const HostId& remoteHostId
     )
     {
         ClientInputId migratedClientInputId = ClientInputId{ 0 };
@@ -121,11 +119,9 @@ namespace Multiplayer
         const uint64_t temporaryUserIdentifier = AzNetworking::CryptoRand64();
 
         // Tell the new host that a client is about to (re)join
-        GetMultiplayer()->SendNotifyClientMigrationEvent(remoteHostId, temporaryUserIdentifier, migratedClientInputId, m_controlledEntity.GetNetEntityId());
-
-        // Tell the client who to join
-        MultiplayerPackets::ClientMigration clientMigration(migrateHostId, temporaryUserIdentifier, migratedClientInputId);
-        GetConnection()->SendReliablePacket(clientMigration);
+        GetMultiplayer()->SendNotifyClientMigrationEvent(GetConnection()->GetConnectionId(), remoteHostId, temporaryUserIdentifier, migratedClientInputId, m_controlledEntity.GetNetEntityId());
+        // We need to send a MultiplayerPackets::ClientMigration packet to complete this process
+        // This happens inside MultiplayerSystemComponent, once we're certain the remote host has appropriately prepared
 
         m_controlledEntity = NetworkEntityHandle();
         m_canSendUpdates = false;

@@ -212,12 +212,12 @@ namespace Multiplayer
             sv_port = port;
         }
 
-        InitializeMultiplayer(isDedicated ? MultiplayerAgentType::DedicatedServer : MultiplayerAgentType::ClientServer);
         const uint16_t maxPort = sv_port + sv_portRange;
         while (sv_port <= maxPort)
         {
             if (m_networkInterface->Listen(sv_port))
             {
+                InitializeMultiplayer(isDedicated ? MultiplayerAgentType::DedicatedServer : MultiplayerAgentType::ClientServer);
                 return true;
             }
             AZLOG_WARN("Failed to start listening on port %u, port is in use?", static_cast<uint32_t>(sv_port));
@@ -510,6 +510,12 @@ namespace Multiplayer
             AZStd::unique_ptr<IReplicationWindow> window = AZStd::make_unique<ServerToClientReplicationWindow>(controlledEntity, connection);
             connectionData->GetReplicationManager().SetReplicationWindow(AZStd::move(window));
             connectionData->SetControlledEntity(controlledEntity);
+
+            // If this is a migrate or rejoin, immediately ready the connection for updates
+            if (packet.GetTemporaryUserId() != 0)
+            {
+                connectionData->SetCanSendUpdates(true);
+            }
         }
 
         if (connection->SendReliablePacket(MultiplayerPackets::Accept(sv_map)))
@@ -543,14 +549,16 @@ namespace Multiplayer
         }
         else
         {
-            OnAutonomousEntityReplicatorCreated();
-//            IConnectionData* connectionData = reinterpret_cast<IConnectionData*>(connection->GetUserData());
-//            if (connectionData)
-//            {
-//                // @nt: TODO - delete once dropped RPC problem fixed
-//                // Connection has migrated, we are now waiting for the autonomous entity replicator to be created
-//                connectionData->GetReplicationManager().AddAutonomousEntityReplicatorCreatedHandler(m_autonomousEntityReplicatorCreatedHandler);
-//            }
+            // Bypass map loading and immediately ready the connection for updates
+            IConnectionData* connectionData = reinterpret_cast<IConnectionData*>(connection->GetUserData());
+            if (connectionData)
+            {
+                connectionData->SetCanSendUpdates(true);
+
+                // @nt: TODO - delete once dropped RPC problem fixed
+                // Connection has migrated, we are now waiting for the autonomous entity replicator to be created
+                connectionData->GetReplicationManager().AddAutonomousEntityReplicatorCreatedHandler(m_autonomousEntityReplicatorCreatedHandler);
+            }
         }
         return true;
     }
@@ -880,9 +888,9 @@ namespace Multiplayer
         handler.Connect(m_shutdownEvent);
     }
 
-    void MultiplayerSystemComponent::SendNotifyClientMigrationEvent(const HostId& hostId, uint64_t userIdentifier, ClientInputId lastClientInputId, NetEntityId controlledEntityId)
+    void MultiplayerSystemComponent::SendNotifyClientMigrationEvent(AzNetworking::ConnectionId connectionId, const HostId& hostId, uint64_t userIdentifier, ClientInputId lastClientInputId, NetEntityId controlledEntityId)
     {
-        m_notifyClientMigrationEvent.Signal(hostId, userIdentifier, lastClientInputId, controlledEntityId);
+        m_notifyClientMigrationEvent.Signal(connectionId, hostId, userIdentifier, lastClientInputId, controlledEntityId);
     }
 
     void MultiplayerSystemComponent::SendNotifyEntityMigrationEvent(const ConstNetworkEntityHandle& entityHandle, const HostId& remoteHostId)
@@ -939,6 +947,17 @@ namespace Multiplayer
     void MultiplayerSystemComponent::RegisterPlayerIdentifierForRejoin(uint64_t temporaryUserIdentifier, NetEntityId controlledEntityId)
     {
         m_playerRejoinData[temporaryUserIdentifier] = controlledEntityId;
+    }
+
+    void MultiplayerSystemComponent::CompleteClientMigration(uint64_t temporaryUserIdentifier, AzNetworking::ConnectionId connectionId, const HostId& publicHostId, ClientInputId migratedClientInputId)
+    {
+        IConnection* connection = m_networkInterface->GetConnectionSet().GetConnection(connectionId);
+        if (connection != nullptr) // Make sure the player has not disconnected since the start of migration
+        {
+            // Tell the client who to join
+            MultiplayerPackets::ClientMigration clientMigration(publicHostId, temporaryUserIdentifier, migratedClientInputId);
+            connection->SendReliablePacket(clientMigration);
+        }
     }
 
     void MultiplayerSystemComponent::SetShouldSpawnNetworkEntities(bool value)

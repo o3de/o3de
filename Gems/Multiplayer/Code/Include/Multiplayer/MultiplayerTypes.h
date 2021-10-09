@@ -29,7 +29,7 @@ namespace Multiplayer
     using HostId = AzNetworking::IpAddress;
     static const HostId InvalidHostId = HostId();
 
-    AZ_TYPE_SAFE_INTEGRAL(NetEntityId, uint32_t);
+    AZ_TYPE_SAFE_INTEGRAL(NetEntityId, uint64_t);
     static constexpr NetEntityId InvalidNetEntityId = static_cast<NetEntityId>(-1);
 
     AZ_TYPE_SAFE_INTEGRAL(NetComponentId, uint16_t);

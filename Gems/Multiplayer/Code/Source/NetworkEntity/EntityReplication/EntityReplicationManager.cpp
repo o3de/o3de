@@ -386,17 +386,18 @@ namespace Multiplayer
                 if (changedRemoteRole || changedLocalRole)
                 {
                     const uint32_t intEntityId = static_cast<uint32_t>(netBindComponent->GetNetEntityId());
+                    const char* entityName = entityReplicator->GetEntityHandle().GetEntity()->GetName().c_str();
                     if (changedLocalRole)
                     {
                         const char* oldRoleString = GetEnumString(entityReplicator->GetRemoteNetworkRole());
                         const char* newRoleString = GetEnumString(remoteNetworkRole);
-                        AZLOG(NET_ReplicatorRoles, "Replicator %u changed local role, old role = %s, new role = %s", intEntityId, oldRoleString, newRoleString);
+                        AZLOG(NET_ReplicatorRoles, "Replicator %s(%u) changed local role, old role = %s, new role = %s", entityName, intEntityId, oldRoleString, newRoleString);
                     }
                     if (changedRemoteRole)
                     {
                         const char* oldRoleString = GetEnumString(entityReplicator->GetBoundLocalNetworkRole());
                         const char* newRoleString = GetEnumString(netBindComponent->GetNetEntityRole());
-                        AZLOG(NET_ReplicatorRoles, "Replicator %u changed remote role, old role = %s, new role = %s", intEntityId, oldRoleString, newRoleString);
+                        AZLOG(NET_ReplicatorRoles, "Replicator %s(%u) changed remote role, old role = %s, new role = %s", entityName, intEntityId, oldRoleString, newRoleString);
                     }
 
                     // If we changed roles, we need to reset everything
@@ -605,9 +606,9 @@ namespace Multiplayer
         NetBindComponent* netBindComponent = replicatorEntity.GetNetBindComponent();
         AZ_Assert(netBindComponent != nullptr, "No NetBindComponent");
 
-        if (createEntity)
+        if (netBindComponent->GetOwningConnectionId() != invokingConnection->GetConnectionId())
         {
-            // Always set our invoking connectionId for any newly created entities, since this connection now 'owns' them from a rewind perspective
+            // Always ensure our owning connectionId is correct for correct rewind behaviour
             netBindComponent->SetOwningConnectionId(invokingConnection->GetConnectionId());
         }
 
@@ -617,10 +618,11 @@ namespace Multiplayer
             AZ_Assert(localNetworkRole != NetEntityRole::Authority, "UpdateMessage trying to set local role to Authority, this should only happen via migration");
             AZLOG_INFO
             (
-                "EntityReplicationManager: Changing network role on entity %u, old role %u new role %u",
+                "EntityReplicationManager: Changing network role on entity %s(%u), old role %s new role %s",
+                replicatorEntity.GetEntity()->GetName().c_str(),
                 aznumeric_cast<uint32_t>(netEntityId),
-                aznumeric_cast<uint32_t>(netBindComponent->GetNetEntityRole()),
-                aznumeric_cast<uint32_t>(localNetworkRole)
+                GetEnumString(netBindComponent->GetNetEntityRole()),
+                GetEnumString(localNetworkRole)
             );
 
             if (NetworkRoleHasController(localNetworkRole))
@@ -1135,7 +1137,7 @@ namespace Multiplayer
 
             if (m_updateMode == EntityReplicationManager::Mode::LocalServerToRemoteServer)
             {
-                netBindComponent->NotifyServerMigration(GetRemoteHostId(), GetMigrateHostId(), GetConnection().GetConnectionId());
+                netBindComponent->NotifyServerMigration(GetRemoteHostId());
             }
 
             bool didSucceed = true;

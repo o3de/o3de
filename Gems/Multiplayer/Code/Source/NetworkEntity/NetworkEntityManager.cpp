@@ -46,6 +46,20 @@ namespace Multiplayer
     void NetworkEntityManager::Initialize(const HostId& hostId, AZStd::unique_ptr<IEntityDomain> entityDomain)
     {
         m_hostId = hostId;
+
+        // Configure our vended NetEntityIds so that no two hosts generate the same NetEntityId
+        {
+            // Needs more thought
+            const uint64_t addrPortion = hostId.GetAddress(AzNetworking::ByteOrder::Host);
+            const uint64_t portPortion = hostId.GetPort(AzNetworking::ByteOrder::Host);
+            const uint64_t hostIdentifier = (portPortion << 32) | addrPortion;
+            const AZ::HashValue32 hostHash = AZ::TypeHash32(hostIdentifier);
+
+            NetEntityId hostEntityIdOffset = static_cast<NetEntityId>(hostHash) << 32;
+            m_nextEntityId &= NetEntityId{ 0x0000000000000000FFFFFFFFFFFFFFFF };
+            m_nextEntityId |= hostEntityIdOffset;
+        }
+
         m_entityDomain = AZStd::move(entityDomain);
         m_updateEntityDomainEvent.Enqueue(net_EntityDomainUpdateMs, true);
         m_entityDomain->ActivateTracking(m_ownedEntities);
