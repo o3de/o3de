@@ -57,10 +57,6 @@ namespace Multiplayer
         EntityReplicationManager(AzNetworking::IConnection& connection, AzNetworking::IConnectionListener& connectionListener, Mode mode);
         ~EntityReplicationManager() = default;
 
-        //! Used to override during client migration if your host has a specially assigned publically routable address.
-        //! @param remoteHostId the publically routable address to use in place of the remote HostId
-        void SetMigrateHostId(const HostId& remoteHostId);
-        const HostId& GetMigrateHostId() const;
         const HostId& GetRemoteHostId() const;
 
         void ActivatePendingEntities();
@@ -211,7 +207,6 @@ namespace Multiplayer
         AZ::TimeMs m_entityPendingRemovalMs = AZ::TimeMs{ 0 };
         AZ::TimeMs m_frameTimeMs = AZ::TimeMs{ 0 };
         HostId m_remoteHostId = InvalidHostId;
-        HostId m_migrateHostId = InvalidHostId;
         uint32_t m_maxRemoteEntitiesPendingCreationCount = AZStd::numeric_limits<uint32_t>::max();
         uint32_t m_maxPayloadSize = 0;
         Mode m_updateMode = Mode::Invalid;

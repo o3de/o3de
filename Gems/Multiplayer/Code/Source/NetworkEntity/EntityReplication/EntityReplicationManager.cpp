@@ -49,7 +49,6 @@ namespace Multiplayer
     {
         // Set up our remote host identifier, by default we use the IP address of the remote host
         m_remoteHostId = connection.GetRemoteAddress();
-        m_migrateHostId = m_remoteHostId;
 
         // Our max payload size is whatever is passed in, minus room for a udp packetheader
         m_maxPayloadSize = connection.GetConnectionMtu() - UdpPacketHeaderSerializeSize - ReplicationManagerPacketOverhead;
@@ -70,17 +69,6 @@ namespace Multiplayer
         {
             GetMultiplayer()->AddNotifyEntityMigrationEventHandler(m_notifyEntityMigrationHandler);
         }
-    }
-
-    void EntityReplicationManager::SetMigrateHostId(const HostId& remoteHostId)
-    {
-        // Allows overriding the remote HostId
-        m_migrateHostId = remoteHostId;
-    }
-
-    const HostId& EntityReplicationManager::GetMigrateHostId() const
-    {
-        return m_migrateHostId;
     }
 
     const HostId& EntityReplicationManager::GetRemoteHostId() const
