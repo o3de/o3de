@@ -66,9 +66,10 @@ namespace JsonSerializationTests
                 { "element_3" : "value_3" }
             ])";
 
-            rapidjson::Document array;
-            array.Parse(arrayJson);
-            ASSERT_FALSE(array.HasParseError());
+            const char *nestedImportJson = R"({
+                "desc" : "Nested Import",
+                "obj" : {"$import" : "object.json"}
+            })";
             
             if (docName.compare("object.json") == 0)
             {
@@ -77,12 +78,19 @@ namespace JsonSerializationTests
                 ASSERT_FALSE(object.HasParseError());
                 out.CopyFrom(object, allocator);
             }
-            else
+            else if (docName.compare("array.json") == 0)
             {
                 rapidjson::Document array;
                 array.Parse(arrayJson);
                 ASSERT_FALSE(array.HasParseError());
                 out.CopyFrom(array, allocator);
+            }
+            else if (docName.compare("nested_import.json") == 0)
+            {
+                rapidjson::Document nestedImport;
+                nestedImport.Parse(nestedImportJson);
+                ASSERT_FALSE(nestedImport.HasParseError());
+                out.CopyFrom(nestedImport, allocator);
             }
         }
 
@@ -206,6 +214,32 @@ namespace JsonSerializationTests
                     { "element_2" : "value_2" },
                     { "element_3" : "value_3" }
                 ]
+            }
+        )";
+
+        TestImportLoadStore(inputFile, expectedOutput);
+    }
+
+    TEST_F(JsonImportingTests, ImportNestedImportLoadStoreTest)
+    {
+        const char* inputFile = R"(
+            {
+                "name" : "nested_import",
+                "object": {"$import" : "nested_import.json"}
+            }
+        )";
+
+        const char* expectedOutput = R"(
+            {
+                "name" : "nested_import",
+                "object": {
+                    "desc" : "Nested Import",
+                    "obj" : {
+                        "field_1" : "value_1",
+                        "field_2" : "value_2",
+                        "field_3" : "value_3"
+                    }
+                }
             }
         )";
 

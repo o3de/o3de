@@ -717,6 +717,10 @@ namespace AZ
                     {
                         return result;
                     }
+                    else
+                    {
+                        resultCode.Combine(result);
+                    }
                 }
 
                 // Do an extra pass to find all the fields that are removed.
@@ -761,6 +765,10 @@ namespace AZ
                     else if (result.GetProcessing() != Processing::Completed)
                     {
                         return result;
+                    }
+                    else
+                    {
+                        resultCode.Combine(result);
                     }
                 }
             }

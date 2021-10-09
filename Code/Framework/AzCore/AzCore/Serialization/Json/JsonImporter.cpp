@@ -108,7 +108,6 @@ namespace AZ
             for (auto import = importDirectives.begin(); import != importDirectives.end(); import++)
             {
                 rapidjson::Pointer importPtr = import->first;
-                rapidjson::Value importDirective;
                 rapidjson::Value* currentValue = importPtr.Get(jsonDoc);
                 
                 rapidjson::Value importedValue(rapidjson::kObjectType);
@@ -118,19 +117,17 @@ namespace AZ
                 importPathStack.push_back(loadedJsonPath);
                 ResolveImports(importedValue, allocator, importPathStack, importer, importElement, TRACK_NONE);
 
-                AZ::IO::FixedMaxPath importPath = loadedJsonPath;
-                importPath.RemoveFilename();
-                importPath.Append(import->second);
-                importer->RestoreImport(importDirective, *currentValue, importedValue, allocator, importPath.String());
+                rapidjson::Value importDirective(rapidjson::kObjectType);
+                importer->RestoreImport(importDirective, *currentValue, importedValue, allocator, import->second);
                 
                 currentValue->SetObject();
-                if (!importDirective.IsObject())
+                if (importDirective.IsObject() && importDirective.MemberCount() > 0)
                 {
-                    currentValue->AddMember(rapidjson::StringRef("$import"), rapidjson::StringRef(import->second.c_str()), allocator);
+                    currentValue->AddMember(rapidjson::StringRef("$import"), importDirective, allocator);
                 }
                 else
                 {
-                    currentValue->AddMember(rapidjson::StringRef("$import"), importDirective, allocator);
+                    currentValue->AddMember(rapidjson::StringRef("$import"), rapidjson::StringRef(import->second.c_str()), allocator);
                 }
             }
         }
