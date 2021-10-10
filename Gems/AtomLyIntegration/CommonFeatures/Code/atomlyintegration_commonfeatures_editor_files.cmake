@@ -98,12 +98,12 @@ set(FILES
     Source/SharedPreview/SharedPreviewerFactory.h
     Source/SharedPreview/SharedPreviewContent.cpp
     Source/SharedPreview/SharedPreviewContent.h
+    Source/SharedPreview/SharedPreviewUtils.cpp
+    Source/SharedPreview/SharedPreviewUtils.h
     Source/SharedPreview/SharedThumbnail.cpp
     Source/SharedPreview/SharedThumbnail.h
     Source/SharedPreview/SharedThumbnailRenderer.cpp
     Source/SharedPreview/SharedThumbnailRenderer.h
-    Source/SharedPreview/SharedThumbnailUtils.cpp
-    Source/SharedPreview/SharedThumbnailUtils.h
     Source/Scripting/EditorEntityReferenceComponent.cpp
     Source/Scripting/EditorEntityReferenceComponent.h
     Source/SurfaceData/EditorSurfaceDataMeshComponent.cpp

@@ -6,14 +6,10 @@
  *
  */
 
-#include <Atom/RPI.Reflect/Asset/AssetUtils.h>
-#include <Atom/RPI.Reflect/Material/MaterialAsset.h>
-#include <Atom/RPI.Reflect/Model/ModelAsset.h>
-#include <Atom/RPI.Reflect/System/AnyAsset.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserEntry.h>
+#include <SharedPreview/SharedPreviewUtils.h>
 #include <SharedPreview/SharedPreviewer.h>
 #include <SharedPreview/SharedPreviewerFactory.h>
-#include <SharedPreview/SharedThumbnailUtils.h>
 
 namespace AZ
 {

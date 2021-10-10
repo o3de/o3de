@@ -33,7 +33,7 @@ namespace AZ
             //! Get the set of all asset types supported by the shared preview
             AZStd::unordered_set<AZ::Uuid> GetSupportedAssetTypes();
 
-            //! Determine if a thumbnail key has an asset the shared preview
+            //! Determine if a thumbnail key has an asset supported by the shared preview
             bool IsSupportedAssetType(AzToolsFramework::Thumbnailer::SharedThumbnailKey key);
         } // namespace SharedPreviewUtils
     } // namespace LyIntegration

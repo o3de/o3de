@@ -6,13 +6,10 @@
  *
  */
 
-#include <Atom/RPI.Reflect/Material/MaterialAsset.h>
-#include <Atom/RPI.Reflect/Model/ModelAsset.h>
-#include <Atom/RPI.Reflect/System/AnyAsset.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
-#include <SharedPreview/SharedThumbnail.h>
-#include <SharedPreview/SharedThumbnailUtils.h>
 #include <QtConcurrent/QtConcurrent>
+#include <SharedPreview/SharedPreviewUtils.h>
+#include <SharedPreview/SharedThumbnail.h>
 
 namespace AZ
 {

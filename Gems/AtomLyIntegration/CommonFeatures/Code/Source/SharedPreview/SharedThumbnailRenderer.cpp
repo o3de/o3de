@@ -9,8 +9,8 @@
 #include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
 #include <AzToolsFramework/Thumbnails/ThumbnailerBus.h>
 #include <SharedPreview/SharedPreviewContent.h>
+#include <SharedPreview/SharedPreviewUtils.h>
 #include <SharedPreview/SharedThumbnailRenderer.h>
-#include <SharedPreview/SharedThumbnailUtils.h>
 
 namespace AZ
 {

@@ -12,7 +12,7 @@
 #include <Atom/RPI.Reflect/Material/MaterialAsset.h>
 #include <Atom/RPI.Reflect/Model/ModelAsset.h>
 #include <Atom/RPI.Reflect/System/AnyAsset.h>
-#include <SharedPreview/SharedThumbnailUtils.h>
+#include <SharedPreview/SharedPreviewUtils.h>
 
 namespace AZ
 {

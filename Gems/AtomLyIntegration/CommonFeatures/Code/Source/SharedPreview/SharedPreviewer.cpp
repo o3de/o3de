@@ -12,16 +12,16 @@
 #include <AzToolsFramework/AssetBrowser/AssetBrowserEntry.h>
 #include <AzToolsFramework/Thumbnails/Thumbnail.h>
 #include <AzToolsFramework/Thumbnails/ThumbnailContext.h>
+#include <SharedPreview/SharedPreviewUtils.h>
 #include <SharedPreview/SharedPreviewer.h>
-#include <SharedPreview/SharedThumbnailUtils.h>
 
 // Disables warning messages triggered by the Qt library
 // 4251: class needs to have dll-interface to be used by clients of class
 // 4800: forcing value to bool 'true' or 'false' (performance warning)
 AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option")
-#include <SharedPreview/ui_SharedPreviewer.h>
 #include <QResizeEvent>
 #include <QString>
+#include <SharedPreview/ui_SharedPreviewer.h>
 AZ_POP_DISABLE_WARNING
 
 namespace AZ
