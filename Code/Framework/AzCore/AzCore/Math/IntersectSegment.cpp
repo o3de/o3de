@@ -157,7 +157,7 @@ Intersect::IntersectSegmentTriangle(
 // TestSegmentAABBOrigin
 // [10/21/2009]
 //=========================================================================
-int
+bool
 AZ::Intersect::TestSegmentAABBOrigin(const Vector3& midPoint, const Vector3& halfVector, const Vector3& aabbExtends)
 {
     const Vector3 EPSILON(0.001f); // \todo this is slow load move to a const
@@ -168,7 +168,7 @@ AZ::Intersect::TestSegmentAABBOrigin(const Vector3& midPoint, const Vector3& hal
     // Try world coordinate axes as separating axes
     if (!absMidpoint.IsLessEqualThan(absHalfMidpoint))
     {
-        return 0;
+        return false;
     }
 
     // Add in an epsilon term to counteract arithmetic errors when segment is
@@ -188,11 +188,11 @@ AZ::Intersect::TestSegmentAABBOrigin(const Vector3& midPoint, const Vector3& hal
     Vector3 ead(ey * adz + ez * ady, ex * adz + ez * adx, ex * ady + ey * adx);
     if (!absMDCross.IsLessEqualThan(ead))
     {
-        return 0;
+        return false;
     }
 
     // No separating axis found; segment must be overlapping AABB
-    return 1;
+    return true;
 }
 
 
@@ -200,7 +200,7 @@ AZ::Intersect::TestSegmentAABBOrigin(const Vector3& midPoint, const Vector3& hal
 // IntersectRayAABB
 // [10/21/2009]
 //=========================================================================
-int
+RayAABBIsectTypes
 AZ::Intersect::IntersectRayAABB(
     const Vector3& rayStart, const Vector3& dir, const Vector3& dirRCP, const Aabb& aabb,
     float& tStart, float& tEnd, Vector3& startNormal /*, Vector3& inter*/)
@@ -352,11 +352,14 @@ AZ::Intersect::IntersectRayAABB(
     return ISECT_RAY_AABB_ISECT;
 }
 
+
+
+
 //=========================================================================
 // IntersectRayAABB2
 // [2/18/2011]
 //=========================================================================
-int
+RayAABBIsectTypes
 AZ::Intersect::IntersectRayAABB2(const Vector3& rayStart, const Vector3& dirRCP, const Aabb& aabb, float& start, float& end)
 {
     float tmin, tmax, tymin, tymax, tzmin, tzmax;
@@ -1166,7 +1169,7 @@ int AZ::Intersect::IntersectRayObb(const Vector3& rayOrigin, const Vector3& rayD
 // IntersectSegmentCylinder
 // [10/21/2009]
 //=========================================================================
-int
+CylinderIsectTypes
 AZ::Intersect::IntersectSegmentCylinder(
     const Vector3& sa, const Vector3& dir, const Vector3& p, const Vector3& q, const float r, float& t)
 {
@@ -1225,7 +1228,7 @@ AZ::Intersect::IntersectSegmentCylinder(
         return RR_ISECT_RAY_CYL_NONE;                         // No real roots; no intersection
     }
     t = (-b - Sqrt(discr)) / a;
-    int result = RR_ISECT_RAY_CYL_PQ; // default along the PQ segment
+    CylinderIsectTypes result = RR_ISECT_RAY_CYL_PQ; // default along the PQ segment
 
     if (md + t * nd < 0.0f)
     {
@@ -1294,7 +1297,7 @@ AZ::Intersect::IntersectSegmentCylinder(
 // IntersectSegmentCapsule
 // [10/21/2009]
 //=========================================================================
-int
+CapsuleIsectTypes
 AZ::Intersect::IntersectSegmentCapsule(const Vector3& sa, const Vector3& dir, const Vector3& p, const Vector3& q, const float r, float& t)
 {
     int result = IntersectSegmentCylinder(sa, dir, p, q, r, t);
@@ -1361,7 +1364,7 @@ AZ::Intersect::IntersectSegmentCapsule(const Vector3& sa, const Vector3& dir, co
 // IntersectSegmentPolyhedron
 // [10/21/2009]
 //=========================================================================
-int
+bool
 AZ::Intersect::IntersectSegmentPolyhedron(
     const Vector3& sa, const Vector3& sBA, const Plane p[], int numPlanes,
     float& tfirst, float& tlast, int& iFirstPlane, int& iLastPlane)
@@ -1388,7 +1391,7 @@ AZ::Intersect::IntersectSegmentPolyhedron(
             // If so, return "no intersection" if segment lies outside plane
             if (dist < 0.0f)
             {
-                return 0;
+                return false;
             }
         }
         else
@@ -1417,7 +1420,7 @@ AZ::Intersect::IntersectSegmentPolyhedron(
             // Exit with "no intersection" if intersection becomes empty
             if (tfirst > tlast)
             {
-                return 0;
+                return false;
             }
         }
     }
@@ -1425,11 +1428,11 @@ AZ::Intersect::IntersectSegmentPolyhedron(
     //DBG_Assert(iFirstPlane!=-1&&iLastPlane!=-1,("We have some bad border case to have only one plane, fix this function!"));
     if (iFirstPlane == -1 && iLastPlane == -1)
     {
-        return 0;
+        return false;
     }
 
     // A nonzero logical intersection, so the segment intersects the polyhedron
-    return 1;
+    return true;
 }
 
 //=========================================================================
@@ -1442,7 +1445,7 @@ AZ::Intersect::ClosestSegmentSegment(
     const Vector3& segment2Start, const Vector3& segment2End,
     float& segment1Proportion, float& segment2Proportion, 
     Vector3& closestPointSegment1, Vector3& closestPointSegment2,
-    float epsilon /*= 1e-4f*/ )
+    float epsilon)
 {
     const Vector3 segment1 = segment1End - segment1Start;
     const Vector3 segment2 = segment2End - segment2Start;
