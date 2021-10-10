@@ -18,7 +18,7 @@ namespace AZ
 {
     namespace LyIntegration
     {
-        namespace Thumbnails
+        namespace SharedPreviewUtils
         {
             //! Get assetId by assetType that belongs to either source or product thumbnail key
             Data::AssetId GetAssetId(
@@ -30,9 +30,11 @@ namespace AZ
             //! wrap needed
             QString WordWrap(const QString& string, int maxLength);
 
-            AZStd::unordered_set<AZ::Uuid> GetSupportedThumbnailAssetTypes();
+            //! Get the set of all asset types supported by the shared preview
+            AZStd::unordered_set<AZ::Uuid> GetSupportedAssetTypes();
 
-            bool IsSupportedThumbnail(AzToolsFramework::Thumbnailer::SharedThumbnailKey key);
-        } // namespace Thumbnails
+            //! Determine if a thumbnail key has an asset the shared preview
+            bool IsSupportedAssetType(AzToolsFramework::Thumbnailer::SharedThumbnailKey key);
+        } // namespace SharedPreviewUtils
     } // namespace LyIntegration
 } // namespace AZ

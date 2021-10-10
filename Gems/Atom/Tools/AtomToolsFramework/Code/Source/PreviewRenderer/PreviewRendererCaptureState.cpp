@@ -19,7 +19,7 @@ namespace AtomToolsFramework
     void PreviewRendererCaptureState::Start()
     {
         m_ticksToCapture = 1;
-        m_renderer->UpdateScene();
+        m_renderer->PoseContent();
         AZ::TickBus::Handler::BusConnect();
     }
 

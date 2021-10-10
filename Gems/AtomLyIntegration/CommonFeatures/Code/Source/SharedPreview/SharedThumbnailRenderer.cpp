@@ -8,69 +8,66 @@
 
 #include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
 #include <AzToolsFramework/Thumbnails/ThumbnailerBus.h>
-#include <Previewer/CommonPreviewContent.h>
-#include <Previewer/CommonThumbnailRenderer.h>
-#include <Previewer/CommonThumbnailUtils.h>
+#include <SharedPreview/SharedPreviewContent.h>
+#include <SharedPreview/SharedThumbnailRenderer.h>
+#include <SharedPreview/SharedThumbnailUtils.h>
 
 namespace AZ
 {
     namespace LyIntegration
     {
-        namespace Thumbnails
+        SharedThumbnailRenderer::SharedThumbnailRenderer()
         {
-            CommonThumbnailRenderer::CommonThumbnailRenderer()
+            m_previewRenderer.reset(aznew AtomToolsFramework::PreviewRenderer(
+                "SharedThumbnailRenderer Preview Scene", "SharedThumbnailRenderer Preview Pipeline"));
+
+            m_defaultModelAsset.Create(DefaultModelAssetId, true);
+            m_defaultMaterialAsset.Create(DefaultMaterialAssetId, true);
+            m_defaultLightingPresetAsset.Create(DefaultLightingPresetAssetId, true);
+
+            for (const AZ::Uuid& typeId : SharedPreviewUtils::GetSupportedAssetTypes())
             {
-                m_previewRenderer.reset(aznew AtomToolsFramework::PreviewRenderer(
-                    "CommonThumbnailRenderer Preview Scene", "CommonThumbnailRenderer Preview Pipeline"));
-
-                m_defaultModelAsset.Create(DefaultModelAssetId, true);
-                m_defaultMaterialAsset.Create(DefaultMaterialAssetId, true);
-                m_defaultLightingPresetAsset.Create(DefaultLightingPresetAssetId, true);
-
-                for (const AZ::Uuid& typeId : GetSupportedThumbnailAssetTypes())
-                {
-                    AzToolsFramework::Thumbnailer::ThumbnailerRendererRequestBus::MultiHandler::BusConnect(typeId);
-                }
-                SystemTickBus::Handler::BusConnect();
+                AzToolsFramework::Thumbnailer::ThumbnailerRendererRequestBus::MultiHandler::BusConnect(typeId);
             }
+            SystemTickBus::Handler::BusConnect();
+        }
 
-            CommonThumbnailRenderer::~CommonThumbnailRenderer()
-            {
-                AzToolsFramework::Thumbnailer::ThumbnailerRendererRequestBus::MultiHandler::BusDisconnect();
-                SystemTickBus::Handler::BusDisconnect();
-            }
+        SharedThumbnailRenderer::~SharedThumbnailRenderer()
+        {
+            AzToolsFramework::Thumbnailer::ThumbnailerRendererRequestBus::MultiHandler::BusDisconnect();
+            SystemTickBus::Handler::BusDisconnect();
+        }
 
-            void CommonThumbnailRenderer::RenderThumbnail(AzToolsFramework::Thumbnailer::SharedThumbnailKey thumbnailKey, int thumbnailSize)
-            {
-                m_previewRenderer->AddCaptureRequest(
-                    { thumbnailSize,
-                      AZStd::make_shared<CommonPreviewContent>(
-                          m_previewRenderer->GetScene(), m_previewRenderer->GetView(), m_previewRenderer->GetEntityContextId(),
-                          GetAssetId(thumbnailKey, RPI::ModelAsset::RTTI_Type(), DefaultModelAssetId),
-                          GetAssetId(thumbnailKey, RPI::MaterialAsset::RTTI_Type(), DefaultMaterialAssetId),
-                          GetAssetId(thumbnailKey, RPI::AnyAsset::RTTI_Type(), DefaultLightingPresetAssetId),
-                          Render::MaterialPropertyOverrideMap()),
-                      [thumbnailKey]()
-                      {
-                          AzToolsFramework::Thumbnailer::ThumbnailerRendererNotificationBus::Event(
-                              thumbnailKey, &AzToolsFramework::Thumbnailer::ThumbnailerRendererNotifications::ThumbnailFailedToRender);
-                      },
-                      [thumbnailKey](const QPixmap& pixmap)
-                      {
-                          AzToolsFramework::Thumbnailer::ThumbnailerRendererNotificationBus::Event(
-                              thumbnailKey, &AzToolsFramework::Thumbnailer::ThumbnailerRendererNotifications::ThumbnailRendered, pixmap);
-                      } });
-            }
+        void SharedThumbnailRenderer::RenderThumbnail(AzToolsFramework::Thumbnailer::SharedThumbnailKey thumbnailKey, int thumbnailSize)
+        {
+            m_previewRenderer->AddCaptureRequest(
+                { thumbnailSize,
+                  AZStd::make_shared<SharedPreviewContent>(
+                      m_previewRenderer->GetScene(), m_previewRenderer->GetView(), m_previewRenderer->GetEntityContextId(),
+                      SharedPreviewUtils::GetAssetId(thumbnailKey, RPI::ModelAsset::RTTI_Type(), DefaultModelAssetId),
+                      SharedPreviewUtils::GetAssetId(thumbnailKey, RPI::MaterialAsset::RTTI_Type(), DefaultMaterialAssetId),
+                      SharedPreviewUtils::GetAssetId(thumbnailKey, RPI::AnyAsset::RTTI_Type(), DefaultLightingPresetAssetId),
+                      Render::MaterialPropertyOverrideMap()),
+                  [thumbnailKey]()
+                  {
+                      AzToolsFramework::Thumbnailer::ThumbnailerRendererNotificationBus::Event(
+                          thumbnailKey, &AzToolsFramework::Thumbnailer::ThumbnailerRendererNotifications::ThumbnailFailedToRender);
+                  },
+                  [thumbnailKey](const QPixmap& pixmap)
+                  {
+                      AzToolsFramework::Thumbnailer::ThumbnailerRendererNotificationBus::Event(
+                          thumbnailKey, &AzToolsFramework::Thumbnailer::ThumbnailerRendererNotifications::ThumbnailRendered, pixmap);
+                  } });
+        }
 
-            bool CommonThumbnailRenderer::Installed() const
-            {
-                return true;
-            }
+        bool SharedThumbnailRenderer::Installed() const
+        {
+            return true;
+        }
 
-            void CommonThumbnailRenderer::OnSystemTick()
-            {
-                AzToolsFramework::Thumbnailer::ThumbnailerRendererRequestBus::ExecuteQueuedEvents();
-            }
-        } // namespace Thumbnails
+        void SharedThumbnailRenderer::OnSystemTick()
+        {
+            AzToolsFramework::Thumbnailer::ThumbnailerRendererRequestBus::ExecuteQueuedEvents();
+        }
     } // namespace LyIntegration
 } // namespace AZ

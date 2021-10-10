@@ -91,19 +91,19 @@ set(FILES
     Source/SkyBox/EditorHDRiSkyboxComponent.h
     Source/SkyBox/EditorPhysicalSkyComponent.cpp
     Source/SkyBox/EditorPhysicalSkyComponent.h
-    Source/Previewer/CommonPreviewer.cpp
-    Source/Previewer/CommonPreviewer.h
-    Source/Previewer/CommonPreviewer.ui
-    Source/Previewer/CommonPreviewerFactory.cpp
-    Source/Previewer/CommonPreviewerFactory.h
-    Source/Previewer/CommonPreviewContent.cpp
-    Source/Previewer/CommonPreviewContent.h
-    Source/Previewer/CommonThumbnail.cpp
-    Source/Previewer/CommonThumbnail.h
-    Source/Previewer/CommonThumbnailRenderer.cpp
-    Source/Previewer/CommonThumbnailRenderer.h
-    Source/Previewer/CommonThumbnailUtils.cpp
-    Source/Previewer/CommonThumbnailUtils.h
+    Source/SharedPreview/SharedPreviewer.cpp
+    Source/SharedPreview/SharedPreviewer.h
+    Source/SharedPreview/SharedPreviewer.ui
+    Source/SharedPreview/SharedPreviewerFactory.cpp
+    Source/SharedPreview/SharedPreviewerFactory.h
+    Source/SharedPreview/SharedPreviewContent.cpp
+    Source/SharedPreview/SharedPreviewContent.h
+    Source/SharedPreview/SharedThumbnail.cpp
+    Source/SharedPreview/SharedThumbnail.h
+    Source/SharedPreview/SharedThumbnailRenderer.cpp
+    Source/SharedPreview/SharedThumbnailRenderer.h
+    Source/SharedPreview/SharedThumbnailUtils.cpp
+    Source/SharedPreview/SharedThumbnailUtils.h
     Source/Scripting/EditorEntityReferenceComponent.cpp
     Source/Scripting/EditorEntityReferenceComponent.h
     Source/SurfaceData/EditorSurfaceDataMeshComponent.cpp

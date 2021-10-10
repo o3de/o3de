@@ -22,7 +22,7 @@
 #include <Editor/LyViewPaneNames.h>
 #include <Material/EditorMaterialComponentInspector.h>
 #include <Material/EditorMaterialSystemComponent.h>
-#include <Previewer/CommonPreviewContent.h>
+#include <SharedPreview/SharedPreviewContent.h>
 
 // Disables warning messages triggered by the Qt library
 // 4251: class needs to have dll-interface to be used by clients of class 
@@ -176,7 +176,7 @@ namespace AZ
 
                 m_previewRenderer->AddCaptureRequest(
                     { 128,
-                      AZStd::make_shared<AZ::LyIntegration::CommonPreviewContent>(
+                      AZStd::make_shared<AZ::LyIntegration::SharedPreviewContent>(
                           m_previewRenderer->GetScene(), m_previewRenderer->GetView(), m_previewRenderer->GetEntityContextId(),
                           AZ::RPI::AssetUtils::GetAssetIdForProductPath(DefaultModelPath), materialAssetId,
                           AZ::RPI::AssetUtils::GetAssetIdForProductPath(DefaultLightingPresetPath), propertyOverrides),

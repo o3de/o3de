@@ -12,14 +12,14 @@
 #include <AzToolsFramework/AssetBrowser/AssetBrowserEntry.h>
 #include <AzToolsFramework/Thumbnails/Thumbnail.h>
 #include <AzToolsFramework/Thumbnails/ThumbnailContext.h>
-#include <Previewer/CommonPreviewer.h>
-#include <Previewer/CommonThumbnailUtils.h>
+#include <SharedPreview/SharedPreviewer.h>
+#include <SharedPreview/SharedThumbnailUtils.h>
 
 // Disables warning messages triggered by the Qt library
 // 4251: class needs to have dll-interface to be used by clients of class
 // 4800: forcing value to bool 'true' or 'false' (performance warning)
 AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option")
-#include <Previewer/ui_CommonPreviewer.h>
+#include <SharedPreview/ui_SharedPreviewer.h>
 #include <QResizeEvent>
 #include <QString>
 AZ_POP_DISABLE_WARNING
@@ -30,22 +30,22 @@ namespace AZ
     {
         static constexpr int CharWidth = 6;
 
-        CommonPreviewer::CommonPreviewer(QWidget* parent)
+        SharedPreviewer::SharedPreviewer(QWidget* parent)
             : Previewer(parent)
-            , m_ui(new Ui::CommonPreviewerClass())
+            , m_ui(new Ui::SharedPreviewerClass())
         {
             m_ui->setupUi(this);
         }
 
-        CommonPreviewer::~CommonPreviewer()
+        SharedPreviewer::~SharedPreviewer()
         {
         }
 
-        void CommonPreviewer::Clear() const
+        void SharedPreviewer::Clear() const
         {
         }
 
-        void CommonPreviewer::Display(const AzToolsFramework::AssetBrowser::AssetBrowserEntry* entry)
+        void SharedPreviewer::Display(const AzToolsFramework::AssetBrowser::AssetBrowserEntry* entry)
         {
             using namespace AzToolsFramework::AssetBrowser;
             using namespace AzToolsFramework::Thumbnailer;
@@ -56,23 +56,23 @@ namespace AZ
             UpdateFileInfo();
         }
 
-        const QString& CommonPreviewer::GetName() const
+        const QString& SharedPreviewer::GetName() const
         {
             return m_name;
         }
 
-        void CommonPreviewer::resizeEvent([[maybe_unused]] QResizeEvent* event)
+        void SharedPreviewer::resizeEvent([[maybe_unused]] QResizeEvent* event)
         {
             m_ui->m_previewWidget->setMaximumHeight(m_ui->m_previewWidget->width());
 
             UpdateFileInfo();
         }
 
-        void CommonPreviewer::UpdateFileInfo() const
+        void SharedPreviewer::UpdateFileInfo() const
         {
-            m_ui->m_fileInfoLabel->setText(Thumbnails::WordWrap(m_fileInfo, m_ui->m_fileInfoLabel->width() / CharWidth));
+            m_ui->m_fileInfoLabel->setText(SharedPreviewUtils::WordWrap(m_fileInfo, m_ui->m_fileInfoLabel->width() / CharWidth));
         }
     } // namespace LyIntegration
 } // namespace AZ
 
-#include <Previewer/moc_CommonPreviewer.cpp>
+#include <SharedPreview/moc_SharedPreviewer.cpp>

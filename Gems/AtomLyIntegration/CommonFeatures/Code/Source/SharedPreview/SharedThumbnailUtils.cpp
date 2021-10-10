@@ -9,16 +9,16 @@
 #include <API/EditorAssetSystemAPI.h>
 #include <AssetBrowser/Thumbnails/ProductThumbnail.h>
 #include <AssetBrowser/Thumbnails/SourceThumbnail.h>
-#include <Previewer/CommonThumbnailUtils.h>
 #include <Atom/RPI.Reflect/Material/MaterialAsset.h>
 #include <Atom/RPI.Reflect/Model/ModelAsset.h>
 #include <Atom/RPI.Reflect/System/AnyAsset.h>
+#include <SharedPreview/SharedThumbnailUtils.h>
 
 namespace AZ
 {
     namespace LyIntegration
     {
-        namespace Thumbnails
+        namespace SharedPreviewUtils
         {
             Data::AssetId GetAssetId(
                 AzToolsFramework::Thumbnailer::SharedThumbnailKey key,
@@ -86,16 +86,16 @@ namespace AZ
                 return result;
             }
 
-            AZStd::unordered_set<AZ::Uuid> GetSupportedThumbnailAssetTypes()
+            AZStd::unordered_set<AZ::Uuid> GetSupportedAssetTypes()
             {
                 return { RPI::AnyAsset::RTTI_Type(), RPI::MaterialAsset::RTTI_Type(), RPI::ModelAsset::RTTI_Type() };
             }
 
-            bool IsSupportedThumbnail(AzToolsFramework::Thumbnailer::SharedThumbnailKey key)
+            bool IsSupportedAssetType(AzToolsFramework::Thumbnailer::SharedThumbnailKey key)
             {
-                for (const AZ::Uuid& typeId : GetSupportedThumbnailAssetTypes())
+                for (const AZ::Uuid& typeId : SharedPreviewUtils::GetSupportedAssetTypes())
                 {
-                    const AZ::Data::AssetId& assetId = GetAssetId(key, typeId);
+                    const AZ::Data::AssetId& assetId = SharedPreviewUtils::GetAssetId(key, typeId);
                     if (assetId.IsValid())
                     {
                         if (typeId == RPI::AnyAsset::RTTI_Type())
@@ -111,6 +111,6 @@ namespace AZ
 
                 return false;
             }
-        } // namespace Thumbnails
+        } // namespace SharedPreviewUtils
     } // namespace LyIntegration
 } // namespace AZ

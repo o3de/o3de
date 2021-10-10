@@ -15,7 +15,7 @@
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/Thumbnails/ThumbnailContext.h>
 #include <EditorCommonFeaturesSystemComponent.h>
-#include <Previewer/CommonThumbnail.h>
+#include <SharedPreview/SharedThumbnail.h>
 #include <SkinnedMesh/SkinnedMeshDebugDisplay.h>
 
 #include <IEditor.h>
@@ -216,11 +216,11 @@ namespace AZ
             using namespace LyIntegration;
 
             ThumbnailerRequestsBus::Broadcast(
-                &ThumbnailerRequests::RegisterThumbnailProvider, MAKE_TCACHE(Thumbnails::CommonThumbnailCache),
+                &ThumbnailerRequests::RegisterThumbnailProvider, MAKE_TCACHE(SharedThumbnailCache),
                 ThumbnailContext::DefaultContext);
 
-            m_renderer = AZStd::make_unique<AZ::LyIntegration::Thumbnails::CommonThumbnailRenderer>();
-            m_previewerFactory = AZStd::make_unique<LyIntegration::CommonPreviewerFactory>();
+            m_renderer = AZStd::make_unique<AZ::LyIntegration::SharedThumbnailRenderer>();
+            m_previewerFactory = AZStd::make_unique<LyIntegration::SharedPreviewerFactory>();
         }
 
         void EditorCommonFeaturesSystemComponent::TeardownThumbnails()
@@ -229,7 +229,7 @@ namespace AZ
             using namespace LyIntegration;
 
             ThumbnailerRequestsBus::Broadcast(
-                &ThumbnailerRequests::UnregisterThumbnailProvider, Thumbnails::CommonThumbnailCache::ProviderName,
+                &ThumbnailerRequests::UnregisterThumbnailProvider, SharedThumbnailCache::ProviderName,
                 ThumbnailContext::DefaultContext);
 
             m_renderer.reset();

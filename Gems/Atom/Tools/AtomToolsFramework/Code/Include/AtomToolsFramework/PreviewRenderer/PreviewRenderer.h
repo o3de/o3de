@@ -24,7 +24,7 @@ class QPixmap;
 
 namespace AtomToolsFramework
 {
-    //! Provides custom rendering of preview images
+    //! Processes requests for setting up content that gets rendered to a texture and captured to an image
     class PreviewRenderer final : public PreviewerFeatureProcessorProviderBus::Handler
     {
     public:
@@ -58,15 +58,15 @@ namespace AtomToolsFramework
         void SetState(State state);
         State GetState() const;
 
-        void SelectCaptureRequest();
+        void ProcessCaptureRequests();
         void CancelCaptureRequest();
         void CompleteCaptureRequest();
 
-        void LoadAssets();
-        void UpdateLoadAssets();
-        void CancelLoadAssets();
+        void LoadContent();
+        void UpdateLoadContent();
+        void CancelLoadContent();
 
-        void UpdateScene();
+        void PoseContent();
 
         bool StartCapture();
         void EndCapture();

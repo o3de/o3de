@@ -19,13 +19,13 @@ namespace AZ
 {
     namespace LyIntegration
     {
-        //! Provides custom rendering of material and model previews
-        class CommonPreviewContent final : public AtomToolsFramework::PreviewContent
+        //! Creates a simple scene used for most previews and thumbnails
+        class SharedPreviewContent final : public AtomToolsFramework::PreviewContent
         {
         public:
-            AZ_CLASS_ALLOCATOR(CommonPreviewContent, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(SharedPreviewContent, AZ::SystemAllocator, 0);
 
-            CommonPreviewContent(
+            SharedPreviewContent(
                 RPI::ScenePtr scene,
                 RPI::ViewPtr view,
                 AZ::Uuid entityContextId,
@@ -34,13 +34,13 @@ namespace AZ
                 const Data::AssetId& lightingPresetAssetId,
                 const Render::MaterialPropertyOverrideMap& materialPropertyOverrides);
 
-            ~CommonPreviewContent() override;
+            ~SharedPreviewContent() override;
 
             void Load() override;
             bool IsReady() const override;
             bool IsError() const override;
             void ReportErrors() override;
-            void UpdateScene() override;
+            void Update() override;
 
         private:
             void UpdateModel();

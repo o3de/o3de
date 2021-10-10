@@ -13,8 +13,8 @@
 #include <AzToolsFramework/API/EditorLevelNotificationBus.h>
 #include <AzToolsFramework/AssetBrowser/Previewer/PreviewerBus.h>
 #include <AzToolsFramework/Entity/SliceEditorEntityOwnershipServiceBus.h>
-#include <Previewer/CommonPreviewerFactory.h>
-#include <Previewer/CommonThumbnailRenderer.h>
+#include <SharedPreview/SharedPreviewerFactory.h>
+#include <SharedPreview/SharedThumbnailRenderer.h>
 
 namespace AZ
 {
@@ -78,8 +78,8 @@ namespace AZ
             AZStd::string m_atomLevelDefaultAssetPath{ "LevelAssets/default.slice" };
             float m_envProbeHeight{ 200.0f };
 
-            AZStd::unique_ptr<AZ::LyIntegration::Thumbnails::CommonThumbnailRenderer> m_renderer;
-            AZStd::unique_ptr<LyIntegration::CommonPreviewerFactory> m_previewerFactory;
+            AZStd::unique_ptr<AZ::LyIntegration::SharedThumbnailRenderer> m_renderer;
+            AZStd::unique_ptr<LyIntegration::SharedPreviewerFactory> m_previewerFactory;
         };
     } // namespace Render
 } // namespace AZ

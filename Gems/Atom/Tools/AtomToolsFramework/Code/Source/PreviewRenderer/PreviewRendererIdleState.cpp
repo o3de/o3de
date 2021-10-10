@@ -28,6 +28,6 @@ namespace AtomToolsFramework
 
     void PreviewRendererIdleState::OnTick([[maybe_unused]] float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time)
     {
-        m_renderer->SelectCaptureRequest();
+        m_renderer->ProcessCaptureRequests();
     }
 } // namespace AtomToolsFramework

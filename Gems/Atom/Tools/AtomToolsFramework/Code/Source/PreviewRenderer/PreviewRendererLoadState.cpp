@@ -18,7 +18,7 @@ namespace AtomToolsFramework
 
     void PreviewRendererLoadState::Start()
     {
-        m_renderer->LoadAssets();
+        m_renderer->LoadContent();
         m_timeRemainingS = TimeOutS;
         AZ::TickBus::Handler::BusConnect();
     }
@@ -33,11 +33,11 @@ namespace AtomToolsFramework
         m_timeRemainingS -= deltaTime;
         if (m_timeRemainingS > 0.0f)
         {
-            m_renderer->UpdateLoadAssets();
+            m_renderer->UpdateLoadContent();
         }
         else
         {
-            m_renderer->CancelLoadAssets();
+            m_renderer->CancelLoadContent();
         }
     }
 } // namespace AtomToolsFramework

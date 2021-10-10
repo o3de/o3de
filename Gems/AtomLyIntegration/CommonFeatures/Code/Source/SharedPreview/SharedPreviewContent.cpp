@@ -23,13 +23,13 @@
 #include <AzCore/Math/Transform.h>
 #include <AzFramework/Components/TransformComponent.h>
 #include <AzFramework/Entity/EntityContextBus.h>
-#include <Previewer/CommonPreviewContent.h>
+#include <SharedPreview/SharedPreviewContent.h>
 
 namespace AZ
 {
     namespace LyIntegration
     {
-        CommonPreviewContent::CommonPreviewContent(
+        SharedPreviewContent::SharedPreviewContent(
             RPI::ScenePtr scene,
             RPI::ViewPtr view,
             AZ::Uuid entityContextId,
@@ -56,7 +56,7 @@ namespace AZ
             m_lightingPresetAsset.Create(lightingPresetAssetId);
         }
 
-        CommonPreviewContent::~CommonPreviewContent()
+        SharedPreviewContent::~SharedPreviewContent()
         {
             if (m_modelEntity)
             {
@@ -66,46 +66,46 @@ namespace AZ
             }
         }
 
-        void CommonPreviewContent::Load()
+        void SharedPreviewContent::Load()
         {
             m_modelAsset.QueueLoad();
             m_materialAsset.QueueLoad();
             m_lightingPresetAsset.QueueLoad();
         }
 
-        bool CommonPreviewContent::IsReady() const
+        bool SharedPreviewContent::IsReady() const
         {
             return (!m_modelAsset.GetId().IsValid() || m_modelAsset.IsReady()) &&
                 (!m_materialAsset.GetId().IsValid() || m_materialAsset.IsReady()) &&
                 (!m_lightingPresetAsset.GetId().IsValid() || m_lightingPresetAsset.IsReady());
         }
 
-        bool CommonPreviewContent::IsError() const
+        bool SharedPreviewContent::IsError() const
         {
             return m_modelAsset.IsError() || m_materialAsset.IsError() || m_lightingPresetAsset.IsError();
         }
 
-        void CommonPreviewContent::ReportErrors()
+        void SharedPreviewContent::ReportErrors()
         {
             AZ_Warning(
-                "CommonPreviewContent", !m_modelAsset.GetId().IsValid() || m_modelAsset.IsReady(), "Asset failed to load in time: %s",
+                "SharedPreviewContent", !m_modelAsset.GetId().IsValid() || m_modelAsset.IsReady(), "Asset failed to load in time: %s",
                 m_modelAsset.ToString<AZStd::string>().c_str());
             AZ_Warning(
-                "CommonPreviewContent", !m_materialAsset.GetId().IsValid() || m_materialAsset.IsReady(), "Asset failed to load in time: %s",
+                "SharedPreviewContent", !m_materialAsset.GetId().IsValid() || m_materialAsset.IsReady(), "Asset failed to load in time: %s",
                 m_materialAsset.ToString<AZStd::string>().c_str());
             AZ_Warning(
-                "CommonPreviewContent", !m_lightingPresetAsset.GetId().IsValid() || m_lightingPresetAsset.IsReady(),
+                "SharedPreviewContent", !m_lightingPresetAsset.GetId().IsValid() || m_lightingPresetAsset.IsReady(),
                 "Asset failed to load in time: %s", m_lightingPresetAsset.ToString<AZStd::string>().c_str());
         }
 
-        void CommonPreviewContent::UpdateScene()
+        void SharedPreviewContent::Update()
         {
             UpdateModel();
             UpdateLighting();
             UpdateCamera();
         }
 
-        void CommonPreviewContent::UpdateModel()
+        void SharedPreviewContent::UpdateModel()
         {
             Render::MeshComponentRequestBus::Event(
                 m_modelEntity->GetId(), &Render::MeshComponentRequestBus::Events::SetModelAsset, m_modelAsset);
@@ -119,7 +119,7 @@ namespace AZ
                 Render::DefaultMaterialAssignmentId, m_materialPropertyOverrides);
         }
 
-        void CommonPreviewContent::UpdateLighting()
+        void SharedPreviewContent::UpdateLighting()
         {
             if (m_lightingPresetAsset.IsReady())
             {
@@ -152,7 +152,7 @@ namespace AZ
             }
         }
 
-        void CommonPreviewContent::UpdateCamera()
+        void SharedPreviewContent::UpdateCamera()
         {
             // Get bounding sphere of the model asset and estimate how far the camera needs to be see all of it
             Vector3 center = {};

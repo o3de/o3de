@@ -24,6 +24,6 @@ namespace AtomToolsFramework
         virtual bool IsReady() const = 0;
         virtual bool IsError() const = 0;
         virtual void ReportErrors() = 0;
-        virtual void UpdateScene() = 0;
+        virtual void Update() = 0;
     };
 } // namespace AtomToolsFramework

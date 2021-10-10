@@ -142,7 +142,7 @@ namespace AtomToolsFramework
         return m_currentState;
     }
 
-    void PreviewRenderer::SelectCaptureRequest()
+    void PreviewRenderer::ProcessCaptureRequests()
     {
         if (!m_captureRequestQueue.empty())
         {
@@ -165,12 +165,12 @@ namespace AtomToolsFramework
         SetState(PreviewRenderer::State::IdleState);
     }
 
-    void PreviewRenderer::LoadAssets()
+    void PreviewRenderer::LoadContent()
     {
         m_currentCaptureRequest.m_content->Load();
     }
 
-    void PreviewRenderer::UpdateLoadAssets()
+    void PreviewRenderer::UpdateLoadContent()
     {
         if (m_currentCaptureRequest.m_content->IsReady())
         {
@@ -180,20 +180,20 @@ namespace AtomToolsFramework
 
         if (m_currentCaptureRequest.m_content->IsError())
         {
-            CancelLoadAssets();
+            CancelLoadContent();
             return;
         }
     }
 
-    void PreviewRenderer::CancelLoadAssets()
+    void PreviewRenderer::CancelLoadContent()
     {
         m_currentCaptureRequest.m_content->ReportErrors();
         CancelCaptureRequest();
     }
 
-    void PreviewRenderer::UpdateScene()
+    void PreviewRenderer::PoseContent()
     {
-        m_currentCaptureRequest.m_content->UpdateScene();
+        m_currentCaptureRequest.m_content->Update();
     }
 
     bool PreviewRenderer::StartCapture()

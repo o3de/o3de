@@ -22,41 +22,39 @@ namespace AZ
 {
     namespace LyIntegration
     {
-        namespace Thumbnails
+        //! Provides custom rendering thumbnails of supported asset types
+        class SharedThumbnailRenderer final
+            : public AzToolsFramework::Thumbnailer::ThumbnailerRendererRequestBus::MultiHandler
+            , public SystemTickBus::Handler
         {
-            //! Provides custom rendering of material and model thumbnails
-            class CommonThumbnailRenderer
-                : public AzToolsFramework::Thumbnailer::ThumbnailerRendererRequestBus::MultiHandler
-                , public SystemTickBus::Handler
-            {
-            public:
-                AZ_CLASS_ALLOCATOR(CommonThumbnailRenderer, AZ::SystemAllocator, 0);
+        public:
+            AZ_CLASS_ALLOCATOR(SharedThumbnailRenderer, AZ::SystemAllocator, 0);
 
-                CommonThumbnailRenderer();
-                ~CommonThumbnailRenderer();
+            SharedThumbnailRenderer();
+            ~SharedThumbnailRenderer();
 
-            private:
-                //! ThumbnailerRendererRequestsBus::Handler interface overrides...
-                void RenderThumbnail(AzToolsFramework::Thumbnailer::SharedThumbnailKey thumbnailKey, int thumbnailSize) override;
-                bool Installed() const override;
+        private:
+            //! ThumbnailerRendererRequestsBus::Handler interface overrides...
+            void RenderThumbnail(AzToolsFramework::Thumbnailer::SharedThumbnailKey thumbnailKey, int thumbnailSize) override;
+            bool Installed() const override;
 
-                //! SystemTickBus::Handler interface overrides...
-                void OnSystemTick() override;
+            //! SystemTickBus::Handler interface overrides...
+            void OnSystemTick() override;
 
-                static constexpr const char* DefaultLightingPresetPath = "lightingpresets/thumbnail.lightingpreset.azasset";
-                const Data::AssetId DefaultLightingPresetAssetId = AZ::RPI::AssetUtils::GetAssetIdForProductPath(DefaultLightingPresetPath);
-                Data::Asset<RPI::AnyAsset> m_defaultLightingPresetAsset;
+            // Default assets to be kept loaded and used for rendering if not overridden
+            static constexpr const char* DefaultLightingPresetPath = "lightingpresets/thumbnail.lightingpreset.azasset";
+            const Data::AssetId DefaultLightingPresetAssetId = AZ::RPI::AssetUtils::GetAssetIdForProductPath(DefaultLightingPresetPath);
+            Data::Asset<RPI::AnyAsset> m_defaultLightingPresetAsset;
 
-                static constexpr const char* DefaultModelPath = "models/sphere.azmodel";
-                const Data::AssetId DefaultModelAssetId = AZ::RPI::AssetUtils::GetAssetIdForProductPath(DefaultModelPath);
-                Data::Asset<RPI::ModelAsset> m_defaultModelAsset;
+            static constexpr const char* DefaultModelPath = "models/sphere.azmodel";
+            const Data::AssetId DefaultModelAssetId = AZ::RPI::AssetUtils::GetAssetIdForProductPath(DefaultModelPath);
+            Data::Asset<RPI::ModelAsset> m_defaultModelAsset;
 
-                static constexpr const char* DefaultMaterialPath = "";
-                const Data::AssetId DefaultMaterialAssetId;
-                Data::Asset<RPI::MaterialAsset> m_defaultMaterialAsset;
+            static constexpr const char* DefaultMaterialPath = "";
+            const Data::AssetId DefaultMaterialAssetId;
+            Data::Asset<RPI::MaterialAsset> m_defaultMaterialAsset;
 
-                AZStd::unique_ptr<AtomToolsFramework::PreviewRenderer> m_previewRenderer;
-            };
-        } // namespace Thumbnails
+            AZStd::unique_ptr<AtomToolsFramework::PreviewRenderer> m_previewRenderer;
+        };
     } // namespace LyIntegration
 } // namespace AZ

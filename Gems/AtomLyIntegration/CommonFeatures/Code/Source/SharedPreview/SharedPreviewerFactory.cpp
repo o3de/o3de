@@ -11,25 +11,25 @@
 #include <Atom/RPI.Reflect/Model/ModelAsset.h>
 #include <Atom/RPI.Reflect/System/AnyAsset.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserEntry.h>
-#include <Previewer/CommonPreviewer.h>
-#include <Previewer/CommonPreviewerFactory.h>
-#include <Previewer/CommonThumbnailUtils.h>
+#include <SharedPreview/SharedPreviewer.h>
+#include <SharedPreview/SharedPreviewerFactory.h>
+#include <SharedPreview/SharedThumbnailUtils.h>
 
 namespace AZ
 {
     namespace LyIntegration
     {
-        AzToolsFramework::AssetBrowser::Previewer* CommonPreviewerFactory::CreatePreviewer(QWidget* parent) const
+        AzToolsFramework::AssetBrowser::Previewer* SharedPreviewerFactory::CreatePreviewer(QWidget* parent) const
         {
-            return new CommonPreviewer(parent);
+            return new SharedPreviewer(parent);
         }
 
-        bool CommonPreviewerFactory::IsEntrySupported(const AzToolsFramework::AssetBrowser::AssetBrowserEntry* entry) const
+        bool SharedPreviewerFactory::IsEntrySupported(const AzToolsFramework::AssetBrowser::AssetBrowserEntry* entry) const
         {
-            return Thumbnails::IsSupportedThumbnail(entry->GetThumbnailKey());
+            return SharedPreviewUtils::IsSupportedAssetType(entry->GetThumbnailKey());
         }
 
-        const QString& CommonPreviewerFactory::GetName() const
+        const QString& SharedPreviewerFactory::GetName() const
         {
             return m_name;
         }
