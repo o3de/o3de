@@ -17,6 +17,8 @@
 
 namespace AZ
 {
+    struct JsonImportSettings;
+
     class BaseJsonImporter
     {
     public:
@@ -47,7 +49,6 @@ namespace AZ
         ImportedFilesList m_importedFiles;
     };
 
-
     class JsonImportResolver final
     {
     public:
@@ -66,18 +67,29 @@ namespace AZ
         JsonImportResolver(JsonImportResolver&& rhs) = delete;
         ~JsonImportResolver() = delete;
 
-        static bool ResolveImports(rapidjson::Value& jsonDoc,
+        static JsonSerializationResult::ResultCode ResolveImports(rapidjson::Value& jsonDoc,
             rapidjson::Document::AllocatorType& allocator, ImportPathStack& importPathStack,
-            BaseJsonImporter* importer, StackedString& element, AZ::u8 loadFlags = TRACK_ALL);
+            JsonImportSettings& settings, StackedString& element);
 
-        static bool RestoreImports(rapidjson::Value& jsonDoc,
-            rapidjson::Document::AllocatorType& allocator, const AZ::IO::FixedMaxPath& loadedJsonPath,
-            BaseJsonImporter* importer);
+        static JsonSerializationResult::ResultCode RestoreImports(rapidjson::Value& jsonDoc,
+            rapidjson::Document::AllocatorType& allocator, JsonImportSettings& settings);
         
     private:
 
-        static bool ResolveNestedImports(rapidjson::Value& jsonDoc,
+        static JsonSerializationResult::ResultCode ResolveNestedImports(rapidjson::Value& jsonDoc,
             rapidjson::Document::AllocatorType& allocator, ImportPathStack& importPathStack,
-            BaseJsonImporter* importer, const AZ::IO::FixedMaxPath& importPath);
+            JsonImportSettings& settings, const AZ::IO::FixedMaxPath& importPath, StackedString& element);
+    };
+
+
+    struct JsonImportSettings final
+    {
+        JsonSerializationResult::JsonIssueCallback m_reporting;
+        
+        BaseJsonImporter* m_importer = nullptr;
+
+        AZ::u8 m_resolveFlags = JsonImportResolver::TRACK_ALL;
+
+        AZ::IO::FixedMaxPath m_loadedJsonPath;
     };
 } // namespace AZ

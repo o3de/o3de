@@ -18,6 +18,8 @@
 namespace AZ
 {
     class BaseJsonSerializer;
+
+    struct JsonImportSettings;
     
     enum class JsonMergeApproach
     {
@@ -283,6 +285,12 @@ namespace AZ
         //! @param rhs The right hand side value for the compare.
         //! @return An enum containing less, equal or greater. In case of an error, the value for the enum will "error".
         static JsonSerializerCompareResult Compare(const rapidjson::Value& lhs, const rapidjson::Value& rhs);
+
+        static JsonSerializationResult::ResultCode ResolveImports(
+            rapidjson::Value& jsonDoc, rapidjson::Document::AllocatorType& allocator, JsonImportSettings& settings);
+        
+        static JsonSerializationResult::ResultCode RestoreImports(
+            rapidjson::Value& jsonDoc, rapidjson::Document::AllocatorType& allocator, JsonImportSettings& settings);
 
     private:
         JsonSerialization() = delete;

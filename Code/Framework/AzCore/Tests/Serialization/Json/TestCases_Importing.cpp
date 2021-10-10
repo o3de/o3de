@@ -52,7 +52,7 @@ namespace JsonSerializationTests
             BaseJsonSerializerFixture::TearDown();
         }
 
-        void GetTestDocument(const AZStd::string& docName, rapidjson::Value& out, rapidjson::Document::AllocatorType& allocator)
+        void GetTestDocument(const AZStd::string& docName, rapidjson::Document& out, rapidjson::Document::AllocatorType& allocator)
         {
             const char *objectJson = R"({
                 "field_1" : "value_1",
@@ -71,26 +71,40 @@ namespace JsonSerializationTests
                 "obj" : {"$import" : "object.json"}
             })";
             
+            const char *nestedImportCycle1Json = R"({
+                "desc" : "Nested Import Cycle 1",
+                "obj" : {"$import" : "nested_import_c2.json"}
+            })";
+
+            const char *nestedImportCycle2Json = R"({
+                "desc" : "Nested Import Cycle 2",
+                "obj" : {"$import" : "nested_import_c1.json"}
+            })";
+
             if (docName.compare("object.json") == 0)
             {
-                rapidjson::Document object;
-                object.Parse(objectJson);
-                ASSERT_FALSE(object.HasParseError());
-                out.CopyFrom(object, allocator);
+                out.Parse(objectJson);
+                ASSERT_FALSE(out.HasParseError());
             }
             else if (docName.compare("array.json") == 0)
             {
-                rapidjson::Document array;
-                array.Parse(arrayJson);
-                ASSERT_FALSE(array.HasParseError());
-                out.CopyFrom(array, allocator);
+                out.Parse(arrayJson);
+                ASSERT_FALSE(out.HasParseError());
             }
             else if (docName.compare("nested_import.json") == 0)
             {
-                rapidjson::Document nestedImport;
-                nestedImport.Parse(nestedImportJson);
-                ASSERT_FALSE(nestedImport.HasParseError());
-                out.CopyFrom(nestedImport, allocator);
+                out.Parse(nestedImportJson);
+                ASSERT_FALSE(out.HasParseError());
+            }
+            else if (docName.compare("nested_import_c1.json") == 0)
+            {
+                out.Parse(nestedImportCycle1Json);
+                ASSERT_FALSE(out.HasParseError());
+            }
+            else if (docName.compare("nested_import_c2.json") == 0)
+            {
+                out.Parse(nestedImportCycle2Json);
+                ASSERT_FALSE(out.HasParseError());
             }
         }
 
@@ -100,30 +114,57 @@ namespace JsonSerializationTests
             m_jsonDocument->Parse(input);
             ASSERT_FALSE(m_jsonDocument->HasParseError());
 
-            AZ::StackedString pathLoad(AZ::StackedString::Format::JsonPointer);
-            AZ::IO::FixedMaxPath filePath;
-            AZ::JsonImportResolver::ImportPathStack importPathStack;
-            importPathStack.push_back(filePath);
             JsonImporterCustom* importerObj = new JsonImporterCustom(this);
-
-            AZ::JsonImportResolver::ResolveImports(m_jsonDocument->GetObject(), m_jsonDocument->GetAllocator(), importPathStack, importerObj, pathLoad);
 
             rapidjson::Document expectedOutcome;
             expectedOutcome.Parse(expectedImportedValue);
             ASSERT_FALSE(expectedOutcome.HasParseError());
+
+            TestResolveImports(importerObj);
 
             Expect_DocStrEq(m_jsonDocument->GetObject(), expectedOutcome.GetObject());
 
             rapidjson::Document originalInput;
             originalInput.Parse(input);
             ASSERT_FALSE(originalInput.HasParseError());
-            
-            AZ::JsonImportResolver::RestoreImports(m_jsonDocument->GetObject(), m_jsonDocument->GetAllocator(), filePath, importerObj);
-            
+
+            TestRestoreImports(importerObj);
+
             Expect_DocStrEq(m_jsonDocument->GetObject(), originalInput.GetObject());
             
             m_jsonDocument->SetObject();
             delete importerObj;
+        }
+
+        void TestImportCycle(const char* input)
+        {
+            m_jsonDocument->Parse(input);
+            ASSERT_FALSE(m_jsonDocument->HasParseError());
+
+            JsonImporterCustom* importerObj = new JsonImporterCustom(this);
+
+            AZ::JsonSerializationResult::ResultCode result = TestResolveImports(importerObj);
+
+            EXPECT_EQ(result.GetOutcome(), AZ::JsonSerializationResult::Outcomes::Catastrophic);
+
+            m_jsonDocument->SetObject();
+            delete importerObj;
+        }
+
+        AZ::JsonSerializationResult::ResultCode TestResolveImports(JsonImporterCustom* importerObj)
+        {
+            AZ::JsonImportSettings settings;
+            settings.m_importer = importerObj;
+
+            return AZ::JsonSerialization::ResolveImports(m_jsonDocument->GetObject(), m_jsonDocument->GetAllocator(), settings);
+        }
+
+        AZ::JsonSerializationResult::ResultCode TestRestoreImports(JsonImporterCustom* importerObj)
+        {
+            AZ::JsonImportSettings settings;
+            settings.m_importer = importerObj;
+
+            return AZ::JsonSerialization::RestoreImports(m_jsonDocument->GetObject(), m_jsonDocument->GetAllocator(), settings);
         }
     };
 
@@ -133,7 +174,7 @@ namespace JsonSerializationTests
     {
         AZ::JsonSerializationResult::ResultCode resultCode(AZ::JsonSerializationResult::Tasks::Import);
         
-        rapidjson::Value importedDoc;
+        rapidjson::Document importedDoc;
         testClass->GetTestDocument(importedFilePath.String(), importedDoc, allocator);
 
         rapidjson::Value patch;
@@ -148,7 +189,7 @@ namespace JsonSerializationTests
 
         if ((patch.IsObject() && patch.MemberCount() > 0) || (patch.IsArray() && !patch.Empty()))
         {
-            AZ::JsonSerialization::ApplyPatch(importedDoc, allocator, patch, AZ::JsonMergeApproach::JsonMergePatch);
+            AZ::JsonSerialization::ApplyPatch(importedDoc.GetObject(), allocator, patch, AZ::JsonMergeApproach::JsonMergePatch);
         }
         importedValueOut.CopyFrom(importedDoc, allocator);
 
@@ -162,7 +203,7 @@ namespace JsonSerializationTests
         AZ::JsonSerializationResult::ResultCode resultCode(AZ::JsonSerializationResult::Tasks::Import);
 
         rapidjson::Value patch;
-        AZ::JsonSerialization::CreatePatch(patch, allocator, currentValue, importedValue, AZ::JsonMergeApproach::JsonMergePatch);
+        AZ::JsonSerialization::CreatePatch(patch, allocator, importedValue, currentValue, AZ::JsonMergeApproach::JsonMergePatch);
         if ((patch.IsObject() && patch.MemberCount() > 0) || (patch.IsArray() && !patch.Empty()))
         {
             importDirectiveOut.AddMember(rapidjson::StringRef("filename"), rapidjson::StringRef(importFilename.c_str()), allocator);
@@ -244,5 +285,17 @@ namespace JsonSerializationTests
         )";
 
         TestImportLoadStore(inputFile, expectedOutput);
+    }
+
+    TEST_F(JsonImportingTests, ImportNestedImportCycleTest)
+    {
+        const char* inputFile = R"(
+            {
+                "name" : "nested_import_cycle",
+                "object": {"$import" : "nested_import_c1.json"}
+            }
+        )";
+
+        TestImportCycle(inputFile);
     }
 }
