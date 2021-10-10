@@ -36,3 +36,7 @@ AZ_GFX_VEC3_PARAM(SplitToneHighlightsColor, m_splitToneHighlightsColor, AZ::Vect
 AZ_GFX_VEC3_PARAM(SmhShadowsColor, m_smhShadowsColor, AZ::Vector3(1.0f, 0.25f, 0.25f))
 AZ_GFX_VEC3_PARAM(SmhMidtonesColor, m_smhMidtonesColor, AZ::Vector3(0.1f, 0.1f, 1.0f))
 AZ_GFX_VEC3_PARAM(SmhHighlightsColor, m_smhHighlightsColor, AZ::Vector3(1.0f, 0.0f, 1.0f))
+AZ_GFX_COMMON_PARAM(AZ::Render::LutResolution, LutResolution, m_lutResolution, AZ::Render::LutResolution::Lut16x16x16)
+AZ_GFX_COMMON_PARAM(AZ::Render::ShaperPresetType, ShaperPresetType, m_shaperPresetType, AZ::Render::ShaperPresetType::None)
+AZ_GFX_COMMON_PARAM(float, CustomMinExposure, m_customMinExposure, -6.5)
+AZ_GFX_COMMON_PARAM(float, CustomMaxExposure, m_customMaxExposure, 6.5)

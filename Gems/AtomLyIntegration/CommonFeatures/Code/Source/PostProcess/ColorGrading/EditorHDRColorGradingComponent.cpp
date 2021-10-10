@@ -8,6 +8,9 @@
 
 #include <PostProcess/ColorGrading/EditorHDRColorGradingComponent.h>
 #include <AzToolsFramework/API/EditorPythonRunnerRequestsBus.h>
+#include <AzToolsFramework/API/ComponentEntityObjectBus.h>
+#include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>
+#include <AzCore/StringFunc/StringFunc.h>
 
 namespace AZ
 {
@@ -19,7 +22,10 @@ namespace AZ
 
             if (AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
             {
-                serializeContext->Class<EditorHDRColorGradingComponent, BaseClass>()->Version(1);
+                serializeContext->Class<EditorHDRColorGradingComponent, BaseClass>()
+                    ->Version(2)
+                    ->Field("generatedLut", &EditorHDRColorGradingComponent::m_generatedLutAbsolutePath)
+                    ;
 
                 if (AZ::EditContext* editContext = serializeContext->GetEditContext())
                 {
@@ -38,6 +44,14 @@ namespace AZ
                             ->Attribute(AZ::Edit::Attributes::NameLabelOverride, "")
                             ->Attribute(AZ::Edit::Attributes::ButtonText, "Generate LUT")
                             ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorHDRColorGradingComponent::GenerateLut)
+                        ->DataElement(AZ::Edit::UIHandlers::MultiLineEdit, &EditorHDRColorGradingComponent::m_generatedLutAbsolutePath, "Generated LUT Path", "Generated LUT Path")
+                            ->Attribute(AZ::Edit::Attributes::ReadOnly, true)
+                            ->Attribute(AZ::Edit::Attributes::Visibility, &EditorHDRColorGradingComponent::GetGeneratedLutVisibilitySettings)
+                        ->UIElement(AZ::Edit::UIHandlers::Button, "Activate LUT", "Use the generated LUT asset in a Look Modification component")
+                            ->Attribute(AZ::Edit::Attributes::NameLabelOverride, "")
+                            ->Attribute(AZ::Edit::Attributes::ButtonText, "Activate LUT")
+                            ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorHDRColorGradingComponent::ActivateLut)
+                            ->Attribute(AZ::Edit::Attributes::Visibility, &EditorHDRColorGradingComponent::GetGeneratedLutVisibilitySettings)
                         ;
 
                     editContext->Class<HDRColorGradingComponentController>(
@@ -133,6 +147,22 @@ namespace AZ
                         ->DataElement(AZ::Edit::UIHandlers::Slider, &HDRColorGradingComponentConfig::m_colorGradingPostSaturation, "Post Saturation", "Post Saturation Value")
                             ->Attribute(Edit::Attributes::Min, -100.0f)
                             ->Attribute(Edit::Attributes::Max, 100.0f)
+
+                        ->ClassElement(AZ::Edit::ClassElements::Group, "LUT Generation")
+                        ->DataElement(AZ::Edit::UIHandlers::ComboBox, &HDRColorGradingComponentConfig::m_lutResolution, "LUT Resolution", "Resolution of generated LUT")
+                            ->EnumAttribute(LutResolution::Lut16x16x16, "16x16x16")
+                            ->EnumAttribute(LutResolution::Lut32x32x32, "32x32x32")
+                            ->EnumAttribute(LutResolution::Lut64x64x64, "64x64x64")
+                        ->DataElement(Edit::UIHandlers::ComboBox, &HDRColorGradingComponentConfig::m_shaperPresetType,
+                            "Shaper Type", "Shaper Type.")
+                            ->EnumAttribute(ShaperPresetType::None, "None")
+                            ->EnumAttribute(ShaperPresetType::LinearCustomRange, "Linear Custom Range")
+                            ->EnumAttribute(ShaperPresetType::Log2_48Nits, "Log2 48 nits")
+                            ->EnumAttribute(ShaperPresetType::Log2_1000Nits, "Log2 1000 nits")
+                            ->EnumAttribute(ShaperPresetType::Log2_2000Nits, "Log2 2000 nits")
+                            ->EnumAttribute(ShaperPresetType::Log2_4000Nits, "Log2 4000 nits")
+                            ->EnumAttribute(ShaperPresetType::Log2CustomRange, "Log2 Custom Range")
+                            ->EnumAttribute(ShaperPresetType::PqSmpteSt2084, "PQ (SMPTE ST 2084)")
                         ;
                 }
             }
@@ -163,7 +193,8 @@ namespace AZ
                     startedCapture,
                     &AZ::Render::FrameCaptureRequestBus::Events::CapturePassAttachment,
                     LutGenerationPassHierarchy,
-                    AZStd::string(LutAttachment), TempTiffFilePath,
+                    AZStd::string(LutAttachment),
+                    m_currentTiffFilePath,
                     AZ::RPI::PassAttachmentReadbackOption::Output);
 
                 m_lutGenerationInProgress = !startedCapture;
@@ -173,9 +204,9 @@ namespace AZ
         void EditorHDRColorGradingComponent::OnCaptureFinished([[maybe_unused]] AZ::Render::FrameCaptureResult result, [[maybe_unused]]const AZStd::string& info)
         {
             char resolvedInputFilePath[AZ_MAX_PATH_LEN] = { 0 };
-            AZ::IO::FileIOBase::GetDirectInstance()->ResolvePath(TempTiffFilePath, resolvedInputFilePath, AZ_MAX_PATH_LEN);
+            AZ::IO::FileIOBase::GetDirectInstance()->ResolvePath(m_currentTiffFilePath.c_str(), resolvedInputFilePath, AZ_MAX_PATH_LEN);
             char resolvedOutputFilePath[AZ_MAX_PATH_LEN] = { 0 };
-            AZ::IO::FileIOBase::GetDirectInstance()->ResolvePath(GeneratedLutFilePath, resolvedOutputFilePath, AZ_MAX_PATH_LEN);
+            AZ::IO::FileIOBase::GetDirectInstance()->ResolvePath(m_currentLutFilePath.c_str(), resolvedOutputFilePath, AZ_MAX_PATH_LEN);
 
             AZStd::vector<AZStd::string_view> pythonArgs
             {
@@ -185,10 +216,16 @@ namespace AZ
 
             AzToolsFramework::EditorPythonRunnerRequestBus::Broadcast(
                 &AzToolsFramework::EditorPythonRunnerRequestBus::Events::ExecuteByFilenameWithArgs,
-                "@devroot@/Gems/Atom/Feature/Common/Editor/Scripts/ColorGrading/tiff_to_3dl_azasset.py", pythonArgs);
+                TiffToAzassetPythonScriptPath,
+                pythonArgs);
 
             m_controller.m_configuration.m_generateLut = false;
             m_controller.OnConfigChanged();
+
+            m_generatedLutAbsolutePath = resolvedOutputFilePath + AZStd::string(".azasset");
+            AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(
+                &AzToolsFramework::PropertyEditorGUIMessages::RequestRefresh,
+                AzToolsFramework::PropertyModificationRefreshLevel::Refresh_EntireTree);
 
             AZ::TickBus::Handler::BusDisconnect();
             AZ::Render::FrameCaptureNotificationBus::Handler::BusDisconnect();
@@ -197,6 +234,13 @@ namespace AZ
         void EditorHDRColorGradingComponent::GenerateLut()
         {
             // turn on lut generation pass
+            AZ::Uuid uuid = AZ::Uuid::CreateRandom();
+            AZStd::string uuidString;
+            uuid.ToString(uuidString);
+
+            m_currentTiffFilePath = AZStd::string::format(TempTiffFilePath, uuidString.c_str());
+            m_currentLutFilePath = "@devassets@/" + AZStd::string::format(GeneratedLutRelativePath, uuidString.c_str());
+
             m_lutGenerationInProgress = true;
             m_controller.m_configuration.m_generateLut = true;
             m_controller.OnConfigChanged();
@@ -204,6 +248,35 @@ namespace AZ
             m_frameCounter = FramesToWait;
 
             AZ::TickBus::Handler::BusConnect();
+        }
+
+        AZ::u32 EditorHDRColorGradingComponent::ActivateLut()
+        {
+            using namespace AzFramework::StringFunc::Path;
+
+            AZStd::string entityName;
+            AZ::ComponentApplicationBus::BroadcastResult(entityName, &AZ::ComponentApplicationRequests::GetEntityName, GetEntityId());
+
+            AZStd::string filename;
+            GetFileName(m_generatedLutAbsolutePath.c_str(), filename);
+            AZStd::string assetRelativePath = "LutGeneration/" + filename + ".azasset";
+            AZStd::vector<AZStd::string_view> pythonArgs
+            {
+                "--entityName", entityName,
+                "--assetRelativePath", assetRelativePath
+            };
+
+            AzToolsFramework::EditorPythonRunnerRequestBus::Broadcast(
+                &AzToolsFramework::EditorPythonRunnerRequestBus::Events::ExecuteByFilenameWithArgs,
+                ActivateLutAssetPythonScriptPath,
+                pythonArgs);
+
+            return AZ::Edit::PropertyRefreshLevels::EntireTree;
+        }
+
+        bool EditorHDRColorGradingComponent::GetGeneratedLutVisibilitySettings()
+        {
+            return !m_generatedLutAbsolutePath.empty();
         }
 
         u32 EditorHDRColorGradingComponent::OnConfigurationChanged()

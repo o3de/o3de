@@ -38,22 +38,19 @@ namespace AZ
                 AcesDisplayMapperFeatureProcessor* dmfp = scene->GetFeatureProcessor<AcesDisplayMapperFeatureProcessor>();
                 if (dmfp)
                 {
-                    // load the image assets
-                    auto assetId = AZ::RPI::AssetUtils::GetAssetIdForProductPath(
-                        "lookuptables/lut_identitylinear_16x16x16.azasset", AZ::RPI::AssetUtils::TraceLevel::Error);
-                    AZ_Assert(assetId.IsValid(), "LUT Asset is not valid.");
-                    dmfp->GetLutFromAssetId(m_colorGradingLut, assetId);
+                    for (int i = 0; i < NumLuts; ++i)
+                    {
+                        auto assetId = AZ::RPI::AssetUtils::GetAssetIdForProductPath(LutIdentityProductPath[i], AZ::RPI::AssetUtils::TraceLevel::Error);
+                        AZ_Assert(assetId.IsValid(), "LUT Asset is not valid.");
+                        dmfp->GetLutFromAssetId(m_colorGradingLuts[i], assetId);
 
-                    // set srg image index
-                    m_shaderResourceGroup->SetImageView(m_identityLut16x16x16Index, m_colorGradingLut.m_lutStreamingImage->GetImageView());
+                        m_shaderResourceGroup->SetImageView(m_identityLutIndices[i], m_colorGradingLuts[i].m_lutStreamingImage->GetImageView());
 
-                    // Get the output image attachment
-                    RPI::Ptr<RPI::PassAttachment> attachment = FindOwnedAttachment(Name{ "ColorGradingLut" });
-                    RHI::ImageDescriptor& imageDescriptor = attachment->m_descriptor.m_image;
-                    imageDescriptor.m_size = RHI::Size(
-                        m_colorGradingLut.m_lutStreamingImage->GetDescriptor().m_size.m_width*m_colorGradingLut.m_lutStreamingImage->GetDescriptor().m_size.m_width,
-                        m_colorGradingLut.m_lutStreamingImage->GetDescriptor().m_size.m_height,
-                        1);
+                        m_colorGradingLutSizes[i] = RHI::Size(
+                            m_colorGradingLuts[i].m_lutStreamingImage->GetDescriptor().m_size.m_width * m_colorGradingLuts[i].m_lutStreamingImage->GetDescriptor().m_size.m_width,
+                            m_colorGradingLuts[i].m_lutStreamingImage->GetDescriptor().m_size.m_height,
+                            1);
+                    }
                 }
             }
 
@@ -64,27 +61,46 @@ namespace AZ
         {
             HDRColorGradingPass::InitializeInternal();
 
-            m_identityLut16x16x16Index.Reset();
-            m_identityLut32x32x32Index.Reset();
-            m_identityLut64x64x64Index.Reset();
-
-            //// load the image assets
-            //DisplayMapperAssetLut m_colorGradingLut;
-            //auto assetId = AZ::RPI::AssetUtils::GetAssetIdForProductPath("lookuptables/lut_identitylinear_16x16x16.azasset", AZ::RPI::AssetUtils::TraceLevel::Error);
-            //AcesDisplayMapperFeatureProcessor* dmfp = GetScene()->GetFeatureProcessor<AcesDisplayMapperFeatureProcessor>();
-            //dmfp->GetLutFromAssetId(m_colorGradingLut, assetId);
-
-            //// set srg image index
-            //m_shaderResourceGroup->SetImageView(m_identityLut16x16x16Index, m_colorGradingLut.m_lutStreamingImage->GetImageView());
+            for (int i = 0; i < NumLuts; ++i)
+            {
+                m_identityLutIndices[i].Reset();
+            }
+            m_lutResolutionIndex.Reset();
+            m_lutShaperTypeIndex.Reset();
+            m_lutShaperScaleIndex.Reset();
         }
 
         void LutGenerationPass::FrameBeginInternal(FramePrepareParams params)
         {
+            const auto* colorGradingSettings = GetHDRColorGradingSettings();
+            if (colorGradingSettings)
+            {
+                m_shaderResourceGroup->SetConstant(m_lutResolutionIndex, colorGradingSettings->GetLutResolution());
+
+                auto shaperParams = AcesDisplayMapperFeatureProcessor::GetShaperParameters(
+                    colorGradingSettings->GetShaperPresetType(),
+                    colorGradingSettings->GetCustomMinExposure(),
+                    colorGradingSettings->GetCustomMaxExposure());
+                m_shaderResourceGroup->SetConstant(m_lutShaperTypeIndex, shaperParams.m_type);
+                m_shaderResourceGroup->SetConstant(m_lutShaperBiasIndex, shaperParams.m_bias);
+                m_shaderResourceGroup->SetConstant(m_lutShaperScaleIndex, shaperParams.m_scale);
+            }
+
             HDRColorGradingPass::FrameBeginInternal(params);
         }
 
         void LutGenerationPass::BuildCommandListInternal(const RHI::FrameGraphExecuteContext& context)
         {
+            const auto* colorGradingSettings = GetHDRColorGradingSettings();
+            if (colorGradingSettings)
+            {
+                LutResolution lutResolution = colorGradingSettings->GetLutResolution();
+
+                RPI::Ptr<RPI::PassAttachment> attachment = FindOwnedAttachment(Name{ "ColorGradingLut" });
+                RHI::ImageDescriptor& imageDescriptor = attachment->m_descriptor.m_image;
+                imageDescriptor.m_size = m_colorGradingLutSizes[(int)lutResolution];
+                SetViewportScissorFromImageSize(m_colorGradingLutSizes[(int)lutResolution]);
+            }
             HDRColorGradingPass::BuildCommandListInternal(context);
         }
 
@@ -94,6 +110,15 @@ namespace AZ
             //return colorGradingSettings ? colorGradingSettings->GetGenerateLut() : false;
             return true;
         }
+
+        void LutGenerationPass::SetViewportScissorFromImageSize(const RHI::Size& imageSize)
+        {
+            const RHI::Viewport viewport(0.f, imageSize.m_width * 1.f, 0.f, imageSize.m_height * 1.f);
+            const RHI::Scissor scissor(0, 0, imageSize.m_width, imageSize.m_height);
+            m_viewportState = viewport;
+            m_scissorState = scissor;
+        }
+
     } // namespace Render
 } // namespace AZ
 

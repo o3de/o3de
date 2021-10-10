@@ -52,6 +52,7 @@ namespace AZ
         void HDRColorGradingComponentController::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
         {
             incompatible.push_back(AZ_CRC_CE("HDRColorGradingService"));
+            incompatible.push_back(AZ_CRC("LookModificationService", 0x207b7539));
         }
 
         void HDRColorGradingComponentController::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)

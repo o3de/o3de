@@ -28,19 +28,39 @@ static const float FloatMax = FLOAT_32_MAX; // Max float number representable
 
 static const float AcesCcMidGrey = 0.4135884;
 
-float3 convert2Dto3DLutCoords(float2 uv)
+float3 convert2Dto3DLutCoords(float2 uv, float width, float height)
 {
-    const float height = 16.0;
-    const float width = 256.0;
+    //uint adjustedU = uv.x * (height-1)*(height-1);
+    //uint2 adjustedUv = uint2(uv.x * height*height, uv.y * (height-1));
+    //uint3 coords = uint3(adjustedUv.x%height, adjustedUv.y, adjustedU/(height-1));
+    //float3 coords = float3(clamp(((adjustedUv.x-1)%height+1), 0, height), adjustedUv.y, (int)(adjustedUv.x/height));
 
-    float2 adjustedUv = float2(uv.x * width, uv.y * height);
-    float3 coords = float3(adjustedUv.x%height, adjustedUv.x/height, adjustedUv.y);
+    float2 adjustedUv = float2(uv.x * height*height, uv.y * height);
+    float3 coords = float3(adjustedUv.x%height, uv.x*height, adjustedUv.y);
     return coords/height;
+    //return float3(uv.x, uv.x, uv.y);
 }
+
+enum class LutResolution
+{
+    Lut16x16x16,
+    Lut32x32x32,
+    Lut64x64x64
+};
 
 ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
 {
     // framebuffer sampler
+    Sampler PointSampler
+    {
+        MinFilter = Point;
+        MagFilter = Point;
+        MipFilter = Point;
+        AddressU = Clamp;
+        AddressV = Clamp;
+        AddressW = Clamp;
+    };
+
     Sampler LinearSampler
     {
         MinFilter = Linear;
@@ -53,6 +73,13 @@ ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
 
     // Identity LUTs
     Texture3D<float4> m_identityLut16x16x16;
+    Texture3D<float4> m_identityLut32x32x32;
+    Texture3D<float4> m_identityLut64x64x64;
+
+    int m_lutResolution;
+    int m_shaperType;
+    float m_shaperBias;
+    float m_shaperScale;
 
     float m_colorGradingExposure;
     float m_colorGradingContrast;
@@ -125,7 +152,8 @@ float3 ColorGradeHueShift (float3 frameColor, float amount)
 
 float3 ColorGradeSaturation (float3 frameColor, float control) 
 {
-    const float vLuminance = CalculateLuminance(frameColor, ColorSpaceId::ACEScg);
+    const float vLuminance = CalculateLuminance(frameColor, ColorSpaceId::LinearSRGB);
+    //const float vLuminance = CalculateLuminance(frameColor, ColorSpaceId::ACEScg);
     return (frameColor - vLuminance) * control + vLuminance;
 }
 
@@ -184,20 +212,7 @@ float3 ColorGradeShadowsMidtonesHighlights (float3 frameColor, float shadowsStar
 
 float3 ColorGrade(float3 frameColor) 
 {
-    frameColor = ColorGradePostExposure(frameColor, PassSrg::m_colorGradingExposure);
-    frameColor = ColorGradeKelvinColorTemp(frameColor, PassSrg::m_whiteBalanceKelvin);
-    frameColor = ColorGradingContrast(frameColor, AcesCcMidGrey, PassSrg::m_colorGradingContrast);
-    frameColor = ColorGradeColorFilter(frameColor, PassSrg::m_colorFilterSwatch.rgb,
-                                         PassSrg::m_colorFilterMultiply);
-    frameColor = max(frameColor, 0.0);
     frameColor = ColorGradeSaturation(frameColor, PassSrg::m_colorGradingPreSaturation);
-    frameColor = ColorGradeSplitTone(frameColor, PassSrg::m_splitToneBalance, PassSrg::m_splitToneWeight);
-    frameColor = ColorGradeChannelMixer(frameColor);
-    frameColor = max(frameColor, 0.0);
-    frameColor = ColorGradeShadowsMidtonesHighlights(frameColor, PassSrg::m_smhShadowsStart, PassSrg::m_smhShadowsEnd,
-                                                    PassSrg::m_smhHighlightsStart, PassSrg::m_smhHighlightsEnd, PassSrg::m_smhWeight,
-                                                    PassSrg::m_smhShadowsColor, PassSrg::m_smhMidtonesColor, PassSrg::m_smhHighlightsColor);
-    frameColor = ColorGradeHueShift(frameColor, PassSrg::m_colorGradingHueShift);
     frameColor = ColorGradeSaturation(frameColor, PassSrg::m_colorGradingPostSaturation);
     return frameColor.rgb;
 }
@@ -206,6 +221,11 @@ struct PSOutput
 {
     float4 m_lutOutput : SV_Target0;
 };
+
+float3 InverseGamma(float3 color)
+{
+    return pow(color, 2.2);
+}
 
 float3 GetSourceLutLinearColor(float3 baseColor, Texture3D<float4> sourceLut, ShaperType shaperType, float shaperBias, float shaperScale)
 {
@@ -219,38 +239,49 @@ float3 GetSourceLutLinearColor(float3 baseColor, Texture3D<float4> sourceLut, Sh
     float3 coordScale = (outputDimensions - 1.0) / outputDimensions;
     lutCoord = (lutCoord * coordScale) + coordBias;
 
-    float3 lutColor = sourceLut.SampleLevel(PassSrg::LinearSampler, lutCoord, 0).rgb;
+    float3 lutColor = sourceLut.SampleLevel(PassSrg::PointSampler, lutCoord, 0).rgb;
     // Convert to linear
     float3 linearColor = ShaperToLinear(lutColor, shaperType, shaperBias, shaperScale);
     return linearColor;
 }
 
-float3 InverseGamma(float3 color)
-{
-    return pow(color, 2.2);
-}
-
 PSOutput MainPS(VSOutput IN)
 {
-    int shaperNum = 0;
-    ShaperType shaperType = (ShaperType)shaperNum;
-    //ShaperType shaperType = ShaperType::ShaperLinear;
-    float bias = 0.0;
-    float scale = 1.0;
+    ShaperType shaperType = (ShaperType)PassSrg::m_shaperType;
 
     PSOutput OUT;
 
-    float3 baseCoords = convert2Dto3DLutCoords(IN.m_texCoord);
-    float3 baseColor = ShaperToLinear(baseCoords, shaperType, bias, scale);
-
-    float3 lutColor = PassSrg::m_identityLut16x16x16.Sample(PassSrg::LinearSampler, baseColor, 0.0).rgb;
-    //float3 lutColor = GetSourceLutLinearColor(baseColor, PassSrg::m_identityLut16x16x16, shaperType, bias, scale);
-
-    //float3 gradedColor = float4(ColorGrade(lutColor), 1.0);
-
-    //float3 finalColor = LinearToShaper(gradedColor, shaperType, bias, scale);
-     
-    OUT.m_lutOutput = float4(lutColor, 1.0);
+    uint3 lutDimensions;
+    float3 baseCoords = float3(0.0, 0.0, 0.0);
+    float3 lutColor = float3(0.0, 0.0, 0.0);
+    LutResolution lutRes = (LutResolution)PassSrg::m_lutResolution;
+    switch(lutRes)
+    {
+        case LutResolution::Lut16x16x16:
+        {
+            baseCoords = convert2Dto3DLutCoords(IN.m_texCoord, 256, 16);
+            lutColor = PassSrg::m_identityLut16x16x16.Sample(PassSrg::PointSampler, baseCoords, 0.0).rgb;
+            //lutColor = TransformColor(lutColor, ColorSpaceId::LinearSRGB, ColorSpaceId::ACEScg);
+            break;
+        }
+        case LutResolution::Lut32x32x32:
+        {
+            baseCoords = convert2Dto3DLutCoords(IN.m_texCoord, 1024, 32);
+            lutColor = PassSrg::m_identityLut32x32x32.Sample(PassSrg::PointSampler, baseCoords, 0.0).rgb;
+            break;
+        }
+        case LutResolution::Lut64x64x64:
+        {
+            baseCoords = convert2Dto3DLutCoords(IN.m_texCoord, 4096, 64);
+            lutColor = PassSrg::m_identityLut64x64x64.Sample(PassSrg::PointSampler, baseCoords, 0.0).rgb;
+            break;
+        }
+    }
+    //float3 lutColor = ShaperToLinear(baseCoords, shaperType, PassSrg::m_shaperBias, PassSrg::m_shaperScale);
+    float3 gradedColor = float4(ColorGrade(lutColor), 1.0);
+    //float3 finalColor = LinearToShaper(gradedColor, shaperType, PassSrg::m_shaperBias, PassSrg::m_shaperScale);
+    gradedColor = TransformColor(gradedColor, ColorSpaceId::LinearSRGB, ColorSpaceId::ACEScg);
+    OUT.m_lutOutput = float4(gradedColor, 1.0);
 
     return OUT;
 }

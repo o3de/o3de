@@ -17,8 +17,10 @@ namespace AZ
 {
     namespace Render
     {
-        static const char* const TempTiffFilePath{ "@projectcache@/LutGeneration/SavedLut.tiff" };
-        static const char* const GeneratedLutFilePath{ "@projectcache@/LutGeneration/SavedLut" };
+        static const char* const TempTiffFilePath{ "@projectcache@/LutGeneration/SavedLut_%s.tiff" };
+        static const char* const GeneratedLutRelativePath = { "LutGeneration/SavedLut_%s" };
+        static const char* const TiffToAzassetPythonScriptPath{ "@devroot@/Gems/Atom/Feature/Common/Editor/Scripts/ColorGrading/tiff_to_3dl_azasset.py" };
+        static const char* const ActivateLutAssetPythonScriptPath{ "@devroot@/Gems/Atom/Feature/Common/Assets/Scripts/activate_lut_asset.py" };
 
         class EditorHDRColorGradingComponent final
             : public AzToolsFramework::Components::
@@ -50,9 +52,15 @@ namespace AZ
             void OnCaptureFinished(AZ::Render::FrameCaptureResult result, const AZStd::string& info) override;
 
             void GenerateLut();
+            AZ::u32 ActivateLut();
+            bool GetGeneratedLutVisibilitySettings();
 
             AZStd::atomic_bool m_lutGenerationInProgress = false;
             int m_frameCounter;
+            AZStd::string m_currentTiffFilePath;
+            AZStd::string m_currentLutFilePath;
+
+            AZStd::string m_generatedLutAbsolutePath;
         };
     } // namespace Render
 } // namespace AZ
