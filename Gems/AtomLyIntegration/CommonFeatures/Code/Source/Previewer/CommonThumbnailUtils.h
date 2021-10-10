@@ -26,8 +26,13 @@ namespace AZ
                 const Data::AssetType& assetType,
                 const Data::AssetId& defaultAssetId = {});
 
-            //! Word wrap function for previewer QLabel, since by default it does not break long words such as filenames, so manual word wrap needed
+            //! Word wrap function for previewer QLabel, since by default it does not break long words such as filenames, so manual word
+            //! wrap needed
             QString WordWrap(const QString& string, int maxLength);
+
+            AZStd::unordered_set<AZ::Uuid> GetSupportedThumbnailAssetTypes();
+
+            bool IsSupportedThumbnail(AzToolsFramework::Thumbnailer::SharedThumbnailKey key);
         } // namespace Thumbnails
     } // namespace LyIntegration
 } // namespace AZ

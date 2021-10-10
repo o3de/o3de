@@ -22,15 +22,15 @@ namespace AZ
         namespace Thumbnails
         {
             //! Custom thumbnail that detects when an asset changes and updates the thumbnail
-            class MaterialThumbnail
+            class CommonThumbnail
                 : public AzToolsFramework::Thumbnailer::Thumbnail
                 , public AzToolsFramework::Thumbnailer::ThumbnailerRendererNotificationBus::Handler
                 , private AzFramework::AssetCatalogEventBus::Handler
             {
                 Q_OBJECT
             public:
-                MaterialThumbnail(AzToolsFramework::Thumbnailer::SharedThumbnailKey key);
-                ~MaterialThumbnail() override;
+                CommonThumbnail(AzToolsFramework::Thumbnailer::SharedThumbnailKey key);
+                ~CommonThumbnail() override;
 
                 //! AzToolsFramework::ThumbnailerRendererNotificationBus::Handler overrides...
                 void ThumbnailRendered(const QPixmap& thumbnailImage) override;
@@ -45,19 +45,20 @@ namespace AZ
 
                 AZStd::binary_semaphore m_renderWait;
                 Data::AssetId m_assetId;
+                AZ::Uuid m_typeId;
             };
 
             //! Cache configuration for large thumbnails
-            class MaterialThumbnailCache : public AzToolsFramework::Thumbnailer::ThumbnailCache<MaterialThumbnail>
+            class CommonThumbnailCache : public AzToolsFramework::Thumbnailer::ThumbnailCache<CommonThumbnail>
             {
             public:
-                MaterialThumbnailCache();
-                ~MaterialThumbnailCache() override;
+                CommonThumbnailCache();
+                ~CommonThumbnailCache() override;
 
                 int GetPriority() const override;
                 const char* GetProviderName() const override;
 
-                static constexpr const char* ProviderName = "Material Thumbnails";
+                static constexpr const char* ProviderName = "Common Thumbnails";
 
             protected:
                 bool IsSupportedThumbnail(AzToolsFramework::Thumbnailer::SharedThumbnailKey key) const override;

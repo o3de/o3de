@@ -13,7 +13,7 @@
 #include <AzToolsFramework/AssetBrowser/AssetBrowserEntry.h>
 #include <Previewer/CommonPreviewer.h>
 #include <Previewer/CommonPreviewerFactory.h>
-#include <Previewer/ThumbnailUtils.h>
+#include <Previewer/CommonThumbnailUtils.h>
 
 namespace AZ
 {
@@ -26,28 +26,7 @@ namespace AZ
 
         bool CommonPreviewerFactory::IsEntrySupported(const AzToolsFramework::AssetBrowser::AssetBrowserEntry* entry) const
         {
-            AZ::Data::AssetId assetId = Thumbnails::GetAssetId(entry->GetThumbnailKey(), RPI::ModelAsset::RTTI_Type());
-            if (assetId.IsValid())
-            {
-                return true;
-            }
-
-            assetId = Thumbnails::GetAssetId(entry->GetThumbnailKey(), RPI::MaterialAsset::RTTI_Type());
-            if (assetId.IsValid())
-            {
-                return true;
-            }
-
-            assetId = Thumbnails::GetAssetId(entry->GetThumbnailKey(), RPI::AnyAsset::RTTI_Type());
-            if (assetId.IsValid())
-            {
-                AZ::Data::AssetInfo assetInfo;
-                AZ::Data::AssetCatalogRequestBus::BroadcastResult(
-                    assetInfo, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetInfoById, assetId);
-                return AzFramework::StringFunc::EndsWith(assetInfo.m_relativePath.c_str(), "lightingpreset.azasset");
-            }
-
-            return false;
+            return Thumbnails::IsSupportedThumbnail(entry->GetThumbnailKey());
         }
 
         const QString& CommonPreviewerFactory::GetName() const

@@ -10,7 +10,7 @@
 #include <AzToolsFramework/Thumbnails/ThumbnailerBus.h>
 #include <Previewer/CommonPreviewContent.h>
 #include <Previewer/CommonThumbnailRenderer.h>
-#include <Previewer/ThumbnailUtils.h>
+#include <Previewer/CommonThumbnailUtils.h>
 
 namespace AZ
 {
@@ -27,10 +27,10 @@ namespace AZ
                 m_defaultMaterialAsset.Create(DefaultMaterialAssetId, true);
                 m_defaultLightingPresetAsset.Create(DefaultLightingPresetAssetId, true);
 
-                // CommonThumbnailRenderer supports both models and materials
-                AzToolsFramework::Thumbnailer::ThumbnailerRendererRequestBus::MultiHandler::BusConnect(RPI::MaterialAsset::RTTI_Type());
-                AzToolsFramework::Thumbnailer::ThumbnailerRendererRequestBus::MultiHandler::BusConnect(RPI::ModelAsset::RTTI_Type());
-                AzToolsFramework::Thumbnailer::ThumbnailerRendererRequestBus::MultiHandler::BusConnect(RPI::AnyAsset::RTTI_Type());
+                for (const AZ::Uuid& typeId : GetSupportedThumbnailAssetTypes())
+                {
+                    AzToolsFramework::Thumbnailer::ThumbnailerRendererRequestBus::MultiHandler::BusConnect(typeId);
+                }
                 SystemTickBus::Handler::BusConnect();
             }
 

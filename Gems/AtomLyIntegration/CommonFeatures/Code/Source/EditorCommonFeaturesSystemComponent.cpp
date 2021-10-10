@@ -6,9 +6,6 @@
  *
  */
 
-#include <EditorCommonFeaturesSystemComponent.h>
-#include <SkinnedMesh/SkinnedMeshDebugDisplay.h>
-
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/EditContextConstants.inl>
 #include <AzCore/Serialization/SerializeContext.h>
@@ -17,10 +14,9 @@
 #include <AzToolsFramework/API/EditorCameraBus.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/Thumbnails/ThumbnailContext.h>
-
-#include <Previewer/MaterialThumbnail.h>
-#include <Previewer/ModelThumbnail.h>
-#include <Previewer/LightingPresetThumbnail.h>
+#include <EditorCommonFeaturesSystemComponent.h>
+#include <Previewer/CommonThumbnail.h>
+#include <SkinnedMesh/SkinnedMeshDebugDisplay.h>
 
 #include <IEditor.h>
 
@@ -220,15 +216,7 @@ namespace AZ
             using namespace LyIntegration;
 
             ThumbnailerRequestsBus::Broadcast(
-                &ThumbnailerRequests::RegisterThumbnailProvider, MAKE_TCACHE(Thumbnails::MaterialThumbnailCache),
-                ThumbnailContext::DefaultContext);
-
-            ThumbnailerRequestsBus::Broadcast(
-                &ThumbnailerRequests::RegisterThumbnailProvider, MAKE_TCACHE(Thumbnails::ModelThumbnailCache),
-                ThumbnailContext::DefaultContext);
-
-            ThumbnailerRequestsBus::Broadcast(
-                &ThumbnailerRequests::RegisterThumbnailProvider, MAKE_TCACHE(Thumbnails::LightingPresetThumbnailCache),
+                &ThumbnailerRequests::RegisterThumbnailProvider, MAKE_TCACHE(Thumbnails::CommonThumbnailCache),
                 ThumbnailContext::DefaultContext);
 
             m_renderer = AZStd::make_unique<AZ::LyIntegration::Thumbnails::CommonThumbnailRenderer>();
@@ -241,15 +229,7 @@ namespace AZ
             using namespace LyIntegration;
 
             ThumbnailerRequestsBus::Broadcast(
-                &ThumbnailerRequests::UnregisterThumbnailProvider, Thumbnails::MaterialThumbnailCache::ProviderName,
-                ThumbnailContext::DefaultContext);
-
-            ThumbnailerRequestsBus::Broadcast(
-                &ThumbnailerRequests::UnregisterThumbnailProvider, Thumbnails::ModelThumbnailCache::ProviderName,
-                ThumbnailContext::DefaultContext);
-
-            ThumbnailerRequestsBus::Broadcast(
-                &ThumbnailerRequests::UnregisterThumbnailProvider, Thumbnails::LightingPresetThumbnailCache::ProviderName,
+                &ThumbnailerRequests::UnregisterThumbnailProvider, Thumbnails::CommonThumbnailCache::ProviderName,
                 ThumbnailContext::DefaultContext);
 
             m_renderer.reset();

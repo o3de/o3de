@@ -5,6 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+
 #pragma once
 
 #include <AzCore/Memory/SystemAllocator.h>
@@ -18,8 +19,7 @@ namespace AZ
 {
     namespace LyIntegration
     {
-        class CommonPreviewerFactory final
-            : public AzToolsFramework::AssetBrowser::PreviewerFactory
+        class CommonPreviewerFactory final : public AzToolsFramework::AssetBrowser::PreviewerFactory
         {
         public:
             AZ_CLASS_ALLOCATOR(CommonPreviewerFactory, AZ::SystemAllocator, 0);

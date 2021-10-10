@@ -9,9 +9,10 @@
 #include <API/EditorAssetSystemAPI.h>
 #include <AssetBrowser/Thumbnails/ProductThumbnail.h>
 #include <AssetBrowser/Thumbnails/SourceThumbnail.h>
+#include <Previewer/CommonThumbnailUtils.h>
 #include <Atom/RPI.Reflect/Material/MaterialAsset.h>
 #include <Atom/RPI.Reflect/Model/ModelAsset.h>
-#include <Previewer/ThumbnailUtils.h>
+#include <Atom/RPI.Reflect/System/AnyAsset.h>
 
 namespace AZ
 {
@@ -30,12 +31,15 @@ namespace AZ
                 {
                     bool foundIt = false;
                     AZStd::vector<Data::AssetInfo> productsAssetInfo;
-                    AzToolsFramework::AssetSystemRequestBus::BroadcastResult(foundIt, &AzToolsFramework::AssetSystemRequestBus::Events::GetAssetsProducedBySourceUUID, sourceKey->GetSourceUuid(), productsAssetInfo);
+                    AzToolsFramework::AssetSystemRequestBus::BroadcastResult(
+                        foundIt, &AzToolsFramework::AssetSystemRequestBus::Events::GetAssetsProducedBySourceUUID,
+                        sourceKey->GetSourceUuid(), productsAssetInfo);
                     if (!foundIt)
                     {
                         return defaultAssetId;
                     }
-                    auto assetInfoIt = AZStd::find_if(productsAssetInfo.begin(), productsAssetInfo.end(),
+                    auto assetInfoIt = AZStd::find_if(
+                        productsAssetInfo.begin(), productsAssetInfo.end(),
                         [&assetType](const Data::AssetInfo& assetInfo)
                         {
                             return assetInfo.m_assetType == assetType;
@@ -56,7 +60,6 @@ namespace AZ
                 }
                 return defaultAssetId;
             }
-
 
             QString WordWrap(const QString& string, int maxLength)
             {
@@ -81,6 +84,32 @@ namespace AZ
                     result.append(c);
                 }
                 return result;
+            }
+
+            AZStd::unordered_set<AZ::Uuid> GetSupportedThumbnailAssetTypes()
+            {
+                return { RPI::AnyAsset::RTTI_Type(), RPI::MaterialAsset::RTTI_Type(), RPI::ModelAsset::RTTI_Type() };
+            }
+
+            bool IsSupportedThumbnail(AzToolsFramework::Thumbnailer::SharedThumbnailKey key)
+            {
+                for (const AZ::Uuid& typeId : GetSupportedThumbnailAssetTypes())
+                {
+                    const AZ::Data::AssetId& assetId = GetAssetId(key, typeId);
+                    if (assetId.IsValid())
+                    {
+                        if (typeId == RPI::AnyAsset::RTTI_Type())
+                        {
+                            AZ::Data::AssetInfo assetInfo;
+                            AZ::Data::AssetCatalogRequestBus::BroadcastResult(
+                                assetInfo, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetInfoById, assetId);
+                            return AzFramework::StringFunc::EndsWith(assetInfo.m_relativePath.c_str(), "lightingpreset.azasset");
+                        }
+                        return true;
+                    }
+                }
+
+                return false;
             }
         } // namespace Thumbnails
     } // namespace LyIntegration

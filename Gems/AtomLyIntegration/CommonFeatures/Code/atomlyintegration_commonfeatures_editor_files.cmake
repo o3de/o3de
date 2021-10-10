@@ -91,8 +91,6 @@ set(FILES
     Source/SkyBox/EditorHDRiSkyboxComponent.h
     Source/SkyBox/EditorPhysicalSkyComponent.cpp
     Source/SkyBox/EditorPhysicalSkyComponent.h
-    Source/Previewer/ThumbnailUtils.h
-    Source/Previewer/ThumbnailUtils.cpp
     Source/Previewer/CommonPreviewer.cpp
     Source/Previewer/CommonPreviewer.h
     Source/Previewer/CommonPreviewer.ui
@@ -100,14 +98,12 @@ set(FILES
     Source/Previewer/CommonPreviewerFactory.h
     Source/Previewer/CommonPreviewContent.cpp
     Source/Previewer/CommonPreviewContent.h
+    Source/Previewer/CommonThumbnail.cpp
+    Source/Previewer/CommonThumbnail.h
     Source/Previewer/CommonThumbnailRenderer.cpp
     Source/Previewer/CommonThumbnailRenderer.h
-    Source/Previewer/MaterialThumbnail.cpp
-    Source/Previewer/MaterialThumbnail.h
-    Source/Previewer/ModelThumbnail.cpp
-    Source/Previewer/ModelThumbnail.h
-    Source/Previewer/LightingPresetThumbnail.cpp
-    Source/Previewer/LightingPresetThumbnail.h
+    Source/Previewer/CommonThumbnailUtils.cpp
+    Source/Previewer/CommonThumbnailUtils.h
     Source/Scripting/EditorEntityReferenceComponent.cpp
     Source/Scripting/EditorEntityReferenceComponent.h
     Source/SurfaceData/EditorSurfaceDataMeshComponent.cpp
