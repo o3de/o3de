@@ -397,7 +397,6 @@ namespace O3DE::ProjectManager
         }
 
         painter->save();
-        const int statusStartX = buttonRect.left() -s_statusButtonSpacing - s_statusIconSize;
 
         QPixmap currentFrame;
         const QPixmap* statusPixmap;
