@@ -47,12 +47,15 @@ namespace AWSGameLift
             AZ_TracePrintf(AWSGameLiftClientLocalTicketTrackerName, "Matchmaking ticket tracker is running.");
             return;
         }
+
+        // Make sure thread and wait event are both in clean state before starting new one
         m_waitEvent.release();
         if (m_trackerThread.joinable())
         {
             m_trackerThread.join();
         }
         m_waitEvent.acquire();
+
         m_status = TicketTrackerStatus::Running;
         m_trackerThread = AZStd::thread(AZStd::bind(
             &AWSGameLiftClientLocalTicketTracker::ProcessPolling, this, ticketId, playerId));
@@ -88,9 +91,9 @@ namespace AWSGameLift
                         auto ticket = describeMatchmakingOutcome.GetResult().GetTicketList().front();
                         if (ticket.GetStatus() == Aws::GameLift::Model::MatchmakingConfigurationStatus::COMPLETED)
                         {
-                            RequestPlayerJoinMatch(ticket, playerId);
                             AZ_TracePrintf(AWSGameLiftClientLocalTicketTrackerName,
                                 "Matchmaking ticket %s is complete.", ticket.GetTicketId().c_str());
+                            RequestPlayerJoinMatch(ticket, playerId);
                             m_status = TicketTrackerStatus::Idle;
                             return;
                         }
