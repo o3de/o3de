@@ -10,6 +10,7 @@
 
 #include <AzCore/Component/TransformBus.h>
 #include <AzToolsFramework/ContainerEntity/ContainerEntityNotificationBus.h>
+#include <AzToolsFramework/API/ToolsApplicationAPI.h>
 
 namespace AzToolsFramework
 {
@@ -126,9 +127,17 @@ namespace AzToolsFramework
         Clear(AzFramework::EntityContextId::CreateNull());
     }
 
-    ContainerEntityOperationResult ContainerEntitySystemComponent::Clear([[maybe_unused]] AzFramework::EntityContextId entityContextId)
+    ContainerEntityOperationResult ContainerEntitySystemComponent::Clear(AzFramework::EntityContextId entityContextId)
     {
-        // We don't yet support multiple entity contexts, so clear everything.
+        // We don't yet support multiple entity contexts, so only clear the default.
+        auto editorEntityContextId = AzFramework::EntityContextId::CreateNull();
+        EditorEntityContextRequestBus::BroadcastResult(editorEntityContextId, &EditorEntityContextRequests::GetEditorEntityContextId);
+
+        if (entityContextId != editorEntityContextId)
+        {
+            return AZ::Failure(AZStd::string(
+                "Error in ContainerEntitySystemComponent::Clear - cannot clear non-default Entity Context!"));
+        }
 
         if (!m_containers.empty())
         {

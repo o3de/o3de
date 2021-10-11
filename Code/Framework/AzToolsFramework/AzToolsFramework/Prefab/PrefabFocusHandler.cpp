@@ -196,7 +196,7 @@ namespace AzToolsFramework::Prefab
             Initialize();
         }
 
-        // Clear the old Focus Vector
+        // Clear the old focus vector
         m_instanceFocusVector.clear();
 
         // Focus on the root prefab (AZ::EntityId() will default to it)

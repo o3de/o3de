@@ -14,32 +14,22 @@ namespace AzToolsFramework
     {
         // When no containers are in the way, the function will just return the entityId of the entity that was clicked.
         
-        // Clear selection
-        ClearSelectedEntities();
-
         // Click on Car Entity
-        ClickAtWorldPositionOnViewport(CarEntityPosition);
+        ClickAtWorldPositionOnViewport(WorldCarEntityPosition);
 
         // Verify the correct entity is selected
         auto selectedEntitiesAfter = GetSelectedEntities();
         EXPECT_EQ(selectedEntitiesAfter.size(), 1);
         EXPECT_EQ(selectedEntitiesAfter.front(), m_entityMap[CarEntityName]);
-
-        // Restore default state for other tests.
-        ClearSelectedEntities();
     }
 
     TEST_F(EditorFocusModeSelectionFixture, ContainerEntitySelectionTests_FindHighestSelectableEntityWithClosedContainer)
     {
         // If a closed container is an ancestor of the queried entity, the closed container is selected.
-        
-        // Clear selection
-        ClearSelectedEntities();
-
         m_containerEntityInterface->RegisterEntityAsContainer(m_entityMap[StreetEntityName]); // Containers are closed by default
 
         // Click on Car Entity
-        ClickAtWorldPositionOnViewport(CarEntityPosition);
+        ClickAtWorldPositionOnViewport(WorldCarEntityPosition);
 
         // Verify the correct entity is selected
         auto selectedEntitiesAfter = GetSelectedEntities();
@@ -48,21 +38,16 @@ namespace AzToolsFramework
 
         // Restore default state for other tests.
         m_containerEntityInterface->UnregisterEntityAsContainer(m_entityMap[StreetEntityName]);
-        ClearSelectedEntities();
     }
 
     TEST_F(EditorFocusModeSelectionFixture, ContainerEntitySelectionTests_FindHighestSelectableEntityWithOpenContainer)
     {
         // If a closed container is an ancestor of the queried entity, the closed container is selected.
-        
-        // Clear selection
-        ClearSelectedEntities();
-
         m_containerEntityInterface->RegisterEntityAsContainer(m_entityMap[StreetEntityName]);
         m_containerEntityInterface->SetContainerOpen(m_entityMap[StreetEntityName], true);
 
         // Click on Car Entity
-        ClickAtWorldPositionOnViewport(CarEntityPosition);
+        ClickAtWorldPositionOnViewport(WorldCarEntityPosition);
 
         // Verify the correct entity is selected
         auto selectedEntitiesAfter = GetSelectedEntities();
@@ -70,23 +55,17 @@ namespace AzToolsFramework
         EXPECT_EQ(selectedEntitiesAfter.front(), m_entityMap[CarEntityName]);
 
         // Restore default state for other tests.
-        m_containerEntityInterface->SetContainerOpen(m_entityMap[StreetEntityName], false);
         m_containerEntityInterface->UnregisterEntityAsContainer(m_entityMap[StreetEntityName]);
-        ClearSelectedEntities();
     }
 
     TEST_F(EditorFocusModeSelectionFixture, ContainerEntitySelectionTests_FindHighestSelectableEntityWithMultipleClosedContainers)
     {
         // If multiple closed containers are ancestors of the queried entity, the highest closed container is selected.
-        
-        // Clear selection
-        ClearSelectedEntities();
-
         m_containerEntityInterface->RegisterEntityAsContainer(m_entityMap[StreetEntityName]);
         m_containerEntityInterface->RegisterEntityAsContainer(m_entityMap[CityEntityName]);
 
         // Click on Car Entity
-        ClickAtWorldPositionOnViewport(CarEntityPosition);
+        ClickAtWorldPositionOnViewport(WorldCarEntityPosition);
 
         // Verify the correct entity is selected
         auto selectedEntitiesAfter = GetSelectedEntities();
@@ -96,22 +75,17 @@ namespace AzToolsFramework
         // Restore default state for other tests.
         m_containerEntityInterface->UnregisterEntityAsContainer(m_entityMap[StreetEntityName]);
         m_containerEntityInterface->UnregisterEntityAsContainer(m_entityMap[CityEntityName]);
-        ClearSelectedEntities();
     }
 
     TEST_F(EditorFocusModeSelectionFixture, ContainerEntitySelectionTests_FindHighestSelectableEntityWithMultipleContainers)
     {
         // If multiple containers are ancestors of the queried entity, the highest closed container is selected.
-        
-        // Clear selection
-        ClearSelectedEntities();
-
         m_containerEntityInterface->RegisterEntityAsContainer(m_entityMap[StreetEntityName]);
         m_containerEntityInterface->RegisterEntityAsContainer(m_entityMap[CityEntityName]);
         m_containerEntityInterface->SetContainerOpen(m_entityMap[CityEntityName], true);
 
         // Click on Car Entity
-        ClickAtWorldPositionOnViewport(CarEntityPosition);
+        ClickAtWorldPositionOnViewport(WorldCarEntityPosition);
 
         // Verify the correct entity is selected
         auto selectedEntitiesAfter = GetSelectedEntities();
@@ -119,9 +93,7 @@ namespace AzToolsFramework
         EXPECT_EQ(selectedEntitiesAfter.front(), m_entityMap[StreetEntityName]);
 
         // Restore default state for other tests.
-        m_containerEntityInterface->SetContainerOpen(m_entityMap[CityEntityName], false);
         m_containerEntityInterface->UnregisterEntityAsContainer(m_entityMap[StreetEntityName]);
         m_containerEntityInterface->UnregisterEntityAsContainer(m_entityMap[CityEntityName]);
-        ClearSelectedEntities();
     }
 }

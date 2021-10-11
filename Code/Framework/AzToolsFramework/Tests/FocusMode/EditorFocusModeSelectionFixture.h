@@ -28,8 +28,7 @@
 
 namespace AzToolsFramework
 {
-    class EditorFocusModeSelectionFixture
-        : public UnitTest::IndirectCallManipulatorViewportInteractionFixtureMixin<EditorFocusModeFixture>
+    class EditorFocusModeSelectionFixture : public UnitTest::IndirectCallManipulatorViewportInteractionFixtureMixin<EditorFocusModeFixture>
     {
     public:
         void ClickAtWorldPositionOnViewport(const AZ::Vector3& worldPosition)
@@ -41,18 +40,4 @@ namespace AzToolsFramework
             m_actionDispatcher->CameraState(m_cameraState)->MousePosition(carScreenPosition)->MouseLButtonDown()->MouseLButtonUp();
         }
     };
-
-    void ClearSelectedEntities()
-    {
-        AzToolsFramework::ToolsApplicationRequestBus::Broadcast(
-            &AzToolsFramework::ToolsApplicationRequestBus::Events::SetSelectedEntities, AzToolsFramework::EntityIdList());
-    }
-
-    AzToolsFramework::EntityIdList GetSelectedEntities()
-    {
-        AzToolsFramework::EntityIdList selectedEntities;
-        AzToolsFramework::ToolsApplicationRequestBus::BroadcastResult(
-            selectedEntities, &AzToolsFramework::ToolsApplicationRequestBus::Events::GetSelectedEntities);
-        return selectedEntities;
-    }
-}
+} // namespace AzToolsFramework

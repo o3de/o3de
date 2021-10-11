@@ -97,7 +97,6 @@ namespace AzToolsFramework
         EXPECT_TRUE(outcome.IsSuccess());
 
         // Restore default state for other tests.
-        m_containerEntityInterface->SetContainerOpen(m_entityMap[StreetEntityName], false);
         m_containerEntityInterface->UnregisterEntityAsContainer(m_entityMap[StreetEntityName]);
     }
 
@@ -110,7 +109,6 @@ namespace AzToolsFramework
         EXPECT_TRUE(outcome.IsSuccess());
 
         // Restore default state for other tests.
-        m_containerEntityInterface->SetContainerOpen(m_entityMap[StreetEntityName], false);
         m_containerEntityInterface->UnregisterEntityAsContainer(m_entityMap[StreetEntityName]);
     }
 
@@ -122,7 +120,6 @@ namespace AzToolsFramework
         EXPECT_TRUE(outcome.IsSuccess());
 
         // Restore default state for other tests.
-        m_containerEntityInterface->SetContainerOpen(m_entityMap[StreetEntityName], false);
         m_containerEntityInterface->UnregisterEntityAsContainer(m_entityMap[StreetEntityName]);
     }
     
@@ -155,7 +152,6 @@ namespace AzToolsFramework
         EXPECT_TRUE(isOpen);
 
         // Restore default state for other tests.
-        m_containerEntityInterface->SetContainerOpen(m_entityMap[CityEntityName], false);
         m_containerEntityInterface->UnregisterEntityAsContainer(m_entityMap[CityEntityName]);
     }
     
@@ -186,7 +182,6 @@ namespace AzToolsFramework
         EXPECT_TRUE(isOpen);
 
         // Restore default state for other tests.
-        m_containerEntityInterface->SetContainerOpen(m_entityMap[CityEntityName], false);
         m_containerEntityInterface->UnregisterEntityAsContainer(m_entityMap[CityEntityName]);
     }
     
@@ -263,7 +258,6 @@ namespace AzToolsFramework
         EXPECT_EQ(selectedEntityId, m_entityMap[Passenger2EntityName]);
 
         // Restore default state for other tests.
-        m_containerEntityInterface->SetContainerOpen(m_entityMap[SportsCarEntityName], false);
         m_containerEntityInterface->UnregisterEntityAsContainer(m_entityMap[SportsCarEntityName]);
     }
 
@@ -292,7 +286,6 @@ namespace AzToolsFramework
         EXPECT_EQ(selectedEntityId, m_entityMap[SportsCarEntityName]);
 
         // Restore default state for other tests.
-        m_containerEntityInterface->SetContainerOpen(m_entityMap[StreetEntityName], false);
         m_containerEntityInterface->UnregisterEntityAsContainer(m_entityMap[StreetEntityName]);
         m_containerEntityInterface->UnregisterEntityAsContainer(m_entityMap[SportsCarEntityName]);
     }
