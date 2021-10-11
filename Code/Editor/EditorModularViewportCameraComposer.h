@@ -41,15 +41,15 @@ namespace SandboxEditor
         AZStd::shared_ptr<AzFramework::RotateCameraInput> m_firstPersonRotateCamera;
         AZStd::shared_ptr<AzFramework::PanCameraInput> m_firstPersonPanCamera;
         AZStd::shared_ptr<AzFramework::TranslateCameraInput> m_firstPersonTranslateCamera;
-        AZStd::shared_ptr<AzFramework::ScrollTranslationCameraInput> m_firstPersonScrollCamera;
+        AZStd::shared_ptr<AzFramework::LookScrollTranslationCameraInput> m_firstPersonScrollCamera;
         AZStd::shared_ptr<AzFramework::FocusCameraInput> m_firstPersonFocusCamera;
-        AZStd::shared_ptr<AzFramework::PivotCameraInput> m_pivotCamera;
-        AZStd::shared_ptr<AzFramework::RotateCameraInput> m_pivotRotateCamera;
-        AZStd::shared_ptr<AzFramework::TranslateCameraInput> m_pivotTranslateCamera;
-        AZStd::shared_ptr<AzFramework::PivotDollyScrollCameraInput> m_pivotDollyScrollCamera;
-        AZStd::shared_ptr<AzFramework::PivotDollyMotionCameraInput> m_pivotDollyMoveCamera;
-        AZStd::shared_ptr<AzFramework::PanCameraInput> m_pivotPanCamera;
-        AZStd::shared_ptr<AzFramework::FocusCameraInput> m_pivotFocusCamera;
+        AZStd::shared_ptr<AzFramework::OrbitCameraInput> m_orbitCamera;
+        AZStd::shared_ptr<AzFramework::RotateCameraInput> m_orbitRotateCamera;
+        AZStd::shared_ptr<AzFramework::TranslateCameraInput> m_orbitTranslateCamera;
+        AZStd::shared_ptr<AzFramework::OrbitDollyScrollCameraInput> m_orbitDollyScrollCamera;
+        AZStd::shared_ptr<AzFramework::OrbitDollyMotionCameraInput> m_orbitDollyMoveCamera;
+        AZStd::shared_ptr<AzFramework::PanCameraInput> m_orbitPanCamera;
+        AZStd::shared_ptr<AzFramework::FocusCameraInput> m_orbitFocusCamera;
 
         AzFramework::ViewportId m_viewportId;
     };

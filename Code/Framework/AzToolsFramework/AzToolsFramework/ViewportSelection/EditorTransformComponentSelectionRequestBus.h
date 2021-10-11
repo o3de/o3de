@@ -31,8 +31,6 @@ namespace AzToolsFramework
     constexpr inline AZ::Crc32 EditPivot = AZ_CRC_CE("com.o3de.action.editortransform.editpivot");
     constexpr inline AZ::Crc32 EditReset = AZ_CRC_CE("com.o3de.action.editortransform.editreset");
     constexpr inline AZ::Crc32 EditResetManipulator = AZ_CRC_CE("com.o3de.action.editortransform.editresetmanipulator");
-    constexpr inline AZ::Crc32 EditResetLocal = AZ_CRC_CE("com.o3de.action.editortransform.editresetlocal");
-    constexpr inline AZ::Crc32 EditResetWorld = AZ_CRC_CE("com.o3de.action.editortransform.editresetworld");
     constexpr inline AZ::Crc32 ViewportUiVisible = AZ_CRC_CE("com.o3de.action.editortransform.viewportuivisible");
     //@}
 

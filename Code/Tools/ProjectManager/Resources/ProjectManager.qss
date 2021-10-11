@@ -496,11 +496,32 @@ QProgressBar::chunk {
     background-color: #333333;
 }
 
-/************** Filter tag widget **************/
+#GemDependenciesDialog QLabel {
+    margin-bottom:10px;
+}
+
+#GemDependenciesDialog QCheckBox {
+    background-color: #333333;
+    border-radius: 3px;
+    spacing:3px;
+    margin-right:5px;
+    padding:4px;
+    margin-top:5px;
+}
+
+/************** Filter Tag widget **************/
 
 #FilterTagWidgetTextLabel {
     color: #94D2FF;
     font-size: 10px;
+}
+
+#TagWidget {
+    background-color: #333333;
+    padding:3px;
+    font-size:12px;
+    border-radius: 3px;
+    margin-right: 3px;
 }
 
 /************** Gems SubWidget **************/

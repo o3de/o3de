@@ -59,6 +59,14 @@ binary_file_ext = {
     '.motionset'
 }
 
+cpp_file_ext = {
+    '.cpp',
+    '.h',
+    '.hpp',
+    '.hxx',
+    '.inl'
+}
+
 expect_license_info_ext = {
     '.cpp',
     '.h',
@@ -402,7 +410,7 @@ def create_template(source_path: pathlib.Path,
     # if no template path, error
     if not template_path:
         logger.info(f'Template path empty. Using source name {source_name}')
-        template_path = source_name
+        template_path = pathlib.Path(source_name)
     if not template_path.is_absolute():
         default_templates_folder = manifest.get_registered(default_folder='templates')
         template_path = default_templates_folder / template_path
@@ -518,20 +526,51 @@ def create_template(source_path: pathlib.Path,
     replacements.append((source_name.upper(), '${NameUpper}'))
     replacements.append((source_name, '${Name}'))
     replacements.append((sanitized_source_name, '${SanitizedCppName}'))
+    sanitized_name_index = len(replacements) - 1
 
-    def _transform_into_template(s_data: object) -> (bool, str):
+    def _is_cpp_file(file_path: pathlib.Path) -> bool:
+        """
+        Internal helper method to check if a file is a C++ file based
+        on its extension, so we can determine if we need to prefer
+        the ${SanitizedCppName}
+        :param file_path: The input file path
+        :return: bool: Whether or not the input file path has a C++ extension
+        """
+        name, ext = os.path.splitext(file_path)
+
+        return ext.lower() in cpp_file_ext
+
+    def _transform_into_template(s_data: object,
+                                 prefer_sanitized_name: bool = False) -> (bool, str):
         """
         Internal function to transform any data into templated data
         :param s_data: the input data, this could be file data or file name data
+        :param prefer_sanitized_name: Optionally swap the sanitized name with the normal name
+                                      This can be necessary when creating the template, the source
+                                      name and sanitized source name might be the same, but C++
+                                      files will need to prefer the sanitized version, or else
+                                      there might be compile errors (e.g. '-' characters in the name)
         :return: bool: whether or not the returned data MAY need to be transformed to instantiate it
                  t_data: potentially transformed data 0 for success or non 0 failure code
         """
+        def swap_sanitized_name_and_normal():
+            replacements[sanitized_name_index-1], replacements[sanitized_name_index] = \
+                replacements[sanitized_name_index], replacements[sanitized_name_index-1]
+
         # copy the src data to the transformed data, then operate only on transformed data
         t_data = str(s_data)
+
+        # If we need to prefer the sanitized name, then swap it for the normal
+        if prefer_sanitized_name:
+            swap_sanitized_name_and_normal()
 
         # run all the replacements
         for replacement in replacements:
             t_data = t_data.replace(replacement[0], replacement[1])
+
+        # Once we are done running the replacements, reset the list if we had modified it
+        if prefer_sanitized_name:
+            swap_sanitized_name_and_normal()
 
         if not keep_license_text:
             t_data = _replace_license_text(t_data)
@@ -704,7 +743,7 @@ def create_template(source_path: pathlib.Path,
                         # open the file and attempt to transform it
                         with open(entry_abs, 'r') as s:
                             source_data = s.read()
-                            templated, source_data = _transform_into_template(source_data)
+                            templated, source_data = _transform_into_template(source_data, _is_cpp_file(entry_abs))
 
                             # if the file type is a file that we expect to fins license header and we don't find any
                             # warn that the we didn't find the license info, this makes it easy to make sure we didn't
@@ -840,7 +879,7 @@ def create_template(source_path: pathlib.Path,
                         # open the file and attempt to transform it
                         with open(entry_abs, 'r') as s:
                             source_data = s.read()
-                            templated, source_data = _transform_into_template(source_data)
+                            templated, source_data = _transform_into_template(source_data, _is_cpp_file(entry_abs))
 
                             # if the file type is a file that we expect to fins license header and we don't find any
                             # warn that the we didn't find the license info, this makes it easy to make sure we didn't
