@@ -18,7 +18,7 @@
 #include <AzFramework/Viewport/CursorState.h>
 #include <AzToolsFramework/API/EditorCameraBus.h>
 #include <AzToolsFramework/Commands/EntityManipulatorCommand.h>
-#include <AzToolsFramework/ComponentMode/EditorComponentModeBus.h>
+#include <AzToolsFramework/API/ViewportEditorModeTrackerNotificationBus.h>
 #include <AzToolsFramework/Editor/EditorContextMenuBus.h>
 #include <AzToolsFramework/Manipulators/BaseManipulator.h>
 #include <AzToolsFramework/ToolsComponents/EditorLockComponentBus.h>
@@ -153,7 +153,7 @@ namespace AzToolsFramework
         , private EditorTransformComponentSelectionRequestBus::Handler
         , private ToolsApplicationNotificationBus::Handler
         , private Camera::EditorCameraNotificationBus::Handler
-        , private ComponentModeFramework::EditorComponentModeNotificationBus::Handler
+        , private ViewportEditorModeNotificationsBus::Handler
         , private EditorEntityContextNotificationBus::Handler
         , private EditorEntityVisibilityNotificationBus::Router
         , private EditorEntityLockComponentNotificationBus::Router
@@ -286,9 +286,9 @@ namespace AzToolsFramework
         // EditorContextLockComponentNotificationBus overrides ...
         void OnEntityLockChanged(bool locked) override;
 
-        // EditorComponentModeNotificationBus overrides ...
-        void EnteredComponentMode(const AZStd::vector<AZ::Uuid>& componentModeTypes) override;
-        void LeftComponentMode(const AZStd::vector<AZ::Uuid>& componentModeTypes) override;
+        // ViewportEditorModeNotificationsBus overrides ...
+        void OnEditorModeActivated(const ViewportEditorModesInterface& editorModeState, ViewportEditorMode mode) override;
+        void OnEditorModeDeactivated(const ViewportEditorModesInterface& editorModeState, ViewportEditorMode mode) override;
 
         // EditorEntityContextNotificationBus overrides ...
         void OnStartPlayInEditor() override;
