@@ -144,7 +144,7 @@ namespace TestImpact
             }
 
             [[nodiscard]] ProcessCallbackResult operator()(
-                const typename JobInfo& jobInfo, const TestImpact::JobMeta& meta, AZStd::string&& stdOut, AZStd::string&& stdErr)
+                const typename JobInfo& jobInfo, const TestImpact::JobMeta& meta, StdContent&& std)
             {
                 const auto id = jobInfo.GetId().m_value;
                 const auto& args = jobInfo.GetCommand().m_args;
@@ -153,7 +153,7 @@ namespace TestImpact
 
                 // Place the test engine job associated with this test run into the map along with its client test run result so
                 // that it can be retrieved when the sequence has ended (and any associated artifacts processed)
-                const auto& [it, success] = m_engineJobs->emplace(id, TestEngineJob(target, args, meta, result, AZStd::move(stdOut), AZStd::move(stdErr)));
+                const auto& [it, success] = m_engineJobs->emplace(id, TestEngineJob(target, args, meta, result, AZStd::move(std.m_out.value_or("")), AZStd::move(std.m_err.value_or(""))));
                 
                 if (m_callback->has_value())
                 {

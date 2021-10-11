@@ -49,7 +49,7 @@ namespace TestImpact
         //! @param stdOutput The total accumulated standard output buffer.
         //! @param stdError The total accumulated standard error buffer.
         //! @param stdDelta The standard output/error buffer data since the last callback.
-        using JobStdBufferCallback = AZStd::function<ProcessCallbackResult(
+        using StdBufferCallback = AZStd::function<ProcessCallbackResult(
             const typename Job::Info& jobInfo, const AZStd::string& stdOutput, const AZStd::string& stdError, StdContent&& stdDelta)>;
 
         //! Constructs the job runner with the specified parameters to constrain job runs.
@@ -73,7 +73,7 @@ namespace TestImpact
             AZStd::optional<AZStd::chrono::milliseconds> jobTimeout,
             AZStd::optional<AZStd::chrono::milliseconds> runnerTimeout,
             JobCallback jobCallback,
-            AZStd::optional<JobStdBufferCallback> stdBufferCallback);
+            AZStd::optional<StdBufferCallback> stdBufferCallback);
 
     private:
         ProcessScheduler m_processScheduler;
@@ -98,7 +98,7 @@ namespace TestImpact
         AZStd::optional<AZStd::chrono::milliseconds> jobTimeout,
         AZStd::optional<AZStd::chrono::milliseconds> runnerTimeout,
         JobCallback jobCallback,
-        AZStd::optional<JobStdBufferCallback> stdBufferCallback)
+        AZStd::optional<StdBufferCallback> stdBufferCallback)
     {
         AZStd::vector<ProcessInfo> processes;
         AZStd::unordered_map<Job::Info::IdType, AZStd::pair<JobMeta, const typename Job::Info*>> metas;

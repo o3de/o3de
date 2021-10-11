@@ -84,7 +84,7 @@ namespace TestImpact
     //! @param stdOutput The total accumulated standard output buffer.
     //! @param stdError The total accumulated standard error buffer.
     //! @param stdDelta The standard output/error buffer data since the last callback.
-    using ProcessStdBufferCallback = AZStd::function<ProcessCallbackResult(
+    using ProcessStdContentCallback = AZStd::function<ProcessCallbackResult(
         ProcessId processId,
         const AZStd::string& stdOutput,
         const AZStd::string& stdError,

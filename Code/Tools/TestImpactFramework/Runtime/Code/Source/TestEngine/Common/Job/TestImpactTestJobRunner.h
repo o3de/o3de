@@ -47,13 +47,15 @@ namespace TestImpact
         using Job = Job<JobInfo, Payload>;
         using PayloadMap = typename JobRunner<Job>::PayloadMap;
         using JobDataMap = typename JobRunner<Job>::JobDataMap;
+        using JobCallback = typename JobRunner<Job>::JobCallback;
+        using StdBufferCallback = typename JobRunner<Job>::StdBufferCallback;
 
         //!
-        using JobCallback = AZStd::function<ProcessCallbackResult(const JobInfo& jobInfo, const JobMeta& meta, AZStd::string&& stdOut, AZStd::string&& stdErr)>;
+        //using JobCallback = AZStd::function<ProcessCallbackResult(const JobInfo& jobInfo, const JobMeta& meta, AZStd::string&& stdOut, AZStd::string&& stdErr)>;
 
         //!
-        using StdBufferCallback =
-            AZStd::function<ProcessCallbackResult(const AZStd::string& stdOutput, const AZStd::string& stdError, StdContent&& stdDelta)>;
+        //using StdBufferCallback =
+        //    AZStd::function<ProcessCallbackResult(const AZStd::string& stdOutput, const AZStd::string& stdError, StdContent&& stdDelta)>;
 
         //! Constructs the job runner with the specified parameters common to all job runs of this runner.
         //! @param maxConcurrentJobs The maximum number of jobs to be in flight at any given time.
@@ -108,7 +110,7 @@ namespace TestImpact
             if (clientCallback.has_value())
             {
                 if (const auto result =
-                        (*clientCallback)(jobInfo, meta, AZStd::move(std.m_out.value_or("")), AZStd::move(std.m_err.value_or("")));
+                        (*clientCallback)(jobInfo, meta, AZStd::move(std));
                     result == ProcessCallbackResult::Abort)
                 {
                     return ProcessCallbackResult::Abort;
