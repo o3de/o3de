@@ -16,12 +16,12 @@ namespace O3DE::ProjectManager
 {
     QT_FORWARD_DECLARE_CLASS(GemModel)
 
-    class GemRequirementDialog
+    class GemDependenciesDialog
         : public QDialog
     {
         Q_OBJECT // AUTOMOC
     public:
-        explicit GemRequirementDialog(GemModel* model, QWidget *parent = nullptr);
-        ~GemRequirementDialog() = default;
+        explicit GemDependenciesDialog(GemModel* gemModel, QWidget *parent = nullptr);
+        ~GemDependenciesDialog() = default;
     };
 } // namespace O3DE::ProjectManager

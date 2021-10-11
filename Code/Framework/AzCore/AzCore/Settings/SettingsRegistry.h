@@ -204,14 +204,14 @@ namespace AZ
         [[nodiscard]] virtual PreMergeEventHandler RegisterPreMergeEvent(const PreMergeEventCallback& callback) = 0;
         //! Register a function that will be called before a file is merged.
         //! @callback The function to call before a file is merged.
-        [[nodiscard]] virtual PreMergeEventHandler RegisterPreMergeEvent (PreMergeEventCallback&& callback) = 0;
+        [[nodiscard]] virtual PreMergeEventHandler RegisterPreMergeEvent(PreMergeEventCallback&& callback) = 0;
 
         //! Register a function that will be called after a file is merged.
         //! @callback The function to call after a file is merged.
         [[nodiscard]] virtual PostMergeEventHandler RegisterPostMergeEvent(const PostMergeEventCallback& callback) = 0;
         //! Register a function that will be called after a file is merged.
         //! @callback The function to call after a file is merged.
-        [[nodiscard]] virtual PostMergeEventHandler RegisterPostMergeEvent (PostMergeEventCallback&& callback) = 0;
+        [[nodiscard]] virtual PostMergeEventHandler RegisterPostMergeEvent(PostMergeEventCallback&& callback) = 0;
 
         //! Gets the boolean value at the provided path.
         //! @param result The target to write the result to.
