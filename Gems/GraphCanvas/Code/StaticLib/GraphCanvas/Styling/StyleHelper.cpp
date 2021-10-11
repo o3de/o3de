@@ -6,6 +6,8 @@
  *
  */
 
+#include <GraphCanvas/Styling/StyleHelper.h>
+
 namespace GraphCanvas
 {
     namespace Styling
