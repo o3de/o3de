@@ -92,6 +92,8 @@ set(FILES
     Source/GemCatalog/GemListHeaderWidget.cpp
     Source/GemCatalog/GemModel.h
     Source/GemCatalog/GemModel.cpp
+    Source/GemCatalog/GemDependenciesDialog.h
+    Source/GemCatalog/GemDependenciesDialog.cpp
     Source/GemCatalog/GemRequirementDialog.h
     Source/GemCatalog/GemRequirementDialog.cpp
     Source/GemCatalog/GemRequirementDelegate.h
