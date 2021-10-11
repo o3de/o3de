@@ -19,8 +19,8 @@ namespace TestImpact
         : public TestJobRunner<AdditionalInfo, Payload>
     {
     public:
-        using JobRunner = TestJobRunner<AdditionalInfo, Payload>;
-        using JobRunner::JobRunner;
+        using TestJobRunner = TestJobRunner<AdditionalInfo, Payload>;
+        using TestJobRunner::TestJobRunner;
 
         //! Executes the specified test run jobs according to the specified job exception policies.
         //! @param jobInfos The test run jobs to execute.
@@ -29,16 +29,18 @@ namespace TestImpact
         //! @param runTimeout The maximum duration a run may be in-flight for before being forcefully terminated.
         //! @param runnerTimeout The maximum duration the runner may run before forcefully terminating all in-flight runs.
         //! @param clientCallback The optional client callback to be called whenever a run job changes state.
+        //! @param stdContentCallback 
         //! @return The result of the run sequence and the run jobs with their associated test run payloads.
-        AZStd::pair<ProcessSchedulerResult, AZStd::vector<typename JobRunner::Job>> RunTests(
-            const AZStd::vector<typename JobRunner::JobInfo>& jobInfos,
+        AZStd::pair<ProcessSchedulerResult, AZStd::vector<TestJobRunner::Job>> RunTests(
+            const AZStd::vector<TestJobRunner::JobInfo>& jobInfos,
             AZStd::optional<AZStd::chrono::milliseconds> runTimeout,
             AZStd::optional<AZStd::chrono::milliseconds> runnerTimeout,
-            AZStd::optional<typename JobRunner::JobCallback> clientCallback)
+            AZStd::optional<TestJobRunner::JobCallback> clientCallback,
+            AZStd::optional<TestJobRunner::StdContentCallback> stdContentCallback)
         {
-            const auto payloadGenerator = [](const typename JobRunner::JobDataMap& jobDataMap)
+            const auto payloadGenerator = [](const typename TestJobRunner::JobDataMap& jobDataMap)
             {
-                typename JobRunner::PayloadMap runs;
+                typename TestJobRunner::PayloadMap runs;
                 for (const auto& [jobId, jobData] : jobDataMap)
                 {
                     const auto& [meta, jobInfo] = jobData;
@@ -60,13 +62,13 @@ namespace TestImpact
                 return runs;
             };
 
-            return JobRunner::ExecuteJobs(
+            return this->m_jobRunner.Execute(
                 jobInfos,
                 payloadGenerator,
                 runTimeout,
                 runnerTimeout,
                 clientCallback,
-                AZStd::nullopt); // <--- STD BUFFER CALLBACK
+                stdContentCallback);
         }
     };
 } // namespace TestImpact

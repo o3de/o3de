@@ -101,6 +101,13 @@ namespace UnitTest
                 {
                     printf("RET: %i, CMD: %s\n", meta.m_returnCode.value_or(-10000), jobInfo.GetCommand().m_args.c_str());
                     return TestImpact::ProcessCallbackResult::Continue;
+                },
+                []([[maybe_unused]] const JobInfo& jobInfo, [[maybe_unused]] const AZStd::string& stdOutput,
+                   [[maybe_unused]] const AZStd::string& stdError,
+                   AZStd::string&& stdOutDelta, AZStd::string&& stdErrDelta)
+                {
+                    printf("%s%s", stdOutDelta.c_str(), stdErrDelta.c_str());
+                    return TestImpact::ProcessCallbackResult::Continue;
                 });
         }
         catch(const std::exception& e)

@@ -21,10 +21,19 @@ namespace TestImpact
     //! Generic job runner that launches a process for each job, records metrics about each job run and hands the payload artifacts
     //! produced by each job to the client before compositing the metrics and payload artifacts for each job into a single interface
     //! to be consumed by the client.
-    template<typename Job>
+    //! @tparam AdditionalInfo The data structure containing the information additional to the command arguments necessary to execute and
+    //! complete a job.
+    //! @tparam Payload The output produced by a job.
+    template<typename AdditionalInfo, typename Payload>
     class JobRunner
     {
     public:
+        using JobData = AdditionalInfo;
+        using JobInfo = JobInfo<AdditionalInfo>;
+        using Command = typename JobInfo::Command;
+        using JobPayload = Payload;
+        using Job = Job<JobInfo, Payload>;
+
         //! The payloads produced by the job-specific payload producer in the form of a map associating each job id with the job's payload.
         using PayloadMap = AZStd::unordered_map<typename Job::Info::IdType, AZStd::optional<typename Job::Payload>>;
 
@@ -48,9 +57,9 @@ namespace TestImpact
         //! @param jobInfo The job information associated with this job.
         //! @param stdOutput The total accumulated standard output buffer.
         //! @param stdError The total accumulated standard error buffer.
-        //! @param stdDelta The standard output/error buffer data since the last callback.
+        //! @param stdOutDelta The standard output/error buffer data since the last callback.
         using StdContentCallback = AZStd::function<ProcessCallbackResult(
-            const typename Job::Info& jobInfo, const AZStd::string& stdOutput, const AZStd::string& stdError, StdContent&& stdDelta)>;
+            const typename Job::Info& jobInfo, const AZStd::string& stdOutput, const AZStd::string& stdError, AZStd::string&& stdOutDelta, AZStd::string&& stdErrDelta)>;
 
         //! Constructs the job runner with the specified parameters to constrain job runs.
         //! @param maxConcurrentProcesses he maximum number of concurrent jobs in-flight.
@@ -62,6 +71,7 @@ namespace TestImpact
         //! @param runnerTimeout The maximum duration the scheduler may run before forcefully terminating all in-flight jobs (nullopt if no timeout).
         //! @param payloadMapProducer The client callback to be called when all jobs have finished to transform the work produced by each job into the desired output.
         //! @param jobCallback The client callback to be called when each job changes state.
+        //! @param stdContentCallback
         //! @return The result of the run sequence and the jobs with their associated payloads.
         AZStd::pair<ProcessSchedulerResult, AZStd::vector<typename Job>> Execute(
             const AZStd::vector<typename Job::Info>& jobs,
@@ -69,7 +79,7 @@ namespace TestImpact
             AZStd::optional<AZStd::chrono::milliseconds> jobTimeout,
             AZStd::optional<AZStd::chrono::milliseconds> runnerTimeout,
             AZStd::optional<JobCallback> jobCallback,
-            AZStd::optional<StdContentCallback> StdContentCallback);
+            AZStd::optional<StdContentCallback> stdContentCallback);
 
     private:
         ProcessScheduler m_processScheduler;
@@ -79,14 +89,15 @@ namespace TestImpact
         AZStd::optional<AZStd::chrono::milliseconds> m_runnerTimeout; //!< Maximum time the job runner can run before forcefully terminating all in-flight jobs and shutting down.
     };
 
-    template<typename Job>
-    JobRunner<Job>::JobRunner(size_t maxConcurrentProcesses)
+    template<typename AdditionalInfo, typename Payload>
+    JobRunner<AdditionalInfo, Payload>::JobRunner(size_t maxConcurrentProcesses)
         : m_processScheduler(maxConcurrentProcesses)
     {
     }
 
-    template<typename Job>
-    AZStd::pair<ProcessSchedulerResult, AZStd::vector<typename Job>> JobRunner<Job>::Execute(
+    template<typename AdditionalInfo, typename Payload>
+    AZStd::pair<ProcessSchedulerResult, AZStd::vector<typename JobRunner<AdditionalInfo, Payload>::Job>> JobRunner<AdditionalInfo, Payload>::
+        Execute(
         const AZStd::vector<typename Job::Info>& jobInfos,
         PayloadMapProducer payloadMapProducer,
         AZStd::optional<AZStd::chrono::milliseconds> jobTimeout,
@@ -168,10 +179,11 @@ namespace TestImpact
                 ProcessId processId,
                 const AZStd::string& stdOutput,
                 const AZStd::string& stdError,
-                StdContent&& stdDelta)
+                AZStd::string&& stdOutputDelta,
+                AZStd::string&& stdErrorDelta)
             {
                 auto& [meta, jobInfo] = metas.at(processId);
-                return (*StdContentCallback)(*jobInfo, stdOutput, stdError, AZStd::move(stdDelta));
+                return (*StdContentCallback)(*jobInfo, stdOutput, stdError, AZStd::move(stdOutputDelta), AZStd::move(stdErrorDelta));
             })
             : AZStd::nullopt;
 

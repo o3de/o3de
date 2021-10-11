@@ -382,7 +382,8 @@ namespace TestImpact
             jobInfos,
             testTargetTimeout,
             globalTimeout,
-            jobCallback);
+            jobCallback,
+            AZStd::nullopt);
 
         auto engineRuns = CompileTestEngineRuns<NativeRegularTestRunner>(testTargets, runnerJobs, AZStd::move(engineJobs));
         return { CalculateSequenceResult(result, engineRuns, executionFailurePolicy), AZStd::move(engineRuns) };
@@ -412,7 +413,8 @@ namespace TestImpact
                 &engineJobs,
                 executionFailurePolicy,
                 testFailurePolicy,
-                &callback));
+                &callback),
+            AZStd::nullopt);
 
         auto engineRuns = CompileTestEngineRuns<NativeInstrumentedTestRunner>(testTargets, runnerJobs, AZStd::move(engineJobs));
 

@@ -24,12 +24,9 @@ namespace TestImpact
     class TestEnumerator
         : public TestJobRunner<AdditionalInfo, TestEnumeration>
     {
-        static_assert(
-            AZStd::is_base_of_v<TestEnumerationJobData, AdditionalInfo>, "Test enumeration job types must derive from AdditionalInfo");
-
     public:
-        using JobRunner = TestJobRunner<AdditionalInfo, TestEnumeration>;
-        using JobRunner::JobRunner;
+        using TestJobRunner = TestJobRunner<AdditionalInfo, TestEnumeration>;
+        using TestJobRunner::TestJobRunner;
 
         //! Executes the specified test enumeration jobs according to the specified cache and job exception policies.
         //! @param jobInfos The enumeration jobs to execute.
@@ -38,15 +35,17 @@ namespace TestImpact
         //! @param enumerationTimeout The maximum duration an enumeration may be in-flight for before being forcefully terminated.
         //! @param enumeratorTimeout The maximum duration the enumerator may run before forcefully terminating all in-flight enumerations.
         //! @param clientCallback The optional client callback to be called whenever an enumeration job changes state.
+        //! @param stdContentCallback 
         //! @return The result of the run sequence and the enumeration jobs with their associated test enumeration payloads.
-        AZStd::pair<ProcessSchedulerResult, AZStd::vector<typename JobRunner::Job>> Enumerate(
-            const AZStd::vector<typename JobRunner::JobInfo>& jobInfos,
+        AZStd::pair<ProcessSchedulerResult, AZStd::vector<typename TestJobRunner::Job>> Enumerate(
+            const AZStd::vector<typename TestJobRunner::JobInfo>& jobInfos,
             AZStd::optional<AZStd::chrono::milliseconds> enumerationTimeout,
             AZStd::optional<AZStd::chrono::milliseconds> enumeratorTimeout,
-            AZStd::optional<typename JobRunner::JobCallback> clientCallback)
+            AZStd::optional<typename TestJobRunner::JobCallback> clientCallback,
+            AZStd::optional<typename TestJobRunner::StdContentCallback> stdContentCallback)
         {
-            AZStd::vector<typename JobRunner::Job> cachedJobs;
-            AZStd::vector<typename JobRunner::JobInfo> jobQueue;
+            AZStd::vector<typename TestJobRunner::Job> cachedJobs;
+            AZStd::vector<typename TestJobRunner::JobInfo> jobQueue;
 
             for (auto jobInfo = jobInfos.begin(); jobInfo != jobInfos.end(); ++jobInfo)
             {
@@ -146,9 +145,9 @@ namespace TestImpact
             }
             */
 
-            const auto payloadGenerator = [](const typename JobRunner::JobDataMap& jobDataMap)
+            const auto payloadGenerator = [](const typename TestJobRunner::JobDataMap& jobDataMap)
             {
-                typename JobRunner::PayloadMap enumerations;
+                typename TestJobRunner::PayloadMap enumerations;
                 for (const auto& [jobId, jobData] : jobDataMap)
                 {
                     const auto& [meta, jobInfo] = jobData;
@@ -196,13 +195,13 @@ namespace TestImpact
             };
 
             // Generate the enumeration results for the jobs that weren't cached
-            auto [result, jobs] = ExecuteJobs(
+            auto [result, jobs] = this->m_jobRunner.Execute(
                 jobQueue,
                 payloadGenerator,
                 enumerationTimeout,
                 enumeratorTimeout,
                 clientCallback,
-                AZStd::nullopt); // <--- STD BUFFER CALLBACK
+                stdContentCallback);
 
             // We need to add the cached jobs to the completed job list even though they technically weren't executed
             for (auto&& job : cachedJobs)

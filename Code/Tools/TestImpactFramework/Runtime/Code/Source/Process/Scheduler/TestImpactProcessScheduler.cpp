@@ -256,7 +256,8 @@ namespace TestImpact
                 processInFlight.m_process->GetProcessInfo().GetId(),
                 processInFlight.m_stdOutput,
                 processInFlight.m_stdError,
-                AZStd::move(stdContents));
+                AZStd::move(stdContents.m_out.value_or("")),
+                AZStd::move(stdContents.m_err.value_or("")));
         }
     }
 
