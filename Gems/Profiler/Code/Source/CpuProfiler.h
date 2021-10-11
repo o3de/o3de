@@ -15,73 +15,69 @@
 #include <AzCore/std/containers/unordered_map.h>
 #include <AzCore/std/string/string.h>
 
-namespace AZ
+namespace Profiler
 {
-    namespace RHI
+    //! Structure that is used to cache a timed region into the thread's local storage.
+    struct CachedTimeRegion
     {
-        //! Structure that is used to cache a timed region into the thread's local storage.
-        struct CachedTimeRegion
+        //! Structure used internally for caching assumed global string pointers (ideally literals) to the marker group/region
+        //! NOTE: When used in a separate shared library, the library mustn't be unloaded before the CpuProfiler is shutdown.
+        struct GroupRegionName
         {
-            //! Structure used internally for caching assumed global string pointers (ideally literals) to the marker group/region
-            //! NOTE: When used in a separate shared library, the library mustn't be unloaded before the CpuProfiler is shutdown.
-            struct GroupRegionName
+            GroupRegionName() = delete;
+            GroupRegionName(const char* const group, const char* const region);
+
+            const char* m_groupName = nullptr;
+            const char* m_regionName = nullptr;
+
+            struct Hash
             {
-                GroupRegionName() = delete;
-                GroupRegionName(const char* const group, const char* const region);
-
-                const char* m_groupName = nullptr;
-                const char* m_regionName = nullptr;
-
-                struct Hash
-                {
-                    AZStd::size_t operator()(const GroupRegionName& name) const;
-                };
-                bool operator==(const GroupRegionName& other) const;
+                AZStd::size_t operator()(const GroupRegionName& name) const;
             };
-
-            CachedTimeRegion() = default;
-            CachedTimeRegion(const GroupRegionName& groupRegionName);
-            CachedTimeRegion(const GroupRegionName& groupRegionName, uint16_t stackDepth, uint64_t startTick, uint64_t endTick);
-
-            GroupRegionName m_groupRegionName{nullptr, nullptr};
-
-            uint16_t m_stackDepth = 0u;
-            AZStd::sys_time_t m_startTick = 0;
-            AZStd::sys_time_t m_endTick = 0;
+            bool operator==(const GroupRegionName& other) const;
         };
 
-        //! Interface class of the CpuProfiler
-        class CpuProfiler
-        {
-        public:
-            using ThreadTimeRegionMap = AZStd::unordered_map<AZStd::string, AZStd::vector<CachedTimeRegion>>;
-            using TimeRegionMap = AZStd::unordered_map<AZStd::thread_id, ThreadTimeRegionMap>;
+        CachedTimeRegion() = default;
+        CachedTimeRegion(const GroupRegionName& groupRegionName);
+        CachedTimeRegion(const GroupRegionName& groupRegionName, uint16_t stackDepth, uint64_t startTick, uint64_t endTick);
 
-            AZ_RTTI(CpuProfiler, "{127C1D0B-BE05-4E18-A8F6-24F3EED2ECA6}");
+        GroupRegionName m_groupRegionName{nullptr, nullptr};
 
-            CpuProfiler() = default;
-            virtual ~CpuProfiler() = default;
+        uint16_t m_stackDepth = 0u;
+        AZStd::sys_time_t m_startTick = 0;
+        AZStd::sys_time_t m_endTick = 0;
+    };
 
-            AZ_DISABLE_COPY_MOVE(CpuProfiler);
+    //! Interface class of the CpuProfiler
+    class CpuProfiler
+    {
+    public:
+        using ThreadTimeRegionMap = AZStd::unordered_map<AZStd::string, AZStd::vector<CachedTimeRegion>>;
+        using TimeRegionMap = AZStd::unordered_map<AZStd::thread_id, ThreadTimeRegionMap>;
 
-            static CpuProfiler* Get();
+        AZ_RTTI(CpuProfiler, "{127C1D0B-BE05-4E18-A8F6-24F3EED2ECA6}");
 
-            //! Get the last frame's TimeRegionMap
-            virtual const TimeRegionMap& GetTimeRegionMap() const = 0;
+        CpuProfiler() = default;
+        virtual ~CpuProfiler() = default;
 
-            //! Begin a continuous capture. Blocks the profiler from being toggled off until EndContinuousCapture is called. 
-            [[nodiscard]] virtual bool BeginContinuousCapture() = 0;
+        AZ_DISABLE_COPY_MOVE(CpuProfiler);
 
-            //! Flush the CPU Profiler's saved data into the passed ring buffer .
-            [[nodiscard]] virtual bool EndContinuousCapture(AZStd::ring_buffer<TimeRegionMap>& flushTarget) = 0;
+        static CpuProfiler* Get();
 
-            virtual bool IsContinuousCaptureInProgress() const = 0;
+        //! Get the last frame's TimeRegionMap
+        virtual const TimeRegionMap& GetTimeRegionMap() const = 0;
 
-            //! Enable/Disable the CpuProfiler
-            virtual void SetProfilerEnabled(bool enabled) = 0;
+        //! Begin a continuous capture. Blocks the profiler from being toggled off until EndContinuousCapture is called.
+        [[nodiscard]] virtual bool BeginContinuousCapture() = 0;
 
-            virtual bool IsProfilerEnabled() const = 0 ;
-        };
+        //! Flush the CPU Profiler's saved data into the passed ring buffer .
+        [[nodiscard]] virtual bool EndContinuousCapture(AZStd::ring_buffer<TimeRegionMap>& flushTarget) = 0;
 
-    } // namespace RPI
-} // namespace AZ
+        virtual bool IsContinuousCaptureInProgress() const = 0;
+
+        //! Enable/Disable the CpuProfiler
+        virtual void SetProfilerEnabled(bool enabled) = 0;
+
+        virtual bool IsProfilerEnabled() const = 0 ;
+    };
+} // namespace Profiler
