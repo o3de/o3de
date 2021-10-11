@@ -5,24 +5,19 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include <QCursor>
-
 #include <AzCore/Component/Entity.h>
+#include <AzQtComponents/Components/ToastNotification.h>
+#include <AzQtComponents/Components/ui_ToastNotification.h>
 
-#include <GraphCanvas/Widgets/ToastNotification/ToastNotification.h>
-#include <StaticLib/GraphCanvas/Widgets/ToastNotification/ui_ToastNotification.h>
+#include <QCursor>
+#include <QIcon>
+#include <QToolButton>
+#include <QPropertyAnimation>
 
-#include <GraphCanvas/Components/ToastBus.h>
-
-namespace GraphCanvas
+namespace AzQtComponents
 {
-    //////////////////////
-    // ToastNotification
-    //////////////////////
-
     ToastNotification::ToastNotification(QWidget* parent, const ToastConfiguration& toastConfiguration)
         : QDialog(parent, Qt::FramelessWindowHint)
-        , m_toastId(AZ::Entity::MakeId())
         , m_closeOnClick(true)
         , m_ui(new Ui::ToastNotification())
         , m_fadeAnimation(nullptr)
@@ -36,46 +31,41 @@ namespace GraphCanvas
 
         QIcon toastIcon;
 
-        switch (toastConfiguration.GetToastType())
+        switch (toastConfiguration.m_toastType)
         {
         case ToastType::Error:
-            toastIcon = QIcon(":/GraphCanvasEditorResources/toast_error_icon.png");
+            toastIcon = QIcon(":/stylesheet/img/logging/error.svg");
             break;
         case ToastType::Warning:
-            toastIcon = QIcon(":/GraphCanvasEditorResources/toast_warning_icon.png");
+            toastIcon = QIcon(":/stylesheet/img/logging/warning.svg");
             break;
         case ToastType::Information:
-            toastIcon = QIcon(":/GraphCanvasEditorResources/toast_information_icon.png");
+            toastIcon = QIcon(":/stylesheet/img/logging/information.svg");
             break;
         case ToastType::Custom:
-            toastIcon = QIcon(toastConfiguration.GetCustomToastImage().c_str());
+            toastIcon = QIcon(toastConfiguration.m_customIconImage);
         default:
             break;
         }
 
         m_ui->iconLabel->setPixmap(toastIcon.pixmap(64, 64));
 
-        m_ui->titleLabel->setText(toastConfiguration.GetTitleLabel().c_str());
-        m_ui->mainLabel->setText(toastConfiguration.GetDescriptionLabel().c_str());
+        m_ui->titleLabel->setText(toastConfiguration.m_title);
+        m_ui->mainLabel->setText(toastConfiguration.m_description);
 
-        m_lifeSpan.setInterval(aznumeric_cast<int>(toastConfiguration.GetDuration().count()));
-        m_closeOnClick = toastConfiguration.GetCloseOnClick();
+        m_lifeSpan.setInterval(aznumeric_cast<int>(toastConfiguration.m_duration.count()));
+        m_closeOnClick = toastConfiguration.m_closeOnClick;
 
         m_ui->closeButton->setVisible(m_closeOnClick);
         QObject::connect(m_ui->closeButton, &QToolButton::clicked, this, &ToastNotification::accept);
 
-        m_fadeDuration = toastConfiguration.GetFadeDuration();
+        m_fadeDuration = toastConfiguration.m_fadeDuration;
         
         QObject::connect(&m_lifeSpan, &QTimer::timeout, this, &ToastNotification::FadeOut);
     }
 
     ToastNotification::~ToastNotification()
     {        
-    }
-
-    ToastId ToastNotification::GetToastId() const
-    {
-        return m_toastId;
     }
 
     void ToastNotification::ShowToastAtCursor()
@@ -131,8 +121,6 @@ namespace GraphCanvas
         {
             StartTimer();
         }
-
-        emit ToastNotificationShown();
     }
 
     void ToastNotification::hideEvent(QHideEvent* hideEvent)
@@ -147,7 +135,7 @@ namespace GraphCanvas
             delete m_fadeAnimation;
         }
 
-        ToastNotificationBus::Event(GetToastId(), &ToastNotifications::OnToastDismissed);
+        //ToastNotificationBus::Event(GetToastId(), &ToastNotifications::OnToastDismissed);
         emit ToastNotificationHidden();
     }
 
@@ -155,7 +143,8 @@ namespace GraphCanvas
     {
         if (m_closeOnClick)
         {
-            ToastNotificationBus::Event(GetToastId(), &ToastNotifications::OnToastInteraction);
+            emit ToastNotificationInteraction();
+            //ToastNotificationBus::Event(GetToastId(), &ToastNotifications::OnToastInteraction);
             accept();
         }
     }
@@ -205,5 +194,5 @@ namespace GraphCanvas
             accept();
         }
     }    
-#include <StaticLib/GraphCanvas/Widgets/ToastNotification/moc_ToastNotification.cpp>
+#include "Components/moc_ToastNotification.cpp"
 }

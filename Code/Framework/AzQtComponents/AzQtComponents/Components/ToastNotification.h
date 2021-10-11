@@ -8,17 +8,13 @@
 #pragma once
 
 #if !defined(Q_MOC_RUN)
+#include <AzQtComponents/AzQtComponentsAPI.h>
+#include <AzQtComponents/Components/ToastNotificationConfiguration.h>
+#include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <QEvent>
 #include <QDialog>
 #include <QMouseEvent>
-#include <QPropertyAnimation>
 #include <QTimer>
-#include <AzCore/Component/TickBus.h>
-#include <AzCore/std/chrono/chrono.h>
-#include <AzCore/std/smart_ptr/unique_ptr.h>
-#include <AzCore/Memory/SystemAllocator.h>
-
-#include <GraphCanvas/Editor/EditorTypes.h>
 #endif
 
 namespace Ui
@@ -26,20 +22,20 @@ namespace Ui
     class ToastNotification;
 }
 
-namespace GraphCanvas
+QT_FORWARD_DECLARE_CLASS(QPropertyAnimation)
+
+namespace AzQtComponents
 {
-    class ToastNotification
+    class AZ_QT_COMPONENTS_API ToastNotification
         : public QDialog
     {
         Q_OBJECT
     public:    
         AZ_CLASS_ALLOCATOR(ToastNotification, AZ::SystemAllocator, 0);
         
-        ToastNotification(QWidget* parent, const ToastConfiguration& configuration);
+        ToastNotification(QWidget* parent, const ToastConfiguration& toastConfiguration);
         virtual ~ToastNotification();
 
-        ToastId GetToastId() const;
-        
         // Shows the toast notification relative to the current cursor.        
         void ShowToastAtCursor();
         
@@ -53,30 +49,26 @@ namespace GraphCanvas
         // QDialog
         void showEvent(QShowEvent* showEvent) override;
         void hideEvent(QHideEvent* hideEvent) override;
-
         void mousePressEvent(QMouseEvent* mouseEvent) override;
-
         bool eventFilter(QObject* object, QEvent* event) override;
-        ////
         
     public slots:
-
         void StartTimer();
         void FadeOut();
 
     signals:    
-        void ToastNotificationShown();
         void ToastNotificationHidden();
+        void ToastNotificationInteraction();
         
     private:
-
         QPropertyAnimation* m_fadeAnimation;
-        AZStd::chrono::milliseconds m_fadeDuration;
-
-        ToastId m_toastId;
 
         bool   m_closeOnClick;
         QTimer m_lifeSpan;
+
+        AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
+        AZStd::chrono::milliseconds m_fadeDuration;
         AZStd::unique_ptr<Ui::ToastNotification> m_ui;        
+        AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
     };
-}
+} // namespace AzQtComponents

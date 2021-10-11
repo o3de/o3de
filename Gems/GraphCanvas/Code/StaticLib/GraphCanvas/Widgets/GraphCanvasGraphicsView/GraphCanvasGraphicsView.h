@@ -27,11 +27,16 @@ AZ_POP_DISABLE_WARNING
 #include <AzCore/Memory/SystemAllocator.h>
 
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
+#include <AzToolsFramework/UI/Notifications/ToastBus.h>
 
 #include <GraphCanvas/Components/SceneBus.h>
 #include <GraphCanvas/Components/ViewBus.h>
 #include <GraphCanvas/Editor/AssetEditorBus.h>
-#include <GraphCanvas/Widgets/ToastNotification/ToastNotification.h>
+
+namespace AzQtComponents
+{
+    class ToastNotification;
+}
 
 namespace GraphCanvas
 {
@@ -123,11 +128,11 @@ namespace GraphCanvas
 
         void RefreshView() override;
 
-        void HideToastNotification(const ToastId& toastId) override;
+        void HideToastNotification(const AzToolsFramework::ToastId& toastId) override;
 
-        ToastId ShowToastNotification(const ToastConfiguration& toastConfiguration) override;
-        ToastId ShowToastAtCursor(const ToastConfiguration& toastConfiguration) override;
-        ToastId ShowToastAtPoint(const QPoint& screenPosition, const QPointF& anchorPoint, const ToastConfiguration& toastConfiguration) override;
+        AzToolsFramework::ToastId ShowToastNotification(const AzQtComponents::ToastConfiguration& toastConfiguration) override;
+        AzToolsFramework::ToastId ShowToastAtCursor(const AzQtComponents::ToastConfiguration& toastConfiguration) override;
+        AzToolsFramework::ToastId ShowToastAtPoint(const QPoint& screenPosition, const QPointF& anchorPoint, const AzQtComponents::ToastConfiguration& toastConfiguration) override;
 
         bool IsShowing() const override;
         ////
@@ -186,7 +191,7 @@ namespace GraphCanvas
 
     private:
 
-        void UpdateToastPosition();
+        //void UpdateToastPosition();
 
         void CenterOnSceneMembers(const AZStd::vector<AZ::EntityId>& memberIds);
 
@@ -205,9 +210,6 @@ namespace GraphCanvas
         void CalculateInternalRectangle();
 
         void ManageTickState();
-
-        void OnNotificationHidden();
-        void DisplayQueuedNotification();
 
         GraphCanvasGraphicsView(const GraphCanvasGraphicsView&) = delete;
 
@@ -243,12 +245,12 @@ namespace GraphCanvas
         AZStd::unique_ptr<FocusQueue> m_queuedFocus;
 
         // These will display sequentially in a reserved part of the UI
-        ToastId                  m_activeNotification;
-        AZStd::vector< ToastId > m_queuedNotifications;
+        AzToolsFramework::ToastId                m_activeNotification;
+        AZStd::vector<AzToolsFramework::ToastId> m_queuedNotifications;
 
         // There could be more then the queued list in terms of general notifications
         // As some systems might want to re-use the systems for their own needs.
-        AZStd::unordered_map< ToastId, ToastNotification* > m_notifications;
+        AZStd::unordered_map<AzToolsFramework::ToastId, AzQtComponents::ToastNotification*> m_notifications;
 
         bool m_isEditing;
 

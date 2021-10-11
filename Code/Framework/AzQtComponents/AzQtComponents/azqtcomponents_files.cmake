@@ -49,6 +49,11 @@ set(FILES
     Components/Titlebar.h
     Components/TitleBarOverdrawHandler.cpp
     Components/TitleBarOverdrawHandler.h
+    Components/ToastNotification.cpp
+    Components/ToastNotification.h
+    Components/ToastNotificationConfiguration.h
+    Components/ToastNotificationConfiguration.cpp
+    Components/ToastNotification.ui
     Components/ToolButtonComboBox.cpp
     Components/ToolButtonComboBox.h
     Components/ToolButtonLineEdit.cpp
