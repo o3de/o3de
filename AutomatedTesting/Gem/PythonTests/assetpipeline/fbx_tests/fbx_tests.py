@@ -275,6 +275,38 @@ blackbox_fbx_tests = [
         id="35796285",
         marks=pytest.mark.test_case_id("C35796285"),
     ),
+    pytest.param(
+        BlackboxAssetTest(
+            test_name= "MotionTest_RunAP_SuccessWithMatchingProducts",
+            asset_folder= "Motion",
+            scene_debug_file="Jack_Idle_Aim_ZUp.dbgsg",
+            assets = [
+                asset_db_utils.DBSourceAsset(
+                    source_file_name = "Jack_Idle_Aim_ZUp.fbx",
+                    uuid = b"eda904ae0e145f8b973d57fc5809918b",
+                    jobs = [
+                        asset_db_utils.DBJob(
+                            job_key= "Scene compilation",
+                            builder_guid=b"bd8bf65894854fe3830e8ec3a23c35f3",
+                            status=4,
+                            error_count=0,
+                            warning_count=0,
+                            products = [
+                                asset_db_utils.DBProduct(
+                                    product_name='motion/jack_idle_aim_zup.dbgsg',
+                                    sub_id=-517610290,
+                                    asset_type=b'07f289d14dc74c4094b40a53bbcb9f0b'),
+                                asset_db_utils.DBProduct(
+                                    product_name='motion/jack_idle_aim_zup.motion',
+                                    sub_id=186392073,
+                                    asset_type=b'00494b8e75784ba28b28272e90680787')
+                            ]
+                        ),
+                    ]
+                )
+            ]
+        ),
+    ),
 ]
 
 
