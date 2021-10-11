@@ -10,7 +10,6 @@
 
 #include <Activity/AWSGameLiftStopMatchmakingActivity.h>
 #include <AWSGameLiftSessionConstants.h>
-#include <Request/IAWSGameLiftMatchmakingInternalRequests.h>
 
 namespace AWSGameLift
 {
@@ -40,9 +39,6 @@ namespace AWSGameLift
 
             if (stopMatchmakingOutcome.IsSuccess())
             {
-                // Stop the local ticket tracker for polling matchmaking ticket
-                AZ::Interface<IAWSGameLiftMatchmakingInternalRequests>::Get()->StopPolling();
-
                 AZ_TracePrintf(AWSGameLiftStopMatchmakingActivityName, "StopMatchmaking request against Amazon GameLift service is complete");
             }
             else

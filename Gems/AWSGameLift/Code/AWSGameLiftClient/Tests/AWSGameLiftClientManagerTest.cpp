@@ -233,6 +233,7 @@ protected:
 
         AWSGameLiftPlayerInformation player;
         player.m_playerAttributes["dummy"] = "{\"N\": \"1\"}";
+        player.m_playerId = DummyPlayerId;
         player.m_latencyInMs["us-east-1"] = 10;
         request.m_players.emplace_back(player);
 
@@ -251,6 +252,7 @@ protected:
     }
 
     static const char* const DummyMatchmakingTicketId;
+    static const char* const DummyPlayerId;
 
 public:
     AZStd::unique_ptr<AWSGameLiftClientManager> m_gameliftClientManager;
@@ -258,6 +260,7 @@ public:
 };
 
 const char* const AWSGameLiftClientManagerTest::DummyMatchmakingTicketId = "dummyTicketId";
+const char* const AWSGameLiftClientManagerTest::DummyPlayerId = "dummyPlayerId";
 
 TEST_F(AWSGameLiftClientManagerTest, ConfigureGameLiftClient_CallWithoutRegion_GetFalseAsResult)
 {
@@ -828,9 +831,6 @@ TEST_F(AWSGameLiftClientManagerTest, StartMatchmaking_CallWithValidRequest_GetSu
         .Times(1)
         .WillOnce(::testing::Return(outcome));
 
-    AWSGameLiftMatchmakingInternalRequestsMock matchmakingInternalRequestsMock;
-    EXPECT_CALL(matchmakingInternalRequestsMock, StartPolling(::testing::_, ::testing::_)).Times(1);
-
     AZStd::string response = m_gameliftClientManager->StartMatchmaking(request);
     EXPECT_EQ(response, DummyMatchmakingTicketId);
 }
@@ -877,9 +877,6 @@ TEST_F(AWSGameLiftClientManagerTest, StartMatchmakingAsync_CallWithValidRequest_
     EXPECT_CALL(*m_gameliftClientMockPtr, StartMatchmaking(::testing::_))
         .Times(1)
         .WillOnce(::testing::Return(outcome));
-
-    AWSGameLiftMatchmakingInternalRequestsMock matchmakingInternalRequestsMock;
-    EXPECT_CALL(matchmakingInternalRequestsMock, StartPolling(AZStd::string(DummyMatchmakingTicketId), ::testing::_)).Times(1);
 
     MatchmakingAsyncRequestNotificationsHandlerMock matchmakingHandlerMock;
     EXPECT_CALL(matchmakingHandlerMock, OnStartMatchmakingAsyncComplete(AZStd::string(DummyMatchmakingTicketId))).Times(1);
@@ -936,9 +933,6 @@ TEST_F(AWSGameLiftClientManagerTest, StopMatchmaking_CallWithValidRequest_Succes
         .Times(1)
         .WillOnce(::testing::Return(outcome));
 
-    AWSGameLiftMatchmakingInternalRequestsMock matchmakingInternalRequestsMock;
-    EXPECT_CALL(matchmakingInternalRequestsMock, StopPolling()).Times(1);
-
     m_gameliftClientManager->StopMatchmaking(request);
 }
 
@@ -983,9 +977,6 @@ TEST_F(AWSGameLiftClientManagerTest, StopMatchmakingAsync_CallWithValidRequest_G
     EXPECT_CALL(*m_gameliftClientMockPtr, StopMatchmaking(::testing::_))
         .Times(1)
         .WillOnce(::testing::Return(outcome));
-
-    AWSGameLiftMatchmakingInternalRequestsMock matchmakingInternalRequestsMock;
-    EXPECT_CALL(matchmakingInternalRequestsMock, StopPolling()).Times(1);
 
     MatchmakingAsyncRequestNotificationsHandlerMock matchmakingHandlerMock;
     EXPECT_CALL(matchmakingHandlerMock, OnStopMatchmakingAsyncComplete()).Times(1);

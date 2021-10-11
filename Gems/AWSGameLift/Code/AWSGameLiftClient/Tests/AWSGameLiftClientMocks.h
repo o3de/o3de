@@ -111,21 +111,3 @@ public:
     MOCK_METHOD1(RequestPlayerJoinSession, bool(const AzFramework::SessionConnectionConfig&));
     MOCK_METHOD0(RequestPlayerLeaveSession, void());
 };
-
-class AWSGameLiftMatchmakingInternalRequestsMock
-    : public AWSGameLift::IAWSGameLiftMatchmakingInternalRequests
-{
-public:
-    AWSGameLiftMatchmakingInternalRequestsMock()
-    {
-        AZ::Interface<AWSGameLift::IAWSGameLiftMatchmakingInternalRequests>::Register(this);
-    }
-
-    virtual ~AWSGameLiftMatchmakingInternalRequestsMock()
-    {
-        AZ::Interface<AWSGameLift::IAWSGameLiftMatchmakingInternalRequests>::Unregister(this);
-    }
-
-    MOCK_METHOD2(StartPolling, void(const AZStd::string&, const AZStd::string&));
-    MOCK_METHOD0(StopPolling, void());
-};
