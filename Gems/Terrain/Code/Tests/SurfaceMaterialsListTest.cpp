@@ -33,10 +33,16 @@ namespace UnitTest
             m_app.Create(appDesc);
         }
 
-        AZStd::unique_ptr<AZ::Entity> CreateEntityWithShapeComponents()
+        AZStd::unique_ptr<AZ::Entity> CreateEntity()
         {
             auto entity = AZStd::make_unique<AZ::Entity>();
             entity->Init();
+            return entity;
+        }
+
+        AZStd::unique_ptr<AZ::Entity> CreateEntityWithShapeComponents()
+        {
+            auto entity = CreateEntity();
 
             auto shapeComponent = entity->CreateComponent<UnitTest::MockAxisAlignedBoxShapeComponent>();
             m_app.RegisterComponentDescriptor(shapeComponent->CreateDescriptor());
@@ -57,6 +63,19 @@ namespace UnitTest
             m_app.Destroy();
         }
     };
+
+    TEST_F(TerrainSurfaceMaterialsListTest, SurfaceGradientListRequiresShapeToActivate)
+    {
+        auto entity = CreateEntity();
+
+        AddSurfaceMaterialListComponent(entity.get());
+
+        entity->Activate();
+
+        EXPECT_EQ(entity->GetState(), AZ::Entity::State::Active);
+
+        entity.reset();
+    }
 
     TEST_F(TerrainSurfaceMaterialsListTest, SurfaceGradientListActivatesSuccessfully)
     {
