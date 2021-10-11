@@ -31,6 +31,7 @@ namespace O3DE::ProjectManager
 
         void paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& modelIndex) const override;
         QSize sizeHint(const QStyleOptionViewItem& option, const QModelIndex& modelIndex) const override;
+        virtual QString anchorAt(const QString& html, const QPoint& position, const QRect& rect);
 
         // Colors
         const QColor m_textColor = QColor("#FFFFFF");
@@ -72,9 +73,11 @@ namespace O3DE::ProjectManager
         void CalcRects(const QStyleOptionViewItem& option, QRect& outFullRect, QRect& outItemRect, QRect& outContentRect) const;
         QRect GetTextRect(QFont& font, const QString& text, qreal fontSize) const;
         QRect CalcButtonRect(const QRect& contentRect) const;
+        QRect CalcSummaryRect(const QRect& contentRect, bool hasTags) const;
         void DrawPlatformIcons(QPainter* painter, const QRect& contentRect, const QModelIndex& modelIndex) const;
         void DrawButton(QPainter* painter, const QRect& buttonRect, const QModelIndex& modelIndex) const;
         void DrawFeatureTags(QPainter* painter, const QRect& contentRect, const QStringList& featureTags, const QFont& standardFont, const QRect& summaryRect) const;
+        void DrawText(const QString& text, QPainter* painter, const QRect& rect, const QFont& standardFont) const;
         void DrawDownloadStatusIcon(QPainter* painter, const QRect& contentRect, const QRect& buttonRect, const QModelIndex& modelIndex) const;
 
         QAbstractItemModel* m_model = nullptr;

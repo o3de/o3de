@@ -29,7 +29,14 @@ namespace O3DE::ProjectManager
         ProjectManagerScreen GetScreenEnum() override;
 
         void ReinitForProject(const QString& projectPath);
-        bool EnableDisableGemsForProject(const QString& projectPath);
+
+        enum class EnableDisableGemsResult 
+        {
+            Failed = 0,
+            Success,
+            Cancel
+        };
+        EnableDisableGemsResult EnableDisableGemsForProject(const QString& projectPath);
 
         GemModel* GetGemModel() const { return m_gemModel; }
 

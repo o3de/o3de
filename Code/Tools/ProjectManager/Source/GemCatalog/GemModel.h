@@ -68,6 +68,7 @@ namespace O3DE::ProjectManager
         static void SetDownloadStatus(QAbstractItemModel& model, const QModelIndex& modelIndex, GemInfo::DownloadStatus status);
 
         bool DoGemsToBeAddedHaveRequirements() const;
+        bool HasDependentGemsToRemove() const;
 
         QVector<QModelIndex> GatherGemDependencies(const QModelIndex& modelIndex) const;
         QVector<QModelIndex> GatherDependentGems(const QModelIndex& modelIndex, bool addedOnly = false) const;
