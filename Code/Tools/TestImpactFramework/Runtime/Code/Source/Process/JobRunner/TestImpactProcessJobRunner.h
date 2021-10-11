@@ -67,8 +67,10 @@ namespace TestImpact
            
         //! Executes the specified jobs and returns the products of their labor.
         //! @param jobs The arguments (and other pertinent information) required for each job to be run.
-        //! @param jobTimeout The maximum duration a job may be in-flight before being forcefully terminated (nullopt if no timeout).
+        //! @param stdOutRouting The standard output routing to be specified for all jobs.
+        //! @param stdErrRouting The standard error routing to be specified for all jobs.
         //! @param runnerTimeout The maximum duration the scheduler may run before forcefully terminating all in-flight jobs (nullopt if no timeout).
+        //! @param jobTimeout The maximum duration a job may be in-flight before being forcefully terminated (nullopt if no timeout).
         //! @param payloadMapProducer The client callback to be called when all jobs have finished to transform the work produced by each job into the desired output.
         //! @param jobCallback The client callback to be called when each job changes state.
         //! @param stdContentCallback
@@ -76,6 +78,8 @@ namespace TestImpact
         AZStd::pair<ProcessSchedulerResult, AZStd::vector<typename Job>> Execute(
             const AZStd::vector<typename Job::Info>& jobs,
             PayloadMapProducer payloadMapProducer,
+            StdOutputRouting stdOutRouting,
+            StdErrorRouting stdErrRouting,
             AZStd::optional<AZStd::chrono::milliseconds> jobTimeout,
             AZStd::optional<AZStd::chrono::milliseconds> runnerTimeout,
             AZStd::optional<JobCallback> jobCallback,
@@ -100,6 +104,8 @@ namespace TestImpact
         Execute(
         const AZStd::vector<typename Job::Info>& jobInfos,
         PayloadMapProducer payloadMapProducer,
+        StdOutputRouting stdOutRouting,
+        StdErrorRouting stdErrRouting,
         AZStd::optional<AZStd::chrono::milliseconds> jobTimeout,
         AZStd::optional<AZStd::chrono::milliseconds> runnerTimeout,
         AZStd::optional<JobCallback> jobCallback,
@@ -117,9 +123,6 @@ namespace TestImpact
             const auto* jobInfo = &jobInfos[jobIndex];
             const auto jobId = jobInfo->GetId().m_value;
             metas.emplace(jobId, AZStd::pair<JobMeta, const typename Job::Info*>{JobMeta{}, jobInfo});
-
-            const StdOutputRouting stdOutRouting = StdContentCallback.has_value() ? StdOutputRouting::ToParent : StdOutputRouting::None;
-            const StdErrorRouting stdErrRouting = StdContentCallback.has_value() ? StdErrorRouting::ToParent : StdErrorRouting::None;
             processes.emplace_back(jobId, stdOutRouting, stdErrRouting, jobInfo->GetCommand().m_args);
         }
 

@@ -24,6 +24,8 @@ namespace TestImpact
 
         //! Executes the specified test run jobs according to the specified job exception policies.
         //! @param jobInfos The test run jobs to execute.
+        //! @param stdOutRouting The standard output routing to be specified for all jobs.
+        //! @param stdErrRouting The standard error routing to be specified for all jobs.
         //! @param jobExceptionPolicy The test run job exception policy to be used for this run (use
         //! TestJobExceptionPolicy::OnFailedToExecute to throw on test failures).
         //! @param runTimeout The maximum duration a run may be in-flight for before being forcefully terminated.
@@ -33,6 +35,8 @@ namespace TestImpact
         //! @return The result of the run sequence and the run jobs with their associated test run payloads.
         AZStd::pair<ProcessSchedulerResult, AZStd::vector<TestJobRunner::Job>> RunTests(
             const AZStd::vector<TestJobRunner::JobInfo>& jobInfos,
+            StdOutputRouting stdOutRouting,
+            StdErrorRouting stdErrRouting,
             AZStd::optional<AZStd::chrono::milliseconds> runTimeout,
             AZStd::optional<AZStd::chrono::milliseconds> runnerTimeout,
             AZStd::optional<TestJobRunner::JobCallback> clientCallback,
@@ -65,10 +69,11 @@ namespace TestImpact
             return this->m_jobRunner.Execute(
                 jobInfos,
                 payloadGenerator,
+                stdOutRouting,
+                stdErrRouting,
                 runTimeout,
                 runnerTimeout,
-                clientCallback,
-                stdContentCallback);
+                clientCallback, stdContentCallback);
         }
     };
 } // namespace TestImpact

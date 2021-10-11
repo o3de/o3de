@@ -95,18 +95,24 @@ namespace UnitTest
                 jobInfos.push_back(JobInfo({ id }, {cmd}, JobData("")));
             }
 
-            auto [result, runnerJobs] = m_testRunner.RunTests(jobInfos, AZStd::nullopt, AZStd::nullopt,
+            auto [result, runnerJobs] = m_testRunner.RunTests(
+                jobInfos,
+                TestImpact::StdOutputRouting::ToParent,
+                TestImpact::StdErrorRouting::None,
+                AZStd::nullopt,
+                AZStd::nullopt,
                 []([[maybe_unused]] const JobInfo& jobInfo, [[maybe_unused]] const TestImpact::JobMeta& meta,
-                   [[maybe_unused]] TestImpact::StdContent&& std)
+                    [[maybe_unused]] TestImpact::StdContent&& std)
                 {
                     printf("RET: %i, CMD: %s\n", meta.m_returnCode.value_or(-10000), jobInfo.GetCommand().m_args.c_str());
                     return TestImpact::ProcessCallbackResult::Continue;
                 },
                 []([[maybe_unused]] const JobInfo& jobInfo, [[maybe_unused]] const AZStd::string& stdOutput,
-                   [[maybe_unused]] const AZStd::string& stdError,
-                   AZStd::string&& stdOutDelta, AZStd::string&& stdErrDelta)
+                    [[maybe_unused]] const AZStd::string& stdError,
+                    AZStd::string&& stdOutDelta,
+                    [[maybe_unused]] AZStd::string&& stdErrDelta)
                 {
-                    printf("%s%s", stdOutDelta.c_str(), stdErrDelta.c_str());
+                    printf("%s", stdOutDelta.c_str());
                     return TestImpact::ProcessCallbackResult::Continue;
                 });
         }

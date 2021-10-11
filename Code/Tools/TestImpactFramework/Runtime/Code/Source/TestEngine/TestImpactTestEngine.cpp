@@ -380,6 +380,8 @@ namespace TestImpact
 
         auto [result, runnerJobs] = m_testRunner->RunTests(
             jobInfos,
+            StdOutputRouting::None,
+            StdErrorRouting::None,
             testTargetTimeout,
             globalTimeout,
             jobCallback,
@@ -406,6 +408,8 @@ namespace TestImpact
 
         auto [result, runnerJobs] = m_instrumentedTestRunner->RunTests(
             jobInfos,
+            StdOutputRouting::None,
+            StdErrorRouting::None,
             testTargetTimeout,
             globalTimeout,
             InstrumentedRegularTestJobRunnerCallbackHandler(

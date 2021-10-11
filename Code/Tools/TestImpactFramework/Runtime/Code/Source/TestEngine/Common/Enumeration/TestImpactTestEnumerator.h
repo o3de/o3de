@@ -30,6 +30,8 @@ namespace TestImpact
 
         //! Executes the specified test enumeration jobs according to the specified cache and job exception policies.
         //! @param jobInfos The enumeration jobs to execute.
+        //! @param stdOutRouting The standard output routing to be specified for all jobs.
+        //! @param stdErrRouting The standard error routing to be specified for all jobs.
         //! @param cacheExceptionPolicy The cache exception policy to be used for this run.
         //! @param jobExceptionPolicy The enumeration job exception policy to be used for this run.
         //! @param enumerationTimeout The maximum duration an enumeration may be in-flight for before being forcefully terminated.
@@ -39,6 +41,8 @@ namespace TestImpact
         //! @return The result of the run sequence and the enumeration jobs with their associated test enumeration payloads.
         AZStd::pair<ProcessSchedulerResult, AZStd::vector<typename TestJobRunner::Job>> Enumerate(
             const AZStd::vector<typename TestJobRunner::JobInfo>& jobInfos,
+            StdOutputRouting stdOutRouting,
+            StdErrorRouting stdErrRouting,
             AZStd::optional<AZStd::chrono::milliseconds> enumerationTimeout,
             AZStd::optional<AZStd::chrono::milliseconds> enumeratorTimeout,
             AZStd::optional<typename TestJobRunner::JobCallback> clientCallback,
@@ -153,23 +157,6 @@ namespace TestImpact
                     const auto& [meta, jobInfo] = jobData;
                     if (meta.m_result == JobResult::ExecutedWithSuccess)
                     {
-                        //try
-                        //{
-                        //    const auto& enumeration =
-                        //        (enumerations[jobId] = TestEnumeration(GTest::TestEnumerationSuitesFactory(
-                        //             ReadFileContents<TestEngineException>(jobInfo->GetEnumerationArtifactPath()))));
-                        //
-                        //    // Write out the enumeration to a cache file if we have a cache write policy for this job
-                        //    if (jobInfo->GetCache().has_value() && jobInfo->GetCache()->m_policy == JobData::CachePolicy::Write)
-                        //    {
-                        //        WriteFileContents<TestEngineException>(
-                        //            SerializeTestEnumeration(enumeration.value()), jobInfo->GetCache()->m_file);
-                        //    }
-                        //} catch ([[maybe_unused]] const Exception& e)
-                        //{
-                        //    AZ_Warning("Enumerate", false, e.what());
-                        //    enumerations[jobId] = AZStd::nullopt;
-                        //}
                         if (auto outcome = PayloadFactory<AdditionalInfo, TestEnumeration>(*jobInfo, meta);
                             outcome.IsSuccess())
                         {
@@ -198,6 +185,8 @@ namespace TestImpact
             auto [result, jobs] = this->m_jobRunner.Execute(
                 jobQueue,
                 payloadGenerator,
+                stdOutRouting,
+                stdErrRouting,
                 enumerationTimeout,
                 enumeratorTimeout,
                 clientCallback,
