@@ -826,9 +826,9 @@ namespace PhysX
                 }
 
                 m_componentWarnings.push_back(AZStd::string::format(
-                    "The asset \"%s\" contains one or more triangle meshes, which are not compatible with non-kinematic dynamic "
-                    "rigid bodies. To make the collider compatible, you can export the asset as a primitive or convex mesh, use mesh "
-                    "decomposition when exporting the asset, or set the rigid body to kinematic. Learn more about "
+                    "The physics asset \"%s\" was exported using triangle mesh geometry, which is not compatible with non-kinematic "
+                    "dynamic rigid bodies. To make the collider compatible, you can export the asset using primitive or convex mesh "
+                    "geometry, use mesh decomposition when exporting the asset, or set the rigid body to kinematic. Learn more about "
                     "<a href=\"https://o3de.org/docs/user-guide/components/reference/physx/collider/\">colliders</a>.",
                     assetPath.c_str()));
 
