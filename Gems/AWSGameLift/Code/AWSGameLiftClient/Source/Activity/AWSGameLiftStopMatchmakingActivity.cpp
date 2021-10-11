@@ -37,12 +37,13 @@ namespace AWSGameLift
 
             Aws::GameLift::Model::StopMatchmakingRequest request = BuildAWSGameLiftStopMatchmakingRequest(stopMatchmakingRequest);
             auto stopMatchmakingOutcome = gameliftClient.StopMatchmaking(request);
-            AZ_TracePrintf(AWSGameLiftStopMatchmakingActivityName, "StopMatchmaking request against Amazon GameLift service is complete");
 
             if (stopMatchmakingOutcome.IsSuccess())
             {
                 // Stop the local ticket tracker for polling matchmaking ticket
                 AZ::Interface<IAWSGameLiftMatchmakingInternalRequests>::Get()->StopPolling();
+
+                AZ_TracePrintf(AWSGameLiftStopMatchmakingActivityName, "StopMatchmaking request against Amazon GameLift service is complete");
             }
             else
             {

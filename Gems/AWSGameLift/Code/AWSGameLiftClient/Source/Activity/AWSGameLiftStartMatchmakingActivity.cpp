@@ -42,13 +42,13 @@ namespace AWSGameLift
                 if (playerInfo.m_latencyInMs.size() > 0)
                 {
                     Aws::Map<Aws::String, int> regionToLatencyMap;
-                    AWSGameLiftActivityUtils::GetRegionToLatencyMap(playerInfo.m_latencyInMs, regionToLatencyMap);
+                    AWSGameLiftActivityUtils::ConvertRegionToLatencyMap(playerInfo.m_latencyInMs, regionToLatencyMap);
                     player.SetLatencyInMs(AZStd::move(regionToLatencyMap));
                 }
                 if (playerInfo.m_playerAttributes.size() > 0)
                 {
                     Aws::Map<Aws::String, Aws::GameLift::Model::AttributeValue> playerAttributes;
-                    AWSGameLiftActivityUtils::GetPlayerAttributes(playerInfo.m_playerAttributes, playerAttributes);
+                    AWSGameLiftActivityUtils::ConvertPlayerAttributes(playerInfo.m_playerAttributes, playerAttributes);
                     player.SetPlayerAttributes(AZStd::move(playerAttributes));
                 }
                 players.emplace_back(player);
@@ -82,8 +82,6 @@ namespace AWSGameLift
             AZStd::string result = "";
             Aws::GameLift::Model::StartMatchmakingRequest request = BuildAWSGameLiftStartMatchmakingRequest(startMatchmakingRequest);
             auto startMatchmakingOutcome = gameliftClient.StartMatchmaking(request);
-            AZ_TracePrintf(AWSGameLiftStartMatchmakingActivityName, "StartMatchmaking request against Amazon GameLift service is complete");
-
             if (startMatchmakingOutcome.IsSuccess())
             {
                 result = AZStd::string(startMatchmakingOutcome.GetResult().GetMatchmakingTicket().GetTicketId().c_str());
@@ -94,6 +92,8 @@ namespace AWSGameLift
 
                 AZ::Interface<IAWSGameLiftMatchmakingInternalRequests>::Get()->StartPolling(
                     result, startMatchmakingRequest.m_players[0].m_playerId);
+
+                AZ_TracePrintf(AWSGameLiftStartMatchmakingActivityName, "StartMatchmaking request against Amazon GameLift service is complete");
             }
             else
             {

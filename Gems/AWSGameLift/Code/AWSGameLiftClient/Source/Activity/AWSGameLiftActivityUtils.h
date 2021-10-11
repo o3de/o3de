@@ -23,11 +23,11 @@ namespace AWSGameLift
             Aws::Vector<Aws::GameLift::Model::GameProperty>& outGameProperties,
             AZStd::string& outGamePropertiesOutput);
 
-        void GetPlayerAttributes(
+        void ConvertPlayerAttributes(
             const AZStd::unordered_map<AZStd::string, AZStd::string>& playerAttributes,
             Aws::Map<Aws::String, Aws::GameLift::Model::AttributeValue>& outPlayerAttributes);
 
-        void GetRegionToLatencyMap(
+        void ConvertRegionToLatencyMap(
             const AZStd::unordered_map<AZStd::string, int>& regionToLatencyMap,
             Aws::Map<Aws::String, int>& outRegionToLatencyMap);
 

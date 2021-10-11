@@ -33,7 +33,7 @@ namespace AWSGameLift
             }
         }
 
-        void GetPlayerAttributes(
+        void ConvertPlayerAttributes(
             const AZStd::unordered_map<AZStd::string, AZStd::string>& playerAttributes,
             Aws::Map<Aws::String, Aws::GameLift::Model::AttributeValue>& outPlayerAttributes)
         {
@@ -46,7 +46,7 @@ namespace AWSGameLift
             }
         }
 
-        void GetRegionToLatencyMap(
+        void ConvertRegionToLatencyMap(
             const AZStd::unordered_map<AZStd::string, int>& regionToLatencyMap,
             Aws::Map<Aws::String, int>& outRegionToLatencyMap)
         {

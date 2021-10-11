@@ -21,8 +21,9 @@ namespace AWSGameLift
         static constexpr const char AWSGameLiftStartMatchmakingActivityName[] = "AWSGameLiftStartMatchmakingActivity";
         static constexpr const char AWSGameLiftStartMatchmakingRequestInvalidErrorMessage[] = "Invalid GameLift StartMatchmaking request.";
         static constexpr const char AWSGameLiftStartMatchmakingMultiplePlayersWarningMessage[] =
-            "More than one players are included in the GameLift StartMatchmaking request."
-            "The local ticket tracker will only poll matchmaking ticket based on the first player in the list.";
+            "More than one players are included in the GameLift StartMatchmaking request. "
+            "The pre-dev local ticket tracker can only track the status of the current player. "
+            "Implement your own tracking system for tracking multiple players on the same client.";
 
         // Build AWS GameLift StartMatchmakingRequest by using AWSGameLiftStartMatchmakingRequest
         Aws::GameLift::Model::StartMatchmakingRequest BuildAWSGameLiftStartMatchmakingRequest(const AWSGameLiftStartMatchmakingRequest& startMatchmakingRequest);
