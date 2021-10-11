@@ -131,7 +131,7 @@ def DynamicSliceInstanceSpawner_External_E2E():
     # 6) Save and export to engine
     general.save_level()
     general.export_to_engine()
-    pak_path = os.path.join(paths.devroot, "AutomatedTesting", "cache", "pc", "levels", lvl_name, "level.pak")
+    pak_path = os.path.join(paths.products, "levels", lvl_name, "level.pak")
     Report.result(Tests.saved_and_exported, os.path.exists(pak_path))
 
 

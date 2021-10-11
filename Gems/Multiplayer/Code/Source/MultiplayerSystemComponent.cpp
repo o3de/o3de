@@ -446,9 +446,9 @@ namespace Multiplayer
         MultiplayerPackets::SyncConsole m_syncPacket;
     };
 
-    bool MultiplayerSystemComponent::IsHandshakeComplete() const
+    bool MultiplayerSystemComponent::IsHandshakeComplete(AzNetworking::IConnection* connection) const
     {
-        return m_didHandshake;
+        return reinterpret_cast<IConnectionData*>(connection->GetUserData())->DidHandshake();
     }
 
     bool MultiplayerSystemComponent::HandleRequest
@@ -475,7 +475,7 @@ namespace Multiplayer
 
         if (connection->SendReliablePacket(MultiplayerPackets::Accept(sv_map)))
         {
-            m_didHandshake = true;
+            reinterpret_cast<ServerToClientConnectionData*>(connection->GetUserData())->SetDidHandshake(true);
 
             // Sync our console
             ConsoleReplicator consoleReplicator(connection);
@@ -492,11 +492,13 @@ namespace Multiplayer
         [[maybe_unused]] MultiplayerPackets::Accept& packet
     )
     {
-        m_didHandshake = true;
+        reinterpret_cast<ClientToServerConnectionData*>(connection->GetUserData())->SetDidHandshake(true);
         AZ::CVarFixedString commandString = "sv_map " + packet.GetMap();
         AZ::Interface<AZ::IConsole>::Get()->PerformCommand(commandString.c_str());
         AZ::CVarFixedString loadLevelString = "LoadLevel " + packet.GetMap();
         AZ::Interface<AZ::IConsole>::Get()->PerformCommand(loadLevelString.c_str());
+
+        m_serverAcceptanceReceivedEvent.Signal();
         return true;
     }
 
@@ -821,6 +823,11 @@ namespace Multiplayer
         handler.Connect(m_connectionAcquiredEvent);
     }
 
+    void MultiplayerSystemComponent::AddServerAcceptanceReceivedHandler(ServerAcceptanceReceivedEvent::Handler& handler)
+    {
+        handler.Connect(m_serverAcceptanceReceivedEvent);
+    }
+
     void MultiplayerSystemComponent::AddSessionInitHandler(SessionInitEvent::Handler& handler)
     {
         handler.Connect(m_initEvent);
@@ -1034,7 +1041,7 @@ namespace Multiplayer
         INetworkEntityManager::EntityList entityList = m_networkEntityManager.CreateEntitiesImmediate(playerPrefabEntityId, NetEntityRole::Authority, AZ::Transform::CreateIdentity(), Multiplayer::AutoActivate::DoNotActivate);
 
         NetworkEntityHandle controlledEntity;
-        if (entityList.size() > 0)
+        if (!entityList.empty())
         {
             controlledEntity = entityList[0];
         }

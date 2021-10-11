@@ -13,12 +13,15 @@
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzCore/Memory/SystemAllocator.h>
 
+#include <AWSCore_Traits_Platform.h>
+
 // The AWS Native SDK AWSAllocator triggers a warning due to accessing members of std::allocator directly.
 // AWSAllocator.h(70): warning C4996: 'std::allocator<T>::pointer': warning STL4010: Various members of std::allocator are deprecated in C++17.
 // Use std::allocator_traits instead of accessing these members directly.
 // You can define _SILENCE_CXX17_OLD_ALLOCATOR_MEMBERS_DEPRECATION_WARNING or _SILENCE_ALL_CXX17_DEPRECATION_WARNINGS to acknowledge that you have received this warning.
 
 AZ_PUSH_DISABLE_WARNING(4251 4996, "-Wunknown-warning-option")
+#include <aws/core/client/ClientConfiguration.h>
 #include <aws/core/utils/memory/stl/AWSString.h>
 #include <aws/core/http/Scheme.h>
 #include <aws/core/Region.h>
@@ -93,9 +96,6 @@ namespace AWSCore
 
         /// Initialize an AwsApiClientJobConfig object.
         ///
-        /// \param DefaultConfigType - the type of the config object from which
-        /// default values will be taken.
-        ///
         /// \param defaultConfig - the config object that provides values when
         /// no override has been set in this object. The default is nullptr, which
         /// will cause a default value to be used.
@@ -136,10 +136,14 @@ namespace AWSCore
         Override<std::shared_ptr<Aws::Utils::RateLimits::RateLimiterInterface>> writeRateLimiter;
         Override<std::shared_ptr<Aws::Utils::RateLimits::RateLimiterInterface>> readRateLimiter;
         Override<Aws::Http::TransferLibType> httpLibOverride;
+#if AWSCORE_BACKWARD_INCOMPATIBLE_CHANGE
+        Override<Aws::Client::FollowRedirectsPolicy> followRedirects;
+#else
         Override<bool> followRedirects;
+#endif
         Override<Aws::String> caFile;
 
-        /// Applys settings changes made after first use.
+        /// Applies settings changes made after first use.
         virtual void ApplySettings();
 
         //////////////////////////////////////////////////////////////////////////
@@ -210,7 +214,7 @@ namespace AWSCore
         : protected AWSCoreNotificationsBus::Handler
     {
     public:
-        ~AwsApiJobConfigHolder()
+        ~AwsApiJobConfigHolder() override
         {
             AWSCoreNotificationsBus::Handler::BusDisconnect();
         }

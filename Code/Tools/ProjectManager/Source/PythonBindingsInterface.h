@@ -38,6 +38,14 @@ namespace O3DE::ProjectManager
          */
         virtual bool PythonStarted() = 0;
 
+        /**
+         * Attempt to start Python. Normally, Python is started when the bindings are created,
+         * but this method allows you to attempt to retry starting Python in case the configuration
+         * has changed.
+         * @return true if Python was started successfully, false on failure 
+         */
+        virtual bool StartPython() = 0;
+
         // Engine
 
         /**

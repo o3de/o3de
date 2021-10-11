@@ -18,7 +18,7 @@ ly_associate_package(PACKAGE_NAME lux_core-2.2-rev5-multiplatform    TARGETS lux
 # platform-specific:
 ly_associate_package(PACKAGE_NAME tiff-4.2.0.15-rev2-android         TARGETS tiff            PACKAGE_HASH 252b99e5886ec59fdccf38603c1399dd3fc02d878641aba35a7f8d2504065a06)
 ly_associate_package(PACKAGE_NAME freetype-2.10.4.16-android         TARGETS freetype        PACKAGE_HASH df9e4d559ea0f03b0666b48c79813b1cd4d9624429148a249865de9f5c2c11cd)
-ly_associate_package(PACKAGE_NAME AWSNativeSDK-1.7.167-rev6-android  TARGETS AWSNativeSDK    PACKAGE_HASH 1624ba9aaf03d001ed0ffc57d2f945ff82590e75a7ea868de35043cf673e82fb)
+ly_associate_package(PACKAGE_NAME AWSNativeSDK-1.9.50-rev1-android   TARGETS AWSNativeSDK    PACKAGE_HASH 33771499f9080cbaab613459927e52911e68f94fa356397885e85005efbd1490)
 ly_associate_package(PACKAGE_NAME Lua-5.3.5-rev5-android             TARGETS Lua             PACKAGE_HASH 1f638e94a17a87fe9e588ea456d5893876094b4db191234380e4c4eb9e06c300)
 ly_associate_package(PACKAGE_NAME PhysX-4.1.2.29882248-rev3-android  TARGETS PhysX           PACKAGE_HASH b8cb6aa46b2a21671f6cb1f6a78713a3ba88824d0447560ff5ce6c01014b9f43)
 ly_associate_package(PACKAGE_NAME mikkelsen-1.0.0.4-android          TARGETS mikkelsen       PACKAGE_HASH 075e8e4940884971063b5a9963014e2e517246fa269c07c7dc55b8cf2cd99705)
@@ -27,6 +27,6 @@ ly_associate_package(PACKAGE_NAME googlebenchmark-1.5.0-rev2-android TARGETS Goo
 ly_associate_package(PACKAGE_NAME libpng-1.6.37-rev1-android         TARGETS libpng          PACKAGE_HASH 51d3ec1559c5595196c11e11674cf5745989d3073bf33dabc6697e3eee77a1cc)
 ly_associate_package(PACKAGE_NAME libsamplerate-0.2.1-rev2-android   TARGETS libsamplerate   PACKAGE_HASH bf13662afe65d02bcfa16258a4caa9b875534978227d6f9f36c9cfa92b3fb12b)
 ly_associate_package(PACKAGE_NAME OpenSSL-1.1.1b-rev1-android        TARGETS OpenSSL         PACKAGE_HASH 4036d4019d722f0e1b7a1621bf60b5a17ca6a65c9c78fd8701cee1131eec8480)
-ly_associate_package(PACKAGE_NAME zlib-1.2.11-rev2-android           TARGETS zlib            PACKAGE_HASH 85b730b97176772538cfcacd6b6aaf4655fc2d368d134d6dd55e02f28f183826)
+ly_associate_package(PACKAGE_NAME zlib-1.2.11-rev5-android           TARGETS ZLIB            PACKAGE_HASH 73c9e88892c237a3fc6eafc04268ccd9d479e6d55f9df2ed58b236c8f9cf2cae)
 ly_associate_package(PACKAGE_NAME lz4-1.9.3-vcpkg-rev4-android       TARGETS lz4             PACKAGE_HASH f5b22642d218dbbb442cae61e469e5b241c4740acd258c3e8678e60dec61ea93)
 

@@ -47,9 +47,8 @@ namespace AZ
                 shaderOption.SetValue(AZ::Name("o_enableMarschner_R"), AZ::RPI::ShaderOptionValue{ m_hairGlobalSettings.m_enableMarschner_R });
                 shaderOption.SetValue(AZ::Name("o_enableMarschner_TRT"), AZ::RPI::ShaderOptionValue{ m_hairGlobalSettings.m_enableMarschner_TRT });
                 shaderOption.SetValue(AZ::Name("o_enableMarschner_TT"), AZ::RPI::ShaderOptionValue{ m_hairGlobalSettings.m_enableMarschner_TT });
-                shaderOption.SetValue(AZ::Name("o_enableDiffuseLobe"), AZ::RPI::ShaderOptionValue{ m_hairGlobalSettings.m_enableDiffuseLobe });
-                shaderOption.SetValue(AZ::Name("o_enableSpecularLobe"), AZ::RPI::ShaderOptionValue{ m_hairGlobalSettings.m_enableSpecularLobe });
-                shaderOption.SetValue(AZ::Name("o_enableTransmittanceLobe"), AZ::RPI::ShaderOptionValue{ m_hairGlobalSettings.m_enableTransmittanceLobe });
+                shaderOption.SetValue(AZ::Name("o_enableLongtitudeCoeff"), AZ::RPI::ShaderOptionValue{ m_hairGlobalSettings.m_enableLongtitudeCoeff });
+                shaderOption.SetValue(AZ::Name("o_enableAzimuthCoeff"), AZ::RPI::ShaderOptionValue{ m_hairGlobalSettings.m_enableAzimuthCoeff });
 
                 m_shaderOptions = shaderOption.GetShaderVariantKeyFallbackValue();
             }
