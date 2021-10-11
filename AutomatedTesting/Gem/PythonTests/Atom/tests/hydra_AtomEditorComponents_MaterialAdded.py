@@ -95,13 +95,13 @@ def AtomEditorComponents_Material_AddedToEntity():
     import azlmbr.legacy.general as general
 
     from editor_python_test_tools.editor_entity_utils import EditorEntity
-    from editor_python_test_tools.utils import Report, Tracer, TestHelper as helper
+    from editor_python_test_tools.utils import Report, Tracer, TestHelper
 
     with Tracer() as error_tracer:
         # Test setup begins.
         # Setup: Wait for Editor idle loop before executing Python hydra scripts then open "Base" level.
-        helper.init_idle()
-        helper.open_level("", "Base")
+        TestHelper.init_idle()
+        TestHelper.open_level("", "Base")
 
         # Test steps begin.
         # 1. Create a Material entity with no components.
@@ -167,9 +167,9 @@ def AtomEditorComponents_Material_AddedToEntity():
         Report.result(Tests.material_enabled, material_component.is_enabled())
 
         # 12. Enter/Exit game mode.
-        helper.enter_game_mode(Tests.enter_game_mode)
+        TestHelper.enter_game_mode(Tests.enter_game_mode)
         general.idle_wait_frames(1)
-        helper.exit_game_mode(Tests.exit_game_mode)
+        TestHelper.exit_game_mode(Tests.exit_game_mode)
 
         # 13. Test IsHidden.
         material_entity.set_visibility_state(False)
@@ -193,7 +193,7 @@ def AtomEditorComponents_Material_AddedToEntity():
         Report.result(Tests.deletion_redo, not material_entity.exists())
 
         # 18. Look for errors or asserts.
-        helper.wait_for_condition(lambda: error_tracer.has_errors or error_tracer.has_asserts, 1.0)
+        TestHelper.wait_for_condition(lambda: error_tracer.has_errors or error_tracer.has_asserts, 1.0)
         for error_info in error_tracer.errors:
             Report.info(f"Error: {error_info.filename} {error_info.function} | {error_info.message}")
         for assert_info in error_tracer.asserts:

@@ -16,7 +16,7 @@
 #include <AzCore/base.h>
 #include <AzToolsFramework/API/EditorWindowRequestBus.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
-#include <AzToolsFramework/ComponentMode/EditorComponentModeBus.h>
+#include <AzToolsFramework/API/ViewportEditorModeTrackerNotificationBus.h>
 #include <AzToolsFramework/Entity/EditorEntityInfoBus.h>
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 #include <AzToolsFramework/Entity/SliceEditorEntityOwnershipServiceBus.h>
@@ -58,7 +58,7 @@ class OutlinerWidget
     , private AzToolsFramework::EditorEntityContextNotificationBus::Handler
     , private AzToolsFramework::SliceEditorEntityOwnershipServiceNotificationBus::Handler
     , private AzToolsFramework::EditorEntityInfoNotificationBus::Handler
-    , private AzToolsFramework::ComponentModeFramework::EditorComponentModeNotificationBus::Handler
+    , private AzToolsFramework::ViewportEditorModeNotificationsBus::Handler
     , private AzToolsFramework::EditorWindowUIRequestBus::Handler
 {
     Q_OBJECT;
@@ -105,9 +105,11 @@ private:
     void OnEntityInfoUpdatedAddChildEnd(AZ::EntityId /*parentId*/, AZ::EntityId /*childId*/) override;
     void OnEntityInfoUpdatedName(AZ::EntityId entityId, const AZStd::string& /*name*/) override;
 
-    // EditorComponentModeNotificationBus
-    void EnteredComponentMode(const AZStd::vector<AZ::Uuid>& componentModeTypes) override;
-    void LeftComponentMode(const AZStd::vector<AZ::Uuid>& componentModeTypes) override;
+    // ViewportEditorModeNotificationsBus overrides ...
+    void OnEditorModeActivated(
+        const AzToolsFramework::ViewportEditorModesInterface& editorModeState, AzToolsFramework::ViewportEditorMode mode) override;
+    void OnEditorModeDeactivated(
+        const AzToolsFramework::ViewportEditorModesInterface& editorModeState, AzToolsFramework::ViewportEditorMode mode) override;
 
     // EditorWindowUIRequestBus overrides
     void SetEditorUiEnabled(bool enable) override;

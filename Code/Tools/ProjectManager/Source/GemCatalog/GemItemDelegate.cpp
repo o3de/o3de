@@ -9,6 +9,7 @@
 #include <GemCatalog/GemItemDelegate.h>
 #include <GemCatalog/GemModel.h>
 #include <GemCatalog/GemSortFilterProxyModel.h>
+#include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <QEvent>
 #include <QAbstractItemView>
 #include <QPainter>
@@ -16,6 +17,9 @@
 #include <QHelpEvent>
 #include <QToolTip>
 #include <QHoverEvent>
+#include <QTextDocument>
+#include <QAbstractTextDocumentLayout>
+#include <QDesktopServices>
 
 namespace O3DE::ProjectManager
 {
@@ -104,28 +108,28 @@ namespace O3DE::ProjectManager
         painter->drawText(gemCreatorRect, Qt::TextSingleLine, gemCreator);
 
         // Gem summary
-
-        // In case there are feature tags displayed at the bottom, decrease the size of the summary text field.
         const QStringList featureTags = GemModel::GetFeatures(modelIndex);
-        const int featureTagAreaHeight = 30;
-        const int summaryHeight = contentRect.height() - (!featureTags.empty() * featureTagAreaHeight);
-
-        const int additionalSummarySpacing = s_itemMargins.right() * 3;
-        const QSize summarySize = QSize(contentRect.width() - s_summaryStartX - s_buttonWidth - additionalSummarySpacing,
-            summaryHeight);
-        const QRect summaryRect = QRect(/*topLeft=*/QPoint(contentRect.left() + s_summaryStartX, contentRect.top()), summarySize);
-
-        painter->setFont(standardFont);
-        painter->setPen(m_textColor);
-
+        const bool hasTags = !featureTags.isEmpty();
         const QString summary = GemModel::GetSummary(modelIndex);
-        painter->drawText(summaryRect, Qt::AlignLeft | Qt::TextWordWrap, summary);
+        const QRect summaryRect = CalcSummaryRect(contentRect, hasTags);
+        DrawText(summary, painter, summaryRect, standardFont);
 
         DrawButton(painter, contentRect, modelIndex);
         DrawPlatformIcons(painter, contentRect, modelIndex);
         DrawFeatureTags(painter, contentRect, featureTags, standardFont, summaryRect);
 
         painter->restore();
+    }
+
+    QRect GemItemDelegate::CalcSummaryRect(const QRect& contentRect, bool hasTags) const
+    {
+        const int featureTagAreaHeight = 30;
+        const int summaryHeight = contentRect.height() - (hasTags * featureTagAreaHeight);
+
+        const int additionalSummarySpacing = s_itemMargins.right() * 3;
+        const QSize summarySize = QSize(contentRect.width() - s_summaryStartX - s_buttonWidth - additionalSummarySpacing,
+            summaryHeight);
+        return QRect(QPoint(contentRect.left() + s_summaryStartX, contentRect.top()), summarySize);
     }
 
     QSize GemItemDelegate::sizeHint(const QStyleOptionViewItem& option, const QModelIndex& modelIndex) const
@@ -154,7 +158,7 @@ namespace O3DE::ProjectManager
                 return true;
             }
         }
-        else if (event->type() == QEvent::MouseButtonPress )
+        else if (event->type() == QEvent::MouseButtonPress)
         {
             QMouseEvent* mouseEvent = static_cast<QMouseEvent*>(event);
 
@@ -167,6 +171,21 @@ namespace O3DE::ProjectManager
                 const bool isAdded = GemModel::IsAdded(modelIndex);
                 GemModel::SetIsAdded(*model, modelIndex, !isAdded);
                 return true;
+            }
+
+            // we must manually handle html links because we aren't using QLabels
+            const QStringList featureTags = GemModel::GetFeatures(modelIndex);
+            const bool hasTags = !featureTags.isEmpty();
+            const QRect summaryRect = CalcSummaryRect(contentRect, hasTags);
+            if (summaryRect.contains(mouseEvent->pos()))
+            {
+                const QString html = GemModel::GetSummary(modelIndex);
+                QString anchor = anchorAt(html, mouseEvent->pos(), summaryRect);
+                if (!anchor.isEmpty())
+                {
+                    QDesktopServices::openUrl(QUrl(anchor));
+                    return true;
+                }
             }
         }
 
@@ -321,6 +340,44 @@ namespace O3DE::ProjectManager
         }
     }
 
+    AZStd::unique_ptr<QTextDocument> GetTextDocument(const QString& text, int width)
+    {
+        // using unique_ptr as a workaround for QTextDocument having a private copy constructor
+        auto doc = AZStd::make_unique<QTextDocument>();
+        QTextOption textOption(doc->defaultTextOption());
+        textOption.setWrapMode(QTextOption::WordWrap);
+        doc->setDefaultTextOption(textOption);
+        doc->setHtml(text);
+        doc->setTextWidth(width);
+        return doc;
+    }
+
+    void GemItemDelegate::DrawText(const QString& text, QPainter* painter, const QRect& rect, const QFont& standardFont) const 
+    {
+        painter->save();
+
+        if (text.contains('<'))
+        {
+            painter->translate(rect.topLeft());
+
+            // use QTextDocument because drawText does not support rich text or html
+            QAbstractTextDocumentLayout::PaintContext paintContext;
+            paintContext.clip = QRect(0, 0, rect.width(), rect.height());
+            paintContext.palette.setColor(QPalette::Text, painter->pen().color());
+
+            AZStd::unique_ptr<QTextDocument> textDocument = GetTextDocument(text, rect.width());
+            textDocument->documentLayout()->draw(painter, paintContext);
+        }
+        else
+        {
+            painter->setFont(standardFont);
+            painter->setPen(m_textColor);
+            painter->drawText(rect, Qt::AlignLeft | Qt::TextWordWrap, text);
+        }
+
+        painter->restore();
+    }
+
     void GemItemDelegate::DrawButton(QPainter* painter, const QRect& contentRect, const QModelIndex& modelIndex) const
     {
         painter->save();
@@ -354,5 +411,20 @@ namespace O3DE::ProjectManager
         painter->drawEllipse(circleCenter, s_buttonCircleRadius, s_buttonCircleRadius);
 
         painter->restore();
+    }
+
+    QString GemItemDelegate::anchorAt(const QString& html, const QPoint& position, const QRect& rect)
+    {
+        if (!html.isEmpty())
+        {
+            AZStd::unique_ptr<QTextDocument> doc = GetTextDocument(html, rect.width());
+            QAbstractTextDocumentLayout* layout = doc->documentLayout();
+            if (layout)
+            {
+                return layout->anchorAt(position - rect.topLeft());
+            }
+        }
+
+        return QString();
     }
 } // namespace O3DE::ProjectManager
