@@ -422,7 +422,7 @@ def get_templates_for_generic_creation():  # temporary until we have a better wa
     return list(filter(filter_project_and_gem_templates_out, get_all_templates()))
 
 def get_json_file_path(object_typename: str,
-                       object_path: str or pathlib.Path = None) -> pathlib.Path:
+                       object_path: str or pathlib.Path) -> pathlib.Path:
     if not object_typename or not object_path:
         logger.error('Must specify an object typename and object path.')
         return None
@@ -432,26 +432,18 @@ def get_json_file_path(object_typename: str,
 
 
 def get_json_data_file(object_json: pathlib.Path,
-                       object_typename: str = None,
-                       object_validator = callable) -> dict or None:
+                       object_typename: str,
+                       object_validator: callable) -> dict or None:
     if not object_typename:
         logger.error('Missing object typename.')
         return None
 
-    if not object_json:
-        logger.error(f'No object json provided for {object_typename}')
+    if not object_json or not object_json.is_file():
+        logger.error(f'Invalid {object_typename} json {object_json} supplied or file missing.')
         return None
 
-    if not object_json.is_file():
-        logger.error(f'{object_typename} json {object_json} is not present.')
-        return None
-
-    if not object_validator:
-        logger.error('Missing object validator.')
-        return None
-
-    if not object_validator(object_json):
-        logger.error(f'{object_typename} json {object_json} is not valid.')
+    if not object_validator or not object_validator(object_json):
+        logger.error(f'{object_typename} json {object_json} is not valid or could not be validated.')
         return None
 
     with object_json.open('r') as f:
@@ -464,15 +456,10 @@ def get_json_data_file(object_json: pathlib.Path,
 
     return None
 
-def get_json_data(object_typename: str = None,
-                  object_path: str or pathlib.Path = None,
-                  object_validator = callable,
-                  object_name: str = None) -> dict or None:
+def get_json_data(object_typename: str,
+                  object_path: str or pathlib.Path,
+                  object_validator: callable) -> dict or None:
     object_json = get_json_file_path(object_typename, object_path)
-
-    if not object_json and object_name:
-        logger.error(f'{object_name} has not been registered.')
-        return None
 
     return get_json_data_file(object_json, object_typename, object_validator)
 
@@ -486,7 +473,7 @@ def get_engine_json_data(engine_name: str = None,
     if engine_name and not engine_path:
         engine_path = get_registered(engine_name=engine_name)
 
-    return get_json_data('engine', engine_path, validation.valid_o3de_engine_json, engine_name)
+    return get_json_data('engine', engine_path, validation.valid_o3de_engine_json)
 
 
 def get_project_json_data(project_name: str = None,
@@ -498,7 +485,7 @@ def get_project_json_data(project_name: str = None,
     if project_name and not project_path:
         project_path = get_registered(project_name=project_name)
 
-    return get_json_data('project', project_path, validation.valid_o3de_project_json, project_name)
+    return get_json_data('project', project_path, validation.valid_o3de_project_json)
 
 
 def get_gem_json_data(gem_name: str = None, gem_path: str or pathlib.Path = None,
@@ -510,7 +497,7 @@ def get_gem_json_data(gem_name: str = None, gem_path: str or pathlib.Path = None
     if gem_name and not gem_path:
         gem_path = get_registered(gem_name=gem_name, project_path=project_path)
 
-    return get_json_data('gem', gem_path, validation.valid_o3de_gem_json, gem_name)
+    return get_json_data('gem', gem_path, validation.valid_o3de_gem_json)
 
 
 def get_template_json_data(template_name: str = None, template_path: str or pathlib.Path = None,
@@ -522,7 +509,7 @@ def get_template_json_data(template_name: str = None, template_path: str or path
     if template_name and not template_path:
         template_path = get_registered(template_name=template_name, project_path=project_path)
 
-    return get_json_data('template', template_path, validation.valid_o3de_template_json, template_name)
+    return get_json_data('template', template_path, validation.valid_o3de_template_json)
 
 
 def get_restricted_json_data(restricted_name: str = None, restricted_path: str or pathlib.Path = None,
@@ -534,7 +521,7 @@ def get_restricted_json_data(restricted_name: str = None, restricted_path: str o
     if restricted_name and not restricted_path:
         restricted_path = get_registered(restricted_name=restricted_name, project_path=project_path)
 
-    return get_json_data('restricted', restricted_path, validation.valid_o3de_restricted_json, restricted_name)
+    return get_json_data('restricted', restricted_path, validation.valid_o3de_restricted_json)
 
 def get_repo_json_data(repo_uri: str) -> dict or None:
     if not repo_uri:
