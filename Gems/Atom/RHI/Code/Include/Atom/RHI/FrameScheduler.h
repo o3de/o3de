@@ -167,7 +167,7 @@ namespace AZ
             /// Returns the timing statistics for the previous frame.
             const TransientAttachmentStatistics* GetTransientAttachmentStatistics() const;
 
-            /// Returns current CPU frame to frame time.
+            /// Returns current CPU frame to frame time in milliseconds.
             double GetCpuFrameTime() const;
 
             /// Returns memory statistics for the previous frame.
