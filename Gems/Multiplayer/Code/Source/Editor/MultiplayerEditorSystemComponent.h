@@ -8,6 +8,8 @@
 
 #pragma once
 
+#include <Multiplayer/IMultiplayer.h>
+
 #include <IEditor.h>
 
 #include <Editor/MultiplayerEditorConnection.h>
@@ -45,6 +47,9 @@ namespace Multiplayer
         MultiplayerEditorSystemComponent();
         ~MultiplayerEditorSystemComponent() override = default;
 
+        //! Called once the editor receives the server's accept packet
+        void OnServerAcceptanceReceived();
+
         //! AZ::Component overrides.
         //! @{
         void Activate() override;
@@ -71,5 +76,7 @@ namespace Multiplayer
         IEditor* m_editor = nullptr;
         AzFramework::ProcessWatcher* m_serverProcess = nullptr;
         AzNetworking::ConnectionId m_editorConnId;
+
+        ServerAcceptanceReceivedEvent::Handler m_serverAcceptanceReceivedHandler;
     };
 }
