@@ -58,7 +58,7 @@ class TestAutomatedTestingProject(object):
             # Call the game client executable
             with launcher.start():
                 # Wait for the process to exist
-                waiter.wait_for(lambda: process_utils.process_exists(f"{project}.GameLauncher", ignore_extensions=True))
+                waiter.wait_for(lambda: process_utils.process_exists(f"{project}.GameLauncher.exe", ignore_extensions=True))
         finally:
             # Clean up processes after the test is finished
             process_utils.kill_processes_named(names=process_utils.LY_PROCESS_KILL_LIST, ignore_extensions=True)
@@ -85,7 +85,7 @@ class TestAutomatedTestingProject(object):
             # Call the Editor executable
             with editor.start():
                 # Wait for the process to exist
-                waiter.wait_for(lambda: process_utils.process_exists("Editor", ignore_extensions=True))
+                waiter.wait_for(lambda: process_utils.process_exists("Editor.exe", ignore_extensions=True))
         finally:
             # Clean up processes after the test is finished
             process_utils.kill_processes_named(names=process_utils.LY_PROCESS_KILL_LIST, ignore_extensions=True)
