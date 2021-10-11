@@ -167,7 +167,7 @@ TEST_F(AWSGameLiftClientLocalTicketTrackerTest, StartPolling_CallWithMoreThanOne
     ASSERT_FALSE(m_gameliftClientTicketTracker->IsTrackerIdle());
 }
 
-TEST_F(AWSGameLiftClientLocalTicketTrackerTest, StartPolling_CallWithCompleteStatus_ProcessStopsAndGetExpectedResult)
+TEST_F(AWSGameLiftClientLocalTicketTrackerTest, DISABLED_StartPolling_CallWithCompleteStatus_ProcessStopsAndGetExpectedResult)
 {
     Aws::GameLift::Model::GameSessionConnectionInfo connectionInfo;
     connectionInfo.SetIpAddress("DummyIpAddress");
