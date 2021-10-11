@@ -203,6 +203,12 @@ namespace AzToolsFramework
             }
         }
 
+        AZStd::vector<AZ::Uuid> ComponentModeCollection::GetComponentTypes() const
+        {
+            // If in component mode, return the active component types, otherwise return an empty vector
+            return InComponentMode() ? m_activeComponentTypes : AZStd::vector<AZ::Uuid>{};
+        }
+
         void ComponentModeCollection::BeginComponentMode()
         {
             m_selectedComponentModeIndex = 0;
@@ -211,13 +217,6 @@ namespace AzToolsFramework
 
             // notify listeners the editor has entered ComponentMode - listeners may
             // wish to modify state to indicate this (e.g. appearance, functionality etc.)
-            EditorComponentModeNotificationBus::Event(
-                GetEntityContextId(), &EditorComponentModeNotifications::EnteredComponentMode,
-                m_activeComponentTypes);
-
-            // this call to activate the component mode editor state should eventually replace the bus call in
-            // ComponentModeCollection::BeginComponentMode() to EditorComponentModeNotifications::EnteredComponentMode
-            // such that all of the notifications for activating/deactivating the different editor modes are in a central location
             m_viewportEditorModeTracker->ActivateMode({ GetEntityContextId() }, ViewportEditorMode::Component);
 
             // enable actions for the first/primary ComponentMode
@@ -288,14 +287,6 @@ namespace AzToolsFramework
 
             // notify listeners the editor has left ComponentMode - listeners may
             // wish to modify state to indicate this (e.g. appearance, functionality etc.)
-            EditorComponentModeNotificationBus::Event(
-                GetEntityContextId(),
-                &EditorComponentModeNotifications::LeftComponentMode,
-                m_activeComponentTypes);
-
-            // this call to deactivate the component mode editor state should eventually replace the bus call in
-            // ComponentModeCollection::EndComponentMode() to EditorComponentModeNotifications::LeftComponentMode
-            // such that all of the notifications for activating/deactivating the different editor modes are in a central location
             m_viewportEditorModeTracker->DeactivateMode({ GetEntityContextId() }, ViewportEditorMode::Component);
 
             // clear stored modes and builders for this ComponentMode

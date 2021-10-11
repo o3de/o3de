@@ -33,6 +33,7 @@ AZ_POP_DISABLE_WARNING
 #include <AzQtComponents/Components/Style.h>
 #include <AzQtComponents/Components/Widgets/DragAndDrop.h>
 #include <AzQtComponents/Components/Widgets/LineEdit.h>
+#include <AzToolsFramework/API/ComponentModeCollectionInterface.h>
 #include <AzToolsFramework/API/EntityCompositionRequestBus.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/Entity/EditorEntityInfoBus.h>
@@ -486,7 +487,11 @@ namespace AzToolsFramework
         , m_isSystemEntityEditor(false)
         , m_isLevelEntityEditor(isLevelEntityEditor)
     {
+
         initEntityPropertyEditorResources();
+
+        m_componentModeCollection = AZ::Interface<ComponentModeCollectionInterface>::Get();
+        AZ_Assert(m_componentModeCollection, "Could not retrieve component mode collection.");
 
         m_prefabPublicInterface = AZ::Interface<Prefab::PrefabPublicInterface>::Get();
         AZ_Assert(m_prefabPublicInterface != nullptr, "EntityPropertyEditor requires a PrefabPublicInterface instance on Initialize.");
@@ -5698,39 +5703,49 @@ namespace AzToolsFramework
         SaveComponentEditorState();
     }
 
-    void EntityPropertyEditor::EnteredComponentMode(const AZStd::vector<AZ::Uuid>& componentModeTypes)
+    void EntityPropertyEditor::OnEditorModeActivated(
+        [[maybe_unused]] const AzToolsFramework::ViewportEditorModesInterface& editorModeState, AzToolsFramework::ViewportEditorMode mode)
     {
-        DisableComponentActions(this, m_entityComponentActions);
-        SetPropertyEditorState(m_gui, false);
-        m_disabled = true;
-
-        if (!componentModeTypes.empty())
+        if (mode == AzToolsFramework::ViewportEditorMode::Component)
         {
-            m_componentEditorLastSelectedIndex = GetComponentEditorIndexFromType(componentModeTypes.front());
-        }
+            DisableComponentActions(this, m_entityComponentActions);
+            SetPropertyEditorState(m_gui, false);
+            const auto componentModeTypes = m_componentModeCollection->GetComponentTypes();
+            m_disabled = true;
+            
+            if (!componentModeTypes.empty())
+            {
+                m_componentEditorLastSelectedIndex = GetComponentEditorIndexFromType(componentModeTypes.front());
+            }
 
-        for (auto componentEditor : m_componentEditors)
-        {
-            componentEditor->EnteredComponentMode(componentModeTypes);
-        }
+            for (auto componentEditor : m_componentEditors)
+            {
+                componentEditor->EnteredComponentMode(componentModeTypes);
+            }
 
-        // record the selected state after entering component mode
-        SaveComponentEditorState();
+            // record the selected state after entering component mode
+            SaveComponentEditorState();
+        }
     }
 
-    void EntityPropertyEditor::LeftComponentMode(const AZStd::vector<AZ::Uuid>& componentModeTypes)
+    void EntityPropertyEditor::OnEditorModeDeactivated(
+        [[maybe_unused]] const AzToolsFramework::ViewportEditorModesInterface& editorModeState, AzToolsFramework::ViewportEditorMode mode)
     {
-        EnableComponentActions(this, m_entityComponentActions);
-        SetPropertyEditorState(m_gui, true);
-        m_disabled = false;
-
-        for (auto componentEditor : m_componentEditors)
+        if (mode == AzToolsFramework::ViewportEditorMode::Component)
         {
-            componentEditor->LeftComponentMode(componentModeTypes);
-        }
+            EnableComponentActions(this, m_entityComponentActions);
+            SetPropertyEditorState(m_gui, true);
+            const auto componentModeTypes = m_componentModeCollection->GetComponentTypes();
+            m_disabled = false;
 
-        // record the selected state after leaving component mode
-        SaveComponentEditorState();
+            for (auto componentEditor : m_componentEditors)
+            {
+                componentEditor->LeftComponentMode(componentModeTypes);
+            }
+
+            // record the selected state after leaving component mode
+            SaveComponentEditorState();
+        }
     }
 
     void EntityPropertyEditor::ActiveComponentModeChanged(const AZ::Uuid& componentType)
