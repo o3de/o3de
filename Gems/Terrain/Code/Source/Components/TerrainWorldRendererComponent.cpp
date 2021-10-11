@@ -13,8 +13,6 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzFramework/Entity/GameEntityContextBus.h>
 
-#include <SurfaceData/SurfaceDataSystemRequestBus.h>
-
 #include <Atom/RPI.Public/Scene.h>
 #include <Atom/RPI.Public/FeatureProcessorFactory.h>
 #include <TerrainRenderer/TerrainFeatureProcessor.h>
@@ -135,17 +133,13 @@ namespace Terrain
         {
             m_terrainFeatureProcessor = scene->EnableFeatureProcessor<Terrain::TerrainFeatureProcessor>();
         }
-
-        AzFramework::Terrain::TerrainDataNotificationBus::Handler::BusConnect();
         m_terrainRendererActive = true;
     }
 
     void TerrainWorldRendererComponent::Deactivate()
     {
         // On component deactivation, unregister the feature processor and remove it from the default scene.
-
         m_terrainRendererActive = false;
-        AzFramework::Terrain::TerrainDataNotificationBus::Handler::BusDisconnect();
 
         if (AZ::RPI::Scene* scene = GetScene(); scene)
         {
@@ -178,69 +172,4 @@ namespace Terrain
         }
         return false;
     }
-
-    void TerrainWorldRendererComponent::OnTerrainDataDestroyBegin()
-    {
-        // If the terrain is being destroyed, remove all existing terrain data from the feature processor.
-
-        if (m_terrainFeatureProcessor)
-        {
-            m_terrainFeatureProcessor->RemoveTerrainData();
-        }
-    }
-
-    void TerrainWorldRendererComponent::OnTerrainDataChanged([[maybe_unused]] const AZ::Aabb& dirtyRegion, [[maybe_unused]] TerrainDataChangedMask dataChangedMask)
-    {
-        // Block other threads from accessing the surface data bus while we are in GetValue (which may call into the SurfaceData bus).
-        // We lock our surface data mutex *before* checking / setting "isRequestInProgress" so that we prevent race conditions
-        // that create false detection of cyclic dependencies when multiple requests occur on different threads simultaneously.
-        // (One case where this was previously able to occur was in rapid updating of the Preview widget on the
-        // GradientSurfaceDataComponent in the Editor when moving the threshold sliders back and forth rapidly)
-        auto& surfaceDataContext = SurfaceData::SurfaceDataSystemRequestBus::GetOrCreateContext(false);
-        typename SurfaceData::SurfaceDataSystemRequestBus::Context::DispatchLockGuard scopeLock(surfaceDataContext.m_contextMutex);
-
-        AZ::Vector2 queryResolution = AZ::Vector2(1.0f);
-        AzFramework::Terrain::TerrainDataRequestBus::BroadcastResult(
-            queryResolution, &AzFramework::Terrain::TerrainDataRequests::GetTerrainHeightQueryResolution);
-
-        AZ::Aabb worldBounds = AZ::Aabb::CreateNull();
-        AzFramework::Terrain::TerrainDataRequestBus::BroadcastResult(
-            worldBounds, &AzFramework::Terrain::TerrainDataRequests::GetTerrainAabb);
-
-
-        AZ::Transform transform = AZ::Transform::CreateTranslation(worldBounds.GetCenter());
-
-        uint32_t width = aznumeric_cast<uint32_t>(
-            (float)worldBounds.GetXExtent() / queryResolution.GetX());
-        uint32_t height = aznumeric_cast<uint32_t>(
-            (float)worldBounds.GetYExtent() / queryResolution.GetY());
-        AZStd::vector<float> pixels;
-        pixels.resize_no_construct(width * height);
-        const uint32_t pixelDataSize = width * height * sizeof(float);
-        memset(pixels.data(), 0, pixelDataSize);
-
-        for (uint32_t y = 0; y < height; y++)
-        {
-            for (uint32_t x = 0; x < width; x++)
-            {
-                bool terrainExists = true;
-                float terrainHeight = 0.0f;
-                AzFramework::Terrain::TerrainDataRequestBus::BroadcastResult(
-                    terrainHeight, &AzFramework::Terrain::TerrainDataRequests::GetHeightFromFloats,
-                    (x * queryResolution.GetX()) + worldBounds.GetMin().GetX(),
-                    (y * queryResolution.GetY()) + worldBounds.GetMin().GetY(),
-                    AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT,
-                    &terrainExists);
-
-                pixels[(y * width) + x] =
-                    (terrainHeight - worldBounds.GetMin().GetZ()) / worldBounds.GetExtents().GetZ();
-            }
-        }
-
-        if (m_terrainFeatureProcessor)
-        {
-            m_terrainFeatureProcessor->UpdateTerrainData(transform, worldBounds, queryResolution.GetX(), width, height, pixels);
-        }
-    }
-
 }

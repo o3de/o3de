@@ -54,7 +54,7 @@ namespace AWSCore
         {
             if (m_resourceMappingToolWatcher->IsProcessRunning())
             {
-                m_resourceMappingToolWatcher->TerminateProcess(AZ::u32(-1));
+                m_resourceMappingToolWatcher->TerminateProcess(static_cast<AZ::u32>(-1));
             }
             m_resourceMappingToolWatcher.reset();
         }
@@ -78,7 +78,7 @@ namespace AWSCore
 
     void AWSCoreEditorMenu::InitializeResourceMappingToolAction()
     {
-#ifdef AWSCORE_EDITOR_RESOURCE_MAPPING_TOOL_ENABLED
+#if AWSCORE_EDITOR_RESOURCE_MAPPING_TOOL_ENABLED
         AWSCoreResourceMappingToolAction* resourceMappingTool =
             new AWSCoreResourceMappingToolAction(QObject::tr(AWSResourceMappingToolActionText), this);
         QObject::connect(resourceMappingTool, &QAction::triggered, this,
@@ -214,7 +214,7 @@ namespace AWSCore
     QMenu* AWSCoreEditorMenu::SetAWSFeatureSubMenu(const AZStd::string& menuText)
     {
         auto actionList = this->actions();
-        for (QList<QAction*>::iterator itr = actionList.begin(); itr != actionList.end(); itr++)
+        for (QList<QAction*>::iterator itr = actionList.begin(); itr != actionList.end(); ++itr)
         {
             if (QString::compare((*itr)->text(), menuText.c_str()) == 0)
             {

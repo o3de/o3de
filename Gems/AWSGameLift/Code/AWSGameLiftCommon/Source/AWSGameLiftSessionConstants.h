@@ -17,4 +17,5 @@ namespace AWSGameLift
     static const char* AWSGameLiftSessionStatusReasons[2] = { "NotSet", "Interrupted" };
 
     static constexpr const char AWSGameLiftErrorMessageTemplate[] = "Exception: %s, Message: %s";
+    static constexpr const char AWSGameLiftClientMissingErrorMessage[] = "GameLift client is not configured yet.";
 } // namespace AWSGameLift
