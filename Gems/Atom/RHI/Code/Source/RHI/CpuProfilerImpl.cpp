@@ -12,6 +12,7 @@
 #include <AzCore/std/smart_ptr/shared_ptr.h>
 
 #include <AzCore/Debug/Timer.h>
+#include <AzCore/Statistics/StatisticalProfilerProxy.h>
 #include <Atom/RHI/RHIUtils.h>
 
 namespace AZ
@@ -73,6 +74,11 @@ namespace AZ
             m_initialized = true;
             SystemTickBus::Handler::BusConnect();
             m_continuousCaptureData.set_capacity(10);
+
+            if (auto statsProfiler = AZ::Interface<AZ::Statistics::StatisticalProfilerProxy>::Get(); statsProfiler)
+            {
+                statsProfiler->ActivateProfiler(AZ_CRC_CE("RHI"), true);
+            }
         }
 
         void CpuProfilerImpl::Shutdown()

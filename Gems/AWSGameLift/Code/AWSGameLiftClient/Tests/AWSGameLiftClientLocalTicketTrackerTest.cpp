@@ -16,7 +16,7 @@
 
 using namespace AWSGameLift;
 
-static constexpr const uint64_t TEST_RACKER_POLLING_PERIOD_MS = 100;
+static constexpr const uint64_t TEST_RACKER_POLLING_PERIOD_MS = 1000;
 static constexpr const uint64_t TEST_WAIT_BUFFER_TIME_MS = 10;
 static constexpr const uint64_t TEST_WAIT_MAXIMUM_TIME_MS = 10000;
 
