@@ -388,9 +388,7 @@ namespace O3DE::ProjectManager
 
     void GemItemDelegate::DrawDownloadStatusIcon(QPainter* painter, const QRect& contentRect, const QRect& buttonRect, const QModelIndex& modelIndex) const
     {
-        /*const */GemInfo::DownloadStatus downloadStatus = GemModel::GetDownloadStatus(modelIndex);
-
-        downloadStatus = static_cast<GemInfo::DownloadStatus>(modelIndex.row() % 4 - 1);
+        const GemInfo::DownloadStatus downloadStatus = GemModel::GetDownloadStatus(modelIndex);
 
         // Show no icon if gem is already downloaded
         if (downloadStatus == GemInfo::DownloadStatus::Downloaded)
@@ -409,6 +407,8 @@ namespace O3DE::ProjectManager
             if (!movieStarted)
             {
                 m_downloadingMovie->start();
+
+                // Force redraw when download movie is playing so animation is smooth
                 connect(m_downloadingMovie, &QMovie::frameChanged, this, [=]
                 {
                     m_view->viewport()->repaint();

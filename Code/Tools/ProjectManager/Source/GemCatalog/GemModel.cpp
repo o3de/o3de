@@ -48,6 +48,7 @@ namespace O3DE::ProjectManager
         item->setData(gemInfo.m_features, RoleFeatures);
         item->setData(gemInfo.m_path, RolePath);
         item->setData(gemInfo.m_requirement, RoleRequirement);
+        item->setData(gemInfo.m_downloadStatus, RoleDownloadStatus);
 
         appendRow(item);
 

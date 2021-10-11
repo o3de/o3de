@@ -91,8 +91,8 @@ namespace O3DE::ProjectManager
         inline constexpr static int s_statusIconSize = 16;
         inline constexpr static int s_statusButtonSpacing = 5;
 
-        QPixmap* m_unknownStatusPixmap;
-        QPixmap* m_notDownloadedPixmap;
+        QPixmap* m_unknownStatusPixmap = nullptr;
+        QPixmap* m_notDownloadedPixmap = nullptr;
         QMovie* m_downloadingMovie = nullptr;
     };
 } // namespace O3DE::ProjectManager
