@@ -57,7 +57,7 @@ IF ERRORLEVEL 1 (
     exit /b 1
 )
 
-CALL :DeployCDKApplication AWSCore --all
+CALL :DeployCDKApplication AWSCore --all "-c disable_access_log=true"
 IF ERRORLEVEL 1 (
     exit /b 1
 )
