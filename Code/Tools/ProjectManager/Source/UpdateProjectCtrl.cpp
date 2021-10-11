@@ -137,7 +137,7 @@ namespace O3DE::ProjectManager
         else if (m_stack->currentIndex() == ScreenOrder::Gems && m_gemCatalogScreen)
         {
             // Enable or disable the gems that got adjusted in the gem catalog and apply them to the given project.
-            GemCatalogScreen::EnableDisableGemsResult result = m_gemCatalogScreen->EnableDisableGemsForProject(m_projectInfo.m_path);
+            const GemCatalogScreen::EnableDisableGemsResult result = m_gemCatalogScreen->EnableDisableGemsForProject(m_projectInfo.m_path);
             if (result == GemCatalogScreen::EnableDisableGemsResult::Failed)
             {
                 QMessageBox::critical(this, tr("Failed to configure gems"), tr("Failed to configure gems for project."));

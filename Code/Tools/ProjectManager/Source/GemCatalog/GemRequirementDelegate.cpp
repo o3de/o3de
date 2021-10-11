@@ -90,7 +90,7 @@ namespace O3DE::ProjectManager
             return false;
         }
 
-        if (event->type() == QEvent::MouseButtonPress )
+        if (event->type() == QEvent::MouseButtonPress)
         {
             QMouseEvent* mouseEvent = static_cast<QMouseEvent*>(event);
 
