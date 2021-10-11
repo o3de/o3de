@@ -28,6 +28,7 @@
 #include "Objects/EntityObject.h"
 
 #include <AzFramework/Terrain/TerrainDataRequestBus.h>
+#include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 
 //////////////////////////////////////////////////////////////////////////
 #define MUSIC_LEVEL_LIBRARY_FILE "Music.xml"

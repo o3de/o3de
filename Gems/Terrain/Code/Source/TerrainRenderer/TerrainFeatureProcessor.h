@@ -9,24 +9,12 @@
 #pragma once
 
 #include <AzCore/Component/Component.h>
-#include <AzCore/Component/TickBus.h>
-#include <AzCore/Component/TransformBus.h>
-#include <LmbrCentral/Shape/ShapeComponentBus.h>
+
+#include <AzFramework/Terrain/TerrainDataRequestBus.h>
 
 #include <Atom/RPI.Public/FeatureProcessor.h>
-#include <Atom/RPI.Public/Material/Material.h>
-#include <Atom/RPI.Public/Shader/Shader.h>
-
-#include <Atom/RPI.Public/Image/StreamingImage.h>
+#include <Atom/RPI.Public/Image/AttachmentImage.h>
 #include <Atom/RPI.Public/MeshDrawPacket.h>
-#include <Atom/RHI/ShaderResourceGroup.h>
-#include <Atom/RHI/BufferPool.h>
-#include <Atom/RHI/DrawPacket.h>
-#include <Atom/RHI/IndexBufferView.h>
-#include <Atom/RHI/PipelineState.h>
-#include <Atom/RHI/StreamBufferView.h>
-#include <Atom/RHI/RHISystemInterface.h>
-#include <Atom/RPI.Public/Shader/ShaderResourceGroup.h>
 #include <Atom/RPI.Public/Material/MaterialReloadNotificationBus.h>
 
 namespace AZ::RPI
@@ -35,6 +23,7 @@ namespace AZ::RPI
     {
         class AsyncAssetLoader;
     }
+    class Material;
     class Model;
 }
 
@@ -43,6 +32,7 @@ namespace Terrain
     class TerrainFeatureProcessor final
         : public AZ::RPI::FeatureProcessor
         , private AZ::RPI::MaterialReloadNotificationBus::Handler
+        , private AzFramework::Terrain::TerrainDataNotificationBus::Handler
     {
     public:
         AZ_RTTI(TerrainFeatureProcessor, "{D7DAC1F9-4A9F-4D3C-80AE-99579BF8AB1C}", AZ::RPI::FeatureProcessor);
@@ -54,25 +44,12 @@ namespace Terrain
         TerrainFeatureProcessor() = default;
         ~TerrainFeatureProcessor() = default;
 
-        // AZ::Component overrides...
+        // AZ::RPI::FeatureProcessor overrides...
         void Activate() override;
         void Deactivate() override;
-
-        // AZ::RPI::FeatureProcessor overrides...
         void Render(const AZ::RPI::FeatureProcessor::RenderPacket& packet) override;
 
-        // AZ::RPI::MaterialReloadNotificationBus::Handler overrides...
-        void OnMaterialReinitialized(const AZ::Data::Instance<AZ::RPI::Material>& material) override;
-
         void SetWorldSize(AZ::Vector2 sizeInMeters);
-
-        void UpdateTerrainData(const AZ::Transform& transform, const AZ::Aabb& worldBounds, float sampleSpacing,
-                               uint32_t width, uint32_t height, const AZStd::vector<float>& heightData);
-
-        void RemoveTerrainData()
-        {
-            m_areaData = {};
-        }
 
     private:
 
@@ -104,9 +81,18 @@ namespace Terrain
             AZStd::vector<uint16_t> m_indices;
         };
         
+        // AZ::RPI::MaterialReloadNotificationBus::Handler overrides...
+        void OnMaterialReinitialized(const AZ::Data::Instance<AZ::RPI::Material>& material) override;
+
+        // AzFramework::Terrain::TerrainDataNotificationBus overrides...
+        void OnTerrainDataDestroyBegin() override;
+        void OnTerrainDataChanged(const AZ::Aabb& dirtyRegion, TerrainDataChangedMask dataChangedMask) override;
+
         void Initialize();
         void InitializeTerrainPatch(uint16_t gridSize, float gridSpacing, PatchData& patchdata);
         bool InitializePatchModel();
+
+        void UpdateTerrainData();
 
         void ProcessSurfaces(const FeatureProcessor::RenderPacket& process);
         
@@ -132,14 +118,17 @@ namespace Terrain
             AZ::Transform m_transform{ AZ::Transform::CreateIdentity() };
             AZ::Aabb m_terrainBounds{ AZ::Aabb::CreateNull() };
             float m_heightScale{ 0.0f };
-            AZ::Data::Instance<AZ::RPI::StreamingImage> m_heightmapImage;
+            AZ::Data::Instance<AZ::RPI::AttachmentImage> m_heightmapImage;
             uint32_t m_heightmapImageWidth{ 0 };
             uint32_t m_heightmapImageHeight{ 0 };
+            uint32_t m_updateWidth{ 0 };
+            uint32_t m_updateHeight{ 0 };
             bool m_propertiesDirty{ true };
             float m_sampleSpacing{ 0.0f };
         };
 
         TerrainAreaData m_areaData;
+        AZ::Aabb m_dirtyRegion{ AZ::Aabb::CreateNull() };
 
         struct SectorData
         {

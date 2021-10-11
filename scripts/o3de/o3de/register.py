@@ -487,14 +487,14 @@ def register_repo(json_data: dict,
     if remove:
         logger.warn(f'Removing repo uri {repo_uri}.')
         return 0
-
     repo_sha256 = hashlib.sha256(url.encode())
     cache_file = manifest.get_o3de_cache_folder() / str(repo_sha256.hexdigest() + '.json')
 
-    result = utils.download_file(url, cache_file)
+    result = utils.download_file(parsed_uri, cache_file)
     if result == 0:
-        json_data['repos'].insert(0, repo_uri.as_posix())
+        json_data['repos'].insert(0, repo_uri)
 
+    repo_set = set()
     result = repo.process_add_o3de_repo(cache_file, repo_set)
 
     return result
@@ -621,6 +621,7 @@ def register(engine_path: pathlib.Path = None,
             return 1
         result = result or register_gem_path(json_data, gem_path, remove,
                                    external_subdir_engine_path, external_subdir_project_path)
+
     if isinstance(external_subdir_path, pathlib.PurePath):
         if not external_subdir_path:
             logger.error(f'External Subdirectory path is None.')

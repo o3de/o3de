@@ -30,6 +30,8 @@
 #include "Plugins/ComponentEntityEditorPlugin/Objects/ComponentEntityObject.h"
 
 #include <AzCore/Console/Console.h>
+#include <AzToolsFramework/Viewport/ViewportMessages.h>
+#include <AzToolsFramework/ComponentMode/EditorComponentModeBus.h>
 
 AZ_CVAR_EXTERNED(bool, ed_visibility_logTiming);
 
@@ -107,14 +109,13 @@ CObjectManager::CObjectManager()
     m_objectsByName.reserve(1024);
     LoadRegistry();
 
-    AzToolsFramework::ComponentModeFramework::EditorComponentModeNotificationBus::Handler::BusConnect(
-        AzToolsFramework::GetEntityContextId());
+    AzToolsFramework::ViewportEditorModeNotificationsBus::Handler::BusConnect(AzToolsFramework::GetEntityContextId());
 }
 
 //////////////////////////////////////////////////////////////////////////
 CObjectManager::~CObjectManager()
 {
-    AzToolsFramework::ComponentModeFramework::EditorComponentModeNotificationBus::Handler::BusDisconnect();
+    AzToolsFramework::ViewportEditorModeNotificationsBus::Handler::BusDisconnect();
 
     m_bExiting = true;
     SaveRegistry();
@@ -2306,25 +2307,33 @@ void CObjectManager::SelectObjectInRect(CBaseObject* pObj, CViewport* view, HitC
     }
 }
 
-void CObjectManager::EnteredComponentMode(const AZStd::vector<AZ::Uuid>& /*componentModeTypes*/)
+void CObjectManager::OnEditorModeActivated(
+    [[maybe_unused]] const AzToolsFramework::ViewportEditorModesInterface& editorModeState, AzToolsFramework::ViewportEditorMode mode)
 {
-    // hide current gizmo for entity (translate/rotate/scale)
-    IGizmoManager* gizmoManager = GetGizmoManager();
-    const size_t gizmoCount = static_cast<size_t>(gizmoManager->GetGizmoCount());
-    for (size_t i = 0; i < gizmoCount; ++i)
+    if (mode == AzToolsFramework::ViewportEditorMode::Component)
     {
-        gizmoManager->RemoveGizmo(gizmoManager->GetGizmoByIndex(static_cast<int>(i)));
+        // hide current gizmo for entity (translate/rotate/scale)
+        IGizmoManager* gizmoManager = GetGizmoManager();
+        const size_t gizmoCount = static_cast<size_t>(gizmoManager->GetGizmoCount());
+        for (size_t i = 0; i < gizmoCount; ++i)
+        {
+            gizmoManager->RemoveGizmo(gizmoManager->GetGizmoByIndex(static_cast<int>(i)));
+        }
     }
 }
 
-void CObjectManager::LeftComponentMode(const AZStd::vector<AZ::Uuid>& /*componentModeTypes*/)
+void CObjectManager::OnEditorModeDeactivated(
+    [[maybe_unused]] const AzToolsFramework::ViewportEditorModesInterface& editorModeState, AzToolsFramework::ViewportEditorMode mode)
 {
-    // show translate/rotate/scale gizmo again
-    if (IGizmoManager* gizmoManager = GetGizmoManager())
+    if (mode == AzToolsFramework::ViewportEditorMode::Component)
     {
-        if (CBaseObject* selectedObject = GetIEditor()->GetSelectedObject())
+        // show translate/rotate/scale gizmo again
+        if (IGizmoManager* gizmoManager = GetGizmoManager())
         {
-            gizmoManager->AddGizmo(new CAxisGizmo(selectedObject));
+            if (CBaseObject* selectedObject = GetIEditor()->GetSelectedObject())
+            {
+                gizmoManager->AddGizmo(new CAxisGizmo(selectedObject));
+            }
         }
     }
 }

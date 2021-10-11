@@ -9,6 +9,7 @@
 
 #include <QProcess>
 #include <QStandardPaths>
+#include <QDir>
 
 namespace O3DE::ProjectManager
 {
@@ -93,6 +94,15 @@ namespace O3DE::ProjectManager
             }
 
             return AZ::Success();
+        }
+        
+        AZ::Outcome<QString, QString> RunGetPythonScript(const QString& engineRoot)
+        {
+            return ExecuteCommandResultModalDialog(
+                QString("%1/python/get_python.sh").arg(engineRoot),
+                {},
+                QProcessEnvironment::systemEnvironment(),
+                QObject::tr("Running get_python script..."));
         }
     } // namespace ProjectUtils
 } // namespace O3DE::ProjectManager

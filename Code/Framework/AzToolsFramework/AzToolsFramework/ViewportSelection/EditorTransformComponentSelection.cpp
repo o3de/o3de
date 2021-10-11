@@ -103,10 +103,6 @@ namespace AzToolsFramework
     static const char* const ResetEntityTransformDesc = "Reset transform based on manipulator mode";
     static const char* const ResetManipulatorTitle = "Reset Manipulator";
     static const char* const ResetManipulatorDesc = "Reset the manipulator to recenter it on the selected entity";
-    static const char* const ResetTransformLocalTitle = "Reset Transform (Local)";
-    static const char* const ResetTransformLocalDesc = "Reset transform to local space";
-    static const char* const ResetTransformWorldTitle = "Reset Transform (World)";
-    static const char* const ResetTransformWorldDesc = "Reset transform to world space";
 
     static const char* const EntityBoxSelectUndoRedoDesc = "Box Select Entities";
     static const char* const EntityDeselectUndoRedoDesc = "Deselect Entity";
@@ -1027,7 +1023,7 @@ namespace AzToolsFramework
         EditorTransformComponentSelectionRequestBus::Handler::BusConnect(entityContextId);
         ToolsApplicationNotificationBus::Handler::BusConnect();
         Camera::EditorCameraNotificationBus::Handler::BusConnect();
-        ComponentModeFramework::EditorComponentModeNotificationBus::Handler::BusConnect(entityContextId);
+        ViewportEditorModeNotificationsBus::Handler::BusConnect(entityContextId);
         EditorEntityContextNotificationBus::Handler::BusConnect();
         EditorEntityVisibilityNotificationBus::Router::BusRouterConnect();
         EditorEntityLockComponentNotificationBus::Router::BusRouterConnect();
@@ -1075,7 +1071,7 @@ namespace AzToolsFramework
         EditorEntityLockComponentNotificationBus::Router::BusRouterDisconnect();
         EditorEntityVisibilityNotificationBus::Router::BusRouterDisconnect();
         EditorEntityContextNotificationBus::Handler::BusDisconnect();
-        ComponentModeFramework::EditorComponentModeNotificationBus::Handler::BusDisconnect();
+        ViewportEditorModeNotificationsBus::Handler::BusDisconnect();
         Camera::EditorCameraNotificationBus::Handler::BusDisconnect();
         ToolsApplicationNotificationBus::Handler::BusDisconnect();
         EditorTransformComponentSelectionRequestBus::Handler::BusDisconnect();
@@ -2424,45 +2420,9 @@ namespace AzToolsFramework
 
         AddAction(
             m_actions, { QKeySequence(Qt::CTRL + Qt::Key_R) }, EditResetManipulator, ResetManipulatorTitle, ResetManipulatorDesc,
-            AZStd::bind(AZStd::mem_fn(&EditorTransformComponentSelection::DelegateClearManipulatorOverride), this));
-
-        AddAction(
-            m_actions, { QKeySequence(Qt::ALT + Qt::Key_R) }, EditResetLocal, ResetTransformLocalTitle, ResetTransformLocalDesc,
-            [this]()
+            [this]
             {
-                switch (m_mode)
-                {
-                case Mode::Rotation:
-                    ResetOrientationForSelectedEntitiesLocal();
-                    break;
-                case Mode::Scale:
-                    CopyScaleToSelectedEntitiesIndividualWorld(1.0f);
-                    break;
-                case Mode::Translation:
-                    // do nothing
-                    break;
-                }
-            });
-
-        AddAction(
-            m_actions, { QKeySequence(Qt::SHIFT + Qt::Key_R) }, EditResetWorld, ResetTransformWorldTitle, ResetTransformWorldDesc,
-            [this]()
-            {
-                switch (m_mode)
-                {
-                case Mode::Rotation:
-                    {
-                        // begin an undo batch so operations inside CopyOrientation... and
-                        // DelegateClear... are grouped into a single undo/redo
-                        ScopedUndoBatch undoBatch{ ResetTransformWorldTitle };
-                        CopyOrientationToSelectedEntitiesIndividual(AZ::Quaternion::CreateIdentity());
-                        ClearManipulatorOrientationOverride();
-                    }
-                    break;
-                case Mode::Scale:
-                case Mode::Translation:
-                    break;
-                }
+                DelegateClearManipulatorOverride();
             });
 
         AddAction(
@@ -3707,22 +3667,30 @@ namespace AzToolsFramework
         m_selectedEntityIdsAndManipulatorsDirty = true;
     }
 
-    void EditorTransformComponentSelection::EnteredComponentMode([[maybe_unused]] const AZStd::vector<AZ::Uuid>& componentModeTypes)
+    void EditorTransformComponentSelection::OnEditorModeActivated(
+        [[maybe_unused]] const ViewportEditorModesInterface& editorModeState, ViewportEditorMode mode)
     {
-        SetAllViewportUiVisible(false);
+        if (mode == ViewportEditorMode::Component)
+        {
+            SetAllViewportUiVisible(false);
 
-        EditorEntityLockComponentNotificationBus::Router::BusRouterDisconnect();
-        EditorEntityVisibilityNotificationBus::Router::BusRouterDisconnect();
-        ToolsApplicationNotificationBus::Handler::BusDisconnect();
+            EditorEntityLockComponentNotificationBus::Router::BusRouterDisconnect();
+            EditorEntityVisibilityNotificationBus::Router::BusRouterDisconnect();
+            ToolsApplicationNotificationBus::Handler::BusDisconnect();
+        }
     }
 
-    void EditorTransformComponentSelection::LeftComponentMode([[maybe_unused]] const AZStd::vector<AZ::Uuid>& componentModeTypes)
+    void EditorTransformComponentSelection::OnEditorModeDeactivated(
+        [[maybe_unused]] const ViewportEditorModesInterface& editorModeState, ViewportEditorMode mode)
     {
-        SetAllViewportUiVisible(true);
+        if (mode == ViewportEditorMode::Component)
+        {
+            SetAllViewportUiVisible(true);
 
-        ToolsApplicationNotificationBus::Handler::BusConnect();
-        EditorEntityVisibilityNotificationBus::Router::BusRouterConnect();
-        EditorEntityLockComponentNotificationBus::Router::BusRouterConnect();
+            ToolsApplicationNotificationBus::Handler::BusConnect();
+            EditorEntityVisibilityNotificationBus::Router::BusRouterConnect();
+            EditorEntityLockComponentNotificationBus::Router::BusRouterConnect();
+        }
     }
 
     void EditorTransformComponentSelection::CreateEntityManipulatorDeselectCommand(ScopedUndoBatch& undoBatch)

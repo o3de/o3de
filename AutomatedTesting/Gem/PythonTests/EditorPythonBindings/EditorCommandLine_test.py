@@ -42,7 +42,6 @@ class TestEditorAutomation(object):
             "editor command line arg bar",
             "editor command line arg baz",
             "editor engroot set",
-            "editor devroot set",
             "path resolved worked"
             ]
         

@@ -6,12 +6,7 @@
 #
 #
 
-################################################################################
-# Atom Renderer: Automated Tests
-# Runs EditorPythonBindings (hydra) scripts inside the Editor to verify test results for the Atom renderer.
-################################################################################
-
-if(PAL_TRAIT_BUILD_HOST_TOOLS AND PAL_TRAIT_BUILD_TESTS_SUPPORTED AND AutomatedTesting IN_LIST LY_PROJECTS)
+if(PAL_TRAIT_BUILD_HOST_TOOLS AND PAL_TRAIT_BUILD_TESTS_SUPPORTED)
     ly_add_pytest(
         NAME AutomatedTesting::Atom_TestSuite_Main
         TEST_SUITE main
@@ -58,6 +53,20 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS AND PAL_TRAIT_BUILD_TESTS_SUPPORTED AND AutomatedT
         TEST_SERIAL
         TIMEOUT 1200
         PATH ${CMAKE_CURRENT_LIST_DIR}/TestSuite_Main_GPU.py
+        RUNTIME_DEPENDENCIES
+            AssetProcessor
+            AutomatedTesting.Assets
+            Editor
+        COMPONENT
+            Atom
+    )
+    ly_add_pytest(
+        NAME AutomatedTesting::Atom_TestSuite_Main_GPU_Optimized
+        TEST_SUITE main
+        TEST_REQUIRES gpu
+        TEST_SERIAL
+        TIMEOUT 1200
+        PATH ${CMAKE_CURRENT_LIST_DIR}/TestSuite_Main_GPU_Optimized.py
         RUNTIME_DEPENDENCIES
             AssetProcessor
             AutomatedTesting.Assets

@@ -4320,6 +4320,12 @@ namespace ScriptCanvas
         {
             AZ_Assert(execution->GetSymbol() != Symbol::FunctionDefinition, "Function definition input is not handled in AbstractCodeModel::ParseInputDatum");
 
+            if (!input.GetDataType().IsValid())
+            {
+                AddError(nullptr, aznew Internal::ParseError(execution->GetNodeId(), ParseErrors::InvalidDataTypeInInput));
+                return;
+            }
+
             auto nodes = execution->GetId().m_node->GetConnectedNodes(input);
             if (nodes.empty())
             {

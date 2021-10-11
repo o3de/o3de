@@ -56,15 +56,8 @@ namespace AssetProcessor
         // cache this up front.  Note that it can fail here, and will retry later.
         InitializeCacheRoot();
 
-        m_absoluteDevFolderPath[0] = 0;
-        m_absoluteDevGameFolderPath[0] = 0;
-
         QDir assetRoot;
-        if (AssetUtilities::ComputeAssetRoot(assetRoot))
-        {
-            azstrcpy(m_absoluteDevFolderPath, AZ_MAX_PATH_LEN, assetRoot.absolutePath().toUtf8().constData());
-            azstrcpy(m_absoluteDevGameFolderPath, AZ_MAX_PATH_LEN, AssetUtilities::ComputeProjectPath().toUtf8().constData());
-        }
+        AssetUtilities::ComputeAssetRoot(assetRoot);
 
         using namespace AZStd::placeholders;
 

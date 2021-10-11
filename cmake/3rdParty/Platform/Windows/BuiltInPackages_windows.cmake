@@ -21,7 +21,6 @@ ly_associate_package(PACKAGE_NAME azslc-1.7.23-rev1-multiplatform               
 ly_associate_package(PACKAGE_NAME glad-2.0.0-beta-rev2-multiplatform                    TARGETS glad                        PACKAGE_HASH ff97ee9664e97d0854b52a3734c2289329d9f2b4cd69478df6d0ca1f1c9392ee)
 ly_associate_package(PACKAGE_NAME lux_core-2.2-rev5-multiplatform                       TARGETS lux_core                    PACKAGE_HASH c8c13cf7bc351643e1abd294d0841b24dee60e51647dff13db7aec396ad1e0b5)
 ly_associate_package(PACKAGE_NAME xxhash-0.7.4-rev1-multiplatform                       TARGETS xxhash                      PACKAGE_HASH e81f3e6c4065975833996dd1fcffe46c3cf0f9e3a4207ec5f4a1b564ba75861e)
-ly_associate_package(PACKAGE_NAME PVRTexTool-4.24.0-rev4-multiplatform                  TARGETS PVRTexTool                  PACKAGE_HASH d0d6da61c7557de0d2c71fc35ba56c3be49555b703f0e853d4c58225537acf1e)
 
 # platform-specific:
 ly_associate_package(PACKAGE_NAME AWSGameLiftServerSDK-3.4.1-rev1-windows               TARGETS AWSGameLiftServerSDK        PACKAGE_HASH a0586b006e4def65cc25f388de17dc475e417dc1e6f9d96749777c88aa8271b0)
@@ -32,7 +31,6 @@ ly_associate_package(PACKAGE_NAME freetype-2.10.4.16-windows                    
 ly_associate_package(PACKAGE_NAME AWSNativeSDK-1.7.167-rev4-windows                     TARGETS AWSNativeSDK                PACKAGE_HASH a900e80f7259e43aed5c847afee2599ada37f29db70505481397675bcbb6c76c)
 ly_associate_package(PACKAGE_NAME Lua-5.3.5-rev5-windows                                TARGETS Lua                         PACKAGE_HASH 136faccf1f73891e3fa3b95f908523187792e56f5b92c63c6a6d7e72d1158d40)
 ly_associate_package(PACKAGE_NAME PhysX-4.1.2.29882248-rev3-windows                     TARGETS PhysX                       PACKAGE_HASH 0c5ffbd9fa588e5cf7643721a7cfe74d0fe448bf82252d39b3a96d06dfca2298)
-ly_associate_package(PACKAGE_NAME etc2comp-9cd0f9cae0-rev1-windows                      TARGETS etc2comp                    PACKAGE_HASH fc9ae937b2ec0d42d5e7d0e9e8c80e5e4d257673fb33bc9b7d6db76002117123)
 ly_associate_package(PACKAGE_NAME mcpp-2.7.2_az.2-rev1-windows                          TARGETS mcpp                        PACKAGE_HASH 794789aba639bfe2f4e8fcb4424d679933dd6290e523084aa0a4e287ac44acb2)
 ly_associate_package(PACKAGE_NAME mikkelsen-1.0.0.4-windows                             TARGETS mikkelsen                   PACKAGE_HASH 872c4d245a1c86139aa929f2b465b63ea4ea55b04ced50309135dd4597457a4e)
 ly_associate_package(PACKAGE_NAME googletest-1.8.1-rev4-windows                         TARGETS googletest                  PACKAGE_HASH 7e8f03ae8a01563124e3daa06386f25a2b311c10bb95bff05cae6c41eff83837)
@@ -47,7 +45,7 @@ ly_associate_package(PACKAGE_NAME OpenMesh-8.1-rev1-windows                     
 ly_associate_package(PACKAGE_NAME civetweb-1.8-rev1-windows                             TARGETS civetweb                    PACKAGE_HASH 36d0e58a59bcdb4dd70493fb1b177aa0354c945b06c30416348fd326cf323dd4)
 ly_associate_package(PACKAGE_NAME OpenSSL-1.1.1b-rev2-windows                           TARGETS OpenSSL                     PACKAGE_HASH 9af1c50343f89146b4053101a7aeb20513319a3fe2f007e356d7ce25f9241040)
 ly_associate_package(PACKAGE_NAME Crashpad-0.8.0-rev1-windows                           TARGETS Crashpad                    PACKAGE_HASH d162aa3070147bc0130a44caab02c5fe58606910252caf7f90472bd48d4e31e2)
-ly_associate_package(PACKAGE_NAME zlib-1.2.11-rev2-windows                              TARGETS zlib                        PACKAGE_HASH 9afab1d67641ed8bef2fb38fc53942da47f2ab339d9e77d3d20704a48af2da0b)
+ly_associate_package(PACKAGE_NAME zlib-1.2.11-rev5-windows                              TARGETS ZLIB                        PACKAGE_HASH 8847112429744eb11d92c44026fc5fc53caa4a06709382b5f13978f3c26c4cbd)
 ly_associate_package(PACKAGE_NAME squish-ccr-deb557d-rev1-windows                       TARGETS squish-ccr                  PACKAGE_HASH 5c3d9fa491e488ccaf802304ad23b932268a2b2846e383f088779962af2bfa84)
 ly_associate_package(PACKAGE_NAME astc-encoder-3.2-rev1-windows                         TARGETS astc-encoder                PACKAGE_HASH 3addc6fc1a7eb0d6b7f3d530e962af967e6d92b3825ef485da243346357cf78e)
 ly_associate_package(PACKAGE_NAME ISPCTexComp-36b80aa-rev1-windows                      TARGETS ISPCTexComp                 PACKAGE_HASH b6fa6ea28a2808a9a5524c72c37789c525925e435770f2d94eb2d387360fa2d0)

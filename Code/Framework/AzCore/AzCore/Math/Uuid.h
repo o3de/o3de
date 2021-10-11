@@ -42,8 +42,9 @@ namespace AZ
             //VER_AZ_RANDOM_CRC32 = 6, // 0 1 1 0
         };
 
+        static constexpr int ValidUuidStringLength = 32; /// Number of characters (data only, no extra formatting) in a valid UUID string
         static const size_t MaxStringBuffer = 39; /// 32 Uuid + 4 dashes + 2 brackets + 1 terminate
-
+        
         Uuid()  {}
         Uuid(const char* string, size_t stringLength = 0) { *this = CreateString(string, stringLength); }
 
