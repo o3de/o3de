@@ -71,6 +71,22 @@ namespace O3DE::ProjectManager
         }
     }
 
+    QString GemInfo::GetDownloadStatusString(DownloadStatus status)
+    {
+        switch (status)
+        {
+        case NotDownloaded:
+            return "Not Downloaded";
+        case Downloading:
+            return "Downloading";
+        case Downloaded:
+            return "Downloaded";
+        case UnknownDownloadStatus:
+        default:
+            return "<Unknown Download Status>";
+        }
+    };
+
     bool GemInfo::IsPlatformSupported(Platform platform) const
     {
         return (m_platforms & platform);

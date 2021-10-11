@@ -37,7 +37,7 @@ namespace O3DE::ProjectManager
 
         setModel(model);
         setSelectionModel(selectionModel);
-        setItemDelegate(new GemItemDelegate(model, this));
+        setItemDelegate(new GemItemDelegate(model, this, this));
 
         // use a custom proxy style so we get immediate tooltips for gem radio buttons
         setStyle(new GemListViewProxyStyle(this->style()));

@@ -21,7 +21,7 @@ namespace O3DE::ProjectManager
         Q_OBJECT // AUTOMOC
 
     public:
-        explicit GemRequirementDelegate(QAbstractItemModel* model, QObject* parent = nullptr);
+        explicit GemRequirementDelegate(QAbstractItemModel* model, QListView* view, QObject* parent = nullptr);
         ~GemRequirementDelegate() = default;
 
         void paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& modelIndex) const override;

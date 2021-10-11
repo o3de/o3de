@@ -670,6 +670,16 @@ namespace O3DE::ProjectManager
                 {
                     gemInfo.m_gemOrigin = GemInfo::GemOrigin::Open3DEEngine;
                 }
+                else if (data.contains("origin"))
+                {
+                    gemInfo.m_gemOrigin = GemInfo::GemOrigin::Remote;
+                }
+
+                // As long Base Open3DEngine gems are installed before first startup non-remote gems will be downloaded
+                if (gemInfo.m_gemOrigin != GemInfo::GemOrigin::Remote)
+                {
+                    gemInfo.m_downloadStatus = GemInfo::DownloadStatus::Downloaded;
+                }
 
                 if (data.contains("user_tags"))
                 {

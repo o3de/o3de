@@ -9,6 +9,7 @@
 #include <GemCatalog/GemItemDelegate.h>
 #include <GemCatalog/GemModel.h>
 #include <GemCatalog/GemSortFilterProxyModel.h>
+
 #include <QEvent>
 #include <QAbstractItemView>
 #include <QPainter>
@@ -16,11 +17,14 @@
 #include <QHelpEvent>
 #include <QToolTip>
 #include <QHoverEvent>
+#include <QMovie>
+#include <QListView>
 
 namespace O3DE::ProjectManager
 {
-    GemItemDelegate::GemItemDelegate(QAbstractItemModel* model, QObject* parent)
+    GemItemDelegate::GemItemDelegate(QAbstractItemModel* model, QListView* view, QObject* parent)
         : QStyledItemDelegate(parent)
+        , m_view(view)
         , m_model(model)
     {
         AddPlatformIcon(GemInfo::Android, ":/Android.svg");
@@ -28,6 +32,11 @@ namespace O3DE::ProjectManager
         AddPlatformIcon(GemInfo::Linux, ":/Linux.svg");
         AddPlatformIcon(GemInfo::macOS, ":/macOS.svg");
         AddPlatformIcon(GemInfo::Windows, ":/Windows.svg");
+
+        SetStatusIcon(&m_notDownloadedPixmap, ":/Download.svg");
+        SetStatusIcon(&m_unknownStatusPixmap, ":/X.svg");
+
+        m_downloadingMovie = new QMovie(":/in_progress.gif");
     }
 
     void GemItemDelegate::AddPlatformIcon(GemInfo::Platform platform, const QString& iconPath)
@@ -35,6 +44,25 @@ namespace O3DE::ProjectManager
         QPixmap pixmap(iconPath);
         qreal aspectRatio = static_cast<qreal>(pixmap.width()) / pixmap.height();
         m_platformIcons.insert(platform, QIcon(iconPath).pixmap(static_cast<int>(static_cast<qreal>(s_platformIconSize) * aspectRatio), s_platformIconSize));
+    }
+
+    void GemItemDelegate::SetStatusIcon(QPixmap** m_iconPixmap, const QString& iconPath)
+    {
+        QPixmap pixmap(iconPath);
+        float aspectRatio = static_cast<float>(pixmap.width()) / pixmap.height();
+        int xScaler = s_statusIconSize;
+        int yScaler = s_statusIconSize;
+
+        if (aspectRatio > 1.0f)
+        {
+            yScaler = static_cast<int>(1.0f / aspectRatio * s_statusIconSize);
+        }
+        else if (aspectRatio < 1.0f)
+        {
+            xScaler = static_cast<int>(aspectRatio * s_statusIconSize);
+        }
+
+        *m_iconPixmap = new QPixmap(QIcon(iconPath).pixmap(xScaler, yScaler));
     }
 
     void GemItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& modelIndex) const
@@ -51,6 +79,8 @@ namespace O3DE::ProjectManager
 
         QRect fullRect, itemRect, contentRect;
         CalcRects(options, fullRect, itemRect, contentRect);
+
+        QRect buttonRect = CalcButtonRect(contentRect);
 
         QFont standardFont(options.font);
         standardFont.setPixelSize(static_cast<int>(s_fontSize));
@@ -121,7 +151,8 @@ namespace O3DE::ProjectManager
         const QString summary = GemModel::GetSummary(modelIndex);
         painter->drawText(summaryRect, Qt::AlignLeft | Qt::TextWordWrap, summary);
 
-        DrawButton(painter, contentRect, modelIndex);
+        DrawDownloadStatusIcon(painter, contentRect, buttonRect, modelIndex);
+        DrawButton(painter, buttonRect, modelIndex);
         DrawPlatformIcons(painter, contentRect, modelIndex);
         DrawFeatureTags(painter, contentRect, featureTags, standardFont, summaryRect);
 
@@ -251,7 +282,7 @@ namespace O3DE::ProjectManager
 
     QRect GemItemDelegate::CalcButtonRect(const QRect& contentRect) const
     {
-        const QPoint topLeft = QPoint(contentRect.right() - s_buttonWidth - s_itemMargins.right(), contentRect.top() + contentRect.height() / 2 - s_buttonHeight / 2);
+        const QPoint topLeft = QPoint(contentRect.right() - s_buttonWidth, contentRect.center().y() - s_buttonHeight / 2);
         const QSize size = QSize(s_buttonWidth, s_buttonHeight);
         return QRect(topLeft, size);
     }
@@ -321,10 +352,9 @@ namespace O3DE::ProjectManager
         }
     }
 
-    void GemItemDelegate::DrawButton(QPainter* painter, const QRect& contentRect, const QModelIndex& modelIndex) const
+    void GemItemDelegate::DrawButton(QPainter* painter, const QRect& buttonRect, const QModelIndex& modelIndex) const
     {
         painter->save();
-        const QRect buttonRect = CalcButtonRect(contentRect);
         QPoint circleCenter;
 
         if (GemModel::IsAdded(modelIndex))
@@ -354,5 +384,57 @@ namespace O3DE::ProjectManager
         painter->drawEllipse(circleCenter, s_buttonCircleRadius, s_buttonCircleRadius);
 
         painter->restore();
+    }
+
+    void GemItemDelegate::DrawDownloadStatusIcon(QPainter* painter, const QRect& contentRect, const QRect& buttonRect, const QModelIndex& modelIndex) const
+    {
+        /*const */GemInfo::DownloadStatus downloadStatus = GemModel::GetDownloadStatus(modelIndex);
+
+        downloadStatus = static_cast<GemInfo::DownloadStatus>(modelIndex.row() % 4 - 1);
+
+        // Show no icon if gem is already downloaded
+        if (downloadStatus == GemInfo::DownloadStatus::Downloaded)
+        {
+            return;
+        }
+
+        painter->save();
+        const int statusStartX = buttonRect.left() -s_statusButtonSpacing - s_statusIconSize;
+
+        QPixmap currentFrame;
+        const QPixmap* statusPixmap;
+        if (downloadStatus == GemInfo::DownloadStatus::Downloading)
+        {
+            static bool movieStarted = false;
+            if (!movieStarted)
+            {
+                m_downloadingMovie->start();
+                connect(m_downloadingMovie, &QMovie::frameChanged, this, [=]
+                {
+                    m_view->viewport()->repaint();
+                });
+
+                movieStarted = true;
+            }
+
+            currentFrame = m_downloadingMovie->currentPixmap();
+            currentFrame = currentFrame.scaled(s_statusIconSize, s_statusIconSize);
+            statusPixmap = &currentFrame;
+        }
+        else if (downloadStatus == GemInfo::DownloadStatus::NotDownloaded)
+        {
+            statusPixmap = m_notDownloadedPixmap;
+        }
+        else
+        {
+            statusPixmap = m_unknownStatusPixmap;
+        }
+
+        QSize statusSize = statusPixmap->size();
+
+        painter->drawPixmap(
+            buttonRect.left() - s_statusButtonSpacing - statusSize.width(),
+            contentRect.center().y() - statusSize.height() / 2,
+            *statusPixmap);
     }
 } // namespace O3DE::ProjectManager
