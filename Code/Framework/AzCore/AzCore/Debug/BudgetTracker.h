@@ -19,7 +19,7 @@ namespace AZ::Debug
     class BudgetTracker
     {
     public:
-        AZ_RTTI(BudgetTracker, "{E14A746D-BFFE-4C02-90FB-4699B79864A5}");
+        AZ_TYPE_INFO(BudgetTracker, "{E14A746D-BFFE-4C02-90FB-4699B79864A5}");
         static Budget* GetBudgetFromEnvironment(const char* budgetName, uint32_t crc);
 
         ~BudgetTracker();

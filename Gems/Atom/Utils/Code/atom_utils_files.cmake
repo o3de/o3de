@@ -19,8 +19,11 @@ set(FILES
     Include/Atom/Utils/ImGuiPassTree.inl
     Include/Atom/Utils/ImGuiFrameVisualizer.h
     Include/Atom/Utils/ImGuiFrameVisualizer.inl
+    Include/Atom/Utils/ImGuiShaderMetrics.h
+    Include/Atom/Utils/ImGuiShaderMetrics.inl
     Include/Atom/Utils/ImGuiTransientAttachmentProfiler.h
     Include/Atom/Utils/ImGuiTransientAttachmentProfiler.inl
+    Include/Atom/Utils/PngFile.h
     Include/Atom/Utils/PpmFile.h
     Include/Atom/Utils/StableDynamicArray.h
     Include/Atom/Utils/StableDynamicArray.inl
@@ -29,6 +32,7 @@ set(FILES
     Include/Atom/Utils/AssetCollectionAsyncLoader.h
     Source/DdsFile.cpp
     Source/ImageComparison.cpp
+    Source/PngFile.cpp
     Source/PpmFile.cpp
     Source/Utils.cpp
     Source/AssetCollectionAsyncLoader.cpp

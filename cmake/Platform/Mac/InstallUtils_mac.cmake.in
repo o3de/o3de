@@ -1,0 +1,170 @@
+#
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
+#
+# SPDX-License-Identifier: Apache-2.0 OR MIT
+#
+#
+
+function(fixup_qt_framework lib_name framework_path)
+
+    file(REMOVE_RECURSE
+        ${framework_path}/Headers
+        ${framework_path}/Resources
+        ${framework_path}/${lib_name}
+        ${framework_path}/Versions/Current
+        ${framework_path}/Versions/5/Headers
+    )
+
+    execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink 5 Current
+        WORKING_DIRECTORY ${framework_path}/Versions
+    )
+    execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink Versions/Current/${lib_name} ${lib_name}
+        WORKING_DIRECTORY ${framework_path}
+    )
+    execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink Versions/Current/Resources Resources
+        WORKING_DIRECTORY ${framework_path}
+    )
+
+endfunction()
+
+function(fixup_python_framework framework_path)
+
+    file(REMOVE_RECURSE
+        ${framework_path}/Versions/Current
+        ${framework_path}/Versions/@LY_PYTHON_VERSION_MAJOR_MINOR@/Headers
+        ${framework_path}/Versions/@LY_PYTHON_VERSION_MAJOR_MINOR@/lib/Python
+        ${framework_path}/Versions/@LY_PYTHON_VERSION_MAJOR_MINOR@/lib/python@LY_PYTHON_VERSION_MAJOR_MINOR@/test
+        ${framework_path}/Versions/@LY_PYTHON_VERSION_MAJOR_MINOR@/lib/python@LY_PYTHON_VERSION_MAJOR_MINOR@/site-packages/scipy/io/tests
+        ${framework_path}/Python
+        ${framework_path}/Resources
+        ${framework_path}/Headers
+    )
+    
+    file(GLOB_RECURSE exe_file_list "${framework_path}/**/*.exe")
+    if(exe_file_list)
+        file(REMOVE_RECURSE ${exe_file_list})
+    endif()
+    execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink include/python@LY_PYTHON_VERSION_MAJOR_MINOR@m Headers
+        WORKING_DIRECTORY ${framework_path}/Versions/@LY_PYTHON_VERSION_MAJOR_MINOR@
+    )
+    execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink @LY_PYTHON_VERSION_MAJOR_MINOR@ Current
+        WORKING_DIRECTORY ${framework_path}/Versions/
+    )
+    execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink Versions/Current/Python Python
+        WORKING_DIRECTORY ${framework_path}
+    )
+    execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink Versions/Current/Headers Headers
+        WORKING_DIRECTORY ${framework_path}
+    )
+    execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink Versions/Current/Resources Resources
+        WORKING_DIRECTORY ${framework_path}
+    )
+    file(CHMOD ${framework_path}/Versions/Current/Python 
+        PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_WRITE GROUP_EXECUTE WORLD_READ WORLD_EXECUTE 
+    )
+
+endfunction()
+
+function(codesign_file file entitlement_file)
+
+    if (NOT @LY_ENABLE_HARDENED_RUNTIME@)
+        return()
+    endif()
+
+    if(EXISTS ${entitlement_file})
+
+        execute_process(COMMAND "/usr/bin/codesign" "--force" "--sign" "@LY_CODE_SIGN_IDENTITY@" "--deep" "-o" "runtime" "--timestamp" "--entitlements" "${entitlement_file}" "${file}"
+            TIMEOUT 300
+            OUTPUT_VARIABLE codesign_out
+            RESULT_VARIABLE codesign_ret
+        )
+    else()
+        execute_process(COMMAND "/usr/bin/codesign" "--force" "--sign" "@LY_CODE_SIGN_IDENTITY@" "--deep" "-o" "runtime" "--timestamp" "${file}"
+            TIMEOUT 300
+            OUTPUT_VARIABLE codesign_out
+            RESULT_VARIABLE codesign_ret
+        )
+    endif()
+
+    if(NOT ${codesign_ret} EQUAL "0")
+        message(FATAL_ERROR "Codesign operation for ${file_path} returned ${codesign_ret} with message ${codesign_out}")
+    endif()
+
+endfunction()
+
+function(codesign_python_framework_binaries framework_path)
+
+    if (NOT @LY_ENABLE_HARDENED_RUNTIME@)
+        return()
+    endif()
+
+    # The codesign "--deep" flag will only codesign binaries in folders with specific names.
+    # We need to codesign all the binaries that the "--deep" flag will miss.
+    file(GLOB_RECURSE files
+        LIST_DIRECTORIES false
+        "${framework_path}/Versions/@LY_PYTHON_VERSION_MAJOR_MINOR@/bin/**"
+        "${framework_path}/Versions/@LY_PYTHON_VERSION_MAJOR_MINOR@/lib/**"
+        "${framework_path}/Versions/@LY_PYTHON_VERSION_MAJOR_MINOR@/Resources/**")
+
+    foreach(file ${files})
+        if(NOT EXISTS ${file})
+            file(REMOVE ${file})
+            continue()
+        endif()
+        cmake_path(SET path_var "${file}")
+        cmake_path(GET path_var EXTENSION LAST_ONLY extension)
+        set(should_codesign FALSE)
+        set(extension_skip_list ".dylib" ".so" ".7m")
+        if (NOT extension)
+            set(should_codesign TRUE)
+        elseif(extension IN_LIST extension_skip_list)
+            set(should_codesign TRUE)
+        endif()
+        if(${should_codesign})
+            codesign_file("${file}" "@LY_ROOT_FOLDER@/python/Platform/Mac/PythonEntitlements.plist")
+        endif()
+    endforeach()
+
+endfunction()
+
+function(ly_copy source_file target_directory)
+    
+    if("${source_file}" MATCHES "\\.[Ff]ramework[^\\.]")
+
+        # fixup origin to copy the whole Framework folder
+        string(REGEX REPLACE "(.*\\.[Ff]ramework).*" "\\1" source_file "${source_file}")
+
+    endif()
+    get_filename_component(target_filename "${source_file}" NAME)
+    file(COPY "${source_file}" DESTINATION "${target_directory}" FILE_PERMISSIONS @LY_COPY_PERMISSIONS@ FOLLOW_SYMLINK_CHAIN)
+
+    # Our Qt and Python frameworks aren't in the correct bundle format to be codesigned.
+    if("${target_filename}" MATCHES "(Qt[^.]+)\\.[Ff]ramework")
+        fixup_qt_framework(${CMAKE_MATCH_1} "${target_directory}/${target_filename}")
+        # For some Qt frameworks(QtCore), signing the bundle doesn't work because of bundle
+        # format issues(despite the fixes above). But once we've patched the framework above, there's
+        # only one executable that we need to sign so we can do it directly.
+        set(target_filename "${target_filename}/Versions/5/${CMAKE_MATCH_1}")
+    elseif("${target_filename}" MATCHES "Python.framework")
+        fixup_python_framework("${target_directory}/${target_filename}")
+        codesign_python_framework_binaries("${target_directory}/${target_filename}")
+    endif()
+    codesign_file("${target_directory}/${target_filename}" "none")
+
+endfunction()
+
+function(ly_download_and_codesign_sdk_python)
+    execute_process(COMMAND ${CMAKE_COMMAND} -DPAL_PLATFORM_NAME=Mac -DLY_3RDPARTY_PATH=${CMAKE_INSTALL_PREFIX}/python -P ${CMAKE_INSTALL_PREFIX}/python/get_python.cmake
+        WORKING_DIRECTORY ${CMAKE_INSTALL_PREFIX}
+    )
+    fixup_python_framework(${CMAKE_INSTALL_PREFIX}/python/runtime/@LY_PYTHON_PACKAGE_NAME@/Python.framework)
+    codesign_python_framework_binaries(${CMAKE_INSTALL_PREFIX}/python/runtime/@LY_PYTHON_PACKAGE_NAME@/Python.framework)
+    codesign_file(${CMAKE_INSTALL_PREFIX}/python/runtime/@LY_PYTHON_PACKAGE_NAME@/Python.framework @LY_ROOT_FOLDER@/python/Platform/Mac/PythonEntitlements.plist)
+endfunction()
+
+function(ly_codesign_sdk)
+    codesign_file(${LY_INSTALL_PATH_ORIGINAL}/O3DE_SDK.app "none")
+endfunction()
+
+

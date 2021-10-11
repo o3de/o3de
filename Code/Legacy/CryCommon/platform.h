@@ -51,20 +51,9 @@
 #undef AZ_RESTRICTED_SECTION_IMPLEMENTED
 #elif defined(LINUX) || defined(APPLE)
     #define __STDC_FORMAT_MACROS
-    #include <inttypes.h>
-    #if defined(APPLE) || defined(LINUX64)
-    // int64 is not the same type as the operating system's int64_t
-        #undef PRIX64
-        #undef PRIx64
-        #undef PRId64
-        #undef PRIu64
-        #define PRIX64 "llX"
-        #define PRIx64 "llx"
-        #define PRId64 "lld"
-        #define PRIu64 "llu"
-    #endif
+    #include <cinttypes>
 #else
-    #include <inttypes.h>
+    #include <cinttypes>
 #endif
 
 #if !defined(PRISIZE_T)

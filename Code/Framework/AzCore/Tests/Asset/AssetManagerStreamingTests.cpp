@@ -6,6 +6,7 @@
  *
  */
 #include <AzCore/Asset/AssetManager.h>
+#include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/Console/IConsole.h>
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/IO/SystemFile.h>
@@ -420,7 +421,7 @@ namespace UnitTest
         AZ::Data::AssetHandler::LoadResult LoadAssetData(
             [[maybe_unused]] const AZ::Data::Asset<AZ::Data::AssetData>& asset,
             [[maybe_unused]] AZStd::shared_ptr<AZ::Data::AssetDataStream> stream,
-            [[maybe_unused]] const AZ::Data::AssetFilterCB& assetLoadFilterCB)
+            [[maybe_unused]] const AZ::Data::AssetFilterCB& assetLoadFilterCB) override
         {
             return AZ::Data::AssetHandler::LoadResult::LoadComplete;
         }

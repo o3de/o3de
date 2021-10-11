@@ -103,7 +103,7 @@ bool CImageUtil::SavePGM(const QString& fileName, const CImageEx& image)
     }
 
     // First print the file header
-    fprintf(file, fileHeader.c_str());
+    fprintf(file, "%s", fileHeader.c_str());
 
     // Then print all the pixels.
     for (uint32 y = 0; y < height; y++)

@@ -160,7 +160,7 @@ namespace ScriptCanvasEditor
         ////
 
         // GraphCanvas::SceneNotifications
-        void OnSelectionChanged();
+        void OnSelectionChanged() override;
         ////
 
         void ApplyPreferenceSort();

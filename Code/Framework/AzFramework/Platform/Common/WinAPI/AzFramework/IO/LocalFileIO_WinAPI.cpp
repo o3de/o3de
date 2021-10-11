@@ -15,22 +15,6 @@ namespace AZ
 {
     namespace IO
     {
-        bool LocalFileIO::IsDirectory(const char* filePath)
-        {
-            char resolvedPath[AZ_MAX_PATH_LEN];
-            ResolvePath(filePath, resolvedPath, AZ_MAX_PATH_LEN);
-
-            wchar_t resolvedPathW[AZ_MAX_PATH_LEN];
-            AZStd::to_wstring(resolvedPathW, AZ_MAX_PATH_LEN, resolvedPath);
-            DWORD fileAttributes = GetFileAttributesW(resolvedPathW);
-            if (fileAttributes == INVALID_FILE_ATTRIBUTES)
-            {
-                return false;
-            }
-
-            return (fileAttributes & FILE_ATTRIBUTE_DIRECTORY) != 0;
-        }
-
         Result LocalFileIO::FindFiles(const char* filePath, const char* filter, FindFilesCallbackType callback)
         {
             char resolvedPath[AZ_MAX_PATH_LEN];
@@ -63,7 +47,7 @@ namespace AZ
 
             if (hFind != INVALID_HANDLE_VALUE)
             {
-                // because the absolute path might actually be SHORTER than the alias ("c:/r/dev" -> "@devroot@"), we need to
+                // because the absolute path might actually be SHORTER than the alias ("D:/o3de" -> "@engroot@"), we need to
                 // use a static buffer here.
                 char tempBuffer[AZ_MAX_PATH_LEN];
                 do
@@ -148,37 +132,6 @@ namespace AZ
             }
 
             return SystemFile::CreateDir(buf.c_str()) ? ResultCode::Success : ResultCode::Error;
-        }
-
-        bool LocalFileIO::ConvertToAbsolutePath(const char* path, char* absolutePath, AZ::u64 maxLength) const
-        {
-            char* result = _fullpath(absolutePath, path, maxLength);
-            size_t len = ::strlen(absolutePath);
-            if (len > 0)
-            {
-                // strip trailing slash
-                if (absolutePath[len - 1] == '/' || absolutePath[len - 1] == '\\')
-                {
-                    absolutePath[len - 1] = 0;
-                }
-
-                // For some reason, at least on windows, _fullpath returns a lowercase drive letter even though other systems like Qt, use upper case.
-                if (len > 2)
-                {
-                    if (absolutePath[1] == ':')
-                    {
-                        absolutePath[0] = (char)toupper(absolutePath[0]);
-                    }
-                }
-            }
-            return result != nullptr;
-        }
-
-        bool LocalFileIO::IsAbsolutePath(const char* path) const
-        {
-            char drive[16] = { 0 };
-            _splitpath_s(path, drive, 16, nullptr, 0, nullptr, 0, nullptr, 0);
-            return strlen(drive) > 0;
         }
     } // namespace IO
 }//namespace AZ

@@ -11,7 +11,7 @@
 #include <IConsole.h>
 #include <AzTest/AzTest.h>
 
-#include <SFunctor.h>
+#include <AzCore/std/function/function_template.h>
 
 class CVarMock
     : public ICVar
@@ -35,9 +35,8 @@ public:
     MOCK_METHOD0(GetHelp, const char*());
     MOCK_CONST_METHOD0(IsConstCVar, bool());
     MOCK_METHOD1(SetOnChangeCallback, void(ConsoleVarFunc));
-    MOCK_METHOD1(AddOnChangeFunctor, uint64(const SFunctor& pChangeFunctor));
+    MOCK_METHOD1(AddOnChangeFunctor, uint64(const AZStd::function<void()>& pChangeFunctor));
     MOCK_CONST_METHOD0(GetOnChangeCallback, ConsoleVarFunc());
-    MOCK_CONST_METHOD1(GetMemoryUsage, void(class ICrySizer* pSizer));
     MOCK_CONST_METHOD0(GetRealIVal, int());
     MOCK_METHOD2(SetLimits, void(float, float));
     MOCK_METHOD2(GetLimits, void(float&, float&));

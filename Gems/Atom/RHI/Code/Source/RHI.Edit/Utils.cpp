@@ -30,7 +30,7 @@ namespace AZ
     namespace RHI
     {
         static AZStd::mutex s_profilingMutex;
-        static constexpr char ShaderPlatformInterfaceName[] = "ShaderPlatformInterface";
+        [[maybe_unused]] static constexpr char ShaderPlatformInterfaceName[] = "ShaderPlatformInterface";
 
         void ShaderCompilerProfiling::Entry::Reflect(ReflectContext* context)
         {

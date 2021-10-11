@@ -11,9 +11,6 @@
 #include <AzFramework/Components/ComponentAdapter.h>
 
 #include <AzFramework/Components/CameraBus.h>
-#include <IViewSystem.h>
-#include <ISystem.h>
-#include <Cry_Camera.h>
 #include <CameraComponentController.h>
 
 #include <Atom/RPI.Public/Base.h>

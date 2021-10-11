@@ -8,6 +8,7 @@
 #include <Atom/RPI.Reflect/Shader/ShaderAsset.h>
 #include <Atom/RPI.Reflect/Shader/ShaderCommonTypes.h>
 
+#include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/Casting/numeric_cast.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/std/algorithm.h>
@@ -172,8 +173,6 @@ namespace AZ
         Data::Asset<ShaderVariantAsset> ShaderAsset::GetVariant(
             const ShaderVariantId& shaderVariantId, SupervariantIndex supervariantIndex)
         {
-            AZ_PROFILE_FUNCTION(RPI);
-
             auto variantFinder = AZ::Interface<IShaderVariantFinder>::Get();
             AZ_Assert(variantFinder, "The IShaderVariantFinder doesn't exist");
 
@@ -189,8 +188,6 @@ namespace AZ
 
         ShaderVariantSearchResult ShaderAsset::FindVariantStableId(const ShaderVariantId& shaderVariantId)
         {
-            AZ_PROFILE_FUNCTION(RPI);
-
             uint32_t dynamicOptionCount = aznumeric_cast<uint32_t>(GetShaderOptionGroupLayout()->GetShaderOptions().size());
             ShaderVariantSearchResult variantSearchResult{RootShaderVariantStableId,  dynamicOptionCount };
 

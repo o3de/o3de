@@ -462,6 +462,7 @@ class CCryDocManager
     CCrySingleDocTemplate* m_pDefTemplate = nullptr;
 public:
     CCryDocManager();
+    virtual ~CCryDocManager() = default;
     CCrySingleDocTemplate* SetDefaultTemplate(CCrySingleDocTemplate* pNew);
     // Copied from MFC to get rid of the silly ugly unoverridable doc-type pick dialog
     virtual void OnFileNew();

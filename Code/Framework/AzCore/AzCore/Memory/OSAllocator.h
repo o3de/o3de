@@ -61,6 +61,7 @@ namespace AZ
         size_type       NumAllocatedBytes() const override       { return m_custom ? m_custom->NumAllocatedBytes() : m_numAllocatedBytes; }
         size_type       Capacity() const override                { return m_custom ? m_custom->Capacity() : AZ_CORE_MAX_ALLOCATOR_SIZE; } // custom size or unlimited
         size_type       GetMaxAllocationSize() const override    { return m_custom ? m_custom->GetMaxAllocationSize() : AZ_CORE_MAX_ALLOCATOR_SIZE; } // custom size or unlimited
+        size_type       GetMaxContiguousAllocationSize() const override { return m_custom ? m_custom->GetMaxContiguousAllocationSize() : AZ_CORE_MAX_ALLOCATOR_SIZE; } // custom size or unlimited
         IAllocatorAllocate*  GetSubAllocator() override          { return m_custom ? m_custom : NULL; }
          
     protected:

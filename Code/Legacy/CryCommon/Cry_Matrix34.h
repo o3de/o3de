@@ -8,15 +8,7 @@
 
 
 // Description : Common matrix class
-
-
-#ifndef CRYINCLUDE_CRYCOMMON_CRY_MATRIX34_H
-#define CRYINCLUDE_CRYCOMMON_CRY_MATRIX34_H
 #pragma once
-
-
-
-
 
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
@@ -347,220 +339,6 @@ struct Matrix34_tpl
         *this = Matrix33_tpl<F>(q);
     }
 
-
-
-    //CONSTRUCTOR for identical float-types. It converts a QuatT into a Matrix34.
-    //Needs to be 'explicit' because we loose float-precision in the conversion process
-    //Matrix34(QuatT);
-    explicit ILINE Matrix34_tpl<F>(const QuatT_tpl<F> &q)
-    {
-        *this = Matrix34_tpl<F>(Matrix33_tpl<F>(q.q), q.t);
-    }
-    //CONSTRUCTOR for different float-types. It converts a QuatT into a Matrix34.
-    //Needs to be 'explicit' because we loose float-precision in the conversion process
-    //Matrix34(QuatT);
-    template<class F1>
-    ILINE explicit Matrix34_tpl(const QuatT_tpl<F1> q)
-    {
-        *this = Matrix34_tpl<F>(Matrix33_tpl<F1>(q.q), q.t);
-    }
-
-
-
-
-    //CONSTRUCTOR for identical float-types. It converts a QuatTS into a Matrix34.
-    //Needs to be 'explicit' because we loose float-precision in the conversion process
-    //Matrix34(QuatT);
-    explicit ILINE Matrix34_tpl<F>(const QuatTS_tpl<F> &q)
-    {
-        assert(q.q.IsValid());
-        Vec3_tpl<F> v2 = q.q.v + q.q.v;
-        F xx = 1 - v2.x * q.q.v.x;
-        F yy = v2.y * q.q.v.y;
-        F xw = v2.x * q.q.w;
-        F xy = v2.y * q.q.v.x;
-        F yz = v2.z * q.q.v.y;
-        F yw = v2.y * q.q.w;
-        F xz = v2.z * q.q.v.x;
-        F zz = v2.z * q.q.v.z;
-        F zw = v2.z * q.q.w;
-        m00 = (1 - yy - zz) * q.s;
-        m01 = (xy - zw) * q.s;
-        m02 = (xz + yw) * q.s;
-        m03 = q.t.x;
-        m10 = (xy + zw) * q.s;
-        m11 = (xx - zz) * q.s;
-        m12 = (yz - xw) * q.s;
-        m13 = q.t.y;
-        m20 = (xz - yw) * q.s;
-        m21 = (yz + xw) * q.s;
-        m22 = (xx - yy) * q.s;
-        m23 = q.t.z;
-    }
-    //CONSTRUCTOR for different float-types. It converts a QuatTS into a Matrix34.
-    //Needs to be 'explicit' because we loose float-precision in the conversion process
-    //Matrix34(QuatT);
-    template<class F1>
-    ILINE explicit Matrix34_tpl<F>(const QuatTS_tpl<F1> &q)
-    {
-        assert(q.q.IsValid());
-        Vec3_tpl<F1> v2 = q.q.v + q.q.v;
-        F1 xx = 1 - v2.x * q.q.v.x;
-        F1 yy = v2.y * q.q.v.y;
-        F1 xw = v2.x * q.q.w;
-        F1 xy = v2.y * q.q.v.x;
-        F1 yz = v2.z * q.q.v.y;
-        F1 yw = v2.y * q.q.w;
-        F1 xz = v2.z * q.q.v.x;
-        F1 zz = v2.z * q.q.v.z;
-        F1 zw = v2.z * q.q.w;
-        m00 = F((1 - yy - zz) * q.s);
-        m01 = F((xy - zw) * q.s);
-        m02 = F((xz + yw) * q.s);
-        m03 = F(q.t.x);
-        m10 = F((xy + zw) * q.s);
-        m11 = F((xx - zz) * q.s);
-        m12 = F((yz - xw) * q.s);
-        m13 = F(q.t.y);
-        m20 = F((xz - yw) * q.s);
-        m21 = F((yz + xw) * q.s);
-        m22 = F((xx - yy) * q.s);
-        m23 = F(q.t.z);
-    }
-
-
-
-
-    //CONSTRUCTOR for identical float-types. It converts a QuatTNS into a Matrix34.
-    //Needs to be 'explicit' because we loose float-precision in the conversion process
-    //Matrix34(QuatT);
-    explicit ILINE Matrix34_tpl<F>(const QuatTNS_tpl<F> &q)
-    {
-        assert(q.q.IsValid());
-        Vec3_tpl<F> v2 = q.q.v + q.q.v;
-        F xx = 1 - v2.x * q.q.v.x;
-        F yy = v2.y * q.q.v.y;
-        F xw = v2.x * q.q.w;
-        F xy = v2.y * q.q.v.x;
-        F yz = v2.z * q.q.v.y;
-        F yw = v2.y * q.q.w;
-        F xz = v2.z * q.q.v.x;
-        F zz = v2.z * q.q.v.z;
-        F zw = v2.z * q.q.w;
-        m00 = (1 - yy - zz) * q.s.x;
-        m01 = (xy - zw) * q.s.y;
-        m02 = (xz + yw) * q.s.z;
-        m03 = q.t.x;
-        m10 = (xy + zw) * q.s.x;
-        m11 = (xx - zz) * q.s.y;
-        m12 = (yz - xw) * q.s.z;
-        m13 = q.t.y;
-        m20 = (xz - yw) * q.s.x;
-        m21 = (yz + xw) * q.s.y;
-        m22 = (xx - yy) * q.s.z;
-        m23 = q.t.z;
-    }
-    //CONSTRUCTOR for different float-types. It converts a QuatTNS into a Matrix34.
-    //Needs to be 'explicit' because we loose float-precision in the conversion process
-    //Matrix34(QuatT);
-    template<class F1>
-    ILINE explicit Matrix34_tpl<F>(const QuatTNS_tpl<F1> &q)
-    {
-        assert(q.q.IsValid());
-        Vec3_tpl<F1> v2 = q.q.v + q.q.v;
-        F1 xx = 1 - v2.x * q.q.v.x;
-        F1 yy = v2.y * q.q.v.y;
-        F1 xw = v2.x * q.q.w;
-        F1 xy = v2.y * q.q.v.x;
-        F1 yz = v2.z * q.q.v.y;
-        F1 yw = v2.y * q.q.w;
-        F1 xz = v2.z * q.q.v.x;
-        F1 zz = v2.z * q.q.v.z;
-        F1 zw = v2.z * q.q.w;
-        m00 = F((1 - yy - zz) * q.s.x);
-        m01 = F((xy - zw) * q.s.y);
-        m02 = F((xz + yw) * q.s.z);
-        m03 = F(q.t.x);
-        m10 = F((xy + zw) * q.s.x);
-        m11 = F((xx - zz) * q.s.y);
-        m12 = F((yz - xw) * q.s.z);
-        m13 = F(q.t.y);
-        m20 = F((xz - yw) * q.s.x);
-        m21 = F((yz + xw) * q.s.y);
-        m22 = F((xx - yy) * q.s.z);
-        m23 = F(q.t.z);
-    }
-
-
-
-
-    //CONSTRUCTOR for identical float-types. It converts a DualQuat into a Matrix34.
-    //Needs to be 'explicit' because we loose float-precision in the conversion process
-    //Matrix34(QuatT);
-    ILINE explicit Matrix34_tpl<F>(const DualQuat_tpl<F> &q)
-    {
-        assert((fabs_tpl(1 - (q.nq | q.nq))) < 0.01); //check if unit-quaternion
-        Vec3_tpl<F>  t = (q.nq.w * q.dq.v - q.dq.w * q.nq.v + q.nq.v % q.dq.v); //perfect for HLSL
-        Vec3_tpl<F> v2 = q.nq.v + q.nq.v;
-        F xx = 1 - v2.x * q.nq.v.x;
-        F yy = v2.y * q.nq.v.y;
-        F xw = v2.x * q.nq.w;
-        F xy = v2.y * q.nq.v.x;
-        F yz = v2.z * q.nq.v.y;
-        F yw = v2.y * q.nq.w;
-        F xz = v2.z * q.nq.v.x;
-        F zz = v2.z * q.nq.v.z;
-        F zw = v2.z * q.nq.w;
-        m00 = 1 - yy - zz;
-        m01 = xy - zw;
-        m02 = xz + yw;
-        m03 = t.x + t.x;
-        m10 = xy + zw;
-        m11 = xx - zz;
-        m12 = yz - xw;
-        m13 = t.y + t.y;
-        m20 = xz - yw;
-        m21 = yz + xw;
-        m22 = xx - yy;
-        m23 = t.z + t.z;
-    }
-    //CONSTRUCTOR for different float-types. It converts a DualQuat into a Matrix34.
-    //Needs to be 'explicit' because we loose float-precision in the conversion process
-    //Matrix34(QuatT);
-    template<class F1>
-    ILINE explicit Matrix34_tpl<F>(const DualQuat_tpl<F1> &q)
-    {
-        assert((fabs_tpl(1 - (q.nq | q.nq))) < 0.01); //check if unit-quaternion
-        Vec3_tpl<F1>  t = (q.nq.w * q.dq.v - q.dq.w * q.nq.v + q.nq.v % q.dq.v); //perfect for HLSL
-        Vec3_tpl<F1> v2 = q.nq.v + q.nq.v;
-        F1 xx = 1 - v2.x * q.nq.v.x;
-        F1 yy = v2.y * q.nq.v.y;
-        F1 xw = v2.x * q.nq.w;
-        F1 xy = v2.y * q.nq.v.x;
-        F1 yz = v2.z * q.nq.v.y;
-        F1 yw = v2.y * q.nq.w;
-        F1 xz = v2.z * q.nq.v.x;
-        F1 zz = v2.z * q.nq.v.z;
-        F1 zw = v2.z * q.nq.w;
-        m00 = F(1 - yy - zz);
-        m01 = F(xy - zw);
-        m02 = F(xz + yw);
-        m03 = F(t.x + t.x);
-        m10 = F(xy + zw);
-        m11 = F(xx - zz);
-        m12 = F(yz - xw);
-        m13 = F(t.y + t.y);
-        m20 = F(xz - yw);
-        m21 = F(yz + xw);
-        m22 = F(xx - yy);
-        m23 = F(t.z + t.z);
-    }
-
-
-
-
-
-
     //apply scaling to the columns of the matrix.
     ILINE void ScaleColumn(const Vec3_tpl<F>& s)
     {
@@ -580,7 +358,7 @@ struct Matrix34_tpl
     *  Initializes the Matrix34 with the identity.
     *
     */
-    void SetIdentity(void)
+    void SetIdentity()
     {
         m00 = 1.0f;
         m01 = 0.0f;
@@ -596,58 +374,12 @@ struct Matrix34_tpl
         m23 = 0.0f;
     }
 
-    ILINE static Matrix34_tpl<F> CreateIdentity(void)
+    ILINE static Matrix34_tpl<F> CreateIdentity()
     {
         Matrix34_tpl<F> m;
         m.SetIdentity();
         return m;
     }
-
-    ILINE bool IsIdentity() const
-    {
-        return 0 == (fabs_tpl((F)1 - m00) + fabs_tpl(m01) + fabs_tpl(m02) + fabs_tpl(m03) + fabs_tpl(m10) + fabs_tpl((F)1 - m11) + fabs_tpl(m12) + fabs_tpl(m13) + fabs_tpl(m20) + fabs_tpl(m21) + fabs_tpl((F)1 - m22)) + fabs_tpl(m23);
-    }
-
-    ILINE int IsZero() const
-    {
-        return 0 == (fabs_tpl(m00) + fabs_tpl(m01) + fabs_tpl(m02) + fabs_tpl(m03) + fabs_tpl(m10) + fabs_tpl(m11) + fabs_tpl(m12) + fabs_tpl(m13) + fabs_tpl(m20) + fabs_tpl(m21) + fabs_tpl(m22)) + fabs_tpl(m23);
-    }
-
-    /*!
-    *  Create a rotation matrix around an arbitrary axis (Eulers Theorem).
-    *  The axis is specified as an normalized Vec3. The angle is assumed to be in radians.
-    *  This function also assumes a translation-vector and stores it in the right column.
-    *
-    *  Example:
-    *       Matrix34 m34;
-    *       Vec3 axis=GetNormalized( Vec3(-1.0f,-0.3f,0.0f) );
-    *       m34.SetRotationAA( 3.14314f, axis, Vec3(5,5,5) );
-    */
-    ILINE void SetRotationAA(const F rad, const Vec3_tpl<F>& axis, const Vec3_tpl<F>& t = Vec3(ZERO))
-    {
-        *this = Matrix33_tpl<F>::CreateRotationAA(rad, axis);
-        this->SetTranslation(t);
-    }
-    ILINE static Matrix34_tpl<F> CreateRotationAA(const F rad, const Vec3_tpl<F>& axis, const Vec3_tpl<F>& t = Vec3(ZERO))
-    {
-        Matrix34_tpl<F> m34;
-        m34.SetRotationAA(rad, axis, t);
-        return m34;
-    }
-
-    ILINE void SetRotationAA(const Vec3_tpl<F>& rot, const Vec3_tpl<F>& t = Vec3(ZERO))
-    {
-        *this = Matrix33_tpl<F>::CreateRotationAA(rot);
-        this->SetTranslation(t);
-    }
-    ILINE static Matrix34_tpl<F> CreateRotationAA(const Vec3_tpl<F>& rot, const Vec3_tpl<F>& t = Vec3(ZERO))
-    {
-        Matrix34_tpl<F> m34;
-        m34.SetRotationAA(rot, t);
-        return m34;
-    }
-
-
     /*!
     * Create rotation-matrix about X axis using an angle.
     * The angle is assumed to be in radians.
@@ -691,28 +423,6 @@ struct Matrix34_tpl
     }
 
     /*!
-    * Create rotation-matrix about Z axis using an angle.
-    * The angle is assumed to be in radians.
-    * The translation-vector is set to zero.
-    *
-    *  Example:
-    *       Matrix34 m34;
-    *       m34.SetRotationZ(0.5f);
-    */
-    ILINE void SetRotationZ(const f32 rad, const Vec3_tpl<F>& t = Vec3(ZERO))
-    {
-        *this = Matrix33_tpl<F>::CreateRotationZ(rad);
-        this->SetTranslation(t);
-    }
-    ILINE static Matrix34_tpl<F> CreateRotationZ(const f32 rad, const Vec3_tpl<F>& t = Vec3(ZERO))
-    {
-        Matrix34_tpl<F> m34;
-        m34.SetRotationZ(rad, t);
-        return m34;
-    }
-
-
-    /*!
     *
     * Convert three Euler angle to mat33 (rotation order:XYZ)
     * The Euler angles are assumed to be in radians.
@@ -741,22 +451,6 @@ struct Matrix34_tpl
         return m34;
     }
 
-
-    ILINE void SetRotationAA(F c, F s, Vec3_tpl<F> axis, const Vec3_tpl<F>& t = Vec3(ZERO))
-    {
-        assert(axis.IsValid());
-        assert(t.IsValid());
-        *this = Matrix33_tpl<F>::CreateRotationAA(c, s, axis);
-        m03 = t.x;
-        m13 = t.y;
-        m23 = t.z;
-    }
-    ILINE static Matrix34_tpl<F> CreateRotationAA(F c, F s, Vec3_tpl<F> axis, const Vec3_tpl<F>& t = Vec3(ZERO))
-    {
-        Matrix34_tpl<F> m34;
-        m34.SetRotationAA(c, s, axis, t);
-        return m34;
-    }
 
     ILINE void SetTranslationMat(const Vec3_tpl<F>& v)
     {
@@ -802,25 +496,6 @@ struct Matrix34_tpl
         Matrix34_tpl<F> m;
         m.SetFromVectors(vx, vy, vz, pos);
         return m;
-    }
-
-    void InvertFast()
-    { // in-place transposition
-        assert(IsOrthonormal());
-        F t;
-        Vec3 v(m03, m13, m23);
-        t = m01;
-        m01 = m10;
-        m10 = t;
-        m03 = -v.x * m00 - v.y * m01 - v.z * m20;
-        t = m02;
-        m02 = m20;
-        m20 = t;
-        m13 = -v.x * m10 - v.y * m11 - v.z * m21;
-        t = m12;
-        m12 = m21;
-        m21 = t;
-        m23 = -v.x * m20 - v.y * m21 - v.z * m22;
     }
 
     Matrix34_tpl<F> GetInvertedFast() const
@@ -875,14 +550,6 @@ struct Matrix34_tpl
         m22 = z.z;
     }
 
-
-    //determinant is ambiguous: only the upper-left-submatrix's determinant is calculated
-    ILINE f32 Determinant() const
-    {
-        return (m00 * m11 * m22) + (m01 * m12 * m20) + (m02 * m10 * m21) - (m02 * m11 * m20) - (m00 * m12 * m21) - (m01 * m10 * m22);
-    }
-
-
     //--------------------------------------------------------------------------------
     //----                  helper functions to access matrix-members     ------------
     //--------------------------------------------------------------------------------
@@ -896,10 +563,8 @@ struct Matrix34_tpl
     ILINE void SetRow(int i, const Vec3_tpl<F>& v)  {   assert(i < 3);    F* p = (F*)(&m00);    p[0 + 4 * i] = v.x;   p[1 + 4 * i] = v.y;   p[2 + 4 * i] = v.z;       }
 
     ILINE const Vec3_tpl<F>& GetRow(int i) const    {   assert(i < 3); return *(const Vec3_tpl<F>*)(&m00 + 4 * i);  }
-    ILINE const Vec4_tpl<F>& GetRow4(int i) const   {   assert(i < 3); return *(const Vec4_tpl<F>*)(&m00 + 4 * i);  }
+    ILINE const Vec4& GetRow4(int i) const   {   assert(i < 3); return *(const Vec4*)(&m00 + 4 * i);  }
 
-    ILINE void SetColumn(int i, const Vec3_tpl<F>& v)   {   assert(i < 4);    F* p = (F*)(&m00);    p[i + 4 * 0] = v.x;   p[i + 4 * 1] = v.y;   p[i + 4 * 2] = v.z;       }
-    ILINE Vec3_tpl<F> GetColumn(int i) const    {   assert(i < 4);    F* p = (F*)(&m00);    return Vec3(p[i + 4 * 0], p[i + 4 * 1], p[i + 4 * 2]);    }
     ILINE Vec3_tpl<F> GetColumn0() const    { return Vec3_tpl<F>(m00, m10, m20);  }
     ILINE Vec3_tpl<F> GetColumn1() const    { return Vec3_tpl<F>(m01, m11, m21);  }
     ILINE Vec3_tpl<F> GetColumn2() const    { return Vec3_tpl<F>(m02, m12, m22);  }
@@ -908,8 +573,6 @@ struct Matrix34_tpl
 
     ILINE void SetTranslation(const Vec3_tpl<F>& t) { m03 = t.x;    m13 = t.y; m23 = t.z;   }
     ILINE Vec3_tpl<F> GetTranslation() const { return Vec3_tpl<F>(m03, m13, m23); }
-    ILINE void ScaleTranslation (F s)                       {   m03 *= s;     m13 *= s;     m23 *= s;     }
-    ILINE Matrix34_tpl<F> AddTranslation(const Vec3_tpl<F>& t)    {   m03 += t.x;   m13 += t.y;   m23 += t.z;   return *this; }
 
     ILINE void SetRotation33(const Matrix33_tpl<F>& m33)
     {
@@ -922,19 +585,6 @@ struct Matrix34_tpl
         m20 = m33.m20;
         m21 = m33.m21;
         m22 = m33.m22;
-    }
-
-    ILINE void GetRotation33(Matrix33_tpl<F>& m33) const
-    {
-        m33.m00 = m00;
-        m33.m01 = m01;
-        m33.m02 = m02;
-        m33.m10 = m10;
-        m33.m11 = m11;
-        m33.m12 = m12;
-        m33.m20 = m20;
-        m33.m21 = m21;
-        m33.m22 = m22;
     }
 
     //check if we have an orthonormal-base (general case, works even with reflection matrices)
@@ -1031,15 +681,6 @@ struct Matrix34_tpl
         return true;
     }
 
-
-    bool IsDegenerate(float epsilon = FLT_EPSILON) const
-    {
-        //check the basis vectors for 0 vector
-        return GetColumn0().len2() < epsilon
-               || GetColumn1().len2() < epsilon
-               || GetColumn2().len2() < epsilon;
-    }
-
     /*!
     * Create a matrix with SCALING, ROTATION and TRANSLATION (in this order).
     *
@@ -1093,42 +734,11 @@ struct Matrix34_tpl
     *  Example 1:
     *       Matrix m34;
     *       m34.SetScale( Vec3(0.5f, 1.0f, 2.0f) );
-    *  Example 2:
-    *       Matrix34 m34 = Matrix34::CreateScale( Vec3(0.5f, 1.0f, 2.0f) );
     */
     ILINE void SetScale(const Vec3_tpl<F>& s, const Vec3_tpl<F>& t = Vec3(ZERO))
     {
         *this = Matrix33::CreateScale(s);
         this->SetTranslation(t);
-    }
-    ILINE static Matrix34_tpl<F> CreateScale(const Vec3_tpl<F>& s, const Vec3_tpl<F>& t = Vec3(ZERO))
-    {
-        Matrix34_tpl<F> m34;
-        m34.SetScale(s, t);
-        return m34;
-    }
-
-
-    ILINE Matrix44_tpl<F> GetTransposed() const
-    {
-        Matrix44_tpl<F> tmp;
-        tmp.m00 = m00;
-        tmp.m01 = m10;
-        tmp.m02 = m20;
-        tmp.m03 = 0;
-        tmp.m10 = m01;
-        tmp.m11 = m11;
-        tmp.m12 = m21;
-        tmp.m13 = 0;
-        tmp.m20 = m02;
-        tmp.m21 = m12;
-        tmp.m22 = m22;
-        tmp.m23 = 0;
-        tmp.m30 = m03;
-        tmp.m31 = m13;
-        tmp.m32 = m23;
-        tmp.m33 = 1;
-        return tmp;
     }
 
     /*!
@@ -1141,7 +751,7 @@ struct Matrix34_tpl
     *  Example 2:
     *   Matrix34 im34 = m34.GetInverted();
     */
-    void Invert(void)
+    void Invert()
     {
         //rescue members
         Matrix34_tpl<F> m = *this;
@@ -1182,37 +792,6 @@ struct Matrix34_tpl
         dst.Invert();
         return dst;
     }
-
-    /*!
-    *  Name:             ReflectMat34
-    *  Description:      reflect a rotation matrix with respect to a plane.
-    *
-    *  Example:
-    *       Vec3 normal( 0.0f,-1.0f, 0.0f);
-    *       Vec3 pos(0,1000,0);
-    *       Matrix34 m34=CreateReflectionMat( pos, normal );
-    */
-    ILINE static Matrix34_tpl<F> CreateReflectionMat (const Vec3_tpl<F>& p, const Vec3_tpl<F>& n)
-    {
-        Matrix34_tpl<F> m;
-        F vxy   = -2.0f * n.x * n.y;
-        F vxz   = -2.0f * n.x * n.z;
-        F vyz   = -2.0f * n.y * n.z;
-        F pdotn = 2.0f * (p | n);
-        m.m00 = 1.0f - 2.0f * n.x * n.x;
-        m.m01 = vxy;
-        m.m02 = vxz;
-        m.m03 = pdotn * n.x;
-        m.m10 = vxy;
-        m.m11 = 1.0f - 2.0f * n.y * n.y;
-        m.m12 = vyz;
-        m.m13 = pdotn * n.y;
-        m.m20 = vxz;
-        m.m21 = vyz;
-        m.m22 = 1.0f - 2.0f * n.z * n.z;
-        m.m23 = pdotn * n.z;
-        return m;
-    }
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1220,8 +799,6 @@ struct Matrix34_tpl
 ///////////////////////////////////////////////////////////////////////////////
 
 typedef Matrix34_tpl<f32>  Matrix34; //always 32 bit
-typedef Matrix34_tpl<f64>  Matrix34d;//always 64 bit
-typedef Matrix34_tpl<real> Matrix34r;//variable float precision. depending on the target system it can be between 32, 64 or bit
 #if AZ_COMPILER_MSVC
     typedef __declspec(align(16)) Matrix34_tpl<f32> Matrix34A;
 #elif AZ_COMPILER_CLANG
@@ -1423,6 +1000,3 @@ ILINE Matrix44_tpl<F> operator * (const Matrix34_tpl<F>& l, const Matrix44_tpl<F
     m.m33 = r.m33;
     return m;
 }
-
-#endif // CRYINCLUDE_CRYCOMMON_CRY_MATRIX34_H
-

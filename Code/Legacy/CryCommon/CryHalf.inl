@@ -15,7 +15,6 @@
 
 
 typedef uint16 CryHalf;
-class ICrySizer;
 
 typedef union floatint_union
 {
@@ -138,9 +137,6 @@ struct CryHalf2
     {
         return x != rhs.x || y != rhs.y;
     }
-
-    void GetMemoryUsage([[maybe_unused]] ICrySizer* pSizer) const {}
-
 };
 
 struct CryHalf4
@@ -193,9 +189,6 @@ struct CryHalf4
     {
         return x != rhs.x || y != rhs.y || z != rhs.z || w != rhs.w;
     }
-
-    void GetMemoryUsage([[maybe_unused]] ICrySizer* pSizer) const {}
-
 };
 
 #endif // #ifndef CRY_HALF_INL

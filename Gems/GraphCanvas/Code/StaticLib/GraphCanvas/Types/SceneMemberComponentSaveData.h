@@ -43,7 +43,7 @@ namespace GraphCanvas
         }
 
         // SceneMemberNotificationBus::Handler
-        void OnSceneSet(const AZ::EntityId& graphId)
+        void OnSceneSet(const AZ::EntityId& graphId) override
         {
             const AZ::EntityId* ownerId = SceneMemberNotificationBus::GetCurrentBusId();
 

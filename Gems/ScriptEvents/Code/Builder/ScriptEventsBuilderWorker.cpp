@@ -27,7 +27,7 @@
 
 namespace ScriptEventsBuilder
 {
-    static const char* s_scriptEventsBuilder = "ScriptEventsBuilder";
+    [[maybe_unused]] static const char* s_scriptEventsBuilder = "ScriptEventsBuilder";
 
     Worker::Worker()
     {

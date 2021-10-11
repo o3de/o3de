@@ -13,40 +13,6 @@
 #include <string.h>  // memcpy()
 
 //////////////////////////////////////////////////////////////////////////
-namespace XMLBinary
-{
-    void SwapEndianness_Node(Node& t)
-    {
-        SwapEndian(t.nTagStringOffset, true);
-        SwapEndian(t.nContentStringOffset, true);
-        SwapEndian(t.nAttributeCount, true);
-        SwapEndian(t.nChildCount, true);
-        SwapEndian(t.nParentIndex, true);
-        SwapEndian(t.nFirstAttributeIndex, true);
-        SwapEndian(t.nFirstChildIndex, true);
-    }
-
-    void SwapEndianness_Attribute(Attribute& t)
-    {
-        SwapEndian(t.nKeyStringOffset, true);
-        SwapEndian(t.nValueStringOffset, true);
-    }
-
-    void SwapEndianness_Header(BinaryFileHeader& t)
-    {
-        SwapEndian(t.nXMLSize, true);
-        SwapEndian(t.nNodeTablePosition, true);
-        SwapEndian(t.nNodeCount, true);
-        SwapEndian(t.nAttributeTablePosition, true);
-        SwapEndian(t.nAttributeCount, true);
-        SwapEndian(t.nChildTablePosition, true);
-        SwapEndian(t.nChildCount, true);
-        SwapEndian(t.nStringDataPosition, true);
-        SwapEndian(t.nStringDataSize, true);
-    }
-}
-
-//////////////////////////////////////////////////////////////////////////
 XMLBinary::CXMLBinaryWriter::CXMLBinaryWriter()
 {
     m_nStringDataSize = 0;
@@ -84,7 +50,7 @@ static void write(XMLBinary::IDataWriter* const pFile, size_t& nPosition, const 
 }
 
 //////////////////////////////////////////////////////////////////////////
-bool XMLBinary::CXMLBinaryWriter::WriteNode(IDataWriter* pFile, XmlNodeRef node, bool bNeedSwapEndian, XMLBinary::IFilter* pFilter, AZStd::string& error)
+bool XMLBinary::CXMLBinaryWriter::WriteNode(IDataWriter* pFile, XmlNodeRef node, XMLBinary::IFilter* pFilter, AZStd::string& error)
 {
     error = "";
 
@@ -134,24 +100,6 @@ bool XMLBinary::CXMLBinaryWriter::WriteNode(IDataWriter* pFile, XmlNodeRef node,
     nTheoreticalPosition += header.nStringDataSize;
 
     header.nXMLSize = static_cast<uint32>(nTheoreticalPosition);
-
-    // Swap endianness of the data structures
-    if (bNeedSwapEndian)
-    {
-        SwapEndianness_Header(header);
-        for (size_t i = 0, iCount = m_nodes.size(); i < iCount; ++i)
-        {
-            SwapEndianness_Node(m_nodes[i]);
-        }
-        for (size_t i = 0, iCount = m_attributes.size(); i < iCount; ++i)
-        {
-            SwapEndianness_Attribute(m_attributes[i]);
-        }
-        for (size_t i = 0, iCount = m_childs.size(); i < iCount; ++i)
-        {
-            SwapEndian(m_childs[i], true);
-        }
-    }
 
     // Write file
     {

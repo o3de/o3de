@@ -42,6 +42,7 @@
 #include <PostProcess/PostProcessFeatureProcessor.h>
 #include <PostProcessing/BlendColorGradingLutsPass.h>
 #include <PostProcessing/BloomParentPass.h>
+#include <PostProcessing/HDRColorGradingPass.h>
 #include <PostProcessing/DepthUpsamplePass.h>
 #include <PostProcessing/DepthOfFieldCompositePass.h>
 #include <PostProcessing/DepthOfFieldBokehBlurPass.h>
@@ -102,11 +103,15 @@
 #include <ReflectionScreenSpace/ReflectionScreenSpaceCompositePass.h>
 #include <ReflectionScreenSpace/ReflectionCopyFrameBufferPass.h>
 #include <OcclusionCullingPlane/OcclusionCullingPlaneFeatureProcessor.h>
+#include <Mesh/ModelReloaderSystem.h>
 
 namespace AZ
 {
     namespace Render
     {
+        CommonSystemComponent::CommonSystemComponent() = default;
+        CommonSystemComponent::~CommonSystemComponent() = default;
+
         void CommonSystemComponent::Reflect(ReflectContext* context)
         {
             AuxGeomFeatureProcessor::Reflect(context);
@@ -222,6 +227,7 @@ namespace AZ
             passSystem->AddPassCreator(Name("LightCullingRemapPass"), &LightCullingRemap::Create);
             passSystem->AddPassCreator(Name("LightCullingTilePreparePass"), &LightCullingTilePreparePass::Create);
             passSystem->AddPassCreator(Name("BlendColorGradingLutsPass"), &BlendColorGradingLutsPass::Create);
+            passSystem->AddPassCreator(Name("HDRColorGradingPass"), &HDRColorGradingPass::Create);
             passSystem->AddPassCreator(Name("LookModificationCompositePass"), &LookModificationCompositePass::Create);
             passSystem->AddPassCreator(Name("LookModificationTransformPass"), &LookModificationPass::Create);
             passSystem->AddPassCreator(Name("SMAAEdgeDetectionPass"), &SMAAEdgeDetectionPass::Create);
@@ -290,10 +296,13 @@ namespace AZ
             // setup handler for load pass template mappings
             m_loadTemplatesHandler = RPI::PassSystemInterface::OnReadyLoadTemplatesEvent::Handler([this]() { this->LoadPassTemplateMappings(); });
             RPI::PassSystemInterface::Get()->ConnectEvent(m_loadTemplatesHandler);
+            
+            m_modelReloaderSystem = AZStd::make_unique<ModelReloaderSystem>();
         }
 
         void CommonSystemComponent::Deactivate()
         {
+            m_modelReloaderSystem.reset();
             m_loadTemplatesHandler.Disconnect();
             AZ::RPI::FeatureProcessorFactory::Get()->UnregisterFeatureProcessor<RayTracingFeatureProcessor>();
             AZ::RPI::FeatureProcessorFactory::Get()->UnregisterFeatureProcessor<DiffuseGlobalIlluminationFeatureProcessor>();

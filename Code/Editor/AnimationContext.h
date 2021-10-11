@@ -197,7 +197,7 @@ private:
 
     virtual void OnSequenceRemoved(CTrackViewSequence* pSequence) override;
 
-    virtual void OnEditorNotifyEvent(EEditorNotifyEvent event);
+    virtual void OnEditorNotifyEvent(EEditorNotifyEvent event) override;
 
     void AnimateActiveSequence();
 

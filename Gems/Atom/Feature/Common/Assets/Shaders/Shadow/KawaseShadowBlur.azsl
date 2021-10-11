@@ -1,0 +1,132 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+// [GFX TODO][ATOM-3365] optimization using intermediary results in groupshared memory.
+
+// This shader blurs the ESM results using a multi-pass kawase filter.
+// It should generally be faster than separable gaussian blur
+// https://software.intel.com/content/www/us/en/develop/blogs/an-investigation-of-fast-real-time-gpu-based-image-blur-algorithms.html
+
+#include <Atom/Features/Math/Filter.azsli>
+#include <Atom/Features/Shadow/ShadowmapAtlasLib.azsli>
+#include <Atom/Features/Shadow/Shadow.azsli>
+#include <Atom/Features/SrgSemantics.azsli>
+
+ShaderResourceGroup FilterPassSrg : SRG_PerPass
+{
+    // This shader filters multiple images with distinct filter parameters.
+    // So, the input and output are arrays of texture2Ds.
+    Texture2DArray<float> m_inputImage;
+    RWTexture2DArray<float> m_outputImage;
+
+    // This can convert a coordinate in an atlas to
+    // the shadowmap index.
+    Buffer<uint2> m_shadowmapIndexTable;
+
+    // This contains parameters related to filtering.
+    StructuredBuffer<FilterParameter> m_filterParameters;
+       
+    // x and y contain the inverse of the texture map resolution, z contains the kawase iteration
+    // i.e. a two pass kawase blur passes in 0 for the 1st pass and 1 for the second pass
+    float4 m_rcpResolutionAndIteration;
+           
+    Sampler LinearSampler
+    {
+        MinFilter = Linear;
+        MagFilter = Linear;
+        MipFilter = Linear;
+        AddressU = Clamp;
+        AddressV = Clamp;
+        AddressW = Clamp;
+    };    
+}
+
+void CalculateBlurBoundaries(const uint shadowmapIndex, out float2 sourceMinTex, out float2 sourceMaxTex)
+{
+    const float2 rcpPixelSize = FilterPassSrg::m_rcpResolutionAndIteration.xy;
+
+    const FilterParameter filterParameter = FilterPassSrg::m_filterParameters[shadowmapIndex];
+    const uint shadowmapSize = filterParameter.m_shadowmapSize;
+
+    // location of the shadow bounds in texels
+    const uint2 sourceMinPixel = filterParameter.m_shadowmapOriginInSlice.xy;
+    const uint2 sourceMaxPixel = sourceMinPixel + shadowmapSize - 1;
+
+    // location of the shadow bounds in uv space
+    sourceMinTex = (sourceMinPixel + 0.5f) * rcpPixelSize;
+    sourceMaxTex = (sourceMaxPixel + 0.5f) * rcpPixelSize;
+}
+
+float AccumulateShadowSamples(Texture2DArray<float> tex, float3 texCoord, SamplerState s)
+{
+    float4 values = tex.GatherRed(s, texCoord);
+    float result = values.x + values.y + values.z + values.w;
+    return result;
+}
+
+[numthreads(16,16,1)]
+void MainCS(uint3 dispatchId: SV_DispatchThreadID)
+{
+    const float inputSize = GetImageSize(FilterPassSrg::m_inputImage).x;
+    const uint shadowmapIndex = GetShadowmapIndex(
+        FilterPassSrg::m_shadowmapIndexTable,
+        dispatchId,
+        inputSize);
+    
+    // Early return if thread is outside of shadowmaps.
+    if (shadowmapIndex == ~0)
+    {
+        return;
+    }    
+
+    const FilterParameter filterParameter = FilterPassSrg::m_filterParameters[shadowmapIndex];
+    const uint shadowmapSize = filterParameter.m_shadowmapSize;
+    // Early return if filter is disabled.
+    if (!filterParameter.m_isEnabled || shadowmapSize <= 1)
+    {
+        return; // early return if filter parameter is empty.
+    }
+
+    const float2 rcpPixelSize = FilterPassSrg::m_rcpResolutionAndIteration.xy;
+    const float blurIteration = FilterPassSrg::m_rcpResolutionAndIteration.z;
+
+    float2 sourceMinTex, sourceMaxTex;
+    CalculateBlurBoundaries(shadowmapIndex, sourceMinTex, sourceMaxTex);
+
+    const float2 halfRcpPixelSize = rcpPixelSize / 2.0f;
+    const float2 dUV = rcpPixelSize.xy * blurIteration + halfRcpPixelSize.xy;
+    const float2 texCoord = (dispatchId.xy + 0.5f) * rcpPixelSize;
+
+    const float3 texCoordSamples[4] = { 
+        float3(texCoord.x - dUV.x, texCoord.y - dUV.y, dispatchId.z),
+        float3(texCoord.x - dUV.x, texCoord.y + dUV.y, dispatchId.z),
+        float3(texCoord.x + dUV.x, texCoord.y - dUV.y, dispatchId.z),
+        float3(texCoord.x + dUV.x, texCoord.y + dUV.y, dispatchId.z),    
+    };
+    
+    float accumulatedBlur = 0;
+    float numSamplesAccumulated = 0;
+    for(int i = 0 ; i < 4; ++i)
+    {
+        if (texCoordSamples[i].x >= sourceMinTex.x && 
+            texCoordSamples[i].y >= sourceMinTex.y && 
+            texCoordSamples[i].x < sourceMaxTex.x && 
+            texCoordSamples[i].y < sourceMaxTex.y)
+        {
+            // we should be tapping the location directly in between 4 adjacent texels
+            accumulatedBlur += AccumulateShadowSamples(FilterPassSrg::m_inputImage, texCoordSamples[i], FilterPassSrg::LinearSampler);
+            numSamplesAccumulated += 4;
+        }
+    }
+    
+    if (numSamplesAccumulated > 0)
+    {
+        float result = accumulatedBlur / numSamplesAccumulated;    
+        FilterPassSrg::m_outputImage[dispatchId].r = result;
+    }
+}

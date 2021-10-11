@@ -67,7 +67,7 @@ namespace ScriptCanvas
 
             void ReceiveScriptEvent::PopulateAsset(AZ::Data::Asset<ScriptEvents::ScriptEventsAsset> asset, SlotIdMapping& populationMapping)
             {
-                if (CreateHandler(asset))
+                if (InitializeDefinition(asset))
                 {
                     if (!CreateEbus())
                     {
@@ -139,7 +139,6 @@ namespace ScriptCanvas
                     }
                 }
             }
-
 
             void ReceiveScriptEvent::InitializeEvent(AZ::Data::Asset<ScriptEvents::ScriptEventsAsset> asset, int eventIndex, SlotIdMapping& populationMapping)
             {
@@ -353,7 +352,14 @@ namespace ScriptCanvas
 
             AZStd::optional<size_t> ReceiveScriptEvent::GetEventIndex(AZStd::string eventName) const
             {
-                return m_handler->GetFunctionIndex(eventName.c_str());;
+                if (!m_handler)
+                {
+                    const_cast<ReceiveScriptEvent*>(this)->InitializeDefinition(m_asset);
+                    const_cast<ReceiveScriptEvent*>(this)->CreateEbus();
+                }
+
+                AZ_Error("ScriptCanvas", m_handler != nullptr, "GetEventIndex called and handler was not created");
+                return m_handler ? AZStd::optional<size_t>(m_handler->GetFunctionIndex(eventName.c_str())) : AZStd::nullopt;
             }
 
             AZStd::vector<SlotId> ReceiveScriptEvent::GetEventSlotIds() const
@@ -490,14 +496,9 @@ namespace ScriptCanvas
                 return m_definition.IsAddressRequired() || (slot && slot->GetDataType().IsValid());
             }
 
-            bool ReceiveScriptEvent::CreateHandler(AZ::Data::Asset<ScriptEvents::ScriptEventsAsset> asset)
+            bool ReceiveScriptEvent::InitializeDefinition(AZ::Data::Asset<ScriptEvents::ScriptEventsAsset> asset)
             {
                 AZStd::lock_guard<AZStd::recursive_mutex> lock(m_mutex);
-
-                if (m_handler)
-                {
-                    return true;
-                }
 
                 if (!asset)
                 {
@@ -518,12 +519,11 @@ namespace ScriptCanvas
                 }
 
                 return true;
-
             }
 
             void ReceiveScriptEvent::OnScriptEventReady(const AZ::Data::Asset<ScriptEvents::ScriptEventsAsset>& asset)
             {
-                if (CreateHandler(asset))
+                if (InitializeDefinition(asset))
                 {
                     CompleteInitialize(asset);
                 }
@@ -531,7 +531,7 @@ namespace ScriptCanvas
 
             bool ReceiveScriptEvent::CreateEbus()
             {
-                if (!m_ebus)
+                if (!m_ebus || !m_handler)
                 {
                     AZ::BehaviorContext* behaviorContext = nullptr;
                     AZ::ComponentApplicationBus::BroadcastResult(behaviorContext, &AZ::ComponentApplicationBus::Events::GetBehaviorContext);
@@ -547,36 +547,11 @@ namespace ScriptCanvas
                     AZ_Assert(m_ebus, "Behavior Context EBus does not exist: %s", m_definition.GetName().c_str());
                     AZ_Assert(m_ebus->m_createHandler, "The ebus %s has no create handler!", m_definition.GetName().c_str());
                     AZ_Assert(m_ebus->m_destroyHandler, "The ebus %s has no destroy handler!", m_definition.GetName().c_str());
-
                     AZ_Verify(m_ebus->m_createHandler->InvokeResult(m_handler, &m_definition), "Behavior Context EBus handler creation failed %s", m_definition.GetName().c_str());
-
                     AZ_Assert(m_handler, "Ebus create handler failed %s", m_definition.GetName().c_str());
                 }
 
-                return true;
-            }
-
-            bool ReceiveScriptEvent::SetupHandler()
-            {
-                if (!m_handler)
-                {
-                    if (!m_asset.IsReady() && m_scriptEventAssetId.IsValid())
-                    {
-                        m_asset = AZ::Data::AssetManager::Instance().GetAsset<ScriptEvents::ScriptEventsAsset>(m_scriptEventAssetId, AZ::Data::AssetLoadBehavior::PreLoad);
-                        m_asset.BlockUntilLoadComplete();
-                        CreateHandler(m_asset);
-                        CreateEbus();
-                    }
-
-                    if (!m_handler)
-                    {
-                        AZStd::string error = AZStd::string::format("Script Event receiver node was not initialized (%s)!", m_definition.GetName().c_str());
-                        SCRIPTCANVAS_REPORT_ERROR((*this), error.c_str());
-                        return false;
-                    }
-                }
-
-                return true;
+                return m_ebus != nullptr && m_handler != nullptr;
             }
 
             bool ReceiveScriptEvent::IsOutOfDate(const VersionData& graphVersion) const
@@ -619,7 +594,6 @@ namespace ScriptCanvas
                     return UpdateResult::DirtyGraph;
                 }
             }
-
 
             AZStd::string ReceiveScriptEvent::GetUpdateString() const
             {

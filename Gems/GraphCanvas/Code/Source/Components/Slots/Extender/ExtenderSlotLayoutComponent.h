@@ -53,7 +53,7 @@ namespace GraphCanvas
         ////
 
         // StyleNotificationBus
-        void OnStyleChanged();
+        void OnStyleChanged() override;
         ////
 
     private:
@@ -82,9 +82,9 @@ namespace GraphCanvas
         ExtenderSlotLayoutComponent();
         ~ExtenderSlotLayoutComponent() override = default;
 
-        void Init();
-        void Activate();
-        void Deactivate();
+        void Init() override;
+        void Activate() override;
+        void Deactivate() override;
 
     private:
         

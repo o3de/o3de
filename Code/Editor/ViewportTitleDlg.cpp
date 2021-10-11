@@ -15,6 +15,7 @@
 #include "ViewportTitleDlg.h"
 
 // Qt
+#include <QLabel>
 #include <QInputDialog>
 
 #include <AtomLyIntegration/AtomViewportDisplayInfo/AtomViewportInfoDisplayBus.h>
@@ -36,8 +37,10 @@
 #include "MathConversion.h"
 #include "EditorViewportSettings.h"
 
-#include <AzCore/std/algorithm.h>
+#include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/Casting/numeric_cast.h>
+#include <AzCore/std/algorithm.h>
+#include <AzFramework/API/ApplicationAPI.h>
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
 
 #include <LmbrCentral/Audio/AudioSystemComponentBus.h>
@@ -145,6 +148,11 @@ CViewportTitleDlg::~CViewportTitleDlg()
     AZ::VR::VREventBus::Handler::BusDisconnect();
     GetISystem()->GetISystemEventDispatcher()->RemoveListener(this);
     GetIEditor()->UnregisterNotifyListener(this);
+
+    if (m_prefabViewportFocusPathHandler)
+    {
+        delete m_prefabViewportFocusPathHandler;
+    }
 }
 
 void CViewportTitleDlg::SetupCameraDropdownMenu()
@@ -154,6 +162,8 @@ void CViewportTitleDlg::SetupCameraDropdownMenu()
     cameraMenu->addMenu(GetFovMenu());
     m_ui->m_cameraMenu->setMenu(cameraMenu);
     m_ui->m_cameraMenu->setPopupMode(QToolButton::InstantPopup);
+    QObject::connect(cameraMenu, &QMenu::aboutToShow, this, &CViewportTitleDlg::CheckForCameraSpeedUpdate);
+
     QAction* gotoPositionAction = new QAction("Go to position", cameraMenu);
     connect(gotoPositionAction, &QAction::triggered, this, &CViewportTitleDlg::OnBnClickedGotoPosition);
     cameraMenu->addAction(gotoPositionAction);
@@ -290,8 +300,6 @@ void CViewportTitleDlg::SetViewPane(CLayoutViewPane* pViewPane)
 //////////////////////////////////////////////////////////////////////////
 void CViewportTitleDlg::OnInitDialog()
 {
-    m_ui->m_titleBtn->setText(m_title);
-
     // Add a child parented to us that listens for r_displayInfo changes.
     auto displayInfoHelper = new CViewportTitleDlgDisplayInfoHelper(this);
     connect(displayInfoHelper, &CViewportTitleDlgDisplayInfoHelper::ViewportInfoStatusUpdated, this, &CViewportTitleDlg::UpdateDisplayInfo);
@@ -312,13 +320,28 @@ void CViewportTitleDlg::OnInitDialog()
 
     m_cameraSpeed->setFixedWidth(width);
 
+    bool isPrefabSystemEnabled = false;
+    AzFramework::ApplicationRequests::Bus::BroadcastResult(isPrefabSystemEnabled, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
+
+    if (isPrefabSystemEnabled)
+    {
+        m_prefabViewportFocusPathHandler = new AzToolsFramework::Prefab::PrefabViewportFocusPathHandler();
+        m_prefabViewportFocusPathHandler->Initialize(m_ui->m_prefabFocusPath, m_ui->m_prefabFocusBackButton);
+    }
+    else
+    {
+        m_ui->m_prefabFocusPath->setEnabled(false);
+        m_ui->m_prefabFocusBackButton->setEnabled(false);
+        m_ui->m_prefabFocusPath->hide();
+        m_ui->m_prefabFocusBackButton->hide();
+    }
+    
 }
 
 //////////////////////////////////////////////////////////////////////////
 void CViewportTitleDlg::SetTitle(const QString& title)
 {
     m_title = title;
-    m_ui->m_titleBtn->setText(m_title);
 }
 
 //////////////////////////////////////////////////////////////////////////

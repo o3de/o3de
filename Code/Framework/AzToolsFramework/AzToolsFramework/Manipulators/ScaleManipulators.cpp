@@ -71,6 +71,7 @@ namespace AzToolsFramework
         }
 
         m_uniformScaleManipulator->SetVisualOrientationOverride(QuaternionFromTransformNoScaling(localTransform));
+        m_uniformScaleManipulator->SetLocalPosition(localTransform.GetTranslation());
         m_uniformScaleManipulator->SetLocalOrientation(AZ::Quaternion::CreateIdentity());
     }
 
@@ -120,18 +121,18 @@ namespace AzToolsFramework
         const float axisLength, const AZ::Color& axis1Color, const AZ::Color& axis2Color, const AZ::Color& axis3Color)
     {
         const float boxSize = 0.1f;
-        const float lineWidth = 0.05f;
-
         const AZ::Color colors[] = { axis1Color, axis2Color, axis3Color };
 
         for (size_t manipulatorIndex = 0; manipulatorIndex < m_axisScaleManipulators.size(); ++manipulatorIndex)
         {
+            const auto lineLength = axisLength - boxSize;
+
             ManipulatorViews views;
             views.emplace_back(
-                CreateManipulatorViewLine(*m_axisScaleManipulators[manipulatorIndex], colors[manipulatorIndex], axisLength, lineWidth));
+                CreateManipulatorViewLine(*m_axisScaleManipulators[manipulatorIndex], colors[manipulatorIndex], axisLength, m_lineBoundWidth));
             views.emplace_back(CreateManipulatorViewBox(
                 AZ::Transform::CreateIdentity(), colors[manipulatorIndex],
-                m_axisScaleManipulators[manipulatorIndex]->GetAxis() * (axisLength - boxSize), AZ::Vector3(boxSize)));
+                m_axisScaleManipulators[manipulatorIndex]->GetAxis() * lineLength, AZ::Vector3(boxSize)));
             m_axisScaleManipulators[manipulatorIndex]->SetViews(AZStd::move(views));
         }
 
@@ -149,5 +150,10 @@ namespace AzToolsFramework
         }
 
         manipulatorFn(m_uniformScaleManipulator.get());
+    }
+
+    void ScaleManipulators::SetLineBoundWidth(const float lineBoundWidth)
+    {
+        m_lineBoundWidth = lineBoundWidth;
     }
 } // namespace AzToolsFramework

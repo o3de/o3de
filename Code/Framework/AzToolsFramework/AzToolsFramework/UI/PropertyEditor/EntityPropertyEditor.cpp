@@ -2352,6 +2352,13 @@ namespace AzToolsFramework
     {
         QMenu* revertMenu = nullptr;
 
+        auto addRevertMenu = [&menu]()
+        {
+            QMenu* revertOverridesMenu = menu.addMenu(tr("Revert overrides"));
+            revertOverridesMenu->setToolTipsVisible(true);
+            return revertOverridesMenu;
+        };
+
         //check for changes on selected property
         if (componentClassData)
         {
@@ -2372,8 +2379,7 @@ namespace AzToolsFramework
             }
 
             // Only add the "Revert overrides" menu option if it belongs to a slice
-            revertMenu = menu.addMenu(tr("Revert overrides"));
-            revertMenu->setToolTipsVisible(true);
+            revertMenu = addRevertMenu();
             revertMenu->setEnabled(false);
 
             if (fieldNode)
@@ -2447,6 +2453,10 @@ namespace AzToolsFramework
 
         if (isPartOfSlice && hasSliceChanges)
         {
+            if (!revertMenu)
+            {
+                revertMenu = addRevertMenu();
+            }
             revertMenu->setEnabled(true);
 
             QAction* revertComponentAction = revertMenu->addAction(tr("Component"));
@@ -2487,6 +2497,10 @@ namespace AzToolsFramework
                 relevantEntities.push_back(id);
             }
 
+            if (!revertMenu)
+            {
+                revertMenu = addRevertMenu();
+            }
             revertMenu->setEnabled(true);
             QAction* revertAction = revertMenu->addAction(QObject::tr("Entity"));
             revertAction->setToolTip(QObject::tr("This will revert all component properties on this entity to the last saved."));

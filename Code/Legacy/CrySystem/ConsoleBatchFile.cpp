@@ -59,10 +59,10 @@ bool CConsoleBatchFile::ExecuteConfigFile(const char* sFilename)
 
     AZStd::string filename;
 
-    if (sFilename[0] != '@') // console config files are actually by default in @root@ instead of @assets@
+    if (sFilename[0] != '@') // console config files are actually by default in @products@ instead of @products@
     {
         // However, if we've passed in a relative or absolute path that matches an existing file name,
-        // don't change it.  Only change it to "@root@/filename" and strip off any relative paths
+        // don't change it.  Only change it to "@products@/filename" and strip off any relative paths
         // if the given pattern *didn't* match a file.
         if (AZ::IO::FileIOBase::GetDirectInstance()->Exists(sFilename))
         {
@@ -70,7 +70,7 @@ bool CConsoleBatchFile::ExecuteConfigFile(const char* sFilename)
         }
         else
         {
-            filename = PathUtil::Make("@root@", PathUtil::GetFile(sFilename));
+            filename = PathUtil::Make("@products@", PathUtil::GetFile(sFilename));
         }
     }
     else
@@ -91,15 +91,15 @@ bool CConsoleBatchFile::ExecuteConfigFile(const char* sFilename)
         AZStd::string filenameLog;
         AZStd::string sfn = PathUtil::GetFile(filename);
 
-        if (file.Open(filename.c_str(), "rb", AZ::IO::IArchive::FOPEN_HINT_QUIET | AZ::IO::IArchive::FOPEN_ONDISK))
+        if (file.Open(filename.c_str(), "rb"))
         {
             filenameLog = AZStd::string("game/") + sfn;
         }
-        else if (file.Open((AZStd::string("config/") + sfn).c_str(), "rb", AZ::IO::IArchive::FOPEN_HINT_QUIET | AZ::IO::IArchive::FOPEN_ONDISK))
+        else if (file.Open((AZStd::string("config/") + sfn).c_str(), "rb"))
         {
             filenameLog = AZStd::string("game/config/") + sfn;
         }
-        else if (file.Open((AZStd::string("./") + sfn).c_str(), "rb", AZ::IO::IArchive::FOPEN_HINT_QUIET | AZ::IO::IArchive::FOPEN_ONDISK))
+        else if (file.Open((AZStd::string("./") + sfn).c_str(), "rb"))
         {
             filenameLog = AZStd::string("./") + sfn;
         }

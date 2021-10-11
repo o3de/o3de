@@ -163,7 +163,7 @@ namespace GraphCanvas
         void SubmitValue();
         void UpdateSizePolicies();
         
-        bool sceneEventFilter(QGraphicsItem*, QEvent* event);
+        bool sceneEventFilter(QGraphicsItem*, QEvent* event) override;
 
         const AZ::EntityId& GetEntityId() const { return m_entityId; }
         void SetupProxyWidget();

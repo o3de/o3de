@@ -93,7 +93,6 @@ namespace AzToolsFramework
 class SandboxIntegrationManager
     : private AzToolsFramework::ToolsApplicationEvents::Bus::Handler
     , private AzToolsFramework::EditorRequests::Bus::Handler
-    , private AzToolsFramework::EditorPickModeNotificationBus::Handler
     , private AzToolsFramework::EditorContextMenuBus::Handler
     , private AzToolsFramework::EditorWindowRequests::Bus::Handler
     , private AzFramework::AssetCatalogEventBus::Handler
@@ -140,8 +139,6 @@ private:
     QDockWidget* InstanceViewPane(const char* paneName) override;
     void CloseViewPane(const char* paneName) override;
     void BrowseForAssets(AzToolsFramework::AssetBrowser::AssetSelectionModel& selection) override;
-    void HandleObjectModeSelection(const AZ::Vector2& point, int flags, bool& handled) override;
-    void UpdateObjectModeCursor(AZ::u32& cursorId, AZStd::string& cursorStr) override;
     void CreateEditorRepresentation(AZ::Entity* entity) override;
     bool DestroyEditorRepresentation(AZ::EntityId entityId, bool deleteAZEntity) override;
     void CloneSelection(bool& handled) override;
@@ -175,14 +172,10 @@ private:
     QWidget* GetAppMainWindow() override;
     //////////////////////////////////////////////////////////////////////////
 
-    // EditorPickModeNotificationBus
-    void OnEntityPickModeStarted() override;
-    void OnEntityPickModeStopped() override;
-
     //////////////////////////////////////////////////////////////////////////
     // AzToolsFramework::EditorContextMenu::Bus::Handler overrides
     void PopulateEditorGlobalContextMenu(QMenu* menu, const AZ::Vector2& point, int flags) override;
-    int GetMenuPosition() const;
+    int GetMenuPosition() const override;
     //////////////////////////////////////////////////////////////////////////
 
     //////////////////////////////////////////////////////////////////////////
@@ -281,7 +274,6 @@ private:
 private:
     AZ::Vector2 m_contextMenuViewPoint;
 
-    int m_inObjectPickMode;
     short m_startedUndoRecordingNestingLevel;   // used in OnBegin/EndUndo to ensure we only accept undo's we started recording
 
     AzToolsFramework::SliceOverridesNotificationWindowManager* m_notificationWindowManager;

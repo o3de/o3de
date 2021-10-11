@@ -192,15 +192,15 @@ void JobManagerWorkStealing::SuspendJobUntilReady(Job* job)
     ThreadInfo* info = GetCurrentOrCreateThreadInfo();
     AZ_Assert(info->m_currentJob == job, ("Can't suspend a job which isn't currently running"));
 
-    info->m_currentJob = NULL; //clear current job
+    info->m_currentJob = nullptr; //clear current job
 
     if (IsAsynchronous())
     {
-        ProcessJobsAssist(info, job, NULL);
+        ProcessJobsAssist(info, job, nullptr);
     }
     else
     {
-        ProcessJobsSynchronous(info, job, NULL);
+        ProcessJobsSynchronous(info, job, nullptr);
     }
 
     info->m_currentJob = job; //restore current job
@@ -223,11 +223,11 @@ void JobManagerWorkStealing::StartJobAndAssistUntilComplete(Job* job)
     //the processing functions will return when the empty job dependent count has reached 1
     if (IsAsynchronous())
     {
-        ProcessJobsAssist(info, NULL, &notifyFlag);
+        ProcessJobsAssist(info, nullptr, &notifyFlag);
     }
     else
     {
-        ProcessJobsSynchronous(info, NULL, &notifyFlag);
+        ProcessJobsSynchronous(info, nullptr, &notifyFlag);
     }
 
     AZ_Assert(!m_currentThreadInfo, "");
@@ -306,9 +306,9 @@ void JobManagerWorkStealing::ProcessJobsWorker(ThreadInfo* info)
     //setup thread-local storage
     m_currentThreadInfo = info;
 
-    ProcessJobsInternal(info, NULL, NULL);
+    ProcessJobsInternal(info, nullptr, nullptr);
 
-    m_currentThreadInfo = NULL;
+    m_currentThreadInfo = nullptr;
 }
 
 void JobManagerWorkStealing::ProcessJobsAssist(ThreadInfo* info, Job* suspendedJob, AZStd::atomic<bool>* notifyFlag)
@@ -529,7 +529,7 @@ void JobManagerWorkStealing::ProcessJobsSynchronous(ThreadInfo* info, Job* suspe
 
         info->m_currentJob = job;
         Process(job);
-        info->m_currentJob = NULL;
+        info->m_currentJob = nullptr;
 
         //...after calling Process we cannot use the job pointer again, the job has completed and may not exist anymore
 #ifdef JOBMANAGER_ENABLE_STATS
@@ -644,11 +644,11 @@ JobManagerWorkStealing::ThreadList JobManagerWorkStealing::CreateWorkerThreads(c
         }
 
         info->m_thread = AZStd::thread(
+            threadDesc,
             [this, info]()
             {
                 this->ProcessJobsWorker(info);
-            },
-            &threadDesc
+            }
         );
 
         info->m_threadId = info->m_thread.get_id();

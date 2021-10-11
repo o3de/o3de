@@ -168,10 +168,10 @@ namespace EMotionFX
 
         struct EMFX_API ExtractedNodeHistoryItem
         {
-            NodeHistoryItem*    m_nodeHistoryItem;
-            size_t              m_trackIndex;
-            float               m_value;
-            float               m_keyTrackSampleTime;
+            NodeHistoryItem*    m_nodeHistoryItem = nullptr;
+            size_t              m_trackIndex = 0;
+            float               m_value = 0.0f;
+            float               m_keyTrackSampleTime = 0.0f;
 
             friend bool operator< (const ExtractedNodeHistoryItem& a, const ExtractedNodeHistoryItem& b)    { return (a.m_value > b.m_value); }
             friend bool operator==(const ExtractedNodeHistoryItem& a, const ExtractedNodeHistoryItem& b)    { return (a.m_value == b.m_value); }

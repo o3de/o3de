@@ -1,0 +1,6 @@
+<download name="RigidBody_MaxAngularVelocityWorks" type="Map">
+ <index src="filelist.xml" dest="filelist.xml"/>
+ <files>
+  <file src="level.pak" dest="level.pak" size="39340" md5="c98a8cb564dbce581b86d31b3f299a6c"/>
+ </files>
+</download>

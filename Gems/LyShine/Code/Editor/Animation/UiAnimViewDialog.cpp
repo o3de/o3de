@@ -15,7 +15,7 @@
 // ----- End UI_ANIMATION_REVISIT
 
 #include "EditorDefs.h"
-#include "Resource.h"
+#include "Editor/Resource.h"
 
 #include "UiAnimViewDialog.h"
 

@@ -45,7 +45,7 @@ namespace ExecutionInterpretedAPICpp
         0, 1, 2, 3, 4, 5, 6, 7, 8, 9, k_Bad,k_Bad,k_Bad,k_Bad,k_Bad,k_Bad,k_Bad, 10, 11, 12, 13, 14, 15
     };
 
-    constexpr unsigned char k_FastValuesIndexSentinel = 'G' - '0';
+    [[maybe_unused]] constexpr unsigned char k_FastValuesIndexSentinel = 'G' - '0';
 
     template<typename T>
     T* GetAs(AZ::BehaviorValueParameter& argument)
@@ -465,12 +465,7 @@ namespace ScriptCanvas
             lua_register(lua, k_UnpackDependencyConstructionArgsFunctionName, &UnpackDependencyConstructionArgs);
             lua_register(lua, k_UnpackDependencyConstructionArgsLeafFunctionName, &UnpackDependencyConstructionArgsLeaf);
 
-#if defined(PERFORMANCE_BUILD)
-            lua_pushboolean(lua, true);
-            lua_setglobal(lua, k_InterpretedConfigurationPerformance);
-            lua_pushboolean(lua, false);
-            lua_setglobal(lua, k_InterpretedConfigurationRelease);
-#elif defined(_RELEASE)
+#if defined(_RELEASE)
             lua_pushboolean(lua, false);
             lua_setglobal(lua, k_InterpretedConfigurationPerformance);
             lua_pushboolean(lua, true);
@@ -481,7 +476,7 @@ namespace ScriptCanvas
             lua_setglobal(lua, k_InterpretedConfigurationPerformance);
             lua_pushboolean(lua, false);
             lua_setglobal(lua, k_InterpretedConfigurationRelease);
-#endif//defined(PERFORMANCE_BUILD) 
+#endif
 
             lua_register(lua, k_GetRandomSwitchControlNumberName, &GetRandomSwitchControlNumber);
 
@@ -508,7 +503,7 @@ namespace ScriptCanvas
 
         void InitializeInterpretedStatics(const RuntimeData& runtimeData)
         {
-#if defined(PROFILE) || defined(AZ_DEBUG_BUILD)
+#if defined(AZ_PROFILE_BUILD) || defined(AZ_DEBUG_BUILD)
             Execution::InitializeFromLuaStackFunctions(const_cast<Grammar::DebugSymbolMap&>(runtimeData.m_debugMap));
 #endif
             if (runtimeData.RequiresStaticInitialization())

@@ -68,7 +68,7 @@ namespace AWSCore
     },
     "AccountIdString": {
         "type": "string",
-        "pattern": "^[0-9]{12}$"
+        "pattern": "^[0-9]{12}$|EMPTY"
     },
     "NonEmptyString": {
         "type": "string",

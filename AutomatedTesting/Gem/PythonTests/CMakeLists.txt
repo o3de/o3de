@@ -18,10 +18,10 @@ include(${pal_dir}/PAL_traits_${PAL_PLATFORM_NAME_LOWERCASE}.cmake)
 add_subdirectory(assetpipeline)
 
 ## Atom Renderer ##
-add_subdirectory(atom_renderer)
+add_subdirectory(Atom)
 
 ## Physics ##
-add_subdirectory(physics)
+add_subdirectory(Physics)
 
 ## ScriptCanvas ##
 add_subdirectory(scripting)

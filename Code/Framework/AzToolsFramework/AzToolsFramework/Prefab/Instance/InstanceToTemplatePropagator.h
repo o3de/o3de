@@ -31,9 +31,9 @@ namespace AzToolsFramework
 
             void AppendEntityAliasToPatchPaths(PrefabDom& providedPatch, const AZ::EntityId& entityId) override;
 
-            InstanceOptionalReference GetTopMostInstanceInHierarchy(AZ::EntityId entityId);
+            InstanceOptionalReference GetTopMostInstanceInHierarchy(AZ::EntityId entityId) override;
 
-            bool PatchTemplate(PrefabDomValue& providedPatch, TemplateId templateId, InstanceOptionalReference instanceToExclude = AZStd::nullopt) override;
+            bool PatchTemplate(PrefabDomValue& providedPatch, TemplateId templateId, bool immediate = false, InstanceOptionalReference instanceToExclude = AZStd::nullopt) override;
 
             void ApplyPatchesToInstance(const AZ::EntityId& entityId, PrefabDom& patches, const Instance& instanceToAddPatches) override;
 

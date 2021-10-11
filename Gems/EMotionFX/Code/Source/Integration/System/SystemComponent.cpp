@@ -34,6 +34,7 @@
 #include <EMotionFX/Source/MotionEventTrack.h>
 #include <EMotionFX/Source/AnimGraphSyncTrack.h>
 #include <EMotionFX/Source/AnimGraph.h>
+#include <EMotionFX/Source/ActorManager.h>
 
 #include <EMotionFX/Source/PhysicsSetup.h>
 #include <EMotionFX/Source/SimulatedObjectSetup.h>
@@ -45,6 +46,7 @@
 #include <EMotionFX/Source/PoseData.h>
 #include <EMotionFX/Source/PoseDataRagdoll.h>
 
+#include <Integration/AnimationBus.h>
 #include <Integration/EMotionFXBus.h>
 #include <Integration/Assets/ActorAsset.h>
 #include <Integration/Assets/MotionAsset.h>
@@ -62,7 +64,6 @@
 
 
 #if defined(EMOTIONFXANIMATION_EDITOR) // EMFX tools / editor includes
-#   include <IEditor.h>
 // Qt
 #   include <QtGui/QSurfaceFormat>
 // EMStudio tools and main window registration
@@ -70,7 +71,6 @@
 #   include <AzToolsFramework/API/ViewPaneOptions.h>
 #   include <AzCore/std/string/wildcard.h>
 #   include <QApplication>
-#   include <EMotionStudio/EMStudioSDK/Source/EMStudioManager.h>
 #   include <EMotionStudio/EMStudioSDK/Source/MainWindow.h>
 #   include <EMotionStudio/EMStudioSDK/Source/PluginManager.h>
 // EMStudio plugins
@@ -115,7 +115,7 @@ namespace EMotionFX
         public:
             AZ_CLASS_ALLOCATOR(EMotionFXEventHandler, EMotionFXAllocator, 0);
 
-            const AZStd::vector<EventTypes> GetHandledEventTypes() const
+            const AZStd::vector<EventTypes> GetHandledEventTypes() const override
             {
                 return {
                            EVENT_TYPE_ON_EVENT,
@@ -488,9 +488,9 @@ namespace EMotionFX
                 return;
             }
 
-            SetMediaRoot("@assets@");
-            // \todo Right now we're pointing at the @devassets@ location (source) and working from there, because .actor and .motion (motion) aren't yet processed through
-            // the scene pipeline. Once they are, we'll need to update various segments of the Tool to always read from the @assets@ cache, but write to the @devassets@ data/metadata.
+            SetMediaRoot("@products@");
+            // \todo Right now we're pointing at the @projectroot@ location (source) and working from there, because .actor and .motion (motion) aren't yet processed through
+            // the scene pipeline. Once they are, we'll need to update various segments of the Tool to always read from the @products@ cache, but write to the @projectroot@ data/metadata.
             EMotionFX::GetEMotionFX().InitAssetFolderPaths();
 
             // Register EMotionFX event handler
@@ -529,7 +529,7 @@ namespace EMotionFX
 
             if (EMStudio::GetManager())
             {
-                EMStudio::Initializer::Shutdown();
+                m_emstudioManager.reset();
                 MysticQt::Initializer::Shutdown();
             }
 
@@ -604,67 +604,15 @@ namespace EMotionFX
         }
 
         //////////////////////////////////////////////////////////////////////////
-#if defined (EMOTIONFXANIMATION_EDITOR)
-        void SystemComponent::UpdateAnimationEditorPlugins(float delta)
-        {
-            if (!EMStudio::GetManager())
-            {
-                return;
-            }
-
-            EMStudio::PluginManager* pluginManager = EMStudio::GetPluginManager();
-            if (!pluginManager)
-            {
-                return;
-            }
-
-            // Process the plugins.
-            const size_t numPlugins = pluginManager->GetNumActivePlugins();
-            for (size_t i = 0; i < numPlugins; ++i)
-            {
-                EMStudio::EMStudioPlugin* plugin = pluginManager->GetActivePlugin(i);
-                plugin->ProcessFrame(delta);
-            }
-        }
-#endif
-
-        //////////////////////////////////////////////////////////////////////////
         void SystemComponent::OnTick(float delta, AZ::ScriptTimePoint timePoint)
         {
             AZ_UNUSED(timePoint);
 
 #if defined (EMOTIONFXANIMATION_EDITOR)
             AZ_UNUSED(delta);
-            const float realDelta = m_updateTimer.StampAndGetDeltaTimeInSeconds();
+            delta = m_updateTimer.StampAndGetDeltaTimeInSeconds();
+#endif
 
-            // Flush events prior to updating EMotion FX.
-            ActorNotificationBus::ExecuteQueuedEvents();
-
-            if (CVars::emfx_updateEnabled)
-            {
-                // Main EMotionFX runtime update.
-                GetEMotionFX().Update(realDelta);
-            }
-
-            // Check if we are in game mode.
-            IEditor* editor = nullptr;
-            EBUS_EVENT_RESULT(editor, AzToolsFramework::EditorRequests::Bus, GetEditor);
-            const bool inGameMode = editor ? editor->IsInGameMode() : false;
-
-            // Update all the animation editor plugins (redraw viewports, timeline, and graph windows etc).
-            // But only update this when the main window is visible and we are in game mode.
-            const bool isEditorActive =
-                EMotionFX::GetEMotionFX().GetIsInEditorMode() &&
-                EMStudio::GetManager() &&
-                EMStudio::HasMainWindow() &&
-                !EMStudio::GetMainWindow()->visibleRegion().isEmpty() &&
-                !inGameMode;
-
-            if (isEditorActive)
-            {
-                UpdateAnimationEditorPlugins(realDelta);
-            }
-#else
             // Flush events prior to updating EMotion FX.
             ActorNotificationBus::ExecuteQueuedEvents();
 
@@ -673,9 +621,7 @@ namespace EMotionFX
                 // Main EMotionFX runtime update.
                 GetEMotionFX().Update(delta);
             }
-#endif
 
-            const float timeDelta = delta;
             const ActorManager* actorManager = GetEMotionFX().GetActorManager();
             const size_t numActorInstances = actorManager->GetNumActorInstances();
             for (size_t i = 0; i < numActorInstances; ++i)
@@ -704,7 +650,7 @@ namespace EMotionFX
                         // If we have a physics controller.
                         if (hasCustomMotionExtractionController || hasPhysicsController)
                         {
-                            const float deltaTimeInv = (timeDelta > 0.0f) ? (1.0f / timeDelta) : 0.0f;
+                            const float deltaTimeInv = (delta > 0.0f) ? (1.0f / delta) : 0.0f;
 
                             AZ::Transform currentTransform = AZ::Transform::CreateIdentity();
                             AZ::TransformBus::EventResult(currentTransform, entityId, &AZ::TransformBus::Events::GetWorldTM);
@@ -719,7 +665,7 @@ namespace EMotionFX
                             }
                             else if (hasCustomMotionExtractionController)
                             {
-                                MotionExtractionRequestBus::Event(entityId, &MotionExtractionRequestBus::Events::ExtractMotion, positionDelta, timeDelta);
+                                MotionExtractionRequestBus::Event(entityId, &MotionExtractionRequestBus::Events::ExtractMotion, positionDelta, delta);
                                 AZ::TransformBus::EventResult(currentTransform, entityId, &AZ::TransformBus::Events::GetWorldTM);
                             }
 
@@ -853,6 +799,8 @@ namespace EMotionFX
             pluginManager->RegisterPlugin(new EMotionFX::RagdollNodeInspectorPlugin());
             pluginManager->RegisterPlugin(new EMotionFX::ClothJointInspectorPlugin());
             pluginManager->RegisterPlugin(new EMotionFX::SimulatedObjectWidget());
+
+            SystemNotificationBus::Broadcast(&SystemNotificationBus::Events::OnRegisterPlugin);
         }
 
         //////////////////////////////////////////////////////////////////////////
@@ -868,7 +816,7 @@ namespace EMotionFX
             char** argv = nullptr;
 
             MysticQt::Initializer::Init("", editorAssetsPath.c_str());
-            EMStudio::Initializer::Init(qApp, argc, argv);
+            m_emstudioManager = AZStd::make_unique<EMStudio::EMStudioManager>(qApp, argc, argv);
 
             InitializeEMStudioPlugins();
 
@@ -884,7 +832,7 @@ namespace EMotionFX
 
             // Register EMotionFX window with the main editor.
             AzToolsFramework::ViewPaneOptions emotionFXWindowOptions;
-            emotionFXWindowOptions.isPreview = true;
+            emotionFXWindowOptions.isPreview = false;
             emotionFXWindowOptions.isDeletable = true;
             emotionFXWindowOptions.isDockable = false;
 #if AZ_TRAIT_EMOTIONFX_MAIN_WINDOW_DETACHED

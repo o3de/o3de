@@ -698,7 +698,7 @@ namespace GridMate
         static void* UserDataCopier(const void* sourceData, unsigned int sourceDataSize)
         {
             (void)sourceDataSize;
-            AZ_Assert(sizeof(T) == sourceDataSize, "Data size %d doesn't match the type size %d", sourceDataSize, sizeof(T))
+            AZ_Assert(sizeof(T) == sourceDataSize, "Data size %d doesn't match the type size %d", sourceDataSize, sizeof(T));
             return azcreate(T, (*static_cast<const T*>(sourceData)), GridMateAllocatorMP, "UserDataCopier");
         }
         template<class T>

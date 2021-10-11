@@ -15,6 +15,7 @@
 #include <AzCore/std/containers/unordered_set.h>
 #include <AzCore/std/string/string.h>
 #include <AzToolsFramework/Prefab/PrefabDomTypes.h>
+#include <Prefab/ScriptingPrefabLoader.h>
 
 namespace AZ
 {
@@ -38,6 +39,8 @@ namespace AzToolsFramework
         public:
             AZ_CLASS_ALLOCATOR(PrefabLoader, AZ::SystemAllocator, 0);
             AZ_RTTI(PrefabLoader, "{A302B072-4DC4-4B7E-9188-226F56A3429C8}", PrefabLoaderInterface);
+
+            static void Reflect(AZ::ReflectContext* context);
 
             //////////////////////////////////////////////////////////////////////////
             // PrefabLoaderInterface interface implementation
@@ -108,7 +111,11 @@ namespace AzToolsFramework
             //! Returns if the path is a valid path for a prefab
             static bool IsValidPrefabPath(AZ::IO::PathView path);
 
+            SaveAllPrefabsPreference GetSaveAllPrefabsPreference() const override;
+            void SetSaveAllPrefabsPreference(SaveAllPrefabsPreference saveAllPrefabsPreference) override;
+
         private:
+
             /**
              * Copies the template dom provided and manipulates it into the proper format to be saved to disk.
              * @param templateRef The template whose dom we want to transform into the proper format to be saved to disk.
@@ -172,6 +179,7 @@ namespace AzToolsFramework
             AZStd::optional<AZStd::pair<PrefabDom, AZ::IO::Path>> StoreTemplateIntoFileFormat(TemplateId templateId);
 
             PrefabSystemComponentInterface* m_prefabSystemComponentInterface = nullptr;
+            ScriptingPrefabLoader m_scriptingPrefabLoader;
             AZ::IO::Path m_projectPathWithOsSeparator;
             AZ::IO::Path m_projectPathWithSlashSeparator;
         };

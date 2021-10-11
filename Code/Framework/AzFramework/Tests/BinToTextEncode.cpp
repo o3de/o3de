@@ -46,7 +46,7 @@ namespace UnitTest
             AllocatorsFixture::TearDown();
         }
 
-        virtual ~Base64Test()
+        ~Base64Test() override
         {
             
         }

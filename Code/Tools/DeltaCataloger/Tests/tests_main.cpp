@@ -84,7 +84,7 @@ protected:
     }
 
 
-    bool OnPreError([[maybe_unused]] const char* window, [[maybe_unused]] const char* fileName, [[maybe_unused]] int line, [[maybe_unused]] const char* func, [[maybe_unused]] const char* message)
+    bool OnPreError([[maybe_unused]] const char* window, [[maybe_unused]] const char* fileName, [[maybe_unused]] int line, [[maybe_unused]] const char* func, [[maybe_unused]] const char* message) override
     {
         return true;
     }

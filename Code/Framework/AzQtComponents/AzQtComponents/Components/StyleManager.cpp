@@ -169,6 +169,10 @@ namespace AzQtComponents
         initializeSearchPaths(application, engineRootPath);
         initializeFonts();
 
+        QFont defaultFont("Open Sans");
+        defaultFont.setPixelSize(12);
+        QApplication::setFont(defaultFont);
+
         m_titleBarOverdrawHandler = TitleBarOverdrawHandler::createHandler(application, this);
 
         // The window decoration wrappers require the titlebar overdraw handler

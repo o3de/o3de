@@ -115,6 +115,7 @@ class CUiAnimViewKeyBundle
 public:
     CUiAnimViewKeyBundle()
         : m_bAllOfSameType(true) {}
+    virtual ~CUiAnimViewKeyBundle() = default;
 
     virtual bool AreAllKeysOfSameType() const override { return m_bAllOfSameType; }
 

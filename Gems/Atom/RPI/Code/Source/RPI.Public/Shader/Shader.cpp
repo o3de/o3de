@@ -7,18 +7,14 @@
  */
 #include <Atom/RPI.Public/Shader/Shader.h>
 
-#include <AzCore/IO/SystemFile.h>
-
-#include <Atom/RHI/RHISystemInterface.h>
-
-#include <Atom/RHI/PipelineStateCache.h>
 #include <Atom/RHI/Factory.h>
-
+#include <Atom/RHI/PipelineStateCache.h>
+#include <Atom/RHI/RHISystemInterface.h>
 #include <AtomCore/Instance/InstanceDatabase.h>
-
-#include <AzCore/Interface/Interface.h>
-#include <Atom/RPI.Public/Shader/ShaderSystemInterface.h>
 #include <Atom/RPI.Public/Shader/ShaderReloadDebugTracker.h>
+#include <Atom/RPI.Public/Shader/ShaderSystemInterface.h>
+#include <AzCore/Interface/Interface.h>
+
 
 namespace AZ
 {
@@ -75,6 +71,29 @@ namespace AZ
             Shutdown();
         }
 
+        static bool GetPipelineLibraryPath(char* pipelineLibraryPath, size_t pipelineLibraryPathLength, const ShaderAsset& shaderAsset)
+        {
+            if (auto* fileIOBase = IO::FileIOBase::GetInstance())
+            {
+                const Data::AssetId& assetId = shaderAsset.GetId();
+
+                Name platformName = RHI::Factory::Get().GetName();
+                Name shaderName = shaderAsset.GetName();
+
+                AZStd::string uuidString;
+                assetId.m_guid.ToString<AZStd::string>(uuidString, false, false);
+
+                char pipelineLibraryPathTemp[AZ_MAX_PATH_LEN];
+                azsnprintf(
+                    pipelineLibraryPathTemp, AZ_MAX_PATH_LEN, "@user@/Atom/PipelineStateCache/%s/%s_%s_%d.bin", platformName.GetCStr(),
+                    shaderName.GetCStr(), uuidString.data(), assetId.m_subId);
+
+                fileIOBase->ResolvePath(pipelineLibraryPathTemp, pipelineLibraryPath, pipelineLibraryPathLength);
+                return true;
+            }
+            return false;
+        }
+
         RHI::ResultCode Shader::Init(ShaderAsset& shaderAsset)
         {
             Data::AssetBus::Handler::BusDisconnect();
@@ -86,6 +105,8 @@ namespace AZ
 
             m_asset = { &shaderAsset, AZ::Data::AssetLoadBehavior::PreLoad };
             m_pipelineStateType = shaderAsset.GetPipelineStateType();
+
+            GetPipelineLibraryPath(m_pipelineLibraryPath, AZ_MAX_PATH_LEN, *m_asset);
 
             {
                 AZStd::unique_lock<decltype(m_variantCacheMutex)> lock(m_variantCacheMutex);
@@ -123,7 +144,7 @@ namespace AZ
                     AZ_Error("Shader", false, "Failed to acquire a DrawListTag. Entries are full.");
                 }
             }
-            
+
             ShaderVariantFinderNotificationBus::Handler::BusConnect(m_asset.GetId());
             Data::AssetBus::Handler::BusConnect(m_asset.GetId());
             ShaderReloadNotificationBus::Handler::BusConnect(m_asset.GetId());
@@ -249,49 +270,28 @@ namespace AZ
             }
         }
         ///////////////////////////////////////////////////////////////////
-
-
+        
         ConstPtr<RHI::PipelineLibraryData> Shader::LoadPipelineLibrary() const
-        {
-            if (IO::FileIOBase::GetInstance())
+        { 
+            if (m_pipelineLibraryPath[0] != 0)
             {
-                return Utils::LoadObjectFromFile<RHI::PipelineLibraryData>(GetPipelineLibraryPath());
+                return Utils::LoadObjectFromFile<RHI::PipelineLibraryData>(m_pipelineLibraryPath);
             }
             return nullptr;
         }
 
         void Shader::SavePipelineLibrary() const
         {
-            if (auto* fileIOBase = IO::FileIOBase::GetInstance())
+            if (m_pipelineLibraryPath[0] != 0)
             {
                 RHI::ConstPtr<RHI::PipelineLibraryData> serializedData = m_pipelineStateCache->GetLibrarySerializedData(m_pipelineLibraryHandle);
                 if (serializedData)
                 {
-                    const AZStd::string pipelineLibraryPath = GetPipelineLibraryPath();
-
-                    char pipelineLibraryPathResolved[AZ_MAX_PATH_LEN] = { 0 };
-                    fileIOBase->ResolvePath(pipelineLibraryPath.c_str(), pipelineLibraryPathResolved, AZ_MAX_PATH_LEN);
-                    Utils::SaveObjectToFile(pipelineLibraryPathResolved, DataStream::ST_BINARY, serializedData.get());
+                    Utils::SaveObjectToFile<RHI::PipelineLibraryData>(m_pipelineLibraryPath, DataStream::ST_BINARY, serializedData.get());
                 }
             }
-            else
-            {
-                AZ_Error("Shader", false, "FileIOBase is not initialized");
-            }
         }
-
-        AZStd::string Shader::GetPipelineLibraryPath() const
-        {
-            const Data::InstanceId& instanceId = GetId();
-            Name platformName = RHI::Factory::Get().GetName();
-            Name shaderName = m_asset->GetName();
-
-            AZStd::string uuidString;
-            instanceId.m_guid.ToString<AZStd::string>(uuidString, false, false);
-
-            return AZStd::string::format("@user@/Atom/PipelineStateCache/%s/%s_%s_%d.bin", platformName.GetCStr(), shaderName.GetCStr(), uuidString.data(), instanceId.m_subId);
-        }
-
+        
         ShaderOptionGroup Shader::CreateShaderOptionGroup() const
         {
             return ShaderOptionGroup(m_asset->GetShaderOptionGroupLayout());
@@ -299,7 +299,6 @@ namespace AZ
 
         const ShaderVariant& Shader::GetVariant(const ShaderVariantId& shaderVariantId)
         {
-            AZ_PROFILE_FUNCTION(RPI);
             Data::Asset<ShaderVariantAsset> shaderVariantAsset = m_asset->GetVariant(shaderVariantId, m_supervariantIndex);
             if (!shaderVariantAsset || shaderVariantAsset->IsRootVariant())
             {
@@ -316,15 +315,12 @@ namespace AZ
 
         ShaderVariantSearchResult Shader::FindVariantStableId(const ShaderVariantId& shaderVariantId) const
         {
-            AZ_PROFILE_FUNCTION(RPI);
             ShaderVariantSearchResult variantSearchResult = m_asset->FindVariantStableId(shaderVariantId);
             return variantSearchResult;
         }
 
         const ShaderVariant& Shader::GetVariant(ShaderVariantStableId shaderVariantStableId)
         {
-            AZ_PROFILE_FUNCTION(RPI);
-
             if (!shaderVariantStableId.IsValid() || shaderVariantStableId == ShaderAsset::RootShaderVariantStableId)
             {
                 return m_rootVariant;

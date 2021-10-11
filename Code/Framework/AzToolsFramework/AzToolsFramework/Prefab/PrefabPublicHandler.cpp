@@ -61,7 +61,7 @@ namespace AzToolsFramework
             m_prefabUndoCache.Destroy();
         }
 
-        PrefabOperationResult PrefabPublicHandler::CreatePrefabInMemory(const EntityIdList& entityIds, AZ::IO::PathView filePath)
+        CreatePrefabResult PrefabPublicHandler::CreatePrefabInMemory(const EntityIdList& entityIds, AZ::IO::PathView filePath)
         {
             EntityList inputEntityList, topLevelEntities;
             AZ::EntityId commonRootEntityId;
@@ -70,8 +70,10 @@ namespace AzToolsFramework
                 entityIds, inputEntityList, topLevelEntities, commonRootEntityId, commonRootEntityOwningInstance);
             if (!findCommonRootOutcome.IsSuccess())
             {
-                return findCommonRootOutcome;
+                return AZ::Failure(findCommonRootOutcome.TakeError());
             }
+
+            AZ::EntityId containerEntityId;
 
             InstanceOptionalReference instanceToCreate;
             {
@@ -92,7 +94,7 @@ namespace AzToolsFramework
                     inputEntityList, commonRootEntityOwningInstance->get(), entities, instances);
                 if (!retrieveEntitiesAndInstancesOutcome.IsSuccess())
                 {
-                    return retrieveEntitiesAndInstancesOutcome;
+                    return AZ::Failure(retrieveEntitiesAndInstancesOutcome.TakeError());
                 }
 
                 AZStd::unordered_map<AZ::EntityId, AZStd::string> oldEntityAliases;
@@ -153,7 +155,7 @@ namespace AzToolsFramework
                         "(A null instance is returned)."));
                 }
 
-                AZ::EntityId containerEntityId = instanceToCreate->get().GetContainerEntityId();
+                containerEntityId = instanceToCreate->get().GetContainerEntityId();
 
                 // Apply the correct transform to the container for the new instance, and store the patch for use when creating the link.
                 PrefabDom patch = ApplyContainerTransformAndGeneratePatch(containerEntityId, commonRootEntityId, topLevelEntities);
@@ -261,10 +263,10 @@ namespace AzToolsFramework
                 }
             }
 
-            return AZ::Success();
+            return AZ::Success(containerEntityId);
         }
 
-        PrefabOperationResult PrefabPublicHandler::CreatePrefabInDisk(const EntityIdList& entityIds, AZ::IO::PathView filePath)
+        CreatePrefabResult PrefabPublicHandler::CreatePrefabInDisk(const EntityIdList& entityIds, AZ::IO::PathView filePath)
         {
             auto result = CreatePrefabInMemory(entityIds, filePath);
             if (result.IsSuccess())
@@ -326,6 +328,11 @@ namespace AzToolsFramework
             {
                 return AZ::Failure(AZStd::string("Could not instantiate prefab - internal error "
                                                  "(PrefabEditorEntityOwnershipInterface unavailable)."));
+            }
+            if (!prefabEditorEntityOwnershipInterface->IsRootPrefabAssigned())
+            {
+                return AZ::Failure(AZStd::string("Could not instantiate prefab - no root prefab assigned. "
+                "Currently, prefabs can only be instantiated inside a level"));
             }
 
             InstanceOptionalReference instanceToParentUnder;
@@ -1034,7 +1041,7 @@ namespace AzToolsFramework
                 PrefabUndoInstance* command = aznew PrefabUndoInstance("Entity/Instance duplication");
                 command->SetParent(undoBatch.GetUndoBatch());
                 command->Capture(instanceDomBefore, instanceDomAfter, commonOwningInstance->get().GetTemplateId());
-                command->Redo();
+                command->RedoBatched();
 
                 DuplicateNestedInstancesInInstance(commonOwningInstance->get(),
                     instances, instanceDomAfter, duplicatedEntityAndInstanceIds, newInstanceAliasToOldInstanceMap);

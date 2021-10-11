@@ -15,6 +15,6 @@ struct IEditorMaterial
     : public CBaseLibraryItem
 {
     virtual int GetFlags() const = 0;
-    virtual _smart_ptr<IMaterial> GetMatInfo(bool bUseExistingEngineMaterial = false) = 0;
+    virtual IMaterial* GetMatInfo(bool bUseExistingEngineMaterial = false) = 0;
     virtual void DisableHighlightForFrame() = 0;
 };

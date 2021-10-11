@@ -45,7 +45,8 @@
                     "_ht",
                     "_h"
                 ],
-                "PixelFormat": "EAC_R11",
+                "PixelFormat": "ASTC_4x4",
+                "MaxTextureSize": 2048,
                 "DiscardAlpha": true,
                 "IsPowerOf2": true,
                 "SizeReduceLevel": 3,
@@ -70,7 +71,8 @@
                     "_ht",
                     "_h"
                 ],
-                "PixelFormat": "EAC_R11",
+                "PixelFormat": "ASTC_4x4",
+                "MaxTextureSize": 2048,
                 "DiscardAlpha": true,
                 "IsPowerOf2": true,
                 "MipMapSetting": {

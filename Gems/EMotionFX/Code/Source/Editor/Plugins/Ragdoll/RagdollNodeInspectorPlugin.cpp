@@ -50,26 +50,21 @@ namespace EMotionFX
         return newPlugin;
     }
 
-    bool RagdollNodeInspectorPlugin::PhysXGemAvailable() const
+    bool RagdollNodeInspectorPlugin::IsPhysXGemAvailable() const
     {
         AZ::SerializeContext* serializeContext = nullptr;
         AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
-        if (serializeContext)
-        {
-            // TypeId of D6JointLimitConfiguration
-            const AZ::SerializeContext::ClassData* classData = serializeContext->FindClassData(AZ::TypeId::CreateString("{90C5C23D-16C0-4F23-AD50-A190E402388E}"));
-            if (classData && ColliderHelpers::AreCollidersReflected())
-            {
-                return true;
-            }
-        }
 
-        return false;
+        // TypeId of PhysX::SystemComponent
+        const char* typeIDPhysXSystem = "{85F90819-4D9A-4A77-AB89-68035201F34B}";
+
+        return serializeContext
+            && serializeContext->FindClassData(AZ::TypeId::CreateString(typeIDPhysXSystem));
     }
 
     bool RagdollNodeInspectorPlugin::Init()
     {
-        if (PhysXGemAvailable())
+        if (IsPhysXGemAvailable() && ColliderHelpers::AreCollidersReflected())
         {
             m_nodeWidget = new RagdollNodeWidget();
             m_nodeWidget->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Ignored);

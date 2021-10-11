@@ -37,7 +37,7 @@ namespace GraphCanvas
                 return 0;
             }
 
-            bool Matches([[maybe_unused]] const AZ::EntityId& object) const
+            bool Matches([[maybe_unused]] const AZ::EntityId& object) const override
             {
                 return false;
             }

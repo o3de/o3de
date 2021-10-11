@@ -78,12 +78,8 @@ namespace AZ
             void SetShadowFilterMethod(ShadowFilterMethod method) override;
             float GetSofteningBoundaryWidth() const override;
             void SetSofteningBoundaryWidth(float width) override;
-            uint32_t GetPredictionSampleCount() const override;
-            void SetPredictionSampleCount(uint32_t count) override;
             uint32_t GetFilteringSampleCount() const override;
             void SetFilteringSampleCount(uint32_t count) override;
-            PcfMethod GetPcfMethod() const override;
-            void SetPcfMethod(PcfMethod method) override;
             bool GetShadowReceiverPlaneBiasEnabled() const override;
             void SetShadowReceiverPlaneBiasEnabled(bool enable) override;
 

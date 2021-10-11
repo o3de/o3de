@@ -123,10 +123,10 @@ namespace AZ
             std::vector<char*> tokens;
             [[maybe_unused]] char* next_token = nullptr;
             char* tok = azstrtok(cmdLine, 0, " ", &next_token);
-            while (tok != NULL)
+            while (tok != nullptr)
             {
                 tokens.push_back(tok);
-                tok = azstrtok(NULL, 0, " ", &next_token);
+                tok = azstrtok(nullptr, 0, " ", &next_token);
             }
             size = (int)tokens.size();
             char** token_array = new char*[size];

@@ -81,11 +81,8 @@ namespace AZ
                 m_context->GetData()->m_view->SetCameraTransform(Matrix3x4::CreateFromTransform(cameraTransform));
             }
 
-            void CaptureStep::OnTick(float deltaTime, ScriptTimePoint time)
+            void CaptureStep::OnTick([[maybe_unused]] float deltaTime, [[maybe_unused]] ScriptTimePoint time)
             {
-                m_context->GetData()->m_deltaTime = deltaTime;
-                m_context->GetData()->m_simulateTime = time.GetSeconds();
-
                 if (m_readyToCapture && m_ticksToCapture-- <= 0)
                 {
                     m_context->GetData()->m_renderPipeline->AddToRenderTickOnce();

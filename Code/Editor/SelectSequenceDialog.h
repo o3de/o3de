@@ -30,7 +30,7 @@ protected:
     void OnInitDialog() override;
 
     // Derived Dialogs should override this
-    virtual void GetItems(std::vector<SItem>& outItems);
+    void GetItems(std::vector<SItem>& outItems) override;
 };
 
 #endif // CRYINCLUDE_EDITOR_SELECTSEQUENCEDIALOG_H

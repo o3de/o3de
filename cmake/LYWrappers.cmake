@@ -330,28 +330,47 @@ function(ly_add_target)
     set(runtime_dependencies_list SHARED MODULE EXECUTABLE APPLICATION)
     if(NOT ly_add_target_IMPORTED AND linking_options IN_LIST runtime_dependencies_list)
 
-        # the stamp file will be the one that triggers the execution of the custom rule. At the end
-        # of running the copy of runtime dependencies, the stamp file is touched so the timestamp is updated.
-        # Adding a config as part of the name since the stamp file is added to the VS project.
-        # Note the STAMP_OUTPUT_FILE need to match with the one used in runtime dependencies (e.g. RuntimeDependencies_common.cmake)
-        set(STAMP_OUTPUT_FILE ${CMAKE_BINARY_DIR}/runtime_dependencies/$<CONFIG>/${ly_add_target_NAME}_$<CONFIG>.stamp)
-        add_custom_command(
-            OUTPUT ${STAMP_OUTPUT_FILE}
-            DEPENDS "$<GENEX_EVAL:$<TARGET_PROPERTY:${ly_add_target_NAME},RUNTIME_DEPENDENCIES_DEPENDS>>"
-            COMMAND ${CMAKE_COMMAND} -P ${CMAKE_BINARY_DIR}/runtime_dependencies/$<CONFIG>/${ly_add_target_NAME}.cmake
-            COMMENT "Copying ${ly_add_target_NAME} runtime dependencies to output..."
-            VERBATIM
-        )
+        get_property(is_multi_config_generator GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
+        # XCode generator doesnt support different source files per configuration, so we cannot have
+        # the runtime dependencies using file-tracking, instead, we will have them as a post build step
+        # Non-multi config generators like Ninja (not "Ninja Multi-Config"), Makefiles, etc have trouble to
+        # produce file-level dependencies per configuration, so we also default to use a post build step
+        if(NOT is_multi_config_generator OR CMAKE_GENERATOR MATCHES Xcode)
+        
+            add_custom_command(TARGET ${ly_add_target_NAME} POST_BUILD
+                COMMAND ${CMAKE_COMMAND} -P ${CMAKE_BINARY_DIR}/runtime_dependencies/$<CONFIG>/${ly_add_target_NAME}.cmake
+                COMMENT "Copying ${ly_add_target_NAME} runtime dependencies to output..."
+                DEPENDS ${CMAKE_BINARY_DIR}/runtime_dependencies/${ly_add_target_NAME}.cmake
+                COMMENT "Copying runtime dependencies..."
+                VERBATIM
+            )
 
-        # Unfortunately the VS generator cannot deal with generation expressions as part of the file name, wrapping the 
-        # stamp file on each configuration so it gets properly excluded by the generator
-        unset(stamp_files_per_config)
-        foreach(conf IN LISTS CMAKE_CONFIGURATION_TYPES)
-            set(stamp_file_conf ${CMAKE_BINARY_DIR}/runtime_dependencies/${conf}/${ly_add_target_NAME}_${conf}.stamp)
-            set_source_files_properties(${stamp_file_conf} PROPERTIES GENERATED TRUE SKIP_AUTOGEN TRUE)
-            list(APPEND stamp_files_per_config $<$<CONFIG:${conf}>:${stamp_file_conf}>)
-        endforeach()
-        target_sources(${ly_add_target_NAME} PRIVATE ${stamp_files_per_config})
+        else()
+
+            # the stamp file will be the one that triggers the execution of the custom rule. At the end
+            # of running the copy of runtime dependencies, the stamp file is touched so the timestamp is updated.
+            # Adding a config as part of the name since the stamp file is added to the VS project.
+            # Note the STAMP_OUTPUT_FILE need to match with the one used in runtime dependencies (e.g. RuntimeDependencies_common.cmake)
+            set(STAMP_OUTPUT_FILE ${CMAKE_BINARY_DIR}/runtime_dependencies/$<CONFIG>/${ly_add_target_NAME}_$<CONFIG>.stamp)
+            add_custom_command(
+                OUTPUT ${STAMP_OUTPUT_FILE}
+                DEPENDS "$<GENEX_EVAL:$<TARGET_PROPERTY:${ly_add_target_NAME},RUNTIME_DEPENDENCIES_DEPENDS>>"
+                COMMAND ${CMAKE_COMMAND} -P ${CMAKE_BINARY_DIR}/runtime_dependencies/$<CONFIG>/${ly_add_target_NAME}.cmake
+                COMMENT "Copying ${ly_add_target_NAME} runtime dependencies to output..."
+                VERBATIM
+            )
+
+            # Unfortunately the VS generator cannot deal with generation expressions as part of the file name, wrapping the 
+            # stamp file on each configuration so it gets properly excluded by the generator
+            unset(stamp_files_per_config)
+            foreach(conf IN LISTS CMAKE_CONFIGURATION_TYPES)
+                set(stamp_file_conf ${CMAKE_BINARY_DIR}/runtime_dependencies/${conf}/${ly_add_target_NAME}_${conf}.stamp)
+                set_source_files_properties(${stamp_file_conf} PROPERTIES GENERATED TRUE SKIP_AUTOGEN TRUE)
+                list(APPEND stamp_files_per_config $<$<CONFIG:${conf}>:${stamp_file_conf}>)
+            endforeach()
+            target_sources(${ly_add_target_NAME} PRIVATE ${stamp_files_per_config})
+
+        endif()
 
     endif()
 
@@ -458,10 +477,22 @@ function(ly_parse_third_party_dependencies ly_THIRD_PARTY_LIBRARIES)
         if(${dependency_namespace} STREQUAL "3rdParty")
             if (NOT TARGET ${dependency})
                 list(GET dependency_list 1 dependency_package)
+                list(LENGTH dependency_list dependency_list_length)
                 ly_download_associated_package(${dependency_package})
-                find_package(${dependency_package} REQUIRED MODULE)
+                if (dependency_list_length GREATER 2)
+                    # There's an optional interface specified
+                    list(GET dependency_list 2 component)
+                    list(APPEND packages_with_components ${dependency_package})
+                    list(APPEND ${dependency_package}_components ${component})
+                else()
+                    find_package(${dependency_package} REQUIRED MODULE)
+                endif()
             endif()
         endif()
+    endforeach()
+
+    foreach(dependency IN LISTS packages_with_components)
+        find_package(${dependency} REQUIRED MODULE COMPONENTS ${${dependency}_components})
     endforeach()
 endfunction()
 

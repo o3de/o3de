@@ -26,7 +26,7 @@ class CView
 public:
 
     CView(ISystem* pSystem);
-    virtual ~CView();
+    ~CView() override;
 
     //shaking
     struct SShake
@@ -81,37 +81,33 @@ public:
 
             ID = shakeID;
         }
-
-        void GetMemoryUsage([[maybe_unused]] ICrySizer* pSizer) const { /*nothing*/}
     };
 
 
     // IView
-    virtual void Release();
-    virtual void Update(float frameTime, bool isActive);
+    void Release() override;
+    void Update(float frameTime, bool isActive) override;
     virtual void ProcessShaking(float frameTime);
     virtual void ProcessShake(SShake* pShake, float frameTime);
-    virtual void ResetShaking();
-    virtual void ResetBlending() { m_viewParams.ResetBlending(); }
-    virtual void LinkTo(AZ::Entity* follow);
-    virtual void Unlink();
-    virtual AZ::EntityId GetLinkedId() {return m_linkedTo; };
-    virtual void SetCurrentParams(SViewParams& params) { m_viewParams = params; };
-    virtual const SViewParams* GetCurrentParams() {return &m_viewParams; }
-    virtual void SetViewShake(Ang3 shakeAngle, Vec3 shakeShift, float duration, float frequency, float randomness, int shakeID, bool bFlipVec = true, bool bUpdateOnly = false, bool bGroundOnly = false);
-    virtual void SetViewShakeEx(const SShakeParams& params);
-    virtual void StopShake(int shakeID);
-    virtual void SetFrameAdditiveCameraAngles(const Ang3& addFrameAngles);
-    virtual void SetScale(const float scale);
-    virtual void SetZoomedScale(const float scale);
-    virtual void SetActive(const bool bActive);
+    void ResetShaking() override;
+    void ResetBlending() override { m_viewParams.ResetBlending(); }
+    void LinkTo(AZ::Entity* follow) override;
+    void Unlink() override;
+    AZ::EntityId GetLinkedId() override {return m_linkedTo; };
+    void SetCurrentParams(SViewParams& params) override { m_viewParams = params; };
+    const SViewParams* GetCurrentParams() override {return &m_viewParams; }
+    void SetViewShake(Ang3 shakeAngle, Vec3 shakeShift, float duration, float frequency, float randomness, int shakeID, bool bFlipVec = true, bool bUpdateOnly = false, bool bGroundOnly = false) override;
+    void SetViewShakeEx(const SShakeParams& params) override;
+    void StopShake(int shakeID) override;
+    void SetFrameAdditiveCameraAngles(const Ang3& addFrameAngles) override;
+    void SetScale(const float scale) override;
+    void SetZoomedScale(const float scale) override;
+    void SetActive(const bool bActive) override;
     // ~IView
 
     void PostSerialize() override;
     CCamera& GetCamera() override { return m_camera; }
     const CCamera& GetCamera() const override { return m_camera; }
-
-    void GetMemoryUsage(ICrySizer* s) const;
 
 protected:
 

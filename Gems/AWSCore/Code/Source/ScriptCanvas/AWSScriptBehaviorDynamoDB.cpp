@@ -71,7 +71,7 @@ namespace AWSCore
             [](DynamoDBGetItemRequestJob* job) // OnSuccess handler
             {
                 auto item = job->result.GetItem();
-                if (item.size() > 0)
+                if (!item.empty())
                 {
                     DynamoDBAttributeValueMap result;
                     for (const auto& itermPair : item)

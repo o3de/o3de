@@ -142,7 +142,7 @@ namespace AZ
 
             //////////////////////////////////////////////////////////////////////////
             // FrameEventBus::Handler
-            void OnFrameCompileEnd(RHI::FrameGraph& frameGraph);
+            void OnFrameCompileEnd(RHI::FrameGraph& frameGraph) override;
             //////////////////////////////////////////////////////////////////////////
 
             // Returns if a barrier can be converted to an implicit subpass barrier.

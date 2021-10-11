@@ -22,21 +22,32 @@
 #include <LyShine/ILyShine.h>
 #include <AzCore/Component/TickBus.h>
 #include <AzCore/IO/Path/Path.h>
+#include <AzCore/Settings/SettingsRegistryVisitorUtils.h>
 #include <AzCore/StringFunc/StringFunc.h>
 
 #include <AzCore/Script/ScriptSystemBus.h>
 
 namespace LegacyLevelSystem
 {
+    constexpr AZStd::string_view DeferredLoadLevelKey = "/O3DE/Runtime/SpawnableLevelSystem/DeferredLoadLevel";
     //------------------------------------------------------------------------
     static void LoadLevel(const AZ::ConsoleCommandContainer& arguments)
     {
         AZ_Error("SpawnableLevelSystem", !arguments.empty(), "LoadLevel requires a level file name to be provided.");
         AZ_Error("SpawnableLevelSystem", arguments.size() == 1, "LoadLevel requires a single level file name to be provided.");
 
-        if (!arguments.empty() && gEnv->pSystem && gEnv->pSystem->GetILevelSystem() && !gEnv->IsEditor())
+        if (!arguments.empty() && gEnv && gEnv->pSystem && gEnv->pSystem->GetILevelSystem() && !gEnv->IsEditor())
         {
             gEnv->pSystem->GetILevelSystem()->LoadLevel(arguments[0].data());
+        }
+        else if (!arguments.empty())
+        {
+            // The SpawnableLevelSystem isn't available yet.
+            // Defer the level load until later by storing it in the SettingsRegistry
+            if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
+            {
+                settingsRegistry->Set(DeferredLoadLevelKey, arguments.front());
+            }
         }
     }
 
@@ -45,7 +56,7 @@ namespace LegacyLevelSystem
     {
         AZ_Warning("SpawnableLevelSystem", !arguments.empty(), "UnloadLevel doesn't use any arguments.");
 
-        if (gEnv->pSystem && gEnv->pSystem->GetILevelSystem() && !gEnv->IsEditor())
+        if (gEnv && gEnv->pSystem && gEnv->pSystem->GetILevelSystem() && !gEnv->IsEditor())
         {
             gEnv->pSystem->GetILevelSystem()->UnloadLevel();
         }
@@ -73,6 +84,24 @@ namespace LegacyLevelSystem
         }
 
         AzFramework::RootSpawnableNotificationBus::Handler::BusConnect();
+
+        // If there were LoadLevel command invocations before the creation of the level system
+        // then those invocations were queued.
+        // load the last level in the queue, since only one level can be loaded at a time
+        if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
+        {
+            if (AZ::SettingsRegistryInterface::FixedValueString deferredLevelName;
+                settingsRegistry->Get(deferredLevelName, DeferredLoadLevelKey) && !deferredLevelName.empty())
+            {
+                // since this is the constructor any derived classes vtables aren't setup yet
+                // call this class LoadLevel function
+                AZ_TracePrintf("SpawnableLevelSystem", "The Level System is now available."
+                    " Loading level %s which could not be loaded earlier\n", deferredLevelName.c_str());
+                SpawnableLevelSystem::LoadLevel(deferredLevelName.c_str());
+                // Delete the key with the deferred level name
+                settingsRegistry->Remove(DeferredLoadLevelKey);
+            }
+        }
     }
 
     //------------------------------------------------------------------------
@@ -173,7 +202,7 @@ namespace LegacyLevelSystem
         }
 
         // Make sure a spawnable level exists that matches levelname
-        AZStd::string validLevelName = "";
+        AZStd::string validLevelName;
         AZ::Data::AssetId rootSpawnableAssetId;
         AZ::Data::AssetCatalogRequestBus::BroadcastResult(
             rootSpawnableAssetId, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetIdByPath, levelName, nullptr, false);
@@ -468,10 +497,7 @@ namespace LegacyLevelSystem
             sChain = " (Chained)";
         }
 
-        AZStd::string text;
-        text.format(
-            "Game Level Load Time: [%s] Level %s loaded in %.2f seconds%s", vers, m_lastLevelName.c_str(), m_fLastLevelLoadTime, sChain);
-        gEnv->pLog->Log(text.c_str());
+        gEnv->pLog->Log("Game Level Load Time: [%s] Level %s loaded in %.2f seconds%s", vers, m_lastLevelName.c_str(), m_fLastLevelLoadTime, sChain);
     }
 
     //////////////////////////////////////////////////////////////////////////

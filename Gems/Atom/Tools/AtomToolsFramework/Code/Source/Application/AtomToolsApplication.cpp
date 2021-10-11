@@ -87,6 +87,7 @@ namespace AtomToolsFramework
 
     AtomToolsApplication ::~AtomToolsApplication()
     {
+        m_styleManager.reset();
         AtomToolsMainWindowNotificationBus::Handler::BusDisconnect();
         AzToolsFramework::AssetDatabase::AssetDatabaseRequestsBus::Handler::BusDisconnect();
         AzToolsFramework::EditorPythonConsoleNotificationBus::Handler::BusDisconnect();
@@ -172,14 +173,16 @@ namespace AtomToolsFramework
         AzToolsFramework::AssetBrowser::AssetDatabaseLocationNotificationBus::Broadcast(
             &AzToolsFramework::AssetBrowser::AssetDatabaseLocationNotifications::OnDatabaseInitialized);
 
-        AZ::Data::AssetCatalogRequestBus::Broadcast(&AZ::Data::AssetCatalogRequestBus::Events::LoadCatalog, "@assets@/assetcatalog.xml");
+        AZ::Data::AssetCatalogRequestBus::Broadcast(&AZ::Data::AssetCatalogRequestBus::Events::LoadCatalog, "@products@/assetcatalog.xml");
 
-        AZ::RPI::RPISystemInterface::Get()->InitializeSystemAssets();
+        if (!AZ::RPI::RPISystemInterface::Get()->IsInitialized())
+        {
+            AZ::RPI::RPISystemInterface::Get()->InitializeSystemAssets();
+        }
 
         LoadSettings();
 
         AtomToolsMainWindowNotificationBus::Handler::BusConnect();
-
         AtomToolsMainWindowFactoryRequestBus::Broadcast(&AtomToolsMainWindowFactoryRequestBus::Handler::CreateMainWindow);
 
         auto editorPythonEventsInterface = AZ::Interface<AzToolsFramework::EditorPythonEventsInterface>::Get();
@@ -206,6 +209,7 @@ namespace AtomToolsFramework
     {
         // before modules are unloaded, destroy UI to free up any assets it cached
         AtomToolsMainWindowFactoryRequestBus::Broadcast(&AtomToolsMainWindowFactoryRequestBus::Handler::DestroyMainWindow);
+        m_styleManager.reset();
 
         AzToolsFramework::EditorPythonConsoleNotificationBus::Handler::BusDisconnect();
         AzToolsFramework::AssetDatabase::AssetDatabaseRequestsBus::Handler::BusDisconnect();
@@ -285,7 +289,7 @@ namespace AtomToolsFramework
             ExitMainLoop();
         }
     }
-    
+
     void AtomToolsApplication::SaveSettings()
     {
         if (m_activatedLocalUserSettings)
@@ -374,7 +378,7 @@ namespace AtomToolsFramework
             ExitMainLoop();
         }
     }
-    
+
     bool AtomToolsApplication::LaunchLocalServer()
     {
         // Determine if this is the first launch of the tool by attempting to connect to a running server
@@ -461,6 +465,7 @@ namespace AtomToolsFramework
     void AtomToolsApplication::Stop()
     {
         AtomToolsMainWindowFactoryRequestBus::Broadcast(&AtomToolsMainWindowFactoryRequestBus::Handler::DestroyMainWindow);
+        m_styleManager.reset();
 
         UnloadSettings();
         Base::Stop();
@@ -468,7 +473,7 @@ namespace AtomToolsFramework
 
     void AtomToolsApplication::QueryApplicationType(AZ::ApplicationTypeQuery& appType) const
     {
-        appType.m_maskValue = AZ::ApplicationTypeQuery::Masks::Game;
+        appType.m_maskValue = AZ::ApplicationTypeQuery::Masks::Tool;
     }
 
     void AtomToolsApplication::OnTraceMessage([[maybe_unused]] AZStd::string_view message)

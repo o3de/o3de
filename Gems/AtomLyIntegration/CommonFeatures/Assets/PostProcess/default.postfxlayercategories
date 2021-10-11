@@ -1,17 +1,30 @@
 <ObjectStream version="3">
 	<Class name="EditorPostFxLayerCategoriesAsset" type="{A18B1B11-4C1E-4C1B-9643-178E8ED27019}">
 		<Class name="AZStd::map" field="Layer Categories" type="{5B4970CC-26DE-51A3-83E7-1BC3A7E8E3C3}">
+
 			<Class name="AZStd::pair" field="element" type="{279D3EEE-F9CE-57FA-986E-D24E57211795}">
-				<Class name="AZStd::string" field="value1" value="Camera" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-				<Class name="int" field="value2" value="100" type="{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}"/>
+				<Class name="AZStd::string" field="value1" value="FrontEnd" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="int" field="value2" value="1000000" type="{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}"/>
 			</Class>
 			<Class name="AZStd::pair" field="element" type="{279D3EEE-F9CE-57FA-986E-D24E57211795}">
-				<Class name="AZStd::string" field="value1" value="Level" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-				<Class name="int" field="value2" value="1000" type="{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}"/>
+				<Class name="AZStd::string" field="value1" value="Cinematics" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="int" field="value2" value="2000000" type="{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}"/>
+			</Class>
+			<Class name="AZStd::pair" field="element" type="{279D3EEE-F9CE-57FA-986E-D24E57211795}">
+				<Class name="AZStd::string" field="value1" value="Gameplay" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="int" field="value2" value="3000000" type="{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}"/>
+			</Class>
+			<Class name="AZStd::pair" field="element" type="{279D3EEE-F9CE-57FA-986E-D24E57211795}">
+				<Class name="AZStd::string" field="value1" value="Camera" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="int" field="value2" value="4000000" type="{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}"/>
 			</Class>
 			<Class name="AZStd::pair" field="element" type="{279D3EEE-F9CE-57FA-986E-D24E57211795}">
 				<Class name="AZStd::string" field="value1" value="Volume" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-				<Class name="int" field="value2" value="10" type="{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}"/>
+				<Class name="int" field="value2" value="5000000" type="{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}"/>
+			</Class>
+			<Class name="AZStd::pair" field="element" type="{279D3EEE-F9CE-57FA-986E-D24E57211795}">
+				<Class name="AZStd::string" field="value1" value="Level" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="int" field="value2" value="6000000" type="{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}"/>
 			</Class>
 		</Class>
 	</Class>

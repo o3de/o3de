@@ -105,9 +105,6 @@ namespace AZ
                 RPI::ScenePtr m_defaultScene = nullptr;
                 AZStd::shared_ptr<AzFramework::Scene> m_defaultFrameworkScene = nullptr;
 
-                float m_simulateTime = 0;
-                float m_deltaTime = 0.016f;
-
                 bool m_isAssetCatalogLoaded = false;
 
                 // The id of the render pipeline created by this component

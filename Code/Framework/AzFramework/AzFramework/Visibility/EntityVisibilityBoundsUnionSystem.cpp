@@ -45,8 +45,6 @@ namespace AzFramework
 
     void EntityVisibilityBoundsUnionSystem::OnEntityActivated(AZ::Entity* entity)
     {
-        AZ_PROFILE_FUNCTION(AzFramework);
-
         // ignore any entity that might activate which does not have a TransformComponent
         if (entity->GetTransform() == nullptr)
         {
@@ -68,8 +66,6 @@ namespace AzFramework
 
     void EntityVisibilityBoundsUnionSystem::OnEntityDeactivated(AZ::Entity* entity)
     {
-        AZ_PROFILE_FUNCTION(AzFramework);
-
         // ignore any entity that might deactivate which does not have a TransformComponent
         if (entity->GetTransform() == nullptr)
         {
@@ -89,8 +85,6 @@ namespace AzFramework
 
     void EntityVisibilityBoundsUnionSystem::UpdateVisibilitySystem(AZ::Entity* entity, EntityVisibilityBoundsUnionInstance& instance)
     {
-        AZ_PROFILE_FUNCTION(AzFramework);
-
         if (const auto& localEntityBoundsUnions = instance.m_localEntityBoundsUnion; localEntityBoundsUnions.IsValid())
         {
             // note: worldEntityBounds will not be a 'tight-fit' Aabb but that of a transformed local aabb
@@ -134,6 +128,24 @@ namespace AzFramework
         return AZ::Aabb::CreateNull();
     }
 
+    AZ::Aabb EntityVisibilityBoundsUnionSystem::GetEntityWorldBoundsUnion(const AZ::EntityId entityId) const
+    {
+        AZ::Entity* entity = AZ::Interface<AZ::ComponentApplicationRequests>::Get()->FindEntity(entityId);
+        if (entity != nullptr)
+        {
+            // if the entity is not found in the mapping then return a null Aabb, this is to mimic 
+            // as closely as possible the behavior of an individual GetLocalBounds call to an Entity that
+            // had been deleted (there would be no response, leaving the default value assigned)
+            if (auto instance_it = m_entityVisibilityBoundsUnionInstanceMapping.find(entity);
+                instance_it != m_entityVisibilityBoundsUnionInstanceMapping.end())
+            {
+                return instance_it->second.m_localEntityBoundsUnion.GetTranslated(entity->GetTransform()->GetWorldTranslation());
+            }
+        }
+
+        return AZ::Aabb::CreateNull();
+    }
+
     void EntityVisibilityBoundsUnionSystem::ProcessEntityBoundsUnionRequests()
     {
         AZ_PROFILE_FUNCTION(AzFramework);
@@ -155,8 +167,6 @@ namespace AzFramework
 
     void EntityVisibilityBoundsUnionSystem::OnTransformUpdated(AZ::Entity* entity)
     {
-        AZ_PROFILE_FUNCTION(AzFramework);
-
         // update the world transform of the visibility bounds union
         if (auto instance_it = m_entityVisibilityBoundsUnionInstanceMapping.find(entity);
             instance_it != m_entityVisibilityBoundsUnionInstanceMapping.end())

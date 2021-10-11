@@ -44,6 +44,7 @@
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 #include <AzToolsFramework/Entity/EditorEntityHelpers.h>
 #include <AzToolsFramework/Entity/EditorEntityInfoBus.h>
+#include <AzToolsFramework/FocusMode/FocusModeInterface.h>
 #include <AzToolsFramework/ToolsComponents/ComponentAssetMimeDataContainer.h>
 #include <AzToolsFramework/ToolsComponents/ComponentMimeData.h>
 #include <AzToolsFramework/ToolsComponents/EditorEntityIdContainer.h>
@@ -81,10 +82,13 @@ namespace AzToolsFramework
         , m_entityExpansionState()
         , m_entityFilteredState()
     {
+        m_focusModeInterface = AZ::Interface<FocusModeInterface>::Get();
+        AZ_Assert(m_focusModeInterface != nullptr, "EntityOutlinerListModel requires a FocusModeInterface instance on construction.");
     }
 
     EntityOutlinerListModel::~EntityOutlinerListModel()
     {
+        ContainerEntityNotificationBus::Handler::BusDisconnect();
         EditorEntityInfoNotificationBus::Handler::BusDisconnect();
         EditorEntityContextNotificationBus::Handler::BusDisconnect();
         ToolsApplicationEvents::Bus::Handler::BusDisconnect();
@@ -102,10 +106,15 @@ namespace AzToolsFramework
         EntityCompositionNotificationBus::Handler::BusConnect();
         AZ::EntitySystemBus::Handler::BusConnect();
 
-        m_editorEntityFrameworkInterface = AZ::Interface<AzToolsFramework::EditorEntityUiInterface>::Get();
+        AzFramework::EntityContextId editorEntityContextId = AzFramework::EntityContextId::CreateNull();
+        AzToolsFramework::EditorEntityContextRequestBus::BroadcastResult(
+            editorEntityContextId, &AzToolsFramework::EditorEntityContextRequestBus::Events::GetEditorEntityContextId);
 
-        AZ_Assert(m_editorEntityFrameworkInterface != nullptr,
-            "EntityOutlinerListModel requires a EditorEntityFrameworkInterface instance on Initialize.");
+        ContainerEntityNotificationBus::Handler::BusConnect(editorEntityContextId);
+
+        m_editorEntityUiInterface = AZ::Interface<AzToolsFramework::EditorEntityUiInterface>::Get();
+        AZ_Assert(m_editorEntityUiInterface != nullptr,
+            "EntityOutlinerListModel requires a EditorEntityUiInterface instance on Initialize.");
     }
 
     int EntityOutlinerListModel::rowCount(const QModelIndex& parent) const
@@ -279,18 +288,18 @@ namespace AzToolsFramework
 
     QVariant EntityOutlinerListModel::GetEntityIcon(const AZ::EntityId& id) const
     {
-        auto entityUiHandler = m_editorEntityFrameworkInterface->GetHandler(id);
-        QPixmap pixmap;
+        auto entityUiHandler = m_editorEntityUiInterface->GetHandler(id);
+        QIcon icon;
 
         // Retrieve the icon from the handler
         if (entityUiHandler != nullptr)
         {
-            pixmap = entityUiHandler->GenerateItemIcon(id);
+            icon = entityUiHandler->GenerateItemIcon(id);
         }
 
-        if (!pixmap.isNull())
+        if (!icon.isNull())
         {
-            return QIcon(pixmap);
+            return icon;
         }
 
         // If no icon was returned by the handler, use the default one.
@@ -299,7 +308,7 @@ namespace AzToolsFramework
 
         if (isEditorOnly)
         {
-            return QIcon(QPixmap(QString(":/Icons/Entity_Editor_Only.svg")));
+            return QIcon(QString(":/Icons/Entity_Editor_Only.svg"));
         }
 
         AZ::Entity* entity = nullptr;
@@ -308,15 +317,15 @@ namespace AzToolsFramework
 
         if (!isInitiallyActive)
         {
-            return QIcon(QPixmap(QString(":/Icons/Entity_Not_Active.svg")));
+            return QIcon(QString(":/Icons/Entity_Not_Active.svg"));
         }
 
-        return QIcon(QPixmap(QString(":/Icons/Entity.svg")));
+        return QIcon(QString(":/Icons/Entity.svg"));
     }
 
     QVariant EntityOutlinerListModel::GetEntityTooltip(const AZ::EntityId& id) const
     {
-        auto entityUiHandler = m_editorEntityFrameworkInterface->GetHandler(id);
+        auto entityUiHandler = m_editorEntityUiInterface->GetHandler(id);
         QString tooltip;
 
         // Retrieve the tooltip from the handler
@@ -349,7 +358,7 @@ namespace AzToolsFramework
     QVariant EntityOutlinerListModel::dataForVisibility(const QModelIndex& index, int role) const
     {
         auto entityId = GetEntityFromIndex(index);
-        auto entityUiHandler = m_editorEntityFrameworkInterface->GetHandler(entityId);
+        auto entityUiHandler = m_editorEntityUiInterface->GetHandler(entityId);
 
         if (!entityUiHandler || entityUiHandler->CanToggleLockVisibility(entityId))
         {
@@ -377,7 +386,7 @@ namespace AzToolsFramework
     QVariant EntityOutlinerListModel::dataForLock(const QModelIndex& index, int role) const
     {
         auto entityId = GetEntityFromIndex(index);
-        auto entityUiHandler = m_editorEntityFrameworkInterface->GetHandler(entityId);
+        auto entityUiHandler = m_editorEntityUiInterface->GetHandler(entityId);
 
         if (!entityUiHandler || entityUiHandler->CanToggleLockVisibility(entityId))
         {
@@ -436,7 +445,7 @@ namespace AzToolsFramework
             if (value.canConvert<Qt::CheckState>())
             {
                 const auto entityId = GetEntityFromIndex(index);
-                auto entityUiHandler = m_editorEntityFrameworkInterface->GetHandler(entityId);
+                auto entityUiHandler = m_editorEntityUiInterface->GetHandler(entityId);
 
                 if (!entityUiHandler || entityUiHandler->CanToggleLockVisibility(entityId))
                 {
@@ -530,6 +539,11 @@ namespace AzToolsFramework
         default:
             itemFlags |= Qt::ItemIsEnabled | Qt::ItemIsSelectable | Qt::ItemIsDropEnabled;
             break;
+        }
+
+        if (AZ::EntityId entityId = GetEntityFromIndex(index); !m_focusModeInterface->IsInFocusSubTree(entityId))
+        {
+            itemFlags &= !Qt::ItemIsEnabled;
         }
 
         return itemFlags;
@@ -1326,10 +1340,24 @@ namespace AzToolsFramework
         emit EnableSelectionUpdates(true);
     }
 
-    void EntityOutlinerListModel::OnEntityRuntimeActivationChanged(AZ::EntityId entityId, bool activeOnStart)
+    void EntityOutlinerListModel::OnEntityRuntimeActivationChanged(AZ::EntityId entityId, [[maybe_unused]] bool activeOnStart)
     {
-        AZ_UNUSED(activeOnStart);
         QueueEntityUpdate(entityId);
+    }
+
+    void EntityOutlinerListModel::OnContainerEntityStatusChanged(AZ::EntityId entityId, [[maybe_unused]] bool open)
+    {
+        QModelIndex changedIndex = GetIndexFromEntity(entityId);
+
+        // Trigger a refresh of all direct children so that they can be shown or hidden appropriately.
+        int numChildren = rowCount(changedIndex);
+        if (numChildren > 0)
+        {
+            emit dataChanged(index(0, 0, changedIndex), index(numChildren - 1, ColumnCount - 1, changedIndex));
+        }
+
+        // Always expand containers
+        QueueEntityToExpand(entityId, true);
     }
 
     void EntityOutlinerListModel::OnEntityInfoUpdatedRemoveChildBegin([[maybe_unused]] AZ::EntityId parentId, [[maybe_unused]] AZ::EntityId childId)
@@ -1337,7 +1365,10 @@ namespace AzToolsFramework
         //add/remove operations trigger selection change signals which assert and break undo/redo operations in progress in inspector etc.
         //so disallow selection updates until change is complete
         emit EnableSelectionUpdates(false);
-        beginResetModel();
+
+        auto parentIndex = GetIndexFromEntity(parentId);
+        auto childIndex = GetIndexFromEntity(childId);
+        beginRemoveRows(parentIndex, childIndex.row(), childIndex.row());
     }
 
     void EntityOutlinerListModel::OnEntityInfoUpdatedRemoveChildEnd(AZ::EntityId parentId, AZ::EntityId childId)
@@ -1345,7 +1376,7 @@ namespace AzToolsFramework
         (void)childId;
         AZ_PROFILE_FUNCTION(AzToolsFramework);
 
-        endResetModel();
+        endRemoveRows();
 
         //must refresh partial lock/visibility of parents
         m_isFilterDirty = true;

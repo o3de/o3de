@@ -28,11 +28,11 @@ namespace AZ
         }
 #endif
 
-        RHI::ResultCode RayTracingPipelineState::InitInternal(RHI::Device& deviceBase, [[maybe_unused]]const RHI::RayTracingPipelineStateDescriptor* descriptor)
+        RHI::ResultCode RayTracingPipelineState::InitInternal([[maybe_unused]]RHI::Device& deviceBase, [[maybe_unused]]const RHI::RayTracingPipelineStateDescriptor* descriptor)
         {
+#ifdef AZ_DX12_DXR_SUPPORT
             Device& device = static_cast<Device&>(deviceBase);
 
-#ifdef AZ_DX12_DXR_SUPPORT
             size_t dxilLibraryCount = descriptor->GetShaderLibraries().size();
             size_t hitGroupCount = descriptor->GetHitGroups().size();
        

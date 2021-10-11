@@ -29,11 +29,17 @@ namespace AtomToolsFramework
 
         //! Begin a smooth transition of the camera to the requested transform.
         //! @param worldFromLocal The transform of where the camera should end up.
-        //! @param lookAtDistance The distance between the camera transform and the imagined look at point.
-        virtual void InterpolateToTransform(const AZ::Transform& worldFromLocal, float lookAtDistance) = 0;
+        virtual void InterpolateToTransform(const AZ::Transform& worldFromLocal) = 0;
 
-        //! Look at point after an interpolation has finished and no translation has occurred.
-        virtual AZStd::optional<AZ::Vector3> LookAtAfterInterpolation() const = 0;
+        //! Return the current reference frame.
+        //! @note If a reference frame has not been set or a frame has been cleared, this is just the identity.
+        virtual AZ::Transform GetReferenceFrame() const = 0;
+
+        //! Set a new reference frame other than the identity for the camera controller.
+        virtual void SetReferenceFrame(const AZ::Transform& worldFromLocal) = 0;
+
+        //! Clear the current reference frame to restore the identity.
+        virtual void ClearReferenceFrame() = 0;
 
     protected:
         ~ModularViewportCameraControllerRequests() = default;

@@ -8,8 +8,8 @@
 
 
 #include <platform.h>
+#include "Cry_Color.h"
 #include "XMLBinaryNode.h"
-#include <CrySizer.h>
 
 //////////////////////////////////////////////////////////////////////////
 CBinaryXmlData::CBinaryXmlData()
@@ -38,23 +38,9 @@ CBinaryXmlData::~CBinaryXmlData()
     pBinaryNodes = 0;
 }
 
-void CBinaryXmlData::GetMemoryUsage(ICrySizer* pSizer) const
-{
-    pSizer->AddObject(pFileContents, nFileSize);
-    const XMLBinary::BinaryFileHeader* pHeader = reinterpret_cast<const XMLBinary::BinaryFileHeader*>(pFileContents);
-    pSizer->AddObject(pBinaryNodes, sizeof(CBinaryXmlNode) * pHeader->nNodeCount);
-}
-
 //////////////////////////////////////////////////////////////////////////
 // CBinaryXmlNode implementation.
 //////////////////////////////////////////////////////////////////////////
-
-//////////////////////////////////////////////////////////////////////////
-// collect allocated memory  informations
-void CBinaryXmlNode::GetMemoryUsage(ICrySizer* pSizer) const
-{
-    pSizer->AddObject(m_pData);
-}
 
 //////////////////////////////////////////////////////////////////////////
 XmlNodeRef CBinaryXmlNode::getParent() const
@@ -139,7 +125,7 @@ bool CBinaryXmlNode::getAttr(const char* key, int64& value) const
     const char* svalue = GetValue(key);
     if (svalue)
     {
-        azsscanf(svalue, "%" PRId64, &value);
+        value = strtoll(svalue, nullptr, 10);
         return true;
     }
     return false;
@@ -151,14 +137,7 @@ bool CBinaryXmlNode::getAttr(const char* key, uint64& value, bool useHexFormat) 
     const char* svalue = GetValue(key);
     if (svalue)
     {
-        if (useHexFormat)
-        {
-            azsscanf(svalue, "%" PRIX64, &value);
-        }
-        else
-        {
-            azsscanf(svalue, "%" PRIu64, &value);
-        }
+        value = strtoull(svalue, nullptr, useHexFormat ? 16 : 10);
         return true;
     }
     return false;
@@ -244,21 +223,6 @@ bool CBinaryXmlNode::getAttr(const char* key, Vec4& value) const
     return false;
 }
 
-bool CBinaryXmlNode::getAttr(const char* key, Vec3d& value) const
-{
-    const char* svalue = GetValue(key);
-    if (svalue)
-    {
-        double x, y, z;
-        if (azsscanf(svalue, "%lf,%lf,%lf", &x, &y, &z) == 3)
-        {
-            value = Vec3d(x, y, z);
-            return true;
-        }
-    }
-    return false;
-}
-
 //////////////////////////////////////////////////////////////////////////
 bool CBinaryXmlNode::getAttr(const char* key, Vec2& value) const
 {
@@ -269,22 +233,6 @@ bool CBinaryXmlNode::getAttr(const char* key, Vec2& value) const
         if (azsscanf(svalue, "%f,%f", &x, &y) == 2)
         {
             value = Vec2(x, y);
-            return true;
-        }
-    }
-    return false;
-}
-
-//////////////////////////////////////////////////////////////////////////
-bool CBinaryXmlNode::getAttr(const char* key, Vec2d& value) const
-{
-    const char* svalue = GetValue(key);
-    if (svalue)
-    {
-        double x, y;
-        if (azsscanf(svalue, "%lf,%lf", &x, &y) == 2)
-        {
-            value = Vec2d(x, y);
             return true;
         }
     }

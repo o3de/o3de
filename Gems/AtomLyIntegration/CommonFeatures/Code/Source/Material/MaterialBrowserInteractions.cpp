@@ -29,16 +29,13 @@ namespace AZ
         {
             if (HandlesSource(fullSourceFileName))
             {
-                openers.push_back(
-                    {
-                        "Material_Editor",
-                        "Open in Material Editor...",
-                        QIcon(),
+                openers.push_back({ "Material_Editor", "Open in Material Editor...", QIcon(),
                     [&](const char* fullSourceFileNameInCallback, [[maybe_unused]] const AZ::Uuid& sourceUUID)
-                        {
-                            EditorMaterialSystemComponentRequestBus::Broadcast(&EditorMaterialSystemComponentRequestBus::Events::OpenInMaterialEditor, fullSourceFileNameInCallback);
-                        }
-                    });
+                    {
+                        EditorMaterialSystemComponentRequestBus::Broadcast(
+                            &EditorMaterialSystemComponentRequestBus::Events::OpenMaterialEditor,
+                            fullSourceFileNameInCallback);
+                    } });
             }
         }
 

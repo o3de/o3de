@@ -30,16 +30,17 @@ namespace UnitTest
         : public ScopedAllocatorSetupFixture
     {
     public:
+        // Use an Immediately invoked function to initlaize the m_stackRecordLevels value of the AZ::SystemAllocator::Descriptor class
         ArchiveTestFixture()
-            : m_application{ AZStd::make_unique<AzFramework::Application>() }
+            : ScopedAllocatorSetupFixture(
+                []() { AZ::SystemAllocator::Descriptor desc; desc.m_stackRecordLevels = 30; return desc; }()
+            )
+            , m_application{ AZStd::make_unique<AzFramework::Application>() }
         {
         }
 
         void SetUp() override
         {
-            AZ::ComponentApplication::Descriptor descriptor;
-            descriptor.m_stackRecordLevels = 30;
-
             AZ::SettingsRegistryInterface* registry = AZ::SettingsRegistry::Get();
 
             auto projectPathKey =
@@ -47,9 +48,9 @@ namespace UnitTest
             registry->Set(projectPathKey, "AutomatedTesting");
             AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddRuntimeFilePaths(*registry);
 
-            m_application->Start(descriptor);
+            m_application->Start({});
             // Without this, the user settings component would attempt to save on finalize/shutdown. Since the file is
-            // shared across the whole engine, if multiple tests are run in parallel, the saving could cause a crash 
+            // shared across the whole engine, if multiple tests are run in parallel, the saving could cause a crash
             // in the unit tests.
             AZ::UserSettingsComponentRequestBus::Broadcast(&AZ::UserSettingsComponentRequests::DisableSaveOnFinalize);
         }
@@ -68,7 +69,7 @@ namespace UnitTest
                 return false;
             }
 
-            return archive->OpenPack(path, AZ::IO::IArchive::FLAGS_PATH_REAL) && archive->ClosePack(path);
+            return archive->OpenPack(path) && archive->ClosePack(path);
         }
 
         template <class Function>
@@ -116,7 +117,7 @@ namespace UnitTest
 
             {
                 // Canary tests first
-                AZ::IO::HandleType fileHandle = archive->FOpen(testFilePath, "rb", 0);
+                AZ::IO::HandleType fileHandle = archive->FOpen(testFilePath, "rb");
 
                 ASSERT_NE(AZ::IO::InvalidHandle, fileHandle);
 
@@ -136,9 +137,9 @@ namespace UnitTest
                 // open already open file and call FGetCachedFileData
                 fileSize = 0;
                 {
-                    AZ::IO::HandleType fileHandle2 = archive->FOpen(testFilePath, "rb", 0);
+                    AZ::IO::HandleType fileHandle2 = archive->FOpen(testFilePath, "rb");
                     char* pFileBuffer3 = (char*)archive->FGetCachedFileData(fileHandle2, fileSize);
-                    ASSERT_NE(nullptr,pFileBuffer3);
+                    ASSERT_NE(nullptr, pFileBuffer3);
                     EXPECT_EQ(dataLen, fileSize);
                     EXPECT_EQ(0, memcmp(pFileBuffer3, testData, dataLen));
                     archive->FClose(fileHandle2);
@@ -174,7 +175,7 @@ namespace UnitTest
             // Multithreaded Test #2 reading from the same file concurrently
             auto concurrentArchiveFileReadFunc = [archive, testFilePath, dataLen, testData]()
             {
-                AZ::IO::HandleType threadFileHandle = archive->FOpen(testFilePath, "rb", 0);
+                AZ::IO::HandleType threadFileHandle = archive->FOpen(testFilePath, "rb");
 
                 if (threadFileHandle == AZ::IO::InvalidHandle)
                 {
@@ -255,13 +256,13 @@ namespace UnitTest
             fileIo->CreatePath("@usercache@/levels/test");
 
             // setup test archive and file
-            AZStd::intrusive_ptr<AZ::IO::INestedArchive> pArchive = archive->OpenArchive(testArchivePath_withSubfolders.c_str(), nullptr, AZ::IO::INestedArchive::FLAGS_CREATE_NEW);
+            AZStd::intrusive_ptr<AZ::IO::INestedArchive> pArchive = archive->OpenArchive(testArchivePath_withSubfolders.c_str(), {}, AZ::IO::INestedArchive::FLAGS_CREATE_NEW);
             EXPECT_NE(nullptr, pArchive);
             EXPECT_EQ(0, pArchive->UpdateFile(fileInArchiveFile, dataString.data(), dataString.size(), AZ::IO::INestedArchive::METHOD_COMPRESS, AZ::IO::INestedArchive::LEVEL_FASTEST));
             pArchive.reset();
             EXPECT_TRUE(IsPackValid(testArchivePath_withSubfolders.c_str()));
 
-            EXPECT_TRUE(archive->OpenPack("@assets@", testArchivePath_withSubfolders.c_str()));
+            EXPECT_TRUE(archive->OpenPack("@products@", testArchivePath_withSubfolders.c_str()));
 
             EXPECT_TRUE(archive->IsFileExist(fileInArchiveFile));
         }
@@ -290,7 +291,7 @@ namespace UnitTest
             archive->ClosePack(filePath.c_str());
             fileIo->Remove(filePath.c_str());
 
-            auto pArchive = archive->OpenArchive(filePath.c_str(), nullptr, AZ::IO::INestedArchive::FLAGS_CREATE_NEW);
+            auto pArchive = archive->OpenArchive(filePath.c_str(), {}, AZ::IO::INestedArchive::FLAGS_CREATE_NEW);
             EXPECT_NE(nullptr, pArchive);
             pArchive.reset();
             archive->ClosePack(filePath.c_str());
@@ -305,7 +306,7 @@ namespace UnitTest
 
         // open and fetch the opened pak file using a *.pak
         AZStd::vector<AZ::IO::FixedMaxPathString> fullPaths;
-        archive->OpenPacks("@usercache@/*.pak", AZ::IO::IArchive::EPathResolutionRules::FLAGS_PATH_REAL, &fullPaths);
+        archive->OpenPacks("@usercache@/*.pak", &fullPaths);
         EXPECT_TRUE(AZStd::any_of(fullPaths.cbegin(), fullPaths.cend(), [](auto& path) { return path.ends_with("one.pak"); }));
         EXPECT_TRUE(AZStd::any_of(fullPaths.cbegin(), fullPaths.cend(), [](auto& path) { return path.ends_with("two.pak"); }));
     }
@@ -352,7 +353,7 @@ namespace UnitTest
         // and be able to IMMEDIATELY
         // * read the file in the subfolder
         // * enumerate the folders (including that subfolder) even though they are 'virtual', not real folders on physical media
-        // * all of the above even though the mount point for the archive is @assets@ wheras the physical pack lives in @usercache@
+        // * all of the above even though the mount point for the archive is @products@ wheras the physical pack lives in @usercache@
         // finally, we're going to repeat the above test but with files mounted with subfolders
         // so for example, the pack will contain levelinfo.xml at the root of it
         // but it will be mounted at a subfolder (levels/mylevel).
@@ -387,7 +388,7 @@ namespace UnitTest
         pArchive.reset();
         EXPECT_TRUE(IsPackValid(testArchivePath_withSubfolders));
 
-        EXPECT_TRUE(archive->OpenPack("@assets@", testArchivePath_withSubfolders));
+        EXPECT_TRUE(archive->OpenPack("@products@", testArchivePath_withSubfolders));
         // ---- BARRAGE OF TESTS
         EXPECT_TRUE(archive->IsFileExist("levels\\mylevel\\levelinfo.xml"));
         EXPECT_TRUE(archive->IsFileExist("levels//mylevel//levelinfo.xml"));
@@ -477,13 +478,13 @@ namespace UnitTest
         bool found_mylevel_file{};
         bool found_mylevel_folder{};
 
-        AZStd::intrusive_ptr<AZ::IO::INestedArchive> pArchive = archive->OpenArchive(testArchivePath_withMountPoint, nullptr, AZ::IO::INestedArchive::FLAGS_CREATE_NEW);
+        AZStd::intrusive_ptr<AZ::IO::INestedArchive> pArchive = archive->OpenArchive(testArchivePath_withMountPoint, {}, AZ::IO::INestedArchive::FLAGS_CREATE_NEW);
         EXPECT_NE(nullptr, pArchive);
         EXPECT_EQ(0, pArchive->UpdateFile("levelinfo.xml", dataString.data(), dataString.size(), AZ::IO::INestedArchive::METHOD_COMPRESS, AZ::IO::INestedArchive::LEVEL_FASTEST));
         pArchive.reset();
         EXPECT_TRUE(IsPackValid(testArchivePath_withMountPoint));
 
-        EXPECT_TRUE(archive->OpenPack("@assets@\\uniquename\\mylevel2", testArchivePath_withMountPoint));
+        EXPECT_TRUE(archive->OpenPack("@products@\\uniquename\\mylevel2", testArchivePath_withMountPoint));
 
         // ---- BARRAGE OF TESTS
         EXPECT_TRUE(archive->IsFileExist("uniquename\\mylevel2\\levelinfo.xml"));
@@ -542,7 +543,7 @@ namespace UnitTest
         archive->ClosePack(testArchivePath_withMountPoint);
 
         // --- test to make sure that when you iterate only the first component is found, so bury it deep and ask for the root
-        EXPECT_TRUE(archive->OpenPack("@assets@\\uniquename\\mylevel2\\mylevel3\\mylevel4", testArchivePath_withMountPoint));
+        EXPECT_TRUE(archive->OpenPack("@products@\\uniquename\\mylevel2\\mylevel3\\mylevel4", testArchivePath_withMountPoint));
 
         found_mylevel_folder = false;
         handle = archive->FindFirst("uniquename\\*");
@@ -570,12 +571,12 @@ namespace UnitTest
         EXPECT_TRUE(found_mylevel_folder);
 
         numFound = 0;
-        found_mylevel_folder = 0;
+        found_mylevel_folder = false;
 
         // now make sure no red herrings appear
-        // for example, if a file is mounted at "@assets@\\uniquename\\mylevel2\\mylevel3\\mylevel4"
-        // and the file "@assets@\\somethingelse" is requested it should not be found
-        // in addition if the file "@assets@\\uniquename\\mylevel3" is requested it should not be found
+        // for example, if a file is mounted at "@products@\\uniquename\\mylevel2\\mylevel3\\mylevel4"
+        // and the file "@products@\\somethingelse" is requested it should not be found
+        // in addition if the file "@products@\\uniquename\\mylevel3" is requested it should not be found
         handle = archive->FindFirst("somethingelse\\*");
         EXPECT_FALSE(static_cast<bool>(handle));
 
@@ -608,6 +609,9 @@ namespace UnitTest
         archive->ClosePack(genericArchiveFileName);
         cpfio.Remove(genericArchiveFileName);
 
+        // create the asset alias directory
+        cpfio.CreatePath("@products@");
+
         // create generic file
 
         HandleType normalFileHandle;
@@ -625,17 +629,17 @@ namespace UnitTest
         normalFileHandle = InvalidHandle;
         EXPECT_TRUE(cpfio.Exists("@log@/unittesttemp/realfileforunittest.xml"));
 
-        AZStd::intrusive_ptr<AZ::IO::INestedArchive> pArchive = archive->OpenArchive(genericArchiveFileName, nullptr, AZ::IO::INestedArchive::FLAGS_CREATE_NEW);
+        AZStd::intrusive_ptr<AZ::IO::INestedArchive> pArchive = archive->OpenArchive(genericArchiveFileName, {}, AZ::IO::INestedArchive::FLAGS_CREATE_NEW);
         EXPECT_NE(nullptr, pArchive);
         EXPECT_EQ(0, pArchive->UpdateFile("testfile.xml", dataString, aznumeric_cast<uint32_t>(dataLen), AZ::IO::INestedArchive::METHOD_COMPRESS, AZ::IO::INestedArchive::LEVEL_FASTEST));
         pArchive.reset();
         EXPECT_TRUE(IsPackValid(genericArchiveFileName));
 
-        EXPECT_TRUE(archive->OpenPack("@assets@", genericArchiveFileName));
+        EXPECT_TRUE(archive->OpenPack("@products@", genericArchiveFileName));
 
         // ---- BARRAGE OF TESTS
         EXPECT_TRUE(cpfio.Exists("testfile.xml"));
-        EXPECT_TRUE(cpfio.Exists("@assets@/testfile.xml"));  // this should be hte same file
+        EXPECT_TRUE(cpfio.Exists("@products@/testfile.xml"));  // this should be hte same file
         EXPECT_TRUE(!cpfio.Exists("@log@/testfile.xml"));
         EXPECT_TRUE(!cpfio.Exists("@usercache@/testfile.xml"));
         EXPECT_TRUE(cpfio.Exists("@log@/unittesttemp/realfileforunittest.xml"));
@@ -681,9 +685,9 @@ namespace UnitTest
         EXPECT_EQ(ResultCode::Success, cpfio.Close(normalFileHandle));
 
         EXPECT_TRUE(!cpfio.IsDirectory("testfile.xml"));
-        EXPECT_TRUE(cpfio.IsDirectory("@assets@"));
+        EXPECT_TRUE(cpfio.IsDirectory("@products@"));
         EXPECT_TRUE(cpfio.IsReadOnly("testfile.xml"));
-        EXPECT_TRUE(cpfio.IsReadOnly("@assets@/testfile.xml"));
+        EXPECT_TRUE(cpfio.IsReadOnly("@products@/testfile.xml"));
         EXPECT_TRUE(!cpfio.IsReadOnly("@log@/unittesttemp/realfileforunittest.xml"));
 
 
@@ -709,13 +713,16 @@ namespace UnitTest
         EXPECT_TRUE(cpfio.Exists("@log@/unittesttemp/copiedfile2.xml"));
 
         // find files test.
-
+        AZ::IO::FixedMaxPath resolvedTestFilePath;
+        EXPECT_TRUE(cpfio.ResolvePath(resolvedTestFilePath, AZ::IO::PathView("@products@/testfile.xml")));
         bool foundIt = false;
         // note that this file exists only in the archive.
-        cpfio.FindFiles("@assets@", "*.xml", [&foundIt](const char* foundName)
+        cpfio.FindFiles("@products@", "*.xml", [&foundIt, &cpfio, &resolvedTestFilePath](const char* foundName)
             {
+                AZ::IO::FixedMaxPath resolvedFoundPath;
+                EXPECT_TRUE(cpfio.ResolvePath(resolvedFoundPath, AZ::IO::PathView(foundName)));
                 // according to the contract stated in the FileIO.h file, we expect full paths. (Aliases are full paths)
-                if (azstricmp(foundName, "@assets@/testfile.xml") == 0)
+                if (resolvedTestFilePath == resolvedFoundPath)
                 {
                     foundIt = true;
                     return false;
@@ -727,10 +734,10 @@ namespace UnitTest
 
 
         // The following test is disabled because it will trigger an AZ_ERROR which will affect the outcome of this entire test
-        // EXPECT_NE(ResultCode::Success, cpfio.Remove("@assets@/testfile.xml")); // may not delete archive files
+        // EXPECT_NE(ResultCode::Success, cpfio.Remove("@products@/testfile.xml")); // may not delete archive files
 
         // make sure it works with and without alias:
-        EXPECT_TRUE(cpfio.Exists("@assets@/testfile.xml"));
+        EXPECT_TRUE(cpfio.Exists("@products@/testfile.xml"));
         EXPECT_TRUE(cpfio.Exists("testfile.xml"));
 
         EXPECT_TRUE(cpfio.Exists("@log@/unittesttemp/realfileforunittest.xml"));
@@ -766,7 +773,7 @@ namespace UnitTest
         fileIo->Remove(testArchivePath);
 
         // ------------ BASIC TEST:  Create and read Empty Archive ------------
-        AZStd::intrusive_ptr<AZ::IO::INestedArchive> pArchive = archive->OpenArchive(testArchivePath, nullptr, AZ::IO::INestedArchive::FLAGS_CREATE_NEW);
+        AZStd::intrusive_ptr<AZ::IO::INestedArchive> pArchive = archive->OpenArchive(testArchivePath, {}, AZ::IO::INestedArchive::FLAGS_CREATE_NEW);
         EXPECT_NE(nullptr, pArchive);
 
         EXPECT_EQ(0, pArchive->UpdateFile("foundit.dat", const_cast<char*>("test"), 4, AZ::IO::INestedArchive::METHOD_COMPRESS, AZ::IO::INestedArchive::LEVEL_BEST));
@@ -781,59 +788,68 @@ namespace UnitTest
         EXPECT_TRUE(archive->ClosePack(realNameBuf));
 
         // change its actual location:
-        EXPECT_TRUE(archive->OpenPack("@assets@", realNameBuf));
-        EXPECT_TRUE(archive->IsFileExist("@assets@/foundit.dat"));
+        EXPECT_TRUE(archive->OpenPack("@products@", realNameBuf));
+        EXPECT_TRUE(archive->IsFileExist("@products@/foundit.dat"));
         EXPECT_FALSE(archive->IsFileExist("@usercache@/foundit.dat")); // do not find it in the previous location!
-        EXPECT_FALSE(archive->IsFileExist("@assets@/foundit.dat", AZ::IO::IArchive::eFileLocation_OnDisk));
-        EXPECT_FALSE(archive->IsFileExist("@assets@/notfoundit.dat"));
+        EXPECT_FALSE(archive->IsFileExist("@products@/foundit.dat", AZ::IO::IArchive::eFileLocation_OnDisk));
+        EXPECT_FALSE(archive->IsFileExist("@products@/notfoundit.dat"));
         EXPECT_TRUE(archive->ClosePack(realNameBuf));
 
         // try sub-folders
-        EXPECT_TRUE(archive->OpenPack("@assets@/mystuff", realNameBuf));
-        EXPECT_TRUE(archive->IsFileExist("@assets@/mystuff/foundit.dat"));
-        EXPECT_FALSE(archive->IsFileExist("@assets@/foundit.dat")); // do not find it in the previous locations!
+        EXPECT_TRUE(archive->OpenPack("@products@/mystuff", realNameBuf));
+        EXPECT_TRUE(archive->IsFileExist("@products@/mystuff/foundit.dat"));
+        EXPECT_FALSE(archive->IsFileExist("@products@/foundit.dat")); // do not find it in the previous locations!
         EXPECT_FALSE(archive->IsFileExist("@usercache@/foundit.dat")); // do not find it in the previous locations!
-        EXPECT_FALSE(archive->IsFileExist("@assets@/foundit.dat", AZ::IO::IArchive::eFileLocation_OnDisk));
-        EXPECT_FALSE(archive->IsFileExist("@assets@/mystuff/foundit.dat", AZ::IO::IArchive::eFileLocation_OnDisk));
-        EXPECT_FALSE(archive->IsFileExist("@assets@/notfoundit.dat")); // non-existent file
-        EXPECT_FALSE(archive->IsFileExist("@assets@/mystuff/notfoundit.dat")); // non-existent file
+        EXPECT_FALSE(archive->IsFileExist("@products@/foundit.dat", AZ::IO::IArchive::eFileLocation_OnDisk));
+        EXPECT_FALSE(archive->IsFileExist("@products@/mystuff/foundit.dat", AZ::IO::IArchive::eFileLocation_OnDisk));
+        EXPECT_FALSE(archive->IsFileExist("@products@/notfoundit.dat")); // non-existent file
+        EXPECT_FALSE(archive->IsFileExist("@products@/mystuff/notfoundit.dat")); // non-existent file
         EXPECT_TRUE(archive->ClosePack(realNameBuf));
     }
 
-    TEST_F(ArchiveTestFixture, IResourceList_Add_EmptyFileName_DoesNotCrash)
+    TEST_F(ArchiveTestFixture, IResourceList_Add_EmptyFileName_DoesNotInsert)
     {
         AZ::IO::IResourceList* reslist = AZ::Interface<AZ::IO::IArchive>::Get()->GetResourceList(AZ::IO::IArchive::RFOM_EngineStartup);
         ASSERT_NE(nullptr, reslist);
 
         reslist->Clear();
         reslist->Add("");
-        EXPECT_STREQ(reslist->GetFirst(), "");
-        reslist->Clear();
+        EXPECT_EQ(nullptr, reslist->GetFirst());
     }
 
-    TEST_F(ArchiveTestFixture, IResourceList_Add_RegularFileName_NormalizesAppropriately)
+    TEST_F(ArchiveTestFixture, IResourceList_Add_RegularFileName_ResolvesAppropriately)
     {
         AZ::IO::IResourceList* reslist = AZ::Interface<AZ::IO::IArchive>::Get()->GetResourceList(AZ::IO::IArchive::RFOM_EngineStartup);
         ASSERT_NE(nullptr, reslist);
+
+        AZ::IO::FileIOBase* ioBase = AZ::IO::FileIOBase::GetInstance();
+        ASSERT_NE(nullptr, ioBase);
+        AZ::IO::FixedMaxPath resolvedTestPath;
+        EXPECT_TRUE(ioBase->ResolvePath(resolvedTestPath, "blah/blah/abcde"));
 
         reslist->Clear();
         reslist->Add("blah\\blah/AbCDE");
-
-        // it normalizes the string, so the slashes flip and everything is lowercased.
-        EXPECT_STREQ(reslist->GetFirst(), "blah/blah/abcde");
+        AZ::IO::FixedMaxPath resolvedAddedPath;
+        EXPECT_TRUE(ioBase->ResolvePath(resolvedAddedPath, reslist->GetFirst()));
+        EXPECT_EQ(resolvedTestPath, resolvedAddedPath);
         reslist->Clear();
     }
 
-    TEST_F(ArchiveTestFixture, IResourceList_Add_ReallyShortFileName_NormalizesAppropriately)
+    TEST_F(ArchiveTestFixture, IResourceList_Add_ReallyShortFileName_ResolvesAppropriately)
     {
         AZ::IO::IResourceList* reslist = AZ::Interface<AZ::IO::IArchive>::Get()->GetResourceList(AZ::IO::IArchive::RFOM_EngineStartup);
         ASSERT_NE(nullptr, reslist);
 
+        AZ::IO::FileIOBase* ioBase = AZ::IO::FileIOBase::GetInstance();
+        ASSERT_NE(nullptr, ioBase);
+        AZ::IO::FixedMaxPath resolvedTestPath;
+        EXPECT_TRUE(ioBase->ResolvePath(resolvedTestPath, "a"));
+
         reslist->Clear();
         reslist->Add("A");
-
-        // it normalizes the string, so the slashes flip and everything is lowercased.
-        EXPECT_STREQ(reslist->GetFirst(), "a");
+        AZ::IO::FixedMaxPath resolvedAddedPath;
+        EXPECT_TRUE(ioBase->ResolvePath(resolvedAddedPath, reslist->GetFirst()));
+        EXPECT_EQ(resolvedTestPath, resolvedAddedPath);
         reslist->Clear();
     }
 
@@ -845,207 +861,20 @@ namespace UnitTest
         AZ::IO::FileIOBase* ioBase = AZ::IO::FileIOBase::GetInstance();
         ASSERT_NE(nullptr, ioBase);
 
-        const char *assetsPath = ioBase->GetAlias("@assets@");
+        const char* assetsPath = ioBase->GetAlias("@products@");
         ASSERT_NE(nullptr, assetsPath);
 
-        AZStd::string stringToAdd = AZStd::string::format("%s/textures/test.dds", assetsPath);
+        auto stringToAdd = AZ::IO::Path(assetsPath) / "textures" / "test.dds";
 
         reslist->Clear();
-        reslist->Add(stringToAdd.c_str());
+        reslist->Add(stringToAdd.Native());
 
         // it normalizes the string, so the slashes flip and everything is lowercased.
-        EXPECT_STREQ(reslist->GetFirst(), "@assets@/textures/test.dds");
+        AZ::IO::FixedMaxPath resolvedAddedPath;
+        AZ::IO::FixedMaxPath resolvedResourcePath;
+        EXPECT_TRUE(ioBase->ReplaceAlias(resolvedAddedPath, "@products@/textures/test.dds"));
+        EXPECT_TRUE(ioBase->ReplaceAlias(resolvedResourcePath, reslist->GetFirst()));
+        EXPECT_EQ(resolvedAddedPath, resolvedResourcePath);
         reslist->Clear();
     }
-
-
-    class ArchiveUnitTestsWithAllocators
-        : public ScopedAllocatorSetupFixture
-    {
-    protected:
-
-        void SetUp() override
-        {
-            m_localFileIO = aznew AZ::IO::LocalFileIO();
-            AZ::IO::FileIOBase::SetDirectInstance(m_localFileIO);
-            m_localFileIO->SetAlias(m_firstAlias.c_str(), m_firstAliasPath.c_str());
-            m_localFileIO->SetAlias(m_secondAlias.c_str(), m_secondAliasPath.c_str());
-        }
-
-        void TearDown() override
-        {
-            AZ::IO::FileIOBase::SetDirectInstance(nullptr);
-            delete m_localFileIO;
-            m_localFileIO = nullptr;
-        }
-
-        AZ::IO::FileIOBase* m_localFileIO = nullptr;
-        AZStd::string m_firstAlias = "@devassets@";
-        AZStd::string m_firstAliasPath = "devassets_absolutepath";
-        AZStd::string m_secondAlias = "@assets@";
-        AZStd::string m_secondAliasPath = "assets_absolutepath";
-    };
-
-    // ConvertAbsolutePathToAliasedPath tests are built to verify existing behavior doesn't change.
-    // It's a legacy function and the actual intended behavior is unknown, so these are black box unit tests.
-    TEST_F(ArchiveUnitTestsWithAllocators, ConvertAbsolutePathToAliasedPath_NullString_ReturnsSuccess)
-    {
-        auto conversionResult = AZ::IO::ArchiveInternal::ConvertAbsolutePathToAliasedPath(nullptr);
-        EXPECT_TRUE(conversionResult);
-        EXPECT_TRUE(conversionResult->empty());
-    }
-
-    TEST_F(ArchiveUnitTestsWithAllocators, ConvertAbsolutePathToAliasedPath_NoAliasInSource_ReturnsSource)
-    {
-        AZStd::string sourceString("NoAlias");
-        auto conversionResult = AZ::IO::ArchiveInternal::ConvertAbsolutePathToAliasedPath(sourceString.c_str());
-        EXPECT_TRUE(conversionResult);
-        // ConvertAbsolutePathToAliasedPath returns sourceString if there is no alias in the source.
-        EXPECT_STREQ(sourceString.c_str(), conversionResult->c_str());
-    }
-
-    TEST_F(ArchiveUnitTestsWithAllocators, ConvertAbsolutePathToAliasedPath_NullAliasToLookFor_ReturnsSource)
-    {
-        AZStd::string sourceString("NoAlias");
-        auto conversionResult = AZ::IO::ArchiveInternal::ConvertAbsolutePathToAliasedPath(sourceString.c_str(), nullptr);
-        EXPECT_TRUE(conversionResult);
-        EXPECT_STREQ(sourceString.c_str(), conversionResult->c_str());
-    }
-
-    TEST_F(ArchiveUnitTestsWithAllocators, ConvertAbsolutePathToAliasedPath_NullAliasToReplaceWith_ReturnsSource)
-    {
-        AZStd::string sourceString("NoAlias");
-        auto conversionResult = AZ::IO::ArchiveInternal::ConvertAbsolutePathToAliasedPath(sourceString.c_str(), "@SomeAlias", nullptr);
-        EXPECT_TRUE(conversionResult);
-        EXPECT_STREQ(sourceString.c_str(), conversionResult->c_str());
-    }
-
-    TEST_F(ArchiveUnitTestsWithAllocators, ConvertAbsolutePathToAliasedPath_NullAliases_ReturnsSource)
-    {
-        AZStd::string sourceString("NoAlias");
-        auto conversionResult = AZ::IO::ArchiveInternal::ConvertAbsolutePathToAliasedPath(sourceString.c_str(), nullptr, nullptr);
-        EXPECT_TRUE(conversionResult);
-        EXPECT_STREQ(sourceString.c_str(), conversionResult->c_str());
-    }
-
-    TEST_F(ArchiveUnitTestsWithAllocators, ConvertAbsolutePathToAliasedPath_AbsPathInSource_ReturnsReplacedAlias)
-    {
-        // ConvertAbsolutePathToAliasedPath only replaces data if GetDirectInstance is valid.
-        EXPECT_TRUE(AZ::IO::FileIOBase::GetDirectInstance() != nullptr);
-
-        const char* fullPath = AZ::IO::FileIOBase::GetDirectInstance()->GetAlias(m_firstAlias.c_str());
-        AZStd::string sourceString = AZStd::string::format("%s" AZ_CORRECT_FILESYSTEM_SEPARATOR_STRING "SomeStringWithAlias", fullPath);
-        AZStd::string expectedResult = AZStd::string::format("%s" AZ_CORRECT_FILESYSTEM_SEPARATOR_STRING "somestringwithalias", m_secondAlias.c_str());
-
-        auto conversionResult = AZ::IO::ArchiveInternal::ConvertAbsolutePathToAliasedPath(
-            sourceString.c_str(),
-            m_firstAlias.c_str(),  // find any instance of FirstAlias in sourceString
-            m_secondAlias.c_str());  // replace it with SecondAlias
-        EXPECT_TRUE(conversionResult);
-        EXPECT_STREQ(conversionResult->c_str(), expectedResult.c_str());
-    }
-
-    TEST_F(ArchiveUnitTestsWithAllocators, ConvertAbsolutePathToAliasedPath_AliasInSource_ReturnsReplacedAlias)
-    {
-        // ConvertAbsolutePathToAliasedPath only replaces data if GetDirectInstance is valid.
-        EXPECT_TRUE(AZ::IO::FileIOBase::GetDirectInstance() != nullptr);
-
-        AZStd::string sourceString = AZStd::string::format("%s" AZ_CORRECT_FILESYSTEM_SEPARATOR_STRING "SomeStringWithAlias", m_firstAlias.c_str());
-        AZStd::string expectedResult = AZStd::string::format("%s" AZ_CORRECT_FILESYSTEM_SEPARATOR_STRING "somestringwithalias", m_secondAlias.c_str());
-
-        auto conversionResult = AZ::IO::ArchiveInternal::ConvertAbsolutePathToAliasedPath(
-            sourceString.c_str(),
-            m_firstAlias.c_str(),  // find any instance of FirstAlias in sourceString
-            m_secondAlias.c_str());  // replace it with SecondAlias
-        EXPECT_TRUE(conversionResult);
-        EXPECT_STREQ(conversionResult->c_str(), expectedResult.c_str());
-    }
-
-#if AZ_TRAIT_OS_USE_WINDOWS_FILE_PATHS
-    TEST_F(ArchiveUnitTestsWithAllocators, ConvertAbsolutePathToAliasedPath_AbsPathInSource_DOSSlashInSource_ReturnsReplacedAlias)
-    {
-        // ConvertAbsolutePathToAliasedPath only replaces data if GetDirectInstance is valid.
-        EXPECT_TRUE(AZ::IO::FileIOBase::GetDirectInstance() != nullptr);
-
-        const char* fullPath = AZ::IO::FileIOBase::GetDirectInstance()->GetAlias(m_firstAlias.c_str());
-        AZStd::string sourceString = AZStd::string::format("%s" AZ_WRONG_DATABASE_SEPARATOR_STRING "SomeStringWithAlias", fullPath);
-        AZStd::string expectedResult = AZStd::string::format("%s" AZ_CORRECT_FILESYSTEM_SEPARATOR_STRING "somestringwithalias", m_secondAlias.c_str());
-        auto conversionResult = AZ::IO::ArchiveInternal::ConvertAbsolutePathToAliasedPath(
-            sourceString.c_str(),
-            m_firstAlias.c_str(),  // find any instance of FirstAlias in sourceString
-            m_secondAlias.c_str());  // replace it with SecondAlias
-        EXPECT_TRUE(conversionResult);
-        EXPECT_STREQ(conversionResult->c_str(), expectedResult.c_str());
-    }
-#endif // AZ_TRAIT_OS_USE_WINDOWS_FILE_PATHS
-
-    TEST_F(ArchiveUnitTestsWithAllocators, ConvertAbsolutePathToAliasedPath_AbsPathInSource_UNIXSlashInSource_ReturnsReplacedAlias)
-    {
-        // ConvertAbsolutePathToAliasedPath only replaces data if GetDirectInstance is valid.
-        EXPECT_TRUE(AZ::IO::FileIOBase::GetDirectInstance() != nullptr);
-
-        const char* fullPath = AZ::IO::FileIOBase::GetDirectInstance()->GetAlias(m_firstAlias.c_str());
-        AZStd::string sourceString = AZStd::string::format("%s" AZ_CORRECT_DATABASE_SEPARATOR_STRING "SomeStringWithAlias", fullPath);
-        AZStd::string expectedResult = AZStd::string::format("%s" AZ_CORRECT_DATABASE_SEPARATOR_STRING "somestringwithalias", m_secondAlias.c_str());
-        auto conversionResult = AZ::IO::ArchiveInternal::ConvertAbsolutePathToAliasedPath(
-            sourceString.c_str(),
-            m_firstAlias.c_str(),  // find any instance of FirstAlias in sourceString
-            m_secondAlias.c_str());  // replace it with SecondAlias
-        EXPECT_TRUE(conversionResult);
-        EXPECT_STREQ(conversionResult->c_str(), expectedResult.c_str());
-    }
-
-    TEST_F(ArchiveUnitTestsWithAllocators, ConvertAbsolutePathToAliasedPath_AliasInSource_DOSSlashInSource_ReturnsReplacedAlias)
-    {
-        // ConvertAbsolutePathToAliasedPath only replaces data if GetDirectInstance is valid.
-        EXPECT_TRUE(AZ::IO::FileIOBase::GetDirectInstance() != nullptr);
-
-        AZStd::string sourceString = AZStd::string::format("%s" AZ_WRONG_DATABASE_SEPARATOR_STRING "SomeStringWithAlias", m_firstAlias.c_str());
-        AZStd::string expectedResult = AZStd::string::format("%s" AZ_WRONG_DATABASE_SEPARATOR_STRING "somestringwithalias", m_secondAlias.c_str());
-
-        // sourceString is now (firstAlias)SomeStringWithAlias
-
-        auto conversionResult = AZ::IO::ArchiveInternal::ConvertAbsolutePathToAliasedPath(
-            sourceString.c_str(),
-            m_firstAlias.c_str(),  // find any instance of FirstAlias in sourceString
-            m_secondAlias.c_str());  // replace it with SecondAlias
-        EXPECT_TRUE(conversionResult);
-        EXPECT_STREQ(conversionResult->c_str(), expectedResult.c_str());
-    }
-
-    TEST_F(ArchiveUnitTestsWithAllocators, ConvertAbsolutePathToAliasedPath_AliasInSource_UNIXSlashInSource_ReturnsReplacedAlias)
-    {
-        // ConvertAbsolutePathToAliasedPath only replaces data if GetDirectInstance is valid.
-        EXPECT_TRUE(AZ::IO::FileIOBase::GetDirectInstance() != nullptr);
-
-        AZStd::string sourceString = AZStd::string::format("%s" AZ_CORRECT_DATABASE_SEPARATOR_STRING "SomeStringWithAlias", m_firstAlias.c_str());
-        AZStd::string expectedResult = AZStd::string::format("%s" AZ_CORRECT_DATABASE_SEPARATOR_STRING "somestringwithalias", m_secondAlias.c_str());
-
-        // sourceString is now (firstAlias)SomeStringWithAlias
-
-        auto conversionResult = AZ::IO::ArchiveInternal::ConvertAbsolutePathToAliasedPath(
-            sourceString.c_str(),
-            m_firstAlias.c_str(),  // find any instance of FirstAlias in sourceString
-            m_secondAlias.c_str());  // replace it with SecondAlias
-        EXPECT_TRUE(conversionResult);
-        EXPECT_STREQ(conversionResult->c_str(), expectedResult.c_str());
-    }
-
-    TEST_F(ArchiveUnitTestsWithAllocators, ConvertAbsolutePathToAliasedPath_SourceLongerThanMaxPath_ReturnsFailure)
-    {
-        const int longPathArraySize = AZ::IO::MaxPathLength + 2;
-        char longPath[longPathArraySize];
-        memset(longPath, 'a', sizeof(char) * longPathArraySize);
-        longPath[longPathArraySize - 1] = '\0';
-        AZ_TEST_START_TRACE_SUPPRESSION;
-        auto conversionResult = AZ::IO::ArchiveInternal::ConvertAbsolutePathToAliasedPath(longPath);
-        AZ_TEST_STOP_TRACE_SUPPRESSION(1);
-        EXPECT_FALSE(conversionResult);
-    }
-
-    class ArchivePathCompareTestFixture
-        : public ScopedAllocatorSetupFixture
-        , public ::testing::WithParamInterface<AZStd::tuple<AZStd::string_view, AZStd::string_view>>
-    {
-    };
 }

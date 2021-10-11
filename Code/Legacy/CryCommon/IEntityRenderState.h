@@ -7,33 +7,14 @@
  */
 
 #pragma once
+#include <CryCommon/Cry_Matrix34.h>
 
-#include "IStatObj.h"
-
-#include <IRenderer.h>
-#include <limits>
-#include <AzCore/Component/EntityId.h>
-#include <AzCore/std/algorithm.h>
-
-
-namespace AZ
-{
-    class Vector2;
-}
-
-struct IMaterial;
-struct IRenderNode;
-struct IVisArea;
-struct SRenderingPassInfo;
-struct SRendItemSorter;
-struct SFrameLodInfo;
-struct pe_params_area;
-struct pe_articgeomparams;
+struct IStatObj;
 
 struct IRenderNode
 {
     // Gives access to object components.
-    struct IStatObj* GetEntityStatObj(unsigned int  = 0, unsigned int  = 0, Matrix34A*  = NULL, bool  = false) {
+    IStatObj* GetEntityStatObj(unsigned int  = 0, unsigned int  = 0, Matrix34* = nullptr, bool  = false) {
         return nullptr;
     }
 

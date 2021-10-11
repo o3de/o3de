@@ -66,6 +66,13 @@ R"({
     "Region": "123",
     "Version": "123"
 })";
+static constexpr const char TEST_TEMPLATE_RESOURCE_MAPPING_CONFIG_FILE[] =
+    R"({
+    "AWSResourceMappings": {},
+    "AccountId": "EMPTY",
+    "Region": "us-west-2",
+    "Version": "1.0.0"
+})";
 
 class AWSResourceMappingManagerTest
     : public AWSCoreFixture
@@ -190,12 +197,27 @@ TEST_F(AWSResourceMappingManagerTest, ActivateManager_ParseValidConfigFile_Confi
     EXPECT_TRUE(m_resourceMappingManager->GetStatus() == AWSResourceMappingManager::Status::Ready);
 }
 
+TEST_F(AWSResourceMappingManagerTest, ActivateManager_ParseTemplateConfigFile_ConfigDataIsNotEmpty)
+{
+    CreateTestConfigFile(TEST_TEMPLATE_RESOURCE_MAPPING_CONFIG_FILE);
+    m_resourceMappingManager->ActivateManager();
+
+    AZStd::string actualAccountId;
+    AZStd::string actualRegion;
+    AWSResourceMappingRequestBus::BroadcastResult(actualAccountId, &AWSResourceMappingRequests::GetDefaultAccountId);
+    AWSResourceMappingRequestBus::BroadcastResult(actualRegion, &AWSResourceMappingRequests::GetDefaultRegion);
+    EXPECT_EQ(m_reloadConfigurationCounter, 0);
+    EXPECT_FALSE(actualAccountId.empty());
+    EXPECT_FALSE(actualRegion.empty());
+    EXPECT_TRUE(m_resourceMappingManager->GetStatus() == AWSResourceMappingManager::Status::Ready);
+}
+
 TEST_F(AWSResourceMappingManagerTest, ActivateManager_ParseValidConfigFile_ConfigDataIsNotEmptyWithMultithreadCalls)
 {
     CreateTestConfigFile(TEST_VALID_RESOURCE_MAPPING_CONFIG_FILE);
     m_resourceMappingManager->ActivateManager();
 
-    int testThreadNumber = 10;
+    constexpr int testThreadNumber = 10;
     AZStd::atomic<int> actualEbusCalls = 0;
     AZStd::vector<AZStd::thread> testThreadPool;
     for (int index = 0; index < testThreadNumber; index++)
@@ -204,7 +226,7 @@ TEST_F(AWSResourceMappingManagerTest, ActivateManager_ParseValidConfigFile_Confi
             AZStd::string actualAccountId;
             AWSResourceMappingRequestBus::BroadcastResult(actualAccountId, &AWSResourceMappingRequests::GetDefaultAccountId);
             EXPECT_FALSE(actualAccountId.empty());
-            actualEbusCalls++;
+            ++actualEbusCalls;
         }));
     }
 

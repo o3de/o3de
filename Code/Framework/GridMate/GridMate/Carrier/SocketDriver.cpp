@@ -1081,7 +1081,7 @@ namespace GridMate
         };
         sockaddr* sockAddr = reinterpret_cast<sockaddr*>(&sockAddrIn6);
         socklen_t sockAddrLen = sizeof(sockAddrIn6);
-        from = NULL;
+        from = nullptr;
 
         unsigned int recvd = m_platformDriver->Receive(data, maxDataSize, sockAddr, sockAddrLen, resultCode);
 
@@ -1207,7 +1207,7 @@ namespace GridMate
         unsigned int port;
         if (!AddressToIPPort(address, ip, port))
         {
-            return NULL;
+            return nullptr;
         }
 
         SocketDriverAddress drvAddr(this, ip, port);
@@ -1313,7 +1313,7 @@ namespace GridMate
                     fd_set fdwrite;
                     FD_ZERO(&fdwrite);
                     FD_SET(m_socket, &fdwrite);
-                    select(FD_SETSIZE, 0, &fdwrite, 0, 0);
+                    select(FD_SETSIZE, nullptr, &fdwrite, nullptr, nullptr);
                     continue;
                 }
 
@@ -1376,7 +1376,7 @@ namespace GridMate
         FD_SET(m_socket, &fdread);
         timeval t = Platform::GetTimeValue(timeOut);
 
-        int result = select(FD_SETSIZE, &fdread, 0, 0, &t);
+        int result = select(FD_SETSIZE, &fdread, nullptr, nullptr, &t);
         if (result > 0)
         {
             m_parent.m_isStoppedWaitForData = true;
@@ -1694,7 +1694,7 @@ namespace GridMate
         //worker packet send thread
         AZStd::thread_desc workerSendThreadDesc;
         workerSendThreadDesc.m_name = "GridMate-Carrier Packet Send Thread";
-        m_workerSendThread = AZStd::thread(AZStd::bind(&SocketDriverCommon::RIOPlatformSocketDriver::WorkerSendThread, this), &workerSendThreadDesc);
+        m_workerSendThread = AZStd::thread(workerSendThreadDesc, AZStd::bind(&SocketDriverCommon::RIOPlatformSocketDriver::WorkerSendThread, this));
         if (m_workerSendThread.get_id() == AZStd::native_thread_invalid_id)
         {
             AZ_Error("GridMate", false, "Could not create worker thread.");

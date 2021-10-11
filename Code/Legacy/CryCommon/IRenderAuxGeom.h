@@ -455,7 +455,7 @@ enum EAuxGeomPublicRenderflags_DepthWrite
 //   EAuxGeomPublicRenderflagBitMasks
 enum EAuxGeomPublicRenderflags_DepthTest
 {
-    e_DepthTestOn                   = 0x0 << e_DepthTestShift,
+    e_DepthTestOn               = 0x0 << e_DepthTestShift,
     e_DepthTestOff              = 0x1 << e_DepthTestShift,
 };
 
@@ -465,10 +465,6 @@ enum EAuxGeomPublicRenderflags_Defaults
     // Default render flags for 3d primitives.
     e_Def3DPublicRenderflags = e_Mode3D | e_AlphaNone | e_DrawInFrontOff | e_FillModeSolid |
         e_CullModeBack | e_DepthWriteOn | e_DepthTestOn,
-
-    // Default render flags for 2d primitives.
-    e_Def2DPublicRenderflags = e_Mode2D | e_AlphaNone | e_DrawInFrontOff | e_FillModeSolid |
-        e_CullModeBack | e_DepthWriteOn | e_DepthTestOn
 };
 
 
@@ -487,48 +483,15 @@ struct SAuxGeomRenderFlags
     bool operator !=(const SAuxGeomRenderFlags& rhs) const;
     bool operator !=(uint32 rhs) const;
 
-    // Summary:
-    //   Gets the flags for 2D/3D rendering mode.
-    EAuxGeomPublicRenderflags_Mode2D3D GetMode2D3DFlag() const;
-    // Summary:
-    //   Sets the flags for 2D/3D rendering mode.
-    void SetMode2D3DFlag(const EAuxGeomPublicRenderflags_Mode2D3D& state);
-
-    // Summary:
-    //   Gets the flags for alpha blend mode.
-    EAuxGeomPublicRenderflags_AlphaBlendMode GetAlphaBlendMode() const;
-    // Summary:
-    //   Sets the flags for the alpha blend mode.
-    void SetAlphaBlendMode(const EAuxGeomPublicRenderflags_AlphaBlendMode& state);
-
-
-    EAuxGeomPublicRenderflags_DrawInFrontMode GetDrawInFrontMode() const;
     void SetDrawInFrontMode(const EAuxGeomPublicRenderflags_DrawInFrontMode& state);
 
-    // Summary:
-    //   Gets the flags for the filling mode.
-    EAuxGeomPublicRenderflags_FillMode GetFillMode() const;
     // Summary:
     //   Sets the flags for the filling mode.
     void SetFillMode(const EAuxGeomPublicRenderflags_FillMode& state);
 
     // Summary:
-    //   Gets the flags for the culling mode.
-    EAuxGeomPublicRenderflags_CullMode GetCullMode() const;
-    // Summary:
     //   Sets the flags for the culling mode.
     void SetCullMode(const EAuxGeomPublicRenderflags_CullMode& state);
-
-
-    EAuxGeomPublicRenderflags_DepthWrite GetDepthWriteFlag() const;
-    void SetDepthWriteFlag(const EAuxGeomPublicRenderflags_DepthWrite& state);
-
-    // Summary:
-    //   Gets the flags for the depth test.
-    EAuxGeomPublicRenderflags_DepthTest GetDepthTestFlag() const;
-    // Summary:
-    //   Sets the flags for the depth test.
-    void SetDepthTestFlag(const EAuxGeomPublicRenderflags_DepthTest& state);
 };
 
 
@@ -596,117 +559,12 @@ SAuxGeomRenderFlags::operator !=(uint32 rhs) const
 }
 
 
-inline EAuxGeomPublicRenderflags_Mode2D3D
-SAuxGeomRenderFlags::GetMode2D3DFlag() const
-{
-    int mode2D3D((int)(m_renderFlags & (uint32)e_Mode2D3DMask));
-    switch (mode2D3D)
-    {
-    case e_Mode2D:
-    {
-        return(e_Mode2D);
-    }
-    case e_Mode3D:
-    default:
-    {
-        assert(e_Mode3D == mode2D3D);
-        return(e_Mode3D);
-    }
-    }
-}
-
-
-inline void
-SAuxGeomRenderFlags::SetMode2D3DFlag(const EAuxGeomPublicRenderflags_Mode2D3D& state)
-{
-    m_renderFlags &= ~e_Mode2D3DMask;
-    m_renderFlags |= state;
-}
-
-
-inline EAuxGeomPublicRenderflags_AlphaBlendMode
-SAuxGeomRenderFlags::GetAlphaBlendMode() const
-{
-    uint32 alphaBlendMode(m_renderFlags & e_AlphaBlendingMask);
-    switch (alphaBlendMode)
-    {
-    case e_AlphaAdditive:
-    {
-        return(e_AlphaAdditive);
-    }
-    case e_AlphaBlended:
-    {
-        return(e_AlphaBlended);
-    }
-    case e_AlphaNone:
-    default:
-    {
-        assert(e_AlphaNone == alphaBlendMode);
-        return(e_AlphaNone);
-    }
-    }
-}
-
-
-inline void
-SAuxGeomRenderFlags::SetAlphaBlendMode(const EAuxGeomPublicRenderflags_AlphaBlendMode& state)
-{
-    m_renderFlags &= ~e_AlphaBlendingMask;
-    m_renderFlags |= state;
-}
-
-
-inline EAuxGeomPublicRenderflags_DrawInFrontMode
-SAuxGeomRenderFlags::GetDrawInFrontMode() const
-{
-    uint32 drawInFrontMode(m_renderFlags & e_DrawInFrontMask);
-    switch (drawInFrontMode)
-    {
-    case e_DrawInFrontOff:
-    {
-        return(e_DrawInFrontOff);
-    }
-    case e_DrawInFrontOn:
-    default:
-    {
-        assert(e_DrawInFrontOn == drawInFrontMode);
-        return(e_DrawInFrontOn);
-    }
-    }
-}
-
-
 inline void
 SAuxGeomRenderFlags::SetDrawInFrontMode(const EAuxGeomPublicRenderflags_DrawInFrontMode& state)
 {
     m_renderFlags &= ~e_DrawInFrontMask;
     m_renderFlags |= state;
 }
-
-
-inline EAuxGeomPublicRenderflags_FillMode
-SAuxGeomRenderFlags::GetFillMode() const
-{
-    uint32 fillMode(m_renderFlags & e_FillModeMask);
-    switch (fillMode)
-    {
-    case e_FillModePoint:
-    {
-        return(e_FillModePoint);
-    }
-    case e_FillModeWireframe:
-    {
-        return(e_FillModeWireframe);
-    }
-    case e_FillModeSolid:
-    default:
-    {
-        assert(e_FillModeSolid == fillMode);
-        return(e_FillModeSolid);
-    }
-    }
-}
-
 
 inline void
 SAuxGeomRenderFlags::SetFillMode(const EAuxGeomPublicRenderflags_FillMode& state)
@@ -715,117 +573,9 @@ SAuxGeomRenderFlags::SetFillMode(const EAuxGeomPublicRenderflags_FillMode& state
     m_renderFlags |= state;
 }
 
-
-inline EAuxGeomPublicRenderflags_CullMode
-SAuxGeomRenderFlags::GetCullMode() const
-{
-    uint32 cullMode(m_renderFlags & e_CullModeMask);
-    switch (cullMode)
-    {
-    case e_CullModeNone:
-    {
-        return(e_CullModeNone);
-    }
-    case e_CullModeFront:
-    {
-        return(e_CullModeFront);
-    }
-    case e_CullModeBack:
-    default:
-    {
-        assert(e_CullModeBack == cullMode);
-        return(e_CullModeBack);
-    }
-    }
-}
-
-
 inline void
 SAuxGeomRenderFlags::SetCullMode(const EAuxGeomPublicRenderflags_CullMode& state)
 {
     m_renderFlags &= ~e_CullModeMask;
     m_renderFlags |= state;
-}
-
-
-inline EAuxGeomPublicRenderflags_DepthWrite
-SAuxGeomRenderFlags::GetDepthWriteFlag() const
-{
-    uint32 depthWriteFlag(m_renderFlags & e_DepthWriteMask);
-    switch (depthWriteFlag)
-    {
-    case e_DepthWriteOff:
-    {
-        return(e_DepthWriteOff);
-    }
-    case e_DepthWriteOn:
-    default:
-    {
-        assert(e_DepthWriteOn == depthWriteFlag);
-        return(e_DepthWriteOn);
-    }
-    }
-}
-
-
-inline void
-SAuxGeomRenderFlags::SetDepthWriteFlag(const EAuxGeomPublicRenderflags_DepthWrite& state)
-{
-    m_renderFlags &= ~e_DepthWriteMask;
-    m_renderFlags |= state;
-}
-
-
-inline EAuxGeomPublicRenderflags_DepthTest
-SAuxGeomRenderFlags::GetDepthTestFlag() const
-{
-    uint32 depthTestFlag(m_renderFlags & e_DepthTestMask);
-    switch (depthTestFlag)
-    {
-    case e_DepthTestOff:
-    {
-        return(e_DepthTestOff);
-    }
-    case e_DepthTestOn:
-    default:
-    {
-        assert(e_DepthTestOn == depthTestFlag);
-        return(e_DepthTestOn);
-    }
-    }
-}
-
-
-inline void
-SAuxGeomRenderFlags::SetDepthTestFlag(const EAuxGeomPublicRenderflags_DepthTest& state)
-{
-    m_renderFlags &= ~e_DepthTestMask;
-    m_renderFlags |= state;
-}
-
-
-class CRenderAuxGeomRenderFlagsRestore
-{
-public:
-    explicit CRenderAuxGeomRenderFlagsRestore(IRenderAuxGeom* pRender);
-    ~CRenderAuxGeomRenderFlagsRestore();
-
-private:
-    IRenderAuxGeom* m_pRender;
-    SAuxGeomRenderFlags m_backuppedRenderFlags;
-
-    // copy-construction not supported
-    CRenderAuxGeomRenderFlagsRestore(const CRenderAuxGeomRenderFlagsRestore&);
-    CRenderAuxGeomRenderFlagsRestore& operator=(const CRenderAuxGeomRenderFlagsRestore&);
-};
-
-inline CRenderAuxGeomRenderFlagsRestore::CRenderAuxGeomRenderFlagsRestore(IRenderAuxGeom* pRender)
-{
-    m_pRender = pRender;
-    m_backuppedRenderFlags = m_pRender->GetRenderFlags();
-}
-
-inline CRenderAuxGeomRenderFlagsRestore::~CRenderAuxGeomRenderFlagsRestore()
-{
-    m_pRender->SetRenderFlags(m_backuppedRenderFlags);
 }

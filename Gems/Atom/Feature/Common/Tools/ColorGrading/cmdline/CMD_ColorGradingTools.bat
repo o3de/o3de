@@ -17,6 +17,13 @@ TITLE O3DE Color Grading CMD
 :: Use obvious color to prevent confusion (Grey with Yellow Text)
 COLOR 8E
 
+echo.
+echo _____________________________________________________________________
+echo.
+echo ~    O3DE Color Grading Python CMD ...
+echo _____________________________________________________________________
+echo.
+
 %~d0
 cd %~dp0
 PUSHD %~dp0
@@ -24,19 +31,20 @@ PUSHD %~dp0
 SETLOCAL ENABLEDELAYEDEXPANSION
 
 :: if the user has set up a custom env call it
-IF EXIST "%~dp0User_env.bat" CALL %~dp0User_env.bat
+IF EXIST "%~dp0User_Env.bat" CALL %~dp0User_Env.bat
 
 :: Initialize env
+echo 
+echo     ... calling Env_Core.bat
 CALL %~dp0\Env_Core.bat
-CALL %~dp0\Env_Python.bat
-CALL %~dp0\Env_Tools.bat
 
-echo.
-echo _____________________________________________________________________
-echo.
-echo ~    O3DE Color Grading Python CMD ...
-echo _____________________________________________________________________
-echo.
+echo 
+echo     ... calling Env_Python.bat
+CALL %~dp0\Env_Python.bat
+
+echo 
+echo     ... calling Env_Tools.bat
+CALL %~dp0\Env_Tools.bat
 
 :: Change to root dir
 CD /D ..

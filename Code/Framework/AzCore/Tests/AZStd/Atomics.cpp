@@ -975,13 +975,13 @@ namespace UnitTest
         A obj(T(0));
         bool b0 = obj.is_lock_free();
         ((void)b0); // mark as unused
-        EXPECT_TRUE(obj == T(0));
+        EXPECT_TRUE(obj == T(nullptr));
         AZStd::atomic_init(&obj, T(1));
         EXPECT_TRUE(obj == T(1));
         AZStd::atomic_init(&obj, T(2));
         EXPECT_TRUE(obj == T(2));
         obj.store(T(0));
-        EXPECT_TRUE(obj == T(0));
+        EXPECT_TRUE(obj == T(nullptr));
         obj.store(T(1), AZStd::memory_order_release);
         EXPECT_TRUE(obj == T(1));
         EXPECT_TRUE(obj.load() == T(1));
@@ -1001,11 +1001,11 @@ namespace UnitTest
         EXPECT_TRUE(obj.compare_exchange_strong(x, T(1)) == true);
         EXPECT_TRUE(obj == T(1));
         EXPECT_TRUE(x == T(2));
-        EXPECT_TRUE(obj.compare_exchange_strong(x, T(0)) == false);
+        EXPECT_TRUE(obj.compare_exchange_strong(x, T(nullptr)) == false);
         EXPECT_TRUE(obj == T(1));
         EXPECT_TRUE(x == T(1));
-        EXPECT_TRUE((obj = T(0)) == T(0));
-        EXPECT_TRUE(obj == T(0));
+        EXPECT_TRUE((obj = T(nullptr)) == T(nullptr));
+        EXPECT_TRUE(obj == T(nullptr));
         obj = T(2 * sizeof(X));
         EXPECT_TRUE((obj += AZStd::ptrdiff_t(3)) == T(5 * sizeof(X)));
         EXPECT_TRUE(obj == T(5 * sizeof(X)));
@@ -1015,7 +1015,7 @@ namespace UnitTest
         {
             alignas(A) char storage[sizeof(A)] = { 23 };
             A& zero = *new (storage) A();
-            EXPECT_TRUE(zero == T(0));
+            EXPECT_TRUE(zero == T(nullptr));
             zero.~A();
         }
     }

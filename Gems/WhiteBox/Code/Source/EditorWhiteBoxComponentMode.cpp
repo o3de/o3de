@@ -52,8 +52,7 @@ namespace WhiteBox
         // default behavior for querying modifier keys (ask the QApplication)
         m_keyboardMofifierQueryFn = []()
         {
-            namespace vi = AzToolsFramework::ViewportInteraction;
-            return vi::KeyboardModifiers(vi::TranslateKeyboardModifiers(QApplication::queryKeyboardModifiers()));
+            return AzToolsFramework::ViewportInteraction::QueryKeyboardModifiers();
         };
 
         m_worldFromLocal = AzToolsFramework::WorldFromLocalWithUniformScale(entityComponentIdPair.GetEntityId());

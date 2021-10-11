@@ -10,6 +10,7 @@
 
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/Serialization/EditContext.h>
+#include <AzCore/Serialization/SerializeContext.h>
 #include <AzToolsFramework/Prefab/PrefabPublicInterface.h>
 #include <AzToolsFramework/UI/EditorEntityUi/EditorEntityUiInterface.h>
 #include <AzToolsFramework/UI/Prefab/PrefabIntegrationBus.h>

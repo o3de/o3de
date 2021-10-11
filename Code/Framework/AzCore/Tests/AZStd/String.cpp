@@ -444,7 +444,7 @@ namespace UnitTest
         str2.back() = 'p';
         AZ_TEST_ASSERT(str2.back() == 'p');
 
-        AZ_TEST_ASSERT(str2.c_str() != 0);
+        AZ_TEST_ASSERT(str2.c_str() != nullptr);
         AZ_TEST_ASSERT(::strlen(str2.c_str()) == str2.length());
 
         str2.resize(30, 'm');
@@ -793,7 +793,7 @@ namespace UnitTest
         AZ_TEST_ASSERT(alphanum_comp(strdup("Alpha 2 B"), strA) > 0);
 
         // show usage of the comparison functor with a set
-        typedef set<string, alphanum_less<string> > StringSetType;
+        using StringSetType = set<string, alphanum_less<string>>;
         StringSetType s;
         s.insert("Xiph Xlater 58");
         s.insert("Xiph Xlater 5000");
@@ -879,7 +879,7 @@ namespace UnitTest
         AZ_TEST_ASSERT(*setIt++ == "Xiph Xlater 10000");
 
         // show usage of comparison functor with a map
-        typedef map<string, int, alphanum_less<string> > StringIntMapType;
+        using StringIntMapType = map<string, int, alphanum_less<string>>;
         StringIntMapType m;
         m["z1.doc"] = 1;
         m["z10.doc"] = 2;
@@ -1210,9 +1210,6 @@ namespace UnitTest
 
         AZStd::string findStr("Hay");
         string_view view3(findStr);
-        string_view nullptrView4(nullptr);
-
-        EXPECT_EQ(emptyView1, nullptrView4);
 
         // copy
         const size_t destBufferSize = 32;
@@ -1263,9 +1260,6 @@ namespace UnitTest
         // rfind
         AZStd::size_t rfindResult = view3.rfind('a', 2);
         EXPECT_EQ(1, rfindResult);
-
-        rfindResult = nullptrView4.rfind("");
-        EXPECT_EQ(string_view::npos, rfindResult);
 
         rfindResult = emptyView1.rfind("");
         EXPECT_EQ(string_view::npos, rfindResult);
@@ -1373,17 +1367,11 @@ namespace UnitTest
     {
         string_view view1("The quick brown fox jumped over the lazy dog");
         string_view view2("Needle in Haystack");
-        string_view nullBeaverView(nullptr);
         string_view emptyBeaverView;
         string_view superEmptyBeaverView("");
         
-        EXPECT_EQ(nullBeaverView, emptyBeaverView);
-        EXPECT_EQ(superEmptyBeaverView, nullBeaverView);
-        EXPECT_EQ(emptyBeaverView, superEmptyBeaverView);
-        EXPECT_EQ(nullBeaverView, "");
-        EXPECT_EQ(nullBeaverView, nullptr);
         EXPECT_EQ("", emptyBeaverView);
-        EXPECT_EQ(nullptr, superEmptyBeaverView);
+        EXPECT_EQ("", superEmptyBeaverView);
 
         EXPECT_EQ("The quick brown fox jumped over the lazy dog", view1);
         EXPECT_NE("The slow brown fox jumped over the lazy dog", view1);
@@ -1421,8 +1409,6 @@ namespace UnitTest
         EXPECT_LE(beaverView, "Busy Beaver");
         EXPECT_LE("Likable Beaver", notBeaverView);
         EXPECT_LE("Busy Beaver", beaverView);
-        EXPECT_LE(nullBeaverView, nullBeaverView);
-        EXPECT_LE(nullBeaverView, lowerBeaverStr);
         EXPECT_LE(microBeaverStr, view1);
         EXPECT_LE(compareStr, beaverView);
         
@@ -1441,7 +1427,7 @@ namespace UnitTest
 
     TEST_F(String, String_FormatOnlyAllowsValidArgs)
     {
-        constexpr bool                 v1 = 0;
+        constexpr bool                 v1 = false;
         constexpr char                 v2 = 0;
         constexpr unsigned char        v3 = 0;
         constexpr signed char          v4 = 0;

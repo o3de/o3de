@@ -494,6 +494,7 @@ namespace AZ
                     return AZ::SettingsRegistryInterface::VisitResponse::Continue;
                 }
 
+                using AZ::SettingsRegistryInterface::Visitor::Visit;
                 void Visit(AZStd::string_view, [[maybe_unused]] AZStd::string_view valueName, AZ::SettingsRegistryInterface::Type, AZStd::string_view value) override
                 {
                     if (m_processingSourcePathKey)
@@ -656,6 +657,7 @@ namespace AZ
                                 return AZ::SettingsRegistryInterface::VisitResponse::Continue;
                             }
 
+                            using AZ::SettingsRegistryInterface::Visitor::Visit;
                             void Visit(AZStd::string_view path, AZStd::string_view valueName, [[maybe_unused]] AZ::SettingsRegistryInterface::Type type,
                                 AZStd::string_view value) override
                             {

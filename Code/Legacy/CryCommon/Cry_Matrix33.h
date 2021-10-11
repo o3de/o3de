@@ -8,10 +8,6 @@
 
 
 // Description : Common matrix class
-
-
-#ifndef CRYINCLUDE_CRYCOMMON_CRY_MATRIX33_H
-#define CRYINCLUDE_CRYCOMMON_CRY_MATRIX33_H
 #pragma once
 
 
@@ -64,7 +60,6 @@ struct Matrix33_tpl
 #else
     ILINE Matrix33_tpl(){};
 #endif
-
     //set matrix to Identity
     ILINE Matrix33_tpl(type_identity)
     {
@@ -78,21 +73,6 @@ struct Matrix33_tpl
         m21 = 0;
         m22 = 1;
     }
-    //set matrix to Zero
-    ILINE Matrix33_tpl(type_zero)
-    {
-        m00 = 0;
-        m01 = 0;
-        m02 = 0;
-        m10 = 0;
-        m11 = 0;
-        m12 = 0;
-        m20 = 0;
-        m21 = 0;
-        m22 = 0;
-    }
-
-
     //ASSIGNMENT OPERATOR of identical Matrix33 types.
     //The assignment operator has precedence over assignment constructor
     //Matrix33 m; m=m33;
@@ -118,7 +98,7 @@ struct Matrix33_tpl
 
     //CONSTRUCTOR for identical float-types. It initializes a Matrix33 with 9 floats.
     //Matrix33(0,1,2, 3,4,5, 6,7,8);
-    explicit ILINE Matrix33_tpl<F>(F x00, F x01, F x02, F x10, F x11, F x12, F x20, F x21, F x22)
+    explicit ILINE Matrix33_tpl(F x00, F x01, F x02, F x10, F x11, F x12, F x20, F x21, F x22)
     {
         m00 = x00;
         m01 = x01;
@@ -130,26 +110,11 @@ struct Matrix33_tpl
         m21 = x21;
         m22 = x22;
     }
-    //CONSTRUCTOR for different float-types. It initializes a Matrix33 with 9 floats.
-    //Matrix33(0.0,1.0,2.0, 3.0,4.0,5.0, 6.0,7.0,8.0);
-    template<class F1>
-    explicit ILINE Matrix33_tpl<F>(F1 x00, F1 x01, F1 x02, F1 x10, F1 x11, F1 x12, F1 x20, F1 x21, F1 x22)
-    {
-        m00 = F(x00);
-        m01 = F(x01);
-        m02 = F(x02);
-        m10 = F(x10);
-        m11 = F(x11);
-        m12 = F(x12);
-        m20 = F(x20);
-        m21 = F(x21);
-        m22 = F(x22);
-    }
 
 
     //CONSTRUCTOR for identical float-types. It initializes a Matrix33 with 3 vectors stored in the columns.
     //Matrix33(v0,v1,v2);
-    explicit ILINE Matrix33_tpl<F>(const Vec3_tpl<F>&vx, const Vec3_tpl<F>&vy, const Vec3_tpl<F>&vz)
+    explicit ILINE Matrix33_tpl(const Vec3_tpl<F>&vx, const Vec3_tpl<F>&vy, const Vec3_tpl<F>&vz)
     {
         m00 = vx.x;
         m01 = vy.x;
@@ -164,7 +129,7 @@ struct Matrix33_tpl
     //CONSTRUCTOR for different float-types. It initializes a Matrix33 with 3 vectors stored in the columns and converts between floats/doubles.
     //Matrix33r(v0,v1,v2);
     template<class F1>
-    explicit ILINE Matrix33_tpl<F>(const Vec3_tpl<F1>&vx, const Vec3_tpl<F1>&vy, const Vec3_tpl<F1>&vz)
+    explicit ILINE Matrix33_tpl(const Vec3_tpl<F1>&vx, const Vec3_tpl<F1>&vy, const Vec3_tpl<F1>&vz)
     {
         m00 = F(vx.x);
         m01 = F(vy.x);
@@ -209,8 +174,6 @@ struct Matrix33_tpl
         m22 = F(m.m22);
     }
 
-
-
     //CONSTRUCTOR for identical float-types. It converts a Matrix34 into a Matrix33.
     //Needs to be 'explicit' because we loose the translation vector in the conversion process
     //Matrix33(m34);
@@ -244,9 +207,6 @@ struct Matrix33_tpl
         m21 = F(m.m21);
         m22 = F(m.m22);
     }
-
-
-
 
     //CONSTRUCTOR for identical float-types. It converts a Matrix44 into a Matrix33.
     //Needs to be 'explicit' because we loose the translation vector and the 3rd row in the conversion process
@@ -356,26 +316,6 @@ struct Matrix33_tpl
         SetRotationXYZ(Ang3_tpl<F>(F(ang.x), F(ang.y), F(ang.z)));
     }
 
-
-
-
-    //Bracket OPERATOR: initializes a Matrix33 with 9 floats.
-    //Matrix33 m; m(0,1,2, 3,4,5, 6,7,8);
-    ILINE void operator () (F x00, F x01, F x02, F x10, F x11, F x12, F x20, F x21, F x22)
-    {
-        m00 = x00;
-        m01 = x01;
-        m02 = x02;
-        m10 = x10;
-        m11 = x11;
-        m12 = x12;
-        m20 = x20;
-        m21 = x21;
-        m22 = x22;
-        assert(IsValid());
-    }
-
-
     //---------------------------------------------------------------------------------------
 
     ILINE void SetIdentity(void)
@@ -390,27 +330,6 @@ struct Matrix33_tpl
         m21 = 0;
         m22 = 1;
     }
-
-    ILINE static Matrix33_tpl<F> CreateIdentity()
-    {
-        Matrix33_tpl<F> m33;
-        m33.SetIdentity();
-        return m33;
-    }
-
-    ILINE void SetZero()
-    {
-        m00 = 0;
-        m01 = 0;
-        m02 = 0;
-        m10 = 0;
-        m11 = 0;
-        m12 = 0;
-        m20 = 0;
-        m21 = 0;
-        m22 = 0;
-    }
-
 
     /*!
     *  Create a rotation matrix around an arbitrary axis (Eulers Theorem).
@@ -597,7 +516,7 @@ struct Matrix33_tpl
         F dot = v0 | v1;
         if (dot < F(-0.9999f))
         {
-            Vec3d axis = v0.GetOrthogonal().GetNormalized();
+            Vec3_tpl<F> axis = v0.GetOrthogonal().GetNormalized();
             m00 = F(2 * axis.x * axis.x - 1);
             m01 = F(2 * axis.x * axis.y);
             m02 = F(2 * axis.x * axis.z);
@@ -723,28 +642,6 @@ struct Matrix33_tpl
         return m33;
     }
 
-
-    //! calculate 2 vector that form a orthogonal base with a given input vector (by M.M.)
-    //! /param invDirection input direction (has to be normalized)
-    //! /param outvA first output vector that is perpendicular to the input direction
-    //! /param outvB second output vector that is perpendicular the input vector and the first output vector
-    ILINE static Matrix33_tpl<F> CreateOrthogonalBase(const Vec3& invDirection)
-    {
-        Vec3 outvA;
-        if (invDirection.z < -0.5f || invDirection.z > 0.5f)
-        {
-            outvA = Vec3(invDirection.z, invDirection.y, -invDirection.x);
-        }
-        else
-        {
-            outvA = Vec3(invDirection.y, -invDirection.x, invDirection.z);
-        }
-        Vec3 outvB = (invDirection % outvA).GetNormalized();
-        outvA = (invDirection % outvB).GetNormalized();
-        return CreateFromVectors(invDirection, outvA, outvB);
-    }
-
-
     //////////////////////////////////////////////////////////////////////////
     ILINE static Matrix33_tpl<F> CreateOrientation(const Vec3_tpl<F>& dir, const Vec3_tpl<F>& up, float rollAngle)
     {
@@ -779,77 +676,6 @@ struct Matrix33_tpl
         return tm;
     }
 
-
-    /*!
-    *  Direct-Matrix-Slerp: for the sake of completeness, I have included the following expression
-    *  for Spherical-Linear-Interpolation without using quaternions. This is much faster then converting
-    *  both matrices into quaternions in order to do a quaternion slerp and then converting the slerped
-    *  quaternion back into a matrix.
-    *  This is a high-precision calculation. Given two orthonormal 3x3 matrices this function calculates
-    *  the shortest possible interpolation-path between the two rotations. The interpolation curve forms
-    *  a great arc on the rotation sphere (geodesic). Not only does Slerp follow a great arc it follows
-    *  the shortest great arc.  Furthermore Slerp has constant angular velocity. All in all Slerp is the
-    *  optimal interpolation curve between two rotations.
-    *
-    *  STABILITY PROBLEM: There are two singularities at angle=0 and angle=PI. At 0 the interpolation-axis
-    *  is arbitrary, which means any axis will produce the same result because we have no rotation. Thats
-    *  why I'm using (1,0,0). At PI the rotations point away from each other and the interpolation-axis
-    *  is unpredictable. In this case I'm also using the axis (1,0,0). If the angle is ~0 or ~PI, then we
-    *  have to normalize a very small vector and this can cause numerical instability. The quaternion-slerp
-    *  has exactly the same problems.
-    *                                                                                                  Ivo
-    *  Example:
-    *       Matrix33 slerp=Matrix33::CreateSlerp( m,n,0.333f );
-    */
-    ILINE void SetSlerp(const Matrix33_tpl<F>& m, const Matrix33_tpl<F>& n, F t)
-    {
-        assert(m.IsValid());
-        assert(n.IsValid());
-        //calculate delta-rotation between m and n (=39 flops)
-        Matrix33_tpl<F> d, i;
-        d.m00 = m.m00 * n.m00 + m.m10 * n.m10 + m.m20 * n.m20;
-        d.m01 = m.m00 * n.m01 + m.m10 * n.m11 + m.m20 * n.m21;
-        d.m02 = m.m00 * n.m02 + m.m10 * n.m12 + m.m20 * n.m22;
-        d.m10 = m.m01 * n.m00 + m.m11 * n.m10 + m.m21 * n.m20;
-        d.m11 = m.m01 * n.m01 + m.m11 * n.m11 + m.m21 * n.m21;
-        d.m12 = m.m01 * n.m02 + m.m11 * n.m12 + m.m21 * n.m22;
-        d.m20 = d.m01 * d.m12 - d.m02 * d.m11;
-        d.m21 = d.m02 * d.m10 - d.m00 * d.m12;
-        d.m22 = d.m00 * d.m11 - d.m01 * d.m10;
-        assert(d.IsOrthonormalRH(0.0001f));
-
-        Vec3_tpl<F> axis(d.m21 - d.m12, d.m02 - d.m20, d.m10 - d.m01);
-        F l = sqrt(axis | axis);
-        if (l > F(0.00001))
-        {
-            axis /= l;
-        }
-        else
-        {
-            axis(1, 0, 0);
-        }
-        i.SetRotationAA(acos(clamp_tpl((d.m00 + d.m11 + d.m22 - 1) * 0.5f, F(-1), F(+1))) * t, axis); //angle interpolation and calculation of new delta-matrix (=26 flops)
-
-        //final concatenation (=39 flops)
-        m00 = F(m.m00 * i.m00 + m.m01 * i.m10 + m.m02 * i.m20);
-        m01 = F(m.m00 * i.m01 + m.m01 * i.m11 + m.m02 * i.m21);
-        m02 = F(m.m00 * i.m02 + m.m01 * i.m12 + m.m02 * i.m22);
-        m10 = F(m.m10 * i.m00 + m.m11 * i.m10 + m.m12 * i.m20);
-        m11 = F(m.m10 * i.m01 + m.m11 * i.m11 + m.m12 * i.m21);
-        m12 = F(m.m10 * i.m02 + m.m11 * i.m12 + m.m12 * i.m22);
-        m20 = m01 * m12 - m02 * m11;
-        m21 = m02 * m10 - m00 * m12;
-        m22 = m00 * m11 - m01 * m10;
-        assert(this->IsOrthonormalRH(0.0001f));
-    }
-    ILINE static Matrix33_tpl<F> CreateSlerp(const Matrix33_tpl<F> m, const Matrix33_tpl<F> n, F t)
-    {
-        Matrix33_tpl<F> m33;
-        m33.SetSlerp(m, n, t);
-        return m33;
-    }
-
-
     ILINE void SetScale(const Vec3_tpl<F>& s)
     {
         m00 = s.x;
@@ -880,9 +706,6 @@ struct Matrix33_tpl
     }
     ILINE static Matrix33_tpl<F> CreateFromVectors(const Vec3_tpl<F>& vx, const Vec3_tpl<F>& vy, const Vec3_tpl<F>& vz) { Matrix33_tpl<F> dst; dst.SetFromVectors(vx, vy, vz); return dst;  }
 
-
-
-
     ILINE void Transpose()   // in-place transposition
     {
         F t;
@@ -896,56 +719,6 @@ struct Matrix33_tpl
         m12 = m21;
         m21 = t;
     }
-    ILINE Matrix33_tpl<F> GetTransposed() const
-    {
-        Matrix33_tpl<F> dst;
-        dst.m00 = m00;
-        dst.m01 = m10;
-        dst.m02 = m20;
-        dst.m10 = m01;
-        dst.m11 = m11;
-        dst.m12 = m21;
-        dst.m20 = m02;
-        dst.m21 = m12;
-        dst.m22 = m22;
-        return dst;
-    }
-    ILINE Matrix33_tpl<F> T() const { return GetTransposed(); }
-
-    ILINE Matrix33_tpl& Fabs()
-    {
-        m00 = fabs_tpl(m00);
-        m01 = fabs_tpl(m01);
-        m02 = fabs_tpl(m02);
-        m10 = fabs_tpl(m10);
-        m11 = fabs_tpl(m11);
-        m12 = fabs_tpl(m12);
-        m20 = fabs_tpl(m20);
-        m21 = fabs_tpl(m21);
-        m22 = fabs_tpl(m22);
-        return *this;
-    }
-    ILINE Matrix33_tpl<F> GetFabs() const { Matrix33_tpl<F> m = *this; m.Fabs();  return m;   }
-
-
-    ILINE void Adjoint(void)
-    {
-        //rescue members
-        Matrix33_tpl<F> m = *this;
-        //calculate the adjoint-matrix
-        m00 = m.m11 * m.m22 - m.m12 * m.m21;
-        m01 = m.m12 * m.m20 - m.m10 * m.m22;
-        m02 = m.m10 * m.m21 - m.m11 * m.m20;
-        m10 = m.m21 * m.m02 - m.m22 * m.m01;
-        m11 = m.m22 * m.m00 - m.m20 * m.m02;
-        m12 = m.m20 * m.m01 - m.m21 * m.m00;
-        m20 = m.m01 * m.m12 - m.m02 * m.m11;
-        m21 = m.m02 * m.m10 - m.m00 * m.m12;
-        m22 = m.m00 * m.m11 - m.m01 * m.m10;
-    }
-    ILINE Matrix33_tpl<F> GetAdjoint() const {  Matrix33_tpl<F> dst = *this; dst.Adjoint(); return dst;   }
-
-
 
     /*!
     *
@@ -1201,8 +974,6 @@ struct Matrix33_tpl
 ///////////////////////////////////////////////////////////////////////////////
 
 typedef Matrix33_tpl<f32>  Matrix33;  //always 32 bit
-typedef Matrix33_tpl<f64>  Matrix33d; //always 64 bit
-typedef Matrix33_tpl<real> Matrix33r; //variable float precision. depending on the target system it can be between 32, 64 or 80 bit
 
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
@@ -1360,9 +1131,6 @@ ILINE Matrix33_tpl<F1>& operator+=(Matrix33_tpl<F1>& l, const Matrix33_tpl<F2>& 
     return l;
 }
 
-
-
-
 template<class F1, class F2>
 ILINE Matrix33_tpl<F1> operator - (const Matrix33_tpl<F1>& l, const Matrix33_tpl<F2>& r)
 {
@@ -1396,9 +1164,6 @@ ILINE Matrix33_tpl<F1>& operator-=(Matrix33_tpl<F1>& l, const Matrix33_tpl<F2>& 
     l.m22 -= r.m22;
     return l;
 }
-
-
-
 
 template<class F>
 ILINE Matrix33_tpl<F> operator*(const Matrix33_tpl<F>& m, F op)
@@ -1462,37 +1227,3 @@ ILINE Vec2_tpl<F1> operator*(const Vec2_tpl<F1>& v, const Matrix33_tpl<F2>& m)
     assert(v.IsValid());
     return Vec2_tpl<F1>(v.x * m.m00 + v.y * m.m10, v.x * m.m01 + v.y * m.m11);
 }
-
-template<class F1>
-ILINE Matrix33_tpl<F1>& crossproduct_matrix(const Vec3_tpl<F1>& v, Matrix33_tpl<F1>& m)
-{
-    m.m00 = 0;
-    m.m01 = -v.z;
-    m.m02 = v.y;
-    m.m10 = v.z;
-    m.m11 = 0;
-    m.m12 = -v.x;
-    m.m20 = -v.y;
-    m.m21 = v.x;
-    m.m22 = 0;
-    return m;
-}
-
-template<class F1>
-ILINE Matrix33_tpl<F1>& dotproduct_matrix(const Vec3_tpl<F1>& v, const Vec3_tpl<F1>& op, Matrix33_tpl<F1>& m)
-{
-    m.m00 = v.x * op.x;
-    m.m10 = v.y * op.x;
-    m.m20 = v.z * op.x;
-    m.m01 = v.x * op.y;
-    m.m11 = v.y * op.y;
-    m.m21 = v.z * op.y;
-    m.m02 = v.x * op.z;
-    m.m12 = v.y * op.z;
-    m.m22 = v.z * op.z;
-    return m;
-}
-
-
-#endif // CRYINCLUDE_CRYCOMMON_CRY_MATRIX33_H
-

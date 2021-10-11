@@ -43,7 +43,7 @@ namespace GraphCanvas
             m_states.clear();
         }
 
-        bool HasState() const
+        bool HasState() const override
         {
             return !m_states.empty();
         }
@@ -79,7 +79,7 @@ namespace GraphCanvas
             return releasedValue;
         }
 
-        const T& GetCalculatedState() const
+        const T& GetCalculatedState() const override
         {
             return m_states.back().second;
         }

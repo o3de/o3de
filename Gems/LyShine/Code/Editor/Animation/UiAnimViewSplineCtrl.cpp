@@ -9,7 +9,7 @@
 
 #include "UiEditorAnimationBus.h"
 #include "EditorDefs.h"
-#include "Resource.h"
+#include "Editor/Resource.h"
 #include "UiAnimViewSequenceManager.h"
 #include "UiAnimViewSplineCtrl.h"
 #include "UiAnimViewSequence.h"

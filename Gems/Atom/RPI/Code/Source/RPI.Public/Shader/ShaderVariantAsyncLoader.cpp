@@ -24,12 +24,11 @@ namespace AZ
             threadDesc.m_name = "ShaderVariantAsyncLoader";
 
             m_serviceThread = AZStd::thread(
+                threadDesc,
                 [this]()
                 {
                     this->ThreadServiceLoop();
-                },
-                &threadDesc
-                    );
+                });
         }
 
         void ShaderVariantAsyncLoader::ThreadServiceLoop()

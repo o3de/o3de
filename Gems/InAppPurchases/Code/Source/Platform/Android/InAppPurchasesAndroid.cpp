@@ -58,7 +58,7 @@ namespace InAppPurchases
         }
 
         PurchasedProductDetailsAndroid* purchasedProductDetails = new PurchasedProductDetailsAndroid();
-        
+
         purchasedProductDetails->SetProductId(AZ::Android::JNI::ConvertJstringToString(static_cast<jstring>(env->GetObjectField(jpurchasedProduct, fid[0]))));
         purchasedProductDetails->SetOrderId(AZ::Android::JNI::ConvertJstringToString(static_cast<jstring>(env->GetObjectField(jpurchasedProduct, fid[1]))));
         purchasedProductDetails->SetPackageName(AZ::Android::JNI::ConvertJstringToString(static_cast<jstring>(env->GetObjectField(jpurchasedProduct, fid[2]))));
@@ -75,7 +75,7 @@ namespace InAppPurchases
         int numProducts = env->GetArrayLength(jproductDetails);
 
         InAppPurchasesInterface::GetInstance()->GetCache()->ClearCachedProductDetails();
-        
+
         const int NUM_FIELDS_PRODUCTS = 7;
         jfieldID fid[NUM_FIELDS_PRODUCTS];
         jclass cls;
@@ -224,7 +224,7 @@ namespace InAppPurchases
 
         AZ::IO::HandleType fileHandle = AZ::IO::InvalidHandle;
         AZ::u64 fileSize = 0;
-        if (!fileReader->Open("@assets@/product_ids.json", AZ::IO::OpenMode::ModeRead, fileHandle))
+        if (!fileReader->Open("@products@/product_ids.json", AZ::IO::OpenMode::ModeRead, fileHandle))
         {
             AZ_TracePrintf("LumberyardInAppBilling", "Unable to open file product_ids.json\n");
             return;
@@ -250,7 +250,7 @@ namespace InAppPurchases
         document.Parse(fileBuffer.data());
         if (document.HasParseError())
         {
-            const char* errorStr = rapidjson::GetParseError_En(document.GetParseError());
+            [[maybe_unused]] const char* errorStr = rapidjson::GetParseError_En(document.GetParseError());
             AZ_TracePrintf("LumberyardInAppBilling", "Failed to parse product_ids.json: %s\n", errorStr);
             return;
         }
@@ -319,10 +319,10 @@ namespace InAppPurchases
 
         env->DeleteLocalRef(billingClass);
     }
-    
+
     void InAppPurchasesAndroid::RestorePurchasedProducts() const
     {
-        
+
     }
 
     void InAppPurchasesAndroid::ConsumePurchase(const AZStd::string& purchaseToken) const

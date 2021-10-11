@@ -8,11 +8,10 @@
 #pragma once
 
 #include <AzCore/Component/Component.h>
-
 #include <AzFramework/Application/Application.h>
-
-#include <AzToolsFramework/Thumbnails/Thumbnail.h>
+#include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
+#include <AzToolsFramework/Thumbnails/Thumbnail.h>
 #include <AzToolsFramework/Viewport/ActionBus.h>
 
 #include <AtomLyIntegration/CommonFeatures/Material/EditorMaterialSystemComponentRequestBus.h>
@@ -28,8 +27,9 @@ namespace AZ
             : public AZ::Component
             , private EditorMaterialSystemComponentRequestBus::Handler
             , private AzFramework::ApplicationLifecycleEvents::Bus::Handler
-            , public AzToolsFramework::AssetBrowser::AssetBrowserInteractionNotificationBus::Handler
-            , public AzToolsFramework::EditorMenuNotificationBus::Handler
+            , private AzToolsFramework::AssetBrowser::AssetBrowserInteractionNotificationBus::Handler
+            , private AzToolsFramework::EditorMenuNotificationBus::Handler
+            , private AzToolsFramework::EditorEvents::Bus::Handler
         {
         public:
             AZ_COMPONENT(EditorMaterialSystemComponent, "{96652157-DA0B-420F-B49C-0207C585144C}");
@@ -49,7 +49,8 @@ namespace AZ
 
         private:
             //! EditorMaterialSystemComponentRequestBus::Handler overrides...
-            void OpenInMaterialEditor(const AZStd::string& sourcePath) override;
+            void OpenMaterialEditor(const AZStd::string& sourcePath) override;
+            void OpenMaterialInspector(const AZ::EntityId& entityId, const AZ::Render::MaterialAssignmentId& materialAssignmentId) override;
 
             // AzFramework::ApplicationLifecycleEvents overrides...
             void OnApplicationAboutToStop() override;
@@ -60,6 +61,9 @@ namespace AZ
             // EditorMenuNotificationBus::Handler overrides ...
             void OnPopulateToolMenuItems() override;
             void OnResetToolMenuItems() override;
+
+            // AztoolsFramework::EditorEvents::Bus::Handler overrides...
+            void NotifyRegisterViews() override;
 
             void SetupThumbnails();
             void TeardownThumbnails();

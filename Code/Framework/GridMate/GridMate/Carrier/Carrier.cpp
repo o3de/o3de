@@ -591,13 +591,13 @@ namespace GridMate
 
         ThreadMessage(MainThreadMsg mtm)
             : m_code(mtm)
-            , m_connection(NULL)
-            , m_threadConnection(NULL)
+            , m_connection(nullptr)
+            , m_threadConnection(nullptr)
         {}
         ThreadMessage(CarrierThreadMsg ctm)
             : m_code(ctm)
-            , m_connection(NULL)
-            , m_threadConnection(NULL)
+            , m_connection(nullptr)
+            , m_threadConnection(nullptr)
         {}
 
         int                     m_code;
@@ -787,7 +787,7 @@ namespace GridMate
         AZ_FORCE_INLINE ThreadMessage* PopCarrierThreadMessage()
         {
             AZStd::lock_guard<AZStd::mutex> l(m_carrierMsgQueueLock);
-            ThreadMessage* res = NULL;
+            ThreadMessage* res = nullptr;
             if (!m_carrierMsgQueue.empty())
             {
                 res = m_carrierMsgQueue.front();
@@ -799,7 +799,7 @@ namespace GridMate
         AZ_FORCE_INLINE ThreadMessage* PopMainThreadMessage()
         {
             AZStd::lock_guard<AZStd::mutex> l(m_mainMsgQueueLock);
-            ThreadMessage* res = NULL;
+            ThreadMessage* res = nullptr;
             if (!m_mainMsgQueue.empty())
             {
                 res = m_mainMsgQueue.front();
@@ -1120,7 +1120,7 @@ using namespace GridMate;
 //////////////////////////////////////////////////////////////////////////
 Connection::Connection(CarrierThread* threadOwner, const AZStd::string& address)
     : m_threadOwner(threadOwner)
-    , m_threadConn(NULL)
+    , m_threadConn(nullptr)
     , m_fullAddress(address)
     , m_state(Carrier::CST_CONNECTING)
 {
@@ -1139,7 +1139,7 @@ Connection::Connection(CarrierThread* threadOwner, const AZStd::string& address)
 
 Connection::~Connection()
 {
-    AZ_Error("GridMate", m_threadConn.load(AZStd::memory_order_acquire) == NULL, "We must detach the thread connection first!");
+    AZ_Error("GridMate", m_threadConn.load(AZStd::memory_order_acquire) == nullptr, "We must detach the thread connection first!");
     // Make sure render thread doesn't reference is at this point... it's too late
     for (unsigned int i = 0; i < AZ_ARRAY_SIZE(m_toSend); ++i)
     {
@@ -1172,7 +1172,7 @@ Connection::~Connection()
 
 ThreadConnection::ThreadConnection(CarrierThread* threadOwner)
     : m_threadOwner(threadOwner)
-    , m_mainConnection(NULL)
+    , m_mainConnection(nullptr)
     , m_dataGramSeqNum(1) // IMPORTANT to start with 1 if we have not received any datagrams we will confirm a datagram with value of 0.
     , m_lastAckedDatagram(0)
     , m_lastReceivedDatagramTime(AZStd::chrono::system_clock::now())
@@ -1196,7 +1196,7 @@ ThreadConnection::ThreadConnection(CarrierThread* threadOwner)
 
 ThreadConnection::~ThreadConnection()
 {
-    AZ_Error("GridMate", m_mainConnection == NULL || m_mainConnection->m_threadConn.load() == NULL, "We should have unbound the thread connection by now!");
+    AZ_Error("GridMate", m_mainConnection == nullptr || m_mainConnection->m_threadConn.load() == nullptr, "We should have unbound the thread connection by now!");
 
     for (unsigned char iChannel = 0; iChannel < k_maxNumberOfChannels; ++iChannel)
     {
@@ -1215,8 +1215,8 @@ ThreadConnection::~ThreadConnection()
         m_threadOwner->FreeDatagram(dgram);
     }
 
-    m_target->m_threadConnection = NULL;
-    m_target = NULL;
+    m_target->m_threadConnection = nullptr;
+    m_target = nullptr;
     m_threadOwner->RemoveConnectionToSend(this);
 
     AZ_Error("GridMate", !IsLinked(), "Connection still linked!");
@@ -1245,7 +1245,7 @@ CarrierThread::CarrierThread(const CarrierDesc& desc, AZStd::shared_ptr<Compress
     m_ownDriver = false;
     m_driver = desc.m_driver;
 
-    if (m_driver == 0)
+    if (m_driver == nullptr)
     {
         m_ownDriver = true;
         m_driver = aznew SocketDriver(desc.m_driverIsFullPackets, desc.m_driverIsCrossPlatform);
@@ -1258,7 +1258,7 @@ CarrierThread::CarrierThread(const CarrierDesc& desc, AZStd::shared_ptr<Compress
     m_ownTrafficControl = false;
     m_trafficControl = desc.m_trafficControl;
 
-    if (m_trafficControl == 0)
+    if (m_trafficControl == nullptr)
     {
         m_ownTrafficControl = true;
         m_trafficControl = aznew DefaultTrafficControl(m_driver->GetMaxSendSize(),
@@ -1316,7 +1316,7 @@ CarrierThread::CarrierThread(const CarrierDesc& desc, AZStd::shared_ptr<Compress
         {
             threadDesc.m_priority = desc.m_threadPriority;
         }
-        m_thread = AZStd::thread(AZStd::bind(&CarrierThread::ThreadPump, this), &threadDesc);
+        m_thread = AZStd::thread(threadDesc, AZStd::bind(&CarrierThread::ThreadPump, this));
     }
     else
     {
@@ -1667,7 +1667,7 @@ CarrierThread::UpdateReceive()
         ReadBuffer readBuffer(kCarrierEndian, data, recvDataGramSize);
         ThreadConnection* conn = nullptr;
 
-        if (fromAddress->m_threadConnection != NULL)
+        if (fromAddress->m_threadConnection != nullptr)
         {
             conn = fromAddress->m_threadConnection;
             receivedConnections.insert(conn);
@@ -2214,7 +2214,7 @@ CarrierThread::UpdateStats()
     for (ThreadConnectionList::iterator iConn = m_threadConnections.begin(); iConn != m_threadConnections.end(); ++iConn)
     {
         ThreadConnection* conn = *iConn;
-        if (conn->m_mainConnection == NULL)
+        if (conn->m_mainConnection == nullptr)
         {
             continue;
         }
@@ -2267,40 +2267,40 @@ CarrierThread::ThreadPump()
         // Process messages for us
         {
             ThreadMessage* msg;
-            while ((msg = PopCarrierThreadMessage()) != NULL)
+            while ((msg = PopCarrierThreadMessage()) != nullptr)
             {
                 switch (msg->m_code)
                 {
                 case CTM_CONNECT:
                 {
-                    AZ_Assert(msg->m_connection != NULL, "You must provide a valid connection pointer!");
+                    AZ_Assert(msg->m_connection != nullptr, "You must provide a valid connection pointer!");
                     // if this connect was initiated from a remote machine msg->threadConnection will be != NULL
                     ThreadConnection* conn = msg->m_threadConnection;
                     if (!conn)
                     {
                         // The main thread is initiating this connection
                         AZStd::intrusive_ptr<DriverAddress> driverAddress = m_driver->CreateDriverAddress(msg->m_connection->m_fullAddress);
-                        if (driverAddress->m_threadConnection != NULL)
+                        if (driverAddress->m_threadConnection != nullptr)
                         {
                             AZ_TracePrintf("GridMate", "Thread connection to %s already exists!\n", driverAddress->ToString().c_str());
                             // we already have such thread connection
                             conn = driverAddress->m_threadConnection;
                             // make sure the existing connection is not bound
-                            AZ_Assert(conn->m_mainConnection == NULL, "This thread connection should be unbound!");
+                            AZ_Assert(conn->m_mainConnection == nullptr, "This thread connection should be unbound!");
                         }
                         else
                         {
                             conn = MakeNewConnection(driverAddress);
                         }
                     }
-                    AZ_Assert(conn->m_mainConnection == NULL || conn->m_mainConnection == msg->m_connection, "This thread connection should be unbound or bound to the imcomming main connection!");
+                    AZ_Assert(conn->m_mainConnection == nullptr || conn->m_mainConnection == msg->m_connection, "This thread connection should be unbound or bound to the imcomming main connection!");
                     conn->m_mainConnection = msg->m_connection;
-                    AZ_Assert(conn->m_mainConnection->m_threadConn.load() == NULL || conn->m_mainConnection->m_threadConn.load() == conn, "This main connection should be unbound or bound to us!");
+                    AZ_Assert(conn->m_mainConnection->m_threadConn.load() == nullptr || conn->m_mainConnection->m_threadConn.load() == conn, "This main connection should be unbound or bound to us!");
                     conn->m_mainConnection->m_threadConn = conn;
                 } break;
                 case CTM_DISCONNECT:
                 {
-                    AZ_Assert(msg->m_connection != NULL, "You must provide a valid connection pointer!");
+                    AZ_Assert(msg->m_connection != nullptr, "You must provide a valid connection pointer!");
                     ThreadConnection* tc = msg->m_connection->m_threadConn;
                     if (tc && !tc->m_isDisconnecting)
                     {
@@ -2312,7 +2312,7 @@ CarrierThread::ThreadPump()
                 } break;
                 case CTM_DELETE_CONNECTION:
                 {
-                    ThreadConnection* tc = NULL;
+                    ThreadConnection* tc = nullptr;
                     tc = msg->m_threadConnection;
                     if (tc)
                     {
@@ -2339,7 +2339,7 @@ CarrierThread::ThreadPump()
                             ThreadMessage* mtm = aznew ThreadMessage(MTM_DELETE_CONNECTION);
                             mtm->m_connection = msg->m_connection;
                             RemoveConnectionToSend(mtm->m_threadConnection);
-                            mtm->m_threadConnection = NULL;
+                            mtm->m_threadConnection = nullptr;
                             mtm->m_disconnectReason = msg->m_disconnectReason;
                             PushMainThreadMessage(mtm);
                         }
@@ -2413,10 +2413,10 @@ CarrierThread::ThreadPump()
         if (tc->m_mainConnection)
         {
             RemoveConnectionToSend(tc);
-            tc->m_mainConnection->m_threadConn = NULL;
+            tc->m_mainConnection->m_threadConn = nullptr;
             ThreadMessage* mtm = aznew ThreadMessage(MTM_DELETE_CONNECTION);
             mtm->m_connection = tc->m_mainConnection;
-            mtm->m_threadConnection = NULL;
+            mtm->m_threadConnection = nullptr;
             mtm->m_disconnectReason = CarrierDisconnectReason::DISCONNECT_SHUTTING_DOWN;
             PushMainThreadMessage(mtm);
         }
@@ -2582,7 +2582,7 @@ void CarrierThread::WriteAckData(ThreadConnection* connection, WriteBuffer& writ
         // Generate ACK bits
         SequenceNumber lastToAck;   // last received datagram
         SequenceNumber firstToAck;      // first received datagram (still in the list)
-        unsigned char* ackHistoryBits = NULL;
+        unsigned char* ackHistoryBits = nullptr;
         unsigned char ackNumHistoryBytes = 0;
         unsigned char ackHistoryBitsStorage[DataGramHistoryList::m_datagramHistoryMaxNumberOfBytes];
 
@@ -2736,7 +2736,7 @@ CarrierThread::ReadAckData(ThreadConnection* connection, ReadBuffer& readBuffer)
         return;
     }
 
-    if (connection != NULL && isAckData)
+    if (connection != nullptr && isAckData)
     {
         if (firstToAck != lastToAck)
         {
@@ -3707,12 +3707,12 @@ CarrierImpl::~CarrierImpl()
     }
 
     delete m_thread;
-    m_thread = NULL;
+    m_thread = nullptr;
 
     if (m_ownHandshake)
     {
         delete m_handshake;
-        m_handshake = NULL;
+        m_handshake = nullptr;
     }
 }
 
@@ -4235,13 +4235,13 @@ CarrierImpl::ProcessMainThreadMessages()
     // Process messages from the carrier thread
     {
         ThreadMessage* msg;
-        while ((msg = m_thread->PopMainThreadMessage()) != NULL)
+        while ((msg = m_thread->PopMainThreadMessage()) != nullptr)
         {
             switch (msg->m_code)
             {
             case MTM_NEW_CONNECTION:
             {
-                Connection* conn = NULL;
+                Connection* conn = nullptr;
                 // check if we don't have it in the list.
                 for(auto& c : m_connections)
                 {
@@ -4255,8 +4255,8 @@ CarrierImpl::ProcessMainThreadMessages()
                 {
                     // we already have such connection
                     ThreadConnection* threadConn = conn->m_threadConn.load(AZStd::memory_order_acquire);
-                    AZ_Assert(threadConn == NULL || threadConn == msg->m_threadConnection, "This main connection 0x%08x (%s) already have bound thread connection 0x%08x->0x%08x!", conn, conn->m_fullAddress.c_str(), threadConn, threadConn->m_mainConnection);
-                    if (threadConn == NULL)
+                    AZ_Assert(threadConn == nullptr || threadConn == msg->m_threadConnection, "This main connection 0x%08x (%s) already have bound thread connection 0x%08x->0x%08x!", conn, conn->m_fullAddress.c_str(), threadConn, threadConn->m_mainConnection);
+                    if (threadConn == nullptr)
                     {
                         // request a bind we have not already
                         ThreadMessage* ctm = aznew ThreadMessage(CTM_CONNECT);
@@ -4283,23 +4283,23 @@ CarrierImpl::ProcessMainThreadMessages()
                     // we will not even make a connection
                     ThreadMessage* ctm = aznew ThreadMessage(CTM_DELETE_CONNECTION);
                     ctm->m_threadConnection = msg->m_threadConnection;
-                    ctm->m_connection = NULL;
+                    ctm->m_connection = nullptr;
                     ctm->m_disconnectReason = CarrierDisconnectReason::DISCONNECT_HANDSHAKE_REJECTED;
                     m_thread->PushCarrierThreadMessage(ctm);
                 }
             } break;
             case MTM_DISCONNECT:
             {
-                AZ_Assert(msg->m_connection != NULL, "You must provide a valid connection pointer!");
+                AZ_Assert(msg->m_connection != nullptr, "You must provide a valid connection pointer!");
                 DisconnectRequest(msg->m_connection, msg->m_disconnectReason);
             } break;
             case MTM_DISCONNECT_TIMEOUT:
             {
-                AZ_Assert(msg->m_connection != NULL, "You must provide a valid connection pointer!");
+                AZ_Assert(msg->m_connection != nullptr, "You must provide a valid connection pointer!");
                 if (msg->m_connection->m_state == Carrier::CST_DISCONNECTING)
                 {
                     // unbind from the thread connection and inform carrier thread to delete it.
-                    ThreadConnection* threadConn = msg->m_connection->m_threadConn.exchange(NULL);
+                    ThreadConnection* threadConn = msg->m_connection->m_threadConn.exchange(nullptr);
                     msg->m_connection->m_state = Carrier::CST_DISCONNECTED;
                     ThreadMessage* ctm = aznew ThreadMessage(CTM_DELETE_CONNECTION);
                     ctm->m_connection = msg->m_connection;
@@ -4311,7 +4311,7 @@ CarrierImpl::ProcessMainThreadMessages()
             } break;
             case MTM_DELETE_CONNECTION:
             {
-                AZ_Assert(msg->m_connection != NULL, "You must provide a valid connection pointer!");
+                AZ_Assert(msg->m_connection != nullptr, "You must provide a valid connection pointer!");
                 DeleteConnection(msg->m_connection, msg->m_disconnectReason);
             } break;
             case MTM_ON_ERROR:
@@ -4534,7 +4534,7 @@ CarrierImpl::ProcessSystemMessages()
                     // Delete connection
                     conn->m_state = Carrier::CST_DISCONNECTED;
                     // unbind from the thread connection and inform carrier thread to delete it.
-                    ThreadConnection* threadConn = conn->m_threadConn.exchange(NULL);
+                    ThreadConnection* threadConn = conn->m_threadConn.exchange(nullptr);
                     ThreadMessage* ctm = aznew ThreadMessage(CTM_DELETE_CONNECTION);
                     ctm->m_connection = conn;
                     ctm->m_threadConnection = threadConn;
@@ -4829,7 +4829,7 @@ CarrierImpl::GetTime()
 void
 CarrierImpl::DebugDeleteConnection(ConnectionID id)
 {
-    if (id == InvalidConnectionID && m_thread != NULL)
+    if (id == InvalidConnectionID && m_thread != nullptr)
     {
         return;
     }
@@ -4844,7 +4844,7 @@ CarrierImpl::DebugDeleteConnection(ConnectionID id)
     // Delete connection
     conn->m_state = Carrier::CST_DISCONNECTED;
     // unbind from the thread connection and inform carrier thread to delete it.
-    ThreadConnection* threadConn = conn->m_threadConn.exchange(NULL);
+    ThreadConnection* threadConn = conn->m_threadConn.exchange(nullptr);
     ThreadMessage* ctm = aznew ThreadMessage(CTM_DELETE_CONNECTION);
     ctm->m_connection = conn;
     ctm->m_threadConnection = threadConn;
@@ -4914,7 +4914,7 @@ DefaultCarrier::Create(const CarrierDesc& desc, IGridMate* gridMate)
 AZStd::string
 CarrierEventsBase::ReasonToString(CarrierDisconnectReason reason)
 {
-    const char* reasonStr = 0;
+    const char* reasonStr = nullptr;
     switch (reason)
     {
     case CarrierDisconnectReason::DISCONNECT_USER_REQUESTED:

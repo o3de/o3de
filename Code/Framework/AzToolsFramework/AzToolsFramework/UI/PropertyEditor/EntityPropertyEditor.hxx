@@ -139,8 +139,8 @@ namespace AzToolsFramework
         EntityPropertyEditor(QWidget* pParent = NULL, Qt::WindowFlags flags = Qt::WindowFlags(), bool isLevelEntityEditor = false);
         virtual ~EntityPropertyEditor();
 
-        virtual void BeforeUndoRedo();
-        virtual void AfterUndoRedo();
+        void BeforeUndoRedo() override;
+        void AfterUndoRedo() override;
 
         static void Reflect(AZ::ReflectContext* context);
 
@@ -249,8 +249,8 @@ namespace AzToolsFramework
         bool IsEntitySelected(const AZ::EntityId& id) const;
         bool IsSingleEntitySelected(const AZ::EntityId& id) const;
 
-        virtual void GotSceneSourceControlStatus(AzToolsFramework::SourceControlFileInfo& fileInfo);
-        virtual void PerformActionsBasedOnSceneStatus(bool sceneIsNew, bool readOnly);
+        void GotSceneSourceControlStatus(AzToolsFramework::SourceControlFileInfo& fileInfo) override;
+        void PerformActionsBasedOnSceneStatus(bool sceneIsNew, bool readOnly) override;
 
         // enable/disable editor
         void EnableEditor(bool enabled);

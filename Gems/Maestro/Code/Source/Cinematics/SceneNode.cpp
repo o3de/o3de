@@ -89,13 +89,13 @@ namespace {
             AZ::Quaternion quat = LYQuaternionToAZQuaternion(localRotation);
             AZ::TransformBus::Event(m_cameraEntityId, &AZ::TransformBus::Events::SetLocalRotationQuaternion, quat);
         }
-        float GetFoV() const
+        float GetFoV() const override
         {
             float retFoV = DEFAULT_FOV;
             Camera::CameraRequestBus::EventResult(retFoV, m_cameraEntityId, &Camera::CameraComponentRequests::GetFovDegrees);
             return retFoV;
         }
-        float GetNearZ() const
+        float GetNearZ() const override
         {
             float retNearZ = DEFAULT_NEAR;
             Camera::CameraRequestBus::EventResult(retNearZ, m_cameraEntityId, &Camera::CameraComponentRequests::GetNearClipDistance);

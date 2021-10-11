@@ -6,9 +6,10 @@
  *
  */
 
-#include <Atom/RHI/CpuProfiler.h>
 #include <Atom/RHI/PipelineStateCache.h>
 #include <Atom/RHI/Factory.h>
+
+#include <AzCore/Debug/Profiler.h>
 #include <AzCore/std/sort.h>
 #include <AzCore/std/parallel/exponential_backoff.h>
 
@@ -166,16 +167,12 @@ namespace AZ
             }
 
             AZStd::unique_lock<AZStd::shared_mutex> lock(m_mutex);
-
             const GlobalLibraryEntry& entry = m_globalLibrarySet[handle.GetIndex()];
 
-            /**
-             * Each thread has its own PipelineLibrary instance. To produce the final serialized data, we
-             * coalesce data from each individual library by merging the thread-local ones into a single
-             * global (temporary) library. The data is then extracted from this global library and returned.
-             * This operation is designed to happen once at application shutdown; certainly not every frame.
-             */
-
+            //! Each thread has its own PipelineLibrary instance. To produce the final serialized data, we
+            //! coalesce data from each individual library by merging the thread-local ones into a single
+            //! global (temporary) library. The data is then extracted from this global library and returned.
+            //! This operation is designed to happen once at application shutdown; certainly not every frame.
             AZStd::vector<const PipelineLibrary*> threadLibraries;
             m_threadLibrarySet.ForEach([handle, &threadLibraries](const ThreadLibrarySet& threadLibrarySet)
             {
@@ -188,16 +185,26 @@ namespace AZ
                 }
             });
 
-            Ptr<PipelineLibrary> pipelineLibrary = Factory::Get().CreatePipelineLibrary();
-            ResultCode resultCode = pipelineLibrary->Init(*m_device, entry.m_serializedData.get());
-
-            if (resultCode == ResultCode::Success)
+            bool doesPSODataExist = entry.m_serializedData.get();
+            for (const RHI::PipelineLibrary* libraryBase : threadLibraries)
             {
-                resultCode = pipelineLibrary->MergeInto(threadLibraries);
+                const PipelineLibrary* library = static_cast<const PipelineLibrary*>(libraryBase);
+                doesPSODataExist |= library->IsMergeRequired();
+            }
+
+            if (doesPSODataExist)
+            {
+                Ptr<PipelineLibrary> pipelineLibrary = Factory::Get().CreatePipelineLibrary();
+                ResultCode resultCode = pipelineLibrary->Init(*m_device, entry.m_serializedData.get());
 
                 if (resultCode == ResultCode::Success)
                 {
-                    return pipelineLibrary->GetSerializedData();
+                    resultCode = pipelineLibrary->MergeInto(threadLibraries);
+
+                    if (resultCode == ResultCode::Success)
+                    {
+                        return pipelineLibrary->GetSerializedData();
+                    }
                 }
             }
 
@@ -206,7 +213,7 @@ namespace AZ
 
         void PipelineStateCache::Compact()
         {
-            AZ_ATOM_PROFILE_FUNCTION("RHI", "PipelineStateCache: Compact");
+            AZ_PROFILE_SCOPE(RHI, "PipelineStateCache: Compact");
             AZStd::unique_lock<AZStd::shared_mutex> lock(m_mutex);
 
             // Merge the pending cache into the read-only cache.
@@ -272,8 +279,6 @@ namespace AZ
 
         const PipelineState* PipelineStateCache::AcquirePipelineState(PipelineLibraryHandle handle, const PipelineStateDescriptor& descriptor)
         {
-            AZ_PROFILE_FUNCTION(RHI);
-
             if (handle.IsNull())
             {
                 return nullptr;

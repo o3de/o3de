@@ -548,7 +548,7 @@ namespace ScriptCanvasTests
         bool DestroyEntityById(AZ::EntityId entityId) override;
         AZ::Entity* CloneEntity(const AZ::Entity& sourceEntity) override;
         void ResetContext() override;
-        AZ::EntityId FindLoadedEntityIdMapping(const AZ::EntityId& staticId) const;
+        AZ::EntityId FindLoadedEntityIdMapping(const AZ::EntityId& staticId) const override;
         ////
 
         void AddEntity(AZ::EntityId entityId);

@@ -14,7 +14,6 @@
 #include <AzCore/UnitTest/TestTypes.h>
 #include <AzCore/Utils/Utils.h>
 #include <AzFramework/IO/LocalFileIO.h>
-#include <AzFramework/StringFunc/StringFunc.h>
 #include <AzFramework/IO/FileOperations.h>
 #include <time.h>
 #include <AzTest/Utils.h>
@@ -30,21 +29,6 @@ using namespace AZ;
 using namespace AZ::IO;
 using namespace AZ::Debug;
 
-namespace PathUtil
-{
-    AZStd::string AddSlash(const AZStd::string& path)
-    {
-        if (path.empty() || path[path.length() - 1] == '/')
-        {
-            return path;
-        }
-        if (path[path.length() - 1] == '\\')
-        {
-            return path.substr(0, path.length() - 1) + "/";
-        }
-        return path + "/";
-    }
-}
 
 namespace UnitTest
 {
@@ -118,7 +102,7 @@ namespace UnitTest
             AZ::IO::FileIOBase::SetInstance(&m_fileIO);
         }
 
-        ~FileIOStreamTest()
+        ~FileIOStreamTest() override
         {
         }
 
@@ -161,15 +145,16 @@ namespace UnitTest
             : public ScopedAllocatorSetupFixture
         {
         public:
-            AZStd::string m_root;
-            AZStd::string folderName;
-            AZStd::string deepFolder;
-            AZStd::string extraFolder;
+            AZ::Test::ScopedAutoTempDirectory m_tempDir;
+            AZ::IO::Path m_root;
+            AZ::IO::Path m_folderName;
+            AZ::IO::Path m_deepFolder;
+            AZ::IO::Path m_extraFolder;
 
-            AZStd::string fileRoot;
-            AZStd::string file01Name;
-            AZStd::string file02Name;
-            AZStd::string file03Name;
+            AZ::IO::Path m_fileRoot;
+            AZ::IO::Path m_file01Name;
+            AZ::IO::Path m_file02Name;
+            AZ::IO::Path m_file03Name;
             int m_randomFolderKey = 0;
 
             FolderFixture()
@@ -179,43 +164,13 @@ namespace UnitTest
 
             void ChooseRandomFolder()
             {
-                char currentDir[AZ_MAX_PATH_LEN];
-                AZ::Utils::GetExecutableDirectory(currentDir, AZ_MAX_PATH_LEN);
-
-                folderName = currentDir;
-                folderName.append("/temp");
-                m_root = folderName;
-                if (folderName.size() > 0)
-                {
-                    folderName = PathUtil::AddSlash(folderName);
-                }
-
-                AZStd::string tempName = AZStd::string::format("tmp%08x", m_randomFolderKey);
-                folderName.append(tempName.c_str());
-                folderName = PathUtil::AddSlash(folderName);
-                AZStd::replace(folderName.begin(), folderName.end(), '\\', '/');
-
-                // Make sure the drive letter is capitalized
-                if (folderName.size() > 2)
-                {
-                    if (folderName[1] == ':')
-                    {
-                        folderName[0] = static_cast<char>(toupper(folderName[0]));
-                    }
-                }
-
-                deepFolder = folderName;
-                deepFolder.append("test");
-
-                deepFolder = PathUtil::AddSlash(deepFolder);
-                deepFolder.append("subdir");
-
-                extraFolder = deepFolder;
-                extraFolder = PathUtil::AddSlash(extraFolder);
-                extraFolder.append("subdir2");
+                m_root =  m_tempDir.GetDirectory();
+                m_folderName = m_root / AZStd::string::format("tmp%08x", m_randomFolderKey);
+                m_deepFolder = m_folderName / "test"  / "subdir";
+                m_extraFolder = m_deepFolder / "subdir2";
 
                 // make a couple files there, and in the root:
-                fileRoot = PathUtil::AddSlash(extraFolder);
+                m_fileRoot = m_extraFolder;
             }
 
             void SetUp() override
@@ -229,37 +184,33 @@ namespace UnitTest
                 {
                     ChooseRandomFolder();
                     ++m_randomFolderKey;
-                } while (local.IsDirectory(fileRoot.c_str()));
+                } while (local.IsDirectory(m_fileRoot.c_str()));
 
-                file01Name = fileRoot + "file01.txt";
-                file02Name = fileRoot + "file02.asdf";
-                file03Name = fileRoot + "test123.wha";
+                m_file01Name = m_fileRoot / "file01.txt";
+                m_file02Name = m_fileRoot / "file02.asdf";
+                m_file03Name = m_fileRoot / "test123.wha";
             }
         
             void TearDown() override
             {
-                if ((!folderName.empty())&&(strstr(folderName.c_str(), "/temp") != nullptr))
-                {
-                    // cleanup!
-                    LocalFileIO local;
-                    local.DestroyPath(folderName.c_str());
-                }
             }
             void CreateTestFiles()
             {
+                constexpr auto openMode = SystemFile::OpenMode::SF_OPEN_WRITE_ONLY
+                    | SystemFile::OpenMode::SF_OPEN_CREATE
+                    | SystemFile::OpenMode::SF_OPEN_CREATE_NEW;
+                constexpr AZStd::string_view testContent("this is just a test");
+
                 LocalFileIO local;
-                AZ_TEST_ASSERT(local.CreatePath(fileRoot.c_str()));
-                AZ_TEST_ASSERT(local.IsDirectory(fileRoot.c_str()));
-                for (const AZStd::string& filename : { file01Name, file02Name, file03Name })
+                AZ_TEST_ASSERT(local.CreatePath(m_fileRoot.c_str()));
+                AZ_TEST_ASSERT(local.IsDirectory(m_fileRoot.c_str()));
+                for (const AZ::IO::Path& filename : { m_file01Name, m_file02Name, m_file03Name })
                 {
-#ifdef AZ_COMPILER_MSVC
-                    FILE* tempFile;
-                    fopen_s(&tempFile, filename.c_str(), "wb");
-#else
-                    FILE* tempFile = fopen(filename.c_str(), "wb");
-#endif
-                    fwrite("this is just a test", 1, 19, tempFile);
-                    fclose(tempFile);
+                    SystemFile tempFile;
+                    tempFile.Open(filename.c_str(), openMode);
+
+                    tempFile.Write(testContent.data(), testContent.size());
+                    tempFile.Close();
                 }
             }
         };
@@ -272,28 +223,23 @@ namespace UnitTest
             {
                 LocalFileIO local;
 
-                AZ_TEST_ASSERT(!local.Exists(folderName.c_str()));
+                AZ_TEST_ASSERT(!local.Exists(m_folderName.c_str()));
 
-                AZStd::string longPathCreateTest = folderName;
-                longPathCreateTest.append("one");
-                longPathCreateTest = PathUtil::AddSlash(longPathCreateTest);
-                longPathCreateTest.append("two");
-                longPathCreateTest = PathUtil::AddSlash(longPathCreateTest);
-                longPathCreateTest.append("three");
+                AZ::IO::Path longPathCreateTest = m_folderName / "one" / "two" / "three";
 
                 AZ_TEST_ASSERT(!local.Exists(longPathCreateTest.c_str()));
                 AZ_TEST_ASSERT(!local.IsDirectory(longPathCreateTest.c_str()));
                 AZ_TEST_ASSERT(local.CreatePath(longPathCreateTest.c_str()));
                 AZ_TEST_ASSERT(local.IsDirectory(longPathCreateTest.c_str()));
 
-                AZ_TEST_ASSERT(!local.Exists(deepFolder.c_str()));
-                AZ_TEST_ASSERT(!local.IsDirectory(deepFolder.c_str()));
-                AZ_TEST_ASSERT(local.CreatePath(deepFolder.c_str()));
-                AZ_TEST_ASSERT(local.IsDirectory(deepFolder.c_str()));
+                AZ_TEST_ASSERT(!local.Exists(m_deepFolder.c_str()));
+                AZ_TEST_ASSERT(!local.IsDirectory(m_deepFolder.c_str()));
+                AZ_TEST_ASSERT(local.CreatePath(m_deepFolder.c_str()));
+                AZ_TEST_ASSERT(local.IsDirectory(m_deepFolder.c_str()));
 
-                AZ_TEST_ASSERT(local.Exists(deepFolder.c_str()));
-                AZ_TEST_ASSERT(local.CreatePath(deepFolder.c_str()));
-                AZ_TEST_ASSERT(local.Exists(deepFolder.c_str()));
+                AZ_TEST_ASSERT(local.Exists(m_deepFolder.c_str()));
+                AZ_TEST_ASSERT(local.CreatePath(m_deepFolder.c_str()));
+                AZ_TEST_ASSERT(local.Exists(m_deepFolder.c_str()));
             }
         };
 
@@ -310,16 +256,19 @@ namespace UnitTest
             {
                 LocalFileIO local;
 
-                AZ_TEST_ASSERT(!local.Exists(fileRoot.c_str()));
-                AZ_TEST_ASSERT(!local.IsDirectory(fileRoot.c_str()));
-                AZ_TEST_ASSERT(local.CreatePath(fileRoot.c_str()));
-                AZ_TEST_ASSERT(local.IsDirectory(fileRoot.c_str()));
+                AZ_TEST_ASSERT(!local.Exists(m_fileRoot.c_str()));
+                AZ_TEST_ASSERT(!local.IsDirectory(m_fileRoot.c_str()));
+                AZ_TEST_ASSERT(local.CreatePath(m_fileRoot.c_str()));
+                AZ_TEST_ASSERT(local.IsDirectory(m_fileRoot.c_str()));
 
-                FILE* tempFile = nullptr;
-                azfopen(&tempFile, file01Name.c_str(), "wb");
-
-                fwrite("this is just a test", 1, 19, tempFile);
-                fclose(tempFile);
+                constexpr auto openMode = SystemFile::OpenMode::SF_OPEN_WRITE_ONLY
+                    | SystemFile::OpenMode::SF_OPEN_CREATE
+                    | SystemFile::OpenMode::SF_OPEN_CREATE_NEW;
+                SystemFile tempFile;
+                tempFile.Open(m_file01Name.c_str(), openMode);
+                constexpr AZStd::string_view testContent("this is just a test");
+                tempFile.Write(testContent.data(), testContent.size());
+                tempFile.Close();
 
                 AZ::IO::HandleType fileHandle = AZ::IO::InvalidHandle;
                 AZ_TEST_ASSERT(!local.Open("", AZ::IO::OpenMode::ModeWrite, fileHandle));
@@ -327,12 +276,12 @@ namespace UnitTest
 
                 // test size without opening:
                 AZ::u64 fs = 0;
-                AZ_TEST_ASSERT(local.Size(file01Name.c_str(), fs));
+                AZ_TEST_ASSERT(local.Size(m_file01Name.c_str(), fs));
                 AZ_TEST_ASSERT(fs == 19);
 
                 fileHandle = AZ::IO::InvalidHandle;
 
-                AZ::u64 modTimeA = local.ModificationTime(file01Name.c_str());
+                AZ::u64 modTimeA = local.ModificationTime(m_file01Name.c_str());
                 AZ_TEST_ASSERT(modTimeA != 0);
 
                 // test invalid handle ops:
@@ -341,17 +290,17 @@ namespace UnitTest
                 AZ_TEST_ASSERT(!local.Eof(fileHandle));
                 AZ_TEST_ASSERT(!local.Flush(fileHandle));
                 AZ_TEST_ASSERT(!local.ModificationTime(fileHandle));
-                AZ_TEST_ASSERT(!local.Read(fileHandle, 0, 0, false));
+                AZ_TEST_ASSERT(!local.Read(fileHandle, nullptr, 0, false));
                 AZ_TEST_ASSERT(!local.Tell(fileHandle, fs));
 
-                AZ_TEST_ASSERT(!local.Exists((file01Name + "notexist").c_str()));
+                AZ_TEST_ASSERT(!local.Exists((m_file01Name.Native() + "notexist").c_str()));
 
-                AZ_TEST_ASSERT(local.Exists(file01Name.c_str()));
-                AZ_TEST_ASSERT(!local.IsReadOnly(file01Name.c_str()));
-                AZ_TEST_ASSERT(!local.IsDirectory(file01Name.c_str()));
+                AZ_TEST_ASSERT(local.Exists(m_file01Name.c_str()));
+                AZ_TEST_ASSERT(!local.IsReadOnly(m_file01Name.c_str()));
+                AZ_TEST_ASSERT(!local.IsDirectory(m_file01Name.c_str()));
 
                 // test reads and seeks.
-                AZ_TEST_ASSERT(local.Open(file01Name.c_str(), AZ::IO::OpenMode::ModeRead, fileHandle));
+                AZ_TEST_ASSERT(local.Open(m_file01Name.c_str(), AZ::IO::OpenMode::ModeRead, fileHandle));
                 AZ_TEST_ASSERT(fileHandle != AZ::IO::InvalidHandle);
 
                 // use this again later...
@@ -368,7 +317,7 @@ namespace UnitTest
 
                 // test size without opening, after its already open:
                 fs = 0;
-                AZ_TEST_ASSERT(local.Size(file01Name.c_str(), fs));
+                AZ_TEST_ASSERT(local.Size(m_file01Name.c_str(), fs));
                 AZ_TEST_ASSERT(fs == 19);
 
                 AZ::u64 offs = 0;
@@ -442,22 +391,22 @@ namespace UnitTest
 #if AZ_TRAIT_AZFRAMEWORKTEST_PERFORM_CHMOD_TEST
 
 #if AZ_TRAIT_USE_WINDOWS_FILE_API
-                _chmod(file01Name.c_str(), _S_IREAD);
+                _chmod(m_file01Name.c_str(), _S_IREAD);
 #else
-                chmod(file01Name.c_str(), S_IRUSR | S_IRGRP | S_IROTH);
+                chmod(m_file01Name.c_str(), S_IRUSR | S_IRGRP | S_IROTH);
 #endif
 
-                AZ_TEST_ASSERT(local.IsReadOnly(file01Name.c_str()));
+                AZ_TEST_ASSERT(local.IsReadOnly(m_file01Name.c_str()));
 
 #if AZ_TRAIT_USE_WINDOWS_FILE_API
-                _chmod(file01Name.c_str(), _S_IREAD | _S_IWRITE);
+                _chmod(m_file01Name.c_str(), _S_IREAD | _S_IWRITE);
 #else
-                chmod(file01Name.c_str(), S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH);
+                chmod(m_file01Name.c_str(), S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH);
 #endif
 
 #endif
 
-                AZ_TEST_ASSERT(!local.IsReadOnly(file01Name.c_str()));
+                AZ_TEST_ASSERT(!local.IsReadOnly(m_file01Name.c_str()));
             }
         };
 
@@ -474,14 +423,14 @@ namespace UnitTest
             {
                 LocalFileIO local;
                 
-                AZ_TEST_ASSERT(local.CreatePath(fileRoot.c_str()));
-                AZ_TEST_ASSERT(local.IsDirectory(fileRoot.c_str()));
+                AZ_TEST_ASSERT(local.CreatePath(m_fileRoot.c_str()));
+                AZ_TEST_ASSERT(local.IsDirectory(m_fileRoot.c_str()));
                 {
 #ifdef AZ_COMPILER_MSVC
                     FILE* tempFile;
-                    fopen_s(&tempFile, file01Name.c_str(), "wb");
+                    fopen_s(&tempFile, m_file01Name.c_str(), "wb");
 #else
-                    FILE* tempFile = fopen(file01Name.c_str(), "wb");
+                    FILE* tempFile = fopen(m_file01Name.c_str(), "wb");
 #endif
                     fwrite("this is just a test", 1, 19, tempFile);
                     fclose(tempFile);
@@ -489,47 +438,47 @@ namespace UnitTest
 
                 // make sure attributes are copied (such as modtime) even if they're copied:
                 AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(1500));
-                AZ_TEST_ASSERT(local.Copy(file01Name.c_str(), file02Name.c_str()));
+                AZ_TEST_ASSERT(local.Copy(m_file01Name.c_str(), m_file02Name.c_str()));
                 AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(1500));
-                AZ_TEST_ASSERT(local.Copy(file01Name.c_str(), file03Name.c_str()));
+                AZ_TEST_ASSERT(local.Copy(m_file01Name.c_str(), m_file03Name.c_str()));
 
-                AZ_TEST_ASSERT(local.Exists(file01Name.c_str()));
-                AZ_TEST_ASSERT(local.Exists(file02Name.c_str()));
-                AZ_TEST_ASSERT(local.Exists(file03Name.c_str()));
-                AZ_TEST_ASSERT(!local.DestroyPath(file01Name.c_str())); // you may not destroy files.
-                AZ_TEST_ASSERT(!local.DestroyPath(file02Name.c_str()));
-                AZ_TEST_ASSERT(!local.DestroyPath(file03Name.c_str()));
-                AZ_TEST_ASSERT(local.Exists(file01Name.c_str()));
-                AZ_TEST_ASSERT(local.Exists(file02Name.c_str()));
-                AZ_TEST_ASSERT(local.Exists(file03Name.c_str()));
+                AZ_TEST_ASSERT(local.Exists(m_file01Name.c_str()));
+                AZ_TEST_ASSERT(local.Exists(m_file02Name.c_str()));
+                AZ_TEST_ASSERT(local.Exists(m_file03Name.c_str()));
+                AZ_TEST_ASSERT(!local.DestroyPath(m_file01Name.c_str())); // you may not destroy files.
+                AZ_TEST_ASSERT(!local.DestroyPath(m_file02Name.c_str()));
+                AZ_TEST_ASSERT(!local.DestroyPath(m_file03Name.c_str()));
+                AZ_TEST_ASSERT(local.Exists(m_file01Name.c_str()));
+                AZ_TEST_ASSERT(local.Exists(m_file02Name.c_str()));
+                AZ_TEST_ASSERT(local.Exists(m_file03Name.c_str()));
 
                 AZ::u64 f1s = 0;
                 AZ::u64 f2s = 0;
                 AZ::u64 f3s = 0;
-                AZ_TEST_ASSERT(local.Size(file01Name.c_str(), f1s));
-                AZ_TEST_ASSERT(local.Size(file02Name.c_str(), f2s));
-                AZ_TEST_ASSERT(local.Size(file03Name.c_str(), f3s));
+                AZ_TEST_ASSERT(local.Size(m_file01Name.c_str(), f1s));
+                AZ_TEST_ASSERT(local.Size(m_file02Name.c_str(), f2s));
+                AZ_TEST_ASSERT(local.Size(m_file03Name.c_str(), f3s));
                 AZ_TEST_ASSERT(f1s == f2s);
                 AZ_TEST_ASSERT(f1s == f3s);
 
                 // Copying over top other files is allowed
 
                 SystemFile file;
-                EXPECT_TRUE(file.Open(file01Name.c_str(), SystemFile::SF_OPEN_WRITE_ONLY));
+                EXPECT_TRUE(file.Open(m_file01Name.c_str(), SystemFile::SF_OPEN_WRITE_ONLY));
                 file.Write("this is just a test that is longer", 34);
                 file.Close();
 
                 // make sure attributes are copied (such as modtime) even if they're copied:
                 AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(1500));
 
-                EXPECT_TRUE(local.Copy(file01Name.c_str(), file02Name.c_str()));
+                EXPECT_TRUE(local.Copy(m_file01Name.c_str(), m_file02Name.c_str()));
 
                 f1s = 0;
                 f2s = 0;
                 f3s = 0;
-                EXPECT_TRUE(local.Size(file01Name.c_str(), f1s));
-                EXPECT_TRUE(local.Size(file02Name.c_str(), f2s));
-                EXPECT_TRUE(local.Size(file03Name.c_str(), f3s));
+                EXPECT_TRUE(local.Size(m_file01Name.c_str(), f1s));
+                EXPECT_TRUE(local.Size(m_file02Name.c_str(), f2s));
+                EXPECT_TRUE(local.Size(m_file03Name.c_str(), f3s));
                 EXPECT_EQ(f1s, f2s);
                 EXPECT_NE(f1s, f3s);
             }
@@ -552,37 +501,37 @@ namespace UnitTest
 
                 AZ::u64 modTimeC = 0;
                 AZ::u64 modTimeD = 0;
-                modTimeC = local.ModificationTime(file02Name.c_str());
-                modTimeD = local.ModificationTime(file03Name.c_str());
+                modTimeC = local.ModificationTime(m_file02Name.c_str());
+                modTimeD = local.ModificationTime(m_file03Name.c_str());
 
                 // make sure modtimes are in ascending order (at least)
                 AZ_TEST_ASSERT(modTimeD >= modTimeC);
 
                 // now touch some of the files.   This is also how we test append mode, and write mode.
                 AZ::IO::HandleType fileHandle = AZ::IO::InvalidHandle;
-                AZ_TEST_ASSERT(local.Open(file02Name.c_str(), AZ::IO::OpenMode::ModeAppend | AZ::IO::OpenMode::ModeBinary, fileHandle));
+                AZ_TEST_ASSERT(local.Open(m_file02Name.c_str(), AZ::IO::OpenMode::ModeAppend | AZ::IO::OpenMode::ModeBinary, fileHandle));
                 AZ_TEST_ASSERT(fileHandle != AZ::IO::InvalidHandle);
                 AZ_TEST_ASSERT(local.Write(fileHandle, "more", 4));
                 AZ_TEST_ASSERT(local.Close(fileHandle));
 
                 AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(1500));
                 // No-append-mode
-                AZ_TEST_ASSERT(local.Open(file03Name.c_str(), AZ::IO::OpenMode::ModeWrite | AZ::IO::OpenMode::ModeBinary, fileHandle));
+                AZ_TEST_ASSERT(local.Open(m_file03Name.c_str(), AZ::IO::OpenMode::ModeWrite | AZ::IO::OpenMode::ModeBinary, fileHandle));
                 AZ_TEST_ASSERT(fileHandle != AZ::IO::InvalidHandle);
                 AZ_TEST_ASSERT(local.Write(fileHandle, "more", 4));
                 AZ_TEST_ASSERT(local.Close(fileHandle));
 
-                modTimeC = local.ModificationTime(file02Name.c_str());
-                modTimeD = local.ModificationTime(file03Name.c_str());
+                modTimeC = local.ModificationTime(m_file02Name.c_str());
+                modTimeD = local.ModificationTime(m_file03Name.c_str());
 
                 AZ_TEST_ASSERT(modTimeD > modTimeC);
 
                 AZ::u64 f1s = 0;
                 AZ::u64 f2s = 0;
                 AZ::u64 f3s = 0;
-                AZ_TEST_ASSERT(local.Size(file01Name.c_str(), f1s));
-                AZ_TEST_ASSERT(local.Size(file02Name.c_str(), f2s));
-                AZ_TEST_ASSERT(local.Size(file03Name.c_str(), f3s));
+                AZ_TEST_ASSERT(local.Size(m_file01Name.c_str(), f1s));
+                AZ_TEST_ASSERT(local.Size(m_file02Name.c_str(), f2s));
+                AZ_TEST_ASSERT(local.Size(m_file03Name.c_str(), f3s));
                 AZ_TEST_ASSERT(f2s == f1s + 4);
                 AZ_TEST_ASSERT(f3s == 4);
             }
@@ -603,8 +552,8 @@ namespace UnitTest
 
                 CreateTestFiles();
 
-                AZStd::vector<AZStd::string> resultFiles;
-                bool foundOK = local.FindFiles(fileRoot.c_str(), "*",
+                AZStd::vector<AZ::IO::Path> resultFiles;
+                bool foundOK = local.FindFiles(m_fileRoot.c_str(), "*",
                         [&](const char* filePath) -> bool
                         {
                             resultFiles.push_back(filePath);
@@ -616,7 +565,7 @@ namespace UnitTest
 
                 resultFiles.clear();
 
-                foundOK = local.FindFiles(fileRoot.c_str(), "*",
+                foundOK = local.FindFiles(m_fileRoot.c_str(), "*",
                         [&](const char* filePath) -> bool
                         {
                             resultFiles.push_back(filePath);
@@ -627,7 +576,7 @@ namespace UnitTest
                 AZ_TEST_ASSERT(resultFiles.size() == 3);
 
                 // note: following tests accumulate more files without clearing resultfiles.
-                foundOK = local.FindFiles(fileRoot.c_str(), "*.txt",
+                foundOK = local.FindFiles(m_fileRoot.c_str(), "*.txt",
                         [&](const char* filePath) -> bool
                         {
                             resultFiles.push_back(filePath);
@@ -637,7 +586,7 @@ namespace UnitTest
                 AZ_TEST_ASSERT(foundOK);
                 AZ_TEST_ASSERT(resultFiles.size() == 4);
 
-                foundOK = local.FindFiles(fileRoot.c_str(), "file*.asdf",
+                foundOK = local.FindFiles(m_fileRoot.c_str(), "file*.asdf",
                         [&](const char* filePath) -> bool
                         {
                             resultFiles.push_back(filePath);
@@ -647,7 +596,7 @@ namespace UnitTest
                 AZ_TEST_ASSERT(foundOK);
                 AZ_TEST_ASSERT(resultFiles.size() == 5);
 
-                foundOK = local.FindFiles(fileRoot.c_str(), "asaf.asdf",
+                foundOK = local.FindFiles(m_fileRoot.c_str(), "asaf.asdf",
                         [&](const char* filePath) -> bool
                         {
                             resultFiles.push_back(filePath);
@@ -660,7 +609,7 @@ namespace UnitTest
                 resultFiles.clear();
 
                 // test to make sure directories show up:
-                foundOK = local.FindFiles(deepFolder.c_str(), "*",
+                foundOK = local.FindFiles(m_deepFolder.c_str(), "*",
                         [&](const char* filePath) -> bool
                         {
                             resultFiles.push_back(filePath);
@@ -668,11 +617,11 @@ namespace UnitTest
                         });
 
                 // canonicalize the name in the same way that find does.
-                //AZStd::replace() extraFolder.replace('\\', '/');  FIXME PPATEL
+                //AZStd::replace() m_extraFolder.replace('\\', '/');  FIXME PPATEL
 
                 AZ_TEST_ASSERT(foundOK);
                 AZ_TEST_ASSERT(resultFiles.size() == 1);
-                AZ_TEST_ASSERT(resultFiles[0] == extraFolder);
+                AZ_TEST_ASSERT(resultFiles[0] == m_extraFolder);
                 resultFiles.clear();
                 foundOK = local.FindFiles("o:137787621!@#$%^&&**())_+[])_", "asaf.asdf",
                         [&](const char* filePath) -> bool
@@ -684,13 +633,13 @@ namespace UnitTest
                 AZ_TEST_ASSERT(!foundOK);
                 AZ_TEST_ASSERT(resultFiles.size() == 0);
 
-                AZStd::string file04Name = fileRoot + "test.wha";
+                AZ::IO::Path file04Name = m_fileRoot / "test.wha";
                 // test rename
-                AZ_TEST_ASSERT(local.Rename(file03Name.c_str(), file04Name.c_str()));
-                AZ_TEST_ASSERT(!local.Rename(file03Name.c_str(), file04Name.c_str()));
+                AZ_TEST_ASSERT(local.Rename(m_file03Name.c_str(), file04Name.c_str()));
+                AZ_TEST_ASSERT(!local.Rename(m_file03Name.c_str(), file04Name.c_str()));
                 AZ_TEST_ASSERT(local.Rename(file04Name.c_str(), file04Name.c_str())); // this is valid and ok
                 AZ_TEST_ASSERT(local.Exists(file04Name.c_str()));
-                AZ_TEST_ASSERT(!local.Exists(file03Name.c_str()));
+                AZ_TEST_ASSERT(!local.Exists(m_file03Name.c_str()));
                 AZ_TEST_ASSERT(!local.IsDirectory(file04Name.c_str()));
 
                 AZ::u64 f3s = 0;
@@ -698,8 +647,8 @@ namespace UnitTest
                 AZ_TEST_ASSERT(f3s == 19);
 
                 // deep destroy directory:
-                AZ_TEST_ASSERT(local.DestroyPath(folderName.c_str()));
-                AZ_TEST_ASSERT(!local.Exists(folderName.c_str()));
+                AZ_TEST_ASSERT(local.DestroyPath(m_folderName.c_str()));
+                AZ_TEST_ASSERT(!local.Exists(m_folderName.c_str()));
             }
         };
 
@@ -715,7 +664,7 @@ namespace UnitTest
             AZ::IO::LocalFileIO local;
 
             // test aliases
-            local.SetAlias("@test@", folderName.c_str());
+            local.SetAlias("@test@", m_folderName.c_str());
             const char* testDest1 = local.GetAlias("@test@");
             AZ_TEST_ASSERT(testDest1 != nullptr);
             const char* testDest2 = local.GetAlias("@NOPE@");
@@ -725,18 +674,18 @@ namespace UnitTest
 
             // test resolving
             const char* aliasTestPath = "@test@\\some\\path\\somefile.txt";
-            char aliasResolvedPath[AZ_MAX_PATH_LEN];
-            bool resolveDidWork = local.ResolvePath(aliasTestPath, aliasResolvedPath, AZ_MAX_PATH_LEN);
+            char aliasResolvedPath[AZ::IO::MaxPathLength];
+            bool resolveDidWork = local.ResolvePath(aliasTestPath, aliasResolvedPath, AZ::IO::MaxPathLength);
             AZ_TEST_ASSERT(resolveDidWork);
-            AZStd::string expectedResolvedPath = folderName + "some/path/somefile.txt";
+            AZ::IO::Path expectedResolvedPath = m_folderName / "some/path/somefile.txt";
             AZ_TEST_ASSERT(aliasResolvedPath == expectedResolvedPath);
 
             // more resolve path tests with invalid inputs
             const char* testPath = nullptr;
             char* testResolvedPath = nullptr;
-            resolveDidWork = local.ResolvePath(testPath, aliasResolvedPath, AZ_MAX_PATH_LEN);
+            resolveDidWork = local.ResolvePath(testPath, aliasResolvedPath, AZ::IO::MaxPathLength);
             AZ_TEST_ASSERT(!resolveDidWork);
-            resolveDidWork = local.ResolvePath(aliasTestPath, testResolvedPath, AZ_MAX_PATH_LEN);
+            resolveDidWork = local.ResolvePath(aliasTestPath, testResolvedPath, AZ::IO::MaxPathLength);
             AZ_TEST_ASSERT(!resolveDidWork);
             resolveDidWork = local.ResolvePath(aliasTestPath, aliasResolvedPath, 0);
             AZ_TEST_ASSERT(!resolveDidWork);
@@ -751,7 +700,7 @@ namespace UnitTest
 
             // Test that sending in a too small output path fails,
             // if the output buffer is too small to hold the resolved path
-            size_t SMALLER_THAN_FINAL_RESOLVED_PATH = expectedResolvedPath.length() - 1;
+            size_t SMALLER_THAN_FINAL_RESOLVED_PATH = expectedResolvedPath.Native().length() - 1;
             AZ_TEST_START_TRACE_SUPPRESSION;
             resolveDidWork = local.ResolvePath(aliasTestPath, aliasResolvedPath, SMALLER_THAN_FINAL_RESOLVED_PATH);
             AZ_TEST_STOP_TRACE_SUPPRESSION(1);
@@ -766,22 +715,23 @@ namespace UnitTest
         TEST_F(AliasTest, ResolvePath_PathViewOverload_Succeeds)
         {
             AZ::IO::LocalFileIO local;
-            local.SetAlias("@test@", folderName.c_str());
+            local.SetAlias("@test@", m_folderName.c_str());
             AZ::IO::PathView aliasTestPath = "@test@\\some\\path\\somefile.txt";
             AZ::IO::FixedMaxPath aliasResolvedPath;
             ASSERT_TRUE(local.ResolvePath(aliasResolvedPath, aliasTestPath));
-            const auto expectedResolvedPath = AZ::IO::FixedMaxPathString::format("%ssome/path/somefile.txt", folderName.c_str());
-            EXPECT_STREQ(expectedResolvedPath.c_str(), aliasResolvedPath.c_str());
+            AZ::IO::Path expectedResolvedPath = m_folderName / "some" / "path" / "somefile.txt";
+
+            EXPECT_EQ(expectedResolvedPath, aliasResolvedPath);
 
             AZStd::optional<AZ::IO::FixedMaxPath> optionalResolvedPath = local.ResolvePath(aliasTestPath);
             ASSERT_TRUE(optionalResolvedPath);
-            EXPECT_STREQ(expectedResolvedPath.c_str(), optionalResolvedPath->c_str());
+            EXPECT_EQ(expectedResolvedPath, optionalResolvedPath.value());
         }
 
         TEST_F(AliasTest, ResolvePath_PathViewOverloadWithEmptyPath_Fails)
         {
             AZ::IO::LocalFileIO local;
-            local.SetAlias("@test@", folderName.c_str());
+            local.SetAlias("@test@", m_folderName.c_str());
             AZ::IO::FixedMaxPath aliasResolvedPath;
             EXPECT_FALSE(local.ResolvePath(aliasResolvedPath, {}));
         }
@@ -852,6 +802,51 @@ namespace UnitTest
             AZ_TEST_STOP_TRACE_SUPPRESSION(1);
         }
 
+        TEST_F(AliasTest, GetAlias_LogsError_WhenAccessingDeprecatedAlias_Succeeds)
+        {
+            AZ::IO::LocalFileIO local;
+
+            AZ::IO::FixedMaxPathString aliasFolder;
+            EXPECT_TRUE(local.ConvertToAbsolutePath("/temp", aliasFolder.data(), aliasFolder.capacity()));
+            aliasFolder.resize_no_construct(AZStd::char_traits<char>::length(aliasFolder.data()));
+
+            local.SetAlias("@test@", aliasFolder.c_str());
+            local.SetDeprecatedAlias("@deprecated@", "@test@");
+            local.SetDeprecatedAlias("@deprecatednonexistent@", "@nonexistent@");
+            local.SetDeprecatedAlias("@deprecatedsecond@", "@deprecated@");
+            local.SetDeprecatedAlias("@deprecatednonaliaspath@", aliasFolder);
+
+            AZ_TEST_START_TRACE_SUPPRESSION;
+            const char* testAlias = local.GetAlias("@test@");
+            ASSERT_NE(nullptr, testAlias);
+            EXPECT_EQ(AZ::IO::PathView(aliasFolder), AZ::IO::PathView(testAlias));
+            AZ_TEST_STOP_TRACE_SUPPRESSION(0);
+
+            // Validate that accessing Deprecated Alias results in AZ_Error
+            AZ_TEST_START_TRACE_SUPPRESSION;
+            testAlias = local.GetAlias("@deprecated@");
+            ASSERT_NE(nullptr, testAlias);
+            EXPECT_EQ(AZ::IO::PathView(aliasFolder), AZ::IO::PathView(testAlias));
+            AZ_TEST_STOP_TRACE_SUPPRESSION(1);
+
+            AZ_TEST_START_TRACE_SUPPRESSION;
+            testAlias = local.GetAlias("@deprecatednonexistent@");
+            EXPECT_EQ(nullptr, testAlias);
+            AZ_TEST_STOP_TRACE_SUPPRESSION(1);
+
+            AZ_TEST_START_TRACE_SUPPRESSION;
+            testAlias = local.GetAlias("@deprecatedsecond@");
+            ASSERT_NE(nullptr, testAlias);
+            EXPECT_EQ(AZ::IO::PathView(aliasFolder), AZ::IO::PathView(testAlias));
+            AZ_TEST_STOP_TRACE_SUPPRESSION(1);
+
+            AZ_TEST_START_TRACE_SUPPRESSION;
+            testAlias = local.GetAlias("@deprecatednonaliaspath@");
+            ASSERT_NE(nullptr, testAlias);
+            EXPECT_EQ(AZ::IO::PathView(aliasFolder), AZ::IO::PathView(testAlias));
+            AZ_TEST_STOP_TRACE_SUPPRESSION(1);
+        }
+
         class SmartMoveTests
             : public FolderFixture
         {
@@ -860,24 +855,23 @@ namespace UnitTest
             {
                 LocalFileIO localFileIO;
                 AZ::IO::FileIOBase::SetInstance(&localFileIO);
-                AZStd::string path;
-                AzFramework::StringFunc::Path::GetFullPath(file01Name.c_str(), path);
+                AZ::IO::Path path = m_file01Name.ParentPath();
                 AZ_TEST_ASSERT(localFileIO.CreatePath(path.c_str()));
-                AzFramework::StringFunc::Path::GetFullPath(file02Name.c_str(), path);
+                path = m_file01Name.ParentPath();
                 AZ_TEST_ASSERT(localFileIO.CreatePath(path.c_str()));
 
                 AZ::IO::HandleType fileHandle = AZ::IO::InvalidHandle;
-                localFileIO.Open(file01Name.c_str(), OpenMode::ModeWrite | OpenMode::ModeText, fileHandle);
+                localFileIO.Open(m_file01Name.c_str(), OpenMode::ModeWrite | OpenMode::ModeText, fileHandle);
                 localFileIO.Write(fileHandle, "DummyFile", 9);
                 localFileIO.Close(fileHandle);
 
                 AZ::IO::HandleType fileHandle1 = AZ::IO::InvalidHandle;
-                localFileIO.Open(file02Name.c_str(), OpenMode::ModeWrite | OpenMode::ModeText, fileHandle1);
+                localFileIO.Open(m_file02Name.c_str(), OpenMode::ModeWrite | OpenMode::ModeText, fileHandle1);
                 localFileIO.Write(fileHandle1, "TestFile", 8);
                 localFileIO.Close(fileHandle1);
 
                 fileHandle1 = AZ::IO::InvalidHandle;
-                localFileIO.Open(file02Name.c_str(), OpenMode::ModeRead | OpenMode::ModeText, fileHandle1);
+                localFileIO.Open(m_file02Name.c_str(), OpenMode::ModeRead | OpenMode::ModeText, fileHandle1);
                 static const size_t testStringLen = 256;
                 char testString[testStringLen] = { 0 };
                 localFileIO.Read(fileHandle1, testString, testStringLen);
@@ -885,50 +879,50 @@ namespace UnitTest
                 AZ_TEST_ASSERT(strncmp(testString, "TestFile", 8) == 0);
 
                 // try swapping files when none of the files are in use
-                AZ_TEST_ASSERT(AZ::IO::SmartMove(file01Name.c_str(), file02Name.c_str()));
+                AZ_TEST_ASSERT(AZ::IO::SmartMove(m_file01Name.c_str(), m_file02Name.c_str()));
 
                 fileHandle1 = AZ::IO::InvalidHandle;
-                localFileIO.Open(file02Name.c_str(), OpenMode::ModeRead | OpenMode::ModeText, fileHandle1);
+                localFileIO.Open(m_file02Name.c_str(), OpenMode::ModeRead | OpenMode::ModeText, fileHandle1);
                 testString[0] = '\0';
                 localFileIO.Read(fileHandle1, testString, testStringLen);
                 localFileIO.Close(fileHandle1);
                 AZ_TEST_ASSERT(strncmp(testString, "DummyFile", 9) == 0);
 
                 //try swapping files when source file is not present, this should fail
-                AZ_TEST_ASSERT(!AZ::IO::SmartMove(file01Name.c_str(), file02Name.c_str()));
+                AZ_TEST_ASSERT(!AZ::IO::SmartMove(m_file01Name.c_str(), m_file02Name.c_str()));
 
                 fileHandle = AZ::IO::InvalidHandle;
-                localFileIO.Open(file01Name.c_str(), OpenMode::ModeWrite | OpenMode::ModeText, fileHandle);
+                localFileIO.Open(m_file01Name.c_str(), OpenMode::ModeWrite | OpenMode::ModeText, fileHandle);
                 localFileIO.Write(fileHandle, "TestFile", 8);
                 localFileIO.Close(fileHandle);
 
 #if AZ_TRAIT_AZFRAMEWORKTEST_MOVE_WHILE_OPEN
                 fileHandle1 = AZ::IO::InvalidHandle;
-                localFileIO.Open(file02Name.c_str(), OpenMode::ModeRead | OpenMode::ModeText, fileHandle1);
+                localFileIO.Open(m_file02Name.c_str(), OpenMode::ModeRead | OpenMode::ModeText, fileHandle1);
                 testString[0] = '\0';
                 localFileIO.Read(fileHandle1, testString, testStringLen);
 
                 // try swapping files when the destination file is open for read only, 
                 // since window is unable to move files that are open for read, this will fail.
-                AZ_TEST_ASSERT(!AZ::IO::SmartMove(file01Name.c_str(), file02Name.c_str()));
+                AZ_TEST_ASSERT(!AZ::IO::SmartMove(m_file01Name.c_str(), m_file02Name.c_str()));
                 localFileIO.Close(fileHandle1);
 #endif
                 fileHandle = AZ::IO::InvalidHandle;
-                localFileIO.Open(file01Name.c_str(), OpenMode::ModeRead | OpenMode::ModeText, fileHandle);
+                localFileIO.Open(m_file01Name.c_str(), OpenMode::ModeRead | OpenMode::ModeText, fileHandle);
 
                 // try swapping files when the source file is open for read only
-                AZ_TEST_ASSERT(AZ::IO::SmartMove(file01Name.c_str(), file02Name.c_str()));
+                AZ_TEST_ASSERT(AZ::IO::SmartMove(m_file01Name.c_str(), m_file02Name.c_str()));
                 localFileIO.Close(fileHandle);
 
                 fileHandle1 = AZ::IO::InvalidHandle;
-                localFileIO.Open(file02Name.c_str(), OpenMode::ModeRead | OpenMode::ModeText, fileHandle1);
+                localFileIO.Open(m_file02Name.c_str(), OpenMode::ModeRead | OpenMode::ModeText, fileHandle1);
                 testString[0] = '\0';
                 localFileIO.Read(fileHandle1, testString, testStringLen);
                 AZ_TEST_ASSERT(strncmp(testString, "TestFile", 8) == 0);
                 localFileIO.Close(fileHandle1);
 
-                localFileIO.Remove(file01Name.c_str());
-                localFileIO.Remove(file02Name.c_str());
+                localFileIO.Remove(m_file01Name.c_str());
+                localFileIO.Remove(m_file02Name.c_str());
                 localFileIO.DestroyPath(m_root.c_str());
 
                 AZ::IO::FileIOBase::SetInstance(nullptr);

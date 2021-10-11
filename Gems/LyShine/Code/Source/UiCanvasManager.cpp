@@ -67,7 +67,7 @@ namespace
 
         // Check if extension needs to be fixed up
         const AZStd::string canvasExtension("uicanvas");
-        bool validExtension = AzFramework::StringFunc::Path::IsExtension(assetPath.c_str(), canvasExtension.c_str(), true);        
+        bool validExtension = AzFramework::StringFunc::Path::IsExtension(assetPath.c_str(), canvasExtension.c_str(), true);
         if (!validExtension)
         {
             // Fix extension
@@ -79,7 +79,7 @@ namespace
         // Normalize path
         EBUS_EVENT(AzFramework::ApplicationRequests::Bus, NormalizePathKeepCase, assetPath);
 
-        // Check for any leading slashes as the specified path should be a relative path to the @assets@ alias.
+        // Check for any leading slashes as the specified path should be a relative path to the @products@ alias.
         // This eliminates inconsistencies between lower level file opens on different platforms
         int numCharsToErase = 0;
         for (; numCharsToErase < assetPath.length(); ++numCharsToErase)
@@ -581,7 +581,7 @@ void UiCanvasManager::UpdateLoadedCanvases(float deltaTime)
 
     // Update all the canvases loaded in game.
     // It is unlikely this will call out to client code that could remove a canvas but we have no
-    // control over what custom components do so we increment the count that will defer all canvas deletion 
+    // control over what custom components do so we increment the count that will defer all canvas deletion
     m_recursionGuardCount++;
     if (m_generateMousePositionInputEvent)
     {
@@ -1031,7 +1031,7 @@ void UiCanvasManager::DebugDisplayCanvasData(int setting) const
     // local function to write a line of text (with a background rect) and increment Y offset
     AZStd::function<void(const char*, const AZ::Vector3&)> WriteLine = [&](const char* buffer, const AZ::Vector3& color)
     {
-        IDraw2d::TextOptions textOptions = draw2d->GetDefaultTextOptions();
+        CDraw2d::TextOptions textOptions = draw2d->GetDefaultTextOptions();
         textOptions.color = color;
         AZ::Vector2 textSize = draw2d->GetTextSize(buffer, fontSize, &textOptions);
         AZ::Vector2 rectTopLeft = AZ::Vector2(xOffset - 2, yOffset);
@@ -1087,7 +1087,7 @@ void UiCanvasManager::DebugDisplayCanvasData(int setting) const
         }
         const char* enabledString = isCanvasEnabled ? "Y" : "N";
         totalEnabled += isCanvasEnabled ? 1 : 0;
-        
+
         bool posEnabled = canvas->GetIsPositionalInputSupported();
         const char* posEnabledString = posEnabled ? "Y" : "N";
         totalPositionalInputs += posEnabled ? 1 : 0;
@@ -1178,11 +1178,11 @@ void UiCanvasManager::DebugDisplayDrawCallData() const
     const AZ::Vector3 blue(0.3f,0.3f,1);
     const AZ::Vector3 green(0.3f,1,0.3f);
     const AZ::Vector3 yellow(0.7f,0.7f,0.2f);
-        
+
     // local function to write a line of text (with a background rect) and increment Y offset
     AZStd::function<void(const char*, const AZ::Vector3&)> WriteLine = [&](const char* buffer, const AZ::Vector3& color)
     {
-        IDraw2d::TextOptions textOptions = draw2d->GetDefaultTextOptions();
+        CDraw2d::TextOptions textOptions = draw2d->GetDefaultTextOptions();
         textOptions.color = color;
         AZ::Vector2 textSize = draw2d->GetTextSize(buffer, 16, &textOptions);
         AZ::Vector2 rectTopLeft = AZ::Vector2(xOffset - 2, yOffset);
@@ -1191,7 +1191,7 @@ void UiCanvasManager::DebugDisplayDrawCallData() const
         draw2d->DrawText(buffer, AZ::Vector2(xOffset, yOffset), 16, textOpacity, &textOptions);
         yOffset += lineSpacing;
     };
-        
+
     char buffer[200];
 
     sprintf_s(buffer, "NN: %20s %5s   %5s %5s %5s %5s %5s   %5s %5s %5s %5s %5s %5s",

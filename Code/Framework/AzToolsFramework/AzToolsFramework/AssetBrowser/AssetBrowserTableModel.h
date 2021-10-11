@@ -21,8 +21,7 @@ namespace AzToolsFramework
         class AssetBrowserFilterModel;
         class AssetBrowserEntry;
 
-        class AssetBrowserTableModel
-            : public QSortFilterProxyModel
+        class AssetBrowserTableModel : public QSortFilterProxyModel
         {
             Q_OBJECT
 

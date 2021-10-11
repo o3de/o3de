@@ -90,7 +90,7 @@ public:
     {
     }
 
-    ~CarrierCallbacksHandler()
+    ~CarrierCallbacksHandler() override
     {
         CarrierEventBus::Handler::BusDisconnect();
     }

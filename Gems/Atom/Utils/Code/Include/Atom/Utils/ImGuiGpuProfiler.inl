@@ -279,13 +279,13 @@ namespace AZ
                         const AZStd::string totalPassCountLabel = AZStd::string::format("%s: %u",
                             "Total Pass Count",
                             static_cast<uint32_t>(passEntryDatabase.size()));
-                        ImGui::Text(totalPassCountLabel.c_str());
+                        ImGui::Text("%s", totalPassCountLabel.c_str());
 
                         // Display listed pass count.
                         const AZStd::string listedPassCountLabel = AZStd::string::format("%s: %u",
                             "Listed Pass Count",
                             static_cast<uint32_t>(m_passEntryReferences.size()));
-                        ImGui::Text(listedPassCountLabel.c_str());
+                        ImGui::Text("%s", listedPassCountLabel.c_str());
                     }
                 }
 
@@ -404,7 +404,7 @@ namespace AZ
                     passName = AZStd::string::format("%s (%s)", passName.c_str(), passTreeState);
                 }
 
-                ImGui::Text(passName.c_str());
+                ImGui::Text("%s", passName.c_str());
 
                 // Show a HoverMarker if the text is bigger than the column.
                 const ImVec2 textSize = ImGui::CalcTextSize(passName.c_str());
@@ -480,7 +480,7 @@ namespace AZ
                     }
                     else
                     {
-                        ImGui::Text(label.c_str());
+                        ImGui::Text("%s", label.c_str());
                     }
 
                     if (textColorChanged)
@@ -683,7 +683,7 @@ namespace AZ
                     // Draw the frame time (GPU).
                     const AZStd::string formattedTimestamp = FormatTimestampLabel(gpuTimestamp.GetDurationInNanoseconds());
                     const AZStd::string headerFrameTime = AZStd::string::format("Total frame duration (GPU): %s", formattedTimestamp.c_str());
-                    ImGui::Text(headerFrameTime.c_str());
+                    ImGui::Text("%s", headerFrameTime.c_str());
 
                     // Draw the viewing option.
                     ImGui::RadioButton("Hierarchical", reinterpret_cast<int32_t*>(&m_viewType), static_cast<int32_t>(ProfilerViewType::Hierarchical));
@@ -810,7 +810,7 @@ namespace AZ
                                 {
                                     const int32_t timestampMetricUnitNumeric = static_cast<int32_t>(m_timestampMetricUnit);
                                     const AZStd::string metricUnitText = AZStd::string::format("Time in %s", MetricUnitText[timestampMetricUnitNumeric]);
-                                    ImGui::Text(metricUnitText.c_str());
+                                    ImGui::Text("%s", metricUnitText.c_str());
                                     ImGui::NextColumn();
                                 }
 
@@ -818,7 +818,7 @@ namespace AZ
                                 {
                                     const int32_t frameWorkloadViewNumeric = static_cast<int32_t>(m_frameWorkloadView);
                                     const AZStd::string frameWorkloadViewText = AZStd::string::format("Frame workload in %s FPS", FrameWorkloadUnit[frameWorkloadViewNumeric]);
-                                    ImGui::Text(frameWorkloadViewText.c_str());
+                                    ImGui::Text("%s", frameWorkloadViewText.c_str());
                                     ImGui::NextColumn();
                                 }
 
@@ -853,7 +853,7 @@ namespace AZ
 
                                 const int32_t frameWorkloadViewNumeric = static_cast<int32_t>(m_frameWorkloadView);
                                 const AZStd::string frameWorkloadViewText = AZStd::string::format("Frame workload in %s FPS", FrameWorkloadUnit[frameWorkloadViewNumeric]);
-                                ImGui::Text(frameWorkloadViewText.c_str());
+                                ImGui::Text("%s", frameWorkloadViewText.c_str());
                                 ImGui::NextColumn();
                             }
 
@@ -907,7 +907,7 @@ namespace AZ
                 }
                 else
                 {
-                    ImGui::Text(entryTime.c_str());
+                    ImGui::Text("%s", entryTime.c_str());
                     ImGui::NextColumn();
                     DrawFrameWorkloadBar(NormalizeFrameWorkload(entry->m_interpolatedTimestampInNanoseconds));
                     ImGui::NextColumn();
@@ -927,7 +927,7 @@ namespace AZ
             if (entry->m_children.empty())
             {
                 // Draw the workload bar when it doesn't have children.
-                ImGui::Text(entry->m_name.GetCStr());
+                ImGui::Text("%s", entry->m_name.GetCStr());
                 // Show a HoverMarker if the text is bigger than the column.
                 createHoverMarker(entry->m_name.GetCStr());
 
@@ -991,9 +991,9 @@ namespace AZ
                 }
                 const AZStd::string entryTime = FormatTimestampLabel(entry->m_interpolatedTimestampInNanoseconds);
 
-                ImGui::Text(entry->m_name.GetCStr());
+                ImGui::Text("%s", entry->m_name.GetCStr());
                 ImGui::NextColumn();
-                ImGui::Text(entryTime.c_str());
+                ImGui::Text("%s", entryTime.c_str());
                 ImGui::NextColumn();
                 DrawFrameWorkloadBar(NormalizeFrameWorkload(entry->m_interpolatedTimestampInNanoseconds));
                 ImGui::NextColumn();
@@ -1131,13 +1131,13 @@ namespace AZ
                         continue;
                     }
 
-                    ImGui::Text(tableRow.m_parentPoolName.GetCStr());
+                    ImGui::Text("%s", tableRow.m_parentPoolName.GetCStr());
                     ImGui::TableNextColumn();
-                    ImGui::Text(tableRow.m_bufImgName.GetCStr());
+                    ImGui::Text("%s", tableRow.m_bufImgName.GetCStr());
                     ImGui::TableNextColumn();
                     ImGui::Text("%.4f", 1.0f * tableRow.m_sizeInBytes / GpuProfilerImGuiHelper::MB);
                     ImGui::TableNextColumn();
-                    ImGui::Text(tableRow.m_bindFlags.c_str());
+                    ImGui::Text("%s", tableRow.m_bindFlags.c_str());
                     ImGui::TableNextColumn();
                 }
             }
@@ -1244,20 +1244,20 @@ namespace AZ
                 {
                     if (ImGui::BeginChild(savedHeap.m_name.GetCStr(), { ImGui::GetWindowWidth() / m_savedHeaps.size(), 250 }), ImGuiWindowFlags_NoScrollbar)
                     {
-                        ImGui::Text(savedHeap.m_name.GetCStr());
+                        ImGui::Text("%s", savedHeap.m_name.GetCStr());
                         ImGui::Columns(2, "HeapData", true);
 
-                        ImGui::Text("Resident (MB): ");
+                        ImGui::Text("%s", "Resident (MB): ");
                         ImGui::NextColumn();
                         ImGui::Text("%.2f", 1.0 * savedHeap.m_memoryUsage.m_residentInBytes.load() / GpuProfilerImGuiHelper::MB);
                         ImGui::NextColumn();
 
-                        ImGui::Text("Reserved (MB): ");
+                        ImGui::Text("%s", "Reserved (MB): ");
                         ImGui::NextColumn();
                         ImGui::Text("%.2f", 1.0 * savedHeap.m_memoryUsage.m_reservedInBytes.load() / GpuProfilerImGuiHelper::MB);
                         ImGui::NextColumn();
 
-                        ImGui::Text("Budget (MB): ");
+                        ImGui::Text("%s", "Budget (MB): ");
                         ImGui::NextColumn();
                         ImGui::Text("%.2f", 1.0 * savedHeap.m_memoryUsage.m_budgetInBytes / GpuProfilerImGuiHelper::MB);
 

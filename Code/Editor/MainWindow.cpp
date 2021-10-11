@@ -27,10 +27,11 @@ AZ_POP_DISABLE_WARNING
 #endif
 
 // AzCore
-#include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzCore/Component/ComponentApplication.h>
-#include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/Interface/Interface.h>
+#include <AzCore/RTTI/BehaviorContext.h>
+#include <AzCore/Settings/SettingsRegistryMergeUtils.h>
+#include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzCore/Utils/Utils.h>
 
 // AzFramework

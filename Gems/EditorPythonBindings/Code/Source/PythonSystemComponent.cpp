@@ -258,6 +258,85 @@ namespace EditorPythonBindings
         void Finalize() override {}
     };
 
+    // Manages the acquisition and release of the Python GIL (Global Interpreter Lock).
+    // Used by PythonSystemComponent to lock the GIL when executing python.
+    class PythonSystemComponent::PythonGILScopedLock final
+    {
+    public:
+        PythonGILScopedLock(AZStd::recursive_mutex& lock, int& lockRecursiveCounter, bool tryLock = false);
+        ~PythonGILScopedLock();
+
+        bool IsLocked() const;
+
+    protected:
+        void Lock(bool tryLock);
+        void Unlock();
+
+        AZStd::recursive_mutex& m_lock;
+        int& m_lockRecursiveCounter;
+        bool m_locked = false;
+        AZStd::unique_ptr<pybind11::gil_scoped_release> m_releaseGIL;
+        AZStd::unique_ptr<pybind11::gil_scoped_acquire> m_acquireGIL;
+    };
+
+    PythonSystemComponent::PythonGILScopedLock::PythonGILScopedLock(AZStd::recursive_mutex& lock, int& lockRecursiveCounter, bool tryLock)
+        : m_lock(lock)
+        , m_lockRecursiveCounter(lockRecursiveCounter)
+    {
+        Lock(tryLock);
+    }
+
+    PythonSystemComponent::PythonGILScopedLock::~PythonGILScopedLock()
+    {
+        Unlock();
+    }
+
+    bool PythonSystemComponent::PythonGILScopedLock::IsLocked() const
+    {
+        return m_locked;
+    }
+
+    void PythonSystemComponent::PythonGILScopedLock::Lock(bool tryLock)
+    {
+        if (tryLock)
+        {
+            if (!m_lock.try_lock())
+            {
+                return;
+            }
+        }
+        else
+        {
+            m_lock.lock();
+        }
+
+        m_locked = true;
+        m_lockRecursiveCounter++;
+
+        // Only Acquire the GIL when there is no recursion. If there is
+        // recursion that means it's the same thread (because the mutex was able
+        // to be locked) and therefore it's already got the GIL acquired.
+        if (m_lockRecursiveCounter == 1)
+        {
+            m_releaseGIL = AZStd::make_unique<pybind11::gil_scoped_release>();
+            m_acquireGIL = AZStd::make_unique<pybind11::gil_scoped_acquire>();
+        }
+    }
+
+    void PythonSystemComponent::PythonGILScopedLock::Unlock()
+    {
+        if (!m_locked)
+        {
+            return;
+        }
+
+        m_acquireGIL.reset();
+        m_releaseGIL.reset();
+        m_lockRecursiveCounter--;
+        m_locked = false;
+        m_lock.unlock();
+    }
+
     void PythonSystemComponent::Reflect(AZ::ReflectContext* context)
     {
         if (AZ::SerializeContext* serialize = azrtti_cast<AZ::SerializeContext*>(context))
@@ -296,9 +375,9 @@ namespace EditorPythonBindings
 
     void PythonSystemComponent::Deactivate()
     {
+        StopPython(true);
         AzToolsFramework::EditorPythonRunnerRequestBus::Handler::BusDisconnect();
         AZ::Interface<AzToolsFramework::EditorPythonEventsInterface>::Unregister(this);
-        StopPython(true);
     }
 
     bool PythonSystemComponent::StartPython([[maybe_unused]] bool silenceWarnings)
@@ -354,7 +433,6 @@ namespace EditorPythonBindings
 
         bool result = false;
         EditorPythonBindingsNotificationBus::Broadcast(&EditorPythonBindingsNotificationBus::Events::OnPreFinalize);
-        AzToolsFramework::EditorPythonRunnerRequestBus::Handler::BusDisconnect();
 
         result = StopPythonInterpreter();
         EditorPythonBindingsNotificationBus::Broadcast(&EditorPythonBindingsNotificationBus::Events::OnPostFinalize);
@@ -374,10 +452,19 @@ namespace EditorPythonBindings
 
     void PythonSystemComponent::ExecuteWithLock(AZStd::function<void()> executionCallback)
     {
-        AZStd::lock_guard<decltype(m_lock)> lock(m_lock);
-        pybind11::gil_scoped_release release;
-        pybind11::gil_scoped_acquire acquire;
+        PythonGILScopedLock lock(m_lock, m_lockRecursiveCounter);
         executionCallback();
+    }
+
+    bool PythonSystemComponent::TryExecuteWithLock(AZStd::function<void()> executionCallback)
+    {
+        PythonGILScopedLock lock(m_lock, m_lockRecursiveCounter, true /*tryLock*/);
+        if (lock.IsLocked())
+        {
+            executionCallback();
+            return true;
+        }
+        return false;
     }
 
     void PythonSystemComponent::DiscoverPythonPaths(PythonPathStack& pythonPathStack)
@@ -425,6 +512,8 @@ namespace EditorPythonBindings
             GetGemSourcePathsVisitor(AZ::SettingsRegistryInterface& settingsRegistry)
                 : m_settingsRegistry(settingsRegistry)
             {}
+
+            using AZ::SettingsRegistryInterface::Visitor::Visit;
             void Visit(AZStd::string_view path, AZStd::string_view, AZ::SettingsRegistryInterface::Type,
                 AZStd::string_view value) override
             {
@@ -435,7 +524,7 @@ namespace EditorPythonBindings
                 {
                     AZ::IO::Path newSourcePath = jsonSourcePathPointer;
                     // Resolve any file aliases first - Do not use ResolvePath() as that assumes
-                    // any relative path is underneath the @assets@ alias
+                    // any relative path is underneath the @products@ alias
                     if (auto fileIoBase = AZ::IO::FileIOBase::GetInstance(); fileIoBase != nullptr)
                     {
                         AZ::IO::FixedMaxPath replacedAliasPath;
@@ -548,8 +637,7 @@ namespace EditorPythonBindings
             RedirectOutput::Intialize(PyImport_ImportModule("azlmbr_redirect"));
 
             // Acquire GIL before calling Python code
-            AZStd::lock_guard<decltype(m_lock)> lock(m_lock);
-            pybind11::gil_scoped_acquire acquire;
+            PythonGILScopedLock lock(m_lock, m_lockRecursiveCounter);
 
             if (EditorPythonBindings::PythonSymbolEventBus::GetTotalNumOfEventHandlers() == 0)
             {
@@ -622,8 +710,7 @@ namespace EditorPythonBindings
                 &AzToolsFramework::EditorPythonScriptNotificationsBus::Events::OnStartExecuteByString, script);
 
             // Acquire GIL before calling Python code
-            AZStd::lock_guard<decltype(m_lock)> lock(m_lock);
-            pybind11::gil_scoped_acquire acquire;
+            PythonGILScopedLock lock(m_lock, m_lockRecursiveCounter);
 
             // Acquire scope for __main__ for executing our script
             pybind11::object scope = pybind11::module::import("__main__").attr("__dict__");
@@ -716,7 +803,7 @@ namespace EditorPythonBindings
             return Result::Error_InvalidFilename;
         }
 
-        // support the alias version of a script such as @devroot@/Editor/Scripts/select_story_anim_objects.py
+        // support the alias version of a script such as @engroot@/Editor/Scripts/select_story_anim_objects.py
         AZStd::string theFilename(filename);
         {
             char resolvedPath[AZ_MAX_PATH_LEN] = { 0 };
@@ -741,8 +828,7 @@ namespace EditorPythonBindings
         try
         {
             // Acquire GIL before calling Python code
-            AZStd::lock_guard<decltype(m_lock)> lock(m_lock);
-            pybind11::gil_scoped_acquire acquire;
+            PythonGILScopedLock lock(m_lock, m_lockRecursiveCounter);
 
             // Create standard "argc" / "argv" command-line parameters to pass in to the Python script via sys.argv.
             // argc = number of parameters.  This will always be at least 1, since the first parameter is the script name.

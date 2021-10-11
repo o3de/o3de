@@ -38,7 +38,7 @@ namespace LyShine
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     PrimitiveListRenderNode::PrimitiveListRenderNode(const AZ::Data::Instance<AZ::RPI::Image>& texture,
-        bool isClampTextureMode, bool isTextureSRGB, bool preMultiplyAlpha, int blendModeState)
+        bool isClampTextureMode, bool isTextureSRGB, bool preMultiplyAlpha, const AZ::RHI::TargetBlendState& blendModeState)
         : RenderNode(RenderNodeType::PrimitiveList)
         , m_numTextures(1)
         , m_isTextureSRGB(isTextureSRGB)
@@ -55,7 +55,7 @@ namespace LyShine
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     PrimitiveListRenderNode::PrimitiveListRenderNode(const AZ::Data::Instance<AZ::RPI::Image>& texture,
         const AZ::Data::Instance<AZ::RPI::Image>& maskTexture, bool isClampTextureMode, bool isTextureSRGB,
-        bool preMultiplyAlpha, AlphaMaskType alphaMaskType, int blendModeState)
+        bool preMultiplyAlpha, AlphaMaskType alphaMaskType, const AZ::RHI::TargetBlendState& blendModeState)
         : RenderNode(RenderNodeType::PrimitiveList)
         , m_numTextures(2)
         , m_isTextureSRGB(isTextureSRGB)
@@ -102,9 +102,16 @@ namespace LyShine
 
         const UiRenderer::UiShaderData& uiShaderData = uiRenderer->GetUiShaderData();
 
-        // Set render state
         dynamicDraw->SetStencilState(uiRenderer->GetBaseState().m_stencilState);
-        dynamicDraw->SetTarget0BlendState(uiRenderer->GetBaseState().m_blendState);
+
+        // The blend factor and op is stored in m_blendModeState when the primitive is added to the graph.
+        // That is also when the graph determines whether a new primitive list node is needed.
+        // The rest of the blend properties are assigned during the render calls, so they get merged here
+        // and all are passed to the dynamic draw context
+        AZ::RHI::TargetBlendState targetBlendState = m_blendModeState;
+        targetBlendState.m_enable = uiRenderer->GetBaseState().m_blendStateEnabled;
+        targetBlendState.m_writeMask = uiRenderer->GetBaseState().m_blendStateWriteMask;
+        dynamicDraw->SetTarget0BlendState(targetBlendState);
 
         dynamicDraw->SetShaderVariant(uiRenderer->GetCurrentShaderVariant());
 
@@ -354,13 +361,13 @@ namespace LyShine
 
         // if either of the draw flags are checked then we may want to draw the renderable component(s)
         // on this element, otherwise use the color mask to stop them rendering
-        curBaseState.m_blendState.m_enable = false;
-        curBaseState.m_blendState.m_writeMask = 0x0;
+        curBaseState.m_blendStateEnabled = false;
+        curBaseState.m_blendStateWriteMask = 0x0;
         if ((m_drawBehind && firstPass) ||
             (m_drawInFront && !firstPass))
         {
-            curBaseState.m_blendState.m_enable = true;
-            curBaseState.m_blendState.m_writeMask = 0xF;
+            curBaseState.m_blendStateEnabled = true;
+            curBaseState.m_blendStateWriteMask = 0xF;
         }
 
         if (m_isMaskingEnabled)
@@ -507,19 +514,10 @@ namespace LyShine
 
             if (m_dynamicDraw)
             {
-                UiRenderer::BaseState priorBaseState = uiRenderer->GetBaseState();
-
-                UiRenderer::BaseState curBaseState = priorBaseState;
-                curBaseState.m_blendState.m_blendAlphaSource = AZ::RHI::BlendFactor::One;
-                curBaseState.m_blendState.m_blendAlphaDest = AZ::RHI::BlendFactor::AlphaSource1Inverse;
-                uiRenderer->SetBaseState(curBaseState);
-
                 for (RenderNode* renderNode : m_childRenderNodes)
                 {
                     renderNode->Render(uiRenderer, m_modelViewProjMat, m_dynamicDraw);
                 }
-
-                uiRenderer->SetBaseState(priorBaseState);
             }
             else
             {
@@ -722,7 +720,7 @@ namespace LyShine
             // The shader can be outputing premultiplied alpha EITHER if the input texture is premultiplied alpha OR if the
             // shader is doing the premultiply of the output color
             bool isShaderOutputPremultAlpha = isPreMultiplyAlpha || isTexturePremultipliedAlpha;
-            int blendModeState = GetBlendModeState(blendMode, isShaderOutputPremultAlpha);
+            AZ::RHI::TargetBlendState blendModeState = GetBlendModeState(blendMode, isShaderOutputPremultAlpha);
 
             PrimitiveListRenderNode* renderNodeToAddTo = nullptr;
             if (!renderNodeList->empty())
@@ -801,7 +799,7 @@ namespace LyShine
             // The shader can be outputing premultiplied alpha EITHER if the input texture is premultiplied alpha OR if the
             // shader is doing the premultiply of the output color
             bool isShaderOutputPremultAlpha = isPreMultiplyAlpha || isTexturePremultipliedAlpha;
-            int blendModeState = GetBlendModeState(blendMode, isShaderOutputPremultAlpha);
+            AZ::RHI::TargetBlendState blendModeState = GetBlendModeState(blendMode, isShaderOutputPremultAlpha);
             AlphaMaskType alphaMaskType = isShaderOutputPremultAlpha ? AlphaMaskType::ModulateAlphaAndColor : AlphaMaskType::ModulateAlpha;
 
             PrimitiveListRenderNode* renderNodeToAddTo = nullptr;
@@ -947,9 +945,12 @@ namespace LyShine
     {
         AZ::RHI::Ptr<AZ::RPI::DynamicDrawContext> dynamicDraw = uiRenderer->GetDynamicDrawContext();
 
-        // Disable stencil and enable blend/color write
+        // Reset stencil and blend mode to defaults (disable stencil and enable blend/color write)
         dynamicDraw->SetStencilState(uiRenderer->GetBaseState().m_stencilState);
-        dynamicDraw->SetTarget0BlendState(uiRenderer->GetBaseState().m_blendState);
+        AZ::RHI::TargetBlendState defaultBlendModeState = GetBlendModeState(LyShine::BlendMode::Normal, false);
+        defaultBlendModeState.m_enable = uiRenderer->GetBaseState().m_blendStateEnabled;
+        defaultBlendModeState.m_writeMask = uiRenderer->GetBaseState().m_blendStateWriteMask;
+        dynamicDraw->SetTarget0BlendState(defaultBlendModeState);
 
         // First render the render targets, they are sorted so that more deeply nested ones are rendered first.
         // They only need to be rendered the first time that a render graph is rendered after it has been built.
@@ -1169,7 +1170,7 @@ namespace LyShine
 
                 if (prevPrimListNode)
                 {
-                    if (prevPrimListNode->GetBlendModeState() != primListRenderNode->GetBlendModeState())
+                    if (!(prevPrimListNode->GetBlendModeState() == primListRenderNode->GetBlendModeState()))
                     {
                         ++info.m_numNodesDueToBlendMode;
                     }
@@ -1346,8 +1347,9 @@ namespace LyShine
                 }
 
                 // Write heading to logfile for this render node
-                logLine = AZStd::string::format("%sPrimitive render node (Blend mode=%d, SRGB=%d). NumPrims=%d, NumTris=%d. Using textures:\r\n",
-                    indent.c_str(), primListRenderNode->GetBlendModeState(),
+                AZ::RHI::TargetBlendState blendMode = primListRenderNode->GetBlendModeState();
+                logLine = AZStd::string::format("%sPrimitive render node (Blend mode=%s, SRGB=%d). NumPrims=%d, NumTris=%d. Using textures:\r\n",
+                    indent.c_str(), blendMode.m_enable ? "enabled" : "disabled",
                     static_cast<int>(primListRenderNode->GetIsTextureSRGB()),
                     numPrimitives, numTriangles);
                 AZ::IO::LocalFileIO::GetInstance()->Write(fileHandle, logLine.c_str(), logLine.size());
@@ -1415,8 +1417,9 @@ namespace LyShine
 #endif
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
-    int RenderGraph::GetBlendModeState(LyShine::BlendMode blendMode, bool isShaderOutputPremultAlpha) const
-    {   
+    AZ::RHI::TargetBlendState RenderGraph::GetBlendModeState(LyShine::BlendMode blendMode, [[maybe_unused]] bool isShaderOutputPremultAlpha) const
+    {
+        // LYSHINE_ATOM_TODO - remove "premultiplyAlpha" parameter and clean up related comments as I think it's no longer needed
         // Our blend modes are complicated by the fact we want to be able to render to a render target and then
         // render from that render target texture to the back buffer and get the same result as if we rendered
         // directly to the back buffer. This should be true even if the render target texture does not end up
@@ -1443,72 +1446,47 @@ namespace LyShine
         // properly might require shader changes also. For the moment using the blend modes Screen, Darken, Lighten
         // is not encouraged, especially when rendering to a render target.
 
-        int flags = GS_BLSRC_SRCALPHA | GS_BLDST_ONEMINUSSRCALPHA; // the default
+        AZ::RHI::TargetBlendState blendState;
+        blendState.m_blendAlphaSource = AZ::RHI::BlendFactor::One;
+        blendState.m_blendAlphaDest = AZ::RHI::BlendFactor::AlphaSourceInverse;
+
         switch (blendMode)
         {
         case LyShine::BlendMode::Normal:
             // This is the default mode that does an alpha blend by interpolating based on src alpha
-            if (isShaderOutputPremultAlpha)
-            {
-                flags = GS_BLSRC_ONE | GS_BLDST_ONEMINUSSRCALPHA;
-            }
-            else
-            {
-                flags = GS_BLSRC_SRCALPHA | GS_BLDST_ONEMINUSSRCALPHA;
-            }
+            blendState.m_blendSource = AZ::RHI::BlendFactor::AlphaSource;
+            blendState.m_blendDest = AZ::RHI::BlendFactor::AlphaSourceInverse;
             break;
         case LyShine::BlendMode::Add:
             // This works well, the amount of the src color added is controlled by src alpha
-            if (isShaderOutputPremultAlpha)
-            {
-                flags = GS_BLSRC_ONE | GS_BLDST_ONE;
-            }
-            else
-            {
-                flags = GS_BLSRC_SRCALPHA | GS_BLDST_ONE;
-            }
+            blendState.m_blendSource = AZ::RHI::BlendFactor::AlphaSource;
+            blendState.m_blendDest = AZ::RHI::BlendFactor::One;
             break;
         case LyShine::BlendMode::Screen:
             // This is a poor approximation of the PhotoShop Screen mode but trying to take some account of src alpha
             // In Photoshop this would be 1 - ( (1-SrcColor) * (1-DstColor) )
             // So we should use a blend op of multiply but the IRenderer interface doesn't support that. We get some multiply
             // from GS_BLDST_ONEMINUSSRCCOL which multiplies the DstColor by (1-SrcColor)
-            if (isShaderOutputPremultAlpha)
-            {
-                flags = GS_BLSRC_ONE | GS_BLDST_ONEMINUSSRCCOL;
-            }
-            else
-            {
-                flags = GS_BLSRC_SRCALPHA | GS_BLDST_ONEMINUSSRCCOL;
-            }
+            blendState.m_blendSource = AZ::RHI::BlendFactor::AlphaSource;
+            blendState.m_blendDest = AZ::RHI::BlendFactor::ColorSourceInverse;
             break;
         case LyShine::BlendMode::Darken:
             // This is a poor approximation of the PhotoShop Darken mode but trying to take some account of src alpha
             // In Photoshop Darken means min(SrcColor, DstColor)
-            if (isShaderOutputPremultAlpha)
-            {
-                flags = GS_BLOP_MIN | GS_BLSRC_ONE | GS_BLDST_ONE | GS_BLALPHA_MAX;
-            }
-            else
-            {
-                flags = GS_BLOP_MIN | GS_BLSRC_ONEMINUSSRCALPHA | GS_BLDST_ONE;
-            }
+            blendState.m_blendSource = AZ::RHI::BlendFactor::AlphaSourceInverse;
+            blendState.m_blendDest = AZ::RHI::BlendFactor::One;
+            blendState.m_blendOp = AZ::RHI::BlendOp::Minimum;
             break;
         case LyShine::BlendMode::Lighten:
             // This is a pretty good an approximation of the PhotoShop Lighten mode but trying to take some account of src alpha
             // In PhotoShop Lighten means max(SrcColor, DstColor)
-            if (isShaderOutputPremultAlpha)
-            {
-                flags = GS_BLOP_MAX | GS_BLSRC_ONE| GS_BLDST_ONE;
-            }
-            else
-            {
-                flags = GS_BLOP_MAX | GS_BLSRC_SRCALPHA | GS_BLDST_ONE;
-            }
+            blendState.m_blendSource = AZ::RHI::BlendFactor::AlphaSource;
+            blendState.m_blendDest = AZ::RHI::BlendFactor::One;
+            blendState.m_blendOp = AZ::RHI::BlendOp::Maximum;
             break;
         }
 
-        return flags;
+        return blendState;
     }
 
     void RenderGraph::SetRttPassesEnabled(UiRenderer* uiRenderer, bool enabled)

@@ -40,7 +40,7 @@ namespace AzToolsFramework
         //! Returns the item tooltip text to display in the Outliner.
         virtual QString GenerateItemTooltip(AZ::EntityId entityId) const;
         //! Returns the item icon pixmap to display in the Outliner.
-        virtual QPixmap GenerateItemIcon(AZ::EntityId entityId) const;
+        virtual QIcon GenerateItemIcon(AZ::EntityId entityId) const;
         //! Returns whether the element's lock and visibility state should be accessible in the Outliner
         virtual bool CanToggleLockVisibility(AZ::EntityId entityId) const;
         //! Returns whether the element's name should be editable
@@ -60,6 +60,9 @@ namespace AzToolsFramework
         //! Paints visual elements on the foreground of the descendants of the item in the Outliner.
         virtual void PaintDescendantForeground(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index,
             const QModelIndex& descendantIndex) const;
+
+        //! Triggered when the entity is double clicked in the Outliner.
+        virtual void OnDoubleClick(AZ::EntityId entityId) const;
 
     private:
         EditorEntityUiHandlerId m_handlerId = 0;

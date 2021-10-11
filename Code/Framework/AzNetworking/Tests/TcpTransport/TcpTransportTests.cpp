@@ -23,29 +23,29 @@ namespace UnitTest
         : public IConnectionListener
     {
     public:
-        ConnectResult ValidateConnect([[maybe_unused]] const IpAddress& remoteAddress, [[maybe_unused]] const IPacketHeader& packetHeader, [[maybe_unused]] ISerializer& serializer)
+        ConnectResult ValidateConnect([[maybe_unused]] const IpAddress& remoteAddress, [[maybe_unused]] const IPacketHeader& packetHeader, [[maybe_unused]] ISerializer& serializer) override
         {
             return ConnectResult::Accepted;
         }
 
-        void OnConnect([[maybe_unused]] IConnection* connection)
+        void OnConnect([[maybe_unused]] IConnection* connection) override
         {
             ;
         }
 
-        PacketDispatchResult OnPacketReceived([[maybe_unused]] IConnection* connection, const IPacketHeader& packetHeader, [[maybe_unused]] ISerializer& serializer)
+        PacketDispatchResult OnPacketReceived([[maybe_unused]] IConnection* connection, const IPacketHeader& packetHeader, [[maybe_unused]] ISerializer& serializer) override
         {
             EXPECT_TRUE((packetHeader.GetPacketType() == static_cast<PacketType>(CorePackets::PacketType::InitiateConnectionPacket))
                      || (packetHeader.GetPacketType() == static_cast<PacketType>(CorePackets::PacketType::HeartbeatPacket)));
             return PacketDispatchResult::Failure;
         }
 
-        void OnPacketLost([[maybe_unused]] IConnection* connection, [[maybe_unused]] PacketId packetId)
+        void OnPacketLost([[maybe_unused]] IConnection* connection, [[maybe_unused]] PacketId packetId) override
         {
 
         }
 
-        void OnDisconnect([[maybe_unused]] IConnection* connection, [[maybe_unused]] DisconnectReason reason, [[maybe_unused]] TerminationEndpoint endpoint)
+        void OnDisconnect([[maybe_unused]] IConnection* connection, [[maybe_unused]] DisconnectReason reason, [[maybe_unused]] TerminationEndpoint endpoint) override
         {
 
         }
@@ -148,6 +148,12 @@ namespace UnitTest
 
         EXPECT_EQ(testServer.m_serverNetworkInterface->GetConnectionSet().GetConnectionCount(), 1);
         EXPECT_EQ(testClient.m_clientNetworkInterface->GetConnectionSet().GetConnectionCount(), 1);
+
+        const AZ::TimeMs timeoutMs = AZ::TimeMs{ 100 };
+        testClient.m_clientNetworkInterface->SetTimeoutMs(timeoutMs);
+        EXPECT_EQ(testClient.m_clientNetworkInterface->GetTimeoutMs(), timeoutMs);
+
+        EXPECT_TRUE(testServer.m_serverNetworkInterface->StopListening());
     }
 
     #if AZ_TRAIT_DISABLE_FAILED_NETWORKING_TESTS

@@ -1552,6 +1552,26 @@ namespace AZ::AtomBridge
         }
     }
 
+    void AtomDebugDisplayViewportInterface::PushPremultipliedMatrix(const AZ::Matrix3x4& matrix)
+    {
+        AZ_Assert(m_rendState.m_currentTransform < RenderState::TransformStackSize, "Exceeded AtomDebugDisplayViewportInterface matrix stack size");
+        if (m_rendState.m_currentTransform < RenderState::TransformStackSize)
+        {
+            m_rendState.m_currentTransform++;
+            m_rendState.m_transformStack[m_rendState.m_currentTransform] = matrix;
+        }
+    }
+
+    AZ::Matrix3x4 AtomDebugDisplayViewportInterface::PopPremultipliedMatrix()
+    {
+        AZ_Assert(m_rendState.m_currentTransform > 0, "Underflowed AtomDebugDisplayViewportInterface matrix stack");
+        if (m_rendState.m_currentTransform > 0)
+        {
+            m_rendState.m_currentTransform--;
+        }
+        return m_rendState.m_transformStack[m_rendState.m_currentTransform + 1];
+    }
+
     const AZ::Matrix3x4& AtomDebugDisplayViewportInterface::GetCurrentTransform() const
     {
         return m_rendState.m_transformStack[m_rendState.m_currentTransform];

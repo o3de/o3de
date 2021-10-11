@@ -22,7 +22,6 @@
 #include <Atom/RPI.Public/Shader/Shader.h>
 #include <Atom/RPI.Public/RenderPipeline.h>
 
-#include <Atom/RHI/CpuProfiler.h>
 #include <Atom/RHI/CommandList.h>
 
 #include <AzCore/Debug/EventTrace.h>
@@ -69,8 +68,7 @@ namespace AZ
 
         void SkinnedMeshFeatureProcessor::Render(const FeatureProcessor::RenderPacket& packet)
         {
-            AZ_PROFILE_FUNCTION(AzRender);
-            AZ_ATOM_PROFILE_FUNCTION("SkinnedMesh", "SkinnedMeshFeatureProcessor: Render");
+            AZ_PROFILE_SCOPE(AzRender, "SkinnedMeshFeatureProcessor: Render");
 
 #if 0 //[GFX_TODO][ATOM-13564] Temporarily disable skinning culling until we figure out how to hook up visibility & lod selection with skinning:
             //Setup the culling workgroup (it will be re-used for each view)

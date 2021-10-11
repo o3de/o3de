@@ -51,7 +51,7 @@ namespace AZ
             if (memoryView.IsValid())
             {
                 heapMemoryUsage.m_residentInBytes += m_descriptor.m_pageSizeInBytes;
-                memoryView.SetName("BufferPage");
+                memoryView.SetName(L"BufferPage");
             }
             else
             {

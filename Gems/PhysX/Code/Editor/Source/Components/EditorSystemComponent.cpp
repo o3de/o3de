@@ -8,13 +8,14 @@
 
 #include "EditorSystemComponent.h"
 #include <AzCore/Interface/Interface.h>
+#include <AzCore/IO/Path/Path.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzFramework/Physics/SystemBus.h>
 #include <AzFramework/Physics/Collision/CollisionEvents.h>
 #include <AzFramework/Physics/Common/PhysicsSimulatedBody.h>
 
 #include <IEditor.h>
-#include <ISurfaceType.h>
 
 #include <Editor/ConfigStringLineEditCtrl.h>
 #include <Editor/EditorJointConfiguration.h>
@@ -24,7 +25,7 @@
 
 namespace PhysX
 {
-    constexpr const char* DefaultAssetFilePath = "Physics/SurfaceTypeMaterialLibrary";
+    constexpr const char* DefaultAssetFilePath = "Assets/Physics/SurfaceTypeMaterialLibrary";
     constexpr const char* TemplateAssetFilename = "PhysX/TemplateMaterialLibrary";
 
     static AZStd::optional<AZ::Data::Asset<AZ::Data::AssetData>> GetMaterialLibraryTemplate()
@@ -68,7 +69,7 @@ namespace PhysX
                 assetId, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetIdByPath, relativePath.c_str(), assetType, true /*autoRegisterIfNotFound*/);
 
             AZ::Data::Asset<AZ::Data::AssetData> newAsset =
-                AZ::Data::AssetManager::Instance().GetAsset(assetId, assetType, AZ::Data::AssetLoadBehavior::Default);
+                AZ::Data::AssetManager::Instance().FindOrCreateAsset(assetId, assetType, AZ::Data::AssetLoadBehavior::Default);
 
             if (auto* newMaterialLibraryData = azrtti_cast<Physics::MaterialLibraryAsset*>(newAsset.GetData()))
             {
@@ -139,6 +140,14 @@ namespace PhysX
                     if (auto retrievedMaterialLibrary = RetrieveDefaultMaterialLibrary())
                     {
                         physxSystem->UpdateMaterialLibrary(retrievedMaterialLibrary.value());
+
+                        // After setting the default material library, save the physx configuration.
+                        auto saveCallback = []([[maybe_unused]] const PhysXSystemConfiguration& config, [[maybe_unused]] PhysXSettingsRegistryManager::Result result)
+                        {
+                            AZ_Warning("PhysX", result == PhysXSettingsRegistryManager::Result::Success,
+                                "Unable to save the PhysX configuration after setting default material library.");
+                        };
+                        physxSystem->GetSettingsRegistryManager().SaveSystemConfiguration(physxSystem->GetPhysXConfiguration(), saveCallback);
                     }
                 }
             }
@@ -237,11 +246,15 @@ namespace PhysX
             if (!resultAssetId.IsValid())
             {
                 // No file for the default material library, create it
-                const char* assetRoot = AZ::IO::FileIOBase::GetInstance()->GetAlias("@projectsourceassets@");
-                AZStd::string fullPath;
-                AzFramework::StringFunc::Path::ConstructFull(assetRoot, DefaultAssetFilePath, assetExtension.c_str(), fullPath);
+                AZ::IO::Path fullPath;
+                if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
+                {
+                    settingsRegistry->Get(fullPath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_ProjectPath);
+                }
+                fullPath /= DefaultAssetFilePath;
+                fullPath.ReplaceExtension(AZ::IO::PathView(assetExtension));
 
-                if (auto materialLibraryOpt = CreateMaterialLibrary(fullPath, relativePath))
+                if (auto materialLibraryOpt = CreateMaterialLibrary(fullPath.Native(), relativePath))
                 {
                     return materialLibraryOpt;
                 }

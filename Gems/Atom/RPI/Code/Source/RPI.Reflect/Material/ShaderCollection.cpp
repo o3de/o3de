@@ -7,6 +7,7 @@
  */
 
 #include <AtomCore/std/containers/vector_set.h>
+#include <AzCore/Asset/AssetSerializer.h>
 #include <Atom/RPI.Reflect/Material/ShaderCollection.h>
 #include <Atom/RHI/RHISystemInterface.h>
 #include <Atom/RHI/DrawListTagRegistry.h>
@@ -22,7 +23,7 @@ namespace AZ
             : public SerializeContext::IEventHandler
         {
             //! Called right before we start reading from the instance pointed by classPtr.
-            virtual void OnReadBegin(void* classPtr)
+            void OnReadBegin(void* classPtr) override
             {
                 ShaderCollection::Item* shaderVariantReference = reinterpret_cast<ShaderCollection::Item*>(classPtr);
                 shaderVariantReference->m_shaderVariantId = shaderVariantReference->m_shaderOptionGroup.GetShaderVariantId();

@@ -21,6 +21,7 @@
 
 #include <AzCore/IO/FileIO.h>
 #include <AzCore/IO/SystemFile.h>
+#include <AzCore/std/containers/unordered_set.h>
 #include <AzCore/std/string/conversions.h>
 #include <AzCore/StringFunc/StringFunc.h>
 
@@ -245,8 +246,10 @@ namespace O3DE::ProjectManager
         if (Py_IsInitialized())
         {
             AZ_Warning("python", false, "Python is already active");
-            return false;
+            return m_pythonStarted;
         }
+
+        m_pythonStarted = false;
 
         // set PYTHON_HOME
         AZStd::string pyBasePath = Platform::GetPythonHomePath(PY_PACKAGE, m_enginePath.c_str());
@@ -303,7 +306,8 @@ namespace O3DE::ProjectManager
             // make sure the engine is registered
             RegisterThisEngine();
 
-            return !PyErr_Occurred();
+            m_pythonStarted = !PyErr_Occurred();
+            return m_pythonStarted;
         }
         catch ([[maybe_unused]] const std::exception& e)
         {
@@ -339,7 +343,7 @@ namespace O3DE::ProjectManager
             {
                 for (auto engine : allEngines)
                 {
-                    AZ::IO::FixedMaxPath enginePath(Py_To_String(engine["path"]));
+                    AZ::IO::FixedMaxPath enginePath(Py_To_String(engine));
                     if (enginePath.Compare(m_enginePath) == 0)
                     {
                         return;
@@ -675,6 +679,14 @@ namespace O3DE::ProjectManager
                     }
                 }
 
+                if (data.contains("dependencies"))
+                {
+                    for (auto dependency : data["dependencies"])
+                    {
+                        gemInfo.m_dependencies.push_back(Py_To_String(dependency));
+                    }
+                }
+
                 QString gemType = Py_To_String_Optional(data, "type", "");
                 if (gemType == "Asset")
                 {
@@ -911,5 +923,61 @@ namespace O3DE::ProjectManager
         {
             return AZ::Success(AZStd::move(templates));
         }
+    }
+
+    AZ::Outcome<void, AZStd::string> PythonBindings::AddGemRepo(const QString& repoUri)
+    {
+        // o3de scripts need method added
+        (void)repoUri;
+        return AZ::Failure<AZStd::string>("Adding Gem Repo not implemented yet in o3de scripts.");
+    }
+
+    GemRepoInfo PythonBindings::GemRepoInfoFromPath(pybind11::handle path, pybind11::handle pyEnginePath)
+    {
+        /* Placeholder Logic */
+        (void)path;
+        (void)pyEnginePath;
+
+        return GemRepoInfo();
+    }
+
+//#define MOCK_GEM_REPO_INFO true
+
+    AZ::Outcome<QVector<GemRepoInfo>, AZStd::string> PythonBindings::GetAllGemRepoInfos()
+    {
+        QVector<GemRepoInfo> gemRepos;
+
+#ifndef MOCK_GEM_REPO_INFO
+        auto result = ExecuteWithLockErrorHandling(
+            [&]
+            {
+                /* Placeholder Logic, o3de scripts need method added
+                * 
+                for (auto path : m_manifest.attr("get_gem_repos")())
+                {
+                    gemRepos.push_back(GemRepoInfoFromPath(path, pybind11::none()));
+                }
+                *
+                */
+            });
+        if (!result.IsSuccess())
+        {
+            return AZ::Failure<AZStd::string>(result.GetError().c_str());
+        }
+#else
+        GemRepoInfo mockJohnRepo("JohnCreates", "John Smith", QDateTime(QDate(2021, 8, 31), QTime(11, 57)), true);
+        mockJohnRepo.m_summary = "John's Summary. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce sollicitudin dapibus urna";
+        mockJohnRepo.m_repoLink = "https://github.com/o3de/o3de";
+        mockJohnRepo.m_additionalInfo = "John's additional info. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce sollicitu.";
+        gemRepos.push_back(mockJohnRepo);
+
+        GemRepoInfo mockJaneRepo("JanesGems", "Jane Doe", QDateTime(QDate(2021, 9, 10), QTime(18, 23)), false);
+        mockJaneRepo.m_summary = "Jane's Summary.";
+        mockJaneRepo.m_repoLink = "https://github.com/o3de/o3de.org";
+        gemRepos.push_back(mockJaneRepo);
+#endif // MOCK_GEM_REPO_INFO
+
+        std::sort(gemRepos.begin(), gemRepos.end());
+        return AZ::Success(AZStd::move(gemRepos));
     }
 }

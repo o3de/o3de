@@ -176,11 +176,6 @@ struct SSystemUserCallback
         return CryMessageBox(text, caption, uType);
     }
 
-    void GetMemoryUsage(ICrySizer* pSizer) override
-    {
-        GetIEditor()->GetMemoryUsage(pSizer);
-    }
-
     void OnSplashScreenDone()
     {
         m_pLogo = nullptr;

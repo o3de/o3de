@@ -16,7 +16,6 @@ namespace AzToolsFramework
         AssetBrowserTableModel::AssetBrowserTableModel(QObject* parent /* = nullptr */)
             : QSortFilterProxyModel(parent)
         {
-            setDynamicSortFilter(false);
         }
 
         void AssetBrowserTableModel::setSourceModel(QAbstractItemModel* sourceModel)
@@ -132,14 +131,20 @@ namespace AzToolsFramework
                 {
                     QModelIndex index = model->index(currentRow, 0, parent);
                     AssetBrowserEntry* entry = GetAssetEntry(m_filterModel->mapToSource(index));
-                    // We only want to see the source assets.
+                    // We only want to see source and product assets.
                     if (entry->GetEntryType() == AssetBrowserEntry::AssetEntryType::Source ||
                         entry->GetEntryType() == AssetBrowserEntry::AssetEntryType::Product)
                     {
                         m_indexMap[row] = index;
                         m_rowMap[index] = row;
                         ++row;
-                        ++m_displayedItemsCounter;
+
+                        // We only want to increase the displayed counter if it is a parent (Source)
+                        // so we don't cut children entries.
+                        if (entry->GetEntryType() == AssetBrowserEntry::AssetEntryType::Source)
+                        {
+                            ++m_displayedItemsCounter;
+                        }
                     }
 
                     if (model->hasChildren(index))

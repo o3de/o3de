@@ -22,7 +22,7 @@ using namespace AZ;
 //=========================================================================
 BestFitExternalMapAllocator::BestFitExternalMapAllocator()
     : AllocatorBase(this, "BestFitExternalMapAllocator", "Best fit allocator with external tracking storage!")
-    , m_schema(NULL)
+    , m_schema(nullptr)
 {}
 
 //=========================================================================
@@ -47,7 +47,7 @@ BestFitExternalMapAllocator::Create(const Descriptor& desc)
     schemaDesc.m_memoryBlockByteSize = desc.m_memoryBlockByteSize;
 
     m_schema = azcreate(BestFitExternalMapSchema, (schemaDesc), SystemAllocator);
-    if (m_schema == NULL)
+    if (m_schema == nullptr)
     {
         isReady = false;
     }
@@ -63,7 +63,7 @@ void
 BestFitExternalMapAllocator::Destroy()
 {
     azdestroy(m_schema, SystemAllocator);
-    m_schema = NULL;
+    m_schema = nullptr;
 }
 
 AllocatorDebugConfig BestFitExternalMapAllocator::GetDebugConfig()
@@ -89,7 +89,7 @@ BestFitExternalMapAllocator::Allocate(size_type byteSize, size_type alignment, i
     byteSize = MemorySizeAdjustedUp(byteSize);
 
     BestFitExternalMapAllocator::pointer_type address = m_schema->Allocate(byteSize, alignment, flags);
-    if (address == 0)
+    if (address == nullptr)
     {
         if (!OnOutOfMemory(byteSize, alignment, flags, name, fileName, lineNum))
         {
@@ -100,7 +100,7 @@ BestFitExternalMapAllocator::Allocate(size_type byteSize, size_type alignment, i
         }
     }
 
-    AZ_Assert(address != 0, "BestFitExternalMapAllocator: Failed to allocate %d bytes aligned on %d (flags: 0x%08x) %s : %s (%d)!", byteSize, alignment, flags, name ? name : "(no name)", fileName ? fileName : "(no file name)", lineNum);
+    AZ_Assert(address != nullptr, "BestFitExternalMapAllocator: Failed to allocate %d bytes aligned on %d (flags: 0x%08x) %s : %s (%d)!", byteSize, alignment, flags, name ? name : "(no name)", fileName ? fileName : "(no file name)", lineNum);
     AZ_MEMORY_PROFILE(ProfileAllocation(address, byteSize, alignment, name, fileName, lineNum, suppressStackRecord + 1));
 
     return address;
@@ -145,7 +145,7 @@ BestFitExternalMapAllocator::ReAllocate(pointer_type ptr, size_type newSize, siz
     (void)newSize;
     (void)newAlignment;
     AZ_Assert(false, "Not supported!");
-    return NULL;
+    return nullptr;
 }
 
 //=========================================================================
@@ -186,6 +186,11 @@ BestFitExternalMapAllocator::size_type
 BestFitExternalMapAllocator::GetMaxAllocationSize() const
 {
     return m_schema->GetMaxAllocationSize();
+}
+
+auto BestFitExternalMapAllocator::GetMaxContiguousAllocationSize() const -> size_type
+{
+    return m_schema->GetMaxContiguousAllocationSize();
 }
 
 //=========================================================================

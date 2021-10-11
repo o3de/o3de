@@ -50,6 +50,8 @@ set(FILES
     Source/Shape/EditorDiskShapeComponent.cpp
     Source/Shape/EditorBoxShapeComponent.h
     Source/Shape/EditorBoxShapeComponent.cpp
+    Source/Shape/EditorAxisAlignedBoxShapeComponent.h
+    Source/Shape/EditorAxisAlignedBoxShapeComponent.cpp
     Source/Shape/EditorCylinderShapeComponent.h
     Source/Shape/EditorCylinderShapeComponent.cpp
     Source/Shape/EditorCapsuleShapeComponent.h

@@ -9,12 +9,10 @@
 #include "GameApplication.h"
 #include <AzCore/IO/Path/Path.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
-#include <AzCore/StringFunc/StringFunc.h>
-#include <AzCore/std/string/conversions.h>
-#include <GridMate/Drillers/CarrierDriller.h>
-#include <GridMate/Drillers/ReplicaDriller.h>
+#include <AzCore/Utils/Utils.h>
+
+#include <AzFramework/Archive/Archive.h>
 #include <AzFramework/TargetManagement/TargetManagementComponent.h>
-#include <AzFramework/Metrics/MetricsPlainTextNameRegistration.h>
 #include <AzGameFramework/AzGameFrameworkModule.h>
 
 namespace AzGameFramework
@@ -26,6 +24,27 @@ namespace AzGameFramework
     GameApplication::GameApplication(int argc, char** argv)
         : Application(&argc, &argv)
     {
+        // In the Launcher Applications the Settings Registry
+        // can read from the FileIOBase instance if available
+        m_settingsRegistry->SetUseFileIO(true);
+
+        // Attempt to mount the engine pak to the project product asset alias
+        // Search Order:
+        // - Project Cache Root Directory
+        // - Executable Directory
+        bool enginePakOpened{};
+        AZ::IO::FixedMaxPath enginePakPath;
+        if (m_settingsRegistry->Get(enginePakPath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_CacheRootFolder))
+        {
+            // fall back to checking Project Cache Root.
+            enginePakPath /= "engine.pak";
+            enginePakOpened = m_archive->OpenPack("@products@", enginePakPath.Native());
+        }
+        if (!enginePakOpened)
+        {
+            enginePakPath = AZ::IO::FixedMaxPath(AZ::Utils::GetExecutableDirectory()) / "engine.pak";
+            m_archive->OpenPack("@products@", enginePakPath.Native());
+        }
     }
 
     GameApplication::~GameApplication()
@@ -50,8 +69,8 @@ namespace AzGameFramework
         AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_CommandLine(registry, m_commandLine, false);
         AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_ProjectUserRegistry(registry, AZ_TRAIT_OS_PLATFORM_CODENAME, specializations, &scratchBuffer);
         AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_CommandLine(registry, m_commandLine, false);
-        AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddRuntimeFilePaths(registry);
 #endif
+        AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddRuntimeFilePaths(registry);
 
         AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_TargetBuildDependencyRegistry(registry, AZ_TRAIT_OS_PLATFORM_CODENAME, specializations, &scratchBuffer);
 

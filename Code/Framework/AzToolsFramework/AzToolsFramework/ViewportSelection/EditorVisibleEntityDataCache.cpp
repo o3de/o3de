@@ -161,8 +161,8 @@ namespace AzToolsFramework
 
         // request list of visible entities from authoritative system
         EntityIdList nextVisibleEntityIds;
-        ViewportInteraction::MainEditorViewportInteractionRequestBus::Event(
-            viewportInfo.m_viewportId, &ViewportInteraction::MainEditorViewportInteractionRequestBus::Events::FindVisibleEntities,
+        ViewportInteraction::EditorEntityViewportInteractionRequestBus::Event(
+            viewportInfo.m_viewportId, &ViewportInteraction::EditorEntityViewportInteractionRequestBus::Events::FindVisibleEntities,
             nextVisibleEntityIds);
 
         // only bother resorting if we know the lists have changed
@@ -312,8 +312,6 @@ namespace AzToolsFramework
 
     void EditorVisibleEntityDataCache::OnTransformChanged(const AZ::Transform& /*local*/, const AZ::Transform& world)
     {
-        AZ_PROFILE_FUNCTION(AzToolsFramework);
-
         const AZ::EntityId entityId = *AZ::TransformNotificationBus::GetCurrentBusId();
 
         if (AZStd::optional<size_t> entityIndex = GetVisibleEntityIndexFromId(entityId))

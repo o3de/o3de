@@ -5,7 +5,12 @@
     "origin": "Open 3D Engine - o3de.org",
     "type": "Asset",
     "summary": "A standard test scene for Global Illumination (forked from crytek sponza scene)",
-    "canonical_tags": ["Gem"],
-    "user_tags": ["Assets"],
-    "requirements": ""
+    "canonical_tags": [
+        "Gem"
+    ],
+    "user_tags": [
+        "Assets"
+    ],
+    "requirements": "",
+    "dependencies": []
 }

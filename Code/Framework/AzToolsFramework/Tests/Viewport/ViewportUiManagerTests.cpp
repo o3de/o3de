@@ -26,7 +26,7 @@ namespace UnitTest
     {
     public:
         ViewportUiManagerTestable() = default;
-        ~ViewportUiManagerTestable() = default;
+        ~ViewportUiManagerTestable() override = default;
 
         const AZStd::unordered_map<AzToolsFramework::ViewportUi::ClusterId, AZStd::shared_ptr<ButtonGroup>>& GetClusterMap()
         {
@@ -84,12 +84,12 @@ namespace UnitTest
 
         ViewportManagerWrapper m_viewportManagerWrapper;
 
-        void SetUp()
+        void SetUp() override
         {
             m_viewportManagerWrapper.Create();
         }
 
-        void TearDown()
+        void TearDown() override
         {
             m_viewportManagerWrapper.Destroy();
         }
@@ -125,6 +125,25 @@ namespace UnitTest
         m_viewportManagerWrapper.GetViewportManager()->SetClusterActiveButton(clusterId, buttonId);
 
         EXPECT_TRUE(button->m_state == AzToolsFramework::ViewportUi::Internal::Button::State::Selected);
+    }
+
+    TEST_F(ViewportUiManagerTestFixture, ClearClusterActiveButtonSetsButtonStateToDeselected)
+    {
+        // setup
+        auto clusterId = m_viewportManagerWrapper.GetViewportManager()->CreateCluster(AzToolsFramework::ViewportUi::Alignment::TopLeft);
+        auto buttonId = m_viewportManagerWrapper.GetViewportManager()->CreateClusterButton(clusterId, "");
+
+        auto clusterEntry = m_viewportManagerWrapper.GetViewportManager()->GetClusterMap().find(clusterId);
+        auto button = clusterEntry->second->GetButton(buttonId);
+
+        // first set a button to active
+        m_viewportManagerWrapper.GetViewportManager()->SetClusterActiveButton(clusterId, buttonId);
+        EXPECT_TRUE(button->m_state == AzToolsFramework::ViewportUi::Internal::Button::State::Selected);
+
+        // clear the active button on the cluster
+        m_viewportManagerWrapper.GetViewportManager()->ClearClusterActiveButton(clusterId);
+        // the button should now be deselected
+        EXPECT_TRUE(button->m_state == AzToolsFramework::ViewportUi::Internal::Button::State::Deselected);
     }
 
     TEST_F(ViewportUiManagerTestFixture, RegisterClusterEventHandlerConnectsHandlerToClusterEvent)

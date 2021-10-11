@@ -8,6 +8,7 @@
 #pragma once
 
 #include <AzCore/EBus/EBus.h>
+#include <AzCore/std/containers/set.h>
 #include <AzCore/Math/Vector2.h>
 #include <AzCore/Math/Vector3.h>
 #include <AzCore/Math/Aabb.h>
@@ -17,16 +18,38 @@ namespace AzFramework
 {
     namespace SurfaceData
     {
+        namespace Constants
+        {
+            static const char* s_unassignedTagName = "(unassigned)";
+        }
+
         struct SurfaceTagWeight
         {
             AZ_TYPE_INFO(SurfaceTagWeight, "{EA14018E-E853-4BF5-8E13-D83BB99A54CC}");
 
-            AZ::Crc32 m_surfaceType;
-            float m_weight; //! A Value in the range [0.0f .. 1.0f]
+            AZ::Crc32 m_surfaceType = AZ::Crc32(Constants::s_unassignedTagName);
+            float m_weight = 0.0f; //! A Value in the range [0.0f .. 1.0f]
 
             //! Don't call this directly. TerrainDataRequests::Reflect is doing it already.
             static void Reflect(AZ::ReflectContext* context);
         };
+
+        struct SurfaceTagWeightComparator
+        {
+            bool operator()(const SurfaceTagWeight& tagWeight1, const SurfaceTagWeight& tagWeight2) const
+            {
+                if (!AZ::IsClose(tagWeight1.m_weight, tagWeight2.m_weight))
+                {
+                    return tagWeight1.m_weight > tagWeight2.m_weight;
+                }
+                else
+                {
+                    return tagWeight1.m_surfaceType > tagWeight2.m_surfaceType;
+                }
+            }
+        };
+
+         using OrderedSurfaceTagWeightSet = AZStd::set<SurfaceTagWeight, SurfaceTagWeightComparator>;
     } //namespace SurfaceData
 
     namespace Terrain
@@ -59,8 +82,11 @@ namespace AzFramework
             static AZ::Vector3 GetDefaultTerrainNormal() { return AZ::Vector3::CreateAxisZ(); }
 
             // System-level queries to understand world size and resolution
-            virtual AZ::Vector2 GetTerrainGridResolution() const = 0;
+            virtual AZ::Vector2 GetTerrainHeightQueryResolution() const = 0;
+            virtual void SetTerrainHeightQueryResolution(AZ::Vector2 queryResolution) = 0;
+
             virtual AZ::Aabb GetTerrainAabb() const = 0;
+            virtual void SetTerrainAabb(const AZ::Aabb& worldBounds) = 0;
 
             //! Returns terrains height in meters at location x,y.
             //! @terrainExistsPtr: Can be nullptr. If != nullptr then, if there's no terrain at location x,y or location x,y is inside a terrain HOLE then *terrainExistsPtr will become false,
@@ -72,7 +98,27 @@ namespace AzFramework
             //! @terrainExists: Can be nullptr. If != nullptr then, if there's no terrain at location x,y or location x,y is inside a terrain HOLE then *terrainExistsPtr will be set to false,
             //!                  otherwise *terrainExistsPtr will be set to true.
             virtual SurfaceData::SurfaceTagWeight GetMaxSurfaceWeight(AZ::Vector3 position, Sampler sampleFilter = Sampler::BILINEAR, bool* terrainExistsPtr = nullptr) const = 0;
+            virtual SurfaceData::SurfaceTagWeight GetMaxSurfaceWeightFromVector2(const AZ::Vector2& inPosition, Sampler sampleFilter = Sampler::DEFAULT, bool* terrainExistsPtr = nullptr) const = 0;
             virtual SurfaceData::SurfaceTagWeight GetMaxSurfaceWeightFromFloats(float x, float y, Sampler sampleFilter = Sampler::BILINEAR, bool* terrainExistsPtr = nullptr) const = 0;
+
+            //! Given an XY coordinate, return the set of surface types and weights.  The Vector3 input position version is defined to ignore
+            //! the input Z value.
+            virtual void GetSurfaceWeights(
+                const AZ::Vector3& inPosition,
+                SurfaceData::OrderedSurfaceTagWeightSet& outSurfaceWeights,
+                Sampler sampleFilter = Sampler::DEFAULT,
+                bool* terrainExistsPtr = nullptr) const = 0;
+            virtual void GetSurfaceWeightsFromVector2(
+                const AZ::Vector2& inPosition,
+                SurfaceData::OrderedSurfaceTagWeightSet& outSurfaceWeights,
+                Sampler sampleFilter = Sampler::DEFAULT,
+                bool* terrainExistsPtr = nullptr) const = 0;
+            virtual void GetSurfaceWeightsFromFloats(
+                float x,
+                float y,
+                SurfaceData::OrderedSurfaceTagWeightSet& outSurfaceWeights,
+                Sampler sampleFilter = Sampler::DEFAULT,
+                bool* terrainExistsPtr = nullptr) const = 0;
 
             //! Convenience function for  low level systems that can't do a reverse lookup from Crc to string. Everyone else should use GetMaxSurfaceWeight or GetMaxSurfaceWeightFromFloats.
             //! Not available in the behavior context.

@@ -6,8 +6,6 @@
  *
  */
 
-#ifndef CRYINCLUDE_CRYCOMMON_ISYSTEM_H
-#define CRYINCLUDE_CRYCOMMON_ISYSTEM_H
 #pragma once
 
 #ifdef CRYSYSTEM_EXPORTS
@@ -15,10 +13,10 @@
 #else
 #define CRYSYSTEM_API DLL_IMPORT
 #endif
+#include <AzCore/IO/SystemFile.h>
 
 #include "CryAssert.h"
-
-#include <AzCore/IO/SystemFile.h>
+#include <CryCommon/IValidator.h>
 
 #if defined(AZ_RESTRICTED_PLATFORM)
 #undef AZ_RESTRICTED_SECTION
@@ -33,7 +31,6 @@
 // Forward declarations
 ////////////////////////////////////////////////////////////////////////////////////////////////
 #include <IXml.h> // <> required for Interfuscator
-#include "IValidator.h" // <> required for Interfuscator
 #include <ILog.h> // <> required for Interfuscator
 #include "CryVersion.h"
 #include "smartptr.h"
@@ -61,9 +58,7 @@ struct SFileVersion;
 struct INameTable;
 struct ILevelSystem;
 struct IViewSystem;
-class ICrySizer;
 class IXMLBinarySerializer;
-struct IReadWriteXMLSink;
 struct IAVI_Reader;
 class CPNoise3;
 struct ILocalizationManager;
@@ -84,8 +79,10 @@ class CCamera;
 struct CLoadingTimeProfiler;
 
 class ICmdLine;
-
 class ILyShine;
+
+enum EValidatorModule : int;
+enum EValidatorSeverity : int;
 
 enum ESystemUpdateFlags
 {
@@ -435,9 +432,6 @@ struct ISystemUserCallback
     //   Show message by provider.
     virtual int ShowMessage(const char* text, const char* caption, unsigned int uType) { return CryMessageBox(text, caption, uType); }
 
-    // Description:
-    //   Collects the memory information in the user program/application.
-    virtual void GetMemoryUsage(ICrySizer* pSizer) = 0;
     // </interfuscator:shuffle>
 
     //   Post console load, for cvar setting
@@ -1313,9 +1307,8 @@ namespace Detail
         const char* GetHelp() { return NULL; }
         bool IsConstCVar() const { return true; }
         void SetOnChangeCallback(ConsoleVarFunc pChangeFunc) { (void)pChangeFunc; }
-        uint64 AddOnChangeFunctor(const SFunctor& pChangeFunctor) { (void)pChangeFunctor; return 0; }
+        uint64 AddOnChangeFunctor(const AZStd::function<void()>& pChangeFunctor) { (void)pChangeFunctor; return 0; }
         ConsoleVarFunc GetOnChangeCallback() const { InvalidAccess(); return NULL; }
-        void GetMemoryUsage([[maybe_unused]] class ICrySizer* pSizer) const {}
         int GetRealIVal() const { return GetIVal(); }
         void SetLimits([[maybe_unused]] float min, [[maybe_unused]] float max) { return; }
         void GetLimits([[maybe_unused]] float& min, [[maybe_unused]] float& max) { return; }
@@ -1411,17 +1404,8 @@ static void AssertConsoleExists(void)
 //   Preferred way to register an int CVar with a callback
 #define REGISTER_INT_CB(_name, _def_val, _flags, _comment, _onchangefunction)                   (ASSERT_CONSOLE_EXISTS, gEnv->pConsole == 0 ? 0 : gEnv->pConsole->RegisterInt(_name, (_def_val), (_flags), CVARHELP(_comment), _onchangefunction))
 // Summary:
-//   Preferred way to register an int64 CVar
-#define REGISTER_INT64(_name, _def_val, _flags, _comment)                                                      (ASSERT_CONSOLE_EXISTS, gEnv->pConsole == 0 ? 0 : gEnv->pConsole->RegisterInt64(_name, (_def_val), (_flags), CVARHELP(_comment)))
-// Summary:
-//   Preferred way to register an int64 CVar with a callback
-#define REGISTER_INT64_CB(_name, _def_val, _flags, _comment, _onchangefunction)                                                     (ASSERT_CONSOLE_EXISTS, gEnv->pConsole == 0 ? 0 : gEnv->pConsole->RegisterInt64(_name, (_def_val), (_flags), CVARHELP(_comment), _onchangefunction))
-// Summary:
 //   Preferred way to register a float CVar
 #define REGISTER_FLOAT(_name, _def_val, _flags, _comment)                                                      (ASSERT_CONSOLE_EXISTS, gEnv->pConsole == 0 ? 0 : gEnv->pConsole->RegisterFloat(_name, (_def_val), (_flags), CVARHELP(_comment)))
-// Summary:
-//   Preferred way to register a float CVar with a callback
-#define REGISTER_FLOAT_CB(_name, _def_val, _flags, _comment, _onchangefunction)                 (ASSERT_CONSOLE_EXISTS, gEnv->pConsole == 0 ? 0 : gEnv->pConsole->RegisterFloat(_name, (_def_val), (_flags), CVARHELP(_comment), _onchangefunction))
 // Summary:
 //   Offers more flexibility but more code is required
 #define REGISTER_CVAR2(_name, _var, _def_val, _flags, _comment)                                             (ASSERT_CONSOLE_EXISTS, gEnv->pConsole == 0 ? 0 : gEnv->pConsole->Register(_name, _var, (_def_val), (_flags), CVARHELP(_comment)))
@@ -1431,9 +1415,6 @@ static void AssertConsoleExists(void)
 // Summary:
 //   Offers more flexibility but more code is required, explicit address taking of destination variable
 #define REGISTER_CVAR3(_name, _var, _def_val, _flags, _comment)                                             (ASSERT_CONSOLE_EXISTS, gEnv->pConsole == 0 ? 0 : gEnv->pConsole->Register(_name, &(_var), (_def_val), (_flags), CVARHELP(_comment)))
-// Summary:
-//   Offers more flexibility but more code is required, explicit address taking of destination variable
-#define REGISTER_CVAR3_CB(_name, _var, _def_val, _flags, _comment, _onchangefunction)    (ASSERT_CONSOLE_EXISTS, gEnv->pConsole == 0 ? 0 : gEnv->pConsole->Register(_name, &(_var), (_def_val), (_flags), CVARHELP(_comment), _onchangefunction))
 // Summary:
 //   Preferred way to register a console command
 #define REGISTER_COMMAND(_name, _func, _flags, _comment)                                                           (ASSERT_CONSOLE_EXISTS, gEnv->pConsole == 0 ? false : gEnv->pConsole->AddCommand(_name, _func, (_flags), CVARHELP(_comment)))
@@ -1465,12 +1446,10 @@ static void AssertConsoleExists(void)
 #define REGISTER_STRING_CB_DEV_ONLY(_name, _def_val, _flags, _comment, _onchangefunction)               NULL; static_assert(((_flags) & ILLEGAL_DEV_FLAGS) == 0)                                  /* consumed; pure cvar not available */
 #define REGISTER_INT_DEV_ONLY(_name, _def_val, _flags, _comment)                                                               NULL; static_assert(((_flags) & ILLEGAL_DEV_FLAGS) == 0)                                  /* consumed; pure cvar not available */
 #define REGISTER_INT_CB_DEV_ONLY(_name, _def_val, _flags, _comment, _onchangefunction)                  NULL; static_assert(((_flags) & ILLEGAL_DEV_FLAGS) == 0)                                  /* consumed; pure cvar not available */
-#define REGISTER_INT64_DEV_ONLY(_name, _def_val, _flags, _comment)                                                         NULL; static_assert(((_flags) & ILLEGAL_DEV_FLAGS) == 0)                                  /* consumed; pure cvar not available */
 #define REGISTER_FLOAT_DEV_ONLY(_name, _def_val, _flags, _comment)                                                         NULL; static_assert(((_flags) & ILLEGAL_DEV_FLAGS) == 0)                                  /* consumed; pure cvar not available */
 #define REGISTER_CVAR2_DEV_ONLY(_name, _var, _def_val, _flags, _comment)                                                NULL; static_assert(((_flags) & ILLEGAL_DEV_FLAGS) == 0); *(_var) = _def_val
 #define REGISTER_CVAR2_CB_DEV_ONLY(_name, _var, _def_val, _flags, _comment, _onchangefunction)       NULL; static_assert(((_flags) & ILLEGAL_DEV_FLAGS) == 0); *(_var) = _def_val
 #define REGISTER_CVAR3_DEV_ONLY(_name, _var, _def_val, _flags, _comment)                                                NULL; static_assert(((_flags) & ILLEGAL_DEV_FLAGS) == 0); _var = _def_val
-#define REGISTER_CVAR3_CB_DEV_ONLY(_name, _var, _def_val, _flags, _comment, _onchangefunction)       NULL; static_assert(((_flags) & ILLEGAL_DEV_FLAGS) == 0); _var = _def_val
 #define REGISTER_COMMAND_DEV_ONLY(_name, _func, _flags, _comment)                                                  /* consumed; command not available */
 #else
 #define REGISTER_CVAR_DEV_ONLY(_var, _def_val, _flags, _comment)                                                               REGISTER_CVAR(_var, _def_val, ((_flags) | VF_DEV_ONLY), _comment); static_assert(((_flags) & ILLEGAL_DEV_FLAGS) == 0)
@@ -1479,12 +1458,10 @@ static void AssertConsoleExists(void)
 #define REGISTER_STRING_CB_DEV_ONLY(_name, _def_val, _flags, _comment, _onchangefunction)               REGISTER_STRING_CB(_name, _def_val, ((_flags) | VF_DEV_ONLY), _comment, _onchangefunction); static_assert(((_flags) & ILLEGAL_DEV_FLAGS) == 0)
 #define REGISTER_INT_DEV_ONLY(_name, _def_val, _flags, _comment)                                                               REGISTER_INT(_name, _def_val, ((_flags) | VF_DEV_ONLY), _comment); static_assert(((_flags) & ILLEGAL_DEV_FLAGS) == 0)
 #define REGISTER_INT_CB_DEV_ONLY(_name, _def_val, _flags, _comment, _onchangefunction)                  REGISTER_INT_CB(_name, _def_val, ((_flags) | VF_DEV_ONLY), _comment, _onchangefunction); static_assert(((_flags) & ILLEGAL_DEV_FLAGS) == 0)
-#define REGISTER_INT64_DEV_ONLY(_name, _def_val, _flags, _comment)                                                         REGISTER_INT64(_name, _def_val, ((_flags) | VF_DEV_ONLY), _comment); static_assert(((_flags) & ILLEGAL_DEV_FLAGS) == 0)
 #define REGISTER_FLOAT_DEV_ONLY(_name, _def_val, _flags, _comment)                                                         REGISTER_FLOAT(_name, _def_val, ((_flags) | VF_DEV_ONLY), _comment); static_assert(((_flags) & ILLEGAL_DEV_FLAGS) == 0)
 #define REGISTER_CVAR2_DEV_ONLY(_name, _var, _def_val, _flags, _comment)                                                REGISTER_CVAR2(_name, _var, _def_val, ((_flags) | VF_DEV_ONLY), _comment); static_assert(((_flags) & ILLEGAL_DEV_FLAGS) == 0)
 #define REGISTER_CVAR2_CB_DEV_ONLY(_name, _var, _def_val, _flags, _comment, _onchangefunction)       REGISTER_CVAR2_CB(_name, _var, _def_val, ((_flags) | VF_DEV_ONLY), _comment, _onchangefunction); static_assert(((_flags) & ILLEGAL_DEV_FLAGS) == 0)
 #define REGISTER_CVAR3_DEV_ONLY(_name, _var, _def_val, _flags, _comment)                                                REGISTER_CVAR3(_name, _var, _def_val, ((_flags) | VF_DEV_ONLY), _comment); static_assert(((_flags) & ILLEGAL_DEV_FLAGS) == 0)
-#define REGISTER_CVAR3_CB_DEV_ONLY(_name, _var, _def_val, _flags, _comment, _onchangefunction)       REGISTER_CVAR3_CB(_name, _var, _def_val, ((_flags) | VF_DEV_ONLY), _comment, _onchangefunction); static_assert(((_flags) & ILLEGAL_DEV_FLAGS) == 0)
 #define REGISTER_COMMAND_DEV_ONLY(_name, _func, _flags, _comment)                                                          REGISTER_COMMAND(_name, _func, ((_flags) | VF_DEV_ONLY), _comment); static_assert(((_flags) & ILLEGAL_DEV_FLAGS) == 0)
 #endif // defined(_RELEASE)
 //
@@ -1508,12 +1485,9 @@ static void AssertConsoleExists(void)
 #define REGISTER_STRING_CB_DEDI_ONLY(_name, _def_val, _flags, _comment, _onchangefunction)          REGISTER_STRING_CB(_name, _def_val, ((_flags) | VF_DEDI_ONLY), _comment, _onchangefunction); static_assert(((_flags) & ILLEGAL_DEV_FLAGS) == 0)
 #define REGISTER_INT_DEDI_ONLY(_name, _def_val, _flags, _comment)                                                          REGISTER_INT(_name, _def_val, ((_flags) | VF_DEDI_ONLY), _comment); static_assert(((_flags) & ILLEGAL_DEV_FLAGS) == 0)
 #define REGISTER_INT_CB_DEDI_ONLY(_name, _def_val, _flags, _comment, _onchangefunction)                 REGISTER_INT_CB(_name, _def_val, ((_flags) | VF_DEDI_ONLY), _comment, _onchangefunction); static_assert(((_flags) & ILLEGAL_DEV_FLAGS) == 0)
-#define REGISTER_INT64_DEDI_ONLY(_name, _def_val, _flags, _comment)                                                        REGISTER_INT64(_name, _def_val, ((_flags) | VF_DEDI_ONLY), _comment); static_assert(((_flags) & ILLEGAL_DEV_FLAGS) == 0)
 #define REGISTER_FLOAT_DEDI_ONLY(_name, _def_val, _flags, _comment)                                                        REGISTER_FLOAT(_name, _def_val, ((_flags) | VF_DEDI_ONLY), _comment); static_assert(((_flags) & ILLEGAL_DEV_FLAGS) == 0)
 #define REGISTER_CVAR2_DEDI_ONLY(_name, _var, _def_val, _flags, _comment)                                               REGISTER_CVAR2(_name, _var, _def_val, ((_flags) | VF_DEDI_ONLY), _comment); static_assert(((_flags) & ILLEGAL_DEV_FLAGS) == 0)
 #define REGISTER_CVAR2_CB_DEDI_ONLY(_name, _var, _def_val, _flags, _comment, _onchangefunction)  REGISTER_CVAR2_CB(_name, _var, _def_val, ((_flags) | VF_DEDI_ONLY), _comment, _onchangefunction); static_assert(((_flags) & ILLEGAL_DEV_FLAGS) == 0)
-#define REGISTER_CVAR3_DEDI_ONLY(_name, _var, _def_val, _flags, _comment)                                               REGISTER_CVAR3(_name, _var, _def_val, ((_flags) | VF_DEDI_ONLY), _comment); static_assert(((_flags) & ILLEGAL_DEV_FLAGS) == 0)
-#define REGISTER_CVAR3_CB_DEDI_ONLY(_name, _var, _def_val, _flags, _comment, _onchangefunction)  REGISTER_CVAR3_CB(_name, _var, _def_val, ((_flags) | VF_DEDI_ONLY), _comment, _onchangefunction); static_assert(((_flags) & ILLEGAL_DEV_FLAGS) == 0)
 #define REGISTER_COMMAND_DEDI_ONLY(_name, _func, _flags, _comment)                                                         REGISTER_COMMAND(_name, _func, ((_flags) | VF_DEDI_ONLY), _comment); static_assert(((_flags) & ILLEGAL_DEV_FLAGS) == 0)
 #else
 #define REGISTER_CVAR_DEDI_ONLY(_var, _def_val, _flags, _comment)                                                          REGISTER_CVAR_DEV_ONLY(_var, _def_val, ((_flags) | VF_DEDI_ONLY), _comment)
@@ -1522,12 +1496,9 @@ static void AssertConsoleExists(void)
 #define REGISTER_STRING_CB_DEDI_ONLY(_name, _def_val, _flags, _comment, _onchangefunction)          REGISTER_STRING_CB_DEV_ONLY(_name, _def_val, ((_flags) | VF_DEDI_ONLY), _comment, _onchangefunction)
 #define REGISTER_INT_DEDI_ONLY(_name, _def_val, _flags, _comment)                                                          REGISTER_INT_DEV_ONLY(_name, _def_val, ((_flags) | VF_DEDI_ONLY), _comment)
 #define REGISTER_INT_CB_DEDI_ONLY(_name, _def_val, _flags, _comment, _onchangefunction)                 REGISTER_INT_CB_DEV_ONLY(_name, _def_val, ((_flags) | VF_DEDI_ONLY), _comment, _onchangefunction)
-#define REGISTER_INT64_DEDI_ONLY(_name, _def_val, _flags, _comment)                                                        REGISTER_INT64_DEV_ONLY(_name, _def_val, ((_flags) | VF_DEDI_ONLY), _comment)
 #define REGISTER_FLOAT_DEDI_ONLY(_name, _def_val, _flags, _comment)                                                        REGISTER_FLOAT_DEV_ONLY(_name, _def_val, ((_flags) | VF_DEDI_ONLY), _comment)
 #define REGISTER_CVAR2_DEDI_ONLY(_name, _var, _def_val, _flags, _comment)                                               REGISTER_CVAR2_DEV_ONLY(_name, _var, _def_val, ((_flags) | VF_DEDI_ONLY), _comment)
 #define REGISTER_CVAR2_CB_DEDI_ONLY(_name, _var, _def_val, _flags, _comment, _onchangefunction)  REGISTER_CVAR2_CB_DEV_ONLY(_name, _var, _def_val, ((_flags) | VF_DEDI_ONLY), _comment, _onchangefunction)
-#define REGISTER_CVAR3_DEDI_ONLY(_name, _var, _def_val, _flags, _comment)                                               REGISTER_CVAR3_DEV_ONLY(_name, _var, _def_val, ((_flags) | VF_DEDI_ONLY), _comment)
-#define REGISTER_CVAR3_CB_DEDI_ONLY(_name, _var, _def_val, _flags, _comment, _onchangefunction)  REGISTER_CVAR3_CB_DEV_ONLY(_name, _var, _def_val, ((_flags) | VF_DEDI_ONLY), _comment, _onchangefunction)
 #define REGISTER_COMMAND_DEDI_ONLY(_name, _func, _flags, _comment)                                                         REGISTER_COMMAND_DEV_ONLY(_name, _func, ((_flags) | VF_DEDI_ONLY), _comment)
 #endif // defined(_RELEASE)
 //
@@ -1592,4 +1563,3 @@ inline void CryLogAlways(const char* format, ...)
 }
 
 #endif // EXCLUDE_NORMAL_LOG
-#endif // CRYINCLUDE_CRYCOMMON_ISYSTEM_H

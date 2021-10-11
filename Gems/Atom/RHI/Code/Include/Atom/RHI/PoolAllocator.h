@@ -51,7 +51,7 @@ namespace AZ
             VirtualAddress Allocate(size_t byteCount, size_t byteAlignment) override;
             void DeAllocate(VirtualAddress allocation) override;
             void GarbageCollect() override;
-            void GarbageCollectForce();
+            void GarbageCollectForce() override;
             size_t GetAllocationCount() const override;
             size_t GetAllocatedByteCount() const override;
             const Descriptor& GetDescriptor() const override;

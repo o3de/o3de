@@ -411,7 +411,7 @@ bool AssetBuilderComponent::RunInResidentMode()
         m_running = true;
 
         m_jobThreadDesc.m_name = "Builder Job Thread";
-        m_jobThread = AZStd::thread(AZStd::bind(&AssetBuilderComponent::JobThread, this), &m_jobThreadDesc);
+        m_jobThread = AZStd::thread(m_jobThreadDesc, AZStd::bind(&AssetBuilderComponent::JobThread, this));
 
         AzFramework::EngineConnectionEvents::Bus::Handler::BusConnect(); // Listen for disconnects
 
@@ -683,31 +683,26 @@ void AssetBuilderComponent::ProcessJob(const AssetBuilderSDK::ProcessJobFunction
     AZ_Assert(settingsRegistry != nullptr, "SettingsRegistry must be ready for use in the AssetBuilder.");
 
     // The root path is the cache plus the platform name.
-    AZ::IO::FixedMaxPath newRoot(m_gameCache);
+    AZ::IO::FixedMaxPath newProjectCache(m_gameCache);
     // Check if the platform identifier is a valid "asset platform"
     // If so, use it, other wise use the OS default platform as a fail safe
     // This is to make sure the "debug platform" isn't added as a path segment
-    // the Cache Root folder
+    // the Cache ProjectCache folder
     if (AzFramework::PlatformHelper::GetPlatformIdFromName(request.m_platformInfo.m_identifier) != AzFramework::PlatformId::Invalid)
     {
-        newRoot /= request.m_platformInfo.m_identifier;
+        newProjectCache /= request.m_platformInfo.m_identifier;
     }
     else
     {
-        newRoot /= AzFramework::OSPlatformToDefaultAssetPlatform(AZ_TRAIT_OS_PLATFORM_CODENAME);
+        newProjectCache /= AzFramework::OSPlatformToDefaultAssetPlatform(AZ_TRAIT_OS_PLATFORM_CODENAME);
     }
-
-    // The asset path is root and the lower case game name.
-    AZ::IO::FixedMaxPath newAssets = newRoot;
 
     // Now set the paths and run the job.
     {
         // Save out the prior paths.
-        ScopedAliasSetter assetAliasScope(*ioBase, "@assets@", newAssets.c_str());
-        ScopedAliasSetter rootAliasScope(*ioBase, "@root@", newRoot.c_str());
-        ScopedAliasSetter projectplatformCacheAliasScope(*ioBase, "@projectplatformcache@", newRoot.c_str());
+        ScopedAliasSetter projectPlatformCacheAliasScope(*ioBase, "@products@", newProjectCache.c_str());
         ScopedSettingsRegistrySetter cacheRootFolderScope(*settingsRegistry,
-            AZ::SettingsRegistryMergeUtils::FilePathKey_CacheRootFolder, newRoot.Native());
+            AZ::SettingsRegistryMergeUtils::FilePathKey_CacheRootFolder, newProjectCache.Native());
 
         // Invoke the Process Job function
         job(request, outResponse);

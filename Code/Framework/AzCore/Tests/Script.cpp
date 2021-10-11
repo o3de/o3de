@@ -1382,7 +1382,7 @@ namespace UnitTest
     static int s_errorCount = 0;
 
     IncompleteType* s_globalIncompletePtr = static_cast<IncompleteType*>(AZ_INVALID_POINTER);
-    IncompleteType* s_globalIncompletePtr1 = 0;
+    IncompleteType* s_globalIncompletePtr1 = nullptr;
 
     void GlobalVarSet(int v)
     {
@@ -2234,7 +2234,7 @@ namespace UnitTest
 
         // incomplete types passed by a light-user data (pointer reference)
         AZ_TEST_ASSERT(s_globalIncompletePtr == reinterpret_cast<IncompleteType*>(AZ_INVALID_POINTER));
-        AZ_TEST_ASSERT(s_globalIncompletePtr1 == 0);
+        AZ_TEST_ASSERT(s_globalIncompletePtr1 == nullptr);
 
         script.Execute("globalIncomplete1 = globalIncomplete");
         AZ_TEST_ASSERT(s_globalIncompletePtr1 == s_globalIncompletePtr);
@@ -3157,7 +3157,7 @@ namespace UnitTest
                 char stackOutput[2048];
                 debugContext->StackTrace(stackOutput, AZ_ARRAY_SIZE(stackOutput));
                 AZ_Printf("Script", "%s", stackOutput);
-                AZ_TEST_ASSERT(strstr(stackOutput, "GlobalFunction") != 0);
+                AZ_TEST_ASSERT(strstr(stackOutput, "GlobalFunction") != nullptr);
                 AZ_TEST_ASSERT(breakpoint->m_lineNumber == 20);
             }
             else if (m_numBreakpointHits == 2)
@@ -3193,7 +3193,7 @@ namespace UnitTest
                 char stackOutput[2048];
                 debugContext->StackTrace(stackOutput, AZ_ARRAY_SIZE(stackOutput));
                 AZ_Printf("Script", "%s", stackOutput);
-                AZ_TEST_ASSERT(strstr(stackOutput, "GlobalMult") != 0);
+                AZ_TEST_ASSERT(strstr(stackOutput, "GlobalMult") != nullptr);
                 AZ_TEST_ASSERT(breakpoint->m_lineNumber == 23);
             }
 

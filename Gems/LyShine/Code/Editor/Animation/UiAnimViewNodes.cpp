@@ -8,7 +8,7 @@
 
 
 #include "EditorDefs.h"
-#include "Resource.h"
+#include "Editor/Resource.h"
 #include "UiEditorAnimationBus.h"
 #include "UiAnimViewNodes.h"
 #include "UiAnimViewDopeSheetBase.h"

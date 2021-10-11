@@ -63,23 +63,23 @@ namespace LegacyFramework
 
         // ------------------------------------------------------------------
         // implementation of FrameworkApplicationMessages::Handler
-        virtual bool IsRunningInGUIMode() { return m_desc.m_enableGUI; }
-        virtual bool RequiresGameProject() { return m_desc.m_enableProjectManager; }
-        virtual bool ShouldRunAssetProcessor() { return m_desc.m_shouldRunAssetProcessor; }
-        virtual void* GetMainModule();
-        virtual const char* GetApplicationName();
-        virtual const char* GetApplicationModule();
-        virtual const char* GetApplicationDirectory();
-        virtual const AzFramework::CommandLine* GetCommandLineParser();
-        virtual void TeardownApplicationComponent();
-        virtual void RunAssetProcessor() override;
+        bool IsRunningInGUIMode() override { return m_desc.m_enableGUI; }
+        bool RequiresGameProject() override { return m_desc.m_enableProjectManager; }
+        bool ShouldRunAssetProcessor() override { return m_desc.m_shouldRunAssetProcessor; }
+        void* GetMainModule() override;
+        const char* GetApplicationName() override;
+        const char* GetApplicationModule() override;
+        const char* GetApplicationDirectory() override;
+        const AzFramework::CommandLine* GetCommandLineParser() override;
+        void TeardownApplicationComponent() override;
+        void RunAssetProcessor() override;
         // ------------------------------------------------------------------
 
         void SetSettingsRegistrySpecializations(AZ::SettingsRegistryInterface::Specializations& specializations) override;
 
         // ------------------------------------------------------------------
         // implementation of CoreMessageBus::Handler
-        virtual void OnProjectSet(const char*  /*pathToProject*/);
+        void OnProjectSet(const char*  /*pathToProject*/) override;
         // ------------------------------------------------------------------
 
         // This is called during the bootstrap and makes all the components we should have for SYSTEM minimal functionality.
@@ -114,17 +114,17 @@ namespace LegacyFramework
          * ComponentApplication::RegisterCoreComponents and then register the application
          * specific core components.
          */
-        virtual void RegisterCoreComponents();
+        void RegisterCoreComponents() override;
         AZ::Entity* m_ptrSystemEntity;
 
-        virtual int GetDesiredExitCode() override { return m_desiredExitCode; }
-        virtual void SetDesiredExitCode(int code) override { m_desiredExitCode = code; }
-        virtual bool GetAbortRequested() override { return m_abortRequested; }
-        virtual void SetAbortRequested() override { m_abortRequested = true; }
-        virtual AZStd::string GetApplicationGlobalStoragePath() override;
-        virtual bool IsPrimary() override { return m_isPrimary; }
+        int GetDesiredExitCode() override { return m_desiredExitCode; }
+        void SetDesiredExitCode(int code) override { m_desiredExitCode = code; }
+        bool GetAbortRequested() override { return m_abortRequested; }
+        void SetAbortRequested() override { m_abortRequested = true; }
+        AZStd::string GetApplicationGlobalStoragePath() override;
+        bool IsPrimary() override { return m_isPrimary; }
 
-        virtual bool IsAppConfigWritable() override;
+        bool IsAppConfigWritable() override;
 
         AZ::Entity* m_applicationEntity;
 

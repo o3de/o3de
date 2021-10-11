@@ -124,7 +124,6 @@ namespace AZ
 
         bool MeshDrawPacket::DoUpdate(const Scene& parentScene)
         {
-            AZ_PROFILE_FUNCTION(RPI);
             const ModelLod::Mesh& mesh = m_modelLod->GetMeshes()[m_modelLodMeshIndex];
 
             if (!m_material)
@@ -155,8 +154,6 @@ namespace AZ
 
             auto appendShader = [&](const ShaderCollection::Item& shaderItem)
             {
-                AZ_PROFILE_SCOPE(RPI, "appendShader()");
-
                 // Skip the shader item without creating the shader instance
                 // if the mesh is not going to be rendered based on the draw tag
                 RHI::RHISystemInterface* rhiSystem = RHI::RHISystemInterface::Get();
@@ -256,7 +253,6 @@ namespace AZ
                 Data::Instance<ShaderResourceGroup> drawSrg;
                 if (drawSrgLayout)
                 {
-                    AZ_PROFILE_SCOPE(RPI, "create drawSrg");
                     // If the DrawSrg exists we must create and bind it, otherwise the CommandList will fail validation for SRG being null
                     drawSrg = RPI::ShaderResourceGroup::Create(shader->GetAsset(), shader->GetSupervariantIndex(), drawSrgLayout->GetName());
 

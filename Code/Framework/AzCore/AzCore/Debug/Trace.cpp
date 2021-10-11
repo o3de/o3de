@@ -154,7 +154,7 @@ namespace AZ
     }
 
     bool
-    Trace::WaitForDebugger(float timeoutSeconds/*=-1.f*/)
+    Trace::WaitForDebugger([[maybe_unused]] float timeoutSeconds/*=-1.f*/)
     {
 #if defined(AZ_ENABLE_DEBUG_TOOLS)
         using AZStd::chrono::system_clock;
@@ -174,6 +174,8 @@ namespace AZ
             AZStd::this_thread::sleep_for(milliseconds(1));
         }
         return AZ::Debug::Trace::IsDebuggerPresent();
+#else
+        return false;
 #endif
     }
 
@@ -216,12 +218,14 @@ namespace AZ
 
     void Debug::Trace::Crash()
     {
-        int* p = 0;
+        int* p = nullptr;
         *p = 1;
     }
 
     void Debug::Trace::Terminate(int exitCode)
     {
+        AZ_TracePrintf("Exit", "Called Terminate() with exit code: 0x%x", exitCode);
+        AZ::Debug::Trace::PrintCallstack("Exit");
         Platform::Terminate(exitCode);
     }
 

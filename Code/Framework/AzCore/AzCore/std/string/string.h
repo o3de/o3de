@@ -16,6 +16,7 @@
 #include <AzCore/std/base.h>
 #include <AzCore/std/iterator.h>
 #include <AzCore/std/allocator.h>
+#include <AzCore/std/allocator_traits.h>
 #include <AzCore/std/algorithm.h>
 #include <AzCore/std/typetraits/alignment_of.h>
 #include <AzCore/std/typetraits/is_integral.h>
@@ -167,6 +168,9 @@ namespace AZStd
         {
         }
 
+        // C++23 overload to prevent initializing a string_view via a nullptr or integer type
+        constexpr basic_string(AZStd::nullptr_t) = delete;
+
         inline ~basic_string()
         {
             // destroy the string
@@ -196,6 +200,7 @@ namespace AZStd
         inline this_type& operator=(AZStd::basic_string_view<Element, Traits> view) { return assign(view); }
         inline this_type& operator=(const_pointer ptr)          { return assign(ptr); }
         inline this_type& operator=(Element ch)             { return assign(1, ch); }
+        inline this_type& operator=(AZStd::nullptr_t) = delete;
         inline this_type& operator+=(const this_type& rhs)      { return append(rhs); }
         inline this_type& operator+=(const_pointer ptr)     { return append(ptr); }
         inline this_type& operator+=(Element ch)                { return append(1, ch); }
@@ -862,8 +867,7 @@ namespace AZStd
         inline size_type        max_size() const
         {
             // return maximum possible length of sequence
-            size_type num = m_allocator.get_max_size();
-            return (num <= 1 ? 1 : num - 1);
+            return AZStd::allocator_traits<allocator_type>::max_size(m_allocator) / sizeof(value_type);
         }
 
         inline void resize(size_type newSize)

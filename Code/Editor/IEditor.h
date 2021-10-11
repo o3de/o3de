@@ -701,7 +701,6 @@ struct IEditor
 
     virtual CUIEnumsDatabase* GetUIEnumsDatabase() = 0;
     virtual void AddUIEnums() = 0;
-    virtual void GetMemoryUsage(ICrySizer* pSizer) = 0;
     virtual void ReduceMemory() = 0;
 
     //! Export manager for exporting objects and a terrain from the game to DCC tools

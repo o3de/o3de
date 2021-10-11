@@ -5,10 +5,9 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include <AzCore/IO/SystemFile.h>
+#include <AzCore/IO/Path/Path.h>
 #include <AzCore/std/parallel/lock.h>
 #include <AzCore/std/functional.h> // for function<> in the find files callback.
-#include <AzCore/StringFunc/StringFunc.h>
 #include <AzFramework/Archive/ArchiveFileIO.h>
 #include <AzFramework/Archive/IArchive.h>
 
@@ -188,7 +187,7 @@ namespace AZ::IO
             return IO::ResultCode::Error;
         }
 
-        size_t result = m_archive->FReadRaw(buffer, 1, size, fileHandle);
+        size_t result = m_archive->FRead(buffer, size, fileHandle);
         if (bytesRead)
         {
             *bytesRead = static_cast<AZ::u64>(result);
@@ -213,7 +212,7 @@ namespace AZ::IO
             return IO::ResultCode::Error;
         }
 
-        size_t result = m_archive->FWrite(buffer, 1, size, fileHandle);
+        size_t result = m_archive->FWrite(buffer, size, fileHandle);
         if (bytesWritten)
         {
             *bytesWritten = static_cast<AZ::u64>(result);
@@ -357,14 +356,8 @@ namespace AZ::IO
             return IO::ResultCode::Error;
         }
 
-        // avoid using AZStd::string if possible - use OSString instead of StringFunc
-        AZ::OSString destPath(destinationFilePath);
+        IO::Path destPath(IO::PathView(destinationFilePath).ParentPath());
 
-        AZ::OSString::size_type pos = destPath.find_last_of(AZ_CORRECT_AND_WRONG_FILESYSTEM_SEPARATOR);
-        if (pos != AZ::OSString::npos)
-        {
-            destPath.resize(pos);
-        }
         CreatePath(destPath.c_str());
 
         if (!Open(destinationFilePath, IO::OpenMode::ModeWrite | IO::OpenMode::ModeBinary, destinationFile))
@@ -466,31 +459,25 @@ namespace AZ::IO
             return IO::ResultCode::Error;
         }
 
-        AZStd::fixed_string<AZ_MAX_PATH_LEN> total = filePath;
+        AZ::IO::FixedMaxPath total = filePath;
         if (total.empty())
         {
             return IO::ResultCode::Error;
         }
 
-        if (!total.ends_with(AZ_CORRECT_FILESYSTEM_SEPARATOR) && !total.ends_with(AZ_WRONG_FILESYSTEM_SEPARATOR))
-        {
-            total.append(AZ_CORRECT_FILESYSTEM_SEPARATOR_STRING);
-        }
-
-        total.append(filter);
+        total /= filter;
 
         AZ::IO::ArchiveFileIterator fileIterator = m_archive->FindFirst(total.c_str());
         if (!fileIterator)
         {
             return IO::ResultCode::Success; // its not an actual fatal error to not find anything.
         }
-        for (;fileIterator; fileIterator = m_archive->FindNext(fileIterator))
+        for (; fileIterator; fileIterator = m_archive->FindNext(fileIterator))
         {
-            total = AZStd::fixed_string<AZ_MAX_PATH_LEN>::format("%s/%.*s", filePath, aznumeric_cast<int>(fileIterator.m_filename.size()), fileIterator.m_filename.data());
-            AZStd::optional resolvedAliasLength = ConvertToAlias(total.data(), total.capacity());
-            if (resolvedAliasLength)
+            total = filePath;
+            total /= fileIterator.m_filename;
+            if (ConvertToAlias(total, total))
             {
-                total.resize_no_construct(*resolvedAliasLength);
                 if (!callback(total.c_str()))
                 {
                     break;
@@ -510,8 +497,13 @@ namespace AZ::IO
         const auto fileIt = m_trackedFiles.find(fileHandle);
         if (fileIt != m_trackedFiles.end())
         {
-            AZ_Assert(filenameSize >= fileIt->second.length(), "Filename size %" PRIu64 " is larger than the size of the tracked file %s:%zu", fileIt->second.c_str(), fileIt->second.size());
-            azstrncpy(filename, filenameSize, fileIt->second.c_str(), fileIt->second.length());
+            const AZStd::string_view trackedFileView = fileIt->second.Native();
+            if (filenameSize <= trackedFileView.size())
+            {
+                return false;
+            }
+            size_t trackedFileViewLength = trackedFileView.copy(filename, trackedFileView.size());
+            filename[trackedFileViewLength] = '\0';
             return true;
         }
 
@@ -552,6 +544,16 @@ namespace AZ::IO
             return;
         }
         realUnderlyingFileIO->GetAlias(alias);
+    }
+
+    void ArchiveFileIO::SetDeprecatedAlias(AZStd::string_view oldAlias, AZStd::string_view newAlias)
+    {
+        FileIOBase* realUnderlyingFileIO = FileIOBase::GetDirectInstance();
+        if (!realUnderlyingFileIO)
+        {
+            return;
+        }
+        realUnderlyingFileIO->SetDeprecatedAlias(oldAlias, newAlias);
     }
 
     AZStd::optional<AZ::u64> ArchiveFileIO::ConvertToAlias(char* inOutBuffer, AZ::u64 bufferLength) const

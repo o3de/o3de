@@ -8,7 +8,9 @@
     "canonical_tags": [
         "Gem"
     ],
-    "user_tags": [
-    ],
-    "requirements": ""
+    "user_tags": [],
+    "requirements": "",
+    "dependencies": [
+        "Atom_RHI"
+    ]
 }

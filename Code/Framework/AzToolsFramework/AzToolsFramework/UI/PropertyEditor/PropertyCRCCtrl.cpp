@@ -137,7 +137,7 @@ namespace AzToolsFramework
         Q_UNUSED(debugName)
     }
 
-    AZ::u32 U32CRCHandler::GetHandlerName(void) const
+    AZ::u32 U32CRCHandler::GetHandlerName() const
     {
         return AZ::Edit::UIHandlers::Crc;
     }

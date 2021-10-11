@@ -29,26 +29,13 @@ namespace Multiplayer
         void OnDeactivate(Multiplayer::EntityIsMigrating entityIsMigrating) override;
 
     private:
-        void OnPreRender(float deltaTime, float blendFactor);
+        void OnPreRender(float deltaTime);
         void OnCorrection();
-
-        void OnRotationChangedEvent(const AZ::Quaternion& rotation);
-        void OnTranslationChangedEvent(const AZ::Vector3& translation);
-        void OnScaleChangedEvent(float scale);
-        void OnResetCountChangedEvent();
-
-        void UpdateTargetHostFrameId();
-
-        AZ::Transform m_previousTransform = AZ::Transform::CreateIdentity();
-        AZ::Transform m_targetTransform = AZ::Transform::CreateIdentity();
-
-        AZ::Event<AZ::Quaternion>::Handler m_rotationEventHandler;
-        AZ::Event<AZ::Vector3>::Handler m_translationEventHandler;
-        AZ::Event<float>::Handler m_scaleEventHandler;
-        AZ::Event<uint8_t>::Handler m_resetCountEventHandler;
-
+        void OnParentChanged(NetEntityId parentId);
+        
         EntityPreRenderEvent::Handler m_entityPreRenderEventHandler;
         EntityCorrectionEvent::Handler m_entityCorrectionEventHandler;
+        AZ::Event<NetEntityId>::Handler m_parentChangedEventHandler;
 
         Multiplayer::HostFrameId m_targetHostFrameId = HostFrameId(0);
     };
@@ -63,8 +50,10 @@ namespace Multiplayer
         void OnDeactivate(Multiplayer::EntityIsMigrating entityIsMigrating) override;
 
     private:
-        void OnTransformChangedEvent(const AZ::Transform& worldTm);
+        void OnTransformChangedEvent(const AZ::Transform& localTm, const AZ::Transform& worldTm);
+        void OnParentIdChangedEvent(AZ::EntityId oldParent, AZ::EntityId newParent);
 
         AZ::TransformChangedEvent::Handler m_transformChangedHandler;
+        AZ::ParentChangedEvent::Handler m_parentIdChangedHandler;
     };
 }

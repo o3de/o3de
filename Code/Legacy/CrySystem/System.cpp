@@ -125,14 +125,12 @@ LRESULT WINAPI WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 #include "Log.h"
 
 #include "XML/xml.h"
-#include "XML/ReadWriteXMLSink.h"
 
 #include "LocalizedStringManager.h"
 #include "XML/XmlUtils.h"
 #include "SystemEventDispatcher.h"
 #include "HMDBus.h"
 
-#include "zlib.h"
 #include "RemoteConsole/RemoteConsole.h"
 
 #include <PNoise3.h>
@@ -340,9 +338,6 @@ CSystem::~CSystem()
 //////////////////////////////////////////////////////////////////////////
 void CSystem::Release()
 {
-    //Disconnect the render bus
-    AZ::RenderNotificationsBus::Handler::BusDisconnect();
-
     delete this;
 }
 
@@ -552,29 +547,6 @@ void CSystem::Quit()
     {
         logger->Flush();
     }
-
-    /*
-    * TODO: This call to _exit, _Exit, TerminateProcess etc. needs to
-    * eventually be removed. This causes an extremely early exit before we
-    * actually perform cleanup. When this gets called most managers are
-    * simply never deleted and we leave it to the OS to clean up our mess
-    * which is just really bad practice. However there are LOTS of issues
-    * with shutdown at the moment. Removing this will simply cause
-    * a crash when either the Editor or Launcher initiate shutdown. Both
-    * applications crash differently too. Bugs will be logged about those
-    * issues.
-    */
-#if defined(AZ_RESTRICTED_PLATFORM)
-#define AZ_RESTRICTED_SECTION SYSTEM_CPP_SECTION_4
-#include AZ_RESTRICTED_FILE(System_cpp)
-#endif
-#if defined(AZ_RESTRICTED_SECTION_IMPLEMENTED)
-#undef AZ_RESTRICTED_SECTION_IMPLEMENTED
-#elif defined(WIN32) || defined(WIN64)
-    TerminateProcess(GetCurrentProcess(), m_env.retCode);
-#else
-    exit(m_env.retCode);
-#endif
 
 #ifdef WIN32
     //Post a WM_QUIT message to the Win32 api which causes the message loop to END

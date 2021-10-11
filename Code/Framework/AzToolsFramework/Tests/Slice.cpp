@@ -457,7 +457,7 @@ namespace UnitTest
             {
                 AZ::Debug::TraceMessageBus::Handler::BusConnect();
             }
-            ~SliceTestWarningInterceptor()
+            ~SliceTestWarningInterceptor() override
             {
                 AZ::Debug::TraceMessageBus::Handler::BusDisconnect();
             }

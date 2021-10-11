@@ -75,11 +75,11 @@ namespace AzQtComponents
                 connect(slider, &QSlider::sliderReleased, this, [this] { m_dragging = false; });
             }
         }
-        ~ClickEventFilterPrivate() {}
+        ~ClickEventFilterPrivate() override {}
     signals:
         void clickOnApplication(const QPoint& pos);
     protected:
-        bool eventFilter(QObject* obj, QEvent* event)
+        bool eventFilter(QObject* obj, QEvent* event) override
         {
             if (event->type() == QEvent::MouseButtonRelease && !m_dragging)
             {

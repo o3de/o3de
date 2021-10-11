@@ -204,14 +204,14 @@ namespace AZ
         [[nodiscard]] virtual PreMergeEventHandler RegisterPreMergeEvent(const PreMergeEventCallback& callback) = 0;
         //! Register a function that will be called before a file is merged.
         //! @callback The function to call before a file is merged.
-        [[nodiscard]] virtual PreMergeEventHandler RegisterPreMergeEvent (PreMergeEventCallback&& callback) = 0;
+        [[nodiscard]] virtual PreMergeEventHandler RegisterPreMergeEvent(PreMergeEventCallback&& callback) = 0;
 
         //! Register a function that will be called after a file is merged.
         //! @callback The function to call after a file is merged.
         [[nodiscard]] virtual PostMergeEventHandler RegisterPostMergeEvent(const PostMergeEventCallback& callback) = 0;
         //! Register a function that will be called after a file is merged.
         //! @callback The function to call after a file is merged.
-        [[nodiscard]] virtual PostMergeEventHandler RegisterPostMergeEvent (PostMergeEventCallback&& callback) = 0;
+        [[nodiscard]] virtual PostMergeEventHandler RegisterPostMergeEvent(PostMergeEventCallback&& callback) = 0;
 
         //! Gets the boolean value at the provided path.
         //! @param result The target to write the result to.
@@ -370,6 +370,11 @@ namespace AZ
         //! @param applyPatchSettings The ApplyPatchSettings which are using during JSON Merging
         virtual void SetApplyPatchSettings(const AZ::JsonApplyPatchSettings& applyPatchSettings) = 0;
         virtual void GetApplyPatchSettings(AZ::JsonApplyPatchSettings& applyPatchSettings) = 0;
+
+        //! Stores option to indicate whether the FileIOBase instance should be used for file operations
+        //! @param useFileIo If true the FileIOBase instance will attempted to be used for FileIOBase
+        //! operations before falling back to use SystemFile
+        virtual void SetUseFileIO(bool useFileIo) = 0;
     };
 
     inline SettingsRegistryInterface::Visitor::~Visitor() = default;

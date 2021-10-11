@@ -136,8 +136,8 @@ namespace PhysX::Benchmarks
     class PhysXRigidbodyBenchmarkFixture
         : public PhysXBaseBenchmarkFixture
     {
-    public:
-        virtual void SetUp([[maybe_unused]] const ::benchmark::State &state) override
+    protected:
+        virtual void internalSetUp()
         {
             PhysXBaseBenchmarkFixture::SetUpInternal();
             //need to get the Physics::System to be able to spawn the rigid bodies
@@ -146,10 +146,28 @@ namespace PhysX::Benchmarks
             m_terrainEntity = PhysX::TestUtils::CreateFlatTestTerrain(m_testSceneHandle, RigidBodyConstants::TerrainSize, RigidBodyConstants::TerrainSize);
         }
 
-        virtual void TearDown([[maybe_unused]] const ::benchmark::State &state) override
+        virtual void internalTearDown()
         {
             m_terrainEntity = nullptr;
             PhysXBaseBenchmarkFixture::TearDownInternal();
+        }
+    public:
+        void SetUp(const benchmark::State&) override
+        {
+            internalSetUp();
+        }
+        void SetUp(benchmark::State&) override
+        {
+            internalSetUp();
+        }
+
+        void TearDown(const benchmark::State&) override
+        {
+            internalTearDown();
+        }
+        void TearDown(benchmark::State&) override
+        {
+            internalTearDown();
         }
 
     protected:
@@ -312,10 +330,9 @@ namespace PhysX::Benchmarks
     class PhysXRigidbodyCollisionsBenchmarkFixture
         : public PhysXRigidbodyBenchmarkFixture
     {
-    public:
-        void SetUp(const ::benchmark::State& state) override
+        void internalSetUp() override
         {
-            PhysXRigidbodyBenchmarkFixture::SetUp(state);
+            PhysXRigidbodyBenchmarkFixture::internalSetUp();
 
             m_collisionBeginCount = 0;
             m_collisionPersistCount = 0;
@@ -346,11 +363,30 @@ namespace PhysX::Benchmarks
             m_defaultScene->RegisterSceneCollisionEventHandler(m_onSceneCollisionHandler);
         }
 
-        void TearDown(const ::benchmark::State& state) override
+        void internalTearDown() override
         {
             m_onSceneCollisionHandler.Disconnect();
 
-            PhysXRigidbodyBenchmarkFixture::TearDown(state);
+            PhysXRigidbodyBenchmarkFixture::internalTearDown();
+        }
+
+    public:
+        void SetUp(const benchmark::State&) override
+        {
+            internalSetUp();
+        }
+        void SetUp(benchmark::State&) override
+        {
+            internalSetUp();
+        }
+
+        void TearDown(const benchmark::State&) override
+        {
+            internalTearDown();
+        }
+        void TearDown(benchmark::State&) override
+        {
+            internalTearDown();
         }
 
     protected:

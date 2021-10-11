@@ -28,7 +28,7 @@ namespace ScriptCanvasEditor
     {
         setDynamicSortFilter(true);
 
-        m_showColumn.insert(aznumeric_cast<int>(AssetBrowserEntry::Column::DisplayName));
+        m_shownColumns.insert(aznumeric_cast<int>(AssetBrowserEntry::Column::DisplayName));
 
         UnitTestWidgetNotificationBus::Handler::BusConnect();
 

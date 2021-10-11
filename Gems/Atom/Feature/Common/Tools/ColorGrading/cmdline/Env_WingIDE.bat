@@ -38,8 +38,6 @@ set DCCSI_PY_DEFAULT=%DCCSI_PY_IDE%\python.exe
 set WINGHOME=%PROGRAMFILES(X86)%\Wing Pro %DCCSI_WING_VERSION_MAJOR%.%DCCSI_WING_VERSION_MINOR%
 IF "%WING_PROJ%"=="" (set WING_PROJ=%O3DE_PROJECT_PATH%\.solutions\.wing\o3de_color_grading_%DCCSI_WING_VERSION_MAJOR%x.wpr)
 
-::SETLOCAL ENABLEDELAYEDEXPANSION
-
 echo.
 echo _____________________________________________________________________
 echo.
@@ -54,8 +52,6 @@ echo     WING_PROJ = %WING_PROJ%
 
 :: add to the PATH
 SET PATH=%WINGHOME%;%PATH%
-
-::ENDLOCAL
 
 :: Set flag so we don't initialize dccsi environment twice
 SET DCCSI_ENV_WINGIDE_INIT=1

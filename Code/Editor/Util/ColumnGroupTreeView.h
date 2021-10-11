@@ -44,7 +44,7 @@ public slots:
     QVector<int> Groups() const;
 
 protected:
-    void paintEvent(QPaintEvent* event)
+    void paintEvent(QPaintEvent* event) override
     {
         if (model() && model()->rowCount() > 0)
         {

@@ -169,7 +169,7 @@ AllocationRecords::RegisterAllocation(void* address, size_t byteSize, size_t ali
     ai.m_timeStamp = AZStd::GetTimeNowMicroSecond();
 
     // if we don't have a fileName,lineNum record the stack or if the user requested it.
-    if ((fileName == 0 && m_mode == RECORD_STACK_IF_NO_FILE_LINE) || m_mode == RECORD_FULL)
+    if ((fileName == nullptr && m_mode == RECORD_STACK_IF_NO_FILE_LINE) || m_mode == RECORD_FULL)
     {
         ai.m_stackFrames = m_numStackLevels ? reinterpret_cast<AZ::Debug::StackFrame*>(m_records.get_allocator().allocate(sizeof(AZ::Debug::StackFrame)*m_numStackLevels, 1)) : nullptr;
         if (ai.m_stackFrames)

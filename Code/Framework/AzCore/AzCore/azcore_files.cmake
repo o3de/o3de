@@ -35,6 +35,7 @@ set(FILES
     Asset/AssetInternal/WeakAsset.h
     Casting/lossy_cast.h
     Casting/numeric_cast.h
+    Casting/numeric_cast_internal.h
     Component/Component.cpp
     Component/Component.h
     Component/ComponentApplication.cpp
@@ -165,6 +166,8 @@ set(FILES
     IO/FileIO.cpp
     IO/FileIO.h
     IO/FileIOEventBus.h
+    IO/FileReader.cpp
+    IO/FileReader.h
     IO/IOUtils.h
     IO/IOUtils.cpp
     IO/IStreamer.h
@@ -176,6 +179,8 @@ set(FILES
     IO/Path/Path.cpp
     IO/Path/Path.h
     IO/Path/Path.inl
+    IO/Path/PathIterable.inl
+    IO/Path/PathParser.inl
     IO/Path/Path_fwd.h
     IO/SystemFile.cpp
     IO/SystemFile.h
@@ -440,6 +445,7 @@ set(FILES
     RTTI/AttributeReader.h
     RTTI/AzStdOnDemandPrettyName.inl
     RTTI/AzStdOnDemandReflection.inl
+    RTTI/AzStdOnDemandReflectionSpecializations.cpp
     RTTI/AzStdOnDemandReflectionLuaFunctions.inl
     RTTI/BehaviorContext.cpp
     RTTI/BehaviorContext.h
@@ -560,6 +566,8 @@ set(FILES
     Settings/SettingsRegistryMergeUtils.h
     Settings/SettingsRegistryScriptUtils.cpp
     Settings/SettingsRegistryScriptUtils.h
+    Settings/SettingsRegistryVisitorUtils.cpp
+    Settings/SettingsRegistryVisitorUtils.h
     State/HSM.cpp
     State/HSM.h
     Statistics/NamedRunningStatistic.h
@@ -627,10 +635,14 @@ set(FILES
     Task/TaskGraph.cpp
     Task/TaskGraph.h
     Task/TaskGraph.inl
+    Task/TaskGraphSystemComponent.h
+    Task/TaskGraphSystemComponent.cpp
     Threading/ThreadSafeDeque.h
     Threading/ThreadSafeDeque.inl
     Threading/ThreadSafeObject.h
     Threading/ThreadSafeObject.inl
+    Threading/ThreadUtils.h
+    Threading/ThreadUtils.cpp
     Time/ITime.h
     Time/TimeSystemComponent.cpp
     Time/TimeSystemComponent.h

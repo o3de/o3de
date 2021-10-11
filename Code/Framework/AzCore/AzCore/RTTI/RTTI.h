@@ -5,8 +5,8 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef AZCORE_RTTI_H
-#define AZCORE_RTTI_H
+
+#pragma once
 
 #include <AzCore/RTTI/TypeInfo.h>
 #include <AzCore/Module/Environment.h>
@@ -44,21 +44,9 @@ namespace AZ
     /// RTTI typeId
     typedef void (* RTTI_EnumCallback)(const AZ::TypeId& /*typeId*/, void* /*userData*/);
 
-    // Disabling missing override warning because we intentionally want to allow for declaring RTTI base classes that don't impelment RTTI.
-#if defined(AZ_COMPILER_CLANG)
-#   define AZ_PUSH_DISABLE_OVERRIDE_WARNING \
-    _Pragma("clang diagnostic push")        \
-    _Pragma("clang diagnostic ignored \"-Winconsistent-missing-override\"")
-#   define AZ_POP_DISABLE_OVERRIDE_WARNING \
-    _Pragma("clang diagnostic pop")
-#else
-#   define AZ_PUSH_DISABLE_OVERRIDE_WARNING
-#   define AZ_POP_DISABLE_OVERRIDE_WARNING
-#endif
-
     // We require AZ_TYPE_INFO to be declared
     #define AZ_RTTI_COMMON()                                                                                                       \
-    AZ_PUSH_DISABLE_OVERRIDE_WARNING                                                                                               \
+    AZ_PUSH_DISABLE_WARNING(26433, "-Winconsistent-missing-override")                                                              \
     void RTTI_Enable();                                                                                                            \
     virtual inline const AZ::TypeId& RTTI_GetType() const { return RTTI_Type(); }                                                  \
     virtual inline const char*      RTTI_GetTypeName() const { return RTTI_TypeName(); }                                           \
@@ -66,7 +54,7 @@ namespace AZ
     virtual void                    RTTI_EnumTypes(AZ::RTTI_EnumCallback cb, void* userData) { RTTI_EnumHierarchy(cb, userData); } \
     static inline const AZ::TypeId& RTTI_Type() { return TYPEINFO_Uuid(); }                                                        \
     static inline const char*       RTTI_TypeName() { return TYPEINFO_Name(); }                                                    \
-    AZ_POP_DISABLE_OVERRIDE_WARNING
+    AZ_POP_DISABLE_WARNING
 
     //#define AZ_RTTI_1(_1)           static_assert(false,"You must provide a valid classUuid!")
 
@@ -74,8 +62,10 @@ namespace AZ
     #define AZ_RTTI_1()             AZ_RTTI_COMMON()                                                                        \
     static bool                 RTTI_IsContainType(const AZ::TypeId& id) { return id == RTTI_Type(); }                      \
     static void                 RTTI_EnumHierarchy(AZ::RTTI_EnumCallback cb, void* userData) { cb(RTTI_Type(), userData); } \
+    AZ_PUSH_DISABLE_WARNING(26433, "-Winconsistent-missing-override")                                                       \
     virtual inline const void*  RTTI_AddressOf(const AZ::TypeId& id) const { return (id == RTTI_Type()) ? this : nullptr; } \
-    virtual inline void*        RTTI_AddressOf(const AZ::TypeId& id) { return (id == RTTI_Type()) ? this : nullptr; }
+    virtual inline void*        RTTI_AddressOf(const AZ::TypeId& id) { return (id == RTTI_Type()) ? this : nullptr; }       \
+    AZ_POP_DISABLE_WARNING
 
     /// AZ_RTTI(BaseClass)
     #define AZ_RTTI_2(_1)           AZ_RTTI_COMMON()                                           \
@@ -85,14 +75,14 @@ namespace AZ
     static void                 RTTI_EnumHierarchy(AZ::RTTI_EnumCallback cb, void* userData) { \
         cb(RTTI_Type(), userData);                                                             \
         AZ::Internal::RttiCaller<_1>::RTTI_EnumHierarchy(cb, userData); }                      \
-    AZ_PUSH_DISABLE_OVERRIDE_WARNING                                                           \
+    AZ_PUSH_DISABLE_WARNING(26433, "-Winconsistent-missing-override")                          \
     virtual inline const void*  RTTI_AddressOf(const AZ::TypeId& id) const {                   \
         if (id == RTTI_Type()) { return this; }                                                \
         return AZ::Internal::RttiCaller<_1>::RTTI_AddressOf(this, id); }                       \
     virtual inline void*        RTTI_AddressOf(const AZ::TypeId& id) {                         \
         if (id == RTTI_Type()) { return this; }                                                \
         return AZ::Internal::RttiCaller<_1>::RTTI_AddressOf(this, id); }                       \
-    AZ_POP_DISABLE_OVERRIDE_WARNING
+    AZ_POP_DISABLE_WARNING
 
     /// AZ_RTTI(BaseClass1,BaseClass2)
     #define AZ_RTTI_3(_1, _2)        AZ_RTTI_COMMON()                                                \
@@ -104,7 +94,7 @@ namespace AZ
         cb(RTTI_Type(), userData);                                                                   \
         AZ::Internal::RttiCaller<_1>::RTTI_EnumHierarchy(cb, userData);                              \
         AZ::Internal::RttiCaller<_2>::RTTI_EnumHierarchy(cb, userData); }                            \
-    AZ_PUSH_DISABLE_OVERRIDE_WARNING                                                                 \
+    AZ_PUSH_DISABLE_WARNING(26433, "-Winconsistent-missing-override")                                \
     virtual inline const void*  RTTI_AddressOf(const AZ::TypeId& id) const {                         \
         if (id == RTTI_Type()) { return this; }                                                      \
         const void* r = AZ::Internal::RttiCaller<_1>::RTTI_AddressOf(this, id); if (r) { return r; } \
@@ -113,7 +103,7 @@ namespace AZ
         if (id == RTTI_Type()) { return this; }                                                      \
         void* r = AZ::Internal::RttiCaller<_1>::RTTI_AddressOf(this, id); if (r) { return r; }       \
         return AZ::Internal::RttiCaller<_2>::RTTI_AddressOf(this, id); }                             \
-    AZ_POP_DISABLE_OVERRIDE_WARNING
+    AZ_POP_DISABLE_WARNING
 
     /// AZ_RTTI(BaseClass1,BaseClass2,BaseClass3)
     #define AZ_RTTI_4(_1, _2, _3)    AZ_RTTI_COMMON()                                                \
@@ -127,7 +117,7 @@ namespace AZ
         AZ::Internal::RttiCaller<_1>::RTTI_EnumHierarchy(cb, userData);                              \
         AZ::Internal::RttiCaller<_2>::RTTI_EnumHierarchy(cb, userData);                              \
         AZ::Internal::RttiCaller<_3>::RTTI_EnumHierarchy(cb, userData); }                            \
-    AZ_PUSH_DISABLE_OVERRIDE_WARNING                                                                 \
+    AZ_PUSH_DISABLE_WARNING(26433, "-Winconsistent-missing-override")                                \
     virtual inline const void*  RTTI_AddressOf(const AZ::TypeId& id) const {                         \
         if (id == RTTI_Type()) { return this; }                                                      \
         const void* r = AZ::Internal::RttiCaller<_1>::RTTI_AddressOf(this, id); if (r) { return r; } \
@@ -138,7 +128,7 @@ namespace AZ
         void* r = AZ::Internal::RttiCaller<_1>::RTTI_AddressOf(this, id); if (r) { return r; }       \
         r = AZ::Internal::RttiCaller<_2>::RTTI_AddressOf(this, id); if (r) { return r; }             \
         return AZ::Internal::RttiCaller<_3>::RTTI_AddressOf(this, id); }                             \
-    AZ_POP_DISABLE_OVERRIDE_WARNING
+    AZ_POP_DISABLE_WARNING
 
     /// AZ_RTTI(BaseClass1,BaseClass2,BaseClass3,BaseClass4)
     #define AZ_RTTI_5(_1, _2, _3, _4)  AZ_RTTI_COMMON()                                              \
@@ -154,7 +144,7 @@ namespace AZ
         AZ::Internal::RttiCaller<_2>::RTTI_EnumHierarchy(cb, userData);                              \
         AZ::Internal::RttiCaller<_3>::RTTI_EnumHierarchy(cb, userData);                              \
         AZ::Internal::RttiCaller<_4>::RTTI_EnumHierarchy(cb, userData); }                            \
-    AZ_PUSH_DISABLE_OVERRIDE_WARNING                                                                 \
+    AZ_PUSH_DISABLE_WARNING(26433, "-Winconsistent-missing-override")                                \
     virtual inline const void*  RTTI_AddressOf(const AZ::TypeId& id) const {                         \
         if (id == RTTI_Type()) { return this; }                                                      \
         const void* r = AZ::Internal::RttiCaller<_1>::RTTI_AddressOf(this, id); if (r) { return r; } \
@@ -167,7 +157,7 @@ namespace AZ
         r = AZ::Internal::RttiCaller<_2>::RTTI_AddressOf(this, id); if (r) { return r; }             \
         r = AZ::Internal::RttiCaller<_3>::RTTI_AddressOf(this, id); if (r) { return r; }             \
         return AZ::Internal::RttiCaller<_4>::RTTI_AddressOf(this, id); }                             \
-    AZ_POP_DISABLE_OVERRIDE_WARNING
+    AZ_POP_DISABLE_WARNING
 
     /// AZ_RTTI(BaseClass1,BaseClass2,BaseClass3,BaseClass4,BaseClass5)
     #define AZ_RTTI_6(_1, _2, _3, _4, _5)  AZ_RTTI_COMMON()                                          \
@@ -185,7 +175,7 @@ namespace AZ
         AZ::Internal::RttiCaller<_3>::RTTI_EnumHierarchy(cb, userData);                              \
         AZ::Internal::RttiCaller<_4>::RTTI_EnumHierarchy(cb, userData);                              \
         AZ::Internal::RttiCaller<_5>::RTTI_EnumHierarchy(cb, userData); }                            \
-    AZ_PUSH_DISABLE_OVERRIDE_WARNING                                                                 \
+    AZ_PUSH_DISABLE_WARNING(26433, "-Winconsistent-missing-override")                                \
     virtual inline const void*  RTTI_AddressOf(const AZ::TypeId& id) const {                         \
         if (id == RTTI_Type()) { return this; }                                                      \
         const void* r = AZ::Internal::RttiCaller<_1>::RTTI_AddressOf(this, id); if (r) { return r; } \
@@ -200,7 +190,7 @@ namespace AZ
         r = AZ::Internal::RttiCaller<_3>::RTTI_AddressOf(this, id); if (r) { return r; }             \
         r = AZ::Internal::RttiCaller<_4>::RTTI_AddressOf(this, id); if (r) { return r; }             \
         return AZ::Internal::RttiCaller<_5>::RTTI_AddressOf(this, id); }                             \
-    AZ_POP_DISABLE_OVERRIDE_WARNING
+    AZ_POP_DISABLE_WARNING
 
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // MACRO specialization to allow optional parameters for template version of AZ_RTTI
@@ -951,10 +941,7 @@ namespace AZ
         {
             return AZStd::shared_ptr<DestType>(ptr, castPtr);
         }
-        else
-        {
-            return AZStd::shared_ptr<DestType>();
-        }
+        return AZStd::shared_ptr<DestType>();
     }
 
     // RttiCast specialization for intrusive_ptr.
@@ -1077,7 +1064,6 @@ namespace AZ
     {
         return AZ::Internal::RttiIsTypeOfIdHelper<U>::Check(id, data, typename HasAZRtti<AZStd::remove_pointer_t<U>>::kind_type());
     }
+
 } // namespace AZ
 
-#endif // AZCORE_RTTI_H
-#pragma once

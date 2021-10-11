@@ -42,7 +42,7 @@ class CLightAnimWrapper
 {
 public:
     // ILightAnimWrapper interface
-    virtual bool Resolve();
+    bool Resolve() override;
 
 public:
     static CLightAnimWrapper* Create(const char* name);
@@ -80,119 +80,116 @@ public:
     CMovieSystem(ISystem* system);
     CMovieSystem();
 
-    void Release() { delete this; };
+    void Release() override { delete this; };
 
-    void SetUser(IMovieUser* pUser) { m_pUser = pUser; }
-    IMovieUser* GetUser() { return m_pUser; }
+    void SetUser(IMovieUser* pUser) override { m_pUser = pUser; }
+    IMovieUser* GetUser() override { return m_pUser; }
 
-    ISystem* GetSystem() { return m_pSystem; }
+    ISystem* GetSystem() override { return m_pSystem; }
 
-    IAnimSequence* CreateSequence(const char* sequence, bool bLoad = false, uint32 id = 0, SequenceType = kSequenceTypeDefault, AZ::EntityId entityId = AZ::EntityId());
+    IAnimSequence* CreateSequence(const char* sequence, bool bLoad = false, uint32 id = 0, SequenceType = kSequenceTypeDefault, AZ::EntityId entityId = AZ::EntityId()) override;
 
-    void AddSequence(IAnimSequence* pSequence);
-    void RemoveSequence(IAnimSequence* pSequence);
+    void AddSequence(IAnimSequence* pSequence) override;
+    void RemoveSequence(IAnimSequence* pSequence) override;
     IAnimSequence* FindLegacySequenceByName(const char* sequence) const override;
     IAnimSequence* FindSequence(const AZ::EntityId& componentEntitySequenceId) const override;
     IAnimSequence* FindSequenceById(uint32 id) const override;
-    IAnimSequence* GetSequence(int i) const;
-    int GetNumSequences() const;
-    IAnimSequence* GetPlayingSequence(int i) const;
-    int GetNumPlayingSequences() const;
-    bool IsCutScenePlaying() const;
+    IAnimSequence* GetSequence(int i) const override;
+    int GetNumSequences() const override;
+    IAnimSequence* GetPlayingSequence(int i) const override;
+    int GetNumPlayingSequences() const override;
+    bool IsCutScenePlaying() const override;
 
     uint32 GrabNextSequenceId() override
     { return m_nextSequenceId++; }
     void OnSetSequenceId(uint32 sequenceId) override;
 
-    int OnSequenceRenamed(const char* before, const char* after);
-    int OnCameraRenamed(const char* before, const char* after);
+    int OnSequenceRenamed(const char* before, const char* after) override;
+    int OnCameraRenamed(const char* before, const char* after) override;
 
-    bool AddMovieListener(IAnimSequence* pSequence, IMovieListener* pListener);
-    bool RemoveMovieListener(IAnimSequence* pSequence, IMovieListener* pListener);
+    bool AddMovieListener(IAnimSequence* pSequence, IMovieListener* pListener) override;
+    bool RemoveMovieListener(IAnimSequence* pSequence, IMovieListener* pListener) override;
 
-    void RemoveAllSequences();
+    void RemoveAllSequences() override;
 
     //////////////////////////////////////////////////////////////////////////
     // Sequence playback.
     //////////////////////////////////////////////////////////////////////////
     void PlaySequence(const char* sequence, IAnimSequence* parentSeq = NULL, bool bResetFX = true,
-        bool bTrackedSequence = false, float startTime = -FLT_MAX, float endTime = -FLT_MAX);
+        bool bTrackedSequence = false, float startTime = -FLT_MAX, float endTime = -FLT_MAX) override;
     void PlaySequence(IAnimSequence* seq, IAnimSequence* parentSeq = NULL, bool bResetFX = true,
-        bool bTrackedSequence = false, float startTime = -FLT_MAX, float endTime = -FLT_MAX);
-    void PlayOnLoadSequences();
+        bool bTrackedSequence = false, float startTime = -FLT_MAX, float endTime = -FLT_MAX) override;
+    void PlayOnLoadSequences() override;
 
-    bool StopSequence(const char* sequence);
-    bool StopSequence(IAnimSequence* seq);
-    bool AbortSequence(IAnimSequence* seq, bool bLeaveTime = false);
+    bool StopSequence(const char* sequence) override;
+    bool StopSequence(IAnimSequence* seq) override;
+    bool AbortSequence(IAnimSequence* seq, bool bLeaveTime = false) override;
 
-    void StopAllSequences();
-    void StopAllCutScenes();
+    void StopAllSequences() override;
+    void StopAllCutScenes() override;
     void Pause(bool bPause);
 
-    void Reset(bool bPlayOnReset, bool bSeekToStart);
-    void StillUpdate();
-    void PreUpdate(const float dt);
-    void PostUpdate(const float dt);
-    void Render();
+    void Reset(bool bPlayOnReset, bool bSeekToStart) override;
+    void StillUpdate() override;
+    void PreUpdate(const float dt) override;
+    void PostUpdate(const float dt) override;
+    void Render() override;
 
-    void EnableFixedStepForCapture(float step);
-    void DisableFixedStepForCapture();
-    void StartCapture(const ICaptureKey& key, int frame);
-    void EndCapture();
-    void ControlCapture();
-    bool IsCapturing() const;
+    void EnableFixedStepForCapture(float step) override;
+    void DisableFixedStepForCapture() override;
+    void StartCapture(const ICaptureKey& key, int frame) override;
+    void EndCapture() override;
+    void ControlCapture() override;
+    bool IsCapturing() const override;
 
-    bool IsPlaying(IAnimSequence* seq) const;
+    bool IsPlaying(IAnimSequence* seq) const override;
 
-    void Pause();
-    void Resume();
+    void Pause() override;
+    void Resume() override;
 
-    virtual void PauseCutScenes();
-    virtual void ResumeCutScenes();
+    void PauseCutScenes() override;
+    void ResumeCutScenes() override;
 
-    void SetRecording(bool recording) { m_bRecording = recording; };
-    bool IsRecording() const { return m_bRecording; };
+    void SetRecording(bool recording) override { m_bRecording = recording; };
+    bool IsRecording() const override { return m_bRecording; };
 
-    void EnableCameraShake(bool bEnabled){ m_bEnableCameraShake = bEnabled; };
-    bool IsCameraShakeEnabled() const {return m_bEnableCameraShake; };
+    void EnableCameraShake(bool bEnabled) override{ m_bEnableCameraShake = bEnabled; };
 
-    void SetCallback(IMovieCallback* pCallback) { m_pCallback = pCallback; }
-    IMovieCallback* GetCallback() { return m_pCallback; }
+    void SetCallback(IMovieCallback* pCallback) override { m_pCallback = pCallback; }
+    IMovieCallback* GetCallback() override { return m_pCallback; }
     void Callback(IMovieCallback::ECallbackReason Reason, IAnimNode* pNode);
 
-    const SCameraParams& GetCameraParams() const { return m_ActiveCameraParams; }
-    void SetCameraParams(const SCameraParams& Params);
+    const SCameraParams& GetCameraParams() const override { return m_ActiveCameraParams; }
+    void SetCameraParams(const SCameraParams& Params) override;
 
-    void SendGlobalEvent(const char* pszEvent);
-    void SetSequenceStopBehavior(ESequenceStopBehavior behavior);
-    IMovieSystem::ESequenceStopBehavior GetSequenceStopBehavior();
+    void SendGlobalEvent(const char* pszEvent) override;
+    void SetSequenceStopBehavior(ESequenceStopBehavior behavior) override;
+    IMovieSystem::ESequenceStopBehavior GetSequenceStopBehavior() override;
 
-    float GetPlayingTime(IAnimSequence* pSeq);
-    bool SetPlayingTime(IAnimSequence* pSeq, float fTime);
+    float GetPlayingTime(IAnimSequence* pSeq) override;
+    bool SetPlayingTime(IAnimSequence* pSeq, float fTime) override;
 
-    float GetPlayingSpeed(IAnimSequence* pSeq);
-    bool SetPlayingSpeed(IAnimSequence* pSeq, float fTime);
+    float GetPlayingSpeed(IAnimSequence* pSeq) override;
+    bool SetPlayingSpeed(IAnimSequence* pSeq, float fTime) override;
 
-    bool GetStartEndTime(IAnimSequence* pSeq, float& fStartTime, float& fEndTime);
-    bool SetStartEndTime(IAnimSequence* pSeq, const float fStartTime, const float fEndTime);
+    bool GetStartEndTime(IAnimSequence* pSeq, float& fStartTime, float& fEndTime) override;
+    bool SetStartEndTime(IAnimSequence* pSeq, const float fStartTime, const float fEndTime) override;
 
-    void GoToFrame(const char* seqName, float targetFrame);
+    void GoToFrame(const char* seqName, float targetFrame) override;
 
-    const char* GetOverrideCamName() const
+    const char* GetOverrideCamName() const override
     { return m_mov_overrideCam->GetString(); }
 
-    virtual bool IsPhysicsEventsEnabled() const { return m_bPhysicsEventsEnabled; }
-    virtual void EnablePhysicsEvents(bool enable) { m_bPhysicsEventsEnabled = enable; }
+    bool IsPhysicsEventsEnabled() const override { return m_bPhysicsEventsEnabled; }
+    void EnablePhysicsEvents(bool enable) override { m_bPhysicsEventsEnabled = enable; }
 
-    virtual void EnableBatchRenderMode(bool bOn) { m_bBatchRenderMode = bOn; }
-    virtual bool IsInBatchRenderMode() const { return m_bBatchRenderMode; }
-
-    ILightAnimWrapper* CreateLightAnimWrapper(const char* name) const;
+    void EnableBatchRenderMode(bool bOn) override { m_bBatchRenderMode = bOn; }
+    bool IsInBatchRenderMode() const override { return m_bBatchRenderMode; }
 
     void SerializeNodeType(AnimNodeType& animNodeType, XmlNodeRef& xmlNode, bool bLoading, const uint version, int flags) override;
-    virtual void LoadParamTypeFromXml(CAnimParamType& animParamType, const XmlNodeRef& xmlNode, const uint version) override;
-    virtual void SaveParamTypeToXml(const CAnimParamType& animParamType, XmlNodeRef& xmlNode) override;
-    virtual void SerializeParamType(CAnimParamType& animParamType, XmlNodeRef& xmlNode, bool bLoading, const uint version);
+    void LoadParamTypeFromXml(CAnimParamType& animParamType, const XmlNodeRef& xmlNode, const uint version) override;
+    void SaveParamTypeToXml(const CAnimParamType& animParamType, XmlNodeRef& xmlNode) override;
+    void SerializeParamType(CAnimParamType& animParamType, XmlNodeRef& xmlNode, bool bLoading, const uint version) override;
 
     static const char* GetParamTypeName(const CAnimParamType& animParamType);
 
@@ -229,8 +226,8 @@ private:
     void UpdateInternal(const float dt, const bool bPreUpdate);
 
 #ifdef MOVIESYSTEM_SUPPORT_EDITING
-    virtual AnimNodeType GetNodeTypeFromString(const char* pString) const;
-    virtual CAnimParamType GetParamTypeFromString(const char* pString) const;
+    AnimNodeType GetNodeTypeFromString(const char* pString) const override;
+    CAnimParamType GetParamTypeFromString(const char* pString) const override;
 #endif
 
     ISystem* m_pSystem;

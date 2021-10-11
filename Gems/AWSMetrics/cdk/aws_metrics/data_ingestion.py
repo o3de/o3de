@@ -69,14 +69,14 @@ class DataIngestion:
         cfn_rest_api.add_property_deletion_override("BodyS3Location")
         cfn_rest_api.add_property_override("FailOnWarnings", True)
 
-        api_id_output = core.CfnOutput(
+        core.CfnOutput(
             self._stack,
             id='RESTApiId',
             description='Service API Id for the analytics pipeline',
             export_name=f"{application_name}:RestApiId",
             value=self._rest_api.rest_api_id)
 
-        stage_output = core.CfnOutput(
+        core.CfnOutput(
             self._stack,
             id='RESTApiStage',
             description='Stage for the REST API deployment',

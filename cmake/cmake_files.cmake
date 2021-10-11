@@ -15,7 +15,6 @@ set(FILES
     Configurations.cmake
     Dependencies.cmake
     Deployment.cmake
-    EngineJson.cmake
     FileUtil.cmake
     Findo3de.cmake
     Gems.cmake
@@ -28,6 +27,7 @@ set(FILES
     LYPython.cmake
     LYWrappers.cmake
     Monolithic.cmake
+    O3DEJson.cmake
     OutputDirectory.cmake
     Packaging.cmake
     PAL.cmake

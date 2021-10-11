@@ -84,6 +84,8 @@ namespace AssetProcessor
             return !m_platformIdentifierStack.empty() ? AZ::SettingsRegistryInterface::VisitResponse::Continue
                 : AZ::SettingsRegistryInterface::VisitResponse::Skip;
         }
+
+        using AZ::SettingsRegistryInterface::Visitor::Visit;
         void Visit([[maybe_unused]] AZStd::string_view path, AZStd::string_view valueName, AZ::SettingsRegistryInterface::Type, AZStd::string_view value) override
         {
             if (m_platformIdentifierStack.empty())
@@ -114,6 +116,7 @@ namespace AssetProcessor
     struct MetaDataTypesVisitor
         : AZ::SettingsRegistryInterface::Visitor
     {
+        using AZ::SettingsRegistryInterface::Visitor::Visit;
         void Visit([[maybe_unused]] AZStd::string_view path, AZStd::string_view valueName, AZ::SettingsRegistryInterface::Type, AZStd::string_view value) override
         {
             m_metaDataTypes.push_back({ AZ::IO::PathView(valueName, AZ::IO::PosixPathSeparator).LexicallyNormal().String(), value });
