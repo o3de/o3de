@@ -45,7 +45,8 @@ namespace TestImpact
         using Command = typename JobInfo::Command;
         using JobPayload = Payload;
         using Job = Job<JobInfo, Payload>;
-        using JobDataMap = JobDataMap<Job>;
+        using PayloadMap = typename JobRunner<Job>::PayloadMap;
+        using JobDataMap = typename JobRunner<Job>::JobDataMap;
 
         //!
         using JobCallback = AZStd::function<ProcessCallbackResult(const JobInfo& jobInfo, const JobMeta& meta, AZStd::string&& stdOut, AZStd::string&& stdErr)>;
@@ -72,7 +73,7 @@ namespace TestImpact
         //! @returns The result of the run sequence and the jobs that the sequence produced.
         AZStd::pair<ProcessSchedulerResult, AZStd::vector<Job>> ExecuteJobs(
             const AZStd::vector<JobInfo>& jobInfos,
-            PayloadMapProducer<Job> payloadMapProducer,
+            typename JobRunner<Job>::PayloadMapProducer payloadMapProducer,
             StdOutputRouting stdOutRouting,
             StdErrorRouting stdErrRouting,
             AZStd::optional<AZStd::chrono::milliseconds> jobTimeout,
@@ -93,7 +94,7 @@ namespace TestImpact
     template<typename Data, typename Payload>
     AZStd::pair<ProcessSchedulerResult, AZStd::vector<typename TestJobRunner<Data, Payload>::Job>> TestJobRunner<Data, Payload>::ExecuteJobs(
         const AZStd::vector<JobInfo>& jobInfos,
-        PayloadMapProducer<Job> payloadMapProducer,
+        typename JobRunner<Job>::PayloadMapProducer payloadMapProducer,
         StdOutputRouting stdOutRouting,
         StdErrorRouting stdErrRouting,
         AZStd::optional<AZStd::chrono::milliseconds> jobTimeout,

@@ -17,45 +17,41 @@
 #include <AzCore/std/string/string.h>
 
 namespace TestImpact
-{
-    //! Callback for job completion/failure.
-    //! @param jobInfo The job information associated with this job.
-    //! @param meta The meta-data about the job run.
-    //! @param std The standard output and standard error of the process running the job.
-    template<typename Job>
-    using JobCallback = AZStd::function<ProcessCallbackResult(const typename Job::Info& jobInfo, const JobMeta& meta, StdContent&& std)>;
-
-    //! Callback for job standard output/error buffer consumption in real-time.
-    //! @note The full standard output/error data is available to all capturing jobs at their end of life regardless of this callback.
-    //! @param jobInfo The job information associated with this job.
-    //! @param stdOutput The total accumulated standard output buffer.
-    //! @param stdError The total accumulated standard error buffer.
-    //! @param stdDelta The standard output/error buffer data since the last callback.
-    template<typename Job>
-    using JobStdBufferCallback = AZStd::function<ProcessCallbackResult(
-        const typename Job::Info& jobInfo, const AZStd::string& stdOutput, const AZStd::string& stdError, StdContent&& stdDelta)>;
-
-    //! The payloads produced by the job-specific payload producer in the form of a map associating each job id with the job's payload.
-    template<typename Job>
-    using PayloadMap = AZStd::unordered_map<typename Job::Info::IdType, AZStd::optional<typename Job::Payload>>;
-
-    //! The map used by the client to associate the job information and meta-data with the job ids.
-    template<typename Job>
-    using JobDataMap = AZStd::unordered_map<typename Job::Info::IdType, AZStd::pair<JobMeta, const typename Job::Info*>>;
-
-    //! The callback for producing the payloads for the jobs after all jobs have finished executing.
-    //! @param jobInfos The information for each job run.
-    //! @param jobDataMap The job data (in the form of job info and meta-data) for each job run.
-    template<typename Job>
-    using PayloadMapProducer = AZStd::function<PayloadMap<Job>(const JobDataMap<Job>& jobDataMap)>;
-
+{    
     //! Generic job runner that launches a process for each job, records metrics about each job run and hands the payload artifacts
     //! produced by each job to the client before compositing the metrics and payload artifacts for each job into a single interface
     //! to be consumed by the client.
-    template<typename JobT>
+    template<typename Job>
     class JobRunner
     {
     public:
+        //! The payloads produced by the job-specific payload producer in the form of a map associating each job id with the job's payload.
+        using PayloadMap = AZStd::unordered_map<typename Job::Info::IdType, AZStd::optional<typename Job::Payload>>;
+
+        //! The map used by the client to associate the job information and meta-data with the job ids.
+        using JobDataMap = AZStd::unordered_map<typename Job::Info::IdType, AZStd::pair<JobMeta, const typename Job::Info*>>;
+
+        //! The callback for producing the payloads for the jobs after all jobs have finished executing.
+        //! @param jobInfos The information for each job run.
+        //! @param jobDataMap The job data (in the form of job info and meta-data) for each job run.
+        using PayloadMapProducer = AZStd::function<PayloadMap(const JobDataMap& jobDataMap)>;
+
+        //! Callback for job completion/failure.
+        //! @param jobInfo The job information associated with this job.
+        //! @param meta The meta-data about the job run.
+        //! @param std The standard output and standard error of the process running the job.
+        using JobCallback =
+            AZStd::function<ProcessCallbackResult(const typename Job::Info& jobInfo, const JobMeta& meta, StdContent&& std)>;
+
+        //! Callback for job standard output/error buffer consumption in real-time.
+        //! @note The full standard output/error data is available to all capturing jobs at their end of life regardless of this callback.
+        //! @param jobInfo The job information associated with this job.
+        //! @param stdOutput The total accumulated standard output buffer.
+        //! @param stdError The total accumulated standard error buffer.
+        //! @param stdDelta The standard output/error buffer data since the last callback.
+        using JobStdBufferCallback = AZStd::function<ProcessCallbackResult(
+            const typename Job::Info& jobInfo, const AZStd::string& stdOutput, const AZStd::string& stdError, StdContent&& stdDelta)>;
+
         //! Constructs the job runner with the specified parameters to constrain job runs.
         //! @param maxConcurrentProcesses he maximum number of concurrent jobs in-flight.
         explicit JobRunner(size_t maxConcurrentProcesses);
@@ -69,15 +65,15 @@ namespace TestImpact
         //! @param payloadMapProducer The client callback to be called when all jobs have finished to transform the work produced by each job into the desired output.
         //! @param jobCallback The client callback to be called when each job changes state.
         //! @return The result of the run sequence and the jobs with their associated payloads.
-        AZStd::pair<ProcessSchedulerResult, AZStd::vector<typename JobT>> Execute(
-            const AZStd::vector<typename JobT::Info>& jobs,
-            PayloadMapProducer<JobT> payloadMapProducer,
+        AZStd::pair<ProcessSchedulerResult, AZStd::vector<typename Job>> Execute(
+            const AZStd::vector<typename Job::Info>& jobs,
+            PayloadMapProducer payloadMapProducer,
             StdOutputRouting stdOutRouting,
             StdErrorRouting stdErrRouting,
             AZStd::optional<AZStd::chrono::milliseconds> jobTimeout,
             AZStd::optional<AZStd::chrono::milliseconds> runnerTimeout,
-            JobCallback<typename JobT> jobCallback,
-            AZStd::optional<JobStdBufferCallback<typename JobT>> stdBufferCallback);
+            JobCallback jobCallback,
+            AZStd::optional<JobStdBufferCallback> stdBufferCallback);
 
     private:
         ProcessScheduler m_processScheduler;
@@ -87,26 +83,26 @@ namespace TestImpact
         AZStd::optional<AZStd::chrono::milliseconds> m_runnerTimeout; //!< Maximum time the job runner can run before forcefully terminating all in-flight jobs and shutting down.
     };
 
-    template<typename JobT>
-    JobRunner<JobT>::JobRunner(size_t maxConcurrentProcesses)
+    template<typename Job>
+    JobRunner<Job>::JobRunner(size_t maxConcurrentProcesses)
         : m_processScheduler(maxConcurrentProcesses)
     {
     }
 
-    template<typename JobT>
-    AZStd::pair<ProcessSchedulerResult, AZStd::vector<typename JobT>> JobRunner<JobT>::Execute(
-        const AZStd::vector<typename JobT::Info>& jobInfos,
-        PayloadMapProducer<JobT> payloadMapProducer,
+    template<typename Job>
+    AZStd::pair<ProcessSchedulerResult, AZStd::vector<typename Job>> JobRunner<Job>::Execute(
+        const AZStd::vector<typename Job::Info>& jobInfos,
+        PayloadMapProducer payloadMapProducer,
         StdOutputRouting stdOutRouting,
         StdErrorRouting stdErrRouting,
         AZStd::optional<AZStd::chrono::milliseconds> jobTimeout,
         AZStd::optional<AZStd::chrono::milliseconds> runnerTimeout,
-        JobCallback<typename JobT> jobCallback,
-        AZStd::optional<JobStdBufferCallback<typename JobT>> stdBufferCallback)
+        JobCallback jobCallback,
+        AZStd::optional<JobStdBufferCallback> stdBufferCallback)
     {
         AZStd::vector<ProcessInfo> processes;
-        AZStd::unordered_map<JobT::Info::IdType, AZStd::pair<JobMeta, const typename JobT::Info*>> metas;
-        AZStd::vector<JobT> jobs;
+        AZStd::unordered_map<Job::Info::IdType, AZStd::pair<JobMeta, const typename Job::Info*>> metas;
+        AZStd::vector<Job> jobs;
         jobs.reserve(jobInfos.size());
         processes.reserve(jobInfos.size());
 
@@ -115,7 +111,7 @@ namespace TestImpact
         {
             const auto* jobInfo = &jobInfos[jobIndex];
             const auto jobId = jobInfo->GetId().m_value;
-            metas.emplace(jobId, AZStd::pair<JobMeta, const typename JobT::Info*>{JobMeta{}, jobInfo});
+            metas.emplace(jobId, AZStd::pair<JobMeta, const typename Job::Info*>{JobMeta{}, jobInfo});
             processes.emplace_back(jobId, stdOutRouting, stdErrRouting, jobInfo->GetCommand().m_args);
         }
 
@@ -198,7 +194,7 @@ namespace TestImpact
         for (const auto& jobInfo : jobInfos)
         {
             const auto jobId = jobInfo.GetId().m_value;
-            jobs.emplace_back(JobT(jobInfo, AZStd::move(metas.at(jobId).first), AZStd::move(payloadMap[jobId])));
+            jobs.emplace_back(Job(jobInfo, AZStd::move(metas.at(jobId).first), AZStd::move(payloadMap[jobId])));
         }
 
         return { result, jobs };

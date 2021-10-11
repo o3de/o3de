@@ -38,7 +38,7 @@ namespace TestImpact
         {
             const auto payloadGenerator = [](const typename JobRunner::JobDataMap& jobDataMap)
             {
-                PayloadMap<JobRunner::Job> runs;
+                typename JobRunner::PayloadMap runs;
                 for (const auto& [jobId, jobData] : jobDataMap)
                 {
                     const auto& [meta, jobInfo] = jobData;
