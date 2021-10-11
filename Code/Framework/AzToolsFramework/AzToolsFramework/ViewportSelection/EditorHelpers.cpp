@@ -13,8 +13,9 @@
 #include <AzFramework/Viewport/CameraState.h>
 #include <AzFramework/Viewport/ViewportScreen.h>
 #include <AzFramework/Visibility/BoundsBus.h>
-#include <AzToolsFramework/FocusMode/FocusModeInterface.h>
 #include <AzToolsFramework/API/EditorViewportIconDisplayInterface.h>
+#include <AzToolsFramework/ContainerEntity/ContainerEntityInterface.h>
+#include <AzToolsFramework/FocusMode/FocusModeInterface.h>
 #include <AzToolsFramework/ToolsComponents/EditorEntityIconComponentBus.h>
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
 #include <AzToolsFramework/Viewport/ViewportTypes.h>
@@ -189,6 +190,14 @@ namespace AzToolsFramework
         if (!m_focusModeInterface->IsInFocusSubTree(entityIdUnderCursor))
         {
             return AZ::EntityId();
+        }
+
+        // Container Entity support - if the entity that is being selected is part of a closed container,
+        // change the selection to the container instead.
+        ContainerEntityInterface* containerEntityInterface = AZ::Interface<ContainerEntityInterface>::Get();
+        if (containerEntityInterface)
+        {
+            return containerEntityInterface->FindHighestSelectableEntity(entityIdUnderCursor);
         }
 
         return entityIdUnderCursor;

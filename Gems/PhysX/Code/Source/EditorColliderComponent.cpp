@@ -17,6 +17,7 @@
 #include <AzFramework/Physics/Configuration/StaticRigidBodyConfiguration.h>
 #include <AzFramework/Viewport/ViewportColors.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
+#include <AzToolsFramework/API/EntityPropertyEditorRequestsBus.h>
 #include <AzToolsFramework/ComponentModes/BoxComponentMode.h>
 #include <AzToolsFramework/Maths/TransformUtils.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>
@@ -791,6 +792,7 @@ namespace PhysX
             if (shapes.empty())
             {
                 m_componentWarnings.clear();
+
                 AzToolsFramework::ToolsApplicationEvents::Bus::Broadcast(
                     &AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplay, AzToolsFramework::Refresh_EntireTree);
                 return;
@@ -824,9 +826,16 @@ namespace PhysX
                 }
 
                 m_componentWarnings.push_back(AZStd::string::format(
-                    "The Physics Asset \"%s\" is a Triangle Mesh, it is not compatible with a Dynamic Rigidbody, either:\n"
-                    "Change the PhysicsAsset to Convex Mesh or set the Rigidbody to kinematic.",
+                    "The physics asset \"%s\" was exported using triangle mesh geometry, which is not compatible with non-kinematic "
+                    "dynamic rigid bodies. To make the collider compatible, you can export the asset using primitive or convex mesh "
+                    "geometry, use mesh decomposition when exporting the asset, or set the rigid body to kinematic. Learn more about "
+                    "<a href=\"https://o3de.org/docs/user-guide/components/reference/physx/collider/\">colliders</a>.",
                     assetPath.c_str()));
+
+                // make sure the entity inspector scrolls so the warning is visible by marking this component as having
+                // new content
+                AzToolsFramework::EntityPropertyEditorRequestBus::Broadcast(
+                    &AzToolsFramework::EntityPropertyEditorRequests::SetNewComponentId, GetId());
             }
             else
             {
@@ -839,8 +848,8 @@ namespace PhysX
         }
 
         AzToolsFramework::ToolsApplicationEvents::Bus::Broadcast(
-            &AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplay, AzToolsFramework::Refresh_EntireTree);
-
+            &AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplay,
+            m_componentWarnings.empty() ? AzToolsFramework::Refresh_EntireTree : AzToolsFramework::Refresh_EntireTree_NewContent);
     }
 
     void EditorColliderComponent::OnAssetReloaded(AZ::Data::Asset<AZ::Data::AssetData> asset)

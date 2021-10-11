@@ -69,6 +69,7 @@ namespace UnitTest
 
             m_rootWidget = AZStd::make_unique<QWidget>();
             m_rootWidget->setFixedSize(WidgetSize);
+            m_rootWidget->move(0, 0); // explicitly set the widget to be in the upper left corner
 
             m_controllerList = AZStd::make_shared<AzFramework::ViewportControllerList>();
             m_controllerList->RegisterViewportContext(TestViewportId);
@@ -340,6 +341,53 @@ namespace UnitTest
         // initial amount of rotation after first mouse move
         using ::testing::FloatNear;
         EXPECT_THAT(eulerAngles.GetZ(), FloatNear(-0.025f, 0.001f));
+
+        // Clean-up
+        HaltCollaborators();
+    }
+
+    // test to verify deltas and cursor positions are handled correctly when the widget is moved
+    TEST_F(ModularViewportCameraControllerFixture, CameraDoesNotStutterAfterWidgetIsMoved)
+    {
+        // Given
+        PrepareCollaborators();
+        SandboxEditor::SetCameraCaptureCursorForLook(true);
+
+        const float deltaTime = 1.0f / 60.0f;
+
+        // When
+        // move cursor to the center of the screen
+        auto start = QPoint(WidgetSize.width() / 2, WidgetSize.height() / 2);
+        MouseMove(m_rootWidget.get(), start, QPoint(0, 0));
+        m_controllerList->UpdateViewport({ TestViewportId, AzFramework::FloatSeconds(deltaTime), AZ::ScriptTimePoint() });
+
+        // move camera right
+        const auto mouseDelta = QPoint(200, 0);
+        MousePressAndMove(m_rootWidget.get(), start, mouseDelta, Qt::MouseButton::RightButton);
+        m_controllerList->UpdateViewport({ TestViewportId, AzFramework::FloatSeconds(deltaTime), AZ::ScriptTimePoint() });
+
+        QTest::mouseRelease(m_rootWidget.get(), Qt::MouseButton::RightButton, Qt::NoModifier, start + mouseDelta);
+
+        // update the position of the widget
+        const auto offset = QPoint(500, 500);
+        m_rootWidget->move(offset);
+
+        // move cursor back to widget center
+        MouseMove(m_rootWidget.get(), start, QPoint(0, 0));
+        m_controllerList->UpdateViewport({ TestViewportId, AzFramework::FloatSeconds(deltaTime), AZ::ScriptTimePoint() });
+
+        // move camera left
+        MousePressAndMove(m_rootWidget.get(), start, -mouseDelta, Qt::MouseButton::RightButton);
+        m_controllerList->UpdateViewport({ TestViewportId, AzFramework::FloatSeconds(deltaTime), AZ::ScriptTimePoint() });
+
+        // Then
+        // ensure the camera rotation has returned to the identity
+        const AZ::Quaternion cameraRotation = m_cameraViewportContextView->GetCameraTransform().GetRotation();
+        const auto eulerAngles = AzFramework::EulerAngles(AZ::Matrix3x3::CreateFromQuaternion(cameraRotation));
+
+        using ::testing::FloatNear;
+        EXPECT_THAT(eulerAngles.GetX(), FloatNear(0.0f, 0.001f));
+        EXPECT_THAT(eulerAngles.GetZ(), FloatNear(0.0f, 0.001f));
 
         // Clean-up
         HaltCollaborators();

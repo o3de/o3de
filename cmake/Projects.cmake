@@ -10,7 +10,11 @@
 
 include_guard()
 
-set(LY_PROJECTS "" CACHE STRING "List of projects to enable, this can be a relative path to the engine root or an absolute path")
+# Passing ${LY_PROJECTS} as the default since in project-centric LY_PROJECTS is defined by the project and
+# we want to pick up that one as the value of the variable.
+# Ideally this cache variable would be defined before the project sets LY_PROJECTS, but that would mean 
+# it would have to be defined in each project.
+set(LY_PROJECTS "${LY_PROJECTS}" CACHE STRING "List of projects to enable, this can be a relative path to the engine root or an absolute path")
 
 #! ly_add_target_dependencies: adds module load dependencies for this target.
 #
@@ -169,12 +173,9 @@ if("${CMAKE_INSTALL_CONFIG_NAME}" MATCHES "^([Rr][Ee][Ll][Ee][Aa][Ss][Ee])$")
             message(STATUS "${install_output_folder}/engine.pak generated")
         endif()
     endif()
-    file(WRITE ${install_output_folder}/project.json 
-"{
-    \"project_name\": \"@project_name@\"
-}")
 endif()
 ]=])
+
     string(CONFIGURE "${install_engine_pak_template}" install_engine_pak_code @ONLY)
     ly_install_run_code("${install_engine_pak_code}")
 

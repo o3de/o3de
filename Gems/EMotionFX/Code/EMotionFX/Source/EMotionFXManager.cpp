@@ -50,7 +50,7 @@ namespace EMotionFX
 
         // Create EMotion FX allocators
         Allocators::Create();
-        
+
         // create the new object
         gEMFX = AZ::Environment::CreateVariable<EMotionFXManager*>(kEMotionFXInstanceVarName);
         gEMFX.Set(EMotionFXManager::Create());
@@ -166,11 +166,11 @@ namespace EMotionFX
 
         delete m_debugDraw;
         m_debugDraw = nullptr;
-        
+
 
         m_eventManager->Destroy();
         m_eventManager = nullptr;
-        
+
         // delete the thread datas
         for (uint32 i = 0; i < m_threadDatas.size(); ++i)
         {
@@ -341,7 +341,7 @@ namespace EMotionFX
     void EMotionFXManager::InitAssetFolderPaths()
     {
         // Initialize the asset source folder path.
-        const char* assetSourcePath = AZ::IO::FileIOBase::GetInstance()->GetAlias("@devassets@");
+        const char* assetSourcePath = AZ::IO::FileIOBase::GetInstance()->GetAlias("@projectroot@");
         if (assetSourcePath)
         {
             m_assetSourceFolder = assetSourcePath;
@@ -361,12 +361,12 @@ namespace EMotionFX
         }
         else
         {
-            AZ_Warning("EMotionFX", false, "Failed to set asset source path for alias '@devassets@'.");
+            AZ_Warning("EMotionFX", false, "Failed to set asset source path for alias '@projectroot@'.");
         }
 
 
         // Initialize the asset cache folder path.
-        const char* assetCachePath = AZ::IO::FileIOBase::GetInstance()->GetAlias("@assets@");
+        const char* assetCachePath = AZ::IO::FileIOBase::GetInstance()->GetAlias("@products@");
         if (assetCachePath)
         {
             m_assetCacheFolder = assetCachePath;
@@ -386,7 +386,7 @@ namespace EMotionFX
         }
         else
         {
-            AZ_Warning("EMotionFX", false, "Failed to set asset cache path for alias '@assets@'.");
+            AZ_Warning("EMotionFX", false, "Failed to set asset cache path for alias '@products@'.");
         }
     }
 
