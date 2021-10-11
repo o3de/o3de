@@ -48,14 +48,7 @@ namespace TestImpact
         using PayloadMap = typename JobRunner<Job>::PayloadMap;
         using JobDataMap = typename JobRunner<Job>::JobDataMap;
         using JobCallback = typename JobRunner<Job>::JobCallback;
-        using StdBufferCallback = typename JobRunner<Job>::StdBufferCallback;
-
-        //!
-        //using JobCallback = AZStd::function<ProcessCallbackResult(const JobInfo& jobInfo, const JobMeta& meta, AZStd::string&& stdOut, AZStd::string&& stdErr)>;
-
-        //!
-        //using StdBufferCallback =
-        //    AZStd::function<ProcessCallbackResult(const AZStd::string& stdOutput, const AZStd::string& stdError, StdContent&& stdDelta)>;
+        using StdContentCallback = typename JobRunner<Job>::StdContentCallback;
 
         //! Constructs the job runner with the specified parameters common to all job runs of this runner.
         //! @param maxConcurrentJobs The maximum number of jobs to be in flight at any given time.
@@ -66,22 +59,18 @@ namespace TestImpact
         //! @param jobInfos The batch of jobs to execute.
         //! @param jobExceptionPolicy The job execution policy for this job run.
         //! @param payloadMapProducer The client callback for producing the payload map based on the completed job data.
-        //! @param stdOutRouting The standard output routing from the underlying job processes to the derived runner.
-        //! @param stdErrorRouting The standard error routing from the underlying job processes to the derived runner.
         //! @param jobTimeout The maximum duration a job may be in-flight for before being forcefully terminated (nullopt if no timeout).
         //! @param runnerTimeout The maximum duration the runner may run before forcefully terminating all in-flight jobs (nullopt if no timeout).
         //! @param clientCallback The optional callback function provided by the client to be called upon job state change.
-        //! @param stdBufferCallback The optional callback function provided by the client to be called upon std buffer updates.
+        //! @param StdContentCallback The optional callback function provided by the client to be called upon std buffer updates.
         //! @returns The result of the run sequence and the jobs that the sequence produced.
         AZStd::pair<ProcessSchedulerResult, AZStd::vector<Job>> ExecuteJobs(
             const AZStd::vector<JobInfo>& jobInfos,
             typename JobRunner<Job>::PayloadMapProducer payloadMapProducer,
-            StdOutputRouting stdOutRouting,
-            StdErrorRouting stdErrRouting,
             AZStd::optional<AZStd::chrono::milliseconds> jobTimeout,
             AZStd::optional<AZStd::chrono::milliseconds> runnerTimeout,
             AZStd::optional<JobCallback> clientCallback,
-            AZStd::optional<StdBufferCallback> stdBufferCallback);
+            AZStd::optional<StdContentCallback> StdContentCallback);
 
     private:
         JobRunner<Job> m_jobRunner;
@@ -97,12 +86,10 @@ namespace TestImpact
     AZStd::pair<ProcessSchedulerResult, AZStd::vector<typename TestJobRunner<Data, Payload>::Job>> TestJobRunner<Data, Payload>::ExecuteJobs(
         const AZStd::vector<JobInfo>& jobInfos,
         typename JobRunner<Job>::PayloadMapProducer payloadMapProducer,
-        StdOutputRouting stdOutRouting,
-        StdErrorRouting stdErrRouting,
         AZStd::optional<AZStd::chrono::milliseconds> jobTimeout,
         AZStd::optional<AZStd::chrono::milliseconds> runnerTimeout,
         AZStd::optional<JobCallback> clientCallback,
-        AZStd::optional<StdBufferCallback> stdBufferCallback)
+        AZStd::optional<StdContentCallback> StdContentCallback)
     {
         // Callback to handle job exception policies and client/derived callbacks
         const auto jobCallback = [&clientCallback](const JobInfo& jobInfo, const JobMeta& meta, StdContent&& std)
@@ -123,8 +110,6 @@ namespace TestImpact
         return m_jobRunner.Execute(
             jobInfos,
             payloadMapProducer,
-            stdOutRouting,
-            stdErrRouting,
             jobTimeout,
             runnerTimeout,
             jobCallback,

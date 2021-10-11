@@ -49,7 +49,7 @@ namespace TestImpact
         //! @param stdOutput The total accumulated standard output buffer.
         //! @param stdError The total accumulated standard error buffer.
         //! @param stdDelta The standard output/error buffer data since the last callback.
-        using StdBufferCallback = AZStd::function<ProcessCallbackResult(
+        using StdContentCallback = AZStd::function<ProcessCallbackResult(
             const typename Job::Info& jobInfo, const AZStd::string& stdOutput, const AZStd::string& stdError, StdContent&& stdDelta)>;
 
         //! Constructs the job runner with the specified parameters to constrain job runs.
@@ -58,8 +58,6 @@ namespace TestImpact
            
         //! Executes the specified jobs and returns the products of their labor.
         //! @param jobs The arguments (and other pertinent information) required for each job to be run.
-        //! @param stdOutRouting The standard output routing to be specified for all jobs.
-        //! @param stdErrRouting The standard error routing to be specified for all jobs.
         //! @param jobTimeout The maximum duration a job may be in-flight before being forcefully terminated (nullopt if no timeout).
         //! @param runnerTimeout The maximum duration the scheduler may run before forcefully terminating all in-flight jobs (nullopt if no timeout).
         //! @param payloadMapProducer The client callback to be called when all jobs have finished to transform the work produced by each job into the desired output.
@@ -68,12 +66,10 @@ namespace TestImpact
         AZStd::pair<ProcessSchedulerResult, AZStd::vector<typename Job>> Execute(
             const AZStd::vector<typename Job::Info>& jobs,
             PayloadMapProducer payloadMapProducer,
-            StdOutputRouting stdOutRouting,
-            StdErrorRouting stdErrRouting,
             AZStd::optional<AZStd::chrono::milliseconds> jobTimeout,
             AZStd::optional<AZStd::chrono::milliseconds> runnerTimeout,
-            JobCallback jobCallback,
-            AZStd::optional<StdBufferCallback> stdBufferCallback);
+            AZStd::optional<JobCallback> jobCallback,
+            AZStd::optional<StdContentCallback> StdContentCallback);
 
     private:
         ProcessScheduler m_processScheduler;
@@ -93,12 +89,10 @@ namespace TestImpact
     AZStd::pair<ProcessSchedulerResult, AZStd::vector<typename Job>> JobRunner<Job>::Execute(
         const AZStd::vector<typename Job::Info>& jobInfos,
         PayloadMapProducer payloadMapProducer,
-        StdOutputRouting stdOutRouting,
-        StdErrorRouting stdErrRouting,
         AZStd::optional<AZStd::chrono::milliseconds> jobTimeout,
         AZStd::optional<AZStd::chrono::milliseconds> runnerTimeout,
-        JobCallback jobCallback,
-        AZStd::optional<StdBufferCallback> stdBufferCallback)
+        AZStd::optional<JobCallback> jobCallback,
+        AZStd::optional<StdContentCallback> StdContentCallback)
     {
         AZStd::vector<ProcessInfo> processes;
         AZStd::unordered_map<Job::Info::IdType, AZStd::pair<JobMeta, const typename Job::Info*>> metas;
@@ -112,6 +106,9 @@ namespace TestImpact
             const auto* jobInfo = &jobInfos[jobIndex];
             const auto jobId = jobInfo->GetId().m_value;
             metas.emplace(jobId, AZStd::pair<JobMeta, const typename Job::Info*>{JobMeta{}, jobInfo});
+
+            const StdOutputRouting stdOutRouting = StdContentCallback.has_value() ? StdOutputRouting::ToParent : StdOutputRouting::None;
+            const StdErrorRouting stdErrRouting = StdContentCallback.has_value() ? StdErrorRouting::ToParent : StdErrorRouting::None;
             processes.emplace_back(jobId, stdOutRouting, stdErrRouting, jobInfo->GetCommand().m_args);
         }
 
@@ -125,7 +122,7 @@ namespace TestImpact
             if (launchResult == LaunchResult::Failure)
             {
                 meta.m_result = JobResult::FailedToExecute;
-                return jobCallback(*jobInfo, meta, {});
+                return jobCallback.has_value() ? (*jobCallback)(*jobInfo, meta, {}) : ProcessCallbackResult::Continue;
             }
             else
             {
@@ -162,19 +159,19 @@ namespace TestImpact
                 meta.m_result = JobResult::ExecutedWithFailure;
             }
 
-            return jobCallback(*jobInfo, meta, AZStd::move(std));
+            return jobCallback.has_value() ? (*jobCallback)(*jobInfo, meta, AZStd::move(std)) : ProcessCallbackResult::Continue;
         };
 
         // Wrapper around low-level process std buffer callback to present a simplified callback interface to the client
-        const AZStd::optional<ProcessStdBufferCallback> processStdBufferCallback = stdBufferCallback.has_value()
-            ? AZStd::optional<ProcessStdBufferCallback>([&stdBufferCallback, &metas](
+        const AZStd::optional<ProcessStdContentCallback> processStdContentCallback = StdContentCallback.has_value()
+            ? AZStd::optional<ProcessStdContentCallback>([&StdContentCallback, &metas](
                 ProcessId processId,
                 const AZStd::string& stdOutput,
                 const AZStd::string& stdError,
                 StdContent&& stdDelta)
             {
                 auto& [meta, jobInfo] = metas.at(processId);
-                return (*stdBufferCallback)(*jobInfo, stdOutput, stdError, AZStd::move(stdDelta));
+                return (*StdContentCallback)(*jobInfo, stdOutput, stdError, AZStd::move(stdDelta));
             })
             : AZStd::nullopt;
 
@@ -185,7 +182,7 @@ namespace TestImpact
             runnerTimeout,
             processLaunchCallback,
             processExitCallback,
-            processStdBufferCallback);
+            processStdContentCallback);
 
         // Hand off the jobs to the client for payload generation
         auto payloadMap = payloadMapProducer(metas);

@@ -96,7 +96,8 @@ namespace UnitTest
             }
 
             auto [result, runnerJobs] = m_testRunner.RunTests(jobInfos, AZStd::nullopt, AZStd::nullopt,
-                []([[maybe_unused]] const JobInfo& jobInfo, [[maybe_unused]] const TestImpact::JobMeta& meta)
+                []([[maybe_unused]] const JobInfo& jobInfo, [[maybe_unused]] const TestImpact::JobMeta& meta,
+                   [[maybe_unused]] TestImpact::StdContent&& std)
                 {
                     printf("RET: %i, CMD: %s\n", meta.m_returnCode.value_or(-10000), jobInfo.GetCommand().m_args.c_str());
                     return TestImpact::ProcessCallbackResult::Continue;

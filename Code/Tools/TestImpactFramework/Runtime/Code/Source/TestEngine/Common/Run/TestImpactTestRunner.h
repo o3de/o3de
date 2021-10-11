@@ -63,8 +63,6 @@ namespace TestImpact
             return JobRunner::ExecuteJobs(
                 jobInfos,
                 payloadGenerator,
-                StdOutputRouting::None,
-                StdErrorRouting::None,
                 runTimeout,
                 runnerTimeout,
                 clientCallback,

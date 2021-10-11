@@ -107,7 +107,7 @@ namespace TestImpact
         //! @param scheduleTimeout The maximum duration the scheduler may run before forcefully terminating all in-flight processes.
         //! @param processLaunchCallback The process launch callback function.
         //! @param processExitCallback The process exit callback function.
-        //! @param processStdBufferCallback The process standard buffer callback function.
+        //! @param processStdContentCallback The process standard buffer callback function.
         //! @returns The state that triggered the end of the schedule sequence.
         ProcessSchedulerResult Execute(
             const AZStd::vector<ProcessInfo>& processes,
@@ -115,7 +115,7 @@ namespace TestImpact
             AZStd::optional<AZStd::chrono::milliseconds> scheduleTimeout,
             ProcessLaunchCallback processLaunchCallback,
             ProcessExitCallback processExitCallback,
-            AZStd::optional<ProcessStdBufferCallback> processStdBufferCallback);
+            AZStd::optional<ProcessStdContentCallback> processStdContentCallback);
 
     private:
         class ExecutionState;

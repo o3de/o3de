@@ -199,8 +199,6 @@ namespace TestImpact
             auto [result, jobs] = ExecuteJobs(
                 jobQueue,
                 payloadGenerator,
-                StdOutputRouting::None,
-                StdErrorRouting::None,
                 enumerationTimeout,
                 enumeratorTimeout,
                 clientCallback,
