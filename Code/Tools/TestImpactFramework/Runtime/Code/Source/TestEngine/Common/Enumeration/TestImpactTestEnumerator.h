@@ -197,8 +197,14 @@ namespace TestImpact
 
             // Generate the enumeration results for the jobs that weren't cached
             auto [result, jobs] = ExecuteJobs(
-                jobQueue, payloadGenerator, StdOutputRouting::None, StdErrorRouting::None, enumerationTimeout, enumeratorTimeout,
-                clientCallback, AZStd::nullopt);
+                jobQueue,
+                payloadGenerator,
+                StdOutputRouting::None,
+                StdErrorRouting::None,
+                enumerationTimeout,
+                enumeratorTimeout,
+                clientCallback,
+                AZStd::nullopt); // <--- STD BUFFER CALLBACK
 
             // We need to add the cached jobs to the completed job list even though they technically weren't executed
             for (auto&& job : cachedJobs)

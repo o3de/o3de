@@ -67,7 +67,8 @@ namespace TestImpact
                 StdErrorRouting::None,
                 runTimeout,
                 runnerTimeout,
-                clientCallback);
+                clientCallback,
+                AZStd::nullopt); // <--- STD BUFFER CALLBACK
         }
     };
 } // namespace TestImpact

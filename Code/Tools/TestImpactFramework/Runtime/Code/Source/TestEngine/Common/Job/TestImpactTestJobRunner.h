@@ -45,8 +45,14 @@ namespace TestImpact
         using Command = typename JobInfo::Command;
         using JobPayload = Payload;
         using Job = Job<JobInfo, Payload>;
-        using JobCallback = AZStd::function<ProcessCallbackResult(const JobInfo& jobInfo, const JobMeta& meta, AZStd::string&& stdOut, AZStd::string&& stdErr)>;
         using JobDataMap = JobDataMap<Job>;
+
+        //!
+        using JobCallback = AZStd::function<ProcessCallbackResult(const JobInfo& jobInfo, const JobMeta& meta, AZStd::string&& stdOut, AZStd::string&& stdErr)>;
+
+        //!
+        using StdBufferCallback =
+            AZStd::function<ProcessCallbackResult(const AZStd::string& stdOutput, const AZStd::string& stdError, StdContent&& stdDelta)>;
 
         //! Constructs the job runner with the specified parameters common to all job runs of this runner.
         //! @param maxConcurrentJobs The maximum number of jobs to be in flight at any given time.
@@ -62,6 +68,7 @@ namespace TestImpact
         //! @param jobTimeout The maximum duration a job may be in-flight for before being forcefully terminated (nullopt if no timeout).
         //! @param runnerTimeout The maximum duration the runner may run before forcefully terminating all in-flight jobs (nullopt if no timeout).
         //! @param clientCallback The optional callback function provided by the client to be called upon job state change.
+        //! @param stdBufferCallback The optional callback function provided by the client to be called upon std buffer updates.
         //! @returns The result of the run sequence and the jobs that the sequence produced.
         AZStd::pair<ProcessSchedulerResult, AZStd::vector<Job>> ExecuteJobs(
             const AZStd::vector<JobInfo>& jobInfos,
@@ -70,7 +77,8 @@ namespace TestImpact
             StdErrorRouting stdErrRouting,
             AZStd::optional<AZStd::chrono::milliseconds> jobTimeout,
             AZStd::optional<AZStd::chrono::milliseconds> runnerTimeout,
-            AZStd::optional<JobCallback> clientCallback);
+            AZStd::optional<JobCallback> clientCallback,
+            AZStd::optional<StdBufferCallback> stdBufferCallback);
 
     private:
         JobRunner<Job> m_jobRunner;
@@ -90,7 +98,8 @@ namespace TestImpact
         StdErrorRouting stdErrRouting,
         AZStd::optional<AZStd::chrono::milliseconds> jobTimeout,
         AZStd::optional<AZStd::chrono::milliseconds> runnerTimeout,
-        AZStd::optional<JobCallback> clientCallback)
+        AZStd::optional<JobCallback> clientCallback,
+        AZStd::optional<StdBufferCallback> stdBufferCallback)
     {
         // Callback to handle job exception policies and client/derived callbacks
         const auto jobCallback = [&clientCallback](const JobInfo& jobInfo, const JobMeta& meta, StdContent&& std)
