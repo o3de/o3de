@@ -18,6 +18,7 @@
 #include <AzQtComponents/DragAndDrop/ViewportDragAndDrop.h>
 
 #include <AzToolsFramework/API/ComponentEntitySelectionBus.h>
+#include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 #include <AzToolsFramework/ViewportSelection/EditorSelectionUtil.h>
 
 // Editor
