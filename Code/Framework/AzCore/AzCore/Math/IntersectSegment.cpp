@@ -352,9 +352,6 @@ AZ::Intersect::IntersectRayAABB(
     return ISECT_RAY_AABB_ISECT;
 }
 
-
-
-
 //=========================================================================
 // IntersectRayAABB2
 // [2/18/2011]
@@ -411,7 +408,7 @@ AZ::Intersect::IntersectRayAABB2(const Vector3& rayStart, const Vector3& dirRCP,
     return ISECT_RAY_AABB_ISECT;
 }
 
-int AZ::Intersect::IntersectRayDisk(
+bool AZ::Intersect::IntersectRayDisk(
     const Vector3& rayOrigin, const Vector3& rayDir, const Vector3& diskCenter, const float diskRadius, const Vector3& diskNormal, float& t)
 {
     // First intersect with the plane of the disk
@@ -424,10 +421,10 @@ int AZ::Intersect::IntersectRayDisk(
         if (pointOnPlane.GetDistance(diskCenter) < diskRadius)
         {
             t = planeIntersectionDistance;
-            return 1;
+            return true;
         }
     }
-    return 0;
+    return false;
 }
 
 // Reference: Real-Time Collision Detection - 5.3.7 Intersecting Ray or Segment Against Cylinder, and the book's errata.
@@ -1015,7 +1012,7 @@ int AZ::Intersect::IntersectRayQuad(
 }
 
 // reference: Real-Time Collision Detection, 5.3.3 Intersecting Ray or Segment Against Box
-int AZ::Intersect::IntersectRayBox(
+bool AZ::Intersect::IntersectRayBox(
     const Vector3& rayOrigin, const Vector3& rayDir, const Vector3& boxCenter, const Vector3& boxAxis1,
     const Vector3& boxAxis2, const Vector3& boxAxis3, float boxHalfExtent1, float boxHalfExtent2, float boxHalfExtent3, float& t)
 {
@@ -1047,7 +1044,7 @@ int AZ::Intersect::IntersectRayBox(
         // If the ray is parallel to the slab and the ray origin is outside, return no intersection.
         if (tp < 0.0f || tn < 0.0f)
         {
-            return 0;
+            return false;
         }
     }
     else
@@ -1068,7 +1065,7 @@ int AZ::Intersect::IntersectRayBox(
         tmax = AZ::GetMin(tmax, t2);
         if (tmin > tmax)
         {
-            return 0;
+            return false;
         }
     }
 
@@ -1088,7 +1085,7 @@ int AZ::Intersect::IntersectRayBox(
         // If the ray is parallel to the slab and the ray origin is outside, return no intersection.
         if (tp < 0.0f || tn < 0.0f)
         {
-            return 0;
+            return false;
         }
     }
     else
@@ -1109,7 +1106,7 @@ int AZ::Intersect::IntersectRayBox(
         tmax = AZ::GetMin(tmax, t2);
         if (tmin > tmax)
         {
-            return 0;
+            return false;
         }
     }
 
@@ -1129,7 +1126,7 @@ int AZ::Intersect::IntersectRayBox(
         // If the ray is parallel to the slab and the ray origin is outside, return no intersection.
         if (tp < 0.0f || tn < 0.0f)
         {
-            return 0;
+            return false;
         }
     }
     else
@@ -1150,15 +1147,15 @@ int AZ::Intersect::IntersectRayBox(
         tmax = AZ::GetMin(tmax, t2);
         if (tmin > tmax)
         {
-            return 0;
+            return false;
         }
     }
 
     t = (isRayOriginInsideBox ? tmax : tmin);
-    return 1;
+    return true;
 }
 
-int AZ::Intersect::IntersectRayObb(const Vector3& rayOrigin, const Vector3& rayDir, const Obb& obb, float& t)
+bool AZ::Intersect::IntersectRayObb(const Vector3& rayOrigin, const Vector3& rayDir, const Obb& obb, float& t)
 {
     return AZ::Intersect::IntersectRayBox(rayOrigin, rayDir, obb.GetPosition(),
         obb.GetAxisX(), obb.GetAxisY(), obb.GetAxisZ(),
@@ -1366,11 +1363,11 @@ AZ::Intersect::IntersectSegmentCapsule(const Vector3& sa, const Vector3& dir, co
 //=========================================================================
 bool
 AZ::Intersect::IntersectSegmentPolyhedron(
-    const Vector3& sa, const Vector3& sBA, const Plane p[], int numPlanes,
+    const Vector3& sa, const Vector3& dir, const Plane p[], int numPlanes,
     float& tfirst, float& tlast, int& iFirstPlane, int& iLastPlane)
 {
     // Compute direction vector for the segment
-    Vector3 d = /*b - a*/ sBA;
+    Vector3 d = /*b - a*/ dir;
     // Set initial interval to being the whole segment. For a ray, tlast should be
     // set to +RR_FLT_MAX. For a line, additionally tfirst should be set to -RR_FLT_MAX
     tfirst = 0.0f;
