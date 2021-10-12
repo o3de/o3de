@@ -53,8 +53,6 @@ namespace AzToolsFramework
         void OnEntityStreamLoadSuccess() override;
 
     private:
-        AzFramework::EntityContextId m_editorEntityContextId;
-
         AZStd::unordered_set<AZ::EntityId> m_containers;      //!< All entities in this set are containers.
         AZStd::unordered_set<AZ::EntityId> m_openContainers;  //!< All entities in this set are open containers.
     };

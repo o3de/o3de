@@ -16,9 +16,6 @@ namespace AzToolsFramework
 {
     void ContainerEntitySystemComponent::Activate()
     {
-        m_editorEntityContextId = AzFramework::EntityContextId::CreateNull();
-        EditorEntityContextRequestBus::BroadcastResult(m_editorEntityContextId, &EditorEntityContextRequests::GetEditorEntityContextId);
-
         AZ::Interface<ContainerEntityInterface>::Register(this);
         EditorEntityContextNotificationBus::Handler::BusConnect();
     }
@@ -126,13 +123,19 @@ namespace AzToolsFramework
     void ContainerEntitySystemComponent::OnEntityStreamLoadSuccess()
     {
         // We don't yet support multiple entity contexts, so just use the default.
-        Clear(m_editorEntityContextId);
+        auto editorEntityContextId = AzFramework::EntityContextId::CreateNull();
+        EditorEntityContextRequestBus::BroadcastResult(editorEntityContextId, &EditorEntityContextRequests::GetEditorEntityContextId);
+
+        Clear(editorEntityContextId);
     }
 
     ContainerEntityOperationResult ContainerEntitySystemComponent::Clear(AzFramework::EntityContextId entityContextId)
     {
         // We don't yet support multiple entity contexts, so only clear the default.
-        if (entityContextId != m_editorEntityContextId)
+        auto editorEntityContextId = AzFramework::EntityContextId::CreateNull();
+        EditorEntityContextRequestBus::BroadcastResult(editorEntityContextId, &EditorEntityContextRequests::GetEditorEntityContextId);
+
+        if (entityContextId != editorEntityContextId)
         {
             return AZ::Failure(AZStd::string(
                 "Error in ContainerEntitySystemComponent::Clear - cannot clear non-default Entity Context!"));
