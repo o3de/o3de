@@ -12,7 +12,7 @@
 
 namespace AtomToolsFramework
 {
-    //! Provides custom rendering of previefw images
+    //! Interface for describing scene content that will be rendered using the PreviewRenderer
     class PreviewContent
     {
     public:
@@ -20,10 +20,20 @@ namespace AtomToolsFramework
 
         PreviewContent() = default;
         virtual ~PreviewContent() = default;
+
+        //! Initiate loading of scene content, models, materials, etc
         virtual void Load() = 0;
+
+        //! Return true if content is loaded and ready to render
         virtual bool IsReady() const = 0;
+
+        //! Return true if content failed to load
         virtual bool IsError() const = 0;
+
+        //! Report any issues encountered while loading
         virtual void ReportErrors() = 0;
+
+        //! Prepare or pose content before rendering
         virtual void Update() = 0;
     };
 } // namespace AtomToolsFramework
