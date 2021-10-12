@@ -282,6 +282,7 @@ set(FILES
     ShaderLib/Atom/Features/PostProcessing/FullscreenVertexUtil.azsli
     ShaderLib/Atom/Features/PostProcessing/GlyphData.azsli
     ShaderLib/Atom/Features/PostProcessing/GlyphRender.azsli
+    ShaderLib/Atom/Features/PostProcessing/HDRColorGradingCommon.azsl
     ShaderLib/Atom/Features/PostProcessing/PostProcessUtil.azsli
     ShaderLib/Atom/Features/RayTracing/RayTracingSceneSrg.azsli
     ShaderLib/Atom/Features/ScreenSpace/ScreenSpaceUtil.azsli
