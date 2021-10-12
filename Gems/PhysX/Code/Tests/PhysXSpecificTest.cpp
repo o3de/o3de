@@ -1581,7 +1581,7 @@ namespace PhysX
         AzPhysics::SceneHandle m_testSceneHandle = AzPhysics::InvalidSceneHandle;
     };
 
-    TEST_P(MassPropertiesWithTriangleMesh, KinematicRigidBody_ComputeMsss_WorksAsExpected)
+    TEST_P(MassPropertiesWithTriangleMesh, KinematicRigidBody_ComputeMassProperties_WorksAsExpected)
     {
         const AzPhysics::MassComputeFlags flags = GetMassComputeFlags();
 
