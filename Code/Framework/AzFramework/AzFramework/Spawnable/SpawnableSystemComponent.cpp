@@ -166,6 +166,8 @@ namespace AzFramework
 
     void SpawnableSystemComponent::Deactivate()
     {
+        ProcessSpawnableQueue();
+
         m_registryChangeHandler.Disconnect();
 
         AZ::TickBus::Handler::BusDisconnect();
