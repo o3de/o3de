@@ -825,6 +825,11 @@ namespace CommandSystem
                 {
                     continue;
                 }
+                // Ignore actor instances owned by entity
+                if (actorInstance->GetEntity())
+                {
+                    continue;
+                }
 
                 // generate command to remove the actor instance
                 const AZStd::string command = AZStd::string::format("RemoveActorInstance -actorInstanceID %i", actorInstance->GetID());

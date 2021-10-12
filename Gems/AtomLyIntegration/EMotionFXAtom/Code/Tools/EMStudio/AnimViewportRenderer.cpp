@@ -92,6 +92,7 @@ namespace EMStudio
         m_postProcessEntity->CreateComponent(AZ::Render::PostFxLayerComponentTypeId);
         m_postProcessEntity->CreateComponent(AZ::Render::ExposureControlComponentTypeId);
         m_postProcessEntity->CreateComponent(azrtti_typeid<AzFramework::TransformComponent>());
+        m_postProcessEntity->Init();
         m_postProcessEntity->Activate();
 
         // Init directional light processor
@@ -112,6 +113,7 @@ namespace EMStudio
 
         m_iblEntity->CreateComponent(AZ::Render::ImageBasedLightComponentTypeId);
         m_iblEntity->CreateComponent(azrtti_typeid<AzFramework::TransformComponent>());
+        m_iblEntity->Init();
         m_iblEntity->Activate();
 
         // Load light preset
@@ -134,6 +136,7 @@ namespace EMStudio
         gridComponent->SetConfiguration(gridConfig);
 
         m_gridEntity->CreateComponent(azrtti_typeid<AzFramework::TransformComponent>());
+        m_gridEntity->Init();
         m_gridEntity->Activate();
 
         Reinit();
@@ -251,6 +254,7 @@ namespace EMStudio
         actorEntity->CreateComponent(azrtti_typeid<EMotionFX::Integration::ActorComponent>());
         actorEntity->CreateComponent(AZ::Render::MaterialComponentTypeId);
         actorEntity->CreateComponent(azrtti_typeid<AzFramework::TransformComponent>());
+        actorEntity->Init();
         actorEntity->Activate();
 
         EMotionFX::Integration::ActorComponent* actorComponent = actorEntity->FindComponent<EMotionFX::Integration::ActorComponent>();

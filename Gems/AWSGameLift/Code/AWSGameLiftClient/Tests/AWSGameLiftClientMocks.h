@@ -11,6 +11,7 @@
 #include <AzCore/Interface/Interface.h>
 #include <AzFramework/Session/ISessionRequests.h>
 #include <AzFramework/Session/ISessionHandlingRequests.h>
+#include <AzFramework/Matchmaking/MatchmakingNotifications.h>
 #include <AzTest/AzTest.h>
 
 #include <aws/core/auth/AWSCredentialsProvider.h>
@@ -27,6 +28,12 @@
 #include <aws/gamelift/model/SearchGameSessionsResult.h>
 #include <aws/gamelift/model/StartGameSessionPlacementRequest.h>
 #include <aws/gamelift/model/StartGameSessionPlacementResult.h>
+#include <aws/gamelift/model/StartMatchmakingRequest.h>
+#include <aws/gamelift/model/StartMatchmakingResult.h>
+#include <aws/gamelift/model/StopMatchmakingRequest.h>
+#include <aws/gamelift/model/StopMatchmakingResult.h>
+
+#include <Request/IAWSGameLiftMatchmakingInternalRequests.h>
 
 using namespace Aws::GameLift;
 
@@ -44,6 +51,27 @@ public:
     MOCK_CONST_METHOD1(DescribeMatchmaking, Model::DescribeMatchmakingOutcome(const Model::DescribeMatchmakingRequest&));
     MOCK_CONST_METHOD1(SearchGameSessions, Model::SearchGameSessionsOutcome(const Model::SearchGameSessionsRequest&));
     MOCK_CONST_METHOD1(StartGameSessionPlacement, Model::StartGameSessionPlacementOutcome(const Model::StartGameSessionPlacementRequest&));
+    MOCK_CONST_METHOD1(StartMatchmaking, Model::StartMatchmakingOutcome(const Model::StartMatchmakingRequest&));
+    MOCK_CONST_METHOD1(StopMatchmaking, Model::StopMatchmakingOutcome(const Model::StopMatchmakingRequest&));
+};
+
+class MatchmakingAsyncRequestNotificationsHandlerMock
+    : public AzFramework::MatchmakingAsyncRequestNotificationBus::Handler
+{
+public:
+    MatchmakingAsyncRequestNotificationsHandlerMock()
+    {
+        AzFramework::MatchmakingAsyncRequestNotificationBus::Handler::BusConnect();
+    }
+
+    ~MatchmakingAsyncRequestNotificationsHandlerMock()
+    {
+        AzFramework::MatchmakingAsyncRequestNotificationBus::Handler::BusDisconnect();
+    }
+
+    MOCK_METHOD0(OnAcceptMatchAsyncComplete, void());
+    MOCK_METHOD1(OnStartMatchmakingAsyncComplete, void(const AZStd::string&));
+    MOCK_METHOD0(OnStopMatchmakingAsyncComplete, void());
 };
 
 class SessionAsyncRequestNotificationsHandlerMock
