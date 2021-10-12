@@ -55,6 +55,7 @@
 #include <QScrollArea>
 #include <QVBoxLayout>
 #include <QWidget>
+#include <QWindow>
 
 
 namespace AzToolsFramework
@@ -1393,7 +1394,32 @@ namespace AzToolsFramework
 
         AZStd::unique_ptr<AzQtComponents::Card> PrefabIntegrationManager::ConstructUnsavedPrefabsCard(TemplateId templateId)
         {
-            FlowLayout* unsavedPrefabsLayout = new FlowLayout(AzToolsFramework::GetActiveWindow());
+            #if defined(Q_OS_LINUX)
+                // On Linux, we cannot use the AzToolsFramework::GetActiveWindow() helper function because it falls  
+                // back to the main window object, which causes falls back to trying to get the main window through
+                // the 'AzToolsFramework::EditorRequests::GetMainWindow' bus call. (On Linux, there is no active window
+                // because at this point, there are no widgets that have keyboard focus). 
+                // The main window widget causes a crash on Linux when applied to flow layout that is constructed
+                // for the custom Card widget. As a work around to prevent this crash, we will use the first available
+                // visible widget that has no parent as the parent for the flow layout.
+                QWidget* prefabCardParent = QApplication::activeWindow();
+                if (!prefabCardParent)
+                {
+                    QWidgetList allWidgets = QApplication::allWidgets();
+                    for (QWidget* widget : allWidgets)
+                    {
+                        if (widget->isVisible() && widget->parentWidget() == nullptr)
+                        {
+                            prefabCardParent = widget;
+                            break;
+                        }
+                    }
+                }
+            #else
+                QWidget* prefabCardParent = AzToolsFramework::GetActiveWindow();
+            #endif
+
+            FlowLayout* unsavedPrefabsLayout = new FlowLayout(prefabCardParent);
 
             AZStd::set<AZ::IO::PathView> dirtyTemplatePaths = s_prefabSystemComponentInterface->GetDirtyTemplatePaths(templateId);
 
