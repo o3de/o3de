@@ -31,9 +31,11 @@ namespace Multiplayer
     private:
         void OnPreRender(float deltaTime);
         void OnCorrection();
-
+        void OnParentChanged(NetEntityId parentId);
+        
         EntityPreRenderEvent::Handler m_entityPreRenderEventHandler;
         EntityCorrectionEvent::Handler m_entityCorrectionEventHandler;
+        AZ::Event<NetEntityId>::Handler m_parentChangedEventHandler;
 
         Multiplayer::HostFrameId m_targetHostFrameId = HostFrameId(0);
     };
@@ -48,8 +50,10 @@ namespace Multiplayer
         void OnDeactivate(Multiplayer::EntityIsMigrating entityIsMigrating) override;
 
     private:
-        void OnTransformChangedEvent(const AZ::Transform& worldTm);
+        void OnTransformChangedEvent(const AZ::Transform& localTm, const AZ::Transform& worldTm);
+        void OnParentIdChangedEvent(AZ::EntityId oldParent, AZ::EntityId newParent);
 
         AZ::TransformChangedEvent::Handler m_transformChangedHandler;
+        AZ::ParentChangedEvent::Handler m_parentIdChangedHandler;
     };
 }

@@ -24,7 +24,7 @@
 namespace MaterialEditor
 {
     CreateMaterialDialog::CreateMaterialDialog(QWidget* parent)
-        : CreateMaterialDialog(QString(AZ::IO::FileIOBase::GetInstance()->GetAlias("@devassets@")) + AZ_CORRECT_FILESYSTEM_SEPARATOR + "Materials", parent)
+        : CreateMaterialDialog(QString(AZ::IO::FileIOBase::GetInstance()->GetAlias("@projectroot@")) + AZ_CORRECT_FILESYSTEM_SEPARATOR + "Materials", parent)
     {
     }
 

@@ -7,10 +7,14 @@
 #
 
 set(FILES
+    ../AWSGameLiftCommon/Source/AWSGameLiftSessionConstants.h
+    Include/Request/AWSGameLiftAcceptMatchRequest.h
     Include/Request/AWSGameLiftCreateSessionOnQueueRequest.h
     Include/Request/AWSGameLiftCreateSessionRequest.h
     Include/Request/AWSGameLiftJoinSessionRequest.h
     Include/Request/AWSGameLiftSearchSessionsRequest.h
+    Include/Request/AWSGameLiftStartMatchmakingRequest.h
+    Include/Request/AWSGameLiftStopMatchmakingRequest.h
     Include/Request/IAWSGameLiftRequests.h
     Source/Activity/AWSGameLiftActivityUtils.cpp
     Source/Activity/AWSGameLiftActivityUtils.h
@@ -24,12 +28,23 @@ set(FILES
     Source/Activity/AWSGameLiftLeaveSessionActivity.h
     Source/Activity/AWSGameLiftSearchSessionsActivity.cpp
     Source/Activity/AWSGameLiftSearchSessionsActivity.h
+    Source/AWSGameLiftClientLocalTicketTracker.cpp
+    Source/AWSGameLiftClientLocalTicketTracker.h
+    Source/Activity/AWSGameLiftStartMatchmakingActivity.cpp
+    Source/Activity/AWSGameLiftStartMatchmakingActivity.h
+    Source/Activity/AWSGameLiftStopMatchmakingActivity.cpp
+    Source/Activity/AWSGameLiftStopMatchmakingActivity.h
     Source/AWSGameLiftClientManager.cpp
     Source/AWSGameLiftClientManager.h
     Source/AWSGameLiftClientSystemComponent.cpp
     Source/AWSGameLiftClientSystemComponent.h
+    Source/Request/AWSGameLiftAcceptMatchRequest.cpp
     Source/Request/AWSGameLiftCreateSessionOnQueueRequest.cpp
     Source/Request/AWSGameLiftCreateSessionRequest.cpp
     Source/Request/AWSGameLiftJoinSessionRequest.cpp
     Source/Request/AWSGameLiftSearchSessionsRequest.cpp
+    Source/Request/AWSGameLiftStartMatchmakingRequest.cpp
+    Source/Request/AWSGameLiftStopMatchmakingRequest.cpp
+    Source/Request/IAWSGameLiftInternalRequests.h
+    Source/Request/IAWSGameLiftMatchmakingInternalRequests.h
 )

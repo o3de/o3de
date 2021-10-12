@@ -33,6 +33,16 @@ namespace AZ
             virtual const MaterialAssignmentMap& GetMaterialOverrides() const = 0;
             //! Clear all material overrides
             virtual void ClearAllMaterialOverrides() = 0;
+            //! Clear non-lod material overrides
+            virtual void ClearModelMaterialOverrides() = 0;
+            //! Clear lod material overrides
+            virtual void ClearLodMaterialOverrides() = 0;
+            //! Clear residual materials that don't correspond to the associated model
+            virtual void ClearIncompatibleMaterialOverrides() = 0;
+            //! Clear materials that reference missing assets
+            virtual void ClearInvalidMaterialOverrides() = 0;
+            //! Repair materials that reference missing assets by assigning the default asset
+            virtual void RepairInvalidMaterialOverrides() = 0;
             //! Set default material override
             virtual void SetDefaultMaterialOverride(const AZ::Data::AssetId& materialAssetId) = 0;
             //! Get default material override
@@ -141,7 +151,9 @@ namespace AZ
             //! Returns the list of all ModelMaterialSlot's for the model, across all LODs.
             virtual RPI::ModelMaterialSlotMap GetModelMaterialSlots() const = 0;
 
+            //! Returns the available, overridable material slots and the default assigned materials
             virtual MaterialAssignmentMap GetMaterialAssignments() const = 0;
+
             virtual AZStd::unordered_set<AZ::Name> GetModelUvNames() const = 0;
         };
         using MaterialReceiverRequestBus = EBus<MaterialReceiverRequests>;
@@ -151,6 +163,7 @@ namespace AZ
             : public ComponentBus
         {
         public:
+            //! Notification that overridable material slots are available or have changed
             virtual void OnMaterialAssignmentsChanged() = 0;
         };
         using MaterialReceiverNotificationBus = EBus<MaterialReceiverNotifications>;

@@ -29,7 +29,7 @@ AZ_PUSH_DISABLE_WARNING(4251 4244, "-Wunknown-warning-option") // disable warnin
 AZ_POP_DISABLE_WARNING
 
 AZ_CVAR(
-    bool, ed_hideAssetPickerPathColumn, false, nullptr, AZ::ConsoleFunctorFlags::Null,
+    bool, ed_hideAssetPickerPathColumn, true, nullptr, AZ::ConsoleFunctorFlags::Null,
     "Hide AssetPicker path column for a clearer view.");
 AZ_CVAR_EXTERNED(bool, ed_useNewAssetBrowserTableView);
 
@@ -151,6 +151,10 @@ namespace AzToolsFramework
                     m_ui->m_assetBrowserTableViewWidget, &AssetBrowserTableView::ClearTypeFilter, m_ui->m_searchWidget,
                     &SearchWidget::ClearTypeFilter);
 
+                 connect(
+                    this, &AssetPickerDialog::SizeChangedSignal, m_ui->m_assetBrowserTableViewWidget,
+                    &AssetBrowserTableView::UpdateSizeSlot);
+
                 m_ui->m_assetBrowserTableViewWidget->SetName("AssetBrowserTableView_main");
                 m_tableModel->UpdateTableModelMaps();
             }
@@ -204,6 +208,12 @@ namespace AzToolsFramework
             {
                 m_hasFilter = true;
             }
+        }
+
+        void AssetPickerDialog::resizeEvent(QResizeEvent* resizeEvent)
+        {
+            emit SizeChangedSignal(m_ui->verticalLayout_4->geometry().width());
+            QDialog::resizeEvent(resizeEvent);
         }
 
         void AssetPickerDialog::keyPressEvent(QKeyEvent* e)

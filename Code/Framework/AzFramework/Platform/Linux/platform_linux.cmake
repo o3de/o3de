@@ -10,20 +10,21 @@
 # Only 'xcb' and 'wayland' are recognized
 if (${PAL_TRAIT_LINUX_WINDOW_MANAGER} STREQUAL "xcb")
 
-    find_library(XCB_LIBRARY xcb)
-    find_library(XCB_XKB_LIBRARY xcb-xkb)
-    find_library(XKBCOMMON_LIBRARY xkbcommon)
-    find_library(XKBCOMMON_X11_LIBRARY xkbcommon-x11)
-
+    set(LY_COMPILE_DEFINITIONS PUBLIC PAL_TRAIT_LINUX_WINDOW_MANAGER_XCB)
+    set(LY_INCLUDE_DIRECTORIES
+        PUBLIC
+            Platform/Common/Xcb
+    )
+    set(LY_FILES_CMAKE
+        Platform/Common/Xcb/azframework_xcb_files.cmake
+    )
     set(LY_BUILD_DEPENDENCIES
         PRIVATE
-            ${XCB_LIBRARY}
-            ${XKBCOMMON_LIBRARY}
-            ${XKBCOMMON_X11_LIBRARY}
-            ${XCB_XKB_LIBRARY}
+            3rdParty::X11::xcb
+            3rdParty::X11::xcb_xkb
+            3rdParty::X11::xkbcommon
+            3rdParty::X11::xkbcommon_X11
     )
-
-    set(LY_COMPILE_DEFINITIONS PUBLIC PAL_TRAIT_LINUX_WINDOW_MANAGER_XCB)
 
 elseif(PAL_TRAIT_LINUX_WINDOW_MANAGER STREQUAL "wayland")
 

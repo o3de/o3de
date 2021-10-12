@@ -15,6 +15,7 @@
 #include <AzCore/Jobs/JobCompletion.h>
 #include <AzCore/Jobs/JobFunction.h>
 #include <AzCore/Memory/Memory.h>
+#include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <Blast/BlastActorData.h>
@@ -285,13 +286,16 @@ namespace Blast
             DefaultConfigurationPath, globalConfiguration);
         AZ_Warning("Blast", loaded, "Failed to load Blast configuration, initializing with default configs.");
 
-        SetGlobalConfiguration(globalConfiguration);
-        SaveConfiguration();
+        ApplyGlobalConfiguration(globalConfiguration);
+        if (!loaded)
+        {
+            SaveConfiguration();
+        }
     }
 
     void BlastSystemComponent::SaveConfiguration()
     {
-        auto assetRoot = AZ::IO::FileIOBase::GetInstance()->GetAlias("@devassets@");
+        auto assetRoot = AZ::IO::FileIOBase::GetInstance()->GetAlias("@projectroot@");
 
         if (!assetRoot)
         {
@@ -308,7 +312,7 @@ namespace Blast
 
     void BlastSystemComponent::CheckoutConfiguration()
     {
-        const auto assetRoot = AZ::IO::FileIOBase::GetInstance()->GetAlias("@devassets@");
+        const auto assetRoot = AZ::IO::FileIOBase::GetInstance()->GetAlias("@projectroot@");
 
         AZStd::string fullPath;
         AzFramework::StringFunc::Path::Join(assetRoot, DefaultConfigurationPath, fullPath);
@@ -393,8 +397,13 @@ namespace Blast
 
     void BlastSystemComponent::SetGlobalConfiguration(const BlastGlobalConfiguration& globalConfiguration)
     {
-        m_configuration = globalConfiguration;
+        ApplyGlobalConfiguration(globalConfiguration);
         SaveConfiguration();
+    }
+
+    void BlastSystemComponent::ApplyGlobalConfiguration(const BlastGlobalConfiguration& globalConfiguration)
+    {
+        m_configuration = globalConfiguration;
 
         {
             AZ::Data::Asset<Blast::BlastMaterialLibraryAsset>& materialLibrary = m_configuration.m_materialLibrary;

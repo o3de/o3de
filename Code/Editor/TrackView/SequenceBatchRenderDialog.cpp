@@ -36,9 +36,6 @@
 #include "CryEdit.h"
 #include "Viewport.h"
 
-// Atom Renderer
-#include <Atom/RPI.Public/RPISystemInterface.h>
-
 AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
 #include <TrackView/ui_SequenceBatchRenderDialog.h>
 AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
@@ -272,7 +269,7 @@ void CSequenceBatchRenderDialog::OnRenderItemSelChange()
     // Enable/disable the 'remove'/'update' button properly.
     bool bNoSelection = !m_ui->m_renderList->selectionModel()->hasSelection();
     m_ui->BATCH_RENDER_REMOVE_SEQ->setEnabled(bNoSelection ? false : true);
-    
+
     CheckForEnableUpdateButton();
 
     if (bNoSelection)
@@ -363,7 +360,7 @@ void CSequenceBatchRenderDialog::OnRenderItemSelChange()
         cvarsText += item.cvars[static_cast<int>(i)];
         cvarsText += "\r\n";
     }
-    m_ui->m_cvarsEdit->setPlainText(cvarsText);    
+    m_ui->m_cvarsEdit->setPlainText(cvarsText);
 }
 
 void CSequenceBatchRenderDialog::CheckForEnableUpdateButton()
@@ -497,7 +494,7 @@ void CSequenceBatchRenderDialog::OnSavePreset()
 }
 
 void CSequenceBatchRenderDialog::stashActiveViewportResolution()
-{   
+{
     // stash active resolution in global vars
     activeViewportWidth = resolutions[0][0];
     activeViewportHeight = resolutions[0][1];
@@ -505,7 +502,7 @@ void CSequenceBatchRenderDialog::stashActiveViewportResolution()
     if (activeViewport)
     {
         activeViewport->GetDimensions(&activeViewportWidth, &activeViewportHeight);
-    }  
+    }
 }
 
 void CSequenceBatchRenderDialog::OnGo()
@@ -643,7 +640,7 @@ void CSequenceBatchRenderDialog::OnResolutionSelected()
         int defaultH;
         const QString currentCustomResText = m_ui->m_resolutionCombo->currentText();
         GetResolutionFromCustomResText(currentCustomResText.toStdString().c_str(), defaultW, defaultH);
-        
+
         CCustomResolutionDlg resDlg(defaultW, defaultH, this);
         if (resDlg.exec() == QDialog::Accepted)
         {
@@ -755,7 +752,7 @@ bool CSequenceBatchRenderDialog::LoadOutputOptions(const QString& pathname)
         {
             const QString customResText = resolutionNode->getContent();
             m_ui->m_resolutionCombo->setItemText(curSel, customResText);
-            
+
             GetResolutionFromCustomResText(customResText.toStdString().c_str(), m_customResW, m_customResH);
         }
         m_ui->m_resolutionCombo->setCurrentIndex(curSel);
@@ -910,12 +907,12 @@ void CSequenceBatchRenderDialog::CaptureItemStart()
     folder += "/";
     folder += itemText;
 
-    // If this is a relative path, prepend the @assets@ folder to match where the Renderer is going
+    // If this is a relative path, prepend the @products@ folder to match where the Renderer is going
     // to dump the frame buffer image captures.
     if (AzFramework::StringFunc::Path::IsRelative(folder.toUtf8().data()))
     {
         AZStd::string absolutePath;
-        AZStd::string assetsRoot = AZ::IO::FileIOBase::GetInstance()->GetAlias("@assets@");
+        AZStd::string assetsRoot = AZ::IO::FileIOBase::GetInstance()->GetAlias("@products@");
         AzFramework::StringFunc::Path::Join(assetsRoot.c_str(), folder.toUtf8().data(), absolutePath);
         folder = absolutePath.c_str();
     }
@@ -965,7 +962,7 @@ void CSequenceBatchRenderDialog::CaptureItemStart()
         m_renderContext.cvarDisplayInfoBU = cvarDebugInfo->GetIVal();
         if (renderItem.disableDebugInfo && cvarDebugInfo->GetIVal())
         {
-            const int DISPLAY_INFO_OFF = 0;         
+            const int DISPLAY_INFO_OFF = 0;
             cvarDebugInfo->Set(DISPLAY_INFO_OFF);
         }
     }
@@ -1103,13 +1100,13 @@ void CSequenceBatchRenderDialog::OnUpdateEnd(IAnimSequence* sequence)
     sequence->SetActiveDirector(m_renderContext.pActiveDirectorBU);
 
     const auto imageFormat = m_ui->m_imageFormatCombo->currentText();
-    
+
     SRenderItem renderItem = m_renderItems[m_renderContext.currentItemIndex];
     if (m_bFFMPEGCommandAvailable && renderItem.bCreateVideo)
     {
         // Create a video using the ffmpeg plug-in from captured images.
         m_renderContext.processingFFMPEG = true;
-       
+
         AZStd::string outputFolder = m_renderContext.captureOptions.folder;
         auto future = QtConcurrent::run(
             [renderItem, outputFolder, imageFormat]
@@ -1237,18 +1234,11 @@ void CSequenceBatchRenderDialog::OnKickIdleTimout()
         {
             componentApplication->TickSystem();
         }
-
-        // Directly tick the renderer, as it's no longer part of the system tick
-        if (auto rpiSystem = AZ::RPI::RPISystemInterface::Get())
-        {
-            rpiSystem->SimulationTick();
-            rpiSystem->RenderTick();
-        }
     }
 }
 
 void CSequenceBatchRenderDialog::OnKickIdle()
-{    
+{
     if (m_renderContext.captureState == CaptureState::WarmingUpAfterResChange)
     {
         OnUpdateWarmingUpAfterResChange();
@@ -1264,7 +1254,7 @@ void CSequenceBatchRenderDialog::OnKickIdle()
     else if (m_renderContext.captureState == CaptureState::Capturing)
     {
         OnUpdateCapturing();
-    }    
+    }
     else if (m_renderContext.captureState == CaptureState::End)
     {
         OnUpdateEnd(m_renderContext.endingSequence);

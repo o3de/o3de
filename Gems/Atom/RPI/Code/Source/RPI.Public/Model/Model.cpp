@@ -7,6 +7,7 @@
  */
 
 #include <Atom/RPI.Public/Model/Model.h>
+#include <Atom/RPI.Reflect/Model/ModelAsset.h>
 
 #include <Atom/RHI/Factory.h>
 
@@ -30,6 +31,28 @@ namespace AZ
                 modelAsset);
         }
 
+        
+        void Model::TEMPOrphanFromDatabase(const Data::Asset<ModelAsset>& modelAsset)
+        {
+            for (auto& modelLodAsset : modelAsset->GetLodAssets())
+            {
+                for(auto& mesh : modelLodAsset->GetMeshes())
+                {
+                    for (auto& streamBufferInfo : mesh.GetStreamBufferInfoList())
+                    {
+                        Data::InstanceDatabase<Buffer>::Instance().TEMPOrphan(
+                            Data::InstanceId::CreateFromAssetId(streamBufferInfo.m_bufferAssetView.GetBufferAsset().GetId()));
+                    }
+                    Data::InstanceDatabase<Buffer>::Instance().TEMPOrphan(
+                        Data::InstanceId::CreateFromAssetId(mesh.GetIndexBufferAssetView().GetBufferAsset().GetId()));
+                }
+                Data::InstanceDatabase<ModelLod>::Instance().TEMPOrphan(Data::InstanceId::CreateFromAssetId(modelLodAsset.GetId()));
+            }
+
+            Data::InstanceDatabase<Model>::Instance().TEMPOrphan(
+                Data::InstanceId::CreateFromAssetId(modelAsset.GetId()));
+        }
+
         size_t Model::GetLodCount() const
         {
             return m_lods.size();
@@ -42,7 +65,7 @@ namespace AZ
 
         Data::Instance<Model> Model::CreateInternal(const Data::Asset<ModelAsset>& modelAsset)
         {
-            AZ_PROFILE_FUNCTION(RPI);
+            AZ_PROFILE_SCOPE(RPI, "Model: CreateInternal");
             Data::Instance<Model> model = aznew Model();
             const RHI::ResultCode resultCode = model->Init(modelAsset);
 
@@ -56,7 +79,7 @@ namespace AZ
 
         RHI::ResultCode Model::Init(const Data::Asset<ModelAsset>& modelAsset)
         {
-            AZ_PROFILE_FUNCTION(RPI);
+            AZ_PROFILE_SCOPE(RPI, "Model: Init");
 
             m_lods.resize(modelAsset->GetLodAssets().size());
 
@@ -128,7 +151,7 @@ namespace AZ
 
         bool Model::LocalRayIntersection(const AZ::Vector3& rayStart, const AZ::Vector3& rayDir, float& distanceNormalized, AZ::Vector3& normal) const
         {
-            AZ_PROFILE_FUNCTION(RPI);
+            AZ_PROFILE_SCOPE(RPI, "Model: LocalRayIntersection");
             
             if (!GetModelAsset())
             {
@@ -171,7 +194,7 @@ namespace AZ
             float& distanceNormalized,
             AZ::Vector3& normal) const
         {
-            AZ_PROFILE_FUNCTION(RPI);
+            AZ_PROFILE_SCOPE(RPI, "Model: RayIntersection");
             const AZ::Vector3 clampedScale = nonUniformScale.GetMax(AZ::Vector3(AZ::MinTransformScale));
 
             const AZ::Transform inverseTM = modelTransform.GetInverse();

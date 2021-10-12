@@ -5,9 +5,8 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include <Atom/RHI/CpuProfiler.h>
+
 #include <Atom/RHI/Device.h>
-#include <Atom/RHI.Reflect/CpuTimingStatistics.h>
 #include <AzCore/Debug/EventTraceDrillerBus.h>
 #include <RHI/CommandQueueContext.h>
 #include <RHI/Device.h>
@@ -39,7 +38,7 @@ namespace AZ
         {
             Device& device = static_cast<Device&>(deviceBase);
             m_currentFrameIndex = 0;
-            m_frameFences.resize(RHI::Limits::Device::FrameCountMax - 1);
+            m_frameFences.resize(RHI::Limits::Device::FrameCountMax);
             for (FenceSet& fences : m_frameFences)
             {
                 fences.Init(device.GetDevice(), RHI::FenceState::Signaled);
@@ -101,7 +100,7 @@ namespace AZ
 
         void CommandQueueContext::WaitForIdle()
         {
-            AZ_PROFILE_FUNCTION(RHI);
+            AZ_PROFILE_SCOPE(RHI, "CommandQueueContext: WaitForIdle");
             for (uint32_t hardwareQueueIdx = 0; hardwareQueueIdx < RHI::HardwareQueueClassCount; ++hardwareQueueIdx)
             {
                 if (m_commandQueues[hardwareQueueIdx])
@@ -113,7 +112,7 @@ namespace AZ
 
         void CommandQueueContext::Begin()
         {
-            AZ_PROFILE_FUNCTION(RHI);
+            AZ_PROFILE_SCOPE(RHI, "CommandQueueContext: Begin");
 
             {
                 AZ_PROFILE_SCOPE(RHI, "Clearing Command Queue Timers");
@@ -131,8 +130,7 @@ namespace AZ
 
         void CommandQueueContext::End()
         {
-            AZ_PROFILE_FUNCTION(RHI);
-            AZ_ATOM_PROFILE_FUNCTION("DX12", "CommandQueueContext: End");
+            AZ_PROFILE_SCOPE(RHI, "CommandQueueContext: End");
 
             QueueGpuSignals(m_frameFences[m_currentFrameIndex]);
 
@@ -146,7 +144,6 @@ namespace AZ
 
             {
                 AZ_PROFILE_SCOPE(RHI, "Wait and Reset Fence");
-                AZ_ATOM_PROFILE_TIME_GROUP_REGION("DX12", "CommandQueueContext: Wait on Fences");
 
                 FenceEvent event("FrameFence");
                 m_frameFences[m_currentFrameIndex].Wait(event);
@@ -185,17 +182,22 @@ namespace AZ
             return *m_commandQueues[static_cast<uint32_t>(hardwareQueueClass)];
         }
 
-        void CommandQueueContext::UpdateCpuTimingStatistics(RHI::CpuTimingStatistics& cpuTimingStatistics) const
+        void CommandQueueContext::UpdateCpuTimingStatistics() const
         {
-            cpuTimingStatistics.Reset();
-
-            AZStd::sys_time_t presentDuration = 0;
-            for (const RHI::Ptr<CommandQueue>& commandQueue : m_commandQueues)
+            if (auto statsProfiler = AZ::Interface<AZ::Statistics::StatisticalProfilerProxy>::Get(); statsProfiler)
             {
-                cpuTimingStatistics.m_queueStatistics.push_back({ commandQueue->GetName(), commandQueue->GetLastExecuteDuration() });
-                presentDuration += commandQueue->GetLastPresentDuration();
+                auto& rhiMetrics = statsProfiler->GetProfiler(rhiMetricsId);
+
+                AZStd::sys_time_t presentDuration = 0;
+                for (const RHI::Ptr<CommandQueue>& commandQueue : m_commandQueues)
+                {
+                    const AZ::Crc32 commandQueueId(commandQueue->GetName().GetHash());
+                    rhiMetrics.PushSample(commandQueueId, static_cast<double>(commandQueue->GetLastExecuteDuration()));
+                    presentDuration += commandQueue->GetLastPresentDuration();
+                }
+
+                rhiMetrics.PushSample(AZ_CRC_CE("Present"), static_cast<double>(presentDuration));
             }
-            cpuTimingStatistics.m_presentDuration = presentDuration;
         }
 
         const FenceSet& CommandQueueContext::GetCompiledFences()

@@ -22,7 +22,7 @@ public:
         AWSScriptBehaviorLambdaNotificationBus::Handler::BusConnect();
     }
 
-    ~AWSScriptBehaviorLambdaNotificationBusHandlerMock()
+    ~AWSScriptBehaviorLambdaNotificationBusHandlerMock() override
     {
         AWSScriptBehaviorLambdaNotificationBus::Handler::BusDisconnect();
     }

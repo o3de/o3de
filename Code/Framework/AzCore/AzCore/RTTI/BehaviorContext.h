@@ -14,6 +14,7 @@
 #include <AzCore/RTTI/ReflectContext.h>
 #include <AzCore/std/containers/array.h>
 #include <AzCore/std/containers/unordered_map.h>
+#include <AzCore/std/containers/unordered_set.h>
 #include <AzCore/std/function/invoke.h>
 #include <AzCore/std/string/string.h>
 #include <AzCore/std/string/string_view.h>

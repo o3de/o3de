@@ -22,9 +22,10 @@
 #include <AZTestShared/Math/MathTestHelpers.h>
 #include <AZTestShared/Utils/Utils.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
+#include <AzToolsFramework/API/ViewportEditorModeTrackerInterface.h>
+#include <AzToolsFramework/API/ViewportEditorModeTrackerNotificationBus.h>
 #include <AzToolsFramework/Application/ToolsApplication.h>
 #include <AzToolsFramework/Entity/EditorEntityTransformBus.h>
-#include <AzToolsFramework/ComponentMode/EditorComponentModeBus.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>
 #include <AzToolsFramework/Viewport/ActionBus.h>
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
@@ -102,7 +103,7 @@ namespace UnitTest
     /// component mode editing.
     class TestEditorActions
         : private AzToolsFramework::EditorActionRequestBus::Handler
-        , private AzToolsFramework::ComponentModeFramework::EditorComponentModeNotificationBus::Handler
+        , private AzToolsFramework::ViewportEditorModeNotificationsBus::Handler
     {
         // EditorActionRequestBus ...
         void AddActionViaBus(int id, QAction* action) override;
@@ -113,9 +114,11 @@ namespace UnitTest
         void AttachOverride(QWidget* /*object*/) override {}
         void DetachOverride() override {}
 
-        // EditorComponentModeNotificationBus ...
-        void EnteredComponentMode(const AZStd::vector<AZ::Uuid>& componentTypes) override;
-        void LeftComponentMode(const AZStd::vector<AZ::Uuid>& componentTypes) override;
+        // ViewportEditorModeNotificationsBus overrides ...
+        void OnEditorModeActivated(
+            const AzToolsFramework::ViewportEditorModesInterface& editorModeState, AzToolsFramework::ViewportEditorMode mode) override;
+        void OnEditorModeDeactivated(
+            const AzToolsFramework::ViewportEditorModesInterface& editorModeState, AzToolsFramework::ViewportEditorMode mode) override;
 
     public:
         void Connect();
@@ -166,11 +169,12 @@ namespace UnitTest
             m_editorActions.Connect();
 
             const auto viewportHandlerBuilder =
-                [this](const AzToolsFramework::EditorVisibleEntityDataCache* entityDataCache)
+                [this](const AzToolsFramework::EditorVisibleEntityDataCache* entityDataCache,
+                    [[maybe_unused]] AzToolsFramework::ViewportEditorModeTrackerInterface* viewportEditorModeTracker)
             {
                 // create the default viewport (handles ComponentMode)
                 AZStd::unique_ptr<AzToolsFramework::EditorDefaultSelection> defaultSelection =
-                    AZStd::make_unique<AzToolsFramework::EditorDefaultSelection>(entityDataCache);
+                    AZStd::make_unique<AzToolsFramework::EditorDefaultSelection>(entityDataCache, viewportEditorModeTracker);
 
                 // override the phantom widget so we can use out custom test widget
                 defaultSelection->SetOverridePhantomWidget(&m_editorActions.m_componentModeWidget);

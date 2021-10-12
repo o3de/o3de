@@ -520,14 +520,14 @@ namespace PathUtil
         unsigned int index = 0;
         if (relativePath.length() && relativePath[index] == '@') // already aliased
         {
-            if (AZ::StringFunc::Equal(relativePath.c_str(), "@assets@/", false, 9))
+            if (AZ::StringFunc::Equal(relativePath.c_str(), "@products@/", false, 9))
             {
                 return relativePath.substr(9); // assets is assumed.
             }
             return relativePath;
         }
 
-        const char* rootValue = gEnv->pFileIO->GetAlias("@root@");
+        const char* rootValue = gEnv->pFileIO->GetAlias("@products@");
         if (rootValue)
         {
             stack_string rootPath(ToUnixPath(rootValue));
@@ -538,7 +538,7 @@ namespace PathUtil
                 )
             {
                 stack_string chopped_string = relativePath.substr(rootPath.size());
-                stack_string rooted = stack_string("@root@") + chopped_string;
+                stack_string rooted = stack_string("@products@") + chopped_string;
                 return rooted;
             }
         }

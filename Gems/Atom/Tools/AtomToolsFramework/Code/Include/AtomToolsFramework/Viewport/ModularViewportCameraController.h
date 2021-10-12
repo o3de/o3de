@@ -10,7 +10,6 @@
 
 #include <Atom/RPI.Public/ViewportContext.h>
 #include <AtomToolsFramework/Viewport/ModularViewportCameraControllerRequestBus.h>
-#include <AzFramework/Entity/EntityDebugDisplayBus.h>
 #include <AzFramework/Viewport/CameraInput.h>
 #include <AzFramework/Viewport/MultiViewportController.h>
 
@@ -103,7 +102,6 @@ namespace AtomToolsFramework
     class ModularViewportCameraControllerInstance final
         : public AzFramework::MultiViewportControllerInstanceInterface<ModularViewportCameraController>
         , public ModularViewportCameraControllerRequestBus::Handler
-        , private AzFramework::ViewportDebugDisplayEventBus::Handler
     {
     public:
         explicit ModularViewportCameraControllerInstance(AzFramework::ViewportId viewportId, ModularViewportCameraController* controller);
@@ -114,12 +112,15 @@ namespace AtomToolsFramework
         void UpdateViewport(const AzFramework::ViewportControllerUpdateEvent& event) override;
 
         // ModularViewportCameraControllerRequestBus overrides ...
-        void InterpolateToTransform(const AZ::Transform& worldFromLocal, float lookAtDistance) override;
-        AZStd::optional<AZ::Vector3> LookAtAfterInterpolation() const override;
+        void InterpolateToTransform(const AZ::Transform& worldFromLocal) override;
+        AZ::Transform GetReferenceFrame() const override;
+        void SetReferenceFrame(const AZ::Transform& worldFromLocal) override;
+        void ClearReferenceFrame() override;
 
     private:
-        // AzFramework::ViewportDebugDisplayEventBus overrides ...
-        void DisplayViewport(const AzFramework::ViewportInfo& viewportInfo, AzFramework::DebugDisplayRequests& debugDisplay) override;
+        //! Update the reference frame after a change has been made to the camera
+        //! view without updating the internal camera via user input.
+        void RefreshReferenceFrame();
 
         //! The current mode the camera controller is in.
         enum class CameraMode
@@ -139,19 +140,34 @@ namespace AtomToolsFramework
 
         AzFramework::Camera m_camera; //!< The current camera state (pitch/yaw/position/look-distance).
         AzFramework::Camera m_targetCamera; //!< The target (next) camera state that m_camera is catching up to.
+        AzFramework::Camera m_previousCamera; //!< The state of the camera from the previous frame.
+        AZStd::optional<AzFramework::Camera> m_storedCamera; //!< A potentially stored camera for when a custom reference frame is set.
         AzFramework::CameraSystem m_cameraSystem; //!< The camera system responsible for managing all CameraInputs.
         AzFramework::CameraProps m_cameraProps; //!< Camera properties to control rotate and translate smoothness.
         CameraControllerPriorityFn m_priorityFn; //!< Controls at what priority the camera controller should respond to events.
 
         CameraAnimation m_cameraAnimation; //!< Camera animation state (used during CameraMode::Animation).
         CameraMode m_cameraMode = CameraMode::Control; //!< The current mode the camera is operating in.
-        AZStd::optional<AZ::Vector3> m_lookAtAfterInterpolation; //!< The look at point after an interpolation has finished.
-                                                                 //!< Will be cleared when the view changes (camera looks away).
+        //! An additional reference frame the camera can operate in (identity has no effect).
+        AZ::Transform m_referenceFrameOverride = AZ::Transform::CreateIdentity();
         //! Flag to prevent circular updates of the camera transform (while the viewport transform is being updated internally).
         bool m_updatingTransformInternally = false;
         //! Listen for camera view changes outside of the camera controller.
         AZ::RPI::ViewportContext::MatrixChangedEvent::Handler m_cameraViewMatrixChangeHandler;
         //! The current instance of the modular camera viewport context.
         AZStd::unique_ptr<ModularCameraViewportContext> m_modularCameraViewportContext;
+    };
+
+    //! Placeholder implementation for ModularCameraViewportContext (useful for verifying the interface).
+    class PlaceholderModularCameraViewportContextImpl : public AtomToolsFramework::ModularCameraViewportContext
+    {
+    public:
+        AZ::Transform GetCameraTransform() const override;
+        void SetCameraTransform(const AZ::Transform& transform) override;
+        void ConnectViewMatrixChangedHandler(AZ::RPI::ViewportContext::MatrixChangedEvent::Handler& handler) override;
+
+    private:
+        AZ::Transform m_cameraTransform = AZ::Transform::CreateIdentity();
+        AZ::RPI::ViewportContext::MatrixChangedEvent m_viewMatrixChangedEvent;
     };
 } // namespace AtomToolsFramework

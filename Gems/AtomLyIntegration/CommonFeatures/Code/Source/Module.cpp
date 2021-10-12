@@ -24,6 +24,7 @@
 #include <OcclusionCullingPlane/OcclusionCullingPlaneComponent.h>
 #include <PostProcess/PostFxLayerComponent.h>
 #include <PostProcess/Bloom/BloomComponent.h>
+#include <PostProcess/ColorGrading/HDRColorGradingComponent.h>
 #include <PostProcess/DepthOfField/DepthOfFieldComponent.h>
 #include <PostProcess/DisplayMapper/DisplayMapperComponent.h>
 #include <PostProcess/ExposureControl/ExposureControlComponent.h>
@@ -57,6 +58,7 @@
 #include <OcclusionCullingPlane/EditorOcclusionCullingPlaneComponent.h>
 #include <PostProcess/EditorPostFxLayerComponent.h>
 #include <PostProcess/Bloom/EditorBloomComponent.h>
+#include <PostProcess/ColorGrading/EditorHDRColorGradingComponent.h>
 #include <PostProcess/DepthOfField/EditorDepthOfFieldComponent.h>
 #include <PostProcess/DisplayMapper/EditorDisplayMapperComponent.h>
 #include <PostProcess/ExposureControl/EditorExposureControlComponent.h>
@@ -93,6 +95,7 @@ namespace AZ
                         DecalComponent::CreateDescriptor(),
                         DirectionalLightComponent::CreateDescriptor(),
                         BloomComponent::CreateDescriptor(),
+                        HDRColorGradingComponent::CreateDescriptor(),
                         DisplayMapperComponent::CreateDescriptor(),
                         DepthOfFieldComponent::CreateDescriptor(),
                         ExposureControlComponent::CreateDescriptor(),
@@ -124,6 +127,7 @@ namespace AZ
                         EditorDecalComponent::CreateDescriptor(),
                         EditorDirectionalLightComponent::CreateDescriptor(),
                         EditorBloomComponent::CreateDescriptor(),
+                        EditorHDRColorGradingComponent::CreateDescriptor(),
                         EditorDepthOfFieldComponent::CreateDescriptor(),
                         EditorDisplayMapperComponent::CreateDescriptor(),
                         EditorExposureControlComponent::CreateDescriptor(),

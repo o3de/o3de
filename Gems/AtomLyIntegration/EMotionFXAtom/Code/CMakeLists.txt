@@ -54,11 +54,21 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
         INCLUDE_DIRECTORIES
             PRIVATE
                 Source
+                Tools
         BUILD_DEPENDENCIES
             PRIVATE
                 AZ::AzCore
                 Gem::EMotionFX_Atom.Static
+                Gem::EMotionFX.Editor.Static
+                Gem::AtomToolsFramework.Static
+                Gem::AtomToolsFramework.Editor
+                Gem::Atom_Component_DebugCamera.Static
+                Gem::Atom_Feature_Common.Static
+                Gem::AtomLyIntegration_CommonFeatures.Static
         RUNTIME_DEPENDENCIES
             Gem::EMotionFX.Editor
+        COMPILE_DEFINITIONS
+            PUBLIC
+            EMOTIONFXATOM_EDITOR
     )
 endif()

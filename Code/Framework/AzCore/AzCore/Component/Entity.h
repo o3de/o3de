@@ -133,6 +133,14 @@ namespace AZ
         //! @return The state of the entity. For example, the entity has been initialized, the entity is active, and so on.
         State GetState() const { return m_state; }
 
+        //! Gets the ticket id used to spawn the entity.
+        //! @return the ticket id used to spawn the entity. If entity is not spawned, the id will be 0.
+        u32 GetSpawnTicketId() const;
+
+        //! Sets the ticket id used to spawn the entity. The ticket id in the entity will remain 0 unless it's set using this function.
+        //! @param spawnTicketId the ticket id used to spawn the entity.
+        void SetSpawnTicketId(u32 spawnTicketId);
+
         //! Connects an entity state event handler to the entity.
         //! All state changes will be signaled through this event.
         //! @param handler reference to the EntityStateEvent handler to attach to the entities state event.
@@ -354,10 +362,9 @@ namespace AZ
         //! @return The Process Signature of the local machine.
         static AZ::u32 GetProcessSignature();
 
-        /// @cond EXCLUDE_DOCS 
-        //! @deprecated Use the TransformBus to communicate with the TransformInterface.
-        inline TransformInterface* GetTransform() const { return m_transform; }
-        /// @endcond
+        //! Gets the TransformInterface for the entity.
+        //! @return The TransformInterface for the entity.
+        TransformInterface* GetTransform() const;
 
         //! Sorts an entity's components based on the dependencies between components.
         //! If all dependencies are met, the required services can be activated
@@ -406,10 +413,12 @@ namespace AZ
         //! A cached pointer to the transform interface. 
         //! We recommend using AZ::TransformBus and caching locally instead of accessing
         //! the transform interface directly through this pointer.
-        TransformInterface* m_transform;
+        mutable TransformInterface* m_transform;
 
         //! A user-friendly name for the entity. This makes error messages easier to read.
         AZStd::string m_name;
+
+        u32 m_spawnTicketId = 0;
 
         //! The state of the entity.
         State m_state;

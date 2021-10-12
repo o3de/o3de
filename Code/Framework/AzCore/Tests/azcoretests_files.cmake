@@ -37,6 +37,7 @@ set(FILES
     FileIOBaseTestTypes.h
     Geometry2DUtils.cpp
     Interface.cpp
+    IO/FileReaderTests.cpp
     IO/Path/PathTests.cpp
     IPC.cpp
     Jobs.cpp
@@ -60,6 +61,7 @@ set(FILES
     Slice.cpp
     State.cpp
     Statistics.cpp
+    StatisticalProfiler.cpp
     StreamerTests.cpp
     StringFunc.cpp
     SystemFile.cpp
@@ -73,11 +75,12 @@ set(FILES
     Name/NameJsonSerializerTests.cpp
     Name/NameTests.cpp
     RTTI/TypeSafeIntegralTests.cpp
-    SettingsRegistryTests.cpp
-    SettingsRegistryMergeUtilsTests.cpp
     Settings/CommandLineTests.cpp
+    Settings/SettingsRegistryTests.cpp
     Settings/SettingsRegistryConsoleUtilsTests.cpp
+    Settings/SettingsRegistryMergeUtilsTests.cpp
     Settings/SettingsRegistryScriptUtilsTests.cpp
+    Settings/SettingsRegistryVisitorUtilsTests.cpp
     Streamer/BlockCacheTests.cpp
     Streamer/DedicatedCacheTests.cpp
     Streamer/FullDecompressorTests.cpp
@@ -126,6 +129,7 @@ set(FILES
     Serialization/Json/UnorderedSetSerializerTests.cpp
     Serialization/Json/UnsupportedTypesSerializerTests.cpp
     Serialization/Json/UuidSerializerTests.cpp
+    Time/TimeTests.cpp
     Math/AabbTests.cpp
     Math/ColorTests.cpp
     Math/CrcTests.cpp
@@ -191,6 +195,7 @@ set(FILES
     AZStd/LockFreeQueues.cpp
     AZStd/LockFreeStacks.cpp
     AZStd/LockTests.cpp
+    AZStd/Math.cpp
     AZStd/Numeric.cpp
     AZStd/Ordered.cpp
     AZStd/Optional.cpp

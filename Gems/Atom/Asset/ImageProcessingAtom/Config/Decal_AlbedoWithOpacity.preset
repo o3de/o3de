@@ -24,13 +24,14 @@
                 "FileMasks": [
                     "_decal"
                 ],
-                "PixelFormat": "ETC2a",
+                "PixelFormat": "ASTC_4x4",
+                "MaxTextureSize": 2048,
                 "IsPowerOf2": true,
                 "MipMapSetting": {
                     "MipGenType": "Box"
                 },
                 // Decal Texture Arrays need all mips available immediately for packing. 
-                "NumberResidentMips": 255              
+                "NumberResidentMips": 255
             },
             "ios": {
                 "UUID": "{E06B5087-2640-49B6-B9BA-D40048162B90}",
@@ -39,6 +40,7 @@
                     "_decal"
                 ],
                 "PixelFormat": "ASTC_4x4",
+                "MaxTextureSize": 2048,
                 "IsPowerOf2": true,
                 "MipMapSetting": {
                     "MipGenType": "Box"

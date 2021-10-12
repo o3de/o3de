@@ -10,6 +10,7 @@
 #include <Material/EditorMaterialComponentExporter.h>
 #include <Material/EditorMaterialComponentInspector.h>
 #include <Material/EditorMaterialModelUvNameMapInspector.h>
+#include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/RTTI/BehaviorContext.h>
@@ -117,10 +118,16 @@ namespace AZ
             }
         };
 
+        AZ::Data::AssetId EditorMaterialComponentSlot::GetActiveAssetId() const
+        {
+            return m_materialAsset.GetId().IsValid() ? m_materialAsset.GetId() : GetDefaultAssetId();
+        }
+
         AZ::Data::AssetId EditorMaterialComponentSlot::GetDefaultAssetId() const
         {
             AZ::Data::AssetId assetId;
-            MaterialComponentRequestBus::EventResult(assetId, m_entityId, &MaterialComponentRequestBus::Events::GetDefaultMaterialAssetId, m_id);
+            MaterialComponentRequestBus::EventResult(
+                assetId, m_entityId, &MaterialComponentRequestBus::Events::GetDefaultMaterialAssetId, m_id);
             return assetId;
         }
 
@@ -134,13 +141,13 @@ namespace AZ
         bool EditorMaterialComponentSlot::HasSourceData() const
         {
             // The slot only has valid source data if the source path is valid and the file has the correct extension
-            const AZStd::string& sourcePath = AZ::RPI::AssetUtils::GetSourcePathByAssetId(m_materialAsset.GetId());
+            const AZStd::string& sourcePath = AZ::RPI::AssetUtils::GetSourcePathByAssetId(GetActiveAssetId());
             return !sourcePath.empty() && AZ::StringFunc::Path::IsExtension(sourcePath.c_str(), AZ::RPI::MaterialSourceData::Extension);
         }
 
         void EditorMaterialComponentSlot::SetAsset(const Data::AssetId& assetId)
         {
-            m_materialAsset.Create(assetId);
+            m_materialAsset = AZ::Data::Asset<AZ::RPI::MaterialAsset>(assetId, AZ::AzTypeInfo<AZ::RPI::MaterialAsset>::Uuid());
             MaterialComponentRequestBus::Event(
                 m_entityId, &MaterialComponentRequestBus::Events::SetMaterialOverride, m_id, m_materialAsset.GetId());
             OnDataChanged();
@@ -164,7 +171,7 @@ namespace AZ
 
         void EditorMaterialComponentSlot::ClearToDefaultAsset()
         {
-            m_materialAsset.Create(GetDefaultAssetId());
+            m_materialAsset = AZ::Data::Asset<AZ::RPI::MaterialAsset>(GetDefaultAssetId(), AZ::AzTypeInfo<AZ::RPI::MaterialAsset>::Uuid());
             MaterialComponentRequestBus::Event(
                 m_entityId, &MaterialComponentRequestBus::Events::SetMaterialOverride, m_id, m_materialAsset.GetId());
             ClearOverrides();
@@ -204,7 +211,8 @@ namespace AZ
                     const auto& assetIdOutcome = AZ::RPI::AssetUtils::MakeAssetId(exportItem.GetExportPath(), 0);
                     if (assetIdOutcome)
                     {
-                        m_materialAsset.Create(assetIdOutcome.GetValue());
+                        m_materialAsset = AZ::Data::Asset<AZ::RPI::MaterialAsset>(
+                            assetIdOutcome.GetValue(), AZ::AzTypeInfo<AZ::RPI::MaterialAsset>::Uuid());
                         changed = true;
                     }
                 }
@@ -218,7 +226,7 @@ namespace AZ
 
         void EditorMaterialComponentSlot::OpenMaterialEditor() const
         {
-            const AZStd::string& sourcePath = AZ::RPI::AssetUtils::GetSourcePathByAssetId(m_materialAsset.GetId());
+            const AZStd::string& sourcePath = AZ::RPI::AssetUtils::GetSourcePathByAssetId(GetActiveAssetId());
             if (!sourcePath.empty() && AZ::StringFunc::Path::IsExtension(sourcePath.c_str(), AZ::RPI::MaterialSourceData::Extension))
             {
                 EditorMaterialSystemComponentRequestBus::Broadcast(
@@ -234,7 +242,7 @@ namespace AZ
 
         void EditorMaterialComponentSlot::OpenUvNameMapInspector()
         {
-            if (m_materialAsset.GetId().IsValid())
+            if (GetActiveAssetId().IsValid())
             {
                 AZStd::unordered_set<AZ::Name> modelUvNames;
                 MaterialReceiverRequestBus::EventResult(modelUvNames, m_entityId, &MaterialReceiverRequestBus::Events::GetModelUvNames);
@@ -250,7 +258,7 @@ namespace AZ
                 };
 
                 if (EditorMaterialComponentInspector::OpenInspectorDialog(
-                        m_materialAsset.GetId(), matModUvOverrides, modelUvNames, applyMatModUvOverrideChangedCallback))
+                        GetActiveAssetId(), matModUvOverrides, modelUvNames, applyMatModUvOverrideChangedCallback))
                 {
                     OnDataChanged();
                 }
@@ -272,10 +280,10 @@ namespace AZ
             action->setEnabled(HasSourceData());
 
             action = menu.addAction("Edit Material Instance...", [this]() { OpenMaterialInspector(); });
-            action->setEnabled(m_materialAsset.GetId().IsValid());
+            action->setEnabled(GetActiveAssetId().IsValid());
 
             action = menu.addAction("Edit Material Instance UV Map...", [this]() { OpenUvNameMapInspector(); });
-            action->setEnabled(m_materialAsset.GetId().IsValid());
+            action->setEnabled(GetActiveAssetId().IsValid());
 
             menu.addSeparator();
 

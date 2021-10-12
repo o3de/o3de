@@ -5,9 +5,16 @@
     "origin": "Open 3D Engine - o3de.org",
     "type": "Tool",
     "summary": "The Scene Processing Gem provides Scene Settings, a tool you can use to specify the default settings for processing asset files for actors, meshes, motions, and PhysX.",
-    "canonical_tags": ["Gem"],
-    "user_tags": ["Assets", "Tools", "Core"],
+    "canonical_tags": [
+        "Gem"
+    ],
+    "user_tags": [
+        "Assets",
+        "Tools",
+        "Core"
+    ],
     "icon_path": "preview.png",
     "requirements": "",
-    "documentation_url": "https://o3de.org/docs/user-guide/gems/reference/assets/scene-processing/"
+    "documentation_url": "https://o3de.org/docs/user-guide/gems/reference/assets/scene-processing/",
+    "dependencies": []
 }

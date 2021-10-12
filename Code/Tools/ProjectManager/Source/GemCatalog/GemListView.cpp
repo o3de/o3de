@@ -8,7 +8,6 @@
 
 #include <GemCatalog/GemListView.h>
 #include <GemCatalog/GemItemDelegate.h>
-#include <QStandardItemModel>
 
 namespace O3DE::ProjectManager
 {

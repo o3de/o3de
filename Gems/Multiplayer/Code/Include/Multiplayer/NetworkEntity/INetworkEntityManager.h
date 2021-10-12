@@ -13,6 +13,7 @@
 #include <AzCore/Component/Entity.h>
 #include <AzCore/EBus/Event.h>
 #include <AzCore/Asset/AssetCommon.h>
+#include <AzFramework/Spawnable/SpawnableEntitiesInterface.h>
 
 namespace Multiplayer
 {
@@ -20,6 +21,7 @@ namespace Multiplayer
     class NetworkEntityAuthorityTracker;
     class NetworkEntityRpcMessage;
     class MultiplayerComponentRegistry;
+    class IEntityDomain;
 
     using EntityExitDomainEvent = AZ::Event<const ConstNetworkEntityHandle&>;
     using ControllersActivatedEvent = AZ::Event<const ConstNetworkEntityHandle&, EntityIsMigrating>;
@@ -37,6 +39,19 @@ namespace Multiplayer
 
         virtual ~INetworkEntityManager() = default;
 
+        //! Configures the NetworkEntityManager to operate as an authoritative host.
+        //! @param hostId       the hostId of this NetworkEntityManager
+        //! @param entityDomain the entity domain used to determine which entities this manager has authority over
+        virtual void Initialize(const HostId& hostId, AZStd::unique_ptr<IEntityDomain> entityDomain) = 0;
+
+        //! Returns whether or not the network entity manager has been initialized to host.
+        //! @return boolean true if this network entity manager has been intialized to host
+        virtual bool IsInitialized() const = 0;
+
+        //! Returns the entity domain associated with this network entity manager, this will be nullptr on clients.
+        //! @return boolean the entity domain for this network entity manager
+        virtual IEntityDomain* GetEntityDomain() const = 0;
+
         //! Returns the NetworkEntityTracker for this INetworkEntityManager instance.
         //! @return the NetworkEntityTracker for this INetworkEntityManager instance
         virtual NetworkEntityTracker* GetNetworkEntityTracker() = 0;
@@ -51,7 +66,7 @@ namespace Multiplayer
 
         //! Returns the HostId for this INetworkEntityManager instance.
         //! @return the HostId for this INetworkEntityManager instance
-        virtual HostId GetHostId() const = 0;
+        virtual const HostId& GetHostId() const = 0;
 
         //! Creates new entities of the given archetype
         //! @param prefabEntryId the name of the spawnable to spawn
@@ -74,6 +89,15 @@ namespace Multiplayer
             AutoActivate autoActivate,
             const AZ::Transform& transform
         ) = 0;
+
+        //! Requests a network spawnable to instantiate at a given transform
+        //! This is an async function. The instantiated entities are not available immediately but will be constructed by the spawnable system
+        //! The spawnable ticket has to be kept for the whole lifetime of the entities
+        //! @param netSpawnable the network spawnable to spawn
+        //! @param transform the transform where the spawnable should be spawned
+        //! @return the ticket for managing the spawned entities
+        [[nodiscard]] virtual AZStd::unique_ptr<AzFramework::EntitySpawnTicket> RequestNetSpawnableInstantiation(
+            const AZ::Data::Asset<AzFramework::Spawnable>& netSpawnable, const AZ::Transform& transform) = 0;
 
         //! Configures new networked entity
         //! @param netEntity the entity to setup
@@ -156,5 +180,8 @@ namespace Multiplayer
         //! Handle a local rpc message.
         //! @param entityRpcMessage the local rpc message to handle
         virtual void HandleLocalRpcMessage(NetworkEntityRpcMessage& message) = 0;
+
+        //! Visualization of network entity manager state.
+        virtual void DebugDraw() const = 0;
     };
 }

@@ -7,7 +7,6 @@
  */
 
 #include <Atom/Feature/Utils/ProfilingCaptureBus.h>
-#include <Atom/RHI.Reflect/CpuTimingStatistics.h>
 #include <Atom/RHI/CpuProfiler.h>
 #include <Atom/RHI/CpuProfilerImpl.h>
 #include <Atom/RPI.Edit/Common/JsonUtils.h>
@@ -16,6 +15,7 @@
 #include <AzCore/Casting/lossy_cast.h>
 #include <AzCore/IO/FileIO.h>
 #include <AzCore/JSON/filereadstream.h>
+#include <AzCore/Statistics/StatisticalProfilerProxy.h>
 #include <AzCore/Serialization/Json/JsonSerialization.h>
 #include <AzCore/Serialization/Json/JsonSerializationResult.h>
 #include <AzCore/std/containers/map.h>
@@ -31,12 +31,17 @@ namespace AZ
     {
         namespace CpuProfilerImGuiHelper
         {
-            inline float TicksToMs(AZStd::sys_time_t ticks)
+            inline float TicksToMs(double ticks)
             {
                 // Note: converting to microseconds integer before converting to milliseconds float
                 const AZStd::sys_time_t ticksPerSecond = AZStd::GetTimeTicksPerSecond();
                 AZ_Assert(ticksPerSecond >= 1000, "Error in converting ticks to ms, expected ticksPerSecond >= 1000");
                 return static_cast<float>((ticks * 1000) / (ticksPerSecond / 1000)) / 1000.0f;
+            }
+
+            inline float TicksToMs(AZStd::sys_time_t ticks)
+            {
+                return TicksToMs(static_cast<double>(ticks));
             }
 
             using DeserializedCpuData = AZStd::vector<RHI::CpuProfilingStatisticsSerializer::CpuProfilingStatisticsSerializerEntry>;
@@ -108,7 +113,9 @@ namespace AZ
             }
         } // namespace CpuProfilerImGuiHelper
 
-        inline void ImGuiCpuProfiler::Draw(bool& keepDrawing, const AZ::RHI::CpuTimingStatistics& currentCpuTimingStatistics)
+
+
+        inline void ImGuiCpuProfiler::Draw(bool& keepDrawing)
         {
             // Cache the value to detect if it was changed by ImGui(user pressed 'x')
             const bool cachedShowCpuProfiler = keepDrawing;
@@ -121,10 +128,10 @@ namespace AZ
                 if (!m_paused)
                 {
                     // Update region map and cache the input cpu timing statistics when the profiling is not paused
-                    m_cpuTimingStatisticsWhenPause = currentCpuTimingStatistics;
+                    CacheCpuTimingStatistics();
 
                     CollectFrameData();
-                    CullFrameData(currentCpuTimingStatistics); 
+                    CullFrameData();
 
                     // Only listen to system ticks when the profiler is active
                     if (!SystemTickBus::Handler::BusIsConnected())
@@ -148,7 +155,7 @@ namespace AZ
                 }
             }
             ImGui::End();
-         
+
             if (m_captureToFile)
             {
                 AZStd::sys_time_t timeNow = AZStd::GetTimeNowSecond();
@@ -325,7 +332,7 @@ namespace AZ
         {
             const bool ascending = sortSpecs->Specs->SortDirection == ImGuiSortDirection_Ascending;
             const ImS16 columnToSort = sortSpecs->Specs->ColumnIndex;
-                
+
             switch (columnToSort)
             {
             case (0): // Sort by group name
@@ -343,7 +350,7 @@ namespace AZ
             case (4): // Sort by invocations
                 AZStd::sort(m_tableData.begin(), m_tableData.end(), TableRow::TableRowCompareFunctor(&TableRow::m_invocationsLastFrame, ascending));
                 break;
-            case (5): // Sort by total time 
+            case (5): // Sort by total time
                 AZStd::sort(m_tableData.begin(), m_tableData.end(), TableRow::TableRowCompareFunctor(&TableRow::m_lastFrameTotalTicks, ascending));
                 break;
             }
@@ -354,19 +361,12 @@ namespace AZ
         {
             DrawCommonHeader();
 
-            const AZ::RHI::CpuTimingStatistics& cpuTimingStatistics = m_cpuTimingStatisticsWhenPause;
-
-            const auto ShowTimeInMs = [](AZStd::sys_time_t duration)
-            {
-                ImGui::Text("%.2f ms", CpuProfilerImGuiHelper::TicksToMs(duration));
-            };
-
-            const auto ShowRow = [&ShowTimeInMs](const char* regionLabel, AZStd::sys_time_t duration)
+            const auto ShowRow = [](const char* regionLabel, double duration)
             {
                 ImGui::Text("%s", regionLabel);
                 ImGui::NextColumn();
 
-                ShowTimeInMs(duration);
+                ImGui::Text("%.2f ms", CpuProfilerImGuiHelper::TicksToMs(duration));
                 ImGui::NextColumn();
             };
 
@@ -377,11 +377,9 @@ namespace AZ
                 ImGui::SetColumnWidth(0, 660.0f);
                 ImGui::SetColumnWidth(1, 100.0f);
 
-                ShowRow("Frame to Frame Time", cpuTimingStatistics.m_frameToFrameTime);
-                ShowRow("Present Time", cpuTimingStatistics.m_presentDuration);
-                for (const auto& queueStatistics : cpuTimingStatistics.m_queueStatistics)
+                for (const auto& queueStatistics : m_cpuTimingStatisticsWhenPause)
                 {
-                    ShowRow(queueStatistics.m_queueName.GetCStr(), queueStatistics.m_executeDuration);
+                    ShowRow(queueStatistics.m_name.c_str(), queueStatistics.m_executeDuration);
                 }
 
                 ImGui::Separator();
@@ -401,7 +399,7 @@ namespace AZ
                 }
 
                 DrawTable();
-            } 
+            }
         }
 
         inline void ImGuiCpuProfiler::DrawFilePicker()
@@ -460,17 +458,17 @@ namespace AZ
                 const auto [groupRegionNameItr, wasGroupRegionNameInserted] =
                     m_deserializedGroupRegionNamePool.emplace(groupNameItr->c_str(), regionNameItr->c_str());
 
-                const RHI::CachedTimeRegion newRegion(&(*groupRegionNameItr), entry.m_stackDepth, entry.m_startTick, entry.m_endTick);
+                const RHI::CachedTimeRegion newRegion(*groupRegionNameItr, entry.m_stackDepth, entry.m_startTick, entry.m_endTick);
                 m_savedData[entry.m_threadId].push_back(newRegion);
 
-                // Since we don't serialize the frame boundaries, we need to use the RPI's OnSystemTick event as a heuristic. 
+                // Since we don't serialize the frame boundaries, we need to use the RPI's OnSystemTick event as a heuristic.
                 const static Name frameBoundaryName = Name("RPISystem: OnSystemTick");
                 if (entry.m_regionName == frameBoundaryName)
                 {
                     m_frameEndTicks.push_back(entry.m_endTick);
-                }  
+                }
 
-                // Update running statistics 
+                // Update running statistics
                 if (!m_groupRegionMap[*groupNameItr].contains(*regionNameItr))
                 {
                     m_groupRegionMap[*groupNameItr][*regionNameItr].m_groupName = *groupNameItr;
@@ -487,7 +485,7 @@ namespace AZ
             // Invariant: each vector in m_savedData must be sorted so that we can efficiently cull region data.
             for (auto& [threadId, singleThreadData] : m_savedData)
             {
-                AZStd::sort(singleThreadData.begin(), singleThreadData.end(), 
+                AZStd::sort(singleThreadData.begin(), singleThreadData.end(),
                 [](const TimeRegion& lhs, const TimeRegion& rhs)
                 {
                     return lhs.m_startTick < rhs.m_startTick;
@@ -653,6 +651,32 @@ namespace AZ
             ImGui::EndChild();
         }
 
+        inline void ImGuiCpuProfiler::CacheCpuTimingStatistics()
+        {
+            using namespace AZ::Statistics;
+
+            m_cpuTimingStatisticsWhenPause.clear();
+            if (auto statsProfiler = AZ::Interface<StatisticalProfilerProxy>::Get(); statsProfiler)
+            {
+                auto& rhiMetrics = statsProfiler->GetProfiler(AZ_CRC_CE("RHI"));
+
+                const NamedRunningStatistic* frameTimeMetric = rhiMetrics.GetStatistic(AZ_CRC_CE("Frame to Frame Time"));
+                if (frameTimeMetric)
+                {
+                    m_frameToFrameTime = static_cast<AZStd::sys_time_t>(frameTimeMetric->GetMostRecentSample());
+                }
+
+                AZStd::vector<NamedRunningStatistic*> statistics;
+                rhiMetrics.GetStatsManager().GetAllStatistics(statistics);
+
+                for (NamedRunningStatistic* stat : statistics)
+                {
+                    m_cpuTimingStatisticsWhenPause.push_back({ stat->GetName(), stat->GetMostRecentSample() });
+                    stat->Reset();
+                }
+            }
+        }
+
         inline void ImGuiCpuProfiler::CollectFrameData()
         {
             // We maintain separate datastores for the visualizer and the statistical view because they require different
@@ -669,7 +693,7 @@ namespace AZ
             // Iterate through the entire TimeRegionMap and copy the data since it will get deleted on the next frame
             for (const auto& [threadId, singleThreadRegionMap] : timeRegionMap)
             {
-                const size_t threadIdHashed = AZStd::hash<AZStd::thread_id>{}(threadId); 
+                const size_t threadIdHashed = AZStd::hash<AZStd::thread_id>{}(threadId);
                 // The profiler can sometime return threads without any profiling events when dropping threads, FIXME(ATOM-15949)
                 if (singleThreadRegionMap.size() == 0)
                 {
@@ -686,7 +710,7 @@ namespace AZ
                         newVisualizerData.push_back(region); // Copies
 
                         // Also update the statistical view's data
-                        const AZStd::string& groupName = region.m_groupRegionName->m_groupName;
+                        const AZStd::string& groupName = region.m_groupRegionName.m_groupName;
 
                         if (!m_groupRegionMap[groupName].contains(regionName))
                         {
@@ -721,10 +745,9 @@ namespace AZ
             }
         }
 
-        inline void ImGuiCpuProfiler::CullFrameData(const AZ::RHI::CpuTimingStatistics& currentCpuTimingStatistics)
+        inline void ImGuiCpuProfiler::CullFrameData()
         {
-            const AZStd::sys_time_t frameToFrameTime = currentCpuTimingStatistics.m_frameToFrameTime;
-            const AZStd::sys_time_t deleteBeforeTick = AZStd::GetTimeNowTicks() - frameToFrameTime * m_framesToCollect;
+            const AZStd::sys_time_t deleteBeforeTick = AZStd::GetTimeNowTicks() - m_frameToFrameTime * m_framesToCollect;
 
             // Remove old frame boundary data
             auto firstBoundaryToKeepItr = AZStd::upper_bound(m_frameEndTicks.begin(), m_frameEndTicks.end(), deleteBeforeTick);
@@ -765,7 +788,7 @@ namespace AZ
         inline void ImGuiCpuProfiler::DrawBlock(const TimeRegion& block, u64 targetRow)
         {
             // Don't draw anything if the user is searching for regions and this block doesn't pass the filter
-            if (!m_visualizerHighlightFilter.PassFilter(block.m_groupRegionName->m_regionName))
+            if (!m_visualizerHighlightFilter.PassFilter(block.m_groupRegionName.m_regionName))
             {
                 return;
             }
@@ -798,7 +821,7 @@ namespace AZ
             if (regionPixelWidth > maxCharWidth) // We can draw at least one character
             {
                 const AZStd::string label =
-                    AZStd::string::format("%s/ %s", block.m_groupRegionName->m_groupName, block.m_groupRegionName->m_regionName);
+                    AZStd::string::format("%s/ %s", block.m_groupRegionName.m_groupName, block.m_groupRegionName.m_regionName);
                 const float textWidth = ImGui::CalcTextSize(label.c_str()).x;
 
                 if (regionPixelWidth < textWidth) // Not enough space in the block to draw the whole name, draw clipped text.
@@ -809,7 +832,7 @@ namespace AZ
                     // so we must adjust for the scale manually.
                     const float scaleFactor = ImGui::GetIO().FontGlobalScale;
                     const float fontSize = ImGui::GetFont()->FontSize * scaleFactor;
-                    
+
                     ImGui::GetFont()->RenderText(drawList, fontSize, startPoint, IM_COL32_WHITE, clipRect, label.c_str(), 0);
                 }
                 else // We have enough space to draw the entire label, draw and center text.
@@ -828,7 +851,7 @@ namespace AZ
                 if (ImGui::IsMouseClicked(ImGuiMouseButton_Left))
                 {
                     m_enableVisualizer = false;
-                    const auto newFilter = AZStd::string(block.m_groupRegionName->m_regionName);
+                    const auto newFilter = AZStd::string(block.m_groupRegionName.m_regionName);
                     m_timedRegionFilter = ImGuiTextFilter(newFilter.c_str());
                     m_timedRegionFilter.Build();
                 }
@@ -836,7 +859,7 @@ namespace AZ
                 drawList->AddRect(startPoint, endPoint, ImGui::GetColorU32({ 1, 1, 1, 1 }), 0.0, 0, 1.5);
 
                 ImGui::BeginTooltip();
-                ImGui::Text("%s::%s", block.m_groupRegionName->m_groupName, block.m_groupRegionName->m_regionName);
+                ImGui::Text("%s::%s", block.m_groupRegionName.m_groupName, block.m_groupRegionName.m_regionName);
                 ImGui::Text("Execution time: %.3f ms", CpuProfilerImGuiHelper::TicksToMs(block.m_endTick - block.m_startTick));
                 ImGui::Text("Ticks %lld => %lld", block.m_startTick, block.m_endTick);
                 ImGui::EndTooltip();
@@ -846,10 +869,10 @@ namespace AZ
         inline ImU32 ImGuiCpuProfiler::GetBlockColor(const TimeRegion& block)
         {
             // Use the GroupRegionName pointer a key into the cache, equal regions will have equal pointers
-            const GroupRegionName* key = block.m_groupRegionName;
-            if (m_regionColorMap.contains(key)) // Cache hit
+            const GroupRegionName& key = block.m_groupRegionName;
+            if (auto iter = m_regionColorMap.find(key); iter != m_regionColorMap.end()) // Cache hit
             {
-                return ImGui::GetColorU32(m_regionColorMap[key]);
+                return ImGui::GetColorU32(iter->second);
             }
 
             // Cache miss, generate a new random color
