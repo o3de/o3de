@@ -78,6 +78,23 @@ public:
     MOCK_METHOD0(OnStopMatchmakingAsyncComplete, void());
 };
 
+class MatchAcceptanceNotificationsHandlerMock
+    : public AzFramework::MatchAcceptanceNotificationBus::Handler
+{
+public:
+    MatchAcceptanceNotificationsHandlerMock()
+    {
+        AzFramework::MatchAcceptanceNotificationBus::Handler::BusConnect();
+    }
+
+    ~MatchAcceptanceNotificationsHandlerMock()
+    {
+        AzFramework::MatchAcceptanceNotificationBus::Handler::BusDisconnect();
+    }
+
+    MOCK_METHOD0(OnMatchAcceptance, void());
+};
+
 class SessionAsyncRequestNotificationsHandlerMock
     : public AzFramework::SessionAsyncRequestNotificationBus::Handler
 {
