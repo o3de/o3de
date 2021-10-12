@@ -266,6 +266,15 @@ class TestMaterialEditorBasicTests(object):
         request.addfinalizer(teardown)
 
     @pytest.mark.parametrize("exe_file_name", ["MaterialEditor"])
+    @pytest.mark.test_case_id("C34448113")  # Creating a New Asset.
+    @pytest.mark.test_case_id("C34448114")  # Opening an Existing Asset.
+    @pytest.mark.test_case_id("C34448115")  # Closing Selected Material.
+    @pytest.mark.test_case_id("C34448116")  # Closing All Materials.
+    @pytest.mark.test_case_id("C34448117")  # Closing all but Selected Material.
+    @pytest.mark.test_case_id("C34448118")  # Saving Material.
+    @pytest.mark.test_case_id("C34448119")  # Saving as a New Material.
+    @pytest.mark.test_case_id("C34448120")  # Saving as a Child Material.
+    @pytest.mark.test_case_id("C34448121")  # Saving all Open Materials.
     def test_MaterialEditorBasicTests(
             self, request, workspace, project, launcher_platform, generic_launcher, exe_file_name):
 
