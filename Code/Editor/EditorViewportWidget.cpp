@@ -166,6 +166,9 @@ EditorViewportWidget::EditorViewportWidget(const QString& name, QWidget* parent)
 
     m_defaultViewTM.SetIdentity();
 
+    //Set the camera position to a more sensible default.
+    m_defaultViewTM.SetTranslation(Vec3(0.f, -10.f, 4.f));
+
     if (GetIEditor()->GetViewManager()->GetSelectedViewport() == nullptr)
     {
         GetIEditor()->GetViewManager()->SelectViewport(this);
@@ -1449,6 +1452,7 @@ void EditorViewportWidget::SetViewTM(const Matrix34& camMatrix, bool bMoveOnly)
     {
         GetCurrentAtomView()->SetCameraTransform(LYTransformToAZMatrix3x4(camMatrix));
     }
+
     if (m_pressedKeyState == KeyPressedState::PressedThisFrame)
     {
         m_pressedKeyState = KeyPressedState::PressedInPreviousFrame;
