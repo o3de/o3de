@@ -1445,7 +1445,10 @@ void EditorViewportWidget::SetViewTM(const Matrix34& camMatrix, bool bMoveOnly)
             "Please report this as a bug."
         );
     }
-
+    else if (shouldUpdateObject == ShouldUpdateObject::No)
+    {
+        GetCurrentAtomView()->SetCameraTransform(LYTransformToAZMatrix3x4(camMatrix));
+    }
     if (m_pressedKeyState == KeyPressedState::PressedThisFrame)
     {
         m_pressedKeyState = KeyPressedState::PressedInPreviousFrame;
