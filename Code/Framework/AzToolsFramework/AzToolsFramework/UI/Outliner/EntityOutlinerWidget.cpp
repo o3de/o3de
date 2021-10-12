@@ -325,7 +325,7 @@ namespace AzToolsFramework
     void EntityOutlinerWidget::OnSelectionChanged(const QItemSelection& selected, const QItemSelection& deselected)
     {
         if (m_selectionChangeInProgress || !m_enableSelectionUpdates
-            || (selected.size() == 0 && deselected.size() == 0))
+            || (selected.empty() && deselected.empty()))
         {
             return;
         }
