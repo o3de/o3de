@@ -1,0 +1,53 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\Atom-418206cc\RPI\Code\CMakeFiles\Atom_RPI.Private.dir\Unity\unity_0_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\RPI\Code\Source\RPI.Private\Module.cpp">
+      <Filter>Source\RPI.Private</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\RPI\Code\Source\RPI.Private\RPISystemComponent.cpp">
+      <Filter>Source\RPI.Private</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\RPI\Code\Source\RPI.Private\Module.h">
+      <Filter>Source\RPI.Private</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\RPI\Code\Source\RPI.Private\RPISystemComponent.h">
+      <Filter>Source\RPI.Private</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\CMakeFiles\08b24365a84bd27d080f6dd51f42b933\Atom_RPI.Private_(CONFIG).stamp.rule">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Gems\Atom\RPI\Code\CMakeLists.txt">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\RPI\Code\atom_rpi_private_files.cmake" />
+    <None Include="C:\Users\lesaelr\o3de\runtime_dependencies\debug\Atom_RPI.Private_debug.stamp">
+      <Filter>Generated Files</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\runtime_dependencies\profile\Atom_RPI.Private_profile.stamp">
+      <Filter>Generated Files</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\runtime_dependencies\release\Atom_RPI.Private_release.stamp">
+      <Filter>Generated Files</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Generated Files">
+      <UniqueIdentifier>{FB9B7D8B-7F05-31D5-AA90-592248EDE1B3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source">
+      <UniqueIdentifier>{F3F0AD47-5F83-373B-A2BF-650D2E4FA3EA}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\RPI.Private">
+      <UniqueIdentifier>{EEC28086-A496-3A37-85AA-ED73610C628E}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

@@ -1,0 +1,77 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\SurfaceData-40c9a442\Code\CMakeFiles\SurfaceData.Editor.dir\Unity\unity_0_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\SurfaceData\Code\Source\SurfaceDataEditorModule.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\SurfaceData\Code\Source\Editor\EditorSurfaceTagListAsset.cpp">
+      <Filter>Source\Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\SurfaceData\Code\Source\Editor\EditorSurfaceDataSystemComponent.cpp">
+      <Filter>Source\Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\SurfaceData\Code\Source\Editor\EditorSurfaceDataColliderComponent.cpp">
+      <Filter>Source\Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\SurfaceData\Code\Source\Editor\EditorSurfaceDataShapeComponent.cpp">
+      <Filter>Source\Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\SurfaceData\Code\Source\SurfaceDataModule.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\SurfaceData\Code\Source\SurfaceDataEditorModule.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\SurfaceData\Code\Source\Editor\EditorSurfaceTagListAsset.h">
+      <Filter>Source\Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\SurfaceData\Code\Source\Editor\EditorSurfaceDataSystemComponent.h">
+      <Filter>Source\Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\SurfaceData\Code\Source\Editor\EditorSurfaceDataColliderComponent.h">
+      <Filter>Source\Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\SurfaceData\Code\Source\Editor\EditorSurfaceDataShapeComponent.h">
+      <Filter>Source\Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\SurfaceData\Code\Source\SurfaceDataModule.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\CMakeFiles\08b24365a84bd27d080f6dd51f42b933\SurfaceData.Editor_(CONFIG).stamp.rule">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Gems\SurfaceData\Code\CMakeLists.txt">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="C:\Users\lesaelr\o3de\Gems\SurfaceData\Code\surfacedata_editor_files.cmake" />
+    <None Include="C:\Users\lesaelr\o3de\runtime_dependencies\debug\SurfaceData.Editor_debug.stamp">
+      <Filter>Generated Files</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\runtime_dependencies\profile\SurfaceData.Editor_profile.stamp">
+      <Filter>Generated Files</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\runtime_dependencies\release\SurfaceData.Editor_release.stamp">
+      <Filter>Generated Files</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Generated Files">
+      <UniqueIdentifier>{FB9B7D8B-7F05-31D5-AA90-592248EDE1B3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source">
+      <UniqueIdentifier>{F3F0AD47-5F83-373B-A2BF-650D2E4FA3EA}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Editor">
+      <UniqueIdentifier>{32FCFB28-A730-3475-B9AE-03974723A74B}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

@@ -1,0 +1,193 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\Plugins\ComponentEntityEditorPlugin\ComponentEntityEditorPlugin_autogen\mocs_compilation_debug.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\Plugins\ComponentEntityEditorPlugin\CMakeFiles\ComponentEntityEditorPlugin.dir\Unity\unity_2_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\Plugins\ComponentEntityEditorPlugin\CMakeFiles\ComponentEntityEditorPlugin.dir\Unity\unity_1_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\Plugins\ComponentEntityEditorPlugin\CMakeFiles\ComponentEntityEditorPlugin.dir\Unity\unity_0_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\Plugins\ComponentEntityEditorPlugin\dllmain.cpp" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\Plugins\ComponentEntityEditorPlugin\ComponentEntityEditorPlugin.cpp" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\Plugins\ComponentEntityEditorPlugin\SandboxIntegration.cpp" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\Plugins\ComponentEntityEditorPlugin\UI\QComponentEntityEditorMainWindow.cpp">
+      <Filter>UI</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\Plugins\ComponentEntityEditorPlugin\UI\QComponentLevelEntityEditorMainWindow.cpp">
+      <Filter>UI</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\Plugins\ComponentEntityEditorPlugin\UI\QComponentEntityEditorOutlinerWindow.cpp">
+      <Filter>UI</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\Plugins\ComponentEntityEditorPlugin\UI\AssetCatalogModel.cpp">
+      <Filter>UI</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\Plugins\ComponentEntityEditorPlugin\UI\ComponentPalette\CategoriesList.cpp">
+      <Filter>UI\ComponentPalette</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\Plugins\ComponentEntityEditorPlugin\UI\ComponentPalette\ComponentDataModel.cpp">
+      <Filter>UI\ComponentPalette</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\Plugins\ComponentEntityEditorPlugin\UI\ComponentPalette\ComponentPaletteWindow.cpp">
+      <Filter>UI\ComponentPalette</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\Plugins\ComponentEntityEditorPlugin\UI\ComponentPalette\FavoriteComponentList.cpp">
+      <Filter>UI\ComponentPalette</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\Plugins\ComponentEntityEditorPlugin\UI\ComponentPalette\FilteredComponentList.cpp">
+      <Filter>UI\ComponentPalette</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\Plugins\ComponentEntityEditorPlugin\UI\ComponentPalette\InformationPanel.cpp">
+      <Filter>UI\ComponentPalette</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\Plugins\ComponentEntityEditorPlugin\UI\Outliner\OutlinerDisplayOptionsMenu.cpp">
+      <Filter>UI\Outliner</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\Plugins\ComponentEntityEditorPlugin\UI\Outliner\OutlinerTreeView.cpp">
+      <Filter>UI\Outliner</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\Plugins\ComponentEntityEditorPlugin\UI\Outliner\OutlinerWidget.cpp">
+      <Filter>UI\Outliner</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\Plugins\ComponentEntityEditorPlugin\UI\Outliner\OutlinerListModel.cpp">
+      <Filter>UI\Outliner</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\Plugins\ComponentEntityEditorPlugin\UI\Outliner\OutlinerSearchWidget.cpp">
+      <Filter>UI\Outliner</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\Plugins\ComponentEntityEditorPlugin\UI\Outliner\OutlinerSortFilterProxyModel.cpp">
+      <Filter>UI\Outliner</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\Plugins\ComponentEntityEditorPlugin\Objects\ComponentEntityObject.cpp">
+      <Filter>Objects</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\Plugins\ComponentEntityEditorPlugin\ComponentEntityEditorPlugin_autogen\CBLZLII4FO\qrc_resources.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\Plugins\ComponentEntityEditorPlugin\ComponentEntityEditorPlugin_autogen\mocs_compilation_profile.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\Plugins\ComponentEntityEditorPlugin\ComponentEntityEditorPlugin_autogen\mocs_compilation_release.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Plugins\ComponentEntityEditorPlugin\ComponentEntityEditorPlugin.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Plugins\ComponentEntityEditorPlugin\SandboxIntegration.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Plugins\ComponentEntityEditorPlugin\UI\QComponentEntityEditorMainWindow.h">
+      <Filter>UI</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Plugins\ComponentEntityEditorPlugin\UI\QComponentLevelEntityEditorMainWindow.h">
+      <Filter>UI</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Plugins\ComponentEntityEditorPlugin\UI\QComponentEntityEditorOutlinerWindow.h">
+      <Filter>UI</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Plugins\ComponentEntityEditorPlugin\UI\AssetCatalogModel.h">
+      <Filter>UI</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Plugins\ComponentEntityEditorPlugin\UI\ComponentPalette\CategoriesList.h">
+      <Filter>UI\ComponentPalette</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Plugins\ComponentEntityEditorPlugin\UI\ComponentPalette\ComponentDataModel.h">
+      <Filter>UI\ComponentPalette</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Plugins\ComponentEntityEditorPlugin\UI\ComponentPalette\ComponentPaletteSettings.h">
+      <Filter>UI\ComponentPalette</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Plugins\ComponentEntityEditorPlugin\UI\ComponentPalette\ComponentPaletteWindow.h">
+      <Filter>UI\ComponentPalette</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Plugins\ComponentEntityEditorPlugin\UI\ComponentPalette\FavoriteComponentList.h">
+      <Filter>UI\ComponentPalette</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Plugins\ComponentEntityEditorPlugin\UI\ComponentPalette\FilteredComponentList.h">
+      <Filter>UI\ComponentPalette</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Plugins\ComponentEntityEditorPlugin\UI\ComponentPalette\InformationPanel.h">
+      <Filter>UI\ComponentPalette</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Plugins\ComponentEntityEditorPlugin\UI\Outliner\OutlinerDisplayOptionsMenu.h">
+      <Filter>UI\Outliner</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Plugins\ComponentEntityEditorPlugin\UI\Outliner\OutlinerTreeView.hxx">
+      <Filter>UI\Outliner</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Plugins\ComponentEntityEditorPlugin\UI\Outliner\OutlinerWidget.hxx">
+      <Filter>UI\Outliner</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Plugins\ComponentEntityEditorPlugin\UI\Outliner\OutlinerCacheBus.h">
+      <Filter>UI\Outliner</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Plugins\ComponentEntityEditorPlugin\UI\Outliner\OutlinerListModel.hxx">
+      <Filter>UI\Outliner</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Plugins\ComponentEntityEditorPlugin\UI\Outliner\OutlinerSearchWidget.h">
+      <Filter>UI\Outliner</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Plugins\ComponentEntityEditorPlugin\UI\Outliner\OutlinerSortFilterProxyModel.hxx">
+      <Filter>UI\Outliner</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Plugins\ComponentEntityEditorPlugin\Objects\ComponentEntityObject.h">
+      <Filter>Objects</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Plugins\ComponentEntityEditorPlugin\ComponentEntityEditorPlugin_autogen\include\UI\Outliner\ui_OutlinerWidget.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Code\Editor\Plugins\ComponentEntityEditorPlugin\UI\Outliner\OutlinerWidget.ui">
+      <Filter>UI\Outliner</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\CMakeFiles\08b24365a84bd27d080f6dd51f42b933\ComponentEntityEditorPlugin_(CONFIG).stamp.rule">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\CMakeFiles\ab62295111292b3b633d1471df9ac5f1\qrc_resources.cpp.rule">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Code\Editor\Plugins\ComponentEntityEditorPlugin\CMakeLists.txt">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\Plugins\ComponentEntityEditorPlugin\UI\Outliner\resources.qrc">
+      <Filter>UI\Outliner</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\Plugins\ComponentEntityEditorPlugin\UI\Outliner\EntityOutliner.qss">
+      <Filter>UI\Outliner</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\Plugins\ComponentEntityEditorPlugin\componententityeditorplugin_files.cmake" />
+    <None Include="C:\Users\lesaelr\o3de\runtime_dependencies\debug\ComponentEntityEditorPlugin_debug.stamp">
+      <Filter>Generated Files</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\runtime_dependencies\profile\ComponentEntityEditorPlugin_profile.stamp">
+      <Filter>Generated Files</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\runtime_dependencies\release\ComponentEntityEditorPlugin_release.stamp">
+      <Filter>Generated Files</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Generated Files">
+      <UniqueIdentifier>{FB9B7D8B-7F05-31D5-AA90-592248EDE1B3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Objects">
+      <UniqueIdentifier>{D93A8D6C-9D90-33D0-8231-F4EB87BA57AA}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="UI">
+      <UniqueIdentifier>{D77753F4-79DD-33CF-A3D5-FFF0DABA8477}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="UI\ComponentPalette">
+      <UniqueIdentifier>{304EBE58-C826-3D27-973E-7928E7FE608C}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="UI\Outliner">
+      <UniqueIdentifier>{68B6B6D1-5A97-32E3-8838-87D78A4557BF}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

@@ -1,0 +1,359 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\Vegetation-f607f625\Code\CMakeFiles\Vegetation.Static.dir\Unity\unity_3_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\Vegetation-f607f625\Code\CMakeFiles\Vegetation.Static.dir\Unity\unity_2_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\Vegetation-f607f625\Code\CMakeFiles\Vegetation.Static.dir\Unity\unity_1_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\Vegetation-f607f625\Code\CMakeFiles\Vegetation.Static.dir\Unity\unity_0_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Vegetation\Code\Source\Components\AreaBlenderComponent.cpp">
+      <Filter>Source\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Vegetation\Code\Source\Components\AreaComponentBase.cpp">
+      <Filter>Source\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Vegetation\Code\Source\Components\BlockerComponent.cpp">
+      <Filter>Source\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Vegetation\Code\Source\Components\DescriptorListCombinerComponent.cpp">
+      <Filter>Source\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Vegetation\Code\Source\Components\DescriptorListComponent.cpp">
+      <Filter>Source\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Vegetation\Code\Source\Components\DescriptorWeightSelectorComponent.cpp">
+      <Filter>Source\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Vegetation\Code\Source\Components\DistanceBetweenFilterComponent.cpp">
+      <Filter>Source\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Vegetation\Code\Source\Components\DistributionFilterComponent.cpp">
+      <Filter>Source\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Vegetation\Code\Source\Components\LevelSettingsComponent.cpp">
+      <Filter>Source\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Vegetation\Code\Source\Components\MeshBlockerComponent.cpp">
+      <Filter>Source\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Vegetation\Code\Source\Components\PositionModifierComponent.cpp">
+      <Filter>Source\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Vegetation\Code\Source\Components\ReferenceShapeComponent.cpp">
+      <Filter>Source\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Vegetation\Code\Source\Components\RotationModifierComponent.cpp">
+      <Filter>Source\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Vegetation\Code\Source\Components\ScaleModifierComponent.cpp">
+      <Filter>Source\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Vegetation\Code\Source\Components\ShapeIntersectionFilterComponent.cpp">
+      <Filter>Source\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Vegetation\Code\Source\Components\SlopeAlignmentModifierComponent.cpp">
+      <Filter>Source\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Vegetation\Code\Source\Components\SpawnerComponent.cpp">
+      <Filter>Source\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Vegetation\Code\Source\Components\SurfaceAltitudeFilterComponent.cpp">
+      <Filter>Source\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Vegetation\Code\Source\Components\SurfaceMaskDepthFilterComponent.cpp">
+      <Filter>Source\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Vegetation\Code\Source\Components\SurfaceMaskFilterComponent.cpp">
+      <Filter>Source\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Vegetation\Code\Source\Components\SurfaceSlopeFilterComponent.cpp">
+      <Filter>Source\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Vegetation\Code\Source\Debugger\AreaDebugComponent.cpp">
+      <Filter>Source\Debugger</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Vegetation\Code\Source\Debugger\DebugComponent.cpp">
+      <Filter>Source\Debugger</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Vegetation\Code\Source\DescriptorListAsset.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Vegetation\Code\Source\Descriptor.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Vegetation\Code\Source\DynamicSliceInstanceSpawner.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Vegetation\Code\Source\EmptyInstanceSpawner.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Vegetation\Code\Source\PrefabInstanceSpawner.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Vegetation\Code\Source\VegetationSystemComponent.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Vegetation\Code\Source\InstanceData.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Vegetation\Code\Source\InstanceSystemComponent.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Vegetation\Code\Source\DebugSystemComponent.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Vegetation\Code\Include\Vegetation\DescriptorListAsset.h">
+      <Filter>Include\Vegetation</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Vegetation\Code\Include\Vegetation\Descriptor.h">
+      <Filter>Include\Vegetation</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Vegetation\Code\Include\Vegetation\InstanceData.h">
+      <Filter>Include\Vegetation</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Vegetation\Code\Include\Vegetation\InstanceSpawner.h">
+      <Filter>Include\Vegetation</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Vegetation\Code\Include\Vegetation\DynamicSliceInstanceSpawner.h">
+      <Filter>Include\Vegetation</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Vegetation\Code\Include\Vegetation\EmptyInstanceSpawner.h">
+      <Filter>Include\Vegetation</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Vegetation\Code\Include\Vegetation\PrefabInstanceSpawner.h">
+      <Filter>Include\Vegetation</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Vegetation\Code\Include\Vegetation\AreaComponentBase.h">
+      <Filter>Include\Vegetation</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Vegetation\Code\Include\Vegetation\Ebuses\AreaSystemRequestBus.h">
+      <Filter>Include\Vegetation\Ebuses</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Vegetation\Code\Include\Vegetation\Ebuses\AreaNotificationBus.h">
+      <Filter>Include\Vegetation\Ebuses</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Vegetation\Code\Include\Vegetation\Ebuses\AreaConfigRequestBus.h">
+      <Filter>Include\Vegetation\Ebuses</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Vegetation\Code\Include\Vegetation\Ebuses\AreaDebugBus.h">
+      <Filter>Include\Vegetation\Ebuses</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Vegetation\Code\Include\Vegetation\Ebuses\AreaInfoBus.h">
+      <Filter>Include\Vegetation\Ebuses</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Vegetation\Code\Include\Vegetation\Ebuses\AreaRequestBus.h">
+      <Filter>Include\Vegetation\Ebuses</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Vegetation\Code\Include\Vegetation\Ebuses\DebugNotificationBus.h">
+      <Filter>Include\Vegetation\Ebuses</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Vegetation\Code\Include\Vegetation\Ebuses\DebugRequestsBus.h">
+      <Filter>Include\Vegetation\Ebuses</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Vegetation\Code\Include\Vegetation\Ebuses\DebugSystemDataBus.h">
+      <Filter>Include\Vegetation\Ebuses</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Vegetation\Code\Include\Vegetation\Ebuses\DependencyRequestBus.h">
+      <Filter>Include\Vegetation\Ebuses</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Vegetation\Code\Include\Vegetation\Ebuses\DescriptorNotificationBus.h">
+      <Filter>Include\Vegetation\Ebuses</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Vegetation\Code\Include\Vegetation\Ebuses\DescriptorProviderRequestBus.h">
+      <Filter>Include\Vegetation\Ebuses</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Vegetation\Code\Include\Vegetation\Ebuses\DescriptorSelectorRequestBus.h">
+      <Filter>Include\Vegetation\Ebuses</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Vegetation\Code\Include\Vegetation\Ebuses\FilterRequestBus.h">
+      <Filter>Include\Vegetation\Ebuses</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Vegetation\Code\Include\Vegetation\Ebuses\InstanceSystemRequestBus.h">
+      <Filter>Include\Vegetation\Ebuses</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Vegetation\Code\Include\Vegetation\Ebuses\ModifierRequestBus.h">
+      <Filter>Include\Vegetation\Ebuses</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Vegetation\Code\Include\Vegetation\Ebuses\SystemConfigurationBus.h">
+      <Filter>Include\Vegetation\Ebuses</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Vegetation\Code\Include\Vegetation\Ebuses\ScaleModifierRequestBus.h">
+      <Filter>Include\Vegetation\Ebuses</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Vegetation\Code\Include\Vegetation\Ebuses\SlopeAlignmentModifierRequestBus.h">
+      <Filter>Include\Vegetation\Ebuses</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Vegetation\Code\Include\Vegetation\Ebuses\RotationModifierRequestBus.h">
+      <Filter>Include\Vegetation\Ebuses</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Vegetation\Code\Include\Vegetation\Ebuses\PositionModifierRequestBus.h">
+      <Filter>Include\Vegetation\Ebuses</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Vegetation\Code\Include\Vegetation\Ebuses\SurfaceAltitudeFilterRequestBus.h">
+      <Filter>Include\Vegetation\Ebuses</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Vegetation\Code\Include\Vegetation\Ebuses\DistanceBetweenFilterRequestBus.h">
+      <Filter>Include\Vegetation\Ebuses</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Vegetation\Code\Include\Vegetation\Ebuses\DistributionFilterRequestBus.h">
+      <Filter>Include\Vegetation\Ebuses</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Vegetation\Code\Include\Vegetation\Ebuses\ShapeIntersectionFilterRequestBus.h">
+      <Filter>Include\Vegetation\Ebuses</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Vegetation\Code\Include\Vegetation\Ebuses\SurfaceSlopeFilterRequestBus.h">
+      <Filter>Include\Vegetation\Ebuses</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Vegetation\Code\Include\Vegetation\Ebuses\SurfaceMaskDepthFilterRequestBus.h">
+      <Filter>Include\Vegetation\Ebuses</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Vegetation\Code\Include\Vegetation\Ebuses\SurfaceMaskFilterRequestBus.h">
+      <Filter>Include\Vegetation\Ebuses</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Vegetation\Code\Include\Vegetation\Ebuses\AreaBlenderRequestBus.h">
+      <Filter>Include\Vegetation\Ebuses</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Vegetation\Code\Include\Vegetation\Ebuses\BlockerRequestBus.h">
+      <Filter>Include\Vegetation\Ebuses</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Vegetation\Code\Include\Vegetation\Ebuses\DescriptorListCombinerRequestBus.h">
+      <Filter>Include\Vegetation\Ebuses</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Vegetation\Code\Include\Vegetation\Ebuses\ReferenceShapeRequestBus.h">
+      <Filter>Include\Vegetation\Ebuses</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Vegetation\Code\Include\Vegetation\Ebuses\MeshBlockerRequestBus.h">
+      <Filter>Include\Vegetation\Ebuses</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Vegetation\Code\Include\Vegetation\Ebuses\SpawnerRequestBus.h">
+      <Filter>Include\Vegetation\Ebuses</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Vegetation\Code\Include\Vegetation\Ebuses\DescriptorListRequestBus.h">
+      <Filter>Include\Vegetation\Ebuses</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Vegetation\Code\Source\Components\AreaBlenderComponent.h">
+      <Filter>Source\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Vegetation\Code\Source\Components\BlockerComponent.h">
+      <Filter>Source\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Vegetation\Code\Source\Components\DescriptorListCombinerComponent.h">
+      <Filter>Source\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Vegetation\Code\Source\Components\DescriptorListComponent.h">
+      <Filter>Source\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Vegetation\Code\Source\Components\DescriptorWeightSelectorComponent.h">
+      <Filter>Source\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Vegetation\Code\Source\Components\DistanceBetweenFilterComponent.h">
+      <Filter>Source\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Vegetation\Code\Source\Components\DistributionFilterComponent.h">
+      <Filter>Source\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Vegetation\Code\Source\Components\LevelSettingsComponent.h">
+      <Filter>Source\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Vegetation\Code\Source\Components\MeshBlockerComponent.h">
+      <Filter>Source\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Vegetation\Code\Source\Components\PositionModifierComponent.h">
+      <Filter>Source\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Vegetation\Code\Source\Components\ReferenceShapeComponent.h">
+      <Filter>Source\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Vegetation\Code\Source\Components\RotationModifierComponent.h">
+      <Filter>Source\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Vegetation\Code\Source\Components\ScaleModifierComponent.h">
+      <Filter>Source\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Vegetation\Code\Source\Components\ShapeIntersectionFilterComponent.h">
+      <Filter>Source\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Vegetation\Code\Source\Components\SlopeAlignmentModifierComponent.h">
+      <Filter>Source\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Vegetation\Code\Source\Components\SpawnerComponent.h">
+      <Filter>Source\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Vegetation\Code\Source\Components\SurfaceAltitudeFilterComponent.h">
+      <Filter>Source\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Vegetation\Code\Source\Components\SurfaceMaskDepthFilterComponent.h">
+      <Filter>Source\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Vegetation\Code\Source\Components\SurfaceMaskFilterComponent.h">
+      <Filter>Source\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Vegetation\Code\Source\Components\SurfaceSlopeFilterComponent.h">
+      <Filter>Source\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Vegetation\Code\Source\Util\ConcurrentQueue.h">
+      <Filter>Source\Util</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Vegetation\Code\Source\Util\ProducerConsumerQueue.h">
+      <Filter>Source\Util</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Vegetation\Code\Source\Debugger\AreaDebugComponent.h">
+      <Filter>Source\Debugger</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Vegetation\Code\Source\Debugger\DebugComponent.h">
+      <Filter>Source\Debugger</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Vegetation\Code\Source\VegetationSystemComponent.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Vegetation\Code\Source\InstanceSystemComponent.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Vegetation\Code\Source\DebugSystemComponent.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Gems\Vegetation\Code\CMakeLists.txt">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Vegetation\Code\vegetation_files.cmake" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Generated Files">
+      <UniqueIdentifier>{FB9B7D8B-7F05-31D5-AA90-592248EDE1B3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include">
+      <UniqueIdentifier>{E188105A-C8C4-34BB-9809-15E8410EF7F8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\Vegetation">
+      <UniqueIdentifier>{1F101767-0F5D-3D5A-BF37-C1EC793445F1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\Vegetation\Ebuses">
+      <UniqueIdentifier>{3F3B5E6F-049B-3EAB-93C9-064B15BC739A}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source">
+      <UniqueIdentifier>{F3F0AD47-5F83-373B-A2BF-650D2E4FA3EA}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Components">
+      <UniqueIdentifier>{914C6B5F-184E-399E-8506-2B79CE7A1426}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Debugger">
+      <UniqueIdentifier>{C6D6E116-A81C-3F04-96BA-6EF2CE471FDF}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Util">
+      <UniqueIdentifier>{791EC76A-600E-3D3A-B1A2-552A6F8192CA}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

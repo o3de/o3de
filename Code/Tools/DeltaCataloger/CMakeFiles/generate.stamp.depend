@@ -1,0 +1,6 @@
+# CMake generation dependency list for this directory.
+C:/Users/lesaelr/o3de/Code/Tools/DeltaCataloger/CMakeLists.txt
+C:/Users/lesaelr/o3de/Code/Tools/DeltaCataloger/deltacataloger_files.cmake
+C:/Users/lesaelr/o3de/Code/Tools/DeltaCataloger/deltacataloger_test_files.cmake
+C:/Users/lesaelr/o3de/Code/Tools/DeltaCataloger/deltacataloger_win_files.cmake
+C:/Users/lesaelr/o3de/cmake/Platform/Windows/LYTestWrappers_windows.cmake

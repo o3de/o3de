@@ -1,0 +1,230 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\AudioSystem-825219bb\Code\AudioSystem.Editor.Static_autogen\mocs_compilation_debug.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\AudioSystem-825219bb\Code\CMakeFiles\AudioSystem.Editor.Static.dir\Unity\unity_2_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\AudioSystem-825219bb\Code\CMakeFiles\AudioSystem.Editor.Static.dir\Unity\unity_1_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\AudioSystem-825219bb\Code\CMakeFiles\AudioSystem.Editor.Static.dir\Unity\unity_0_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\AudioSystem\Code\Source\Editor\QATLControlsTreeModel.cpp">
+      <Filter>Source\Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\AudioSystem\Code\Source\Editor\QAudioControlTreeWidget.cpp">
+      <Filter>Source\Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\AudioSystem\Code\Source\Editor\QConnectionsWidget.cpp">
+      <Filter>Source\Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\AudioSystem\Code\Source\Editor\QSimpleAudioControlListWidget.cpp">
+      <Filter>Source\Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\AudioSystem\Code\Source\Editor\QTreeWidgetFilter.cpp">
+      <Filter>Source\Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\AudioSystem\Code\Source\Editor\ATLControlsModel.cpp">
+      <Filter>Source\Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\AudioSystem\Code\Source\Editor\ATLControlsPanel.cpp">
+      <Filter>Source\Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\AudioSystem\Code\Source\Editor\ATLControlsResourceDialog.cpp">
+      <Filter>Source\Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\AudioSystem\Code\Source\Editor\AudioControl.cpp">
+      <Filter>Source\Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\AudioSystem\Code\Source\Editor\AudioControlFilters.cpp">
+      <Filter>Source\Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\AudioSystem\Code\Source\Editor\AudioControlsEditorPlugin.cpp">
+      <Filter>Source\Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\AudioSystem\Code\Source\Editor\AudioControlsEditorUndo.cpp">
+      <Filter>Source\Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\AudioSystem\Code\Source\Editor\AudioControlsEditorWindow.cpp">
+      <Filter>Source\Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\AudioSystem\Code\Source\Editor\AudioControlsLoader.cpp">
+      <Filter>Source\Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\AudioSystem\Code\Source\Editor\AudioControlsWriter.cpp">
+      <Filter>Source\Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\AudioSystem\Code\Source\Editor\AudioResourceSelectors.cpp">
+      <Filter>Source\Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\AudioSystem\Code\Source\Editor\AudioSystemPanel.cpp">
+      <Filter>Source\Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\AudioSystem\Code\Source\Editor\ImplementationManager.cpp">
+      <Filter>Source\Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\AudioSystem\Code\Source\Editor\InspectorPanel.cpp">
+      <Filter>Source\Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\AudioSystem\Code\Source\AudioSystemGemSystemComponent.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\AudioSystem-825219bb\Code\AudioSystem.Editor.Static_autogen\VQH663J3CY\qrc_AudioControlsEditorUI.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\AudioSystem-825219bb\Code\AudioSystem.Editor.Static_autogen\mocs_compilation_profile.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\AudioSystem-825219bb\Code\AudioSystem.Editor.Static_autogen\mocs_compilation_release.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\AudioSystem\Code\Source\Editor\QATLControlsTreeModel.h">
+      <Filter>Source\Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\AudioSystem\Code\Source\Editor\QAudioControlEditorIcons.h">
+      <Filter>Source\Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\AudioSystem\Code\Source\Editor\QAudioControlTreeWidget.h">
+      <Filter>Source\Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\AudioSystem\Code\Source\Editor\QConnectionListWidget.h">
+      <Filter>Source\Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\AudioSystem\Code\Source\Editor\QConnectionsWidget.h">
+      <Filter>Source\Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\AudioSystem\Code\Source\Editor\QSimpleAudioControlListWidget.h">
+      <Filter>Source\Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\AudioSystem\Code\Source\Editor\QTreeWidgetFilter.h">
+      <Filter>Source\Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\AudioSystem\Code\Include\Editor\ACETypes.h">
+      <Filter>Include\Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\AudioSystem\Code\Include\Editor\IAudioConnection.h">
+      <Filter>Include\Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\AudioSystem\Code\Include\Editor\IAudioSystemControl.h">
+      <Filter>Include\Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\AudioSystem\Code\Include\Editor\IAudioSystemEditor.h">
+      <Filter>Include\Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\AudioSystem\Code\Source\Editor\ACEEnums.h">
+      <Filter>Source\Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\AudioSystem\Code\Source\Editor\ATLControlsModel.h">
+      <Filter>Source\Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\AudioSystem\Code\Source\Editor\ATLControlsPanel.h">
+      <Filter>Source\Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\AudioSystem\Code\Source\Editor\ATLControlsResourceDialog.h">
+      <Filter>Source\Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\AudioSystem\Code\Source\Editor\AudioControl.h">
+      <Filter>Source\Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\AudioSystem\Code\Source\Editor\AudioControlFilters.h">
+      <Filter>Source\Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\AudioSystem\Code\Source\Editor\AudioControlsEditorPlugin.h">
+      <Filter>Source\Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\AudioSystem\Code\Source\Editor\AudioControlsEditorUndo.h">
+      <Filter>Source\Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\AudioSystem\Code\Source\Editor\AudioControlsEditorWindow.h">
+      <Filter>Source\Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\AudioSystem\Code\Source\Editor\AudioControlsLoader.h">
+      <Filter>Source\Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\AudioSystem\Code\Source\Editor\AudioControlsWriter.h">
+      <Filter>Source\Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\AudioSystem\Code\Source\Editor\AudioResourceSelectors.h">
+      <Filter>Source\Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\AudioSystem\Code\Source\Editor\AudioSystemPanel.h">
+      <Filter>Source\Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\AudioSystem\Code\Source\Editor\ImplementationManager.h">
+      <Filter>Source\Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\AudioSystem\Code\Source\Editor\InspectorPanel.h">
+      <Filter>Source\Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\AudioSystem\Code\Source\AudioSystemGemSystemComponent.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\External\AudioSystem-825219bb\Code\AudioSystem.Editor.Static_autogen\include\Source\Editor\ui_ATLControlsPanel.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\External\AudioSystem-825219bb\Code\AudioSystem.Editor.Static_autogen\include\Source\Editor\ui_AudioControlsEditorMainWindow.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\External\AudioSystem-825219bb\Code\AudioSystem.Editor.Static_autogen\include\Source\Editor\ui_AudioSystemPanel.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\External\AudioSystem-825219bb\Code\AudioSystem.Editor.Static_autogen\include\Source\Editor\ui_ConnectionsWidget.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\External\AudioSystem-825219bb\Code\AudioSystem.Editor.Static_autogen\include\Source\Editor\ui_InspectorPanel.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Gems\AudioSystem\Code\Source\Editor\ATLControlsPanel.ui">
+      <Filter>Source\Editor</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Gems\AudioSystem\Code\Source\Editor\AudioControlsEditorMainWindow.ui">
+      <Filter>Source\Editor</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Gems\AudioSystem\Code\Source\Editor\AudioSystemPanel.ui">
+      <Filter>Source\Editor</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Gems\AudioSystem\Code\Source\Editor\ConnectionsWidget.ui">
+      <Filter>Source\Editor</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Gems\AudioSystem\Code\Source\Editor\InspectorPanel.ui">
+      <Filter>Source\Editor</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\CMakeFiles\5ce442dfd3fa256bc6f2851faf45ea30\qrc_AudioControlsEditorUI.cpp.rule">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Gems\AudioSystem\Code\CMakeLists.txt">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="C:\Users\lesaelr\o3de\Gems\AudioSystem\Code\Source\Editor\AudioControlsEditorUI.qrc">
+      <Filter>Source\Editor</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\AudioSystem\Code\audiosystem_editor_files.cmake" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Generated Files">
+      <UniqueIdentifier>{FB9B7D8B-7F05-31D5-AA90-592248EDE1B3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include">
+      <UniqueIdentifier>{E188105A-C8C4-34BB-9809-15E8410EF7F8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\Editor">
+      <UniqueIdentifier>{A50AB020-0EA3-3567-8C99-CE16676A42D7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source">
+      <UniqueIdentifier>{F3F0AD47-5F83-373B-A2BF-650D2E4FA3EA}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Editor">
+      <UniqueIdentifier>{32FCFB28-A730-3475-B9AE-03974723A74B}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

@@ -1,0 +1,69 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\ScriptEvents-f79e6fca\Code\CMakeFiles\ScriptEvents.Editor.dir\Unity\unity_0_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptEvents\Code\Source\Editor\ScriptEventsEditorGem.cpp">
+      <Filter>Source\Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptEvents\Code\Source\Editor\ScriptEventsSystemEditorComponent.cpp">
+      <Filter>Source\Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptEvents\Code\Builder\ScriptEventsBuilderComponent.cpp">
+      <Filter>Builder</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptEvents\Code\Builder\ScriptEventsBuilderWorker.cpp">
+      <Filter>Builder</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptEvents\Code\Source\Editor\ScriptEventsSystemEditorComponent.h">
+      <Filter>Source\Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptEvents\Code\Builder\ScriptEventsBuilderComponent.h">
+      <Filter>Builder</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptEvents\Code\Builder\ScriptEventsBuilderWorker.h">
+      <Filter>Builder</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptEvents\Code\Builder\BuilderSystemComponent.h">
+      <Filter>Builder</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\CMakeFiles\08b24365a84bd27d080f6dd51f42b933\ScriptEvents.Editor_(CONFIG).stamp.rule">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Gems\ScriptEvents\Code\CMakeLists.txt">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="C:\Users\lesaelr\o3de\Gems\ScriptEvents\Code\scriptevents_editor_files.cmake" />
+    <None Include="C:\Users\lesaelr\o3de\Gems\ScriptEvents\Code\scriptevents_editor_builder_files.cmake" />
+    <None Include="C:\Users\lesaelr\o3de\runtime_dependencies\debug\ScriptEvents.Editor_debug.stamp">
+      <Filter>Generated Files</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\runtime_dependencies\profile\ScriptEvents.Editor_profile.stamp">
+      <Filter>Generated Files</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\runtime_dependencies\release\ScriptEvents.Editor_release.stamp">
+      <Filter>Generated Files</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Builder">
+      <UniqueIdentifier>{D8BA338B-236D-3BEC-81EF-F04002A4F878}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Generated Files">
+      <UniqueIdentifier>{FB9B7D8B-7F05-31D5-AA90-592248EDE1B3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source">
+      <UniqueIdentifier>{F3F0AD47-5F83-373B-A2BF-650D2E4FA3EA}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Editor">
+      <UniqueIdentifier>{32FCFB28-A730-3475-B9AE-03974723A74B}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

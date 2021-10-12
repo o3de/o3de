@@ -1,0 +1,32 @@
+# CMake generation dependency list for this directory.
+C:/Program Files/CMake/share/cmake-3.21/Modules/FindOpenGL.cmake
+C:/Program Files/CMake/share/cmake-3.21/Modules/FindPackageHandleStandardArgs.cmake
+C:/Program Files/CMake/share/cmake-3.21/Modules/FindPackageMessage.cmake
+C:/Users/lesaelr/o3de/Gems/EMotionFX/Assets/Editor/Images/Icons/Resources.qrc
+C:/Users/lesaelr/o3de/Gems/EMotionFX/Assets/Editor/Layouts/Layouts.qrc
+C:/Users/lesaelr/o3de/Gems/EMotionFX/Code/CMakeLists.txt
+C:/Users/lesaelr/o3de/Gems/EMotionFX/Code/EMotionFX/CommandSystem/commandsystem_files.cmake
+C:/Users/lesaelr/o3de/Gems/EMotionFX/Code/EMotionFX/Exporters/ExporterLib/exporterlib_files.cmake
+C:/Users/lesaelr/o3de/Gems/EMotionFX/Code/EMotionFX/Pipeline/EMotionFXBuilder/emotionfxbuilder_files.cmake
+C:/Users/lesaelr/o3de/Gems/EMotionFX/Code/EMotionFX/Pipeline/RCExt/rc_ext_files.cmake
+C:/Users/lesaelr/o3de/Gems/EMotionFX/Code/EMotionFX/Pipeline/SceneAPIExt/sceneapi_ext_files.cmake
+C:/Users/lesaelr/o3de/Gems/EMotionFX/Code/EMotionFX/Rendering/rendering_files.cmake
+C:/Users/lesaelr/o3de/Gems/EMotionFX/Code/EMotionFX/Tools/EMotionStudio/EMStudioSDK/emstudiosdk_files.cmake
+C:/Users/lesaelr/o3de/Gems/EMotionFX/Code/EMotionFX/Tools/EMotionStudio/Plugins/RenderPlugins/renderplugins_files.cmake
+C:/Users/lesaelr/o3de/Gems/EMotionFX/Code/EMotionFX/Tools/EMotionStudio/Plugins/StandardPlugins/standardplugins_files.cmake
+C:/Users/lesaelr/o3de/Gems/EMotionFX/Code/EMotionFX/emotionfx_files.cmake
+C:/Users/lesaelr/o3de/Gems/EMotionFX/Code/Editor/Platform/Windows/platform_windows.cmake
+C:/Users/lesaelr/o3de/Gems/EMotionFX/Code/Editor/Platform/Windows/platform_windows_files.cmake
+C:/Users/lesaelr/o3de/Gems/EMotionFX/Code/MCore/mcore_files.cmake
+C:/Users/lesaelr/o3de/Gems/EMotionFX/Code/MysticQt/mysticqt_files.cmake
+C:/Users/lesaelr/o3de/Gems/EMotionFX/Code/Platform/Windows/platform_windows.cmake
+C:/Users/lesaelr/o3de/Gems/EMotionFX/Code/Platform/Windows/platform_windows_files.cmake
+C:/Users/lesaelr/o3de/Gems/EMotionFX/Code/Source/Integration/System/emotionfx_module_files.cmake
+C:/Users/lesaelr/o3de/Gems/EMotionFX/Code/emotionfx_editor_files.cmake
+C:/Users/lesaelr/o3de/Gems/EMotionFX/Code/emotionfx_editor_tests_files.cmake
+C:/Users/lesaelr/o3de/Gems/EMotionFX/Code/emotionfx_files.cmake
+C:/Users/lesaelr/o3de/Gems/EMotionFX/Code/emotionfx_shared_files.cmake
+C:/Users/lesaelr/o3de/Gems/EMotionFX/Code/emotionfx_shared_tests_files.cmake
+C:/Users/lesaelr/o3de/Gems/EMotionFX/Code/emotionfx_tests_files.cmake
+C:/Users/lesaelr/o3de/cmake/3rdParty/FindOpenGLInterface.cmake
+C:/Users/lesaelr/o3de/cmake/Platform/Windows/LYTestWrappers_windows.cmake

@@ -1,0 +1,5 @@
+# CMake generation dependency list for this directory.
+C:/Users/lesaelr/o3de/Gems/ScriptCanvasDeveloper/Code/CMakeLists.txt
+C:/Users/lesaelr/o3de/Gems/ScriptCanvasDeveloper/Code/scriptcanvasdeveloper_gem_common_files.cmake
+C:/Users/lesaelr/o3de/Gems/ScriptCanvasDeveloper/Code/scriptcanvasdeveloper_gem_editor_files.cmake
+C:/Users/lesaelr/o3de/Gems/ScriptCanvasDeveloper/Code/scriptcanvasdeveloper_gem_game_files.cmake

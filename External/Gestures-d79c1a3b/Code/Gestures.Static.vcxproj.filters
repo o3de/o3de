@@ -1,0 +1,131 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\Gestures-d79c1a3b\Code\CMakeFiles\Gestures.Static.dir\Unity\unity_1_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\Gestures-d79c1a3b\Code\CMakeFiles\Gestures.Static.dir\Unity\unity_0_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Gestures\Code\Source\GesturesModule.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Gestures\Code\Source\GesturesSystemComponent.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Gestures\Code\Source\InputChannelGesture.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Gestures\Code\Source\InputChannelGestureClickOrTap.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Gestures\Code\Source\InputChannelGestureDrag.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Gestures\Code\Source\InputChannelGestureHold.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Gestures\Code\Source\InputChannelGesturePinch.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Gestures\Code\Source\InputChannelGestureRotate.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Gestures\Code\Source\InputChannelGestureSwipe.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Gestures\Code\Source\InputDeviceGestures.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Gestures\Code\Include\Gestures\GestureRecognizerClickOrTap.h">
+      <Filter>Include\Gestures</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Gestures\Code\Include\Gestures\GestureRecognizerClickOrTap.inl">
+      <Filter>Include\Gestures</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Gestures\Code\Include\Gestures\GestureRecognizerDrag.h">
+      <Filter>Include\Gestures</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Gestures\Code\Include\Gestures\GestureRecognizerDrag.inl">
+      <Filter>Include\Gestures</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Gestures\Code\Include\Gestures\GestureRecognizerHold.h">
+      <Filter>Include\Gestures</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Gestures\Code\Include\Gestures\GestureRecognizerHold.inl">
+      <Filter>Include\Gestures</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Gestures\Code\Include\Gestures\GestureRecognizerPinch.h">
+      <Filter>Include\Gestures</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Gestures\Code\Include\Gestures\GestureRecognizerPinch.inl">
+      <Filter>Include\Gestures</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Gestures\Code\Include\Gestures\GestureRecognizerRotate.h">
+      <Filter>Include\Gestures</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Gestures\Code\Include\Gestures\GestureRecognizerRotate.inl">
+      <Filter>Include\Gestures</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Gestures\Code\Include\Gestures\GestureRecognizerSwipe.h">
+      <Filter>Include\Gestures</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Gestures\Code\Include\Gestures\GestureRecognizerSwipe.inl">
+      <Filter>Include\Gestures</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Gestures\Code\Include\Gestures\IGestureRecognizer.h">
+      <Filter>Include\Gestures</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Gestures\Code\Source\GesturesSystemComponent.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Gestures\Code\Source\InputChannelGesture.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Gestures\Code\Source\InputChannelGestureClickOrTap.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Gestures\Code\Source\InputChannelGestureDrag.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Gestures\Code\Source\InputChannelGestureHold.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Gestures\Code\Source\InputChannelGesturePinch.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Gestures\Code\Source\InputChannelGestureRotate.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Gestures\Code\Source\InputChannelGestureSwipe.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Gestures\Code\Source\InputDeviceGestures.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Gems\Gestures\Code\CMakeLists.txt">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Gestures\Code\gestures_files.cmake" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Generated Files">
+      <UniqueIdentifier>{FB9B7D8B-7F05-31D5-AA90-592248EDE1B3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include">
+      <UniqueIdentifier>{E188105A-C8C4-34BB-9809-15E8410EF7F8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\Gestures">
+      <UniqueIdentifier>{1441048D-8481-3D48-B071-0C676143F875}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source">
+      <UniqueIdentifier>{F3F0AD47-5F83-373B-A2BF-650D2E4FA3EA}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

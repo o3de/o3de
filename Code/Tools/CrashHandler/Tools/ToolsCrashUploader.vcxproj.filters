@@ -1,0 +1,101 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\CrashHandler\Tools\ToolsCrashUploader_autogen\mocs_compilation_debug.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\CrashHandler\Tools\CMakeFiles\ToolsCrashUploader.dir\Unity\unity_0_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\CrashHandler\Tools\Uploader\ToolsCrashUploader.cpp">
+      <Filter>Uploader</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\CrashHandler\Tools\Uploader\SendReportDialog.cpp">
+      <Filter>Uploader</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\CrashHandler\Tools\Uploader\platforms\win\main.cpp">
+      <Filter>Platform\Windows\..\..\Uploader\platforms\win</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\CrashHandler\Tools\ToolsCrashUploader_autogen\mocs_compilation_profile.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\CrashHandler\Tools\ToolsCrashUploader_autogen\mocs_compilation_release.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\CrashHandler\Tools\Uploader\ToolsCrashUploader.h">
+      <Filter>Uploader</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\CrashHandler\Tools\Uploader\SendReportDialog.h">
+      <Filter>Uploader</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\CrashHandler\Tools\ToolsCrashUploader_autogen\include\UI\ui_submit_report.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Code\Tools\CrashHandler\Tools\UI\submit_report.ui">
+      <Filter>UI</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\CMakeFiles\08b24365a84bd27d080f6dd51f42b933\ToolsCrashUploader_(CONFIG).stamp.rule">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Code\Tools\CrashHandler\Tools\CMakeLists.txt">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="C:\Users\lesaelr\o3de\Code\Tools\CrashHandler\Tools\UI\lyeditor.ico">
+      <Filter>UI</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Tools\CrashHandler\Tools\UI\ToolsCrashHandler.qrc">
+      <Filter>UI</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Tools\CrashHandler\Tools\tools_crash_uploader_files.cmake" />
+    <None Include="C:\Users\lesaelr\o3de\Code\Tools\CrashHandler\Tools\Platform\Windows\tools_crash_uploader_windows_files.cmake">
+      <Filter>Platform\Windows</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\runtime_dependencies\debug\ToolsCrashUploader_debug.stamp">
+      <Filter>Generated Files</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\runtime_dependencies\profile\ToolsCrashUploader_profile.stamp">
+      <Filter>Generated Files</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\runtime_dependencies\release\ToolsCrashUploader_release.stamp">
+      <Filter>Generated Files</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Generated Files">
+      <UniqueIdentifier>{FB9B7D8B-7F05-31D5-AA90-592248EDE1B3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Platform">
+      <UniqueIdentifier>{378A8D8C-6CA1-3F6B-A02B-1E9FF64C97B2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Platform\Windows">
+      <UniqueIdentifier>{63AEF2F6-51C7-306A-BFE8-A049C8C62EFB}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Platform\Windows\..">
+      <UniqueIdentifier>{C2D7F6B4-9216-3C2D-9F9A-76D34821E4A4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Platform\Windows\..\..">
+      <UniqueIdentifier>{B3F0A8C7-D94B-3D2F-84F1-951E63018888}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Platform\Windows\..\..\Uploader">
+      <UniqueIdentifier>{B9EC4FC2-D348-382E-A5A8-B76361E478FF}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Platform\Windows\..\..\Uploader\platforms">
+      <UniqueIdentifier>{362C4616-9809-3BC5-B12C-D25491E70F05}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Platform\Windows\..\..\Uploader\platforms\win">
+      <UniqueIdentifier>{8704A8E3-FC22-326C-AAA6-1BC2FAF8DC3A}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="UI">
+      <UniqueIdentifier>{D77753F4-79DD-33CF-A3D5-FFF0DABA8477}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Uploader">
+      <UniqueIdentifier>{7C2D4605-C54D-31E9-90F2-11092D6CAC8D}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

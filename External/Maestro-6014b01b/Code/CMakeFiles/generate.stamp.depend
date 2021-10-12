@@ -1,0 +1,7 @@
+# CMake generation dependency list for this directory.
+C:/Users/lesaelr/o3de/Gems/Maestro/Code/CMakeLists.txt
+C:/Users/lesaelr/o3de/Gems/Maestro/Code/maestro_editor_files.cmake
+C:/Users/lesaelr/o3de/Gems/Maestro/Code/maestro_files.cmake
+C:/Users/lesaelr/o3de/Gems/Maestro/Code/maestro_static_files.cmake
+C:/Users/lesaelr/o3de/Gems/Maestro/Code/maestro_tests_files.cmake
+C:/Users/lesaelr/o3de/cmake/Platform/Windows/LYTestWrappers_windows.cmake

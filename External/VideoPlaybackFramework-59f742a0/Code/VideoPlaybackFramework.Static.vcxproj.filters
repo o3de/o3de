@@ -1,0 +1,47 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\VideoPlaybackFramework-59f742a0\Code\CMakeFiles\VideoPlaybackFramework.Static.dir\Unity\unity_0_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\VideoPlaybackFramework\Code\Source\VideoPlaybackFrameworkSystemComponent.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\VideoPlaybackFramework\Code\Include\VideoPlaybackFramework\VideoPlaybackFrameworkBus.h">
+      <Filter>Include\VideoPlaybackFramework</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\VideoPlaybackFramework\Code\Include\VideoPlaybackFramework\VideoPlaybackBus.h">
+      <Filter>Include\VideoPlaybackFramework</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\VideoPlaybackFramework\Code\Include\VideoPlaybackFramework\VideoPlaybackAsset.h">
+      <Filter>Include\VideoPlaybackFramework</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\VideoPlaybackFramework\Code\Source\VideoPlaybackFrameworkSystemComponent.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Gems\VideoPlaybackFramework\Code\CMakeLists.txt">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="C:\Users\lesaelr\o3de\Gems\VideoPlaybackFramework\Code\videoplaybackframework_files.cmake" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Generated Files">
+      <UniqueIdentifier>{FB9B7D8B-7F05-31D5-AA90-592248EDE1B3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include">
+      <UniqueIdentifier>{E188105A-C8C4-34BB-9809-15E8410EF7F8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\VideoPlaybackFramework">
+      <UniqueIdentifier>{311CF2E8-C0CE-3625-BA1A-DD0C85826436}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source">
+      <UniqueIdentifier>{F3F0AD47-5F83-373B-A2BF-650D2E4FA3EA}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

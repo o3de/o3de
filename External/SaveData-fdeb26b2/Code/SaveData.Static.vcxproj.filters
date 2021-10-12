@@ -1,0 +1,65 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\SaveData-fdeb26b2\Code\CMakeFiles\SaveData.Static.dir\Unity\unity_0_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\SaveData\Code\Source\SaveDataSystemComponent.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\SaveData\Code\Source\Platform\Windows\SaveData_SystemComponent_Windows.cpp">
+      <Filter>Source\Platform\Windows</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\SaveData\Code\Include\SaveData\SaveDataNotificationBus.h">
+      <Filter>Include\SaveData</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\SaveData\Code\Include\SaveData\SaveDataRequestBus.h">
+      <Filter>Include\SaveData</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\SaveData\Code\Source\SaveDataSystemComponent.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\SaveData\Code\Source\Platform\Windows\SaveData_Traits_Platform.h">
+      <Filter>Source\Platform\Windows</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\SaveData\Code\Source\Platform\Windows\SaveData_Traits_Windows.h">
+      <Filter>Source\Platform\Windows</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Gems\SaveData\Code\CMakeLists.txt">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="C:\Users\lesaelr\o3de\Gems\SaveData\Code\savedata_files.cmake" />
+    <None Include="C:\Users\lesaelr\o3de\Gems\SaveData\Code\Source\Platform\Windows\platform_windows_files.cmake">
+      <Filter>Source\Platform\Windows</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\SaveData\Code\Source\Platform\Windows\platform_windows.cmake">
+      <Filter>Source\Platform\Windows</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Generated Files">
+      <UniqueIdentifier>{FB9B7D8B-7F05-31D5-AA90-592248EDE1B3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include">
+      <UniqueIdentifier>{E188105A-C8C4-34BB-9809-15E8410EF7F8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\SaveData">
+      <UniqueIdentifier>{53985B30-C350-3437-B43F-91040BC323FC}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source">
+      <UniqueIdentifier>{F3F0AD47-5F83-373B-A2BF-650D2E4FA3EA}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Platform">
+      <UniqueIdentifier>{4FB794FF-EAE9-3B82-95CC-6241BAD0E3AC}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Platform\Windows">
+      <UniqueIdentifier>{2D0E7154-D797-393D-A7EB-8527ACAFB2BF}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

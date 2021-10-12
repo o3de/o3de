@@ -1,0 +1,51 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneBuilder\CMakeFiles\SceneBuilder.Tests.dir\Unity\unity_0_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneBuilder\Tests\TestsMain.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneBuilder\Tests\Importers\SceneImporterUtilitiesTests.cpp">
+      <Filter>Tests\Importers</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneBuilder\Tests\Importers\Utilities\RenamedNodesMapTests.cpp">
+      <Filter>Tests\Importers\Utilities</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\CMakeFiles\08b24365a84bd27d080f6dd51f42b933\SceneBuilder.Tests_(CONFIG).stamp.rule">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneBuilder\CMakeLists.txt">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneBuilder\scenebuilder_testing_files.cmake" />
+    <None Include="C:\Users\lesaelr\o3de\runtime_dependencies\debug\SceneBuilder.Tests_debug.stamp">
+      <Filter>Generated Files</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\runtime_dependencies\profile\SceneBuilder.Tests_profile.stamp">
+      <Filter>Generated Files</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\runtime_dependencies\release\SceneBuilder.Tests_release.stamp">
+      <Filter>Generated Files</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Generated Files">
+      <UniqueIdentifier>{FB9B7D8B-7F05-31D5-AA90-592248EDE1B3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Tests">
+      <UniqueIdentifier>{042E9197-689D-3636-8A35-28EBCAA2BD47}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Tests\Importers">
+      <UniqueIdentifier>{5F99436E-E9FB-3713-A0AA-42347A955226}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Tests\Importers\Utilities">
+      <UniqueIdentifier>{5D96F353-665E-3E5B-B613-E6AC1C57A712}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

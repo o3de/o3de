@@ -1,0 +1,30 @@
+{
+	"BUILD_DIR" : "C:/Users/lesaelr/o3de/Code/Tools/AssetBundler/AssetBundler_autogen",
+	"CMAKE_BINARY_DIR" : "C:/Users/lesaelr/o3de",
+	"CMAKE_CURRENT_BINARY_DIR" : "C:/Users/lesaelr/o3de/Code/Tools/AssetBundler",
+	"CMAKE_CURRENT_SOURCE_DIR" : "C:/Users/lesaelr/o3de/Code/Tools/AssetBundler",
+	"CMAKE_SOURCE_DIR" : "C:/Users/lesaelr/o3de",
+	"INCLUDE_DIR" : "C:/Users/lesaelr/o3de/Code/Tools/AssetBundler/AssetBundler_autogen/include",
+	"INCLUDE_DIR_debug" : "C:/Users/lesaelr/o3de/Code/Tools/AssetBundler/AssetBundler_autogen/include_debug",
+	"INCLUDE_DIR_profile" : "C:/Users/lesaelr/o3de/Code/Tools/AssetBundler/AssetBundler_autogen/include_profile",
+	"INCLUDE_DIR_release" : "C:/Users/lesaelr/o3de/Code/Tools/AssetBundler/AssetBundler_autogen/include_release",
+	"INPUTS" : 
+	[
+		"C:/Users/lesaelr/o3de/Code/Tools/AssetBundler/source/ui/style/AssetBundlerConfig.ini",
+		"C:/Users/lesaelr/o3de/Code/Tools/AssetBundler/source/ui/style/AssetBundler-Icon-256x256@x2.ico",
+		"C:/Users/lesaelr/o3de/Code/Tools/AssetBundler/source/ui/style/AssetBundler.qss"
+	],
+	"LOCK_FILE" : "C:/Users/lesaelr/o3de/Code/Tools/AssetBundler/CMakeFiles/AssetBundler_autogen.dir/AutoRcc_AssetBundler_6XBB44IFRS_Lock.lock",
+	"MULTI_CONFIG" : true,
+	"OPTIONS" : [ "-name", "AssetBundler" ],
+	"OUTPUT_CHECKSUM" : "6XBB44IFRS",
+	"OUTPUT_NAME" : "qrc_AssetBundler.cpp",
+	"RCC_EXECUTABLE" : "C:/Users/lesaelr/.o3de/3rdParty/packages/qt-5.15.2-rev4-windows/qt/bin/rcc.exe",
+	"RCC_LIST_OPTIONS" : [ "--list" ],
+	"SETTINGS_FILE" : "C:/Users/lesaelr/o3de/Code/Tools/AssetBundler/CMakeFiles/AssetBundler_autogen.dir/AutoRcc_AssetBundler_6XBB44IFRS_Used.txt",
+	"SETTINGS_FILE_debug" : "C:/Users/lesaelr/o3de/Code/Tools/AssetBundler/CMakeFiles/AssetBundler_autogen.dir/AutoRcc_AssetBundler_6XBB44IFRS_Used_debug.txt",
+	"SETTINGS_FILE_profile" : "C:/Users/lesaelr/o3de/Code/Tools/AssetBundler/CMakeFiles/AssetBundler_autogen.dir/AutoRcc_AssetBundler_6XBB44IFRS_Used_profile.txt",
+	"SETTINGS_FILE_release" : "C:/Users/lesaelr/o3de/Code/Tools/AssetBundler/CMakeFiles/AssetBundler_autogen.dir/AutoRcc_AssetBundler_6XBB44IFRS_Used_release.txt",
+	"SOURCE" : "C:/Users/lesaelr/o3de/Code/Tools/AssetBundler/source/ui/style/AssetBundler.qrc",
+	"VERBOSITY" : 0
+}

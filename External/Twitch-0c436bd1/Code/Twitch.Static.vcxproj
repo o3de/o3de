@@ -1,0 +1,306 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <PreferredToolArchitecture>x64</PreferredToolArchitecture>
+  </PropertyGroup>
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="debug|x64">
+      <Configuration>debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="profile|x64">
+      <Configuration>profile</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="release|x64">
+      <Configuration>release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{EF8A20C0-18C1-3D6B-BF4E-A5E0F4E3087E}</ProjectGuid>
+    <WindowsTargetPlatformVersion>10.0.19041.0</WindowsTargetPlatformVersion>
+    <Keyword>Win32Proj</Keyword>
+    <Platform>x64</Platform>
+    <ProjectName>Twitch.Static</ProjectName>
+    <VCProjectUpgraderObjectName>NoUpgrade</VCProjectUpgraderObjectName>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='debug|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v142</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='profile|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v142</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='release|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v142</PlatformToolset>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>10.0.20506.1</_ProjectFileVersion>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='debug|x64'">C:\Users\lesaelr\o3de\lib\debug\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='debug|x64'">Twitch.Static.dir\debug\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='debug|x64'">Twitch.Static</TargetName>
+    <TargetExt Condition="'$(Configuration)|$(Platform)'=='debug|x64'">.lib</TargetExt>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='profile|x64'">C:\Users\lesaelr\o3de\lib\profile\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='profile|x64'">Twitch.Static.dir\profile\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='profile|x64'">Twitch.Static</TargetName>
+    <TargetExt Condition="'$(Configuration)|$(Platform)'=='profile|x64'">.lib</TargetExt>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='release|x64'">C:\Users\lesaelr\o3de\lib\release\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='release|x64'">Twitch.Static.dir\release\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='release|x64'">Twitch.Static</TargetName>
+    <TargetExt Condition="'$(Configuration)|$(Platform)'=='release|x64'">.lib</TargetExt>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='debug|x64'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>C:\Users\lesaelr\o3de\Gems\Twitch\Code\Source;C:\Users\lesaelr\o3de\Gems\Twitch\Code\Source\Platform\Windows;C:\Users\lesaelr\o3de\Gems\Twitch\Code\Include;C:\Users\lesaelr\o3de\Gems\HttpRequestor\Code\Include;C:\Users\lesaelr\o3de\Code\Framework\AzCore\.;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalOptions>%(AdditionalOptions) /Zc:__cplusplus /Zc:lambda /favor:AMD64 /bigobj /RTCsu /experimental:external /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/Lua-5.3.5-rev5-windows/lua/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/RapidJSON-1.1.0-rev1-multiplatform/RapidJSON/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/RapidXML-1.13-rev1-multiplatform/RapidXML/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/zlib-1.2.11-rev2-windows/zlib/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/zstd-1.35-multiplatform/zstd/lib /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/cityhash-1.1-multiplatform/cityhash/src /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/AWSNativeSDK-1.7.167-rev4-windows/AWSNativeSDK/include</AdditionalOptions>
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <BufferSecurityCheck>true</BufferSecurityCheck>
+      <CallingConvention>Cdecl</CallingConvention>
+      <ConformanceMode>true</ConformanceMode>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <DiagnosticsFormat>Caret</DiagnosticsFormat>
+      <DisableSpecificWarnings>4201</DisableSpecificWarnings>
+      <ExceptionHandling>
+      </ExceptionHandling>
+      <ExternalWarningLevel>TurnOffAllWarnings</ExternalWarningLevel>
+      <FloatingPointModel>Fast</FloatingPointModel>
+      <ForceConformanceInForLoopScope>true</ForceConformanceInForLoopScope>
+      <InlineFunctionExpansion>Disabled</InlineFunctionExpansion>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <Optimization>Disabled</Optimization>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <TreatSpecificWarningsAsErrors>4263;4264;4265;4266;4296;4426;4437;4774;4777;5031;5032;5233</TreatSpecificWarningsAsErrors>
+      <TreatWarningAsError>true</TreatWarningAsError>
+      <UseFullPaths>false</UseFullPaths>
+      <WarningLevel>Level4</WarningLevel>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);_HAS_EXCEPTIONS=0;_DEBUG;AZ_DEBUG_BUILD=1;AZ_ENABLE_TRACING;AZ_ENABLE_DEBUG_TOOLS;AZ_BUILD_CONFIGURATION_TYPE="debug";_ENABLE_EXTENDED_ALIGNED_STORAGE;_WIN32;WIN32;_WIN64;WIN64;NOMINMAX;AWS_CUSTOM_MEMORY_MANAGEMENT;PLATFORM_SUPPORTS_AWS_NATIVE_SDK;USE_IMPORT_EXPORT;CMAKE_INTDIR="debug"</PreprocessorDefinitions>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);_DEBUG;_HAS_EXCEPTIONS=0;AZ_DEBUG_BUILD=1;AZ_ENABLE_TRACING;AZ_ENABLE_DEBUG_TOOLS;AZ_BUILD_CONFIGURATION_TYPE=\"debug\";_ENABLE_EXTENDED_ALIGNED_STORAGE;_WIN32;WIN32;_WIN64;WIN64;NOMINMAX;AWS_CUSTOM_MEMORY_MANAGEMENT;PLATFORM_SUPPORTS_AWS_NATIVE_SDK;USE_IMPORT_EXPORT;CMAKE_INTDIR=\"debug\"</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>C:\Users\lesaelr\o3de\Gems\Twitch\Code\Source;C:\Users\lesaelr\o3de\Gems\Twitch\Code\Source\Platform\Windows;C:\Users\lesaelr\o3de\Gems\Twitch\Code\Include;C:\Users\lesaelr\o3de\Gems\HttpRequestor\Code\Include;C:\Users\lesaelr\o3de\Code\Framework\AzCore\.;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+    </ResourceCompile>
+    <Midl>
+      <AdditionalIncludeDirectories>C:\Users\lesaelr\o3de\Gems\Twitch\Code\Source;C:\Users\lesaelr\o3de\Gems\Twitch\Code\Source\Platform\Windows;C:\Users\lesaelr\o3de\Gems\Twitch\Code\Include;C:\Users\lesaelr\o3de\Gems\HttpRequestor\Code\Include;C:\Users\lesaelr\o3de\Code\Framework\AzCore\.;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+    <Lib>
+      <AdditionalOptions>%(AdditionalOptions) /machine:x64 /IGNORE:4099</AdditionalOptions>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <TargetMachine>MachineX64</TargetMachine>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='profile|x64'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>C:\Users\lesaelr\o3de\Gems\Twitch\Code\Source;C:\Users\lesaelr\o3de\Gems\Twitch\Code\Source\Platform\Windows;C:\Users\lesaelr\o3de\Gems\Twitch\Code\Include;C:\Users\lesaelr\o3de\Gems\HttpRequestor\Code\Include;C:\Users\lesaelr\o3de\Code\Framework\AzCore\.;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalOptions>%(AdditionalOptions) /Zc:__cplusplus /Zc:lambda /favor:AMD64 /bigobj /experimental:external /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/Lua-5.3.5-rev5-windows/lua/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/RapidJSON-1.1.0-rev1-multiplatform/RapidJSON/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/RapidXML-1.13-rev1-multiplatform/RapidXML/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/zlib-1.2.11-rev2-windows/zlib/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/zstd-1.35-multiplatform/zstd/lib /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/cityhash-1.1-multiplatform/cityhash/src /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/AWSNativeSDK-1.7.167-rev4-windows/AWSNativeSDK/include</AdditionalOptions>
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <CallingConvention>Cdecl</CallingConvention>
+      <ConformanceMode>true</ConformanceMode>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <DiagnosticsFormat>Caret</DiagnosticsFormat>
+      <DisableSpecificWarnings>4201</DisableSpecificWarnings>
+      <ExceptionHandling>
+      </ExceptionHandling>
+      <ExternalWarningLevel>TurnOffAllWarnings</ExternalWarningLevel>
+      <FloatingPointModel>Fast</FloatingPointModel>
+      <ForceConformanceInForLoopScope>true</ForceConformanceInForLoopScope>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <Optimization>MaxSpeed</Optimization>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <RemoveUnreferencedCodeData>true</RemoveUnreferencedCodeData>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <StringPooling>true</StringPooling>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <TreatSpecificWarningsAsErrors>4263;4264;4265;4266;4296;4426;4437;4774;4777;5031;5032;5233</TreatSpecificWarningsAsErrors>
+      <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
+      <TreatWarningAsError>true</TreatWarningAsError>
+      <UseFullPaths>false</UseFullPaths>
+      <WarningLevel>Level4</WarningLevel>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);_HAS_EXCEPTIONS=0;_PROFILE;PROFILE;NDEBUG;AZ_ENABLE_TRACING;AZ_ENABLE_DEBUG_TOOLS;AZ_BUILD_CONFIGURATION_TYPE="profile";_ENABLE_EXTENDED_ALIGNED_STORAGE;_WIN32;WIN32;_WIN64;WIN64;NOMINMAX;AWS_CUSTOM_MEMORY_MANAGEMENT;PLATFORM_SUPPORTS_AWS_NATIVE_SDK;USE_IMPORT_EXPORT;CMAKE_INTDIR="profile"</PreprocessorDefinitions>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);_HAS_EXCEPTIONS=0;_PROFILE;PROFILE;NDEBUG;AZ_ENABLE_TRACING;AZ_ENABLE_DEBUG_TOOLS;AZ_BUILD_CONFIGURATION_TYPE=\"profile\";_ENABLE_EXTENDED_ALIGNED_STORAGE;_WIN32;WIN32;_WIN64;WIN64;NOMINMAX;AWS_CUSTOM_MEMORY_MANAGEMENT;PLATFORM_SUPPORTS_AWS_NATIVE_SDK;USE_IMPORT_EXPORT;CMAKE_INTDIR=\"profile\"</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>C:\Users\lesaelr\o3de\Gems\Twitch\Code\Source;C:\Users\lesaelr\o3de\Gems\Twitch\Code\Source\Platform\Windows;C:\Users\lesaelr\o3de\Gems\Twitch\Code\Include;C:\Users\lesaelr\o3de\Gems\HttpRequestor\Code\Include;C:\Users\lesaelr\o3de\Code\Framework\AzCore\.;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+    </ResourceCompile>
+    <Midl>
+      <AdditionalIncludeDirectories>C:\Users\lesaelr\o3de\Gems\Twitch\Code\Source;C:\Users\lesaelr\o3de\Gems\Twitch\Code\Source\Platform\Windows;C:\Users\lesaelr\o3de\Gems\Twitch\Code\Include;C:\Users\lesaelr\o3de\Gems\HttpRequestor\Code\Include;C:\Users\lesaelr\o3de\Code\Framework\AzCore\.;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+    <Lib>
+      <AdditionalOptions>%(AdditionalOptions) /machine:x64 /IGNORE:4099</AdditionalOptions>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <TargetMachine>MachineX64</TargetMachine>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='release|x64'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>C:\Users\lesaelr\o3de\Gems\Twitch\Code\Source;C:\Users\lesaelr\o3de\Gems\Twitch\Code\Source\Platform\Windows;C:\Users\lesaelr\o3de\Gems\Twitch\Code\Include;C:\Users\lesaelr\o3de\Gems\HttpRequestor\Code\Include;C:\Users\lesaelr\o3de\Code\Framework\AzCore\.;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalOptions>%(AdditionalOptions) /Zc:__cplusplus /Zc:lambda /favor:AMD64 /bigobj /experimental:external /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/Lua-5.3.5-rev5-windows/lua/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/RapidJSON-1.1.0-rev1-multiplatform/RapidJSON/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/RapidXML-1.13-rev1-multiplatform/RapidXML/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/zlib-1.2.11-rev2-windows/zlib/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/zstd-1.35-multiplatform/zstd/lib /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/cityhash-1.1-multiplatform/cityhash/src /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/AWSNativeSDK-1.7.167-rev4-windows/AWSNativeSDK/include</AdditionalOptions>
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <CallingConvention>Cdecl</CallingConvention>
+      <ConformanceMode>true</ConformanceMode>
+      <DiagnosticsFormat>Caret</DiagnosticsFormat>
+      <DisableSpecificWarnings>4201</DisableSpecificWarnings>
+      <ExceptionHandling>
+      </ExceptionHandling>
+      <ExternalWarningLevel>TurnOffAllWarnings</ExternalWarningLevel>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <FloatingPointModel>Fast</FloatingPointModel>
+      <ForceConformanceInForLoopScope>true</ForceConformanceInForLoopScope>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <OmitFramePointers>true</OmitFramePointers>
+      <Optimization>Full</Optimization>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <TreatSpecificWarningsAsErrors>4263;4264;4265;4266;4296;4426;4437;4774;4777;5031;5032;5233</TreatSpecificWarningsAsErrors>
+      <TreatWarningAsError>true</TreatWarningAsError>
+      <UseFullPaths>false</UseFullPaths>
+      <WarningLevel>Level4</WarningLevel>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);_HAS_EXCEPTIONS=0;_RELEASE;RELEASE;NDEBUG;AZ_BUILD_CONFIGURATION_TYPE="release";_ENABLE_EXTENDED_ALIGNED_STORAGE;_WIN32;WIN32;_WIN64;WIN64;NOMINMAX;AWS_CUSTOM_MEMORY_MANAGEMENT;PLATFORM_SUPPORTS_AWS_NATIVE_SDK;USE_IMPORT_EXPORT;CMAKE_INTDIR="release"</PreprocessorDefinitions>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+      <DebugInformationFormat>
+      </DebugInformationFormat>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);_HAS_EXCEPTIONS=0;_RELEASE;RELEASE;NDEBUG;AZ_BUILD_CONFIGURATION_TYPE=\"release\";_ENABLE_EXTENDED_ALIGNED_STORAGE;_WIN32;WIN32;_WIN64;WIN64;NOMINMAX;AWS_CUSTOM_MEMORY_MANAGEMENT;PLATFORM_SUPPORTS_AWS_NATIVE_SDK;USE_IMPORT_EXPORT;CMAKE_INTDIR=\"release\"</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>C:\Users\lesaelr\o3de\Gems\Twitch\Code\Source;C:\Users\lesaelr\o3de\Gems\Twitch\Code\Source\Platform\Windows;C:\Users\lesaelr\o3de\Gems\Twitch\Code\Include;C:\Users\lesaelr\o3de\Gems\HttpRequestor\Code\Include;C:\Users\lesaelr\o3de\Code\Framework\AzCore\.;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+    </ResourceCompile>
+    <Midl>
+      <AdditionalIncludeDirectories>C:\Users\lesaelr\o3de\Gems\Twitch\Code\Source;C:\Users\lesaelr\o3de\Gems\Twitch\Code\Source\Platform\Windows;C:\Users\lesaelr\o3de\Gems\Twitch\Code\Include;C:\Users\lesaelr\o3de\Gems\HttpRequestor\Code\Include;C:\Users\lesaelr\o3de\Code\Framework\AzCore\.;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+    <Lib>
+      <AdditionalOptions>%(AdditionalOptions) /machine:x64 /IGNORE:4099</AdditionalOptions>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <TargetMachine>MachineX64</TargetMachine>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Gems\Twitch\Code\CMakeLists.txt">
+      <UseUtf8Encoding>Always</UseUtf8Encoding>
+      <Message Condition="'$(Configuration)|$(Platform)'=='debug|x64'">Building Custom Rule C:/Users/lesaelr/o3de/Gems/Twitch/Code/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='debug|x64'">setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SC:/Users/lesaelr/o3de -BC:/Users/lesaelr/o3de --check-stamp-file C:/Users/lesaelr/o3de/External/Twitch-0c436bd1/Code/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='debug|x64'">C:\Users\lesaelr\o3de\Gems\Twitch\Code\Source\Platform\Windows\platform_windows_files.cmake;C:\Users\lesaelr\o3de\Gems\Twitch\Code\twitch_files.cmake;C:\Users\lesaelr\o3de\Gems\Twitch\Code\twitch_shared_files.cmake;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='debug|x64'">C:\Users\lesaelr\o3de\External\Twitch-0c436bd1\Code\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='debug|x64'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='profile|x64'">Building Custom Rule C:/Users/lesaelr/o3de/Gems/Twitch/Code/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='profile|x64'">setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SC:/Users/lesaelr/o3de -BC:/Users/lesaelr/o3de --check-stamp-file C:/Users/lesaelr/o3de/External/Twitch-0c436bd1/Code/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='profile|x64'">C:\Users\lesaelr\o3de\Gems\Twitch\Code\Source\Platform\Windows\platform_windows_files.cmake;C:\Users\lesaelr\o3de\Gems\Twitch\Code\twitch_files.cmake;C:\Users\lesaelr\o3de\Gems\Twitch\Code\twitch_shared_files.cmake;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='profile|x64'">C:\Users\lesaelr\o3de\External\Twitch-0c436bd1\Code\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='profile|x64'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='release|x64'">Building Custom Rule C:/Users/lesaelr/o3de/Gems/Twitch/Code/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='release|x64'">setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SC:/Users/lesaelr/o3de -BC:/Users/lesaelr/o3de --check-stamp-file C:/Users/lesaelr/o3de/External/Twitch-0c436bd1/Code/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='release|x64'">C:\Users\lesaelr\o3de\Gems\Twitch\Code\Source\Platform\Windows\platform_windows_files.cmake;C:\Users\lesaelr\o3de\Gems\Twitch\Code\twitch_files.cmake;C:\Users\lesaelr\o3de\Gems\Twitch\Code\twitch_shared_files.cmake;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='release|x64'">C:\Users\lesaelr\o3de\External\Twitch-0c436bd1\Code\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='release|x64'">false</LinkObjects>
+    </CustomBuild>
+  </ItemGroup>
+  <PropertyGroup>
+    <EnableUnitySupport>true</EnableUnitySupport>
+  </PropertyGroup>
+  <ItemGroup>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\Twitch-0c436bd1\Code\CMakeFiles\Twitch.Static.dir\Unity\unity_0_cxx.cxx" IncludeInUnityFile="false" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/Twitch-0c436bd1/Code/CMakeFiles/Twitch.Static.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Twitch\Code\Include\Twitch\TwitchBus.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Twitch\Code\Include\Twitch\TwitchTypes.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Twitch\Code\Include\Twitch\BaseTypes.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Twitch\Code\Include\Twitch\RESTTypes.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Twitch\Code\Source\TwitchSystemComponent.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/Twitch-0c436bd1/Code/CMakeFiles/Twitch.Static.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Twitch\Code\Source\TwitchSystemComponent.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Twitch\Code\Source\TwitchReflection.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/Twitch-0c436bd1/Code/CMakeFiles/Twitch.Static.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Twitch\Code\Source\TwitchReflection.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Twitch\Code\Source\ITwitchREST.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Twitch\Code\Source\TwitchREST.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/Twitch-0c436bd1/Code/CMakeFiles/Twitch.Static.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Twitch\Code\Source\TwitchREST.h" />
+    <None Include="C:\Users\lesaelr\o3de\Gems\Twitch\Code\twitch_files.cmake">
+    </None>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Twitch\Code\Source\Platform\Windows\Twitch_Traits_Platform.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Twitch\Code\Source\Platform\Windows\Twitch_Traits_Windows.h" />
+    <None Include="C:\Users\lesaelr\o3de\Gems\Twitch\Code\Source\Platform\Windows\platform_windows_files.cmake">
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\ZERO_CHECK.vcxproj">
+      <Project>{CDE32B4E-8490-3FC5-A3F2-976A0A5DE45E}</Project>
+      <Name>ZERO_CHECK</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore.vcxproj">
+      <Project>{8AC0D8DF-6487-39C7-A5F3-F77355B1ACD9}</Project>
+      <Name>AzCore</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\External\HttpRequestor-6f78570b\Code\HttpRequestor.vcxproj">
+      <Project>{EE5AF9F3-1BA9-310C-9D2E-175AB1FE0A09}</Project>
+      <Name>HttpRequestor</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

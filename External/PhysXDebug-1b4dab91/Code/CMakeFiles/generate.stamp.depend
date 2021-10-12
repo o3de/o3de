@@ -1,0 +1,5 @@
+# CMake generation dependency list for this directory.
+C:/Users/lesaelr/o3de/Gems/PhysX/Code/Source/Platform/Windows/PAL_windows.cmake
+C:/Users/lesaelr/o3de/Gems/PhysXDebug/Code/CMakeLists.txt
+C:/Users/lesaelr/o3de/Gems/PhysXDebug/Code/physxdebug_editor_files.cmake
+C:/Users/lesaelr/o3de/Gems/PhysXDebug/Code/physxdebug_files.cmake

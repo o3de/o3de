@@ -1,0 +1,4 @@
+# CMake generation dependency list for this directory.
+C:/Users/lesaelr/o3de/Code/Tools/CrashHandler/Support/CMakeLists.txt
+C:/Users/lesaelr/o3de/Code/Tools/CrashHandler/Support/crash_handler_support_files.cmake
+C:/Users/lesaelr/o3de/Code/Tools/CrashHandler/Support/platform/Windows/crash_handler_support_windows_files.cmake

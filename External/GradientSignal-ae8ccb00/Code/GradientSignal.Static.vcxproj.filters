@@ -1,0 +1,275 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\GradientSignal-ae8ccb00\Code\CMakeFiles\GradientSignal.Static.dir\Unity\unity_3_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\GradientSignal-ae8ccb00\Code\CMakeFiles\GradientSignal.Static.dir\Unity\unity_2_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\GradientSignal-ae8ccb00\Code\CMakeFiles\GradientSignal.Static.dir\Unity\unity_1_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\GradientSignal-ae8ccb00\Code\CMakeFiles\GradientSignal.Static.dir\Unity\unity_0_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GradientSignal\Code\Source\Components\ConstantGradientComponent.cpp">
+      <Filter>Source\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GradientSignal\Code\Source\Components\DitherGradientComponent.cpp">
+      <Filter>Source\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GradientSignal\Code\Source\Components\GradientSurfaceDataComponent.cpp">
+      <Filter>Source\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GradientSignal\Code\Source\Components\GradientTransformComponent.cpp">
+      <Filter>Source\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GradientSignal\Code\Source\Components\ImageGradientComponent.cpp">
+      <Filter>Source\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GradientSignal\Code\Source\Components\InvertGradientComponent.cpp">
+      <Filter>Source\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GradientSignal\Code\Source\Components\LevelsGradientComponent.cpp">
+      <Filter>Source\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GradientSignal\Code\Source\Components\MixedGradientComponent.cpp">
+      <Filter>Source\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GradientSignal\Code\Source\Components\PerlinGradientComponent.cpp">
+      <Filter>Source\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GradientSignal\Code\Source\Components\PosterizeGradientComponent.cpp">
+      <Filter>Source\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GradientSignal\Code\Source\Components\RandomGradientComponent.cpp">
+      <Filter>Source\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GradientSignal\Code\Source\Components\ReferenceGradientComponent.cpp">
+      <Filter>Source\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GradientSignal\Code\Source\Components\ShapeAreaFalloffGradientComponent.cpp">
+      <Filter>Source\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GradientSignal\Code\Source\Components\SmoothStepGradientComponent.cpp">
+      <Filter>Source\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GradientSignal\Code\Source\Components\SurfaceAltitudeGradientComponent.cpp">
+      <Filter>Source\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GradientSignal\Code\Source\Components\SurfaceMaskGradientComponent.cpp">
+      <Filter>Source\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GradientSignal\Code\Source\Components\SurfaceSlopeGradientComponent.cpp">
+      <Filter>Source\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GradientSignal\Code\Source\Components\ThresholdGradientComponent.cpp">
+      <Filter>Source\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GradientSignal\Code\Source\GradientSampler.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GradientSignal\Code\Source\GradientSignalSystemComponent.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GradientSignal\Code\Source\SmoothStep.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GradientSignal\Code\Source\ImageAsset.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GradientSignal\Code\Source\ImageSettings.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GradientSignal\Code\Source\PerlinImprovedNoise.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GradientSignal\Code\Source\Util.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GradientSignal\Code\Source\GradientImageConversion.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GradientSignal\Code\Include\GradientSignal\GradientSampler.h">
+      <Filter>Include\GradientSignal</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GradientSignal\Code\Include\GradientSignal\SmoothStep.h">
+      <Filter>Include\GradientSignal</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GradientSignal\Code\Include\GradientSignal\ImageAsset.h">
+      <Filter>Include\GradientSignal</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GradientSignal\Code\Include\GradientSignal\ImageSettings.h">
+      <Filter>Include\GradientSignal</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GradientSignal\Code\Include\GradientSignal\PerlinImprovedNoise.h">
+      <Filter>Include\GradientSignal</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GradientSignal\Code\Include\GradientSignal\Util.h">
+      <Filter>Include\GradientSignal</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GradientSignal\Code\Include\GradientSignal\GradientImageConversion.h">
+      <Filter>Include\GradientSignal</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GradientSignal\Code\Include\GradientSignal\Ebuses\GradientTransformRequestBus.h">
+      <Filter>Include\GradientSignal\Ebuses</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GradientSignal\Code\Include\GradientSignal\Ebuses\GradientRequestBus.h">
+      <Filter>Include\GradientSignal\Ebuses</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GradientSignal\Code\Include\GradientSignal\Ebuses\GradientPreviewRequestBus.h">
+      <Filter>Include\GradientSignal\Ebuses</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GradientSignal\Code\Include\GradientSignal\Ebuses\GradientPreviewContextRequestBus.h">
+      <Filter>Include\GradientSignal\Ebuses</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GradientSignal\Code\Include\GradientSignal\Ebuses\SectorDataRequestBus.h">
+      <Filter>Include\GradientSignal\Ebuses</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GradientSignal\Code\Include\GradientSignal\Ebuses\RandomGradientRequestBus.h">
+      <Filter>Include\GradientSignal\Ebuses</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GradientSignal\Code\Include\GradientSignal\Ebuses\PerlinGradientRequestBus.h">
+      <Filter>Include\GradientSignal\Ebuses</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GradientSignal\Code\Include\GradientSignal\Ebuses\DitherGradientRequestBus.h">
+      <Filter>Include\GradientSignal\Ebuses</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GradientSignal\Code\Include\GradientSignal\Ebuses\GradientTransformModifierRequestBus.h">
+      <Filter>Include\GradientSignal\Ebuses</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GradientSignal\Code\Include\GradientSignal\Ebuses\InvertGradientRequestBus.h">
+      <Filter>Include\GradientSignal\Ebuses</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GradientSignal\Code\Include\GradientSignal\Ebuses\LevelsGradientRequestBus.h">
+      <Filter>Include\GradientSignal\Ebuses</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GradientSignal\Code\Include\GradientSignal\Ebuses\PosterizeGradientRequestBus.h">
+      <Filter>Include\GradientSignal\Ebuses</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GradientSignal\Code\Include\GradientSignal\Ebuses\SmoothStepGradientRequestBus.h">
+      <Filter>Include\GradientSignal\Ebuses</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GradientSignal\Code\Include\GradientSignal\Ebuses\ThresholdGradientRequestBus.h">
+      <Filter>Include\GradientSignal\Ebuses</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GradientSignal\Code\Include\GradientSignal\Ebuses\ConstantGradientRequestBus.h">
+      <Filter>Include\GradientSignal\Ebuses</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GradientSignal\Code\Include\GradientSignal\Ebuses\ImageGradientRequestBus.h">
+      <Filter>Include\GradientSignal\Ebuses</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GradientSignal\Code\Include\GradientSignal\Ebuses\MixedGradientRequestBus.h">
+      <Filter>Include\GradientSignal\Ebuses</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GradientSignal\Code\Include\GradientSignal\Ebuses\ReferenceGradientRequestBus.h">
+      <Filter>Include\GradientSignal\Ebuses</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GradientSignal\Code\Include\GradientSignal\Ebuses\ShapeAreaFalloffGradientRequestBus.h">
+      <Filter>Include\GradientSignal\Ebuses</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GradientSignal\Code\Include\GradientSignal\Ebuses\SurfaceAltitudeGradientRequestBus.h">
+      <Filter>Include\GradientSignal\Ebuses</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GradientSignal\Code\Include\GradientSignal\Ebuses\SurfaceMaskGradientRequestBus.h">
+      <Filter>Include\GradientSignal\Ebuses</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GradientSignal\Code\Include\GradientSignal\Ebuses\SurfaceSlopeGradientRequestBus.h">
+      <Filter>Include\GradientSignal\Ebuses</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GradientSignal\Code\Include\GradientSignal\Ebuses\GradientSurfaceDataRequestBus.h">
+      <Filter>Include\GradientSignal\Ebuses</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GradientSignal\Code\Include\GradientSignal\Ebuses\SmoothStepRequestBus.h">
+      <Filter>Include\GradientSignal\Ebuses</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GradientSignal\Code\Source\Components\ConstantGradientComponent.h">
+      <Filter>Source\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GradientSignal\Code\Source\Components\DitherGradientComponent.h">
+      <Filter>Source\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GradientSignal\Code\Source\Components\GradientSurfaceDataComponent.h">
+      <Filter>Source\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GradientSignal\Code\Source\Components\GradientTransformComponent.h">
+      <Filter>Source\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GradientSignal\Code\Source\Components\ImageGradientComponent.h">
+      <Filter>Source\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GradientSignal\Code\Source\Components\InvertGradientComponent.h">
+      <Filter>Source\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GradientSignal\Code\Source\Components\LevelsGradientComponent.h">
+      <Filter>Source\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GradientSignal\Code\Source\Components\MixedGradientComponent.h">
+      <Filter>Source\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GradientSignal\Code\Source\Components\PerlinGradientComponent.h">
+      <Filter>Source\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GradientSignal\Code\Source\Components\PosterizeGradientComponent.h">
+      <Filter>Source\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GradientSignal\Code\Source\Components\RandomGradientComponent.h">
+      <Filter>Source\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GradientSignal\Code\Source\Components\ReferenceGradientComponent.h">
+      <Filter>Source\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GradientSignal\Code\Source\Components\ShapeAreaFalloffGradientComponent.h">
+      <Filter>Source\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GradientSignal\Code\Source\Components\SmoothStepGradientComponent.h">
+      <Filter>Source\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GradientSignal\Code\Source\Components\SurfaceAltitudeGradientComponent.h">
+      <Filter>Source\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GradientSignal\Code\Source\Components\SurfaceMaskGradientComponent.h">
+      <Filter>Source\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GradientSignal\Code\Source\Components\SurfaceSlopeGradientComponent.h">
+      <Filter>Source\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GradientSignal\Code\Source\Components\ThresholdGradientComponent.h">
+      <Filter>Source\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GradientSignal\Code\Source\GradientSignalSystemComponent.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Gems\GradientSignal\Code\CMakeLists.txt">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="C:\Users\lesaelr\o3de\Gems\GradientSignal\Code\gradientsignal_files.cmake" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Generated Files">
+      <UniqueIdentifier>{FB9B7D8B-7F05-31D5-AA90-592248EDE1B3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include">
+      <UniqueIdentifier>{E188105A-C8C4-34BB-9809-15E8410EF7F8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\GradientSignal">
+      <UniqueIdentifier>{E97EE16F-62CC-3482-81D1-F1DEA6B2FFE1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\GradientSignal\Ebuses">
+      <UniqueIdentifier>{A55A8DE8-A81A-3E99-814B-BB81A9BB1543}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source">
+      <UniqueIdentifier>{F3F0AD47-5F83-373B-A2BF-650D2E4FA3EA}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Components">
+      <UniqueIdentifier>{914C6B5F-184E-399E-8506-2B79CE7A1426}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

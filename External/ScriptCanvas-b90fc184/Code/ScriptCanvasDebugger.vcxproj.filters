@@ -1,0 +1,170 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\CMakeFiles\ScriptCanvasDebugger.dir\Unity\unity_0_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Debugger\API.cpp">
+      <Filter>Include\ScriptCanvas\Debugger</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Debugger\APIArguments.cpp">
+      <Filter>Include\ScriptCanvas\Debugger</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Debugger\ClientTransceiver.cpp">
+      <Filter>Include\ScriptCanvas\Debugger</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Debugger\Debugger.cpp">
+      <Filter>Include\ScriptCanvas\Debugger</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Debugger\Logger.cpp">
+      <Filter>Include\ScriptCanvas\Debugger</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Debugger\LogReader.cpp">
+      <Filter>Include\ScriptCanvas\Debugger</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Debugger\Messages\Notify.cpp">
+      <Filter>Include\ScriptCanvas\Debugger\Messages</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Debugger\Messages\Request.cpp">
+      <Filter>Include\ScriptCanvas\Debugger\Messages</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Debugger\API.h">
+      <Filter>Include\ScriptCanvas\Debugger</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Debugger\APIArguments.h">
+      <Filter>Include\ScriptCanvas\Debugger</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Debugger\Bus.h">
+      <Filter>Include\ScriptCanvas\Debugger</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Debugger\ClientTransceiver.h">
+      <Filter>Include\ScriptCanvas\Debugger</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Debugger\Debugger.h">
+      <Filter>Include\ScriptCanvas\Debugger</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Debugger\Logger.h">
+      <Filter>Include\ScriptCanvas\Debugger</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Debugger\LogReader.h">
+      <Filter>Include\ScriptCanvas\Debugger</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Debugger\StatusBus.h">
+      <Filter>Include\ScriptCanvas\Debugger</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Debugger\Messages\Notify.h">
+      <Filter>Include\ScriptCanvas\Debugger\Messages</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Debugger\Messages\Request.h">
+      <Filter>Include\ScriptCanvas\Debugger\Messages</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Debugger\ValidationEvents\ValidationEvent.h">
+      <Filter>Include\ScriptCanvas\Debugger\ValidationEvents</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Debugger\ValidationEvents\GraphTranslationValidation\GraphTranslationValidations.h">
+      <Filter>Include\ScriptCanvas\Debugger\ValidationEvents\GraphTranslationValidation</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Debugger\ValidationEvents\GraphTranslationValidation\GraphTranslationValidationIds.h">
+      <Filter>Include\ScriptCanvas\Debugger\ValidationEvents\GraphTranslationValidation</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Debugger\ValidationEvents\ParsingValidation\ParsingValidations.h">
+      <Filter>Include\ScriptCanvas\Debugger\ValidationEvents\ParsingValidation</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Debugger\ValidationEvents\ParsingValidation\ParsingValidationIds.h">
+      <Filter>Include\ScriptCanvas\Debugger\ValidationEvents\ParsingValidation</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Debugger\ValidationEvents\DataValidation\DataValidationEvents.h">
+      <Filter>Include\ScriptCanvas\Debugger\ValidationEvents\DataValidation</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Debugger\ValidationEvents\DataValidation\DataValidationIds.h">
+      <Filter>Include\ScriptCanvas\Debugger\ValidationEvents\DataValidation</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Debugger\ValidationEvents\DataValidation\DynamicDataTypeEvent.h">
+      <Filter>Include\ScriptCanvas\Debugger\ValidationEvents\DataValidation</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Debugger\ValidationEvents\DataValidation\InvalidExpressionEvent.h">
+      <Filter>Include\ScriptCanvas\Debugger\ValidationEvents\DataValidation</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Debugger\ValidationEvents\DataValidation\InvalidRandomSignalEvent.h">
+      <Filter>Include\ScriptCanvas\Debugger\ValidationEvents\DataValidation</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Debugger\ValidationEvents\DataValidation\InvalidVariableTypeEvent.h">
+      <Filter>Include\ScriptCanvas\Debugger\ValidationEvents\DataValidation</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Debugger\ValidationEvents\DataValidation\ScopedDataConnectionEvent.h">
+      <Filter>Include\ScriptCanvas\Debugger\ValidationEvents\DataValidation</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Debugger\ValidationEvents\DataValidation\SlotReferenceEvent.h">
+      <Filter>Include\ScriptCanvas\Debugger\ValidationEvents\DataValidation</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Debugger\ValidationEvents\DataValidation\UnknownEndpointEvent.h">
+      <Filter>Include\ScriptCanvas\Debugger\ValidationEvents\DataValidation</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Debugger\ValidationEvents\DataValidation\ScriptEventVersionMismatch.h">
+      <Filter>Include\ScriptCanvas\Debugger\ValidationEvents\DataValidation</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Debugger\ValidationEvents\ExecutionValidation\ExecutionValidationEvents.h">
+      <Filter>Include\ScriptCanvas\Debugger\ValidationEvents\ExecutionValidation</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Debugger\ValidationEvents\ExecutionValidation\ExecutionValidationIds.h">
+      <Filter>Include\ScriptCanvas\Debugger\ValidationEvents\ExecutionValidation</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Debugger\ValidationEvents\ExecutionValidation\UnusedNodeEvent.h">
+      <Filter>Include\ScriptCanvas\Debugger\ValidationEvents\ExecutionValidation</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Debugger\ValidationEvents\ValidationEffects\FocusOnEffect.h">
+      <Filter>Include\ScriptCanvas\Debugger\ValidationEvents\ValidationEffects</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Debugger\ValidationEvents\ValidationEffects\HighlightEffect.h">
+      <Filter>Include\ScriptCanvas\Debugger\ValidationEvents\ValidationEffects</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\Debugger\ValidationEvents\ValidationEffects\GreyOutEffect.h">
+      <Filter>Include\ScriptCanvas\Debugger\ValidationEvents\ValidationEffects</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\CMakeLists.txt">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\scriptcanvasgem_debugger_files.cmake" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Generated Files">
+      <UniqueIdentifier>{FB9B7D8B-7F05-31D5-AA90-592248EDE1B3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include">
+      <UniqueIdentifier>{E188105A-C8C4-34BB-9809-15E8410EF7F8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\ScriptCanvas">
+      <UniqueIdentifier>{71510BC0-2808-3CCC-84ED-FDDDE11E1FCF}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\ScriptCanvas\Debugger">
+      <UniqueIdentifier>{295254BC-D937-3D0F-8C9E-ED4994A0E02D}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\ScriptCanvas\Debugger\Messages">
+      <UniqueIdentifier>{35860F4A-BB2F-34E7-8659-12F24F5A1375}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\ScriptCanvas\Debugger\ValidationEvents">
+      <UniqueIdentifier>{BC12C3FD-5687-3D60-BAD3-9686032317C9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\ScriptCanvas\Debugger\ValidationEvents\DataValidation">
+      <UniqueIdentifier>{A2F8B1EE-584B-3B97-99BF-B1FBC2D42015}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\ScriptCanvas\Debugger\ValidationEvents\ExecutionValidation">
+      <UniqueIdentifier>{ADB4090A-6218-3A5C-A246-BDE00FFEEB3D}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\ScriptCanvas\Debugger\ValidationEvents\GraphTranslationValidation">
+      <UniqueIdentifier>{32484139-3068-3A8A-B989-58469C1857FB}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\ScriptCanvas\Debugger\ValidationEvents\ParsingValidation">
+      <UniqueIdentifier>{694B97B1-F037-3139-B15D-3CEBF996DB67}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\ScriptCanvas\Debugger\ValidationEvents\ValidationEffects">
+      <UniqueIdentifier>{4B3D9714-B7B9-33EA-A11C-A6940F41F86C}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

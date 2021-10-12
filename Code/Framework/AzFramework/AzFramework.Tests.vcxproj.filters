@@ -1,0 +1,137 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\CMakeFiles\AzFramework.Tests.dir\Unity\unity_3_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\CMakeFiles\AzFramework.Tests.dir\Unity\unity_2_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\CMakeFiles\AzFramework.Tests.dir\Unity\unity_1_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\CMakeFiles\AzFramework.Tests.dir\Unity\unity_0_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Main.cpp">
+      <Filter>Tests\..\..\AzCore\Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\Tests\Spawnable\SpawnableEntitiesInterfaceTests.cpp">
+      <Filter>Tests\Spawnable</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\Tests\Spawnable\SpawnableEntitiesManagerTests.cpp">
+      <Filter>Tests\Spawnable</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\Tests\ArchiveCompressionTests.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\Tests\ArchiveTests.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\Tests\BehaviorEntityTests.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\Tests\BinToTextEncode.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\Tests\CameraInputTests.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\Tests\ClickDetectorTests.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\Tests\CursorStateTests.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\Tests\EntityContext.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\Tests\FileIO.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\Tests\FileTagTests.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\Tests\GenAppDescriptors.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\Tests\OctreePerformanceTests.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\Tests\OctreeTests.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\Tests\AssetCatalog.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\Tests\AssetProcessorConnection.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\Tests\NativeWindow.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\Tests\ProcessLaunchParseTests.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\Tests\Application.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\Tests\PlatformHelper.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\Tests\Scene.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\Tests\CameraState.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\Tests\InputTests.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\CMakeFiles\08b24365a84bd27d080f6dd51f42b933\AzFramework.Tests_(CONFIG).stamp.rule">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\CMakeLists.txt">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\Tests\frameworktests_files.cmake">
+      <Filter>Tests</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\runtime_dependencies\debug\AzFramework.Tests_debug.stamp">
+      <Filter>Generated Files</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\runtime_dependencies\profile\AzFramework.Tests_profile.stamp">
+      <Filter>Generated Files</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\runtime_dependencies\release\AzFramework.Tests_release.stamp">
+      <Filter>Generated Files</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Generated Files">
+      <UniqueIdentifier>{FB9B7D8B-7F05-31D5-AA90-592248EDE1B3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Tests">
+      <UniqueIdentifier>{042E9197-689D-3636-8A35-28EBCAA2BD47}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Tests\..">
+      <UniqueIdentifier>{3677944C-6F75-3F2D-8927-022ACD4837F6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Tests\..\..">
+      <UniqueIdentifier>{76C14412-2334-3B6B-B292-D86831BADF17}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Tests\..\..\AzCore">
+      <UniqueIdentifier>{51FE7CEA-640A-3ACC-ABD4-6A5F6DB88C45}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Tests\..\..\AzCore\Tests">
+      <UniqueIdentifier>{FEF82246-0767-3D67-82EF-82B062BFB2C5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Tests\Spawnable">
+      <UniqueIdentifier>{A5845912-A8AF-3D7C-B4E3-7BAFF71C3693}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

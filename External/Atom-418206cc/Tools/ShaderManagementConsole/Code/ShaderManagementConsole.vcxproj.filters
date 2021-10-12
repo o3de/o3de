@@ -1,0 +1,79 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\Atom-418206cc\Tools\ShaderManagementConsole\Code\CMakeFiles\ShaderManagementConsole.dir\Unity\unity_0_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Tools\ShaderManagementConsole\Code\Source\main.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Tools\ShaderManagementConsole\Code\Source\ShaderManagementConsoleApplication.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Tools\ShaderManagementConsole\Code\Source\ShaderManagementConsoleApplication.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Tools\ShaderManagementConsole\Code\Source\Platform\Windows\ShaderManagementConsole_Traits_Platform.h">
+      <Filter>Source\Platform\Windows</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Tools\ShaderManagementConsole\Code\Source\Platform\Windows\ShaderManagementConsole_Traits_Windows.h">
+      <Filter>Source\Platform\Windows</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\CMakeFiles\08b24365a84bd27d080f6dd51f42b933\ShaderManagementConsole_(CONFIG).stamp.rule">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Gems\Atom\Tools\ShaderManagementConsole\Code\CMakeLists.txt">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Tools\ShaderManagementConsole\Scripts\GenerateShaderVariantListForMaterials.py">
+      <Filter>..\Scripts</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Tools\ShaderManagementConsole\Code\shadermanagementconsole_files.cmake" />
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Tools\ShaderManagementConsole\Code\Source\Platform\Windows\platform_windows_files.cmake">
+      <Filter>Source\Platform\Windows</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Tools\ShaderManagementConsole\Code\Source\Platform\Windows\tool_dependencies_windows.cmake">
+      <Filter>Source\Platform\Windows</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\runtime_dependencies\debug\ShaderManagementConsole_debug.stamp">
+      <Filter>Generated Files</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\runtime_dependencies\profile\ShaderManagementConsole_profile.stamp">
+      <Filter>Generated Files</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\runtime_dependencies\release\ShaderManagementConsole_release.stamp">
+      <Filter>Generated Files</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Tools\ShaderManagementConsole\Code\Source\Platform\Windows\ShaderManagementConsole.rc">
+      <Filter>Source\Platform\Windows</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="..">
+      <UniqueIdentifier>{B62B6BD3-6D53-356A-92E7-D4477019628D}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="..\Scripts">
+      <UniqueIdentifier>{8495C028-688E-3011-90CD-2DEBD324555E}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Generated Files">
+      <UniqueIdentifier>{FB9B7D8B-7F05-31D5-AA90-592248EDE1B3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source">
+      <UniqueIdentifier>{F3F0AD47-5F83-373B-A2BF-650D2E4FA3EA}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Platform">
+      <UniqueIdentifier>{4FB794FF-EAE9-3B82-95CC-6241BAD0E3AC}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Platform\Windows">
+      <UniqueIdentifier>{2D0E7154-D797-393D-A7EB-8527ACAFB2BF}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

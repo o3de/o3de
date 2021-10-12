@@ -1,0 +1,5 @@
+# CMake generation dependency list for this directory.
+C:/Users/lesaelr/o3de/Code/Tools/TestImpactFramework/Runtime/Code/CMakeLists.txt
+C:/Users/lesaelr/o3de/Code/Tools/TestImpactFramework/Runtime/Code/Source/Platform/Common/MSVC/testimpactframework_msvc.cmake
+C:/Users/lesaelr/o3de/Code/Tools/TestImpactFramework/Runtime/Code/Source/Platform/Windows/platform_windows_files.cmake
+C:/Users/lesaelr/o3de/Code/Tools/TestImpactFramework/Runtime/Code/testimpactframework_runtime_files.cmake

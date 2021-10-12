@@ -1,0 +1,215 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\Atom-418206cc\RHI\Null\Code\CMakeFiles\Atom_RHI_Null.Private.Static.dir\Unity\unity_3_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\Atom-418206cc\RHI\Null\Code\CMakeFiles\Atom_RHI_Null.Private.Static.dir\Unity\unity_2_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\Atom-418206cc\RHI\Null\Code\CMakeFiles\Atom_RHI_Null.Private.Static.dir\Unity\unity_1_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\Atom-418206cc\RHI\Null\Code\CMakeFiles\Atom_RHI_Null.Private.Static.dir\Unity\unity_0_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\RHI\Null\Code\Source\RHI\AliasedHeap.cpp">
+      <Filter>Source\RHI</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\RHI\Null\Code\Source\RHI\Buffer.cpp">
+      <Filter>Source\RHI</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\RHI\Null\Code\Source\RHI\BufferView.cpp">
+      <Filter>Source\RHI</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\RHI\Null\Code\Source\RHI\BufferPool.cpp">
+      <Filter>Source\RHI</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\RHI\Null\Code\Source\RHI\CommandList.cpp">
+      <Filter>Source\RHI</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\RHI\Null\Code\Source\RHI\CommandQueue.cpp">
+      <Filter>Source\RHI</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\RHI\Null\Code\Source\RHI\Device.cpp">
+      <Filter>Source\RHI</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\RHI\Null\Code\Source\RHI\Fence.cpp">
+      <Filter>Source\RHI</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\RHI\Null\Code\Source\RHI\FrameGraphCompiler.cpp">
+      <Filter>Source\RHI</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\RHI\Null\Code\Source\RHI\FrameGraphExecuter.cpp">
+      <Filter>Source\RHI</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\RHI\Null\Code\Source\RHI\Image.cpp">
+      <Filter>Source\RHI</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\RHI\Null\Code\Source\RHI\ImagePool.cpp">
+      <Filter>Source\RHI</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\RHI\Null\Code\Source\RHI\ImageView.cpp">
+      <Filter>Source\RHI</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\RHI\Null\Code\Source\RHI\PhysicalDevice.cpp">
+      <Filter>Source\RHI</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\RHI\Null\Code\Source\RHI\PipelineState.cpp">
+      <Filter>Source\RHI</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\RHI\Null\Code\Source\RHI\PipelineLibrary.cpp">
+      <Filter>Source\RHI</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\RHI\Null\Code\Source\RHI\Query.cpp">
+      <Filter>Source\RHI</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\RHI\Null\Code\Source\RHI\QueryPool.cpp">
+      <Filter>Source\RHI</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\RHI\Null\Code\Source\RHI\Scope.cpp">
+      <Filter>Source\RHI</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\RHI\Null\Code\Source\RHI\ShaderResourceGroup.cpp">
+      <Filter>Source\RHI</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\RHI\Null\Code\Source\RHI\ShaderResourceGroupPool.cpp">
+      <Filter>Source\RHI</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\RHI\Null\Code\Source\RHI\StreamingImagePool.cpp">
+      <Filter>Source\RHI</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\RHI\Null\Code\Source\RHI\SwapChain.cpp">
+      <Filter>Source\RHI</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\RHI\Null\Code\Source\RHI\SystemComponent.cpp">
+      <Filter>Source\RHI</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\RHI\Null\Code\Source\RHI\TransientAttachmentPool.cpp">
+      <Filter>Source\RHI</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\RHI\Null\Code\Source\RHI\RayTracingBlas.cpp">
+      <Filter>Source\RHI</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\RHI\Null\Code\Source\RHI\RayTracingTlas.cpp">
+      <Filter>Source\RHI</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\RHI\Null\Code\Source\RHI\RayTracingPipelineState.cpp">
+      <Filter>Source\RHI</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\RHI\Null\Code\Source\RHI\RayTracingShaderTable.cpp">
+      <Filter>Source\RHI</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\RHI\Null\Code\Source\RHI\AliasedHeap.h">
+      <Filter>Source\RHI</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\RHI\Null\Code\Source\RHI\Buffer.h">
+      <Filter>Source\RHI</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\RHI\Null\Code\Source\RHI\BufferView.h">
+      <Filter>Source\RHI</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\RHI\Null\Code\Source\RHI\BufferPool.h">
+      <Filter>Source\RHI</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\RHI\Null\Code\Source\RHI\CommandList.h">
+      <Filter>Source\RHI</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\RHI\Null\Code\Source\RHI\CommandQueue.h">
+      <Filter>Source\RHI</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\RHI\Null\Code\Source\RHI\Device.h">
+      <Filter>Source\RHI</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\RHI\Null\Code\Source\RHI\Fence.h">
+      <Filter>Source\RHI</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\RHI\Null\Code\Source\RHI\FrameGraphCompiler.h">
+      <Filter>Source\RHI</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\RHI\Null\Code\Source\RHI\FrameGraphExecuter.h">
+      <Filter>Source\RHI</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\RHI\Null\Code\Source\RHI\Image.h">
+      <Filter>Source\RHI</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\RHI\Null\Code\Source\RHI\ImagePool.h">
+      <Filter>Source\RHI</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\RHI\Null\Code\Source\RHI\ImageView.h">
+      <Filter>Source\RHI</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\RHI\Null\Code\Source\RHI\PhysicalDevice.h">
+      <Filter>Source\RHI</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\RHI\Null\Code\Source\RHI\PipelineState.h">
+      <Filter>Source\RHI</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\RHI\Null\Code\Source\RHI\PipelineLibrary.h">
+      <Filter>Source\RHI</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\RHI\Null\Code\Source\RHI\Query.h">
+      <Filter>Source\RHI</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\RHI\Null\Code\Source\RHI\QueryPool.h">
+      <Filter>Source\RHI</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\RHI\Null\Code\Source\RHI\Scope.h">
+      <Filter>Source\RHI</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\RHI\Null\Code\Source\RHI\ShaderResourceGroup.h">
+      <Filter>Source\RHI</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\RHI\Null\Code\Source\RHI\ShaderResourceGroupPool.h">
+      <Filter>Source\RHI</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\RHI\Null\Code\Source\RHI\StreamingImagePool.h">
+      <Filter>Source\RHI</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\RHI\Null\Code\Source\RHI\SwapChain.h">
+      <Filter>Source\RHI</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\RHI\Null\Code\Source\RHI\SystemComponent.h">
+      <Filter>Source\RHI</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\RHI\Null\Code\Source\RHI\TransientAttachmentPool.h">
+      <Filter>Source\RHI</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\RHI\Null\Code\Source\RHI\RayTracingBufferPools.h">
+      <Filter>Source\RHI</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\RHI\Null\Code\Source\RHI\RayTracingBlas.h">
+      <Filter>Source\RHI</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\RHI\Null\Code\Source\RHI\RayTracingTlas.h">
+      <Filter>Source\RHI</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\RHI\Null\Code\Source\RHI\RayTracingPipelineState.h">
+      <Filter>Source\RHI</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\RHI\Null\Code\Source\RHI\RayTracingShaderTable.h">
+      <Filter>Source\RHI</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Gems\Atom\RHI\Null\Code\CMakeLists.txt">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\RHI\Null\Code\atom_rhi_null_private_common_files.cmake" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Generated Files">
+      <UniqueIdentifier>{FB9B7D8B-7F05-31D5-AA90-592248EDE1B3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source">
+      <UniqueIdentifier>{F3F0AD47-5F83-373B-A2BF-650D2E4FA3EA}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\RHI">
+      <UniqueIdentifier>{AE1E7F3A-443F-3D6B-8D23-5A1882A4B20D}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

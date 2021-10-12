@@ -1,0 +1,712 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <PreferredToolArchitecture>x64</PreferredToolArchitecture>
+  </PropertyGroup>
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="debug|x64">
+      <Configuration>debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="profile|x64">
+      <Configuration>profile</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="release|x64">
+      <Configuration>release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{1FBB6561-E5AD-30F3-A966-8026AB1325A6}</ProjectGuid>
+    <WindowsTargetPlatformVersion>10.0.19041.0</WindowsTargetPlatformVersion>
+    <Keyword>Win32Proj</Keyword>
+    <Platform>x64</Platform>
+    <ProjectName>TEST_SUITE_main</ProjectName>
+    <VCProjectUpgraderObjectName>NoUpgrade</VCProjectUpgraderObjectName>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='debug|x64'" Label="Configuration">
+    <ConfigurationType>Utility</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v142</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='profile|x64'" Label="Configuration">
+    <ConfigurationType>Utility</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v142</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='release|x64'" Label="Configuration">
+    <ConfigurationType>Utility</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v142</PlatformToolset>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>10.0.20506.1</_ProjectFileVersion>
+    <LocalDebuggerCommand Condition="'$(Configuration)|$(Platform)'=='debug|x64'">C:/Program Files/CMake/bin/ctest.exe</LocalDebuggerCommand>
+    <LocalDebuggerCommandArguments Condition="'$(Configuration)|$(Platform)'=='debug|x64'">-j12 -C debug --output-on-failure -L SUITE_main</LocalDebuggerCommandArguments>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='debug|x64'">$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
+    <LocalDebuggerCommand Condition="'$(Configuration)|$(Platform)'=='profile|x64'">C:/Program Files/CMake/bin/ctest.exe</LocalDebuggerCommand>
+    <LocalDebuggerCommandArguments Condition="'$(Configuration)|$(Platform)'=='profile|x64'">-j12 -C profile --output-on-failure -L SUITE_main</LocalDebuggerCommandArguments>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='profile|x64'">$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
+    <LocalDebuggerCommand Condition="'$(Configuration)|$(Platform)'=='release|x64'">C:/Program Files/CMake/bin/ctest.exe</LocalDebuggerCommand>
+    <LocalDebuggerCommandArguments Condition="'$(Configuration)|$(Platform)'=='release|x64'">-j12 -C release --output-on-failure -L SUITE_main</LocalDebuggerCommandArguments>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='release|x64'">$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='debug|x64'">
+    <Midl>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='profile|x64'">
+    <Midl>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='release|x64'">
+    <Midl>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\CMakeLists.txt">
+      <UseUtf8Encoding>Always</UseUtf8Encoding>
+      <Message Condition="'$(Configuration)|$(Platform)'=='debug|x64'">Building Custom Rule C:/Users/lesaelr/o3de/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='debug|x64'">setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SC:/Users/lesaelr/o3de -BC:/Users/lesaelr/o3de --check-stamp-file C:/Users/lesaelr/o3de/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='debug|x64'">C:\Program Files\CMake\share\cmake-3.21\Modules\CMakeCCompiler.cmake.in;C:\Program Files\CMake\share\cmake-3.21\Modules\CMakeCCompilerABI.c;C:\Program Files\CMake\share\cmake-3.21\Modules\CMakeCInformation.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\CMakeCXXCompiler.cmake.in;C:\Program Files\CMake\share\cmake-3.21\Modules\CMakeCXXCompilerABI.cpp;C:\Program Files\CMake\share\cmake-3.21\Modules\CMakeCXXInformation.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\CMakeCommonLanguageInclude.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\CMakeCompilerIdDetection.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\CMakeDetermineCCompiler.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\CMakeDetermineCXXCompiler.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\CMakeDetermineCompileFeatures.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\CMakeDetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\CMakeDetermineCompilerABI.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\CMakeDetermineCompilerId.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\CMakeDetermineRCCompiler.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\CMakeDetermineSystem.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\CMakeFindBinUtils.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\CMakeFindDependencyMacro.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\CMakeGenericSystem.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\CMakeInitializeConfigs.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\CMakeLanguageInformation.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\CMakeParseArguments.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\CMakeParseImplicitIncludeInfo.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\CMakeParseImplicitLinkInfo.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\CMakeParseLibraryArchitecture.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\CMakeRCCompiler.cmake.in;C:\Program Files\CMake\share\cmake-3.21\Modules\CMakeRCInformation.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\CMakeSystem.cmake.in;C:\Program Files\CMake\share\cmake-3.21\Modules\CMakeSystemSpecificInformation.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\CMakeSystemSpecificInitialize.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\CMakeTestCCompiler.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\CMakeTestCXXCompiler.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\CMakeTestCompilerCommon.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\CMakeTestRCCompiler.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\Compiler\ADSP-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\Compiler\ARMCC-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\Compiler\ARMClang-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\Compiler\AppleClang-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\Compiler\Borland-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\Compiler\Bruce-C-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\Compiler\CMakeCommonCompilerMacros.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\Compiler\Clang-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\Compiler\Clang-DetermineCompilerInternal.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\Compiler\Comeau-CXX-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\Compiler\Compaq-C-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\Compiler\Compaq-CXX-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\Compiler\Cray-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\Compiler\Embarcadero-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\Compiler\Fujitsu-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\Compiler\FujitsuClang-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\Compiler\GHS-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\Compiler\GNU-C-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\Compiler\GNU-CXX-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\Compiler\HP-C-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\Compiler\HP-CXX-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\Compiler\IAR-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\Compiler\IBMCPP-C-DetermineVersionInternal.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\Compiler\IBMCPP-CXX-DetermineVersionInternal.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\Compiler\Intel-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\Compiler\IntelLLVM-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\Compiler\MSVC-C.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\Compiler\MSVC-CXX.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\Compiler\MSVC-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\Compiler\NVHPC-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\Compiler\NVIDIA-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\Compiler\OpenWatcom-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\Compiler\PGI-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\Compiler\PathScale-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\Compiler\ROCMClang-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\Compiler\SCO-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\Compiler\SDCC-C-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\Compiler\SunPro-C-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\Compiler\SunPro-CXX-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\Compiler\TI-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\Compiler\TinyCC-C-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\Compiler\VisualAge-C-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\Compiler\VisualAge-CXX-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\Compiler\Watcom-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\Compiler\XL-C-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\Compiler\XL-CXX-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\Compiler\XLClang-C-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\Compiler\XLClang-CXX-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\Compiler\zOS-C-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\Compiler\zOS-CXX-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\CompilerId\VS-10.vcxproj.in;C:\Program Files\CMake\share\cmake-3.21\Modules\FindPackageHandleStandardArgs.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\FindPackageMessage.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\Internal\FeatureTesting.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\Platform\Windows-Determine-CXX.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\Platform\Windows-MSVC-C.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\Platform\Windows-MSVC-CXX.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\Platform\Windows-MSVC.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\Platform\Windows.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\Platform\WindowsPaths.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\ProcessorCount.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\OpenMesh-8.1-rev1-windows\FindOpenMesh.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\OpenMesh-8.1-rev1-windows\PackageInfo.json;C:\Users\lesaelr\.o3de\3rdParty\packages\assimp-5.0.1-rev11-multiplatform\Findassimplib.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\civetweb-1.8-rev1-windows\Findcivetweb.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\civetweb-1.8-rev1-windows\PackageInfo.json;C:\Users\lesaelr\.o3de\3rdParty\packages\openimageio-2.1.16.0-rev2-windows\FindOpenImageIO.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\openimageio-2.1.16.0-rev2-windows\PackageInfo.json;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\FindQt.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\PackageInfo.json;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\Platform\Windows\QtPlugin_windows.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\Platform\Windows\Qt_windows.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5\Qt5Config.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5\Qt5ConfigVersion.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5\Qt5ModuleLocation.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5Concurrent\Qt5ConcurrentConfig.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5Concurrent\Qt5ConcurrentConfigVersion.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5Core\Qt5CoreConfig.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5Core\Qt5CoreConfigExtras.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5Core\Qt5CoreConfigExtrasMkspecDir.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5Core\Qt5CoreConfigVersion.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5Core\Qt5CoreMacros.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5Gui\Qt5GuiConfig.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5Gui\Qt5GuiConfigExtras.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5Gui\Qt5GuiConfigVersion.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5Gui\Qt5Gui_QGifPlugin.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5Gui\Qt5Gui_QICNSPlugin.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5Gui\Qt5Gui_QICOPlugin.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5Gui\Qt5Gui_QJpegPlugin.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5Gui\Qt5Gui_QMinimalIntegrationPlugin.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5Gui\Qt5Gui_QOffscreenIntegrationPlugin.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5Gui\Qt5Gui_QSvgIconPlugin.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5Gui\Qt5Gui_QSvgPlugin.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5Gui\Qt5Gui_QTgaPlugin.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5Gui\Qt5Gui_QTiffPlugin.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5Gui\Qt5Gui_QTuioTouchPlugin.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5Gui\Qt5Gui_QVirtualKeyboardPlugin.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5Gui\Qt5Gui_QWbmpPlugin.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5Gui\Qt5Gui_QWebGLIntegrationPlugin.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5Gui\Qt5Gui_QWebpPlugin.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5Gui\Qt5Gui_QWindowsDirect2DIntegrationPlugin.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5Gui\Qt5Gui_QWindowsIntegrationPlugin.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5Gui\Qt5Gui_QXdgDesktopPortalThemePlugin.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5LinguistTools\Qt5LinguistToolsConfig.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5LinguistTools\Qt5LinguistToolsConfigVersion.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5LinguistTools\Qt5LinguistToolsMacros.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5Network\Qt5NetworkConfig.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5Network\Qt5NetworkConfigVersion.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5Network\Qt5Network_QGenericEnginePlugin.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5OpenGL\Qt5OpenGLConfig.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5OpenGL\Qt5OpenGLConfigVersion.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5Positioning\Qt5PositioningConfig.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5Positioning\Qt5PositioningConfigVersion.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5Positioning\Qt5Positioning_QGeoPositionInfoSourceFactoryPoll.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5Positioning\Qt5Positioning_QGeoPositionInfoSourceFactorySerialNmea.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5Positioning\Qt5Positioning_QGeoPositionInfoSourceFactoryWinRT.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5PrintSupport\Qt5PrintSupportConfig.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5PrintSupport\Qt5PrintSupportConfigVersion.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5PrintSupport\Qt5PrintSupport_QWindowsPrinterSupportPlugin.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5Qml\Qt5QmlConfig.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5Qml\Qt5QmlConfigExtras.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5Qml\Qt5QmlConfigVersion.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5Qml\Qt5Qml_QDebugMessageServiceFactory.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5Qml\Qt5Qml_QLocalClientConnectionFactory.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5Qml\Qt5Qml_QQmlDebugServerFactory.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5Qml\Qt5Qml_QQmlDebuggerServiceFactory.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5Qml\Qt5Qml_QQmlInspectorServiceFactory.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5Qml\Qt5Qml_QQmlNativeDebugConnectorFactory.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5Qml\Qt5Qml_QQmlNativeDebugServiceFactory.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5Qml\Qt5Qml_QQmlPreviewServiceFactory.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5Qml\Qt5Qml_QQmlProfilerServiceFactory.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5Qml\Qt5Qml_QQuickProfilerAdapterFactory.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5Qml\Qt5Qml_QTcpServerConnectionFactory.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5QmlModels\Qt5QmlModelsConfig.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5QmlModels\Qt5QmlModelsConfigVersion.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5Quick\Qt5QuickConfig.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5Quick\Qt5QuickConfigVersion.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5Quick\Qt5Quick_QSGD3D12Adaptation.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5Svg\Qt5SvgConfig.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5Svg\Qt5SvgConfigVersion.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5Test\Qt5TestConfig.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5Test\Qt5TestConfigExtras.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5Test\Qt5TestConfigVersion.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5WebChannel\Qt5WebChannelConfig.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5WebChannel\Qt5WebChannelConfigVersion.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5WebEngineCore\Qt5WebEngineCoreConfig.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5WebEngineCore\Qt5WebEngineCoreConfigVersion.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5WebEngineWidgets\Qt5WebEngineWidgetsConfig.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5WebEngineWidgets\Qt5WebEngineWidgetsConfigVersion.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5Widgets\Qt5WidgetsConfig.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5Widgets\Qt5WidgetsConfigExtras.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5Widgets\Qt5WidgetsConfigVersion.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5Widgets\Qt5WidgetsMacros.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5Widgets\Qt5Widgets_QWindowsVistaStylePlugin.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5Xml\Qt5XmlConfig.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5Xml\Qt5XmlConfigVersion.cmake;C:\Users\lesaelr\.o3de\o3de_manifest.json;C:\Users\lesaelr\o3de\AutomatedTesting\Gem\PythonTests\EditorPythonTestTools\setup.py;C:\Users\lesaelr\o3de\CMakeFiles\3.21.2\CMakeCCompiler.cmake;C:\Users\lesaelr\o3de\CMakeFiles\3.21.2\CMakeCXXCompiler.cmake;C:\Users\lesaelr\o3de\CMakeFiles\3.21.2\CMakeRCCompiler.cmake;C:\Users\lesaelr\o3de\CMakeFiles\3.21.2\CMakeSystem.cmake;C:\Users\lesaelr\o3de\Tools\LyTestTools\setup.py;C:\Users\lesaelr\o3de\Tools\RemoteConsole\ly_remote_console\setup.py;C:\Users\lesaelr\o3de\cmake\3rdParty.cmake;C:\Users\lesaelr\o3de\cmake\3rdParty\BuiltInPackages.cmake;C:\Users\lesaelr\o3de\cmake\3rdParty\Platform\Windows\BuiltInPackages_windows.cmake;C:\Users\lesaelr\o3de\cmake\3rdParty\Platform\Windows\cmake_windows_files.cmake;C:\Users\lesaelr\o3de\cmake\3rdParty\cmake_files.cmake;C:\Users\lesaelr\o3de\cmake\3rdPartyPackages.cmake;C:\Users\lesaelr\o3de\cmake\CMakeFiles.cmake;C:\Users\lesaelr\o3de\cmake\ConfigurationTypes.cmake;C:\Users\lesaelr\o3de\cmake\Configurations.cmake;C:\Users\lesaelr\o3de\cmake\Dependencies.cmake;C:\Users\lesaelr\o3de\cmake\Deployment.cmake;C:\Users\lesaelr\o3de\cmake\FileUtil.cmake;C:\Users\lesaelr\o3de\cmake\Gems.cmake;C:\Users\lesaelr\o3de\cmake\GeneralSettings.cmake;C:\Users\lesaelr\o3de\cmake\Install.cmake;C:\Users\lesaelr\o3de\cmake\LYPackage_S3Downloader.cmake;C:\Users\lesaelr\o3de\cmake\LYPython.cmake;C:\Users\lesaelr\o3de\cmake\LYTestWrappers.cmake;C:\Users\lesaelr\o3de\cmake\LYWrappers.cmake;C:\Users\lesaelr\o3de\cmake\LyAutoGen.cmake;C:\Users\lesaelr\o3de\cmake\LySet.cmake;C:\Users\lesaelr\o3de\cmake\Monolithic.cmake;C:\Users\lesaelr\o3de\cmake\O3DEJson.cmake;C:\Users\lesaelr\o3de\cmake\OutputDirectory.cmake;C:\Users\lesaelr\o3de\cmake\PAL.cmake;C:\Users\lesaelr\o3de\cmake\PALTools.cmake;C:\Users\lesaelr\o3de\cmake\Packaging.cmake;C:\Users\lesaelr\o3de\cmake\Platform\Android\PALDetection_android.cmake;C:\Users\lesaelr\o3de\cmake\Platform\Common\Configurations_common.cmake;C:\Users\lesaelr\o3de\cmake\Platform\Common\Install_common.cmake;C:\Users\lesaelr\o3de\cmake\Platform\Common\LYWrappers_default.cmake;C:\Users\lesaelr\o3de\cmake\Platform\Common\MSVC\Configurations_msvc.cmake;C:\Users\lesaelr\o3de\cmake\Platform\Common\MSVC\Directory.Build.props;C:\Users\lesaelr\o3de\cmake\Platform\Common\MSVC\VisualStudio_common.cmake;C:\Users\lesaelr\o3de\cmake\Platform\Common\RuntimeDependencies_common.cmake;C:\Users\lesaelr\o3de\cmake\Platform\Common\TargetIncludeSystemDirectories_unsupported.cmake;C:\Users\lesaelr\o3de\cmake\Platform\Common\runtime_dependencies_common.cmake.in;C:\Users\lesaelr\o3de\cmake\Platform\Linux\PALDetection_linux.cmake;C:\Users\lesaelr\o3de\cmake\Platform\Mac\PALDetection_mac.cmake;C:\Users\lesaelr\o3de\cmake\Platform\Windows\Configurations_windows.cmake;C:\Users\lesaelr\o3de\cmake\Platform\Windows\Install_windows.cmake;C:\Users\lesaelr\o3de\cmake\Platform\Windows\LYWrappers_windows.cmake;C:\Users\lesaelr\o3de\cmake\Platform\Windows\PALDetection_windows.cmake;C:\Users\lesaelr\o3de\cmake\Platform\Windows\PAL_windows.cmake;C:\Users\lesaelr\o3de\cmake\Platform\Windows\Packaging_windows.cmake;C:\Users\lesaelr\o3de\cmake\Platform\Windows\RuntimeDependencies_windows.cmake;C:\Users\lesaelr\o3de\cmake\Platform\Windows\platform_windows_files.cmake;C:\Users\lesaelr\o3de\cmake\Platform\iOS\PALDetection_ios.cmake;C:\Users\lesaelr\o3de\cmake\Projects.cmake;C:\Users\lesaelr\o3de\cmake\RuntimeDependencies.cmake;C:\Users\lesaelr\o3de\cmake\SettingsRegistry.cmake;C:\Users\lesaelr\o3de\cmake\TestImpactFramework\LYTestImpactFramework.cmake;C:\Users\lesaelr\o3de\cmake\UnitTest.cmake;C:\Users\lesaelr\o3de\cmake\Version.cmake;C:\Users\lesaelr\o3de\cmake\cmake_files.cmake;C:\Users\lesaelr\o3de\cmake\install\Copyright.in;C:\Users\lesaelr\o3de\cmake\install\Findo3de.cmake.in;C:\Users\lesaelr\o3de\cmake\install\InstalledTarget.in;C:\Users\lesaelr\o3de\cmake\install\engine.json.in;C:\Users\lesaelr\o3de\engine.json;C:\Users\lesaelr\o3de\python\requirements.txt;C:\Users\lesaelr\o3de\python\runtime\python-3.7.10-rev2-windows\FindPython.cmake;C:\Users\lesaelr\o3de\python\runtime\python-3.7.10-rev2-windows\PackageInfo.json;C:\Users\lesaelr\o3de\python\runtime\python-3.7.10-rev2-windows\python-config-version.cmake;C:\Users\lesaelr\o3de\python\runtime\python-3.7.10-rev2-windows\python-config.cmake;C:\Users\lesaelr\o3de\scripts\o3de\setup.py;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='debug|x64'">C:\Users\lesaelr\o3de\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='debug|x64'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='profile|x64'">Building Custom Rule C:/Users/lesaelr/o3de/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='profile|x64'">setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SC:/Users/lesaelr/o3de -BC:/Users/lesaelr/o3de --check-stamp-file C:/Users/lesaelr/o3de/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='profile|x64'">C:\Program Files\CMake\share\cmake-3.21\Modules\CMakeCCompiler.cmake.in;C:\Program Files\CMake\share\cmake-3.21\Modules\CMakeCCompilerABI.c;C:\Program Files\CMake\share\cmake-3.21\Modules\CMakeCInformation.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\CMakeCXXCompiler.cmake.in;C:\Program Files\CMake\share\cmake-3.21\Modules\CMakeCXXCompilerABI.cpp;C:\Program Files\CMake\share\cmake-3.21\Modules\CMakeCXXInformation.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\CMakeCommonLanguageInclude.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\CMakeCompilerIdDetection.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\CMakeDetermineCCompiler.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\CMakeDetermineCXXCompiler.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\CMakeDetermineCompileFeatures.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\CMakeDetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\CMakeDetermineCompilerABI.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\CMakeDetermineCompilerId.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\CMakeDetermineRCCompiler.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\CMakeDetermineSystem.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\CMakeFindBinUtils.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\CMakeFindDependencyMacro.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\CMakeGenericSystem.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\CMakeInitializeConfigs.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\CMakeLanguageInformation.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\CMakeParseArguments.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\CMakeParseImplicitIncludeInfo.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\CMakeParseImplicitLinkInfo.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\CMakeParseLibraryArchitecture.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\CMakeRCCompiler.cmake.in;C:\Program Files\CMake\share\cmake-3.21\Modules\CMakeRCInformation.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\CMakeSystem.cmake.in;C:\Program Files\CMake\share\cmake-3.21\Modules\CMakeSystemSpecificInformation.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\CMakeSystemSpecificInitialize.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\CMakeTestCCompiler.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\CMakeTestCXXCompiler.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\CMakeTestCompilerCommon.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\CMakeTestRCCompiler.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\Compiler\ADSP-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\Compiler\ARMCC-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\Compiler\ARMClang-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\Compiler\AppleClang-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\Compiler\Borland-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\Compiler\Bruce-C-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\Compiler\CMakeCommonCompilerMacros.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\Compiler\Clang-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\Compiler\Clang-DetermineCompilerInternal.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\Compiler\Comeau-CXX-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\Compiler\Compaq-C-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\Compiler\Compaq-CXX-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\Compiler\Cray-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\Compiler\Embarcadero-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\Compiler\Fujitsu-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\Compiler\FujitsuClang-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\Compiler\GHS-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\Compiler\GNU-C-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\Compiler\GNU-CXX-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\Compiler\HP-C-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\Compiler\HP-CXX-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\Compiler\IAR-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\Compiler\IBMCPP-C-DetermineVersionInternal.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\Compiler\IBMCPP-CXX-DetermineVersionInternal.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\Compiler\Intel-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\Compiler\IntelLLVM-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\Compiler\MSVC-C.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\Compiler\MSVC-CXX.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\Compiler\MSVC-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\Compiler\NVHPC-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\Compiler\NVIDIA-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\Compiler\OpenWatcom-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\Compiler\PGI-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\Compiler\PathScale-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\Compiler\ROCMClang-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\Compiler\SCO-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\Compiler\SDCC-C-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\Compiler\SunPro-C-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\Compiler\SunPro-CXX-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\Compiler\TI-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\Compiler\TinyCC-C-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\Compiler\VisualAge-C-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\Compiler\VisualAge-CXX-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\Compiler\Watcom-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\Compiler\XL-C-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\Compiler\XL-CXX-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\Compiler\XLClang-C-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\Compiler\XLClang-CXX-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\Compiler\zOS-C-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\Compiler\zOS-CXX-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\CompilerId\VS-10.vcxproj.in;C:\Program Files\CMake\share\cmake-3.21\Modules\FindPackageHandleStandardArgs.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\FindPackageMessage.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\Internal\FeatureTesting.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\Platform\Windows-Determine-CXX.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\Platform\Windows-MSVC-C.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\Platform\Windows-MSVC-CXX.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\Platform\Windows-MSVC.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\Platform\Windows.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\Platform\WindowsPaths.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\ProcessorCount.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\OpenMesh-8.1-rev1-windows\FindOpenMesh.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\OpenMesh-8.1-rev1-windows\PackageInfo.json;C:\Users\lesaelr\.o3de\3rdParty\packages\assimp-5.0.1-rev11-multiplatform\Findassimplib.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\civetweb-1.8-rev1-windows\Findcivetweb.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\civetweb-1.8-rev1-windows\PackageInfo.json;C:\Users\lesaelr\.o3de\3rdParty\packages\openimageio-2.1.16.0-rev2-windows\FindOpenImageIO.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\openimageio-2.1.16.0-rev2-windows\PackageInfo.json;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\FindQt.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\PackageInfo.json;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\Platform\Windows\QtPlugin_windows.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\Platform\Windows\Qt_windows.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5\Qt5Config.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5\Qt5ConfigVersion.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5\Qt5ModuleLocation.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5Concurrent\Qt5ConcurrentConfig.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5Concurrent\Qt5ConcurrentConfigVersion.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5Core\Qt5CoreConfig.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5Core\Qt5CoreConfigExtras.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5Core\Qt5CoreConfigExtrasMkspecDir.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5Core\Qt5CoreConfigVersion.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5Core\Qt5CoreMacros.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5Gui\Qt5GuiConfig.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5Gui\Qt5GuiConfigExtras.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5Gui\Qt5GuiConfigVersion.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5Gui\Qt5Gui_QGifPlugin.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5Gui\Qt5Gui_QICNSPlugin.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5Gui\Qt5Gui_QICOPlugin.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5Gui\Qt5Gui_QJpegPlugin.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5Gui\Qt5Gui_QMinimalIntegrationPlugin.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5Gui\Qt5Gui_QOffscreenIntegrationPlugin.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5Gui\Qt5Gui_QSvgIconPlugin.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5Gui\Qt5Gui_QSvgPlugin.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5Gui\Qt5Gui_QTgaPlugin.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5Gui\Qt5Gui_QTiffPlugin.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5Gui\Qt5Gui_QTuioTouchPlugin.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5Gui\Qt5Gui_QVirtualKeyboardPlugin.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5Gui\Qt5Gui_QWbmpPlugin.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5Gui\Qt5Gui_QWebGLIntegrationPlugin.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5Gui\Qt5Gui_QWebpPlugin.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5Gui\Qt5Gui_QWindowsDirect2DIntegrationPlugin.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5Gui\Qt5Gui_QWindowsIntegrationPlugin.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5Gui\Qt5Gui_QXdgDesktopPortalThemePlugin.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5LinguistTools\Qt5LinguistToolsConfig.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5LinguistTools\Qt5LinguistToolsConfigVersion.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5LinguistTools\Qt5LinguistToolsMacros.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5Network\Qt5NetworkConfig.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5Network\Qt5NetworkConfigVersion.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5Network\Qt5Network_QGenericEnginePlugin.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5OpenGL\Qt5OpenGLConfig.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5OpenGL\Qt5OpenGLConfigVersion.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5Positioning\Qt5PositioningConfig.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5Positioning\Qt5PositioningConfigVersion.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5Positioning\Qt5Positioning_QGeoPositionInfoSourceFactoryPoll.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5Positioning\Qt5Positioning_QGeoPositionInfoSourceFactorySerialNmea.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5Positioning\Qt5Positioning_QGeoPositionInfoSourceFactoryWinRT.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5PrintSupport\Qt5PrintSupportConfig.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5PrintSupport\Qt5PrintSupportConfigVersion.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5PrintSupport\Qt5PrintSupport_QWindowsPrinterSupportPlugin.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5Qml\Qt5QmlConfig.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5Qml\Qt5QmlConfigExtras.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5Qml\Qt5QmlConfigVersion.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5Qml\Qt5Qml_QDebugMessageServiceFactory.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5Qml\Qt5Qml_QLocalClientConnectionFactory.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5Qml\Qt5Qml_QQmlDebugServerFactory.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5Qml\Qt5Qml_QQmlDebuggerServiceFactory.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5Qml\Qt5Qml_QQmlInspectorServiceFactory.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5Qml\Qt5Qml_QQmlNativeDebugConnectorFactory.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5Qml\Qt5Qml_QQmlNativeDebugServiceFactory.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5Qml\Qt5Qml_QQmlPreviewServiceFactory.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5Qml\Qt5Qml_QQmlProfilerServiceFactory.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5Qml\Qt5Qml_QQuickProfilerAdapterFactory.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5Qml\Qt5Qml_QTcpServerConnectionFactory.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5QmlModels\Qt5QmlModelsConfig.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5QmlModels\Qt5QmlModelsConfigVersion.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5Quick\Qt5QuickConfig.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5Quick\Qt5QuickConfigVersion.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5Quick\Qt5Quick_QSGD3D12Adaptation.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5Svg\Qt5SvgConfig.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5Svg\Qt5SvgConfigVersion.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5Test\Qt5TestConfig.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5Test\Qt5TestConfigExtras.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5Test\Qt5TestConfigVersion.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5WebChannel\Qt5WebChannelConfig.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5WebChannel\Qt5WebChannelConfigVersion.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5WebEngineCore\Qt5WebEngineCoreConfig.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5WebEngineCore\Qt5WebEngineCoreConfigVersion.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5WebEngineWidgets\Qt5WebEngineWidgetsConfig.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5WebEngineWidgets\Qt5WebEngineWidgetsConfigVersion.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5Widgets\Qt5WidgetsConfig.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5Widgets\Qt5WidgetsConfigExtras.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5Widgets\Qt5WidgetsConfigVersion.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5Widgets\Qt5WidgetsMacros.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5Widgets\Qt5Widgets_QWindowsVistaStylePlugin.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5Xml\Qt5XmlConfig.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5Xml\Qt5XmlConfigVersion.cmake;C:\Users\lesaelr\.o3de\o3de_manifest.json;C:\Users\lesaelr\o3de\AutomatedTesting\Gem\PythonTests\EditorPythonTestTools\setup.py;C:\Users\lesaelr\o3de\CMakeFiles\3.21.2\CMakeCCompiler.cmake;C:\Users\lesaelr\o3de\CMakeFiles\3.21.2\CMakeCXXCompiler.cmake;C:\Users\lesaelr\o3de\CMakeFiles\3.21.2\CMakeRCCompiler.cmake;C:\Users\lesaelr\o3de\CMakeFiles\3.21.2\CMakeSystem.cmake;C:\Users\lesaelr\o3de\Tools\LyTestTools\setup.py;C:\Users\lesaelr\o3de\Tools\RemoteConsole\ly_remote_console\setup.py;C:\Users\lesaelr\o3de\cmake\3rdParty.cmake;C:\Users\lesaelr\o3de\cmake\3rdParty\BuiltInPackages.cmake;C:\Users\lesaelr\o3de\cmake\3rdParty\Platform\Windows\BuiltInPackages_windows.cmake;C:\Users\lesaelr\o3de\cmake\3rdParty\Platform\Windows\cmake_windows_files.cmake;C:\Users\lesaelr\o3de\cmake\3rdParty\cmake_files.cmake;C:\Users\lesaelr\o3de\cmake\3rdPartyPackages.cmake;C:\Users\lesaelr\o3de\cmake\CMakeFiles.cmake;C:\Users\lesaelr\o3de\cmake\ConfigurationTypes.cmake;C:\Users\lesaelr\o3de\cmake\Configurations.cmake;C:\Users\lesaelr\o3de\cmake\Dependencies.cmake;C:\Users\lesaelr\o3de\cmake\Deployment.cmake;C:\Users\lesaelr\o3de\cmake\FileUtil.cmake;C:\Users\lesaelr\o3de\cmake\Gems.cmake;C:\Users\lesaelr\o3de\cmake\GeneralSettings.cmake;C:\Users\lesaelr\o3de\cmake\Install.cmake;C:\Users\lesaelr\o3de\cmake\LYPackage_S3Downloader.cmake;C:\Users\lesaelr\o3de\cmake\LYPython.cmake;C:\Users\lesaelr\o3de\cmake\LYTestWrappers.cmake;C:\Users\lesaelr\o3de\cmake\LYWrappers.cmake;C:\Users\lesaelr\o3de\cmake\LyAutoGen.cmake;C:\Users\lesaelr\o3de\cmake\LySet.cmake;C:\Users\lesaelr\o3de\cmake\Monolithic.cmake;C:\Users\lesaelr\o3de\cmake\O3DEJson.cmake;C:\Users\lesaelr\o3de\cmake\OutputDirectory.cmake;C:\Users\lesaelr\o3de\cmake\PAL.cmake;C:\Users\lesaelr\o3de\cmake\PALTools.cmake;C:\Users\lesaelr\o3de\cmake\Packaging.cmake;C:\Users\lesaelr\o3de\cmake\Platform\Android\PALDetection_android.cmake;C:\Users\lesaelr\o3de\cmake\Platform\Common\Configurations_common.cmake;C:\Users\lesaelr\o3de\cmake\Platform\Common\Install_common.cmake;C:\Users\lesaelr\o3de\cmake\Platform\Common\LYWrappers_default.cmake;C:\Users\lesaelr\o3de\cmake\Platform\Common\MSVC\Configurations_msvc.cmake;C:\Users\lesaelr\o3de\cmake\Platform\Common\MSVC\Directory.Build.props;C:\Users\lesaelr\o3de\cmake\Platform\Common\MSVC\VisualStudio_common.cmake;C:\Users\lesaelr\o3de\cmake\Platform\Common\RuntimeDependencies_common.cmake;C:\Users\lesaelr\o3de\cmake\Platform\Common\TargetIncludeSystemDirectories_unsupported.cmake;C:\Users\lesaelr\o3de\cmake\Platform\Common\runtime_dependencies_common.cmake.in;C:\Users\lesaelr\o3de\cmake\Platform\Linux\PALDetection_linux.cmake;C:\Users\lesaelr\o3de\cmake\Platform\Mac\PALDetection_mac.cmake;C:\Users\lesaelr\o3de\cmake\Platform\Windows\Configurations_windows.cmake;C:\Users\lesaelr\o3de\cmake\Platform\Windows\Install_windows.cmake;C:\Users\lesaelr\o3de\cmake\Platform\Windows\LYWrappers_windows.cmake;C:\Users\lesaelr\o3de\cmake\Platform\Windows\PALDetection_windows.cmake;C:\Users\lesaelr\o3de\cmake\Platform\Windows\PAL_windows.cmake;C:\Users\lesaelr\o3de\cmake\Platform\Windows\Packaging_windows.cmake;C:\Users\lesaelr\o3de\cmake\Platform\Windows\RuntimeDependencies_windows.cmake;C:\Users\lesaelr\o3de\cmake\Platform\Windows\platform_windows_files.cmake;C:\Users\lesaelr\o3de\cmake\Platform\iOS\PALDetection_ios.cmake;C:\Users\lesaelr\o3de\cmake\Projects.cmake;C:\Users\lesaelr\o3de\cmake\RuntimeDependencies.cmake;C:\Users\lesaelr\o3de\cmake\SettingsRegistry.cmake;C:\Users\lesaelr\o3de\cmake\TestImpactFramework\LYTestImpactFramework.cmake;C:\Users\lesaelr\o3de\cmake\UnitTest.cmake;C:\Users\lesaelr\o3de\cmake\Version.cmake;C:\Users\lesaelr\o3de\cmake\cmake_files.cmake;C:\Users\lesaelr\o3de\cmake\install\Copyright.in;C:\Users\lesaelr\o3de\cmake\install\Findo3de.cmake.in;C:\Users\lesaelr\o3de\cmake\install\InstalledTarget.in;C:\Users\lesaelr\o3de\cmake\install\engine.json.in;C:\Users\lesaelr\o3de\engine.json;C:\Users\lesaelr\o3de\python\requirements.txt;C:\Users\lesaelr\o3de\python\runtime\python-3.7.10-rev2-windows\FindPython.cmake;C:\Users\lesaelr\o3de\python\runtime\python-3.7.10-rev2-windows\PackageInfo.json;C:\Users\lesaelr\o3de\python\runtime\python-3.7.10-rev2-windows\python-config-version.cmake;C:\Users\lesaelr\o3de\python\runtime\python-3.7.10-rev2-windows\python-config.cmake;C:\Users\lesaelr\o3de\scripts\o3de\setup.py;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='profile|x64'">C:\Users\lesaelr\o3de\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='profile|x64'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='release|x64'">Building Custom Rule C:/Users/lesaelr/o3de/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='release|x64'">setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SC:/Users/lesaelr/o3de -BC:/Users/lesaelr/o3de --check-stamp-file C:/Users/lesaelr/o3de/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='release|x64'">C:\Program Files\CMake\share\cmake-3.21\Modules\CMakeCCompiler.cmake.in;C:\Program Files\CMake\share\cmake-3.21\Modules\CMakeCCompilerABI.c;C:\Program Files\CMake\share\cmake-3.21\Modules\CMakeCInformation.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\CMakeCXXCompiler.cmake.in;C:\Program Files\CMake\share\cmake-3.21\Modules\CMakeCXXCompilerABI.cpp;C:\Program Files\CMake\share\cmake-3.21\Modules\CMakeCXXInformation.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\CMakeCommonLanguageInclude.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\CMakeCompilerIdDetection.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\CMakeDetermineCCompiler.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\CMakeDetermineCXXCompiler.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\CMakeDetermineCompileFeatures.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\CMakeDetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\CMakeDetermineCompilerABI.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\CMakeDetermineCompilerId.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\CMakeDetermineRCCompiler.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\CMakeDetermineSystem.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\CMakeFindBinUtils.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\CMakeFindDependencyMacro.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\CMakeGenericSystem.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\CMakeInitializeConfigs.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\CMakeLanguageInformation.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\CMakeParseArguments.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\CMakeParseImplicitIncludeInfo.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\CMakeParseImplicitLinkInfo.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\CMakeParseLibraryArchitecture.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\CMakeRCCompiler.cmake.in;C:\Program Files\CMake\share\cmake-3.21\Modules\CMakeRCInformation.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\CMakeSystem.cmake.in;C:\Program Files\CMake\share\cmake-3.21\Modules\CMakeSystemSpecificInformation.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\CMakeSystemSpecificInitialize.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\CMakeTestCCompiler.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\CMakeTestCXXCompiler.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\CMakeTestCompilerCommon.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\CMakeTestRCCompiler.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\Compiler\ADSP-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\Compiler\ARMCC-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\Compiler\ARMClang-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\Compiler\AppleClang-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\Compiler\Borland-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\Compiler\Bruce-C-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\Compiler\CMakeCommonCompilerMacros.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\Compiler\Clang-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\Compiler\Clang-DetermineCompilerInternal.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\Compiler\Comeau-CXX-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\Compiler\Compaq-C-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\Compiler\Compaq-CXX-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\Compiler\Cray-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\Compiler\Embarcadero-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\Compiler\Fujitsu-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\Compiler\FujitsuClang-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\Compiler\GHS-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\Compiler\GNU-C-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\Compiler\GNU-CXX-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\Compiler\HP-C-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\Compiler\HP-CXX-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\Compiler\IAR-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\Compiler\IBMCPP-C-DetermineVersionInternal.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\Compiler\IBMCPP-CXX-DetermineVersionInternal.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\Compiler\Intel-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\Compiler\IntelLLVM-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\Compiler\MSVC-C.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\Compiler\MSVC-CXX.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\Compiler\MSVC-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\Compiler\NVHPC-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\Compiler\NVIDIA-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\Compiler\OpenWatcom-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\Compiler\PGI-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\Compiler\PathScale-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\Compiler\ROCMClang-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\Compiler\SCO-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\Compiler\SDCC-C-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\Compiler\SunPro-C-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\Compiler\SunPro-CXX-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\Compiler\TI-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\Compiler\TinyCC-C-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\Compiler\VisualAge-C-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\Compiler\VisualAge-CXX-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\Compiler\Watcom-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\Compiler\XL-C-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\Compiler\XL-CXX-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\Compiler\XLClang-C-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\Compiler\XLClang-CXX-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\Compiler\zOS-C-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\Compiler\zOS-CXX-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\CompilerId\VS-10.vcxproj.in;C:\Program Files\CMake\share\cmake-3.21\Modules\FindPackageHandleStandardArgs.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\FindPackageMessage.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\Internal\FeatureTesting.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\Platform\Windows-Determine-CXX.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\Platform\Windows-MSVC-C.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\Platform\Windows-MSVC-CXX.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\Platform\Windows-MSVC.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\Platform\Windows.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\Platform\WindowsPaths.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\ProcessorCount.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\OpenMesh-8.1-rev1-windows\FindOpenMesh.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\OpenMesh-8.1-rev1-windows\PackageInfo.json;C:\Users\lesaelr\.o3de\3rdParty\packages\assimp-5.0.1-rev11-multiplatform\Findassimplib.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\civetweb-1.8-rev1-windows\Findcivetweb.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\civetweb-1.8-rev1-windows\PackageInfo.json;C:\Users\lesaelr\.o3de\3rdParty\packages\openimageio-2.1.16.0-rev2-windows\FindOpenImageIO.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\openimageio-2.1.16.0-rev2-windows\PackageInfo.json;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\FindQt.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\PackageInfo.json;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\Platform\Windows\QtPlugin_windows.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\Platform\Windows\Qt_windows.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5\Qt5Config.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5\Qt5ConfigVersion.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5\Qt5ModuleLocation.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5Concurrent\Qt5ConcurrentConfig.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5Concurrent\Qt5ConcurrentConfigVersion.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5Core\Qt5CoreConfig.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5Core\Qt5CoreConfigExtras.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5Core\Qt5CoreConfigExtrasMkspecDir.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5Core\Qt5CoreConfigVersion.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5Core\Qt5CoreMacros.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5Gui\Qt5GuiConfig.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5Gui\Qt5GuiConfigExtras.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5Gui\Qt5GuiConfigVersion.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5Gui\Qt5Gui_QGifPlugin.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5Gui\Qt5Gui_QICNSPlugin.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5Gui\Qt5Gui_QICOPlugin.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5Gui\Qt5Gui_QJpegPlugin.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5Gui\Qt5Gui_QMinimalIntegrationPlugin.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5Gui\Qt5Gui_QOffscreenIntegrationPlugin.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5Gui\Qt5Gui_QSvgIconPlugin.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5Gui\Qt5Gui_QSvgPlugin.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5Gui\Qt5Gui_QTgaPlugin.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5Gui\Qt5Gui_QTiffPlugin.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5Gui\Qt5Gui_QTuioTouchPlugin.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5Gui\Qt5Gui_QVirtualKeyboardPlugin.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5Gui\Qt5Gui_QWbmpPlugin.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5Gui\Qt5Gui_QWebGLIntegrationPlugin.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5Gui\Qt5Gui_QWebpPlugin.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5Gui\Qt5Gui_QWindowsDirect2DIntegrationPlugin.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5Gui\Qt5Gui_QWindowsIntegrationPlugin.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5Gui\Qt5Gui_QXdgDesktopPortalThemePlugin.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5LinguistTools\Qt5LinguistToolsConfig.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5LinguistTools\Qt5LinguistToolsConfigVersion.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5LinguistTools\Qt5LinguistToolsMacros.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5Network\Qt5NetworkConfig.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5Network\Qt5NetworkConfigVersion.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5Network\Qt5Network_QGenericEnginePlugin.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5OpenGL\Qt5OpenGLConfig.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5OpenGL\Qt5OpenGLConfigVersion.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5Positioning\Qt5PositioningConfig.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5Positioning\Qt5PositioningConfigVersion.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5Positioning\Qt5Positioning_QGeoPositionInfoSourceFactoryPoll.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5Positioning\Qt5Positioning_QGeoPositionInfoSourceFactorySerialNmea.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5Positioning\Qt5Positioning_QGeoPositionInfoSourceFactoryWinRT.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5PrintSupport\Qt5PrintSupportConfig.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5PrintSupport\Qt5PrintSupportConfigVersion.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5PrintSupport\Qt5PrintSupport_QWindowsPrinterSupportPlugin.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5Qml\Qt5QmlConfig.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5Qml\Qt5QmlConfigExtras.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5Qml\Qt5QmlConfigVersion.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5Qml\Qt5Qml_QDebugMessageServiceFactory.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5Qml\Qt5Qml_QLocalClientConnectionFactory.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5Qml\Qt5Qml_QQmlDebugServerFactory.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5Qml\Qt5Qml_QQmlDebuggerServiceFactory.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5Qml\Qt5Qml_QQmlInspectorServiceFactory.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5Qml\Qt5Qml_QQmlNativeDebugConnectorFactory.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5Qml\Qt5Qml_QQmlNativeDebugServiceFactory.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5Qml\Qt5Qml_QQmlPreviewServiceFactory.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5Qml\Qt5Qml_QQmlProfilerServiceFactory.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5Qml\Qt5Qml_QQuickProfilerAdapterFactory.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5Qml\Qt5Qml_QTcpServerConnectionFactory.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5QmlModels\Qt5QmlModelsConfig.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5QmlModels\Qt5QmlModelsConfigVersion.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5Quick\Qt5QuickConfig.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5Quick\Qt5QuickConfigVersion.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5Quick\Qt5Quick_QSGD3D12Adaptation.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5Svg\Qt5SvgConfig.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5Svg\Qt5SvgConfigVersion.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5Test\Qt5TestConfig.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5Test\Qt5TestConfigExtras.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5Test\Qt5TestConfigVersion.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5WebChannel\Qt5WebChannelConfig.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5WebChannel\Qt5WebChannelConfigVersion.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5WebEngineCore\Qt5WebEngineCoreConfig.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5WebEngineCore\Qt5WebEngineCoreConfigVersion.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5WebEngineWidgets\Qt5WebEngineWidgetsConfig.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5WebEngineWidgets\Qt5WebEngineWidgetsConfigVersion.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5Widgets\Qt5WidgetsConfig.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5Widgets\Qt5WidgetsConfigExtras.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5Widgets\Qt5WidgetsConfigVersion.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5Widgets\Qt5WidgetsMacros.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5Widgets\Qt5Widgets_QWindowsVistaStylePlugin.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5Xml\Qt5XmlConfig.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\cmake\Qt5Xml\Qt5XmlConfigVersion.cmake;C:\Users\lesaelr\.o3de\o3de_manifest.json;C:\Users\lesaelr\o3de\AutomatedTesting\Gem\PythonTests\EditorPythonTestTools\setup.py;C:\Users\lesaelr\o3de\CMakeFiles\3.21.2\CMakeCCompiler.cmake;C:\Users\lesaelr\o3de\CMakeFiles\3.21.2\CMakeCXXCompiler.cmake;C:\Users\lesaelr\o3de\CMakeFiles\3.21.2\CMakeRCCompiler.cmake;C:\Users\lesaelr\o3de\CMakeFiles\3.21.2\CMakeSystem.cmake;C:\Users\lesaelr\o3de\Tools\LyTestTools\setup.py;C:\Users\lesaelr\o3de\Tools\RemoteConsole\ly_remote_console\setup.py;C:\Users\lesaelr\o3de\cmake\3rdParty.cmake;C:\Users\lesaelr\o3de\cmake\3rdParty\BuiltInPackages.cmake;C:\Users\lesaelr\o3de\cmake\3rdParty\Platform\Windows\BuiltInPackages_windows.cmake;C:\Users\lesaelr\o3de\cmake\3rdParty\Platform\Windows\cmake_windows_files.cmake;C:\Users\lesaelr\o3de\cmake\3rdParty\cmake_files.cmake;C:\Users\lesaelr\o3de\cmake\3rdPartyPackages.cmake;C:\Users\lesaelr\o3de\cmake\CMakeFiles.cmake;C:\Users\lesaelr\o3de\cmake\ConfigurationTypes.cmake;C:\Users\lesaelr\o3de\cmake\Configurations.cmake;C:\Users\lesaelr\o3de\cmake\Dependencies.cmake;C:\Users\lesaelr\o3de\cmake\Deployment.cmake;C:\Users\lesaelr\o3de\cmake\FileUtil.cmake;C:\Users\lesaelr\o3de\cmake\Gems.cmake;C:\Users\lesaelr\o3de\cmake\GeneralSettings.cmake;C:\Users\lesaelr\o3de\cmake\Install.cmake;C:\Users\lesaelr\o3de\cmake\LYPackage_S3Downloader.cmake;C:\Users\lesaelr\o3de\cmake\LYPython.cmake;C:\Users\lesaelr\o3de\cmake\LYTestWrappers.cmake;C:\Users\lesaelr\o3de\cmake\LYWrappers.cmake;C:\Users\lesaelr\o3de\cmake\LyAutoGen.cmake;C:\Users\lesaelr\o3de\cmake\LySet.cmake;C:\Users\lesaelr\o3de\cmake\Monolithic.cmake;C:\Users\lesaelr\o3de\cmake\O3DEJson.cmake;C:\Users\lesaelr\o3de\cmake\OutputDirectory.cmake;C:\Users\lesaelr\o3de\cmake\PAL.cmake;C:\Users\lesaelr\o3de\cmake\PALTools.cmake;C:\Users\lesaelr\o3de\cmake\Packaging.cmake;C:\Users\lesaelr\o3de\cmake\Platform\Android\PALDetection_android.cmake;C:\Users\lesaelr\o3de\cmake\Platform\Common\Configurations_common.cmake;C:\Users\lesaelr\o3de\cmake\Platform\Common\Install_common.cmake;C:\Users\lesaelr\o3de\cmake\Platform\Common\LYWrappers_default.cmake;C:\Users\lesaelr\o3de\cmake\Platform\Common\MSVC\Configurations_msvc.cmake;C:\Users\lesaelr\o3de\cmake\Platform\Common\MSVC\Directory.Build.props;C:\Users\lesaelr\o3de\cmake\Platform\Common\MSVC\VisualStudio_common.cmake;C:\Users\lesaelr\o3de\cmake\Platform\Common\RuntimeDependencies_common.cmake;C:\Users\lesaelr\o3de\cmake\Platform\Common\TargetIncludeSystemDirectories_unsupported.cmake;C:\Users\lesaelr\o3de\cmake\Platform\Common\runtime_dependencies_common.cmake.in;C:\Users\lesaelr\o3de\cmake\Platform\Linux\PALDetection_linux.cmake;C:\Users\lesaelr\o3de\cmake\Platform\Mac\PALDetection_mac.cmake;C:\Users\lesaelr\o3de\cmake\Platform\Windows\Configurations_windows.cmake;C:\Users\lesaelr\o3de\cmake\Platform\Windows\Install_windows.cmake;C:\Users\lesaelr\o3de\cmake\Platform\Windows\LYWrappers_windows.cmake;C:\Users\lesaelr\o3de\cmake\Platform\Windows\PALDetection_windows.cmake;C:\Users\lesaelr\o3de\cmake\Platform\Windows\PAL_windows.cmake;C:\Users\lesaelr\o3de\cmake\Platform\Windows\Packaging_windows.cmake;C:\Users\lesaelr\o3de\cmake\Platform\Windows\RuntimeDependencies_windows.cmake;C:\Users\lesaelr\o3de\cmake\Platform\Windows\platform_windows_files.cmake;C:\Users\lesaelr\o3de\cmake\Platform\iOS\PALDetection_ios.cmake;C:\Users\lesaelr\o3de\cmake\Projects.cmake;C:\Users\lesaelr\o3de\cmake\RuntimeDependencies.cmake;C:\Users\lesaelr\o3de\cmake\SettingsRegistry.cmake;C:\Users\lesaelr\o3de\cmake\TestImpactFramework\LYTestImpactFramework.cmake;C:\Users\lesaelr\o3de\cmake\UnitTest.cmake;C:\Users\lesaelr\o3de\cmake\Version.cmake;C:\Users\lesaelr\o3de\cmake\cmake_files.cmake;C:\Users\lesaelr\o3de\cmake\install\Copyright.in;C:\Users\lesaelr\o3de\cmake\install\Findo3de.cmake.in;C:\Users\lesaelr\o3de\cmake\install\InstalledTarget.in;C:\Users\lesaelr\o3de\cmake\install\engine.json.in;C:\Users\lesaelr\o3de\engine.json;C:\Users\lesaelr\o3de\python\requirements.txt;C:\Users\lesaelr\o3de\python\runtime\python-3.7.10-rev2-windows\FindPython.cmake;C:\Users\lesaelr\o3de\python\runtime\python-3.7.10-rev2-windows\PackageInfo.json;C:\Users\lesaelr\o3de\python\runtime\python-3.7.10-rev2-windows\python-config-version.cmake;C:\Users\lesaelr\o3de\python\runtime\python-3.7.10-rev2-windows\python-config.cmake;C:\Users\lesaelr\o3de\scripts\o3de\setup.py;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='release|x64'">C:\Users\lesaelr\o3de\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='release|x64'">false</LinkObjects>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\ZERO_CHECK.vcxproj">
+      <Project>{CDE32B4E-8490-3FC5-A3F2-976A0A5DE45E}</Project>
+      <Name>ZERO_CHECK</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\External\AWSClientAuth-b21a1927\Code\AWSClientAuth.Tests.vcxproj">
+      <Project>{3C521CE6-3EF6-3E65-B292-0D99E8B92681}</Project>
+      <Name>AWSClientAuth.Tests</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\External\AWSCore-48b9dca4\Code\AWSCore.Editor.Tests.vcxproj">
+      <Project>{DD630B6A-7815-3406-8558-7ED95A6E6ECE}</Project>
+      <Name>AWSCore.Editor.Tests</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\External\AWSCore-48b9dca4\Code\AWSCore.Tests.vcxproj">
+      <Project>{4F2046E1-B0E7-384E-B57D-C410D6FF92D0}</Project>
+      <Name>AWSCore.Tests</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\External\AWSGameLift-51ae3120\Code\AWSGameLiftClient\AWSGameLift.Client.Tests.vcxproj">
+      <Project>{9CE8DD2F-E214-30B7-8143-02963420D498}</Project>
+      <Name>AWSGameLift.Client.Tests</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\External\AWSGameLift-51ae3120\Code\AWSGameLiftServer\AWSGameLift.Server.Tests.vcxproj">
+      <Project>{6855131D-C7DE-31CC-8A2F-A5200F2B035D}</Project>
+      <Name>AWSGameLift.Server.Tests</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\External\AWSMetrics-0761fbea\Code\AWSMetrics.Tests.vcxproj">
+      <Project>{84D39B1C-445C-3D7A-8E61-C1A05BC0C4A8}</Project>
+      <Name>AWSMetrics.Tests</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\Code\Tools\AssetBundler\AssetBundler.Tests.vcxproj">
+      <Project>{D20FF178-30A8-32D8-BDC0-10DB6710AAC7}</Project>
+      <Name>AssetBundler.Tests</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\External\AssetMemoryAnalyzer-62daeec5\Code\AssetMemoryAnalyzer.Tests.vcxproj">
+      <Project>{9970FC1E-D46C-3AC9-8D38-299A945AF2FD}</Project>
+      <Name>AssetMemoryAnalyzer.Tests</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\Code\Tools\AssetProcessor\AssetProcessor.Tests.vcxproj">
+      <Project>{A2DEB113-8AD3-3F6E-BF78-2D638981490E}</Project>
+      <Name>AssetProcessor.Tests</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\External\AssetValidation-e839a42e\Code\AssetValidation.Tests.vcxproj">
+      <Project>{C8C9270D-23FB-3F04-A36B-84C6A3DD7864}</Project>
+      <Name>AssetValidation.Tests</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\Code\Framework\AtomCore\AtomCore.Tests.vcxproj">
+      <Project>{BACA5EE8-21B5-3701-AADD-4C470BED2D59}</Project>
+      <Name>AtomCore.Tests</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\External\AtomLyIntegration-c3d5e932\AtomFont\Code\AtomFont.Tests.vcxproj">
+      <Project>{58C8FB39-D0A0-3063-8F75-E5CD2593FB3A}</Project>
+      <Name>AtomFont.Tests</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\External\AtomLyIntegration-c3d5e932\AtomViewportDisplayInfo\Code\AtomViewportDisplayInfo.Tests.vcxproj">
+      <Project>{51230A43-DD17-3BE9-80C3-5EBE64938ED9}</Project>
+      <Name>AtomViewportDisplayInfo.Tests</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\External\Atom-418206cc\Asset\Shader\Code\Atom_Asset_Shader.Tests.vcxproj">
+      <Project>{EE75019E-231C-3FEE-A757-90CF60C13A7D}</Project>
+      <Name>Atom_Asset_Shader.Tests</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\External\Atom-418206cc\Feature\Common\Code\Atom_Feature_Common.Tests.vcxproj">
+      <Project>{25FD941C-D2E6-3061-91A2-8B2C32CB992E}</Project>
+      <Name>Atom_Feature_Common.Tests</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\External\Atom-418206cc\RHI\Code\Atom_RHI.Tests.vcxproj">
+      <Project>{26977F94-4332-3BC8-A9BF-5B73F7051E36}</Project>
+      <Name>Atom_RHI.Tests</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\External\Atom-418206cc\RPI\Code\Atom_RPI.Builders.Tests.vcxproj">
+      <Project>{760F5B84-8895-3EBD-91C9-D8528AD656F9}</Project>
+      <Name>Atom_RPI.Builders.Tests</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\External\Atom-418206cc\RPI\Code\Atom_RPI.Tests.vcxproj">
+      <Project>{45CFA378-8E3D-3205-8A0F-1047AB5A4F2F}</Project>
+      <Name>Atom_RPI.Tests</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\External\Atom-418206cc\Utils\Code\Atom_Utils.Tests.vcxproj">
+      <Project>{4EF66E02-0E23-32CB-A369-3AD1A21A095D}</Project>
+      <Name>Atom_Utils.Tests</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\External\AudioSystem-825219bb\Code\AudioSystem.Editor.Tests.vcxproj">
+      <Project>{E1D067D1-A25E-374F-BC96-456E38CBF89E}</Project>
+      <Name>AudioSystem.Editor.Tests</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\External\AudioSystem-825219bb\Code\AudioSystem.Tests.vcxproj">
+      <Project>{EBC77C23-45FC-3789-BB1C-43078B99653B}</Project>
+      <Name>AudioSystem.Tests</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore.Tests.vcxproj">
+      <Project>{9BAE3499-A677-3ADA-8FF5-ABB50095B120}</Project>
+      <Name>AzCore.Tests</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework.Tests.vcxproj">
+      <Project>{CB3D2805-7461-3A1E-8A5C-BDB61A2AC7EE}</Project>
+      <Name>AzFramework.Tests</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\Code\Framework\AzManipulatorTestFramework\AzManipulatorTestFramework.Tests.vcxproj">
+      <Project>{04119A7C-5002-39A6-BB18-4ABFAAD85FB4}</Project>
+      <Name>AzManipulatorTestFramework.Tests</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\AzNetworking.Tests.vcxproj">
+      <Project>{8D353B28-7DF1-30BF-90DE-2AF6A03B991A}</Project>
+      <Name>AzNetworking.Tests</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\AzQtComponents.Tests.vcxproj">
+      <Project>{C5A22B1F-24F8-3BD7-9947-572E3395C5E6}</Project>
+      <Name>AzQtComponents.Tests</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\Code\Tools\AzTestRunner\AzTestRunner.Tests.vcxproj">
+      <Project>{1463549D-EC46-3A68-8ED0-773158C1319D}</Project>
+      <Name>AzTestRunner.Tests</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework.Tests.vcxproj">
+      <Project>{3446AF79-C488-3B86-8F4E-C70985754D96}</Project>
+      <Name>AzToolsFramework.Tests</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\External\Blast-dc3b9232\Code\Blast.Editor.Tests.vcxproj">
+      <Project>{27EB473A-CA19-3195-BE4C-00B3C5033440}</Project>
+      <Name>Blast.Editor.Tests</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\Code\Editor\Plugins\ComponentEntityEditorPlugin\ComponentEntityEditorPlugin.Tests.vcxproj">
+      <Project>{E1A16D02-6F3E-31C0-B42F-3F2308C587F8}</Project>
+      <Name>ComponentEntityEditorPlugin.Tests</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\Code\Tools\DeltaCataloger\DeltaCataloger.Tests.vcxproj">
+      <Project>{5DB2994A-9C96-33E1-9AAB-6A705529DC78}</Project>
+      <Name>DeltaCataloger.Tests</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\External\EMotionFX-34d60ee3\Code\EMotionFX.Editor.Tests.vcxproj">
+      <Project>{7E2C81A5-9FE6-3E4C-8911-788131A09F56}</Project>
+      <Name>EMotionFX.Editor.Tests</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\External\EMotionFX-34d60ee3\Code\EMotionFX.Tests.vcxproj">
+      <Project>{860393B3-0261-3B02-8319-FB918AD1FACC}</Project>
+      <Name>EMotionFX.Tests</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\Code\Editor\EditorCore.Tests.vcxproj">
+      <Project>{55D1AD77-8316-325E-9322-E6FB5C190FFC}</Project>
+      <Name>EditorCore.Tests</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\Code\Editor\EditorLib.Camera.Tests.vcxproj">
+      <Project>{B3F0C553-2C78-3D1C-BD39-0ACD73D4A063}</Project>
+      <Name>EditorLib.Camera.Tests</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\Code\Editor\EditorLib.Tests.vcxproj">
+      <Project>{BDC13BA5-9CF1-3981-8AF2-E145487368CB}</Project>
+      <Name>EditorLib.Tests</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\External\EditorPythonBindings-d1c6a6b7\Code\EditorPythonBindings.Tests.vcxproj">
+      <Project>{B3F0ECA9-50F9-3B95-B7D1-0724825D0E41}</Project>
+      <Name>EditorPythonBindings.Tests</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\External\ExpressionEvaluation-fba66a77\Code\ExpressionEvaluation.Tests.vcxproj">
+      <Project>{3AF068F1-7DE0-3BB2-A3B4-3DA577F08DCC}</Project>
+      <Name>ExpressionEvaluation.Tests</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\External\FastNoise-c729c6f6\Code\FastNoise.Editor.Tests.vcxproj">
+      <Project>{67054188-D361-3FF9-9940-FD7D4EE69451}</Project>
+      <Name>FastNoise.Editor.Tests</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\External\GameState-eb5c8049\Code\GameState.Tests.vcxproj">
+      <Project>{5963A485-A735-3CDD-9BD0-172639E354C5}</Project>
+      <Name>GameState.Tests</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\External\Gestures-d79c1a3b\Code\Gestures.Tests.vcxproj">
+      <Project>{5B51C5A3-9BB1-3910-8968-97D3D322CDBE}</Project>
+      <Name>Gestures.Tests</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\External\GradientSignal-ae8ccb00\Code\GradientSignal.Editor.Tests.vcxproj">
+      <Project>{362EF080-99C9-3930-B3E8-6D70D7783C16}</Project>
+      <Name>GradientSignal.Editor.Tests</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\External\GradientSignal-ae8ccb00\Code\GradientSignal.Tests.vcxproj">
+      <Project>{95763AB1-35AF-31D4-8089-1025391209F9}</Project>
+      <Name>GradientSignal.Tests</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\External\GraphModel-6d006756\Code\GraphModel.Editor.Tests.vcxproj">
+      <Project>{C67702B4-7E58-3CD5-8BE5-A0C784793ED4}</Project>
+      <Name>GraphModel.Editor.Tests</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate.Tests.vcxproj">
+      <Project>{F893DA8D-E02A-329D-B5DD-2C8383F937EF}</Project>
+      <Name>GridMate.Tests</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\External\HttpRequestor-6f78570b\Code\HttpRequestor.Tests.vcxproj">
+      <Project>{EDA8A26C-6FC3-3531-9F2D-B93742129EC3}</Project>
+      <Name>HttpRequestor.Tests</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\External\Atom-418206cc\Asset\ImageProcessingAtom\Code\ImageProcessingAtom.Editor.Tests.vcxproj">
+      <Project>{B934ACCE-837B-38EA-8152-3A6E5C878480}</Project>
+      <Name>ImageProcessingAtom.Editor.Tests</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\External\LandscapeCanvas-d623eb7d\Code\LandscapeCanvas.Editor.Tests.vcxproj">
+      <Project>{FE538A49-F315-3595-9977-3CC90FF566C1}</Project>
+      <Name>LandscapeCanvas.Editor.Tests</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\Code\LauncherUnified\Launcher.Tests.vcxproj">
+      <Project>{4C95D7EA-6045-33BB-BAA0-E15AB5669037}</Project>
+      <Name>Launcher.Tests</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\External\LmbrCentral-1931088b\Code\LmbrCentral.Editor.Tests.vcxproj">
+      <Project>{CCAEB884-EF01-3AE0-A6DB-C1B7A2EE192B}</Project>
+      <Name>LmbrCentral.Editor.Tests</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\External\LmbrCentral-1931088b\Code\LmbrCentral.Tests.vcxproj">
+      <Project>{01D4E6B2-488B-33FA-8553-8BD1BEDA64A9}</Project>
+      <Name>LmbrCentral.Tests</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\External\LocalUser-9c1f74cf\Code\LocalUser.Tests.vcxproj">
+      <Project>{861FC701-96C8-34B4-9FC4-059AC3717103}</Project>
+      <Name>LocalUser.Tests</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\External\LyShine-4e09d22a\Code\LyShine.Editor.Tests.vcxproj">
+      <Project>{571030BE-94CF-3D22-B45E-A9664B882A18}</Project>
+      <Name>LyShine.Editor.Tests</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\External\LyShine-4e09d22a\Code\LyShine.Tests.vcxproj">
+      <Project>{2847654D-FC27-36B6-AA8B-ADF813C7DDC5}</Project>
+      <Name>LyShine.Tests</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\External\Maestro-6014b01b\Code\Maestro.Tests.vcxproj">
+      <Project>{A5D20E3C-9D84-3FFF-AD73-2EB54658D9D4}</Project>
+      <Name>Maestro.Tests</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\External\Metastream-c172f23d\Code\Metastream.Tests.vcxproj">
+      <Project>{5F5923A5-23F9-38CD-B6B2-F7DDE9D14FDB}</Project>
+      <Name>Metastream.Tests</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\External\Multiplayer-0cbd0873\Code\Multiplayer.Builders.Tests.vcxproj">
+      <Project>{BFBF6402-45E1-3353-AA78-AF2F0668EF99}</Project>
+      <Name>Multiplayer.Builders.Tests</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\External\Multiplayer-0cbd0873\Code\Multiplayer.Tests.vcxproj">
+      <Project>{94D10832-0948-3FC2-907A-312A2FE5DF6B}</Project>
+      <Name>Multiplayer.Tests</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\External\MultiplayerCompression-e1bacd98\Code\MultiplayerCompression.Tests.vcxproj">
+      <Project>{BA2265F3-05CF-3A6C-B0C5-38C6CF0E81BC}</Project>
+      <Name>MultiplayerCompression.Tests</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\External\NvCloth-2c209df5\Code\NvCloth.Editor.Tests.vcxproj">
+      <Project>{B4364316-D369-3063-A976-9ECFCD5020F5}</Project>
+      <Name>NvCloth.Editor.Tests</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\External\NvCloth-2c209df5\Code\NvCloth.Tests.vcxproj">
+      <Project>{08EE61A1-DFDF-3908-9508-272FDE10D833}</Project>
+      <Name>NvCloth.Tests</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\External\PhysX-777cc257\Code\PhysX.Editor.Tests.vcxproj">
+      <Project>{3B8937CE-72D8-3BC2-A4E1-392309070E1F}</Project>
+      <Name>PhysX.Editor.Tests</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\External\PhysX-777cc257\Code\NumericalMethods\PhysX.NumericalMethods.Tests.vcxproj">
+      <Project>{17DFE7C3-FFA6-3EF5-BA4F-E8F0CCDE8A88}</Project>
+      <Name>PhysX.NumericalMethods.Tests</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\External\PhysX-777cc257\Code\PhysX.Tests.vcxproj">
+      <Project>{657F6184-0CEA-369D-B6D7-E324FF721695}</Project>
+      <Name>PhysX.Tests</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\External\Prefab-8542aabe\PrefabBuilder\PrefabBuilder.Tests.vcxproj">
+      <Project>{78D0A52C-1DA1-3393-B0EF-12712866F29B}</Project>
+      <Name>PrefabBuilder.Tests</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\Code\Tools\ProjectManager\ProjectManager.Tests.vcxproj">
+      <Project>{2CDD5C54-B82D-3EF3-8F8D-2C2DA9CBDC89}</Project>
+      <Name>ProjectManager.Tests</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\External\PythonAssetBuilder-fcc54723\Code\PythonAssetBuilder.Tests.vcxproj">
+      <Project>{B7E07DA7-6519-3AE7-828D-4E5FCDC1CC28}</Project>
+      <Name>PythonAssetBuilder.Tests</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\Code\Tools\PythonBindingsExample\PythonBindingsExample.Tests.vcxproj">
+      <Project>{30844F02-7381-3923-9D47-7EC9D024111A}</Project>
+      <Name>PythonBindingsExample.Tests</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\Tools\RemoteConsole\ly_remote_console\tests\RemoteConsole_UnitTests_main_no_gpu.vcxproj">
+      <Project>{776F2A9F-4E14-3F3F-87D2-34D73CA2F7FD}</Project>
+      <Name>RemoteConsole_UnitTests_main_no_gpu</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\External\SaveData-fdeb26b2\Code\SaveData.Tests.vcxproj">
+      <Project>{618478B1-B2AE-3BC6-9318-5EBA8B0B4474}</Project>
+      <Name>SaveData.Tests</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneBuilder\SceneBuilder.Tests.vcxproj">
+      <Project>{0B7408A8-5C8B-3113-B9F5-BA01DEE03C4F}</Project>
+      <Name>SceneBuilder.Tests</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneCore\SceneCore.Tests.vcxproj">
+      <Project>{D400F693-22C0-32CC-9618-6F73155EB465}</Project>
+      <Name>SceneCore.Tests</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneData\SceneData.Tests.vcxproj">
+      <Project>{7A26D1E5-C1C7-33FD-A43E-5E7FB146CBDB}</Project>
+      <Name>SceneData.Tests</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\External\SceneProcessing-5634e1d7\Code\SceneProcessing.Editor.Tests.vcxproj">
+      <Project>{2343F67B-BFA8-37FD-8432-62D101E2318A}</Project>
+      <Name>SceneProcessing.Editor.Tests</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\External\SceneProcessing-5634e1d7\Code\SceneProcessing.Tests.vcxproj">
+      <Project>{3FD23E17-E31B-3226-ABF6-20AB2113A9BC}</Project>
+      <Name>SceneProcessing.Tests</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneUI\SceneUI.Tests.vcxproj">
+      <Project>{A83312F2-0986-3393-B5D9-300937D2D173}</Project>
+      <Name>SceneUI.Tests</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\ScriptCanvas.Editor.Tests.vcxproj">
+      <Project>{2B4A2AA0-B21D-3403-B43E-6B088FAD9AE2}</Project>
+      <Name>ScriptCanvas.Editor.Tests</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\ScriptCanvas.Tests.vcxproj">
+      <Project>{B0B34555-C08C-3B19-A11C-A89AF5895B86}</Project>
+      <Name>ScriptCanvas.Tests</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\External\ScriptCanvasPhysics-10e0b38e\Code\ScriptCanvasPhysics.Tests.vcxproj">
+      <Project>{54B6AF91-2BAB-3904-8456-80C462D2DD5B}</Project>
+      <Name>ScriptCanvasPhysics.Tests</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\External\ScriptCanvasTesting-440080ab\Code\ScriptCanvasTesting.Editor.Tests.vcxproj">
+      <Project>{3881AC0F-E2D3-36B4-97E1-32B441139737}</Project>
+      <Name>ScriptCanvasTesting.Editor.Tests</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\External\ScriptEvents-f79e6fca\Code\ScriptEvents.Tests.vcxproj">
+      <Project>{7C44371F-5B29-3DD7-8585-EC8E1D941959}</Project>
+      <Name>ScriptEvents.Tests</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\External\StartingPointInput-4ddefce8\Code\StartingPointInput.Tests.vcxproj">
+      <Project>{3B38C108-E855-350F-B6A8-E1A4BE92DCFD}</Project>
+      <Name>StartingPointInput.Tests</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\External\SurfaceData-40c9a442\Code\SurfaceData.Tests.vcxproj">
+      <Project>{7F454EA5-731F-3858-8ABC-4CDFDDE4E129}</Project>
+      <Name>SurfaceData.Tests</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\External\Terrain-ca46e1f4\Code\Terrain.Editor.Tests.vcxproj">
+      <Project>{F2CA7D71-BF1A-3811-95D4-864FDECA765E}</Project>
+      <Name>Terrain.Editor.Tests</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\External\Terrain-ca46e1f4\Code\Terrain.Tests.vcxproj">
+      <Project>{B8C18485-9180-3830-88CA-56C29BD98233}</Project>
+      <Name>Terrain.Tests</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\External\Vegetation-f607f625\Code\Vegetation.Tests.vcxproj">
+      <Project>{29E0A3EF-CA2D-3003-9437-DFD6C6CB7587}</Project>
+      <Name>Vegetation.Tests</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\External\VideoPlaybackFramework-59f742a0\Code\VideoPlaybackFramework.Tests.vcxproj">
+      <Project>{451FF6CC-0FC3-3C6C-BEF8-9A78E5490FF5}</Project>
+      <Name>VideoPlaybackFramework.Tests</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\External\WhiteBox-371c67b0\Code\WhiteBox.Editor.Physics.Tests.vcxproj">
+      <Project>{469671BC-E3F3-3AF1-8E3B-D87DF76501E5}</Project>
+      <Name>WhiteBox.Editor.Physics.Tests</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\External\WhiteBox-371c67b0\Code\WhiteBox.Editor.Tests.vcxproj">
+      <Project>{A7925BB1-1303-38FD-9580-FAC9F8DD85D6}</Project>
+      <Name>WhiteBox.Editor.Tests</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\External\WhiteBox-371c67b0\Code\WhiteBox.Tests.vcxproj">
+      <Project>{EBB466CB-E9F9-3E32-8FDF-D39D6D600E4D}</Project>
+      <Name>WhiteBox.Tests</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\External\Atom-418206cc\RPI\Tools\atom_rpi_tools_tests.vcxproj">
+      <Project>{937D2CE6-300A-30DF-9411-62B54AB52448}</Project>
+      <Name>atom_rpi_tools_tests</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\scripts\ctest\pytest_sanity_main_no_gpu.vcxproj">
+      <Project>{700639D8-96C3-3E38-A116-3AFBFD7841DC}</Project>
+      <Name>pytest_sanity_main_no_gpu</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\scripts\ctest\pytest_sanity_main_requires_gpu.vcxproj">
+      <Project>{B6D72C26-E8DC-367D-99A5-827F7C6A1B2A}</Project>
+      <Name>pytest_sanity_main_requires_gpu</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\scripts\commit_validation\test_commit_validation.vcxproj">
+      <Project>{36808093-F520-3EB5-A023-FB5D7925D138}</Project>
+      <Name>test_commit_validation</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\scripts\detect_file_changes\test_detect_file_changes.vcxproj">
+      <Project>{D608FDE4-5C7D-335B-9ACF-16D33BFC1468}</Project>
+      <Name>test_detect_file_changes</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

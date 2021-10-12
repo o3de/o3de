@@ -1,0 +1,456 @@
+{
+	"BUILD_DIR" : "C:/Users/lesaelr/o3de/Code/Editor/Plugins/ProjectSettingsTool/ProjectSettingsTool_autogen",
+	"CMAKE_BINARY_DIR" : "C:/Users/lesaelr/o3de",
+	"CMAKE_CURRENT_BINARY_DIR" : "C:/Users/lesaelr/o3de/Code/Editor/Plugins/ProjectSettingsTool",
+	"CMAKE_CURRENT_SOURCE_DIR" : "C:/Users/lesaelr/o3de/Code/Editor/Plugins/ProjectSettingsTool",
+	"CMAKE_EXECUTABLE" : "C:/Program Files/CMake/bin/cmake.exe",
+	"CMAKE_LIST_FILES" : 
+	[
+		"C:/Users/lesaelr/o3de/Code/Editor/Plugins/ProjectSettingsTool/CMakeLists.txt",
+		"C:/Users/lesaelr/o3de/Code/Editor/Plugins/ProjectSettingsTool/projectsettingstool_files.cmake"
+	],
+	"CMAKE_SOURCE_DIR" : "C:/Users/lesaelr/o3de",
+	"DEP_FILE" : "",
+	"DEP_FILE_RULE_NAME" : "",
+	"HEADERS" : 
+	[
+		[
+			"C:/Users/lesaelr/o3de/Code/Editor/Plugins/ProjectSettingsTool/DefaultImageValidator.h",
+			"Mu",
+			"EWIEGA46WW/moc_DefaultImageValidator.cpp",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Code/Editor/Plugins/ProjectSettingsTool/FunctorValidator.h",
+			"Mu",
+			"EWIEGA46WW/moc_FunctorValidator.cpp",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Code/Editor/Plugins/ProjectSettingsTool/LastPathBus.h",
+			"Mu",
+			"EWIEGA46WW/moc_LastPathBus.cpp",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Code/Editor/Plugins/ProjectSettingsTool/PlatformSettings.h",
+			"Mu",
+			"EWIEGA46WW/moc_PlatformSettings.cpp",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Code/Editor/Plugins/ProjectSettingsTool/PlatformSettings_Android.h",
+			"Mu",
+			"EWIEGA46WW/moc_PlatformSettings_Android.cpp",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Code/Editor/Plugins/ProjectSettingsTool/PlatformSettings_Base.h",
+			"Mu",
+			"EWIEGA46WW/moc_PlatformSettings_Base.cpp",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Code/Editor/Plugins/ProjectSettingsTool/PlatformSettings_Ios.h",
+			"Mu",
+			"EWIEGA46WW/moc_PlatformSettings_Ios.cpp",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Code/Editor/Plugins/ProjectSettingsTool/PlatformSettings_common.h",
+			"Mu",
+			"EWIEGA46WW/moc_PlatformSettings_common.cpp",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Code/Editor/Plugins/ProjectSettingsTool/Platforms.h",
+			"Mu",
+			"EWIEGA46WW/moc_Platforms.cpp",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Code/Editor/Plugins/ProjectSettingsTool/PlistDictionary.h",
+			"Mu",
+			"EWIEGA46WW/moc_PlistDictionary.cpp",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Code/Editor/Plugins/ProjectSettingsTool/ProjectSettingsContainer.h",
+			"Mu",
+			"EWIEGA46WW/moc_ProjectSettingsContainer.cpp",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Code/Editor/Plugins/ProjectSettingsTool/ProjectSettingsSerialization.h",
+			"Mu",
+			"EWIEGA46WW/moc_ProjectSettingsSerialization.cpp",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Code/Editor/Plugins/ProjectSettingsTool/ProjectSettingsToolWindow.h",
+			"Mu",
+			"EWIEGA46WW/moc_ProjectSettingsToolWindow.cpp",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Code/Editor/Plugins/ProjectSettingsTool/ProjectSettingsValidator.h",
+			"Mu",
+			"EWIEGA46WW/moc_ProjectSettingsValidator.cpp",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Code/Editor/Plugins/ProjectSettingsTool/PropertyFileSelect.h",
+			"Mu",
+			"EWIEGA46WW/moc_PropertyFileSelect.cpp",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Code/Editor/Plugins/ProjectSettingsTool/PropertyFuncValBrowseEdit.h",
+			"Mu",
+			"EWIEGA46WW/moc_PropertyFuncValBrowseEdit.cpp",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Code/Editor/Plugins/ProjectSettingsTool/PropertyFuncValLineEdit.h",
+			"Mu",
+			"EWIEGA46WW/moc_PropertyFuncValLineEdit.cpp",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Code/Editor/Plugins/ProjectSettingsTool/PropertyImagePreview.h",
+			"Mu",
+			"EWIEGA46WW/moc_PropertyImagePreview.cpp",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Code/Editor/Plugins/ProjectSettingsTool/PropertyLinked.h",
+			"Mu",
+			"EWIEGA46WW/moc_PropertyLinked.cpp",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Code/Editor/Plugins/ProjectSettingsTool/Utils.h",
+			"Mu",
+			"EWIEGA46WW/moc_Utils.cpp",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Code/Editor/Plugins/ProjectSettingsTool/ValidationHandler.h",
+			"Mu",
+			"EWIEGA46WW/moc_ValidationHandler.cpp",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Code/Editor/Plugins/ProjectSettingsTool/ValidatorBus.h",
+			"Mu",
+			"EWIEGA46WW/moc_ValidatorBus.cpp",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Code/Editor/Plugins/ProjectSettingsTool/Validators.h",
+			"Mu",
+			"EWIEGA46WW/moc_Validators.cpp",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Code/Editor/Plugins/ProjectSettingsTool/Validators_impl.h",
+			"Mu",
+			"EWIEGA46WW/moc_Validators_impl.cpp",
+			null
+		]
+	],
+	"HEADER_EXTENSIONS" : [ "h", "hh", "h++", "hm", "hpp", "hxx", "in", "txx" ],
+	"INCLUDE_DIR" : "C:/Users/lesaelr/o3de/Code/Editor/Plugins/ProjectSettingsTool/ProjectSettingsTool_autogen/include",
+	"INCLUDE_DIR_debug" : "C:/Users/lesaelr/o3de/Code/Editor/Plugins/ProjectSettingsTool/ProjectSettingsTool_autogen/include_debug",
+	"INCLUDE_DIR_profile" : "C:/Users/lesaelr/o3de/Code/Editor/Plugins/ProjectSettingsTool/ProjectSettingsTool_autogen/include_profile",
+	"INCLUDE_DIR_release" : "C:/Users/lesaelr/o3de/Code/Editor/Plugins/ProjectSettingsTool/ProjectSettingsTool_autogen/include_release",
+	"MOC_COMPILATION_FILE" : "C:/Users/lesaelr/o3de/Code/Editor/Plugins/ProjectSettingsTool/ProjectSettingsTool_autogen/mocs_compilation.cpp",
+	"MOC_COMPILATION_FILE_debug" : "C:/Users/lesaelr/o3de/Code/Editor/Plugins/ProjectSettingsTool/ProjectSettingsTool_autogen/mocs_compilation_debug.cpp",
+	"MOC_COMPILATION_FILE_profile" : "C:/Users/lesaelr/o3de/Code/Editor/Plugins/ProjectSettingsTool/ProjectSettingsTool_autogen/mocs_compilation_profile.cpp",
+	"MOC_COMPILATION_FILE_release" : "C:/Users/lesaelr/o3de/Code/Editor/Plugins/ProjectSettingsTool/ProjectSettingsTool_autogen/mocs_compilation_release.cpp",
+	"MOC_DEFINITIONS" : 
+	[
+		"AWS_CUSTOM_MEMORY_MANAGEMENT",
+		"EDITOR",
+		"EDITOR_COMMON_IMPORTS",
+		"NOMINMAX",
+		"OPENSSL_ENABLED",
+		"PLATFORM_SUPPORTS_AWS_NATIVE_SDK",
+		"PLUGIN_EXPORTS",
+		"ProjectSettingsTool_EXPORTS",
+		"QT_CORE_LIB",
+		"QT_GUI_LIB",
+		"QT_NETWORK_LIB",
+		"QT_NO_DEBUG",
+		"QT_SVG_LIB",
+		"QT_WIDGETS_LIB",
+		"QT_XML_LIB",
+		"SANDBOX_IMPORTS",
+		"USE_IMPORT_EXPORT",
+		"WIN32",
+		"WIN64",
+		"_ENABLE_EXTENDED_ALIGNED_STORAGE",
+		"_HAS_EXCEPTIONS=0",
+		"_WIN32",
+		"_WIN64"
+	],
+	"MOC_DEFINITIONS_debug" : 
+	[
+		"AWS_CUSTOM_MEMORY_MANAGEMENT",
+		"AZ_BUILD_CONFIGURATION_TYPE=\"debug\"",
+		"AZ_DEBUG_BUILD=1",
+		"AZ_ENABLE_DEBUG_TOOLS",
+		"AZ_ENABLE_TRACING",
+		"EDITOR",
+		"EDITOR_COMMON_IMPORTS",
+		"NOMINMAX",
+		"OPENSSL_ENABLED",
+		"PLATFORM_SUPPORTS_AWS_NATIVE_SDK",
+		"PLUGIN_EXPORTS",
+		"ProjectSettingsTool_EXPORTS",
+		"QT_CORE_LIB",
+		"QT_GUI_LIB",
+		"QT_NETWORK_LIB",
+		"QT_SVG_LIB",
+		"QT_WIDGETS_LIB",
+		"QT_XML_LIB",
+		"SANDBOX_IMPORTS",
+		"USE_IMPORT_EXPORT",
+		"WIN32",
+		"WIN64",
+		"_DEBUG",
+		"_ENABLE_EXTENDED_ALIGNED_STORAGE",
+		"_HAS_EXCEPTIONS=0",
+		"_WIN32",
+		"_WIN64"
+	],
+	"MOC_DEFINITIONS_profile" : 
+	[
+		"AWS_CUSTOM_MEMORY_MANAGEMENT",
+		"AZ_BUILD_CONFIGURATION_TYPE=\"profile\"",
+		"AZ_ENABLE_DEBUG_TOOLS",
+		"AZ_ENABLE_TRACING",
+		"EDITOR",
+		"EDITOR_COMMON_IMPORTS",
+		"NDEBUG",
+		"NOMINMAX",
+		"OPENSSL_ENABLED",
+		"PLATFORM_SUPPORTS_AWS_NATIVE_SDK",
+		"PLUGIN_EXPORTS",
+		"PROFILE",
+		"ProjectSettingsTool_EXPORTS",
+		"QT_CORE_LIB",
+		"QT_GUI_LIB",
+		"QT_NETWORK_LIB",
+		"QT_NO_DEBUG",
+		"QT_SVG_LIB",
+		"QT_WIDGETS_LIB",
+		"QT_XML_LIB",
+		"SANDBOX_IMPORTS",
+		"USE_IMPORT_EXPORT",
+		"WIN32",
+		"WIN64",
+		"_ENABLE_EXTENDED_ALIGNED_STORAGE",
+		"_HAS_EXCEPTIONS=0",
+		"_PROFILE",
+		"_WIN32",
+		"_WIN64"
+	],
+	"MOC_DEFINITIONS_release" : 
+	[
+		"AWS_CUSTOM_MEMORY_MANAGEMENT",
+		"AZ_BUILD_CONFIGURATION_TYPE=\"release\"",
+		"EDITOR",
+		"EDITOR_COMMON_IMPORTS",
+		"NDEBUG",
+		"NOMINMAX",
+		"OPENSSL_ENABLED",
+		"PLATFORM_SUPPORTS_AWS_NATIVE_SDK",
+		"PLUGIN_EXPORTS",
+		"ProjectSettingsTool_EXPORTS",
+		"QT_CORE_LIB",
+		"QT_GUI_LIB",
+		"QT_NETWORK_LIB",
+		"QT_NO_DEBUG",
+		"QT_SVG_LIB",
+		"QT_WIDGETS_LIB",
+		"QT_XML_LIB",
+		"RELEASE",
+		"SANDBOX_IMPORTS",
+		"USE_IMPORT_EXPORT",
+		"WIN32",
+		"WIN64",
+		"_ENABLE_EXTENDED_ALIGNED_STORAGE",
+		"_HAS_EXCEPTIONS=0",
+		"_RELEASE",
+		"_WIN32",
+		"_WIN64"
+	],
+	"MOC_DEPEND_FILTERS" : 
+	[
+		[
+			"Q_PLUGIN_METADATA",
+			"[\n][ \t]*Q_PLUGIN_METADATA[ \t]*\\([^\\)]*FILE[ \t]*\"([^\"]+)\""
+		]
+	],
+	"MOC_INCLUDES" : 
+	[
+		"C:/Users/lesaelr/o3de/Code/Editor/Plugins/ProjectSettingsTool/ProjectSettingsTool_autogen/include",
+		"C:/Users/lesaelr/o3de/Code/Framework/AzCore",
+		"C:/Users/lesaelr/o3de/Code/Framework/AzCore/Platform/Windows",
+		"C:/Users/lesaelr/o3de/Code/Framework/AzCore/Platform/Common",
+		"C:/Users/lesaelr/o3de/Code/Framework/AzToolsFramework",
+		"C:/Users/lesaelr/o3de/Code/Framework/AzToolsFramework/AzToolsFramework",
+		"C:/Users/lesaelr/o3de/Code/Framework/AzToolsFramework/Platform/Windows",
+		"C:/Users/lesaelr/o3de/Code/Framework/AzFramework",
+		"C:/Users/lesaelr/o3de/Code/Framework/AzFramework/Platform/Windows",
+		"C:/Users/lesaelr/o3de/Code/Framework/GridMate",
+		"C:/Users/lesaelr/o3de/Code/Framework/GridMate/Platform/Windows",
+		"C:/Users/lesaelr/o3de/Code/Framework/AzQtComponents",
+		"C:/Users/lesaelr/o3de/Code/Legacy/CryCommon",
+		"C:/Users/lesaelr/o3de/Code/Legacy",
+		"C:/Users/lesaelr/o3de/Code/Legacy/CryCommon/Platform/Windows",
+		"C:/Users/lesaelr/o3de/Code/Editor/Include",
+		"C:/Users/lesaelr/o3de/Code/Editor",
+		"C:/Users/lesaelr/o3de/Code",
+		"C:/Users/lesaelr/o3de/Code/Editor/Plugins/EditorCommon"
+	],
+	"MOC_MACRO_NAMES" : [ "Q_OBJECT", "Q_GADGET", "Q_NAMESPACE", "Q_NAMESPACE_EXPORT" ],
+	"MOC_OPTIONS" : [],
+	"MOC_PATH_PREFIX" : false,
+	"MOC_PREDEFS_CMD" : [],
+	"MOC_PREDEFS_FILE" : "",
+	"MOC_RELAXED_MODE" : false,
+	"MOC_SKIP" : 
+	[
+		"C:/Users/lesaelr/o3de/Code/Editor/Plugins/ProjectSettingsTool/ProjectSettingsTool_autogen/include/ui_ProjectSettingsToolWidget.h"
+	],
+	"MULTI_CONFIG" : true,
+	"PARALLEL" : 6,
+	"PARSE_CACHE_FILE" : "C:/Users/lesaelr/o3de/Code/Editor/Plugins/ProjectSettingsTool/CMakeFiles/ProjectSettingsTool_autogen.dir/ParseCache.txt",
+	"PARSE_CACHE_FILE_debug" : "C:/Users/lesaelr/o3de/Code/Editor/Plugins/ProjectSettingsTool/CMakeFiles/ProjectSettingsTool_autogen.dir/ParseCache_debug.txt",
+	"PARSE_CACHE_FILE_profile" : "C:/Users/lesaelr/o3de/Code/Editor/Plugins/ProjectSettingsTool/CMakeFiles/ProjectSettingsTool_autogen.dir/ParseCache_profile.txt",
+	"PARSE_CACHE_FILE_release" : "C:/Users/lesaelr/o3de/Code/Editor/Plugins/ProjectSettingsTool/CMakeFiles/ProjectSettingsTool_autogen.dir/ParseCache_release.txt",
+	"QT_MOC_EXECUTABLE" : "C:/Users/lesaelr/.o3de/3rdParty/packages/qt-5.15.2-rev4-windows/qt/bin/moc.exe",
+	"QT_UIC_EXECUTABLE" : "",
+	"QT_VERSION_MAJOR" : 5,
+	"QT_VERSION_MINOR" : 15,
+	"SETTINGS_FILE" : "C:/Users/lesaelr/o3de/Code/Editor/Plugins/ProjectSettingsTool/CMakeFiles/ProjectSettingsTool_autogen.dir/AutogenUsed.txt",
+	"SETTINGS_FILE_debug" : "C:/Users/lesaelr/o3de/Code/Editor/Plugins/ProjectSettingsTool/CMakeFiles/ProjectSettingsTool_autogen.dir/AutogenUsed_debug.txt",
+	"SETTINGS_FILE_profile" : "C:/Users/lesaelr/o3de/Code/Editor/Plugins/ProjectSettingsTool/CMakeFiles/ProjectSettingsTool_autogen.dir/AutogenUsed_profile.txt",
+	"SETTINGS_FILE_release" : "C:/Users/lesaelr/o3de/Code/Editor/Plugins/ProjectSettingsTool/CMakeFiles/ProjectSettingsTool_autogen.dir/AutogenUsed_release.txt",
+	"SOURCES" : 
+	[
+		[
+			"C:/Users/lesaelr/o3de/Code/Editor/Plugins/ProjectSettingsTool/CMakeFiles/ProjectSettingsTool.dir/Unity/unity_0_cxx.cxx",
+			"Mu",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Code/Editor/Plugins/ProjectSettingsTool/CMakeFiles/ProjectSettingsTool.dir/Unity/unity_1_cxx.cxx",
+			"Mu",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Code/Editor/Plugins/ProjectSettingsTool/CMakeFiles/ProjectSettingsTool.dir/Unity/unity_2_cxx.cxx",
+			"Mu",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Code/Editor/Plugins/ProjectSettingsTool/DefaultImageValidator.cpp",
+			"Mu",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Code/Editor/Plugins/ProjectSettingsTool/FunctorValidator.cpp",
+			"Mu",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Code/Editor/Plugins/ProjectSettingsTool/PlatformSettings_Android.cpp",
+			"Mu",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Code/Editor/Plugins/ProjectSettingsTool/PlatformSettings_Base.cpp",
+			"Mu",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Code/Editor/Plugins/ProjectSettingsTool/PlatformSettings_Ios.cpp",
+			"Mu",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Code/Editor/Plugins/ProjectSettingsTool/PlistDictionary.cpp",
+			"Mu",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Code/Editor/Plugins/ProjectSettingsTool/ProjectSettingsContainer.cpp",
+			"Mu",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Code/Editor/Plugins/ProjectSettingsTool/ProjectSettingsSerialization.cpp",
+			"Mu",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Code/Editor/Plugins/ProjectSettingsTool/ProjectSettingsToolWindow.cpp",
+			"Mu",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Code/Editor/Plugins/ProjectSettingsTool/ProjectSettingsValidator.cpp",
+			"Mu",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Code/Editor/Plugins/ProjectSettingsTool/PropertyFileSelect.cpp",
+			"Mu",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Code/Editor/Plugins/ProjectSettingsTool/PropertyFuncValBrowseEdit.cpp",
+			"Mu",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Code/Editor/Plugins/ProjectSettingsTool/PropertyFuncValLineEdit.cpp",
+			"Mu",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Code/Editor/Plugins/ProjectSettingsTool/PropertyImagePreview.cpp",
+			"Mu",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Code/Editor/Plugins/ProjectSettingsTool/PropertyLinked.cpp",
+			"Mu",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Code/Editor/Plugins/ProjectSettingsTool/Utils.cpp",
+			"Mu",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Code/Editor/Plugins/ProjectSettingsTool/ValidationHandler.cpp",
+			"Mu",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Code/Editor/Plugins/ProjectSettingsTool/Validators.cpp",
+			"Mu",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Code/Editor/Plugins/ProjectSettingsTool/main.cpp",
+			"Mu",
+			null
+		]
+	],
+	"VERBOSITY" : 0
+}

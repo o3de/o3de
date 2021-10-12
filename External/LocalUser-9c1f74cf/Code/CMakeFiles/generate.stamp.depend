@@ -1,0 +1,7 @@
+# CMake generation dependency list for this directory.
+C:/Users/lesaelr/o3de/Gems/LocalUser/Code/CMakeLists.txt
+C:/Users/lesaelr/o3de/Gems/LocalUser/Code/Source/Platform/Windows/platform_windows_files.cmake
+C:/Users/lesaelr/o3de/Gems/LocalUser/Code/localuser_files.cmake
+C:/Users/lesaelr/o3de/Gems/LocalUser/Code/localuser_shared_files.cmake
+C:/Users/lesaelr/o3de/Gems/LocalUser/Code/localuser_tests_files.cmake
+C:/Users/lesaelr/o3de/cmake/Platform/Windows/LYTestWrappers_windows.cmake

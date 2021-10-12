@@ -1,0 +1,47 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\GFxFramework\GFxFramework\CMakeFiles\GFxFramework.dir\Unity\unity_0_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\GFxFramework\GFxFramework\MaterialIO\Material.cpp">
+      <Filter>MaterialIO</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\GFxFramework\GFxFramework\MaterialIO\IMaterial.h">
+      <Filter>MaterialIO</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\GFxFramework\GFxFramework\MaterialIO\Material.h">
+      <Filter>MaterialIO</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Code\Framework\GFxFramework\GFxFramework\CMakeLists.txt">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="C:\Users\lesaelr\o3de\Code\Framework\GFxFramework\GFxFramework\gfxframework_files.cmake" />
+    <None Include="C:\Users\lesaelr\o3de\Code\Framework\GFxFramework\Platform\Windows\platform_windows.cmake">
+      <Filter>..\Platform\Windows</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="..">
+      <UniqueIdentifier>{B62B6BD3-6D53-356A-92E7-D4477019628D}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="..\Platform">
+      <UniqueIdentifier>{F9E7DE97-4DE9-3528-BC3B-3609D2C90881}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="..\Platform\Windows">
+      <UniqueIdentifier>{86A49385-AD67-323F-B0D7-C612878A8834}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Generated Files">
+      <UniqueIdentifier>{FB9B7D8B-7F05-31D5-AA90-592248EDE1B3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="MaterialIO">
+      <UniqueIdentifier>{6A87AD0F-B626-3364-9C34-EDC88E32AE86}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

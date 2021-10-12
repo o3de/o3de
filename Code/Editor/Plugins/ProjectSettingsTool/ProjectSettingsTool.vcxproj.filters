@@ -1,0 +1,98 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\Plugins\ProjectSettingsTool\ProjectSettingsTool_autogen\mocs_compilation_debug.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\Plugins\ProjectSettingsTool\CMakeFiles\ProjectSettingsTool.dir\Unity\unity_2_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\Plugins\ProjectSettingsTool\CMakeFiles\ProjectSettingsTool.dir\Unity\unity_1_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\Plugins\ProjectSettingsTool\CMakeFiles\ProjectSettingsTool.dir\Unity\unity_0_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\Plugins\ProjectSettingsTool\main.cpp" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\Plugins\ProjectSettingsTool\DefaultImageValidator.cpp" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\Plugins\ProjectSettingsTool\FunctorValidator.cpp" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\Plugins\ProjectSettingsTool\PlatformSettings_Android.cpp" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\Plugins\ProjectSettingsTool\PlatformSettings_Base.cpp" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\Plugins\ProjectSettingsTool\PlatformSettings_Ios.cpp" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\Plugins\ProjectSettingsTool\PlistDictionary.cpp" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\Plugins\ProjectSettingsTool\ProjectSettingsContainer.cpp" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\Plugins\ProjectSettingsTool\ProjectSettingsSerialization.cpp" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\Plugins\ProjectSettingsTool\ProjectSettingsToolWindow.cpp" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\Plugins\ProjectSettingsTool\ProjectSettingsValidator.cpp" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\Plugins\ProjectSettingsTool\PropertyFileSelect.cpp" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\Plugins\ProjectSettingsTool\PropertyFuncValBrowseEdit.cpp" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\Plugins\ProjectSettingsTool\PropertyFuncValLineEdit.cpp" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\Plugins\ProjectSettingsTool\PropertyImagePreview.cpp" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\Plugins\ProjectSettingsTool\PropertyLinked.cpp" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\Plugins\ProjectSettingsTool\Utils.cpp" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\Plugins\ProjectSettingsTool\ValidationHandler.cpp" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\Plugins\ProjectSettingsTool\Validators.cpp" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\Plugins\ProjectSettingsTool\ProjectSettingsTool_autogen\mocs_compilation_profile.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\Plugins\ProjectSettingsTool\ProjectSettingsTool_autogen\mocs_compilation_release.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Plugins\ProjectSettingsTool\DefaultImageValidator.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Plugins\ProjectSettingsTool\FunctorValidator.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Plugins\ProjectSettingsTool\LastPathBus.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Plugins\ProjectSettingsTool\Platforms.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Plugins\ProjectSettingsTool\PlatformSettings.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Plugins\ProjectSettingsTool\PlatformSettings_Android.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Plugins\ProjectSettingsTool\PlatformSettings_Base.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Plugins\ProjectSettingsTool\PlatformSettings_common.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Plugins\ProjectSettingsTool\PlatformSettings_Ios.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Plugins\ProjectSettingsTool\PlistDictionary.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Plugins\ProjectSettingsTool\ProjectSettingsContainer.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Plugins\ProjectSettingsTool\ProjectSettingsSerialization.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Plugins\ProjectSettingsTool\ProjectSettingsToolWindow.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Plugins\ProjectSettingsTool\ProjectSettingsValidator.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Plugins\ProjectSettingsTool\PropertyFileSelect.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Plugins\ProjectSettingsTool\PropertyFuncValBrowseEdit.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Plugins\ProjectSettingsTool\PropertyFuncValLineEdit.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Plugins\ProjectSettingsTool\PropertyImagePreview.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Plugins\ProjectSettingsTool\PropertyLinked.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Plugins\ProjectSettingsTool\Utils.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Plugins\ProjectSettingsTool\ValidationHandler.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Plugins\ProjectSettingsTool\ValidatorBus.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Plugins\ProjectSettingsTool\Validators.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Plugins\ProjectSettingsTool\Validators_impl.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Plugins\ProjectSettingsTool\ProjectSettingsTool_autogen\include\ui_ProjectSettingsToolWidget.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Code\Editor\Plugins\ProjectSettingsTool\ProjectSettingsToolWidget.ui" />
+    <CustomBuild Include="C:\Users\lesaelr\o3de\CMakeFiles\08b24365a84bd27d080f6dd51f42b933\ProjectSettingsTool_(CONFIG).stamp.rule">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Code\Editor\Plugins\ProjectSettingsTool\CMakeLists.txt">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\Plugins\ProjectSettingsTool\ProjectSettingsTool.qrc" />
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\Plugins\ProjectSettingsTool\projectsettingstool_files.cmake" />
+    <None Include="C:\Users\lesaelr\o3de\runtime_dependencies\debug\ProjectSettingsTool_debug.stamp">
+      <Filter>Generated Files</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\runtime_dependencies\profile\ProjectSettingsTool_profile.stamp">
+      <Filter>Generated Files</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\runtime_dependencies\release\ProjectSettingsTool_release.stamp">
+      <Filter>Generated Files</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Generated Files">
+      <UniqueIdentifier>{FB9B7D8B-7F05-31D5-AA90-592248EDE1B3}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

@@ -1,0 +1,28 @@
+{
+	"BUILD_DIR" : "C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/EMotionFX.Editor.Static_autogen",
+	"CMAKE_BINARY_DIR" : "C:/Users/lesaelr/o3de",
+	"CMAKE_CURRENT_BINARY_DIR" : "C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code",
+	"CMAKE_CURRENT_SOURCE_DIR" : "C:/Users/lesaelr/o3de/Gems/EMotionFX/Code",
+	"CMAKE_SOURCE_DIR" : "C:/Users/lesaelr/o3de",
+	"INCLUDE_DIR" : "C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/EMotionFX.Editor.Static_autogen/include",
+	"INCLUDE_DIR_debug" : "C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/EMotionFX.Editor.Static_autogen/include_debug",
+	"INCLUDE_DIR_profile" : "C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/EMotionFX.Editor.Static_autogen/include_profile",
+	"INCLUDE_DIR_release" : "C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/EMotionFX.Editor.Static_autogen/include_release",
+	"INPUTS" : 
+	[
+		"C:/Users/lesaelr/o3de/Gems/EMotionFX/Assets/Editor/Layouts/AnimGraph.layout"
+	],
+	"LOCK_FILE" : "C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFX.Editor.Static_autogen.dir/AutoRcc_Layouts_BOU6K7L3QR_Lock.lock",
+	"MULTI_CONFIG" : true,
+	"OPTIONS" : [ "-name", "Layouts" ],
+	"OUTPUT_CHECKSUM" : "BOU6K7L3QR",
+	"OUTPUT_NAME" : "qrc_Layouts.cpp",
+	"RCC_EXECUTABLE" : "C:/Users/lesaelr/.o3de/3rdParty/packages/qt-5.15.2-rev4-windows/qt/bin/rcc.exe",
+	"RCC_LIST_OPTIONS" : [ "--list" ],
+	"SETTINGS_FILE" : "C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFX.Editor.Static_autogen.dir/AutoRcc_Layouts_BOU6K7L3QR_Used.txt",
+	"SETTINGS_FILE_debug" : "C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFX.Editor.Static_autogen.dir/AutoRcc_Layouts_BOU6K7L3QR_Used_debug.txt",
+	"SETTINGS_FILE_profile" : "C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFX.Editor.Static_autogen.dir/AutoRcc_Layouts_BOU6K7L3QR_Used_profile.txt",
+	"SETTINGS_FILE_release" : "C:/Users/lesaelr/o3de/External/EMotionFX-34d60ee3/Code/CMakeFiles/EMotionFX.Editor.Static_autogen.dir/AutoRcc_Layouts_BOU6K7L3QR_Used_release.txt",
+	"SOURCE" : "C:/Users/lesaelr/o3de/Gems/EMotionFX/Assets/Editor/Layouts/Layouts.qrc",
+	"VERBOSITY" : 0
+}

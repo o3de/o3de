@@ -1,0 +1,85 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Gems\GameStateSamples\Code\CMakeLists.txt">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="C:\Users\lesaelr\o3de\Gems\GameStateSamples\Code\Include\GameStateSamples\GameOptionRequestBus.h">
+      <Filter>Include\GameStateSamples</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\GameStateSamples\Code\Include\GameStateSamples\GameStateLevelLoading.h">
+      <Filter>Include\GameStateSamples</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\GameStateSamples\Code\Include\GameStateSamples\GameStateLevelLoading.inl">
+      <Filter>Include\GameStateSamples</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\GameStateSamples\Code\Include\GameStateSamples\GameStateLevelPaused.h">
+      <Filter>Include\GameStateSamples</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\GameStateSamples\Code\Include\GameStateSamples\GameStateLevelPaused.inl">
+      <Filter>Include\GameStateSamples</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\GameStateSamples\Code\Include\GameStateSamples\GameStateLevelRunning.h">
+      <Filter>Include\GameStateSamples</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\GameStateSamples\Code\Include\GameStateSamples\GameStateLevelRunning.inl">
+      <Filter>Include\GameStateSamples</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\GameStateSamples\Code\Include\GameStateSamples\GameStateLocalUserLobby.h">
+      <Filter>Include\GameStateSamples</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\GameStateSamples\Code\Include\GameStateSamples\GameStateLocalUserLobby.inl">
+      <Filter>Include\GameStateSamples</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\GameStateSamples\Code\Include\GameStateSamples\GameStateMainMenu.h">
+      <Filter>Include\GameStateSamples</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\GameStateSamples\Code\Include\GameStateSamples\GameStateMainMenu.inl">
+      <Filter>Include\GameStateSamples</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\GameStateSamples\Code\Include\GameStateSamples\GameStateOptionsMenu.h">
+      <Filter>Include\GameStateSamples</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\GameStateSamples\Code\Include\GameStateSamples\GameStateOptionsMenu.inl">
+      <Filter>Include\GameStateSamples</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\GameStateSamples\Code\Include\GameStateSamples\GameStatePrimaryControllerDisconnected.h">
+      <Filter>Include\GameStateSamples</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\GameStateSamples\Code\Include\GameStateSamples\GameStatePrimaryControllerDisconnected.inl">
+      <Filter>Include\GameStateSamples</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\GameStateSamples\Code\Include\GameStateSamples\GameStatePrimaryUserMonitor.h">
+      <Filter>Include\GameStateSamples</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\GameStateSamples\Code\Include\GameStateSamples\GameStatePrimaryUserMonitor.inl">
+      <Filter>Include\GameStateSamples</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\GameStateSamples\Code\Include\GameStateSamples\GameStatePrimaryUserSelection.h">
+      <Filter>Include\GameStateSamples</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\GameStateSamples\Code\Include\GameStateSamples\GameStatePrimaryUserSelection.inl">
+      <Filter>Include\GameStateSamples</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\GameStateSamples\Code\Include\GameStateSamples\GameStatePrimaryUserSignedOut.h">
+      <Filter>Include\GameStateSamples</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\GameStateSamples\Code\Include\GameStateSamples\GameStatePrimaryUserSignedOut.inl">
+      <Filter>Include\GameStateSamples</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\GameStateSamples\Code\gamestatesamples_headers_files.cmake" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Generated Files">
+      <UniqueIdentifier>{FB9B7D8B-7F05-31D5-AA90-592248EDE1B3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include">
+      <UniqueIdentifier>{E188105A-C8C4-34BB-9809-15E8410EF7F8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\GameStateSamples">
+      <UniqueIdentifier>{872D8FF9-9E20-38D3-AE12-EB97655FE94E}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

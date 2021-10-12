@@ -1,0 +1,516 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\O3DEQtControlGallery_autogen\mocs_compilation_debug.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\CMakeFiles\O3DEQtControlGallery.dir\Unity\unity_4_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\CMakeFiles\O3DEQtControlGallery.dir\Unity\unity_3_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\CMakeFiles\O3DEQtControlGallery.dir\Unity\unity_2_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\CMakeFiles\O3DEQtControlGallery.dir\Unity\unity_1_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\CMakeFiles\O3DEQtControlGallery.dir\Unity\unity_0_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\AzQtComponents\Gallery\AssetBrowserFolderPage.cpp">
+      <Filter>AzQtComponents\Gallery</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\AzQtComponents\Gallery\BreadCrumbsPage.cpp">
+      <Filter>AzQtComponents\Gallery</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\AzQtComponents\Gallery\BrowseEditPage.cpp">
+      <Filter>AzQtComponents\Gallery</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\AzQtComponents\Gallery\ButtonPage.cpp">
+      <Filter>AzQtComponents\Gallery</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\AzQtComponents\Gallery\CardPage.cpp">
+      <Filter>AzQtComponents\Gallery</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\AzQtComponents\Gallery\CheckBoxPage.cpp">
+      <Filter>AzQtComponents\Gallery</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\AzQtComponents\Gallery\ColorLabelPage.cpp">
+      <Filter>AzQtComponents\Gallery</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\AzQtComponents\Gallery\ColorPickerPage.cpp">
+      <Filter>AzQtComponents\Gallery</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\AzQtComponents\Gallery\ComboBoxPage.cpp">
+      <Filter>AzQtComponents\Gallery</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\AzQtComponents\Gallery\ComponentDemoWidget.cpp">
+      <Filter>AzQtComponents\Gallery</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\AzQtComponents\Gallery\DragAndDropPage.cpp">
+      <Filter>AzQtComponents\Gallery</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\AzQtComponents\Gallery\FilteredSearchWidgetPage.cpp">
+      <Filter>AzQtComponents\Gallery</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\AzQtComponents\Gallery\FixedStateButton.cpp">
+      <Filter>AzQtComponents\Gallery</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\AzQtComponents\Gallery\GradientSliderPage.cpp">
+      <Filter>AzQtComponents\Gallery</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\AzQtComponents\Gallery\HyperlinkPage.cpp">
+      <Filter>AzQtComponents\Gallery</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\AzQtComponents\Gallery\LineEditPage.cpp">
+      <Filter>AzQtComponents\Gallery</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\AzQtComponents\Gallery\main.cpp">
+      <Filter>AzQtComponents\Gallery</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\AzQtComponents\Gallery\MenuPage.cpp">
+      <Filter>AzQtComponents\Gallery</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\AzQtComponents\Gallery\ProgressIndicatorPage.cpp">
+      <Filter>AzQtComponents\Gallery</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\AzQtComponents\Gallery\RadioButtonPage.cpp">
+      <Filter>AzQtComponents\Gallery</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\AzQtComponents\Gallery\ReflectedPropertyEditorPage.cpp">
+      <Filter>AzQtComponents\Gallery</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\AzQtComponents\Gallery\ScrollBarPage.cpp">
+      <Filter>AzQtComponents\Gallery</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\AzQtComponents\Gallery\SegmentControlPage.cpp">
+      <Filter>AzQtComponents\Gallery</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\AzQtComponents\Gallery\SliderPage.cpp">
+      <Filter>AzQtComponents\Gallery</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\AzQtComponents\Gallery\SliderComboPage.cpp">
+      <Filter>AzQtComponents\Gallery</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\AzQtComponents\Gallery\SpinBoxPage.cpp">
+      <Filter>AzQtComponents\Gallery</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\AzQtComponents\Gallery\SplitterPage.cpp">
+      <Filter>AzQtComponents\Gallery</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\AzQtComponents\Gallery\StyledDockWidgetPage.cpp">
+      <Filter>AzQtComponents\Gallery</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\AzQtComponents\Gallery\StyleSheetPage.cpp">
+      <Filter>AzQtComponents\Gallery</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\AzQtComponents\Gallery\SvgLabelPage.cpp">
+      <Filter>AzQtComponents\Gallery</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\AzQtComponents\Gallery\TableViewPage.cpp">
+      <Filter>AzQtComponents\Gallery</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\AzQtComponents\Gallery\TabWidgetPage.cpp">
+      <Filter>AzQtComponents\Gallery</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\AzQtComponents\Gallery\TitleBarPage.cpp">
+      <Filter>AzQtComponents\Gallery</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\AzQtComponents\Gallery\ToggleSwitchPage.cpp">
+      <Filter>AzQtComponents\Gallery</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\AzQtComponents\Gallery\ToolBarPage.cpp">
+      <Filter>AzQtComponents\Gallery</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\AzQtComponents\Gallery\TypographyPage.cpp">
+      <Filter>AzQtComponents\Gallery</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\AzQtComponents\Gallery\TreeViewPage.cpp">
+      <Filter>AzQtComponents\Gallery</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\O3DEQtControlGallery_autogen\mocs_compilation_profile.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\O3DEQtControlGallery_autogen\mocs_compilation_release.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\AzQtComponents\Gallery\AssetBrowserFolderPage.h">
+      <Filter>AzQtComponents\Gallery</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\AzQtComponents\Gallery\BreadCrumbsPage.h">
+      <Filter>AzQtComponents\Gallery</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\AzQtComponents\Gallery\BrowseEditPage.h">
+      <Filter>AzQtComponents\Gallery</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\AzQtComponents\Gallery\ButtonPage.h">
+      <Filter>AzQtComponents\Gallery</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\AzQtComponents\Gallery\CardPage.h">
+      <Filter>AzQtComponents\Gallery</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\AzQtComponents\Gallery\CheckBoxPage.h">
+      <Filter>AzQtComponents\Gallery</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\AzQtComponents\Gallery\ColorLabelPage.h">
+      <Filter>AzQtComponents\Gallery</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\AzQtComponents\Gallery\ColorPickerPage.h">
+      <Filter>AzQtComponents\Gallery</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\AzQtComponents\Gallery\ComboBoxPage.h">
+      <Filter>AzQtComponents\Gallery</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\AzQtComponents\Gallery\ComponentDemoWidget.h">
+      <Filter>AzQtComponents\Gallery</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\AzQtComponents\Gallery\DragAndDropPage.h">
+      <Filter>AzQtComponents\Gallery</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\AzQtComponents\Gallery\FilteredSearchWidgetPage.h">
+      <Filter>AzQtComponents\Gallery</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\AzQtComponents\Gallery\FixedStateButton.h">
+      <Filter>AzQtComponents\Gallery</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\AzQtComponents\Gallery\GradientSliderPage.h">
+      <Filter>AzQtComponents\Gallery</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\AzQtComponents\Gallery\HyperlinkPage.h">
+      <Filter>AzQtComponents\Gallery</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\AzQtComponents\Gallery\LineEditPage.h">
+      <Filter>AzQtComponents\Gallery</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\AzQtComponents\Gallery\MenuPage.h">
+      <Filter>AzQtComponents\Gallery</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\AzQtComponents\Gallery\ProgressIndicatorPage.h">
+      <Filter>AzQtComponents\Gallery</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\AzQtComponents\Gallery\RadioButtonPage.h">
+      <Filter>AzQtComponents\Gallery</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\AzQtComponents\Gallery\ReflectedPropertyEditorPage.h">
+      <Filter>AzQtComponents\Gallery</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\AzQtComponents\Gallery\ScrollBarPage.h">
+      <Filter>AzQtComponents\Gallery</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\AzQtComponents\Gallery\SegmentControlPage.h">
+      <Filter>AzQtComponents\Gallery</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\AzQtComponents\Gallery\SliderPage.h">
+      <Filter>AzQtComponents\Gallery</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\AzQtComponents\Gallery\SliderComboPage.h">
+      <Filter>AzQtComponents\Gallery</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\AzQtComponents\Gallery\SpinBoxPage.h">
+      <Filter>AzQtComponents\Gallery</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\AzQtComponents\Gallery\SplitterPage.h">
+      <Filter>AzQtComponents\Gallery</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\AzQtComponents\Gallery\StyledDockWidgetPage.h">
+      <Filter>AzQtComponents\Gallery</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\AzQtComponents\Gallery\StyleSheetPage.h">
+      <Filter>AzQtComponents\Gallery</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\AzQtComponents\Gallery\SvgLabelPage.h">
+      <Filter>AzQtComponents\Gallery</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\AzQtComponents\Gallery\TableViewPage.h">
+      <Filter>AzQtComponents\Gallery</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\AzQtComponents\Gallery\TabWidgetPage.h">
+      <Filter>AzQtComponents\Gallery</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\AzQtComponents\Gallery\TitleBarPage.h">
+      <Filter>AzQtComponents\Gallery</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\AzQtComponents\Gallery\ToggleSwitchPage.h">
+      <Filter>AzQtComponents\Gallery</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\AzQtComponents\Gallery\ToolBarPage.h">
+      <Filter>AzQtComponents\Gallery</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\AzQtComponents\Gallery\TypographyPage.h">
+      <Filter>AzQtComponents\Gallery</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\AzQtComponents\Gallery\TreeViewPage.h">
+      <Filter>AzQtComponents\Gallery</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\O3DEQtControlGallery_autogen\include\AzQtComponents\Gallery\ui_AssetBrowserFolderPage.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\O3DEQtControlGallery_autogen\include\AzQtComponents\Gallery\ui_BreadCrumbsPage.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\O3DEQtControlGallery_autogen\include\AzQtComponents\Gallery\ui_BrowseEditPage.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\O3DEQtControlGallery_autogen\include\AzQtComponents\Gallery\ui_ButtonPage.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\O3DEQtControlGallery_autogen\include\AzQtComponents\Gallery\ui_CardPage.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\O3DEQtControlGallery_autogen\include\AzQtComponents\Gallery\ui_CheckBoxPage.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\O3DEQtControlGallery_autogen\include\AzQtComponents\Gallery\ui_ColorLabelPage.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\O3DEQtControlGallery_autogen\include\AzQtComponents\Gallery\ui_ColorPickerPage.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\O3DEQtControlGallery_autogen\include\AzQtComponents\Gallery\ui_ComboBoxPage.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\O3DEQtControlGallery_autogen\include\AzQtComponents\Gallery\ui_ComponentDemoWidget.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\O3DEQtControlGallery_autogen\include\AzQtComponents\Gallery\ui_DragAndDropPage.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\O3DEQtControlGallery_autogen\include\AzQtComponents\Gallery\ui_FilteredSearchWidgetPage.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\O3DEQtControlGallery_autogen\include\AzQtComponents\Gallery\ui_GradientSliderPage.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\O3DEQtControlGallery_autogen\include\AzQtComponents\Gallery\ui_HyperlinkPage.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\O3DEQtControlGallery_autogen\include\AzQtComponents\Gallery\ui_LineEditPage.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\O3DEQtControlGallery_autogen\include\AzQtComponents\Gallery\ui_MenuPage.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\O3DEQtControlGallery_autogen\include\AzQtComponents\Gallery\ui_ProgressIndicatorPage.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\O3DEQtControlGallery_autogen\include\AzQtComponents\Gallery\ui_RadioButtonPage.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\O3DEQtControlGallery_autogen\include\AzQtComponents\Gallery\ui_ReflectedPropertyEditorPage.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\O3DEQtControlGallery_autogen\include\AzQtComponents\Gallery\ui_ScrollBarPage.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\O3DEQtControlGallery_autogen\include\AzQtComponents\Gallery\ui_SegmentControlPage.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\O3DEQtControlGallery_autogen\include\AzQtComponents\Gallery\ui_SliderPage.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\O3DEQtControlGallery_autogen\include\AzQtComponents\Gallery\ui_SliderComboPage.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\O3DEQtControlGallery_autogen\include\AzQtComponents\Gallery\ui_SpinBoxPage.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\O3DEQtControlGallery_autogen\include\AzQtComponents\Gallery\ui_SplitterPage.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\O3DEQtControlGallery_autogen\include\AzQtComponents\Gallery\ui_StyledDockWidgetPage.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\O3DEQtControlGallery_autogen\include\AzQtComponents\Gallery\ui_StyleSheetPage.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\O3DEQtControlGallery_autogen\include\AzQtComponents\Gallery\ui_SvgLabelPage.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\O3DEQtControlGallery_autogen\include\AzQtComponents\Gallery\ui_TableViewPage.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\O3DEQtControlGallery_autogen\include\AzQtComponents\Gallery\ui_TabWidgetPage.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\O3DEQtControlGallery_autogen\include\AzQtComponents\Gallery\ui_TitleBarPage.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\O3DEQtControlGallery_autogen\include\AzQtComponents\Gallery\ui_ToggleSwitchPage.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\O3DEQtControlGallery_autogen\include\AzQtComponents\Gallery\ui_ToolBarPage.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\O3DEQtControlGallery_autogen\include\AzQtComponents\Gallery\ui_TypographyPage.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\O3DEQtControlGallery_autogen\include\AzQtComponents\Gallery\ui_TreeViewPage.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\AzQtComponents\Gallery\AssetBrowserFolderPage.ui">
+      <Filter>AzQtComponents\Gallery</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\AzQtComponents\Gallery\BreadCrumbsPage.ui">
+      <Filter>AzQtComponents\Gallery</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\AzQtComponents\Gallery\BrowseEditPage.ui">
+      <Filter>AzQtComponents\Gallery</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\AzQtComponents\Gallery\ButtonPage.ui">
+      <Filter>AzQtComponents\Gallery</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\AzQtComponents\Gallery\CardPage.ui">
+      <Filter>AzQtComponents\Gallery</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\AzQtComponents\Gallery\CheckBoxPage.ui">
+      <Filter>AzQtComponents\Gallery</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\AzQtComponents\Gallery\ColorLabelPage.ui">
+      <Filter>AzQtComponents\Gallery</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\AzQtComponents\Gallery\ColorPickerPage.ui">
+      <Filter>AzQtComponents\Gallery</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\AzQtComponents\Gallery\ComboBoxPage.ui">
+      <Filter>AzQtComponents\Gallery</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\AzQtComponents\Gallery\ComponentDemoWidget.ui">
+      <Filter>AzQtComponents\Gallery</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\AzQtComponents\Gallery\DragAndDropPage.ui">
+      <Filter>AzQtComponents\Gallery</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\AzQtComponents\Gallery\FilteredSearchWidgetPage.ui">
+      <Filter>AzQtComponents\Gallery</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\AzQtComponents\Gallery\GradientSliderPage.ui">
+      <Filter>AzQtComponents\Gallery</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\AzQtComponents\Gallery\HyperlinkPage.ui">
+      <Filter>AzQtComponents\Gallery</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\AzQtComponents\Gallery\LineEditPage.ui">
+      <Filter>AzQtComponents\Gallery</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\AzQtComponents\Gallery\MenuPage.ui">
+      <Filter>AzQtComponents\Gallery</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\AzQtComponents\Gallery\ProgressIndicatorPage.ui">
+      <Filter>AzQtComponents\Gallery</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\AzQtComponents\Gallery\RadioButtonPage.ui">
+      <Filter>AzQtComponents\Gallery</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\AzQtComponents\Gallery\ReflectedPropertyEditorPage.ui">
+      <Filter>AzQtComponents\Gallery</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\AzQtComponents\Gallery\ScrollBarPage.ui">
+      <Filter>AzQtComponents\Gallery</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\AzQtComponents\Gallery\SegmentControlPage.ui">
+      <Filter>AzQtComponents\Gallery</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\AzQtComponents\Gallery\SliderPage.ui">
+      <Filter>AzQtComponents\Gallery</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\AzQtComponents\Gallery\SliderComboPage.ui">
+      <Filter>AzQtComponents\Gallery</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\AzQtComponents\Gallery\SpinBoxPage.ui">
+      <Filter>AzQtComponents\Gallery</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\AzQtComponents\Gallery\SplitterPage.ui">
+      <Filter>AzQtComponents\Gallery</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\AzQtComponents\Gallery\StyledDockWidgetPage.ui">
+      <Filter>AzQtComponents\Gallery</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\AzQtComponents\Gallery\StyleSheetPage.ui">
+      <Filter>AzQtComponents\Gallery</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\AzQtComponents\Gallery\SvgLabelPage.ui">
+      <Filter>AzQtComponents\Gallery</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\AzQtComponents\Gallery\TableViewPage.ui">
+      <Filter>AzQtComponents\Gallery</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\AzQtComponents\Gallery\TabWidgetPage.ui">
+      <Filter>AzQtComponents\Gallery</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\AzQtComponents\Gallery\TitleBarPage.ui">
+      <Filter>AzQtComponents\Gallery</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\AzQtComponents\Gallery\ToggleSwitchPage.ui">
+      <Filter>AzQtComponents\Gallery</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\AzQtComponents\Gallery\ToolBarPage.ui">
+      <Filter>AzQtComponents\Gallery</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\AzQtComponents\Gallery\TypographyPage.ui">
+      <Filter>AzQtComponents\Gallery</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\AzQtComponents\Gallery\TreeViewPage.ui">
+      <Filter>AzQtComponents\Gallery</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\CMakeFiles\08b24365a84bd27d080f6dd51f42b933\O3DEQtControlGallery_(CONFIG).stamp.rule">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\CMakeLists.txt">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\AzQtComponents\Gallery\AssetBrowserFolderPage.qrc">
+      <Filter>AzQtComponents\Gallery</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\AzQtComponents\Gallery\ExampleWidget.qss">
+      <Filter>AzQtComponents\Gallery</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\AzQtComponents\Gallery\resources.qrc">
+      <Filter>AzQtComponents\Gallery</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\AzQtComponents\Gallery\StyleSheetLabel.qss">
+      <Filter>AzQtComponents\Gallery</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\AzQtComponents\Gallery\StyleSheetPage.qss">
+      <Filter>AzQtComponents\Gallery</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\AzQtComponents\Gallery\StyleSheetView.qss">
+      <Filter>AzQtComponents\Gallery</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\AzQtComponents\azqtcomponents_gallery_files.cmake">
+      <Filter>AzQtComponents</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\runtime_dependencies\debug\O3DEQtControlGallery_debug.stamp">
+      <Filter>Generated Files</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\runtime_dependencies\profile\O3DEQtControlGallery_profile.stamp">
+      <Filter>Generated Files</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\runtime_dependencies\release\O3DEQtControlGallery_release.stamp">
+      <Filter>Generated Files</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\AzQtComponents\Gallery\Gallery.rc">
+      <Filter>AzQtComponents\Gallery</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="AzQtComponents">
+      <UniqueIdentifier>{9E6694A1-33EA-34DD-A3F7-6FDBBD75AD17}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzQtComponents\Gallery">
+      <UniqueIdentifier>{47153852-9AD0-3A12-93D3-147AB3E5D479}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Generated Files">
+      <UniqueIdentifier>{FB9B7D8B-7F05-31D5-AA90-592248EDE1B3}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

@@ -1,0 +1,8 @@
+# CMake generation dependency list for this directory.
+C:/Users/lesaelr/o3de/Code/Tools/PythonBindingsExample/CMakeLists.txt
+C:/Users/lesaelr/o3de/Code/Tools/PythonBindingsExample/pythonbindingsexample_app_files.cmake
+C:/Users/lesaelr/o3de/Code/Tools/PythonBindingsExample/pythonbindingsexample_files.cmake
+C:/Users/lesaelr/o3de/Code/Tools/PythonBindingsExample/pythonbindingsexample_tests_files.cmake
+C:/Users/lesaelr/o3de/Code/Tools/PythonBindingsExample/source/Platform/Common/MSVC/pythonbindingsexample_msvc.cmake
+C:/Users/lesaelr/o3de/Code/Tools/PythonBindingsExample/tool_dependencies.cmake
+C:/Users/lesaelr/o3de/cmake/Platform/Windows/LYTestWrappers_windows.cmake

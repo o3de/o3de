@@ -1,0 +1,98 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\Atom-418206cc\RHI\Metal\Code\CMakeFiles\Atom_RHI_Metal.Builders.dir\Unity\unity_0_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\RHI\Metal\Code\Source\Platform\Windows\RHI.Builders\BuilderModule_Windows.cpp">
+      <Filter>Source\Platform\Windows\RHI.Builders</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\RHI\Metal\Code\Source\RHI.Reflect\PipelineLayoutDescriptor.cpp">
+      <Filter>Source\RHI.Reflect</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\RHI\Metal\Code\Source\RHI.Reflect\ReflectSystemComponent.cpp">
+      <Filter>Source\RHI.Reflect</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\RHI\Metal\Code\Source\RHI.Reflect\BufferPoolDescriptor.cpp">
+      <Filter>Source\RHI.Reflect</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\RHI\Metal\Code\Source\RHI.Reflect\ShaderStageFunction.cpp">
+      <Filter>Source\RHI.Reflect</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\RHI\Metal\Code\Source\RHI.Reflect\PlatformLimitsDescriptor.cpp">
+      <Filter>Source\RHI.Reflect</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\RHI\Metal\Code\Include\Atom\RHI.Reflect\Metal\PipelineLayoutDescriptor.h">
+      <Filter>Include\Atom\RHI.Reflect\Metal</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\RHI\Metal\Code\Include\Atom\RHI.Reflect\Metal\ReflectSystemComponent.h">
+      <Filter>Include\Atom\RHI.Reflect\Metal</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\RHI\Metal\Code\Include\Atom\RHI.Reflect\Metal\BufferPoolDescriptor.h">
+      <Filter>Include\Atom\RHI.Reflect\Metal</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\RHI\Metal\Code\Include\Atom\RHI.Reflect\Metal\ShaderStageFunction.h">
+      <Filter>Include\Atom\RHI.Reflect\Metal</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\RHI\Metal\Code\Include\Atom\RHI.Reflect\Metal\PlatformLimitsDescriptor.h">
+      <Filter>Include\Atom\RHI.Reflect\Metal</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\CMakeFiles\08b24365a84bd27d080f6dd51f42b933\Atom_RHI_Metal.Builders_(CONFIG).stamp.rule">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Gems\Atom\RHI\Metal\Code\CMakeLists.txt">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\RHI\Metal\Code\Source\Platform\Windows\platform_builders_windows_files.cmake">
+      <Filter>Source\Platform\Windows</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\RHI\Metal\Code\atom_rhi_metal_reflect_common_files.cmake" />
+    <None Include="C:\Users\lesaelr\o3de\runtime_dependencies\debug\Atom_RHI_Metal.Builders_debug.stamp">
+      <Filter>Generated Files</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\runtime_dependencies\profile\Atom_RHI_Metal.Builders_profile.stamp">
+      <Filter>Generated Files</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\runtime_dependencies\release\Atom_RHI_Metal.Builders_release.stamp">
+      <Filter>Generated Files</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Generated Files">
+      <UniqueIdentifier>{FB9B7D8B-7F05-31D5-AA90-592248EDE1B3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include">
+      <UniqueIdentifier>{E188105A-C8C4-34BB-9809-15E8410EF7F8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\Atom">
+      <UniqueIdentifier>{D3FF6349-761F-30FE-A9A9-4A8D0DE47ADF}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\Atom\RHI.Reflect">
+      <UniqueIdentifier>{FA92D33D-A888-30FF-915B-A042ABAAD713}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\Atom\RHI.Reflect\Metal">
+      <UniqueIdentifier>{F0E0C1D6-3A2E-3EFB-8002-917F1CA587DE}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source">
+      <UniqueIdentifier>{F3F0AD47-5F83-373B-A2BF-650D2E4FA3EA}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Platform">
+      <UniqueIdentifier>{4FB794FF-EAE9-3B82-95CC-6241BAD0E3AC}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Platform\Windows">
+      <UniqueIdentifier>{2D0E7154-D797-393D-A7EB-8527ACAFB2BF}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Platform\Windows\RHI.Builders">
+      <UniqueIdentifier>{149A6B08-1C79-36C0-98C7-D5FBF883C002}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\RHI.Reflect">
+      <UniqueIdentifier>{ABC79B0F-887C-3686-9657-A1D3CCE3EFA9}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

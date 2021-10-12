@@ -1,0 +1,7 @@
+# CMake generation dependency list for this directory.
+C:/Users/lesaelr/o3de/Gems/Atom/RHI/Null/Code/CMakeLists.txt
+C:/Users/lesaelr/o3de/Gems/Atom/RHI/Null/Code/atom_rhi_null_builders_common_files.cmake
+C:/Users/lesaelr/o3de/Gems/Atom/RHI/Null/Code/atom_rhi_null_builders_shared_files.cmake
+C:/Users/lesaelr/o3de/Gems/Atom/RHI/Null/Code/atom_rhi_null_private_common_files.cmake
+C:/Users/lesaelr/o3de/Gems/Atom/RHI/Null/Code/atom_rhi_null_private_common_shared_files.cmake
+C:/Users/lesaelr/o3de/Gems/Atom/RHI/Null/Code/atom_rhi_null_reflect_common_files.cmake

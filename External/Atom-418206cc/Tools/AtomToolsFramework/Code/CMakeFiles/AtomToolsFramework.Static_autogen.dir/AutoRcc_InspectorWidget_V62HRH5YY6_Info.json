@@ -1,0 +1,29 @@
+{
+	"BUILD_DIR" : "C:/Users/lesaelr/o3de/External/Atom-418206cc/Tools/AtomToolsFramework/Code/AtomToolsFramework.Static_autogen",
+	"CMAKE_BINARY_DIR" : "C:/Users/lesaelr/o3de",
+	"CMAKE_CURRENT_BINARY_DIR" : "C:/Users/lesaelr/o3de/External/Atom-418206cc/Tools/AtomToolsFramework/Code",
+	"CMAKE_CURRENT_SOURCE_DIR" : "C:/Users/lesaelr/o3de/Gems/Atom/Tools/AtomToolsFramework/Code",
+	"CMAKE_SOURCE_DIR" : "C:/Users/lesaelr/o3de",
+	"INCLUDE_DIR" : "C:/Users/lesaelr/o3de/External/Atom-418206cc/Tools/AtomToolsFramework/Code/AtomToolsFramework.Static_autogen/include",
+	"INCLUDE_DIR_debug" : "C:/Users/lesaelr/o3de/External/Atom-418206cc/Tools/AtomToolsFramework/Code/AtomToolsFramework.Static_autogen/include_debug",
+	"INCLUDE_DIR_profile" : "C:/Users/lesaelr/o3de/External/Atom-418206cc/Tools/AtomToolsFramework/Code/AtomToolsFramework.Static_autogen/include_profile",
+	"INCLUDE_DIR_release" : "C:/Users/lesaelr/o3de/External/Atom-418206cc/Tools/AtomToolsFramework/Code/AtomToolsFramework.Static_autogen/include_release",
+	"INPUTS" : 
+	[
+		"C:/Users/lesaelr/o3de/Gems/Atom/Tools/AtomToolsFramework/Code/Source/Inspector/Icons/group_open.png",
+		"C:/Users/lesaelr/o3de/Gems/Atom/Tools/AtomToolsFramework/Code/Source/Inspector/Icons/group_closed.png"
+	],
+	"LOCK_FILE" : "C:/Users/lesaelr/o3de/External/Atom-418206cc/Tools/AtomToolsFramework/Code/CMakeFiles/AtomToolsFramework.Static_autogen.dir/AutoRcc_InspectorWidget_V62HRH5YY6_Lock.lock",
+	"MULTI_CONFIG" : true,
+	"OPTIONS" : [ "-name", "InspectorWidget" ],
+	"OUTPUT_CHECKSUM" : "V62HRH5YY6",
+	"OUTPUT_NAME" : "qrc_InspectorWidget.cpp",
+	"RCC_EXECUTABLE" : "C:/Users/lesaelr/.o3de/3rdParty/packages/qt-5.15.2-rev4-windows/qt/bin/rcc.exe",
+	"RCC_LIST_OPTIONS" : [ "--list" ],
+	"SETTINGS_FILE" : "C:/Users/lesaelr/o3de/External/Atom-418206cc/Tools/AtomToolsFramework/Code/CMakeFiles/AtomToolsFramework.Static_autogen.dir/AutoRcc_InspectorWidget_V62HRH5YY6_Used.txt",
+	"SETTINGS_FILE_debug" : "C:/Users/lesaelr/o3de/External/Atom-418206cc/Tools/AtomToolsFramework/Code/CMakeFiles/AtomToolsFramework.Static_autogen.dir/AutoRcc_InspectorWidget_V62HRH5YY6_Used_debug.txt",
+	"SETTINGS_FILE_profile" : "C:/Users/lesaelr/o3de/External/Atom-418206cc/Tools/AtomToolsFramework/Code/CMakeFiles/AtomToolsFramework.Static_autogen.dir/AutoRcc_InspectorWidget_V62HRH5YY6_Used_profile.txt",
+	"SETTINGS_FILE_release" : "C:/Users/lesaelr/o3de/External/Atom-418206cc/Tools/AtomToolsFramework/Code/CMakeFiles/AtomToolsFramework.Static_autogen.dir/AutoRcc_InspectorWidget_V62HRH5YY6_Used_release.txt",
+	"SOURCE" : "C:/Users/lesaelr/o3de/Gems/Atom/Tools/AtomToolsFramework/Code/Source/Inspector/InspectorWidget.qrc",
+	"VERBOSITY" : 0
+}

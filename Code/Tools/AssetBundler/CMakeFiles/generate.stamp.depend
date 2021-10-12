@@ -1,0 +1,11 @@
+# CMake generation dependency list for this directory.
+C:/Users/lesaelr/o3de/Code/Tools/AssetBundler/CMakeLists.txt
+C:/Users/lesaelr/o3de/Code/Tools/AssetBundler/Platform/Windows/PAL_windows.cmake
+C:/Users/lesaelr/o3de/Code/Tools/AssetBundler/Platform/Windows/assetbundlergui_windows_files.cmake
+C:/Users/lesaelr/o3de/Code/Tools/AssetBundler/assetbundler_exe_files.cmake
+C:/Users/lesaelr/o3de/Code/Tools/AssetBundler/assetbundlerbatch_exe_files.cmake
+C:/Users/lesaelr/o3de/Code/Tools/AssetBundler/assetbundlerbatch_files.cmake
+C:/Users/lesaelr/o3de/Code/Tools/AssetBundler/assetbundlerbatch_test_files.cmake
+C:/Users/lesaelr/o3de/Code/Tools/AssetBundler/assetbundlergui_files.cmake
+C:/Users/lesaelr/o3de/Code/Tools/AssetBundler/source/ui/style/AssetBundler.qrc
+C:/Users/lesaelr/o3de/cmake/Platform/Windows/LYTestWrappers_windows.cmake

@@ -1,0 +1,131 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <PreferredToolArchitecture>x64</PreferredToolArchitecture>
+  </PropertyGroup>
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="debug|x64">
+      <Configuration>debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="profile|x64">
+      <Configuration>profile</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="release|x64">
+      <Configuration>release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{60A6B0B3-2BBB-36F5-995F-03CD600E0586}</ProjectGuid>
+    <WindowsTargetPlatformVersion>10.0.19041.0</WindowsTargetPlatformVersion>
+    <Keyword>Win32Proj</Keyword>
+    <Platform>x64</Platform>
+    <ProjectName>CryCommonMocks</ProjectName>
+    <VCProjectUpgraderObjectName>NoUpgrade</VCProjectUpgraderObjectName>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='debug|x64'" Label="Configuration">
+    <ConfigurationType>Utility</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v142</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='profile|x64'" Label="Configuration">
+    <ConfigurationType>Utility</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v142</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='release|x64'" Label="Configuration">
+    <ConfigurationType>Utility</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v142</PlatformToolset>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='debug|x64'" />
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='profile|x64'" />
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='release|x64'" />
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\CMakeLists.txt">
+      <UseUtf8Encoding>Always</UseUtf8Encoding>
+      <Message Condition="'$(Configuration)|$(Platform)'=='debug|x64'">Building Custom Rule C:/Users/lesaelr/o3de/Code/Legacy/CryCommon/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='debug|x64'">setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SC:/Users/lesaelr/o3de -BC:/Users/lesaelr/o3de --check-stamp-file C:/Users/lesaelr/o3de/Code/Legacy/CryCommon/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='debug|x64'">C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\Platform\Windows\crycommon_windows.cmake;C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\Platform\Windows\crycommon_windows_files.cmake;C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\crycommon_files.cmake;C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\crycommon_testing_files.cmake;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='debug|x64'">C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='debug|x64'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='profile|x64'">Building Custom Rule C:/Users/lesaelr/o3de/Code/Legacy/CryCommon/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='profile|x64'">setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SC:/Users/lesaelr/o3de -BC:/Users/lesaelr/o3de --check-stamp-file C:/Users/lesaelr/o3de/Code/Legacy/CryCommon/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='profile|x64'">C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\Platform\Windows\crycommon_windows.cmake;C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\Platform\Windows\crycommon_windows_files.cmake;C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\crycommon_files.cmake;C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\crycommon_testing_files.cmake;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='profile|x64'">C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='profile|x64'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='release|x64'">Building Custom Rule C:/Users/lesaelr/o3de/Code/Legacy/CryCommon/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='release|x64'">setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SC:/Users/lesaelr/o3de -BC:/Users/lesaelr/o3de --check-stamp-file C:/Users/lesaelr/o3de/Code/Legacy/CryCommon/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='release|x64'">C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\Platform\Windows\crycommon_windows.cmake;C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\Platform\Windows\crycommon_windows_files.cmake;C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\crycommon_files.cmake;C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\crycommon_testing_files.cmake;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='release|x64'">C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='release|x64'">false</LinkObjects>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\Mocks\IAudioSystemMock.h">
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\Mocks\IConsoleMock.h">
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\Mocks\ICryPakMock.h">
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\Mocks\ILogMock.h">
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\Mocks\ISystemMock.h">
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\Mocks\ITimerMock.h">
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\Mocks\ICVarMock.h">
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\Mocks\ITextureMock.h">
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\Mocks\IRemoteConsoleMock.h">
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\crycommon_testing_files.cmake">
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\ZERO_CHECK.vcxproj">
+      <Project>{CDE32B4E-8490-3FC5-A3F2-976A0A5DE45E}</Project>
+      <Name>ZERO_CHECK</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

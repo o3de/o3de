@@ -1,0 +1,1690 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\CMakeFiles\AzFramework.dir\Unity\unity_21_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\CMakeFiles\AzFramework.dir\Unity\unity_20_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\CMakeFiles\AzFramework.dir\Unity\unity_19_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\CMakeFiles\AzFramework.dir\Unity\unity_18_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\CMakeFiles\AzFramework.dir\Unity\unity_17_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\CMakeFiles\AzFramework.dir\Unity\unity_16_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\CMakeFiles\AzFramework.dir\Unity\unity_15_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\CMakeFiles\AzFramework.dir\Unity\unity_14_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\CMakeFiles\AzFramework.dir\Unity\unity_13_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\CMakeFiles\AzFramework.dir\Unity\unity_12_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\CMakeFiles\AzFramework.dir\Unity\unity_11_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\CMakeFiles\AzFramework.dir\Unity\unity_10_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\CMakeFiles\AzFramework.dir\Unity\unity_9_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\CMakeFiles\AzFramework.dir\Unity\unity_8_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\CMakeFiles\AzFramework.dir\Unity\unity_7_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\CMakeFiles\AzFramework.dir\Unity\unity_6_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\CMakeFiles\AzFramework.dir\Unity\unity_5_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\CMakeFiles\AzFramework.dir\Unity\unity_4_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\CMakeFiles\AzFramework.dir\Unity\unity_3_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\CMakeFiles\AzFramework.dir\Unity\unity_2_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\CMakeFiles\AzFramework.dir\Unity\unity_1_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\CMakeFiles\AzFramework.dir\Unity\unity_0_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Asset\AssetSystemComponentHelper.cpp">
+      <Filter>AzFramework\Asset</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\AzFrameworkModule.cpp">
+      <Filter>AzFramework</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Application\Application.cpp">
+      <Filter>AzFramework\Application</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Archive\Archive.cpp">
+      <Filter>AzFramework\Archive</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Archive\ArchiveFileIO.cpp">
+      <Filter>AzFramework\Archive</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Archive\ArchiveFindData.cpp">
+      <Filter>AzFramework\Archive</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Archive\MissingFileReport.cpp">
+      <Filter>AzFramework\Archive</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Archive\NestedArchive.cpp">
+      <Filter>AzFramework\Archive</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Archive\ZipDirCache.cpp">
+      <Filter>AzFramework\Archive</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Archive\ZipDirCacheFactory.cpp">
+      <Filter>AzFramework\Archive</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Archive\ZipDirFind.cpp">
+      <Filter>AzFramework\Archive</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Archive\ZipDirList.cpp">
+      <Filter>AzFramework\Archive</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Archive\ZipDirStructures.cpp">
+      <Filter>AzFramework\Archive</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Archive\ZipDirTree.cpp">
+      <Filter>AzFramework\Archive</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Asset\SimpleAsset.cpp">
+      <Filter>AzFramework\Asset</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Asset\AssetCatalog.cpp">
+      <Filter>AzFramework\Asset</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Asset\AssetCatalogComponent.cpp">
+      <Filter>AzFramework\Asset</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Asset\AssetProcessorMessages.cpp">
+      <Filter>AzFramework\Asset</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Asset\AssetRegistry.cpp">
+      <Filter>AzFramework\Asset</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Asset\AssetSeedList.cpp">
+      <Filter>AzFramework\Asset</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Asset\AssetSystemComponent.cpp">
+      <Filter>AzFramework\Asset</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Asset\AssetBundleManifest.cpp">
+      <Filter>AzFramework\Asset</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Asset\CustomAssetTypeComponent.cpp">
+      <Filter>AzFramework\Asset</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Asset\FileTagAsset.cpp">
+      <Filter>AzFramework\Asset</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Asset\XmlSchemaAsset.cpp">
+      <Filter>AzFramework\Asset</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Asset\Benchmark\BenchmarkAsset.cpp">
+      <Filter>AzFramework\Asset\Benchmark</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Asset\Benchmark\BenchmarkCommands.cpp">
+      <Filter>AzFramework\Asset\Benchmark</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Asset\Benchmark\BenchmarkSettingsAsset.cpp">
+      <Filter>AzFramework\Asset\Benchmark</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Viewport\ViewportBus.cpp">
+      <Filter>AzFramework\Viewport</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Viewport\ViewportColors.cpp">
+      <Filter>AzFramework\Viewport</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Viewport\ViewportConstants.cpp">
+      <Filter>AzFramework\Viewport</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Viewport\SingleViewportController.cpp">
+      <Filter>AzFramework\Viewport</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Viewport\ViewportControllerList.cpp">
+      <Filter>AzFramework\Viewport</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Viewport\ViewportScreen.cpp">
+      <Filter>AzFramework\Viewport</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Viewport\ScreenGeometry.cpp">
+      <Filter>AzFramework\Viewport</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Viewport\CameraState.cpp">
+      <Filter>AzFramework\Viewport</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Viewport\CameraInput.cpp">
+      <Filter>AzFramework\Viewport</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Viewport\ClickDetector.cpp">
+      <Filter>AzFramework\Viewport</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Entity\BehaviorEntity.cpp">
+      <Filter>AzFramework\Entity</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Entity\GameEntityContextComponent.cpp">
+      <Filter>AzFramework\Entity</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Entity\EntityContext.cpp">
+      <Filter>AzFramework\Entity</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Entity\SliceEntityOwnershipService.cpp">
+      <Filter>AzFramework\Entity</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Entity\SliceGameEntityOwnershipService.cpp">
+      <Filter>AzFramework\Entity</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Entity\PrefabEntityOwnershipService.cpp">
+      <Filter>AzFramework\Entity</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Components\TransformComponent.cpp">
+      <Filter>AzFramework\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Components\ConsoleBus.cpp">
+      <Filter>AzFramework\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Components\AzFrameworkConfigurationSystemComponent.cpp">
+      <Filter>AzFramework\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Components\NonUniformScaleComponent.cpp">
+      <Filter>AzFramework\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\FileFunc\FileFunc.cpp">
+      <Filter>AzFramework\FileFunc</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Gem\GemInfo.cpp">
+      <Filter>AzFramework\Gem</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\IO\LocalFileIO.cpp">
+      <Filter>AzFramework\IO</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\IO\FileOperations.cpp">
+      <Filter>AzFramework\IO</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\IO\RemoteFileIO.cpp">
+      <Filter>AzFramework\IO</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\IO\RemoteStorageDrive.cpp">
+      <Filter>AzFramework\IO</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Network\AssetProcessorConnection.cpp">
+      <Filter>AzFramework\Network</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Network\SocketConnection.cpp">
+      <Filter>AzFramework\Network</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Logging\LogFile.cpp">
+      <Filter>AzFramework\Logging</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Logging\LoggingComponent.cpp">
+      <Filter>AzFramework\Logging</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Logging\StartupLogSinkReporter.cpp">
+      <Filter>AzFramework\Logging</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Logging\MissingAssetLogger.cpp">
+      <Filter>AzFramework\Logging</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Scene\Scene.cpp">
+      <Filter>AzFramework\Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Scene\SceneSystemComponent.cpp">
+      <Filter>AzFramework\Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Script\ScriptComponent.cpp">
+      <Filter>AzFramework\Script</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Script\ScriptDebugMsgReflection.cpp">
+      <Filter>AzFramework\Script</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Script\ScriptRemoteDebugging.cpp">
+      <Filter>AzFramework\Script</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Session\ISessionRequests.cpp">
+      <Filter>AzFramework\Session</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Session\SessionConfig.cpp">
+      <Filter>AzFramework\Session</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\StreamingInstall\StreamingInstall.cpp">
+      <Filter>AzFramework\StreamingInstall</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Physics\Collision\CollisionEvents.cpp">
+      <Filter>AzFramework\Physics\Collision</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Physics\Collision\CollisionLayers.cpp">
+      <Filter>AzFramework\Physics\Collision</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Physics\Collision\CollisionGroups.cpp">
+      <Filter>AzFramework\Physics\Collision</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Physics\Common\PhysicsJoint.cpp">
+      <Filter>AzFramework\Physics\Common</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Physics\Common\PhysicsSceneQueries.cpp">
+      <Filter>AzFramework\Physics\Common</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Physics\Common\PhysicsSimulatedBody.cpp">
+      <Filter>AzFramework\Physics\Common</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Physics\Common\PhysicsSimulatedBodyAutomation.cpp">
+      <Filter>AzFramework\Physics\Common</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Physics\Common\PhysicsSimulatedBodyEvents.cpp">
+      <Filter>AzFramework\Physics\Common</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Physics\Configuration\JointConfiguration.cpp">
+      <Filter>AzFramework\Physics\Configuration</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Physics\Configuration\CollisionConfiguration.cpp">
+      <Filter>AzFramework\Physics\Configuration</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Physics\Configuration\RigidBodyConfiguration.cpp">
+      <Filter>AzFramework\Physics\Configuration</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Physics\Configuration\StaticRigidBodyConfiguration.cpp">
+      <Filter>AzFramework\Physics\Configuration</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Physics\Configuration\SceneConfiguration.cpp">
+      <Filter>AzFramework\Physics\Configuration</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Physics\Configuration\SimulatedBodyConfiguration.cpp">
+      <Filter>AzFramework\Physics\Configuration</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Physics\Configuration\SystemConfiguration.cpp">
+      <Filter>AzFramework\Physics\Configuration</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Physics\SimulatedBodies\RigidBody.cpp">
+      <Filter>AzFramework\Physics\SimulatedBodies</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Physics\SimulatedBodies\StaticRigidBody.cpp">
+      <Filter>AzFramework\Physics\SimulatedBodies</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Physics\PhysicsSystem.cpp">
+      <Filter>AzFramework\Physics</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Physics\PhysicsScene.cpp">
+      <Filter>AzFramework\Physics</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Physics\AnimationConfiguration.cpp">
+      <Filter>AzFramework\Physics</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Physics\Character.cpp">
+      <Filter>AzFramework\Physics</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Physics\CollisionBus.cpp">
+      <Filter>AzFramework\Physics</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Physics\Material.cpp">
+      <Filter>AzFramework\Physics</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Physics\NameConstants.cpp">
+      <Filter>AzFramework\Physics</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Physics\Shape.cpp">
+      <Filter>AzFramework\Physics</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Physics\ShapeConfiguration.cpp">
+      <Filter>AzFramework\Physics</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Physics\Ragdoll.cpp">
+      <Filter>AzFramework\Physics</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Physics\Utils.cpp">
+      <Filter>AzFramework\Physics</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Physics\ClassConverters.cpp">
+      <Filter>AzFramework\Physics</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Process\ProcessCommunicator.cpp">
+      <Filter>AzFramework\Process</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Process\ProcessWatcher.cpp">
+      <Filter>AzFramework\Process</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\ProjectManager\ProjectManager.cpp">
+      <Filter>AzFramework\ProjectManager</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Render\GameIntersectorComponent.cpp">
+      <Filter>AzFramework\Render</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Render\Intersector.cpp">
+      <Filter>AzFramework\Render</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Spawnable\Spawnable.cpp">
+      <Filter>AzFramework\Spawnable</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Spawnable\SpawnableAssetHandler.cpp">
+      <Filter>AzFramework\Spawnable</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Spawnable\SpawnableEntitiesContainer.cpp">
+      <Filter>AzFramework\Spawnable</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Spawnable\SpawnableEntitiesInterface.cpp">
+      <Filter>AzFramework\Spawnable</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Spawnable\SpawnableEntitiesManager.cpp">
+      <Filter>AzFramework\Spawnable</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Spawnable\SpawnableMetaData.cpp">
+      <Filter>AzFramework\Spawnable</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Spawnable\SpawnableMonitor.cpp">
+      <Filter>AzFramework\Spawnable</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Spawnable\SpawnableSystemComponent.cpp">
+      <Filter>AzFramework\Spawnable</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Terrain\TerrainDataRequestBus.cpp">
+      <Filter>AzFramework\Terrain</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Windowing\NativeWindow.cpp">
+      <Filter>AzFramework\Windowing</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Input\Channels\InputChannel.cpp">
+      <Filter>AzFramework\Input\Channels</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Input\Channels\InputChannelAnalog.cpp">
+      <Filter>AzFramework\Input\Channels</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Input\Channels\InputChannelAnalogWithPosition2D.cpp">
+      <Filter>AzFramework\Input\Channels</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Input\Channels\InputChannelAxis1D.cpp">
+      <Filter>AzFramework\Input\Channels</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Input\Channels\InputChannelAxis2D.cpp">
+      <Filter>AzFramework\Input\Channels</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Input\Channels\InputChannelAxis3D.cpp">
+      <Filter>AzFramework\Input\Channels</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Input\Channels\InputChannelDelta.cpp">
+      <Filter>AzFramework\Input\Channels</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Input\Channels\InputChannelDeltaWithSharedPosition2D.cpp">
+      <Filter>AzFramework\Input\Channels</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Input\Channels\InputChannelDigital.cpp">
+      <Filter>AzFramework\Input\Channels</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Input\Channels\InputChannelDigitalWithPosition2D.cpp">
+      <Filter>AzFramework\Input\Channels</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Input\Channels\InputChannelDigitalWithSharedModifierKeyStates.cpp">
+      <Filter>AzFramework\Input\Channels</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Input\Channels\InputChannelDigitalWithSharedPosition2D.cpp">
+      <Filter>AzFramework\Input\Channels</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Input\Channels\InputChannelId.cpp">
+      <Filter>AzFramework\Input\Channels</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Input\Channels\InputChannelQuaternion.cpp">
+      <Filter>AzFramework\Input\Channels</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Input\Contexts\InputContext.cpp">
+      <Filter>AzFramework\Input\Contexts</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Input\Contexts\InputContextComponent.cpp">
+      <Filter>AzFramework\Input\Contexts</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Input\Devices\InputDevice.cpp">
+      <Filter>AzFramework\Input\Devices</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Input\Devices\InputDeviceId.cpp">
+      <Filter>AzFramework\Input\Devices</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Input\Devices\Gamepad\InputDeviceGamepad.cpp">
+      <Filter>AzFramework\Input\Devices\Gamepad</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Input\Devices\Keyboard\InputDeviceKeyboard.cpp">
+      <Filter>AzFramework\Input\Devices\Keyboard</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Input\Devices\Motion\InputDeviceMotion.cpp">
+      <Filter>AzFramework\Input\Devices\Motion</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Input\Devices\Mouse\InputDeviceMouse.cpp">
+      <Filter>AzFramework\Input\Devices\Mouse</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Input\Devices\VirtualKeyboard\InputDeviceVirtualKeyboard.cpp">
+      <Filter>AzFramework\Input\Devices\VirtualKeyboard</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Input\Devices\Touch\InputDeviceTouch.cpp">
+      <Filter>AzFramework\Input\Devices\Touch</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Input\Events\InputChannelEventFilter.cpp">
+      <Filter>AzFramework\Input\Events</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Input\Events\InputChannelEventListener.cpp">
+      <Filter>AzFramework\Input\Events</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Input\Events\InputChannelEventSink.cpp">
+      <Filter>AzFramework\Input\Events</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Input\Events\InputTextEventListener.cpp">
+      <Filter>AzFramework\Input\Events</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Input\Mappings\InputMapping.cpp">
+      <Filter>AzFramework\Input\Mappings</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Input\Mappings\InputMappingAnd.cpp">
+      <Filter>AzFramework\Input\Mappings</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Input\Mappings\InputMappingOr.cpp">
+      <Filter>AzFramework\Input\Mappings</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Input\System\InputSystemComponent.cpp">
+      <Filter>AzFramework\Input\System</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\TargetManagement\NeighborhoodAPI.cpp">
+      <Filter>AzFramework\TargetManagement</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\TargetManagement\TargetManagementComponent.cpp">
+      <Filter>AzFramework\TargetManagement</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\FileTag\FileTag.cpp">
+      <Filter>AzFramework\FileTag</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\FileTag\FileTagComponent.cpp">
+      <Filter>AzFramework\FileTag</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\UnitTest\TestDebugDisplayRequests.cpp">
+      <Filter>AzFramework\UnitTest</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Slice\SliceInstantiationTicket.cpp">
+      <Filter>AzFramework\Slice</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Visibility\OctreeSystemComponent.cpp">
+      <Filter>AzFramework\Visibility</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Visibility\BoundsBus.cpp">
+      <Filter>AzFramework\Visibility</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Visibility\VisibilityDebug.cpp">
+      <Filter>AzFramework\Visibility</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Visibility\EntityVisibilityBoundsUnionSystem.cpp">
+      <Filter>AzFramework\Visibility</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Visibility\EntityVisibilityQuery.cpp">
+      <Filter>AzFramework\Visibility</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\Platform\Windows\AzFramework\Application\Application_Windows.cpp">
+      <Filter>Platform\Windows\AzFramework\Application</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\Platform\Windows\AzFramework\Asset\AssetSystemComponentHelper_Windows.cpp">
+      <Filter>Platform\Windows\AzFramework\Asset</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\Platform\Windows\AzFramework\Process\ProcessWatcher_Win.cpp">
+      <Filter>Platform\Windows\AzFramework\Process</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\Platform\Windows\AzFramework\Process\ProcessCommunicator_Win.cpp">
+      <Filter>Platform\Windows\AzFramework\Process</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\Platform\Common\WinAPI\AzFramework\IO\LocalFileIO_WinAPI.cpp">
+      <Filter>Platform\Windows\..\Common\WinAPI\AzFramework\IO</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\Platform\Windows\AzFramework\IO\LocalFileIO_Windows.cpp">
+      <Filter>Platform\Windows\AzFramework\IO</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\Platform\Common\Unimplemented\AzFramework\StreamingInstall\StreamingInstall_Unimplemented.cpp">
+      <Filter>Platform\Windows\..\Common\Unimplemented\AzFramework\StreamingInstall</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\Platform\Windows\AzFramework\TargetManagement\TargetManagementComponent_Windows.cpp">
+      <Filter>Platform\Windows\AzFramework\TargetManagement</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\Platform\Windows\AzFramework\Windowing\NativeWindow_Windows.cpp">
+      <Filter>Platform\Windows\AzFramework\Windowing</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\Platform\Windows\AzFramework\Input\Devices\Gamepad\InputDeviceGamepad_Windows.cpp">
+      <Filter>Platform\Windows\AzFramework\Input\Devices\Gamepad</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\Platform\Windows\AzFramework\Input\Devices\Keyboard\InputDeviceKeyboard_Windows.cpp">
+      <Filter>Platform\Windows\AzFramework\Input\Devices\Keyboard</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\Platform\Common\Unimplemented\AzFramework\Input\Devices\Motion\InputDeviceMotion_Unimplemented.cpp">
+      <Filter>Platform\Windows\..\Common\Unimplemented\AzFramework\Input\Devices\Motion</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\Platform\Windows\AzFramework\Input\Devices\Mouse\InputDeviceMouse_Windows.cpp">
+      <Filter>Platform\Windows\AzFramework\Input\Devices\Mouse</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\Platform\Common\Unimplemented\AzFramework\Input\Devices\Touch\InputDeviceTouch_Unimplemented.cpp">
+      <Filter>Platform\Windows\..\Common\Unimplemented\AzFramework\Input\Devices\Touch</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\Platform\Common\Unimplemented\AzFramework\Input\Devices\VirtualKeyboard\InputDeviceVirtualKeyboard_Unimplemented.cpp">
+      <Filter>Platform\Windows\..\Common\Unimplemented\AzFramework\Input\Devices\VirtualKeyboard</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\AzFrameworkModule.h">
+      <Filter>AzFramework</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\API\ApplicationAPI.h">
+      <Filter>AzFramework\API</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Application\Application.h">
+      <Filter>AzFramework\Application</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Archive\Archive.h">
+      <Filter>AzFramework\Archive</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Archive\ArchiveBus.h">
+      <Filter>AzFramework\Archive</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Archive\ArchiveFileIO.h">
+      <Filter>AzFramework\Archive</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Archive\ArchiveFindData.h">
+      <Filter>AzFramework\Archive</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Archive\ArchiveVars.h">
+      <Filter>AzFramework\Archive</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Archive\Codec.h">
+      <Filter>AzFramework\Archive</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Archive\IArchive.h">
+      <Filter>AzFramework\Archive</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Archive\INestedArchive.h">
+      <Filter>AzFramework\Archive</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Archive\MissingFileReport.h">
+      <Filter>AzFramework\Archive</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Archive\NestedArchive.h">
+      <Filter>AzFramework\Archive</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Archive\ZipDirCache.h">
+      <Filter>AzFramework\Archive</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Archive\ZipDirCacheFactory.h">
+      <Filter>AzFramework\Archive</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Archive\ZipDirFind.h">
+      <Filter>AzFramework\Archive</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Archive\ZipDirList.h">
+      <Filter>AzFramework\Archive</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Archive\ZipDirStructures.h">
+      <Filter>AzFramework\Archive</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Archive\ZipDirTree.h">
+      <Filter>AzFramework\Archive</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Archive\ZipFileFormat.h">
+      <Filter>AzFramework\Archive</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Asset\SimpleAsset.h">
+      <Filter>AzFramework\Asset</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Asset\AssetCatalogBus.h">
+      <Filter>AzFramework\Asset</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Asset\AssetSystemBus.h">
+      <Filter>AzFramework\Asset</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Asset\AssetSystemTypes.h">
+      <Filter>AzFramework\Asset</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Asset\AssetCatalog.h">
+      <Filter>AzFramework\Asset</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Asset\AssetCatalogComponent.h">
+      <Filter>AzFramework\Asset</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Asset\AssetProcessorMessages.h">
+      <Filter>AzFramework\Asset</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Asset\AssetRegistry.h">
+      <Filter>AzFramework\Asset</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Asset\AssetSeedList.h">
+      <Filter>AzFramework\Asset</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Asset\AssetSystemComponent.h">
+      <Filter>AzFramework\Asset</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Asset\CfgFileAsset.h">
+      <Filter>AzFramework\Asset</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Asset\GenericAssetHandler.h">
+      <Filter>AzFramework\Asset</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Asset\AssetBundleManifest.h">
+      <Filter>AzFramework\Asset</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Asset\CustomAssetTypeComponent.h">
+      <Filter>AzFramework\Asset</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Asset\FileTagAsset.h">
+      <Filter>AzFramework\Asset</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Asset\NetworkAssetNotification_private.h">
+      <Filter>AzFramework\Asset</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Asset\XmlSchemaAsset.h">
+      <Filter>AzFramework\Asset</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Asset\Benchmark\BenchmarkAsset.h">
+      <Filter>AzFramework\Asset\Benchmark</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Asset\Benchmark\BenchmarkCommands.h">
+      <Filter>AzFramework\Asset\Benchmark</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Asset\Benchmark\BenchmarkSettingsAsset.h">
+      <Filter>AzFramework\Asset\Benchmark</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\CommandLine\CommandLine.h">
+      <Filter>AzFramework\CommandLine</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\CommandLine\CommandRegistrationBus.h">
+      <Filter>AzFramework\CommandLine</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Debug\DebugCameraBus.h">
+      <Filter>AzFramework\Debug</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Viewport\ViewportBus.h">
+      <Filter>AzFramework\Viewport</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Viewport\ViewportColors.h">
+      <Filter>AzFramework\Viewport</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Viewport\ViewportConstants.h">
+      <Filter>AzFramework\Viewport</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Viewport\MultiViewportController.h">
+      <Filter>AzFramework\Viewport</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Viewport\MultiViewportController.inl">
+      <Filter>AzFramework\Viewport</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Viewport\SingleViewportController.h">
+      <Filter>AzFramework\Viewport</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Viewport\ViewportControllerInterface.h">
+      <Filter>AzFramework\Viewport</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Viewport\ViewportControllerList.h">
+      <Filter>AzFramework\Viewport</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Viewport\ViewportId.h">
+      <Filter>AzFramework\Viewport</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Viewport\ViewportScreen.h">
+      <Filter>AzFramework\Viewport</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Viewport\ScreenGeometry.h">
+      <Filter>AzFramework\Viewport</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Viewport\CameraState.h">
+      <Filter>AzFramework\Viewport</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Viewport\CameraInput.h">
+      <Filter>AzFramework\Viewport</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Viewport\ClickDetector.h">
+      <Filter>AzFramework\Viewport</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Viewport\CursorState.h">
+      <Filter>AzFramework\Viewport</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Viewport\DisplayContextRequestBus.h">
+      <Filter>AzFramework\Viewport</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Entity\BehaviorEntity.h">
+      <Filter>AzFramework\Entity</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Entity\GameEntityContextComponent.h">
+      <Filter>AzFramework\Entity</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Entity\GameEntityContextBus.h">
+      <Filter>AzFramework\Entity</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Entity\EntityContext.h">
+      <Filter>AzFramework\Entity</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Entity\EntityContextBus.h">
+      <Filter>AzFramework\Entity</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Entity\EntityDebugDisplayBus.h">
+      <Filter>AzFramework\Entity</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Entity\EntityOwnershipService.h">
+      <Filter>AzFramework\Entity</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Entity\EntityOwnershipServiceBus.h">
+      <Filter>AzFramework\Entity</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Entity\SliceEntityOwnershipServiceBus.h">
+      <Filter>AzFramework\Entity</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Entity\SliceEntityOwnershipService.h">
+      <Filter>AzFramework\Entity</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Entity\SliceGameEntityOwnershipService.h">
+      <Filter>AzFramework\Entity</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Entity\SliceGameEntityOwnershipServiceBus.h">
+      <Filter>AzFramework\Entity</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Entity\PrefabEntityOwnershipService.h">
+      <Filter>AzFramework\Entity</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Components\ComponentAdapter.h">
+      <Filter>AzFramework\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Components\ComponentAdapter.inl">
+      <Filter>AzFramework\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Components\ComponentAdapterHelpers.h">
+      <Filter>AzFramework\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Components\EditorEntityEvents.h">
+      <Filter>AzFramework\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Components\TransformComponent.h">
+      <Filter>AzFramework\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Components\CameraBus.h">
+      <Filter>AzFramework\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Components\ConsoleBus.h">
+      <Filter>AzFramework\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Components\DeprecatedComponentsBus.h">
+      <Filter>AzFramework\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Components\AzFrameworkConfigurationSystemComponent.h">
+      <Filter>AzFramework\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Components\NonUniformScaleComponent.h">
+      <Filter>AzFramework\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\FileFunc\FileFunc.h">
+      <Filter>AzFramework\FileFunc</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Font\FontInterface.h">
+      <Filter>AzFramework\Font</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Gem\GemInfo.h">
+      <Filter>AzFramework\Gem</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\StringFunc\StringFunc.h">
+      <Filter>AzFramework\StringFunc</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\InGameUI\UiFrameworkBus.h">
+      <Filter>AzFramework\InGameUI</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\IO\LocalFileIO.h">
+      <Filter>AzFramework\IO</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\IO\FileOperations.h">
+      <Filter>AzFramework\IO</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\IO\RemoteFileIO.h">
+      <Filter>AzFramework\IO</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\IO\RemoteStorageDrive.h">
+      <Filter>AzFramework\IO</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Math\InterpolationSample.h">
+      <Filter>AzFramework\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Metrics\MetricsPlainTextNameRegistration.h">
+      <Filter>AzFramework\Metrics</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Network\AssetProcessorConnection.h">
+      <Filter>AzFramework\Network</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Network\SocketConnection.h">
+      <Filter>AzFramework\Network</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Logging\LogFile.h">
+      <Filter>AzFramework\Logging</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Logging\LoggingComponent.h">
+      <Filter>AzFramework\Logging</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Logging\StartupLogSinkReporter.h">
+      <Filter>AzFramework\Logging</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Logging\MissingAssetLogger.h">
+      <Filter>AzFramework\Logging</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Logging\MissingAssetNotificationBus.h">
+      <Filter>AzFramework\Logging</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Scene\Scene.h">
+      <Filter>AzFramework\Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Scene\Scene.inl">
+      <Filter>AzFramework\Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Scene\SceneSystemComponent.h">
+      <Filter>AzFramework\Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Scene\SceneSystemInterface.h">
+      <Filter>AzFramework\Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Script\ScriptComponent.h">
+      <Filter>AzFramework\Script</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Script\ScriptDebugAgentBus.h">
+      <Filter>AzFramework\Script</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Script\ScriptDebugMsgReflection.h">
+      <Filter>AzFramework\Script</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Script\ScriptRemoteDebugging.h">
+      <Filter>AzFramework\Script</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Session\ISessionHandlingRequests.h">
+      <Filter>AzFramework\Session</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Session\ISessionRequests.h">
+      <Filter>AzFramework\Session</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Session\SessionConfig.h">
+      <Filter>AzFramework\Session</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Session\SessionNotifications.h">
+      <Filter>AzFramework\Session</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\StreamingInstall\StreamingInstall.h">
+      <Filter>AzFramework\StreamingInstall</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\StreamingInstall\StreamingInstallRequests.h">
+      <Filter>AzFramework\StreamingInstall</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\StreamingInstall\StreamingInstallNotifications.h">
+      <Filter>AzFramework\StreamingInstall</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Physics\Collision\CollisionEvents.h">
+      <Filter>AzFramework\Physics\Collision</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Physics\Collision\CollisionLayers.h">
+      <Filter>AzFramework\Physics\Collision</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Physics\Collision\CollisionGroups.h">
+      <Filter>AzFramework\Physics\Collision</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Physics\Common\PhysicsJoint.h">
+      <Filter>AzFramework\Physics\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Physics\Common\PhysicsSceneQueries.h">
+      <Filter>AzFramework\Physics\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Physics\Common\PhysicsEvents.h">
+      <Filter>AzFramework\Physics\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Physics\Common\PhysicsSimulatedBody.h">
+      <Filter>AzFramework\Physics\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Physics\Common\PhysicsSimulatedBodyAutomation.h">
+      <Filter>AzFramework\Physics\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Physics\Common\PhysicsSimulatedBodyEvents.h">
+      <Filter>AzFramework\Physics\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Physics\Common\PhysicsTypes.h">
+      <Filter>AzFramework\Physics\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Physics\Components\SimulatedBodyComponentBus.h">
+      <Filter>AzFramework\Physics\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Physics\Configuration\JointConfiguration.h">
+      <Filter>AzFramework\Physics\Configuration</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Physics\Configuration\CollisionConfiguration.h">
+      <Filter>AzFramework\Physics\Configuration</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Physics\Configuration\RigidBodyConfiguration.h">
+      <Filter>AzFramework\Physics\Configuration</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Physics\Configuration\StaticRigidBodyConfiguration.h">
+      <Filter>AzFramework\Physics\Configuration</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Physics\Configuration\SceneConfiguration.h">
+      <Filter>AzFramework\Physics\Configuration</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Physics\Configuration\SimulatedBodyConfiguration.h">
+      <Filter>AzFramework\Physics\Configuration</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Physics\Configuration\SystemConfiguration.h">
+      <Filter>AzFramework\Physics\Configuration</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Physics\SimulatedBodies\RigidBody.h">
+      <Filter>AzFramework\Physics\SimulatedBodies</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Physics\SimulatedBodies\StaticRigidBody.h">
+      <Filter>AzFramework\Physics\SimulatedBodies</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Physics\PhysicsSystem.h">
+      <Filter>AzFramework\Physics</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Physics\PhysicsScene.h">
+      <Filter>AzFramework\Physics</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Physics\AnimationConfiguration.h">
+      <Filter>AzFramework\Physics</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Physics\Character.h">
+      <Filter>AzFramework\Physics</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Physics\CollisionBus.h">
+      <Filter>AzFramework\Physics</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Physics\Material.h">
+      <Filter>AzFramework\Physics</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Physics\NameConstants.h">
+      <Filter>AzFramework\Physics</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Physics\RigidBodyBus.h">
+      <Filter>AzFramework\Physics</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Physics\Shape.h">
+      <Filter>AzFramework\Physics</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Physics\ShapeConfiguration.h">
+      <Filter>AzFramework\Physics</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Physics\SystemBus.h">
+      <Filter>AzFramework\Physics</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Physics\ColliderComponentBus.h">
+      <Filter>AzFramework\Physics</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Physics\RagdollPhysicsBus.h">
+      <Filter>AzFramework\Physics</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Physics\CharacterPhysicsDataBus.h">
+      <Filter>AzFramework\Physics</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Physics\CharacterBus.h">
+      <Filter>AzFramework\Physics</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Physics\Ragdoll.h">
+      <Filter>AzFramework\Physics</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Physics\Utils.h">
+      <Filter>AzFramework\Physics</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Physics\ClassConverters.h">
+      <Filter>AzFramework\Physics</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Physics\MaterialBus.h">
+      <Filter>AzFramework\Physics</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Physics\WindBus.h">
+      <Filter>AzFramework\Physics</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Process\ProcessCommunicator.h">
+      <Filter>AzFramework\Process</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Process\ProcessWatcher.h">
+      <Filter>AzFramework\Process</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Process\ProcessCommon_fwd.h">
+      <Filter>AzFramework\Process</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\ProjectManager\ProjectManager.h">
+      <Filter>AzFramework\ProjectManager</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Render\GameIntersectorComponent.h">
+      <Filter>AzFramework\Render</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Render\GeometryIntersectionBus.h">
+      <Filter>AzFramework\Render</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Render\GeometryIntersectionStructures.h">
+      <Filter>AzFramework\Render</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Render\Intersector.h">
+      <Filter>AzFramework\Render</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Render\IntersectorInterface.h">
+      <Filter>AzFramework\Render</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Spawnable\RootSpawnableInterface.h">
+      <Filter>AzFramework\Spawnable</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Spawnable\Spawnable.h">
+      <Filter>AzFramework\Spawnable</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Spawnable\SpawnableAssetHandler.h">
+      <Filter>AzFramework\Spawnable</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Spawnable\SpawnableEntitiesContainer.h">
+      <Filter>AzFramework\Spawnable</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Spawnable\SpawnableEntitiesInterface.h">
+      <Filter>AzFramework\Spawnable</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Spawnable\SpawnableEntitiesManager.h">
+      <Filter>AzFramework\Spawnable</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Spawnable\SpawnableMetaData.h">
+      <Filter>AzFramework\Spawnable</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Spawnable\SpawnableMonitor.h">
+      <Filter>AzFramework\Spawnable</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Spawnable\SpawnableSystemComponent.h">
+      <Filter>AzFramework\Spawnable</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Terrain\TerrainDataRequestBus.h">
+      <Filter>AzFramework\Terrain</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Thermal\ThermalInfo.h">
+      <Filter>AzFramework\Thermal</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Platform\PlatformDefaults.h">
+      <Filter>AzFramework\Platform</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Windowing\WindowBus.h">
+      <Filter>AzFramework\Windowing</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Windowing\NativeWindow.h">
+      <Filter>AzFramework\Windowing</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Input\Buses\Notifications\InputChannelNotificationBus.h">
+      <Filter>AzFramework\Input\Buses\Notifications</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Input\Buses\Notifications\InputDeviceNotificationBus.h">
+      <Filter>AzFramework\Input\Buses\Notifications</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Input\Buses\Notifications\InputSystemNotificationBus.h">
+      <Filter>AzFramework\Input\Buses\Notifications</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Input\Buses\Notifications\InputTextNotificationBus.h">
+      <Filter>AzFramework\Input\Buses\Notifications</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Input\Buses\Requests\InputChannelRequestBus.h">
+      <Filter>AzFramework\Input\Buses\Requests</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Input\Buses\Requests\InputDeviceRequestBus.h">
+      <Filter>AzFramework\Input\Buses\Requests</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Input\Buses\Requests\InputHapticFeedbackRequestBus.h">
+      <Filter>AzFramework\Input\Buses\Requests</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Input\Buses\Requests\InputLightBarRequestBus.h">
+      <Filter>AzFramework\Input\Buses\Requests</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Input\Buses\Requests\InputMotionSensorRequestBus.h">
+      <Filter>AzFramework\Input\Buses\Requests</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Input\Buses\Requests\InputSystemRequestBus.h">
+      <Filter>AzFramework\Input\Buses\Requests</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Input\Buses\Requests\InputSystemCursorRequestBus.h">
+      <Filter>AzFramework\Input\Buses\Requests</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Input\Buses\Requests\InputTextEntryRequestBus.h">
+      <Filter>AzFramework\Input\Buses\Requests</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Input\Channels\InputChannel.h">
+      <Filter>AzFramework\Input\Channels</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Input\Channels\InputChannelAnalog.h">
+      <Filter>AzFramework\Input\Channels</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Input\Channels\InputChannelAnalogWithPosition2D.h">
+      <Filter>AzFramework\Input\Channels</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Input\Channels\InputChannelAxis1D.h">
+      <Filter>AzFramework\Input\Channels</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Input\Channels\InputChannelAxis2D.h">
+      <Filter>AzFramework\Input\Channels</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Input\Channels\InputChannelAxis3D.h">
+      <Filter>AzFramework\Input\Channels</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Input\Channels\InputChannelDelta.h">
+      <Filter>AzFramework\Input\Channels</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Input\Channels\InputChannelDeltaWithSharedPosition2D.h">
+      <Filter>AzFramework\Input\Channels</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Input\Channels\InputChannelDigital.h">
+      <Filter>AzFramework\Input\Channels</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Input\Channels\InputChannelDigitalWithPosition2D.h">
+      <Filter>AzFramework\Input\Channels</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Input\Channels\InputChannelDigitalWithSharedModifierKeyStates.h">
+      <Filter>AzFramework\Input\Channels</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Input\Channels\InputChannelDigitalWithSharedPosition2D.h">
+      <Filter>AzFramework\Input\Channels</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Input\Channels\InputChannelId.h">
+      <Filter>AzFramework\Input\Channels</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Input\Channels\InputChannelQuaternion.h">
+      <Filter>AzFramework\Input\Channels</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Input\Contexts\InputContext.h">
+      <Filter>AzFramework\Input\Contexts</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Input\Contexts\InputContextComponent.h">
+      <Filter>AzFramework\Input\Contexts</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Input\Devices\InputDevice.h">
+      <Filter>AzFramework\Input\Devices</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Input\Devices\InputDeviceId.h">
+      <Filter>AzFramework\Input\Devices</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Input\Devices\Gamepad\InputDeviceGamepad.h">
+      <Filter>AzFramework\Input\Devices\Gamepad</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Input\Devices\Keyboard\InputDeviceKeyboard.h">
+      <Filter>AzFramework\Input\Devices\Keyboard</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Input\Devices\Keyboard\InputDeviceKeyboardWindowsScanCodes.h">
+      <Filter>AzFramework\Input\Devices\Keyboard</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Input\Devices\Motion\InputDeviceMotion.h">
+      <Filter>AzFramework\Input\Devices\Motion</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Input\Devices\Mouse\InputDeviceMouse.h">
+      <Filter>AzFramework\Input\Devices\Mouse</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Input\Devices\VirtualKeyboard\InputDeviceVirtualKeyboard.h">
+      <Filter>AzFramework\Input\Devices\VirtualKeyboard</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Input\Devices\Touch\InputDeviceTouch.h">
+      <Filter>AzFramework\Input\Devices\Touch</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Input\Events\InputChannelEventFilter.h">
+      <Filter>AzFramework\Input\Events</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Input\Events\InputChannelEventListener.h">
+      <Filter>AzFramework\Input\Events</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Input\Events\InputChannelEventSink.h">
+      <Filter>AzFramework\Input\Events</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Input\Events\InputTextEventListener.h">
+      <Filter>AzFramework\Input\Events</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Input\Mappings\InputMapping.h">
+      <Filter>AzFramework\Input\Mappings</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Input\Mappings\InputMappingAnd.h">
+      <Filter>AzFramework\Input\Mappings</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Input\Mappings\InputMappingOr.h">
+      <Filter>AzFramework\Input\Mappings</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Input\System\InputSystemComponent.h">
+      <Filter>AzFramework\Input\System</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Input\User\LocalUserId.h">
+      <Filter>AzFramework\Input\User</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Input\Utils\AdjustAnalogInputForDeadZone.h">
+      <Filter>AzFramework\Input\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Input\Utils\IsAnyKeyOrButton.h">
+      <Filter>AzFramework\Input\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Input\Utils\ProcessRawInputEventQueues.h">
+      <Filter>AzFramework\Input\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\TargetManagement\NeighborhoodAPI.h">
+      <Filter>AzFramework\TargetManagement</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\TargetManagement\TargetManagementAPI.h">
+      <Filter>AzFramework\TargetManagement</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\TargetManagement\TargetManagementComponent.h">
+      <Filter>AzFramework\TargetManagement</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\FileTag\FileTag.h">
+      <Filter>AzFramework\FileTag</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\FileTag\FileTagBus.h">
+      <Filter>AzFramework\FileTag</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\FileTag\FileTagComponent.h">
+      <Filter>AzFramework\FileTag</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\UnitTest\FrameworkTestTypes.h">
+      <Filter>AzFramework\UnitTest</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\UnitTest\TestDebugDisplayRequests.h">
+      <Filter>AzFramework\UnitTest</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Slice\SliceEntityBus.h">
+      <Filter>AzFramework\Slice</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Slice\SliceInstantiationBus.h">
+      <Filter>AzFramework\Slice</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Slice\SliceInstantiationTicket.h">
+      <Filter>AzFramework\Slice</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Visibility\IVisibilitySystem.h">
+      <Filter>AzFramework\Visibility</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Visibility\OctreeSystemComponent.h">
+      <Filter>AzFramework\Visibility</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Visibility\BoundsBus.h">
+      <Filter>AzFramework\Visibility</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Visibility\VisibilityDebug.h">
+      <Filter>AzFramework\Visibility</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Visibility\EntityBoundsUnionBus.h">
+      <Filter>AzFramework\Visibility</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Visibility\EntityVisibilityBoundsUnionSystem.h">
+      <Filter>AzFramework\Visibility</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Visibility\EntityVisibilityQuery.h">
+      <Filter>AzFramework\Visibility</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Dependency\Dependency.h">
+      <Filter>AzFramework\Dependency</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Dependency\Dependency.inl">
+      <Filter>AzFramework\Dependency</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\Dependency\Version.h">
+      <Filter>AzFramework\Dependency</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\Platform\Windows\AzFramework\AzFramework_Traits_Platform.h">
+      <Filter>Platform\Windows\AzFramework</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\Platform\Windows\AzFramework\AzFramework_Traits_Windows.h">
+      <Filter>Platform\Windows\AzFramework</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\Platform\Windows\AzFramework\API\ApplicationAPI_Platform.h">
+      <Filter>Platform\Windows\AzFramework\API</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\Platform\Windows\AzFramework\API\ApplicationAPI_Windows.h">
+      <Filter>Platform\Windows\AzFramework\API</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\Platform\Windows\AzFramework\Process\ProcessCommon.h">
+      <Filter>Platform\Windows\AzFramework\Process</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\Platform\Windows\AzFramework\Input\Buses\Notifications\RawInputNotificationBus_Platform.h">
+      <Filter>Platform\Windows\AzFramework\Input\Buses\Notifications</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\Platform\Windows\AzFramework\Input\Buses\Notifications\RawInputNotificationBus_Windows.h">
+      <Filter>Platform\Windows\AzFramework\Input\Buses\Notifications</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\Platform\Common\WinAPI\AzFramework\Input\Devices\Keyboard\InputDeviceKeyboard_WinAPI.h">
+      <Filter>Platform\Windows\..\Common\WinAPI\AzFramework\Input\Devices\Keyboard</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\Platform\Windows\AzFramework\Input\User\LocalUserId_Platform.h">
+      <Filter>Platform\Windows\AzFramework\Input\User</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\Platform\Common\Default\AzFramework\Input\User\LocalUserId_Default.h">
+      <Filter>Platform\Windows\..\Common\Default\AzFramework\Input\User</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\Platform\Windows\AzFramework\Archive\ArchiveVars_Platform.h">
+      <Filter>Platform\Windows\AzFramework\Archive</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\Platform\Windows\AzFramework\Archive\ArchiveVars_Windows.h">
+      <Filter>Platform\Windows\AzFramework\Archive</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\CMakeLists.txt">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework\azframework_files.cmake">
+      <Filter>AzFramework</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\Platform\Windows\platform_windows_files.cmake">
+      <Filter>Platform\Windows</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\Platform\Windows\platform_windows.cmake">
+      <Filter>Platform\Windows</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="AzFramework">
+      <UniqueIdentifier>{6BADAB29-DDA8-3257-A652-7C4B424328D3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzFramework\API">
+      <UniqueIdentifier>{EB4617C9-B861-38B0-BA62-762329AA794E}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzFramework\Application">
+      <UniqueIdentifier>{CE11B8C9-2653-318D-9F11-2F1E3FF52891}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzFramework\Archive">
+      <UniqueIdentifier>{97E36D12-45EC-3D5F-BA21-E7DB68C376EF}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzFramework\Asset">
+      <UniqueIdentifier>{05075886-2F6B-31DF-9263-EA02C671BB18}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzFramework\Asset\Benchmark">
+      <UniqueIdentifier>{00FC5363-79AA-33DD-A574-87AAC85AA7D6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzFramework\CommandLine">
+      <UniqueIdentifier>{46EC3BE9-7AD6-3181-BC92-A98A137B1F97}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzFramework\Components">
+      <UniqueIdentifier>{5C6185EF-F643-3722-A1AF-F6A0BB8B8B85}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzFramework\Debug">
+      <UniqueIdentifier>{BD6E59D1-AD72-3A3D-B81C-559CC693E4F0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzFramework\Dependency">
+      <UniqueIdentifier>{6B47433E-7554-3C3B-A441-AE639F08DEF3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzFramework\Entity">
+      <UniqueIdentifier>{6CF6827C-B378-3110-AE3F-5CF92F042B63}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzFramework\FileFunc">
+      <UniqueIdentifier>{A46BB852-047A-3CBC-B8B4-5E2342647CC6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzFramework\FileTag">
+      <UniqueIdentifier>{EC3BE8C2-5ABD-3F3A-88F9-ECA6A9F124D4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzFramework\Font">
+      <UniqueIdentifier>{A7CB58EC-E296-39D7-973A-315A992F3400}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzFramework\Gem">
+      <UniqueIdentifier>{F80D7CF0-BA24-3D19-A216-E3FCBAC1FA30}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzFramework\IO">
+      <UniqueIdentifier>{F54461DF-FDCA-38F5-9E4A-F28FD1D9B400}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzFramework\InGameUI">
+      <UniqueIdentifier>{5E2988E4-F7F0-35E4-A70C-BC0862B23F12}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzFramework\Input">
+      <UniqueIdentifier>{BCF2177C-AA84-31EC-B247-9D6433AE69A6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzFramework\Input\Buses">
+      <UniqueIdentifier>{CE734904-9CC2-3848-A8BC-6F4D05C7BD81}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzFramework\Input\Buses\Notifications">
+      <UniqueIdentifier>{87B33BB3-794E-3198-8098-DD2D2B70BEA8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzFramework\Input\Buses\Requests">
+      <UniqueIdentifier>{BC6A11B8-9D43-3415-9143-7323B63BE39C}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzFramework\Input\Channels">
+      <UniqueIdentifier>{2202BAF8-F29D-3E36-ADD9-39342A84A59E}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzFramework\Input\Contexts">
+      <UniqueIdentifier>{5EE74F40-F3F8-3684-BC19-AEF42FC75E4E}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzFramework\Input\Devices">
+      <UniqueIdentifier>{9DF30B88-448F-3B31-BB10-81D5085AED57}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzFramework\Input\Devices\Gamepad">
+      <UniqueIdentifier>{F815C86F-FFFD-3B5F-BCA2-790C00AEB563}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzFramework\Input\Devices\Keyboard">
+      <UniqueIdentifier>{73AAD31D-A0DF-3199-A5AB-A45211E4FCDC}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzFramework\Input\Devices\Motion">
+      <UniqueIdentifier>{D8AE10AE-1FD0-3B07-824A-7E67BCE666A2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzFramework\Input\Devices\Mouse">
+      <UniqueIdentifier>{F4CB7E3E-FB24-3EA1-B24C-512C7D3CE152}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzFramework\Input\Devices\Touch">
+      <UniqueIdentifier>{4A2018C0-1A88-3318-947C-1772ADD7548B}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzFramework\Input\Devices\VirtualKeyboard">
+      <UniqueIdentifier>{AE0D4233-E665-30C3-BEFA-4D91C79C446D}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzFramework\Input\Events">
+      <UniqueIdentifier>{08E3475F-5F08-398F-9296-351EFAF238C8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzFramework\Input\Mappings">
+      <UniqueIdentifier>{92D0475C-A53E-3D40-B204-CE7F3D2CAA8D}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzFramework\Input\System">
+      <UniqueIdentifier>{2025978D-2075-35E2-953D-52A3D7C993FB}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzFramework\Input\User">
+      <UniqueIdentifier>{9F6FA19D-1BB4-3138-BE6E-3B6F0349AE8C}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzFramework\Input\Utils">
+      <UniqueIdentifier>{B39DB036-B6EF-3083-AE85-0E4CAD37A84A}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzFramework\Logging">
+      <UniqueIdentifier>{9D2D7D8E-129A-38C9-9D3C-982A9A53D12C}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzFramework\Math">
+      <UniqueIdentifier>{12E5B3D6-884D-3042-8C86-C6CEB836874D}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzFramework\Metrics">
+      <UniqueIdentifier>{D075B412-C0F1-3C1B-B48D-907684C2427E}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzFramework\Network">
+      <UniqueIdentifier>{E8546AF2-2485-335C-A083-026B7A0CAA44}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzFramework\Physics">
+      <UniqueIdentifier>{206CCB4F-351D-3BCC-88C9-72A9819087D7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzFramework\Physics\Collision">
+      <UniqueIdentifier>{92D2E624-C82C-3CB6-AC1B-DEC89CC4F012}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzFramework\Physics\Common">
+      <UniqueIdentifier>{2553C4B6-DE5B-3FD8-A0BC-1115FAEFB4D1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzFramework\Physics\Components">
+      <UniqueIdentifier>{210FB69B-1791-34CF-8A8C-3C4DF85F6BB3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzFramework\Physics\Configuration">
+      <UniqueIdentifier>{9E671FC7-80F6-3E6F-9179-472BD68A7427}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzFramework\Physics\SimulatedBodies">
+      <UniqueIdentifier>{7FE1DB80-624A-3D23-A47C-DC0922304C5F}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzFramework\Platform">
+      <UniqueIdentifier>{F4DB6E9C-2D04-34C8-98B3-78BE9A574875}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzFramework\Process">
+      <UniqueIdentifier>{FE1DDE3F-0914-3D63-88D6-398400EE0A92}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzFramework\ProjectManager">
+      <UniqueIdentifier>{B4709EE2-7D08-3111-95D0-AEE30D0A0046}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzFramework\Render">
+      <UniqueIdentifier>{C1D9376D-1D4E-31BB-BD8E-56D050138169}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzFramework\Scene">
+      <UniqueIdentifier>{CE6C9869-04A6-336F-91DA-AE1364E8CBC9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzFramework\Script">
+      <UniqueIdentifier>{9527F864-AC28-3098-B57B-0BA80533576A}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzFramework\Session">
+      <UniqueIdentifier>{6646414B-4012-3DF5-9935-FD9DE004A323}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzFramework\Slice">
+      <UniqueIdentifier>{B36CF3B3-3872-331F-890F-81A3C36F4E8E}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzFramework\Spawnable">
+      <UniqueIdentifier>{D491022A-3478-3231-B4C2-06020A2576DD}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzFramework\StreamingInstall">
+      <UniqueIdentifier>{8587977E-5113-3900-889F-0763C077C94B}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzFramework\StringFunc">
+      <UniqueIdentifier>{9745343F-0262-3419-A16D-06885D7F0C47}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzFramework\TargetManagement">
+      <UniqueIdentifier>{8BA2D74E-CE07-388D-AC94-70EFAFBBBB14}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzFramework\Terrain">
+      <UniqueIdentifier>{94088AD4-8F66-3999-B8E4-B558589ABA71}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzFramework\Thermal">
+      <UniqueIdentifier>{0D985ECD-A7D7-318D-AE88-8982E2F2AD2D}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzFramework\UnitTest">
+      <UniqueIdentifier>{C9570576-3BE9-3C7D-A814-489A0A4CD737}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzFramework\Viewport">
+      <UniqueIdentifier>{ECCD0C4C-5B96-3601-9C4E-C365D85AA8EA}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzFramework\Visibility">
+      <UniqueIdentifier>{F02661E2-21E5-3628-88B2-EFDB9BCFBF17}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzFramework\Windowing">
+      <UniqueIdentifier>{CC7C1A2B-E5A5-3714-940C-6040142758F1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Generated Files">
+      <UniqueIdentifier>{FB9B7D8B-7F05-31D5-AA90-592248EDE1B3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Platform">
+      <UniqueIdentifier>{378A8D8C-6CA1-3F6B-A02B-1E9FF64C97B2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Platform\Windows">
+      <UniqueIdentifier>{63AEF2F6-51C7-306A-BFE8-A049C8C62EFB}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Platform\Windows\..">
+      <UniqueIdentifier>{C2D7F6B4-9216-3C2D-9F9A-76D34821E4A4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Platform\Windows\..\Common">
+      <UniqueIdentifier>{905836E8-0C7C-3AC8-B31E-AD197AA2F2EA}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Platform\Windows\..\Common\Default">
+      <UniqueIdentifier>{9F370D39-A521-3AA5-B0D6-C2458DC201B2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Platform\Windows\..\Common\Default\AzFramework">
+      <UniqueIdentifier>{E5283EDB-FA6F-3790-A8CE-3D0F828431B3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Platform\Windows\..\Common\Default\AzFramework\Input">
+      <UniqueIdentifier>{DC38FFFB-91FB-3C97-8104-472B9DE5F8F0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Platform\Windows\..\Common\Default\AzFramework\Input\User">
+      <UniqueIdentifier>{BC600BDF-FBC9-3EA4-8109-6B3FA4152D14}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Platform\Windows\..\Common\Unimplemented">
+      <UniqueIdentifier>{B0646FDB-3BB8-3F29-8B4D-C541D8A8D50B}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Platform\Windows\..\Common\Unimplemented\AzFramework">
+      <UniqueIdentifier>{79AD8526-7F8E-38B5-9D46-3354B715CB7D}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Platform\Windows\..\Common\Unimplemented\AzFramework\Input">
+      <UniqueIdentifier>{CFCBA56D-6325-39D4-BD2D-897F6DDF5778}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Platform\Windows\..\Common\Unimplemented\AzFramework\Input\Devices">
+      <UniqueIdentifier>{06D179D3-0586-316E-9DC8-D8BC8ACE30BA}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Platform\Windows\..\Common\Unimplemented\AzFramework\Input\Devices\Motion">
+      <UniqueIdentifier>{7FD48838-4D26-3D97-9951-582137B244A7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Platform\Windows\..\Common\Unimplemented\AzFramework\Input\Devices\Touch">
+      <UniqueIdentifier>{B70CCB53-EF21-311B-8AF3-23F36D9183F6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Platform\Windows\..\Common\Unimplemented\AzFramework\Input\Devices\VirtualKeyboard">
+      <UniqueIdentifier>{CE6258F9-06FD-3A2F-A325-FD6402874A48}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Platform\Windows\..\Common\Unimplemented\AzFramework\StreamingInstall">
+      <UniqueIdentifier>{B7B7971D-E5F2-3167-B5F2-2AE2D515360C}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Platform\Windows\..\Common\WinAPI">
+      <UniqueIdentifier>{1168C645-1E7D-354D-A1D3-60D4294B95F3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Platform\Windows\..\Common\WinAPI\AzFramework">
+      <UniqueIdentifier>{0326A9D3-4E05-3560-90E3-CCA58DA03AA4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Platform\Windows\..\Common\WinAPI\AzFramework\IO">
+      <UniqueIdentifier>{83B46BBC-0451-3B41-9F24-C7F1B39A1970}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Platform\Windows\..\Common\WinAPI\AzFramework\Input">
+      <UniqueIdentifier>{B4622CB9-28A9-3342-8804-10D80832B8B7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Platform\Windows\..\Common\WinAPI\AzFramework\Input\Devices">
+      <UniqueIdentifier>{878C7D4C-B6CA-309D-9175-9337060912ED}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Platform\Windows\..\Common\WinAPI\AzFramework\Input\Devices\Keyboard">
+      <UniqueIdentifier>{06AA8216-3C42-3221-97AF-236E8A8DF4E1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Platform\Windows\AzFramework">
+      <UniqueIdentifier>{6953705E-6EB7-3237-B340-8C18B7EA8F14}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Platform\Windows\AzFramework\API">
+      <UniqueIdentifier>{CA6B2DBA-EAC3-3736-A38A-17B75F55A97D}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Platform\Windows\AzFramework\Application">
+      <UniqueIdentifier>{0816CEDD-A802-3DC2-9168-FAD0F49544AE}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Platform\Windows\AzFramework\Archive">
+      <UniqueIdentifier>{CA140CFF-DBCC-377B-8B58-29C3723C0E6C}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Platform\Windows\AzFramework\Asset">
+      <UniqueIdentifier>{7049107D-DD33-3F61-B014-D8ABA7352DB6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Platform\Windows\AzFramework\IO">
+      <UniqueIdentifier>{20DE8A67-B8C5-3C87-960D-6C12F0D58E0C}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Platform\Windows\AzFramework\Input">
+      <UniqueIdentifier>{7A660C20-AD0F-3779-A36E-C606AD49DBA2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Platform\Windows\AzFramework\Input\Buses">
+      <UniqueIdentifier>{4AB2DF40-4064-383A-BBBB-703FF1F9DDC1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Platform\Windows\AzFramework\Input\Buses\Notifications">
+      <UniqueIdentifier>{BF5A1C2D-C3D4-38FC-8CD6-4A0D9791E159}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Platform\Windows\AzFramework\Input\Devices">
+      <UniqueIdentifier>{4506A887-BF2B-36C4-B320-F450DB1F2225}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Platform\Windows\AzFramework\Input\Devices\Gamepad">
+      <UniqueIdentifier>{58B2427D-BBC3-3369-971C-A6E056BCB29D}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Platform\Windows\AzFramework\Input\Devices\Keyboard">
+      <UniqueIdentifier>{360E65E0-0B37-3C99-B8C8-3761BC349706}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Platform\Windows\AzFramework\Input\Devices\Mouse">
+      <UniqueIdentifier>{E75D8E83-B8CB-33F9-B54D-69D05462D13D}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Platform\Windows\AzFramework\Input\User">
+      <UniqueIdentifier>{92E42513-D6FE-3272-A14B-039A686E6F72}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Platform\Windows\AzFramework\Process">
+      <UniqueIdentifier>{753E07AF-7112-38F5-BC1C-213B0DB381A2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Platform\Windows\AzFramework\TargetManagement">
+      <UniqueIdentifier>{F89A652F-EEF9-3AF7-BBEF-85BDC8BCF569}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Platform\Windows\AzFramework\Windowing">
+      <UniqueIdentifier>{AF708A9F-FA4B-3B01-9C27-D0C6D73D0F2D}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

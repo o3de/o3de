@@ -1,0 +1,8 @@
+# CMake generation dependency list for this directory.
+C:/Users/lesaelr/o3de/Gems/ScriptEvents/Code/CMakeLists.txt
+C:/Users/lesaelr/o3de/Gems/ScriptEvents/Code/scriptevents_common_files.cmake
+C:/Users/lesaelr/o3de/Gems/ScriptEvents/Code/scriptevents_editor_builder_files.cmake
+C:/Users/lesaelr/o3de/Gems/ScriptEvents/Code/scriptevents_editor_files.cmake
+C:/Users/lesaelr/o3de/Gems/ScriptEvents/Code/scriptevents_files.cmake
+C:/Users/lesaelr/o3de/Gems/ScriptEvents/Code/scriptevents_tests_files.cmake
+C:/Users/lesaelr/o3de/cmake/Platform/Windows/LYTestWrappers_windows.cmake

@@ -1,0 +1,44 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\CMakeFiles\ReflectedPropertyEditorStandalone.dir\Unity\unity_0_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\AzQtComponents\PropertyEditorStandalone\main.cpp">
+      <Filter>AzQtComponents\PropertyEditorStandalone</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\CMakeFiles\08b24365a84bd27d080f6dd51f42b933\ReflectedPropertyEditorStandalone_(CONFIG).stamp.rule">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\CMakeLists.txt">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\AzQtComponents\azqtcomponents_rpestandalone_files.cmake">
+      <Filter>AzQtComponents</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\runtime_dependencies\debug\ReflectedPropertyEditorStandalone_debug.stamp">
+      <Filter>Generated Files</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\runtime_dependencies\profile\ReflectedPropertyEditorStandalone_profile.stamp">
+      <Filter>Generated Files</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\runtime_dependencies\release\ReflectedPropertyEditorStandalone_release.stamp">
+      <Filter>Generated Files</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="AzQtComponents">
+      <UniqueIdentifier>{9E6694A1-33EA-34DD-A3F7-6FDBBD75AD17}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzQtComponents\PropertyEditorStandalone">
+      <UniqueIdentifier>{9A834E0D-C280-3ADA-8D53-A1DDC3362950}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Generated Files">
+      <UniqueIdentifier>{FB9B7D8B-7F05-31D5-AA90-592248EDE1B3}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

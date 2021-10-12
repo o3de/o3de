@@ -1,0 +1,14 @@
+# CMake generation dependency list for this directory.
+C:/Users/lesaelr/.o3de/3rdParty/packages/Blast-v1.1.7_rc2-9-geb169fe-rev2-windows/FindBlast.cmake
+C:/Users/lesaelr/.o3de/3rdParty/packages/Blast-v1.1.7_rc2-9-geb169fe-rev2-windows/PackageInfo.json
+C:/Users/lesaelr/.o3de/3rdParty/packages/PhysX-4.1.2.29882248-rev3-windows/FindPhysX.cmake
+C:/Users/lesaelr/.o3de/3rdParty/packages/PhysX-4.1.2.29882248-rev3-windows/PackageInfo.json
+C:/Users/lesaelr/o3de/Gems/Blast/Code/CMakeLists.txt
+C:/Users/lesaelr/o3de/Gems/Blast/Code/Platform/Windows/PAL_windows.cmake
+C:/Users/lesaelr/o3de/Gems/Blast/Code/blast_editor_files.cmake
+C:/Users/lesaelr/o3de/Gems/Blast/Code/blast_editor_shared_files.cmake
+C:/Users/lesaelr/o3de/Gems/Blast/Code/blast_editor_tests_files.cmake
+C:/Users/lesaelr/o3de/Gems/Blast/Code/blast_files.cmake
+C:/Users/lesaelr/o3de/Gems/Blast/Code/blast_shared_files.cmake
+C:/Users/lesaelr/o3de/Gems/Blast/Code/blast_tests_files.cmake
+C:/Users/lesaelr/o3de/cmake/Platform/Windows/LYTestWrappers_windows.cmake

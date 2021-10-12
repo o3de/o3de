@@ -1,0 +1,407 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <PreferredToolArchitecture>x64</PreferredToolArchitecture>
+  </PropertyGroup>
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="debug|x64">
+      <Configuration>debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="profile|x64">
+      <Configuration>profile</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="release|x64">
+      <Configuration>release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{D96E4026-5DDA-3DB1-9332-5786C220ECA6}</ProjectGuid>
+    <WindowsTargetPlatformVersion>10.0.19041.0</WindowsTargetPlatformVersion>
+    <Keyword>Win32Proj</Keyword>
+    <Platform>x64</Platform>
+    <ProjectName>Atom_RHI_Vulkan.Private</ProjectName>
+    <VCProjectUpgraderObjectName>NoUpgrade</VCProjectUpgraderObjectName>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='debug|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v142</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='profile|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v142</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='release|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v142</PlatformToolset>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>10.0.20506.1</_ProjectFileVersion>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='debug|x64'">C:\Users\lesaelr\o3de\bin\debug\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='debug|x64'">Atom_RHI_Vulkan.Private.dir\debug\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='debug|x64'">Atom_RHI_Vulkan.Private</TargetName>
+    <TargetExt Condition="'$(Configuration)|$(Platform)'=='debug|x64'">.dll</TargetExt>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='debug|x64'">false</LinkIncremental>
+    <GenerateManifest Condition="'$(Configuration)|$(Platform)'=='debug|x64'">true</GenerateManifest>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='profile|x64'">C:\Users\lesaelr\o3de\bin\profile\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='profile|x64'">Atom_RHI_Vulkan.Private.dir\profile\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='profile|x64'">Atom_RHI_Vulkan.Private</TargetName>
+    <TargetExt Condition="'$(Configuration)|$(Platform)'=='profile|x64'">.dll</TargetExt>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='profile|x64'">false</LinkIncremental>
+    <GenerateManifest Condition="'$(Configuration)|$(Platform)'=='profile|x64'">true</GenerateManifest>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='release|x64'">C:\Users\lesaelr\o3de\bin\release\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='release|x64'">Atom_RHI_Vulkan.Private.dir\release\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='release|x64'">Atom_RHI_Vulkan.Private</TargetName>
+    <TargetExt Condition="'$(Configuration)|$(Platform)'=='release|x64'">.dll</TargetExt>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='release|x64'">false</LinkIncremental>
+    <GenerateManifest Condition="'$(Configuration)|$(Platform)'=='release|x64'">true</GenerateManifest>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='debug|x64'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>C:\Users\lesaelr\o3de\Gems\Atom\RHI\Vulkan\Code\Source;C:\Users\lesaelr\o3de\Gems\Atom\RHI\Vulkan\Code\Source\Platform\Windows;C:\Users\lesaelr\o3de\Gems\Atom\RHI\Vulkan\Code\Include;C:\Users\lesaelr\o3de\Gems\Atom\RHI\Vulkan\Code\Include\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzCore\.;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Common;C:\Users\lesaelr\o3de\Code\Framework\AzFramework\.;C:\Users\lesaelr\o3de\Code\Framework\AzFramework\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\GridMate\.;C:\Users\lesaelr\o3de\Code\Framework\GridMate\Platform\Windows;C:\Users\lesaelr\o3de\Gems\Atom\RHI\Code\Include;C:\Users\lesaelr\o3de\Code\Framework\AtomCore\.;C:\Users\lesaelr\o3de\Gems\Atom\RHI\Vulkan\Code\Include\Atom\RHI.Loader\Glad;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalOptions>%(AdditionalOptions) /Zc:__cplusplus /Zc:lambda /favor:AMD64 /bigobj /RTCsu /experimental:external /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/Lua-5.3.5-rev5-windows/lua/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/RapidJSON-1.1.0-rev1-multiplatform/RapidJSON/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/RapidXML-1.13-rev1-multiplatform/RapidXML/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/zlib-1.2.11-rev2-windows/zlib/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/zstd-1.35-multiplatform/zstd/lib /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/cityhash-1.1-multiplatform/cityhash/src /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/OpenSSL-1.1.1b-rev2-windows/OpenSSL/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/lz4-1.9.3-vcpkg-rev4-windows/lz4/lz4/include /external:IC:/Users/lesaelr/o3de/Gems/Atom/RHI/Vulkan/External/glad/2.0.0-beta/include</AdditionalOptions>
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <BufferSecurityCheck>true</BufferSecurityCheck>
+      <CallingConvention>Cdecl</CallingConvention>
+      <ConformanceMode>true</ConformanceMode>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <DiagnosticsFormat>Caret</DiagnosticsFormat>
+      <DisableSpecificWarnings>4201</DisableSpecificWarnings>
+      <ExceptionHandling>
+      </ExceptionHandling>
+      <ExternalWarningLevel>TurnOffAllWarnings</ExternalWarningLevel>
+      <FloatingPointModel>Fast</FloatingPointModel>
+      <ForceConformanceInForLoopScope>true</ForceConformanceInForLoopScope>
+      <InlineFunctionExpansion>Disabled</InlineFunctionExpansion>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <Optimization>Disabled</Optimization>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <TreatSpecificWarningsAsErrors>4263;4264;4265;4266;4296;4426;4437;4774;4777;5031;5032;5233</TreatSpecificWarningsAsErrors>
+      <TreatWarningAsError>true</TreatWarningAsError>
+      <UseFullPaths>false</UseFullPaths>
+      <WarningLevel>Level4</WarningLevel>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);_HAS_EXCEPTIONS=0;_DEBUG;AZ_DEBUG_BUILD=1;AZ_ENABLE_TRACING;AZ_ENABLE_DEBUG_TOOLS;AZ_BUILD_CONFIGURATION_TYPE="debug";_ENABLE_EXTENDED_ALIGNED_STORAGE;_WIN32;WIN32;_WIN64;WIN64;NOMINMAX;OPENSSL_ENABLED;VK_USE_PLATFORM_WIN32_KHR;GLAD_PLATFORM_WIN32;CMAKE_INTDIR="debug";Atom_RHI_Vulkan_Private_EXPORTS</PreprocessorDefinitions>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);_DEBUG;_HAS_EXCEPTIONS=0;AZ_DEBUG_BUILD=1;AZ_ENABLE_TRACING;AZ_ENABLE_DEBUG_TOOLS;AZ_BUILD_CONFIGURATION_TYPE=\"debug\";_ENABLE_EXTENDED_ALIGNED_STORAGE;_WIN32;WIN32;_WIN64;WIN64;NOMINMAX;OPENSSL_ENABLED;VK_USE_PLATFORM_WIN32_KHR;GLAD_PLATFORM_WIN32;CMAKE_INTDIR=\"debug\";Atom_RHI_Vulkan_Private_EXPORTS</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>C:\Users\lesaelr\o3de\Gems\Atom\RHI\Vulkan\Code\Source;C:\Users\lesaelr\o3de\Gems\Atom\RHI\Vulkan\Code\Source\Platform\Windows;C:\Users\lesaelr\o3de\Gems\Atom\RHI\Vulkan\Code\Include;C:\Users\lesaelr\o3de\Gems\Atom\RHI\Vulkan\Code\Include\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzCore\.;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Common;C:\Users\lesaelr\o3de\Code\Framework\AzFramework\.;C:\Users\lesaelr\o3de\Code\Framework\AzFramework\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\GridMate\.;C:\Users\lesaelr\o3de\Code\Framework\GridMate\Platform\Windows;C:\Users\lesaelr\o3de\Gems\Atom\RHI\Code\Include;C:\Users\lesaelr\o3de\Code\Framework\AtomCore\.;C:\Users\lesaelr\o3de\Gems\Atom\RHI\Vulkan\Code\Include\Atom\RHI.Loader\Glad;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+    </ResourceCompile>
+    <Midl>
+      <AdditionalIncludeDirectories>C:\Users\lesaelr\o3de\Gems\Atom\RHI\Vulkan\Code\Source;C:\Users\lesaelr\o3de\Gems\Atom\RHI\Vulkan\Code\Source\Platform\Windows;C:\Users\lesaelr\o3de\Gems\Atom\RHI\Vulkan\Code\Include;C:\Users\lesaelr\o3de\Gems\Atom\RHI\Vulkan\Code\Include\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzCore\.;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Common;C:\Users\lesaelr\o3de\Code\Framework\AzFramework\.;C:\Users\lesaelr\o3de\Code\Framework\AzFramework\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\GridMate\.;C:\Users\lesaelr\o3de\Code\Framework\GridMate\Platform\Windows;C:\Users\lesaelr\o3de\Gems\Atom\RHI\Code\Include;C:\Users\lesaelr\o3de\Code\Framework\AtomCore\.;C:\Users\lesaelr\o3de\Gems\Atom\RHI\Vulkan\Code\Include\Atom\RHI.Loader\Glad;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+    <Link>
+      <AdditionalDependencies>..\..\..\..\..\lib\debug\Atom_RHI_Vulkan.Private.Static.lib;..\..\..\..\..\lib\debug\Atom_RHI.Public.lib;..\..\..\..\..\lib\debug\Atom_RHI_Vulkan.Glad.Static.lib;..\..\..\..\..\lib\debug\Atom_RHI_Vulkan.Reflect.lib;..\..\..\..\..\lib\debug\Atom_RHI.Reflect.lib;..\..\..\..\..\lib\debug\AzFramework.lib;..\..\..\..\..\lib\debug\GridMate.lib;ws2_32.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\OpenSSL-1.1.1b-rev2-windows\OpenSSL\debug\lib\libssl.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\OpenSSL-1.1.1b-rev2-windows\OpenSSL\debug\lib\libcrypto.lib;crypt32.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\lz4-1.9.3-vcpkg-rev4-windows\lz4\lz4\lib\..\debug\lib\lz4d.lib;..\..\..\..\..\lib\debug\AtomCore.lib;..\..\..\..\..\lib\debug\AzCore.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\Lua-5.3.5-rev5-windows\lua\lib\debug\lualib.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\zlib-1.2.11-rev2-windows\zlib\lib\zlibstaticd.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\zstd-1.35-multiplatform\zstd\bin\win-x64-vc140\debug\zstd.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\cityhash-1.1-multiplatform\cityhash\build\win_x64\vc140\debug\cityhash.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;advapi32.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalOptions>%(AdditionalOptions) /machine:x64 /IGNORE:4099</AdditionalOptions>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <ImportLibrary>C:/Users/lesaelr/o3de/lib/debug/Atom_RHI_Vulkan.Private.lib</ImportLibrary>
+      <ProgramDataBaseFile>C:/Users/lesaelr/o3de/bin/debug/Atom_RHI_Vulkan.Private.pdb</ProgramDataBaseFile>
+      <SubSystem>Console</SubSystem>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <TargetMachine>MachineX64</TargetMachine>
+    </Link>
+    <ProjectReference>
+      <LinkLibraryDependencies>false</LinkLibraryDependencies>
+    </ProjectReference>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='profile|x64'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>C:\Users\lesaelr\o3de\Gems\Atom\RHI\Vulkan\Code\Source;C:\Users\lesaelr\o3de\Gems\Atom\RHI\Vulkan\Code\Source\Platform\Windows;C:\Users\lesaelr\o3de\Gems\Atom\RHI\Vulkan\Code\Include;C:\Users\lesaelr\o3de\Gems\Atom\RHI\Vulkan\Code\Include\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzCore\.;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Common;C:\Users\lesaelr\o3de\Code\Framework\AzFramework\.;C:\Users\lesaelr\o3de\Code\Framework\AzFramework\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\GridMate\.;C:\Users\lesaelr\o3de\Code\Framework\GridMate\Platform\Windows;C:\Users\lesaelr\o3de\Gems\Atom\RHI\Code\Include;C:\Users\lesaelr\o3de\Code\Framework\AtomCore\.;C:\Users\lesaelr\o3de\Gems\Atom\RHI\Vulkan\Code\Include\Atom\RHI.Loader\Glad;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalOptions>%(AdditionalOptions) /Zc:__cplusplus /Zc:lambda /favor:AMD64 /bigobj /experimental:external /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/Lua-5.3.5-rev5-windows/lua/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/RapidJSON-1.1.0-rev1-multiplatform/RapidJSON/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/RapidXML-1.13-rev1-multiplatform/RapidXML/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/zlib-1.2.11-rev2-windows/zlib/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/zstd-1.35-multiplatform/zstd/lib /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/cityhash-1.1-multiplatform/cityhash/src /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/OpenSSL-1.1.1b-rev2-windows/OpenSSL/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/lz4-1.9.3-vcpkg-rev4-windows/lz4/lz4/include /external:IC:/Users/lesaelr/o3de/Gems/Atom/RHI/Vulkan/External/glad/2.0.0-beta/include</AdditionalOptions>
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <CallingConvention>Cdecl</CallingConvention>
+      <ConformanceMode>true</ConformanceMode>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <DiagnosticsFormat>Caret</DiagnosticsFormat>
+      <DisableSpecificWarnings>4201</DisableSpecificWarnings>
+      <ExceptionHandling>
+      </ExceptionHandling>
+      <ExternalWarningLevel>TurnOffAllWarnings</ExternalWarningLevel>
+      <FloatingPointModel>Fast</FloatingPointModel>
+      <ForceConformanceInForLoopScope>true</ForceConformanceInForLoopScope>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <Optimization>MaxSpeed</Optimization>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <RemoveUnreferencedCodeData>true</RemoveUnreferencedCodeData>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <StringPooling>true</StringPooling>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <TreatSpecificWarningsAsErrors>4263;4264;4265;4266;4296;4426;4437;4774;4777;5031;5032;5233</TreatSpecificWarningsAsErrors>
+      <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
+      <TreatWarningAsError>true</TreatWarningAsError>
+      <UseFullPaths>false</UseFullPaths>
+      <WarningLevel>Level4</WarningLevel>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);_HAS_EXCEPTIONS=0;_PROFILE;PROFILE;NDEBUG;AZ_ENABLE_TRACING;AZ_ENABLE_DEBUG_TOOLS;AZ_BUILD_CONFIGURATION_TYPE="profile";_ENABLE_EXTENDED_ALIGNED_STORAGE;_WIN32;WIN32;_WIN64;WIN64;NOMINMAX;OPENSSL_ENABLED;VK_USE_PLATFORM_WIN32_KHR;GLAD_PLATFORM_WIN32;CMAKE_INTDIR="profile";Atom_RHI_Vulkan_Private_EXPORTS</PreprocessorDefinitions>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);_HAS_EXCEPTIONS=0;_PROFILE;PROFILE;NDEBUG;AZ_ENABLE_TRACING;AZ_ENABLE_DEBUG_TOOLS;AZ_BUILD_CONFIGURATION_TYPE=\"profile\";_ENABLE_EXTENDED_ALIGNED_STORAGE;_WIN32;WIN32;_WIN64;WIN64;NOMINMAX;OPENSSL_ENABLED;VK_USE_PLATFORM_WIN32_KHR;GLAD_PLATFORM_WIN32;CMAKE_INTDIR=\"profile\";Atom_RHI_Vulkan_Private_EXPORTS</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>C:\Users\lesaelr\o3de\Gems\Atom\RHI\Vulkan\Code\Source;C:\Users\lesaelr\o3de\Gems\Atom\RHI\Vulkan\Code\Source\Platform\Windows;C:\Users\lesaelr\o3de\Gems\Atom\RHI\Vulkan\Code\Include;C:\Users\lesaelr\o3de\Gems\Atom\RHI\Vulkan\Code\Include\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzCore\.;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Common;C:\Users\lesaelr\o3de\Code\Framework\AzFramework\.;C:\Users\lesaelr\o3de\Code\Framework\AzFramework\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\GridMate\.;C:\Users\lesaelr\o3de\Code\Framework\GridMate\Platform\Windows;C:\Users\lesaelr\o3de\Gems\Atom\RHI\Code\Include;C:\Users\lesaelr\o3de\Code\Framework\AtomCore\.;C:\Users\lesaelr\o3de\Gems\Atom\RHI\Vulkan\Code\Include\Atom\RHI.Loader\Glad;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+    </ResourceCompile>
+    <Midl>
+      <AdditionalIncludeDirectories>C:\Users\lesaelr\o3de\Gems\Atom\RHI\Vulkan\Code\Source;C:\Users\lesaelr\o3de\Gems\Atom\RHI\Vulkan\Code\Source\Platform\Windows;C:\Users\lesaelr\o3de\Gems\Atom\RHI\Vulkan\Code\Include;C:\Users\lesaelr\o3de\Gems\Atom\RHI\Vulkan\Code\Include\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzCore\.;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Common;C:\Users\lesaelr\o3de\Code\Framework\AzFramework\.;C:\Users\lesaelr\o3de\Code\Framework\AzFramework\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\GridMate\.;C:\Users\lesaelr\o3de\Code\Framework\GridMate\Platform\Windows;C:\Users\lesaelr\o3de\Gems\Atom\RHI\Code\Include;C:\Users\lesaelr\o3de\Code\Framework\AtomCore\.;C:\Users\lesaelr\o3de\Gems\Atom\RHI\Vulkan\Code\Include\Atom\RHI.Loader\Glad;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+    <Link>
+      <AdditionalDependencies>..\..\..\..\..\lib\profile\Atom_RHI_Vulkan.Private.Static.lib;..\..\..\..\..\lib\profile\Atom_RHI.Public.lib;..\..\..\..\..\lib\profile\Atom_RHI_Vulkan.Glad.Static.lib;..\..\..\..\..\lib\profile\Atom_RHI_Vulkan.Reflect.lib;..\..\..\..\..\lib\profile\Atom_RHI.Reflect.lib;..\..\..\..\..\lib\profile\AzFramework.lib;..\..\..\..\..\lib\profile\GridMate.lib;ws2_32.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\OpenSSL-1.1.1b-rev2-windows\OpenSSL\lib\libssl.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\OpenSSL-1.1.1b-rev2-windows\OpenSSL\lib\libcrypto.lib;crypt32.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\lz4-1.9.3-vcpkg-rev4-windows\lz4\lz4\lib\lz4.lib;..\..\..\..\..\lib\profile\AtomCore.lib;..\..\..\..\..\lib\profile\AzCore.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\Lua-5.3.5-rev5-windows\lua\lib\release\lualib.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\zlib-1.2.11-rev2-windows\zlib\lib\zlibstatic.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\zstd-1.35-multiplatform\zstd\bin\win-x64-vc140\release\zstd.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\cityhash-1.1-multiplatform\cityhash\build\win_x64\vc140\release\cityhash.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;advapi32.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalOptions>%(AdditionalOptions) /machine:x64 /IGNORE:4099</AdditionalOptions>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <ImportLibrary>C:/Users/lesaelr/o3de/lib/profile/Atom_RHI_Vulkan.Private.lib</ImportLibrary>
+      <OptimizeReferences>true</OptimizeReferences>
+      <ProgramDataBaseFile>C:/Users/lesaelr/o3de/bin/profile/Atom_RHI_Vulkan.Private.pdb</ProgramDataBaseFile>
+      <SubSystem>Console</SubSystem>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <TargetMachine>MachineX64</TargetMachine>
+    </Link>
+    <ProjectReference>
+      <LinkLibraryDependencies>false</LinkLibraryDependencies>
+    </ProjectReference>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='release|x64'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>C:\Users\lesaelr\o3de\Gems\Atom\RHI\Vulkan\Code\Source;C:\Users\lesaelr\o3de\Gems\Atom\RHI\Vulkan\Code\Source\Platform\Windows;C:\Users\lesaelr\o3de\Gems\Atom\RHI\Vulkan\Code\Include;C:\Users\lesaelr\o3de\Gems\Atom\RHI\Vulkan\Code\Include\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzCore\.;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Common;C:\Users\lesaelr\o3de\Code\Framework\AzFramework\.;C:\Users\lesaelr\o3de\Code\Framework\AzFramework\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\GridMate\.;C:\Users\lesaelr\o3de\Code\Framework\GridMate\Platform\Windows;C:\Users\lesaelr\o3de\Gems\Atom\RHI\Code\Include;C:\Users\lesaelr\o3de\Code\Framework\AtomCore\.;C:\Users\lesaelr\o3de\Gems\Atom\RHI\Vulkan\Code\Include\Atom\RHI.Loader\Glad;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalOptions>%(AdditionalOptions) /Zc:__cplusplus /Zc:lambda /favor:AMD64 /bigobj /experimental:external /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/Lua-5.3.5-rev5-windows/lua/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/RapidJSON-1.1.0-rev1-multiplatform/RapidJSON/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/RapidXML-1.13-rev1-multiplatform/RapidXML/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/zlib-1.2.11-rev2-windows/zlib/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/zstd-1.35-multiplatform/zstd/lib /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/cityhash-1.1-multiplatform/cityhash/src /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/OpenSSL-1.1.1b-rev2-windows/OpenSSL/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/lz4-1.9.3-vcpkg-rev4-windows/lz4/lz4/include /external:IC:/Users/lesaelr/o3de/Gems/Atom/RHI/Vulkan/External/glad/2.0.0-beta/include</AdditionalOptions>
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <CallingConvention>Cdecl</CallingConvention>
+      <ConformanceMode>true</ConformanceMode>
+      <DiagnosticsFormat>Caret</DiagnosticsFormat>
+      <DisableSpecificWarnings>4201</DisableSpecificWarnings>
+      <ExceptionHandling>
+      </ExceptionHandling>
+      <ExternalWarningLevel>TurnOffAllWarnings</ExternalWarningLevel>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <FloatingPointModel>Fast</FloatingPointModel>
+      <ForceConformanceInForLoopScope>true</ForceConformanceInForLoopScope>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <OmitFramePointers>true</OmitFramePointers>
+      <Optimization>Full</Optimization>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <TreatSpecificWarningsAsErrors>4263;4264;4265;4266;4296;4426;4437;4774;4777;5031;5032;5233</TreatSpecificWarningsAsErrors>
+      <TreatWarningAsError>true</TreatWarningAsError>
+      <UseFullPaths>false</UseFullPaths>
+      <WarningLevel>Level4</WarningLevel>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);_HAS_EXCEPTIONS=0;_RELEASE;RELEASE;NDEBUG;AZ_BUILD_CONFIGURATION_TYPE="release";_ENABLE_EXTENDED_ALIGNED_STORAGE;_WIN32;WIN32;_WIN64;WIN64;NOMINMAX;OPENSSL_ENABLED;VK_USE_PLATFORM_WIN32_KHR;GLAD_PLATFORM_WIN32;CMAKE_INTDIR="release";Atom_RHI_Vulkan_Private_EXPORTS</PreprocessorDefinitions>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+      <DebugInformationFormat>
+      </DebugInformationFormat>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);_HAS_EXCEPTIONS=0;_RELEASE;RELEASE;NDEBUG;AZ_BUILD_CONFIGURATION_TYPE=\"release\";_ENABLE_EXTENDED_ALIGNED_STORAGE;_WIN32;WIN32;_WIN64;WIN64;NOMINMAX;OPENSSL_ENABLED;VK_USE_PLATFORM_WIN32_KHR;GLAD_PLATFORM_WIN32;CMAKE_INTDIR=\"release\";Atom_RHI_Vulkan_Private_EXPORTS</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>C:\Users\lesaelr\o3de\Gems\Atom\RHI\Vulkan\Code\Source;C:\Users\lesaelr\o3de\Gems\Atom\RHI\Vulkan\Code\Source\Platform\Windows;C:\Users\lesaelr\o3de\Gems\Atom\RHI\Vulkan\Code\Include;C:\Users\lesaelr\o3de\Gems\Atom\RHI\Vulkan\Code\Include\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzCore\.;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Common;C:\Users\lesaelr\o3de\Code\Framework\AzFramework\.;C:\Users\lesaelr\o3de\Code\Framework\AzFramework\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\GridMate\.;C:\Users\lesaelr\o3de\Code\Framework\GridMate\Platform\Windows;C:\Users\lesaelr\o3de\Gems\Atom\RHI\Code\Include;C:\Users\lesaelr\o3de\Code\Framework\AtomCore\.;C:\Users\lesaelr\o3de\Gems\Atom\RHI\Vulkan\Code\Include\Atom\RHI.Loader\Glad;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+    </ResourceCompile>
+    <Midl>
+      <AdditionalIncludeDirectories>C:\Users\lesaelr\o3de\Gems\Atom\RHI\Vulkan\Code\Source;C:\Users\lesaelr\o3de\Gems\Atom\RHI\Vulkan\Code\Source\Platform\Windows;C:\Users\lesaelr\o3de\Gems\Atom\RHI\Vulkan\Code\Include;C:\Users\lesaelr\o3de\Gems\Atom\RHI\Vulkan\Code\Include\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzCore\.;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Common;C:\Users\lesaelr\o3de\Code\Framework\AzFramework\.;C:\Users\lesaelr\o3de\Code\Framework\AzFramework\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\GridMate\.;C:\Users\lesaelr\o3de\Code\Framework\GridMate\Platform\Windows;C:\Users\lesaelr\o3de\Gems\Atom\RHI\Code\Include;C:\Users\lesaelr\o3de\Code\Framework\AtomCore\.;C:\Users\lesaelr\o3de\Gems\Atom\RHI\Vulkan\Code\Include\Atom\RHI.Loader\Glad;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+    <Link>
+      <AdditionalDependencies>..\..\..\..\..\lib\release\Atom_RHI_Vulkan.Private.Static.lib;..\..\..\..\..\lib\release\Atom_RHI.Public.lib;..\..\..\..\..\lib\release\Atom_RHI_Vulkan.Glad.Static.lib;..\..\..\..\..\lib\release\Atom_RHI_Vulkan.Reflect.lib;..\..\..\..\..\lib\release\Atom_RHI.Reflect.lib;..\..\..\..\..\lib\release\AzFramework.lib;..\..\..\..\..\lib\release\GridMate.lib;ws2_32.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\OpenSSL-1.1.1b-rev2-windows\OpenSSL\lib\libssl.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\OpenSSL-1.1.1b-rev2-windows\OpenSSL\lib\libcrypto.lib;crypt32.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\lz4-1.9.3-vcpkg-rev4-windows\lz4\lz4\lib\lz4.lib;..\..\..\..\..\lib\release\AtomCore.lib;..\..\..\..\..\lib\release\AzCore.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\Lua-5.3.5-rev5-windows\lua\lib\release\lualib.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\zlib-1.2.11-rev2-windows\zlib\lib\zlibstatic.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\zstd-1.35-multiplatform\zstd\bin\win-x64-vc140\release\zstd.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\cityhash-1.1-multiplatform\cityhash\build\win_x64\vc140\release\cityhash.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;advapi32.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalOptions>%(AdditionalOptions) /machine:x64 /IGNORE:4099</AdditionalOptions>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
+      <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <ImportLibrary>C:/Users/lesaelr/o3de/lib/release/Atom_RHI_Vulkan.Private.lib</ImportLibrary>
+      <OptimizeReferences>true</OptimizeReferences>
+      <ProgramDataBaseFile>C:/Users/lesaelr/o3de/bin/release/Atom_RHI_Vulkan.Private.pdb</ProgramDataBaseFile>
+      <SubSystem>Console</SubSystem>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <TargetMachine>MachineX64</TargetMachine>
+    </Link>
+    <ProjectReference>
+      <LinkLibraryDependencies>false</LinkLibraryDependencies>
+    </ProjectReference>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\CMakeFiles\08b24365a84bd27d080f6dd51f42b933\Atom_RHI_Vulkan.Private_(CONFIG).stamp.rule">
+      <Message Condition="'$(Configuration)|$(Platform)'=='debug|x64'">Copying Atom_RHI_Vulkan.Private runtime dependencies to output...</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='debug|x64'">setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -P C:/Users/lesaelr/o3de/runtime_dependencies/debug/Atom_RHI_Vulkan.Private.cmake
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='debug|x64'">%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='debug|x64'">C:\Users\lesaelr\o3de\runtime_dependencies\debug\Atom_RHI_Vulkan.Private_debug.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='debug|x64'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='profile|x64'">Copying Atom_RHI_Vulkan.Private runtime dependencies to output...</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='profile|x64'">setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -P C:/Users/lesaelr/o3de/runtime_dependencies/profile/Atom_RHI_Vulkan.Private.cmake
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='profile|x64'">%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='profile|x64'">C:\Users\lesaelr\o3de\runtime_dependencies\profile\Atom_RHI_Vulkan.Private_profile.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='profile|x64'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='release|x64'">Copying Atom_RHI_Vulkan.Private runtime dependencies to output...</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='release|x64'">setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -P C:/Users/lesaelr/o3de/runtime_dependencies/release/Atom_RHI_Vulkan.Private.cmake
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='release|x64'">%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='release|x64'">C:\Users\lesaelr\o3de\runtime_dependencies\release\Atom_RHI_Vulkan.Private_release.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='release|x64'">false</LinkObjects>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Gems\Atom\RHI\Vulkan\Code\CMakeLists.txt">
+      <UseUtf8Encoding>Always</UseUtf8Encoding>
+      <Message Condition="'$(Configuration)|$(Platform)'=='debug|x64'">Building Custom Rule C:/Users/lesaelr/o3de/Gems/Atom/RHI/Vulkan/Code/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='debug|x64'">setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SC:/Users/lesaelr/o3de -BC:/Users/lesaelr/o3de --check-stamp-file C:/Users/lesaelr/o3de/External/Atom-418206cc/RHI/Vulkan/Code/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='debug|x64'">C:\Users\lesaelr\o3de\Gems\Atom\RHI\Vulkan\3rdParty\Findglad_vulkan.cmake;C:\Users\lesaelr\o3de\Gems\Atom\RHI\Vulkan\3rdParty\Platform\Windows\glad_vulkan_windows.cmake;C:\Users\lesaelr\o3de\Gems\Atom\RHI\Vulkan\Code\Include\Platform\Windows\platform_private_windows_files.cmake;C:\Users\lesaelr\o3de\Gems\Atom\RHI\Vulkan\Code\Source\Platform\Windows\PAL_windows.cmake;C:\Users\lesaelr\o3de\Gems\Atom\RHI\Vulkan\Code\Source\Platform\Windows\platform_builders_windows_files.cmake;C:\Users\lesaelr\o3de\Gems\Atom\RHI\Vulkan\Code\Source\Platform\Windows\platform_glad_windows_files.cmake;C:\Users\lesaelr\o3de\Gems\Atom\RHI\Vulkan\Code\Source\Platform\Windows\platform_private_static_windows.cmake;C:\Users\lesaelr\o3de\Gems\Atom\RHI\Vulkan\Code\Source\Platform\Windows\platform_private_windows_files.cmake;C:\Users\lesaelr\o3de\Gems\Atom\RHI\Vulkan\Code\Source\Platform\Windows\platform_reflect_windows_files.cmake;C:\Users\lesaelr\o3de\Gems\Atom\RHI\Vulkan\Code\atom_rhi_vulkan_builders_common_files.cmake;C:\Users\lesaelr\o3de\Gems\Atom\RHI\Vulkan\Code\atom_rhi_vulkan_glad_files.cmake;C:\Users\lesaelr\o3de\Gems\Atom\RHI\Vulkan\Code\atom_rhi_vulkan_private_common_files.cmake;C:\Users\lesaelr\o3de\Gems\Atom\RHI\Vulkan\Code\atom_rhi_vulkan_private_common_shared_files.cmake;C:\Users\lesaelr\o3de\Gems\Atom\RHI\Vulkan\Code\atom_rhi_vulkan_reflect_common_files.cmake;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='debug|x64'">C:\Users\lesaelr\o3de\External\Atom-418206cc\RHI\Vulkan\Code\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='debug|x64'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='profile|x64'">Building Custom Rule C:/Users/lesaelr/o3de/Gems/Atom/RHI/Vulkan/Code/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='profile|x64'">setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SC:/Users/lesaelr/o3de -BC:/Users/lesaelr/o3de --check-stamp-file C:/Users/lesaelr/o3de/External/Atom-418206cc/RHI/Vulkan/Code/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='profile|x64'">C:\Users\lesaelr\o3de\Gems\Atom\RHI\Vulkan\3rdParty\Findglad_vulkan.cmake;C:\Users\lesaelr\o3de\Gems\Atom\RHI\Vulkan\3rdParty\Platform\Windows\glad_vulkan_windows.cmake;C:\Users\lesaelr\o3de\Gems\Atom\RHI\Vulkan\Code\Include\Platform\Windows\platform_private_windows_files.cmake;C:\Users\lesaelr\o3de\Gems\Atom\RHI\Vulkan\Code\Source\Platform\Windows\PAL_windows.cmake;C:\Users\lesaelr\o3de\Gems\Atom\RHI\Vulkan\Code\Source\Platform\Windows\platform_builders_windows_files.cmake;C:\Users\lesaelr\o3de\Gems\Atom\RHI\Vulkan\Code\Source\Platform\Windows\platform_glad_windows_files.cmake;C:\Users\lesaelr\o3de\Gems\Atom\RHI\Vulkan\Code\Source\Platform\Windows\platform_private_static_windows.cmake;C:\Users\lesaelr\o3de\Gems\Atom\RHI\Vulkan\Code\Source\Platform\Windows\platform_private_windows_files.cmake;C:\Users\lesaelr\o3de\Gems\Atom\RHI\Vulkan\Code\Source\Platform\Windows\platform_reflect_windows_files.cmake;C:\Users\lesaelr\o3de\Gems\Atom\RHI\Vulkan\Code\atom_rhi_vulkan_builders_common_files.cmake;C:\Users\lesaelr\o3de\Gems\Atom\RHI\Vulkan\Code\atom_rhi_vulkan_glad_files.cmake;C:\Users\lesaelr\o3de\Gems\Atom\RHI\Vulkan\Code\atom_rhi_vulkan_private_common_files.cmake;C:\Users\lesaelr\o3de\Gems\Atom\RHI\Vulkan\Code\atom_rhi_vulkan_private_common_shared_files.cmake;C:\Users\lesaelr\o3de\Gems\Atom\RHI\Vulkan\Code\atom_rhi_vulkan_reflect_common_files.cmake;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='profile|x64'">C:\Users\lesaelr\o3de\External\Atom-418206cc\RHI\Vulkan\Code\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='profile|x64'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='release|x64'">Building Custom Rule C:/Users/lesaelr/o3de/Gems/Atom/RHI/Vulkan/Code/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='release|x64'">setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SC:/Users/lesaelr/o3de -BC:/Users/lesaelr/o3de --check-stamp-file C:/Users/lesaelr/o3de/External/Atom-418206cc/RHI/Vulkan/Code/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='release|x64'">C:\Users\lesaelr\o3de\Gems\Atom\RHI\Vulkan\3rdParty\Findglad_vulkan.cmake;C:\Users\lesaelr\o3de\Gems\Atom\RHI\Vulkan\3rdParty\Platform\Windows\glad_vulkan_windows.cmake;C:\Users\lesaelr\o3de\Gems\Atom\RHI\Vulkan\Code\Include\Platform\Windows\platform_private_windows_files.cmake;C:\Users\lesaelr\o3de\Gems\Atom\RHI\Vulkan\Code\Source\Platform\Windows\PAL_windows.cmake;C:\Users\lesaelr\o3de\Gems\Atom\RHI\Vulkan\Code\Source\Platform\Windows\platform_builders_windows_files.cmake;C:\Users\lesaelr\o3de\Gems\Atom\RHI\Vulkan\Code\Source\Platform\Windows\platform_glad_windows_files.cmake;C:\Users\lesaelr\o3de\Gems\Atom\RHI\Vulkan\Code\Source\Platform\Windows\platform_private_static_windows.cmake;C:\Users\lesaelr\o3de\Gems\Atom\RHI\Vulkan\Code\Source\Platform\Windows\platform_private_windows_files.cmake;C:\Users\lesaelr\o3de\Gems\Atom\RHI\Vulkan\Code\Source\Platform\Windows\platform_reflect_windows_files.cmake;C:\Users\lesaelr\o3de\Gems\Atom\RHI\Vulkan\Code\atom_rhi_vulkan_builders_common_files.cmake;C:\Users\lesaelr\o3de\Gems\Atom\RHI\Vulkan\Code\atom_rhi_vulkan_glad_files.cmake;C:\Users\lesaelr\o3de\Gems\Atom\RHI\Vulkan\Code\atom_rhi_vulkan_private_common_files.cmake;C:\Users\lesaelr\o3de\Gems\Atom\RHI\Vulkan\Code\atom_rhi_vulkan_private_common_shared_files.cmake;C:\Users\lesaelr\o3de\Gems\Atom\RHI\Vulkan\Code\atom_rhi_vulkan_reflect_common_files.cmake;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='release|x64'">C:\Users\lesaelr\o3de\External\Atom-418206cc\RHI\Vulkan\Code\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='release|x64'">false</LinkObjects>
+    </CustomBuild>
+  </ItemGroup>
+  <PropertyGroup>
+    <EnableUnitySupport>true</EnableUnitySupport>
+  </PropertyGroup>
+  <ItemGroup>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\Atom-418206cc\RHI\Vulkan\Code\CMakeFiles\Atom_RHI_Vulkan.Private.dir\Unity\unity_0_cxx.cxx" IncludeInUnityFile="false" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/Atom-418206cc/RHI/Vulkan/Code/CMakeFiles/Atom_RHI_Vulkan.Private.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\RHI\Vulkan\Code\Source\RHI\Module.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/Atom-418206cc/RHI/Vulkan/Code/CMakeFiles/Atom_RHI_Vulkan.Private.dir/Unity" />
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\RHI\Vulkan\Code\atom_rhi_vulkan_private_common_shared_files.cmake">
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\runtime_dependencies\debug\Atom_RHI_Vulkan.Private_debug.stamp">
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\runtime_dependencies\profile\Atom_RHI_Vulkan.Private_profile.stamp">
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\runtime_dependencies\release\Atom_RHI_Vulkan.Private_release.stamp">
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\ZERO_CHECK.vcxproj">
+      <Project>{CDE32B4E-8490-3FC5-A3F2-976A0A5DE45E}</Project>
+      <Name>ZERO_CHECK</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\Code\Framework\AtomCore\AtomCore.vcxproj">
+      <Project>{6D55F49F-9D52-3893-81A0-A8698549AB69}</Project>
+      <Name>AtomCore</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\External\Atom-418206cc\RHI\Code\Atom_RHI.Public.vcxproj">
+      <Project>{2E32222C-434D-3353-967C-88B4AA98F8F8}</Project>
+      <Name>Atom_RHI.Public</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\External\Atom-418206cc\RHI\Code\Atom_RHI.Reflect.vcxproj">
+      <Project>{34A5B279-91CB-334A-9CD9-0B3CFB872F2C}</Project>
+      <Name>Atom_RHI.Reflect</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\External\Atom-418206cc\RHI\Vulkan\Code\Atom_RHI_Vulkan.Glad.Static.vcxproj">
+      <Project>{35A6D795-6AA7-3C0C-95D8-5EC493D9A2AB}</Project>
+      <Name>Atom_RHI_Vulkan.Glad.Static</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\External\Atom-418206cc\RHI\Vulkan\Code\Atom_RHI_Vulkan.Private.Static.vcxproj">
+      <Project>{C5582C0B-34DE-3950-8D35-B7D30C5834D7}</Project>
+      <Name>Atom_RHI_Vulkan.Private.Static</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\External\Atom-418206cc\RHI\Vulkan\Code\Atom_RHI_Vulkan.Reflect.vcxproj">
+      <Project>{45CE84B6-A6E3-3FFC-9384-E3522677CB78}</Project>
+      <Name>Atom_RHI_Vulkan.Reflect</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore.vcxproj">
+      <Project>{8AC0D8DF-6487-39C7-A5F3-F77355B1ACD9}</Project>
+      <Name>AzCore</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework.vcxproj">
+      <Project>{E4BA859A-1109-3DBC-887D-DBC80D0DD65A}</Project>
+      <Name>AzFramework</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate.vcxproj">
+      <Project>{FE67A854-57A6-3513-BAEF-9A7AC0A253E8}</Project>
+      <Name>GridMate</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

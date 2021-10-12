@@ -1,0 +1,59 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\Atom-418206cc\Tools\ShaderManagementConsole\Code\CMakeFiles\ShaderManagementConsole.Document.dir\Unity\unity_0_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Tools\ShaderManagementConsole\Code\Source\Document\ShaderManagementConsoleDocument.cpp">
+      <Filter>Source\Document</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Tools\ShaderManagementConsole\Code\Source\Document\ShaderManagementConsoleDocumentModule.cpp">
+      <Filter>Source\Document</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Tools\ShaderManagementConsole\Code\Source\Document\ShaderManagementConsoleDocumentSystemComponent.cpp">
+      <Filter>Source\Document</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Tools\ShaderManagementConsole\Code\Include\Atom\Document\ShaderManagementConsoleDocumentModule.h">
+      <Filter>Include\Atom\Document</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Tools\ShaderManagementConsole\Code\Include\Atom\Document\ShaderManagementConsoleDocumentRequestBus.h">
+      <Filter>Include\Atom\Document</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Tools\ShaderManagementConsole\Code\Source\Document\ShaderManagementConsoleDocument.h">
+      <Filter>Source\Document</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Tools\ShaderManagementConsole\Code\Source\Document\ShaderManagementConsoleDocumentSystemComponent.h">
+      <Filter>Source\Document</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Gems\Atom\Tools\ShaderManagementConsole\Code\CMakeLists.txt">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Tools\ShaderManagementConsole\Code\shadermanagementconsoledocument_files.cmake" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Generated Files">
+      <UniqueIdentifier>{FB9B7D8B-7F05-31D5-AA90-592248EDE1B3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include">
+      <UniqueIdentifier>{E188105A-C8C4-34BB-9809-15E8410EF7F8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\Atom">
+      <UniqueIdentifier>{D3FF6349-761F-30FE-A9A9-4A8D0DE47ADF}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\Atom\Document">
+      <UniqueIdentifier>{9E8C967E-63D2-35E9-9ED6-BB4FFB28FB57}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source">
+      <UniqueIdentifier>{F3F0AD47-5F83-373B-A2BF-650D2E4FA3EA}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Document">
+      <UniqueIdentifier>{C864C62A-B2D1-335C-AA23-7653C83BE8BB}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

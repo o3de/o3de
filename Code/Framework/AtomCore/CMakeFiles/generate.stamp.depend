@@ -1,0 +1,7 @@
+# CMake generation dependency list for this directory.
+C:/Users/lesaelr/.o3de/3rdParty/packages/RapidJSON-1.1.0-rev1-multiplatform/FindRapidJSON.cmake
+C:/Users/lesaelr/.o3de/3rdParty/packages/RapidJSON-1.1.0-rev1-multiplatform/PackageInfo.json
+C:/Users/lesaelr/o3de/Code/Framework/AtomCore/AtomCore/atomcore_files.cmake
+C:/Users/lesaelr/o3de/Code/Framework/AtomCore/CMakeLists.txt
+C:/Users/lesaelr/o3de/Code/Framework/AtomCore/Tests/atomcore_tests_files.cmake
+C:/Users/lesaelr/o3de/cmake/Platform/Windows/LYTestWrappers_windows.cmake

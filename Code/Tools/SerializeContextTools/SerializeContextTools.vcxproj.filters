@@ -1,0 +1,47 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\SerializeContextTools\CMakeFiles\SerializeContextTools.dir\Unity\unity_0_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\SerializeContextTools\Application.cpp" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\SerializeContextTools\Converter.cpp" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\SerializeContextTools\Dumper.cpp" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\SerializeContextTools\main.cpp" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\SerializeContextTools\SliceConverter.cpp" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\SerializeContextTools\Utilities.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SerializeContextTools\Application.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SerializeContextTools\Converter.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SerializeContextTools\Dumper.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SerializeContextTools\SliceConverterEditorEntityContextComponent.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SerializeContextTools\SliceConverter.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SerializeContextTools\Utilities.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\CMakeFiles\08b24365a84bd27d080f6dd51f42b933\SerializeContextTools_(CONFIG).stamp.rule">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Code\Tools\SerializeContextTools\CMakeLists.txt">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="C:\Users\lesaelr\o3de\Code\Tools\SerializeContextTools\serializecontexttools_files.cmake" />
+    <None Include="C:\Users\lesaelr\o3de\runtime_dependencies\debug\SerializeContextTools_debug.stamp">
+      <Filter>Generated Files</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\runtime_dependencies\profile\SerializeContextTools_profile.stamp">
+      <Filter>Generated Files</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\runtime_dependencies\release\SerializeContextTools_release.stamp">
+      <Filter>Generated Files</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Generated Files">
+      <UniqueIdentifier>{FB9B7D8B-7F05-31D5-AA90-592248EDE1B3}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

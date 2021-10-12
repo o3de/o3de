@@ -36,8 +36,8 @@ function(get_default_third_party_folder output_third_party_path)
     set(${output_third_party_path} ${home_directory}/.o3de/3rdParty PARENT_SCOPE)
 endfunction()
 
-get_default_third_party_folder(o3de_default_third_party_path)
-set(LY_3RDPARTY_PATH "${o3de_default_third_party_path}" CACHE PATH "Path to the 3rdParty folder")
+get_default_third_party_folder(C:/User/lesaelr/.o3de/3rdParty)
+set(LY_3RDPARTY_PATH "$C:/User/lesaelr/.o3de/3rdParty" CACHE PATH "Path to the 3rdParty folder")
 
 if(LY_3RDPARTY_PATH)
     file(TO_CMAKE_PATH ${LY_3RDPARTY_PATH} LY_3RDPARTY_PATH)

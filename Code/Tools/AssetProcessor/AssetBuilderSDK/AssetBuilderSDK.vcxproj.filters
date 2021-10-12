@@ -1,0 +1,41 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\AssetProcessor\AssetBuilderSDK\CMakeFiles\AssetBuilderSDK.dir\Unity\unity_0_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\AssetProcessor\AssetBuilderSDK\AssetBuilderSDK\AssetBuilderSDK.cpp">
+      <Filter>AssetBuilderSDK</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\AssetProcessor\AssetBuilderSDK\AssetBuilderSDK\SerializationDependencies.cpp">
+      <Filter>AssetBuilderSDK</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\AssetProcessor\AssetBuilderSDK\AssetBuilderSDK\AssetBuilderSDK.h">
+      <Filter>AssetBuilderSDK</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\AssetProcessor\AssetBuilderSDK\AssetBuilderSDK\AssetBuilderBusses.h">
+      <Filter>AssetBuilderSDK</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\AssetProcessor\AssetBuilderSDK\AssetBuilderSDK\SerializationDependencies.h">
+      <Filter>AssetBuilderSDK</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Code\Tools\AssetProcessor\AssetBuilderSDK\CMakeLists.txt">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="C:\Users\lesaelr\o3de\Code\Tools\AssetProcessor\AssetBuilderSDK\assetbuilder_files.cmake" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="AssetBuilderSDK">
+      <UniqueIdentifier>{F1270697-3332-3D61-A2A3-78169EB6FB04}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Generated Files">
+      <UniqueIdentifier>{FB9B7D8B-7F05-31D5-AA90-592248EDE1B3}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

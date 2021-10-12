@@ -1,0 +1,41 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\Atom-418206cc\RHI\Code\CMakeFiles\Atom_RHI.Private.Static.dir\Unity\unity_0_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\RHI\Code\Source\RHI.Private\FactoryManagerSystemComponent.cpp">
+      <Filter>Source\RHI.Private</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\RHI\Code\Source\RHI.Private\FactoryRegistrationFinalizerSystemComponent.cpp">
+      <Filter>Source\RHI.Private</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\RHI\Code\Source\RHI.Private\FactoryManagerSystemComponent.h">
+      <Filter>Source\RHI.Private</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\RHI\Code\Source\RHI.Private\FactoryRegistrationFinalizerSystemComponent.h">
+      <Filter>Source\RHI.Private</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Gems\Atom\RHI\Code\CMakeLists.txt">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\RHI\Code\atom_rhi_private_files.cmake" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Generated Files">
+      <UniqueIdentifier>{FB9B7D8B-7F05-31D5-AA90-592248EDE1B3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source">
+      <UniqueIdentifier>{F3F0AD47-5F83-373B-A2BF-650D2E4FA3EA}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\RHI.Private">
+      <UniqueIdentifier>{3A0CFDFF-0FBB-36FD-A326-F8A21938CCF7}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

@@ -1,0 +1,119 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\AWSCore-48b9dca4\Code\CMakeFiles\AWSCore.Editor.Tests.dir\Unity\unity_1_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\AWSCore-48b9dca4\Code\CMakeFiles\AWSCore.Editor.Tests.dir\Unity\unity_0_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\AWSCore\Code\Tests\Editor\AWSCoreEditorTest.cpp">
+      <Filter>Tests\Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\AWSCore\Code\Tests\Editor\AWSCoreEditorSystemComponentTest.cpp">
+      <Filter>Tests\Editor\Platform\Windows\..\..</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\AWSCore\Code\Tests\Editor\Attribution\AWSCoreAttributionManagerTest.cpp">
+      <Filter>Tests\Editor\Platform\Windows\..\..\Attribution</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\AWSCore\Code\Tests\Editor\Attribution\AWSCoreAttributionMetricTest.cpp">
+      <Filter>Tests\Editor\Platform\Windows\..\..\Attribution</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\AWSCore\Code\Tests\Editor\Attribution\AWSCoreAttributionSystemComponentTest.cpp">
+      <Filter>Tests\Editor\Platform\Windows\..\..\Attribution</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\AWSCore\Code\Tests\Editor\Attribution\AWSAttributionServiceApiTest.cpp">
+      <Filter>Tests\Editor\Platform\Windows\..\..\Attribution</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\AWSCore\Code\Tests\Editor\UI\AWSCoreEditorMenuTest.cpp">
+      <Filter>Tests\Editor\Platform\Windows\..\..\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\AWSCore\Code\Tests\Editor\UI\AWSCoreResourceMappingToolActionTest.cpp">
+      <Filter>Tests\Editor\Platform\Windows\..\..\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\AWSCore\Code\Tests\Editor\AWSCoreEditorManagerTest.cpp">
+      <Filter>Tests\Editor\Platform\Windows\..\..</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\AWSCore\Code\Include\Private\Editor\Platform\Windows\AWSCoreEditor_Traits_Platform.h">
+      <Filter>Include\Private\Editor\Platform\Windows</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\AWSCore\Code\Include\Private\Editor\Platform\Windows\AWSCoreEditor_Traits_Windows.h">
+      <Filter>Include\Private\Editor\Platform\Windows</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\AWSCore\Code\Tests\Editor\UI\AWSCoreEditorUIFixture.h">
+      <Filter>Tests\Editor\Platform\Windows\..\..\UI</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\CMakeFiles\08b24365a84bd27d080f6dd51f42b933\AWSCore.Editor.Tests_(CONFIG).stamp.rule">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Gems\AWSCore\Code\CMakeLists.txt">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="C:\Users\lesaelr\o3de\Gems\AWSCore\Code\awscore_editor_tests_files.cmake" />
+    <None Include="C:\Users\lesaelr\o3de\Gems\AWSCore\Code\Include\Private\Editor\Platform\Windows\platform_windows_files.cmake">
+      <Filter>Include\Private\Editor\Platform\Windows</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\AWSCore\Code\Tests\Editor\Platform\Windows\awscore_editor_tests_windows_files.cmake">
+      <Filter>Tests\Editor\Platform\Windows</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\runtime_dependencies\debug\AWSCore.Editor.Tests_debug.stamp">
+      <Filter>Generated Files</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\runtime_dependencies\profile\AWSCore.Editor.Tests_profile.stamp">
+      <Filter>Generated Files</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\runtime_dependencies\release\AWSCore.Editor.Tests_release.stamp">
+      <Filter>Generated Files</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Generated Files">
+      <UniqueIdentifier>{FB9B7D8B-7F05-31D5-AA90-592248EDE1B3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include">
+      <UniqueIdentifier>{E188105A-C8C4-34BB-9809-15E8410EF7F8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\Private">
+      <UniqueIdentifier>{9A706140-4A99-3FC5-8C68-4F65DF59576D}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\Private\Editor">
+      <UniqueIdentifier>{0379CFB2-0C1F-34F5-9FBD-D58FA0F75EDC}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\Private\Editor\Platform">
+      <UniqueIdentifier>{E49E24B2-ADB7-3538-9347-D82E9CE61FD7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\Private\Editor\Platform\Windows">
+      <UniqueIdentifier>{554E4C34-5EB4-379D-97AB-7663EFB7236C}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Tests">
+      <UniqueIdentifier>{042E9197-689D-3636-8A35-28EBCAA2BD47}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Tests\Editor">
+      <UniqueIdentifier>{339B640B-605B-3117-911B-F6C774A87179}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Tests\Editor\Platform">
+      <UniqueIdentifier>{282CFD2F-ADFE-31A9-AA85-C77524E49A88}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Tests\Editor\Platform\Windows">
+      <UniqueIdentifier>{D545A21C-7642-3E95-824D-59522549B371}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Tests\Editor\Platform\Windows\..">
+      <UniqueIdentifier>{79BA4E0C-E0CB-36DA-858A-0CF6A137C26B}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Tests\Editor\Platform\Windows\..\..">
+      <UniqueIdentifier>{9B68DADC-8599-339D-8E55-B00602A229E5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Tests\Editor\Platform\Windows\..\..\Attribution">
+      <UniqueIdentifier>{9571CE2B-65BB-3D3B-97C3-78F2356BA6F4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Tests\Editor\Platform\Windows\..\..\UI">
+      <UniqueIdentifier>{2A0A11DB-8DDC-3E38-BC0D-F240E0356D5F}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

@@ -1,0 +1,411 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <PreferredToolArchitecture>x64</PreferredToolArchitecture>
+  </PropertyGroup>
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="debug|x64">
+      <Configuration>debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="profile|x64">
+      <Configuration>profile</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="release|x64">
+      <Configuration>release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{30844F02-7381-3923-9D47-7EC9D024111A}</ProjectGuid>
+    <WindowsTargetPlatformVersion>10.0.19041.0</WindowsTargetPlatformVersion>
+    <Keyword>Win32Proj</Keyword>
+    <Platform>x64</Platform>
+    <ProjectName>PythonBindingsExample.Tests</ProjectName>
+    <VCProjectUpgraderObjectName>NoUpgrade</VCProjectUpgraderObjectName>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='debug|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v142</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='profile|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v142</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='release|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v142</PlatformToolset>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets">
+    <Import Project="C:\Users\lesaelr\o3de\cmake\Platform\Common\MSVC\TestProject.props" Condition="exists('C:\Users\lesaelr\o3de\cmake\Platform\Common\MSVC\TestProject.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>10.0.20506.1</_ProjectFileVersion>
+    <LocalDebuggerCommand Condition="'$(Configuration)|$(Platform)'=='debug|x64'">C:/Users/lesaelr/o3de/bin/debug/PythonBindingsExample.Tests.exe</LocalDebuggerCommand>
+    <LocalDebuggerCommandArguments Condition="'$(Configuration)|$(Platform)'=='debug|x64'">--unittest --gtest_output=xml:C:/Users/lesaelr/o3de/Testing/Gtest/AZ_PythonBindingsExample.Tests.xml</LocalDebuggerCommandArguments>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='debug|x64'">C:\Users\lesaelr\o3de\bin\debug\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='debug|x64'">PythonBindingsExample.Tests.dir\debug\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='debug|x64'">PythonBindingsExample.Tests</TargetName>
+    <TargetExt Condition="'$(Configuration)|$(Platform)'=='debug|x64'">.exe</TargetExt>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='debug|x64'">false</LinkIncremental>
+    <GenerateManifest Condition="'$(Configuration)|$(Platform)'=='debug|x64'">true</GenerateManifest>
+    <LocalDebuggerCommand Condition="'$(Configuration)|$(Platform)'=='profile|x64'">C:/Users/lesaelr/o3de/bin/profile/PythonBindingsExample.Tests.exe</LocalDebuggerCommand>
+    <LocalDebuggerCommandArguments Condition="'$(Configuration)|$(Platform)'=='profile|x64'">--unittest --gtest_output=xml:C:/Users/lesaelr/o3de/Testing/Gtest/AZ_PythonBindingsExample.Tests.xml</LocalDebuggerCommandArguments>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='profile|x64'">C:\Users\lesaelr\o3de\bin\profile\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='profile|x64'">PythonBindingsExample.Tests.dir\profile\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='profile|x64'">PythonBindingsExample.Tests</TargetName>
+    <TargetExt Condition="'$(Configuration)|$(Platform)'=='profile|x64'">.exe</TargetExt>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='profile|x64'">false</LinkIncremental>
+    <GenerateManifest Condition="'$(Configuration)|$(Platform)'=='profile|x64'">true</GenerateManifest>
+    <LocalDebuggerCommand Condition="'$(Configuration)|$(Platform)'=='release|x64'">C:/Users/lesaelr/o3de/bin/release/PythonBindingsExample.Tests.exe</LocalDebuggerCommand>
+    <LocalDebuggerCommandArguments Condition="'$(Configuration)|$(Platform)'=='release|x64'">--unittest --gtest_output=xml:C:/Users/lesaelr/o3de/Testing/Gtest/AZ_PythonBindingsExample.Tests.xml</LocalDebuggerCommandArguments>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='release|x64'">C:\Users\lesaelr\o3de\bin\release\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='release|x64'">PythonBindingsExample.Tests.dir\release\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='release|x64'">PythonBindingsExample.Tests</TargetName>
+    <TargetExt Condition="'$(Configuration)|$(Platform)'=='release|x64'">.exe</TargetExt>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='release|x64'">false</LinkIncremental>
+    <GenerateManifest Condition="'$(Configuration)|$(Platform)'=='release|x64'">true</GenerateManifest>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='debug|x64'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>C:\Users\lesaelr\o3de\Code\Tools\PythonBindingsExample\.;C:\Users\lesaelr\o3de\Code\Framework\AzCore\.;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Common;C:\Users\lesaelr\o3de\Code\Framework\AzFramework\.;C:\Users\lesaelr\o3de\Code\Framework\AzFramework\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\GridMate\.;C:\Users\lesaelr\o3de\Code\Framework\GridMate\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzTest\.;C:\Users\lesaelr\o3de\Code\Framework\AzTest\AzTest\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\.;C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework;C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\.;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalOptions>%(AdditionalOptions) /Zc:__cplusplus /Zc:lambda /favor:AMD64 /bigobj /RTCsu /experimental:external /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/Lua-5.3.5-rev5-windows/lua/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/RapidJSON-1.1.0-rev1-multiplatform/RapidJSON/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/RapidXML-1.13-rev1-multiplatform/RapidXML/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/zlib-1.2.11-rev2-windows/zlib/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/zstd-1.35-multiplatform/zstd/lib /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/cityhash-1.1-multiplatform/cityhash/src /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/OpenSSL-1.1.1b-rev2-windows/OpenSSL/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/lz4-1.9.3-vcpkg-rev4-windows/lz4/lz4/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/googletest-1.8.1-rev4-windows/googletest/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/googlebenchmark-1.5.0-rev2-windows/googlebenchmark/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/qt-5.15.2-rev4-windows/qt/include/ /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/qt-5.15.2-rev4-windows/qt/include/QtCore /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/qt-5.15.2-rev4-windows/qt/.//mkspecs/win32-msvc /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/qt-5.15.2-rev4-windows/qt/include/QtGui /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/qt-5.15.2-rev4-windows/qt/include//QtANGLE /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/qt-5.15.2-rev4-windows/qt/include/QtGui/5.15.1 /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/qt-5.15.2-rev4-windows/qt/include/QtGui/5.15.1/QtGui /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/qt-5.15.2-rev4-windows/qt/include/QtCore/5.15.1 /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/qt-5.15.2-rev4-windows/qt/include/QtCore/5.15.1/QtCore /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/qt-5.15.2-rev4-windows/qt/include/QtWidgets /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/qt-5.15.2-rev4-windows/qt/include/QtWidgets/5.15.1 /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/qt-5.15.2-rev4-windows/qt/include/QtWidgets/5.15.1/QtWidgets /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/qt-5.15.2-rev4-windows/qt/include/QtSvg /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/qt-5.15.2-rev4-windows/qt/include/QtXml</AdditionalOptions>
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <BufferSecurityCheck>true</BufferSecurityCheck>
+      <CallingConvention>Cdecl</CallingConvention>
+      <ConformanceMode>true</ConformanceMode>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <DiagnosticsFormat>Caret</DiagnosticsFormat>
+      <DisableSpecificWarnings>4201</DisableSpecificWarnings>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <ExternalWarningLevel>TurnOffAllWarnings</ExternalWarningLevel>
+      <FloatingPointModel>Fast</FloatingPointModel>
+      <ForceConformanceInForLoopScope>true</ForceConformanceInForLoopScope>
+      <InlineFunctionExpansion>Disabled</InlineFunctionExpansion>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <Optimization>Disabled</Optimization>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <TreatSpecificWarningsAsErrors>4263;4264;4265;4266;4296;4426;4437;4774;4777;5031;5032;5233</TreatSpecificWarningsAsErrors>
+      <TreatWarningAsError>true</TreatWarningAsError>
+      <UseFullPaths>false</UseFullPaths>
+      <WarningLevel>Level4</WarningLevel>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);_HAS_EXCEPTIONS=0;_DEBUG;AZ_DEBUG_BUILD=1;AZ_ENABLE_TRACING;AZ_ENABLE_DEBUG_TOOLS;AZ_BUILD_CONFIGURATION_TYPE="debug";_ENABLE_EXTENDED_ALIGNED_STORAGE;_WIN32;WIN32;_WIN64;WIN64;NOMINMAX;OPENSSL_ENABLED;HAVE_BENCHMARK;QT_CORE_LIB;QT_GUI_LIB;QT_WIDGETS_LIB;QT_SVG_LIB;QT_XML_LIB;CMAKE_INTDIR="debug"</PreprocessorDefinitions>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);_DEBUG;_HAS_EXCEPTIONS=0;AZ_DEBUG_BUILD=1;AZ_ENABLE_TRACING;AZ_ENABLE_DEBUG_TOOLS;AZ_BUILD_CONFIGURATION_TYPE=\"debug\";_ENABLE_EXTENDED_ALIGNED_STORAGE;_WIN32;WIN32;_WIN64;WIN64;NOMINMAX;OPENSSL_ENABLED;HAVE_BENCHMARK;QT_CORE_LIB;QT_GUI_LIB;QT_WIDGETS_LIB;QT_SVG_LIB;QT_XML_LIB;CMAKE_INTDIR=\"debug\"</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>C:\Users\lesaelr\o3de\Code\Tools\PythonBindingsExample\.;C:\Users\lesaelr\o3de\Code\Framework\AzCore\.;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Common;C:\Users\lesaelr\o3de\Code\Framework\AzFramework\.;C:\Users\lesaelr\o3de\Code\Framework\AzFramework\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\GridMate\.;C:\Users\lesaelr\o3de\Code\Framework\GridMate\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzTest\.;C:\Users\lesaelr\o3de\Code\Framework\AzTest\AzTest\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\.;C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework;C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\.;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+    </ResourceCompile>
+    <Midl>
+      <AdditionalIncludeDirectories>C:\Users\lesaelr\o3de\Code\Tools\PythonBindingsExample\.;C:\Users\lesaelr\o3de\Code\Framework\AzCore\.;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Common;C:\Users\lesaelr\o3de\Code\Framework\AzFramework\.;C:\Users\lesaelr\o3de\Code\Framework\AzFramework\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\GridMate\.;C:\Users\lesaelr\o3de\Code\Framework\GridMate\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzTest\.;C:\Users\lesaelr\o3de\Code\Framework\AzTest\AzTest\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\.;C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework;C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\.;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+    <Link>
+      <AdditionalDependencies>..\..\..\lib\debug\AzCore.lib;..\..\..\lib\debug\AzFramework.lib;..\..\..\lib\debug\AzTest.lib;..\..\..\lib\debug\AzToolsFramework.lib;..\..\..\lib\debug\PythonBindingsExample.Static.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\googletest-1.8.1-rev4-windows\googletest\lib\gmockd.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\googletest-1.8.1-rev4-windows\googletest\lib\gtestd.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\googlebenchmark-1.5.0-rev2-windows\googlebenchmark\lib\Debug\benchmark.lib;Shlwapi.lib;..\..\..\lib\debug\AzToolsFramework.lib;..\..\..\lib\debug\AzFramework.lib;..\..\..\lib\debug\GridMate.lib;ws2_32.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\OpenSSL-1.1.1b-rev2-windows\OpenSSL\debug\lib\libssl.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\OpenSSL-1.1.1b-rev2-windows\OpenSSL\debug\lib\libcrypto.lib;crypt32.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\lz4-1.9.3-vcpkg-rev4-windows\lz4\lz4\lib\..\debug\lib\lz4d.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\SQLite-3.32.2-rev3-multiplatform\SQLite\build\win_x64\vc140\debug\sqlite.lib;..\..\..\lib\debug\AzQtComponents.lib;..\..\..\lib\debug\AzCore.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\Lua-5.3.5-rev5-windows\lua\lib\debug\lualib.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\zlib-1.2.11-rev2-windows\zlib\lib\zlibstaticd.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\zstd-1.35-multiplatform\zstd\bin\win-x64-vc140\debug\zstd.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\cityhash-1.1-multiplatform\cityhash\build\win_x64\vc140\debug\cityhash.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\Qt5Svgd.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\Qt5Widgetsd.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\Qt5Guid.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\Qt5Xmld.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\Qt5Cored.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;advapi32.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalOptions>%(AdditionalOptions) /machine:x64 /ignore:4099</AdditionalOptions>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <ImportLibrary>C:/Users/lesaelr/o3de/lib/debug/PythonBindingsExample.Tests.lib</ImportLibrary>
+      <ProgramDataBaseFile>C:/Users/lesaelr/o3de/bin/debug/PythonBindingsExample.Tests.pdb</ProgramDataBaseFile>
+      <SubSystem>Console</SubSystem>
+    </Link>
+    <ProjectReference>
+      <LinkLibraryDependencies>false</LinkLibraryDependencies>
+    </ProjectReference>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='profile|x64'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>C:\Users\lesaelr\o3de\Code\Tools\PythonBindingsExample\.;C:\Users\lesaelr\o3de\Code\Framework\AzCore\.;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Common;C:\Users\lesaelr\o3de\Code\Framework\AzFramework\.;C:\Users\lesaelr\o3de\Code\Framework\AzFramework\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\GridMate\.;C:\Users\lesaelr\o3de\Code\Framework\GridMate\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzTest\.;C:\Users\lesaelr\o3de\Code\Framework\AzTest\AzTest\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\.;C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework;C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\.;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalOptions>%(AdditionalOptions) /Zc:__cplusplus /Zc:lambda /favor:AMD64 /bigobj /experimental:external /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/Lua-5.3.5-rev5-windows/lua/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/RapidJSON-1.1.0-rev1-multiplatform/RapidJSON/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/RapidXML-1.13-rev1-multiplatform/RapidXML/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/zlib-1.2.11-rev2-windows/zlib/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/zstd-1.35-multiplatform/zstd/lib /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/cityhash-1.1-multiplatform/cityhash/src /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/OpenSSL-1.1.1b-rev2-windows/OpenSSL/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/lz4-1.9.3-vcpkg-rev4-windows/lz4/lz4/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/googletest-1.8.1-rev4-windows/googletest/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/googlebenchmark-1.5.0-rev2-windows/googlebenchmark/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/qt-5.15.2-rev4-windows/qt/include/ /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/qt-5.15.2-rev4-windows/qt/include/QtCore /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/qt-5.15.2-rev4-windows/qt/.//mkspecs/win32-msvc /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/qt-5.15.2-rev4-windows/qt/include/QtGui /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/qt-5.15.2-rev4-windows/qt/include//QtANGLE /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/qt-5.15.2-rev4-windows/qt/include/QtGui/5.15.1 /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/qt-5.15.2-rev4-windows/qt/include/QtGui/5.15.1/QtGui /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/qt-5.15.2-rev4-windows/qt/include/QtCore/5.15.1 /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/qt-5.15.2-rev4-windows/qt/include/QtCore/5.15.1/QtCore /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/qt-5.15.2-rev4-windows/qt/include/QtWidgets /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/qt-5.15.2-rev4-windows/qt/include/QtWidgets/5.15.1 /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/qt-5.15.2-rev4-windows/qt/include/QtWidgets/5.15.1/QtWidgets /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/qt-5.15.2-rev4-windows/qt/include/QtSvg /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/qt-5.15.2-rev4-windows/qt/include/QtXml</AdditionalOptions>
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <CallingConvention>Cdecl</CallingConvention>
+      <ConformanceMode>true</ConformanceMode>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <DiagnosticsFormat>Caret</DiagnosticsFormat>
+      <DisableSpecificWarnings>4201</DisableSpecificWarnings>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <ExternalWarningLevel>TurnOffAllWarnings</ExternalWarningLevel>
+      <FloatingPointModel>Fast</FloatingPointModel>
+      <ForceConformanceInForLoopScope>true</ForceConformanceInForLoopScope>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <Optimization>MaxSpeed</Optimization>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <RemoveUnreferencedCodeData>true</RemoveUnreferencedCodeData>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <StringPooling>true</StringPooling>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <TreatSpecificWarningsAsErrors>4263;4264;4265;4266;4296;4426;4437;4774;4777;5031;5032;5233</TreatSpecificWarningsAsErrors>
+      <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
+      <TreatWarningAsError>true</TreatWarningAsError>
+      <UseFullPaths>false</UseFullPaths>
+      <WarningLevel>Level4</WarningLevel>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);_HAS_EXCEPTIONS=0;_PROFILE;PROFILE;NDEBUG;AZ_ENABLE_TRACING;AZ_ENABLE_DEBUG_TOOLS;AZ_BUILD_CONFIGURATION_TYPE="profile";_ENABLE_EXTENDED_ALIGNED_STORAGE;_WIN32;WIN32;_WIN64;WIN64;NOMINMAX;OPENSSL_ENABLED;HAVE_BENCHMARK;QT_CORE_LIB;QT_NO_DEBUG;QT_GUI_LIB;QT_WIDGETS_LIB;QT_SVG_LIB;QT_XML_LIB;CMAKE_INTDIR="profile"</PreprocessorDefinitions>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);_HAS_EXCEPTIONS=0;_PROFILE;PROFILE;NDEBUG;AZ_ENABLE_TRACING;AZ_ENABLE_DEBUG_TOOLS;AZ_BUILD_CONFIGURATION_TYPE=\"profile\";_ENABLE_EXTENDED_ALIGNED_STORAGE;_WIN32;WIN32;_WIN64;WIN64;NOMINMAX;OPENSSL_ENABLED;HAVE_BENCHMARK;QT_CORE_LIB;QT_NO_DEBUG;QT_GUI_LIB;QT_WIDGETS_LIB;QT_SVG_LIB;QT_XML_LIB;CMAKE_INTDIR=\"profile\"</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>C:\Users\lesaelr\o3de\Code\Tools\PythonBindingsExample\.;C:\Users\lesaelr\o3de\Code\Framework\AzCore\.;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Common;C:\Users\lesaelr\o3de\Code\Framework\AzFramework\.;C:\Users\lesaelr\o3de\Code\Framework\AzFramework\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\GridMate\.;C:\Users\lesaelr\o3de\Code\Framework\GridMate\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzTest\.;C:\Users\lesaelr\o3de\Code\Framework\AzTest\AzTest\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\.;C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework;C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\.;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+    </ResourceCompile>
+    <Midl>
+      <AdditionalIncludeDirectories>C:\Users\lesaelr\o3de\Code\Tools\PythonBindingsExample\.;C:\Users\lesaelr\o3de\Code\Framework\AzCore\.;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Common;C:\Users\lesaelr\o3de\Code\Framework\AzFramework\.;C:\Users\lesaelr\o3de\Code\Framework\AzFramework\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\GridMate\.;C:\Users\lesaelr\o3de\Code\Framework\GridMate\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzTest\.;C:\Users\lesaelr\o3de\Code\Framework\AzTest\AzTest\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\.;C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework;C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\.;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+    <Link>
+      <AdditionalDependencies>..\..\..\lib\profile\AzCore.lib;..\..\..\lib\profile\AzFramework.lib;..\..\..\lib\profile\AzTest.lib;..\..\..\lib\profile\AzToolsFramework.lib;..\..\..\lib\profile\PythonBindingsExample.Static.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\googletest-1.8.1-rev4-windows\googletest\lib\gmock.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\googletest-1.8.1-rev4-windows\googletest\lib\gtest.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\googlebenchmark-1.5.0-rev2-windows\googlebenchmark\lib\Release\benchmark.lib;Shlwapi.lib;..\..\..\lib\profile\AzToolsFramework.lib;..\..\..\lib\profile\AzFramework.lib;..\..\..\lib\profile\GridMate.lib;ws2_32.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\OpenSSL-1.1.1b-rev2-windows\OpenSSL\lib\libssl.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\OpenSSL-1.1.1b-rev2-windows\OpenSSL\lib\libcrypto.lib;crypt32.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\lz4-1.9.3-vcpkg-rev4-windows\lz4\lz4\lib\lz4.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\SQLite-3.32.2-rev3-multiplatform\SQLite\build\win_x64\vc140\release\sqlite.lib;..\..\..\lib\profile\AzQtComponents.lib;..\..\..\lib\profile\AzCore.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\Lua-5.3.5-rev5-windows\lua\lib\release\lualib.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\zlib-1.2.11-rev2-windows\zlib\lib\zlibstatic.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\zstd-1.35-multiplatform\zstd\bin\win-x64-vc140\release\zstd.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\cityhash-1.1-multiplatform\cityhash\build\win_x64\vc140\release\cityhash.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\Qt5Svg.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\Qt5Widgets.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\Qt5Gui.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\Qt5Xml.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\Qt5Core.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;advapi32.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalOptions>%(AdditionalOptions) /machine:x64 /ignore:4099</AdditionalOptions>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <ImportLibrary>C:/Users/lesaelr/o3de/lib/profile/PythonBindingsExample.Tests.lib</ImportLibrary>
+      <OptimizeReferences>true</OptimizeReferences>
+      <ProgramDataBaseFile>C:/Users/lesaelr/o3de/bin/profile/PythonBindingsExample.Tests.pdb</ProgramDataBaseFile>
+      <SubSystem>Console</SubSystem>
+    </Link>
+    <ProjectReference>
+      <LinkLibraryDependencies>false</LinkLibraryDependencies>
+    </ProjectReference>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='release|x64'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>C:\Users\lesaelr\o3de\Code\Tools\PythonBindingsExample\.;C:\Users\lesaelr\o3de\Code\Framework\AzCore\.;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Common;C:\Users\lesaelr\o3de\Code\Framework\AzFramework\.;C:\Users\lesaelr\o3de\Code\Framework\AzFramework\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\GridMate\.;C:\Users\lesaelr\o3de\Code\Framework\GridMate\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzTest\.;C:\Users\lesaelr\o3de\Code\Framework\AzTest\AzTest\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\.;C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework;C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\.;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalOptions>%(AdditionalOptions) /Zc:__cplusplus /Zc:lambda /favor:AMD64 /bigobj /experimental:external /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/Lua-5.3.5-rev5-windows/lua/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/RapidJSON-1.1.0-rev1-multiplatform/RapidJSON/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/RapidXML-1.13-rev1-multiplatform/RapidXML/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/zlib-1.2.11-rev2-windows/zlib/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/zstd-1.35-multiplatform/zstd/lib /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/cityhash-1.1-multiplatform/cityhash/src /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/OpenSSL-1.1.1b-rev2-windows/OpenSSL/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/lz4-1.9.3-vcpkg-rev4-windows/lz4/lz4/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/googletest-1.8.1-rev4-windows/googletest/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/googlebenchmark-1.5.0-rev2-windows/googlebenchmark/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/qt-5.15.2-rev4-windows/qt/include/ /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/qt-5.15.2-rev4-windows/qt/include/QtCore /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/qt-5.15.2-rev4-windows/qt/.//mkspecs/win32-msvc /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/qt-5.15.2-rev4-windows/qt/include/QtGui /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/qt-5.15.2-rev4-windows/qt/include//QtANGLE /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/qt-5.15.2-rev4-windows/qt/include/QtGui/5.15.1 /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/qt-5.15.2-rev4-windows/qt/include/QtGui/5.15.1/QtGui /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/qt-5.15.2-rev4-windows/qt/include/QtCore/5.15.1 /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/qt-5.15.2-rev4-windows/qt/include/QtCore/5.15.1/QtCore /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/qt-5.15.2-rev4-windows/qt/include/QtWidgets /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/qt-5.15.2-rev4-windows/qt/include/QtWidgets/5.15.1 /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/qt-5.15.2-rev4-windows/qt/include/QtWidgets/5.15.1/QtWidgets /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/qt-5.15.2-rev4-windows/qt/include/QtSvg /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/qt-5.15.2-rev4-windows/qt/include/QtXml</AdditionalOptions>
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <CallingConvention>Cdecl</CallingConvention>
+      <ConformanceMode>true</ConformanceMode>
+      <DiagnosticsFormat>Caret</DiagnosticsFormat>
+      <DisableSpecificWarnings>4201</DisableSpecificWarnings>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <ExternalWarningLevel>TurnOffAllWarnings</ExternalWarningLevel>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <FloatingPointModel>Fast</FloatingPointModel>
+      <ForceConformanceInForLoopScope>true</ForceConformanceInForLoopScope>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <OmitFramePointers>true</OmitFramePointers>
+      <Optimization>Full</Optimization>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <TreatSpecificWarningsAsErrors>4263;4264;4265;4266;4296;4426;4437;4774;4777;5031;5032;5233</TreatSpecificWarningsAsErrors>
+      <TreatWarningAsError>true</TreatWarningAsError>
+      <UseFullPaths>false</UseFullPaths>
+      <WarningLevel>Level4</WarningLevel>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);_HAS_EXCEPTIONS=0;_RELEASE;RELEASE;NDEBUG;AZ_BUILD_CONFIGURATION_TYPE="release";_ENABLE_EXTENDED_ALIGNED_STORAGE;_WIN32;WIN32;_WIN64;WIN64;NOMINMAX;OPENSSL_ENABLED;HAVE_BENCHMARK;QT_CORE_LIB;QT_NO_DEBUG;QT_GUI_LIB;QT_WIDGETS_LIB;QT_SVG_LIB;QT_XML_LIB;CMAKE_INTDIR="release"</PreprocessorDefinitions>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+      <DebugInformationFormat>
+      </DebugInformationFormat>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);_HAS_EXCEPTIONS=0;_RELEASE;RELEASE;NDEBUG;AZ_BUILD_CONFIGURATION_TYPE=\"release\";_ENABLE_EXTENDED_ALIGNED_STORAGE;_WIN32;WIN32;_WIN64;WIN64;NOMINMAX;OPENSSL_ENABLED;HAVE_BENCHMARK;QT_CORE_LIB;QT_NO_DEBUG;QT_GUI_LIB;QT_WIDGETS_LIB;QT_SVG_LIB;QT_XML_LIB;CMAKE_INTDIR=\"release\"</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>C:\Users\lesaelr\o3de\Code\Tools\PythonBindingsExample\.;C:\Users\lesaelr\o3de\Code\Framework\AzCore\.;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Common;C:\Users\lesaelr\o3de\Code\Framework\AzFramework\.;C:\Users\lesaelr\o3de\Code\Framework\AzFramework\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\GridMate\.;C:\Users\lesaelr\o3de\Code\Framework\GridMate\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzTest\.;C:\Users\lesaelr\o3de\Code\Framework\AzTest\AzTest\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\.;C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework;C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\.;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+    </ResourceCompile>
+    <Midl>
+      <AdditionalIncludeDirectories>C:\Users\lesaelr\o3de\Code\Tools\PythonBindingsExample\.;C:\Users\lesaelr\o3de\Code\Framework\AzCore\.;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Common;C:\Users\lesaelr\o3de\Code\Framework\AzFramework\.;C:\Users\lesaelr\o3de\Code\Framework\AzFramework\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\GridMate\.;C:\Users\lesaelr\o3de\Code\Framework\GridMate\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzTest\.;C:\Users\lesaelr\o3de\Code\Framework\AzTest\AzTest\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\.;C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework;C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\.;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+    <Link>
+      <AdditionalDependencies>..\..\..\lib\release\AzCore.lib;..\..\..\lib\release\AzFramework.lib;..\..\..\lib\release\AzTest.lib;..\..\..\lib\release\AzToolsFramework.lib;..\..\..\lib\release\PythonBindingsExample.Static.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\googletest-1.8.1-rev4-windows\googletest\lib\gmock.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\googletest-1.8.1-rev4-windows\googletest\lib\gtest.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\googlebenchmark-1.5.0-rev2-windows\googlebenchmark\lib\Release\benchmark.lib;Shlwapi.lib;..\..\..\lib\release\AzToolsFramework.lib;..\..\..\lib\release\AzFramework.lib;..\..\..\lib\release\GridMate.lib;ws2_32.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\OpenSSL-1.1.1b-rev2-windows\OpenSSL\lib\libssl.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\OpenSSL-1.1.1b-rev2-windows\OpenSSL\lib\libcrypto.lib;crypt32.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\lz4-1.9.3-vcpkg-rev4-windows\lz4\lz4\lib\lz4.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\SQLite-3.32.2-rev3-multiplatform\SQLite\build\win_x64\vc140\release\sqlite.lib;..\..\..\lib\release\AzQtComponents.lib;..\..\..\lib\release\AzCore.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\Lua-5.3.5-rev5-windows\lua\lib\release\lualib.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\zlib-1.2.11-rev2-windows\zlib\lib\zlibstatic.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\zstd-1.35-multiplatform\zstd\bin\win-x64-vc140\release\zstd.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\cityhash-1.1-multiplatform\cityhash\build\win_x64\vc140\release\cityhash.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\Qt5Svg.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\Qt5Widgets.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\Qt5Gui.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\Qt5Xml.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\Qt5Core.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;advapi32.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalOptions>%(AdditionalOptions) /machine:x64 /ignore:4099</AdditionalOptions>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
+      <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <ImportLibrary>C:/Users/lesaelr/o3de/lib/release/PythonBindingsExample.Tests.lib</ImportLibrary>
+      <OptimizeReferences>true</OptimizeReferences>
+      <ProgramDataBaseFile>C:/Users/lesaelr/o3de/bin/release/PythonBindingsExample.Tests.pdb</ProgramDataBaseFile>
+      <SubSystem>Console</SubSystem>
+    </Link>
+    <ProjectReference>
+      <LinkLibraryDependencies>false</LinkLibraryDependencies>
+    </ProjectReference>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\CMakeFiles\08b24365a84bd27d080f6dd51f42b933\PythonBindingsExample.Tests_(CONFIG).stamp.rule">
+      <Message Condition="'$(Configuration)|$(Platform)'=='debug|x64'">Copying PythonBindingsExample.Tests runtime dependencies to output...</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='debug|x64'">setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -P C:/Users/lesaelr/o3de/runtime_dependencies/debug/PythonBindingsExample.Tests.cmake
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='debug|x64'">C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_ar.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_bg.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_ca.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_cs.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_da.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_de.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_en.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_es.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_fa.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_fi.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_fr.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_gd.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_gl.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_he.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_ar.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_bg.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_ca.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_cs.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_da.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_de.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_en.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_es.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_fr.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_gl.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_hu.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_it.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_ja.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_ko.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_pl.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_ru.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_sk.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_sl.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_tr.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_uk.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_zh_CN.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_zh_TW.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_hu.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_it.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_ja.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_ko.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_lt.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_lv.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_pl.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_pt.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_ru.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_sk.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_sl.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_sv.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_tr.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_uk.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_zh_CN.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_zh_TW.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\bin\Qt5Cored.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\plugins\iconengines\qsvgicond.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\plugins\imageformats\qgifd.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\plugins\imageformats\qicnsd.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\plugins\imageformats\qicod.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\plugins\imageformats\qjpegd.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\plugins\imageformats\qsvgd.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\plugins\imageformats\qtgad.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\plugins\imageformats\qtiffd.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\plugins\imageformats\qwbmpd.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\plugins\imageformats\qwebpd.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\plugins\platforms\qminimald.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\plugins\platforms\qwindowsd.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\bin\Qt5Guid.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\plugins\styles\qwindowsvistastyled.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\bin\Qt5Widgetsd.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\bin\Qt5Svgd.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\bin\Qt5Xmld.dll;C:\Users\lesaelr\o3de\bin\debug\AzTestRunner.exe;C:\Users\lesaelr\o3de\python\runtime\python-3.7.10-rev2-windows\python\python37_d.dll;C:\Users\lesaelr\o3de\python\runtime\python-3.7.10-rev2-windows\python\python3_d.dll;C:\Users\lesaelr\o3de\python\runtime\python-3.7.10-rev2-windows\python\python37_d.pdb;C:\Users\lesaelr\o3de\python\runtime\python-3.7.10-rev2-windows\python\python3_d.pdb;C:\Users\lesaelr\o3de\bin\debug\EditorPythonBindings.Editor.dll;C:\Users\lesaelr\o3de\bin\debug\Registry\cmake_dependencies.pythonbindingsexample_tests.setreg;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='debug|x64'">C:\Users\lesaelr\o3de\runtime_dependencies\debug\PythonBindingsExample.Tests_debug.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='debug|x64'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='profile|x64'">Copying PythonBindingsExample.Tests runtime dependencies to output...</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='profile|x64'">setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -P C:/Users/lesaelr/o3de/runtime_dependencies/profile/PythonBindingsExample.Tests.cmake
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='profile|x64'">C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_ar.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_bg.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_ca.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_cs.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_da.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_de.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_en.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_es.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_fa.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_fi.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_fr.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_gd.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_gl.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_he.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_ar.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_bg.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_ca.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_cs.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_da.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_de.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_en.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_es.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_fr.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_gl.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_hu.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_it.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_ja.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_ko.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_pl.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_ru.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_sk.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_sl.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_tr.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_uk.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_zh_CN.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_zh_TW.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_hu.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_it.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_ja.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_ko.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_lt.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_lv.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_pl.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_pt.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_ru.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_sk.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_sl.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_sv.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_tr.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_uk.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_zh_CN.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_zh_TW.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\bin\Qt5Core.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\plugins\iconengines\qsvgicon.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\plugins\imageformats\qgif.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\plugins\imageformats\qicns.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\plugins\imageformats\qico.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\plugins\imageformats\qjpeg.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\plugins\imageformats\qsvg.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\plugins\imageformats\qtga.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\plugins\imageformats\qtiff.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\plugins\imageformats\qwbmp.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\plugins\imageformats\qwebp.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\plugins\platforms\qminimal.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\plugins\platforms\qwindows.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\bin\Qt5Gui.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\plugins\styles\qwindowsvistastyle.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\bin\Qt5Widgets.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\bin\Qt5Svg.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\bin\Qt5Xml.dll;C:\Users\lesaelr\o3de\bin\profile\AzTestRunner.exe;C:\Users\lesaelr\o3de\python\runtime\python-3.7.10-rev2-windows\python\python37.dll;C:\Users\lesaelr\o3de\python\runtime\python-3.7.10-rev2-windows\python\python3.dll;C:\Users\lesaelr\o3de\python\runtime\python-3.7.10-rev2-windows\python\python37.pdb;C:\Users\lesaelr\o3de\python\runtime\python-3.7.10-rev2-windows\python\python3.pdb;C:\Users\lesaelr\o3de\bin\profile\EditorPythonBindings.Editor.dll;C:\Users\lesaelr\o3de\bin\profile\Registry\cmake_dependencies.pythonbindingsexample_tests.setreg;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='profile|x64'">C:\Users\lesaelr\o3de\runtime_dependencies\profile\PythonBindingsExample.Tests_profile.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='profile|x64'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='release|x64'">Copying PythonBindingsExample.Tests runtime dependencies to output...</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='release|x64'">setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -P C:/Users/lesaelr/o3de/runtime_dependencies/release/PythonBindingsExample.Tests.cmake
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='release|x64'">C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_ar.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_bg.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_ca.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_cs.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_da.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_de.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_en.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_es.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_fa.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_fi.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_fr.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_gd.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_gl.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_he.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_ar.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_bg.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_ca.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_cs.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_da.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_de.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_en.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_es.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_fr.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_gl.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_hu.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_it.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_ja.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_ko.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_pl.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_ru.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_sk.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_sl.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_tr.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_uk.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_zh_CN.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_zh_TW.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_hu.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_it.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_ja.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_ko.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_lt.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_lv.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_pl.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_pt.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_ru.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_sk.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_sl.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_sv.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_tr.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_uk.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_zh_CN.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_zh_TW.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\bin\Qt5Core.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\plugins\iconengines\qsvgicon.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\plugins\imageformats\qgif.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\plugins\imageformats\qicns.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\plugins\imageformats\qico.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\plugins\imageformats\qjpeg.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\plugins\imageformats\qsvg.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\plugins\imageformats\qtga.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\plugins\imageformats\qtiff.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\plugins\imageformats\qwbmp.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\plugins\imageformats\qwebp.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\plugins\platforms\qminimal.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\plugins\platforms\qwindows.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\bin\Qt5Gui.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\plugins\styles\qwindowsvistastyle.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\bin\Qt5Widgets.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\bin\Qt5Svg.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\bin\Qt5Xml.dll;C:\Users\lesaelr\o3de\bin\release\AzTestRunner.exe;C:\Users\lesaelr\o3de\python\runtime\python-3.7.10-rev2-windows\python\python37.dll;C:\Users\lesaelr\o3de\python\runtime\python-3.7.10-rev2-windows\python\python3.dll;C:\Users\lesaelr\o3de\python\runtime\python-3.7.10-rev2-windows\python\python37.pdb;C:\Users\lesaelr\o3de\python\runtime\python-3.7.10-rev2-windows\python\python3.pdb;C:\Users\lesaelr\o3de\bin\release\EditorPythonBindings.Editor.dll;C:\Users\lesaelr\o3de\bin\release\Registry\cmake_dependencies.pythonbindingsexample_tests.setreg;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='release|x64'">C:\Users\lesaelr\o3de\runtime_dependencies\release\PythonBindingsExample.Tests_release.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='release|x64'">false</LinkObjects>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Code\Tools\PythonBindingsExample\CMakeLists.txt">
+      <UseUtf8Encoding>Always</UseUtf8Encoding>
+      <Message Condition="'$(Configuration)|$(Platform)'=='debug|x64'">Building Custom Rule C:/Users/lesaelr/o3de/Code/Tools/PythonBindingsExample/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='debug|x64'">setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SC:/Users/lesaelr/o3de -BC:/Users/lesaelr/o3de --check-stamp-file C:/Users/lesaelr/o3de/Code/Tools/PythonBindingsExample/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='debug|x64'">C:\Users\lesaelr\o3de\Code\Tools\PythonBindingsExample\pythonbindingsexample_app_files.cmake;C:\Users\lesaelr\o3de\Code\Tools\PythonBindingsExample\pythonbindingsexample_files.cmake;C:\Users\lesaelr\o3de\Code\Tools\PythonBindingsExample\pythonbindingsexample_tests_files.cmake;C:\Users\lesaelr\o3de\Code\Tools\PythonBindingsExample\source\Platform\Common\MSVC\pythonbindingsexample_msvc.cmake;C:\Users\lesaelr\o3de\Code\Tools\PythonBindingsExample\tool_dependencies.cmake;C:\Users\lesaelr\o3de\cmake\Platform\Windows\LYTestWrappers_windows.cmake;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='debug|x64'">C:\Users\lesaelr\o3de\Code\Tools\PythonBindingsExample\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='debug|x64'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='profile|x64'">Building Custom Rule C:/Users/lesaelr/o3de/Code/Tools/PythonBindingsExample/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='profile|x64'">setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SC:/Users/lesaelr/o3de -BC:/Users/lesaelr/o3de --check-stamp-file C:/Users/lesaelr/o3de/Code/Tools/PythonBindingsExample/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='profile|x64'">C:\Users\lesaelr\o3de\Code\Tools\PythonBindingsExample\pythonbindingsexample_app_files.cmake;C:\Users\lesaelr\o3de\Code\Tools\PythonBindingsExample\pythonbindingsexample_files.cmake;C:\Users\lesaelr\o3de\Code\Tools\PythonBindingsExample\pythonbindingsexample_tests_files.cmake;C:\Users\lesaelr\o3de\Code\Tools\PythonBindingsExample\source\Platform\Common\MSVC\pythonbindingsexample_msvc.cmake;C:\Users\lesaelr\o3de\Code\Tools\PythonBindingsExample\tool_dependencies.cmake;C:\Users\lesaelr\o3de\cmake\Platform\Windows\LYTestWrappers_windows.cmake;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='profile|x64'">C:\Users\lesaelr\o3de\Code\Tools\PythonBindingsExample\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='profile|x64'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='release|x64'">Building Custom Rule C:/Users/lesaelr/o3de/Code/Tools/PythonBindingsExample/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='release|x64'">setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SC:/Users/lesaelr/o3de -BC:/Users/lesaelr/o3de --check-stamp-file C:/Users/lesaelr/o3de/Code/Tools/PythonBindingsExample/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='release|x64'">C:\Users\lesaelr\o3de\Code\Tools\PythonBindingsExample\pythonbindingsexample_app_files.cmake;C:\Users\lesaelr\o3de\Code\Tools\PythonBindingsExample\pythonbindingsexample_files.cmake;C:\Users\lesaelr\o3de\Code\Tools\PythonBindingsExample\pythonbindingsexample_tests_files.cmake;C:\Users\lesaelr\o3de\Code\Tools\PythonBindingsExample\source\Platform\Common\MSVC\pythonbindingsexample_msvc.cmake;C:\Users\lesaelr\o3de\Code\Tools\PythonBindingsExample\tool_dependencies.cmake;C:\Users\lesaelr\o3de\cmake\Platform\Windows\LYTestWrappers_windows.cmake;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='release|x64'">C:\Users\lesaelr\o3de\Code\Tools\PythonBindingsExample\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='release|x64'">false</LinkObjects>
+    </CustomBuild>
+  </ItemGroup>
+  <PropertyGroup>
+    <EnableUnitySupport>true</EnableUnitySupport>
+  </PropertyGroup>
+  <ItemGroup>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\PythonBindingsExample\CMakeFiles\PythonBindingsExample.Tests.dir\Unity\unity_0_cxx.cxx" IncludeInUnityFile="false" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Tools/PythonBindingsExample/CMakeFiles/PythonBindingsExample.Tests.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\PythonBindingsExample\tests\ApplicationTests.cpp">
+      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='debug|x64'">%(PreprocessorDefinitions);LY_CMAKE_TARGET="PythonBindingsExample"</PreprocessorDefinitions>
+      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='profile|x64'">%(PreprocessorDefinitions);LY_CMAKE_TARGET="PythonBindingsExample"</PreprocessorDefinitions>
+      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='release|x64'">%(PreprocessorDefinitions);LY_CMAKE_TARGET="PythonBindingsExample"</PreprocessorDefinitions>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\PythonBindingsExample\tests\TestMain.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Tools/PythonBindingsExample/CMakeFiles/PythonBindingsExample.Tests.dir/Unity" />
+    <None Include="C:\Users\lesaelr\o3de\Code\Tools\PythonBindingsExample\pythonbindingsexample_tests_files.cmake">
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\runtime_dependencies\debug\PythonBindingsExample.Tests_debug.stamp">
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\runtime_dependencies\profile\PythonBindingsExample.Tests_profile.stamp">
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\runtime_dependencies\release\PythonBindingsExample.Tests_release.stamp">
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\ZERO_CHECK.vcxproj">
+      <Project>{CDE32B4E-8490-3FC5-A3F2-976A0A5DE45E}</Project>
+      <Name>ZERO_CHECK</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore.vcxproj">
+      <Project>{8AC0D8DF-6487-39C7-A5F3-F77355B1ACD9}</Project>
+      <Name>AzCore</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework.vcxproj">
+      <Project>{E4BA859A-1109-3DBC-887D-DBC80D0DD65A}</Project>
+      <Name>AzFramework</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\AzQtComponents.vcxproj">
+      <Project>{9CADCCDF-9B80-353B-85C8-F3054FA0C0DF}</Project>
+      <Name>AzQtComponents</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\Code\Framework\AzTest\AzTest.vcxproj">
+      <Project>{95261DE1-D32C-3935-98F1-4D1BF1D97218}</Project>
+      <Name>AzTest</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\Code\Tools\AzTestRunner\AzTestRunner.vcxproj">
+      <Project>{968B32CB-A1B3-3E25-9F97-5BCF47C8BDF1}</Project>
+      <Name>AzTestRunner</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework.vcxproj">
+      <Project>{7F75A175-5A41-381A-9555-72F870CC937B}</Project>
+      <Name>AzToolsFramework</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\External\EditorPythonBindings-d1c6a6b7\Code\EditorPythonBindings.Editor.vcxproj">
+      <Project>{DE68F3DD-E165-3B9C-BA0D-C5B96BBC7362}</Project>
+      <Name>EditorPythonBindings.Editor</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate.vcxproj">
+      <Project>{FE67A854-57A6-3513-BAEF-9A7AC0A253E8}</Project>
+      <Name>GridMate</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\Code\Tools\PythonBindingsExample\PythonBindingsExample.Static.vcxproj">
+      <Project>{84398D64-858B-38C4-BB52-07EDB2197AAA}</Project>
+      <Name>PythonBindingsExample.Static</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

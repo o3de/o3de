@@ -1,0 +1,96 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\Metastream-c172f23d\Code\CMakeFiles\Metastream.Tests.dir\Unity\unity_0_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Metastream\Code\Tests\MetastreamTest.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Metastream\Code\Source\MetastreamGem.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Metastream\Code\Source\BaseHttpServer.cpp">
+      <Filter>Source\Platform\Windows\..\..</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Metastream\Code\Source\CivetHttpServer.cpp">
+      <Filter>Source\Platform\Windows\..\..</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Metastream\Code\Source\MetastreamGem.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Metastream\Code\Source\Platform\Windows\Metastream_Traits_Platform.h">
+      <Filter>Source\Platform\Windows</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Metastream\Code\Source\Platform\Windows\Metastream_Traits_Windows.h">
+      <Filter>Source\Platform\Windows</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Metastream\Code\Source\BaseHttpServer.h">
+      <Filter>Source\Platform\Windows\..\..</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Metastream\Code\Source\CivetHttpServer.h">
+      <Filter>Source\Platform\Windows\..\..</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\CMakeFiles\08b24365a84bd27d080f6dd51f42b933\Metastream.Tests_(CONFIG).stamp.rule">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Gems\Metastream\Code\CMakeLists.txt">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Metastream\Code\metastream_tests_files.cmake" />
+    <None Include="C:\Users\lesaelr\o3de\Gems\Metastream\Code\metastream_shared_files.cmake" />
+    <None Include="C:\Users\lesaelr\o3de\Gems\Metastream\Code\Source\Platform\Windows\platform_windows_files.cmake">
+      <Filter>Source\Platform\Windows</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Metastream\Code\Source\Platform\Windows\metastream_windows.cmake">
+      <Filter>Source\Platform\Windows</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Metastream\Code\Source\Platform\Common\MSVC\metastream_msvc.cmake">
+      <Filter>Source\Platform\Common\MSVC</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\runtime_dependencies\debug\Metastream.Tests_debug.stamp">
+      <Filter>Generated Files</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\runtime_dependencies\profile\Metastream.Tests_profile.stamp">
+      <Filter>Generated Files</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\runtime_dependencies\release\Metastream.Tests_release.stamp">
+      <Filter>Generated Files</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Generated Files">
+      <UniqueIdentifier>{FB9B7D8B-7F05-31D5-AA90-592248EDE1B3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source">
+      <UniqueIdentifier>{F3F0AD47-5F83-373B-A2BF-650D2E4FA3EA}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Platform">
+      <UniqueIdentifier>{4FB794FF-EAE9-3B82-95CC-6241BAD0E3AC}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Platform\Common">
+      <UniqueIdentifier>{36290816-6835-39C0-B301-795953CCC13E}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Platform\Common\MSVC">
+      <UniqueIdentifier>{E1E89B60-2468-3907-B827-F49D4366A0DE}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Platform\Windows">
+      <UniqueIdentifier>{2D0E7154-D797-393D-A7EB-8527ACAFB2BF}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Platform\Windows\..">
+      <UniqueIdentifier>{F7662613-E4CB-3520-9CE4-901D15E00EF5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Platform\Windows\..\..">
+      <UniqueIdentifier>{26BEEA10-DAE6-3A94-A722-62DCF36E3DA5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Tests">
+      <UniqueIdentifier>{042E9197-689D-3636-8A35-28EBCAA2BD47}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

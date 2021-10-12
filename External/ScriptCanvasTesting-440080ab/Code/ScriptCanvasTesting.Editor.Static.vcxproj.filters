@@ -1,0 +1,137 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\ScriptCanvasTesting-440080ab\Code\CMakeFiles\ScriptCanvasTesting.Editor.Static.dir\Unity\unity_0_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvasTesting\Code\Source\ScriptCanvasTestBus.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvasTesting\Code\Source\ScriptCanvasTestingSystemComponent.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvasTesting\Code\Source\Framework\ScriptCanvasTestVerify.cpp">
+      <Filter>Source\Framework</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvasTesting\Code\Source\Nodes\Nodeables\NodeableTestingLibrary.cpp">
+      <Filter>Source\Nodes\Nodeables</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvasTesting\Code\Source\Nodes\Nodeables\SharedDataSlotExample.cpp">
+      <Filter>Source\Nodes\Nodeables</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvasTesting\Code\Source\Nodes\Nodeables\ValuePointerReferenceExample.cpp">
+      <Filter>Source\Nodes\Nodeables</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\ScriptCanvasTesting-440080ab\Code\Azcg\Generated\Source\Nodes\Nodeables\SharedDataSlotExample.generated.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\ScriptCanvasTesting-440080ab\Code\Azcg\Generated\Source\Nodes\Nodeables\ValuePointerReferenceExample.generated.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvasTesting\Code\Source\ScriptCanvasTestBus.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvasTesting\Code\Source\ScriptCanvasTestingSystemComponent.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvasTesting\Code\Source\Framework\ScriptCanvasTestVerify.h">
+      <Filter>Source\Framework</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvasTesting\Code\Source\Nodes\BehaviorContextObjectTestNode.h">
+      <Filter>Source\Nodes</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvasTesting\Code\Source\Nodes\Nodeables\NodeableTestingLibrary.h">
+      <Filter>Source\Nodes\Nodeables</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvasTesting\Code\Source\Nodes\Nodeables\SharedDataSlotExample.h">
+      <Filter>Source\Nodes\Nodeables</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvasTesting\Code\Source\Nodes\Nodeables\ValuePointerReferenceExample.h">
+      <Filter>Source\Nodes\Nodeables</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\External\ScriptCanvasTesting-440080ab\Code\Azcg\Generated\Source\Nodes\Nodeables\SharedDataSlotExample.generated.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\External\ScriptCanvasTesting-440080ab\Code\Azcg\Generated\Source\Nodes\Nodeables\ValuePointerReferenceExample.generated.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\CMakeFiles\4ec031719ec3912708e25a6a95d690cc\SharedDataSlotExample.generated.h.rule">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvasTesting\Code\CMakeLists.txt">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvasTesting\Code\scriptcanvastestingeditor_files.cmake" />
+    <None Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\AutoGen\ScriptCanvasGrammar_Header.jinja">
+      <Filter>..\..\ScriptCanvas\Code\Include\ScriptCanvas\AutoGen</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\AutoGen\ScriptCanvasGrammar_Source.jinja">
+      <Filter>..\..\ScriptCanvas\Code\Include\ScriptCanvas\AutoGen</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\AutoGen\ScriptCanvasNodeable_Header.jinja">
+      <Filter>..\..\ScriptCanvas\Code\Include\ScriptCanvas\AutoGen</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\AutoGen\ScriptCanvasNodeable_Source.jinja">
+      <Filter>..\..\ScriptCanvas\Code\Include\ScriptCanvas\AutoGen</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\AutoGen\ScriptCanvas_Macros.jinja">
+      <Filter>..\..\ScriptCanvas\Code\Include\ScriptCanvas\AutoGen</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Include\ScriptCanvas\AutoGen\ScriptCanvas_Nodeable_Macros.jinja">
+      <Filter>..\..\ScriptCanvas\Code\Include\ScriptCanvas\AutoGen</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvasTesting\Code\scriptcanvastesting_autogen_files.cmake" />
+  </ItemGroup>
+  <ItemGroup>
+    <XML Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvasTesting\Code\Source\Nodes\Nodeables\SharedDataSlotExample.ScriptCanvasNodeable.xml">
+      <Filter>Source\Nodes\Nodeables</Filter>
+    </XML>
+    <XML Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvasTesting\Code\Source\Nodes\Nodeables\ValuePointerReferenceExample.ScriptCanvasNodeable.xml">
+      <Filter>Source\Nodes\Nodeables</Filter>
+    </XML>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="..">
+      <UniqueIdentifier>{B62B6BD3-6D53-356A-92E7-D4477019628D}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="..\..">
+      <UniqueIdentifier>{EF225BAE-B93D-3FC9-9DC6-002B77DE8B58}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="..\..\ScriptCanvas">
+      <UniqueIdentifier>{E24756C7-4570-342B-A80B-D20A7AD4638F}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="..\..\ScriptCanvas\Code">
+      <UniqueIdentifier>{7E63EA85-8995-3A8F-BBE3-39588FC83B5D}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="..\..\ScriptCanvas\Code\Include">
+      <UniqueIdentifier>{92FCDE3F-0945-32F5-973B-56E93B3E66A6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="..\..\ScriptCanvas\Code\Include\ScriptCanvas">
+      <UniqueIdentifier>{42F07BE0-1110-37AE-8A0B-C971AE59DE40}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="..\..\ScriptCanvas\Code\Include\ScriptCanvas\AutoGen">
+      <UniqueIdentifier>{B7BF4936-2B69-39FB-B5A2-A3F8DC7509B8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Generated Files">
+      <UniqueIdentifier>{FB9B7D8B-7F05-31D5-AA90-592248EDE1B3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source">
+      <UniqueIdentifier>{F3F0AD47-5F83-373B-A2BF-650D2E4FA3EA}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Framework">
+      <UniqueIdentifier>{22AEDEAC-757E-343B-94E9-178A1AA74305}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Nodes">
+      <UniqueIdentifier>{4BB94A37-46E4-3490-B653-4945DFB85113}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Nodes\Nodeables">
+      <UniqueIdentifier>{D8A26295-908F-3D20-9F60-B19517699384}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

@@ -1,0 +1,12 @@
+# CMake generation dependency list for this directory.
+C:/Users/lesaelr/o3de/Code/LauncherUnified/CMakeLists.txt
+C:/Users/lesaelr/o3de/Code/LauncherUnified/Platform/Windows/LauncherUnified_traits_windows.cmake
+C:/Users/lesaelr/o3de/Code/LauncherUnified/Platform/Windows/launcher_game_windows_files.cmake
+C:/Users/lesaelr/o3de/Code/LauncherUnified/Platform/Windows/platform_windows.cmake
+C:/Users/lesaelr/o3de/Code/LauncherUnified/Platform/Windows/platform_windows_files.cmake
+C:/Users/lesaelr/o3de/Code/LauncherUnified/launcher_files.cmake
+C:/Users/lesaelr/o3de/Code/LauncherUnified/launcher_game_files.cmake
+C:/Users/lesaelr/o3de/Code/LauncherUnified/launcher_generator.cmake
+C:/Users/lesaelr/o3de/Code/LauncherUnified/launcher_server_files.cmake
+C:/Users/lesaelr/o3de/Code/LauncherUnified/launcher_test_files.cmake
+C:/Users/lesaelr/o3de/cmake/Platform/Windows/LYTestWrappers_windows.cmake

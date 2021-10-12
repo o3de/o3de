@@ -1,0 +1,30 @@
+# CMake generation dependency list for this directory.
+C:/Program Files/CMake/share/cmake-3.21/Modules/CMakeParseArguments.cmake
+C:/Users/lesaelr/.o3de/3rdParty/packages/AWSNativeSDK-1.7.167-rev4-windows/FindAWSNativeSDK.cmake
+C:/Users/lesaelr/.o3de/3rdParty/packages/AWSNativeSDK-1.7.167-rev4-windows/PackageInfo.json
+C:/Users/lesaelr/.o3de/3rdParty/packages/squish-ccr-deb557d-rev1-windows/Findsquish-ccr.cmake
+C:/Users/lesaelr/.o3de/3rdParty/packages/squish-ccr-deb557d-rev1-windows/PackageInfo.json
+C:/Users/lesaelr/o3de/Code/Editor/CMakeLists.txt
+C:/Users/lesaelr/o3de/Code/Editor/Controls/ConsoleSCB.qrc
+C:/Users/lesaelr/o3de/Code/Editor/LayoutConfigDialog.qrc
+C:/Users/lesaelr/o3de/Code/Editor/LevelFileDialog.qrc
+C:/Users/lesaelr/o3de/Code/Editor/Lib/Tests/Camera/editor_lib_camera_test_files.cmake
+C:/Users/lesaelr/o3de/Code/Editor/MainWindow.qrc
+C:/Users/lesaelr/o3de/Code/Editor/Platform/Common/MSVC/editor_lib_msvc.cmake
+C:/Users/lesaelr/o3de/Code/Editor/Platform/Windows/editor_core_files_windows.cmake
+C:/Users/lesaelr/o3de/Code/Editor/Platform/Windows/editor_lib_windows.cmake
+C:/Users/lesaelr/o3de/Code/Editor/Platform/Windows/editor_windows.cmake
+C:/Users/lesaelr/o3de/Code/Editor/Platform/Windows/platform_windows_files.cmake
+C:/Users/lesaelr/o3de/Code/Editor/StartupLogoDialog.qrc
+C:/Users/lesaelr/o3de/Code/Editor/Style/resources.qrc
+C:/Users/lesaelr/o3de/Code/Editor/TrackView/TrackViewDialog.qrc
+C:/Users/lesaelr/o3de/Code/Editor/WelcomeScreen/WelcomeScreenDialog.qrc
+C:/Users/lesaelr/o3de/Code/Editor/WipFeaturesDlg.qrc
+C:/Users/lesaelr/o3de/Code/Editor/editor_core_files.cmake
+C:/Users/lesaelr/o3de/Code/Editor/editor_core_test_files.cmake
+C:/Users/lesaelr/o3de/Code/Editor/editor_files.cmake
+C:/Users/lesaelr/o3de/Code/Editor/editor_headers_files.cmake
+C:/Users/lesaelr/o3de/Code/Editor/editor_lib_files.cmake
+C:/Users/lesaelr/o3de/Code/Editor/editor_lib_test_files.cmake
+C:/Users/lesaelr/o3de/Code/Editor/i18n_Translations.qrc
+C:/Users/lesaelr/o3de/cmake/Platform/Windows/LYTestWrappers_windows.cmake

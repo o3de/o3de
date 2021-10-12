@@ -1,0 +1,479 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\PhysX-777cc257\Code\CMakeFiles\PhysX.Static.dir\Unity\unity_6_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\PhysX-777cc257\Code\CMakeFiles\PhysX.Static.dir\Unity\unity_5_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\PhysX-777cc257\Code\CMakeFiles\PhysX.Static.dir\Unity\unity_4_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\PhysX-777cc257\Code\CMakeFiles\PhysX.Static.dir\Unity\unity_3_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\PhysX-777cc257\Code\CMakeFiles\PhysX.Static.dir\Unity\unity_2_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\PhysX-777cc257\Code\CMakeFiles\PhysX.Static.dir\Unity\unity_1_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\PhysX-777cc257\Code\CMakeFiles\PhysX.Static.dir\Unity\unity_0_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Source\SystemComponent.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Include\PhysX\HeightFieldAsset.cpp">
+      <Filter>Include\PhysX</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Source\RigidBodyComponent.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Source\BaseColliderComponent.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Source\MeshColliderComponent.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Source\BoxColliderComponent.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Source\SphereColliderComponent.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Source\CapsuleColliderComponent.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Source\ShapeColliderComponent.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Source\ForceRegionComponent.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Source\StaticRigidBodyComponent.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Source\BallJointComponent.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Source\FixedJointComponent.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Source\HingeJointComponent.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Source\JointComponent.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Source\Pipeline\MeshAssetHandler.cpp">
+      <Filter>Source\Pipeline</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Source\Pipeline\HeightFieldAssetHandler.cpp">
+      <Filter>Source\Pipeline</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Source\Pipeline\StreamWrapper.cpp">
+      <Filter>Source\Pipeline</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Source\Utils.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Source\RigidBody.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Source\RigidBodyStatic.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Source\Collision.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Source\Shape.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Source\Material.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Source\ForceRegionForces.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Source\ForceRegion.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Source\NameConstants.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Source\DefaultWorldComponent.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Source\WindProvider.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Source\PhysXCharacters\API\CharacterController.cpp">
+      <Filter>Source\PhysXCharacters\API</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Source\PhysXCharacters\API\Ragdoll.cpp">
+      <Filter>Source\PhysXCharacters\API</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Source\PhysXCharacters\API\RagdollNode.cpp">
+      <Filter>Source\PhysXCharacters\API</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Source\PhysXCharacters\API\CharacterUtils.cpp">
+      <Filter>Source\PhysXCharacters\API</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Source\PhysXCharacters\Components\CharacterControllerComponent.cpp">
+      <Filter>Source\PhysXCharacters\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Source\PhysXCharacters\Components\CharacterGameplayComponent.cpp">
+      <Filter>Source\PhysXCharacters\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Source\PhysXCharacters\Components\RagdollComponent.cpp">
+      <Filter>Source\PhysXCharacters\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Source\Common\PhysXSceneQueryHelpers.cpp">
+      <Filter>Source\Common</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Source\Configuration\PhysXConfiguration.cpp">
+      <Filter>Source\Configuration</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Source\Configuration\PhysXSettingsRegistryManager.cpp">
+      <Filter>Source\Configuration</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Source\Debug\PhysXDebug.cpp">
+      <Filter>Source\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Source\Debug\Configuration\PhysXDebugConfiguration.cpp">
+      <Filter>Source\Debug\Configuration</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Source\Joint\PhysXJoint.cpp">
+      <Filter>Source\Joint</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Source\Joint\PhysXJointUtils.cpp">
+      <Filter>Source\Joint</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Source\Joint\Configuration\PhysXJointConfiguration.cpp">
+      <Filter>Source\Joint\Configuration</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Source\Scene\PhysXScene.cpp">
+      <Filter>Source\Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Source\Scene\PhysXSceneInterface.cpp">
+      <Filter>Source\Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Source\Scene\PhysXSceneSimulationEventCallback.cpp">
+      <Filter>Source\Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Source\Scene\PhysXSceneSimulationFilterCallback.cpp">
+      <Filter>Source\Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Source\System\PhysXAllocator.cpp">
+      <Filter>Source\System</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Source\System\PhysXCookingParams.cpp">
+      <Filter>Source\System</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Source\System\PhysXCpuDispatcher.cpp">
+      <Filter>Source\System</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Source\System\PhysXJob.cpp">
+      <Filter>Source\System</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Source\System\PhysXJointInterface.cpp">
+      <Filter>Source\System</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Source\System\PhysXSdkCallbacks.cpp">
+      <Filter>Source\System</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Source\System\PhysXSystem.cpp">
+      <Filter>Source\System</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Source\SystemComponent.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Include\PhysX\SystemComponentBus.h">
+      <Filter>Include\PhysX</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Include\PhysX\ColliderComponentBus.h">
+      <Filter>Include\PhysX</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Include\PhysX\NativeTypeIdentifiers.h">
+      <Filter>Include\PhysX</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Include\PhysX\MeshColliderComponentBus.h">
+      <Filter>Include\PhysX</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Include\PhysX\MeshAsset.h">
+      <Filter>Include\PhysX</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Include\PhysX\HeightFieldAsset.h">
+      <Filter>Include\PhysX</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Include\PhysX\UserDataTypes.h">
+      <Filter>Include\PhysX</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Include\PhysX\UserDataTypes.inl">
+      <Filter>Include\PhysX</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Include\PhysX\Utils.h">
+      <Filter>Include\PhysX</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Include\PhysX\Utils.inl">
+      <Filter>Include\PhysX</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Include\PhysX\MathConversion.h">
+      <Filter>Include\PhysX</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Include\PhysX\ComponentTypeIds.h">
+      <Filter>Include\PhysX</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Include\PhysX\ForceRegionComponentBus.h">
+      <Filter>Include\PhysX</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Include\PhysX\ColliderShapeBus.h">
+      <Filter>Include\PhysX</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Include\PhysX\PhysXLocks.h">
+      <Filter>Include\PhysX</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Include\PhysX\CharacterControllerBus.h">
+      <Filter>Include\PhysX</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Include\PhysX\CharacterGameplayBus.h">
+      <Filter>Include\PhysX</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Source\RigidBodyComponent.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Source\BaseColliderComponent.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Source\MeshColliderComponent.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Source\BoxColliderComponent.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Source\SphereColliderComponent.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Source\CapsuleColliderComponent.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Source\ShapeColliderComponent.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Source\ForceRegionComponent.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Source\StaticRigidBodyComponent.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Source\BallJointComponent.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Source\FixedJointComponent.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Source\HingeJointComponent.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Source\JointComponent.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Source\Pipeline\MeshAssetHandler.h">
+      <Filter>Source\Pipeline</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Source\Pipeline\HeightFieldAssetHandler.h">
+      <Filter>Source\Pipeline</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Source\Pipeline\StreamWrapper.h">
+      <Filter>Source\Pipeline</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Source\Utils.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Source\RigidBody.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Source\RigidBodyStatic.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Source\Collision.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Source\Shape.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Source\Material.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Source\ForceRegionForces.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Source\ForceRegion.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Source\NameConstants.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Source\DefaultWorldComponent.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Source\WindProvider.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Source\PhysXCharacters\API\CharacterController.h">
+      <Filter>Source\PhysXCharacters\API</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Source\PhysXCharacters\API\Ragdoll.h">
+      <Filter>Source\PhysXCharacters\API</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Source\PhysXCharacters\API\RagdollNode.h">
+      <Filter>Source\PhysXCharacters\API</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Source\PhysXCharacters\API\CharacterUtils.h">
+      <Filter>Source\PhysXCharacters\API</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Source\PhysXCharacters\Components\CharacterControllerComponent.h">
+      <Filter>Source\PhysXCharacters\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Source\PhysXCharacters\Components\CharacterGameplayComponent.h">
+      <Filter>Source\PhysXCharacters\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Source\PhysXCharacters\Components\RagdollComponent.h">
+      <Filter>Source\PhysXCharacters\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Include\PhysX\Debug\PhysXDebugConfiguration.h">
+      <Filter>Include\PhysX\Debug</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Include\PhysX\Debug\PhysXDebugInterface.h">
+      <Filter>Include\PhysX\Debug</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Include\PhysX\Configuration\PhysXConfiguration.h">
+      <Filter>Include\PhysX\Configuration</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Include\PhysX\Joint\Configuration\PhysXJointConfiguration.h">
+      <Filter>Include\PhysX\Joint\Configuration</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Source\Common\PhysXSceneQueryHelpers.h">
+      <Filter>Source\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Source\Configuration\PhysXSettingsRegistryManager.h">
+      <Filter>Source\Configuration</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Source\Debug\PhysXDebug.h">
+      <Filter>Source\Debug</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Source\Joint\PhysXJoint.h">
+      <Filter>Source\Joint</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Source\Joint\PhysXJointUtils.h">
+      <Filter>Source\Joint</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Source\Scene\PhysXScene.h">
+      <Filter>Source\Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Source\Scene\PhysXSceneInterface.h">
+      <Filter>Source\Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Source\Scene\PhysXSceneSimulationEventCallback.h">
+      <Filter>Source\Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Source\Scene\PhysXSceneSimulationFilterCallback.h">
+      <Filter>Source\Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Source\System\PhysXAllocator.h">
+      <Filter>Source\System</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Source\System\PhysXCookingParams.h">
+      <Filter>Source\System</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Source\System\PhysXCpuDispatcher.h">
+      <Filter>Source\System</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Source\System\PhysXJob.h">
+      <Filter>Source\System</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Source\System\PhysXJointInterface.h">
+      <Filter>Source\System</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Source\System\PhysXSdkCallbacks.h">
+      <Filter>Source\System</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\Source\System\PhysXSystem.h">
+      <Filter>Source\System</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\CMakeLists.txt">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="C:\Users\lesaelr\o3de\Gems\PhysX\Code\physx_files.cmake" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Generated Files">
+      <UniqueIdentifier>{FB9B7D8B-7F05-31D5-AA90-592248EDE1B3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include">
+      <UniqueIdentifier>{E188105A-C8C4-34BB-9809-15E8410EF7F8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\PhysX">
+      <UniqueIdentifier>{B4820FB8-4526-333E-8510-D888CD8DF9DF}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\PhysX\Configuration">
+      <UniqueIdentifier>{38298FDB-F70D-3437-94B4-CDFE6B1ACBF0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\PhysX\Debug">
+      <UniqueIdentifier>{60A2DB50-BFEA-3A88-8C7F-C68393FCD0ED}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\PhysX\Joint">
+      <UniqueIdentifier>{CF3F46C0-9A17-3E9C-B516-EA2878632B3D}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\PhysX\Joint\Configuration">
+      <UniqueIdentifier>{FDB8DCB6-058E-3BE0-A9D5-2BCE8750CDE4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source">
+      <UniqueIdentifier>{F3F0AD47-5F83-373B-A2BF-650D2E4FA3EA}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Common">
+      <UniqueIdentifier>{A666DE74-E315-30B4-80AB-52C074A5A0A1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Configuration">
+      <UniqueIdentifier>{33ADD97E-1C3D-3D79-BEF8-E9E1B0F8F7B3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Debug">
+      <UniqueIdentifier>{33133EDA-4D34-3000-9543-EC6753591408}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Debug\Configuration">
+      <UniqueIdentifier>{5649EDD7-167D-36D3-AD11-D45D68ECFDC9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Joint">
+      <UniqueIdentifier>{694B56C4-E17F-3080-ADFF-4B01B219C531}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Joint\Configuration">
+      <UniqueIdentifier>{D2423D73-BEB6-3436-B76F-6EC282EFE3F1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\PhysXCharacters">
+      <UniqueIdentifier>{F4E24B45-DB22-375C-8DFD-A65FE9FB445E}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\PhysXCharacters\API">
+      <UniqueIdentifier>{3A07CFD2-36D7-3197-91F5-BE5494878345}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\PhysXCharacters\Components">
+      <UniqueIdentifier>{13C2D1B9-A62B-360E-9FEF-565FB0A23AD9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Pipeline">
+      <UniqueIdentifier>{5FFC77F1-6D46-3907-9866-437683B107D9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Scene">
+      <UniqueIdentifier>{683314FA-78EC-394D-AB64-1B6522010C1E}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\System">
+      <UniqueIdentifier>{4DA47873-6877-390C-B637-7CF9E1E8CF23}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

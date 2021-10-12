@@ -1,0 +1,10 @@
+# CMake generation dependency list for this directory.
+C:/Users/lesaelr/o3de/Code/Framework/GridMate/CMakeLists.txt
+C:/Users/lesaelr/o3de/Code/Framework/GridMate/GridMate/gridmate_files.cmake
+C:/Users/lesaelr/o3de/Code/Framework/GridMate/GridMate/gridmate_ssl_files.cmake
+C:/Users/lesaelr/o3de/Code/Framework/GridMate/Platform/Common/gridmate_msvc.cmake
+C:/Users/lesaelr/o3de/Code/Framework/GridMate/Platform/Windows/platform_windows.cmake
+C:/Users/lesaelr/o3de/Code/Framework/GridMate/Platform/Windows/platform_windows_files.cmake
+C:/Users/lesaelr/o3de/Code/Framework/GridMate/Tests/Platform/Windows/platform_windows_files.cmake
+C:/Users/lesaelr/o3de/Code/Framework/GridMate/Tests/gridmate_test_files.cmake
+C:/Users/lesaelr/o3de/cmake/Platform/Windows/LYTestWrappers_windows.cmake

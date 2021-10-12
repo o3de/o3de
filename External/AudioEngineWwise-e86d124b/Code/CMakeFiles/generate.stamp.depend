@@ -1,0 +1,5 @@
+# CMake generation dependency list for this directory.
+C:/Users/lesaelr/o3de/Gems/AudioEngineWwise/Code/CMakeLists.txt
+C:/Users/lesaelr/o3de/Gems/AudioEngineWwise/Code/Platform/Windows/PAL_windows.cmake
+C:/Users/lesaelr/o3de/Gems/AudioEngineWwise/Code/audioenginewwise_stub_files.cmake
+C:/Users/lesaelr/o3de/cmake/3rdParty/FindWwise.cmake

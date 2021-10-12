@@ -1,0 +1,541 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <PreferredToolArchitecture>x64</PreferredToolArchitecture>
+  </PropertyGroup>
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="debug|x64">
+      <Configuration>debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="profile|x64">
+      <Configuration>profile</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="release|x64">
+      <Configuration>release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{C1EAACF3-94B2-3B6E-9E3D-A561FF57D7AA}</ProjectGuid>
+    <WindowsTargetPlatformVersion>10.0.19041.0</WindowsTargetPlatformVersion>
+    <Keyword>Win32Proj</Keyword>
+    <Platform>x64</Platform>
+    <ProjectName>Multiplayer.Static</ProjectName>
+    <VCProjectUpgraderObjectName>NoUpgrade</VCProjectUpgraderObjectName>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='debug|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v142</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='profile|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v142</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='release|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v142</PlatformToolset>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>10.0.20506.1</_ProjectFileVersion>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='debug|x64'">C:\Users\lesaelr\o3de\lib\debug\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='debug|x64'">Multiplayer.Static.dir\debug\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='debug|x64'">Multiplayer.Static</TargetName>
+    <TargetExt Condition="'$(Configuration)|$(Platform)'=='debug|x64'">.lib</TargetExt>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='profile|x64'">C:\Users\lesaelr\o3de\lib\profile\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='profile|x64'">Multiplayer.Static.dir\profile\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='profile|x64'">Multiplayer.Static</TargetName>
+    <TargetExt Condition="'$(Configuration)|$(Platform)'=='profile|x64'">.lib</TargetExt>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='release|x64'">C:\Users\lesaelr\o3de\lib\release\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='release|x64'">Multiplayer.Static.dir\release\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='release|x64'">Multiplayer.Static</TargetName>
+    <TargetExt Condition="'$(Configuration)|$(Platform)'=='release|x64'">.lib</TargetExt>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='debug|x64'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\AZ::AzNetworking;C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source;C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\.;C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Include;C:\Users\lesaelr\o3de\External\Multiplayer-0cbd0873\Code\Azcg\Generated;C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\.;C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Include;C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Source;C:\Users\lesaelr\o3de\Gems\LmbrCentral\Code\include;C:\Users\lesaelr\o3de\Code\Framework\AzCore\.;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Common;C:\Users\lesaelr\o3de\Code\Framework\AzFramework\.;C:\Users\lesaelr\o3de\Code\Framework\AzFramework\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\GridMate\.;C:\Users\lesaelr\o3de\Code\Framework\GridMate\Platform\Windows;C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\.;C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\..;C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AtomCore\.;C:\Users\lesaelr\o3de\Gems\Atom\RPI\Code\Include;C:\Users\lesaelr\o3de\Gems\Atom\RPI\Code\External;C:\Users\lesaelr\o3de\Gems\Atom\RHI\Code\Include;C:\Users\lesaelr\o3de\Gems\PhysX\Code\.;C:\Users\lesaelr\o3de\Gems\PhysX\Code\Source;C:\Users\lesaelr\o3de\Gems\PhysX\Code\Source\Platform\Windows;C:\Users\lesaelr\o3de\Gems\PhysX\Code\Include;C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\.;C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\Platform\Common;C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\Azcg\Generated;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalOptions>%(AdditionalOptions) /Zc:__cplusplus /Zc:lambda /favor:AMD64 /bigobj /RTCsu /experimental:external /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/Lua-5.3.5-rev5-windows/lua/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/RapidJSON-1.1.0-rev1-multiplatform/RapidJSON/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/RapidXML-1.13-rev1-multiplatform/RapidXML/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/zlib-1.2.11-rev2-windows/zlib/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/zstd-1.35-multiplatform/zstd/lib /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/cityhash-1.1-multiplatform/cityhash/src /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/OpenSSL-1.1.1b-rev2-windows/OpenSSL/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/lz4-1.9.3-vcpkg-rev4-windows/lz4/lz4/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/PhysX-4.1.2.29882248-rev3-windows/PhysX/pxshared//include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/PhysX-4.1.2.29882248-rev3-windows/PhysX/pxshared//include/foundation /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/PhysX-4.1.2.29882248-rev3-windows/PhysX/pxshared//include/geometry</AdditionalOptions>
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <BufferSecurityCheck>true</BufferSecurityCheck>
+      <CallingConvention>Cdecl</CallingConvention>
+      <ConformanceMode>true</ConformanceMode>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <DiagnosticsFormat>Caret</DiagnosticsFormat>
+      <DisableSpecificWarnings>4201</DisableSpecificWarnings>
+      <ExceptionHandling>
+      </ExceptionHandling>
+      <ExternalWarningLevel>TurnOffAllWarnings</ExternalWarningLevel>
+      <FloatingPointModel>Fast</FloatingPointModel>
+      <ForceConformanceInForLoopScope>true</ForceConformanceInForLoopScope>
+      <InlineFunctionExpansion>Disabled</InlineFunctionExpansion>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <Optimization>Disabled</Optimization>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <TreatSpecificWarningsAsErrors>4263;4264;4265;4266;4296;4426;4437;4774;4777;5031;5032;5233</TreatSpecificWarningsAsErrors>
+      <TreatWarningAsError>true</TreatWarningAsError>
+      <UseFullPaths>false</UseFullPaths>
+      <WarningLevel>Level4</WarningLevel>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);_HAS_EXCEPTIONS=0;_DEBUG;AZ_DEBUG_BUILD=1;AZ_ENABLE_TRACING;AZ_ENABLE_DEBUG_TOOLS;AZ_BUILD_CONFIGURATION_TYPE="debug";_ENABLE_EXTENDED_ALIGNED_STORAGE;_WIN32;WIN32;_WIN64;WIN64;NOMINMAX;EMFX_DEVELOPMENT_BUILD;OPENSSL_ENABLED;PHYSX_ENABLE_MULTI_THREADING;AZ_PHYSICS_DEBUG_ENABLED;CMAKE_INTDIR="debug"</PreprocessorDefinitions>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);_DEBUG;_HAS_EXCEPTIONS=0;AZ_DEBUG_BUILD=1;AZ_ENABLE_TRACING;AZ_ENABLE_DEBUG_TOOLS;AZ_BUILD_CONFIGURATION_TYPE=\"debug\";_ENABLE_EXTENDED_ALIGNED_STORAGE;_WIN32;WIN32;_WIN64;WIN64;NOMINMAX;EMFX_DEVELOPMENT_BUILD;OPENSSL_ENABLED;PHYSX_ENABLE_MULTI_THREADING;AZ_PHYSICS_DEBUG_ENABLED;CMAKE_INTDIR=\"debug\"</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\AZ::AzNetworking;C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source;C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\.;C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Include;C:\Users\lesaelr\o3de\External\Multiplayer-0cbd0873\Code\Azcg\Generated;C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\.;C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Include;C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Source;C:\Users\lesaelr\o3de\Gems\LmbrCentral\Code\include;C:\Users\lesaelr\o3de\Code\Framework\AzCore\.;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Common;C:\Users\lesaelr\o3de\Code\Framework\AzFramework\.;C:\Users\lesaelr\o3de\Code\Framework\AzFramework\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\GridMate\.;C:\Users\lesaelr\o3de\Code\Framework\GridMate\Platform\Windows;C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\.;C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\..;C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AtomCore\.;C:\Users\lesaelr\o3de\Gems\Atom\RPI\Code\Include;C:\Users\lesaelr\o3de\Gems\Atom\RPI\Code\External;C:\Users\lesaelr\o3de\Gems\Atom\RHI\Code\Include;C:\Users\lesaelr\o3de\Gems\PhysX\Code\.;C:\Users\lesaelr\o3de\Gems\PhysX\Code\Source;C:\Users\lesaelr\o3de\Gems\PhysX\Code\Source\Platform\Windows;C:\Users\lesaelr\o3de\Gems\PhysX\Code\Include;C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\.;C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\Platform\Common;C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\Azcg\Generated;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+    </ResourceCompile>
+    <Midl>
+      <AdditionalIncludeDirectories>C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\AZ::AzNetworking;C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source;C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\.;C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Include;C:\Users\lesaelr\o3de\External\Multiplayer-0cbd0873\Code\Azcg\Generated;C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\.;C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Include;C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Source;C:\Users\lesaelr\o3de\Gems\LmbrCentral\Code\include;C:\Users\lesaelr\o3de\Code\Framework\AzCore\.;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Common;C:\Users\lesaelr\o3de\Code\Framework\AzFramework\.;C:\Users\lesaelr\o3de\Code\Framework\AzFramework\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\GridMate\.;C:\Users\lesaelr\o3de\Code\Framework\GridMate\Platform\Windows;C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\.;C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\..;C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AtomCore\.;C:\Users\lesaelr\o3de\Gems\Atom\RPI\Code\Include;C:\Users\lesaelr\o3de\Gems\Atom\RPI\Code\External;C:\Users\lesaelr\o3de\Gems\Atom\RHI\Code\Include;C:\Users\lesaelr\o3de\Gems\PhysX\Code\.;C:\Users\lesaelr\o3de\Gems\PhysX\Code\Source;C:\Users\lesaelr\o3de\Gems\PhysX\Code\Source\Platform\Windows;C:\Users\lesaelr\o3de\Gems\PhysX\Code\Include;C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\.;C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\Platform\Common;C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\Azcg\Generated;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+    <Lib>
+      <AdditionalOptions>%(AdditionalOptions) /machine:x64 /IGNORE:4099</AdditionalOptions>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <TargetMachine>MachineX64</TargetMachine>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='profile|x64'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\AZ::AzNetworking;C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source;C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\.;C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Include;C:\Users\lesaelr\o3de\External\Multiplayer-0cbd0873\Code\Azcg\Generated;C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\.;C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Include;C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Source;C:\Users\lesaelr\o3de\Gems\LmbrCentral\Code\include;C:\Users\lesaelr\o3de\Code\Framework\AzCore\.;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Common;C:\Users\lesaelr\o3de\Code\Framework\AzFramework\.;C:\Users\lesaelr\o3de\Code\Framework\AzFramework\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\GridMate\.;C:\Users\lesaelr\o3de\Code\Framework\GridMate\Platform\Windows;C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\.;C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\..;C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AtomCore\.;C:\Users\lesaelr\o3de\Gems\Atom\RPI\Code\Include;C:\Users\lesaelr\o3de\Gems\Atom\RPI\Code\External;C:\Users\lesaelr\o3de\Gems\Atom\RHI\Code\Include;C:\Users\lesaelr\o3de\Gems\PhysX\Code\.;C:\Users\lesaelr\o3de\Gems\PhysX\Code\Source;C:\Users\lesaelr\o3de\Gems\PhysX\Code\Source\Platform\Windows;C:\Users\lesaelr\o3de\Gems\PhysX\Code\Include;C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\.;C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\Platform\Common;C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\Azcg\Generated;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalOptions>%(AdditionalOptions) /Zc:__cplusplus /Zc:lambda /favor:AMD64 /bigobj /experimental:external /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/Lua-5.3.5-rev5-windows/lua/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/RapidJSON-1.1.0-rev1-multiplatform/RapidJSON/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/RapidXML-1.13-rev1-multiplatform/RapidXML/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/zlib-1.2.11-rev2-windows/zlib/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/zstd-1.35-multiplatform/zstd/lib /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/cityhash-1.1-multiplatform/cityhash/src /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/OpenSSL-1.1.1b-rev2-windows/OpenSSL/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/lz4-1.9.3-vcpkg-rev4-windows/lz4/lz4/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/PhysX-4.1.2.29882248-rev3-windows/PhysX/pxshared//include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/PhysX-4.1.2.29882248-rev3-windows/PhysX/pxshared//include/foundation /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/PhysX-4.1.2.29882248-rev3-windows/PhysX/pxshared//include/geometry</AdditionalOptions>
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <CallingConvention>Cdecl</CallingConvention>
+      <ConformanceMode>true</ConformanceMode>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <DiagnosticsFormat>Caret</DiagnosticsFormat>
+      <DisableSpecificWarnings>4201</DisableSpecificWarnings>
+      <ExceptionHandling>
+      </ExceptionHandling>
+      <ExternalWarningLevel>TurnOffAllWarnings</ExternalWarningLevel>
+      <FloatingPointModel>Fast</FloatingPointModel>
+      <ForceConformanceInForLoopScope>true</ForceConformanceInForLoopScope>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <Optimization>MaxSpeed</Optimization>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <RemoveUnreferencedCodeData>true</RemoveUnreferencedCodeData>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <StringPooling>true</StringPooling>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <TreatSpecificWarningsAsErrors>4263;4264;4265;4266;4296;4426;4437;4774;4777;5031;5032;5233</TreatSpecificWarningsAsErrors>
+      <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
+      <TreatWarningAsError>true</TreatWarningAsError>
+      <UseFullPaths>false</UseFullPaths>
+      <WarningLevel>Level4</WarningLevel>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);_HAS_EXCEPTIONS=0;_PROFILE;PROFILE;NDEBUG;AZ_ENABLE_TRACING;AZ_ENABLE_DEBUG_TOOLS;AZ_BUILD_CONFIGURATION_TYPE="profile";_ENABLE_EXTENDED_ALIGNED_STORAGE;_WIN32;WIN32;_WIN64;WIN64;NOMINMAX;EMFX_DEVELOPMENT_BUILD;OPENSSL_ENABLED;PHYSX_ENABLE_MULTI_THREADING;AZ_PHYSICS_DEBUG_ENABLED;CMAKE_INTDIR="profile"</PreprocessorDefinitions>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);_HAS_EXCEPTIONS=0;_PROFILE;PROFILE;NDEBUG;AZ_ENABLE_TRACING;AZ_ENABLE_DEBUG_TOOLS;AZ_BUILD_CONFIGURATION_TYPE=\"profile\";_ENABLE_EXTENDED_ALIGNED_STORAGE;_WIN32;WIN32;_WIN64;WIN64;NOMINMAX;EMFX_DEVELOPMENT_BUILD;OPENSSL_ENABLED;PHYSX_ENABLE_MULTI_THREADING;AZ_PHYSICS_DEBUG_ENABLED;CMAKE_INTDIR=\"profile\"</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\AZ::AzNetworking;C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source;C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\.;C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Include;C:\Users\lesaelr\o3de\External\Multiplayer-0cbd0873\Code\Azcg\Generated;C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\.;C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Include;C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Source;C:\Users\lesaelr\o3de\Gems\LmbrCentral\Code\include;C:\Users\lesaelr\o3de\Code\Framework\AzCore\.;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Common;C:\Users\lesaelr\o3de\Code\Framework\AzFramework\.;C:\Users\lesaelr\o3de\Code\Framework\AzFramework\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\GridMate\.;C:\Users\lesaelr\o3de\Code\Framework\GridMate\Platform\Windows;C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\.;C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\..;C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AtomCore\.;C:\Users\lesaelr\o3de\Gems\Atom\RPI\Code\Include;C:\Users\lesaelr\o3de\Gems\Atom\RPI\Code\External;C:\Users\lesaelr\o3de\Gems\Atom\RHI\Code\Include;C:\Users\lesaelr\o3de\Gems\PhysX\Code\.;C:\Users\lesaelr\o3de\Gems\PhysX\Code\Source;C:\Users\lesaelr\o3de\Gems\PhysX\Code\Source\Platform\Windows;C:\Users\lesaelr\o3de\Gems\PhysX\Code\Include;C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\.;C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\Platform\Common;C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\Azcg\Generated;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+    </ResourceCompile>
+    <Midl>
+      <AdditionalIncludeDirectories>C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\AZ::AzNetworking;C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source;C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\.;C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Include;C:\Users\lesaelr\o3de\External\Multiplayer-0cbd0873\Code\Azcg\Generated;C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\.;C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Include;C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Source;C:\Users\lesaelr\o3de\Gems\LmbrCentral\Code\include;C:\Users\lesaelr\o3de\Code\Framework\AzCore\.;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Common;C:\Users\lesaelr\o3de\Code\Framework\AzFramework\.;C:\Users\lesaelr\o3de\Code\Framework\AzFramework\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\GridMate\.;C:\Users\lesaelr\o3de\Code\Framework\GridMate\Platform\Windows;C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\.;C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\..;C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AtomCore\.;C:\Users\lesaelr\o3de\Gems\Atom\RPI\Code\Include;C:\Users\lesaelr\o3de\Gems\Atom\RPI\Code\External;C:\Users\lesaelr\o3de\Gems\Atom\RHI\Code\Include;C:\Users\lesaelr\o3de\Gems\PhysX\Code\.;C:\Users\lesaelr\o3de\Gems\PhysX\Code\Source;C:\Users\lesaelr\o3de\Gems\PhysX\Code\Source\Platform\Windows;C:\Users\lesaelr\o3de\Gems\PhysX\Code\Include;C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\.;C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\Platform\Common;C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\Azcg\Generated;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+    <Lib>
+      <AdditionalOptions>%(AdditionalOptions) /machine:x64 /IGNORE:4099</AdditionalOptions>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <TargetMachine>MachineX64</TargetMachine>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='release|x64'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\AZ::AzNetworking;C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source;C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\.;C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Include;C:\Users\lesaelr\o3de\External\Multiplayer-0cbd0873\Code\Azcg\Generated;C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\.;C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Include;C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Source;C:\Users\lesaelr\o3de\Gems\LmbrCentral\Code\include;C:\Users\lesaelr\o3de\Code\Framework\AzCore\.;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Common;C:\Users\lesaelr\o3de\Code\Framework\AzFramework\.;C:\Users\lesaelr\o3de\Code\Framework\AzFramework\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\GridMate\.;C:\Users\lesaelr\o3de\Code\Framework\GridMate\Platform\Windows;C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\.;C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\..;C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AtomCore\.;C:\Users\lesaelr\o3de\Gems\Atom\RPI\Code\Include;C:\Users\lesaelr\o3de\Gems\Atom\RPI\Code\External;C:\Users\lesaelr\o3de\Gems\Atom\RHI\Code\Include;C:\Users\lesaelr\o3de\Gems\PhysX\Code\.;C:\Users\lesaelr\o3de\Gems\PhysX\Code\Source;C:\Users\lesaelr\o3de\Gems\PhysX\Code\Source\Platform\Windows;C:\Users\lesaelr\o3de\Gems\PhysX\Code\Include;C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\.;C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\Platform\Common;C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\Azcg\Generated;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalOptions>%(AdditionalOptions) /Zc:__cplusplus /Zc:lambda /favor:AMD64 /bigobj /experimental:external /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/Lua-5.3.5-rev5-windows/lua/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/RapidJSON-1.1.0-rev1-multiplatform/RapidJSON/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/RapidXML-1.13-rev1-multiplatform/RapidXML/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/zlib-1.2.11-rev2-windows/zlib/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/zstd-1.35-multiplatform/zstd/lib /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/cityhash-1.1-multiplatform/cityhash/src /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/OpenSSL-1.1.1b-rev2-windows/OpenSSL/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/lz4-1.9.3-vcpkg-rev4-windows/lz4/lz4/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/PhysX-4.1.2.29882248-rev3-windows/PhysX/pxshared//include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/PhysX-4.1.2.29882248-rev3-windows/PhysX/pxshared//include/foundation /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/PhysX-4.1.2.29882248-rev3-windows/PhysX/pxshared//include/geometry</AdditionalOptions>
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <CallingConvention>Cdecl</CallingConvention>
+      <ConformanceMode>true</ConformanceMode>
+      <DiagnosticsFormat>Caret</DiagnosticsFormat>
+      <DisableSpecificWarnings>4201</DisableSpecificWarnings>
+      <ExceptionHandling>
+      </ExceptionHandling>
+      <ExternalWarningLevel>TurnOffAllWarnings</ExternalWarningLevel>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <FloatingPointModel>Fast</FloatingPointModel>
+      <ForceConformanceInForLoopScope>true</ForceConformanceInForLoopScope>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <OmitFramePointers>true</OmitFramePointers>
+      <Optimization>Full</Optimization>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <TreatSpecificWarningsAsErrors>4263;4264;4265;4266;4296;4426;4437;4774;4777;5031;5032;5233</TreatSpecificWarningsAsErrors>
+      <TreatWarningAsError>true</TreatWarningAsError>
+      <UseFullPaths>false</UseFullPaths>
+      <WarningLevel>Level4</WarningLevel>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);_HAS_EXCEPTIONS=0;_RELEASE;RELEASE;NDEBUG;AZ_BUILD_CONFIGURATION_TYPE="release";_ENABLE_EXTENDED_ALIGNED_STORAGE;_WIN32;WIN32;_WIN64;WIN64;NOMINMAX;EMFX_DEVELOPMENT_BUILD;OPENSSL_ENABLED;PHYSX_ENABLE_MULTI_THREADING;CMAKE_INTDIR="release"</PreprocessorDefinitions>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+      <DebugInformationFormat>
+      </DebugInformationFormat>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);_HAS_EXCEPTIONS=0;_RELEASE;RELEASE;NDEBUG;AZ_BUILD_CONFIGURATION_TYPE=\"release\";_ENABLE_EXTENDED_ALIGNED_STORAGE;_WIN32;WIN32;_WIN64;WIN64;NOMINMAX;EMFX_DEVELOPMENT_BUILD;OPENSSL_ENABLED;PHYSX_ENABLE_MULTI_THREADING;CMAKE_INTDIR=\"release\"</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\AZ::AzNetworking;C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source;C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\.;C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Include;C:\Users\lesaelr\o3de\External\Multiplayer-0cbd0873\Code\Azcg\Generated;C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\.;C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Include;C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Source;C:\Users\lesaelr\o3de\Gems\LmbrCentral\Code\include;C:\Users\lesaelr\o3de\Code\Framework\AzCore\.;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Common;C:\Users\lesaelr\o3de\Code\Framework\AzFramework\.;C:\Users\lesaelr\o3de\Code\Framework\AzFramework\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\GridMate\.;C:\Users\lesaelr\o3de\Code\Framework\GridMate\Platform\Windows;C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\.;C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\..;C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AtomCore\.;C:\Users\lesaelr\o3de\Gems\Atom\RPI\Code\Include;C:\Users\lesaelr\o3de\Gems\Atom\RPI\Code\External;C:\Users\lesaelr\o3de\Gems\Atom\RHI\Code\Include;C:\Users\lesaelr\o3de\Gems\PhysX\Code\.;C:\Users\lesaelr\o3de\Gems\PhysX\Code\Source;C:\Users\lesaelr\o3de\Gems\PhysX\Code\Source\Platform\Windows;C:\Users\lesaelr\o3de\Gems\PhysX\Code\Include;C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\.;C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\Platform\Common;C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\Azcg\Generated;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+    </ResourceCompile>
+    <Midl>
+      <AdditionalIncludeDirectories>C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\AZ::AzNetworking;C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source;C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\.;C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Include;C:\Users\lesaelr\o3de\External\Multiplayer-0cbd0873\Code\Azcg\Generated;C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\.;C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Include;C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Source;C:\Users\lesaelr\o3de\Gems\LmbrCentral\Code\include;C:\Users\lesaelr\o3de\Code\Framework\AzCore\.;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Common;C:\Users\lesaelr\o3de\Code\Framework\AzFramework\.;C:\Users\lesaelr\o3de\Code\Framework\AzFramework\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\GridMate\.;C:\Users\lesaelr\o3de\Code\Framework\GridMate\Platform\Windows;C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\.;C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\..;C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AtomCore\.;C:\Users\lesaelr\o3de\Gems\Atom\RPI\Code\Include;C:\Users\lesaelr\o3de\Gems\Atom\RPI\Code\External;C:\Users\lesaelr\o3de\Gems\Atom\RHI\Code\Include;C:\Users\lesaelr\o3de\Gems\PhysX\Code\.;C:\Users\lesaelr\o3de\Gems\PhysX\Code\Source;C:\Users\lesaelr\o3de\Gems\PhysX\Code\Source\Platform\Windows;C:\Users\lesaelr\o3de\Gems\PhysX\Code\Include;C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\.;C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\Platform\Common;C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\Azcg\Generated;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+    <Lib>
+      <AdditionalOptions>%(AdditionalOptions) /machine:x64 /IGNORE:4099</AdditionalOptions>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <TargetMachine>MachineX64</TargetMachine>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\CMakeFiles\d01e5c12e11b820c55a8f223e2cb6b99\Multiplayer.AutoPackets.h.rule">
+      <Message Condition="'$(Configuration)|$(Platform)'=='debug|x64'">Running AutoGen for Multiplayer.Static</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='debug|x64'">setlocal
+call ..\..\..\python\python.cmd -s C:/Users/lesaelr/o3de/cmake/AzAutoGen.py C:/Users/lesaelr/o3de/Azcg/TemplateCache/ C:/Users/lesaelr/o3de/External/Multiplayer-0cbd0873/Code/Azcg/Generated/ C:/Users/lesaelr/o3de/Gems/Multiplayer/Code Source/AutoGen/AutoComponentTypes_Header.jinja";"Source/AutoGen/AutoComponentTypes_Source.jinja";"Source/AutoGen/AutoComponent_Common.jinja";"Source/AutoGen/AutoComponent_Header.jinja";"Source/AutoGen/AutoComponent_Source.jinja";"Source/AutoGen/LocalPredictionPlayerInputComponent.AutoComponent.xml";"Source/AutoGen/Multiplayer.AutoPackets.xml";"Source/AutoGen/MultiplayerEditor.AutoPackets.xml";"Source/AutoGen/NetworkCharacterComponent.AutoComponent.xml";"Source/AutoGen/NetworkHitVolumesComponent.AutoComponent.xml";"Source/AutoGen/NetworkRigidBodyComponent.AutoComponent.xml";"Source/AutoGen/NetworkTransformComponent.AutoComponent.xml";"Source/AutoGen/NetworkHierarchyChildComponent.AutoComponent.xml";"Source/AutoGen/NetworkHierarchyRootComponent.AutoComponent.xml";"C:/Users/lesaelr/o3de/Code/Framework/AzNetworking/AzNetworking/AutoGen/AutoPackets_Header.jinja";"C:/Users/lesaelr/o3de/Code/Framework/AzNetworking/AzNetworking/AutoGen/AutoPackets_Inline.jinja";"C:/Users/lesaelr/o3de/Code/Framework/AzNetworking/AzNetworking/AutoGen/AutoPackets_Source.jinja";"C:/Users/lesaelr/o3de/Code/Framework/AzNetworking/AzNetworking/AutoGen/AutoPacketDispatcher_Header.jinja";"C:/Users/lesaelr/o3de/Code/Framework/AzNetworking/AzNetworking/AutoGen/AutoPacketDispatcher_Inline.jinja *.AutoPackets.xml,AutoPackets_Header.jinja,"$"path/"$"fileprefix.AutoPackets.h";"*.AutoPackets.xml,AutoPackets_Inline.jinja,"$"path/"$"fileprefix.AutoPackets.inl";"*.AutoPackets.xml,AutoPackets_Source.jinja,"$"path/"$"fileprefix.AutoPackets.cpp";"*.AutoPackets.xml,AutoPacketDispatcher_Header.jinja,"$"path/"$"fileprefix.AutoPacketDispatcher.h";"*.AutoPackets.xml,AutoPacketDispatcher_Inline.jinja,"$"path/"$"fileprefix.AutoPacketDispatcher.inl";"*.AutoComponent.xml,AutoComponent_Header.jinja,"$"path/"$"fileprefix.AutoComponent.h";"*.AutoComponent.xml,AutoComponent_Source.jinja,"$"path/"$"fileprefix.AutoComponent.cpp";"*.AutoComponent.xml,AutoComponentTypes_Header.jinja,"$"path/AutoComponentTypes.h";"*.AutoComponent.xml,AutoComponentTypes_Source.jinja,"$"path/AutoComponentTypes.cpp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='debug|x64'">C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source\AutoGen\AutoComponentTypes_Header.jinja;C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source\AutoGen\AutoComponentTypes_Source.jinja;C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source\AutoGen\AutoComponent_Common.jinja;C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source\AutoGen\AutoComponent_Header.jinja;C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source\AutoGen\AutoComponent_Source.jinja;C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source\AutoGen\LocalPredictionPlayerInputComponent.AutoComponent.xml;C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source\AutoGen\Multiplayer.AutoPackets.xml;C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source\AutoGen\MultiplayerEditor.AutoPackets.xml;C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source\AutoGen\NetworkCharacterComponent.AutoComponent.xml;C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source\AutoGen\NetworkHitVolumesComponent.AutoComponent.xml;C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source\AutoGen\NetworkRigidBodyComponent.AutoComponent.xml;C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source\AutoGen\NetworkTransformComponent.AutoComponent.xml;C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source\AutoGen\NetworkHierarchyChildComponent.AutoComponent.xml;C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source\AutoGen\NetworkHierarchyRootComponent.AutoComponent.xml;C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\AzNetworking\AutoGen\AutoPackets_Header.jinja;C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\AzNetworking\AutoGen\AutoPackets_Inline.jinja;C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\AzNetworking\AutoGen\AutoPackets_Source.jinja;C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\AzNetworking\AutoGen\AutoPacketDispatcher_Header.jinja;C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\AzNetworking\AutoGen\AutoPacketDispatcher_Inline.jinja;C:\Users\lesaelr\o3de\cmake\AzAutoGen.py;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='debug|x64'">C:\Users\lesaelr\o3de\External\Multiplayer-0cbd0873\Code\Azcg\Generated\Source\AutoGen\Multiplayer.AutoPackets.h;C:\Users\lesaelr\o3de\External\Multiplayer-0cbd0873\Code\Azcg\Generated\Source\AutoGen\MultiplayerEditor.AutoPackets.h;C:\Users\lesaelr\o3de\External\Multiplayer-0cbd0873\Code\Azcg\Generated\Source\AutoGen\Multiplayer.AutoPackets.inl;C:\Users\lesaelr\o3de\External\Multiplayer-0cbd0873\Code\Azcg\Generated\Source\AutoGen\MultiplayerEditor.AutoPackets.inl;C:\Users\lesaelr\o3de\External\Multiplayer-0cbd0873\Code\Azcg\Generated\Source\AutoGen\Multiplayer.AutoPackets.cpp;C:\Users\lesaelr\o3de\External\Multiplayer-0cbd0873\Code\Azcg\Generated\Source\AutoGen\MultiplayerEditor.AutoPackets.cpp;C:\Users\lesaelr\o3de\External\Multiplayer-0cbd0873\Code\Azcg\Generated\Source\AutoGen\Multiplayer.AutoPacketDispatcher.h;C:\Users\lesaelr\o3de\External\Multiplayer-0cbd0873\Code\Azcg\Generated\Source\AutoGen\MultiplayerEditor.AutoPacketDispatcher.h;C:\Users\lesaelr\o3de\External\Multiplayer-0cbd0873\Code\Azcg\Generated\Source\AutoGen\Multiplayer.AutoPacketDispatcher.inl;C:\Users\lesaelr\o3de\External\Multiplayer-0cbd0873\Code\Azcg\Generated\Source\AutoGen\MultiplayerEditor.AutoPacketDispatcher.inl;C:\Users\lesaelr\o3de\External\Multiplayer-0cbd0873\Code\Azcg\Generated\Source\AutoGen\LocalPredictionPlayerInputComponent.AutoComponent.h;C:\Users\lesaelr\o3de\External\Multiplayer-0cbd0873\Code\Azcg\Generated\Source\AutoGen\NetworkCharacterComponent.AutoComponent.h;C:\Users\lesaelr\o3de\External\Multiplayer-0cbd0873\Code\Azcg\Generated\Source\AutoGen\NetworkHitVolumesComponent.AutoComponent.h;C:\Users\lesaelr\o3de\External\Multiplayer-0cbd0873\Code\Azcg\Generated\Source\AutoGen\NetworkRigidBodyComponent.AutoComponent.h;C:\Users\lesaelr\o3de\External\Multiplayer-0cbd0873\Code\Azcg\Generated\Source\AutoGen\NetworkTransformComponent.AutoComponent.h;C:\Users\lesaelr\o3de\External\Multiplayer-0cbd0873\Code\Azcg\Generated\Source\AutoGen\NetworkHierarchyChildComponent.AutoComponent.h;C:\Users\lesaelr\o3de\External\Multiplayer-0cbd0873\Code\Azcg\Generated\Source\AutoGen\NetworkHierarchyRootComponent.AutoComponent.h;C:\Users\lesaelr\o3de\External\Multiplayer-0cbd0873\Code\Azcg\Generated\Source\AutoGen\LocalPredictionPlayerInputComponent.AutoComponent.cpp;C:\Users\lesaelr\o3de\External\Multiplayer-0cbd0873\Code\Azcg\Generated\Source\AutoGen\NetworkCharacterComponent.AutoComponent.cpp;C:\Users\lesaelr\o3de\External\Multiplayer-0cbd0873\Code\Azcg\Generated\Source\AutoGen\NetworkHitVolumesComponent.AutoComponent.cpp;C:\Users\lesaelr\o3de\External\Multiplayer-0cbd0873\Code\Azcg\Generated\Source\AutoGen\NetworkRigidBodyComponent.AutoComponent.cpp;C:\Users\lesaelr\o3de\External\Multiplayer-0cbd0873\Code\Azcg\Generated\Source\AutoGen\NetworkTransformComponent.AutoComponent.cpp;C:\Users\lesaelr\o3de\External\Multiplayer-0cbd0873\Code\Azcg\Generated\Source\AutoGen\NetworkHierarchyChildComponent.AutoComponent.cpp;C:\Users\lesaelr\o3de\External\Multiplayer-0cbd0873\Code\Azcg\Generated\Source\AutoGen\NetworkHierarchyRootComponent.AutoComponent.cpp;C:\Users\lesaelr\o3de\External\Multiplayer-0cbd0873\Code\Azcg\Generated\Source\AutoGen\AutoComponentTypes.h;C:\Users\lesaelr\o3de\External\Multiplayer-0cbd0873\Code\Azcg\Generated\Source\AutoGen\AutoComponentTypes.cpp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='debug|x64'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='profile|x64'">Running AutoGen for Multiplayer.Static</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='profile|x64'">setlocal
+call ..\..\..\python\python.cmd -s C:/Users/lesaelr/o3de/cmake/AzAutoGen.py C:/Users/lesaelr/o3de/Azcg/TemplateCache/ C:/Users/lesaelr/o3de/External/Multiplayer-0cbd0873/Code/Azcg/Generated/ C:/Users/lesaelr/o3de/Gems/Multiplayer/Code Source/AutoGen/AutoComponentTypes_Header.jinja";"Source/AutoGen/AutoComponentTypes_Source.jinja";"Source/AutoGen/AutoComponent_Common.jinja";"Source/AutoGen/AutoComponent_Header.jinja";"Source/AutoGen/AutoComponent_Source.jinja";"Source/AutoGen/LocalPredictionPlayerInputComponent.AutoComponent.xml";"Source/AutoGen/Multiplayer.AutoPackets.xml";"Source/AutoGen/MultiplayerEditor.AutoPackets.xml";"Source/AutoGen/NetworkCharacterComponent.AutoComponent.xml";"Source/AutoGen/NetworkHitVolumesComponent.AutoComponent.xml";"Source/AutoGen/NetworkRigidBodyComponent.AutoComponent.xml";"Source/AutoGen/NetworkTransformComponent.AutoComponent.xml";"Source/AutoGen/NetworkHierarchyChildComponent.AutoComponent.xml";"Source/AutoGen/NetworkHierarchyRootComponent.AutoComponent.xml";"C:/Users/lesaelr/o3de/Code/Framework/AzNetworking/AzNetworking/AutoGen/AutoPackets_Header.jinja";"C:/Users/lesaelr/o3de/Code/Framework/AzNetworking/AzNetworking/AutoGen/AutoPackets_Inline.jinja";"C:/Users/lesaelr/o3de/Code/Framework/AzNetworking/AzNetworking/AutoGen/AutoPackets_Source.jinja";"C:/Users/lesaelr/o3de/Code/Framework/AzNetworking/AzNetworking/AutoGen/AutoPacketDispatcher_Header.jinja";"C:/Users/lesaelr/o3de/Code/Framework/AzNetworking/AzNetworking/AutoGen/AutoPacketDispatcher_Inline.jinja *.AutoPackets.xml,AutoPackets_Header.jinja,"$"path/"$"fileprefix.AutoPackets.h";"*.AutoPackets.xml,AutoPackets_Inline.jinja,"$"path/"$"fileprefix.AutoPackets.inl";"*.AutoPackets.xml,AutoPackets_Source.jinja,"$"path/"$"fileprefix.AutoPackets.cpp";"*.AutoPackets.xml,AutoPacketDispatcher_Header.jinja,"$"path/"$"fileprefix.AutoPacketDispatcher.h";"*.AutoPackets.xml,AutoPacketDispatcher_Inline.jinja,"$"path/"$"fileprefix.AutoPacketDispatcher.inl";"*.AutoComponent.xml,AutoComponent_Header.jinja,"$"path/"$"fileprefix.AutoComponent.h";"*.AutoComponent.xml,AutoComponent_Source.jinja,"$"path/"$"fileprefix.AutoComponent.cpp";"*.AutoComponent.xml,AutoComponentTypes_Header.jinja,"$"path/AutoComponentTypes.h";"*.AutoComponent.xml,AutoComponentTypes_Source.jinja,"$"path/AutoComponentTypes.cpp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='profile|x64'">C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source\AutoGen\AutoComponentTypes_Header.jinja;C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source\AutoGen\AutoComponentTypes_Source.jinja;C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source\AutoGen\AutoComponent_Common.jinja;C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source\AutoGen\AutoComponent_Header.jinja;C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source\AutoGen\AutoComponent_Source.jinja;C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source\AutoGen\LocalPredictionPlayerInputComponent.AutoComponent.xml;C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source\AutoGen\Multiplayer.AutoPackets.xml;C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source\AutoGen\MultiplayerEditor.AutoPackets.xml;C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source\AutoGen\NetworkCharacterComponent.AutoComponent.xml;C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source\AutoGen\NetworkHitVolumesComponent.AutoComponent.xml;C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source\AutoGen\NetworkRigidBodyComponent.AutoComponent.xml;C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source\AutoGen\NetworkTransformComponent.AutoComponent.xml;C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source\AutoGen\NetworkHierarchyChildComponent.AutoComponent.xml;C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source\AutoGen\NetworkHierarchyRootComponent.AutoComponent.xml;C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\AzNetworking\AutoGen\AutoPackets_Header.jinja;C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\AzNetworking\AutoGen\AutoPackets_Inline.jinja;C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\AzNetworking\AutoGen\AutoPackets_Source.jinja;C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\AzNetworking\AutoGen\AutoPacketDispatcher_Header.jinja;C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\AzNetworking\AutoGen\AutoPacketDispatcher_Inline.jinja;C:\Users\lesaelr\o3de\cmake\AzAutoGen.py;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='profile|x64'">C:\Users\lesaelr\o3de\External\Multiplayer-0cbd0873\Code\Azcg\Generated\Source\AutoGen\Multiplayer.AutoPackets.h;C:\Users\lesaelr\o3de\External\Multiplayer-0cbd0873\Code\Azcg\Generated\Source\AutoGen\MultiplayerEditor.AutoPackets.h;C:\Users\lesaelr\o3de\External\Multiplayer-0cbd0873\Code\Azcg\Generated\Source\AutoGen\Multiplayer.AutoPackets.inl;C:\Users\lesaelr\o3de\External\Multiplayer-0cbd0873\Code\Azcg\Generated\Source\AutoGen\MultiplayerEditor.AutoPackets.inl;C:\Users\lesaelr\o3de\External\Multiplayer-0cbd0873\Code\Azcg\Generated\Source\AutoGen\Multiplayer.AutoPackets.cpp;C:\Users\lesaelr\o3de\External\Multiplayer-0cbd0873\Code\Azcg\Generated\Source\AutoGen\MultiplayerEditor.AutoPackets.cpp;C:\Users\lesaelr\o3de\External\Multiplayer-0cbd0873\Code\Azcg\Generated\Source\AutoGen\Multiplayer.AutoPacketDispatcher.h;C:\Users\lesaelr\o3de\External\Multiplayer-0cbd0873\Code\Azcg\Generated\Source\AutoGen\MultiplayerEditor.AutoPacketDispatcher.h;C:\Users\lesaelr\o3de\External\Multiplayer-0cbd0873\Code\Azcg\Generated\Source\AutoGen\Multiplayer.AutoPacketDispatcher.inl;C:\Users\lesaelr\o3de\External\Multiplayer-0cbd0873\Code\Azcg\Generated\Source\AutoGen\MultiplayerEditor.AutoPacketDispatcher.inl;C:\Users\lesaelr\o3de\External\Multiplayer-0cbd0873\Code\Azcg\Generated\Source\AutoGen\LocalPredictionPlayerInputComponent.AutoComponent.h;C:\Users\lesaelr\o3de\External\Multiplayer-0cbd0873\Code\Azcg\Generated\Source\AutoGen\NetworkCharacterComponent.AutoComponent.h;C:\Users\lesaelr\o3de\External\Multiplayer-0cbd0873\Code\Azcg\Generated\Source\AutoGen\NetworkHitVolumesComponent.AutoComponent.h;C:\Users\lesaelr\o3de\External\Multiplayer-0cbd0873\Code\Azcg\Generated\Source\AutoGen\NetworkRigidBodyComponent.AutoComponent.h;C:\Users\lesaelr\o3de\External\Multiplayer-0cbd0873\Code\Azcg\Generated\Source\AutoGen\NetworkTransformComponent.AutoComponent.h;C:\Users\lesaelr\o3de\External\Multiplayer-0cbd0873\Code\Azcg\Generated\Source\AutoGen\NetworkHierarchyChildComponent.AutoComponent.h;C:\Users\lesaelr\o3de\External\Multiplayer-0cbd0873\Code\Azcg\Generated\Source\AutoGen\NetworkHierarchyRootComponent.AutoComponent.h;C:\Users\lesaelr\o3de\External\Multiplayer-0cbd0873\Code\Azcg\Generated\Source\AutoGen\LocalPredictionPlayerInputComponent.AutoComponent.cpp;C:\Users\lesaelr\o3de\External\Multiplayer-0cbd0873\Code\Azcg\Generated\Source\AutoGen\NetworkCharacterComponent.AutoComponent.cpp;C:\Users\lesaelr\o3de\External\Multiplayer-0cbd0873\Code\Azcg\Generated\Source\AutoGen\NetworkHitVolumesComponent.AutoComponent.cpp;C:\Users\lesaelr\o3de\External\Multiplayer-0cbd0873\Code\Azcg\Generated\Source\AutoGen\NetworkRigidBodyComponent.AutoComponent.cpp;C:\Users\lesaelr\o3de\External\Multiplayer-0cbd0873\Code\Azcg\Generated\Source\AutoGen\NetworkTransformComponent.AutoComponent.cpp;C:\Users\lesaelr\o3de\External\Multiplayer-0cbd0873\Code\Azcg\Generated\Source\AutoGen\NetworkHierarchyChildComponent.AutoComponent.cpp;C:\Users\lesaelr\o3de\External\Multiplayer-0cbd0873\Code\Azcg\Generated\Source\AutoGen\NetworkHierarchyRootComponent.AutoComponent.cpp;C:\Users\lesaelr\o3de\External\Multiplayer-0cbd0873\Code\Azcg\Generated\Source\AutoGen\AutoComponentTypes.h;C:\Users\lesaelr\o3de\External\Multiplayer-0cbd0873\Code\Azcg\Generated\Source\AutoGen\AutoComponentTypes.cpp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='profile|x64'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='release|x64'">Running AutoGen for Multiplayer.Static</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='release|x64'">setlocal
+call ..\..\..\python\python.cmd -s C:/Users/lesaelr/o3de/cmake/AzAutoGen.py C:/Users/lesaelr/o3de/Azcg/TemplateCache/ C:/Users/lesaelr/o3de/External/Multiplayer-0cbd0873/Code/Azcg/Generated/ C:/Users/lesaelr/o3de/Gems/Multiplayer/Code Source/AutoGen/AutoComponentTypes_Header.jinja";"Source/AutoGen/AutoComponentTypes_Source.jinja";"Source/AutoGen/AutoComponent_Common.jinja";"Source/AutoGen/AutoComponent_Header.jinja";"Source/AutoGen/AutoComponent_Source.jinja";"Source/AutoGen/LocalPredictionPlayerInputComponent.AutoComponent.xml";"Source/AutoGen/Multiplayer.AutoPackets.xml";"Source/AutoGen/MultiplayerEditor.AutoPackets.xml";"Source/AutoGen/NetworkCharacterComponent.AutoComponent.xml";"Source/AutoGen/NetworkHitVolumesComponent.AutoComponent.xml";"Source/AutoGen/NetworkRigidBodyComponent.AutoComponent.xml";"Source/AutoGen/NetworkTransformComponent.AutoComponent.xml";"Source/AutoGen/NetworkHierarchyChildComponent.AutoComponent.xml";"Source/AutoGen/NetworkHierarchyRootComponent.AutoComponent.xml";"C:/Users/lesaelr/o3de/Code/Framework/AzNetworking/AzNetworking/AutoGen/AutoPackets_Header.jinja";"C:/Users/lesaelr/o3de/Code/Framework/AzNetworking/AzNetworking/AutoGen/AutoPackets_Inline.jinja";"C:/Users/lesaelr/o3de/Code/Framework/AzNetworking/AzNetworking/AutoGen/AutoPackets_Source.jinja";"C:/Users/lesaelr/o3de/Code/Framework/AzNetworking/AzNetworking/AutoGen/AutoPacketDispatcher_Header.jinja";"C:/Users/lesaelr/o3de/Code/Framework/AzNetworking/AzNetworking/AutoGen/AutoPacketDispatcher_Inline.jinja *.AutoPackets.xml,AutoPackets_Header.jinja,"$"path/"$"fileprefix.AutoPackets.h";"*.AutoPackets.xml,AutoPackets_Inline.jinja,"$"path/"$"fileprefix.AutoPackets.inl";"*.AutoPackets.xml,AutoPackets_Source.jinja,"$"path/"$"fileprefix.AutoPackets.cpp";"*.AutoPackets.xml,AutoPacketDispatcher_Header.jinja,"$"path/"$"fileprefix.AutoPacketDispatcher.h";"*.AutoPackets.xml,AutoPacketDispatcher_Inline.jinja,"$"path/"$"fileprefix.AutoPacketDispatcher.inl";"*.AutoComponent.xml,AutoComponent_Header.jinja,"$"path/"$"fileprefix.AutoComponent.h";"*.AutoComponent.xml,AutoComponent_Source.jinja,"$"path/"$"fileprefix.AutoComponent.cpp";"*.AutoComponent.xml,AutoComponentTypes_Header.jinja,"$"path/AutoComponentTypes.h";"*.AutoComponent.xml,AutoComponentTypes_Source.jinja,"$"path/AutoComponentTypes.cpp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='release|x64'">C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source\AutoGen\AutoComponentTypes_Header.jinja;C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source\AutoGen\AutoComponentTypes_Source.jinja;C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source\AutoGen\AutoComponent_Common.jinja;C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source\AutoGen\AutoComponent_Header.jinja;C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source\AutoGen\AutoComponent_Source.jinja;C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source\AutoGen\LocalPredictionPlayerInputComponent.AutoComponent.xml;C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source\AutoGen\Multiplayer.AutoPackets.xml;C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source\AutoGen\MultiplayerEditor.AutoPackets.xml;C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source\AutoGen\NetworkCharacterComponent.AutoComponent.xml;C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source\AutoGen\NetworkHitVolumesComponent.AutoComponent.xml;C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source\AutoGen\NetworkRigidBodyComponent.AutoComponent.xml;C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source\AutoGen\NetworkTransformComponent.AutoComponent.xml;C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source\AutoGen\NetworkHierarchyChildComponent.AutoComponent.xml;C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source\AutoGen\NetworkHierarchyRootComponent.AutoComponent.xml;C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\AzNetworking\AutoGen\AutoPackets_Header.jinja;C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\AzNetworking\AutoGen\AutoPackets_Inline.jinja;C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\AzNetworking\AutoGen\AutoPackets_Source.jinja;C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\AzNetworking\AutoGen\AutoPacketDispatcher_Header.jinja;C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\AzNetworking\AutoGen\AutoPacketDispatcher_Inline.jinja;C:\Users\lesaelr\o3de\cmake\AzAutoGen.py;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='release|x64'">C:\Users\lesaelr\o3de\External\Multiplayer-0cbd0873\Code\Azcg\Generated\Source\AutoGen\Multiplayer.AutoPackets.h;C:\Users\lesaelr\o3de\External\Multiplayer-0cbd0873\Code\Azcg\Generated\Source\AutoGen\MultiplayerEditor.AutoPackets.h;C:\Users\lesaelr\o3de\External\Multiplayer-0cbd0873\Code\Azcg\Generated\Source\AutoGen\Multiplayer.AutoPackets.inl;C:\Users\lesaelr\o3de\External\Multiplayer-0cbd0873\Code\Azcg\Generated\Source\AutoGen\MultiplayerEditor.AutoPackets.inl;C:\Users\lesaelr\o3de\External\Multiplayer-0cbd0873\Code\Azcg\Generated\Source\AutoGen\Multiplayer.AutoPackets.cpp;C:\Users\lesaelr\o3de\External\Multiplayer-0cbd0873\Code\Azcg\Generated\Source\AutoGen\MultiplayerEditor.AutoPackets.cpp;C:\Users\lesaelr\o3de\External\Multiplayer-0cbd0873\Code\Azcg\Generated\Source\AutoGen\Multiplayer.AutoPacketDispatcher.h;C:\Users\lesaelr\o3de\External\Multiplayer-0cbd0873\Code\Azcg\Generated\Source\AutoGen\MultiplayerEditor.AutoPacketDispatcher.h;C:\Users\lesaelr\o3de\External\Multiplayer-0cbd0873\Code\Azcg\Generated\Source\AutoGen\Multiplayer.AutoPacketDispatcher.inl;C:\Users\lesaelr\o3de\External\Multiplayer-0cbd0873\Code\Azcg\Generated\Source\AutoGen\MultiplayerEditor.AutoPacketDispatcher.inl;C:\Users\lesaelr\o3de\External\Multiplayer-0cbd0873\Code\Azcg\Generated\Source\AutoGen\LocalPredictionPlayerInputComponent.AutoComponent.h;C:\Users\lesaelr\o3de\External\Multiplayer-0cbd0873\Code\Azcg\Generated\Source\AutoGen\NetworkCharacterComponent.AutoComponent.h;C:\Users\lesaelr\o3de\External\Multiplayer-0cbd0873\Code\Azcg\Generated\Source\AutoGen\NetworkHitVolumesComponent.AutoComponent.h;C:\Users\lesaelr\o3de\External\Multiplayer-0cbd0873\Code\Azcg\Generated\Source\AutoGen\NetworkRigidBodyComponent.AutoComponent.h;C:\Users\lesaelr\o3de\External\Multiplayer-0cbd0873\Code\Azcg\Generated\Source\AutoGen\NetworkTransformComponent.AutoComponent.h;C:\Users\lesaelr\o3de\External\Multiplayer-0cbd0873\Code\Azcg\Generated\Source\AutoGen\NetworkHierarchyChildComponent.AutoComponent.h;C:\Users\lesaelr\o3de\External\Multiplayer-0cbd0873\Code\Azcg\Generated\Source\AutoGen\NetworkHierarchyRootComponent.AutoComponent.h;C:\Users\lesaelr\o3de\External\Multiplayer-0cbd0873\Code\Azcg\Generated\Source\AutoGen\LocalPredictionPlayerInputComponent.AutoComponent.cpp;C:\Users\lesaelr\o3de\External\Multiplayer-0cbd0873\Code\Azcg\Generated\Source\AutoGen\NetworkCharacterComponent.AutoComponent.cpp;C:\Users\lesaelr\o3de\External\Multiplayer-0cbd0873\Code\Azcg\Generated\Source\AutoGen\NetworkHitVolumesComponent.AutoComponent.cpp;C:\Users\lesaelr\o3de\External\Multiplayer-0cbd0873\Code\Azcg\Generated\Source\AutoGen\NetworkRigidBodyComponent.AutoComponent.cpp;C:\Users\lesaelr\o3de\External\Multiplayer-0cbd0873\Code\Azcg\Generated\Source\AutoGen\NetworkTransformComponent.AutoComponent.cpp;C:\Users\lesaelr\o3de\External\Multiplayer-0cbd0873\Code\Azcg\Generated\Source\AutoGen\NetworkHierarchyChildComponent.AutoComponent.cpp;C:\Users\lesaelr\o3de\External\Multiplayer-0cbd0873\Code\Azcg\Generated\Source\AutoGen\NetworkHierarchyRootComponent.AutoComponent.cpp;C:\Users\lesaelr\o3de\External\Multiplayer-0cbd0873\Code\Azcg\Generated\Source\AutoGen\AutoComponentTypes.h;C:\Users\lesaelr\o3de\External\Multiplayer-0cbd0873\Code\Azcg\Generated\Source\AutoGen\AutoComponentTypes.cpp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='release|x64'">false</LinkObjects>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\CMakeLists.txt">
+      <UseUtf8Encoding>Always</UseUtf8Encoding>
+      <Message Condition="'$(Configuration)|$(Platform)'=='debug|x64'">Building Custom Rule C:/Users/lesaelr/o3de/Gems/Multiplayer/Code/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='debug|x64'">setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SC:/Users/lesaelr/o3de -BC:/Users/lesaelr/o3de --check-stamp-file C:/Users/lesaelr/o3de/External/Multiplayer-0cbd0873/Code/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='debug|x64'">C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\multiplayer_autogen_files.cmake;C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\multiplayer_debug_files.cmake;C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\multiplayer_editor_shared_files.cmake;C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\multiplayer_files.cmake;C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\multiplayer_shared_files.cmake;C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\multiplayer_tests_files.cmake;C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\multiplayer_tools_files.cmake;C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\multiplayer_tools_tests_files.cmake;C:\Users\lesaelr\o3de\cmake\Platform\Windows\LYTestWrappers_windows.cmake;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='debug|x64'">C:\Users\lesaelr\o3de\External\Multiplayer-0cbd0873\Code\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='debug|x64'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='profile|x64'">Building Custom Rule C:/Users/lesaelr/o3de/Gems/Multiplayer/Code/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='profile|x64'">setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SC:/Users/lesaelr/o3de -BC:/Users/lesaelr/o3de --check-stamp-file C:/Users/lesaelr/o3de/External/Multiplayer-0cbd0873/Code/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='profile|x64'">C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\multiplayer_autogen_files.cmake;C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\multiplayer_debug_files.cmake;C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\multiplayer_editor_shared_files.cmake;C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\multiplayer_files.cmake;C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\multiplayer_shared_files.cmake;C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\multiplayer_tests_files.cmake;C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\multiplayer_tools_files.cmake;C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\multiplayer_tools_tests_files.cmake;C:\Users\lesaelr\o3de\cmake\Platform\Windows\LYTestWrappers_windows.cmake;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='profile|x64'">C:\Users\lesaelr\o3de\External\Multiplayer-0cbd0873\Code\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='profile|x64'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='release|x64'">Building Custom Rule C:/Users/lesaelr/o3de/Gems/Multiplayer/Code/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='release|x64'">setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SC:/Users/lesaelr/o3de -BC:/Users/lesaelr/o3de --check-stamp-file C:/Users/lesaelr/o3de/External/Multiplayer-0cbd0873/Code/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='release|x64'">C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\multiplayer_autogen_files.cmake;C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\multiplayer_debug_files.cmake;C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\multiplayer_editor_shared_files.cmake;C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\multiplayer_files.cmake;C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\multiplayer_shared_files.cmake;C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\multiplayer_tests_files.cmake;C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\multiplayer_tools_files.cmake;C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\multiplayer_tools_tests_files.cmake;C:\Users\lesaelr\o3de\cmake\Platform\Windows\LYTestWrappers_windows.cmake;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='release|x64'">C:\Users\lesaelr\o3de\External\Multiplayer-0cbd0873\Code\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='release|x64'">false</LinkObjects>
+    </CustomBuild>
+  </ItemGroup>
+  <PropertyGroup>
+    <EnableUnitySupport>true</EnableUnitySupport>
+  </PropertyGroup>
+  <ItemGroup>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\Multiplayer-0cbd0873\Code\CMakeFiles\Multiplayer.Static.dir\Unity\unity_5_cxx.cxx" IncludeInUnityFile="false" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/Multiplayer-0cbd0873/Code/CMakeFiles/Multiplayer.Static.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\Multiplayer-0cbd0873\Code\CMakeFiles\Multiplayer.Static.dir\Unity\unity_4_cxx.cxx" IncludeInUnityFile="false" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/Multiplayer-0cbd0873/Code/CMakeFiles/Multiplayer.Static.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\Multiplayer-0cbd0873\Code\CMakeFiles\Multiplayer.Static.dir\Unity\unity_3_cxx.cxx" IncludeInUnityFile="false" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/Multiplayer-0cbd0873/Code/CMakeFiles/Multiplayer.Static.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\Multiplayer-0cbd0873\Code\CMakeFiles\Multiplayer.Static.dir\Unity\unity_2_cxx.cxx" IncludeInUnityFile="false" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/Multiplayer-0cbd0873/Code/CMakeFiles/Multiplayer.Static.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\Multiplayer-0cbd0873\Code\CMakeFiles\Multiplayer.Static.dir\Unity\unity_1_cxx.cxx" IncludeInUnityFile="false" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/Multiplayer-0cbd0873/Code/CMakeFiles/Multiplayer.Static.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\Multiplayer-0cbd0873\Code\CMakeFiles\Multiplayer.Static.dir\Unity\unity_0_cxx.cxx" IncludeInUnityFile="false" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/Multiplayer-0cbd0873/Code/CMakeFiles/Multiplayer.Static.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Include\Multiplayer\IMultiplayer.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Include\Multiplayer\IMultiplayerDebug.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Include\Multiplayer\IMultiplayerTools.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Include\Multiplayer\MultiplayerConstants.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Include\Multiplayer\MultiplayerStats.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Include\Multiplayer\MultiplayerTypes.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Include\Multiplayer\Components\LocalPredictionPlayerInputComponent.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Include\Multiplayer\Components\MultiplayerComponent.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Include\Multiplayer\Components\MultiplayerComponentRegistry.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Include\Multiplayer\Components\MultiplayerController.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Include\Multiplayer\Components\NetBindComponent.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Include\Multiplayer\Components\NetworkHierarchyChildComponent.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Include\Multiplayer\Components\NetworkHierarchyRootComponent.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Include\Multiplayer\Components\NetworkHierarchyBus.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Include\Multiplayer\Components\NetworkCharacterComponent.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Include\Multiplayer\Components\NetworkHitVolumesComponent.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Include\Multiplayer\Components\NetworkRigidBodyComponent.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Include\Multiplayer\Components\NetworkTransformComponent.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Include\Multiplayer\ConnectionData\IConnectionData.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Include\Multiplayer\EntityDomains\IEntityDomain.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Include\Multiplayer\INetworkSpawnableLibrary.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Include\Multiplayer\NetworkEntity\EntityReplication\ReplicationRecord.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Include\Multiplayer\NetworkEntity\IFilterEntityManager.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Include\Multiplayer\NetworkEntity\INetworkEntityManager.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Include\Multiplayer\NetworkEntity\NetworkEntityHandle.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Include\Multiplayer\NetworkEntity\NetworkEntityHandle.inl" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Include\Multiplayer\NetworkEntity\NetworkEntityRpcMessage.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Include\Multiplayer\NetworkEntity\NetworkEntityUpdateMessage.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Include\Multiplayer\NetworkInput\IMultiplayerComponentInput.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Include\Multiplayer\NetworkInput\NetworkInput.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Include\Multiplayer\NetworkTime\INetworkTime.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Include\Multiplayer\NetworkTime\RewindableArray.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Include\Multiplayer\NetworkTime\RewindableArray.inl" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Include\Multiplayer\NetworkTime\RewindableFixedVector.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Include\Multiplayer\NetworkTime\RewindableFixedVector.inl" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Include\Multiplayer\NetworkTime\RewindableObject.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Include\Multiplayer\NetworkTime\RewindableObject.inl" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Include\Multiplayer\Physics\PhysicsUtils.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Include\Multiplayer\ReplicationWindows\IReplicationWindow.h" />
+    <None Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source\AutoGen\AutoComponentTypes_Header.jinja">
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source\AutoGen\AutoComponentTypes_Source.jinja">
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source\AutoGen\AutoComponent_Common.jinja">
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source\AutoGen\AutoComponent_Header.jinja">
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source\AutoGen\AutoComponent_Source.jinja">
+    </None>
+    <XML Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source\AutoGen\LocalPredictionPlayerInputComponent.AutoComponent.xml">
+    </XML>
+    <XML Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source\AutoGen\Multiplayer.AutoPackets.xml">
+    </XML>
+    <XML Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source\AutoGen\MultiplayerEditor.AutoPackets.xml">
+    </XML>
+    <XML Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source\AutoGen\NetworkCharacterComponent.AutoComponent.xml">
+    </XML>
+    <XML Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source\AutoGen\NetworkHitVolumesComponent.AutoComponent.xml">
+    </XML>
+    <XML Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source\AutoGen\NetworkRigidBodyComponent.AutoComponent.xml">
+    </XML>
+    <XML Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source\AutoGen\NetworkTransformComponent.AutoComponent.xml">
+    </XML>
+    <XML Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source\AutoGen\NetworkHierarchyChildComponent.AutoComponent.xml">
+    </XML>
+    <XML Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source\AutoGen\NetworkHierarchyRootComponent.AutoComponent.xml">
+    </XML>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source\Components\LocalPredictionPlayerInputComponent.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/Multiplayer-0cbd0873/Code/CMakeFiles/Multiplayer.Static.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source\Components\MultiplayerComponent.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/Multiplayer-0cbd0873/Code/CMakeFiles/Multiplayer.Static.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source\Components\MultiplayerComponentRegistry.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/Multiplayer-0cbd0873/Code/CMakeFiles/Multiplayer.Static.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source\Components\MultiplayerController.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/Multiplayer-0cbd0873/Code/CMakeFiles/Multiplayer.Static.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source\Components\NetBindComponent.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/Multiplayer-0cbd0873/Code/CMakeFiles/Multiplayer.Static.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source\Components\NetworkHierarchyChildComponent.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/Multiplayer-0cbd0873/Code/CMakeFiles/Multiplayer.Static.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source\Components\NetworkHierarchyRootComponent.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/Multiplayer-0cbd0873/Code/CMakeFiles/Multiplayer.Static.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source\Components\NetworkCharacterComponent.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/Multiplayer-0cbd0873/Code/CMakeFiles/Multiplayer.Static.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source\Components\NetworkHitVolumesComponent.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/Multiplayer-0cbd0873/Code/CMakeFiles/Multiplayer.Static.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source\Components\NetworkRigidBodyComponent.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/Multiplayer-0cbd0873/Code/CMakeFiles/Multiplayer.Static.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source\Components\NetworkTransformComponent.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/Multiplayer-0cbd0873/Code/CMakeFiles/Multiplayer.Static.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source\ConnectionData\ClientToServerConnectionData.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/Multiplayer-0cbd0873/Code/CMakeFiles/Multiplayer.Static.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source\ConnectionData\ClientToServerConnectionData.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source\ConnectionData\ClientToServerConnectionData.inl" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source\ConnectionData\ServerToClientConnectionData.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/Multiplayer-0cbd0873/Code/CMakeFiles/Multiplayer.Static.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source\ConnectionData\ServerToClientConnectionData.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source\ConnectionData\ServerToClientConnectionData.inl" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source\Editor\MultiplayerEditorConnection.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/Multiplayer-0cbd0873/Code/CMakeFiles/Multiplayer.Static.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source\Editor\MultiplayerEditorConnection.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source\EntityDomains\FullOwnershipEntityDomain.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/Multiplayer-0cbd0873/Code/CMakeFiles/Multiplayer.Static.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source\EntityDomains\FullOwnershipEntityDomain.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source\MultiplayerStats.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/Multiplayer-0cbd0873/Code/CMakeFiles/Multiplayer.Static.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source\MultiplayerSystemComponent.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/Multiplayer-0cbd0873/Code/CMakeFiles/Multiplayer.Static.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source\MultiplayerSystemComponent.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source\NetworkEntity\EntityReplication\EntityReplicationManager.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/Multiplayer-0cbd0873/Code/CMakeFiles/Multiplayer.Static.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source\NetworkEntity\EntityReplication\EntityReplicationManager.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source\NetworkEntity\EntityReplication\EntityReplicator.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/Multiplayer-0cbd0873/Code/CMakeFiles/Multiplayer.Static.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source\NetworkEntity\EntityReplication\EntityReplicator.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source\NetworkEntity\EntityReplication\EntityReplicator.inl" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source\NetworkEntity\EntityReplication\PropertyPublisher.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/Multiplayer-0cbd0873/Code/CMakeFiles/Multiplayer.Static.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source\NetworkEntity\EntityReplication\PropertyPublisher.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source\NetworkEntity\EntityReplication\PropertySubscriber.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/Multiplayer-0cbd0873/Code/CMakeFiles/Multiplayer.Static.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source\NetworkEntity\EntityReplication\PropertySubscriber.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source\NetworkEntity\EntityReplication\ReplicationRecord.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/Multiplayer-0cbd0873/Code/CMakeFiles/Multiplayer.Static.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source\NetworkEntity\NetworkEntityAuthorityTracker.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/Multiplayer-0cbd0873/Code/CMakeFiles/Multiplayer.Static.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source\NetworkEntity\NetworkEntityAuthorityTracker.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source\NetworkEntity\NetworkEntityHandle.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/Multiplayer-0cbd0873/Code/CMakeFiles/Multiplayer.Static.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source\NetworkEntity\NetworkEntityManager.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/Multiplayer-0cbd0873/Code/CMakeFiles/Multiplayer.Static.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source\NetworkEntity\NetworkEntityManager.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source\NetworkEntity\NetworkEntityRpcMessage.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/Multiplayer-0cbd0873/Code/CMakeFiles/Multiplayer.Static.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source\NetworkEntity\NetworkEntityTracker.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/Multiplayer-0cbd0873/Code/CMakeFiles/Multiplayer.Static.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source\NetworkEntity\NetworkEntityTracker.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source\NetworkEntity\NetworkEntityTracker.inl" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source\NetworkEntity\NetworkEntityUpdateMessage.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/Multiplayer-0cbd0873/Code/CMakeFiles/Multiplayer.Static.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source\NetworkEntity\NetworkSpawnableLibrary.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/Multiplayer-0cbd0873/Code/CMakeFiles/Multiplayer.Static.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source\NetworkEntity\NetworkSpawnableLibrary.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source\NetworkInput\NetworkInput.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/Multiplayer-0cbd0873/Code/CMakeFiles/Multiplayer.Static.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source\NetworkInput\NetworkInputArray.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/Multiplayer-0cbd0873/Code/CMakeFiles/Multiplayer.Static.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source\NetworkInput\NetworkInputArray.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source\NetworkInput\NetworkInputChild.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/Multiplayer-0cbd0873/Code/CMakeFiles/Multiplayer.Static.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source\NetworkInput\NetworkInputChild.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source\NetworkInput\NetworkInputHistory.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/Multiplayer-0cbd0873/Code/CMakeFiles/Multiplayer.Static.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source\NetworkInput\NetworkInputHistory.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source\NetworkInput\NetworkInputMigrationVector.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/Multiplayer-0cbd0873/Code/CMakeFiles/Multiplayer.Static.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source\NetworkInput\NetworkInputMigrationVector.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source\NetworkTime\NetworkTime.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/Multiplayer-0cbd0873/Code/CMakeFiles/Multiplayer.Static.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source\NetworkTime\NetworkTime.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source\Pipeline\NetworkSpawnableHolderComponent.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/Multiplayer-0cbd0873/Code/CMakeFiles/Multiplayer.Static.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source\Pipeline\NetworkSpawnableHolderComponent.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source\ReplicationWindows\NullReplicationWindow.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/Multiplayer-0cbd0873/Code/CMakeFiles/Multiplayer.Static.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source\ReplicationWindows\NullReplicationWindow.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source\ReplicationWindows\ServerToClientReplicationWindow.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/Multiplayer-0cbd0873/Code/CMakeFiles/Multiplayer.Static.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source\ReplicationWindows\ServerToClientReplicationWindow.h" />
+    <None Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\multiplayer_files.cmake">
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\AzNetworking\AutoGen\AutoPackets_Header.jinja">
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\AzNetworking\AutoGen\AutoPackets_Inline.jinja">
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\AzNetworking\AutoGen\AutoPackets_Source.jinja">
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\AzNetworking\AutoGen\AutoPacketDispatcher_Header.jinja">
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\AzNetworking\AutoGen\AutoPacketDispatcher_Inline.jinja">
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\multiplayer_autogen_files.cmake">
+    </None>
+    <ClInclude Include="C:\Users\lesaelr\o3de\External\Multiplayer-0cbd0873\Code\Azcg\Generated\Source\AutoGen\Multiplayer.AutoPackets.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\External\Multiplayer-0cbd0873\Code\Azcg\Generated\Source\AutoGen\MultiplayerEditor.AutoPackets.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\External\Multiplayer-0cbd0873\Code\Azcg\Generated\Source\AutoGen\Multiplayer.AutoPackets.inl" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\External\Multiplayer-0cbd0873\Code\Azcg\Generated\Source\AutoGen\MultiplayerEditor.AutoPackets.inl" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\Multiplayer-0cbd0873\Code\Azcg\Generated\Source\AutoGen\Multiplayer.AutoPackets.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/Multiplayer-0cbd0873/Code/CMakeFiles/Multiplayer.Static.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\Multiplayer-0cbd0873\Code\Azcg\Generated\Source\AutoGen\MultiplayerEditor.AutoPackets.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/Multiplayer-0cbd0873/Code/CMakeFiles/Multiplayer.Static.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\External\Multiplayer-0cbd0873\Code\Azcg\Generated\Source\AutoGen\Multiplayer.AutoPacketDispatcher.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\External\Multiplayer-0cbd0873\Code\Azcg\Generated\Source\AutoGen\MultiplayerEditor.AutoPacketDispatcher.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\External\Multiplayer-0cbd0873\Code\Azcg\Generated\Source\AutoGen\Multiplayer.AutoPacketDispatcher.inl" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\External\Multiplayer-0cbd0873\Code\Azcg\Generated\Source\AutoGen\MultiplayerEditor.AutoPacketDispatcher.inl" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\External\Multiplayer-0cbd0873\Code\Azcg\Generated\Source\AutoGen\LocalPredictionPlayerInputComponent.AutoComponent.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\External\Multiplayer-0cbd0873\Code\Azcg\Generated\Source\AutoGen\NetworkCharacterComponent.AutoComponent.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\External\Multiplayer-0cbd0873\Code\Azcg\Generated\Source\AutoGen\NetworkHitVolumesComponent.AutoComponent.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\External\Multiplayer-0cbd0873\Code\Azcg\Generated\Source\AutoGen\NetworkRigidBodyComponent.AutoComponent.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\External\Multiplayer-0cbd0873\Code\Azcg\Generated\Source\AutoGen\NetworkTransformComponent.AutoComponent.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\External\Multiplayer-0cbd0873\Code\Azcg\Generated\Source\AutoGen\NetworkHierarchyChildComponent.AutoComponent.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\External\Multiplayer-0cbd0873\Code\Azcg\Generated\Source\AutoGen\NetworkHierarchyRootComponent.AutoComponent.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\Multiplayer-0cbd0873\Code\Azcg\Generated\Source\AutoGen\LocalPredictionPlayerInputComponent.AutoComponent.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/Multiplayer-0cbd0873/Code/CMakeFiles/Multiplayer.Static.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\Multiplayer-0cbd0873\Code\Azcg\Generated\Source\AutoGen\NetworkCharacterComponent.AutoComponent.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/Multiplayer-0cbd0873/Code/CMakeFiles/Multiplayer.Static.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\Multiplayer-0cbd0873\Code\Azcg\Generated\Source\AutoGen\NetworkHitVolumesComponent.AutoComponent.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/Multiplayer-0cbd0873/Code/CMakeFiles/Multiplayer.Static.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\Multiplayer-0cbd0873\Code\Azcg\Generated\Source\AutoGen\NetworkRigidBodyComponent.AutoComponent.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/Multiplayer-0cbd0873/Code/CMakeFiles/Multiplayer.Static.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\Multiplayer-0cbd0873\Code\Azcg\Generated\Source\AutoGen\NetworkTransformComponent.AutoComponent.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/Multiplayer-0cbd0873/Code/CMakeFiles/Multiplayer.Static.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\Multiplayer-0cbd0873\Code\Azcg\Generated\Source\AutoGen\NetworkHierarchyChildComponent.AutoComponent.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/Multiplayer-0cbd0873/Code/CMakeFiles/Multiplayer.Static.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\Multiplayer-0cbd0873\Code\Azcg\Generated\Source\AutoGen\NetworkHierarchyRootComponent.AutoComponent.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/Multiplayer-0cbd0873/Code/CMakeFiles/Multiplayer.Static.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\External\Multiplayer-0cbd0873\Code\Azcg\Generated\Source\AutoGen\AutoComponentTypes.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\Multiplayer-0cbd0873\Code\Azcg\Generated\Source\AutoGen\AutoComponentTypes.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/Multiplayer-0cbd0873/Code/CMakeFiles/Multiplayer.Static.dir/Unity" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\ZERO_CHECK.vcxproj">
+      <Project>{CDE32B4E-8490-3FC5-A3F2-976A0A5DE45E}</Project>
+      <Name>ZERO_CHECK</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\Code\Framework\AtomCore\AtomCore.vcxproj">
+      <Project>{6D55F49F-9D52-3893-81A0-A8698549AB69}</Project>
+      <Name>AtomCore</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\External\Atom-418206cc\RHI\Code\Atom_RHI.Public.vcxproj">
+      <Project>{2E32222C-434D-3353-967C-88B4AA98F8F8}</Project>
+      <Name>Atom_RHI.Public</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\External\Atom-418206cc\RHI\Code\Atom_RHI.Reflect.vcxproj">
+      <Project>{34A5B279-91CB-334A-9CD9-0B3CFB872F2C}</Project>
+      <Name>Atom_RHI.Reflect</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\External\Atom-418206cc\RPI\Code\Atom_RPI.Public.vcxproj">
+      <Project>{ABB218FB-FD4C-33F6-B91D-28BD20400532}</Project>
+      <Name>Atom_RPI.Public</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore.vcxproj">
+      <Project>{8AC0D8DF-6487-39C7-A5F3-F77355B1ACD9}</Project>
+      <Name>AzCore</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework.vcxproj">
+      <Project>{E4BA859A-1109-3DBC-887D-DBC80D0DD65A}</Project>
+      <Name>AzFramework</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\AzNetworking.vcxproj">
+      <Project>{F482CBCF-A0F3-36E9-B215-CD53073E46D9}</Project>
+      <Name>AzNetworking</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\CryCommon.vcxproj">
+      <Project>{CA3B5D54-5095-3557-9270-FD4F882B4C66}</Project>
+      <Name>CryCommon</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\External\EMotionFX-34d60ee3\Code\EMotionFXStaticLib.vcxproj">
+      <Project>{C3EEEEA5-78C3-33F2-8E25-E88BB964A847}</Project>
+      <Name>EMotionFXStaticLib</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate.vcxproj">
+      <Project>{FE67A854-57A6-3513-BAEF-9A7AC0A253E8}</Project>
+      <Name>GridMate</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\External\PhysX-777cc257\Code\PhysX.Static.vcxproj">
+      <Project>{8908F5BD-C2C4-38B9-A816-CDCCF4FB5FE2}</Project>
+      <Name>PhysX.Static</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

@@ -1,0 +1,71 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Frontend\Console\Code\CMakeFiles\TestImpact.Frontend.Console.Static.dir\Unity\unity_0_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Frontend\Console\Code\Source\TestImpactCommandLineOptions.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Frontend\Console\Code\Source\TestImpactCommandLineOptionsUtils.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Frontend\Console\Code\Source\TestImpactRuntimeConfigurationFactory.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Frontend\Console\Code\Source\TestImpactConsoleMain.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Frontend\Console\Code\Source\TestImpactConsoleTestSequenceEventHandler.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Frontend\Console\Code\Source\TestImpactConsoleUtils.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Frontend\Console\Code\Include\TestImpactFramework\TestImpactConsoleMain.h">
+      <Filter>Include\TestImpactFramework</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Frontend\Console\Code\Source\TestImpactCommandLineOptions.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Frontend\Console\Code\Source\TestImpactCommandLineOptionsUtils.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Frontend\Console\Code\Source\TestImpactCommandLineOptionsException.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Frontend\Console\Code\Source\TestImpactRuntimeConfigurationFactory.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Frontend\Console\Code\Source\TestImpactConsoleTestSequenceEventHandler.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Frontend\Console\Code\Source\TestImpactConsoleUtils.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Frontend\Console\Code\CMakeLists.txt">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Frontend\Console\Code\testimpactframework_frontend_console_static_files.cmake" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Generated Files">
+      <UniqueIdentifier>{FB9B7D8B-7F05-31D5-AA90-592248EDE1B3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include">
+      <UniqueIdentifier>{E188105A-C8C4-34BB-9809-15E8410EF7F8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\TestImpactFramework">
+      <UniqueIdentifier>{ECC17B5D-215C-3DFE-9ACF-A601797F1E98}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source">
+      <UniqueIdentifier>{F3F0AD47-5F83-373B-A2BF-650D2E4FA3EA}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

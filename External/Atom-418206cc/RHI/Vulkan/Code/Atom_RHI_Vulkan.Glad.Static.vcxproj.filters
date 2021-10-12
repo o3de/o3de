@@ -1,0 +1,62 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\Atom-418206cc\RHI\Vulkan\Code\CMakeFiles\Atom_RHI_Vulkan.Glad.Static.dir\Unity\unity_0_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\RHI\Vulkan\Code\Source\RHI.Loader\FunctionLoader.cpp">
+      <Filter>Source\RHI.Loader</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\RHI\Vulkan\Code\Source\RHI.Loader\Glad\GladFunctionLoader.cpp">
+      <Filter>Source\RHI.Loader\Glad</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\RHI\Vulkan\Code\Include\Atom\RHI.Loader\FunctionLoader.h">
+      <Filter>Include\Atom\RHI.Loader</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\RHI\Vulkan\Code\Source\RHI.Loader\Glad\GladFunctionLoader.h">
+      <Filter>Source\RHI.Loader\Glad</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Gems\Atom\RHI\Vulkan\Code\CMakeLists.txt">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\RHI\Vulkan\Code\atom_rhi_vulkan_glad_files.cmake" />
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\RHI\Vulkan\Code\Source\Platform\Windows\platform_glad_windows_files.cmake">
+      <Filter>Source\Platform\Windows</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Generated Files">
+      <UniqueIdentifier>{FB9B7D8B-7F05-31D5-AA90-592248EDE1B3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include">
+      <UniqueIdentifier>{E188105A-C8C4-34BB-9809-15E8410EF7F8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\Atom">
+      <UniqueIdentifier>{D3FF6349-761F-30FE-A9A9-4A8D0DE47ADF}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\Atom\RHI.Loader">
+      <UniqueIdentifier>{9FE69C31-16AE-3EFC-AC6C-3DA629238B5E}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source">
+      <UniqueIdentifier>{F3F0AD47-5F83-373B-A2BF-650D2E4FA3EA}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Platform">
+      <UniqueIdentifier>{4FB794FF-EAE9-3B82-95CC-6241BAD0E3AC}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Platform\Windows">
+      <UniqueIdentifier>{2D0E7154-D797-393D-A7EB-8527ACAFB2BF}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\RHI.Loader">
+      <UniqueIdentifier>{7859FBD1-3C2E-3EB6-9D77-988CE3B7213E}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\RHI.Loader\Glad">
+      <UniqueIdentifier>{AA684E17-4D4C-3D60-A4F4-506085837A00}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

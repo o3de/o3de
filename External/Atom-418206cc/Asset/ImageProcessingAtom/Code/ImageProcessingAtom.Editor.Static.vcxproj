@@ -1,0 +1,925 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <PreferredToolArchitecture>x64</PreferredToolArchitecture>
+  </PropertyGroup>
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="debug|x64">
+      <Configuration>debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="profile|x64">
+      <Configuration>profile</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="release|x64">
+      <Configuration>release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{D41EA51A-E628-3954-98C2-EE6FC7945CEF}</ProjectGuid>
+    <WindowsTargetPlatformVersion>10.0.19041.0</WindowsTargetPlatformVersion>
+    <Keyword>Win32Proj</Keyword>
+    <Platform>x64</Platform>
+    <ProjectName>ImageProcessingAtom.Editor.Static</ProjectName>
+    <VCProjectUpgraderObjectName>NoUpgrade</VCProjectUpgraderObjectName>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='debug|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v142</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='profile|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v142</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='release|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v142</PlatformToolset>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>10.0.20506.1</_ProjectFileVersion>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='debug|x64'">C:\Users\lesaelr\o3de\lib\debug\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='debug|x64'">ImageProcessingAtom.Editor.Static.dir\debug\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='debug|x64'">ImageProcessingAtom.Editor.Static</TargetName>
+    <TargetExt Condition="'$(Configuration)|$(Platform)'=='debug|x64'">.lib</TargetExt>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='profile|x64'">C:\Users\lesaelr\o3de\lib\profile\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='profile|x64'">ImageProcessingAtom.Editor.Static.dir\profile\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='profile|x64'">ImageProcessingAtom.Editor.Static</TargetName>
+    <TargetExt Condition="'$(Configuration)|$(Platform)'=='profile|x64'">.lib</TargetExt>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='release|x64'">C:\Users\lesaelr\o3de\lib\release\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='release|x64'">ImageProcessingAtom.Editor.Static.dir\release\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='release|x64'">ImageProcessingAtom.Editor.Static</TargetName>
+    <TargetExt Condition="'$(Configuration)|$(Platform)'=='release|x64'">.lib</TargetExt>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='debug|x64'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>C:\Users\lesaelr\o3de\External\Atom-418206cc\Asset\ImageProcessingAtom\Code\ImageProcessingAtom.Editor.Static_autogen\include_debug;C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Include;C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Platform\Windows;C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\.;C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source;C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\..\External\CubeMapGen;C:\Users\lesaelr\o3de\External\Atom-418206cc\Asset\ImageProcessingAtom\Code\ImageProcessingAtom.Editor.Static_autogen\include\Include;C:\Users\lesaelr\o3de\External\Atom-418206cc\Asset\ImageProcessingAtom\Code\ImageProcessingAtom.Editor.Static_autogen\include\Source\Platform\Windows;C:\Users\lesaelr\o3de\External\Atom-418206cc\Asset\ImageProcessingAtom\Code\ImageProcessingAtom.Editor.Static_autogen\include;C:\Users\lesaelr\o3de\External\Atom-418206cc\Asset\ImageProcessingAtom\Code\ImageProcessingAtom.Editor.Static_autogen\include\Source;C:\Users\lesaelr\o3de\External\Atom-418206cc\Asset\ImageProcessingAtom\Code\ImageProcessingAtom.Editor.Static_autogen\include\..\External\CubeMapGen;C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\.;C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\..;C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzCore\.;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Common;C:\Users\lesaelr\o3de\Code\Framework\AzFramework\.;C:\Users\lesaelr\o3de\Code\Framework\AzFramework\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\GridMate\.;C:\Users\lesaelr\o3de\Code\Framework\GridMate\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\.;C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework;C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\.;C:\Users\lesaelr\o3de\Code\Tools\AssetProcessor\AssetBuilderSDK\.;C:\Users\lesaelr\o3de\Code\Framework\AtomCore\.;C:\Users\lesaelr\o3de\Gems\Atom\RPI\Code\Include;C:\Users\lesaelr\o3de\Gems\Atom\RPI\Code\External;C:\Users\lesaelr\o3de\Gems\Atom\RHI\Code\Include;C:\Users\lesaelr\o3de\Gems\Atom\Utils\Code\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalOptions>%(AdditionalOptions) /Zc:__cplusplus /Zc:lambda /favor:AMD64 /bigobj /RTCsu /experimental:external /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/qt-5.15.2-rev4-windows/qt/include/ /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/qt-5.15.2-rev4-windows/qt/include/QtCore /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/qt-5.15.2-rev4-windows/qt/.//mkspecs/win32-msvc /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/qt-5.15.2-rev4-windows/qt/include/QtWidgets /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/qt-5.15.2-rev4-windows/qt/include/QtWidgets/5.15.1 /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/qt-5.15.2-rev4-windows/qt/include/QtWidgets/5.15.1/QtWidgets /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/qt-5.15.2-rev4-windows/qt/include/QtGui/5.15.1 /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/qt-5.15.2-rev4-windows/qt/include/QtGui/5.15.1/QtGui /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/qt-5.15.2-rev4-windows/qt/include/QtCore/5.15.1 /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/qt-5.15.2-rev4-windows/qt/include/QtCore/5.15.1/QtCore /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/qt-5.15.2-rev4-windows/qt/include/QtGui /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/qt-5.15.2-rev4-windows/qt/include//QtANGLE /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/astc-encoder-3.2-rev1-windows/astc-encoder/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/etc2comp-9cd0f9cae0-rev1-windows/etc2comp/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/PVRTexTool-4.24.0-rev4-multiplatform/PVRTexTool/Include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/squish-ccr-deb557d-rev1-windows/squish-ccr/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/tiff-4.2.0.15-rev2-windows/tiff/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/ISPCTexComp-36b80aa-rev1-windows/ISPCTexComp/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/ilmbase-2.3.0-rev4-multiplatform/ilmbase/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/ilmbase-2.3.0-rev4-multiplatform/ilmbase/include/OpenEXR /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/Lua-5.3.5-rev5-windows/lua/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/RapidJSON-1.1.0-rev1-multiplatform/RapidJSON/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/RapidXML-1.13-rev1-multiplatform/RapidXML/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/zlib-1.2.11-rev2-windows/zlib/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/zstd-1.35-multiplatform/zstd/lib /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/cityhash-1.1-multiplatform/cityhash/src /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/OpenSSL-1.1.1b-rev2-windows/OpenSSL/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/lz4-1.9.3-vcpkg-rev4-windows/lz4/lz4/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/qt-5.15.2-rev4-windows/qt/include/QtSvg /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/qt-5.15.2-rev4-windows/qt/include/QtXml</AdditionalOptions>
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <BufferSecurityCheck>true</BufferSecurityCheck>
+      <CallingConvention>Cdecl</CallingConvention>
+      <ConformanceMode>true</ConformanceMode>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <DiagnosticsFormat>Caret</DiagnosticsFormat>
+      <DisableSpecificWarnings>4201</DisableSpecificWarnings>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <ExternalWarningLevel>TurnOffAllWarnings</ExternalWarningLevel>
+      <FloatingPointModel>Fast</FloatingPointModel>
+      <ForceConformanceInForLoopScope>true</ForceConformanceInForLoopScope>
+      <InlineFunctionExpansion>Disabled</InlineFunctionExpansion>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <Optimization>Disabled</Optimization>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <TreatSpecificWarningsAsErrors>4263;4264;4265;4266;4296;4426;4437;4774;4777;5031;5032;5233</TreatSpecificWarningsAsErrors>
+      <TreatWarningAsError>true</TreatWarningAsError>
+      <UseFullPaths>false</UseFullPaths>
+      <WarningLevel>Level4</WarningLevel>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);_HAS_EXCEPTIONS=0;_DEBUG;AZ_DEBUG_BUILD=1;AZ_ENABLE_TRACING;AZ_ENABLE_DEBUG_TOOLS;AZ_BUILD_CONFIGURATION_TYPE="debug";_ENABLE_EXTENDED_ALIGNED_STORAGE;_WIN32;WIN32;_WIN64;WIN64;NOMINMAX;QT_CORE_LIB;QT_WIDGETS_LIB;QT_GUI_LIB;USING_SQUISH_SDK;SQUISH_USE_SSE=2;SQUISH_USE_CPP;SQUISH_USE_CCR;OPENSSL_ENABLED;QT_SVG_LIB;QT_XML_LIB;CMAKE_INTDIR="debug"</PreprocessorDefinitions>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);_DEBUG;_HAS_EXCEPTIONS=0;AZ_DEBUG_BUILD=1;AZ_ENABLE_TRACING;AZ_ENABLE_DEBUG_TOOLS;AZ_BUILD_CONFIGURATION_TYPE=\"debug\";_ENABLE_EXTENDED_ALIGNED_STORAGE;_WIN32;WIN32;_WIN64;WIN64;NOMINMAX;QT_CORE_LIB;QT_WIDGETS_LIB;QT_GUI_LIB;USING_SQUISH_SDK;SQUISH_USE_SSE=2;SQUISH_USE_CPP;SQUISH_USE_CCR;OPENSSL_ENABLED;QT_SVG_LIB;QT_XML_LIB;CMAKE_INTDIR=\"debug\"</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>C:\Users\lesaelr\o3de\External\Atom-418206cc\Asset\ImageProcessingAtom\Code\ImageProcessingAtom.Editor.Static_autogen\include_debug;C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Include;C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Platform\Windows;C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\.;C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source;C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\..\External\CubeMapGen;C:\Users\lesaelr\o3de\External\Atom-418206cc\Asset\ImageProcessingAtom\Code\ImageProcessingAtom.Editor.Static_autogen\include\Include;C:\Users\lesaelr\o3de\External\Atom-418206cc\Asset\ImageProcessingAtom\Code\ImageProcessingAtom.Editor.Static_autogen\include\Source\Platform\Windows;C:\Users\lesaelr\o3de\External\Atom-418206cc\Asset\ImageProcessingAtom\Code\ImageProcessingAtom.Editor.Static_autogen\include;C:\Users\lesaelr\o3de\External\Atom-418206cc\Asset\ImageProcessingAtom\Code\ImageProcessingAtom.Editor.Static_autogen\include\Source;C:\Users\lesaelr\o3de\External\Atom-418206cc\Asset\ImageProcessingAtom\Code\ImageProcessingAtom.Editor.Static_autogen\include\..\External\CubeMapGen;C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\.;C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\..;C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzCore\.;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Common;C:\Users\lesaelr\o3de\Code\Framework\AzFramework\.;C:\Users\lesaelr\o3de\Code\Framework\AzFramework\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\GridMate\.;C:\Users\lesaelr\o3de\Code\Framework\GridMate\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\.;C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework;C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\.;C:\Users\lesaelr\o3de\Code\Tools\AssetProcessor\AssetBuilderSDK\.;C:\Users\lesaelr\o3de\Code\Framework\AtomCore\.;C:\Users\lesaelr\o3de\Gems\Atom\RPI\Code\Include;C:\Users\lesaelr\o3de\Gems\Atom\RPI\Code\External;C:\Users\lesaelr\o3de\Gems\Atom\RHI\Code\Include;C:\Users\lesaelr\o3de\Gems\Atom\Utils\Code\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+    </ResourceCompile>
+    <Midl>
+      <AdditionalIncludeDirectories>C:\Users\lesaelr\o3de\External\Atom-418206cc\Asset\ImageProcessingAtom\Code\ImageProcessingAtom.Editor.Static_autogen\include_debug;C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Include;C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Platform\Windows;C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\.;C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source;C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\..\External\CubeMapGen;C:\Users\lesaelr\o3de\External\Atom-418206cc\Asset\ImageProcessingAtom\Code\ImageProcessingAtom.Editor.Static_autogen\include\Include;C:\Users\lesaelr\o3de\External\Atom-418206cc\Asset\ImageProcessingAtom\Code\ImageProcessingAtom.Editor.Static_autogen\include\Source\Platform\Windows;C:\Users\lesaelr\o3de\External\Atom-418206cc\Asset\ImageProcessingAtom\Code\ImageProcessingAtom.Editor.Static_autogen\include;C:\Users\lesaelr\o3de\External\Atom-418206cc\Asset\ImageProcessingAtom\Code\ImageProcessingAtom.Editor.Static_autogen\include\Source;C:\Users\lesaelr\o3de\External\Atom-418206cc\Asset\ImageProcessingAtom\Code\ImageProcessingAtom.Editor.Static_autogen\include\..\External\CubeMapGen;C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\.;C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\..;C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzCore\.;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Common;C:\Users\lesaelr\o3de\Code\Framework\AzFramework\.;C:\Users\lesaelr\o3de\Code\Framework\AzFramework\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\GridMate\.;C:\Users\lesaelr\o3de\Code\Framework\GridMate\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\.;C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework;C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\.;C:\Users\lesaelr\o3de\Code\Tools\AssetProcessor\AssetBuilderSDK\.;C:\Users\lesaelr\o3de\Code\Framework\AtomCore\.;C:\Users\lesaelr\o3de\Gems\Atom\RPI\Code\Include;C:\Users\lesaelr\o3de\Gems\Atom\RPI\Code\External;C:\Users\lesaelr\o3de\Gems\Atom\RHI\Code\Include;C:\Users\lesaelr\o3de\Gems\Atom\Utils\Code\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+    <PreBuildEvent>
+      <UseUtf8Encoding>Always</UseUtf8Encoding>
+      <Message>Automatic MOC for target ImageProcessingAtom.Editor.Static</Message>
+      <Command>setlocal
+cd C:\Users\lesaelr\o3de\External\Atom-418206cc\Asset\ImageProcessingAtom\Code
+if %errorlevel% neq 0 goto :cmEnd
+C:
+if %errorlevel% neq 0 goto :cmEnd
+"C:\Program Files\CMake\bin\cmake.exe" -E cmake_autogen C:/Users/lesaelr/o3de/External/Atom-418206cc/Asset/ImageProcessingAtom/Code/CMakeFiles/ImageProcessingAtom.Editor.Static_autogen.dir/AutogenInfo.json debug
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+    </PreBuildEvent>
+    <Lib>
+      <AdditionalOptions>%(AdditionalOptions) /machine:x64 /IGNORE:4099</AdditionalOptions>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <TargetMachine>MachineX64</TargetMachine>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='profile|x64'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>C:\Users\lesaelr\o3de\External\Atom-418206cc\Asset\ImageProcessingAtom\Code\ImageProcessingAtom.Editor.Static_autogen\include_profile;C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Include;C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Platform\Windows;C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\.;C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source;C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\..\External\CubeMapGen;C:\Users\lesaelr\o3de\External\Atom-418206cc\Asset\ImageProcessingAtom\Code\ImageProcessingAtom.Editor.Static_autogen\include\Include;C:\Users\lesaelr\o3de\External\Atom-418206cc\Asset\ImageProcessingAtom\Code\ImageProcessingAtom.Editor.Static_autogen\include\Source\Platform\Windows;C:\Users\lesaelr\o3de\External\Atom-418206cc\Asset\ImageProcessingAtom\Code\ImageProcessingAtom.Editor.Static_autogen\include;C:\Users\lesaelr\o3de\External\Atom-418206cc\Asset\ImageProcessingAtom\Code\ImageProcessingAtom.Editor.Static_autogen\include\Source;C:\Users\lesaelr\o3de\External\Atom-418206cc\Asset\ImageProcessingAtom\Code\ImageProcessingAtom.Editor.Static_autogen\include\..\External\CubeMapGen;C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\.;C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\..;C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzCore\.;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Common;C:\Users\lesaelr\o3de\Code\Framework\AzFramework\.;C:\Users\lesaelr\o3de\Code\Framework\AzFramework\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\GridMate\.;C:\Users\lesaelr\o3de\Code\Framework\GridMate\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\.;C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework;C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\.;C:\Users\lesaelr\o3de\Code\Tools\AssetProcessor\AssetBuilderSDK\.;C:\Users\lesaelr\o3de\Code\Framework\AtomCore\.;C:\Users\lesaelr\o3de\Gems\Atom\RPI\Code\Include;C:\Users\lesaelr\o3de\Gems\Atom\RPI\Code\External;C:\Users\lesaelr\o3de\Gems\Atom\RHI\Code\Include;C:\Users\lesaelr\o3de\Gems\Atom\Utils\Code\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalOptions>%(AdditionalOptions) /Zc:__cplusplus /Zc:lambda /favor:AMD64 /bigobj /experimental:external /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/qt-5.15.2-rev4-windows/qt/include/ /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/qt-5.15.2-rev4-windows/qt/include/QtCore /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/qt-5.15.2-rev4-windows/qt/.//mkspecs/win32-msvc /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/qt-5.15.2-rev4-windows/qt/include/QtWidgets /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/qt-5.15.2-rev4-windows/qt/include/QtWidgets/5.15.1 /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/qt-5.15.2-rev4-windows/qt/include/QtWidgets/5.15.1/QtWidgets /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/qt-5.15.2-rev4-windows/qt/include/QtGui/5.15.1 /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/qt-5.15.2-rev4-windows/qt/include/QtGui/5.15.1/QtGui /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/qt-5.15.2-rev4-windows/qt/include/QtCore/5.15.1 /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/qt-5.15.2-rev4-windows/qt/include/QtCore/5.15.1/QtCore /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/qt-5.15.2-rev4-windows/qt/include/QtGui /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/qt-5.15.2-rev4-windows/qt/include//QtANGLE /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/astc-encoder-3.2-rev1-windows/astc-encoder/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/etc2comp-9cd0f9cae0-rev1-windows/etc2comp/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/PVRTexTool-4.24.0-rev4-multiplatform/PVRTexTool/Include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/squish-ccr-deb557d-rev1-windows/squish-ccr/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/tiff-4.2.0.15-rev2-windows/tiff/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/ISPCTexComp-36b80aa-rev1-windows/ISPCTexComp/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/ilmbase-2.3.0-rev4-multiplatform/ilmbase/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/ilmbase-2.3.0-rev4-multiplatform/ilmbase/include/OpenEXR /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/Lua-5.3.5-rev5-windows/lua/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/RapidJSON-1.1.0-rev1-multiplatform/RapidJSON/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/RapidXML-1.13-rev1-multiplatform/RapidXML/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/zlib-1.2.11-rev2-windows/zlib/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/zstd-1.35-multiplatform/zstd/lib /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/cityhash-1.1-multiplatform/cityhash/src /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/OpenSSL-1.1.1b-rev2-windows/OpenSSL/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/lz4-1.9.3-vcpkg-rev4-windows/lz4/lz4/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/qt-5.15.2-rev4-windows/qt/include/QtSvg /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/qt-5.15.2-rev4-windows/qt/include/QtXml</AdditionalOptions>
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <CallingConvention>Cdecl</CallingConvention>
+      <ConformanceMode>true</ConformanceMode>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <DiagnosticsFormat>Caret</DiagnosticsFormat>
+      <DisableSpecificWarnings>4201</DisableSpecificWarnings>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <ExternalWarningLevel>TurnOffAllWarnings</ExternalWarningLevel>
+      <FloatingPointModel>Fast</FloatingPointModel>
+      <ForceConformanceInForLoopScope>true</ForceConformanceInForLoopScope>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <Optimization>MaxSpeed</Optimization>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <RemoveUnreferencedCodeData>true</RemoveUnreferencedCodeData>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <StringPooling>true</StringPooling>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <TreatSpecificWarningsAsErrors>4263;4264;4265;4266;4296;4426;4437;4774;4777;5031;5032;5233</TreatSpecificWarningsAsErrors>
+      <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
+      <TreatWarningAsError>true</TreatWarningAsError>
+      <UseFullPaths>false</UseFullPaths>
+      <WarningLevel>Level4</WarningLevel>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);_HAS_EXCEPTIONS=0;_PROFILE;PROFILE;NDEBUG;AZ_ENABLE_TRACING;AZ_ENABLE_DEBUG_TOOLS;AZ_BUILD_CONFIGURATION_TYPE="profile";_ENABLE_EXTENDED_ALIGNED_STORAGE;_WIN32;WIN32;_WIN64;WIN64;NOMINMAX;QT_CORE_LIB;QT_NO_DEBUG;QT_WIDGETS_LIB;QT_GUI_LIB;USING_SQUISH_SDK;SQUISH_USE_SSE=2;SQUISH_USE_CPP;SQUISH_USE_CCR;OPENSSL_ENABLED;QT_SVG_LIB;QT_XML_LIB;CMAKE_INTDIR="profile"</PreprocessorDefinitions>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);_HAS_EXCEPTIONS=0;_PROFILE;PROFILE;NDEBUG;AZ_ENABLE_TRACING;AZ_ENABLE_DEBUG_TOOLS;AZ_BUILD_CONFIGURATION_TYPE=\"profile\";_ENABLE_EXTENDED_ALIGNED_STORAGE;_WIN32;WIN32;_WIN64;WIN64;NOMINMAX;QT_CORE_LIB;QT_NO_DEBUG;QT_WIDGETS_LIB;QT_GUI_LIB;USING_SQUISH_SDK;SQUISH_USE_SSE=2;SQUISH_USE_CPP;SQUISH_USE_CCR;OPENSSL_ENABLED;QT_SVG_LIB;QT_XML_LIB;CMAKE_INTDIR=\"profile\"</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>C:\Users\lesaelr\o3de\External\Atom-418206cc\Asset\ImageProcessingAtom\Code\ImageProcessingAtom.Editor.Static_autogen\include_profile;C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Include;C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Platform\Windows;C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\.;C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source;C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\..\External\CubeMapGen;C:\Users\lesaelr\o3de\External\Atom-418206cc\Asset\ImageProcessingAtom\Code\ImageProcessingAtom.Editor.Static_autogen\include\Include;C:\Users\lesaelr\o3de\External\Atom-418206cc\Asset\ImageProcessingAtom\Code\ImageProcessingAtom.Editor.Static_autogen\include\Source\Platform\Windows;C:\Users\lesaelr\o3de\External\Atom-418206cc\Asset\ImageProcessingAtom\Code\ImageProcessingAtom.Editor.Static_autogen\include;C:\Users\lesaelr\o3de\External\Atom-418206cc\Asset\ImageProcessingAtom\Code\ImageProcessingAtom.Editor.Static_autogen\include\Source;C:\Users\lesaelr\o3de\External\Atom-418206cc\Asset\ImageProcessingAtom\Code\ImageProcessingAtom.Editor.Static_autogen\include\..\External\CubeMapGen;C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\.;C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\..;C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzCore\.;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Common;C:\Users\lesaelr\o3de\Code\Framework\AzFramework\.;C:\Users\lesaelr\o3de\Code\Framework\AzFramework\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\GridMate\.;C:\Users\lesaelr\o3de\Code\Framework\GridMate\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\.;C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework;C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\.;C:\Users\lesaelr\o3de\Code\Tools\AssetProcessor\AssetBuilderSDK\.;C:\Users\lesaelr\o3de\Code\Framework\AtomCore\.;C:\Users\lesaelr\o3de\Gems\Atom\RPI\Code\Include;C:\Users\lesaelr\o3de\Gems\Atom\RPI\Code\External;C:\Users\lesaelr\o3de\Gems\Atom\RHI\Code\Include;C:\Users\lesaelr\o3de\Gems\Atom\Utils\Code\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+    </ResourceCompile>
+    <Midl>
+      <AdditionalIncludeDirectories>C:\Users\lesaelr\o3de\External\Atom-418206cc\Asset\ImageProcessingAtom\Code\ImageProcessingAtom.Editor.Static_autogen\include_profile;C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Include;C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Platform\Windows;C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\.;C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source;C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\..\External\CubeMapGen;C:\Users\lesaelr\o3de\External\Atom-418206cc\Asset\ImageProcessingAtom\Code\ImageProcessingAtom.Editor.Static_autogen\include\Include;C:\Users\lesaelr\o3de\External\Atom-418206cc\Asset\ImageProcessingAtom\Code\ImageProcessingAtom.Editor.Static_autogen\include\Source\Platform\Windows;C:\Users\lesaelr\o3de\External\Atom-418206cc\Asset\ImageProcessingAtom\Code\ImageProcessingAtom.Editor.Static_autogen\include;C:\Users\lesaelr\o3de\External\Atom-418206cc\Asset\ImageProcessingAtom\Code\ImageProcessingAtom.Editor.Static_autogen\include\Source;C:\Users\lesaelr\o3de\External\Atom-418206cc\Asset\ImageProcessingAtom\Code\ImageProcessingAtom.Editor.Static_autogen\include\..\External\CubeMapGen;C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\.;C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\..;C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzCore\.;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Common;C:\Users\lesaelr\o3de\Code\Framework\AzFramework\.;C:\Users\lesaelr\o3de\Code\Framework\AzFramework\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\GridMate\.;C:\Users\lesaelr\o3de\Code\Framework\GridMate\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\.;C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework;C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\.;C:\Users\lesaelr\o3de\Code\Tools\AssetProcessor\AssetBuilderSDK\.;C:\Users\lesaelr\o3de\Code\Framework\AtomCore\.;C:\Users\lesaelr\o3de\Gems\Atom\RPI\Code\Include;C:\Users\lesaelr\o3de\Gems\Atom\RPI\Code\External;C:\Users\lesaelr\o3de\Gems\Atom\RHI\Code\Include;C:\Users\lesaelr\o3de\Gems\Atom\Utils\Code\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+    <PreBuildEvent>
+      <UseUtf8Encoding>Always</UseUtf8Encoding>
+      <Message>Automatic MOC for target ImageProcessingAtom.Editor.Static</Message>
+      <Command>setlocal
+cd C:\Users\lesaelr\o3de\External\Atom-418206cc\Asset\ImageProcessingAtom\Code
+if %errorlevel% neq 0 goto :cmEnd
+C:
+if %errorlevel% neq 0 goto :cmEnd
+"C:\Program Files\CMake\bin\cmake.exe" -E cmake_autogen C:/Users/lesaelr/o3de/External/Atom-418206cc/Asset/ImageProcessingAtom/Code/CMakeFiles/ImageProcessingAtom.Editor.Static_autogen.dir/AutogenInfo.json profile
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+    </PreBuildEvent>
+    <Lib>
+      <AdditionalOptions>%(AdditionalOptions) /machine:x64 /IGNORE:4099</AdditionalOptions>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <TargetMachine>MachineX64</TargetMachine>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='release|x64'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>C:\Users\lesaelr\o3de\External\Atom-418206cc\Asset\ImageProcessingAtom\Code\ImageProcessingAtom.Editor.Static_autogen\include_release;C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Include;C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Platform\Windows;C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\.;C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source;C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\..\External\CubeMapGen;C:\Users\lesaelr\o3de\External\Atom-418206cc\Asset\ImageProcessingAtom\Code\ImageProcessingAtom.Editor.Static_autogen\include\Include;C:\Users\lesaelr\o3de\External\Atom-418206cc\Asset\ImageProcessingAtom\Code\ImageProcessingAtom.Editor.Static_autogen\include\Source\Platform\Windows;C:\Users\lesaelr\o3de\External\Atom-418206cc\Asset\ImageProcessingAtom\Code\ImageProcessingAtom.Editor.Static_autogen\include;C:\Users\lesaelr\o3de\External\Atom-418206cc\Asset\ImageProcessingAtom\Code\ImageProcessingAtom.Editor.Static_autogen\include\Source;C:\Users\lesaelr\o3de\External\Atom-418206cc\Asset\ImageProcessingAtom\Code\ImageProcessingAtom.Editor.Static_autogen\include\..\External\CubeMapGen;C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\.;C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\..;C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzCore\.;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Common;C:\Users\lesaelr\o3de\Code\Framework\AzFramework\.;C:\Users\lesaelr\o3de\Code\Framework\AzFramework\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\GridMate\.;C:\Users\lesaelr\o3de\Code\Framework\GridMate\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\.;C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework;C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\.;C:\Users\lesaelr\o3de\Code\Tools\AssetProcessor\AssetBuilderSDK\.;C:\Users\lesaelr\o3de\Code\Framework\AtomCore\.;C:\Users\lesaelr\o3de\Gems\Atom\RPI\Code\Include;C:\Users\lesaelr\o3de\Gems\Atom\RPI\Code\External;C:\Users\lesaelr\o3de\Gems\Atom\RHI\Code\Include;C:\Users\lesaelr\o3de\Gems\Atom\Utils\Code\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalOptions>%(AdditionalOptions) /Zc:__cplusplus /Zc:lambda /favor:AMD64 /bigobj /experimental:external /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/qt-5.15.2-rev4-windows/qt/include/ /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/qt-5.15.2-rev4-windows/qt/include/QtCore /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/qt-5.15.2-rev4-windows/qt/.//mkspecs/win32-msvc /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/qt-5.15.2-rev4-windows/qt/include/QtWidgets /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/qt-5.15.2-rev4-windows/qt/include/QtWidgets/5.15.1 /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/qt-5.15.2-rev4-windows/qt/include/QtWidgets/5.15.1/QtWidgets /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/qt-5.15.2-rev4-windows/qt/include/QtGui/5.15.1 /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/qt-5.15.2-rev4-windows/qt/include/QtGui/5.15.1/QtGui /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/qt-5.15.2-rev4-windows/qt/include/QtCore/5.15.1 /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/qt-5.15.2-rev4-windows/qt/include/QtCore/5.15.1/QtCore /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/qt-5.15.2-rev4-windows/qt/include/QtGui /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/qt-5.15.2-rev4-windows/qt/include//QtANGLE /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/astc-encoder-3.2-rev1-windows/astc-encoder/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/etc2comp-9cd0f9cae0-rev1-windows/etc2comp/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/PVRTexTool-4.24.0-rev4-multiplatform/PVRTexTool/Include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/squish-ccr-deb557d-rev1-windows/squish-ccr/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/tiff-4.2.0.15-rev2-windows/tiff/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/ISPCTexComp-36b80aa-rev1-windows/ISPCTexComp/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/ilmbase-2.3.0-rev4-multiplatform/ilmbase/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/ilmbase-2.3.0-rev4-multiplatform/ilmbase/include/OpenEXR /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/Lua-5.3.5-rev5-windows/lua/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/RapidJSON-1.1.0-rev1-multiplatform/RapidJSON/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/RapidXML-1.13-rev1-multiplatform/RapidXML/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/zlib-1.2.11-rev2-windows/zlib/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/zstd-1.35-multiplatform/zstd/lib /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/cityhash-1.1-multiplatform/cityhash/src /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/OpenSSL-1.1.1b-rev2-windows/OpenSSL/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/lz4-1.9.3-vcpkg-rev4-windows/lz4/lz4/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/qt-5.15.2-rev4-windows/qt/include/QtSvg /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/qt-5.15.2-rev4-windows/qt/include/QtXml</AdditionalOptions>
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <CallingConvention>Cdecl</CallingConvention>
+      <ConformanceMode>true</ConformanceMode>
+      <DiagnosticsFormat>Caret</DiagnosticsFormat>
+      <DisableSpecificWarnings>4201</DisableSpecificWarnings>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <ExternalWarningLevel>TurnOffAllWarnings</ExternalWarningLevel>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <FloatingPointModel>Fast</FloatingPointModel>
+      <ForceConformanceInForLoopScope>true</ForceConformanceInForLoopScope>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <OmitFramePointers>true</OmitFramePointers>
+      <Optimization>Full</Optimization>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <TreatSpecificWarningsAsErrors>4263;4264;4265;4266;4296;4426;4437;4774;4777;5031;5032;5233</TreatSpecificWarningsAsErrors>
+      <TreatWarningAsError>true</TreatWarningAsError>
+      <UseFullPaths>false</UseFullPaths>
+      <WarningLevel>Level4</WarningLevel>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);_HAS_EXCEPTIONS=0;_RELEASE;RELEASE;NDEBUG;AZ_BUILD_CONFIGURATION_TYPE="release";_ENABLE_EXTENDED_ALIGNED_STORAGE;_WIN32;WIN32;_WIN64;WIN64;NOMINMAX;QT_CORE_LIB;QT_NO_DEBUG;QT_WIDGETS_LIB;QT_GUI_LIB;USING_SQUISH_SDK;SQUISH_USE_SSE=2;SQUISH_USE_CPP;SQUISH_USE_CCR;OPENSSL_ENABLED;QT_SVG_LIB;QT_XML_LIB;CMAKE_INTDIR="release"</PreprocessorDefinitions>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+      <DebugInformationFormat>
+      </DebugInformationFormat>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);_HAS_EXCEPTIONS=0;_RELEASE;RELEASE;NDEBUG;AZ_BUILD_CONFIGURATION_TYPE=\"release\";_ENABLE_EXTENDED_ALIGNED_STORAGE;_WIN32;WIN32;_WIN64;WIN64;NOMINMAX;QT_CORE_LIB;QT_NO_DEBUG;QT_WIDGETS_LIB;QT_GUI_LIB;USING_SQUISH_SDK;SQUISH_USE_SSE=2;SQUISH_USE_CPP;SQUISH_USE_CCR;OPENSSL_ENABLED;QT_SVG_LIB;QT_XML_LIB;CMAKE_INTDIR=\"release\"</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>C:\Users\lesaelr\o3de\External\Atom-418206cc\Asset\ImageProcessingAtom\Code\ImageProcessingAtom.Editor.Static_autogen\include_release;C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Include;C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Platform\Windows;C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\.;C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source;C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\..\External\CubeMapGen;C:\Users\lesaelr\o3de\External\Atom-418206cc\Asset\ImageProcessingAtom\Code\ImageProcessingAtom.Editor.Static_autogen\include\Include;C:\Users\lesaelr\o3de\External\Atom-418206cc\Asset\ImageProcessingAtom\Code\ImageProcessingAtom.Editor.Static_autogen\include\Source\Platform\Windows;C:\Users\lesaelr\o3de\External\Atom-418206cc\Asset\ImageProcessingAtom\Code\ImageProcessingAtom.Editor.Static_autogen\include;C:\Users\lesaelr\o3de\External\Atom-418206cc\Asset\ImageProcessingAtom\Code\ImageProcessingAtom.Editor.Static_autogen\include\Source;C:\Users\lesaelr\o3de\External\Atom-418206cc\Asset\ImageProcessingAtom\Code\ImageProcessingAtom.Editor.Static_autogen\include\..\External\CubeMapGen;C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\.;C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\..;C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzCore\.;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Common;C:\Users\lesaelr\o3de\Code\Framework\AzFramework\.;C:\Users\lesaelr\o3de\Code\Framework\AzFramework\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\GridMate\.;C:\Users\lesaelr\o3de\Code\Framework\GridMate\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\.;C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework;C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\.;C:\Users\lesaelr\o3de\Code\Tools\AssetProcessor\AssetBuilderSDK\.;C:\Users\lesaelr\o3de\Code\Framework\AtomCore\.;C:\Users\lesaelr\o3de\Gems\Atom\RPI\Code\Include;C:\Users\lesaelr\o3de\Gems\Atom\RPI\Code\External;C:\Users\lesaelr\o3de\Gems\Atom\RHI\Code\Include;C:\Users\lesaelr\o3de\Gems\Atom\Utils\Code\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+    </ResourceCompile>
+    <Midl>
+      <AdditionalIncludeDirectories>C:\Users\lesaelr\o3de\External\Atom-418206cc\Asset\ImageProcessingAtom\Code\ImageProcessingAtom.Editor.Static_autogen\include_release;C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Include;C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Platform\Windows;C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\.;C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source;C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\..\External\CubeMapGen;C:\Users\lesaelr\o3de\External\Atom-418206cc\Asset\ImageProcessingAtom\Code\ImageProcessingAtom.Editor.Static_autogen\include\Include;C:\Users\lesaelr\o3de\External\Atom-418206cc\Asset\ImageProcessingAtom\Code\ImageProcessingAtom.Editor.Static_autogen\include\Source\Platform\Windows;C:\Users\lesaelr\o3de\External\Atom-418206cc\Asset\ImageProcessingAtom\Code\ImageProcessingAtom.Editor.Static_autogen\include;C:\Users\lesaelr\o3de\External\Atom-418206cc\Asset\ImageProcessingAtom\Code\ImageProcessingAtom.Editor.Static_autogen\include\Source;C:\Users\lesaelr\o3de\External\Atom-418206cc\Asset\ImageProcessingAtom\Code\ImageProcessingAtom.Editor.Static_autogen\include\..\External\CubeMapGen;C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\.;C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\..;C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzCore\.;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Common;C:\Users\lesaelr\o3de\Code\Framework\AzFramework\.;C:\Users\lesaelr\o3de\Code\Framework\AzFramework\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\GridMate\.;C:\Users\lesaelr\o3de\Code\Framework\GridMate\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\.;C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework;C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\.;C:\Users\lesaelr\o3de\Code\Tools\AssetProcessor\AssetBuilderSDK\.;C:\Users\lesaelr\o3de\Code\Framework\AtomCore\.;C:\Users\lesaelr\o3de\Gems\Atom\RPI\Code\Include;C:\Users\lesaelr\o3de\Gems\Atom\RPI\Code\External;C:\Users\lesaelr\o3de\Gems\Atom\RHI\Code\Include;C:\Users\lesaelr\o3de\Gems\Atom\Utils\Code\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+    <PreBuildEvent>
+      <UseUtf8Encoding>Always</UseUtf8Encoding>
+      <Message>Automatic MOC for target ImageProcessingAtom.Editor.Static</Message>
+      <Command>setlocal
+cd C:\Users\lesaelr\o3de\External\Atom-418206cc\Asset\ImageProcessingAtom\Code
+if %errorlevel% neq 0 goto :cmEnd
+C:
+if %errorlevel% neq 0 goto :cmEnd
+"C:\Program Files\CMake\bin\cmake.exe" -E cmake_autogen C:/Users/lesaelr/o3de/External/Atom-418206cc/Asset/ImageProcessingAtom/Code/CMakeFiles/ImageProcessingAtom.Editor.Static_autogen.dir/AutogenInfo.json release
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+    </PreBuildEvent>
+    <Lib>
+      <AdditionalOptions>%(AdditionalOptions) /machine:x64 /IGNORE:4099</AdditionalOptions>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <TargetMachine>MachineX64</TargetMachine>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Previewer\ImagePreviewer.ui">
+      <Message Condition="'$(Configuration)|$(Platform)'=='debug|x64'">UIC C:/Users/lesaelr/o3de/Gems/Atom/Asset/ImageProcessingAtom/Code/Source/Previewer/ImagePreviewer.ui</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='debug|x64'">setlocal
+C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\bin\uic.exe -o C:/Users/lesaelr/o3de/External/Atom-418206cc/Asset/ImageProcessingAtom/Code/ImageProcessingAtom.Editor.Static_autogen/include/Source/Previewer/ui_ImagePreviewer.h C:/Users/lesaelr/o3de/Gems/Atom/Asset/ImageProcessingAtom/Code/Source/Previewer/ImagePreviewer.ui
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='debug|x64'">%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='debug|x64'">C:\Users\lesaelr\o3de\External\Atom-418206cc\Asset\ImageProcessingAtom\Code\ImageProcessingAtom.Editor.Static_autogen\include\Source\Previewer\ui_ImagePreviewer.h</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='debug|x64'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='profile|x64'">UIC C:/Users/lesaelr/o3de/Gems/Atom/Asset/ImageProcessingAtom/Code/Source/Previewer/ImagePreviewer.ui</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='profile|x64'">setlocal
+C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\bin\uic.exe -o C:/Users/lesaelr/o3de/External/Atom-418206cc/Asset/ImageProcessingAtom/Code/ImageProcessingAtom.Editor.Static_autogen/include/Source/Previewer/ui_ImagePreviewer.h C:/Users/lesaelr/o3de/Gems/Atom/Asset/ImageProcessingAtom/Code/Source/Previewer/ImagePreviewer.ui
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='profile|x64'">%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='profile|x64'">C:\Users\lesaelr\o3de\External\Atom-418206cc\Asset\ImageProcessingAtom\Code\ImageProcessingAtom.Editor.Static_autogen\include\Source\Previewer\ui_ImagePreviewer.h</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='profile|x64'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='release|x64'">UIC C:/Users/lesaelr/o3de/Gems/Atom/Asset/ImageProcessingAtom/Code/Source/Previewer/ImagePreviewer.ui</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='release|x64'">setlocal
+C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\bin\uic.exe -o C:/Users/lesaelr/o3de/External/Atom-418206cc/Asset/ImageProcessingAtom/Code/ImageProcessingAtom.Editor.Static_autogen/include/Source/Previewer/ui_ImagePreviewer.h C:/Users/lesaelr/o3de/Gems/Atom/Asset/ImageProcessingAtom/Code/Source/Previewer/ImagePreviewer.ui
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='release|x64'">%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='release|x64'">C:\Users\lesaelr\o3de\External\Atom-418206cc\Asset\ImageProcessingAtom\Code\ImageProcessingAtom.Editor.Static_autogen\include\Source\Previewer\ui_ImagePreviewer.h</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='release|x64'">false</LinkObjects>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Editor\ImagePopup.ui">
+      <Message Condition="'$(Configuration)|$(Platform)'=='debug|x64'">UIC C:/Users/lesaelr/o3de/Gems/Atom/Asset/ImageProcessingAtom/Code/Source/Editor/ImagePopup.ui</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='debug|x64'">setlocal
+C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\bin\uic.exe -o C:/Users/lesaelr/o3de/External/Atom-418206cc/Asset/ImageProcessingAtom/Code/ImageProcessingAtom.Editor.Static_autogen/include/Source/Editor/ui_ImagePopup.h C:/Users/lesaelr/o3de/Gems/Atom/Asset/ImageProcessingAtom/Code/Source/Editor/ImagePopup.ui
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='debug|x64'">%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='debug|x64'">C:\Users\lesaelr\o3de\External\Atom-418206cc\Asset\ImageProcessingAtom\Code\ImageProcessingAtom.Editor.Static_autogen\include\Source\Editor\ui_ImagePopup.h</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='debug|x64'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='profile|x64'">UIC C:/Users/lesaelr/o3de/Gems/Atom/Asset/ImageProcessingAtom/Code/Source/Editor/ImagePopup.ui</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='profile|x64'">setlocal
+C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\bin\uic.exe -o C:/Users/lesaelr/o3de/External/Atom-418206cc/Asset/ImageProcessingAtom/Code/ImageProcessingAtom.Editor.Static_autogen/include/Source/Editor/ui_ImagePopup.h C:/Users/lesaelr/o3de/Gems/Atom/Asset/ImageProcessingAtom/Code/Source/Editor/ImagePopup.ui
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='profile|x64'">%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='profile|x64'">C:\Users\lesaelr\o3de\External\Atom-418206cc\Asset\ImageProcessingAtom\Code\ImageProcessingAtom.Editor.Static_autogen\include\Source\Editor\ui_ImagePopup.h</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='profile|x64'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='release|x64'">UIC C:/Users/lesaelr/o3de/Gems/Atom/Asset/ImageProcessingAtom/Code/Source/Editor/ImagePopup.ui</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='release|x64'">setlocal
+C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\bin\uic.exe -o C:/Users/lesaelr/o3de/External/Atom-418206cc/Asset/ImageProcessingAtom/Code/ImageProcessingAtom.Editor.Static_autogen/include/Source/Editor/ui_ImagePopup.h C:/Users/lesaelr/o3de/Gems/Atom/Asset/ImageProcessingAtom/Code/Source/Editor/ImagePopup.ui
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='release|x64'">%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='release|x64'">C:\Users\lesaelr\o3de\External\Atom-418206cc\Asset\ImageProcessingAtom\Code\ImageProcessingAtom.Editor.Static_autogen\include\Source\Editor\ui_ImagePopup.h</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='release|x64'">false</LinkObjects>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Editor\MipmapSettingWidget.ui">
+      <Message Condition="'$(Configuration)|$(Platform)'=='debug|x64'">UIC C:/Users/lesaelr/o3de/Gems/Atom/Asset/ImageProcessingAtom/Code/Source/Editor/MipmapSettingWidget.ui</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='debug|x64'">setlocal
+C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\bin\uic.exe -o C:/Users/lesaelr/o3de/External/Atom-418206cc/Asset/ImageProcessingAtom/Code/ImageProcessingAtom.Editor.Static_autogen/include/Source/Editor/ui_MipmapSettingWidget.h C:/Users/lesaelr/o3de/Gems/Atom/Asset/ImageProcessingAtom/Code/Source/Editor/MipmapSettingWidget.ui
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='debug|x64'">%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='debug|x64'">C:\Users\lesaelr\o3de\External\Atom-418206cc\Asset\ImageProcessingAtom\Code\ImageProcessingAtom.Editor.Static_autogen\include\Source\Editor\ui_MipmapSettingWidget.h</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='debug|x64'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='profile|x64'">UIC C:/Users/lesaelr/o3de/Gems/Atom/Asset/ImageProcessingAtom/Code/Source/Editor/MipmapSettingWidget.ui</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='profile|x64'">setlocal
+C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\bin\uic.exe -o C:/Users/lesaelr/o3de/External/Atom-418206cc/Asset/ImageProcessingAtom/Code/ImageProcessingAtom.Editor.Static_autogen/include/Source/Editor/ui_MipmapSettingWidget.h C:/Users/lesaelr/o3de/Gems/Atom/Asset/ImageProcessingAtom/Code/Source/Editor/MipmapSettingWidget.ui
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='profile|x64'">%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='profile|x64'">C:\Users\lesaelr\o3de\External\Atom-418206cc\Asset\ImageProcessingAtom\Code\ImageProcessingAtom.Editor.Static_autogen\include\Source\Editor\ui_MipmapSettingWidget.h</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='profile|x64'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='release|x64'">UIC C:/Users/lesaelr/o3de/Gems/Atom/Asset/ImageProcessingAtom/Code/Source/Editor/MipmapSettingWidget.ui</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='release|x64'">setlocal
+C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\bin\uic.exe -o C:/Users/lesaelr/o3de/External/Atom-418206cc/Asset/ImageProcessingAtom/Code/ImageProcessingAtom.Editor.Static_autogen/include/Source/Editor/ui_MipmapSettingWidget.h C:/Users/lesaelr/o3de/Gems/Atom/Asset/ImageProcessingAtom/Code/Source/Editor/MipmapSettingWidget.ui
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='release|x64'">%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='release|x64'">C:\Users\lesaelr\o3de\External\Atom-418206cc\Asset\ImageProcessingAtom\Code\ImageProcessingAtom.Editor.Static_autogen\include\Source\Editor\ui_MipmapSettingWidget.h</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='release|x64'">false</LinkObjects>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Editor\PresetInfoPopup.ui">
+      <Message Condition="'$(Configuration)|$(Platform)'=='debug|x64'">UIC C:/Users/lesaelr/o3de/Gems/Atom/Asset/ImageProcessingAtom/Code/Source/Editor/PresetInfoPopup.ui</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='debug|x64'">setlocal
+C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\bin\uic.exe -o C:/Users/lesaelr/o3de/External/Atom-418206cc/Asset/ImageProcessingAtom/Code/ImageProcessingAtom.Editor.Static_autogen/include/Source/Editor/ui_PresetInfoPopup.h C:/Users/lesaelr/o3de/Gems/Atom/Asset/ImageProcessingAtom/Code/Source/Editor/PresetInfoPopup.ui
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='debug|x64'">%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='debug|x64'">C:\Users\lesaelr\o3de\External\Atom-418206cc\Asset\ImageProcessingAtom\Code\ImageProcessingAtom.Editor.Static_autogen\include\Source\Editor\ui_PresetInfoPopup.h</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='debug|x64'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='profile|x64'">UIC C:/Users/lesaelr/o3de/Gems/Atom/Asset/ImageProcessingAtom/Code/Source/Editor/PresetInfoPopup.ui</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='profile|x64'">setlocal
+C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\bin\uic.exe -o C:/Users/lesaelr/o3de/External/Atom-418206cc/Asset/ImageProcessingAtom/Code/ImageProcessingAtom.Editor.Static_autogen/include/Source/Editor/ui_PresetInfoPopup.h C:/Users/lesaelr/o3de/Gems/Atom/Asset/ImageProcessingAtom/Code/Source/Editor/PresetInfoPopup.ui
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='profile|x64'">%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='profile|x64'">C:\Users\lesaelr\o3de\External\Atom-418206cc\Asset\ImageProcessingAtom\Code\ImageProcessingAtom.Editor.Static_autogen\include\Source\Editor\ui_PresetInfoPopup.h</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='profile|x64'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='release|x64'">UIC C:/Users/lesaelr/o3de/Gems/Atom/Asset/ImageProcessingAtom/Code/Source/Editor/PresetInfoPopup.ui</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='release|x64'">setlocal
+C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\bin\uic.exe -o C:/Users/lesaelr/o3de/External/Atom-418206cc/Asset/ImageProcessingAtom/Code/ImageProcessingAtom.Editor.Static_autogen/include/Source/Editor/ui_PresetInfoPopup.h C:/Users/lesaelr/o3de/Gems/Atom/Asset/ImageProcessingAtom/Code/Source/Editor/PresetInfoPopup.ui
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='release|x64'">%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='release|x64'">C:\Users\lesaelr\o3de\External\Atom-418206cc\Asset\ImageProcessingAtom\Code\ImageProcessingAtom.Editor.Static_autogen\include\Source\Editor\ui_PresetInfoPopup.h</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='release|x64'">false</LinkObjects>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Editor\ResolutionSettingItemWidget.ui">
+      <Message Condition="'$(Configuration)|$(Platform)'=='debug|x64'">UIC C:/Users/lesaelr/o3de/Gems/Atom/Asset/ImageProcessingAtom/Code/Source/Editor/ResolutionSettingItemWidget.ui</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='debug|x64'">setlocal
+C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\bin\uic.exe -o C:/Users/lesaelr/o3de/External/Atom-418206cc/Asset/ImageProcessingAtom/Code/ImageProcessingAtom.Editor.Static_autogen/include/Source/Editor/ui_ResolutionSettingItemWidget.h C:/Users/lesaelr/o3de/Gems/Atom/Asset/ImageProcessingAtom/Code/Source/Editor/ResolutionSettingItemWidget.ui
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='debug|x64'">%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='debug|x64'">C:\Users\lesaelr\o3de\External\Atom-418206cc\Asset\ImageProcessingAtom\Code\ImageProcessingAtom.Editor.Static_autogen\include\Source\Editor\ui_ResolutionSettingItemWidget.h</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='debug|x64'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='profile|x64'">UIC C:/Users/lesaelr/o3de/Gems/Atom/Asset/ImageProcessingAtom/Code/Source/Editor/ResolutionSettingItemWidget.ui</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='profile|x64'">setlocal
+C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\bin\uic.exe -o C:/Users/lesaelr/o3de/External/Atom-418206cc/Asset/ImageProcessingAtom/Code/ImageProcessingAtom.Editor.Static_autogen/include/Source/Editor/ui_ResolutionSettingItemWidget.h C:/Users/lesaelr/o3de/Gems/Atom/Asset/ImageProcessingAtom/Code/Source/Editor/ResolutionSettingItemWidget.ui
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='profile|x64'">%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='profile|x64'">C:\Users\lesaelr\o3de\External\Atom-418206cc\Asset\ImageProcessingAtom\Code\ImageProcessingAtom.Editor.Static_autogen\include\Source\Editor\ui_ResolutionSettingItemWidget.h</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='profile|x64'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='release|x64'">UIC C:/Users/lesaelr/o3de/Gems/Atom/Asset/ImageProcessingAtom/Code/Source/Editor/ResolutionSettingItemWidget.ui</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='release|x64'">setlocal
+C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\bin\uic.exe -o C:/Users/lesaelr/o3de/External/Atom-418206cc/Asset/ImageProcessingAtom/Code/ImageProcessingAtom.Editor.Static_autogen/include/Source/Editor/ui_ResolutionSettingItemWidget.h C:/Users/lesaelr/o3de/Gems/Atom/Asset/ImageProcessingAtom/Code/Source/Editor/ResolutionSettingItemWidget.ui
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='release|x64'">%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='release|x64'">C:\Users\lesaelr\o3de\External\Atom-418206cc\Asset\ImageProcessingAtom\Code\ImageProcessingAtom.Editor.Static_autogen\include\Source\Editor\ui_ResolutionSettingItemWidget.h</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='release|x64'">false</LinkObjects>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Editor\ResolutionSettingWidget.ui">
+      <Message Condition="'$(Configuration)|$(Platform)'=='debug|x64'">UIC C:/Users/lesaelr/o3de/Gems/Atom/Asset/ImageProcessingAtom/Code/Source/Editor/ResolutionSettingWidget.ui</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='debug|x64'">setlocal
+C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\bin\uic.exe -o C:/Users/lesaelr/o3de/External/Atom-418206cc/Asset/ImageProcessingAtom/Code/ImageProcessingAtom.Editor.Static_autogen/include/Source/Editor/ui_ResolutionSettingWidget.h C:/Users/lesaelr/o3de/Gems/Atom/Asset/ImageProcessingAtom/Code/Source/Editor/ResolutionSettingWidget.ui
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='debug|x64'">%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='debug|x64'">C:\Users\lesaelr\o3de\External\Atom-418206cc\Asset\ImageProcessingAtom\Code\ImageProcessingAtom.Editor.Static_autogen\include\Source\Editor\ui_ResolutionSettingWidget.h</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='debug|x64'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='profile|x64'">UIC C:/Users/lesaelr/o3de/Gems/Atom/Asset/ImageProcessingAtom/Code/Source/Editor/ResolutionSettingWidget.ui</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='profile|x64'">setlocal
+C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\bin\uic.exe -o C:/Users/lesaelr/o3de/External/Atom-418206cc/Asset/ImageProcessingAtom/Code/ImageProcessingAtom.Editor.Static_autogen/include/Source/Editor/ui_ResolutionSettingWidget.h C:/Users/lesaelr/o3de/Gems/Atom/Asset/ImageProcessingAtom/Code/Source/Editor/ResolutionSettingWidget.ui
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='profile|x64'">%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='profile|x64'">C:\Users\lesaelr\o3de\External\Atom-418206cc\Asset\ImageProcessingAtom\Code\ImageProcessingAtom.Editor.Static_autogen\include\Source\Editor\ui_ResolutionSettingWidget.h</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='profile|x64'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='release|x64'">UIC C:/Users/lesaelr/o3de/Gems/Atom/Asset/ImageProcessingAtom/Code/Source/Editor/ResolutionSettingWidget.ui</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='release|x64'">setlocal
+C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\bin\uic.exe -o C:/Users/lesaelr/o3de/External/Atom-418206cc/Asset/ImageProcessingAtom/Code/ImageProcessingAtom.Editor.Static_autogen/include/Source/Editor/ui_ResolutionSettingWidget.h C:/Users/lesaelr/o3de/Gems/Atom/Asset/ImageProcessingAtom/Code/Source/Editor/ResolutionSettingWidget.ui
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='release|x64'">%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='release|x64'">C:\Users\lesaelr\o3de\External\Atom-418206cc\Asset\ImageProcessingAtom\Code\ImageProcessingAtom.Editor.Static_autogen\include\Source\Editor\ui_ResolutionSettingWidget.h</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='release|x64'">false</LinkObjects>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Editor\TexturePresetSelectionWidget.ui">
+      <Message Condition="'$(Configuration)|$(Platform)'=='debug|x64'">UIC C:/Users/lesaelr/o3de/Gems/Atom/Asset/ImageProcessingAtom/Code/Source/Editor/TexturePresetSelectionWidget.ui</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='debug|x64'">setlocal
+C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\bin\uic.exe -o C:/Users/lesaelr/o3de/External/Atom-418206cc/Asset/ImageProcessingAtom/Code/ImageProcessingAtom.Editor.Static_autogen/include/Source/Editor/ui_TexturePresetSelectionWidget.h C:/Users/lesaelr/o3de/Gems/Atom/Asset/ImageProcessingAtom/Code/Source/Editor/TexturePresetSelectionWidget.ui
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='debug|x64'">%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='debug|x64'">C:\Users\lesaelr\o3de\External\Atom-418206cc\Asset\ImageProcessingAtom\Code\ImageProcessingAtom.Editor.Static_autogen\include\Source\Editor\ui_TexturePresetSelectionWidget.h</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='debug|x64'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='profile|x64'">UIC C:/Users/lesaelr/o3de/Gems/Atom/Asset/ImageProcessingAtom/Code/Source/Editor/TexturePresetSelectionWidget.ui</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='profile|x64'">setlocal
+C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\bin\uic.exe -o C:/Users/lesaelr/o3de/External/Atom-418206cc/Asset/ImageProcessingAtom/Code/ImageProcessingAtom.Editor.Static_autogen/include/Source/Editor/ui_TexturePresetSelectionWidget.h C:/Users/lesaelr/o3de/Gems/Atom/Asset/ImageProcessingAtom/Code/Source/Editor/TexturePresetSelectionWidget.ui
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='profile|x64'">%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='profile|x64'">C:\Users\lesaelr\o3de\External\Atom-418206cc\Asset\ImageProcessingAtom\Code\ImageProcessingAtom.Editor.Static_autogen\include\Source\Editor\ui_TexturePresetSelectionWidget.h</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='profile|x64'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='release|x64'">UIC C:/Users/lesaelr/o3de/Gems/Atom/Asset/ImageProcessingAtom/Code/Source/Editor/TexturePresetSelectionWidget.ui</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='release|x64'">setlocal
+C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\bin\uic.exe -o C:/Users/lesaelr/o3de/External/Atom-418206cc/Asset/ImageProcessingAtom/Code/ImageProcessingAtom.Editor.Static_autogen/include/Source/Editor/ui_TexturePresetSelectionWidget.h C:/Users/lesaelr/o3de/Gems/Atom/Asset/ImageProcessingAtom/Code/Source/Editor/TexturePresetSelectionWidget.ui
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='release|x64'">%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='release|x64'">C:\Users\lesaelr\o3de\External\Atom-418206cc\Asset\ImageProcessingAtom\Code\ImageProcessingAtom.Editor.Static_autogen\include\Source\Editor\ui_TexturePresetSelectionWidget.h</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='release|x64'">false</LinkObjects>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Editor\TexturePreviewWidget.ui">
+      <Message Condition="'$(Configuration)|$(Platform)'=='debug|x64'">UIC C:/Users/lesaelr/o3de/Gems/Atom/Asset/ImageProcessingAtom/Code/Source/Editor/TexturePreviewWidget.ui</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='debug|x64'">setlocal
+C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\bin\uic.exe -o C:/Users/lesaelr/o3de/External/Atom-418206cc/Asset/ImageProcessingAtom/Code/ImageProcessingAtom.Editor.Static_autogen/include/Source/Editor/ui_TexturePreviewWidget.h C:/Users/lesaelr/o3de/Gems/Atom/Asset/ImageProcessingAtom/Code/Source/Editor/TexturePreviewWidget.ui
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='debug|x64'">%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='debug|x64'">C:\Users\lesaelr\o3de\External\Atom-418206cc\Asset\ImageProcessingAtom\Code\ImageProcessingAtom.Editor.Static_autogen\include\Source\Editor\ui_TexturePreviewWidget.h</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='debug|x64'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='profile|x64'">UIC C:/Users/lesaelr/o3de/Gems/Atom/Asset/ImageProcessingAtom/Code/Source/Editor/TexturePreviewWidget.ui</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='profile|x64'">setlocal
+C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\bin\uic.exe -o C:/Users/lesaelr/o3de/External/Atom-418206cc/Asset/ImageProcessingAtom/Code/ImageProcessingAtom.Editor.Static_autogen/include/Source/Editor/ui_TexturePreviewWidget.h C:/Users/lesaelr/o3de/Gems/Atom/Asset/ImageProcessingAtom/Code/Source/Editor/TexturePreviewWidget.ui
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='profile|x64'">%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='profile|x64'">C:\Users\lesaelr\o3de\External\Atom-418206cc\Asset\ImageProcessingAtom\Code\ImageProcessingAtom.Editor.Static_autogen\include\Source\Editor\ui_TexturePreviewWidget.h</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='profile|x64'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='release|x64'">UIC C:/Users/lesaelr/o3de/Gems/Atom/Asset/ImageProcessingAtom/Code/Source/Editor/TexturePreviewWidget.ui</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='release|x64'">setlocal
+C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\bin\uic.exe -o C:/Users/lesaelr/o3de/External/Atom-418206cc/Asset/ImageProcessingAtom/Code/ImageProcessingAtom.Editor.Static_autogen/include/Source/Editor/ui_TexturePreviewWidget.h C:/Users/lesaelr/o3de/Gems/Atom/Asset/ImageProcessingAtom/Code/Source/Editor/TexturePreviewWidget.ui
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='release|x64'">%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='release|x64'">C:\Users\lesaelr\o3de\External\Atom-418206cc\Asset\ImageProcessingAtom\Code\ImageProcessingAtom.Editor.Static_autogen\include\Source\Editor\ui_TexturePreviewWidget.h</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='release|x64'">false</LinkObjects>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Editor\TexturePropertyEditor.ui">
+      <Message Condition="'$(Configuration)|$(Platform)'=='debug|x64'">UIC C:/Users/lesaelr/o3de/Gems/Atom/Asset/ImageProcessingAtom/Code/Source/Editor/TexturePropertyEditor.ui</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='debug|x64'">setlocal
+C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\bin\uic.exe -o C:/Users/lesaelr/o3de/External/Atom-418206cc/Asset/ImageProcessingAtom/Code/ImageProcessingAtom.Editor.Static_autogen/include/Source/Editor/ui_TexturePropertyEditor.h C:/Users/lesaelr/o3de/Gems/Atom/Asset/ImageProcessingAtom/Code/Source/Editor/TexturePropertyEditor.ui
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='debug|x64'">%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='debug|x64'">C:\Users\lesaelr\o3de\External\Atom-418206cc\Asset\ImageProcessingAtom\Code\ImageProcessingAtom.Editor.Static_autogen\include\Source\Editor\ui_TexturePropertyEditor.h</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='debug|x64'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='profile|x64'">UIC C:/Users/lesaelr/o3de/Gems/Atom/Asset/ImageProcessingAtom/Code/Source/Editor/TexturePropertyEditor.ui</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='profile|x64'">setlocal
+C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\bin\uic.exe -o C:/Users/lesaelr/o3de/External/Atom-418206cc/Asset/ImageProcessingAtom/Code/ImageProcessingAtom.Editor.Static_autogen/include/Source/Editor/ui_TexturePropertyEditor.h C:/Users/lesaelr/o3de/Gems/Atom/Asset/ImageProcessingAtom/Code/Source/Editor/TexturePropertyEditor.ui
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='profile|x64'">%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='profile|x64'">C:\Users\lesaelr\o3de\External\Atom-418206cc\Asset\ImageProcessingAtom\Code\ImageProcessingAtom.Editor.Static_autogen\include\Source\Editor\ui_TexturePropertyEditor.h</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='profile|x64'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='release|x64'">UIC C:/Users/lesaelr/o3de/Gems/Atom/Asset/ImageProcessingAtom/Code/Source/Editor/TexturePropertyEditor.ui</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='release|x64'">setlocal
+C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\bin\uic.exe -o C:/Users/lesaelr/o3de/External/Atom-418206cc/Asset/ImageProcessingAtom/Code/ImageProcessingAtom.Editor.Static_autogen/include/Source/Editor/ui_TexturePropertyEditor.h C:/Users/lesaelr/o3de/Gems/Atom/Asset/ImageProcessingAtom/Code/Source/Editor/TexturePropertyEditor.ui
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='release|x64'">%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='release|x64'">C:\Users\lesaelr\o3de\External\Atom-418206cc\Asset\ImageProcessingAtom\Code\ImageProcessingAtom.Editor.Static_autogen\include\Source\Editor\ui_TexturePropertyEditor.h</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='release|x64'">false</LinkObjects>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\CMakeLists.txt">
+      <UseUtf8Encoding>Always</UseUtf8Encoding>
+      <Message Condition="'$(Configuration)|$(Platform)'=='debug|x64'">Building Custom Rule C:/Users/lesaelr/o3de/Gems/Atom/Asset/ImageProcessingAtom/Code/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='debug|x64'">setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SC:/Users/lesaelr/o3de -BC:/Users/lesaelr/o3de --check-stamp-file C:/Users/lesaelr/o3de/External/Atom-418206cc/Asset/ImageProcessingAtom/Code/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='debug|x64'">C:\Users\lesaelr\.o3de\3rdParty\packages\ISPCTexComp-36b80aa-rev1-windows\FindISPCTexComp.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\ISPCTexComp-36b80aa-rev1-windows\PackageInfo.json;C:\Users\lesaelr\.o3de\3rdParty\packages\PVRTexTool-4.24.0-rev4-multiplatform\FindPVRTexTool.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\PVRTexTool-4.24.0-rev4-multiplatform\PackageInfo.json;C:\Users\lesaelr\.o3de\3rdParty\packages\astc-encoder-3.2-rev1-windows\Findastc-encoder.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\astc-encoder-3.2-rev1-windows\PackageInfo.json;C:\Users\lesaelr\.o3de\3rdParty\packages\etc2comp-9cd0f9cae0-rev1-windows\Findetc2comp.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\etc2comp-9cd0f9cae0-rev1-windows\PackageInfo.json;C:\Users\lesaelr\.o3de\3rdParty\packages\ilmbase-2.3.0-rev4-multiplatform\Findilmbase.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\ilmbase-2.3.0-rev4-multiplatform\PackageInfo.json;C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Platform\Common\msvc\imageprocessingatom_editor_static_msvc.cmake;C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Platform\Windows\platform_windows.cmake;C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Platform\Windows\platform_windows_files.cmake;C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\imageprocessing_files.cmake;C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\imageprocessing_tests_files.cmake;C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\imageprocessingatom_headers_files.cmake;C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\imageprocessingatom_shared_files.cmake;C:\Users\lesaelr\o3de\cmake\Platform\Windows\LYTestWrappers_windows.cmake;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='debug|x64'">C:\Users\lesaelr\o3de\External\Atom-418206cc\Asset\ImageProcessingAtom\Code\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='debug|x64'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='profile|x64'">Building Custom Rule C:/Users/lesaelr/o3de/Gems/Atom/Asset/ImageProcessingAtom/Code/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='profile|x64'">setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SC:/Users/lesaelr/o3de -BC:/Users/lesaelr/o3de --check-stamp-file C:/Users/lesaelr/o3de/External/Atom-418206cc/Asset/ImageProcessingAtom/Code/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='profile|x64'">C:\Users\lesaelr\.o3de\3rdParty\packages\ISPCTexComp-36b80aa-rev1-windows\FindISPCTexComp.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\ISPCTexComp-36b80aa-rev1-windows\PackageInfo.json;C:\Users\lesaelr\.o3de\3rdParty\packages\PVRTexTool-4.24.0-rev4-multiplatform\FindPVRTexTool.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\PVRTexTool-4.24.0-rev4-multiplatform\PackageInfo.json;C:\Users\lesaelr\.o3de\3rdParty\packages\astc-encoder-3.2-rev1-windows\Findastc-encoder.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\astc-encoder-3.2-rev1-windows\PackageInfo.json;C:\Users\lesaelr\.o3de\3rdParty\packages\etc2comp-9cd0f9cae0-rev1-windows\Findetc2comp.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\etc2comp-9cd0f9cae0-rev1-windows\PackageInfo.json;C:\Users\lesaelr\.o3de\3rdParty\packages\ilmbase-2.3.0-rev4-multiplatform\Findilmbase.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\ilmbase-2.3.0-rev4-multiplatform\PackageInfo.json;C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Platform\Common\msvc\imageprocessingatom_editor_static_msvc.cmake;C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Platform\Windows\platform_windows.cmake;C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Platform\Windows\platform_windows_files.cmake;C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\imageprocessing_files.cmake;C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\imageprocessing_tests_files.cmake;C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\imageprocessingatom_headers_files.cmake;C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\imageprocessingatom_shared_files.cmake;C:\Users\lesaelr\o3de\cmake\Platform\Windows\LYTestWrappers_windows.cmake;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='profile|x64'">C:\Users\lesaelr\o3de\External\Atom-418206cc\Asset\ImageProcessingAtom\Code\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='profile|x64'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='release|x64'">Building Custom Rule C:/Users/lesaelr/o3de/Gems/Atom/Asset/ImageProcessingAtom/Code/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='release|x64'">setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SC:/Users/lesaelr/o3de -BC:/Users/lesaelr/o3de --check-stamp-file C:/Users/lesaelr/o3de/External/Atom-418206cc/Asset/ImageProcessingAtom/Code/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='release|x64'">C:\Users\lesaelr\.o3de\3rdParty\packages\ISPCTexComp-36b80aa-rev1-windows\FindISPCTexComp.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\ISPCTexComp-36b80aa-rev1-windows\PackageInfo.json;C:\Users\lesaelr\.o3de\3rdParty\packages\PVRTexTool-4.24.0-rev4-multiplatform\FindPVRTexTool.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\PVRTexTool-4.24.0-rev4-multiplatform\PackageInfo.json;C:\Users\lesaelr\.o3de\3rdParty\packages\astc-encoder-3.2-rev1-windows\Findastc-encoder.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\astc-encoder-3.2-rev1-windows\PackageInfo.json;C:\Users\lesaelr\.o3de\3rdParty\packages\etc2comp-9cd0f9cae0-rev1-windows\Findetc2comp.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\etc2comp-9cd0f9cae0-rev1-windows\PackageInfo.json;C:\Users\lesaelr\.o3de\3rdParty\packages\ilmbase-2.3.0-rev4-multiplatform\Findilmbase.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\ilmbase-2.3.0-rev4-multiplatform\PackageInfo.json;C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Platform\Common\msvc\imageprocessingatom_editor_static_msvc.cmake;C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Platform\Windows\platform_windows.cmake;C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Platform\Windows\platform_windows_files.cmake;C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\imageprocessing_files.cmake;C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\imageprocessing_tests_files.cmake;C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\imageprocessingatom_headers_files.cmake;C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\imageprocessingatom_shared_files.cmake;C:\Users\lesaelr\o3de\cmake\Platform\Windows\LYTestWrappers_windows.cmake;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='release|x64'">C:\Users\lesaelr\o3de\External\Atom-418206cc\Asset\ImageProcessingAtom\Code\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='release|x64'">false</LinkObjects>
+    </CustomBuild>
+  </ItemGroup>
+  <PropertyGroup>
+    <EnableUnitySupport>true</EnableUnitySupport>
+  </PropertyGroup>
+  <ItemGroup>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\Atom-418206cc\Asset\ImageProcessingAtom\Code\ImageProcessingAtom.Editor.Static_autogen\mocs_compilation_debug.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='profile|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\Atom-418206cc\Asset\ImageProcessingAtom\Code\CMakeFiles\ImageProcessingAtom.Editor.Static.dir\Unity\unity_7_cxx.cxx" IncludeInUnityFile="false" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/Atom-418206cc/Asset/ImageProcessingAtom/Code/CMakeFiles/ImageProcessingAtom.Editor.Static.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\Atom-418206cc\Asset\ImageProcessingAtom\Code\CMakeFiles\ImageProcessingAtom.Editor.Static.dir\Unity\unity_6_cxx.cxx" IncludeInUnityFile="false" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/Atom-418206cc/Asset/ImageProcessingAtom/Code/CMakeFiles/ImageProcessingAtom.Editor.Static.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\Atom-418206cc\Asset\ImageProcessingAtom\Code\CMakeFiles\ImageProcessingAtom.Editor.Static.dir\Unity\unity_5_cxx.cxx" IncludeInUnityFile="false" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/Atom-418206cc/Asset/ImageProcessingAtom/Code/CMakeFiles/ImageProcessingAtom.Editor.Static.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\Atom-418206cc\Asset\ImageProcessingAtom\Code\CMakeFiles\ImageProcessingAtom.Editor.Static.dir\Unity\unity_4_cxx.cxx" IncludeInUnityFile="false" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/Atom-418206cc/Asset/ImageProcessingAtom/Code/CMakeFiles/ImageProcessingAtom.Editor.Static.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\Atom-418206cc\Asset\ImageProcessingAtom\Code\CMakeFiles\ImageProcessingAtom.Editor.Static.dir\Unity\unity_3_cxx.cxx" IncludeInUnityFile="false" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/Atom-418206cc/Asset/ImageProcessingAtom/Code/CMakeFiles/ImageProcessingAtom.Editor.Static.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\Atom-418206cc\Asset\ImageProcessingAtom\Code\CMakeFiles\ImageProcessingAtom.Editor.Static.dir\Unity\unity_2_cxx.cxx" IncludeInUnityFile="false" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/Atom-418206cc/Asset/ImageProcessingAtom/Code/CMakeFiles/ImageProcessingAtom.Editor.Static.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\Atom-418206cc\Asset\ImageProcessingAtom\Code\CMakeFiles\ImageProcessingAtom.Editor.Static.dir\Unity\unity_1_cxx.cxx" IncludeInUnityFile="false" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/Atom-418206cc/Asset/ImageProcessingAtom/Code/CMakeFiles/ImageProcessingAtom.Editor.Static.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\Atom-418206cc\Asset\ImageProcessingAtom\Code\CMakeFiles\ImageProcessingAtom.Editor.Static.dir\Unity\unity_0_cxx.cxx" IncludeInUnityFile="false" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/Atom-418206cc/Asset/ImageProcessingAtom/Code/CMakeFiles/ImageProcessingAtom.Editor.Static.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Compressors\CryTextureSquisher\CryTextureSquisher.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/Atom-418206cc/Asset/ImageProcessingAtom/Code/CMakeFiles/ImageProcessingAtom.Editor.Static.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Compressors\CryTextureSquisher\CryTextureSquisher.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Include\Atom\ImageProcessing\ImageProcessingBus.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Include\Atom\ImageProcessing\ImageProcessingEditorBus.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Include\Atom\ImageProcessing\PixelFormats.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Include\Atom\ImageProcessing\ImageObject.h" />
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Assets\Editor\Resources.qrc">
+    </None>
+    <Image Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Assets\Editor\Backward.png">
+    </Image>
+    <Image Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Assets\Editor\Forward.png">
+    </Image>
+    <Image Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Assets\Editor\reset.png">
+    </Image>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\ImageBuilderBaseType.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\ImageBuilderComponent.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/Atom-418206cc/Asset/ImageProcessingAtom/Code/CMakeFiles/ImageProcessingAtom.Editor.Static.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\ImageBuilderComponent.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\ImageProcessingSystemComponent.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/Atom-418206cc/Asset/ImageProcessingAtom/Code/CMakeFiles/ImageProcessingAtom.Editor.Static.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\ImageProcessingSystemComponent.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\BuilderSettings\BuilderSettingManager.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/Atom-418206cc/Asset/ImageProcessingAtom/Code/CMakeFiles/ImageProcessingAtom.Editor.Static.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\BuilderSettings\BuilderSettingManager.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\BuilderSettings\BuilderSettings.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/Atom-418206cc/Asset/ImageProcessingAtom/Code/CMakeFiles/ImageProcessingAtom.Editor.Static.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\BuilderSettings\BuilderSettings.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\BuilderSettings\CubemapSettings.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/Atom-418206cc/Asset/ImageProcessingAtom/Code/CMakeFiles/ImageProcessingAtom.Editor.Static.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\BuilderSettings\CubemapSettings.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\BuilderSettings\ImageProcessingDefines.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\BuilderSettings\MipmapSettings.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/Atom-418206cc/Asset/ImageProcessingAtom/Code/CMakeFiles/ImageProcessingAtom.Editor.Static.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\BuilderSettings\MipmapSettings.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\BuilderSettings\PlatformSettings.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\BuilderSettings\PresetSettings.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/Atom-418206cc/Asset/ImageProcessingAtom/Code/CMakeFiles/ImageProcessingAtom.Editor.Static.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\BuilderSettings\PresetSettings.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\BuilderSettings\TextureSettings.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/Atom-418206cc/Asset/ImageProcessingAtom/Code/CMakeFiles/ImageProcessingAtom.Editor.Static.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\BuilderSettings\TextureSettings.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Processing\AzDXGIFormat.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Processing\DDSHeader.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Processing\ImageAssetProducer.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/Atom-418206cc/Asset/ImageProcessingAtom/Code/CMakeFiles/ImageProcessingAtom.Editor.Static.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Processing\ImageAssetProducer.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Processing\ImageConvert.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/Atom-418206cc/Asset/ImageProcessingAtom/Code/CMakeFiles/ImageProcessingAtom.Editor.Static.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Processing\ImageConvert.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Processing\ImageConvertJob.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/Atom-418206cc/Asset/ImageProcessingAtom/Code/CMakeFiles/ImageProcessingAtom.Editor.Static.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Processing\ImageConvertJob.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Processing\ImageFlags.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Processing\ImageObjectImpl.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/Atom-418206cc/Asset/ImageProcessingAtom/Code/CMakeFiles/ImageProcessingAtom.Editor.Static.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Processing\ImageObjectImpl.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Processing\ImagePreview.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/Atom-418206cc/Asset/ImageProcessingAtom/Code/CMakeFiles/ImageProcessingAtom.Editor.Static.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Processing\ImagePreview.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Processing\ImageToProcess.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Processing\PixelFormatInfo.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/Atom-418206cc/Asset/ImageProcessingAtom/Code/CMakeFiles/ImageProcessingAtom.Editor.Static.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Processing\PixelFormatInfo.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Processing\Utils.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/Atom-418206cc/Asset/ImageProcessingAtom/Code/CMakeFiles/ImageProcessingAtom.Editor.Static.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Processing\Utils.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Previewer\ImagePreviewer.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/Atom-418206cc/Asset/ImageProcessingAtom/Code/CMakeFiles/ImageProcessingAtom.Editor.Static.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Previewer\ImagePreviewer.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Previewer\ImagePreviewerFactory.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/Atom-418206cc/Asset/ImageProcessingAtom/Code/CMakeFiles/ImageProcessingAtom.Editor.Static.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Previewer\ImagePreviewerFactory.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\ImageLoader\DdsLoader.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/Atom-418206cc/Asset/ImageProcessingAtom/Code/CMakeFiles/ImageProcessingAtom.Editor.Static.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\ImageLoader\ImageLoaders.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/Atom-418206cc/Asset/ImageProcessingAtom/Code/CMakeFiles/ImageProcessingAtom.Editor.Static.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\ImageLoader\ImageLoaders.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\ImageLoader\QtImageLoader.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/Atom-418206cc/Asset/ImageProcessingAtom/Code/CMakeFiles/ImageProcessingAtom.Editor.Static.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\ImageLoader\TIFFLoader.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/Atom-418206cc/Asset/ImageProcessingAtom/Code/CMakeFiles/ImageProcessingAtom.Editor.Static.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\ImageLoader\ExrLoader.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/Atom-418206cc/Asset/ImageProcessingAtom/Code/CMakeFiles/ImageProcessingAtom.Editor.Static.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Editor\EditorCommon.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Editor\EditorCommon.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/Atom-418206cc/Asset/ImageProcessingAtom/Code/CMakeFiles/ImageProcessingAtom.Editor.Static.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Editor\ImagePopup.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/Atom-418206cc/Asset/ImageProcessingAtom/Code/CMakeFiles/ImageProcessingAtom.Editor.Static.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Editor\ImagePopup.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Editor\MipmapSettingWidget.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/Atom-418206cc/Asset/ImageProcessingAtom/Code/CMakeFiles/ImageProcessingAtom.Editor.Static.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Editor\MipmapSettingWidget.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Editor\PresetInfoPopup.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/Atom-418206cc/Asset/ImageProcessingAtom/Code/CMakeFiles/ImageProcessingAtom.Editor.Static.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Editor\PresetInfoPopup.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Editor\ResolutionSettingItemWidget.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/Atom-418206cc/Asset/ImageProcessingAtom/Code/CMakeFiles/ImageProcessingAtom.Editor.Static.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Editor\ResolutionSettingItemWidget.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Editor\ResolutionSettingWidget.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/Atom-418206cc/Asset/ImageProcessingAtom/Code/CMakeFiles/ImageProcessingAtom.Editor.Static.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Editor\ResolutionSettingWidget.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Editor\TexturePresetSelectionWidget.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/Atom-418206cc/Asset/ImageProcessingAtom/Code/CMakeFiles/ImageProcessingAtom.Editor.Static.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Editor\TexturePresetSelectionWidget.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Editor\TexturePreviewWidget.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/Atom-418206cc/Asset/ImageProcessingAtom/Code/CMakeFiles/ImageProcessingAtom.Editor.Static.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Editor\TexturePreviewWidget.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Editor\TexturePropertyEditor.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/Atom-418206cc/Asset/ImageProcessingAtom/Code/CMakeFiles/ImageProcessingAtom.Editor.Static.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Editor\TexturePropertyEditor.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Converters\Gamma.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/Atom-418206cc/Asset/ImageProcessingAtom/Code/CMakeFiles/ImageProcessingAtom.Editor.Static.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Converters\FIR-Filter.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/Atom-418206cc/Asset/ImageProcessingAtom/Code/CMakeFiles/ImageProcessingAtom.Editor.Static.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Converters\FIR-Windows.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Converters\FIR-Weights.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Converters\FIR-Weights.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/Atom-418206cc/Asset/ImageProcessingAtom/Code/CMakeFiles/ImageProcessingAtom.Editor.Static.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Converters\AlphaCoverage.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/Atom-418206cc/Asset/ImageProcessingAtom/Code/CMakeFiles/ImageProcessingAtom.Editor.Static.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Converters\PixelOperation.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Converters\PixelOperation.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/Atom-418206cc/Asset/ImageProcessingAtom/Code/CMakeFiles/ImageProcessingAtom.Editor.Static.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Converters\Normalize.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/Atom-418206cc/Asset/ImageProcessingAtom/Code/CMakeFiles/ImageProcessingAtom.Editor.Static.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Converters\ConvertPixelFormat.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/Atom-418206cc/Asset/ImageProcessingAtom/Code/CMakeFiles/ImageProcessingAtom.Editor.Static.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Converters\Cubemap.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Converters\Cubemap.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/Atom-418206cc/Asset/ImageProcessingAtom/Code/CMakeFiles/ImageProcessingAtom.Editor.Static.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Converters\ColorChart.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/Atom-418206cc/Asset/ImageProcessingAtom/Code/CMakeFiles/ImageProcessingAtom.Editor.Static.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Converters\HighPass.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/Atom-418206cc/Asset/ImageProcessingAtom/Code/CMakeFiles/ImageProcessingAtom.Editor.Static.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Converters\Histogram.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/Atom-418206cc/Asset/ImageProcessingAtom/Code/CMakeFiles/ImageProcessingAtom.Editor.Static.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Converters\Histogram.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\External\CubeMapGen\CBBoxInt32.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/Atom-418206cc/Asset/ImageProcessingAtom/Code/CMakeFiles/ImageProcessingAtom.Editor.Static.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\External\CubeMapGen\CBBoxInt32.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\External\CubeMapGen\CCubeMapProcessor.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/Atom-418206cc/Asset/ImageProcessingAtom/Code/CMakeFiles/ImageProcessingAtom.Editor.Static.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\External\CubeMapGen\CCubeMapProcessor.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\External\CubeMapGen\CImageSurface.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/Atom-418206cc/Asset/ImageProcessingAtom/Code/CMakeFiles/ImageProcessingAtom.Editor.Static.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\External\CubeMapGen\CImageSurface.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\External\CubeMapGen\VectorMacros.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Compressors\ASTCCompressor.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/Atom-418206cc/Asset/ImageProcessingAtom/Code/CMakeFiles/ImageProcessingAtom.Editor.Static.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Compressors\ASTCCompressor.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Compressors\Compressor.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Compressors\Compressor.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/Atom-418206cc/Asset/ImageProcessingAtom/Code/CMakeFiles/ImageProcessingAtom.Editor.Static.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Compressors\CTSquisher.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Compressors\CTSquisher.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/Atom-418206cc/Asset/ImageProcessingAtom/Code/CMakeFiles/ImageProcessingAtom.Editor.Static.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Compressors\PVRTC.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/Atom-418206cc/Asset/ImageProcessingAtom/Code/CMakeFiles/ImageProcessingAtom.Editor.Static.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Compressors\PVRTC.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Compressors\ETC2.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/Atom-418206cc/Asset/ImageProcessingAtom/Code/CMakeFiles/ImageProcessingAtom.Editor.Static.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Compressors\ETC2.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Compressors\CryTextureSquisher\ColorBlockRGBA4x4f.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/Atom-418206cc/Asset/ImageProcessingAtom/Code/CMakeFiles/ImageProcessingAtom.Editor.Static.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Compressors\CryTextureSquisher\ColorBlockRGBA4x4s.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/Atom-418206cc/Asset/ImageProcessingAtom/Code/CMakeFiles/ImageProcessingAtom.Editor.Static.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Compressors\CryTextureSquisher\ColorBlockRGBA4x4c.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/Atom-418206cc/Asset/ImageProcessingAtom/Code/CMakeFiles/ImageProcessingAtom.Editor.Static.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Compressors\CryTextureSquisher\ColorBlockRGBA4x4f.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Compressors\CryTextureSquisher\ColorBlockRGBA4x4s.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Compressors\CryTextureSquisher\ColorBlockRGBA4x4c.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Compressors\CryTextureSquisher\ColorTypes.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Compressors\ISPCTextureCompressor.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/Atom-418206cc/Asset/ImageProcessingAtom/Code/CMakeFiles/ImageProcessingAtom.Editor.Static.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Compressors\ISPCTextureCompressor.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Thumbnail\ImageThumbnail.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/Atom-418206cc/Asset/ImageProcessingAtom/Code/CMakeFiles/ImageProcessingAtom.Editor.Static.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Thumbnail\ImageThumbnail.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Thumbnail\ImageThumbnailSystemComponent.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/Atom-418206cc/Asset/ImageProcessingAtom/Code/CMakeFiles/ImageProcessingAtom.Editor.Static.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Thumbnail\ImageThumbnailSystemComponent.h" />
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\imageprocessing_files.cmake">
+    </None>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Platform\Windows\ImageProcessing_Traits_Platform.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Platform\Windows\ImageProcessing_Traits_Windows.h" />
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Platform\Windows\platform_windows_files.cmake">
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Platform\Windows\platform_windows.cmake">
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Platform\Common\msvc\imageprocessingatom_editor_static_msvc.cmake">
+    </None>
+    <ClInclude Include="C:\Users\lesaelr\o3de\External\Atom-418206cc\Asset\ImageProcessingAtom\Code\ImageProcessingAtom.Editor.Static_autogen\include\Source\Previewer\ui_ImagePreviewer.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\External\Atom-418206cc\Asset\ImageProcessingAtom\Code\ImageProcessingAtom.Editor.Static_autogen\include\Source\Editor\ui_ImagePopup.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\External\Atom-418206cc\Asset\ImageProcessingAtom\Code\ImageProcessingAtom.Editor.Static_autogen\include\Source\Editor\ui_MipmapSettingWidget.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\External\Atom-418206cc\Asset\ImageProcessingAtom\Code\ImageProcessingAtom.Editor.Static_autogen\include\Source\Editor\ui_PresetInfoPopup.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\External\Atom-418206cc\Asset\ImageProcessingAtom\Code\ImageProcessingAtom.Editor.Static_autogen\include\Source\Editor\ui_ResolutionSettingItemWidget.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\External\Atom-418206cc\Asset\ImageProcessingAtom\Code\ImageProcessingAtom.Editor.Static_autogen\include\Source\Editor\ui_ResolutionSettingWidget.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\External\Atom-418206cc\Asset\ImageProcessingAtom\Code\ImageProcessingAtom.Editor.Static_autogen\include\Source\Editor\ui_TexturePresetSelectionWidget.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\External\Atom-418206cc\Asset\ImageProcessingAtom\Code\ImageProcessingAtom.Editor.Static_autogen\include\Source\Editor\ui_TexturePreviewWidget.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\External\Atom-418206cc\Asset\ImageProcessingAtom\Code\ImageProcessingAtom.Editor.Static_autogen\include\Source\Editor\ui_TexturePropertyEditor.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\Atom-418206cc\Asset\ImageProcessingAtom\Code\ImageProcessingAtom.Editor.Static_autogen\mocs_compilation_profile.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\Atom-418206cc\Asset\ImageProcessingAtom\Code\ImageProcessingAtom.Editor.Static_autogen\mocs_compilation_release.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='profile|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\ZERO_CHECK.vcxproj">
+      <Project>{CDE32B4E-8490-3FC5-A3F2-976A0A5DE45E}</Project>
+      <Name>ZERO_CHECK</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\Code\Tools\AssetProcessor\AssetBuilderSDK\AssetBuilderSDK.vcxproj">
+      <Project>{536A868B-DCA5-3AD8-857F-7EE8BD8C6DFE}</Project>
+      <Name>AssetBuilderSDK</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\Code\Framework\AtomCore\AtomCore.vcxproj">
+      <Project>{6D55F49F-9D52-3893-81A0-A8698549AB69}</Project>
+      <Name>AtomCore</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\External\Atom-418206cc\RHI\Code\Atom_RHI.Public.vcxproj">
+      <Project>{2E32222C-434D-3353-967C-88B4AA98F8F8}</Project>
+      <Name>Atom_RHI.Public</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\External\Atom-418206cc\RHI\Code\Atom_RHI.Reflect.vcxproj">
+      <Project>{34A5B279-91CB-334A-9CD9-0B3CFB872F2C}</Project>
+      <Name>Atom_RHI.Reflect</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\External\Atom-418206cc\RPI\Code\Atom_RPI.Public.vcxproj">
+      <Project>{ABB218FB-FD4C-33F6-B91D-28BD20400532}</Project>
+      <Name>Atom_RPI.Public</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\External\Atom-418206cc\Utils\Code\Atom_Utils.Static.vcxproj">
+      <Project>{094C724A-A8F2-33E3-8B7F-A0D452CB43A0}</Project>
+      <Name>Atom_Utils.Static</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore.vcxproj">
+      <Project>{8AC0D8DF-6487-39C7-A5F3-F77355B1ACD9}</Project>
+      <Name>AzCore</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework.vcxproj">
+      <Project>{E4BA859A-1109-3DBC-887D-DBC80D0DD65A}</Project>
+      <Name>AzFramework</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\AzQtComponents.vcxproj">
+      <Project>{9CADCCDF-9B80-353B-85C8-F3054FA0C0DF}</Project>
+      <Name>AzQtComponents</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework.vcxproj">
+      <Project>{7F75A175-5A41-381A-9555-72F870CC937B}</Project>
+      <Name>AzToolsFramework</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\CryCommon.vcxproj">
+      <Project>{CA3B5D54-5095-3557-9270-FD4F882B4C66}</Project>
+      <Name>CryCommon</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate.vcxproj">
+      <Project>{FE67A854-57A6-3513-BAEF-9A7AC0A253E8}</Project>
+      <Name>GridMate</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

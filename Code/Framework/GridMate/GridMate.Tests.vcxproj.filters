@@ -1,0 +1,109 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\CMakeFiles\GridMate.Tests.dir\Unity\unity_1_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\CMakeFiles\GridMate.Tests.dir\Unity\unity_0_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\Tests\test_Main.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\Tests\Session.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\Tests\Serialize.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\Tests\Certificates.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\Tests\ReplicaSmall.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\Tests\ReplicaMedium.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\Tests\ReplicaBehavior.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\Tests\StreamSecureSocketDriverTests.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\Tests\StreamSocketDriverTests.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\Tests\CarrierStreamSocketDriverTests.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\Tests\Carrier.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\Tests\Tests.h">
+      <Filter>Tests</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\Tests\Platform\Windows\GridMateTests\Tests_Platform.h">
+      <Filter>Tests\Platform\Windows\GridMateTests</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\Tests\Platform\Windows\GridMateTests_Traits_Platform.h">
+      <Filter>Tests\Platform\Windows</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\Tests\Platform\Windows\GridMateTests_Traits_Windows.h">
+      <Filter>Tests\Platform\Windows</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\CMakeFiles\08b24365a84bd27d080f6dd51f42b933\GridMate.Tests_(CONFIG).stamp.rule">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\CMakeLists.txt">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\Tests\gridmate_test_files.cmake">
+      <Filter>Tests</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\Tests\Platform\Windows\platform_windows_files.cmake">
+      <Filter>Tests\Platform\Windows</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\Platform\Windows\platform_windows.cmake">
+      <Filter>Platform\Windows</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\runtime_dependencies\debug\GridMate.Tests_debug.stamp">
+      <Filter>Generated Files</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\runtime_dependencies\profile\GridMate.Tests_profile.stamp">
+      <Filter>Generated Files</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\runtime_dependencies\release\GridMate.Tests_release.stamp">
+      <Filter>Generated Files</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Generated Files">
+      <UniqueIdentifier>{FB9B7D8B-7F05-31D5-AA90-592248EDE1B3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Platform">
+      <UniqueIdentifier>{378A8D8C-6CA1-3F6B-A02B-1E9FF64C97B2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Platform\Windows">
+      <UniqueIdentifier>{63AEF2F6-51C7-306A-BFE8-A049C8C62EFB}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Tests">
+      <UniqueIdentifier>{042E9197-689D-3636-8A35-28EBCAA2BD47}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Tests\Platform">
+      <UniqueIdentifier>{24997702-F848-3CC1-82C3-60A20FBE62DF}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Tests\Platform\Windows">
+      <UniqueIdentifier>{96A40B00-87E5-37D1-937D-A50368440427}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Tests\Platform\Windows\GridMateTests">
+      <UniqueIdentifier>{E7D96524-50F9-3A8E-BC60-6351323AFA75}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

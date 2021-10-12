@@ -1,0 +1,539 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\AtomLyIntegration-c3d5e932\CommonFeatures\Code\AtomLyIntegration_CommonFeatures.Editor_autogen\mocs_compilation_debug.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\AtomLyIntegration-c3d5e932\CommonFeatures\Code\CMakeFiles\AtomLyIntegration_CommonFeatures.Editor.dir\Unity\unity_6_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\AtomLyIntegration-c3d5e932\CommonFeatures\Code\CMakeFiles\AtomLyIntegration_CommonFeatures.Editor.dir\Unity\unity_5_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\AtomLyIntegration-c3d5e932\CommonFeatures\Code\CMakeFiles\AtomLyIntegration_CommonFeatures.Editor.dir\Unity\unity_4_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\AtomLyIntegration-c3d5e932\CommonFeatures\Code\CMakeFiles\AtomLyIntegration_CommonFeatures.Editor.dir\Unity\unity_3_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\AtomLyIntegration-c3d5e932\CommonFeatures\Code\CMakeFiles\AtomLyIntegration_CommonFeatures.Editor.dir\Unity\unity_2_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\AtomLyIntegration-c3d5e932\CommonFeatures\Code\CMakeFiles\AtomLyIntegration_CommonFeatures.Editor.dir\Unity\unity_1_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\AtomLyIntegration-c3d5e932\CommonFeatures\Code\CMakeFiles\AtomLyIntegration_CommonFeatures.Editor.dir\Unity\unity_0_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Source\Module.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Source\Animation\EditorAttachmentComponent.cpp">
+      <Filter>Source\Animation</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Source\EditorCommonFeaturesSystemComponent.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Source\CoreLights\EditorAreaLightComponent.cpp">
+      <Filter>Source\CoreLights</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Source\CoreLights\EditorDirectionalLightComponent.cpp">
+      <Filter>Source\CoreLights</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Source\Decals\EditorDecalComponent.cpp">
+      <Filter>Source\Decals</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Source\DiffuseGlobalIllumination\EditorDiffuseProbeGridComponent.cpp">
+      <Filter>Source\DiffuseGlobalIllumination</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Source\DiffuseGlobalIllumination\EditorDiffuseGlobalIlluminationComponent.cpp">
+      <Filter>Source\DiffuseGlobalIllumination</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Source\Grid\EditorGridComponent.cpp">
+      <Filter>Source\Grid</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Source\ImageBasedLights\EditorImageBasedLightComponent.cpp">
+      <Filter>Source\ImageBasedLights</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Source\Material\EditorMaterialComponent.cpp">
+      <Filter>Source\Material</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Source\Material\EditorMaterialComponentUtil.cpp">
+      <Filter>Source\Material</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Source\Material\EditorMaterialComponentSlot.cpp">
+      <Filter>Source\Material</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Source\Material\EditorMaterialComponentExporter.cpp">
+      <Filter>Source\Material</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Source\Material\EditorMaterialComponentInspector.cpp">
+      <Filter>Source\Material</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Source\Material\EditorMaterialModelUvNameMapInspector.cpp">
+      <Filter>Source\Material</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Source\Material\EditorMaterialSystemComponent.cpp">
+      <Filter>Source\Material</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Source\Material\MaterialBrowserInteractions.cpp">
+      <Filter>Source\Material</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Source\Material\MaterialThumbnail.cpp">
+      <Filter>Source\Material</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Source\Mesh\EditorMeshComponent.cpp">
+      <Filter>Source\Mesh</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Source\Mesh\EditorMeshStats.cpp">
+      <Filter>Source\Mesh</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Source\Mesh\EditorMeshSystemComponent.cpp">
+      <Filter>Source\Mesh</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Source\Mesh\EditorMeshStatsSerializer.cpp">
+      <Filter>Source\Mesh</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Source\Mesh\MeshThumbnail.cpp">
+      <Filter>Source\Mesh</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Source\OcclusionCullingPlane\EditorOcclusionCullingPlaneComponent.cpp">
+      <Filter>Source\OcclusionCullingPlane</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Source\PostProcess\EditorPostFxLayerComponent.cpp">
+      <Filter>Source\PostProcess</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Source\PostProcess\Bloom\EditorBloomComponent.cpp">
+      <Filter>Source\PostProcess\Bloom</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Source\PostProcess\ColorGrading\EditorHDRColorGradingComponent.cpp">
+      <Filter>Source\PostProcess\ColorGrading</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Source\PostProcess\DepthOfField\EditorDepthOfFieldComponent.cpp">
+      <Filter>Source\PostProcess\DepthOfField</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Source\PostProcess\DisplayMapper\EditorDisplayMapperComponent.cpp">
+      <Filter>Source\PostProcess\DisplayMapper</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Source\PostProcess\ExposureControl\EditorExposureControlComponent.cpp">
+      <Filter>Source\PostProcess\ExposureControl</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Source\PostProcess\Ssao\EditorSsaoComponent.cpp">
+      <Filter>Source\PostProcess\Ssao</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Source\PostProcess\LookModification\EditorLookModificationComponent.cpp">
+      <Filter>Source\PostProcess\LookModification</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Source\PostProcess\RadiusWeightModifier\EditorRadiusWeightModifierComponent.cpp">
+      <Filter>Source\PostProcess\RadiusWeightModifier</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Source\PostProcess\ShapeWeightModifier\EditorShapeWeightModifierComponent.cpp">
+      <Filter>Source\PostProcess\ShapeWeightModifier</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Source\PostProcess\GradientWeightModifier\EditorGradientWeightModifierComponent.cpp">
+      <Filter>Source\PostProcess\GradientWeightModifier</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Source\PostProcess\EditorPostFxLayerCategoriesAsset.cpp">
+      <Filter>Source\PostProcess</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Source\PostProcess\EditorPostFxSystemComponent.cpp">
+      <Filter>Source\PostProcess</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Source\ScreenSpace\EditorDeferredFogComponent.cpp">
+      <Filter>Source\ScreenSpace</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Source\ReflectionProbe\EditorReflectionProbeComponent.cpp">
+      <Filter>Source\ReflectionProbe</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Source\SkinnedMesh\SkinnedMeshDebugDisplay.cpp">
+      <Filter>Source\SkinnedMesh</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Source\SkyBox\EditorHDRiSkyboxComponent.cpp">
+      <Filter>Source\SkyBox</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Source\SkyBox\EditorPhysicalSkyComponent.cpp">
+      <Filter>Source\SkyBox</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Source\Thumbnails\ThumbnailUtils.cpp">
+      <Filter>Source\Thumbnails</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Source\Thumbnails\Preview\CommonPreviewer.cpp">
+      <Filter>Source\Thumbnails\Preview</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Source\Thumbnails\Preview\CommonPreviewerFactory.cpp">
+      <Filter>Source\Thumbnails\Preview</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Source\Thumbnails\Rendering\CommonThumbnailRenderer.cpp">
+      <Filter>Source\Thumbnails\Rendering</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Source\Thumbnails\Rendering\ThumbnailRendererSteps\InitializeStep.cpp">
+      <Filter>Source\Thumbnails\Rendering\ThumbnailRendererSteps</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Source\Thumbnails\Rendering\ThumbnailRendererSteps\FindThumbnailToRenderStep.cpp">
+      <Filter>Source\Thumbnails\Rendering\ThumbnailRendererSteps</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Source\Thumbnails\Rendering\ThumbnailRendererSteps\WaitForAssetsToLoadStep.cpp">
+      <Filter>Source\Thumbnails\Rendering\ThumbnailRendererSteps</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Source\Thumbnails\Rendering\ThumbnailRendererSteps\CaptureStep.cpp">
+      <Filter>Source\Thumbnails\Rendering\ThumbnailRendererSteps</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Source\Thumbnails\Rendering\ThumbnailRendererSteps\ReleaseResourcesStep.cpp">
+      <Filter>Source\Thumbnails\Rendering\ThumbnailRendererSteps</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Source\Scripting\EditorEntityReferenceComponent.cpp">
+      <Filter>Source\Scripting</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Source\SurfaceData\EditorSurfaceDataMeshComponent.cpp">
+      <Filter>Source\SurfaceData</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\AtomLyIntegration-c3d5e932\CommonFeatures\Code\AtomLyIntegration_CommonFeatures.Editor_autogen\S5YYZ2ZCNV\qrc_AtomLyIntegrationResources.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\AtomLyIntegration-c3d5e932\CommonFeatures\Code\AtomLyIntegration_CommonFeatures.Editor_autogen\mocs_compilation_profile.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\AtomLyIntegration-c3d5e932\CommonFeatures\Code\AtomLyIntegration_CommonFeatures.Editor_autogen\mocs_compilation_release.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Include\AtomLyIntegration\CommonFeatures\Material\EditorMaterialSystemComponentRequestBus.h">
+      <Filter>Include\AtomLyIntegration\CommonFeatures\Material</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Include\AtomLyIntegration\CommonFeatures\ReflectionProbe\EditorReflectionProbeBus.h">
+      <Filter>Include\AtomLyIntegration\CommonFeatures\ReflectionProbe</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Include\AtomLyIntegration\CommonFeatures\Thumbnails\ThumbnailFeatureProcessorProviderBus.h">
+      <Filter>Include\AtomLyIntegration\CommonFeatures\Thumbnails</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Source\Animation\EditorAttachmentComponent.h">
+      <Filter>Source\Animation</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Source\EditorCommonFeaturesSystemComponent.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Source\CoreLights\EditorAreaLightComponent.h">
+      <Filter>Source\CoreLights</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Source\CoreLights\EditorDirectionalLightComponent.h">
+      <Filter>Source\CoreLights</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Source\Decals\EditorDecalComponent.h">
+      <Filter>Source\Decals</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Source\DiffuseGlobalIllumination\EditorDiffuseProbeGridComponent.h">
+      <Filter>Source\DiffuseGlobalIllumination</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Source\DiffuseGlobalIllumination\EditorDiffuseGlobalIlluminationComponent.h">
+      <Filter>Source\DiffuseGlobalIllumination</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Source\Grid\EditorGridComponent.h">
+      <Filter>Source\Grid</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Source\ImageBasedLights\EditorImageBasedLightComponent.h">
+      <Filter>Source\ImageBasedLights</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Source\Material\EditorMaterialComponent.h">
+      <Filter>Source\Material</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Source\Material\EditorMaterialComponentUtil.h">
+      <Filter>Source\Material</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Source\Material\EditorMaterialComponentSlot.h">
+      <Filter>Source\Material</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Source\Material\EditorMaterialComponentExporter.h">
+      <Filter>Source\Material</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Source\Material\EditorMaterialComponentInspector.h">
+      <Filter>Source\Material</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Source\Material\EditorMaterialModelUvNameMapInspector.h">
+      <Filter>Source\Material</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Source\Material\EditorMaterialSystemComponent.h">
+      <Filter>Source\Material</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Source\Material\MaterialBrowserInteractions.h">
+      <Filter>Source\Material</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Source\Material\MaterialThumbnail.h">
+      <Filter>Source\Material</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Source\Mesh\EditorMeshComponent.h">
+      <Filter>Source\Mesh</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Source\Mesh\EditorMeshStats.h">
+      <Filter>Source\Mesh</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Source\Mesh\EditorMeshSystemComponent.h">
+      <Filter>Source\Mesh</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Source\Mesh\EditorMeshStatsSerializer.h">
+      <Filter>Source\Mesh</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Source\Mesh\MeshThumbnail.h">
+      <Filter>Source\Mesh</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Source\OcclusionCullingPlane\EditorOcclusionCullingPlaneComponent.h">
+      <Filter>Source\OcclusionCullingPlane</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Source\PostProcess\EditorPostFxLayerComponent.h">
+      <Filter>Source\PostProcess</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Source\PostProcess\Bloom\EditorBloomComponent.h">
+      <Filter>Source\PostProcess\Bloom</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Source\PostProcess\ColorGrading\EditorHDRColorGradingComponent.h">
+      <Filter>Source\PostProcess\ColorGrading</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Source\PostProcess\DepthOfField\EditorDepthOfFieldComponent.h">
+      <Filter>Source\PostProcess\DepthOfField</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Source\PostProcess\DisplayMapper\EditorDisplayMapperComponent.h">
+      <Filter>Source\PostProcess\DisplayMapper</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Source\PostProcess\ExposureControl\EditorExposureControlComponent.h">
+      <Filter>Source\PostProcess\ExposureControl</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Source\PostProcess\Ssao\EditorSsaoComponent.h">
+      <Filter>Source\PostProcess\Ssao</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Source\PostProcess\LookModification\EditorLookModificationComponent.h">
+      <Filter>Source\PostProcess\LookModification</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Source\PostProcess\RadiusWeightModifier\EditorRadiusWeightModifierComponent.h">
+      <Filter>Source\PostProcess\RadiusWeightModifier</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Source\PostProcess\GradientWeightModifier\EditorGradientWeightModifierComponent.h">
+      <Filter>Source\PostProcess\GradientWeightModifier</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Source\PostProcess\ShapeWeightModifier\EditorShapeWeightModifierComponent.h">
+      <Filter>Source\PostProcess\ShapeWeightModifier</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Source\PostProcess\EditorPostFxLayerCategoriesAsset.h">
+      <Filter>Source\PostProcess</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Source\PostProcess\EditorPostFxSystemComponent.h">
+      <Filter>Source\PostProcess</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Source\ScreenSpace\EditorDeferredFogComponent.h">
+      <Filter>Source\ScreenSpace</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Source\ReflectionProbe\EditorReflectionProbeComponent.h">
+      <Filter>Source\ReflectionProbe</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Source\SkinnedMesh\SkinnedMeshDebugDisplay.h">
+      <Filter>Source\SkinnedMesh</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Source\SkyBox\EditorHDRiSkyboxComponent.h">
+      <Filter>Source\SkyBox</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Source\SkyBox\EditorPhysicalSkyComponent.h">
+      <Filter>Source\SkyBox</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Source\Thumbnails\ThumbnailUtils.h">
+      <Filter>Source\Thumbnails</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Source\Thumbnails\Preview\CommonPreviewer.h">
+      <Filter>Source\Thumbnails\Preview</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Source\Thumbnails\Preview\CommonPreviewerFactory.h">
+      <Filter>Source\Thumbnails\Preview</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Source\Thumbnails\Rendering\CommonThumbnailRenderer.h">
+      <Filter>Source\Thumbnails\Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Source\Thumbnails\Rendering\ThumbnailRendererData.h">
+      <Filter>Source\Thumbnails\Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Source\Thumbnails\Rendering\ThumbnailRendererContext.h">
+      <Filter>Source\Thumbnails\Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Source\Thumbnails\Rendering\ThumbnailRendererSteps\ThumbnailRendererStep.h">
+      <Filter>Source\Thumbnails\Rendering\ThumbnailRendererSteps</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Source\Thumbnails\Rendering\ThumbnailRendererSteps\InitializeStep.h">
+      <Filter>Source\Thumbnails\Rendering\ThumbnailRendererSteps</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Source\Thumbnails\Rendering\ThumbnailRendererSteps\FindThumbnailToRenderStep.h">
+      <Filter>Source\Thumbnails\Rendering\ThumbnailRendererSteps</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Source\Thumbnails\Rendering\ThumbnailRendererSteps\WaitForAssetsToLoadStep.h">
+      <Filter>Source\Thumbnails\Rendering\ThumbnailRendererSteps</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Source\Thumbnails\Rendering\ThumbnailRendererSteps\CaptureStep.h">
+      <Filter>Source\Thumbnails\Rendering\ThumbnailRendererSteps</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Source\Thumbnails\Rendering\ThumbnailRendererSteps\ReleaseResourcesStep.h">
+      <Filter>Source\Thumbnails\Rendering\ThumbnailRendererSteps</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Source\Scripting\EditorEntityReferenceComponent.h">
+      <Filter>Source\Scripting</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Source\SurfaceData\EditorSurfaceDataMeshComponent.h">
+      <Filter>Source\SurfaceData</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\External\AtomLyIntegration-c3d5e932\CommonFeatures\Code\AtomLyIntegration_CommonFeatures.Editor_autogen\include\Source\Thumbnails\Preview\ui_CommonPreviewer.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Source\Thumbnails\Preview\CommonPreviewer.ui">
+      <Filter>Source\Thumbnails\Preview</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\CMakeFiles\08b24365a84bd27d080f6dd51f42b933\AtomLyIntegration_CommonFeatures.Editor_(CONFIG).stamp.rule">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\CMakeFiles\468e5b6bf5737d36e0dbc59c83ab23e3\qrc_AtomLyIntegrationResources.cpp.rule">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\CMakeLists.txt">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Resources\AtomLyIntegrationResources.qrc">
+      <Filter>Resources</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\atomlyintegration_commonfeatures_editor_files.cmake" />
+    <None Include="C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Source\Platform\Windows\platform_windows_files.cmake">
+      <Filter>Source\Platform\Windows</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\runtime_dependencies\debug\AtomLyIntegration_CommonFeatures.Editor_debug.stamp">
+      <Filter>Generated Files</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\runtime_dependencies\profile\AtomLyIntegration_CommonFeatures.Editor_profile.stamp">
+      <Filter>Generated Files</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\runtime_dependencies\release\AtomLyIntegration_CommonFeatures.Editor_release.stamp">
+      <Filter>Generated Files</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Generated Files">
+      <UniqueIdentifier>{FB9B7D8B-7F05-31D5-AA90-592248EDE1B3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include">
+      <UniqueIdentifier>{E188105A-C8C4-34BB-9809-15E8410EF7F8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\AtomLyIntegration">
+      <UniqueIdentifier>{047FBAEF-F91B-3201-BAD9-0E29EA79A9C3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\AtomLyIntegration\CommonFeatures">
+      <UniqueIdentifier>{5A13A2A2-23CC-3F12-B59C-3A3E3F8E16B8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\AtomLyIntegration\CommonFeatures\Material">
+      <UniqueIdentifier>{A3E60ED5-6673-3CFC-8786-1E35FE60322C}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\AtomLyIntegration\CommonFeatures\ReflectionProbe">
+      <UniqueIdentifier>{30272497-BEA0-3064-9C24-2EB41A5D697F}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\AtomLyIntegration\CommonFeatures\Thumbnails">
+      <UniqueIdentifier>{1EF5833B-ED81-3E64-8E0E-9CBF09BA8506}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resources">
+      <UniqueIdentifier>{E91AAB63-EC2E-3199-A03F-58FB62D27C21}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source">
+      <UniqueIdentifier>{F3F0AD47-5F83-373B-A2BF-650D2E4FA3EA}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Animation">
+      <UniqueIdentifier>{5CF003B2-263C-3B9E-A18D-8320BCBF428C}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\CoreLights">
+      <UniqueIdentifier>{022EF510-CA2B-3726-85DD-7EC4CA0133A4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Decals">
+      <UniqueIdentifier>{9ECA1584-8BEF-3510-80A7-DC72CFA4C4F2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\DiffuseGlobalIllumination">
+      <UniqueIdentifier>{134A356C-F428-3605-B896-A08A671ED96A}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Grid">
+      <UniqueIdentifier>{F251E29A-B088-3D2F-A545-8228FD2A87F6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\ImageBasedLights">
+      <UniqueIdentifier>{78C15A7A-3950-3024-B75F-0DD1C3E68FF4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Material">
+      <UniqueIdentifier>{CA24FD99-8DCF-3299-BBEF-6FFD7F143307}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Mesh">
+      <UniqueIdentifier>{D875F237-A9B7-3C88-93D9-5980912543FF}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\OcclusionCullingPlane">
+      <UniqueIdentifier>{9DAA55F1-6E0D-314E-B075-108F9D19F7C1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Platform">
+      <UniqueIdentifier>{4FB794FF-EAE9-3B82-95CC-6241BAD0E3AC}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Platform\Windows">
+      <UniqueIdentifier>{2D0E7154-D797-393D-A7EB-8527ACAFB2BF}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\PostProcess">
+      <UniqueIdentifier>{7A5363EC-4371-3643-95D4-F8E85BEE73BD}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\PostProcess\Bloom">
+      <UniqueIdentifier>{F63167DD-84E8-3CDD-8073-87773AFDBF99}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\PostProcess\ColorGrading">
+      <UniqueIdentifier>{512D6A0F-F942-3515-A290-1914E22EAC73}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\PostProcess\DepthOfField">
+      <UniqueIdentifier>{0ABB5150-2BB1-3864-B30B-44056258E275}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\PostProcess\DisplayMapper">
+      <UniqueIdentifier>{A2F8E7A0-D5CD-3CF1-A616-0B185C651674}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\PostProcess\ExposureControl">
+      <UniqueIdentifier>{003B4E4E-4DAF-3DF0-9922-8A5E0366B0CA}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\PostProcess\GradientWeightModifier">
+      <UniqueIdentifier>{BF2FBA3A-3733-3F50-BB1A-1F95EC94A8F2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\PostProcess\LookModification">
+      <UniqueIdentifier>{18448552-1DFA-3BDF-8CA7-079B07E46B31}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\PostProcess\RadiusWeightModifier">
+      <UniqueIdentifier>{8C105DB2-81CA-39F0-98DB-01E9650DC181}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\PostProcess\ShapeWeightModifier">
+      <UniqueIdentifier>{6026DB9F-72BF-3FE0-8886-C1217655EBE0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\PostProcess\Ssao">
+      <UniqueIdentifier>{711336E4-57F8-3C26-BADA-FA076FDD08D9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\ReflectionProbe">
+      <UniqueIdentifier>{71751B42-37C1-3952-B5AB-3B78C66C4C90}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\ScreenSpace">
+      <UniqueIdentifier>{18336BA2-CE9E-3847-9830-27041BB61449}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Scripting">
+      <UniqueIdentifier>{CAE3084B-DDBD-3331-83BA-3A77E02E1C4B}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\SkinnedMesh">
+      <UniqueIdentifier>{900D7451-825C-33CA-A2B7-CD939EC443D9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\SkyBox">
+      <UniqueIdentifier>{0061B378-3C41-3C77-BDA2-7E877E222808}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\SurfaceData">
+      <UniqueIdentifier>{C3EFDD79-81B8-3ABE-A129-A8788D6807F8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Thumbnails">
+      <UniqueIdentifier>{FEF42989-6035-373F-BE7F-74F41F577E82}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Thumbnails\Preview">
+      <UniqueIdentifier>{07361C40-415B-3789-BA9A-4E30FD790750}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Thumbnails\Rendering">
+      <UniqueIdentifier>{B9F875E5-270C-30D1-95AC-01235022DB54}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Thumbnails\Rendering\ThumbnailRendererSteps">
+      <UniqueIdentifier>{94ABB162-09C8-39D7-9772-1C54ABA6E7B8}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

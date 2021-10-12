@@ -1,0 +1,167 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\Atom-418206cc\Tools\MaterialEditor\Code\MaterialEditor.Viewport_autogen\mocs_compilation_debug.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\Atom-418206cc\Tools\MaterialEditor\Code\CMakeFiles\MaterialEditor.Viewport.dir\Unity\unity_1_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\Atom-418206cc\Tools\MaterialEditor\Code\CMakeFiles\MaterialEditor.Viewport.dir\Unity\unity_0_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Tools\MaterialEditor\Code\Source\Viewport\InputController\MaterialEditorViewportInputController.cpp">
+      <Filter>Source\Viewport\InputController</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Tools\MaterialEditor\Code\Source\Viewport\InputController\Behavior.cpp">
+      <Filter>Source\Viewport\InputController</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Tools\MaterialEditor\Code\Source\Viewport\InputController\DollyCameraBehavior.cpp">
+      <Filter>Source\Viewport\InputController</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Tools\MaterialEditor\Code\Source\Viewport\InputController\IdleBehavior.cpp">
+      <Filter>Source\Viewport\InputController</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Tools\MaterialEditor\Code\Source\Viewport\InputController\MoveCameraBehavior.cpp">
+      <Filter>Source\Viewport\InputController</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Tools\MaterialEditor\Code\Source\Viewport\InputController\PanCameraBehavior.cpp">
+      <Filter>Source\Viewport\InputController</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Tools\MaterialEditor\Code\Source\Viewport\InputController\OrbitCameraBehavior.cpp">
+      <Filter>Source\Viewport\InputController</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Tools\MaterialEditor\Code\Source\Viewport\InputController\RotateEnvironmentBehavior.cpp">
+      <Filter>Source\Viewport\InputController</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Tools\MaterialEditor\Code\Source\Viewport\InputController\RotateModelBehavior.cpp">
+      <Filter>Source\Viewport\InputController</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Tools\MaterialEditor\Code\Source\Viewport\MaterialViewportModule.cpp">
+      <Filter>Source\Viewport</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Tools\MaterialEditor\Code\Source\Viewport\MaterialViewportSettings.cpp">
+      <Filter>Source\Viewport</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Tools\MaterialEditor\Code\Source\Viewport\MaterialViewportComponent.cpp">
+      <Filter>Source\Viewport</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Tools\MaterialEditor\Code\Source\Viewport\MaterialViewportWidget.cpp">
+      <Filter>Source\Viewport</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Tools\MaterialEditor\Code\Source\Viewport\MaterialViewportRenderer.cpp">
+      <Filter>Source\Viewport</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Tools\MaterialEditor\Code\Source\Viewport\PerformanceMonitorComponent.cpp">
+      <Filter>Source\Viewport</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\Atom-418206cc\Tools\MaterialEditor\Code\MaterialEditor.Viewport_autogen\mocs_compilation_profile.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\Atom-418206cc\Tools\MaterialEditor\Code\MaterialEditor.Viewport_autogen\mocs_compilation_release.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Tools\MaterialEditor\Code\Include\Atom\Viewport\InputController\MaterialEditorViewportInputControllerBus.h">
+      <Filter>Include\Atom\Viewport\InputController</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Tools\MaterialEditor\Code\Include\Atom\Viewport\MaterialViewportModule.h">
+      <Filter>Include\Atom\Viewport</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Tools\MaterialEditor\Code\Include\Atom\Viewport\MaterialViewportSettings.h">
+      <Filter>Include\Atom\Viewport</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Tools\MaterialEditor\Code\Include\Atom\Viewport\MaterialViewportRequestBus.h">
+      <Filter>Include\Atom\Viewport</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Tools\MaterialEditor\Code\Include\Atom\Viewport\MaterialViewportNotificationBus.h">
+      <Filter>Include\Atom\Viewport</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Tools\MaterialEditor\Code\Include\Atom\Viewport\PerformanceMetrics.h">
+      <Filter>Include\Atom\Viewport</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Tools\MaterialEditor\Code\Include\Atom\Viewport\PerformanceMonitorRequestBus.h">
+      <Filter>Include\Atom\Viewport</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Tools\MaterialEditor\Code\Source\Viewport\InputController\MaterialEditorViewportInputController.h">
+      <Filter>Source\Viewport\InputController</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Tools\MaterialEditor\Code\Source\Viewport\InputController\Behavior.h">
+      <Filter>Source\Viewport\InputController</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Tools\MaterialEditor\Code\Source\Viewport\InputController\DollyCameraBehavior.h">
+      <Filter>Source\Viewport\InputController</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Tools\MaterialEditor\Code\Source\Viewport\InputController\IdleBehavior.h">
+      <Filter>Source\Viewport\InputController</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Tools\MaterialEditor\Code\Source\Viewport\InputController\MoveCameraBehavior.h">
+      <Filter>Source\Viewport\InputController</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Tools\MaterialEditor\Code\Source\Viewport\InputController\PanCameraBehavior.h">
+      <Filter>Source\Viewport\InputController</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Tools\MaterialEditor\Code\Source\Viewport\InputController\OrbitCameraBehavior.h">
+      <Filter>Source\Viewport\InputController</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Tools\MaterialEditor\Code\Source\Viewport\InputController\RotateEnvironmentBehavior.h">
+      <Filter>Source\Viewport\InputController</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Tools\MaterialEditor\Code\Source\Viewport\InputController\RotateModelBehavior.h">
+      <Filter>Source\Viewport\InputController</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Tools\MaterialEditor\Code\Source\Viewport\MaterialViewportComponent.h">
+      <Filter>Source\Viewport</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Tools\MaterialEditor\Code\Source\Viewport\MaterialViewportWidget.h">
+      <Filter>Source\Viewport</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Tools\MaterialEditor\Code\Source\Viewport\MaterialViewportRenderer.h">
+      <Filter>Source\Viewport</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Tools\MaterialEditor\Code\Source\Viewport\PerformanceMonitorComponent.h">
+      <Filter>Source\Viewport</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\External\Atom-418206cc\Tools\MaterialEditor\Code\MaterialEditor.Viewport_autogen\include\Source\Viewport\ui_MaterialViewportWidget.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Gems\Atom\Tools\MaterialEditor\Code\Source\Viewport\MaterialViewportWidget.ui">
+      <Filter>Source\Viewport</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Gems\Atom\Tools\MaterialEditor\Code\CMakeLists.txt">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Tools\MaterialEditor\Code\materialeditorviewport_files.cmake" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Generated Files">
+      <UniqueIdentifier>{FB9B7D8B-7F05-31D5-AA90-592248EDE1B3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include">
+      <UniqueIdentifier>{E188105A-C8C4-34BB-9809-15E8410EF7F8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\Atom">
+      <UniqueIdentifier>{D3FF6349-761F-30FE-A9A9-4A8D0DE47ADF}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\Atom\Viewport">
+      <UniqueIdentifier>{EEF17986-F5EF-3184-9D37-1B614AF03755}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\Atom\Viewport\InputController">
+      <UniqueIdentifier>{71B87B65-1EC4-37CA-BBBC-C6557EAB7DFC}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source">
+      <UniqueIdentifier>{F3F0AD47-5F83-373B-A2BF-650D2E4FA3EA}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Viewport">
+      <UniqueIdentifier>{A6745BEC-6C83-38E2-893A-2EFB926CCA22}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Viewport\InputController">
+      <UniqueIdentifier>{082478C9-0839-3483-B407-EE94F450DEDF}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

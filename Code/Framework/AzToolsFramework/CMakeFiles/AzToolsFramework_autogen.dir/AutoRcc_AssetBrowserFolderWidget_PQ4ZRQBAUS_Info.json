@@ -1,0 +1,31 @@
+{
+	"BUILD_DIR" : "C:/Users/lesaelr/o3de/Code/Framework/AzToolsFramework/AzToolsFramework_autogen",
+	"CMAKE_BINARY_DIR" : "C:/Users/lesaelr/o3de",
+	"CMAKE_CURRENT_BINARY_DIR" : "C:/Users/lesaelr/o3de/Code/Framework/AzToolsFramework",
+	"CMAKE_CURRENT_SOURCE_DIR" : "C:/Users/lesaelr/o3de/Code/Framework/AzToolsFramework",
+	"CMAKE_SOURCE_DIR" : "C:/Users/lesaelr/o3de",
+	"INCLUDE_DIR" : "C:/Users/lesaelr/o3de/Code/Framework/AzToolsFramework/AzToolsFramework_autogen/include",
+	"INCLUDE_DIR_debug" : "C:/Users/lesaelr/o3de/Code/Framework/AzToolsFramework/AzToolsFramework_autogen/include_debug",
+	"INCLUDE_DIR_profile" : "C:/Users/lesaelr/o3de/Code/Framework/AzToolsFramework/AzToolsFramework_autogen/include_profile",
+	"INCLUDE_DIR_release" : "C:/Users/lesaelr/o3de/Code/Framework/AzToolsFramework/AzToolsFramework_autogen/include_release",
+	"INPUTS" : 
+	[
+		"C:/Users/lesaelr/o3de/Code/Framework/AzToolsFramework/AzToolsFramework/AssetBrowser/Views/list-selected.png",
+		"C:/Users/lesaelr/o3de/Code/Framework/AzToolsFramework/AzToolsFramework/AssetBrowser/Views/thumb-unselected.png",
+		"C:/Users/lesaelr/o3de/Code/Framework/AzToolsFramework/AzToolsFramework/AssetBrowser/Views/list-unselected.png",
+		"C:/Users/lesaelr/o3de/Code/Framework/AzToolsFramework/AzToolsFramework/AssetBrowser/Views/thumb-selected.png"
+	],
+	"LOCK_FILE" : "C:/Users/lesaelr/o3de/Code/Framework/AzToolsFramework/CMakeFiles/AzToolsFramework_autogen.dir/AutoRcc_AssetBrowserFolderWidget_PQ4ZRQBAUS_Lock.lock",
+	"MULTI_CONFIG" : true,
+	"OPTIONS" : [ "-name", "AssetBrowserFolderWidget" ],
+	"OUTPUT_CHECKSUM" : "PQ4ZRQBAUS",
+	"OUTPUT_NAME" : "qrc_AssetBrowserFolderWidget.cpp",
+	"RCC_EXECUTABLE" : "C:/Users/lesaelr/.o3de/3rdParty/packages/qt-5.15.2-rev4-windows/qt/bin/rcc.exe",
+	"RCC_LIST_OPTIONS" : [ "--list" ],
+	"SETTINGS_FILE" : "C:/Users/lesaelr/o3de/Code/Framework/AzToolsFramework/CMakeFiles/AzToolsFramework_autogen.dir/AutoRcc_AssetBrowserFolderWidget_PQ4ZRQBAUS_Used.txt",
+	"SETTINGS_FILE_debug" : "C:/Users/lesaelr/o3de/Code/Framework/AzToolsFramework/CMakeFiles/AzToolsFramework_autogen.dir/AutoRcc_AssetBrowserFolderWidget_PQ4ZRQBAUS_Used_debug.txt",
+	"SETTINGS_FILE_profile" : "C:/Users/lesaelr/o3de/Code/Framework/AzToolsFramework/CMakeFiles/AzToolsFramework_autogen.dir/AutoRcc_AssetBrowserFolderWidget_PQ4ZRQBAUS_Used_profile.txt",
+	"SETTINGS_FILE_release" : "C:/Users/lesaelr/o3de/Code/Framework/AzToolsFramework/CMakeFiles/AzToolsFramework_autogen.dir/AutoRcc_AssetBrowserFolderWidget_PQ4ZRQBAUS_Used_release.txt",
+	"SOURCE" : "C:/Users/lesaelr/o3de/Code/Framework/AzToolsFramework/AzToolsFramework/AssetBrowser/Views/AssetBrowserFolderWidget.qrc",
+	"VERBOSITY" : 0
+}

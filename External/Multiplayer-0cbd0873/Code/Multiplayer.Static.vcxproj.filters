@@ -1,0 +1,578 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\Multiplayer-0cbd0873\Code\CMakeFiles\Multiplayer.Static.dir\Unity\unity_5_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\Multiplayer-0cbd0873\Code\CMakeFiles\Multiplayer.Static.dir\Unity\unity_4_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\Multiplayer-0cbd0873\Code\CMakeFiles\Multiplayer.Static.dir\Unity\unity_3_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\Multiplayer-0cbd0873\Code\CMakeFiles\Multiplayer.Static.dir\Unity\unity_2_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\Multiplayer-0cbd0873\Code\CMakeFiles\Multiplayer.Static.dir\Unity\unity_1_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\Multiplayer-0cbd0873\Code\CMakeFiles\Multiplayer.Static.dir\Unity\unity_0_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source\Components\LocalPredictionPlayerInputComponent.cpp">
+      <Filter>Source\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source\Components\MultiplayerComponent.cpp">
+      <Filter>Source\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source\Components\MultiplayerComponentRegistry.cpp">
+      <Filter>Source\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source\Components\MultiplayerController.cpp">
+      <Filter>Source\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source\Components\NetBindComponent.cpp">
+      <Filter>Source\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source\Components\NetworkHierarchyChildComponent.cpp">
+      <Filter>Source\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source\Components\NetworkHierarchyRootComponent.cpp">
+      <Filter>Source\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source\Components\NetworkCharacterComponent.cpp">
+      <Filter>Source\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source\Components\NetworkHitVolumesComponent.cpp">
+      <Filter>Source\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source\Components\NetworkRigidBodyComponent.cpp">
+      <Filter>Source\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source\Components\NetworkTransformComponent.cpp">
+      <Filter>Source\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source\ConnectionData\ClientToServerConnectionData.cpp">
+      <Filter>Source\ConnectionData</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source\ConnectionData\ServerToClientConnectionData.cpp">
+      <Filter>Source\ConnectionData</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source\Editor\MultiplayerEditorConnection.cpp">
+      <Filter>Source\Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source\EntityDomains\FullOwnershipEntityDomain.cpp">
+      <Filter>Source\EntityDomains</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source\MultiplayerStats.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source\MultiplayerSystemComponent.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source\NetworkEntity\EntityReplication\EntityReplicationManager.cpp">
+      <Filter>Source\NetworkEntity\EntityReplication</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source\NetworkEntity\EntityReplication\EntityReplicator.cpp">
+      <Filter>Source\NetworkEntity\EntityReplication</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source\NetworkEntity\EntityReplication\PropertyPublisher.cpp">
+      <Filter>Source\NetworkEntity\EntityReplication</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source\NetworkEntity\EntityReplication\PropertySubscriber.cpp">
+      <Filter>Source\NetworkEntity\EntityReplication</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source\NetworkEntity\EntityReplication\ReplicationRecord.cpp">
+      <Filter>Source\NetworkEntity\EntityReplication</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source\NetworkEntity\NetworkEntityAuthorityTracker.cpp">
+      <Filter>Source\NetworkEntity</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source\NetworkEntity\NetworkEntityHandle.cpp">
+      <Filter>Source\NetworkEntity</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source\NetworkEntity\NetworkEntityManager.cpp">
+      <Filter>Source\NetworkEntity</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source\NetworkEntity\NetworkEntityRpcMessage.cpp">
+      <Filter>Source\NetworkEntity</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source\NetworkEntity\NetworkEntityTracker.cpp">
+      <Filter>Source\NetworkEntity</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source\NetworkEntity\NetworkEntityUpdateMessage.cpp">
+      <Filter>Source\NetworkEntity</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source\NetworkEntity\NetworkSpawnableLibrary.cpp">
+      <Filter>Source\NetworkEntity</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source\NetworkInput\NetworkInput.cpp">
+      <Filter>Source\NetworkInput</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source\NetworkInput\NetworkInputArray.cpp">
+      <Filter>Source\NetworkInput</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source\NetworkInput\NetworkInputChild.cpp">
+      <Filter>Source\NetworkInput</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source\NetworkInput\NetworkInputHistory.cpp">
+      <Filter>Source\NetworkInput</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source\NetworkInput\NetworkInputMigrationVector.cpp">
+      <Filter>Source\NetworkInput</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source\NetworkTime\NetworkTime.cpp">
+      <Filter>Source\NetworkTime</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source\Pipeline\NetworkSpawnableHolderComponent.cpp">
+      <Filter>Source\Pipeline</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source\ReplicationWindows\NullReplicationWindow.cpp">
+      <Filter>Source\ReplicationWindows</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source\ReplicationWindows\ServerToClientReplicationWindow.cpp">
+      <Filter>Source\ReplicationWindows</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\Multiplayer-0cbd0873\Code\Azcg\Generated\Source\AutoGen\Multiplayer.AutoPackets.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\Multiplayer-0cbd0873\Code\Azcg\Generated\Source\AutoGen\MultiplayerEditor.AutoPackets.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\Multiplayer-0cbd0873\Code\Azcg\Generated\Source\AutoGen\LocalPredictionPlayerInputComponent.AutoComponent.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\Multiplayer-0cbd0873\Code\Azcg\Generated\Source\AutoGen\NetworkCharacterComponent.AutoComponent.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\Multiplayer-0cbd0873\Code\Azcg\Generated\Source\AutoGen\NetworkHitVolumesComponent.AutoComponent.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\Multiplayer-0cbd0873\Code\Azcg\Generated\Source\AutoGen\NetworkRigidBodyComponent.AutoComponent.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\Multiplayer-0cbd0873\Code\Azcg\Generated\Source\AutoGen\NetworkTransformComponent.AutoComponent.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\Multiplayer-0cbd0873\Code\Azcg\Generated\Source\AutoGen\NetworkHierarchyChildComponent.AutoComponent.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\Multiplayer-0cbd0873\Code\Azcg\Generated\Source\AutoGen\NetworkHierarchyRootComponent.AutoComponent.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\Multiplayer-0cbd0873\Code\Azcg\Generated\Source\AutoGen\AutoComponentTypes.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Include\Multiplayer\IMultiplayer.h">
+      <Filter>Include\Multiplayer</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Include\Multiplayer\IMultiplayerDebug.h">
+      <Filter>Include\Multiplayer</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Include\Multiplayer\IMultiplayerTools.h">
+      <Filter>Include\Multiplayer</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Include\Multiplayer\MultiplayerConstants.h">
+      <Filter>Include\Multiplayer</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Include\Multiplayer\MultiplayerStats.h">
+      <Filter>Include\Multiplayer</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Include\Multiplayer\MultiplayerTypes.h">
+      <Filter>Include\Multiplayer</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Include\Multiplayer\Components\LocalPredictionPlayerInputComponent.h">
+      <Filter>Include\Multiplayer\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Include\Multiplayer\Components\MultiplayerComponent.h">
+      <Filter>Include\Multiplayer\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Include\Multiplayer\Components\MultiplayerComponentRegistry.h">
+      <Filter>Include\Multiplayer\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Include\Multiplayer\Components\MultiplayerController.h">
+      <Filter>Include\Multiplayer\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Include\Multiplayer\Components\NetBindComponent.h">
+      <Filter>Include\Multiplayer\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Include\Multiplayer\Components\NetworkHierarchyChildComponent.h">
+      <Filter>Include\Multiplayer\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Include\Multiplayer\Components\NetworkHierarchyRootComponent.h">
+      <Filter>Include\Multiplayer\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Include\Multiplayer\Components\NetworkHierarchyBus.h">
+      <Filter>Include\Multiplayer\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Include\Multiplayer\Components\NetworkCharacterComponent.h">
+      <Filter>Include\Multiplayer\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Include\Multiplayer\Components\NetworkHitVolumesComponent.h">
+      <Filter>Include\Multiplayer\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Include\Multiplayer\Components\NetworkRigidBodyComponent.h">
+      <Filter>Include\Multiplayer\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Include\Multiplayer\Components\NetworkTransformComponent.h">
+      <Filter>Include\Multiplayer\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Include\Multiplayer\ConnectionData\IConnectionData.h">
+      <Filter>Include\Multiplayer\ConnectionData</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Include\Multiplayer\EntityDomains\IEntityDomain.h">
+      <Filter>Include\Multiplayer\EntityDomains</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Include\Multiplayer\INetworkSpawnableLibrary.h">
+      <Filter>Include\Multiplayer</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Include\Multiplayer\NetworkEntity\EntityReplication\ReplicationRecord.h">
+      <Filter>Include\Multiplayer\NetworkEntity\EntityReplication</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Include\Multiplayer\NetworkEntity\IFilterEntityManager.h">
+      <Filter>Include\Multiplayer\NetworkEntity</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Include\Multiplayer\NetworkEntity\INetworkEntityManager.h">
+      <Filter>Include\Multiplayer\NetworkEntity</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Include\Multiplayer\NetworkEntity\NetworkEntityHandle.h">
+      <Filter>Include\Multiplayer\NetworkEntity</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Include\Multiplayer\NetworkEntity\NetworkEntityHandle.inl">
+      <Filter>Include\Multiplayer\NetworkEntity</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Include\Multiplayer\NetworkEntity\NetworkEntityRpcMessage.h">
+      <Filter>Include\Multiplayer\NetworkEntity</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Include\Multiplayer\NetworkEntity\NetworkEntityUpdateMessage.h">
+      <Filter>Include\Multiplayer\NetworkEntity</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Include\Multiplayer\NetworkInput\IMultiplayerComponentInput.h">
+      <Filter>Include\Multiplayer\NetworkInput</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Include\Multiplayer\NetworkInput\NetworkInput.h">
+      <Filter>Include\Multiplayer\NetworkInput</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Include\Multiplayer\NetworkTime\INetworkTime.h">
+      <Filter>Include\Multiplayer\NetworkTime</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Include\Multiplayer\NetworkTime\RewindableArray.h">
+      <Filter>Include\Multiplayer\NetworkTime</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Include\Multiplayer\NetworkTime\RewindableArray.inl">
+      <Filter>Include\Multiplayer\NetworkTime</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Include\Multiplayer\NetworkTime\RewindableFixedVector.h">
+      <Filter>Include\Multiplayer\NetworkTime</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Include\Multiplayer\NetworkTime\RewindableFixedVector.inl">
+      <Filter>Include\Multiplayer\NetworkTime</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Include\Multiplayer\NetworkTime\RewindableObject.h">
+      <Filter>Include\Multiplayer\NetworkTime</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Include\Multiplayer\NetworkTime\RewindableObject.inl">
+      <Filter>Include\Multiplayer\NetworkTime</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Include\Multiplayer\Physics\PhysicsUtils.h">
+      <Filter>Include\Multiplayer\Physics</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Include\Multiplayer\ReplicationWindows\IReplicationWindow.h">
+      <Filter>Include\Multiplayer\ReplicationWindows</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source\ConnectionData\ClientToServerConnectionData.h">
+      <Filter>Source\ConnectionData</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source\ConnectionData\ClientToServerConnectionData.inl">
+      <Filter>Source\ConnectionData</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source\ConnectionData\ServerToClientConnectionData.h">
+      <Filter>Source\ConnectionData</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source\ConnectionData\ServerToClientConnectionData.inl">
+      <Filter>Source\ConnectionData</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source\Editor\MultiplayerEditorConnection.h">
+      <Filter>Source\Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source\EntityDomains\FullOwnershipEntityDomain.h">
+      <Filter>Source\EntityDomains</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source\MultiplayerSystemComponent.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source\NetworkEntity\EntityReplication\EntityReplicationManager.h">
+      <Filter>Source\NetworkEntity\EntityReplication</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source\NetworkEntity\EntityReplication\EntityReplicator.h">
+      <Filter>Source\NetworkEntity\EntityReplication</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source\NetworkEntity\EntityReplication\EntityReplicator.inl">
+      <Filter>Source\NetworkEntity\EntityReplication</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source\NetworkEntity\EntityReplication\PropertyPublisher.h">
+      <Filter>Source\NetworkEntity\EntityReplication</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source\NetworkEntity\EntityReplication\PropertySubscriber.h">
+      <Filter>Source\NetworkEntity\EntityReplication</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source\NetworkEntity\NetworkEntityAuthorityTracker.h">
+      <Filter>Source\NetworkEntity</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source\NetworkEntity\NetworkEntityManager.h">
+      <Filter>Source\NetworkEntity</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source\NetworkEntity\NetworkEntityTracker.h">
+      <Filter>Source\NetworkEntity</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source\NetworkEntity\NetworkEntityTracker.inl">
+      <Filter>Source\NetworkEntity</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source\NetworkEntity\NetworkSpawnableLibrary.h">
+      <Filter>Source\NetworkEntity</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source\NetworkInput\NetworkInputArray.h">
+      <Filter>Source\NetworkInput</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source\NetworkInput\NetworkInputChild.h">
+      <Filter>Source\NetworkInput</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source\NetworkInput\NetworkInputHistory.h">
+      <Filter>Source\NetworkInput</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source\NetworkInput\NetworkInputMigrationVector.h">
+      <Filter>Source\NetworkInput</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source\NetworkTime\NetworkTime.h">
+      <Filter>Source\NetworkTime</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source\Pipeline\NetworkSpawnableHolderComponent.h">
+      <Filter>Source\Pipeline</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source\ReplicationWindows\NullReplicationWindow.h">
+      <Filter>Source\ReplicationWindows</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source\ReplicationWindows\ServerToClientReplicationWindow.h">
+      <Filter>Source\ReplicationWindows</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\External\Multiplayer-0cbd0873\Code\Azcg\Generated\Source\AutoGen\Multiplayer.AutoPackets.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\External\Multiplayer-0cbd0873\Code\Azcg\Generated\Source\AutoGen\MultiplayerEditor.AutoPackets.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\External\Multiplayer-0cbd0873\Code\Azcg\Generated\Source\AutoGen\Multiplayer.AutoPackets.inl">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\External\Multiplayer-0cbd0873\Code\Azcg\Generated\Source\AutoGen\MultiplayerEditor.AutoPackets.inl">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\External\Multiplayer-0cbd0873\Code\Azcg\Generated\Source\AutoGen\Multiplayer.AutoPacketDispatcher.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\External\Multiplayer-0cbd0873\Code\Azcg\Generated\Source\AutoGen\MultiplayerEditor.AutoPacketDispatcher.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\External\Multiplayer-0cbd0873\Code\Azcg\Generated\Source\AutoGen\Multiplayer.AutoPacketDispatcher.inl">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\External\Multiplayer-0cbd0873\Code\Azcg\Generated\Source\AutoGen\MultiplayerEditor.AutoPacketDispatcher.inl">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\External\Multiplayer-0cbd0873\Code\Azcg\Generated\Source\AutoGen\LocalPredictionPlayerInputComponent.AutoComponent.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\External\Multiplayer-0cbd0873\Code\Azcg\Generated\Source\AutoGen\NetworkCharacterComponent.AutoComponent.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\External\Multiplayer-0cbd0873\Code\Azcg\Generated\Source\AutoGen\NetworkHitVolumesComponent.AutoComponent.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\External\Multiplayer-0cbd0873\Code\Azcg\Generated\Source\AutoGen\NetworkRigidBodyComponent.AutoComponent.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\External\Multiplayer-0cbd0873\Code\Azcg\Generated\Source\AutoGen\NetworkTransformComponent.AutoComponent.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\External\Multiplayer-0cbd0873\Code\Azcg\Generated\Source\AutoGen\NetworkHierarchyChildComponent.AutoComponent.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\External\Multiplayer-0cbd0873\Code\Azcg\Generated\Source\AutoGen\NetworkHierarchyRootComponent.AutoComponent.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\External\Multiplayer-0cbd0873\Code\Azcg\Generated\Source\AutoGen\AutoComponentTypes.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\CMakeFiles\d01e5c12e11b820c55a8f223e2cb6b99\Multiplayer.AutoPackets.h.rule">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\CMakeLists.txt">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source\AutoGen\AutoComponentTypes_Header.jinja">
+      <Filter>Source\AutoGen</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source\AutoGen\AutoComponentTypes_Source.jinja">
+      <Filter>Source\AutoGen</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source\AutoGen\AutoComponent_Common.jinja">
+      <Filter>Source\AutoGen</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source\AutoGen\AutoComponent_Header.jinja">
+      <Filter>Source\AutoGen</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source\AutoGen\AutoComponent_Source.jinja">
+      <Filter>Source\AutoGen</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\multiplayer_files.cmake" />
+    <None Include="C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\AzNetworking\AutoGen\AutoPackets_Header.jinja">
+      <Filter>..\..\..\Code\Framework\AzNetworking\AzNetworking\AutoGen</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\AzNetworking\AutoGen\AutoPackets_Inline.jinja">
+      <Filter>..\..\..\Code\Framework\AzNetworking\AzNetworking\AutoGen</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\AzNetworking\AutoGen\AutoPackets_Source.jinja">
+      <Filter>..\..\..\Code\Framework\AzNetworking\AzNetworking\AutoGen</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\AzNetworking\AutoGen\AutoPacketDispatcher_Header.jinja">
+      <Filter>..\..\..\Code\Framework\AzNetworking\AzNetworking\AutoGen</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\AzNetworking\AutoGen\AutoPacketDispatcher_Inline.jinja">
+      <Filter>..\..\..\Code\Framework\AzNetworking\AzNetworking\AutoGen</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\multiplayer_autogen_files.cmake" />
+  </ItemGroup>
+  <ItemGroup>
+    <XML Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source\AutoGen\LocalPredictionPlayerInputComponent.AutoComponent.xml">
+      <Filter>Source\AutoGen</Filter>
+    </XML>
+    <XML Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source\AutoGen\Multiplayer.AutoPackets.xml">
+      <Filter>Source\AutoGen</Filter>
+    </XML>
+    <XML Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source\AutoGen\MultiplayerEditor.AutoPackets.xml">
+      <Filter>Source\AutoGen</Filter>
+    </XML>
+    <XML Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source\AutoGen\NetworkCharacterComponent.AutoComponent.xml">
+      <Filter>Source\AutoGen</Filter>
+    </XML>
+    <XML Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source\AutoGen\NetworkHitVolumesComponent.AutoComponent.xml">
+      <Filter>Source\AutoGen</Filter>
+    </XML>
+    <XML Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source\AutoGen\NetworkRigidBodyComponent.AutoComponent.xml">
+      <Filter>Source\AutoGen</Filter>
+    </XML>
+    <XML Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source\AutoGen\NetworkTransformComponent.AutoComponent.xml">
+      <Filter>Source\AutoGen</Filter>
+    </XML>
+    <XML Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source\AutoGen\NetworkHierarchyChildComponent.AutoComponent.xml">
+      <Filter>Source\AutoGen</Filter>
+    </XML>
+    <XML Include="C:\Users\lesaelr\o3de\Gems\Multiplayer\Code\Source\AutoGen\NetworkHierarchyRootComponent.AutoComponent.xml">
+      <Filter>Source\AutoGen</Filter>
+    </XML>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="..">
+      <UniqueIdentifier>{B62B6BD3-6D53-356A-92E7-D4477019628D}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="..\..">
+      <UniqueIdentifier>{EF225BAE-B93D-3FC9-9DC6-002B77DE8B58}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="..\..\..">
+      <UniqueIdentifier>{DB32AB10-5944-3691-AE1C-E50CC08101EA}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="..\..\..\Code">
+      <UniqueIdentifier>{7BAC495D-6837-3F09-BCA4-11BD8A965675}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="..\..\..\Code\Framework">
+      <UniqueIdentifier>{161EBC3D-3419-38FE-9337-F9DAD8C08D5D}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="..\..\..\Code\Framework\AzNetworking">
+      <UniqueIdentifier>{878DDE4E-3EC3-3B96-BE23-4D4E265EF205}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="..\..\..\Code\Framework\AzNetworking\AzNetworking">
+      <UniqueIdentifier>{5C173E53-A81E-3A49-8C0C-E21DB9CBF278}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="..\..\..\Code\Framework\AzNetworking\AzNetworking\AutoGen">
+      <UniqueIdentifier>{08F39D48-7DE0-3F0F-A65D-743C0C08494B}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Generated Files">
+      <UniqueIdentifier>{FB9B7D8B-7F05-31D5-AA90-592248EDE1B3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include">
+      <UniqueIdentifier>{E188105A-C8C4-34BB-9809-15E8410EF7F8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\Multiplayer">
+      <UniqueIdentifier>{F0F4708D-35CE-36BD-85D0-1D2D10FE0E18}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\Multiplayer\Components">
+      <UniqueIdentifier>{641ECB28-CCD6-34E7-A430-6B6D15095AC5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\Multiplayer\ConnectionData">
+      <UniqueIdentifier>{10DB8CD2-87AC-34B7-AF49-DC4EC6117495}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\Multiplayer\EntityDomains">
+      <UniqueIdentifier>{B561F1F4-50C2-313F-8E05-0AEE0B109E7D}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\Multiplayer\NetworkEntity">
+      <UniqueIdentifier>{E9E16161-6E81-3EA5-A5FE-218C56F94102}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\Multiplayer\NetworkEntity\EntityReplication">
+      <UniqueIdentifier>{2CDB5BE8-F264-3330-8D16-9FFDEB633878}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\Multiplayer\NetworkInput">
+      <UniqueIdentifier>{8491BC8B-4B9B-37A9-BFB2-1AD43884C83D}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\Multiplayer\NetworkTime">
+      <UniqueIdentifier>{51ECD9A9-DAE6-3EC7-BBD2-9A21469F575A}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\Multiplayer\Physics">
+      <UniqueIdentifier>{4F70EFF1-2FF9-30EE-8CE7-5C5AFA8292E8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\Multiplayer\ReplicationWindows">
+      <UniqueIdentifier>{0604BA92-BB4E-3366-8143-9632EA006B8C}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source">
+      <UniqueIdentifier>{F3F0AD47-5F83-373B-A2BF-650D2E4FA3EA}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\AutoGen">
+      <UniqueIdentifier>{EC365FA5-F8DF-3B94-8C15-9487C6C983B6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Components">
+      <UniqueIdentifier>{914C6B5F-184E-399E-8506-2B79CE7A1426}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\ConnectionData">
+      <UniqueIdentifier>{C0E784C0-5FE9-3145-BFC3-067434DAE098}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Editor">
+      <UniqueIdentifier>{32FCFB28-A730-3475-B9AE-03974723A74B}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\EntityDomains">
+      <UniqueIdentifier>{13CF8CF5-E9E0-355E-9B9B-D174E88AB6E5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\NetworkEntity">
+      <UniqueIdentifier>{CB41CB77-6BB1-3926-8399-273825C20310}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\NetworkEntity\EntityReplication">
+      <UniqueIdentifier>{6167B1B5-9AD9-3A77-969D-036FAEA939FE}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\NetworkInput">
+      <UniqueIdentifier>{D0750BEB-5702-3C8D-8AEF-4DF555A34508}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\NetworkTime">
+      <UniqueIdentifier>{1582D590-DE82-37EC-A105-A619012EACBD}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Pipeline">
+      <UniqueIdentifier>{5FFC77F1-6D46-3907-9866-437683B107D9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\ReplicationWindows">
+      <UniqueIdentifier>{18F6A710-DB1F-3C88-8876-F97AEFAB4B66}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

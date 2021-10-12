@@ -1,0 +1,44 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\Lib\Tests\Camera\test_EditorCamera.cpp">
+      <Filter>Lib\Tests\Camera</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\CMakeFiles\08b24365a84bd27d080f6dd51f42b933\EditorLib.Camera.Tests_(CONFIG).stamp.rule">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Code\Editor\CMakeLists.txt">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\Lib\Tests\Camera\editor_lib_camera_test_files.cmake">
+      <Filter>Lib\Tests\Camera</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\runtime_dependencies\debug\EditorLib.Camera.Tests_debug.stamp">
+      <Filter>Generated Files</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\runtime_dependencies\profile\EditorLib.Camera.Tests_profile.stamp">
+      <Filter>Generated Files</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\runtime_dependencies\release\EditorLib.Camera.Tests_release.stamp">
+      <Filter>Generated Files</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Generated Files">
+      <UniqueIdentifier>{FB9B7D8B-7F05-31D5-AA90-592248EDE1B3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Lib">
+      <UniqueIdentifier>{A8F9DC9A-D305-3659-AF30-B2F6A9937B51}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Lib\Tests">
+      <UniqueIdentifier>{ED754328-C83B-326B-BE1E-7603463AC5C3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Lib\Tests\Camera">
+      <UniqueIdentifier>{DB56727C-3E3C-3AC3-8B85-24C203931FA6}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

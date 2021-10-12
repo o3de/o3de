@@ -1,0 +1,6 @@
+# CMake generation dependency list for this directory.
+C:/Users/lesaelr/o3de/Gems/GraphCanvas/Code/CMakeLists.txt
+C:/Users/lesaelr/o3de/Gems/GraphCanvas/Code/GraphCanvas_game_files.cmake
+C:/Users/lesaelr/o3de/Gems/GraphCanvas/Code/StaticLib/GraphCanvas/Widgets/Resources/GraphCanvasEditorResources.qrc
+C:/Users/lesaelr/o3de/Gems/GraphCanvas/Code/graphcanvas_files.cmake
+C:/Users/lesaelr/o3de/Gems/GraphCanvas/Code/graphcanvas_staticlib_files.cmake

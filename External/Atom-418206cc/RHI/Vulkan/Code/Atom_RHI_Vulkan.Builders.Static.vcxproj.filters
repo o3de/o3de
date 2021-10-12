@@ -1,0 +1,41 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\Atom-418206cc\RHI\Vulkan\Code\CMakeFiles\Atom_RHI_Vulkan.Builders.Static.dir\Unity\unity_0_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\RHI\Vulkan\Code\Source\RHI.Builders\ShaderPlatformInterfaceSystemComponent.cpp">
+      <Filter>Source\RHI.Builders</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\RHI\Vulkan\Code\Source\RHI.Builders\ShaderPlatformInterface.cpp">
+      <Filter>Source\RHI.Builders</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\RHI\Vulkan\Code\Source\RHI.Builders\ShaderPlatformInterfaceSystemComponent.h">
+      <Filter>Source\RHI.Builders</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\RHI\Vulkan\Code\Source\RHI.Builders\ShaderPlatformInterface.h">
+      <Filter>Source\RHI.Builders</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Gems\Atom\RHI\Vulkan\Code\CMakeLists.txt">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\RHI\Vulkan\Code\atom_rhi_vulkan_builders_common_files.cmake" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Generated Files">
+      <UniqueIdentifier>{FB9B7D8B-7F05-31D5-AA90-592248EDE1B3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source">
+      <UniqueIdentifier>{F3F0AD47-5F83-373B-A2BF-650D2E4FA3EA}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\RHI.Builders">
+      <UniqueIdentifier>{388D6EC8-4C56-37D1-AC8F-165BF3B64414}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

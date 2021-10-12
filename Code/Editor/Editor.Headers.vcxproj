@@ -1,0 +1,113 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <PreferredToolArchitecture>x64</PreferredToolArchitecture>
+  </PropertyGroup>
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="debug|x64">
+      <Configuration>debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="profile|x64">
+      <Configuration>profile</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="release|x64">
+      <Configuration>release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{2D6A63C9-F622-3897-871E-0B6093D2D6F9}</ProjectGuid>
+    <WindowsTargetPlatformVersion>10.0.19041.0</WindowsTargetPlatformVersion>
+    <Keyword>Win32Proj</Keyword>
+    <Platform>x64</Platform>
+    <ProjectName>Editor.Headers</ProjectName>
+    <VCProjectUpgraderObjectName>NoUpgrade</VCProjectUpgraderObjectName>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='debug|x64'" Label="Configuration">
+    <ConfigurationType>Utility</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v142</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='profile|x64'" Label="Configuration">
+    <ConfigurationType>Utility</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v142</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='release|x64'" Label="Configuration">
+    <ConfigurationType>Utility</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v142</PlatformToolset>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='debug|x64'" />
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='profile|x64'" />
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='release|x64'" />
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Code\Editor\CMakeLists.txt">
+      <UseUtf8Encoding>Always</UseUtf8Encoding>
+      <Message Condition="'$(Configuration)|$(Platform)'=='debug|x64'">Building Custom Rule C:/Users/lesaelr/o3de/Code/Editor/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='debug|x64'">setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SC:/Users/lesaelr/o3de -BC:/Users/lesaelr/o3de --check-stamp-file C:/Users/lesaelr/o3de/Code/Editor/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='debug|x64'">C:\Program Files\CMake\share\cmake-3.21\Modules\CMakeParseArguments.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\AWSNativeSDK-1.7.167-rev4-windows\FindAWSNativeSDK.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\AWSNativeSDK-1.7.167-rev4-windows\PackageInfo.json;C:\Users\lesaelr\.o3de\3rdParty\packages\squish-ccr-deb557d-rev1-windows\Findsquish-ccr.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\squish-ccr-deb557d-rev1-windows\PackageInfo.json;C:\Users\lesaelr\o3de\Code\Editor\Controls\ConsoleSCB.qrc;C:\Users\lesaelr\o3de\Code\Editor\LayoutConfigDialog.qrc;C:\Users\lesaelr\o3de\Code\Editor\LevelFileDialog.qrc;C:\Users\lesaelr\o3de\Code\Editor\Lib\Tests\Camera\editor_lib_camera_test_files.cmake;C:\Users\lesaelr\o3de\Code\Editor\MainWindow.qrc;C:\Users\lesaelr\o3de\Code\Editor\Platform\Common\MSVC\editor_lib_msvc.cmake;C:\Users\lesaelr\o3de\Code\Editor\Platform\Windows\editor_core_files_windows.cmake;C:\Users\lesaelr\o3de\Code\Editor\Platform\Windows\editor_lib_windows.cmake;C:\Users\lesaelr\o3de\Code\Editor\Platform\Windows\editor_windows.cmake;C:\Users\lesaelr\o3de\Code\Editor\Platform\Windows\platform_windows_files.cmake;C:\Users\lesaelr\o3de\Code\Editor\StartupLogoDialog.qrc;C:\Users\lesaelr\o3de\Code\Editor\Style\resources.qrc;C:\Users\lesaelr\o3de\Code\Editor\TrackView\TrackViewDialog.qrc;C:\Users\lesaelr\o3de\Code\Editor\WelcomeScreen\WelcomeScreenDialog.qrc;C:\Users\lesaelr\o3de\Code\Editor\WipFeaturesDlg.qrc;C:\Users\lesaelr\o3de\Code\Editor\editor_core_files.cmake;C:\Users\lesaelr\o3de\Code\Editor\editor_core_test_files.cmake;C:\Users\lesaelr\o3de\Code\Editor\editor_files.cmake;C:\Users\lesaelr\o3de\Code\Editor\editor_headers_files.cmake;C:\Users\lesaelr\o3de\Code\Editor\editor_lib_files.cmake;C:\Users\lesaelr\o3de\Code\Editor\editor_lib_test_files.cmake;C:\Users\lesaelr\o3de\Code\Editor\i18n_Translations.qrc;C:\Users\lesaelr\o3de\cmake\Platform\Windows\LYTestWrappers_windows.cmake;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='debug|x64'">C:\Users\lesaelr\o3de\Code\Editor\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='debug|x64'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='profile|x64'">Building Custom Rule C:/Users/lesaelr/o3de/Code/Editor/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='profile|x64'">setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SC:/Users/lesaelr/o3de -BC:/Users/lesaelr/o3de --check-stamp-file C:/Users/lesaelr/o3de/Code/Editor/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='profile|x64'">C:\Program Files\CMake\share\cmake-3.21\Modules\CMakeParseArguments.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\AWSNativeSDK-1.7.167-rev4-windows\FindAWSNativeSDK.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\AWSNativeSDK-1.7.167-rev4-windows\PackageInfo.json;C:\Users\lesaelr\.o3de\3rdParty\packages\squish-ccr-deb557d-rev1-windows\Findsquish-ccr.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\squish-ccr-deb557d-rev1-windows\PackageInfo.json;C:\Users\lesaelr\o3de\Code\Editor\Controls\ConsoleSCB.qrc;C:\Users\lesaelr\o3de\Code\Editor\LayoutConfigDialog.qrc;C:\Users\lesaelr\o3de\Code\Editor\LevelFileDialog.qrc;C:\Users\lesaelr\o3de\Code\Editor\Lib\Tests\Camera\editor_lib_camera_test_files.cmake;C:\Users\lesaelr\o3de\Code\Editor\MainWindow.qrc;C:\Users\lesaelr\o3de\Code\Editor\Platform\Common\MSVC\editor_lib_msvc.cmake;C:\Users\lesaelr\o3de\Code\Editor\Platform\Windows\editor_core_files_windows.cmake;C:\Users\lesaelr\o3de\Code\Editor\Platform\Windows\editor_lib_windows.cmake;C:\Users\lesaelr\o3de\Code\Editor\Platform\Windows\editor_windows.cmake;C:\Users\lesaelr\o3de\Code\Editor\Platform\Windows\platform_windows_files.cmake;C:\Users\lesaelr\o3de\Code\Editor\StartupLogoDialog.qrc;C:\Users\lesaelr\o3de\Code\Editor\Style\resources.qrc;C:\Users\lesaelr\o3de\Code\Editor\TrackView\TrackViewDialog.qrc;C:\Users\lesaelr\o3de\Code\Editor\WelcomeScreen\WelcomeScreenDialog.qrc;C:\Users\lesaelr\o3de\Code\Editor\WipFeaturesDlg.qrc;C:\Users\lesaelr\o3de\Code\Editor\editor_core_files.cmake;C:\Users\lesaelr\o3de\Code\Editor\editor_core_test_files.cmake;C:\Users\lesaelr\o3de\Code\Editor\editor_files.cmake;C:\Users\lesaelr\o3de\Code\Editor\editor_headers_files.cmake;C:\Users\lesaelr\o3de\Code\Editor\editor_lib_files.cmake;C:\Users\lesaelr\o3de\Code\Editor\editor_lib_test_files.cmake;C:\Users\lesaelr\o3de\Code\Editor\i18n_Translations.qrc;C:\Users\lesaelr\o3de\cmake\Platform\Windows\LYTestWrappers_windows.cmake;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='profile|x64'">C:\Users\lesaelr\o3de\Code\Editor\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='profile|x64'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='release|x64'">Building Custom Rule C:/Users/lesaelr/o3de/Code/Editor/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='release|x64'">setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SC:/Users/lesaelr/o3de -BC:/Users/lesaelr/o3de --check-stamp-file C:/Users/lesaelr/o3de/Code/Editor/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='release|x64'">C:\Program Files\CMake\share\cmake-3.21\Modules\CMakeParseArguments.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\AWSNativeSDK-1.7.167-rev4-windows\FindAWSNativeSDK.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\AWSNativeSDK-1.7.167-rev4-windows\PackageInfo.json;C:\Users\lesaelr\.o3de\3rdParty\packages\squish-ccr-deb557d-rev1-windows\Findsquish-ccr.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\squish-ccr-deb557d-rev1-windows\PackageInfo.json;C:\Users\lesaelr\o3de\Code\Editor\Controls\ConsoleSCB.qrc;C:\Users\lesaelr\o3de\Code\Editor\LayoutConfigDialog.qrc;C:\Users\lesaelr\o3de\Code\Editor\LevelFileDialog.qrc;C:\Users\lesaelr\o3de\Code\Editor\Lib\Tests\Camera\editor_lib_camera_test_files.cmake;C:\Users\lesaelr\o3de\Code\Editor\MainWindow.qrc;C:\Users\lesaelr\o3de\Code\Editor\Platform\Common\MSVC\editor_lib_msvc.cmake;C:\Users\lesaelr\o3de\Code\Editor\Platform\Windows\editor_core_files_windows.cmake;C:\Users\lesaelr\o3de\Code\Editor\Platform\Windows\editor_lib_windows.cmake;C:\Users\lesaelr\o3de\Code\Editor\Platform\Windows\editor_windows.cmake;C:\Users\lesaelr\o3de\Code\Editor\Platform\Windows\platform_windows_files.cmake;C:\Users\lesaelr\o3de\Code\Editor\StartupLogoDialog.qrc;C:\Users\lesaelr\o3de\Code\Editor\Style\resources.qrc;C:\Users\lesaelr\o3de\Code\Editor\TrackView\TrackViewDialog.qrc;C:\Users\lesaelr\o3de\Code\Editor\WelcomeScreen\WelcomeScreenDialog.qrc;C:\Users\lesaelr\o3de\Code\Editor\WipFeaturesDlg.qrc;C:\Users\lesaelr\o3de\Code\Editor\editor_core_files.cmake;C:\Users\lesaelr\o3de\Code\Editor\editor_core_test_files.cmake;C:\Users\lesaelr\o3de\Code\Editor\editor_files.cmake;C:\Users\lesaelr\o3de\Code\Editor\editor_headers_files.cmake;C:\Users\lesaelr\o3de\Code\Editor\editor_lib_files.cmake;C:\Users\lesaelr\o3de\Code\Editor\editor_lib_test_files.cmake;C:\Users\lesaelr\o3de\Code\Editor\i18n_Translations.qrc;C:\Users\lesaelr\o3de\cmake\Platform\Windows\LYTestWrappers_windows.cmake;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='release|x64'">C:\Users\lesaelr\o3de\Code\Editor\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='release|x64'">false</LinkObjects>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\editor_headers_files.cmake">
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\ZERO_CHECK.vcxproj">
+      <Project>{CDE32B4E-8490-3FC5-A3F2-976A0A5DE45E}</Project>
+      <Name>ZERO_CHECK</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

@@ -1,0 +1,80 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\ProjectManager\CMakeFiles\ProjectManager.Tests.dir\Unity\unity_0_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\ProjectManager\tests\ApplicationTests.cpp">
+      <Filter>tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\ProjectManager\tests\PythonBindingsTests.cpp">
+      <Filter>tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\ProjectManager\tests\main.cpp">
+      <Filter>tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\ProjectManager\tests\UtilsTests.cpp">
+      <Filter>tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\ProjectManager\ProjectManager.Tests_autogen\S5YYZ2ZCNV\qrc_ProjectManager.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\ProjectManager\Platform\Windows\ProjectManager_Test_Traits_Platform.h">
+      <Filter>Platform\Windows</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\ProjectManager\Platform\Windows\ProjectManager_Test_Traits_Windows.h">
+      <Filter>Platform\Windows</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\CMakeFiles\08b24365a84bd27d080f6dd51f42b933\ProjectManager.Tests_(CONFIG).stamp.rule">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\CMakeFiles\997312277fb768f4201a0ee4c7a22587\qrc_ProjectManager.cpp.rule">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Code\Tools\ProjectManager\CMakeLists.txt">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="C:\Users\lesaelr\o3de\Code\Tools\ProjectManager\Resources\ProjectManager.qrc">
+      <Filter>Resources</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Tools\ProjectManager\Resources\ProjectManager.qss">
+      <Filter>Resources</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Tools\ProjectManager\project_manager_tests_files.cmake" />
+    <None Include="C:\Users\lesaelr\o3de\Code\Tools\ProjectManager\Platform\Windows\PAL_windows_tests_files.cmake">
+      <Filter>Platform\Windows</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\runtime_dependencies\debug\ProjectManager.Tests_debug.stamp">
+      <Filter>Generated Files</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\runtime_dependencies\profile\ProjectManager.Tests_profile.stamp">
+      <Filter>Generated Files</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\runtime_dependencies\release\ProjectManager.Tests_release.stamp">
+      <Filter>Generated Files</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Generated Files">
+      <UniqueIdentifier>{FB9B7D8B-7F05-31D5-AA90-592248EDE1B3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Platform">
+      <UniqueIdentifier>{378A8D8C-6CA1-3F6B-A02B-1E9FF64C97B2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Platform\Windows">
+      <UniqueIdentifier>{63AEF2F6-51C7-306A-BFE8-A049C8C62EFB}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resources">
+      <UniqueIdentifier>{E91AAB63-EC2E-3199-A03F-58FB62D27C21}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="tests">
+      <UniqueIdentifier>{7E4D2478-F637-3FEC-A1A7-318AE9CF3D48}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

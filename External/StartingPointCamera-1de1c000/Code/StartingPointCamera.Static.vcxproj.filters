@@ -1,0 +1,116 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\StartingPointCamera-1de1c000\Code\CMakeFiles\StartingPointCamera.Static.dir\Unity\unity_1_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\StartingPointCamera-1de1c000\Code\CMakeFiles\StartingPointCamera.Static.dir\Unity\unity_0_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\StartingPointCamera\Code\Source\StartingPointCamera\StartingPointCameraUtilities.cpp">
+      <Filter>Source\StartingPointCamera</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\StartingPointCamera\Code\Source\CameraTargetAcquirers\AcquireByEntityId.cpp">
+      <Filter>Source\CameraTargetAcquirers</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\StartingPointCamera\Code\Source\CameraTargetAcquirers\AcquireByTag.cpp">
+      <Filter>Source\CameraTargetAcquirers</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\StartingPointCamera\Code\Source\CameraLookAtBehaviors\OffsetPosition.cpp">
+      <Filter>Source\CameraLookAtBehaviors</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\StartingPointCamera\Code\Source\CameraLookAtBehaviors\SlideAlongAxisBasedOnAngle.cpp">
+      <Filter>Source\CameraLookAtBehaviors</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\StartingPointCamera\Code\Source\CameraLookAtBehaviors\RotateCameraLookAt.cpp">
+      <Filter>Source\CameraLookAtBehaviors</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\StartingPointCamera\Code\Source\CameraTransformBehaviors\FaceTarget.cpp">
+      <Filter>Source\CameraTransformBehaviors</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\StartingPointCamera\Code\Source\CameraTransformBehaviors\FollowTargetFromDistance.cpp">
+      <Filter>Source\CameraTransformBehaviors</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\StartingPointCamera\Code\Source\CameraTransformBehaviors\FollowTargetFromAngle.cpp">
+      <Filter>Source\CameraTransformBehaviors</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\StartingPointCamera\Code\Source\CameraTransformBehaviors\OffsetCameraPosition.cpp">
+      <Filter>Source\CameraTransformBehaviors</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\StartingPointCamera\Code\Source\CameraTransformBehaviors\Rotate.cpp">
+      <Filter>Source\CameraTransformBehaviors</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\StartingPointCamera\Code\Include\StartingPointCamera\StartingPointCameraConstants.h">
+      <Filter>Include\StartingPointCamera</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\StartingPointCamera\Code\Include\StartingPointCamera\StartingPointCameraUtilities.h">
+      <Filter>Include\StartingPointCamera</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\StartingPointCamera\Code\Source\CameraTargetAcquirers\AcquireByEntityId.h">
+      <Filter>Source\CameraTargetAcquirers</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\StartingPointCamera\Code\Source\CameraTargetAcquirers\AcquireByTag.h">
+      <Filter>Source\CameraTargetAcquirers</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\StartingPointCamera\Code\Source\CameraLookAtBehaviors\OffsetPosition.h">
+      <Filter>Source\CameraLookAtBehaviors</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\StartingPointCamera\Code\Source\CameraLookAtBehaviors\SlideAlongAxisBasedOnAngle.h">
+      <Filter>Source\CameraLookAtBehaviors</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\StartingPointCamera\Code\Source\CameraLookAtBehaviors\RotateCameraLookAt.h">
+      <Filter>Source\CameraLookAtBehaviors</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\StartingPointCamera\Code\Source\CameraTransformBehaviors\FaceTarget.h">
+      <Filter>Source\CameraTransformBehaviors</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\StartingPointCamera\Code\Source\CameraTransformBehaviors\FollowTargetFromDistance.h">
+      <Filter>Source\CameraTransformBehaviors</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\StartingPointCamera\Code\Source\CameraTransformBehaviors\FollowTargetFromAngle.h">
+      <Filter>Source\CameraTransformBehaviors</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\StartingPointCamera\Code\Source\CameraTransformBehaviors\OffsetCameraPosition.h">
+      <Filter>Source\CameraTransformBehaviors</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\StartingPointCamera\Code\Source\CameraTransformBehaviors\Rotate.h">
+      <Filter>Source\CameraTransformBehaviors</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Gems\StartingPointCamera\Code\CMakeLists.txt">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="C:\Users\lesaelr\o3de\Gems\StartingPointCamera\Code\startingpointcamera_files.cmake" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Generated Files">
+      <UniqueIdentifier>{FB9B7D8B-7F05-31D5-AA90-592248EDE1B3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include">
+      <UniqueIdentifier>{E188105A-C8C4-34BB-9809-15E8410EF7F8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\StartingPointCamera">
+      <UniqueIdentifier>{20549371-DAF4-3BAE-B4D3-EBF74AAF2B2B}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source">
+      <UniqueIdentifier>{F3F0AD47-5F83-373B-A2BF-650D2E4FA3EA}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\CameraLookAtBehaviors">
+      <UniqueIdentifier>{DDFA93A1-40AA-3305-9A1B-BB7B33D70D84}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\CameraTargetAcquirers">
+      <UniqueIdentifier>{0FC49AC8-E020-3886-8C1C-6807EF4E8874}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\CameraTransformBehaviors">
+      <UniqueIdentifier>{279E7306-E688-336E-9D55-8A1470EA0C0A}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\StartingPointCamera">
+      <UniqueIdentifier>{E8EAC66E-F1A1-38C9-873B-C2E5ED2043F6}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

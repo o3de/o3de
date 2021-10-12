@@ -1,0 +1,134 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\AWSCore-48b9dca4\Code\CMakeFiles\AWSCore.Editor.Static.dir\Unity\unity_1_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\AWSCore-48b9dca4\Code\CMakeFiles\AWSCore.Editor.Static.dir\Unity\unity_0_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\AWSCore\Code\Source\AWSCoreEditorSystemComponent.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\AWSCore\Code\Source\Editor\AWSCoreEditorManager.cpp">
+      <Filter>Source\Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\AWSCore\Code\Source\Editor\Attribution\AWSCoreAttributionMetric.cpp">
+      <Filter>Source\Editor\Attribution</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\AWSCore\Code\Source\Editor\Attribution\AWSCoreAttributionManager.cpp">
+      <Filter>Source\Editor\Attribution</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\AWSCore\Code\Source\Editor\Attribution\AWSCoreAttributionSystemComponent.cpp">
+      <Filter>Source\Editor\Attribution</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\AWSCore\Code\Source\Editor\Attribution\AWSAttributionServiceApi.cpp">
+      <Filter>Source\Editor\Attribution</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\AWSCore\Code\Source\Editor\Attribution\AWSCoreAttributionConsentDialog.cpp">
+      <Filter>Source\Editor\Attribution</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\AWSCore\Code\Source\Editor\UI\AWSCoreEditorMenu.cpp">
+      <Filter>Source\Editor\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\AWSCore\Code\Source\Editor\UI\AWSCoreResourceMappingToolAction.cpp">
+      <Filter>Source\Editor\UI</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\AWSCore\Code\Include\Private\AWSCoreEditorSystemComponent.h">
+      <Filter>Include\Private</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\AWSCore\Code\Include\Private\Editor\Attribution\AWSCoreAttributionConstant.h">
+      <Filter>Include\Private\Editor\Attribution</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\AWSCore\Code\Include\Private\Editor\Attribution\AWSCoreAttributionMetric.h">
+      <Filter>Include\Private\Editor\Attribution</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\AWSCore\Code\Include\Private\Editor\Attribution\AWSCoreAttributionManager.h">
+      <Filter>Include\Private\Editor\Attribution</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\AWSCore\Code\Include\Private\Editor\Attribution\AWSCoreAttributionSystemComponent.h">
+      <Filter>Include\Private\Editor\Attribution</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\AWSCore\Code\Include\Private\Editor\Attribution\AWSAttributionServiceApi.h">
+      <Filter>Include\Private\Editor\Attribution</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\AWSCore\Code\Include\Private\Editor\Attribution\AWSCoreAttributionConsentDialog.h">
+      <Filter>Include\Private\Editor\Attribution</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\AWSCore\Code\Include\Private\Editor\AWSCoreEditorManager.h">
+      <Filter>Include\Private\Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\AWSCore\Code\Include\Private\Editor\Constants\AWSCoreEditorMenuLinks.h">
+      <Filter>Include\Private\Editor\Constants</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\AWSCore\Code\Include\Private\Editor\Constants\AWSCoreEditorMenuNames.h">
+      <Filter>Include\Private\Editor\Constants</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\AWSCore\Code\Include\Private\Editor\UI\AWSCoreEditorMenu.h">
+      <Filter>Include\Private\Editor\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\AWSCore\Code\Include\Private\Editor\UI\AWSCoreResourceMappingToolAction.h">
+      <Filter>Include\Private\Editor\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\AWSCore\Code\Include\Private\Editor\Platform\Windows\AWSCoreEditor_Traits_Platform.h">
+      <Filter>Include\Private\Editor\Platform\Windows</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\AWSCore\Code\Include\Private\Editor\Platform\Windows\AWSCoreEditor_Traits_Windows.h">
+      <Filter>Include\Private\Editor\Platform\Windows</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Gems\AWSCore\Code\CMakeLists.txt">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="C:\Users\lesaelr\o3de\Gems\AWSCore\Code\awscore_editor_files.cmake" />
+    <None Include="C:\Users\lesaelr\o3de\Gems\AWSCore\Code\Include\Private\Editor\Platform\Windows\platform_windows_files.cmake">
+      <Filter>Include\Private\Editor\Platform\Windows</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Generated Files">
+      <UniqueIdentifier>{FB9B7D8B-7F05-31D5-AA90-592248EDE1B3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include">
+      <UniqueIdentifier>{E188105A-C8C4-34BB-9809-15E8410EF7F8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\Private">
+      <UniqueIdentifier>{9A706140-4A99-3FC5-8C68-4F65DF59576D}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\Private\Editor">
+      <UniqueIdentifier>{0379CFB2-0C1F-34F5-9FBD-D58FA0F75EDC}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\Private\Editor\Attribution">
+      <UniqueIdentifier>{F59D8C5C-EE87-3ED2-8673-60D2E2A4D82F}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\Private\Editor\Constants">
+      <UniqueIdentifier>{41C2B523-5862-3502-9E21-A2588E2DB65F}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\Private\Editor\Platform">
+      <UniqueIdentifier>{E49E24B2-ADB7-3538-9347-D82E9CE61FD7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\Private\Editor\Platform\Windows">
+      <UniqueIdentifier>{554E4C34-5EB4-379D-97AB-7663EFB7236C}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\Private\Editor\UI">
+      <UniqueIdentifier>{7B393BC0-EE26-31CC-8273-4A77FD633932}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source">
+      <UniqueIdentifier>{F3F0AD47-5F83-373B-A2BF-650D2E4FA3EA}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Editor">
+      <UniqueIdentifier>{32FCFB28-A730-3475-B9AE-03974723A74B}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Editor\Attribution">
+      <UniqueIdentifier>{98515FE5-2981-38E5-81E5-2D09FE3CCAD0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Editor\UI">
+      <UniqueIdentifier>{63C55326-031B-37E9-98B3-CE26EE6FF64C}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

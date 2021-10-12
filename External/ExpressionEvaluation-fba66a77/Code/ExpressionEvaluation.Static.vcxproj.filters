@@ -1,0 +1,92 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\ExpressionEvaluation-fba66a77\Code\CMakeFiles\ExpressionEvaluation.Static.dir\Unity\unity_0_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ExpressionEvaluation\Code\Source\ExpressionEvaluationSystemComponent.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ExpressionEvaluation\Code\Source\ExpressionEngine\ExpressionPrimitive.cpp">
+      <Filter>Source\ExpressionEngine</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ExpressionEvaluation\Code\Source\ExpressionEngine\ExpressionVariable.cpp">
+      <Filter>Source\ExpressionEngine</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ExpressionEvaluation\Code\Source\ExpressionEngine\MathOperators\MathExpressionOperators.cpp">
+      <Filter>Source\ExpressionEngine\MathOperators</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ExpressionEvaluation\Code\Include\ExpressionEvaluation\ExpressionEvaluationBus.h">
+      <Filter>Include\ExpressionEvaluation</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ExpressionEvaluation\Code\Include\ExpressionEvaluation\ExpressionEngine.h">
+      <Filter>Include\ExpressionEvaluation</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ExpressionEvaluation\Code\Include\ExpressionEvaluation\ExpressionEngine\ExpressionTree.h">
+      <Filter>Include\ExpressionEvaluation\ExpressionEngine</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ExpressionEvaluation\Code\Include\ExpressionEvaluation\ExpressionEngine\ExpressionTypes.h">
+      <Filter>Include\ExpressionEvaluation\ExpressionEngine</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ExpressionEvaluation\Code\Source\ExpressionEvaluationSystemComponent.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ExpressionEvaluation\Code\Source\ExpressionPrimitivesSerializers.inl">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ExpressionEvaluation\Code\Source\ElementInformationSerializer.inl">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ExpressionEvaluation\Code\Source\ExpressionEngine\ExpressionElementParser.h">
+      <Filter>Source\ExpressionEngine</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ExpressionEvaluation\Code\Source\ExpressionEngine\ExpressionPrimitive.h">
+      <Filter>Source\ExpressionEngine</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ExpressionEvaluation\Code\Source\ExpressionEngine\ExpressionVariable.h">
+      <Filter>Source\ExpressionEngine</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ExpressionEvaluation\Code\Source\ExpressionEngine\InternalTypes.h">
+      <Filter>Source\ExpressionEngine</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ExpressionEvaluation\Code\Source\ExpressionEngine\Utils.h">
+      <Filter>Source\ExpressionEngine</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ExpressionEvaluation\Code\Source\ExpressionEngine\MathOperators\MathExpressionOperators.h">
+      <Filter>Source\ExpressionEngine\MathOperators</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Gems\ExpressionEvaluation\Code\CMakeLists.txt">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="C:\Users\lesaelr\o3de\Gems\ExpressionEvaluation\Code\expressionevaluation_files.cmake" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Generated Files">
+      <UniqueIdentifier>{FB9B7D8B-7F05-31D5-AA90-592248EDE1B3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include">
+      <UniqueIdentifier>{E188105A-C8C4-34BB-9809-15E8410EF7F8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\ExpressionEvaluation">
+      <UniqueIdentifier>{74924521-6F3B-3D0B-9EB0-5B5C36B71E39}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\ExpressionEvaluation\ExpressionEngine">
+      <UniqueIdentifier>{DA613E29-8438-3834-82F2-22E68B2FC9BD}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source">
+      <UniqueIdentifier>{F3F0AD47-5F83-373B-A2BF-650D2E4FA3EA}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\ExpressionEngine">
+      <UniqueIdentifier>{2DF08260-D4A7-3185-AE1D-49CDFD7FF3AD}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\ExpressionEngine\MathOperators">
+      <UniqueIdentifier>{4A36509D-40B5-3C9C-AB01-A631C559C83E}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

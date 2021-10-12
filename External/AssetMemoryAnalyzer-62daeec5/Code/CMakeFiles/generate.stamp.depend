@@ -1,0 +1,6 @@
+# CMake generation dependency list for this directory.
+C:/Users/lesaelr/o3de/Gems/AssetMemoryAnalyzer/Code/CMakeLists.txt
+C:/Users/lesaelr/o3de/Gems/AssetMemoryAnalyzer/Code/assetmemoryanalyzer_files.cmake
+C:/Users/lesaelr/o3de/Gems/AssetMemoryAnalyzer/Code/assetmemoryanalyzer_shared_files.cmake
+C:/Users/lesaelr/o3de/Gems/AssetMemoryAnalyzer/Code/assetmemoryanalyzer_tests_files.cmake
+C:/Users/lesaelr/o3de/cmake/Platform/Windows/LYTestWrappers_windows.cmake

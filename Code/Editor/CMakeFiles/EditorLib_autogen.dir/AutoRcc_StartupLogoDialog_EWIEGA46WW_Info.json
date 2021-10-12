@@ -1,0 +1,29 @@
+{
+	"BUILD_DIR" : "C:/Users/lesaelr/o3de/Code/Editor/EditorLib_autogen",
+	"CMAKE_BINARY_DIR" : "C:/Users/lesaelr/o3de",
+	"CMAKE_CURRENT_BINARY_DIR" : "C:/Users/lesaelr/o3de/Code/Editor",
+	"CMAKE_CURRENT_SOURCE_DIR" : "C:/Users/lesaelr/o3de/Code/Editor",
+	"CMAKE_SOURCE_DIR" : "C:/Users/lesaelr/o3de",
+	"INCLUDE_DIR" : "C:/Users/lesaelr/o3de/Code/Editor/EditorLib_autogen/include",
+	"INCLUDE_DIR_debug" : "C:/Users/lesaelr/o3de/Code/Editor/EditorLib_autogen/include_debug",
+	"INCLUDE_DIR_profile" : "C:/Users/lesaelr/o3de/Code/Editor/EditorLib_autogen/include_profile",
+	"INCLUDE_DIR_release" : "C:/Users/lesaelr/o3de/Code/Editor/EditorLib_autogen/include_release",
+	"INPUTS" : 
+	[
+		"C:/Users/lesaelr/o3de/Code/Editor/splashscreen_background_developer_preview.jpg",
+		"C:/Users/lesaelr/o3de/Code/Editor/o3de_logo.svg"
+	],
+	"LOCK_FILE" : "C:/Users/lesaelr/o3de/Code/Editor/CMakeFiles/EditorLib_autogen.dir/AutoRcc_StartupLogoDialog_EWIEGA46WW_Lock.lock",
+	"MULTI_CONFIG" : true,
+	"OPTIONS" : [ "-name", "StartupLogoDialog" ],
+	"OUTPUT_CHECKSUM" : "EWIEGA46WW",
+	"OUTPUT_NAME" : "qrc_StartupLogoDialog.cpp",
+	"RCC_EXECUTABLE" : "C:/Users/lesaelr/.o3de/3rdParty/packages/qt-5.15.2-rev4-windows/qt/bin/rcc.exe",
+	"RCC_LIST_OPTIONS" : [ "--list" ],
+	"SETTINGS_FILE" : "C:/Users/lesaelr/o3de/Code/Editor/CMakeFiles/EditorLib_autogen.dir/AutoRcc_StartupLogoDialog_EWIEGA46WW_Used.txt",
+	"SETTINGS_FILE_debug" : "C:/Users/lesaelr/o3de/Code/Editor/CMakeFiles/EditorLib_autogen.dir/AutoRcc_StartupLogoDialog_EWIEGA46WW_Used_debug.txt",
+	"SETTINGS_FILE_profile" : "C:/Users/lesaelr/o3de/Code/Editor/CMakeFiles/EditorLib_autogen.dir/AutoRcc_StartupLogoDialog_EWIEGA46WW_Used_profile.txt",
+	"SETTINGS_FILE_release" : "C:/Users/lesaelr/o3de/Code/Editor/CMakeFiles/EditorLib_autogen.dir/AutoRcc_StartupLogoDialog_EWIEGA46WW_Used_release.txt",
+	"SOURCE" : "C:/Users/lesaelr/o3de/Code/Editor/StartupLogoDialog.qrc",
+	"VERBOSITY" : 0
+}

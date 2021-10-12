@@ -1,0 +1,6 @@
+# CMake generation dependency list for this directory.
+C:/Users/lesaelr/o3de/Gems/AWSGameLift/Code/AWSGameLiftClient/CMakeLists.txt
+C:/Users/lesaelr/o3de/Gems/AWSGameLift/Code/AWSGameLiftClient/awsgamelift_client_files.cmake
+C:/Users/lesaelr/o3de/Gems/AWSGameLift/Code/AWSGameLiftClient/awsgamelift_client_shared_files.cmake
+C:/Users/lesaelr/o3de/Gems/AWSGameLift/Code/AWSGameLiftClient/awsgamelift_client_tests_files.cmake
+C:/Users/lesaelr/o3de/cmake/Platform/Windows/LYTestWrappers_windows.cmake

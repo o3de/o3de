@@ -1,0 +1,248 @@
+{
+	"BUILD_DIR" : "C:/Users/lesaelr/o3de/Code/Editor/Plugins/PerforcePlugin/PerforcePlugin_autogen",
+	"CMAKE_BINARY_DIR" : "C:/Users/lesaelr/o3de",
+	"CMAKE_CURRENT_BINARY_DIR" : "C:/Users/lesaelr/o3de/Code/Editor/Plugins/PerforcePlugin",
+	"CMAKE_CURRENT_SOURCE_DIR" : "C:/Users/lesaelr/o3de/Code/Editor/Plugins/PerforcePlugin",
+	"CMAKE_EXECUTABLE" : "C:/Program Files/CMake/bin/cmake.exe",
+	"CMAKE_LIST_FILES" : 
+	[
+		"C:/Users/lesaelr/o3de/Code/Editor/Plugins/PerforcePlugin/CMakeLists.txt",
+		"C:/Users/lesaelr/o3de/Code/Editor/Plugins/PerforcePlugin/Platform/Windows/PAL_windows.cmake",
+		"C:/Users/lesaelr/o3de/Code/Editor/Plugins/PerforcePlugin/perforceplugin_files.cmake"
+	],
+	"CMAKE_SOURCE_DIR" : "C:/Users/lesaelr/o3de",
+	"DEP_FILE" : "",
+	"DEP_FILE_RULE_NAME" : "",
+	"HEADERS" : 
+	[
+		[
+			"C:/Users/lesaelr/o3de/Code/Editor/Plugins/PerforcePlugin/PasswordDlg.h",
+			"Mu",
+			"EWIEGA46WW/moc_PasswordDlg.cpp",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Code/Editor/Plugins/PerforcePlugin/PerforcePlugin.h",
+			"Mu",
+			"EWIEGA46WW/moc_PerforcePlugin.cpp",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Code/Editor/Plugins/PerforcePlugin/PerforceSourceControl.h",
+			"Mu",
+			"EWIEGA46WW/moc_PerforceSourceControl.cpp",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Code/Editor/Plugins/PerforcePlugin/resource.h",
+			"Mu",
+			"EWIEGA46WW/moc_resource.cpp",
+			null
+		]
+	],
+	"HEADER_EXTENSIONS" : [ "h", "hh", "h++", "hm", "hpp", "hxx", "in", "txx" ],
+	"INCLUDE_DIR" : "C:/Users/lesaelr/o3de/Code/Editor/Plugins/PerforcePlugin/PerforcePlugin_autogen/include",
+	"INCLUDE_DIR_debug" : "C:/Users/lesaelr/o3de/Code/Editor/Plugins/PerforcePlugin/PerforcePlugin_autogen/include_debug",
+	"INCLUDE_DIR_profile" : "C:/Users/lesaelr/o3de/Code/Editor/Plugins/PerforcePlugin/PerforcePlugin_autogen/include_profile",
+	"INCLUDE_DIR_release" : "C:/Users/lesaelr/o3de/Code/Editor/Plugins/PerforcePlugin/PerforcePlugin_autogen/include_release",
+	"MOC_COMPILATION_FILE" : "C:/Users/lesaelr/o3de/Code/Editor/Plugins/PerforcePlugin/PerforcePlugin_autogen/mocs_compilation.cpp",
+	"MOC_COMPILATION_FILE_debug" : "C:/Users/lesaelr/o3de/Code/Editor/Plugins/PerforcePlugin/PerforcePlugin_autogen/mocs_compilation_debug.cpp",
+	"MOC_COMPILATION_FILE_profile" : "C:/Users/lesaelr/o3de/Code/Editor/Plugins/PerforcePlugin/PerforcePlugin_autogen/mocs_compilation_profile.cpp",
+	"MOC_COMPILATION_FILE_release" : "C:/Users/lesaelr/o3de/Code/Editor/Plugins/PerforcePlugin/PerforcePlugin_autogen/mocs_compilation_release.cpp",
+	"MOC_DEFINITIONS" : 
+	[
+		"AWS_CUSTOM_MEMORY_MANAGEMENT",
+		"EDITOR",
+		"NOMINMAX",
+		"OPENSSL_ENABLED",
+		"PLATFORM_SUPPORTS_AWS_NATIVE_SDK",
+		"PLUGIN_EXPORTS",
+		"PerforcePlugin_EXPORTS",
+		"QT_CORE_LIB",
+		"QT_GUI_LIB",
+		"QT_NETWORK_LIB",
+		"QT_NO_DEBUG",
+		"QT_SVG_LIB",
+		"QT_WIDGETS_LIB",
+		"QT_XML_LIB",
+		"SANDBOX_IMPORTS",
+		"USE_IMPORT_EXPORT",
+		"WIN32",
+		"WIN64",
+		"_ENABLE_EXTENDED_ALIGNED_STORAGE",
+		"_HAS_EXCEPTIONS=0",
+		"_WIN32",
+		"_WIN64"
+	],
+	"MOC_DEFINITIONS_debug" : 
+	[
+		"AWS_CUSTOM_MEMORY_MANAGEMENT",
+		"AZ_BUILD_CONFIGURATION_TYPE=\"debug\"",
+		"AZ_DEBUG_BUILD=1",
+		"AZ_ENABLE_DEBUG_TOOLS",
+		"AZ_ENABLE_TRACING",
+		"EDITOR",
+		"NOMINMAX",
+		"OPENSSL_ENABLED",
+		"PLATFORM_SUPPORTS_AWS_NATIVE_SDK",
+		"PLUGIN_EXPORTS",
+		"PerforcePlugin_EXPORTS",
+		"QT_CORE_LIB",
+		"QT_GUI_LIB",
+		"QT_NETWORK_LIB",
+		"QT_SVG_LIB",
+		"QT_WIDGETS_LIB",
+		"QT_XML_LIB",
+		"SANDBOX_IMPORTS",
+		"USE_IMPORT_EXPORT",
+		"WIN32",
+		"WIN64",
+		"_DEBUG",
+		"_ENABLE_EXTENDED_ALIGNED_STORAGE",
+		"_HAS_EXCEPTIONS=0",
+		"_WIN32",
+		"_WIN64"
+	],
+	"MOC_DEFINITIONS_profile" : 
+	[
+		"AWS_CUSTOM_MEMORY_MANAGEMENT",
+		"AZ_BUILD_CONFIGURATION_TYPE=\"profile\"",
+		"AZ_ENABLE_DEBUG_TOOLS",
+		"AZ_ENABLE_TRACING",
+		"EDITOR",
+		"NDEBUG",
+		"NOMINMAX",
+		"OPENSSL_ENABLED",
+		"PLATFORM_SUPPORTS_AWS_NATIVE_SDK",
+		"PLUGIN_EXPORTS",
+		"PROFILE",
+		"PerforcePlugin_EXPORTS",
+		"QT_CORE_LIB",
+		"QT_GUI_LIB",
+		"QT_NETWORK_LIB",
+		"QT_NO_DEBUG",
+		"QT_SVG_LIB",
+		"QT_WIDGETS_LIB",
+		"QT_XML_LIB",
+		"SANDBOX_IMPORTS",
+		"USE_IMPORT_EXPORT",
+		"WIN32",
+		"WIN64",
+		"_ENABLE_EXTENDED_ALIGNED_STORAGE",
+		"_HAS_EXCEPTIONS=0",
+		"_PROFILE",
+		"_WIN32",
+		"_WIN64"
+	],
+	"MOC_DEFINITIONS_release" : 
+	[
+		"AWS_CUSTOM_MEMORY_MANAGEMENT",
+		"AZ_BUILD_CONFIGURATION_TYPE=\"release\"",
+		"EDITOR",
+		"NDEBUG",
+		"NOMINMAX",
+		"OPENSSL_ENABLED",
+		"PLATFORM_SUPPORTS_AWS_NATIVE_SDK",
+		"PLUGIN_EXPORTS",
+		"PerforcePlugin_EXPORTS",
+		"QT_CORE_LIB",
+		"QT_GUI_LIB",
+		"QT_NETWORK_LIB",
+		"QT_NO_DEBUG",
+		"QT_SVG_LIB",
+		"QT_WIDGETS_LIB",
+		"QT_XML_LIB",
+		"RELEASE",
+		"SANDBOX_IMPORTS",
+		"USE_IMPORT_EXPORT",
+		"WIN32",
+		"WIN64",
+		"_ENABLE_EXTENDED_ALIGNED_STORAGE",
+		"_HAS_EXCEPTIONS=0",
+		"_RELEASE",
+		"_WIN32",
+		"_WIN64"
+	],
+	"MOC_DEPEND_FILTERS" : 
+	[
+		[
+			"Q_PLUGIN_METADATA",
+			"[\n][ \t]*Q_PLUGIN_METADATA[ \t]*\\([^\\)]*FILE[ \t]*\"([^\"]+)\""
+		]
+	],
+	"MOC_INCLUDES" : 
+	[
+		"C:/Users/lesaelr/o3de/Code/Editor/Plugins/PerforcePlugin",
+		"C:/Users/lesaelr/o3de/Code/Editor/Plugins/PerforcePlugin/PerforcePlugin_autogen/include",
+		"C:/Users/lesaelr/o3de/Code/Framework/AzCore",
+		"C:/Users/lesaelr/o3de/Code/Framework/AzCore/Platform/Windows",
+		"C:/Users/lesaelr/o3de/Code/Framework/AzCore/Platform/Common",
+		"C:/Users/lesaelr/o3de/Code/Legacy/CryCommon",
+		"C:/Users/lesaelr/o3de/Code/Legacy",
+		"C:/Users/lesaelr/o3de/Code/Legacy/CryCommon/Platform/Windows",
+		"C:/Users/lesaelr/o3de/Code/Framework/AzFramework",
+		"C:/Users/lesaelr/o3de/Code/Framework/AzFramework/Platform/Windows",
+		"C:/Users/lesaelr/o3de/Code/Framework/GridMate",
+		"C:/Users/lesaelr/o3de/Code/Framework/GridMate/Platform/Windows",
+		"C:/Users/lesaelr/o3de/Code/Editor/Include",
+		"C:/Users/lesaelr/o3de/Code/Editor",
+		"C:/Users/lesaelr/o3de/Code",
+		"C:/Users/lesaelr/o3de/Code/Framework/AzToolsFramework",
+		"C:/Users/lesaelr/o3de/Code/Framework/AzToolsFramework/AzToolsFramework",
+		"C:/Users/lesaelr/o3de/Code/Framework/AzToolsFramework/Platform/Windows",
+		"C:/Users/lesaelr/o3de/Code/Framework/AzQtComponents"
+	],
+	"MOC_MACRO_NAMES" : [ "Q_OBJECT", "Q_GADGET", "Q_NAMESPACE", "Q_NAMESPACE_EXPORT" ],
+	"MOC_OPTIONS" : [],
+	"MOC_PATH_PREFIX" : false,
+	"MOC_PREDEFS_CMD" : [],
+	"MOC_PREDEFS_FILE" : "",
+	"MOC_RELAXED_MODE" : false,
+	"MOC_SKIP" : 
+	[
+		"C:/Users/lesaelr/o3de/Code/Editor/Plugins/PerforcePlugin/PerforcePlugin_autogen/include/ui_settings.h"
+	],
+	"MULTI_CONFIG" : true,
+	"PARALLEL" : 6,
+	"PARSE_CACHE_FILE" : "C:/Users/lesaelr/o3de/Code/Editor/Plugins/PerforcePlugin/CMakeFiles/PerforcePlugin_autogen.dir/ParseCache.txt",
+	"PARSE_CACHE_FILE_debug" : "C:/Users/lesaelr/o3de/Code/Editor/Plugins/PerforcePlugin/CMakeFiles/PerforcePlugin_autogen.dir/ParseCache_debug.txt",
+	"PARSE_CACHE_FILE_profile" : "C:/Users/lesaelr/o3de/Code/Editor/Plugins/PerforcePlugin/CMakeFiles/PerforcePlugin_autogen.dir/ParseCache_profile.txt",
+	"PARSE_CACHE_FILE_release" : "C:/Users/lesaelr/o3de/Code/Editor/Plugins/PerforcePlugin/CMakeFiles/PerforcePlugin_autogen.dir/ParseCache_release.txt",
+	"QT_MOC_EXECUTABLE" : "C:/Users/lesaelr/.o3de/3rdParty/packages/qt-5.15.2-rev4-windows/qt/bin/moc.exe",
+	"QT_UIC_EXECUTABLE" : "",
+	"QT_VERSION_MAJOR" : 5,
+	"QT_VERSION_MINOR" : 15,
+	"SETTINGS_FILE" : "C:/Users/lesaelr/o3de/Code/Editor/Plugins/PerforcePlugin/CMakeFiles/PerforcePlugin_autogen.dir/AutogenUsed.txt",
+	"SETTINGS_FILE_debug" : "C:/Users/lesaelr/o3de/Code/Editor/Plugins/PerforcePlugin/CMakeFiles/PerforcePlugin_autogen.dir/AutogenUsed_debug.txt",
+	"SETTINGS_FILE_profile" : "C:/Users/lesaelr/o3de/Code/Editor/Plugins/PerforcePlugin/CMakeFiles/PerforcePlugin_autogen.dir/AutogenUsed_profile.txt",
+	"SETTINGS_FILE_release" : "C:/Users/lesaelr/o3de/Code/Editor/Plugins/PerforcePlugin/CMakeFiles/PerforcePlugin_autogen.dir/AutogenUsed_release.txt",
+	"SOURCES" : 
+	[
+		[
+			"C:/Users/lesaelr/o3de/Code/Editor/Plugins/PerforcePlugin/CMakeFiles/PerforcePlugin.dir/Unity/unity_0_cxx.cxx",
+			"Mu",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Code/Editor/Plugins/PerforcePlugin/PasswordDlg.cpp",
+			"Mu",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Code/Editor/Plugins/PerforcePlugin/PerforcePlugin.cpp",
+			"Mu",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Code/Editor/Plugins/PerforcePlugin/PerforceSourceControl.cpp",
+			"Mu",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Code/Editor/Plugins/PerforcePlugin/main.cpp",
+			"Mu",
+			null
+		]
+	],
+	"VERBOSITY" : 0
+}

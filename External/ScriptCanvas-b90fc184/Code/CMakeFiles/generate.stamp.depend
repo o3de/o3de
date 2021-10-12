@@ -1,0 +1,15 @@
+# CMake generation dependency list for this directory.
+C:/Users/lesaelr/o3de/Gems/ScriptCanvas/Code/CMakeLists.txt
+C:/Users/lesaelr/o3de/Gems/ScriptCanvas/Code/Editor/View/Windows/ScriptCanvasEditorResources.qrc
+C:/Users/lesaelr/o3de/Gems/ScriptCanvas/Code/scriptcanvasgem_common_files.cmake
+C:/Users/lesaelr/o3de/Gems/ScriptCanvas/Code/scriptcanvasgem_debugger_files.cmake
+C:/Users/lesaelr/o3de/Gems/ScriptCanvas/Code/scriptcanvasgem_editor_asset_files.cmake
+C:/Users/lesaelr/o3de/Gems/ScriptCanvas/Code/scriptcanvasgem_editor_builder_files.cmake
+C:/Users/lesaelr/o3de/Gems/ScriptCanvas/Code/scriptcanvasgem_editor_files.cmake
+C:/Users/lesaelr/o3de/Gems/ScriptCanvas/Code/scriptcanvasgem_editor_shared_files.cmake
+C:/Users/lesaelr/o3de/Gems/ScriptCanvas/Code/scriptcanvasgem_editor_static_files.cmake
+C:/Users/lesaelr/o3de/Gems/ScriptCanvas/Code/scriptcanvasgem_editor_tests_files.cmake
+C:/Users/lesaelr/o3de/Gems/ScriptCanvas/Code/scriptcanvasgem_game_files.cmake
+C:/Users/lesaelr/o3de/Gems/ScriptCanvas/Code/scriptcanvasgem_runtime_asset_files.cmake
+C:/Users/lesaelr/o3de/Gems/ScriptCanvas/Code/scriptcanvasgem_tests_files.cmake
+C:/Users/lesaelr/o3de/cmake/Platform/Windows/LYTestWrappers_windows.cmake

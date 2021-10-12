@@ -1,0 +1,4 @@
+# CMake generation dependency list for this directory.
+C:/Users/lesaelr/o3de/Code/Tools/SerializeContextTools/CMakeLists.txt
+C:/Users/lesaelr/o3de/Code/Tools/SerializeContextTools/Platform/Windows/PAL_windows.cmake
+C:/Users/lesaelr/o3de/Code/Tools/SerializeContextTools/serializecontexttools_files.cmake

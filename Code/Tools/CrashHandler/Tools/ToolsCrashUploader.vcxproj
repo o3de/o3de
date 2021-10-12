@@ -1,0 +1,498 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <PreferredToolArchitecture>x64</PreferredToolArchitecture>
+  </PropertyGroup>
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="debug|x64">
+      <Configuration>debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="profile|x64">
+      <Configuration>profile</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="release|x64">
+      <Configuration>release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{835A190B-8753-36B5-95DC-BCCA6D6B44BD}</ProjectGuid>
+    <WindowsTargetPlatformVersion>10.0.19041.0</WindowsTargetPlatformVersion>
+    <Keyword>Win32Proj</Keyword>
+    <Platform>x64</Platform>
+    <ProjectName>ToolsCrashUploader</ProjectName>
+    <VCProjectUpgraderObjectName>NoUpgrade</VCProjectUpgraderObjectName>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='debug|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v142</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='profile|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v142</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='release|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v142</PlatformToolset>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>10.0.20506.1</_ProjectFileVersion>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='debug|x64'">C:\Users\lesaelr\o3de\bin\debug\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='debug|x64'">ToolsCrashUploader.dir\debug\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='debug|x64'">ToolsCrashUploader</TargetName>
+    <TargetExt Condition="'$(Configuration)|$(Platform)'=='debug|x64'">.exe</TargetExt>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='debug|x64'">false</LinkIncremental>
+    <GenerateManifest Condition="'$(Configuration)|$(Platform)'=='debug|x64'">true</GenerateManifest>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='profile|x64'">C:\Users\lesaelr\o3de\bin\profile\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='profile|x64'">ToolsCrashUploader.dir\profile\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='profile|x64'">ToolsCrashUploader</TargetName>
+    <TargetExt Condition="'$(Configuration)|$(Platform)'=='profile|x64'">.exe</TargetExt>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='profile|x64'">false</LinkIncremental>
+    <GenerateManifest Condition="'$(Configuration)|$(Platform)'=='profile|x64'">true</GenerateManifest>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='release|x64'">C:\Users\lesaelr\o3de\bin\release\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='release|x64'">ToolsCrashUploader.dir\release\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='release|x64'">ToolsCrashUploader</TargetName>
+    <TargetExt Condition="'$(Configuration)|$(Platform)'=='release|x64'">.exe</TargetExt>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='release|x64'">false</LinkIncremental>
+    <GenerateManifest Condition="'$(Configuration)|$(Platform)'=='release|x64'">true</GenerateManifest>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='debug|x64'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>C:\Users\lesaelr\o3de\Code\Tools\CrashHandler\Tools\ToolsCrashUploader_autogen\include_debug;C:\Users\lesaelr\o3de\Code\Tools\CrashHandler\Tools\Uploader;C:\Users\lesaelr\o3de\Code\Tools\CrashHandler\Tools\ToolsCrashUploader_autogen\include\Uploader;C:\Users\lesaelr\o3de\Code\Tools\CrashHandler\Tools\ToolsCrashUploader_autogen\include;C:\Users\lesaelr\o3de\Code\Tools\CrashHandler\Uploader\include;C:\Users\lesaelr\o3de\Code\Tools\CrashHandler\Support\include;C:\Users\lesaelr\o3de\Code\Framework\AzCore\.;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Common;C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\.;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalOptions>%(AdditionalOptions) /Zc:__cplusplus /Zc:lambda /favor:AMD64 /bigobj /RTCsu /experimental:external /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/qt-5.15.2-rev4-windows/qt/include/ /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/qt-5.15.2-rev4-windows/qt/include/QtCore /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/qt-5.15.2-rev4-windows/qt/.//mkspecs/win32-msvc /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/qt-5.15.2-rev4-windows/qt/include/QtGui /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/qt-5.15.2-rev4-windows/qt/include//QtANGLE /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/qt-5.15.2-rev4-windows/qt/include/QtGui/5.15.1 /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/qt-5.15.2-rev4-windows/qt/include/QtGui/5.15.1/QtGui /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/qt-5.15.2-rev4-windows/qt/include/QtCore/5.15.1 /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/qt-5.15.2-rev4-windows/qt/include/QtCore/5.15.1/QtCore /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/qt-5.15.2-rev4-windows/qt/include/QtWidgets /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/qt-5.15.2-rev4-windows/qt/include/QtWidgets/5.15.1 /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/qt-5.15.2-rev4-windows/qt/include/QtWidgets/5.15.1/QtWidgets /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/Crashpad-0.8.0-rev1-windows/Crashpad/include/crashpad /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/Crashpad-0.8.0-rev1-windows/Crashpad/include/crashpad/mini_chromium /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/Crashpad-0.8.0-rev1-windows/Crashpad/include/crashpad/getopt /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/Lua-5.3.5-rev5-windows/lua/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/RapidJSON-1.1.0-rev1-multiplatform/RapidJSON/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/RapidXML-1.13-rev1-multiplatform/RapidXML/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/zlib-1.2.11-rev2-windows/zlib/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/zstd-1.35-multiplatform/zstd/lib /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/cityhash-1.1-multiplatform/cityhash/src /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/qt-5.15.2-rev4-windows/qt/include/QtSvg /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/qt-5.15.2-rev4-windows/qt/include/QtXml</AdditionalOptions>
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <BufferSecurityCheck>true</BufferSecurityCheck>
+      <CallingConvention>Cdecl</CallingConvention>
+      <ConformanceMode>true</ConformanceMode>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <DiagnosticsFormat>Caret</DiagnosticsFormat>
+      <DisableSpecificWarnings>4201</DisableSpecificWarnings>
+      <ExceptionHandling>
+      </ExceptionHandling>
+      <ExternalWarningLevel>TurnOffAllWarnings</ExternalWarningLevel>
+      <FloatingPointModel>Fast</FloatingPointModel>
+      <ForceConformanceInForLoopScope>true</ForceConformanceInForLoopScope>
+      <InlineFunctionExpansion>Disabled</InlineFunctionExpansion>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <Optimization>Disabled</Optimization>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <TreatSpecificWarningsAsErrors>4263;4264;4265;4266;4296;4426;4437;4774;4777;5031;5032;5233</TreatSpecificWarningsAsErrors>
+      <TreatWarningAsError>true</TreatWarningAsError>
+      <UseFullPaths>false</UseFullPaths>
+      <WarningLevel>Level4</WarningLevel>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);_HAS_EXCEPTIONS=0;_DEBUG;AZ_DEBUG_BUILD=1;AZ_ENABLE_TRACING;AZ_ENABLE_DEBUG_TOOLS;AZ_BUILD_CONFIGURATION_TYPE="debug";_ENABLE_EXTENDED_ALIGNED_STORAGE;_WIN32;WIN32;_WIN64;WIN64;NOMINMAX;QT_CORE_LIB;QT_GUI_LIB;QT_WIDGETS_LIB;QT_SVG_LIB;QT_XML_LIB;CMAKE_INTDIR="debug"</PreprocessorDefinitions>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);_DEBUG;_HAS_EXCEPTIONS=0;AZ_DEBUG_BUILD=1;AZ_ENABLE_TRACING;AZ_ENABLE_DEBUG_TOOLS;AZ_BUILD_CONFIGURATION_TYPE=\"debug\";_ENABLE_EXTENDED_ALIGNED_STORAGE;_WIN32;WIN32;_WIN64;WIN64;NOMINMAX;QT_CORE_LIB;QT_GUI_LIB;QT_WIDGETS_LIB;QT_SVG_LIB;QT_XML_LIB;CMAKE_INTDIR=\"debug\"</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>C:\Users\lesaelr\o3de\Code\Tools\CrashHandler\Tools\ToolsCrashUploader_autogen\include_debug;C:\Users\lesaelr\o3de\Code\Tools\CrashHandler\Tools\Uploader;C:\Users\lesaelr\o3de\Code\Tools\CrashHandler\Tools\ToolsCrashUploader_autogen\include\Uploader;C:\Users\lesaelr\o3de\Code\Tools\CrashHandler\Tools\ToolsCrashUploader_autogen\include;C:\Users\lesaelr\o3de\Code\Tools\CrashHandler\Uploader\include;C:\Users\lesaelr\o3de\Code\Tools\CrashHandler\Support\include;C:\Users\lesaelr\o3de\Code\Framework\AzCore\.;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Common;C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\.;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+    </ResourceCompile>
+    <Midl>
+      <AdditionalIncludeDirectories>C:\Users\lesaelr\o3de\Code\Tools\CrashHandler\Tools\ToolsCrashUploader_autogen\include_debug;C:\Users\lesaelr\o3de\Code\Tools\CrashHandler\Tools\Uploader;C:\Users\lesaelr\o3de\Code\Tools\CrashHandler\Tools\ToolsCrashUploader_autogen\include\Uploader;C:\Users\lesaelr\o3de\Code\Tools\CrashHandler\Tools\ToolsCrashUploader_autogen\include;C:\Users\lesaelr\o3de\Code\Tools\CrashHandler\Uploader\include;C:\Users\lesaelr\o3de\Code\Tools\CrashHandler\Support\include;C:\Users\lesaelr\o3de\Code\Framework\AzCore\.;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Common;C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\.;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+    <PreBuildEvent>
+      <UseUtf8Encoding>Always</UseUtf8Encoding>
+      <Message>Automatic MOC for target ToolsCrashUploader</Message>
+      <Command>setlocal
+cd C:\Users\lesaelr\o3de\Code\Tools\CrashHandler\Tools
+if %errorlevel% neq 0 goto :cmEnd
+C:
+if %errorlevel% neq 0 goto :cmEnd
+"C:\Program Files\CMake\bin\cmake.exe" -E cmake_autogen C:/Users/lesaelr/o3de/Code/Tools/CrashHandler/Tools/CMakeFiles/ToolsCrashUploader_autogen.dir/AutogenInfo.json debug
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+    </PreBuildEvent>
+    <Link>
+      <AdditionalDependencies>..\..\..\..\lib\debug\CrashUploaderSupport.lib;..\..\..\..\lib\debug\AzQtComponents.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\Crashpad-0.8.0-rev1-windows\Crashpad\debug\lib\compat.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\Crashpad-0.8.0-rev1-windows\Crashpad\debug\lib\context.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\Crashpad-0.8.0-rev1-windows\Crashpad\debug\lib\format.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\Crashpad-0.8.0-rev1-windows\Crashpad\debug\lib\minidump.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\Crashpad-0.8.0-rev1-windows\Crashpad\debug\lib\getopt.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\Crashpad-0.8.0-rev1-windows\Crashpad\debug\lib\handler.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\Crashpad-0.8.0-rev1-windows\Crashpad\debug\lib\snapshot.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\Crashpad-0.8.0-rev1-windows\Crashpad\debug\lib\tool_support.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\Crashpad-0.8.0-rev1-windows\Crashpad\debug\lib\zlib.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\Crashpad-0.8.0-rev1-windows\Crashpad\debug\lib\base.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\Crashpad-0.8.0-rev1-windows\Crashpad\debug\lib\client.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\Crashpad-0.8.0-rev1-windows\Crashpad\debug\lib\util.lib;winhttp.lib;version.lib;powrprof.lib;..\..\..\..\lib\debug\CrashSupport.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\Qt5Svgd.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\Qt5Widgetsd.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\Qt5Guid.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\Qt5Xmld.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\Qt5Cored.lib;..\..\..\..\lib\debug\AzCore.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\Lua-5.3.5-rev5-windows\lua\lib\debug\lualib.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\zlib-1.2.11-rev2-windows\zlib\lib\zlibstaticd.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\zstd-1.35-multiplatform\zstd\bin\win-x64-vc140\debug\zstd.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\cityhash-1.1-multiplatform\cityhash\build\win_x64\vc140\debug\cityhash.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;advapi32.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalOptions>%(AdditionalOptions) /machine:x64</AdditionalOptions>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <ImportLibrary>C:/Users/lesaelr/o3de/lib/debug/ToolsCrashUploader.lib</ImportLibrary>
+      <ProgramDataBaseFile>C:/Users/lesaelr/o3de/bin/debug/ToolsCrashUploader.pdb</ProgramDataBaseFile>
+      <SubSystem>Windows</SubSystem>
+    </Link>
+    <ProjectReference>
+      <LinkLibraryDependencies>false</LinkLibraryDependencies>
+    </ProjectReference>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='profile|x64'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>C:\Users\lesaelr\o3de\Code\Tools\CrashHandler\Tools\ToolsCrashUploader_autogen\include_profile;C:\Users\lesaelr\o3de\Code\Tools\CrashHandler\Tools\Uploader;C:\Users\lesaelr\o3de\Code\Tools\CrashHandler\Tools\ToolsCrashUploader_autogen\include\Uploader;C:\Users\lesaelr\o3de\Code\Tools\CrashHandler\Tools\ToolsCrashUploader_autogen\include;C:\Users\lesaelr\o3de\Code\Tools\CrashHandler\Uploader\include;C:\Users\lesaelr\o3de\Code\Tools\CrashHandler\Support\include;C:\Users\lesaelr\o3de\Code\Framework\AzCore\.;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Common;C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\.;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalOptions>%(AdditionalOptions) /Zc:__cplusplus /Zc:lambda /favor:AMD64 /bigobj /experimental:external /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/qt-5.15.2-rev4-windows/qt/include/ /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/qt-5.15.2-rev4-windows/qt/include/QtCore /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/qt-5.15.2-rev4-windows/qt/.//mkspecs/win32-msvc /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/qt-5.15.2-rev4-windows/qt/include/QtGui /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/qt-5.15.2-rev4-windows/qt/include//QtANGLE /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/qt-5.15.2-rev4-windows/qt/include/QtGui/5.15.1 /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/qt-5.15.2-rev4-windows/qt/include/QtGui/5.15.1/QtGui /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/qt-5.15.2-rev4-windows/qt/include/QtCore/5.15.1 /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/qt-5.15.2-rev4-windows/qt/include/QtCore/5.15.1/QtCore /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/qt-5.15.2-rev4-windows/qt/include/QtWidgets /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/qt-5.15.2-rev4-windows/qt/include/QtWidgets/5.15.1 /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/qt-5.15.2-rev4-windows/qt/include/QtWidgets/5.15.1/QtWidgets /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/Crashpad-0.8.0-rev1-windows/Crashpad/include/crashpad /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/Crashpad-0.8.0-rev1-windows/Crashpad/include/crashpad/mini_chromium /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/Crashpad-0.8.0-rev1-windows/Crashpad/include/crashpad/getopt /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/Lua-5.3.5-rev5-windows/lua/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/RapidJSON-1.1.0-rev1-multiplatform/RapidJSON/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/RapidXML-1.13-rev1-multiplatform/RapidXML/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/zlib-1.2.11-rev2-windows/zlib/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/zstd-1.35-multiplatform/zstd/lib /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/cityhash-1.1-multiplatform/cityhash/src /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/qt-5.15.2-rev4-windows/qt/include/QtSvg /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/qt-5.15.2-rev4-windows/qt/include/QtXml</AdditionalOptions>
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <CallingConvention>Cdecl</CallingConvention>
+      <ConformanceMode>true</ConformanceMode>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <DiagnosticsFormat>Caret</DiagnosticsFormat>
+      <DisableSpecificWarnings>4201</DisableSpecificWarnings>
+      <ExceptionHandling>
+      </ExceptionHandling>
+      <ExternalWarningLevel>TurnOffAllWarnings</ExternalWarningLevel>
+      <FloatingPointModel>Fast</FloatingPointModel>
+      <ForceConformanceInForLoopScope>true</ForceConformanceInForLoopScope>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <Optimization>MaxSpeed</Optimization>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <RemoveUnreferencedCodeData>true</RemoveUnreferencedCodeData>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <StringPooling>true</StringPooling>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <TreatSpecificWarningsAsErrors>4263;4264;4265;4266;4296;4426;4437;4774;4777;5031;5032;5233</TreatSpecificWarningsAsErrors>
+      <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
+      <TreatWarningAsError>true</TreatWarningAsError>
+      <UseFullPaths>false</UseFullPaths>
+      <WarningLevel>Level4</WarningLevel>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);_HAS_EXCEPTIONS=0;_PROFILE;PROFILE;NDEBUG;AZ_ENABLE_TRACING;AZ_ENABLE_DEBUG_TOOLS;AZ_BUILD_CONFIGURATION_TYPE="profile";_ENABLE_EXTENDED_ALIGNED_STORAGE;_WIN32;WIN32;_WIN64;WIN64;NOMINMAX;QT_CORE_LIB;QT_NO_DEBUG;QT_GUI_LIB;QT_WIDGETS_LIB;QT_SVG_LIB;QT_XML_LIB;CMAKE_INTDIR="profile"</PreprocessorDefinitions>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);_HAS_EXCEPTIONS=0;_PROFILE;PROFILE;NDEBUG;AZ_ENABLE_TRACING;AZ_ENABLE_DEBUG_TOOLS;AZ_BUILD_CONFIGURATION_TYPE=\"profile\";_ENABLE_EXTENDED_ALIGNED_STORAGE;_WIN32;WIN32;_WIN64;WIN64;NOMINMAX;QT_CORE_LIB;QT_NO_DEBUG;QT_GUI_LIB;QT_WIDGETS_LIB;QT_SVG_LIB;QT_XML_LIB;CMAKE_INTDIR=\"profile\"</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>C:\Users\lesaelr\o3de\Code\Tools\CrashHandler\Tools\ToolsCrashUploader_autogen\include_profile;C:\Users\lesaelr\o3de\Code\Tools\CrashHandler\Tools\Uploader;C:\Users\lesaelr\o3de\Code\Tools\CrashHandler\Tools\ToolsCrashUploader_autogen\include\Uploader;C:\Users\lesaelr\o3de\Code\Tools\CrashHandler\Tools\ToolsCrashUploader_autogen\include;C:\Users\lesaelr\o3de\Code\Tools\CrashHandler\Uploader\include;C:\Users\lesaelr\o3de\Code\Tools\CrashHandler\Support\include;C:\Users\lesaelr\o3de\Code\Framework\AzCore\.;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Common;C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\.;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+    </ResourceCompile>
+    <Midl>
+      <AdditionalIncludeDirectories>C:\Users\lesaelr\o3de\Code\Tools\CrashHandler\Tools\ToolsCrashUploader_autogen\include_profile;C:\Users\lesaelr\o3de\Code\Tools\CrashHandler\Tools\Uploader;C:\Users\lesaelr\o3de\Code\Tools\CrashHandler\Tools\ToolsCrashUploader_autogen\include\Uploader;C:\Users\lesaelr\o3de\Code\Tools\CrashHandler\Tools\ToolsCrashUploader_autogen\include;C:\Users\lesaelr\o3de\Code\Tools\CrashHandler\Uploader\include;C:\Users\lesaelr\o3de\Code\Tools\CrashHandler\Support\include;C:\Users\lesaelr\o3de\Code\Framework\AzCore\.;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Common;C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\.;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+    <PreBuildEvent>
+      <UseUtf8Encoding>Always</UseUtf8Encoding>
+      <Message>Automatic MOC for target ToolsCrashUploader</Message>
+      <Command>setlocal
+cd C:\Users\lesaelr\o3de\Code\Tools\CrashHandler\Tools
+if %errorlevel% neq 0 goto :cmEnd
+C:
+if %errorlevel% neq 0 goto :cmEnd
+"C:\Program Files\CMake\bin\cmake.exe" -E cmake_autogen C:/Users/lesaelr/o3de/Code/Tools/CrashHandler/Tools/CMakeFiles/ToolsCrashUploader_autogen.dir/AutogenInfo.json profile
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+    </PreBuildEvent>
+    <Link>
+      <AdditionalDependencies>..\..\..\..\lib\profile\CrashUploaderSupport.lib;..\..\..\..\lib\profile\AzQtComponents.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\Crashpad-0.8.0-rev1-windows\Crashpad\lib\compat.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\Crashpad-0.8.0-rev1-windows\Crashpad\lib\context.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\Crashpad-0.8.0-rev1-windows\Crashpad\lib\format.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\Crashpad-0.8.0-rev1-windows\Crashpad\lib\minidump.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\Crashpad-0.8.0-rev1-windows\Crashpad\lib\getopt.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\Crashpad-0.8.0-rev1-windows\Crashpad\lib\handler.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\Crashpad-0.8.0-rev1-windows\Crashpad\lib\snapshot.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\Crashpad-0.8.0-rev1-windows\Crashpad\lib\tool_support.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\Crashpad-0.8.0-rev1-windows\Crashpad\lib\zlib.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\Crashpad-0.8.0-rev1-windows\Crashpad\lib\base.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\Crashpad-0.8.0-rev1-windows\Crashpad\lib\client.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\Crashpad-0.8.0-rev1-windows\Crashpad\lib\util.lib;winhttp.lib;version.lib;powrprof.lib;..\..\..\..\lib\profile\CrashSupport.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\Qt5Svg.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\Qt5Widgets.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\Qt5Gui.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\Qt5Xml.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\Qt5Core.lib;..\..\..\..\lib\profile\AzCore.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\Lua-5.3.5-rev5-windows\lua\lib\release\lualib.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\zlib-1.2.11-rev2-windows\zlib\lib\zlibstatic.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\zstd-1.35-multiplatform\zstd\bin\win-x64-vc140\release\zstd.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\cityhash-1.1-multiplatform\cityhash\build\win_x64\vc140\release\cityhash.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;advapi32.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalOptions>%(AdditionalOptions) /machine:x64</AdditionalOptions>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <ImportLibrary>C:/Users/lesaelr/o3de/lib/profile/ToolsCrashUploader.lib</ImportLibrary>
+      <OptimizeReferences>true</OptimizeReferences>
+      <ProgramDataBaseFile>C:/Users/lesaelr/o3de/bin/profile/ToolsCrashUploader.pdb</ProgramDataBaseFile>
+      <SubSystem>Windows</SubSystem>
+    </Link>
+    <ProjectReference>
+      <LinkLibraryDependencies>false</LinkLibraryDependencies>
+    </ProjectReference>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='release|x64'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>C:\Users\lesaelr\o3de\Code\Tools\CrashHandler\Tools\ToolsCrashUploader_autogen\include_release;C:\Users\lesaelr\o3de\Code\Tools\CrashHandler\Tools\Uploader;C:\Users\lesaelr\o3de\Code\Tools\CrashHandler\Tools\ToolsCrashUploader_autogen\include\Uploader;C:\Users\lesaelr\o3de\Code\Tools\CrashHandler\Tools\ToolsCrashUploader_autogen\include;C:\Users\lesaelr\o3de\Code\Tools\CrashHandler\Uploader\include;C:\Users\lesaelr\o3de\Code\Tools\CrashHandler\Support\include;C:\Users\lesaelr\o3de\Code\Framework\AzCore\.;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Common;C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\.;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalOptions>%(AdditionalOptions) /Zc:__cplusplus /Zc:lambda /favor:AMD64 /bigobj /experimental:external /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/qt-5.15.2-rev4-windows/qt/include/ /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/qt-5.15.2-rev4-windows/qt/include/QtCore /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/qt-5.15.2-rev4-windows/qt/.//mkspecs/win32-msvc /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/qt-5.15.2-rev4-windows/qt/include/QtGui /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/qt-5.15.2-rev4-windows/qt/include//QtANGLE /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/qt-5.15.2-rev4-windows/qt/include/QtGui/5.15.1 /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/qt-5.15.2-rev4-windows/qt/include/QtGui/5.15.1/QtGui /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/qt-5.15.2-rev4-windows/qt/include/QtCore/5.15.1 /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/qt-5.15.2-rev4-windows/qt/include/QtCore/5.15.1/QtCore /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/qt-5.15.2-rev4-windows/qt/include/QtWidgets /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/qt-5.15.2-rev4-windows/qt/include/QtWidgets/5.15.1 /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/qt-5.15.2-rev4-windows/qt/include/QtWidgets/5.15.1/QtWidgets /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/Crashpad-0.8.0-rev1-windows/Crashpad/include/crashpad /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/Crashpad-0.8.0-rev1-windows/Crashpad/include/crashpad/mini_chromium /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/Crashpad-0.8.0-rev1-windows/Crashpad/include/crashpad/getopt /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/Lua-5.3.5-rev5-windows/lua/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/RapidJSON-1.1.0-rev1-multiplatform/RapidJSON/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/RapidXML-1.13-rev1-multiplatform/RapidXML/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/zlib-1.2.11-rev2-windows/zlib/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/zstd-1.35-multiplatform/zstd/lib /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/cityhash-1.1-multiplatform/cityhash/src /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/qt-5.15.2-rev4-windows/qt/include/QtSvg /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/qt-5.15.2-rev4-windows/qt/include/QtXml</AdditionalOptions>
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <CallingConvention>Cdecl</CallingConvention>
+      <ConformanceMode>true</ConformanceMode>
+      <DiagnosticsFormat>Caret</DiagnosticsFormat>
+      <DisableSpecificWarnings>4201</DisableSpecificWarnings>
+      <ExceptionHandling>
+      </ExceptionHandling>
+      <ExternalWarningLevel>TurnOffAllWarnings</ExternalWarningLevel>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <FloatingPointModel>Fast</FloatingPointModel>
+      <ForceConformanceInForLoopScope>true</ForceConformanceInForLoopScope>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <OmitFramePointers>true</OmitFramePointers>
+      <Optimization>Full</Optimization>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <TreatSpecificWarningsAsErrors>4263;4264;4265;4266;4296;4426;4437;4774;4777;5031;5032;5233</TreatSpecificWarningsAsErrors>
+      <TreatWarningAsError>true</TreatWarningAsError>
+      <UseFullPaths>false</UseFullPaths>
+      <WarningLevel>Level4</WarningLevel>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);_HAS_EXCEPTIONS=0;_RELEASE;RELEASE;NDEBUG;AZ_BUILD_CONFIGURATION_TYPE="release";_ENABLE_EXTENDED_ALIGNED_STORAGE;_WIN32;WIN32;_WIN64;WIN64;NOMINMAX;QT_CORE_LIB;QT_NO_DEBUG;QT_GUI_LIB;QT_WIDGETS_LIB;QT_SVG_LIB;QT_XML_LIB;CMAKE_INTDIR="release"</PreprocessorDefinitions>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+      <DebugInformationFormat>
+      </DebugInformationFormat>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);_HAS_EXCEPTIONS=0;_RELEASE;RELEASE;NDEBUG;AZ_BUILD_CONFIGURATION_TYPE=\"release\";_ENABLE_EXTENDED_ALIGNED_STORAGE;_WIN32;WIN32;_WIN64;WIN64;NOMINMAX;QT_CORE_LIB;QT_NO_DEBUG;QT_GUI_LIB;QT_WIDGETS_LIB;QT_SVG_LIB;QT_XML_LIB;CMAKE_INTDIR=\"release\"</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>C:\Users\lesaelr\o3de\Code\Tools\CrashHandler\Tools\ToolsCrashUploader_autogen\include_release;C:\Users\lesaelr\o3de\Code\Tools\CrashHandler\Tools\Uploader;C:\Users\lesaelr\o3de\Code\Tools\CrashHandler\Tools\ToolsCrashUploader_autogen\include\Uploader;C:\Users\lesaelr\o3de\Code\Tools\CrashHandler\Tools\ToolsCrashUploader_autogen\include;C:\Users\lesaelr\o3de\Code\Tools\CrashHandler\Uploader\include;C:\Users\lesaelr\o3de\Code\Tools\CrashHandler\Support\include;C:\Users\lesaelr\o3de\Code\Framework\AzCore\.;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Common;C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\.;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+    </ResourceCompile>
+    <Midl>
+      <AdditionalIncludeDirectories>C:\Users\lesaelr\o3de\Code\Tools\CrashHandler\Tools\ToolsCrashUploader_autogen\include_release;C:\Users\lesaelr\o3de\Code\Tools\CrashHandler\Tools\Uploader;C:\Users\lesaelr\o3de\Code\Tools\CrashHandler\Tools\ToolsCrashUploader_autogen\include\Uploader;C:\Users\lesaelr\o3de\Code\Tools\CrashHandler\Tools\ToolsCrashUploader_autogen\include;C:\Users\lesaelr\o3de\Code\Tools\CrashHandler\Uploader\include;C:\Users\lesaelr\o3de\Code\Tools\CrashHandler\Support\include;C:\Users\lesaelr\o3de\Code\Framework\AzCore\.;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Common;C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\.;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+    <PreBuildEvent>
+      <UseUtf8Encoding>Always</UseUtf8Encoding>
+      <Message>Automatic MOC for target ToolsCrashUploader</Message>
+      <Command>setlocal
+cd C:\Users\lesaelr\o3de\Code\Tools\CrashHandler\Tools
+if %errorlevel% neq 0 goto :cmEnd
+C:
+if %errorlevel% neq 0 goto :cmEnd
+"C:\Program Files\CMake\bin\cmake.exe" -E cmake_autogen C:/Users/lesaelr/o3de/Code/Tools/CrashHandler/Tools/CMakeFiles/ToolsCrashUploader_autogen.dir/AutogenInfo.json release
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+    </PreBuildEvent>
+    <Link>
+      <AdditionalDependencies>..\..\..\..\lib\release\CrashUploaderSupport.lib;..\..\..\..\lib\release\AzQtComponents.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\Crashpad-0.8.0-rev1-windows\Crashpad\lib\compat.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\Crashpad-0.8.0-rev1-windows\Crashpad\lib\context.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\Crashpad-0.8.0-rev1-windows\Crashpad\lib\format.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\Crashpad-0.8.0-rev1-windows\Crashpad\lib\minidump.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\Crashpad-0.8.0-rev1-windows\Crashpad\lib\getopt.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\Crashpad-0.8.0-rev1-windows\Crashpad\lib\handler.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\Crashpad-0.8.0-rev1-windows\Crashpad\lib\snapshot.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\Crashpad-0.8.0-rev1-windows\Crashpad\lib\tool_support.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\Crashpad-0.8.0-rev1-windows\Crashpad\lib\zlib.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\Crashpad-0.8.0-rev1-windows\Crashpad\lib\base.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\Crashpad-0.8.0-rev1-windows\Crashpad\lib\client.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\Crashpad-0.8.0-rev1-windows\Crashpad\lib\util.lib;winhttp.lib;version.lib;powrprof.lib;..\..\..\..\lib\release\CrashSupport.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\Qt5Svg.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\Qt5Widgets.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\Qt5Gui.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\Qt5Xml.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\lib\Qt5Core.lib;..\..\..\..\lib\release\AzCore.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\Lua-5.3.5-rev5-windows\lua\lib\release\lualib.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\zlib-1.2.11-rev2-windows\zlib\lib\zlibstatic.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\zstd-1.35-multiplatform\zstd\bin\win-x64-vc140\release\zstd.lib;C:\Users\lesaelr\.o3de\3rdParty\packages\cityhash-1.1-multiplatform\cityhash\build\win_x64\vc140\release\cityhash.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;advapi32.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalOptions>%(AdditionalOptions) /machine:x64</AdditionalOptions>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
+      <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <ImportLibrary>C:/Users/lesaelr/o3de/lib/release/ToolsCrashUploader.lib</ImportLibrary>
+      <OptimizeReferences>true</OptimizeReferences>
+      <ProgramDataBaseFile>C:/Users/lesaelr/o3de/bin/release/ToolsCrashUploader.pdb</ProgramDataBaseFile>
+      <SubSystem>Windows</SubSystem>
+    </Link>
+    <ProjectReference>
+      <LinkLibraryDependencies>false</LinkLibraryDependencies>
+    </ProjectReference>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Code\Tools\CrashHandler\Tools\UI\submit_report.ui">
+      <Message Condition="'$(Configuration)|$(Platform)'=='debug|x64'">UIC C:/Users/lesaelr/o3de/Code/Tools/CrashHandler/Tools/UI/submit_report.ui</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='debug|x64'">setlocal
+C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\bin\uic.exe -o C:/Users/lesaelr/o3de/Code/Tools/CrashHandler/Tools/ToolsCrashUploader_autogen/include/UI/ui_submit_report.h C:/Users/lesaelr/o3de/Code/Tools/CrashHandler/Tools/UI/submit_report.ui
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='debug|x64'">%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='debug|x64'">C:\Users\lesaelr\o3de\Code\Tools\CrashHandler\Tools\ToolsCrashUploader_autogen\include\UI\ui_submit_report.h</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='debug|x64'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='profile|x64'">UIC C:/Users/lesaelr/o3de/Code/Tools/CrashHandler/Tools/UI/submit_report.ui</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='profile|x64'">setlocal
+C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\bin\uic.exe -o C:/Users/lesaelr/o3de/Code/Tools/CrashHandler/Tools/ToolsCrashUploader_autogen/include/UI/ui_submit_report.h C:/Users/lesaelr/o3de/Code/Tools/CrashHandler/Tools/UI/submit_report.ui
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='profile|x64'">%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='profile|x64'">C:\Users\lesaelr\o3de\Code\Tools\CrashHandler\Tools\ToolsCrashUploader_autogen\include\UI\ui_submit_report.h</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='profile|x64'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='release|x64'">UIC C:/Users/lesaelr/o3de/Code/Tools/CrashHandler/Tools/UI/submit_report.ui</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='release|x64'">setlocal
+C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\bin\uic.exe -o C:/Users/lesaelr/o3de/Code/Tools/CrashHandler/Tools/ToolsCrashUploader_autogen/include/UI/ui_submit_report.h C:/Users/lesaelr/o3de/Code/Tools/CrashHandler/Tools/UI/submit_report.ui
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='release|x64'">%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='release|x64'">C:\Users\lesaelr\o3de\Code\Tools\CrashHandler\Tools\ToolsCrashUploader_autogen\include\UI\ui_submit_report.h</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='release|x64'">false</LinkObjects>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\CMakeFiles\08b24365a84bd27d080f6dd51f42b933\ToolsCrashUploader_(CONFIG).stamp.rule">
+      <Message Condition="'$(Configuration)|$(Platform)'=='debug|x64'">Copying ToolsCrashUploader runtime dependencies to output...</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='debug|x64'">setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -P C:/Users/lesaelr/o3de/runtime_dependencies/debug/ToolsCrashUploader.cmake
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='debug|x64'">C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_ar.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_bg.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_ca.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_cs.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_da.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_de.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_en.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_es.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_fa.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_fi.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_fr.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_gd.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_gl.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_he.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_ar.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_bg.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_ca.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_cs.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_da.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_de.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_en.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_es.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_fr.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_gl.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_hu.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_it.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_ja.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_ko.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_pl.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_ru.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_sk.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_sl.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_tr.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_uk.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_zh_CN.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_zh_TW.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_hu.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_it.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_ja.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_ko.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_lt.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_lv.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_pl.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_pt.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_ru.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_sk.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_sl.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_sv.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_tr.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_uk.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_zh_CN.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_zh_TW.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\bin\Qt5Cored.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\plugins\iconengines\qsvgicond.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\plugins\imageformats\qgifd.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\plugins\imageformats\qicnsd.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\plugins\imageformats\qicod.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\plugins\imageformats\qjpegd.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\plugins\imageformats\qsvgd.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\plugins\imageformats\qtgad.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\plugins\imageformats\qtiffd.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\plugins\imageformats\qwbmpd.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\plugins\imageformats\qwebpd.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\plugins\platforms\qminimald.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\plugins\platforms\qwindowsd.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\bin\Qt5Guid.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\plugins\styles\qwindowsvistastyled.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\bin\Qt5Widgetsd.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\bin\Qt5Svgd.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\bin\Qt5Xmld.dll;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='debug|x64'">C:\Users\lesaelr\o3de\runtime_dependencies\debug\ToolsCrashUploader_debug.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='debug|x64'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='profile|x64'">Copying ToolsCrashUploader runtime dependencies to output...</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='profile|x64'">setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -P C:/Users/lesaelr/o3de/runtime_dependencies/profile/ToolsCrashUploader.cmake
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='profile|x64'">C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_ar.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_bg.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_ca.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_cs.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_da.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_de.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_en.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_es.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_fa.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_fi.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_fr.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_gd.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_gl.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_he.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_ar.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_bg.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_ca.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_cs.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_da.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_de.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_en.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_es.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_fr.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_gl.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_hu.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_it.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_ja.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_ko.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_pl.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_ru.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_sk.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_sl.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_tr.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_uk.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_zh_CN.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_zh_TW.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_hu.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_it.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_ja.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_ko.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_lt.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_lv.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_pl.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_pt.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_ru.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_sk.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_sl.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_sv.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_tr.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_uk.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_zh_CN.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_zh_TW.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\bin\Qt5Core.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\plugins\iconengines\qsvgicon.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\plugins\imageformats\qgif.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\plugins\imageformats\qicns.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\plugins\imageformats\qico.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\plugins\imageformats\qjpeg.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\plugins\imageformats\qsvg.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\plugins\imageformats\qtga.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\plugins\imageformats\qtiff.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\plugins\imageformats\qwbmp.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\plugins\imageformats\qwebp.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\plugins\platforms\qminimal.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\plugins\platforms\qwindows.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\bin\Qt5Gui.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\plugins\styles\qwindowsvistastyle.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\bin\Qt5Widgets.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\bin\Qt5Svg.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\bin\Qt5Xml.dll;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='profile|x64'">C:\Users\lesaelr\o3de\runtime_dependencies\profile\ToolsCrashUploader_profile.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='profile|x64'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='release|x64'">Copying ToolsCrashUploader runtime dependencies to output...</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='release|x64'">setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -P C:/Users/lesaelr/o3de/runtime_dependencies/release/ToolsCrashUploader.cmake
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='release|x64'">C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_ar.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_bg.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_ca.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_cs.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_da.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_de.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_en.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_es.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_fa.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_fi.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_fr.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_gd.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_gl.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_he.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_ar.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_bg.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_ca.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_cs.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_da.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_de.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_en.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_es.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_fr.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_gl.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_hu.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_it.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_ja.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_ko.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_pl.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_ru.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_sk.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_sl.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_tr.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_uk.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_zh_CN.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_help_zh_TW.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_hu.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_it.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_ja.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_ko.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_lt.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_lv.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_pl.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_pt.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_ru.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_sk.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_sl.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_sv.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_tr.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_uk.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_zh_CN.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\translations\qt_zh_TW.qm;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\bin\Qt5Core.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\plugins\iconengines\qsvgicon.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\plugins\imageformats\qgif.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\plugins\imageformats\qicns.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\plugins\imageformats\qico.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\plugins\imageformats\qjpeg.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\plugins\imageformats\qsvg.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\plugins\imageformats\qtga.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\plugins\imageformats\qtiff.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\plugins\imageformats\qwbmp.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\plugins\imageformats\qwebp.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\plugins\platforms\qminimal.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\plugins\platforms\qwindows.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\bin\Qt5Gui.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\plugins\styles\qwindowsvistastyle.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\bin\Qt5Widgets.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\bin\Qt5Svg.dll;C:\Users\lesaelr\.o3de\3rdParty\packages\qt-5.15.2-rev4-windows\qt\bin\Qt5Xml.dll;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='release|x64'">C:\Users\lesaelr\o3de\runtime_dependencies\release\ToolsCrashUploader_release.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='release|x64'">false</LinkObjects>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Code\Tools\CrashHandler\Tools\CMakeLists.txt">
+      <UseUtf8Encoding>Always</UseUtf8Encoding>
+      <Message Condition="'$(Configuration)|$(Platform)'=='debug|x64'">Building Custom Rule C:/Users/lesaelr/o3de/Code/Tools/CrashHandler/Tools/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='debug|x64'">setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SC:/Users/lesaelr/o3de -BC:/Users/lesaelr/o3de --check-stamp-file C:/Users/lesaelr/o3de/Code/Tools/CrashHandler/Tools/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='debug|x64'">C:\Users\lesaelr\o3de\Code\Tools\CrashHandler\Tools\Platform\Windows\tools_crash_handler_windows_files.cmake;C:\Users\lesaelr\o3de\Code\Tools\CrashHandler\Tools\Platform\Windows\tools_crash_uploader_windows_files.cmake;C:\Users\lesaelr\o3de\Code\Tools\CrashHandler\Tools\tools_crash_handler_files.cmake;C:\Users\lesaelr\o3de\Code\Tools\CrashHandler\Tools\tools_crash_uploader_files.cmake;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='debug|x64'">C:\Users\lesaelr\o3de\Code\Tools\CrashHandler\Tools\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='debug|x64'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='profile|x64'">Building Custom Rule C:/Users/lesaelr/o3de/Code/Tools/CrashHandler/Tools/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='profile|x64'">setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SC:/Users/lesaelr/o3de -BC:/Users/lesaelr/o3de --check-stamp-file C:/Users/lesaelr/o3de/Code/Tools/CrashHandler/Tools/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='profile|x64'">C:\Users\lesaelr\o3de\Code\Tools\CrashHandler\Tools\Platform\Windows\tools_crash_handler_windows_files.cmake;C:\Users\lesaelr\o3de\Code\Tools\CrashHandler\Tools\Platform\Windows\tools_crash_uploader_windows_files.cmake;C:\Users\lesaelr\o3de\Code\Tools\CrashHandler\Tools\tools_crash_handler_files.cmake;C:\Users\lesaelr\o3de\Code\Tools\CrashHandler\Tools\tools_crash_uploader_files.cmake;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='profile|x64'">C:\Users\lesaelr\o3de\Code\Tools\CrashHandler\Tools\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='profile|x64'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='release|x64'">Building Custom Rule C:/Users/lesaelr/o3de/Code/Tools/CrashHandler/Tools/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='release|x64'">setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SC:/Users/lesaelr/o3de -BC:/Users/lesaelr/o3de --check-stamp-file C:/Users/lesaelr/o3de/Code/Tools/CrashHandler/Tools/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='release|x64'">C:\Users\lesaelr\o3de\Code\Tools\CrashHandler\Tools\Platform\Windows\tools_crash_handler_windows_files.cmake;C:\Users\lesaelr\o3de\Code\Tools\CrashHandler\Tools\Platform\Windows\tools_crash_uploader_windows_files.cmake;C:\Users\lesaelr\o3de\Code\Tools\CrashHandler\Tools\tools_crash_handler_files.cmake;C:\Users\lesaelr\o3de\Code\Tools\CrashHandler\Tools\tools_crash_uploader_files.cmake;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='release|x64'">C:\Users\lesaelr\o3de\Code\Tools\CrashHandler\Tools\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='release|x64'">false</LinkObjects>
+    </CustomBuild>
+  </ItemGroup>
+  <PropertyGroup>
+    <EnableUnitySupport>true</EnableUnitySupport>
+  </PropertyGroup>
+  <ItemGroup>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\CrashHandler\Tools\ToolsCrashUploader_autogen\mocs_compilation_debug.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='profile|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\CrashHandler\Tools\CMakeFiles\ToolsCrashUploader.dir\Unity\unity_0_cxx.cxx" IncludeInUnityFile="false" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Tools/CrashHandler/Tools/CMakeFiles/ToolsCrashUploader.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\CrashHandler\Tools\Uploader\ToolsCrashUploader.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\CrashHandler\Tools\Uploader\ToolsCrashUploader.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Tools/CrashHandler/Tools/CMakeFiles/ToolsCrashUploader.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\CrashHandler\Tools\Uploader\SendReportDialog.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\CrashHandler\Tools\Uploader\SendReportDialog.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Tools/CrashHandler/Tools/CMakeFiles/ToolsCrashUploader.dir/Unity" />
+    <None Include="C:\Users\lesaelr\o3de\Code\Tools\CrashHandler\Tools\UI\lyeditor.ico">
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Tools\CrashHandler\Tools\UI\ToolsCrashHandler.qrc">
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Tools\CrashHandler\Tools\tools_crash_uploader_files.cmake">
+    </None>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\CrashHandler\Tools\Uploader\platforms\win\main.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Tools/CrashHandler/Tools/CMakeFiles/ToolsCrashUploader.dir/Unity" />
+    <None Include="C:\Users\lesaelr\o3de\Code\Tools\CrashHandler\Tools\Platform\Windows\tools_crash_uploader_windows_files.cmake">
+    </None>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\CrashHandler\Tools\ToolsCrashUploader_autogen\include\UI\ui_submit_report.h" />
+    <None Include="C:\Users\lesaelr\o3de\runtime_dependencies\debug\ToolsCrashUploader_debug.stamp">
+    </None>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\CrashHandler\Tools\ToolsCrashUploader_autogen\mocs_compilation_profile.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <None Include="C:\Users\lesaelr\o3de\runtime_dependencies\profile\ToolsCrashUploader_profile.stamp">
+    </None>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\CrashHandler\Tools\ToolsCrashUploader_autogen\mocs_compilation_release.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='profile|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <None Include="C:\Users\lesaelr\o3de\runtime_dependencies\release\ToolsCrashUploader_release.stamp">
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\ZERO_CHECK.vcxproj">
+      <Project>{CDE32B4E-8490-3FC5-A3F2-976A0A5DE45E}</Project>
+      <Name>ZERO_CHECK</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore.vcxproj">
+      <Project>{8AC0D8DF-6487-39C7-A5F3-F77355B1ACD9}</Project>
+      <Name>AzCore</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\Code\Framework\AzQtComponents\AzQtComponents.vcxproj">
+      <Project>{9CADCCDF-9B80-353B-85C8-F3054FA0C0DF}</Project>
+      <Name>AzQtComponents</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\Code\Tools\CrashHandler\Support\CrashSupport.vcxproj">
+      <Project>{89DE3235-B987-32DB-BF65-B5BD16D07F04}</Project>
+      <Name>CrashSupport</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\Code\Tools\CrashHandler\CrashUploaderSupport.vcxproj">
+      <Project>{B69FAE95-68A2-36F3-8156-D627BB351D4E}</Project>
+      <Name>CrashUploaderSupport</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

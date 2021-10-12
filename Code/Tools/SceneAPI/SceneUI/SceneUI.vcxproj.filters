@@ -1,0 +1,269 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneUI\SceneUI_autogen\mocs_compilation_debug.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneUI\CMakeFiles\SceneUI.dir\Unity\unity_3_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneUI\CMakeFiles\SceneUI.dir\Unity\unity_2_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneUI\CMakeFiles\SceneUI.dir\Unity\unity_1_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneUI\CMakeFiles\SceneUI.dir\Unity\unity_0_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneUI\ManifestMetaInfoHandler.cpp" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneUI\GraphMetaInfoHandler.cpp" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneUI\SceneUIStandaloneAllocator.cpp" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneUI\CommonWidgets\JobWatcher.cpp">
+      <Filter>CommonWidgets</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneUI\CommonWidgets\ProcessingOverlayWidget.cpp">
+      <Filter>CommonWidgets</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneUI\CommonWidgets\ExpandCollapseToggler.cpp">
+      <Filter>CommonWidgets</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneUI\Handlers\ProcessingHandlers\ProcessingHandler.cpp">
+      <Filter>Handlers\ProcessingHandlers</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneUI\Handlers\ProcessingHandlers\ExportJobProcessingHandler.cpp">
+      <Filter>Handlers\ProcessingHandlers</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneUI\Handlers\ProcessingHandlers\AsyncOperationProcessingHandler.cpp">
+      <Filter>Handlers\ProcessingHandlers</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneUI\SceneWidgets\ManifestWidget.cpp">
+      <Filter>SceneWidgets</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneUI\SceneWidgets\ManifestWidgetPage.cpp">
+      <Filter>SceneWidgets</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneUI\SceneWidgets\SceneGraphWidget.cpp">
+      <Filter>SceneWidgets</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneUI\SceneWidgets\SceneGraphInspectWidget.cpp">
+      <Filter>SceneWidgets</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneUI\RowWidgets\HeaderWidget.cpp">
+      <Filter>RowWidgets</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneUI\RowWidgets\HeaderHandler.cpp">
+      <Filter>RowWidgets</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneUI\RowWidgets\ManifestVectorHandler.cpp">
+      <Filter>RowWidgets</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneUI\RowWidgets\ManifestVectorWidget.cpp">
+      <Filter>RowWidgets</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneUI\RowWidgets\NodeListSelectionHandler.cpp">
+      <Filter>RowWidgets</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneUI\RowWidgets\NodeListSelectionWidget.cpp">
+      <Filter>RowWidgets</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneUI\RowWidgets\NodeTreeSelectionHandler.cpp">
+      <Filter>RowWidgets</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneUI\RowWidgets\NodeTreeSelectionWidget.cpp">
+      <Filter>RowWidgets</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneUI\RowWidgets\ManifestNameHandler.cpp">
+      <Filter>RowWidgets</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneUI\RowWidgets\ManifestNameWidget.cpp">
+      <Filter>RowWidgets</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneUI\RowWidgets\TransformRowHandler.cpp">
+      <Filter>RowWidgets</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneUI\RowWidgets\TransformRowWidget.cpp">
+      <Filter>RowWidgets</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneUI\DllMain.cpp" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneUI\SceneUI_autogen\EWIEGA46WW\qrc_SceneUI.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneUI\SceneUI_autogen\mocs_compilation_profile.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneUI\SceneUI_autogen\mocs_compilation_release.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneUI\SceneUIConfiguration.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneUI\ManifestMetaInfoHandler.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneUI\GraphMetaInfoHandler.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneUI\SceneUIStandaloneAllocator.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneUI\CommonWidgets\OverlayWidget.h">
+      <Filter>CommonWidgets</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneUI\CommonWidgets\OverlayWidgetLayer.h">
+      <Filter>CommonWidgets</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneUI\CommonWidgets\JobWatcher.h">
+      <Filter>CommonWidgets</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneUI\CommonWidgets\ProcessingOverlayWidget.h">
+      <Filter>CommonWidgets</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneUI\CommonWidgets\ExpandCollapseToggler.h">
+      <Filter>CommonWidgets</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneUI\Handlers\ProcessingHandlers\ProcessingHandler.h">
+      <Filter>Handlers\ProcessingHandlers</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneUI\Handlers\ProcessingHandlers\ExportJobProcessingHandler.h">
+      <Filter>Handlers\ProcessingHandlers</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneUI\Handlers\ProcessingHandlers\AsyncOperationProcessingHandler.h">
+      <Filter>Handlers\ProcessingHandlers</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneUI\SceneWidgets\ManifestWidget.h">
+      <Filter>SceneWidgets</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneUI\SceneWidgets\ManifestWidgetPage.h">
+      <Filter>SceneWidgets</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneUI\SceneWidgets\SceneGraphWidget.h">
+      <Filter>SceneWidgets</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneUI\SceneWidgets\SceneGraphInspectWidget.h">
+      <Filter>SceneWidgets</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneUI\RowWidgets\HeaderWidget.h">
+      <Filter>RowWidgets</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneUI\RowWidgets\HeaderHandler.h">
+      <Filter>RowWidgets</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneUI\RowWidgets\ManifestVectorHandler.h">
+      <Filter>RowWidgets</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneUI\RowWidgets\ManifestVectorWidget.h">
+      <Filter>RowWidgets</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneUI\RowWidgets\NodeListSelectionHandler.h">
+      <Filter>RowWidgets</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneUI\RowWidgets\NodeListSelectionWidget.h">
+      <Filter>RowWidgets</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneUI\RowWidgets\NodeTreeSelectionHandler.h">
+      <Filter>RowWidgets</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneUI\RowWidgets\NodeTreeSelectionWidget.h">
+      <Filter>RowWidgets</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneUI\RowWidgets\ManifestNameHandler.h">
+      <Filter>RowWidgets</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneUI\RowWidgets\ManifestNameWidget.h">
+      <Filter>RowWidgets</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneUI\RowWidgets\TransformRowHandler.h">
+      <Filter>RowWidgets</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneUI\RowWidgets\TransformRowWidget.h">
+      <Filter>RowWidgets</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneUI\SceneUI_autogen\include\CommonWidgets\ui_ProcessingOverlayWidget.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneUI\SceneUI_autogen\include\SceneWidgets\ui_ManifestWidget.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneUI\SceneUI_autogen\include\SceneWidgets\ui_ManifestWidgetPage.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneUI\SceneUI_autogen\include\SceneWidgets\ui_SceneGraphWidget.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneUI\SceneUI_autogen\include\SceneWidgets\ui_SceneGraphInspectWidget.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneUI\SceneUI_autogen\include\RowWidgets\ui_HeaderWidget.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneUI\SceneUI_autogen\include\RowWidgets\ui_ManifestVectorWidget.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneUI\SceneUI_autogen\include\RowWidgets\ui_NodeTreeSelectionWidget.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneUI\CommonWidgets\ProcessingOverlayWidget.ui">
+      <Filter>CommonWidgets</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneUI\SceneWidgets\ManifestWidget.ui">
+      <Filter>SceneWidgets</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneUI\SceneWidgets\ManifestWidgetPage.ui">
+      <Filter>SceneWidgets</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneUI\SceneWidgets\SceneGraphWidget.ui">
+      <Filter>SceneWidgets</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneUI\SceneWidgets\SceneGraphInspectWidget.ui">
+      <Filter>SceneWidgets</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneUI\RowWidgets\HeaderWidget.ui">
+      <Filter>RowWidgets</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneUI\RowWidgets\ManifestVectorWidget.ui">
+      <Filter>RowWidgets</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneUI\RowWidgets\NodeTreeSelectionWidget.ui">
+      <Filter>RowWidgets</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\CMakeFiles\08b24365a84bd27d080f6dd51f42b933\SceneUI_(CONFIG).stamp.rule">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\CMakeFiles\6b984b6bbb58a59bbab0330e048d3bbd\qrc_SceneUI.cpp.rule">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneUI\CMakeLists.txt">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneUI\SceneUI.qrc" />
+    <None Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneUI\SceneUI_files.cmake" />
+    <None Include="C:\Users\lesaelr\o3de\runtime_dependencies\debug\SceneUI_debug.stamp">
+      <Filter>Generated Files</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\runtime_dependencies\profile\SceneUI_profile.stamp">
+      <Filter>Generated Files</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\runtime_dependencies\release\SceneUI_release.stamp">
+      <Filter>Generated Files</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="CommonWidgets">
+      <UniqueIdentifier>{674CF4D2-13AB-3CE8-95B5-CE991DB2AFD5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Generated Files">
+      <UniqueIdentifier>{FB9B7D8B-7F05-31D5-AA90-592248EDE1B3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Handlers">
+      <UniqueIdentifier>{76CBF165-F4DC-3D8F-844F-DCCDF379F7D5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Handlers\ProcessingHandlers">
+      <UniqueIdentifier>{CBD3C673-B6C7-31DE-A3AE-31884B4E64A9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="RowWidgets">
+      <UniqueIdentifier>{80DEC0EE-C59D-32B0-9383-DA3F3CF118A0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="SceneWidgets">
+      <UniqueIdentifier>{F218B7B6-759E-330B-990C-0954F4C153D3}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

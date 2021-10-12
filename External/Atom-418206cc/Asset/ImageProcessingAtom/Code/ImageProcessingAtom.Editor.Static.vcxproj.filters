@@ -1,0 +1,553 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\Atom-418206cc\Asset\ImageProcessingAtom\Code\ImageProcessingAtom.Editor.Static_autogen\mocs_compilation_debug.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\Atom-418206cc\Asset\ImageProcessingAtom\Code\CMakeFiles\ImageProcessingAtom.Editor.Static.dir\Unity\unity_7_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\Atom-418206cc\Asset\ImageProcessingAtom\Code\CMakeFiles\ImageProcessingAtom.Editor.Static.dir\Unity\unity_6_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\Atom-418206cc\Asset\ImageProcessingAtom\Code\CMakeFiles\ImageProcessingAtom.Editor.Static.dir\Unity\unity_5_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\Atom-418206cc\Asset\ImageProcessingAtom\Code\CMakeFiles\ImageProcessingAtom.Editor.Static.dir\Unity\unity_4_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\Atom-418206cc\Asset\ImageProcessingAtom\Code\CMakeFiles\ImageProcessingAtom.Editor.Static.dir\Unity\unity_3_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\Atom-418206cc\Asset\ImageProcessingAtom\Code\CMakeFiles\ImageProcessingAtom.Editor.Static.dir\Unity\unity_2_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\Atom-418206cc\Asset\ImageProcessingAtom\Code\CMakeFiles\ImageProcessingAtom.Editor.Static.dir\Unity\unity_1_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\Atom-418206cc\Asset\ImageProcessingAtom\Code\CMakeFiles\ImageProcessingAtom.Editor.Static.dir\Unity\unity_0_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Compressors\CryTextureSquisher\CryTextureSquisher.cpp">
+      <Filter>Source\Compressors\CryTextureSquisher</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\ImageBuilderComponent.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\ImageProcessingSystemComponent.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\BuilderSettings\BuilderSettingManager.cpp">
+      <Filter>Source\BuilderSettings</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\BuilderSettings\BuilderSettings.cpp">
+      <Filter>Source\BuilderSettings</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\BuilderSettings\CubemapSettings.cpp">
+      <Filter>Source\BuilderSettings</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\BuilderSettings\MipmapSettings.cpp">
+      <Filter>Source\BuilderSettings</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\BuilderSettings\PresetSettings.cpp">
+      <Filter>Source\BuilderSettings</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\BuilderSettings\TextureSettings.cpp">
+      <Filter>Source\BuilderSettings</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Processing\ImageAssetProducer.cpp">
+      <Filter>Source\Processing</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Processing\ImageConvert.cpp">
+      <Filter>Source\Processing</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Processing\ImageConvertJob.cpp">
+      <Filter>Source\Processing</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Processing\ImageObjectImpl.cpp">
+      <Filter>Source\Processing</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Processing\ImagePreview.cpp">
+      <Filter>Source\Processing</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Processing\PixelFormatInfo.cpp">
+      <Filter>Source\Processing</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Processing\Utils.cpp">
+      <Filter>Source\Processing</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Previewer\ImagePreviewer.cpp">
+      <Filter>Source\Previewer</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Previewer\ImagePreviewerFactory.cpp">
+      <Filter>Source\Previewer</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\ImageLoader\DdsLoader.cpp">
+      <Filter>Source\ImageLoader</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\ImageLoader\ImageLoaders.cpp">
+      <Filter>Source\ImageLoader</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\ImageLoader\QtImageLoader.cpp">
+      <Filter>Source\ImageLoader</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\ImageLoader\TIFFLoader.cpp">
+      <Filter>Source\ImageLoader</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\ImageLoader\ExrLoader.cpp">
+      <Filter>Source\ImageLoader</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Editor\EditorCommon.cpp">
+      <Filter>Source\Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Editor\ImagePopup.cpp">
+      <Filter>Source\Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Editor\MipmapSettingWidget.cpp">
+      <Filter>Source\Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Editor\PresetInfoPopup.cpp">
+      <Filter>Source\Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Editor\ResolutionSettingItemWidget.cpp">
+      <Filter>Source\Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Editor\ResolutionSettingWidget.cpp">
+      <Filter>Source\Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Editor\TexturePresetSelectionWidget.cpp">
+      <Filter>Source\Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Editor\TexturePreviewWidget.cpp">
+      <Filter>Source\Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Editor\TexturePropertyEditor.cpp">
+      <Filter>Source\Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Converters\Gamma.cpp">
+      <Filter>Source\Converters</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Converters\FIR-Filter.cpp">
+      <Filter>Source\Converters</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Converters\FIR-Weights.cpp">
+      <Filter>Source\Converters</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Converters\AlphaCoverage.cpp">
+      <Filter>Source\Converters</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Converters\PixelOperation.cpp">
+      <Filter>Source\Converters</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Converters\Normalize.cpp">
+      <Filter>Source\Converters</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Converters\ConvertPixelFormat.cpp">
+      <Filter>Source\Converters</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Converters\Cubemap.cpp">
+      <Filter>Source\Converters</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Converters\ColorChart.cpp">
+      <Filter>Source\Converters</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Converters\HighPass.cpp">
+      <Filter>Source\Converters</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Converters\Histogram.cpp">
+      <Filter>Source\Converters</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\External\CubeMapGen\CBBoxInt32.cpp">
+      <Filter>..\External\CubeMapGen</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\External\CubeMapGen\CCubeMapProcessor.cpp">
+      <Filter>..\External\CubeMapGen</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\External\CubeMapGen\CImageSurface.cpp">
+      <Filter>..\External\CubeMapGen</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Compressors\ASTCCompressor.cpp">
+      <Filter>Source\Compressors</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Compressors\Compressor.cpp">
+      <Filter>Source\Compressors</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Compressors\CTSquisher.cpp">
+      <Filter>Source\Compressors</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Compressors\PVRTC.cpp">
+      <Filter>Source\Compressors</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Compressors\ETC2.cpp">
+      <Filter>Source\Compressors</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Compressors\CryTextureSquisher\ColorBlockRGBA4x4f.cpp">
+      <Filter>Source\Compressors\CryTextureSquisher</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Compressors\CryTextureSquisher\ColorBlockRGBA4x4s.cpp">
+      <Filter>Source\Compressors\CryTextureSquisher</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Compressors\CryTextureSquisher\ColorBlockRGBA4x4c.cpp">
+      <Filter>Source\Compressors\CryTextureSquisher</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Compressors\ISPCTextureCompressor.cpp">
+      <Filter>Source\Compressors</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Thumbnail\ImageThumbnail.cpp">
+      <Filter>Source\Thumbnail</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Thumbnail\ImageThumbnailSystemComponent.cpp">
+      <Filter>Source\Thumbnail</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\Atom-418206cc\Asset\ImageProcessingAtom\Code\ImageProcessingAtom.Editor.Static_autogen\mocs_compilation_profile.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\Atom-418206cc\Asset\ImageProcessingAtom\Code\ImageProcessingAtom.Editor.Static_autogen\mocs_compilation_release.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Compressors\CryTextureSquisher\CryTextureSquisher.h">
+      <Filter>Source\Compressors\CryTextureSquisher</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Include\Atom\ImageProcessing\ImageProcessingBus.h">
+      <Filter>Include\Atom\ImageProcessing</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Include\Atom\ImageProcessing\ImageProcessingEditorBus.h">
+      <Filter>Include\Atom\ImageProcessing</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Include\Atom\ImageProcessing\PixelFormats.h">
+      <Filter>Include\Atom\ImageProcessing</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Include\Atom\ImageProcessing\ImageObject.h">
+      <Filter>Include\Atom\ImageProcessing</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\ImageBuilderBaseType.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\ImageBuilderComponent.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\ImageProcessingSystemComponent.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\BuilderSettings\BuilderSettingManager.h">
+      <Filter>Source\BuilderSettings</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\BuilderSettings\BuilderSettings.h">
+      <Filter>Source\BuilderSettings</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\BuilderSettings\CubemapSettings.h">
+      <Filter>Source\BuilderSettings</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\BuilderSettings\ImageProcessingDefines.h">
+      <Filter>Source\BuilderSettings</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\BuilderSettings\MipmapSettings.h">
+      <Filter>Source\BuilderSettings</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\BuilderSettings\PlatformSettings.h">
+      <Filter>Source\BuilderSettings</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\BuilderSettings\PresetSettings.h">
+      <Filter>Source\BuilderSettings</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\BuilderSettings\TextureSettings.h">
+      <Filter>Source\BuilderSettings</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Processing\AzDXGIFormat.h">
+      <Filter>Source\Processing</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Processing\DDSHeader.h">
+      <Filter>Source\Processing</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Processing\ImageAssetProducer.h">
+      <Filter>Source\Processing</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Processing\ImageConvert.h">
+      <Filter>Source\Processing</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Processing\ImageConvertJob.h">
+      <Filter>Source\Processing</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Processing\ImageFlags.h">
+      <Filter>Source\Processing</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Processing\ImageObjectImpl.h">
+      <Filter>Source\Processing</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Processing\ImagePreview.h">
+      <Filter>Source\Processing</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Processing\ImageToProcess.h">
+      <Filter>Source\Processing</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Processing\PixelFormatInfo.h">
+      <Filter>Source\Processing</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Processing\Utils.h">
+      <Filter>Source\Processing</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Previewer\ImagePreviewer.h">
+      <Filter>Source\Previewer</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Previewer\ImagePreviewerFactory.h">
+      <Filter>Source\Previewer</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\ImageLoader\ImageLoaders.h">
+      <Filter>Source\ImageLoader</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Editor\EditorCommon.h">
+      <Filter>Source\Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Editor\ImagePopup.h">
+      <Filter>Source\Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Editor\MipmapSettingWidget.h">
+      <Filter>Source\Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Editor\PresetInfoPopup.h">
+      <Filter>Source\Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Editor\ResolutionSettingItemWidget.h">
+      <Filter>Source\Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Editor\ResolutionSettingWidget.h">
+      <Filter>Source\Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Editor\TexturePresetSelectionWidget.h">
+      <Filter>Source\Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Editor\TexturePreviewWidget.h">
+      <Filter>Source\Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Editor\TexturePropertyEditor.h">
+      <Filter>Source\Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Converters\FIR-Windows.h">
+      <Filter>Source\Converters</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Converters\FIR-Weights.h">
+      <Filter>Source\Converters</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Converters\PixelOperation.h">
+      <Filter>Source\Converters</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Converters\Cubemap.h">
+      <Filter>Source\Converters</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Converters\Histogram.h">
+      <Filter>Source\Converters</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\External\CubeMapGen\CBBoxInt32.h">
+      <Filter>..\External\CubeMapGen</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\External\CubeMapGen\CCubeMapProcessor.h">
+      <Filter>..\External\CubeMapGen</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\External\CubeMapGen\CImageSurface.h">
+      <Filter>..\External\CubeMapGen</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\External\CubeMapGen\VectorMacros.h">
+      <Filter>..\External\CubeMapGen</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Compressors\ASTCCompressor.h">
+      <Filter>Source\Compressors</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Compressors\Compressor.h">
+      <Filter>Source\Compressors</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Compressors\CTSquisher.h">
+      <Filter>Source\Compressors</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Compressors\PVRTC.h">
+      <Filter>Source\Compressors</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Compressors\ETC2.h">
+      <Filter>Source\Compressors</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Compressors\CryTextureSquisher\ColorBlockRGBA4x4f.h">
+      <Filter>Source\Compressors\CryTextureSquisher</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Compressors\CryTextureSquisher\ColorBlockRGBA4x4s.h">
+      <Filter>Source\Compressors\CryTextureSquisher</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Compressors\CryTextureSquisher\ColorBlockRGBA4x4c.h">
+      <Filter>Source\Compressors\CryTextureSquisher</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Compressors\CryTextureSquisher\ColorTypes.h">
+      <Filter>Source\Compressors\CryTextureSquisher</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Compressors\ISPCTextureCompressor.h">
+      <Filter>Source\Compressors</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Thumbnail\ImageThumbnail.h">
+      <Filter>Source\Thumbnail</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Thumbnail\ImageThumbnailSystemComponent.h">
+      <Filter>Source\Thumbnail</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Platform\Windows\ImageProcessing_Traits_Platform.h">
+      <Filter>Source\Platform\Windows</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Platform\Windows\ImageProcessing_Traits_Windows.h">
+      <Filter>Source\Platform\Windows</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\External\Atom-418206cc\Asset\ImageProcessingAtom\Code\ImageProcessingAtom.Editor.Static_autogen\include\Source\Previewer\ui_ImagePreviewer.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\External\Atom-418206cc\Asset\ImageProcessingAtom\Code\ImageProcessingAtom.Editor.Static_autogen\include\Source\Editor\ui_ImagePopup.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\External\Atom-418206cc\Asset\ImageProcessingAtom\Code\ImageProcessingAtom.Editor.Static_autogen\include\Source\Editor\ui_MipmapSettingWidget.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\External\Atom-418206cc\Asset\ImageProcessingAtom\Code\ImageProcessingAtom.Editor.Static_autogen\include\Source\Editor\ui_PresetInfoPopup.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\External\Atom-418206cc\Asset\ImageProcessingAtom\Code\ImageProcessingAtom.Editor.Static_autogen\include\Source\Editor\ui_ResolutionSettingItemWidget.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\External\Atom-418206cc\Asset\ImageProcessingAtom\Code\ImageProcessingAtom.Editor.Static_autogen\include\Source\Editor\ui_ResolutionSettingWidget.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\External\Atom-418206cc\Asset\ImageProcessingAtom\Code\ImageProcessingAtom.Editor.Static_autogen\include\Source\Editor\ui_TexturePresetSelectionWidget.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\External\Atom-418206cc\Asset\ImageProcessingAtom\Code\ImageProcessingAtom.Editor.Static_autogen\include\Source\Editor\ui_TexturePreviewWidget.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\External\Atom-418206cc\Asset\ImageProcessingAtom\Code\ImageProcessingAtom.Editor.Static_autogen\include\Source\Editor\ui_TexturePropertyEditor.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Previewer\ImagePreviewer.ui">
+      <Filter>Source\Previewer</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Editor\ImagePopup.ui">
+      <Filter>Source\Editor</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Editor\MipmapSettingWidget.ui">
+      <Filter>Source\Editor</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Editor\PresetInfoPopup.ui">
+      <Filter>Source\Editor</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Editor\ResolutionSettingItemWidget.ui">
+      <Filter>Source\Editor</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Editor\ResolutionSettingWidget.ui">
+      <Filter>Source\Editor</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Editor\TexturePresetSelectionWidget.ui">
+      <Filter>Source\Editor</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Editor\TexturePreviewWidget.ui">
+      <Filter>Source\Editor</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Editor\TexturePropertyEditor.ui">
+      <Filter>Source\Editor</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\CMakeLists.txt">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Assets\Editor\Backward.png">
+      <Filter>..\Assets\Editor</Filter>
+    </Image>
+    <Image Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Assets\Editor\Forward.png">
+      <Filter>..\Assets\Editor</Filter>
+    </Image>
+    <Image Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Assets\Editor\reset.png">
+      <Filter>..\Assets\Editor</Filter>
+    </Image>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Assets\Editor\Resources.qrc">
+      <Filter>..\Assets\Editor</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\imageprocessing_files.cmake" />
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Platform\Windows\platform_windows_files.cmake">
+      <Filter>Source\Platform\Windows</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Platform\Windows\platform_windows.cmake">
+      <Filter>Source\Platform\Windows</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Asset\ImageProcessingAtom\Code\Source\Platform\Common\msvc\imageprocessingatom_editor_static_msvc.cmake">
+      <Filter>Source\Platform\Common\MSVC</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="..">
+      <UniqueIdentifier>{B62B6BD3-6D53-356A-92E7-D4477019628D}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="..\Assets">
+      <UniqueIdentifier>{14B846D0-5CAF-3679-A475-7706CBC167C1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="..\Assets\Editor">
+      <UniqueIdentifier>{C909B306-7E7D-31C3-9D50-ACBE8ED2421B}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="..\External">
+      <UniqueIdentifier>{6CCAE8E3-934F-341C-AE0C-D09FCA84D5AE}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="..\External\CubeMapGen">
+      <UniqueIdentifier>{6657CC69-B1E1-369F-B8BE-0AEA86C6E8AD}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Generated Files">
+      <UniqueIdentifier>{FB9B7D8B-7F05-31D5-AA90-592248EDE1B3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include">
+      <UniqueIdentifier>{E188105A-C8C4-34BB-9809-15E8410EF7F8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\Atom">
+      <UniqueIdentifier>{D3FF6349-761F-30FE-A9A9-4A8D0DE47ADF}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\Atom\ImageProcessing">
+      <UniqueIdentifier>{FD5C4C3E-57FE-3B49-A633-98AC8AEFB5EB}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source">
+      <UniqueIdentifier>{F3F0AD47-5F83-373B-A2BF-650D2E4FA3EA}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\BuilderSettings">
+      <UniqueIdentifier>{5BC5FB04-54B6-3720-AF13-28FB952B3E46}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Compressors">
+      <UniqueIdentifier>{59228907-86A3-39A1-95CF-B0A54D7C238E}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Compressors\CryTextureSquisher">
+      <UniqueIdentifier>{73E4C5AD-BC8B-30C2-8475-9BCF1D64A625}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Converters">
+      <UniqueIdentifier>{AC814F24-3DDB-3D90-BD32-110AC4809052}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Editor">
+      <UniqueIdentifier>{32FCFB28-A730-3475-B9AE-03974723A74B}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\ImageLoader">
+      <UniqueIdentifier>{51E70E98-6992-3AC9-8F54-07591F382953}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Platform">
+      <UniqueIdentifier>{4FB794FF-EAE9-3B82-95CC-6241BAD0E3AC}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Platform\Common">
+      <UniqueIdentifier>{36290816-6835-39C0-B301-795953CCC13E}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Platform\Common\MSVC">
+      <UniqueIdentifier>{E1E89B60-2468-3907-B827-F49D4366A0DE}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Platform\Windows">
+      <UniqueIdentifier>{2D0E7154-D797-393D-A7EB-8527ACAFB2BF}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Previewer">
+      <UniqueIdentifier>{EFAB26EB-2530-30B8-A9AE-64E08217AA36}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Processing">
+      <UniqueIdentifier>{6B1EB9DB-17E4-37EC-AB46-95B7C280AE2F}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Thumbnail">
+      <UniqueIdentifier>{F5AC677F-92D5-3741-B1B0-03B830708BF1}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

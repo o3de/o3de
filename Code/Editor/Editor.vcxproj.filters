@@ -1,0 +1,79 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\CMakeFiles\Editor.dir\Unity\unity_0_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\main.cpp" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\qrc_i18n_Translations.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\Editor_autogen\ZTQVCGDY76\qrc_resources.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\CMakeFiles\08b24365a84bd27d080f6dd51f42b933\Editor_(CONFIG).stamp.rule">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\CMakeFiles\83425d5c3dcdb0ffbf5b884a5b8fd5f1\editor_en-us.qm.rule">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\CMakeFiles\83425d5c3dcdb0ffbf5b884a5b8fd5f1\assetbrowser_en-us.qm.rule">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Code\Editor\i18n_Translations.qrc">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\CMakeFiles\e7eccd380048bfbde150f17eed80ff2f\qrc_resources.cpp.rule">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Code\Editor\CMakeLists.txt">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\Style\Editor.qss">
+      <Filter>Style</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\Style\resources.qrc">
+      <Filter>Style</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\editor_files.cmake" />
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\Platform\Windows\editor_windows.cmake">
+      <Filter>Platform\Windows</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\runtime_dependencies\debug\Editor_debug.stamp">
+      <Filter>Generated Files</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\editor_en-us.qm">
+      <Filter>Generated Files</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\assetbrowser_en-us.qm">
+      <Filter>Generated Files</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\runtime_dependencies\profile\Editor_profile.stamp">
+      <Filter>Generated Files</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\runtime_dependencies\release\Editor_release.stamp">
+      <Filter>Generated Files</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="C:\Users\lesaelr\o3de\Code\Editor\EditorCryEdit.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Generated Files">
+      <UniqueIdentifier>{FB9B7D8B-7F05-31D5-AA90-592248EDE1B3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Platform">
+      <UniqueIdentifier>{378A8D8C-6CA1-3F6B-A02B-1E9FF64C97B2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Platform\Windows">
+      <UniqueIdentifier>{63AEF2F6-51C7-306A-BFE8-A049C8C62EFB}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Style">
+      <UniqueIdentifier>{45572D82-2F60-3E14-B76E-93CE51DA0BEF}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

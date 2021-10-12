@@ -1,0 +1,266 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\Atom-418206cc\Tools\AtomToolsFramework\Code\AtomToolsFramework.Static_autogen\mocs_compilation_debug.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\Atom-418206cc\Tools\AtomToolsFramework\Code\CMakeFiles\AtomToolsFramework.Static.dir\Unity\unity_2_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\Atom-418206cc\Tools\AtomToolsFramework\Code\CMakeFiles\AtomToolsFramework.Static.dir\Unity\unity_1_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\Atom-418206cc\Tools\AtomToolsFramework\Code\CMakeFiles\AtomToolsFramework.Static.dir\Unity\unity_0_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Tools\AtomToolsFramework\Code\Source\Application\AtomToolsApplication.cpp">
+      <Filter>Source\Application</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Tools\AtomToolsFramework\Code\Source\Communication\LocalServer.cpp">
+      <Filter>Source\Communication</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Tools\AtomToolsFramework\Code\Source\Communication\LocalSocket.cpp">
+      <Filter>Source\Communication</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Tools\AtomToolsFramework\Code\Source\Debug\TraceRecorder.cpp">
+      <Filter>Source\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Tools\AtomToolsFramework\Code\Source\Document\AtomToolsDocument.cpp">
+      <Filter>Source\Document</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Tools\AtomToolsFramework\Code\Source\Document\AtomToolsDocumentMainWindow.cpp">
+      <Filter>Source\Document</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Tools\AtomToolsFramework\Code\Source\Document\AtomToolsDocumentSystemSettings.cpp">
+      <Filter>Source\Document</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Tools\AtomToolsFramework\Code\Source\Document\AtomToolsDocumentSystemComponent.cpp">
+      <Filter>Source\Document</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Tools\AtomToolsFramework\Code\Source\DynamicProperty\DynamicProperty.cpp">
+      <Filter>Source\DynamicProperty</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Tools\AtomToolsFramework\Code\Source\DynamicProperty\DynamicPropertyGroup.cpp">
+      <Filter>Source\DynamicProperty</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Tools\AtomToolsFramework\Code\Source\Inspector\InspectorWidget.cpp">
+      <Filter>Source\Inspector</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Tools\AtomToolsFramework\Code\Source\Inspector\InspectorGroupWidget.cpp">
+      <Filter>Source\Inspector</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Tools\AtomToolsFramework\Code\Source\Inspector\InspectorGroupHeaderWidget.cpp">
+      <Filter>Source\Inspector</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Tools\AtomToolsFramework\Code\Source\Inspector\InspectorPropertyGroupWidget.cpp">
+      <Filter>Source\Inspector</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Tools\AtomToolsFramework\Code\Source\Util\MaterialPropertyUtil.cpp">
+      <Filter>Source\Util</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Tools\AtomToolsFramework\Code\Source\Util\Util.cpp">
+      <Filter>Source\Util</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Tools\AtomToolsFramework\Code\Source\Viewport\RenderViewportWidget.cpp">
+      <Filter>Source\Viewport</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Tools\AtomToolsFramework\Code\Source\Viewport\ModularViewportCameraController.cpp">
+      <Filter>Source\Viewport</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Tools\AtomToolsFramework\Code\Source\Window\AtomToolsMainWindow.cpp">
+      <Filter>Source\Window</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Tools\AtomToolsFramework\Code\Source\Window\AtomToolsMainWindowSystemComponent.cpp">
+      <Filter>Source\Window</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\Atom-418206cc\Tools\AtomToolsFramework\Code\AtomToolsFramework.Static_autogen\V62HRH5YY6\qrc_InspectorWidget.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\Atom-418206cc\Tools\AtomToolsFramework\Code\AtomToolsFramework.Static_autogen\mocs_compilation_profile.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\Atom-418206cc\Tools\AtomToolsFramework\Code\AtomToolsFramework.Static_autogen\mocs_compilation_release.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Tools\AtomToolsFramework\Code\Include\AtomToolsFramework\Application\AtomToolsApplication.h">
+      <Filter>Include\AtomToolsFramework\Application</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Tools\AtomToolsFramework\Code\Include\AtomToolsFramework\Communication\LocalServer.h">
+      <Filter>Include\AtomToolsFramework\Communication</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Tools\AtomToolsFramework\Code\Include\AtomToolsFramework\Communication\LocalSocket.h">
+      <Filter>Include\AtomToolsFramework\Communication</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Tools\AtomToolsFramework\Code\Include\AtomToolsFramework\Debug\TraceRecorder.h">
+      <Filter>Include\AtomToolsFramework\Debug</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Tools\AtomToolsFramework\Code\Include\AtomToolsFramework\Document\AtomToolsDocument.h">
+      <Filter>Include\AtomToolsFramework\Document</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Tools\AtomToolsFramework\Code\Include\AtomToolsFramework\Document\AtomToolsDocumentMainWindow.h">
+      <Filter>Include\AtomToolsFramework\Document</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Tools\AtomToolsFramework\Code\Include\AtomToolsFramework\Document\AtomToolsDocumentSystemSettings.h">
+      <Filter>Include\AtomToolsFramework\Document</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Tools\AtomToolsFramework\Code\Include\AtomToolsFramework\Document\AtomToolsDocumentSystemRequestBus.h">
+      <Filter>Include\AtomToolsFramework\Document</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Tools\AtomToolsFramework\Code\Include\AtomToolsFramework\Document\AtomToolsDocumentNotificationBus.h">
+      <Filter>Include\AtomToolsFramework\Document</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Tools\AtomToolsFramework\Code\Include\AtomToolsFramework\Document\AtomToolsDocumentRequestBus.h">
+      <Filter>Include\AtomToolsFramework\Document</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Tools\AtomToolsFramework\Code\Include\AtomToolsFramework\DynamicProperty\DynamicProperty.h">
+      <Filter>Include\AtomToolsFramework\DynamicProperty</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Tools\AtomToolsFramework\Code\Include\AtomToolsFramework\DynamicProperty\DynamicPropertyGroup.h">
+      <Filter>Include\AtomToolsFramework\DynamicProperty</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Tools\AtomToolsFramework\Code\Include\AtomToolsFramework\Inspector\InspectorWidget.h">
+      <Filter>Include\AtomToolsFramework\Inspector</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Tools\AtomToolsFramework\Code\Include\AtomToolsFramework\Inspector\InspectorRequestBus.h">
+      <Filter>Include\AtomToolsFramework\Inspector</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Tools\AtomToolsFramework\Code\Include\AtomToolsFramework\Inspector\InspectorNotificationBus.h">
+      <Filter>Include\AtomToolsFramework\Inspector</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Tools\AtomToolsFramework\Code\Include\AtomToolsFramework\Inspector\InspectorGroupWidget.h">
+      <Filter>Include\AtomToolsFramework\Inspector</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Tools\AtomToolsFramework\Code\Include\AtomToolsFramework\Inspector\InspectorGroupHeaderWidget.h">
+      <Filter>Include\AtomToolsFramework\Inspector</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Tools\AtomToolsFramework\Code\Include\AtomToolsFramework\Inspector\InspectorPropertyGroupWidget.h">
+      <Filter>Include\AtomToolsFramework\Inspector</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Tools\AtomToolsFramework\Code\Include\AtomToolsFramework\Util\MaterialPropertyUtil.h">
+      <Filter>Include\AtomToolsFramework\Util</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Tools\AtomToolsFramework\Code\Include\AtomToolsFramework\Util\Util.h">
+      <Filter>Include\AtomToolsFramework\Util</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Tools\AtomToolsFramework\Code\Include\AtomToolsFramework\Viewport\RenderViewportWidget.h">
+      <Filter>Include\AtomToolsFramework\Viewport</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Tools\AtomToolsFramework\Code\Include\AtomToolsFramework\Viewport\RenderViewportWidgetNotificationBus.h">
+      <Filter>Include\AtomToolsFramework\Viewport</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Tools\AtomToolsFramework\Code\Include\AtomToolsFramework\Viewport\ModularViewportCameraController.h">
+      <Filter>Include\AtomToolsFramework\Viewport</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Tools\AtomToolsFramework\Code\Include\AtomToolsFramework\Viewport\ModularViewportCameraControllerRequestBus.h">
+      <Filter>Include\AtomToolsFramework\Viewport</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Tools\AtomToolsFramework\Code\Include\AtomToolsFramework\Window\AtomToolsMainWindow.h">
+      <Filter>Include\AtomToolsFramework\Window</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Tools\AtomToolsFramework\Code\Include\AtomToolsFramework\Window\AtomToolsMainWindowRequestBus.h">
+      <Filter>Include\AtomToolsFramework\Window</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Tools\AtomToolsFramework\Code\Include\AtomToolsFramework\Window\AtomToolsMainWindowFactoryRequestBus.h">
+      <Filter>Include\AtomToolsFramework\Window</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Tools\AtomToolsFramework\Code\Include\AtomToolsFramework\Window\AtomToolsMainWindowNotificationBus.h">
+      <Filter>Include\AtomToolsFramework\Window</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Tools\AtomToolsFramework\Code\Source\Document\AtomToolsDocumentSystemComponent.h">
+      <Filter>Source\Document</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Tools\AtomToolsFramework\Code\Source\Window\AtomToolsMainWindowSystemComponent.h">
+      <Filter>Source\Window</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\External\Atom-418206cc\Tools\AtomToolsFramework\Code\AtomToolsFramework.Static_autogen\include\Source\Inspector\ui_InspectorWidget.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Gems\Atom\Tools\AtomToolsFramework\Code\Source\Inspector\InspectorWidget.ui">
+      <Filter>Source\Inspector</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\CMakeFiles\c3e38aca9e754d5c7d4b39c7186671fc\qrc_InspectorWidget.cpp.rule">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Gems\Atom\Tools\AtomToolsFramework\Code\CMakeLists.txt">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Tools\AtomToolsFramework\Code\Source\Inspector\InspectorWidget.qrc">
+      <Filter>Source\Inspector</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Tools\AtomToolsFramework\Code\atomtoolsframework_files.cmake" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Generated Files">
+      <UniqueIdentifier>{FB9B7D8B-7F05-31D5-AA90-592248EDE1B3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include">
+      <UniqueIdentifier>{E188105A-C8C4-34BB-9809-15E8410EF7F8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\AtomToolsFramework">
+      <UniqueIdentifier>{14F73F5C-6515-350A-B7DB-C14D2ECB35FA}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\AtomToolsFramework\Application">
+      <UniqueIdentifier>{7B0244F1-B334-314B-8477-BFABDFF256D7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\AtomToolsFramework\Communication">
+      <UniqueIdentifier>{4E5BF569-1E40-38E1-911F-5543F93621B9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\AtomToolsFramework\Debug">
+      <UniqueIdentifier>{212CFC99-51B5-32BA-87A2-13956C49BB7E}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\AtomToolsFramework\Document">
+      <UniqueIdentifier>{7A22F2BF-79E4-34E6-8A6C-7CC8EE6F20A6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\AtomToolsFramework\DynamicProperty">
+      <UniqueIdentifier>{63D7CB59-95FB-39D8-9551-8B8D9FB7A916}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\AtomToolsFramework\Inspector">
+      <UniqueIdentifier>{849417E2-DDA9-30EF-933C-C013C16F88FB}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\AtomToolsFramework\Util">
+      <UniqueIdentifier>{F26101EC-28E6-3094-96A4-2E6A58A938AD}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\AtomToolsFramework\Viewport">
+      <UniqueIdentifier>{47E6B6D5-DFB4-3C68-A877-1D533F870DC8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\AtomToolsFramework\Window">
+      <UniqueIdentifier>{F24C6A03-270C-3314-93CA-B8BD256807FA}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source">
+      <UniqueIdentifier>{F3F0AD47-5F83-373B-A2BF-650D2E4FA3EA}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Application">
+      <UniqueIdentifier>{6960FDA3-F0A4-3638-95CD-43D790E05579}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Communication">
+      <UniqueIdentifier>{298FD79D-865C-3441-A5FF-4013EB64671A}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Debug">
+      <UniqueIdentifier>{33133EDA-4D34-3000-9543-EC6753591408}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Document">
+      <UniqueIdentifier>{C864C62A-B2D1-335C-AA23-7653C83BE8BB}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\DynamicProperty">
+      <UniqueIdentifier>{527A6515-A544-34A8-A69F-C0353AF33A02}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Inspector">
+      <UniqueIdentifier>{26C95DD3-5701-390F-8733-9EE89307BF7B}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Util">
+      <UniqueIdentifier>{791EC76A-600E-3D3A-B1A2-552A6F8192CA}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Viewport">
+      <UniqueIdentifier>{A6745BEC-6C83-38E2-893A-2EFB926CCA22}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Window">
+      <UniqueIdentifier>{AEDB39B3-EA7E-3C59-A4A3-F141A3E30CDA}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

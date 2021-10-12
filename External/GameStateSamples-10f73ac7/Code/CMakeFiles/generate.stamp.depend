@@ -1,0 +1,5 @@
+# CMake generation dependency list for this directory.
+C:/Users/lesaelr/o3de/Gems/GameStateSamples/Code/CMakeLists.txt
+C:/Users/lesaelr/o3de/Gems/GameStateSamples/Code/Include/Platform/Windows/platform_windows_files.cmake
+C:/Users/lesaelr/o3de/Gems/GameStateSamples/Code/gamestatesamples_headers_files.cmake
+C:/Users/lesaelr/o3de/Gems/GameStateSamples/Code/gamestatesamples_shared_files.cmake

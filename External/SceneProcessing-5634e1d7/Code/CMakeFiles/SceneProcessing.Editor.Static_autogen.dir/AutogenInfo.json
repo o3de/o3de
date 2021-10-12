@@ -1,0 +1,410 @@
+{
+	"BUILD_DIR" : "C:/Users/lesaelr/o3de/External/SceneProcessing-5634e1d7/Code/SceneProcessing.Editor.Static_autogen",
+	"CMAKE_BINARY_DIR" : "C:/Users/lesaelr/o3de",
+	"CMAKE_CURRENT_BINARY_DIR" : "C:/Users/lesaelr/o3de/External/SceneProcessing-5634e1d7/Code",
+	"CMAKE_CURRENT_SOURCE_DIR" : "C:/Users/lesaelr/o3de/Gems/SceneProcessing/Code",
+	"CMAKE_EXECUTABLE" : "C:/Program Files/CMake/bin/cmake.exe",
+	"CMAKE_LIST_FILES" : 
+	[
+		"C:/Users/lesaelr/o3de/Gems/SceneProcessing/Code/CMakeLists.txt",
+		"C:/Users/lesaelr/o3de/Gems/SceneProcessing/Code/sceneprocessing_files.cmake",
+		"C:/Users/lesaelr/o3de/Gems/SceneProcessing/Code/sceneprocessing_editor_static_files.cmake",
+		"C:/Users/lesaelr/.o3de/3rdParty/packages/mikkelsen-1.0.0.4-windows/Findmikkelsen.cmake",
+		"C:/Users/lesaelr/.o3de/3rdParty/packages/mikkelsen-1.0.0.4-windows/mikkelsen-config-version.cmake",
+		"C:/Users/lesaelr/.o3de/3rdParty/packages/mikkelsen-1.0.0.4-windows/mikkelsen-config.cmake",
+		"C:/Users/lesaelr/o3de/Gems/SceneProcessing/Code/sceneprocessing_editor_files.cmake",
+		"C:/Users/lesaelr/o3de/Gems/SceneProcessing/Code/sceneprocessing_tests_files.cmake",
+		"C:/Users/lesaelr/o3de/cmake/Platform/Windows/LYTestWrappers_windows.cmake",
+		"C:/Users/lesaelr/o3de/Gems/SceneProcessing/Code/sceneprocessing_editor_tests_files.cmake",
+		"C:/Users/lesaelr/o3de/cmake/Platform/Windows/LYTestWrappers_windows.cmake",
+		"C:/Users/lesaelr/.o3de/3rdParty/packages/mikkelsen-1.0.0.4-windows/PackageInfo.json"
+	],
+	"CMAKE_SOURCE_DIR" : "C:/Users/lesaelr/o3de",
+	"DEP_FILE" : "",
+	"DEP_FILE_RULE_NAME" : "",
+	"HEADERS" : 
+	[
+		[
+			"C:/Users/lesaelr/o3de/Gems/SceneProcessing/Code/Include/Config/SceneProcessingConfigBus.h",
+			"Mu",
+			"EZL2VN23XD/moc_SceneProcessingConfigBus.cpp",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Gems/SceneProcessing/Code/Source/Config/Components/SceneProcessingConfigSystemComponent.h",
+			"Mu",
+			"6EF7ZOSSBJ/moc_SceneProcessingConfigSystemComponent.cpp",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Gems/SceneProcessing/Code/Source/Config/Components/SoftNameBehavior.h",
+			"Mu",
+			"6EF7ZOSSBJ/moc_SoftNameBehavior.cpp",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Gems/SceneProcessing/Code/Source/Config/SettingsObjects/FileSoftNameSetting.h",
+			"Mu",
+			"4C57VOVVAT/moc_FileSoftNameSetting.cpp",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Gems/SceneProcessing/Code/Source/Config/SettingsObjects/NodeSoftNameSetting.h",
+			"Mu",
+			"4C57VOVVAT/moc_NodeSoftNameSetting.cpp",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Gems/SceneProcessing/Code/Source/Config/SettingsObjects/SoftNameSetting.h",
+			"Mu",
+			"4C57VOVVAT/moc_SoftNameSetting.cpp",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Gems/SceneProcessing/Code/Source/Config/Widgets/GraphTypeSelector.h",
+			"Mu",
+			"TP5U2CZUHN/moc_GraphTypeSelector.cpp",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Gems/SceneProcessing/Code/Source/Generation/Components/MeshOptimizer/MeshBuilder.h",
+			"Mu",
+			"6UNKGJQ34F/moc_MeshBuilder.cpp",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Gems/SceneProcessing/Code/Source/Generation/Components/MeshOptimizer/MeshBuilderInvalidIndex.h",
+			"Mu",
+			"6UNKGJQ34F/moc_MeshBuilderInvalidIndex.cpp",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Gems/SceneProcessing/Code/Source/Generation/Components/MeshOptimizer/MeshBuilderSkinningInfo.h",
+			"Mu",
+			"6UNKGJQ34F/moc_MeshBuilderSkinningInfo.cpp",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Gems/SceneProcessing/Code/Source/Generation/Components/MeshOptimizer/MeshBuilderSubMesh.h",
+			"Mu",
+			"6UNKGJQ34F/moc_MeshBuilderSubMesh.cpp",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Gems/SceneProcessing/Code/Source/Generation/Components/MeshOptimizer/MeshBuilderVertexAttributeLayers.h",
+			"Mu",
+			"6UNKGJQ34F/moc_MeshBuilderVertexAttributeLayers.cpp",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Gems/SceneProcessing/Code/Source/Generation/Components/MeshOptimizer/MeshOptimizerComponent.h",
+			"Mu",
+			"6UNKGJQ34F/moc_MeshOptimizerComponent.cpp",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Gems/SceneProcessing/Code/Source/Generation/Components/TangentGenerator/TangentGenerateComponent.h",
+			"Mu",
+			"AZWTWKRXWN/moc_TangentGenerateComponent.cpp",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Gems/SceneProcessing/Code/Source/Generation/Components/TangentGenerator/TangentGenerators/BlendShapeMikkTGenerator.h",
+			"Mu",
+			"NV6KTRVBCL/moc_BlendShapeMikkTGenerator.cpp",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Gems/SceneProcessing/Code/Source/Generation/Components/TangentGenerator/TangentGenerators/MikkTGenerator.h",
+			"Mu",
+			"NV6KTRVBCL/moc_MikkTGenerator.cpp",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Gems/SceneProcessing/Code/Source/Generation/Components/TangentGenerator/TangentPreExportComponent.h",
+			"Mu",
+			"AZWTWKRXWN/moc_TangentPreExportComponent.cpp",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Gems/SceneProcessing/Code/Source/SceneBuilder/SceneBuilderComponent.h",
+			"Mu",
+			"4RYG7MWPLA/moc_SceneBuilderComponent.cpp",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Gems/SceneProcessing/Code/Source/SceneBuilder/SceneBuilderWorker.h",
+			"Mu",
+			"4RYG7MWPLA/moc_SceneBuilderWorker.cpp",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Gems/SceneProcessing/Code/Source/SceneBuilder/SceneSerializationHandler.h",
+			"Mu",
+			"4RYG7MWPLA/moc_SceneSerializationHandler.cpp",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Gems/SceneProcessing/Code/Source/SceneBuilder/TraceMessageHook.h",
+			"Mu",
+			"4RYG7MWPLA/moc_TraceMessageHook.cpp",
+			null
+		]
+	],
+	"HEADER_EXTENSIONS" : [ "h", "hh", "h++", "hm", "hpp", "hxx", "in", "txx" ],
+	"INCLUDE_DIR" : "C:/Users/lesaelr/o3de/External/SceneProcessing-5634e1d7/Code/SceneProcessing.Editor.Static_autogen/include",
+	"INCLUDE_DIR_debug" : "C:/Users/lesaelr/o3de/External/SceneProcessing-5634e1d7/Code/SceneProcessing.Editor.Static_autogen/include_debug",
+	"INCLUDE_DIR_profile" : "C:/Users/lesaelr/o3de/External/SceneProcessing-5634e1d7/Code/SceneProcessing.Editor.Static_autogen/include_profile",
+	"INCLUDE_DIR_release" : "C:/Users/lesaelr/o3de/External/SceneProcessing-5634e1d7/Code/SceneProcessing.Editor.Static_autogen/include_release",
+	"MOC_COMPILATION_FILE" : "C:/Users/lesaelr/o3de/External/SceneProcessing-5634e1d7/Code/SceneProcessing.Editor.Static_autogen/mocs_compilation.cpp",
+	"MOC_COMPILATION_FILE_debug" : "C:/Users/lesaelr/o3de/External/SceneProcessing-5634e1d7/Code/SceneProcessing.Editor.Static_autogen/mocs_compilation_debug.cpp",
+	"MOC_COMPILATION_FILE_profile" : "C:/Users/lesaelr/o3de/External/SceneProcessing-5634e1d7/Code/SceneProcessing.Editor.Static_autogen/mocs_compilation_profile.cpp",
+	"MOC_COMPILATION_FILE_release" : "C:/Users/lesaelr/o3de/External/SceneProcessing-5634e1d7/Code/SceneProcessing.Editor.Static_autogen/mocs_compilation_release.cpp",
+	"MOC_DEFINITIONS" : 
+	[
+		"NOMINMAX",
+		"OPENSSL_ENABLED",
+		"QT_CORE_LIB",
+		"QT_GUI_LIB",
+		"QT_NO_DEBUG",
+		"QT_SVG_LIB",
+		"QT_WIDGETS_LIB",
+		"QT_XML_LIB",
+		"WIN32",
+		"WIN64",
+		"_ENABLE_EXTENDED_ALIGNED_STORAGE",
+		"_HAS_EXCEPTIONS=0",
+		"_WIN32",
+		"_WIN64"
+	],
+	"MOC_DEFINITIONS_debug" : 
+	[
+		"AZ_BUILD_CONFIGURATION_TYPE=\"debug\"",
+		"AZ_DEBUG_BUILD=1",
+		"AZ_ENABLE_DEBUG_TOOLS",
+		"AZ_ENABLE_TRACING",
+		"NOMINMAX",
+		"OPENSSL_ENABLED",
+		"QT_CORE_LIB",
+		"QT_GUI_LIB",
+		"QT_SVG_LIB",
+		"QT_WIDGETS_LIB",
+		"QT_XML_LIB",
+		"WIN32",
+		"WIN64",
+		"_DEBUG",
+		"_ENABLE_EXTENDED_ALIGNED_STORAGE",
+		"_HAS_EXCEPTIONS=0",
+		"_WIN32",
+		"_WIN64"
+	],
+	"MOC_DEFINITIONS_profile" : 
+	[
+		"AZ_BUILD_CONFIGURATION_TYPE=\"profile\"",
+		"AZ_ENABLE_DEBUG_TOOLS",
+		"AZ_ENABLE_TRACING",
+		"NDEBUG",
+		"NOMINMAX",
+		"OPENSSL_ENABLED",
+		"PROFILE",
+		"QT_CORE_LIB",
+		"QT_GUI_LIB",
+		"QT_NO_DEBUG",
+		"QT_SVG_LIB",
+		"QT_WIDGETS_LIB",
+		"QT_XML_LIB",
+		"WIN32",
+		"WIN64",
+		"_ENABLE_EXTENDED_ALIGNED_STORAGE",
+		"_HAS_EXCEPTIONS=0",
+		"_PROFILE",
+		"_WIN32",
+		"_WIN64"
+	],
+	"MOC_DEFINITIONS_release" : 
+	[
+		"AZ_BUILD_CONFIGURATION_TYPE=\"release\"",
+		"NDEBUG",
+		"NOMINMAX",
+		"OPENSSL_ENABLED",
+		"QT_CORE_LIB",
+		"QT_GUI_LIB",
+		"QT_NO_DEBUG",
+		"QT_SVG_LIB",
+		"QT_WIDGETS_LIB",
+		"QT_XML_LIB",
+		"RELEASE",
+		"WIN32",
+		"WIN64",
+		"_ENABLE_EXTENDED_ALIGNED_STORAGE",
+		"_HAS_EXCEPTIONS=0",
+		"_RELEASE",
+		"_WIN32",
+		"_WIN64"
+	],
+	"MOC_DEPEND_FILTERS" : 
+	[
+		[
+			"Q_PLUGIN_METADATA",
+			"[\n][ \t]*Q_PLUGIN_METADATA[ \t]*\\([^\\)]*FILE[ \t]*\"([^\"]+)\""
+		]
+	],
+	"MOC_INCLUDES" : 
+	[
+		"C:/Users/lesaelr/o3de/Gems/SceneProcessing/Code/Source",
+		"C:/Users/lesaelr/o3de/Gems/SceneProcessing/Code",
+		"C:/Users/lesaelr/o3de/Gems/SceneProcessing/Code/Include",
+		"C:/Users/lesaelr/o3de/Code/Tools",
+		"C:/Users/lesaelr/o3de/Code/Framework/AzToolsFramework",
+		"C:/Users/lesaelr/o3de/Code/Framework/AzToolsFramework/AzToolsFramework",
+		"C:/Users/lesaelr/o3de/Code/Framework/AzToolsFramework/Platform/Windows",
+		"C:/Users/lesaelr/o3de/Code/Framework/AzFramework",
+		"C:/Users/lesaelr/o3de/Code/Framework/AzFramework/Platform/Windows",
+		"C:/Users/lesaelr/o3de/Code/Framework/GridMate",
+		"C:/Users/lesaelr/o3de/Code/Framework/GridMate/Platform/Windows",
+		"C:/Users/lesaelr/o3de/Code/Framework/AzQtComponents",
+		"C:/Users/lesaelr/o3de/Code/Framework/AzCore",
+		"C:/Users/lesaelr/o3de/Code/Framework/AzCore/Platform/Windows",
+		"C:/Users/lesaelr/o3de/Code/Framework/AzCore/Platform/Common",
+		"C:/Users/lesaelr/o3de/Code/Tools",
+		"C:/Users/lesaelr/o3de/Code/Tools",
+		"C:/Users/lesaelr/o3de/Code/Tools/SceneAPI/SDKWrapper",
+		"C:/Users/lesaelr/o3de/Code/Tools",
+		"C:/Users/lesaelr/o3de/Code/Tools/AssetProcessor/AssetBuilderSDK"
+	],
+	"MOC_MACRO_NAMES" : [ "Q_OBJECT", "Q_GADGET", "Q_NAMESPACE", "Q_NAMESPACE_EXPORT" ],
+	"MOC_OPTIONS" : [],
+	"MOC_PATH_PREFIX" : false,
+	"MOC_PREDEFS_CMD" : [],
+	"MOC_PREDEFS_FILE" : "",
+	"MOC_RELAXED_MODE" : false,
+	"MOC_SKIP" : [],
+	"MULTI_CONFIG" : true,
+	"PARALLEL" : 6,
+	"PARSE_CACHE_FILE" : "C:/Users/lesaelr/o3de/External/SceneProcessing-5634e1d7/Code/CMakeFiles/SceneProcessing.Editor.Static_autogen.dir/ParseCache.txt",
+	"PARSE_CACHE_FILE_debug" : "C:/Users/lesaelr/o3de/External/SceneProcessing-5634e1d7/Code/CMakeFiles/SceneProcessing.Editor.Static_autogen.dir/ParseCache_debug.txt",
+	"PARSE_CACHE_FILE_profile" : "C:/Users/lesaelr/o3de/External/SceneProcessing-5634e1d7/Code/CMakeFiles/SceneProcessing.Editor.Static_autogen.dir/ParseCache_profile.txt",
+	"PARSE_CACHE_FILE_release" : "C:/Users/lesaelr/o3de/External/SceneProcessing-5634e1d7/Code/CMakeFiles/SceneProcessing.Editor.Static_autogen.dir/ParseCache_release.txt",
+	"QT_MOC_EXECUTABLE" : "C:/Users/lesaelr/.o3de/3rdParty/packages/qt-5.15.2-rev4-windows/qt/bin/moc.exe",
+	"QT_UIC_EXECUTABLE" : "",
+	"QT_VERSION_MAJOR" : 5,
+	"QT_VERSION_MINOR" : 15,
+	"SETTINGS_FILE" : "C:/Users/lesaelr/o3de/External/SceneProcessing-5634e1d7/Code/CMakeFiles/SceneProcessing.Editor.Static_autogen.dir/AutogenUsed.txt",
+	"SETTINGS_FILE_debug" : "C:/Users/lesaelr/o3de/External/SceneProcessing-5634e1d7/Code/CMakeFiles/SceneProcessing.Editor.Static_autogen.dir/AutogenUsed_debug.txt",
+	"SETTINGS_FILE_profile" : "C:/Users/lesaelr/o3de/External/SceneProcessing-5634e1d7/Code/CMakeFiles/SceneProcessing.Editor.Static_autogen.dir/AutogenUsed_profile.txt",
+	"SETTINGS_FILE_release" : "C:/Users/lesaelr/o3de/External/SceneProcessing-5634e1d7/Code/CMakeFiles/SceneProcessing.Editor.Static_autogen.dir/AutogenUsed_release.txt",
+	"SOURCES" : 
+	[
+		[
+			"C:/Users/lesaelr/o3de/External/SceneProcessing-5634e1d7/Code/CMakeFiles/SceneProcessing.Editor.Static.dir/Unity/unity_0_cxx.cxx",
+			"Mu",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/External/SceneProcessing-5634e1d7/Code/CMakeFiles/SceneProcessing.Editor.Static.dir/Unity/unity_1_cxx.cxx",
+			"Mu",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/External/SceneProcessing-5634e1d7/Code/CMakeFiles/SceneProcessing.Editor.Static.dir/Unity/unity_2_cxx.cxx",
+			"Mu",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Gems/SceneProcessing/Code/Source/Config/Components/SceneProcessingConfigSystemComponent.cpp",
+			"Mu",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Gems/SceneProcessing/Code/Source/Config/Components/SoftNameBehavior.cpp",
+			"Mu",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Gems/SceneProcessing/Code/Source/Config/SettingsObjects/FileSoftNameSetting.cpp",
+			"Mu",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Gems/SceneProcessing/Code/Source/Config/SettingsObjects/NodeSoftNameSetting.cpp",
+			"Mu",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Gems/SceneProcessing/Code/Source/Config/SettingsObjects/SoftNameSetting.cpp",
+			"Mu",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Gems/SceneProcessing/Code/Source/Config/Widgets/GraphTypeSelector.cpp",
+			"Mu",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Gems/SceneProcessing/Code/Source/Generation/Components/MeshOptimizer/MeshBuilder.cpp",
+			"Mu",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Gems/SceneProcessing/Code/Source/Generation/Components/MeshOptimizer/MeshBuilderSkinningInfo.cpp",
+			"Mu",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Gems/SceneProcessing/Code/Source/Generation/Components/MeshOptimizer/MeshBuilderSubMesh.cpp",
+			"Mu",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Gems/SceneProcessing/Code/Source/Generation/Components/MeshOptimizer/MeshBuilderVertexAttributeLayers.cpp",
+			"Mu",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Gems/SceneProcessing/Code/Source/Generation/Components/MeshOptimizer/MeshOptimizerComponent.cpp",
+			"Mu",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Gems/SceneProcessing/Code/Source/Generation/Components/TangentGenerator/TangentGenerateComponent.cpp",
+			"Mu",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Gems/SceneProcessing/Code/Source/Generation/Components/TangentGenerator/TangentGenerators/BlendShapeMikkTGenerator.cpp",
+			"Mu",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Gems/SceneProcessing/Code/Source/Generation/Components/TangentGenerator/TangentGenerators/MikkTGenerator.cpp",
+			"Mu",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Gems/SceneProcessing/Code/Source/Generation/Components/TangentGenerator/TangentPreExportComponent.cpp",
+			"Mu",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Gems/SceneProcessing/Code/Source/SceneBuilder/SceneBuilderComponent.cpp",
+			"Mu",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Gems/SceneProcessing/Code/Source/SceneBuilder/SceneBuilderWorker.cpp",
+			"Mu",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Gems/SceneProcessing/Code/Source/SceneBuilder/SceneSerializationHandler.cpp",
+			"Mu",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Gems/SceneProcessing/Code/Source/SceneBuilder/TraceMessageHook.cpp",
+			"Mu",
+			null
+		]
+	],
+	"VERBOSITY" : 0
+}

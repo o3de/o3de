@@ -1,0 +1,425 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <PreferredToolArchitecture>x64</PreferredToolArchitecture>
+  </PropertyGroup>
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="debug|x64">
+      <Configuration>debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="profile|x64">
+      <Configuration>profile</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="release|x64">
+      <Configuration>release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{FE67A854-57A6-3513-BAEF-9A7AC0A253E8}</ProjectGuid>
+    <WindowsTargetPlatformVersion>10.0.19041.0</WindowsTargetPlatformVersion>
+    <Keyword>Win32Proj</Keyword>
+    <Platform>x64</Platform>
+    <ProjectName>GridMate</ProjectName>
+    <VCProjectUpgraderObjectName>NoUpgrade</VCProjectUpgraderObjectName>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='debug|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v142</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='profile|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v142</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='release|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v142</PlatformToolset>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>10.0.20506.1</_ProjectFileVersion>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='debug|x64'">C:\Users\lesaelr\o3de\lib\debug\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='debug|x64'">GridMate.dir\debug\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='debug|x64'">GridMate</TargetName>
+    <TargetExt Condition="'$(Configuration)|$(Platform)'=='debug|x64'">.lib</TargetExt>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='profile|x64'">C:\Users\lesaelr\o3de\lib\profile\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='profile|x64'">GridMate.dir\profile\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='profile|x64'">GridMate</TargetName>
+    <TargetExt Condition="'$(Configuration)|$(Platform)'=='profile|x64'">.lib</TargetExt>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='release|x64'">C:\Users\lesaelr\o3de\lib\release\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='release|x64'">GridMate.dir\release\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='release|x64'">GridMate</TargetName>
+    <TargetExt Condition="'$(Configuration)|$(Platform)'=='release|x64'">.lib</TargetExt>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='debug|x64'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>C:\Users\lesaelr\o3de\Code\Framework\GridMate\.;C:\Users\lesaelr\o3de\Code\Framework\GridMate\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzCore\.;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalOptions>%(AdditionalOptions) /Zc:__cplusplus /Zc:lambda /favor:AMD64 /bigobj /RTCsu /experimental:external /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/Lua-5.3.5-rev5-windows/lua/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/RapidJSON-1.1.0-rev1-multiplatform/RapidJSON/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/RapidXML-1.13-rev1-multiplatform/RapidXML/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/zlib-1.2.11-rev2-windows/zlib/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/zstd-1.35-multiplatform/zstd/lib /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/cityhash-1.1-multiplatform/cityhash/src /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/OpenSSL-1.1.1b-rev2-windows/OpenSSL/include</AdditionalOptions>
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <BufferSecurityCheck>true</BufferSecurityCheck>
+      <CallingConvention>Cdecl</CallingConvention>
+      <ConformanceMode>true</ConformanceMode>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <DiagnosticsFormat>Caret</DiagnosticsFormat>
+      <DisableSpecificWarnings>4201</DisableSpecificWarnings>
+      <ExceptionHandling>
+      </ExceptionHandling>
+      <ExternalWarningLevel>TurnOffAllWarnings</ExternalWarningLevel>
+      <FloatingPointModel>Fast</FloatingPointModel>
+      <ForceConformanceInForLoopScope>true</ForceConformanceInForLoopScope>
+      <InlineFunctionExpansion>Disabled</InlineFunctionExpansion>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <Optimization>Disabled</Optimization>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <TreatSpecificWarningsAsErrors>4263;4264;4265;4266;4296;4426;4437;4774;4777;5031;5032;5233</TreatSpecificWarningsAsErrors>
+      <TreatWarningAsError>true</TreatWarningAsError>
+      <UseFullPaths>false</UseFullPaths>
+      <WarningLevel>Level4</WarningLevel>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);_HAS_EXCEPTIONS=0;_DEBUG;AZ_DEBUG_BUILD=1;AZ_ENABLE_TRACING;AZ_ENABLE_DEBUG_TOOLS;AZ_BUILD_CONFIGURATION_TYPE="debug";_ENABLE_EXTENDED_ALIGNED_STORAGE;_WIN32;WIN32;_WIN64;WIN64;NOMINMAX;OPENSSL_ENABLED;CMAKE_INTDIR="debug"</PreprocessorDefinitions>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);_DEBUG;_HAS_EXCEPTIONS=0;AZ_DEBUG_BUILD=1;AZ_ENABLE_TRACING;AZ_ENABLE_DEBUG_TOOLS;AZ_BUILD_CONFIGURATION_TYPE=\"debug\";_ENABLE_EXTENDED_ALIGNED_STORAGE;_WIN32;WIN32;_WIN64;WIN64;NOMINMAX;OPENSSL_ENABLED;CMAKE_INTDIR=\"debug\"</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>C:\Users\lesaelr\o3de\Code\Framework\GridMate\.;C:\Users\lesaelr\o3de\Code\Framework\GridMate\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzCore\.;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+    </ResourceCompile>
+    <Midl>
+      <AdditionalIncludeDirectories>C:\Users\lesaelr\o3de\Code\Framework\GridMate\.;C:\Users\lesaelr\o3de\Code\Framework\GridMate\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzCore\.;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+    <Lib>
+      <AdditionalOptions>%(AdditionalOptions) /machine:x64 /IGNORE:4099</AdditionalOptions>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <TargetMachine>MachineX64</TargetMachine>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='profile|x64'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>C:\Users\lesaelr\o3de\Code\Framework\GridMate\.;C:\Users\lesaelr\o3de\Code\Framework\GridMate\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzCore\.;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalOptions>%(AdditionalOptions) /Zc:__cplusplus /Zc:lambda /favor:AMD64 /bigobj /experimental:external /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/Lua-5.3.5-rev5-windows/lua/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/RapidJSON-1.1.0-rev1-multiplatform/RapidJSON/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/RapidXML-1.13-rev1-multiplatform/RapidXML/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/zlib-1.2.11-rev2-windows/zlib/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/zstd-1.35-multiplatform/zstd/lib /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/cityhash-1.1-multiplatform/cityhash/src /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/OpenSSL-1.1.1b-rev2-windows/OpenSSL/include</AdditionalOptions>
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <CallingConvention>Cdecl</CallingConvention>
+      <ConformanceMode>true</ConformanceMode>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <DiagnosticsFormat>Caret</DiagnosticsFormat>
+      <DisableSpecificWarnings>4201</DisableSpecificWarnings>
+      <ExceptionHandling>
+      </ExceptionHandling>
+      <ExternalWarningLevel>TurnOffAllWarnings</ExternalWarningLevel>
+      <FloatingPointModel>Fast</FloatingPointModel>
+      <ForceConformanceInForLoopScope>true</ForceConformanceInForLoopScope>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <Optimization>MaxSpeed</Optimization>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <RemoveUnreferencedCodeData>true</RemoveUnreferencedCodeData>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <StringPooling>true</StringPooling>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <TreatSpecificWarningsAsErrors>4263;4264;4265;4266;4296;4426;4437;4774;4777;5031;5032;5233</TreatSpecificWarningsAsErrors>
+      <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
+      <TreatWarningAsError>true</TreatWarningAsError>
+      <UseFullPaths>false</UseFullPaths>
+      <WarningLevel>Level4</WarningLevel>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);_HAS_EXCEPTIONS=0;_PROFILE;PROFILE;NDEBUG;AZ_ENABLE_TRACING;AZ_ENABLE_DEBUG_TOOLS;AZ_BUILD_CONFIGURATION_TYPE="profile";_ENABLE_EXTENDED_ALIGNED_STORAGE;_WIN32;WIN32;_WIN64;WIN64;NOMINMAX;OPENSSL_ENABLED;CMAKE_INTDIR="profile"</PreprocessorDefinitions>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);_HAS_EXCEPTIONS=0;_PROFILE;PROFILE;NDEBUG;AZ_ENABLE_TRACING;AZ_ENABLE_DEBUG_TOOLS;AZ_BUILD_CONFIGURATION_TYPE=\"profile\";_ENABLE_EXTENDED_ALIGNED_STORAGE;_WIN32;WIN32;_WIN64;WIN64;NOMINMAX;OPENSSL_ENABLED;CMAKE_INTDIR=\"profile\"</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>C:\Users\lesaelr\o3de\Code\Framework\GridMate\.;C:\Users\lesaelr\o3de\Code\Framework\GridMate\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzCore\.;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+    </ResourceCompile>
+    <Midl>
+      <AdditionalIncludeDirectories>C:\Users\lesaelr\o3de\Code\Framework\GridMate\.;C:\Users\lesaelr\o3de\Code\Framework\GridMate\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzCore\.;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+    <Lib>
+      <AdditionalOptions>%(AdditionalOptions) /machine:x64 /IGNORE:4099</AdditionalOptions>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <TargetMachine>MachineX64</TargetMachine>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='release|x64'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>C:\Users\lesaelr\o3de\Code\Framework\GridMate\.;C:\Users\lesaelr\o3de\Code\Framework\GridMate\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzCore\.;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalOptions>%(AdditionalOptions) /Zc:__cplusplus /Zc:lambda /favor:AMD64 /bigobj /experimental:external /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/Lua-5.3.5-rev5-windows/lua/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/RapidJSON-1.1.0-rev1-multiplatform/RapidJSON/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/RapidXML-1.13-rev1-multiplatform/RapidXML/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/zlib-1.2.11-rev2-windows/zlib/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/zstd-1.35-multiplatform/zstd/lib /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/cityhash-1.1-multiplatform/cityhash/src /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/OpenSSL-1.1.1b-rev2-windows/OpenSSL/include</AdditionalOptions>
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <CallingConvention>Cdecl</CallingConvention>
+      <ConformanceMode>true</ConformanceMode>
+      <DiagnosticsFormat>Caret</DiagnosticsFormat>
+      <DisableSpecificWarnings>4201</DisableSpecificWarnings>
+      <ExceptionHandling>
+      </ExceptionHandling>
+      <ExternalWarningLevel>TurnOffAllWarnings</ExternalWarningLevel>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <FloatingPointModel>Fast</FloatingPointModel>
+      <ForceConformanceInForLoopScope>true</ForceConformanceInForLoopScope>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <OmitFramePointers>true</OmitFramePointers>
+      <Optimization>Full</Optimization>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <TreatSpecificWarningsAsErrors>4263;4264;4265;4266;4296;4426;4437;4774;4777;5031;5032;5233</TreatSpecificWarningsAsErrors>
+      <TreatWarningAsError>true</TreatWarningAsError>
+      <UseFullPaths>false</UseFullPaths>
+      <WarningLevel>Level4</WarningLevel>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);_HAS_EXCEPTIONS=0;_RELEASE;RELEASE;NDEBUG;AZ_BUILD_CONFIGURATION_TYPE="release";_ENABLE_EXTENDED_ALIGNED_STORAGE;_WIN32;WIN32;_WIN64;WIN64;NOMINMAX;OPENSSL_ENABLED;CMAKE_INTDIR="release"</PreprocessorDefinitions>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+      <DebugInformationFormat>
+      </DebugInformationFormat>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);_HAS_EXCEPTIONS=0;_RELEASE;RELEASE;NDEBUG;AZ_BUILD_CONFIGURATION_TYPE=\"release\";_ENABLE_EXTENDED_ALIGNED_STORAGE;_WIN32;WIN32;_WIN64;WIN64;NOMINMAX;OPENSSL_ENABLED;CMAKE_INTDIR=\"release\"</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>C:\Users\lesaelr\o3de\Code\Framework\GridMate\.;C:\Users\lesaelr\o3de\Code\Framework\GridMate\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzCore\.;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+    </ResourceCompile>
+    <Midl>
+      <AdditionalIncludeDirectories>C:\Users\lesaelr\o3de\Code\Framework\GridMate\.;C:\Users\lesaelr\o3de\Code\Framework\GridMate\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzCore\.;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+    <Lib>
+      <AdditionalOptions>%(AdditionalOptions) /machine:x64 /IGNORE:4099</AdditionalOptions>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <TargetMachine>MachineX64</TargetMachine>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\CMakeLists.txt">
+      <UseUtf8Encoding>Always</UseUtf8Encoding>
+      <Message Condition="'$(Configuration)|$(Platform)'=='debug|x64'">Building Custom Rule C:/Users/lesaelr/o3de/Code/Framework/GridMate/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='debug|x64'">setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SC:/Users/lesaelr/o3de -BC:/Users/lesaelr/o3de --check-stamp-file C:/Users/lesaelr/o3de/Code/Framework/GridMate/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='debug|x64'">C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\gridmate_files.cmake;C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\gridmate_ssl_files.cmake;C:\Users\lesaelr\o3de\Code\Framework\GridMate\Platform\Common\gridmate_msvc.cmake;C:\Users\lesaelr\o3de\Code\Framework\GridMate\Platform\Windows\platform_windows.cmake;C:\Users\lesaelr\o3de\Code\Framework\GridMate\Platform\Windows\platform_windows_files.cmake;C:\Users\lesaelr\o3de\Code\Framework\GridMate\Tests\Platform\Windows\platform_windows_files.cmake;C:\Users\lesaelr\o3de\Code\Framework\GridMate\Tests\gridmate_test_files.cmake;C:\Users\lesaelr\o3de\cmake\Platform\Windows\LYTestWrappers_windows.cmake;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='debug|x64'">C:\Users\lesaelr\o3de\Code\Framework\GridMate\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='debug|x64'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='profile|x64'">Building Custom Rule C:/Users/lesaelr/o3de/Code/Framework/GridMate/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='profile|x64'">setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SC:/Users/lesaelr/o3de -BC:/Users/lesaelr/o3de --check-stamp-file C:/Users/lesaelr/o3de/Code/Framework/GridMate/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='profile|x64'">C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\gridmate_files.cmake;C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\gridmate_ssl_files.cmake;C:\Users\lesaelr\o3de\Code\Framework\GridMate\Platform\Common\gridmate_msvc.cmake;C:\Users\lesaelr\o3de\Code\Framework\GridMate\Platform\Windows\platform_windows.cmake;C:\Users\lesaelr\o3de\Code\Framework\GridMate\Platform\Windows\platform_windows_files.cmake;C:\Users\lesaelr\o3de\Code\Framework\GridMate\Tests\Platform\Windows\platform_windows_files.cmake;C:\Users\lesaelr\o3de\Code\Framework\GridMate\Tests\gridmate_test_files.cmake;C:\Users\lesaelr\o3de\cmake\Platform\Windows\LYTestWrappers_windows.cmake;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='profile|x64'">C:\Users\lesaelr\o3de\Code\Framework\GridMate\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='profile|x64'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='release|x64'">Building Custom Rule C:/Users/lesaelr/o3de/Code/Framework/GridMate/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='release|x64'">setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SC:/Users/lesaelr/o3de -BC:/Users/lesaelr/o3de --check-stamp-file C:/Users/lesaelr/o3de/Code/Framework/GridMate/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='release|x64'">C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\gridmate_files.cmake;C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\gridmate_ssl_files.cmake;C:\Users\lesaelr\o3de\Code\Framework\GridMate\Platform\Common\gridmate_msvc.cmake;C:\Users\lesaelr\o3de\Code\Framework\GridMate\Platform\Windows\platform_windows.cmake;C:\Users\lesaelr\o3de\Code\Framework\GridMate\Platform\Windows\platform_windows_files.cmake;C:\Users\lesaelr\o3de\Code\Framework\GridMate\Tests\Platform\Windows\platform_windows_files.cmake;C:\Users\lesaelr\o3de\Code\Framework\GridMate\Tests\gridmate_test_files.cmake;C:\Users\lesaelr\o3de\cmake\Platform\Windows\LYTestWrappers_windows.cmake;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='release|x64'">C:\Users\lesaelr\o3de\Code\Framework\GridMate\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='release|x64'">false</LinkObjects>
+    </CustomBuild>
+  </ItemGroup>
+  <PropertyGroup>
+    <EnableUnitySupport>true</EnableUnitySupport>
+  </PropertyGroup>
+  <ItemGroup>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\CMakeFiles\GridMate.dir\Unity\unity_4_cxx.cxx" IncludeInUnityFile="false" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/GridMate/CMakeFiles/GridMate.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\CMakeFiles\GridMate.dir\Unity\unity_3_cxx.cxx" IncludeInUnityFile="false" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/GridMate/CMakeFiles/GridMate.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\CMakeFiles\GridMate.dir\Unity\unity_2_cxx.cxx" IncludeInUnityFile="false" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/GridMate/CMakeFiles/GridMate.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\CMakeFiles\GridMate.dir\Unity\unity_1_cxx.cxx" IncludeInUnityFile="false" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/GridMate/CMakeFiles/GridMate.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\CMakeFiles\GridMate.dir\Unity\unity_0_cxx.cxx" IncludeInUnityFile="false" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/GridMate/CMakeFiles/GridMate.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\BuildInfo.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\EBus.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Docs.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\GridMate.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/GridMate/CMakeFiles/GridMate.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\GridMate.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\GridMateEventsBus.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\GridMateService.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\MathUtils.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Memory.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Types.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Version.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Carrier\Carrier.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/GridMate/CMakeFiles/GridMate.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Carrier\Carrier.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Carrier\Compressor.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Carrier\Cripter.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Carrier\DefaultHandshake.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/GridMate/CMakeFiles/GridMate.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Carrier\DefaultHandshake.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Carrier\DefaultSimulator.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/GridMate/CMakeFiles/GridMate.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Carrier\DefaultSimulator.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Carrier\DefaultTrafficControl.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/GridMate/CMakeFiles/GridMate.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Carrier\DefaultTrafficControl.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Carrier\Driver.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Carrier\DriverEvents.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Carrier\Handshake.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Carrier\Simulator.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Carrier\SocketDriver.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/GridMate/CMakeFiles/GridMate.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Carrier\SocketDriver.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Carrier\StreamSocketDriver.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/GridMate/CMakeFiles/GridMate.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Carrier\StreamSocketDriver.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Carrier\TrafficControl.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Carrier\Utils.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Containers\list.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Containers\queue.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Containers\set.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Containers\slist.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Containers\unordered_map.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Containers\unordered_set.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Containers\vector.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Drillers\CarrierDriller.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/GridMate/CMakeFiles/GridMate.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Drillers\CarrierDriller.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Drillers\ReplicaDriller.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/GridMate/CMakeFiles/GridMate.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Drillers\ReplicaDriller.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Drillers\SessionDriller.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/GridMate/CMakeFiles/GridMate.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Drillers\SessionDriller.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Online\OnlineUtilityThread.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Online\UserServiceTypes.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Replica\BasicHostChunkDescriptor.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Replica\DeltaCompressedDataSet.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Replica\DataSet.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/GridMate/CMakeFiles/GridMate.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Replica\DataSet.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Replica\Interpolators.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Replica\MigrationSequence.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/GridMate/CMakeFiles/GridMate.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Replica\MigrationSequence.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Replica\RemoteProcedureCall.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/GridMate/CMakeFiles/GridMate.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Replica\RemoteProcedureCall.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Replica\Replica.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/GridMate/CMakeFiles/GridMate.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Replica\Replica.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Replica\ReplicaChunk.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/GridMate/CMakeFiles/GridMate.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Replica\ReplicaChunk.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Replica\ReplicaChunkDescriptor.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/GridMate/CMakeFiles/GridMate.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Replica\ReplicaChunkDescriptor.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Replica\ReplicaChunkInterface.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Replica\ReplicaCommon.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Replica\ReplicaDefs.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Replica\ReplicaDrillerEvents.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Replica\ReplicaFunctions.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Replica\ReplicaFunctions.inl" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Replica\ReplicaInline.inl" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Replica\ReplicaMgr.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/GridMate/CMakeFiles/GridMate.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Replica\ReplicaMgr.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Replica\ReplicaStatus.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/GridMate/CMakeFiles/GridMate.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Replica\ReplicaStatus.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Replica\ReplicaStatusInterface.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Replica\ReplicaTarget.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/GridMate/CMakeFiles/GridMate.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Replica\ReplicaTarget.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Replica\ReplicaUtils.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Replica\SystemReplicas.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/GridMate/CMakeFiles/GridMate.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Replica\SystemReplicas.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Replica\Throttles.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Replica\Tasks\ReplicaMarshalTasks.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/GridMate/CMakeFiles/GridMate.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Replica\Tasks\ReplicaMarshalTasks.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Replica\Tasks\ReplicaTask.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Replica\Tasks\ReplicaTaskManager.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Replica\Tasks\ReplicaUpdateTasks.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/GridMate/CMakeFiles/GridMate.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Replica\Tasks\ReplicaUpdateTasks.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Replica\Tasks\ReplicaProcessPolicy.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/GridMate/CMakeFiles/GridMate.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Replica\Tasks\ReplicaProcessPolicy.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Replica\Tasks\ReplicaPriorityPolicy.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Replica\Interest\BitmaskInterestHandler.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/GridMate/CMakeFiles/GridMate.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Replica\Interest\BitmaskInterestHandler.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Replica\Interest\InterestDefs.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Replica\Interest\InterestManager.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/GridMate/CMakeFiles/GridMate.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Replica\Interest\InterestManager.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Replica\Interest\InterestQueryResult.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Replica\Interest\RulesHandler.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Serialize\Buffer.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/GridMate/CMakeFiles/GridMate.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Serialize\Buffer.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Serialize\PackedSize.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Serialize\CompressionMarshal.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/GridMate/CMakeFiles/GridMate.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Serialize\CompressionMarshal.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Serialize\ContainerMarshal.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Serialize\DataMarshal.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Serialize\MarshalerTypes.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Serialize\MathMarshal.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Serialize\UtilityMarshal.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Serialize\UuidMarshal.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Session\LANSession.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/GridMate/CMakeFiles/GridMate.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Session\LANSession.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Session\LANSessionServiceTypes.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Session\LANSessionServiceBus.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Session\Session.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/GridMate/CMakeFiles/GridMate.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Session\Session.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Session\SessionServiceBus.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\VoiceChat\VoiceChatServiceBus.h" />
+    <None Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\gridmate_files.cmake">
+    </None>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Carrier\SecureSocketDriver.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/GridMate/CMakeFiles/GridMate.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Carrier\SecureSocketDriver.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Carrier\StreamSecureSocketDriver.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/GridMate/CMakeFiles/GridMate.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\Carrier\StreamSecureSocketDriver.h" />
+    <None Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate\gridmate_ssl_files.cmake">
+    </None>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\Platform\Common\WinAPI\GridMate\Carrier\SocketDriver_WinAPI.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/GridMate/CMakeFiles/GridMate.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\Platform\Common\WinAPI\GridMate\Carrier\Utils_WinAPI.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/GridMate/CMakeFiles/GridMate.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\Platform\Windows\GridMate\Carrier\SocketDriver_Platform.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\Platform\Windows\GridMate\Carrier\SocketDriver_Windows.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\Platform\Windows\GridMate\Carrier\Utils_Windows.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/GridMate/CMakeFiles/GridMate.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\Platform\Windows\GridMate\Session\LANSession_Windows.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/Code/Framework/GridMate/CMakeFiles/GridMate.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\Platform\Windows\GridMate\Session\Session_Platform.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\Platform\Windows\GridMate\Session\Session_Windows.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\Platform\Windows\GridMate_Traits_Platform.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\Platform\Windows\GridMate_Traits_Windows.h" />
+    <None Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\Platform\Windows\platform_windows_files.cmake">
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\Platform\Windows\platform_windows.cmake">
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\Platform\Common\gridmate_msvc.cmake">
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\ZERO_CHECK.vcxproj">
+      <Project>{CDE32B4E-8490-3FC5-A3F2-976A0A5DE45E}</Project>
+      <Name>ZERO_CHECK</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore.vcxproj">
+      <Project>{8AC0D8DF-6487-39C7-A5F3-F77355B1ACD9}</Project>
+      <Name>AzCore</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

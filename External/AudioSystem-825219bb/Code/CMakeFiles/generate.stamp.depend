@@ -1,0 +1,12 @@
+# CMake generation dependency list for this directory.
+C:/Users/lesaelr/o3de/Gems/AudioSystem/Code/CMakeLists.txt
+C:/Users/lesaelr/o3de/Gems/AudioSystem/Code/Platform/Windows/platform_windows.cmake
+C:/Users/lesaelr/o3de/Gems/AudioSystem/Code/Platform/Windows/platform_windows_files.cmake
+C:/Users/lesaelr/o3de/Gems/AudioSystem/Code/Source/Editor/AudioControlsEditorUI.qrc
+C:/Users/lesaelr/o3de/Gems/AudioSystem/Code/audiosystem_editor_files.cmake
+C:/Users/lesaelr/o3de/Gems/AudioSystem/Code/audiosystem_editor_shared_files.cmake
+C:/Users/lesaelr/o3de/Gems/AudioSystem/Code/audiosystem_editor_tests_files.cmake
+C:/Users/lesaelr/o3de/Gems/AudioSystem/Code/audiosystem_files.cmake
+C:/Users/lesaelr/o3de/Gems/AudioSystem/Code/audiosystem_shared_files.cmake
+C:/Users/lesaelr/o3de/Gems/AudioSystem/Code/audiosystem_tests_files.cmake
+C:/Users/lesaelr/o3de/cmake/Platform/Windows/LYTestWrappers_windows.cmake

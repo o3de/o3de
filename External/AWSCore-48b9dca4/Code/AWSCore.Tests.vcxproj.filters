@@ -1,0 +1,131 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\AWSCore-48b9dca4\Code\CMakeFiles\AWSCore.Tests.dir\Unity\unity_2_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\AWSCore-48b9dca4\Code\CMakeFiles\AWSCore.Tests.dir\Unity\unity_1_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\AWSCore-48b9dca4\Code\CMakeFiles\AWSCore.Tests.dir\Unity\unity_0_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\AWSCore\Code\Tests\AWSCoreTest.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\AWSCore\Code\Tests\AWSCoreSystemComponentTest.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\AWSCore\Code\Tests\Configuration\AWSCoreConfigurationTest.cpp">
+      <Filter>Tests\Configuration</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\AWSCore\Code\Tests\Credential\AWSCredentialBusTest.cpp">
+      <Filter>Tests\Credential</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\AWSCore\Code\Tests\Credential\AWSCVarCredentialHandlerTest.cpp">
+      <Filter>Tests\Credential</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\AWSCore\Code\Tests\Credential\AWSDefaultCredentialHandlerTest.cpp">
+      <Filter>Tests\Credential</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\AWSCore\Code\Tests\Framework\AWSApiClientJobConfigTest.cpp">
+      <Filter>Tests\Framework</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\AWSCore\Code\Tests\Framework\AWSApiJobConfigTest.cpp">
+      <Filter>Tests\Framework</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\AWSCore\Code\Tests\Framework\HttpRequestJobTest.cpp">
+      <Filter>Tests\Framework</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\AWSCore\Code\Tests\Framework\JsonObjectHandlerTest.cpp">
+      <Filter>Tests\Framework</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\AWSCore\Code\Tests\Framework\JsonWriterTest.cpp">
+      <Filter>Tests\Framework</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\AWSCore\Code\Tests\Framework\RequestBuilderTest.cpp">
+      <Filter>Tests\Framework</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\AWSCore\Code\Tests\Framework\ServiceClientJobConfigTest.cpp">
+      <Filter>Tests\Framework</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\AWSCore\Code\Tests\Framework\ServiceJobUtilTest.cpp">
+      <Filter>Tests\Framework</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\AWSCore\Code\Tests\Framework\ServiceRequestJobTest.cpp">
+      <Filter>Tests\Framework</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\AWSCore\Code\Tests\Framework\UtilTest.cpp">
+      <Filter>Tests\Framework</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\AWSCore\Code\Tests\ResourceMapping\AWSResourceMappingManagerTest.cpp">
+      <Filter>Tests\ResourceMapping</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\AWSCore\Code\Tests\ResourceMapping\AWSResourceMappingUtilsTest.cpp">
+      <Filter>Tests\ResourceMapping</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\AWSCore\Code\Tests\ScriptCanvas\AWSScriptBehaviorDynamoDBTest.cpp">
+      <Filter>Tests\ScriptCanvas</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\AWSCore\Code\Tests\ScriptCanvas\AWSScriptBehaviorLambdaTest.cpp">
+      <Filter>Tests\ScriptCanvas</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\AWSCore\Code\Tests\ScriptCanvas\AWSScriptBehaviorS3Test.cpp">
+      <Filter>Tests\ScriptCanvas</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\AWSCore\Code\Tests\ScriptCanvas\AWSScriptBehaviorsComponentTest.cpp">
+      <Filter>Tests\ScriptCanvas</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\AWSCore\Code\Tests\TestFramework\AWSCoreFixture.h">
+      <Filter>Tests\TestFramework</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\CMakeFiles\08b24365a84bd27d080f6dd51f42b933\AWSCore.Tests_(CONFIG).stamp.rule">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Gems\AWSCore\Code\CMakeLists.txt">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="C:\Users\lesaelr\o3de\Gems\AWSCore\Code\awscore_tests_files.cmake" />
+    <None Include="C:\Users\lesaelr\o3de\runtime_dependencies\debug\AWSCore.Tests_debug.stamp">
+      <Filter>Generated Files</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\runtime_dependencies\profile\AWSCore.Tests_profile.stamp">
+      <Filter>Generated Files</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\runtime_dependencies\release\AWSCore.Tests_release.stamp">
+      <Filter>Generated Files</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Generated Files">
+      <UniqueIdentifier>{FB9B7D8B-7F05-31D5-AA90-592248EDE1B3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Tests">
+      <UniqueIdentifier>{042E9197-689D-3636-8A35-28EBCAA2BD47}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Tests\Configuration">
+      <UniqueIdentifier>{8FA9E98E-1BEB-358E-AE35-FCC53A128814}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Tests\Credential">
+      <UniqueIdentifier>{9BD2BB09-BB68-3391-8C7A-99025111C130}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Tests\Framework">
+      <UniqueIdentifier>{D3FDE5F5-BF67-3F5D-A3BA-3AEA9161B745}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Tests\ResourceMapping">
+      <UniqueIdentifier>{7C40D08C-E284-3278-8C5C-B7BF3B159821}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Tests\ScriptCanvas">
+      <UniqueIdentifier>{EB8A5C0F-9642-3CF4-8A62-807FBBB1DC9E}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Tests\TestFramework">
+      <UniqueIdentifier>{8784E82A-E75B-30F0-B96A-31807515B759}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

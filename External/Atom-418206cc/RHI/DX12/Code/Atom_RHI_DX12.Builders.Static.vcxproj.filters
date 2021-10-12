@@ -1,0 +1,55 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\Atom-418206cc\RHI\DX12\Code\CMakeFiles\Atom_RHI_DX12.Builders.Static.dir\Unity\unity_0_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\RHI\DX12\Code\Source\RHI.Builders\ShaderPlatformInterfaceSystemComponent.cpp">
+      <Filter>Source\Platform\Windows\..\..\RHI.Builders</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\RHI\DX12\Code\Source\RHI.Builders\ShaderPlatformInterface.cpp">
+      <Filter>Source\Platform\Windows\..\..\RHI.Builders</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\RHI\DX12\Code\Source\RHI.Builders\ShaderPlatformInterfaceSystemComponent.h">
+      <Filter>Source\Platform\Windows\..\..\RHI.Builders</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\RHI\DX12\Code\Source\RHI.Builders\ShaderPlatformInterface.h">
+      <Filter>Source\Platform\Windows\..\..\RHI.Builders</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Gems\Atom\RHI\DX12\Code\CMakeLists.txt">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\RHI\DX12\Code\Source\Platform\Windows\platform_builders_windows_files.cmake">
+      <Filter>Source\Platform\Windows</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Generated Files">
+      <UniqueIdentifier>{FB9B7D8B-7F05-31D5-AA90-592248EDE1B3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source">
+      <UniqueIdentifier>{F3F0AD47-5F83-373B-A2BF-650D2E4FA3EA}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Platform">
+      <UniqueIdentifier>{4FB794FF-EAE9-3B82-95CC-6241BAD0E3AC}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Platform\Windows">
+      <UniqueIdentifier>{2D0E7154-D797-393D-A7EB-8527ACAFB2BF}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Platform\Windows\..">
+      <UniqueIdentifier>{F7662613-E4CB-3520-9CE4-901D15E00EF5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Platform\Windows\..\..">
+      <UniqueIdentifier>{26BEEA10-DAE6-3A94-A722-62DCF36E3DA5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Platform\Windows\..\..\RHI.Builders">
+      <UniqueIdentifier>{D547EF7D-F65B-33B2-8230-5CA521430ECF}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

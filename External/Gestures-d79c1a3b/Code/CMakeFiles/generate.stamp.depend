@@ -1,0 +1,6 @@
+# CMake generation dependency list for this directory.
+C:/Users/lesaelr/o3de/Gems/Gestures/Code/CMakeLists.txt
+C:/Users/lesaelr/o3de/Gems/Gestures/Code/gestures_files.cmake
+C:/Users/lesaelr/o3de/Gems/Gestures/Code/gestures_shared_files.cmake
+C:/Users/lesaelr/o3de/Gems/Gestures/Code/gestures_test_files.cmake
+C:/Users/lesaelr/o3de/cmake/Platform/Windows/LYTestWrappers_windows.cmake

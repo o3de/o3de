@@ -1,0 +1,299 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\Maestro-6014b01b\Code\CMakeFiles\Maestro.Static.dir\Unity\unity_4_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\Maestro-6014b01b\Code\CMakeFiles\Maestro.Static.dir\Unity\unity_3_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\Maestro-6014b01b\Code\CMakeFiles\Maestro.Static.dir\Unity\unity_2_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\Maestro-6014b01b\Code\CMakeFiles\Maestro.Static.dir\Unity\unity_1_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\Maestro-6014b01b\Code\CMakeFiles\Maestro.Static.dir\Unity\unity_0_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Maestro\Code\Source\Cinematics\ShadowsSetupNode.cpp">
+      <Filter>Source\Cinematics</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Maestro\Code\Source\MaestroSystemComponent.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Maestro\Code\Source\Cinematics\AnimSerializer.cpp">
+      <Filter>Source\Cinematics</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Maestro\Code\Source\Cinematics\AnimSequence.cpp">
+      <Filter>Source\Cinematics</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Maestro\Code\Source\Cinematics\CharacterTrackAnimator.cpp">
+      <Filter>Source\Cinematics</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Maestro\Code\Source\Cinematics\Movie.cpp">
+      <Filter>Source\Cinematics</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Maestro\Code\Source\Cinematics\AnimSplineTrack.cpp">
+      <Filter>Source\Cinematics</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Maestro\Code\Source\Cinematics\AnimTrack.cpp">
+      <Filter>Source\Cinematics</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Maestro\Code\Source\Cinematics\AssetBlendTrack.cpp">
+      <Filter>Source\Cinematics</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Maestro\Code\Source\Cinematics\BoolTrack.cpp">
+      <Filter>Source\Cinematics</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Maestro\Code\Source\Cinematics\CaptureTrack.cpp">
+      <Filter>Source\Cinematics</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Maestro\Code\Source\Cinematics\CharacterTrack.cpp">
+      <Filter>Source\Cinematics</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Maestro\Code\Source\Cinematics\CommentTrack.cpp">
+      <Filter>Source\Cinematics</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Maestro\Code\Source\Cinematics\CompoundSplineTrack.cpp">
+      <Filter>Source\Cinematics</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Maestro\Code\Source\Cinematics\ConsoleTrack.cpp">
+      <Filter>Source\Cinematics</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Maestro\Code\Source\Cinematics\EventTrack.cpp">
+      <Filter>Source\Cinematics</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Maestro\Code\Source\Cinematics\GotoTrack.cpp">
+      <Filter>Source\Cinematics</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Maestro\Code\Source\Cinematics\LookAtTrack.cpp">
+      <Filter>Source\Cinematics</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Maestro\Code\Source\Cinematics\TimeRangesTrack.cpp">
+      <Filter>Source\Cinematics</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Maestro\Code\Source\Cinematics\ScreenFaderTrack.cpp">
+      <Filter>Source\Cinematics</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Maestro\Code\Source\Cinematics\SelectTrack.cpp">
+      <Filter>Source\Cinematics</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Maestro\Code\Source\Cinematics\SequenceTrack.cpp">
+      <Filter>Source\Cinematics</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Maestro\Code\Source\Cinematics\SoundTrack.cpp">
+      <Filter>Source\Cinematics</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Maestro\Code\Source\Cinematics\TrackEventTrack.cpp">
+      <Filter>Source\Cinematics</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Maestro\Code\Source\Cinematics\AnimAZEntityNode.cpp">
+      <Filter>Source\Cinematics</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Maestro\Code\Source\Cinematics\AnimNode.cpp">
+      <Filter>Source\Cinematics</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Maestro\Code\Source\Cinematics\AnimNodeGroup.cpp">
+      <Filter>Source\Cinematics</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Maestro\Code\Source\Cinematics\AnimPostFXNode.cpp">
+      <Filter>Source\Cinematics</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Maestro\Code\Source\Cinematics\AnimScreenFaderNode.cpp">
+      <Filter>Source\Cinematics</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Maestro\Code\Source\Cinematics\CommentNode.cpp">
+      <Filter>Source\Cinematics</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Maestro\Code\Source\Cinematics\AnimComponentNode.cpp">
+      <Filter>Source\Cinematics</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Maestro\Code\Source\Cinematics\CVarNode.cpp">
+      <Filter>Source\Cinematics</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Maestro\Code\Source\Cinematics\EventNode.cpp">
+      <Filter>Source\Cinematics</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Maestro\Code\Source\Cinematics\LayerNode.cpp">
+      <Filter>Source\Cinematics</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Maestro\Code\Source\Cinematics\MaterialNode.cpp">
+      <Filter>Source\Cinematics</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Maestro\Code\Source\Cinematics\SceneNode.cpp">
+      <Filter>Source\Cinematics</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Maestro\Code\Source\Cinematics\ScriptVarNode.cpp">
+      <Filter>Source\Cinematics</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Maestro\Code\Source\Components\SequenceComponent.cpp">
+      <Filter>Source\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Maestro\Code\Source\Components\SequenceAgent.cpp">
+      <Filter>Source\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Maestro\Code\Source\Components\SequenceAgentComponent.cpp">
+      <Filter>Source\Components</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Maestro\Code\Source\Cinematics\ShadowsSetupNode.h">
+      <Filter>Source\Cinematics</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Maestro\Code\Include\Maestro\MaestroBus.h">
+      <Filter>Include\Maestro</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Maestro\Code\Source\MaestroSystemComponent.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Maestro\Code\Source\Cinematics\2DSpline.h">
+      <Filter>Source\Cinematics</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Maestro\Code\Source\Cinematics\AnimSerializer.h">
+      <Filter>Source\Cinematics</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Maestro\Code\Source\Cinematics\AnimSequence.h">
+      <Filter>Source\Cinematics</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Maestro\Code\Source\Cinematics\CharacterTrackAnimator.h">
+      <Filter>Source\Cinematics</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Maestro\Code\Source\Cinematics\Movie.h">
+      <Filter>Source\Cinematics</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Maestro\Code\Source\Cinematics\TCBSpline.h">
+      <Filter>Source\Cinematics</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Maestro\Code\Source\Cinematics\resource.h">
+      <Filter>Source\Cinematics</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Maestro\Code\Source\Cinematics\TimeRangesTrack.h">
+      <Filter>Source\Cinematics</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Maestro\Code\Source\Cinematics\AnimSplineTrack.h">
+      <Filter>Source\Cinematics</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Maestro\Code\Source\Cinematics\AnimSplineTrack_Vec2Specialization.h">
+      <Filter>Source\Cinematics</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Maestro\Code\Source\Cinematics\AnimTrack.h">
+      <Filter>Source\Cinematics</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Maestro\Code\Source\Cinematics\AssetBlendTrack.h">
+      <Filter>Source\Cinematics</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Maestro\Code\Source\Cinematics\BoolTrack.h">
+      <Filter>Source\Cinematics</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Maestro\Code\Source\Cinematics\CaptureTrack.h">
+      <Filter>Source\Cinematics</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Maestro\Code\Source\Cinematics\CharacterTrack.h">
+      <Filter>Source\Cinematics</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Maestro\Code\Source\Cinematics\CommentTrack.h">
+      <Filter>Source\Cinematics</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Maestro\Code\Source\Cinematics\CompoundSplineTrack.h">
+      <Filter>Source\Cinematics</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Maestro\Code\Source\Cinematics\ConsoleTrack.h">
+      <Filter>Source\Cinematics</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Maestro\Code\Source\Cinematics\EventTrack.h">
+      <Filter>Source\Cinematics</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Maestro\Code\Source\Cinematics\GotoTrack.h">
+      <Filter>Source\Cinematics</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Maestro\Code\Source\Cinematics\LookAtTrack.h">
+      <Filter>Source\Cinematics</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Maestro\Code\Source\Cinematics\ScreenFaderTrack.h">
+      <Filter>Source\Cinematics</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Maestro\Code\Source\Cinematics\SelectTrack.h">
+      <Filter>Source\Cinematics</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Maestro\Code\Source\Cinematics\SequenceTrack.h">
+      <Filter>Source\Cinematics</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Maestro\Code\Source\Cinematics\SoundTrack.h">
+      <Filter>Source\Cinematics</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Maestro\Code\Source\Cinematics\TrackEventTrack.h">
+      <Filter>Source\Cinematics</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Maestro\Code\Source\Cinematics\AnimAZEntityNode.h">
+      <Filter>Source\Cinematics</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Maestro\Code\Source\Cinematics\AnimNode.h">
+      <Filter>Source\Cinematics</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Maestro\Code\Source\Cinematics\AnimPostFXNode.h">
+      <Filter>Source\Cinematics</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Maestro\Code\Source\Cinematics\AnimScreenFaderNode.h">
+      <Filter>Source\Cinematics</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Maestro\Code\Source\Cinematics\CommentNode.h">
+      <Filter>Source\Cinematics</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Maestro\Code\Source\Cinematics\AnimComponentNode.h">
+      <Filter>Source\Cinematics</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Maestro\Code\Source\Cinematics\CVarNode.h">
+      <Filter>Source\Cinematics</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Maestro\Code\Source\Cinematics\EventNode.h">
+      <Filter>Source\Cinematics</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Maestro\Code\Source\Cinematics\LayerNode.h">
+      <Filter>Source\Cinematics</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Maestro\Code\Source\Cinematics\MaterialNode.h">
+      <Filter>Source\Cinematics</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Maestro\Code\Source\Cinematics\SceneNode.h">
+      <Filter>Source\Cinematics</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Maestro\Code\Source\Components\SequenceComponent.h">
+      <Filter>Source\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Maestro\Code\Source\Components\SequenceAgent.h">
+      <Filter>Source\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Maestro\Code\Source\Components\SequenceAgentComponent.h">
+      <Filter>Source\Components</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Gems\Maestro\Code\CMakeLists.txt">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Maestro\Code\maestro_static_files.cmake" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Generated Files">
+      <UniqueIdentifier>{FB9B7D8B-7F05-31D5-AA90-592248EDE1B3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include">
+      <UniqueIdentifier>{E188105A-C8C4-34BB-9809-15E8410EF7F8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\Maestro">
+      <UniqueIdentifier>{0926986F-D272-3D20-A24E-FA65B7A6C9B6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source">
+      <UniqueIdentifier>{F3F0AD47-5F83-373B-A2BF-650D2E4FA3EA}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Cinematics">
+      <UniqueIdentifier>{44462220-E0B9-3E6E-A637-A1B8E13B6A22}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Components">
+      <UniqueIdentifier>{914C6B5F-184E-399E-8506-2B79CE7A1426}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

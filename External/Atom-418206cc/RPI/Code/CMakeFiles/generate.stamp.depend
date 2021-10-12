@@ -1,0 +1,17 @@
+# CMake generation dependency list for this directory.
+C:/Users/lesaelr/o3de/Gems/Atom/RPI/Assets/atom_rpi_asset_files.cmake
+C:/Users/lesaelr/o3de/Gems/Atom/RPI/Code/CMakeLists.txt
+C:/Users/lesaelr/o3de/Gems/Atom/RPI/Code/Source/Platform/Common/MSVC/atom_rpi_public_msvc.cmake
+C:/Users/lesaelr/o3de/Gems/Atom/RPI/Code/Source/Platform/Windows/PAL_windows.cmake
+C:/Users/lesaelr/o3de/Gems/Atom/RPI/Code/Source/Platform/Windows/platform_windows_files.cmake
+C:/Users/lesaelr/o3de/Gems/Atom/RPI/Code/atom_rpi_builders_files.cmake
+C:/Users/lesaelr/o3de/Gems/Atom/RPI/Code/atom_rpi_builders_shared_files.cmake
+C:/Users/lesaelr/o3de/Gems/Atom/RPI/Code/atom_rpi_builders_tests_files.cmake
+C:/Users/lesaelr/o3de/Gems/Atom/RPI/Code/atom_rpi_edit_files.cmake
+C:/Users/lesaelr/o3de/Gems/Atom/RPI/Code/atom_rpi_editor_files.cmake
+C:/Users/lesaelr/o3de/Gems/Atom/RPI/Code/atom_rpi_masked_occlusion_files.cmake
+C:/Users/lesaelr/o3de/Gems/Atom/RPI/Code/atom_rpi_private_files.cmake
+C:/Users/lesaelr/o3de/Gems/Atom/RPI/Code/atom_rpi_public_files.cmake
+C:/Users/lesaelr/o3de/Gems/Atom/RPI/Code/atom_rpi_reflect_files.cmake
+C:/Users/lesaelr/o3de/Gems/Atom/RPI/Code/atom_rpi_tests_files.cmake
+C:/Users/lesaelr/o3de/cmake/Platform/Windows/LYTestWrappers_windows.cmake

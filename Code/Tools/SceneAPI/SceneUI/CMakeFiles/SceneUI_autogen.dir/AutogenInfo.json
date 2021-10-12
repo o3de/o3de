@@ -1,0 +1,500 @@
+{
+	"BUILD_DIR" : "C:/Users/lesaelr/o3de/Code/Tools/SceneAPI/SceneUI/SceneUI_autogen",
+	"CMAKE_BINARY_DIR" : "C:/Users/lesaelr/o3de",
+	"CMAKE_CURRENT_BINARY_DIR" : "C:/Users/lesaelr/o3de/Code/Tools/SceneAPI/SceneUI",
+	"CMAKE_CURRENT_SOURCE_DIR" : "C:/Users/lesaelr/o3de/Code/Tools/SceneAPI/SceneUI",
+	"CMAKE_EXECUTABLE" : "C:/Program Files/CMake/bin/cmake.exe",
+	"CMAKE_LIST_FILES" : 
+	[
+		"C:/Users/lesaelr/o3de/Code/Tools/SceneAPI/SceneUI/CMakeLists.txt",
+		"C:/Users/lesaelr/o3de/Code/Tools/SceneAPI/SceneUI/SceneUI_files.cmake",
+		"C:/Users/lesaelr/o3de/Code/Tools/SceneAPI/SceneUI/SceneUI_testing_files.cmake",
+		"C:/Users/lesaelr/o3de/cmake/Platform/Windows/LYTestWrappers_windows.cmake",
+		"C:/Users/lesaelr/o3de/Code/Tools/SceneAPI/SceneUI/SceneUI.qrc"
+	],
+	"CMAKE_SOURCE_DIR" : "C:/Users/lesaelr/o3de",
+	"DEP_FILE" : "",
+	"DEP_FILE_RULE_NAME" : "",
+	"HEADERS" : 
+	[
+		[
+			"C:/Users/lesaelr/o3de/Code/Tools/SceneAPI/SceneUI/CommonWidgets/ExpandCollapseToggler.h",
+			"Mu",
+			"DLGSA3MWPO/moc_ExpandCollapseToggler.cpp",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Code/Tools/SceneAPI/SceneUI/CommonWidgets/JobWatcher.h",
+			"Mu",
+			"DLGSA3MWPO/moc_JobWatcher.cpp",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Code/Tools/SceneAPI/SceneUI/CommonWidgets/OverlayWidget.h",
+			"Mu",
+			"DLGSA3MWPO/moc_OverlayWidget.cpp",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Code/Tools/SceneAPI/SceneUI/CommonWidgets/OverlayWidgetLayer.h",
+			"Mu",
+			"DLGSA3MWPO/moc_OverlayWidgetLayer.cpp",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Code/Tools/SceneAPI/SceneUI/CommonWidgets/ProcessingOverlayWidget.h",
+			"Mu",
+			"DLGSA3MWPO/moc_ProcessingOverlayWidget.cpp",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Code/Tools/SceneAPI/SceneUI/GraphMetaInfoHandler.h",
+			"Mu",
+			"EWIEGA46WW/moc_GraphMetaInfoHandler.cpp",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Code/Tools/SceneAPI/SceneUI/Handlers/ProcessingHandlers/AsyncOperationProcessingHandler.h",
+			"Mu",
+			"72LPPYNB7Y/moc_AsyncOperationProcessingHandler.cpp",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Code/Tools/SceneAPI/SceneUI/Handlers/ProcessingHandlers/ExportJobProcessingHandler.h",
+			"Mu",
+			"72LPPYNB7Y/moc_ExportJobProcessingHandler.cpp",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Code/Tools/SceneAPI/SceneUI/Handlers/ProcessingHandlers/ProcessingHandler.h",
+			"Mu",
+			"72LPPYNB7Y/moc_ProcessingHandler.cpp",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Code/Tools/SceneAPI/SceneUI/ManifestMetaInfoHandler.h",
+			"Mu",
+			"EWIEGA46WW/moc_ManifestMetaInfoHandler.cpp",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Code/Tools/SceneAPI/SceneUI/RowWidgets/HeaderHandler.h",
+			"Mu",
+			"5NOYL2FK3W/moc_HeaderHandler.cpp",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Code/Tools/SceneAPI/SceneUI/RowWidgets/HeaderWidget.h",
+			"Mu",
+			"5NOYL2FK3W/moc_HeaderWidget.cpp",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Code/Tools/SceneAPI/SceneUI/RowWidgets/ManifestNameHandler.h",
+			"Mu",
+			"5NOYL2FK3W/moc_ManifestNameHandler.cpp",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Code/Tools/SceneAPI/SceneUI/RowWidgets/ManifestNameWidget.h",
+			"Mu",
+			"5NOYL2FK3W/moc_ManifestNameWidget.cpp",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Code/Tools/SceneAPI/SceneUI/RowWidgets/ManifestVectorHandler.h",
+			"Mu",
+			"5NOYL2FK3W/moc_ManifestVectorHandler.cpp",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Code/Tools/SceneAPI/SceneUI/RowWidgets/ManifestVectorWidget.h",
+			"Mu",
+			"5NOYL2FK3W/moc_ManifestVectorWidget.cpp",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Code/Tools/SceneAPI/SceneUI/RowWidgets/NodeListSelectionHandler.h",
+			"Mu",
+			"5NOYL2FK3W/moc_NodeListSelectionHandler.cpp",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Code/Tools/SceneAPI/SceneUI/RowWidgets/NodeListSelectionWidget.h",
+			"Mu",
+			"5NOYL2FK3W/moc_NodeListSelectionWidget.cpp",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Code/Tools/SceneAPI/SceneUI/RowWidgets/NodeTreeSelectionHandler.h",
+			"Mu",
+			"5NOYL2FK3W/moc_NodeTreeSelectionHandler.cpp",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Code/Tools/SceneAPI/SceneUI/RowWidgets/NodeTreeSelectionWidget.h",
+			"Mu",
+			"5NOYL2FK3W/moc_NodeTreeSelectionWidget.cpp",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Code/Tools/SceneAPI/SceneUI/RowWidgets/TransformRowHandler.h",
+			"Mu",
+			"5NOYL2FK3W/moc_TransformRowHandler.cpp",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Code/Tools/SceneAPI/SceneUI/RowWidgets/TransformRowWidget.h",
+			"Mu",
+			"5NOYL2FK3W/moc_TransformRowWidget.cpp",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Code/Tools/SceneAPI/SceneUI/SceneUIConfiguration.h",
+			"Mu",
+			"EWIEGA46WW/moc_SceneUIConfiguration.cpp",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Code/Tools/SceneAPI/SceneUI/SceneUIStandaloneAllocator.h",
+			"Mu",
+			"EWIEGA46WW/moc_SceneUIStandaloneAllocator.cpp",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Code/Tools/SceneAPI/SceneUI/SceneWidgets/ManifestWidget.h",
+			"Mu",
+			"46ECLH7OKJ/moc_ManifestWidget.cpp",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Code/Tools/SceneAPI/SceneUI/SceneWidgets/ManifestWidgetPage.h",
+			"Mu",
+			"46ECLH7OKJ/moc_ManifestWidgetPage.cpp",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Code/Tools/SceneAPI/SceneUI/SceneWidgets/SceneGraphInspectWidget.h",
+			"Mu",
+			"46ECLH7OKJ/moc_SceneGraphInspectWidget.cpp",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Code/Tools/SceneAPI/SceneUI/SceneWidgets/SceneGraphWidget.h",
+			"Mu",
+			"46ECLH7OKJ/moc_SceneGraphWidget.cpp",
+			null
+		]
+	],
+	"HEADER_EXTENSIONS" : [ "h", "hh", "h++", "hm", "hpp", "hxx", "in", "txx" ],
+	"INCLUDE_DIR" : "C:/Users/lesaelr/o3de/Code/Tools/SceneAPI/SceneUI/SceneUI_autogen/include",
+	"INCLUDE_DIR_debug" : "C:/Users/lesaelr/o3de/Code/Tools/SceneAPI/SceneUI/SceneUI_autogen/include_debug",
+	"INCLUDE_DIR_profile" : "C:/Users/lesaelr/o3de/Code/Tools/SceneAPI/SceneUI/SceneUI_autogen/include_profile",
+	"INCLUDE_DIR_release" : "C:/Users/lesaelr/o3de/Code/Tools/SceneAPI/SceneUI/SceneUI_autogen/include_release",
+	"MOC_COMPILATION_FILE" : "C:/Users/lesaelr/o3de/Code/Tools/SceneAPI/SceneUI/SceneUI_autogen/mocs_compilation.cpp",
+	"MOC_COMPILATION_FILE_debug" : "C:/Users/lesaelr/o3de/Code/Tools/SceneAPI/SceneUI/SceneUI_autogen/mocs_compilation_debug.cpp",
+	"MOC_COMPILATION_FILE_profile" : "C:/Users/lesaelr/o3de/Code/Tools/SceneAPI/SceneUI/SceneUI_autogen/mocs_compilation_profile.cpp",
+	"MOC_COMPILATION_FILE_release" : "C:/Users/lesaelr/o3de/Code/Tools/SceneAPI/SceneUI/SceneUI_autogen/mocs_compilation_release.cpp",
+	"MOC_DEFINITIONS" : 
+	[
+		"NOMINMAX",
+		"OPENSSL_ENABLED",
+		"QT_CORE_LIB",
+		"QT_GUI_LIB",
+		"QT_NO_DEBUG",
+		"QT_SVG_LIB",
+		"QT_WIDGETS_LIB",
+		"QT_XML_LIB",
+		"SCENE_UI_EXPORTS",
+		"SceneUI_EXPORTS",
+		"WIN32",
+		"WIN64",
+		"_ENABLE_EXTENDED_ALIGNED_STORAGE",
+		"_HAS_EXCEPTIONS=0",
+		"_WIN32",
+		"_WIN64"
+	],
+	"MOC_DEFINITIONS_debug" : 
+	[
+		"AZ_BUILD_CONFIGURATION_TYPE=\"debug\"",
+		"AZ_DEBUG_BUILD=1",
+		"AZ_ENABLE_DEBUG_TOOLS",
+		"AZ_ENABLE_TRACING",
+		"NOMINMAX",
+		"OPENSSL_ENABLED",
+		"QT_CORE_LIB",
+		"QT_GUI_LIB",
+		"QT_SVG_LIB",
+		"QT_WIDGETS_LIB",
+		"QT_XML_LIB",
+		"SCENE_UI_EXPORTS",
+		"SceneUI_EXPORTS",
+		"WIN32",
+		"WIN64",
+		"_DEBUG",
+		"_ENABLE_EXTENDED_ALIGNED_STORAGE",
+		"_HAS_EXCEPTIONS=0",
+		"_WIN32",
+		"_WIN64"
+	],
+	"MOC_DEFINITIONS_profile" : 
+	[
+		"AZ_BUILD_CONFIGURATION_TYPE=\"profile\"",
+		"AZ_ENABLE_DEBUG_TOOLS",
+		"AZ_ENABLE_TRACING",
+		"NDEBUG",
+		"NOMINMAX",
+		"OPENSSL_ENABLED",
+		"PROFILE",
+		"QT_CORE_LIB",
+		"QT_GUI_LIB",
+		"QT_NO_DEBUG",
+		"QT_SVG_LIB",
+		"QT_WIDGETS_LIB",
+		"QT_XML_LIB",
+		"SCENE_UI_EXPORTS",
+		"SceneUI_EXPORTS",
+		"WIN32",
+		"WIN64",
+		"_ENABLE_EXTENDED_ALIGNED_STORAGE",
+		"_HAS_EXCEPTIONS=0",
+		"_PROFILE",
+		"_WIN32",
+		"_WIN64"
+	],
+	"MOC_DEFINITIONS_release" : 
+	[
+		"AZ_BUILD_CONFIGURATION_TYPE=\"release\"",
+		"NDEBUG",
+		"NOMINMAX",
+		"OPENSSL_ENABLED",
+		"QT_CORE_LIB",
+		"QT_GUI_LIB",
+		"QT_NO_DEBUG",
+		"QT_SVG_LIB",
+		"QT_WIDGETS_LIB",
+		"QT_XML_LIB",
+		"RELEASE",
+		"SCENE_UI_EXPORTS",
+		"SceneUI_EXPORTS",
+		"WIN32",
+		"WIN64",
+		"_ENABLE_EXTENDED_ALIGNED_STORAGE",
+		"_HAS_EXCEPTIONS=0",
+		"_RELEASE",
+		"_WIN32",
+		"_WIN64"
+	],
+	"MOC_DEPEND_FILTERS" : 
+	[
+		[
+			"Q_PLUGIN_METADATA",
+			"[\n][ \t]*Q_PLUGIN_METADATA[ \t]*\\([^\\)]*FILE[ \t]*\"([^\"]+)\""
+		]
+	],
+	"MOC_INCLUDES" : 
+	[
+		"C:/Users/lesaelr/o3de/Code/Tools/SceneAPI/SceneUI",
+		"C:/Users/lesaelr/o3de/Code/Tools",
+		"C:/Users/lesaelr/o3de/Code/Tools/SceneAPI/SceneUI/SceneUI_autogen/include",
+		"C:/Users/lesaelr/o3de/Code/Tools/SceneAPI/SceneUI",
+		"C:/Users/lesaelr/o3de/Code/Framework/AzCore",
+		"C:/Users/lesaelr/o3de/Code/Framework/AzCore/Platform/Windows",
+		"C:/Users/lesaelr/o3de/Code/Framework/AzCore/Platform/Common",
+		"C:/Users/lesaelr/o3de/Code/Framework/AzFramework",
+		"C:/Users/lesaelr/o3de/Code/Framework/AzFramework/Platform/Windows",
+		"C:/Users/lesaelr/o3de/Code/Framework/GridMate",
+		"C:/Users/lesaelr/o3de/Code/Framework/GridMate/Platform/Windows",
+		"C:/Users/lesaelr/o3de/Code/Framework/AzToolsFramework",
+		"C:/Users/lesaelr/o3de/Code/Framework/AzToolsFramework/AzToolsFramework",
+		"C:/Users/lesaelr/o3de/Code/Framework/AzToolsFramework/Platform/Windows",
+		"C:/Users/lesaelr/o3de/Code/Framework/AzQtComponents",
+		"C:/Users/lesaelr/o3de/Code/Tools",
+		"C:/Users/lesaelr/o3de/Code/Tools"
+	],
+	"MOC_MACRO_NAMES" : [ "Q_OBJECT", "Q_GADGET", "Q_NAMESPACE", "Q_NAMESPACE_EXPORT" ],
+	"MOC_OPTIONS" : [],
+	"MOC_PATH_PREFIX" : false,
+	"MOC_PREDEFS_CMD" : [],
+	"MOC_PREDEFS_FILE" : "",
+	"MOC_RELAXED_MODE" : false,
+	"MOC_SKIP" : 
+	[
+		"C:/Users/lesaelr/o3de/Code/Tools/SceneAPI/SceneUI/SceneUI_autogen/include/CommonWidgets/ui_ProcessingOverlayWidget.h",
+		"C:/Users/lesaelr/o3de/Code/Tools/SceneAPI/SceneUI/SceneUI_autogen/include/RowWidgets/ui_HeaderWidget.h",
+		"C:/Users/lesaelr/o3de/Code/Tools/SceneAPI/SceneUI/SceneUI_autogen/include/RowWidgets/ui_ManifestVectorWidget.h",
+		"C:/Users/lesaelr/o3de/Code/Tools/SceneAPI/SceneUI/SceneUI_autogen/include/RowWidgets/ui_NodeTreeSelectionWidget.h",
+		"C:/Users/lesaelr/o3de/Code/Tools/SceneAPI/SceneUI/SceneUI_autogen/include/SceneWidgets/ui_ManifestWidget.h",
+		"C:/Users/lesaelr/o3de/Code/Tools/SceneAPI/SceneUI/SceneUI_autogen/include/SceneWidgets/ui_ManifestWidgetPage.h",
+		"C:/Users/lesaelr/o3de/Code/Tools/SceneAPI/SceneUI/SceneUI_autogen/include/SceneWidgets/ui_SceneGraphInspectWidget.h",
+		"C:/Users/lesaelr/o3de/Code/Tools/SceneAPI/SceneUI/SceneUI_autogen/include/SceneWidgets/ui_SceneGraphWidget.h"
+	],
+	"MULTI_CONFIG" : true,
+	"PARALLEL" : 6,
+	"PARSE_CACHE_FILE" : "C:/Users/lesaelr/o3de/Code/Tools/SceneAPI/SceneUI/CMakeFiles/SceneUI_autogen.dir/ParseCache.txt",
+	"PARSE_CACHE_FILE_debug" : "C:/Users/lesaelr/o3de/Code/Tools/SceneAPI/SceneUI/CMakeFiles/SceneUI_autogen.dir/ParseCache_debug.txt",
+	"PARSE_CACHE_FILE_profile" : "C:/Users/lesaelr/o3de/Code/Tools/SceneAPI/SceneUI/CMakeFiles/SceneUI_autogen.dir/ParseCache_profile.txt",
+	"PARSE_CACHE_FILE_release" : "C:/Users/lesaelr/o3de/Code/Tools/SceneAPI/SceneUI/CMakeFiles/SceneUI_autogen.dir/ParseCache_release.txt",
+	"QT_MOC_EXECUTABLE" : "C:/Users/lesaelr/.o3de/3rdParty/packages/qt-5.15.2-rev4-windows/qt/bin/moc.exe",
+	"QT_UIC_EXECUTABLE" : "",
+	"QT_VERSION_MAJOR" : 5,
+	"QT_VERSION_MINOR" : 15,
+	"SETTINGS_FILE" : "C:/Users/lesaelr/o3de/Code/Tools/SceneAPI/SceneUI/CMakeFiles/SceneUI_autogen.dir/AutogenUsed.txt",
+	"SETTINGS_FILE_debug" : "C:/Users/lesaelr/o3de/Code/Tools/SceneAPI/SceneUI/CMakeFiles/SceneUI_autogen.dir/AutogenUsed_debug.txt",
+	"SETTINGS_FILE_profile" : "C:/Users/lesaelr/o3de/Code/Tools/SceneAPI/SceneUI/CMakeFiles/SceneUI_autogen.dir/AutogenUsed_profile.txt",
+	"SETTINGS_FILE_release" : "C:/Users/lesaelr/o3de/Code/Tools/SceneAPI/SceneUI/CMakeFiles/SceneUI_autogen.dir/AutogenUsed_release.txt",
+	"SOURCES" : 
+	[
+		[
+			"C:/Users/lesaelr/o3de/Code/Tools/SceneAPI/SceneUI/CMakeFiles/SceneUI.dir/Unity/unity_0_cxx.cxx",
+			"Mu",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Code/Tools/SceneAPI/SceneUI/CMakeFiles/SceneUI.dir/Unity/unity_1_cxx.cxx",
+			"Mu",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Code/Tools/SceneAPI/SceneUI/CMakeFiles/SceneUI.dir/Unity/unity_2_cxx.cxx",
+			"Mu",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Code/Tools/SceneAPI/SceneUI/CMakeFiles/SceneUI.dir/Unity/unity_3_cxx.cxx",
+			"Mu",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Code/Tools/SceneAPI/SceneUI/CommonWidgets/ExpandCollapseToggler.cpp",
+			"Mu",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Code/Tools/SceneAPI/SceneUI/CommonWidgets/JobWatcher.cpp",
+			"Mu",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Code/Tools/SceneAPI/SceneUI/CommonWidgets/ProcessingOverlayWidget.cpp",
+			"Mu",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Code/Tools/SceneAPI/SceneUI/DllMain.cpp",
+			"Mu",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Code/Tools/SceneAPI/SceneUI/GraphMetaInfoHandler.cpp",
+			"Mu",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Code/Tools/SceneAPI/SceneUI/Handlers/ProcessingHandlers/AsyncOperationProcessingHandler.cpp",
+			"Mu",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Code/Tools/SceneAPI/SceneUI/Handlers/ProcessingHandlers/ExportJobProcessingHandler.cpp",
+			"Mu",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Code/Tools/SceneAPI/SceneUI/Handlers/ProcessingHandlers/ProcessingHandler.cpp",
+			"Mu",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Code/Tools/SceneAPI/SceneUI/ManifestMetaInfoHandler.cpp",
+			"Mu",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Code/Tools/SceneAPI/SceneUI/RowWidgets/HeaderHandler.cpp",
+			"Mu",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Code/Tools/SceneAPI/SceneUI/RowWidgets/HeaderWidget.cpp",
+			"Mu",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Code/Tools/SceneAPI/SceneUI/RowWidgets/ManifestNameHandler.cpp",
+			"Mu",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Code/Tools/SceneAPI/SceneUI/RowWidgets/ManifestNameWidget.cpp",
+			"Mu",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Code/Tools/SceneAPI/SceneUI/RowWidgets/ManifestVectorHandler.cpp",
+			"Mu",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Code/Tools/SceneAPI/SceneUI/RowWidgets/ManifestVectorWidget.cpp",
+			"Mu",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Code/Tools/SceneAPI/SceneUI/RowWidgets/NodeListSelectionHandler.cpp",
+			"Mu",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Code/Tools/SceneAPI/SceneUI/RowWidgets/NodeListSelectionWidget.cpp",
+			"Mu",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Code/Tools/SceneAPI/SceneUI/RowWidgets/NodeTreeSelectionHandler.cpp",
+			"Mu",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Code/Tools/SceneAPI/SceneUI/RowWidgets/NodeTreeSelectionWidget.cpp",
+			"Mu",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Code/Tools/SceneAPI/SceneUI/RowWidgets/TransformRowHandler.cpp",
+			"Mu",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Code/Tools/SceneAPI/SceneUI/RowWidgets/TransformRowWidget.cpp",
+			"Mu",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Code/Tools/SceneAPI/SceneUI/SceneUIStandaloneAllocator.cpp",
+			"Mu",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Code/Tools/SceneAPI/SceneUI/SceneWidgets/ManifestWidget.cpp",
+			"Mu",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Code/Tools/SceneAPI/SceneUI/SceneWidgets/ManifestWidgetPage.cpp",
+			"Mu",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Code/Tools/SceneAPI/SceneUI/SceneWidgets/SceneGraphInspectWidget.cpp",
+			"Mu",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Code/Tools/SceneAPI/SceneUI/SceneWidgets/SceneGraphWidget.cpp",
+			"Mu",
+			null
+		]
+	],
+	"VERBOSITY" : 0
+}

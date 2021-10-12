@@ -1,0 +1,16 @@
+# CMake generation dependency list for this directory.
+C:/Users/lesaelr/.o3de/3rdParty/packages/SQLite-3.32.2-rev3-multiplatform/FindSQLite.cmake
+C:/Users/lesaelr/.o3de/3rdParty/packages/SQLite-3.32.2-rev3-multiplatform/PackageInfo.json
+C:/Users/lesaelr/o3de/Code/Framework/AzToolsFramework/AzToolsFramework/AssetBrowser/Search/search.qrc
+C:/Users/lesaelr/o3de/Code/Framework/AzToolsFramework/AzToolsFramework/AssetBrowser/Views/AssetBrowserFolderWidget.qrc
+C:/Users/lesaelr/o3de/Code/Framework/AzToolsFramework/AzToolsFramework/AssetEditor/Resources/AssetEditorResources.qrc
+C:/Users/lesaelr/o3de/Code/Framework/AzToolsFramework/AzToolsFramework/UI/LegacyFramework/Resources/sharedResources.qrc
+C:/Users/lesaelr/o3de/Code/Framework/AzToolsFramework/AzToolsFramework/UI/Outliner/resources.qrc
+C:/Users/lesaelr/o3de/Code/Framework/AzToolsFramework/AzToolsFramework/UI/PropertyEditor/Resources/Icons.qrc
+C:/Users/lesaelr/o3de/Code/Framework/AzToolsFramework/AzToolsFramework/aztoolsframework_files.cmake
+C:/Users/lesaelr/o3de/Code/Framework/AzToolsFramework/AzToolsFramework/aztoolsframework_windows_files.cmake
+C:/Users/lesaelr/o3de/Code/Framework/AzToolsFramework/AzToolsFramework/aztoolsframeworktestcommon_files.cmake
+C:/Users/lesaelr/o3de/Code/Framework/AzToolsFramework/CMakeLists.txt
+C:/Users/lesaelr/o3de/Code/Framework/AzToolsFramework/Platform/Windows/platform_windows_files.cmake
+C:/Users/lesaelr/o3de/Code/Framework/AzToolsFramework/Tests/aztoolsframeworktests_files.cmake
+C:/Users/lesaelr/o3de/cmake/Platform/Windows/LYTestWrappers_windows.cmake

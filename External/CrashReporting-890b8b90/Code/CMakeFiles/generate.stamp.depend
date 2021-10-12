@@ -1,0 +1,7 @@
+# CMake generation dependency list for this directory.
+C:/Users/lesaelr/o3de/Gems/CrashReporting/Code/CMakeLists.txt
+C:/Users/lesaelr/o3de/Gems/CrashReporting/Code/Platform/Windows/PAL_windows.cmake
+C:/Users/lesaelr/o3de/Gems/CrashReporting/Code/Platform/Windows/crashreporting_static_windows_files.cmake
+C:/Users/lesaelr/o3de/Gems/CrashReporting/Code/Platform/Windows/game_crash_uploader_windows_files.cmake
+C:/Users/lesaelr/o3de/Gems/CrashReporting/Code/crashreporting_static_files.cmake
+C:/Users/lesaelr/o3de/Gems/CrashReporting/Code/game_crash_uploader_files.cmake

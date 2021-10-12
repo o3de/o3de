@@ -1,0 +1,12 @@
+# CMake generation dependency list for this directory.
+C:/Users/lesaelr/.o3de/3rdParty/packages/mikkelsen-1.0.0.4-windows/Findmikkelsen.cmake
+C:/Users/lesaelr/.o3de/3rdParty/packages/mikkelsen-1.0.0.4-windows/PackageInfo.json
+C:/Users/lesaelr/.o3de/3rdParty/packages/mikkelsen-1.0.0.4-windows/mikkelsen-config-version.cmake
+C:/Users/lesaelr/.o3de/3rdParty/packages/mikkelsen-1.0.0.4-windows/mikkelsen-config.cmake
+C:/Users/lesaelr/o3de/Gems/SceneProcessing/Code/CMakeLists.txt
+C:/Users/lesaelr/o3de/Gems/SceneProcessing/Code/sceneprocessing_editor_files.cmake
+C:/Users/lesaelr/o3de/Gems/SceneProcessing/Code/sceneprocessing_editor_static_files.cmake
+C:/Users/lesaelr/o3de/Gems/SceneProcessing/Code/sceneprocessing_editor_tests_files.cmake
+C:/Users/lesaelr/o3de/Gems/SceneProcessing/Code/sceneprocessing_files.cmake
+C:/Users/lesaelr/o3de/Gems/SceneProcessing/Code/sceneprocessing_tests_files.cmake
+C:/Users/lesaelr/o3de/cmake/Platform/Windows/LYTestWrappers_windows.cmake

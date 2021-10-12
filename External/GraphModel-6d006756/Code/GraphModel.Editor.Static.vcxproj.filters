@@ -1,0 +1,221 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\GraphModel-6d006756\Code\CMakeFiles\GraphModel.Editor.Static.dir\Unity\unity_2_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\GraphModel-6d006756\Code\CMakeFiles\GraphModel.Editor.Static.dir\Unity\unity_1_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\GraphModel-6d006756\Code\CMakeFiles\GraphModel.Editor.Static.dir\Unity\unity_0_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GraphModel\Code\Source\GraphModelSystemComponent.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GraphModel\Code\Source\Model\Connection.cpp">
+      <Filter>Source\Model</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GraphModel\Code\Source\Model\DataType.cpp">
+      <Filter>Source\Model</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GraphModel\Code\Source\Model\Graph.cpp">
+      <Filter>Source\Model</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GraphModel\Code\Source\Model\GraphElement.cpp">
+      <Filter>Source\Model</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GraphModel\Code\Source\Model\Node.cpp">
+      <Filter>Source\Model</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GraphModel\Code\Source\Model\Slot.cpp">
+      <Filter>Source\Model</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GraphModel\Code\Source\Model\Module\InputOutputNodes.cpp">
+      <Filter>Source\Model\Module</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GraphModel\Code\Source\Model\Module\ModuleGraphManager.cpp">
+      <Filter>Source\Model\Module</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GraphModel\Code\Source\Model\Module\ModuleNode.cpp">
+      <Filter>Source\Model\Module</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GraphModel\Code\Source\Integration\EditorMainWindow.cpp">
+      <Filter>Source\Integration</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GraphModel\Code\Source\Integration\ReadOnlyDataInterface.cpp">
+      <Filter>Source\Integration</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GraphModel\Code\Source\Integration\ThumbnailItem.cpp">
+      <Filter>Source\Integration</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GraphModel\Code\Source\Integration\ThumbnailImageItem.cpp">
+      <Filter>Source\Integration</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GraphModel\Code\Source\Integration\GraphCanvasMetadata.cpp">
+      <Filter>Source\Integration</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GraphModel\Code\Source\Integration\GraphController.cpp">
+      <Filter>Source\Integration</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GraphModel\Code\Source\Integration\GraphControllerManager.cpp">
+      <Filter>Source\Integration</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GraphModel\Code\Source\Integration\BooleanDataInterface.cpp">
+      <Filter>Source\Integration</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GraphModel\Code\Source\Integration\FloatDataInterface.cpp">
+      <Filter>Source\Integration</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GraphModel\Code\Source\Integration\IntegerDataInterface.cpp">
+      <Filter>Source\Integration</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GraphModel\Code\Source\Integration\StringDataInterface.cpp">
+      <Filter>Source\Integration</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\GraphModel\Code\Source\Integration\NodePalette\GraphCanvasNodePaletteItems.cpp">
+      <Filter>Source\Integration\NodePalette</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphModel\Code\Include\GraphModel\GraphModelBus.h">
+      <Filter>Include\GraphModel</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphModel\Code\Include\GraphModel\Model\Common.h">
+      <Filter>Include\GraphModel\Model</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphModel\Code\Include\GraphModel\Model\Connection.h">
+      <Filter>Include\GraphModel\Model</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphModel\Code\Include\GraphModel\Model\DataType.h">
+      <Filter>Include\GraphModel\Model</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphModel\Code\Include\GraphModel\Model\Graph.h">
+      <Filter>Include\GraphModel\Model</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphModel\Code\Include\GraphModel\Model\GraphElement.h">
+      <Filter>Include\GraphModel\Model</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphModel\Code\Include\GraphModel\Model\IGraphContext.h">
+      <Filter>Include\GraphModel\Model</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphModel\Code\Include\GraphModel\Model\Node.h">
+      <Filter>Include\GraphModel\Model</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphModel\Code\Include\GraphModel\Model\Slot.h">
+      <Filter>Include\GraphModel\Model</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphModel\Code\Include\GraphModel\Model\Module\InputOutputNodes.h">
+      <Filter>Include\GraphModel\Model\Module</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphModel\Code\Include\GraphModel\Model\Module\ModuleGraphManager.h">
+      <Filter>Include\GraphModel\Model\Module</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphModel\Code\Include\GraphModel\Model\Module\ModuleNode.h">
+      <Filter>Include\GraphModel\Model\Module</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphModel\Code\Include\GraphModel\Integration\EditorMainWindow.h">
+      <Filter>Include\GraphModel\Integration</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphModel\Code\Include\GraphModel\Integration\ReadOnlyDataInterface.h">
+      <Filter>Include\GraphModel\Integration</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphModel\Code\Include\GraphModel\Integration\ThumbnailItem.h">
+      <Filter>Include\GraphModel\Integration</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphModel\Code\Include\GraphModel\Integration\ThumbnailImageItem.h">
+      <Filter>Include\GraphModel\Integration</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphModel\Code\Include\GraphModel\Integration\GraphCanvasMetadata.h">
+      <Filter>Include\GraphModel\Integration</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphModel\Code\Include\GraphModel\Integration\GraphController.h">
+      <Filter>Include\GraphModel\Integration</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphModel\Code\Include\GraphModel\Integration\GraphControllerManager.h">
+      <Filter>Include\GraphModel\Integration</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphModel\Code\Include\GraphModel\Integration\Helpers.h">
+      <Filter>Include\GraphModel\Integration</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphModel\Code\Include\GraphModel\Integration\BooleanDataInterface.h">
+      <Filter>Include\GraphModel\Integration</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphModel\Code\Include\GraphModel\Integration\FloatDataInterface.h">
+      <Filter>Include\GraphModel\Integration</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphModel\Code\Include\GraphModel\Integration\IntegerDataInterface.h">
+      <Filter>Include\GraphModel\Integration</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphModel\Code\Include\GraphModel\Integration\StringDataInterface.h">
+      <Filter>Include\GraphModel\Integration</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphModel\Code\Include\GraphModel\Integration\VectorDataInterface.inl">
+      <Filter>Include\GraphModel\Integration</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphModel\Code\Include\GraphModel\Integration\IntegrationBus.h">
+      <Filter>Include\GraphModel\Integration</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphModel\Code\Include\GraphModel\Integration\NodePalette\InputOutputNodePaletteItem.h">
+      <Filter>Include\GraphModel\Integration\NodePalette</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphModel\Code\Include\GraphModel\Integration\NodePalette\ModuleNodePaletteItem.h">
+      <Filter>Include\GraphModel\Integration\NodePalette</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphModel\Code\Include\GraphModel\Integration\NodePalette\StandardNodePaletteItem.h">
+      <Filter>Include\GraphModel\Integration\NodePalette</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphModel\Code\Include\GraphModel\Integration\NodePalette\GraphCanvasNodePaletteItems.h">
+      <Filter>Include\GraphModel\Integration\NodePalette</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\GraphModel\Code\Source\GraphModelSystemComponent.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Gems\GraphModel\Code\CMakeLists.txt">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="C:\Users\lesaelr\o3de\Gems\GraphModel\Code\graphmodel_editor_static_files.cmake" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Generated Files">
+      <UniqueIdentifier>{FB9B7D8B-7F05-31D5-AA90-592248EDE1B3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include">
+      <UniqueIdentifier>{E188105A-C8C4-34BB-9809-15E8410EF7F8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\GraphModel">
+      <UniqueIdentifier>{97B993D6-05B3-34C8-A53E-F4D06188EADD}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\GraphModel\Integration">
+      <UniqueIdentifier>{7854B66F-588B-3961-92C2-8188259008E0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\GraphModel\Integration\NodePalette">
+      <UniqueIdentifier>{42BC1B79-076E-3C33-899E-F306F0EBC582}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\GraphModel\Model">
+      <UniqueIdentifier>{23411145-C537-3126-AAD2-FC0DE258F9A5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\GraphModel\Model\Module">
+      <UniqueIdentifier>{6DB9E086-38C5-3E1E-9FFD-2FD48337F5AA}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source">
+      <UniqueIdentifier>{F3F0AD47-5F83-373B-A2BF-650D2E4FA3EA}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Integration">
+      <UniqueIdentifier>{654CB93B-058D-3291-AF1E-27E1F8C8A0AE}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Integration\NodePalette">
+      <UniqueIdentifier>{F100901D-6F2F-3947-B92E-63362DDD67F2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Model">
+      <UniqueIdentifier>{7B9E437F-C18B-3A29-A3D5-E4D7CB8DADE5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Model\Module">
+      <UniqueIdentifier>{C10BE268-15A5-3B1C-B5A9-56B142E19B2C}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

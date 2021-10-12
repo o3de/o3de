@@ -1,0 +1,86 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\Terrain-ca46e1f4\Code\CMakeFiles\Terrain.Static.dir\Unity\unity_0_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Terrain\Code\Source\Components\TerrainHeightGradientListComponent.cpp">
+      <Filter>Source\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Terrain\Code\Source\Components\TerrainLayerSpawnerComponent.cpp">
+      <Filter>Source\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Terrain\Code\Source\Components\TerrainSurfaceDataSystemComponent.cpp">
+      <Filter>Source\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Terrain\Code\Source\Components\TerrainSystemComponent.cpp">
+      <Filter>Source\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Terrain\Code\Source\Components\TerrainWorldComponent.cpp">
+      <Filter>Source\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Terrain\Code\Source\Components\TerrainWorldDebuggerComponent.cpp">
+      <Filter>Source\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Terrain\Code\Source\TerrainRenderer\TerrainFeatureProcessor.cpp">
+      <Filter>Source\TerrainRenderer</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Terrain\Code\Source\TerrainSystem\TerrainSystem.cpp">
+      <Filter>Source\TerrainSystem</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Terrain\Code\Source\Components\TerrainHeightGradientListComponent.h">
+      <Filter>Source\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Terrain\Code\Source\Components\TerrainLayerSpawnerComponent.h">
+      <Filter>Source\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Terrain\Code\Source\Components\TerrainSurfaceDataSystemComponent.h">
+      <Filter>Source\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Terrain\Code\Source\Components\TerrainSystemComponent.h">
+      <Filter>Source\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Terrain\Code\Source\Components\TerrainWorldComponent.h">
+      <Filter>Source\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Terrain\Code\Source\Components\TerrainWorldDebuggerComponent.h">
+      <Filter>Source\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Terrain\Code\Source\TerrainRenderer\TerrainFeatureProcessor.h">
+      <Filter>Source\TerrainRenderer</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Terrain\Code\Source\TerrainSystem\TerrainSystem.h">
+      <Filter>Source\TerrainSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Terrain\Code\Source\TerrainSystem\TerrainSystemBus.h">
+      <Filter>Source\TerrainSystem</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Gems\Terrain\Code\CMakeLists.txt">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Terrain\Code\terrain_files.cmake" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Generated Files">
+      <UniqueIdentifier>{FB9B7D8B-7F05-31D5-AA90-592248EDE1B3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source">
+      <UniqueIdentifier>{F3F0AD47-5F83-373B-A2BF-650D2E4FA3EA}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Components">
+      <UniqueIdentifier>{914C6B5F-184E-399E-8506-2B79CE7A1426}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\TerrainRenderer">
+      <UniqueIdentifier>{565BBDF2-5B62-39A4-97F1-757162E949FC}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\TerrainSystem">
+      <UniqueIdentifier>{57C49E7D-E983-32C8-9D93-793B3E8A3972}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

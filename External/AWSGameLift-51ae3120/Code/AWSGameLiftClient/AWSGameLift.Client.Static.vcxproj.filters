@@ -1,0 +1,116 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\AWSGameLift-51ae3120\Code\AWSGameLiftClient\CMakeFiles\AWSGameLift.Client.Static.dir\Unity\unity_1_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\AWSGameLift-51ae3120\Code\AWSGameLiftClient\CMakeFiles\AWSGameLift.Client.Static.dir\Unity\unity_0_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\AWSGameLift\Code\AWSGameLiftClient\Source\Activity\AWSGameLiftActivityUtils.cpp">
+      <Filter>Source\Activity</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\AWSGameLift\Code\AWSGameLiftClient\Source\Activity\AWSGameLiftCreateSessionActivity.cpp">
+      <Filter>Source\Activity</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\AWSGameLift\Code\AWSGameLiftClient\Source\Activity\AWSGameLiftCreateSessionOnQueueActivity.cpp">
+      <Filter>Source\Activity</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\AWSGameLift\Code\AWSGameLiftClient\Source\Activity\AWSGameLiftJoinSessionActivity.cpp">
+      <Filter>Source\Activity</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\AWSGameLift\Code\AWSGameLiftClient\Source\Activity\AWSGameLiftLeaveSessionActivity.cpp">
+      <Filter>Source\Activity</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\AWSGameLift\Code\AWSGameLiftClient\Source\Activity\AWSGameLiftSearchSessionsActivity.cpp">
+      <Filter>Source\Activity</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\AWSGameLift\Code\AWSGameLiftClient\Source\AWSGameLiftClientManager.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\AWSGameLift\Code\AWSGameLiftClient\Source\AWSGameLiftClientSystemComponent.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\AWSGameLift\Code\AWSGameLiftClient\Source\Request\AWSGameLiftCreateSessionOnQueueRequest.cpp">
+      <Filter>Source\Request</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\AWSGameLift\Code\AWSGameLiftClient\Source\Request\AWSGameLiftCreateSessionRequest.cpp">
+      <Filter>Source\Request</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\AWSGameLift\Code\AWSGameLiftClient\Source\Request\AWSGameLiftJoinSessionRequest.cpp">
+      <Filter>Source\Request</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\AWSGameLift\Code\AWSGameLiftClient\Source\Request\AWSGameLiftSearchSessionsRequest.cpp">
+      <Filter>Source\Request</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\AWSGameLift\Code\AWSGameLiftClient\Include\Request\AWSGameLiftCreateSessionOnQueueRequest.h">
+      <Filter>Include\Request</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\AWSGameLift\Code\AWSGameLiftClient\Include\Request\AWSGameLiftCreateSessionRequest.h">
+      <Filter>Include\Request</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\AWSGameLift\Code\AWSGameLiftClient\Include\Request\AWSGameLiftJoinSessionRequest.h">
+      <Filter>Include\Request</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\AWSGameLift\Code\AWSGameLiftClient\Include\Request\AWSGameLiftSearchSessionsRequest.h">
+      <Filter>Include\Request</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\AWSGameLift\Code\AWSGameLiftClient\Include\Request\IAWSGameLiftRequests.h">
+      <Filter>Include\Request</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\AWSGameLift\Code\AWSGameLiftClient\Source\Activity\AWSGameLiftActivityUtils.h">
+      <Filter>Source\Activity</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\AWSGameLift\Code\AWSGameLiftClient\Source\Activity\AWSGameLiftCreateSessionActivity.h">
+      <Filter>Source\Activity</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\AWSGameLift\Code\AWSGameLiftClient\Source\Activity\AWSGameLiftCreateSessionOnQueueActivity.h">
+      <Filter>Source\Activity</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\AWSGameLift\Code\AWSGameLiftClient\Source\Activity\AWSGameLiftJoinSessionActivity.h">
+      <Filter>Source\Activity</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\AWSGameLift\Code\AWSGameLiftClient\Source\Activity\AWSGameLiftLeaveSessionActivity.h">
+      <Filter>Source\Activity</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\AWSGameLift\Code\AWSGameLiftClient\Source\Activity\AWSGameLiftSearchSessionsActivity.h">
+      <Filter>Source\Activity</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\AWSGameLift\Code\AWSGameLiftClient\Source\AWSGameLiftClientManager.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\AWSGameLift\Code\AWSGameLiftClient\Source\AWSGameLiftClientSystemComponent.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Gems\AWSGameLift\Code\AWSGameLiftClient\CMakeLists.txt">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="C:\Users\lesaelr\o3de\Gems\AWSGameLift\Code\AWSGameLiftClient\awsgamelift_client_files.cmake" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Generated Files">
+      <UniqueIdentifier>{FB9B7D8B-7F05-31D5-AA90-592248EDE1B3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include">
+      <UniqueIdentifier>{E188105A-C8C4-34BB-9809-15E8410EF7F8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\Request">
+      <UniqueIdentifier>{A36000B4-602A-30BC-94FF-A0D11558490C}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source">
+      <UniqueIdentifier>{F3F0AD47-5F83-373B-A2BF-650D2E4FA3EA}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Activity">
+      <UniqueIdentifier>{C5D15F69-7335-37D3-B7EA-EE5AF5336883}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Request">
+      <UniqueIdentifier>{17574F43-46F7-32FB-938C-935E9C03823B}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

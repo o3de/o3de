@@ -1,0 +1,578 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\EMotionFX-34d60ee3\Code\CMakeFiles\EMotionFX.Tests.dir\Unity\unity_13_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\EMotionFX-34d60ee3\Code\CMakeFiles\EMotionFX.Tests.dir\Unity\unity_12_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\EMotionFX-34d60ee3\Code\CMakeFiles\EMotionFX.Tests.dir\Unity\unity_11_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\EMotionFX-34d60ee3\Code\CMakeFiles\EMotionFX.Tests.dir\Unity\unity_10_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\EMotionFX-34d60ee3\Code\CMakeFiles\EMotionFX.Tests.dir\Unity\unity_9_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\EMotionFX-34d60ee3\Code\CMakeFiles\EMotionFX.Tests.dir\Unity\unity_8_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\EMotionFX-34d60ee3\Code\CMakeFiles\EMotionFX.Tests.dir\Unity\unity_7_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\EMotionFX-34d60ee3\Code\CMakeFiles\EMotionFX.Tests.dir\Unity\unity_6_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\EMotionFX-34d60ee3\Code\CMakeFiles\EMotionFX.Tests.dir\Unity\unity_5_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\EMotionFX-34d60ee3\Code\CMakeFiles\EMotionFX.Tests.dir\Unity\unity_4_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\EMotionFX-34d60ee3\Code\CMakeFiles\EMotionFX.Tests.dir\Unity\unity_3_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\EMotionFX-34d60ee3\Code\CMakeFiles\EMotionFX.Tests.dir\Unity\unity_2_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\EMotionFX-34d60ee3\Code\CMakeFiles\EMotionFX.Tests.dir\Unity\unity_1_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\EMotionFX-34d60ee3\Code\CMakeFiles\EMotionFX.Tests.dir\Unity\unity_0_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Tests\ActorBusTests.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Tests\ActorComponentBusTests.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Tests\ActorFixture.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Tests\ActorInstanceCommandTests.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Tests\AdditiveMotionSamplingTests.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Tests\AnimAudioComponentTests.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Tests\AnimGraphActionTests.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Tests\AnimGraphCommandTests.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Tests\AnimGraphActionCommandTests.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Tests\AnimGraphComponentBusTests.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Tests\AnimGraphNetworkingBusTests.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Tests\AnimGraphCopyPasteTests.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Tests\AnimGraphDeferredInitTests.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Tests\AnimGraphEventHandlerCounter.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Tests\AnimGraphEventTests.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Tests\AnimGraphFixture.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Tests\AnimGraphFuzzTests.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Tests\AnimGraphHubNodeTests.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Tests\AnimGraphLoadingTests.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Tests\AnimGraphMotionConditionTests.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Tests\AnimGraphMotionNodeTests.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Tests\AnimGraphNodeEventFilterTests.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Tests\AnimGraphNodeGroupTests.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Tests\AnimGraphNodeProcessingTests.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Tests\AnimGraphParameterActionTests.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Tests\AnimGraphParameterConditionCommandTests.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Tests\AnimGraphParameterConditionTests.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Tests\AnimGraphRefCountTests.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Tests\AnimGraphReferenceNodeTests.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Tests\AnimGraphStateMachineTests.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Tests\AnimGraphStateMachineInterruptionTests.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Tests\AnimGraphStateMachineSyncTests.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Tests\AnimGraphSyncTrackTests.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Tests\AnimGraphTagConditionTests.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Tests\AnimGraphTransitionCommandTests.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Tests\AnimGraphTransitionConditionCommandTests.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Tests\AnimGraphTransitionConditionFixture.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Tests\AnimGraphTransitionConditionTests.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Tests\AnimGraphTransitionFixture.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Tests\AnimGraphTransitionTests.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Tests\AnimGraphVector2ConditionTests.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Tests\AutoSkeletonLODTests.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Tests\BlendSpaceFixture.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Tests\BlendSpaceTests.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Tests\BlendTreeBlendNNodeTests.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Tests\BlendTreeFloatConstantNodeTests.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Tests\BlendTreeFloatConditionNodeTests.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Tests\BlendTreeFloatMath1NodeTests.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Tests\BlendTreeFootIKNodeTests.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Tests\BlendTreeMaskNodeTests.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Tests\BlendTreeMirrorPoseNodeTests.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Tests\BlendTreeMotionFrameNodeTests.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Tests\BlendTreeRagdollNodeTests.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Tests\BlendTreeRangeRemapperNodeTests.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Tests\BlendTreeRotationMath2NodeTests.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Tests\BlendTreeRotationLimitNodeTests.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Tests\BlendTreeSimulatedObjectNodeTests.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Tests\BlendTreeTransformNodeTests.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Tests\BlendTreeTwoLinkIKNodeTests.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Tests\BoolLogicNodeTests.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Tests\ColliderCommandTests.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Tests\EMotionFXTest.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Tests\EmotionFXMathLibTests.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Tests\EventManagerTests.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Tests\JackGraphFixture.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Tests\KeyTrackLinearTests.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Tests\LeaderFollowerVersionTests.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Tests\MCore\Array2DTests.cpp">
+      <Filter>Tests\MCore</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Tests\MCoreSystemFixture.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Tests\MorphTargetRuntimeTests.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Tests\MorphSkinAttachmentTests.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Tests\MotionEventCommandTests.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Tests\MotionEventTrackTests.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Tests\MotionExtractionTests.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Tests\MotionExtractionBusTests.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Tests\MotionInstanceTests.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Tests\MotionLayerSystemTests.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Tests\MultiThreadSchedulerTests.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Tests\PoseTests.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Tests\Printers.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Tests\QuaternionParameterTests.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Tests\RagdollCommandTests.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Tests\RandomMotionSelectionTests.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Tests\RenderBackendManagerTests.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Tests\SelectionListTests.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Tests\SimpleMotionComponentBusTests.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Tests\SimulatedObjectCommandTests.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Tests\SimulatedObjectSerializeTests.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Tests\SkeletalLODTests.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Tests\SkeletonNodeSearchTests.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Tests\SyncingSystemTests.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Tests\SystemComponentTests.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Tests\TransformUnitTests.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Tests\Vector2ToVector3CompatibilityTests.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Tests\Vector3ParameterTests.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Tests\PhysicsSetupUtils.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Tests\MCore\CommandManagerTests.cpp">
+      <Filter>Tests\MCore</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Tests\MCore\CommandLineTests.cpp">
+      <Filter>Tests\MCore</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Tests\TestAssetCode\MotionEvent.cpp">
+      <Filter>Tests\TestAssetCode</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Tests\TestAssetCode\TestActorAssets.cpp">
+      <Filter>Tests\TestAssetCode</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Tests\TestAssetCode\TestMotionAssets.cpp">
+      <Filter>Tests\TestAssetCode</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Tests\Integration\PoseComparisonTests.cpp">
+      <Filter>Tests\Integration</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Tests\Integration\EntityComponentFixture.cpp">
+      <Filter>Tests\Integration</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Tests\Integration\ActorComponentRagdollTests.cpp">
+      <Filter>Tests\Integration</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Tests\Integration\ActorComponentAttachmentTest.cpp">
+      <Filter>Tests\Integration</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Tests\Integration\Components\AnimGraph\CanApplyDefaultParameterValues.cpp">
+      <Filter>Tests\Integration\Components\AnimGraph</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Tests\Game\SamplePerformanceTests.cpp">
+      <Filter>Tests\Game</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Tests\Bugs\CanDeleteExitNodeAfterItHasBeenActive.cpp">
+      <Filter>Tests\Bugs</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Tests\AnimGraphParameterCommandsTests.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Tests\CommandAdjustSimulatedObjectTests.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Tests\SimulatedObjectSetupTests.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Source\Integration\System\AnimationModule.cpp">
+      <Filter>Source\Integration\System</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Tests\ActorFixture.h">
+      <Filter>Tests</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Tests\AnimGraphEventHandlerCounter.h">
+      <Filter>Tests</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Tests\AnimGraphFixture.h">
+      <Filter>Tests</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Tests\AnimGraphTransitionConditionFixture.h">
+      <Filter>Tests</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Tests\AnimGraphTransitionFixture.h">
+      <Filter>Tests</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Tests\BlendSpaceFixture.h">
+      <Filter>Tests</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Tests\JackGraphFixture.h">
+      <Filter>Tests</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Tests\MCoreSystemFixture.h">
+      <Filter>Tests</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Tests\SystemComponentFixture.h">
+      <Filter>Tests</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Tests\PhysicsSetupUtils.h">
+      <Filter>Tests</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Tests\Prefabs\LeftArmSkeleton.h">
+      <Filter>Tests\Prefabs</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Tests\TestAssetCode\MotionEvent.h">
+      <Filter>Tests\TestAssetCode</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Tests\TestAssetCode\TestActorAssets.h">
+      <Filter>Tests\TestAssetCode</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Tests\TestAssetCode\TestMotionAssets.h">
+      <Filter>Tests\TestAssetCode</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Tests\Mocks\Actor.h">
+      <Filter>Tests\Mocks</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Tests\Mocks\ActorManager.h">
+      <Filter>Tests\Mocks</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Tests\Mocks\AnimGraph.h">
+      <Filter>Tests\Mocks</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Tests\Mocks\AnimGraphInstance.h">
+      <Filter>Tests\Mocks</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Tests\Mocks\AnimGraphManager.h">
+      <Filter>Tests\Mocks</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Tests\Mocks\AnimGraphNode.h">
+      <Filter>Tests\Mocks</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Tests\Mocks\AnimGraphObject.h">
+      <Filter>Tests\Mocks</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Tests\Mocks\AnimGraphObjectData.h">
+      <Filter>Tests\Mocks</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Tests\Mocks\AnimGraphStateTransition.h">
+      <Filter>Tests\Mocks</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Tests\Mocks\BlendTreeParameterNode.h">
+      <Filter>Tests\Mocks</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Tests\Mocks\Command.h">
+      <Filter>Tests\Mocks</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Tests\Mocks\CommandManager.h">
+      <Filter>Tests\Mocks</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Tests\Mocks\CommandManagerCallback.h">
+      <Filter>Tests\Mocks</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Tests\Mocks\CommandSystemCommandManager.h">
+      <Filter>Tests\Mocks</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Tests\Mocks\EMotionFXManager.h">
+      <Filter>Tests\Mocks</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Tests\Mocks\GroupParameter.h">
+      <Filter>Tests\Mocks</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Tests\Mocks\Node.h">
+      <Filter>Tests\Mocks</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Tests\Mocks\ObjectAffectedByParameterChanges.h">
+      <Filter>Tests\Mocks</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Tests\Mocks\Parameter.h">
+      <Filter>Tests\Mocks</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Tests\Mocks\ParameterFactory.h">
+      <Filter>Tests\Mocks</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Tests\Mocks\PhysicsRagdoll.h">
+      <Filter>Tests\Mocks</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Tests\Mocks\SimulatedObject.h">
+      <Filter>Tests\Mocks</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Tests\Mocks\SimulatedObjectSetup.h">
+      <Filter>Tests\Mocks</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Tests\Mocks\Skeleton.h">
+      <Filter>Tests\Mocks</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Tests\Mocks\ValueParameter.h">
+      <Filter>Tests\Mocks</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Tests\Integration\PoseComparisonFixture.h">
+      <Filter>Tests\Integration</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Tests\Integration\EntityComponentFixture.h">
+      <Filter>Tests\Integration</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Tests\Game\SampleGameFixture.h">
+      <Filter>Tests\Game</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\CMakeFiles\08b24365a84bd27d080f6dd51f42b933\EMotionFX.Tests_(CONFIG).stamp.rule">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\CMakeLists.txt">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\emotionfx_tests_files.cmake" />
+    <None Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Source\Integration\System\emotionfx_module_files.cmake">
+      <Filter>Source\Integration\System</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\runtime_dependencies\debug\EMotionFX.Tests_debug.stamp">
+      <Filter>Generated Files</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\runtime_dependencies\profile\EMotionFX.Tests_profile.stamp">
+      <Filter>Generated Files</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\runtime_dependencies\release\EMotionFX.Tests_release.stamp">
+      <Filter>Generated Files</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Generated Files">
+      <UniqueIdentifier>{FB9B7D8B-7F05-31D5-AA90-592248EDE1B3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source">
+      <UniqueIdentifier>{F3F0AD47-5F83-373B-A2BF-650D2E4FA3EA}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Integration">
+      <UniqueIdentifier>{654CB93B-058D-3291-AF1E-27E1F8C8A0AE}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Integration\System">
+      <UniqueIdentifier>{9DD90D99-43AE-3B4B-8092-DDF213F3DA80}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Tests">
+      <UniqueIdentifier>{042E9197-689D-3636-8A35-28EBCAA2BD47}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Tests\Bugs">
+      <UniqueIdentifier>{E9C62CDA-9C39-3D5D-9520-57EE0409C797}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Tests\Game">
+      <UniqueIdentifier>{1F3F5670-3793-36C6-8005-566C8E6B1411}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Tests\Integration">
+      <UniqueIdentifier>{11EEA82F-D763-39D5-B1F1-71718A687147}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Tests\Integration\Components">
+      <UniqueIdentifier>{D7D76DE5-77D5-3E6C-B20F-B12C77E061DE}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Tests\Integration\Components\AnimGraph">
+      <UniqueIdentifier>{B25B66B0-B30B-35CC-B110-EB099819183F}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Tests\MCore">
+      <UniqueIdentifier>{CF783D3D-C92C-340A-8C1E-648AB4633563}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Tests\Mocks">
+      <UniqueIdentifier>{E09F4720-9FFA-37D7-A95F-ADA4F86E5FCC}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Tests\Prefabs">
+      <UniqueIdentifier>{A5ABFE48-D44E-3AD0-AC29-3D1584EC7F86}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Tests\TestAssetCode">
+      <UniqueIdentifier>{5956DB45-6A3E-3C93-B8A4-120E2FCC141E}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

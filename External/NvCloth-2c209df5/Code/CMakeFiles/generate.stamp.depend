@@ -1,0 +1,12 @@
+# CMake generation dependency list for this directory.
+C:/Users/lesaelr/.o3de/3rdParty/packages/NvCloth-v1.1.6-4-gd243404-pr58-rev1-windows/FindNvCloth.cmake
+C:/Users/lesaelr/.o3de/3rdParty/packages/NvCloth-v1.1.6-4-gd243404-pr58-rev1-windows/PackageInfo.json
+C:/Users/lesaelr/o3de/Gems/NvCloth/Code/CMakeLists.txt
+C:/Users/lesaelr/o3de/Gems/NvCloth/Code/Platform/Windows/PAL_windows.cmake
+C:/Users/lesaelr/o3de/Gems/NvCloth/Code/nvcloth_editor_files.cmake
+C:/Users/lesaelr/o3de/Gems/NvCloth/Code/nvcloth_editor_shared_files.cmake
+C:/Users/lesaelr/o3de/Gems/NvCloth/Code/nvcloth_editor_tests_files.cmake
+C:/Users/lesaelr/o3de/Gems/NvCloth/Code/nvcloth_files.cmake
+C:/Users/lesaelr/o3de/Gems/NvCloth/Code/nvcloth_shared_files.cmake
+C:/Users/lesaelr/o3de/Gems/NvCloth/Code/nvcloth_tests_files.cmake
+C:/Users/lesaelr/o3de/cmake/Platform/Windows/LYTestWrappers_windows.cmake

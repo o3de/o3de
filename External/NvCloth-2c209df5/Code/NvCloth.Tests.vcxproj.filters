@@ -1,0 +1,119 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\NvCloth-2c209df5\Code\CMakeFiles\NvCloth.Tests.dir\Unity\unity_2_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\NvCloth-2c209df5\Code\CMakeFiles\NvCloth.Tests.dir\Unity\unity_1_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\NvCloth-2c209df5\Code\CMakeFiles\NvCloth.Tests.dir\Unity\unity_0_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\NvCloth\Code\Tests\NvClothTestEnvironment.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\NvCloth\Code\Tests\NvClothTest.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\NvCloth\Code\Tests\UnitTestHelper.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\NvCloth\Code\Tests\ActorHelper.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\NvCloth\Code\Tests\TriangleInputHelper.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\NvCloth\Code\Tests\System\ClothSystemTest.cpp">
+      <Filter>Tests\System</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\NvCloth\Code\Tests\System\ClothTest.cpp">
+      <Filter>Tests\System</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\NvCloth\Code\Tests\System\FabricCookerTest.cpp">
+      <Filter>Tests\System</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\NvCloth\Code\Tests\System\FactoryTest.cpp">
+      <Filter>Tests\System</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\NvCloth\Code\Tests\System\SolverTest.cpp">
+      <Filter>Tests\System</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\NvCloth\Code\Tests\System\NvTypesTest.cpp">
+      <Filter>Tests\System</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\NvCloth\Code\Tests\System\TangentSpaceHelperTest.cpp">
+      <Filter>Tests\System</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\NvCloth\Code\Tests\Components\ClothComponentTest.cpp">
+      <Filter>Tests\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\NvCloth\Code\Tests\Components\ClothComponentMesh\ClothComponentMeshTest.cpp">
+      <Filter>Tests\Components\ClothComponentMesh</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\NvCloth\Code\Tests\Components\ClothComponentMesh\ActorClothCollidersTest.cpp">
+      <Filter>Tests\Components\ClothComponentMesh</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\NvCloth\Code\Tests\Components\ClothComponentMesh\ActorClothSkinningTest.cpp">
+      <Filter>Tests\Components\ClothComponentMesh</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\NvCloth\Code\Tests\Components\ClothComponentMesh\ClothConstraintsTest.cpp">
+      <Filter>Tests\Components\ClothComponentMesh</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\NvCloth\Code\Tests\Utils\ActorAssetHelperTest.cpp">
+      <Filter>Tests\Utils</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\NvCloth\Code\Tests\UnitTestHelper.h">
+      <Filter>Tests</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\NvCloth\Code\Tests\ActorHelper.h">
+      <Filter>Tests</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\NvCloth\Code\Tests\TriangleInputHelper.h">
+      <Filter>Tests</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\CMakeFiles\08b24365a84bd27d080f6dd51f42b933\NvCloth.Tests_(CONFIG).stamp.rule">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Gems\NvCloth\Code\CMakeLists.txt">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="C:\Users\lesaelr\o3de\Gems\NvCloth\Code\nvcloth_tests_files.cmake" />
+    <None Include="C:\Users\lesaelr\o3de\runtime_dependencies\debug\NvCloth.Tests_debug.stamp">
+      <Filter>Generated Files</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\runtime_dependencies\profile\NvCloth.Tests_profile.stamp">
+      <Filter>Generated Files</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\runtime_dependencies\release\NvCloth.Tests_release.stamp">
+      <Filter>Generated Files</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Generated Files">
+      <UniqueIdentifier>{FB9B7D8B-7F05-31D5-AA90-592248EDE1B3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Tests">
+      <UniqueIdentifier>{042E9197-689D-3636-8A35-28EBCAA2BD47}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Tests\Components">
+      <UniqueIdentifier>{B6130DE7-A69C-39D8-8230-04E004B98351}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Tests\Components\ClothComponentMesh">
+      <UniqueIdentifier>{82ED1E5D-53AB-3F50-98E4-246E93A74BD4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Tests\System">
+      <UniqueIdentifier>{25A31E4B-AF95-345F-A14E-6FE516463389}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Tests\Utils">
+      <UniqueIdentifier>{3EE717D5-2A0A-3234-9FA0-AB6F49EB7013}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

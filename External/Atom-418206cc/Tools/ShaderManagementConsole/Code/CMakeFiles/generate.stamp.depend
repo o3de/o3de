@@ -1,0 +1,9 @@
+# CMake generation dependency list for this directory.
+C:/Users/lesaelr/o3de/Gems/Atom/Tools/ShaderManagementConsole/Code/CMakeLists.txt
+C:/Users/lesaelr/o3de/Gems/Atom/Tools/ShaderManagementConsole/Code/Source/Platform/Windows/PAL_windows.cmake
+C:/Users/lesaelr/o3de/Gems/Atom/Tools/ShaderManagementConsole/Code/Source/Platform/Windows/platform_windows_files.cmake
+C:/Users/lesaelr/o3de/Gems/Atom/Tools/ShaderManagementConsole/Code/Source/Platform/Windows/tool_dependencies_windows.cmake
+C:/Users/lesaelr/o3de/Gems/Atom/Tools/ShaderManagementConsole/Code/Source/Window/ShaderManagementConsole.qrc
+C:/Users/lesaelr/o3de/Gems/Atom/Tools/ShaderManagementConsole/Code/shadermanagementconsole_files.cmake
+C:/Users/lesaelr/o3de/Gems/Atom/Tools/ShaderManagementConsole/Code/shadermanagementconsoledocument_files.cmake
+C:/Users/lesaelr/o3de/Gems/Atom/Tools/ShaderManagementConsole/Code/shadermanagementconsolewindow_files.cmake

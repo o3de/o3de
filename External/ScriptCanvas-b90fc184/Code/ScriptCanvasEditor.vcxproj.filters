@@ -1,0 +1,65 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\ScriptCanvasEditor_autogen\mocs_compilation_debug.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\CMakeFiles\ScriptCanvasEditor.dir\Unity\unity_0_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\Static\Source\View\EditCtrls\GenericLineEditCtrl.cpp">
+      <Filter>Editor\Static\Source\View\EditCtrls</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\ScriptCanvasEditor_autogen\mocs_compilation_profile.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\ScriptCanvasEditor_autogen\mocs_compilation_release.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\Static\Include\ScriptCanvas\View\EditCtrls\GenericLineEditCtrl.h">
+      <Filter>Editor\Static\Include\ScriptCanvas\View\EditCtrls</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\CMakeLists.txt">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\scriptcanvasgem_editor_static_files.cmake" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Editor">
+      <UniqueIdentifier>{AB7AD22B-4C45-3CDD-8A3C-7A5D74862736}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Editor\Static">
+      <UniqueIdentifier>{22F4FAFC-87EC-3F3F-937F-5E425AC0754A}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Editor\Static\Include">
+      <UniqueIdentifier>{CE007EA9-0294-3D5A-AB38-A8E09D953070}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Editor\Static\Include\ScriptCanvas">
+      <UniqueIdentifier>{5BECEB49-1A2A-357A-B465-42756D3DA316}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Editor\Static\Include\ScriptCanvas\View">
+      <UniqueIdentifier>{5FD4A006-6706-39F7-8550-219C7C6FF495}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Editor\Static\Include\ScriptCanvas\View\EditCtrls">
+      <UniqueIdentifier>{87FD2EE3-1E1D-357C-83DF-25B4422DA874}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Editor\Static\Source">
+      <UniqueIdentifier>{65652824-6FAA-32F0-92A2-0AF489277F97}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Editor\Static\Source\View">
+      <UniqueIdentifier>{7FB268A8-993B-3FB5-A86F-BC9DEFB5B652}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Editor\Static\Source\View\EditCtrls">
+      <UniqueIdentifier>{F311FFB1-BF05-328F-B835-BD6FBFAA1A71}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Generated Files">
+      <UniqueIdentifier>{FB9B7D8B-7F05-31D5-AA90-592248EDE1B3}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

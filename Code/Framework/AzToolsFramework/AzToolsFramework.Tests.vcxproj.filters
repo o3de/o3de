@@ -1,0 +1,442 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework.Tests_autogen\mocs_compilation_debug.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\CMakeFiles\AzToolsFramework.Tests.dir\Unity\unity_11_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\CMakeFiles\AzToolsFramework.Tests.dir\Unity\unity_10_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\CMakeFiles\AzToolsFramework.Tests.dir\Unity\unity_9_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\CMakeFiles\AzToolsFramework.Tests.dir\Unity\unity_8_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\CMakeFiles\AzToolsFramework.Tests.dir\Unity\unity_7_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\CMakeFiles\AzToolsFramework.Tests.dir\Unity\unity_6_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\CMakeFiles\AzToolsFramework.Tests.dir\Unity\unity_5_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\CMakeFiles\AzToolsFramework.Tests.dir\Unity\unity_4_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\CMakeFiles\AzToolsFramework.Tests.dir\Unity\unity_3_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\CMakeFiles\AzToolsFramework.Tests.dir\Unity\unity_2_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\CMakeFiles\AzToolsFramework.Tests.dir\Unity\unity_1_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\CMakeFiles\AzToolsFramework.Tests.dir\Unity\unity_0_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\Tests\Main.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\Tests\ArchiveTests.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\Tests\AssetFileInfoListComparison.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\Tests\AssetSeedManager.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\Tests\ComponentAdapterTests.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\Tests\ComponentAddRemove.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\Tests\ComponentModeTestDoubles.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\Tests\ComponentModeTestFixture.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\Tests\ComponentModeTests.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\Tests\EditorTransformComponentSelectionTests.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\Tests\EditorVertexSelectionTests.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\Tests\Entity\EditorEntityContextComponentTests.cpp">
+      <Filter>Tests\Entity</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\Tests\Entity\EditorEntityHelpersTests.cpp">
+      <Filter>Tests\Entity</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\Tests\Entity\EditorEntitySearchComponentTests.cpp">
+      <Filter>Tests\Entity</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\Tests\Entity\EditorEntitySelectionTests.cpp">
+      <Filter>Tests\Entity</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\Tests\EntityIdQLabelTests.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\Tests\EntityInspectorTests.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\Tests\EntityOwnershipService\EntityOwnershipServiceTestFixture.cpp">
+      <Filter>Tests\EntityOwnershipService</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\Tests\EntityOwnershipService\SliceEditorEntityOwnershipTests.cpp">
+      <Filter>Tests\EntityOwnershipService</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\Tests\EntityOwnershipService\SliceEntityOwnershipTests.cpp">
+      <Filter>Tests\EntityOwnershipService</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\Tests\FileFunc.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\Tests\FingerprintingTests.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\Tests\GenericComponentWrapperTest.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\Tests\InstanceDataHierarchy.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\Tests\LogLines.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\Tests\ManipulatorBoundsTests.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\Tests\ManipulatorCoreTests.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\Tests\ManipulatorViewTests.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\Tests\PerforceComponentTests.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\Tests\PlatformAddressedAssetCatalogTests.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\Tests\Prefab\Benchmark\PrefabBenchmarkFixture.cpp">
+      <Filter>Tests\Prefab\Benchmark</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\Tests\Prefab\Benchmark\PrefabCreateBenchmarks.cpp">
+      <Filter>Tests\Prefab\Benchmark</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\Tests\Prefab\Benchmark\PrefabInstantiateBenchmarks.cpp">
+      <Filter>Tests\Prefab\Benchmark</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\Tests\Prefab\Benchmark\PrefabLoadBenchmarks.cpp">
+      <Filter>Tests\Prefab\Benchmark</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\Tests\Prefab\Benchmark\PrefabUpdateInstancesBenchmarks.cpp">
+      <Filter>Tests\Prefab\Benchmark</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\Tests\Prefab\Benchmark\SpawnableCreateBenchmarks.cpp">
+      <Filter>Tests\Prefab\Benchmark</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\Tests\Prefab\MockPrefabFileIOActionValidator.cpp">
+      <Filter>Tests\Prefab</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\Tests\Prefab\PrefabDuplicateTests.cpp">
+      <Filter>Tests\Prefab</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\Tests\Prefab\PrefabEntityAliasTests.cpp">
+      <Filter>Tests\Prefab</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\Tests\Prefab\PrefabInstanceToTemplatePropagatorTests.cpp">
+      <Filter>Tests\Prefab</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\Tests\Prefab\PrefabInstantiateTests.cpp">
+      <Filter>Tests\Prefab</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\Tests\Prefab\PrefabLoadTemplateTests.cpp">
+      <Filter>Tests\Prefab</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\Tests\Prefab\PrefabTestComponent.cpp">
+      <Filter>Tests\Prefab</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\Tests\Prefab\PrefabTestData.cpp">
+      <Filter>Tests\Prefab</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\Tests\Prefab\PrefabTestDataUtils.cpp">
+      <Filter>Tests\Prefab</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\Tests\Prefab\PrefabTestDomUtils.cpp">
+      <Filter>Tests\Prefab</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\Tests\Prefab\PrefabTestFixture.cpp">
+      <Filter>Tests\Prefab</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\Tests\Prefab\PrefabTestUndoFixture.cpp">
+      <Filter>Tests\Prefab</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\Tests\Prefab\PrefabUndoLinkTests.cpp">
+      <Filter>Tests\Prefab</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\Tests\Prefab\PrefabUndoTests.cpp">
+      <Filter>Tests\Prefab</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\Tests\Prefab\PrefabUpdateInstancesTests.cpp">
+      <Filter>Tests\Prefab</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\Tests\Prefab\PrefabUpdateTemplateTests.cpp">
+      <Filter>Tests\Prefab</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\Tests\Prefab\PrefabUpdateWithPatchesTests.cpp">
+      <Filter>Tests\Prefab</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\Tests\Prefab\Spawnable\SpawnableMetaDataTests.cpp">
+      <Filter>Tests\Prefab\Spawnable</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\Tests\Prefab\SpawnableCreateTests.cpp">
+      <Filter>Tests\Prefab</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\Tests\Prefab\SpawnableRemoveEditorInfoTestFixture.cpp">
+      <Filter>Tests\Prefab</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\Tests\Prefab\SpawnableRemoveEditorInfoTests.cpp">
+      <Filter>Tests\Prefab</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\Tests\Prefab\SpawnableSortEntitiesTestFixture.cpp">
+      <Filter>Tests\Prefab</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\Tests\Prefab\SpawnableSortEntitiesTests.cpp">
+      <Filter>Tests\Prefab</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\Tests\PropertyIntSliderCtrlTests.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\Tests\PropertyIntSpinCtrlTests.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\Tests\PropertyTreeEditorTests.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\Tests\PythonBindingTests.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\Tests\QtWidgetLimitsTests.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\Tests\Script\ScriptComponentTests.cpp">
+      <Filter>Tests\Script</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\Tests\Script\ScriptEntityTests.cpp">
+      <Filter>Tests\Script</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\Tests\Slice.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\Tests\Slices.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\Tests\SliceStabilityTests\SliceStabilityCreateTests.cpp">
+      <Filter>Tests\SliceStabilityTests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\Tests\SliceStabilityTests\SliceStabilityPushTests.cpp">
+      <Filter>Tests\SliceStabilityTests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\Tests\SliceStabilityTests\SliceStabilityReParentTests.cpp">
+      <Filter>Tests\SliceStabilityTests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\Tests\SliceStabilityTests\SliceStabilityTestFramework.cpp">
+      <Filter>Tests\SliceStabilityTests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\Tests\SliceUpgradeTests.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\Tests\SpinBoxTests.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\Tests\SQLiteConnectionTests.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\Tests\ThumbnailerTests.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\Tests\ToolsComponents\EditorLayerComponentTests.cpp">
+      <Filter>Tests\ToolsComponents</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\Tests\ToolsComponents\EditorTransformComponentTests.cpp">
+      <Filter>Tests\ToolsComponents</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\Tests\TransformComponent.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\Tests\UI\EntityPropertyEditorTests.cpp">
+      <Filter>Tests\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\Tests\UndoStack.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\Tests\Viewport\ClusterTests.cpp">
+      <Filter>Tests\Viewport</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\Tests\Viewport\ViewportEditorModeTests.cpp">
+      <Filter>Tests\Viewport</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\Tests\Viewport\ViewportScreenTests.cpp">
+      <Filter>Tests\Viewport</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\Tests\Viewport\ViewportUiClusterTests.cpp">
+      <Filter>Tests\Viewport</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\Tests\Viewport\ViewportUiDisplayTests.cpp">
+      <Filter>Tests\Viewport</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\Tests\Viewport\ViewportUiManagerTests.cpp">
+      <Filter>Tests\Viewport</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\Tests\Viewport\ViewportUiWidgetManagerTests.cpp">
+      <Filter>Tests\Viewport</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\Tests\Visibility\EditorVisibilityTests.cpp">
+      <Filter>Tests\Visibility</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework.Tests_autogen\mocs_compilation_profile.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework.Tests_autogen\mocs_compilation_release.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\Tests\AssetSystemMocks.h">
+      <Filter>Tests</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\Tests\ComponentModeTestDoubles.h">
+      <Filter>Tests</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\Tests\ComponentModeTestFixture.h">
+      <Filter>Tests</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\Tests\EntityOwnershipService\EntityOwnershipServiceTestFixture.h">
+      <Filter>Tests\EntityOwnershipService</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\Tests\EntityTestbed.h">
+      <Filter>Tests</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\Tests\IntegerPrimtitiveTestConfig.h">
+      <Filter>Tests</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\Tests\Prefab\Benchmark\PrefabBenchmarkFixture.h">
+      <Filter>Tests\Prefab\Benchmark</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\Tests\Prefab\MockPrefabFileIOActionValidator.h">
+      <Filter>Tests\Prefab</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\Tests\Prefab\PrefabTestComponent.h">
+      <Filter>Tests\Prefab</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\Tests\Prefab\PrefabTestData.h">
+      <Filter>Tests\Prefab</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\Tests\Prefab\PrefabTestDataUtils.h">
+      <Filter>Tests\Prefab</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\Tests\Prefab\PrefabTestDomUtils.h">
+      <Filter>Tests\Prefab</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\Tests\Prefab\PrefabTestFixture.h">
+      <Filter>Tests\Prefab</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\Tests\Prefab\PrefabTestUndoFixture.h">
+      <Filter>Tests\Prefab</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\Tests\Prefab\PrefabTestUtils.h">
+      <Filter>Tests\Prefab</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\Tests\Prefab\SpawnableRemoveEditorInfoTestFixture.h">
+      <Filter>Tests\Prefab</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\Tests\Prefab\SpawnableSortEntitiesTestFixture.h">
+      <Filter>Tests\Prefab</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\Tests\PropertyIntCtrlCommonTests.h">
+      <Filter>Tests</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\Tests\SliceStabilityTests\SliceStabilityTestFramework.h">
+      <Filter>Tests\SliceStabilityTests</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\Tests\SliceUpgradeTestsData.h">
+      <Filter>Tests</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\CMakeFiles\08b24365a84bd27d080f6dd51f42b933\AzToolsFramework.Tests_(CONFIG).stamp.rule">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\CMakeLists.txt">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\Tests\aztoolsframeworktests_files.cmake">
+      <Filter>Tests</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\runtime_dependencies\debug\AzToolsFramework.Tests_debug.stamp">
+      <Filter>Generated Files</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\runtime_dependencies\profile\AzToolsFramework.Tests_profile.stamp">
+      <Filter>Generated Files</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\runtime_dependencies\release\AzToolsFramework.Tests_release.stamp">
+      <Filter>Generated Files</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Generated Files">
+      <UniqueIdentifier>{FB9B7D8B-7F05-31D5-AA90-592248EDE1B3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Tests">
+      <UniqueIdentifier>{042E9197-689D-3636-8A35-28EBCAA2BD47}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Tests\Entity">
+      <UniqueIdentifier>{CB54A7DB-C709-31C0-BBFA-8E552CF46374}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Tests\EntityOwnershipService">
+      <UniqueIdentifier>{E54F624B-7B34-3484-89DF-25E4D4885D84}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Tests\Prefab">
+      <UniqueIdentifier>{050A4A2E-F5B3-3E68-9C35-86677440330D}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Tests\Prefab\Benchmark">
+      <UniqueIdentifier>{08671487-2B43-3BDC-B0E5-CF39639140B7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Tests\Prefab\Spawnable">
+      <UniqueIdentifier>{5118A3E1-3CBD-354C-9C93-CB17589BC52E}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Tests\Script">
+      <UniqueIdentifier>{68E3C3EC-D52C-3E89-9596-6A97916556D5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Tests\SliceStabilityTests">
+      <UniqueIdentifier>{BD1BE6E4-91AD-3975-89FB-32323AD0AAAC}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Tests\ToolsComponents">
+      <UniqueIdentifier>{C563F53A-3E7F-3FA4-B33A-2D0AB35CFED3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Tests\UI">
+      <UniqueIdentifier>{A562CAA1-EE94-3B8B-B665-36CF20FB21D0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Tests\Viewport">
+      <UniqueIdentifier>{6F862242-A88A-3AA9-8263-8319DD1BD82F}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Tests\Visibility">
+      <UniqueIdentifier>{00A06A5F-E20C-332E-BDF6-1D3284656962}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

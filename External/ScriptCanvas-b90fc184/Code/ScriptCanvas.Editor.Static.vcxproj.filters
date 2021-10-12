@@ -1,0 +1,1099 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\ScriptCanvas.Editor.Static_autogen\mocs_compilation_debug.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\CMakeFiles\ScriptCanvas.Editor.Static.dir\Unity\unity_12_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\CMakeFiles\ScriptCanvas.Editor.Static.dir\Unity\unity_11_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\CMakeFiles\ScriptCanvas.Editor.Static.dir\Unity\unity_10_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\CMakeFiles\ScriptCanvas.Editor.Static.dir\Unity\unity_9_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\CMakeFiles\ScriptCanvas.Editor.Static.dir\Unity\unity_8_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\CMakeFiles\ScriptCanvas.Editor.Static.dir\Unity\unity_7_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\CMakeFiles\ScriptCanvas.Editor.Static.dir\Unity\unity_6_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\CMakeFiles\ScriptCanvas.Editor.Static.dir\Unity\unity_5_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\CMakeFiles\ScriptCanvas.Editor.Static.dir\Unity\unity_4_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\CMakeFiles\ScriptCanvas.Editor.Static.dir\Unity\unity_3_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\CMakeFiles\ScriptCanvas.Editor.Static.dir\Unity\unity_2_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\CMakeFiles\ScriptCanvas.Editor.Static.dir\Unity\unity_1_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\CMakeFiles\ScriptCanvas.Editor.Static.dir\Unity\unity_0_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\ScriptCanvasEditorGem.cpp">
+      <Filter>Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\Settings.cpp">
+      <Filter>Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\ReflectComponent.cpp">
+      <Filter>Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\SystemComponent.cpp">
+      <Filter>Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\Assets\ScriptCanvasAssetTracker.cpp">
+      <Filter>Editor\Assets</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\Assets\ScriptCanvasAssetHelpers.cpp">
+      <Filter>Editor\Assets</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\Include\ScriptCanvas\Assets\ScriptCanvasBaseAssetData.cpp">
+      <Filter>Editor\Include\ScriptCanvas\Assets</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\Assets\ScriptCanvasAsset.cpp">
+      <Filter>Editor\Assets</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\Assets\ScriptCanvasAssetHandler.cpp">
+      <Filter>Editor\Assets</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\Assets\ScriptCanvasAssetHolder.cpp">
+      <Filter>Editor\Assets</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\Assets\ScriptCanvasMemoryAsset.cpp">
+      <Filter>Editor\Assets</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\Assets\ScriptCanvasUndoHelper.cpp">
+      <Filter>Editor\Assets</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\Components\EditorGraph.cpp">
+      <Filter>Editor\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\Components\EditorUtils.cpp">
+      <Filter>Editor\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\Components\GraphUpgrade.cpp">
+      <Filter>Editor\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\Components\EditorGraphVariableManagerComponent.cpp">
+      <Filter>Editor\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\Components\EditorScriptCanvasComponent.cpp">
+      <Filter>Editor\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\Components\IconComponent.cpp">
+      <Filter>Editor\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\GraphCanvas\Components\DynamicOrderingDynamicSlotComponent.cpp">
+      <Filter>Editor\GraphCanvas\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\GraphCanvas\Components\DynamicSlotComponent.cpp">
+      <Filter>Editor\GraphCanvas\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\GraphCanvas\Components\MappingComponent.cpp">
+      <Filter>Editor\GraphCanvas\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\GraphCanvas\Components\NodeDescriptors\ClassMethodNodeDescriptorComponent.cpp">
+      <Filter>Editor\GraphCanvas\Components\NodeDescriptors</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\GraphCanvas\Components\NodeDescriptors\AzEventHandlerNodeDescriptorComponent.cpp">
+      <Filter>Editor\GraphCanvas\Components\NodeDescriptors</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\GraphCanvas\Components\NodeDescriptors\EBusHandlerEventNodeDescriptorComponent.cpp">
+      <Filter>Editor\GraphCanvas\Components\NodeDescriptors</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\GraphCanvas\Components\NodeDescriptors\EBusHandlerNodeDescriptorComponent.cpp">
+      <Filter>Editor\GraphCanvas\Components\NodeDescriptors</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\GraphCanvas\Components\NodeDescriptors\EBusSenderNodeDescriptorComponent.cpp">
+      <Filter>Editor\GraphCanvas\Components\NodeDescriptors</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\GraphCanvas\Components\NodeDescriptors\FunctionNodeDescriptorComponent.cpp">
+      <Filter>Editor\GraphCanvas\Components\NodeDescriptors</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\GraphCanvas\Components\NodeDescriptors\FunctionDefinitionNodeDescriptorComponent.cpp">
+      <Filter>Editor\GraphCanvas\Components\NodeDescriptors</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\GraphCanvas\Components\NodeDescriptors\GetVariableNodeDescriptorComponent.cpp">
+      <Filter>Editor\GraphCanvas\Components\NodeDescriptors</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\GraphCanvas\Components\NodeDescriptors\NodeDescriptorComponent.cpp">
+      <Filter>Editor\GraphCanvas\Components\NodeDescriptors</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\GraphCanvas\Components\NodeDescriptors\NodelingDescriptorComponent.cpp">
+      <Filter>Editor\GraphCanvas\Components\NodeDescriptors</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\GraphCanvas\Components\NodeDescriptors\SetVariableNodeDescriptorComponent.cpp">
+      <Filter>Editor\GraphCanvas\Components\NodeDescriptors</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\GraphCanvas\Components\NodeDescriptors\UserDefinedNodeDescriptorComponent.cpp">
+      <Filter>Editor\GraphCanvas\Components\NodeDescriptors</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\GraphCanvas\Components\NodeDescriptors\VariableNodeDescriptorComponent.cpp">
+      <Filter>Editor\GraphCanvas\Components\NodeDescriptors</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\GraphCanvas\Components\NodeDescriptors\ScriptEventReceiverEventNodeDescriptorComponent.cpp">
+      <Filter>Editor\GraphCanvas\Components\NodeDescriptors</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\GraphCanvas\Components\NodeDescriptors\ScriptEventReceiverNodeDescriptorComponent.cpp">
+      <Filter>Editor\GraphCanvas\Components\NodeDescriptors</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\GraphCanvas\Components\NodeDescriptors\ScriptEventSenderNodeDescriptorComponent.cpp">
+      <Filter>Editor\GraphCanvas\Components\NodeDescriptors</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\Model\EntityMimeDataHandler.cpp">
+      <Filter>Editor\Model</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\Model\LibraryDataModel.cpp">
+      <Filter>Editor\Model</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\Model\UnitTestBrowserFilterModel.cpp">
+      <Filter>Editor\Model</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\Nodes\NodeCreateUtils.cpp">
+      <Filter>Editor\Nodes</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\Nodes\NodeDisplayUtils.cpp">
+      <Filter>Editor\Nodes</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\Nodes\NodeUtils.cpp">
+      <Filter>Editor\Nodes</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\Undo\ScriptCanvasGraphCommand.cpp">
+      <Filter>Editor\Undo</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\Undo\ScriptCanvasUndoManager.cpp">
+      <Filter>Editor\Undo</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\Utilities\Command.cpp">
+      <Filter>Editor\Utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\Utilities\CommonSettingsConfigurations.cpp">
+      <Filter>Editor\Utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\Utilities\RecentFiles.cpp">
+      <Filter>Editor\Utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\Utilities\RecentAssetPath.cpp">
+      <Filter>Editor\Utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\View\Dialogs\NewGraphDialog.cpp">
+      <Filter>Editor\View\Dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\View\Dialogs\SettingsDialog.cpp">
+      <Filter>Editor\View\Dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\View\Dialogs\UnsavedChangesDialog.cpp">
+      <Filter>Editor\View\Dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\View\Dialogs\ContainerWizard\ContainerTypeLineEdit.cpp">
+      <Filter>Editor\View\Dialogs\ContainerWizard</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\View\Dialogs\ContainerWizard\ContainerWizard.cpp">
+      <Filter>Editor\View\Dialogs\ContainerWizard</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\View\Widgets\CanvasWidget.cpp">
+      <Filter>Editor\View\Widgets</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\View\Widgets\GraphTabBar.cpp">
+      <Filter>Editor\View\Widgets</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\View\Widgets\PropertyGrid.cpp">
+      <Filter>Editor\View\Widgets</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\View\Widgets\PropertyGridContextMenu.cpp">
+      <Filter>Editor\View\Widgets</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\View\Widgets\CommandLine.cpp">
+      <Filter>Editor\View\Widgets</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\View\Widgets\LogPanel.cpp">
+      <Filter>Editor\View\Widgets</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\View\Widgets\MainWindowStatusWidget.cpp">
+      <Filter>Editor\View\Widgets</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\View\Widgets\ScriptCanvasNodePaletteDockWidget.cpp">
+      <Filter>Editor\View\Widgets</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\View\Widgets\DataTypePalette\DataTypePaletteModel.cpp">
+      <Filter>Editor\View\Widgets\DataTypePalette</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\View\Widgets\NodePalette\CreateNodeMimeEvent.cpp">
+      <Filter>Editor\View\Widgets\NodePalette</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\View\Widgets\NodePalette\FunctionNodePaletteTreeItemTypes.cpp">
+      <Filter>Editor\View\Widgets\NodePalette</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\View\Widgets\NodePalette\ScriptEventsNodePaletteTreeItemTypes.cpp">
+      <Filter>Editor\View\Widgets\NodePalette</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\View\Widgets\NodePalette\EBusNodePaletteTreeItemTypes.cpp">
+      <Filter>Editor\View\Widgets\NodePalette</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\View\Widgets\NodePalette\GeneralNodePaletteTreeItemTypes.cpp">
+      <Filter>Editor\View\Widgets\NodePalette</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\View\Widgets\NodePalette\NodePaletteModel.cpp">
+      <Filter>Editor\View\Widgets\NodePalette</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\View\Widgets\NodePalette\SpecializedNodePaletteTreeItemTypes.cpp">
+      <Filter>Editor\View\Widgets\NodePalette</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\View\Widgets\NodePalette\VariableNodePaletteTreeItemTypes.cpp">
+      <Filter>Editor\View\Widgets\NodePalette</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\View\Widgets\LoggingPanel\LoggingDataAggregator.cpp">
+      <Filter>Editor\View\Widgets\LoggingPanel</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\View\Widgets\LoggingPanel\LoggingTypes.cpp">
+      <Filter>Editor\View\Widgets\LoggingPanel</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\View\Widgets\LoggingPanel\LoggingWindow.cpp">
+      <Filter>Editor\View\Widgets\LoggingPanel</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\View\Widgets\LoggingPanel\LoggingWindowSession.cpp">
+      <Filter>Editor\View\Widgets\LoggingPanel</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\View\Widgets\LoggingPanel\LoggingWindowTreeItems.cpp">
+      <Filter>Editor\View\Widgets\LoggingPanel</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\View\Widgets\LoggingPanel\LiveWindowSession\LiveLoggingDataAggregator.cpp">
+      <Filter>Editor\View\Widgets\LoggingPanel\LiveWindowSession</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\View\Widgets\LoggingPanel\LiveWindowSession\LiveLoggingWindowSession.cpp">
+      <Filter>Editor\View\Widgets\LoggingPanel\LiveWindowSession</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\View\Widgets\LoggingPanel\AssetWindowSession\LoggingAssetDataAggregator.cpp">
+      <Filter>Editor\View\Widgets\LoggingPanel\AssetWindowSession</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\View\Widgets\LoggingPanel\AssetWindowSession\LoggingAssetWindowSession.cpp">
+      <Filter>Editor\View\Widgets\LoggingPanel\AssetWindowSession</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\View\Widgets\LoggingPanel\PivotTree\PivotTreeWidget.cpp">
+      <Filter>Editor\View\Widgets\LoggingPanel\PivotTree</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\View\Widgets\LoggingPanel\PivotTree\EntityPivotTree\EntityPivotTree.cpp">
+      <Filter>Editor\View\Widgets\LoggingPanel\PivotTree\EntityPivotTree</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\View\Widgets\LoggingPanel\PivotTree\GraphPivotTree\GraphPivotTree.cpp">
+      <Filter>Editor\View\Widgets\LoggingPanel\PivotTree\GraphPivotTree</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\View\Widgets\ValidationPanel\GraphValidationDockWidget.cpp">
+      <Filter>Editor\View\Widgets\ValidationPanel</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\View\Widgets\StatisticsDialog\ScriptCanvasStatisticsDialog.cpp">
+      <Filter>Editor\View\Widgets\StatisticsDialog</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\View\Widgets\StatisticsDialog\NodeUsageTreeItem.cpp">
+      <Filter>Editor\View\Widgets\StatisticsDialog</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\View\Widgets\VariablePanel\GraphVariablesTableView.cpp">
+      <Filter>Editor\View\Widgets\VariablePanel</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\View\Widgets\VariablePanel\VariableDockWidget.cpp">
+      <Filter>Editor\View\Widgets\VariablePanel</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\View\Widgets\VariablePanel\VariablePaletteTableView.cpp">
+      <Filter>Editor\View\Widgets\VariablePanel</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\View\Widgets\VariablePanel\SlotTypeSelectorWidget.cpp">
+      <Filter>Editor\View\Widgets\VariablePanel</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\View\Widgets\UnitTestPanel\UnitTestDockWidget.cpp">
+      <Filter>Editor\View\Widgets\UnitTestPanel</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\View\Widgets\UnitTestPanel\UnitTestTreeView.cpp">
+      <Filter>Editor\View\Widgets\UnitTestPanel</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\View\Windows\EBusHandlerActionMenu.cpp">
+      <Filter>Editor\View\Windows</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\View\Windows\MainWindow.cpp">
+      <Filter>Editor\View\Windows</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\View\Windows\ScriptCanvasContextMenus.cpp">
+      <Filter>Editor\View\Windows</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\View\Windows\Tools\UpgradeTool\UpgradeHelper.cpp">
+      <Filter>Editor\View\Windows\Tools\UpgradeTool</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\View\Windows\Tools\UpgradeTool\UpgradeTool.cpp">
+      <Filter>Editor\View\Windows\Tools\UpgradeTool</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\View\Windows\Tools\UpgradeTool\VersionExplorer.cpp">
+      <Filter>Editor\View\Windows\Tools\UpgradeTool</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Asset\EditorAssetSystemComponent.cpp">
+      <Filter>Asset</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Builder\ScriptCanvasBuilder.cpp">
+      <Filter>Builder</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Builder\ScriptCanvasBuilderComponent.cpp">
+      <Filter>Builder</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Builder\ScriptCanvasBuilderWorker.cpp">
+      <Filter>Builder</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Builder\ScriptCanvasBuilderWorkerUtility.cpp">
+      <Filter>Builder</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\ScriptCanvas.Editor.Static_autogen\GKWACCD7I5\qrc_ScriptCanvasEditorResources.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\ScriptCanvas.Editor.Static_autogen\mocs_compilation_profile.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\ScriptCanvas.Editor.Static_autogen\mocs_compilation_release.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\Settings.h">
+      <Filter>Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\ReflectComponent.h">
+      <Filter>Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\SystemComponent.h">
+      <Filter>Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\QtMetaTypes.h">
+      <Filter>Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\Assets\ScriptCanvasAssetTracker.h">
+      <Filter>Editor\Assets</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\Assets\ScriptCanvasAssetTrackerBus.h">
+      <Filter>Editor\Assets</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\Assets\ScriptCanvasAssetHelpers.h">
+      <Filter>Editor\Assets</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\Assets\ScriptCanvasAssetTrackerDefinitions.h">
+      <Filter>Editor\Assets</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\Include\ScriptCanvas\Assets\ScriptCanvasBaseAssetData.h">
+      <Filter>Editor\Include\ScriptCanvas\Assets</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\Include\ScriptCanvas\Assets\ScriptCanvasAsset.h">
+      <Filter>Editor\Include\ScriptCanvas\Assets</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\Include\ScriptCanvas\Assets\ScriptCanvasAssetBus.h">
+      <Filter>Editor\Include\ScriptCanvas\Assets</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\Include\ScriptCanvas\Assets\ScriptCanvasAssetTypes.h">
+      <Filter>Editor\Include\ScriptCanvas\Assets</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\Include\ScriptCanvas\Assets\ScriptCanvasAssetHandler.h">
+      <Filter>Editor\Include\ScriptCanvas\Assets</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\Assets\ScriptCanvasAssetHolder.h">
+      <Filter>Editor\Assets</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\Assets\ScriptCanvasMemoryAsset.h">
+      <Filter>Editor\Assets</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\Assets\ScriptCanvasUndoHelper.h">
+      <Filter>Editor\Assets</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\Include\ScriptCanvas\Bus\RequestBus.h">
+      <Filter>Editor\Include\ScriptCanvas\Bus</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\Include\ScriptCanvas\Bus\NodeIdPair.h">
+      <Filter>Editor\Include\ScriptCanvas\Bus</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\Include\ScriptCanvas\Bus\EditorScriptCanvasBus.h">
+      <Filter>Editor\Include\ScriptCanvas\Bus</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\Include\ScriptCanvas\Bus\ScriptCanvasBus.h">
+      <Filter>Editor\Include\ScriptCanvas\Bus</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\Include\ScriptCanvas\Bus\IconBus.h">
+      <Filter>Editor\Include\ScriptCanvas\Bus</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\Include\ScriptCanvas\Bus\GraphBus.h">
+      <Filter>Editor\Include\ScriptCanvas\Bus</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\Include\ScriptCanvas\Bus\UndoBus.h">
+      <Filter>Editor\Include\ScriptCanvas\Bus</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\Include\ScriptCanvas\Bus\EditorSceneVariableManagerBus.h">
+      <Filter>Editor\Include\ScriptCanvas\Bus</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\Include\ScriptCanvas\Bus\ScriptCanvasExecutionBus.h">
+      <Filter>Editor\Include\ScriptCanvas\Bus</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\Include\ScriptCanvas\Bus\UnitTestVerificationBus.h">
+      <Filter>Editor\Include\ScriptCanvas\Bus</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\Include\ScriptCanvas\Components\GraphUpgrade.h">
+      <Filter>Editor\Include\ScriptCanvas\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\Include\ScriptCanvas\Components\EditorGraph.h">
+      <Filter>Editor\Include\ScriptCanvas\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\Include\ScriptCanvas\Components\EditorUtils.h">
+      <Filter>Editor\Include\ScriptCanvas\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\Include\ScriptCanvas\Components\EditorGraphVariableManagerComponent.h">
+      <Filter>Editor\Include\ScriptCanvas\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\Include\ScriptCanvas\Components\EditorScriptCanvasComponent.h">
+      <Filter>Editor\Include\ScriptCanvas\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\Components\IconComponent.h">
+      <Filter>Editor\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\Include\ScriptCanvas\GraphCanvas\DynamicSlotBus.h">
+      <Filter>Editor\Include\ScriptCanvas\GraphCanvas</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\Include\ScriptCanvas\GraphCanvas\NodeDescriptorBus.h">
+      <Filter>Editor\Include\ScriptCanvas\GraphCanvas</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\Include\ScriptCanvas\GraphCanvas\MappingBus.h">
+      <Filter>Editor\Include\ScriptCanvas\GraphCanvas</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\GraphCanvas\AutomationIds.h">
+      <Filter>Editor\GraphCanvas</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\GraphCanvas\GraphCanvasEditorNotificationBusId.h">
+      <Filter>Editor\GraphCanvas</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\GraphCanvas\PropertySlotIds.h">
+      <Filter>Editor\GraphCanvas</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\GraphCanvas\Components\DynamicOrderingDynamicSlotComponent.h">
+      <Filter>Editor\GraphCanvas\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\GraphCanvas\Components\DynamicSlotComponent.h">
+      <Filter>Editor\GraphCanvas\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\GraphCanvas\Components\MappingComponent.h">
+      <Filter>Editor\GraphCanvas\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\GraphCanvas\Components\NodeDescriptors\ClassMethodNodeDescriptorComponent.h">
+      <Filter>Editor\GraphCanvas\Components\NodeDescriptors</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\GraphCanvas\Components\NodeDescriptors\AzEventHandlerNodeDescriptorComponent.h">
+      <Filter>Editor\GraphCanvas\Components\NodeDescriptors</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\GraphCanvas\Components\NodeDescriptors\EBusHandlerEventNodeDescriptorComponent.h">
+      <Filter>Editor\GraphCanvas\Components\NodeDescriptors</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\GraphCanvas\Components\NodeDescriptors\EBusHandlerNodeDescriptorComponent.h">
+      <Filter>Editor\GraphCanvas\Components\NodeDescriptors</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\GraphCanvas\Components\NodeDescriptors\EBusSenderNodeDescriptorComponent.h">
+      <Filter>Editor\GraphCanvas\Components\NodeDescriptors</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\GraphCanvas\Components\NodeDescriptors\FunctionNodeDescriptorComponent.h">
+      <Filter>Editor\GraphCanvas\Components\NodeDescriptors</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\GraphCanvas\Components\NodeDescriptors\FunctionDefinitionNodeDescriptorComponent.h">
+      <Filter>Editor\GraphCanvas\Components\NodeDescriptors</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\GraphCanvas\Components\NodeDescriptors\GetVariableNodeDescriptorComponent.h">
+      <Filter>Editor\GraphCanvas\Components\NodeDescriptors</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\GraphCanvas\Components\NodeDescriptors\NodeDescriptorComponent.h">
+      <Filter>Editor\GraphCanvas\Components\NodeDescriptors</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\GraphCanvas\Components\NodeDescriptors\NodelingDescriptorComponent.h">
+      <Filter>Editor\GraphCanvas\Components\NodeDescriptors</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\GraphCanvas\Components\NodeDescriptors\SetVariableNodeDescriptorComponent.h">
+      <Filter>Editor\GraphCanvas\Components\NodeDescriptors</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\GraphCanvas\Components\NodeDescriptors\UserDefinedNodeDescriptorComponent.h">
+      <Filter>Editor\GraphCanvas\Components\NodeDescriptors</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\GraphCanvas\Components\NodeDescriptors\VariableNodeDescriptorComponent.h">
+      <Filter>Editor\GraphCanvas\Components\NodeDescriptors</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\GraphCanvas\Components\NodeDescriptors\ScriptEventReceiverEventNodeDescriptorComponent.h">
+      <Filter>Editor\GraphCanvas\Components\NodeDescriptors</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\GraphCanvas\Components\NodeDescriptors\ScriptEventReceiverNodeDescriptorComponent.h">
+      <Filter>Editor\GraphCanvas\Components\NodeDescriptors</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\GraphCanvas\Components\NodeDescriptors\ScriptEventSenderNodeDescriptorComponent.h">
+      <Filter>Editor\GraphCanvas\Components\NodeDescriptors</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\GraphCanvas\DataInterfaces\ScriptCanvasAssetIdDataInterface.h">
+      <Filter>Editor\GraphCanvas\DataInterfaces</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\GraphCanvas\DataInterfaces\ScriptCanvasBoolDataInterface.h">
+      <Filter>Editor\GraphCanvas\DataInterfaces</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\GraphCanvas\DataInterfaces\ScriptCanvasEntityIdDataInterface.h">
+      <Filter>Editor\GraphCanvas\DataInterfaces</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\GraphCanvas\DataInterfaces\ScriptCanvasEnumDataInterface.h">
+      <Filter>Editor\GraphCanvas\DataInterfaces</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\GraphCanvas\DataInterfaces\ScriptCanvasDataInterface.h">
+      <Filter>Editor\GraphCanvas\DataInterfaces</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\GraphCanvas\DataInterfaces\ScriptCanvasColorDataInterface.h">
+      <Filter>Editor\GraphCanvas\DataInterfaces</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\GraphCanvas\DataInterfaces\ScriptCanvasCRCDataInterface.h">
+      <Filter>Editor\GraphCanvas\DataInterfaces</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\GraphCanvas\DataInterfaces\ScriptCanvasNumericDataInterface.h">
+      <Filter>Editor\GraphCanvas\DataInterfaces</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\GraphCanvas\DataInterfaces\ScriptCanvasReadOnlyDataInterface.h">
+      <Filter>Editor\GraphCanvas\DataInterfaces</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\GraphCanvas\DataInterfaces\ScriptCanvasStringDataInterface.h">
+      <Filter>Editor\GraphCanvas\DataInterfaces</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\GraphCanvas\DataInterfaces\ScriptCanvasVectorDataInterface.h">
+      <Filter>Editor\GraphCanvas\DataInterfaces</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\GraphCanvas\DataInterfaces\ScriptCanvasVariableDataInterface.h">
+      <Filter>Editor\GraphCanvas\DataInterfaces</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\GraphCanvas\DataInterfaces\ScriptCanvasQuaternionDataInterface.h">
+      <Filter>Editor\GraphCanvas\DataInterfaces</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\GraphCanvas\PropertyInterfaces\ScriptCanvasPropertyDataInterface.h">
+      <Filter>Editor\GraphCanvas\PropertyInterfaces</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\GraphCanvas\PropertyInterfaces\ScriptCanvasStringPropertyDataInterface.h">
+      <Filter>Editor\GraphCanvas\PropertyInterfaces</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\Model\EntityMimeDataHandler.h">
+      <Filter>Editor\Model</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\Model\LibraryDataModel.h">
+      <Filter>Editor\Model</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\Model\UnitTestBrowserFilterModel.h">
+      <Filter>Editor\Model</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\Nodes\NodeCreateUtils.h">
+      <Filter>Editor\Nodes</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\Nodes\NodeDisplayUtils.h">
+      <Filter>Editor\Nodes</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\Nodes\NodeUtils.h">
+      <Filter>Editor\Nodes</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\Translation\TranslationHelper.h">
+      <Filter>Editor\Translation</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\Undo\ScriptCanvasGraphCommand.h">
+      <Filter>Editor\Undo</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\Undo\ScriptCanvasUndoManager.h">
+      <Filter>Editor\Undo</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\Utilities\Command.h">
+      <Filter>Editor\Utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\Utilities\CommonSettingsConfigurations.h">
+      <Filter>Editor\Utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\Utilities\RecentFiles.h">
+      <Filter>Editor\Utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\Utilities\RecentAssetPath.h">
+      <Filter>Editor\Utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\View\Dialogs\NewGraphDialog.h">
+      <Filter>Editor\View\Dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\View\Dialogs\SettingsDialog.h">
+      <Filter>Editor\View\Dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\View\Dialogs\UnsavedChangesDialog.h">
+      <Filter>Editor\View\Dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\View\Dialogs\ContainerWizard\ContainerTypeLineEdit.h">
+      <Filter>Editor\View\Dialogs\ContainerWizard</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\View\Dialogs\ContainerWizard\ContainerWizard.h">
+      <Filter>Editor\View\Dialogs\ContainerWizard</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\View\Widgets\CanvasWidget.h">
+      <Filter>Editor\View\Widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\View\Widgets\GraphTabBar.h">
+      <Filter>Editor\View\Widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\View\Widgets\PropertyGrid.h">
+      <Filter>Editor\View\Widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\View\Widgets\PropertyGridBus.h">
+      <Filter>Editor\View\Widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\View\Widgets\PropertyGridContextMenu.h">
+      <Filter>Editor\View\Widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\View\Widgets\CommandLine.h">
+      <Filter>Editor\View\Widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\View\Widgets\LogPanel.h">
+      <Filter>Editor\View\Widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\View\Widgets\MainWindowStatusWidget.h">
+      <Filter>Editor\View\Widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\View\Widgets\ScriptCanvasNodePaletteDockWidget.h">
+      <Filter>Editor\View\Widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\View\Widgets\WidgetBus.h">
+      <Filter>Editor\View\Widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\View\Widgets\DataTypePalette\DataTypePaletteModel.h">
+      <Filter>Editor\View\Widgets\DataTypePalette</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\View\Widgets\NodePalette\CreateNodeMimeEvent.h">
+      <Filter>Editor\View\Widgets\NodePalette</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\View\Widgets\NodePalette\FunctionNodePaletteTreeItemTypes.h">
+      <Filter>Editor\View\Widgets\NodePalette</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\View\Widgets\NodePalette\ScriptEventsNodePaletteTreeItemTypes.h">
+      <Filter>Editor\View\Widgets\NodePalette</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\View\Widgets\NodePalette\EBusNodePaletteTreeItemTypes.h">
+      <Filter>Editor\View\Widgets\NodePalette</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\View\Widgets\NodePalette\GeneralNodePaletteTreeItemTypes.h">
+      <Filter>Editor\View\Widgets\NodePalette</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\View\Widgets\NodePalette\NodePaletteModelBus.h">
+      <Filter>Editor\View\Widgets\NodePalette</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\View\Widgets\NodePalette\NodePaletteModel.h">
+      <Filter>Editor\View\Widgets\NodePalette</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\View\Widgets\NodePalette\SpecializedNodePaletteTreeItemTypes.h">
+      <Filter>Editor\View\Widgets\NodePalette</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\View\Widgets\NodePalette\VariableNodePaletteTreeItemTypes.h">
+      <Filter>Editor\View\Widgets\NodePalette</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\View\Widgets\LoggingPanel\LoggingDataAggregator.h">
+      <Filter>Editor\View\Widgets\LoggingPanel</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\View\Widgets\LoggingPanel\LoggingTypes.h">
+      <Filter>Editor\View\Widgets\LoggingPanel</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\View\Widgets\LoggingPanel\LoggingWindow.h">
+      <Filter>Editor\View\Widgets\LoggingPanel</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\View\Widgets\LoggingPanel\LoggingWindowSession.h">
+      <Filter>Editor\View\Widgets\LoggingPanel</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\View\Widgets\LoggingPanel\LoggingWindowTreeItems.h">
+      <Filter>Editor\View\Widgets\LoggingPanel</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\View\Widgets\LoggingPanel\LiveWindowSession\LiveLoggingDataAggregator.h">
+      <Filter>Editor\View\Widgets\LoggingPanel\LiveWindowSession</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\View\Widgets\LoggingPanel\LiveWindowSession\LiveLoggingWindowSession.h">
+      <Filter>Editor\View\Widgets\LoggingPanel\LiveWindowSession</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\View\Widgets\LoggingPanel\AssetWindowSession\LoggingAssetDataAggregator.h">
+      <Filter>Editor\View\Widgets\LoggingPanel\AssetWindowSession</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\View\Widgets\LoggingPanel\AssetWindowSession\LoggingAssetWindowSession.h">
+      <Filter>Editor\View\Widgets\LoggingPanel\AssetWindowSession</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\View\Widgets\LoggingPanel\PivotTree\PivotTreeWidget.h">
+      <Filter>Editor\View\Widgets\LoggingPanel\PivotTree</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\View\Widgets\LoggingPanel\PivotTree\EntityPivotTree\EntityPivotTree.h">
+      <Filter>Editor\View\Widgets\LoggingPanel\PivotTree\EntityPivotTree</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\View\Widgets\LoggingPanel\PivotTree\GraphPivotTree\GraphPivotTree.h">
+      <Filter>Editor\View\Widgets\LoggingPanel\PivotTree\GraphPivotTree</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\View\Widgets\ValidationPanel\GraphValidationDockWidget.h">
+      <Filter>Editor\View\Widgets\ValidationPanel</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\View\Widgets\ValidationPanel\GraphValidationDockWidgetBus.h">
+      <Filter>Editor\View\Widgets\ValidationPanel</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\View\Widgets\StatisticsDialog\ScriptCanvasStatisticsDialog.h">
+      <Filter>Editor\View\Widgets\StatisticsDialog</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\View\Widgets\StatisticsDialog\NodeUsageTreeItem.h">
+      <Filter>Editor\View\Widgets\StatisticsDialog</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\View\Widgets\VariablePanel\GraphVariablesTableView.h">
+      <Filter>Editor\View\Widgets\VariablePanel</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\View\Widgets\VariablePanel\VariableDockWidget.h">
+      <Filter>Editor\View\Widgets\VariablePanel</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\View\Widgets\VariablePanel\VariablePaletteTableView.h">
+      <Filter>Editor\View\Widgets\VariablePanel</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\View\Widgets\VariablePanel\SlotTypeSelectorWidget.h">
+      <Filter>Editor\View\Widgets\VariablePanel</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\View\Widgets\UnitTestPanel\UnitTestDockWidget.h">
+      <Filter>Editor\View\Widgets\UnitTestPanel</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\View\Widgets\UnitTestPanel\UnitTestTreeView.h">
+      <Filter>Editor\View\Widgets\UnitTestPanel</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\View\Windows\EBusHandlerActionMenu.h">
+      <Filter>Editor\View\Windows</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\View\Windows\MainWindow.h">
+      <Filter>Editor\View\Windows</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\View\Windows\MainWindowBus.h">
+      <Filter>Editor\View\Windows</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\View\Windows\ScriptCanvasContextMenus.h">
+      <Filter>Editor\View\Windows</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\View\Windows\Tools\UpgradeTool\UpgradeHelper.h">
+      <Filter>Editor\View\Windows\Tools\UpgradeTool</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\View\Windows\Tools\UpgradeTool\UpgradeTool.h">
+      <Filter>Editor\View\Windows\Tools\UpgradeTool</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\View\Windows\Tools\UpgradeTool\VersionExplorer.h">
+      <Filter>Editor\View\Windows\Tools\UpgradeTool</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\Framework\ScriptCanvasGraphUtilities.inl">
+      <Filter>Editor\Framework</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\Framework\ScriptCanvasGraphUtilities.h">
+      <Filter>Editor\Framework</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\Framework\ScriptCanvasTraceUtilities.h">
+      <Filter>Editor\Framework</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\Framework\ScriptCanvasReporter.inl">
+      <Filter>Editor\Framework</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\Framework\ScriptCanvasReporter.h">
+      <Filter>Editor\Framework</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Asset\EditorAssetSystemComponent.h">
+      <Filter>Asset</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Asset\EditorAssetConversionBus.h">
+      <Filter>Asset</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Builder\BuilderSystemComponent.h">
+      <Filter>Builder</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Builder\ScriptCanvasBuilder.h">
+      <Filter>Builder</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Builder\ScriptCanvasBuilderComponent.h">
+      <Filter>Builder</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Builder\ScriptCanvasBuilderWorker.h">
+      <Filter>Builder</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\ScriptCanvas.Editor.Static_autogen\include\Editor\View\Dialogs\ui_NewGraphDialog.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\ScriptCanvas.Editor.Static_autogen\include\Editor\View\Dialogs\ui_SettingsDialog.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\ScriptCanvas.Editor.Static_autogen\include\Editor\View\Dialogs\ui_UnsavedChangesDialog.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\ScriptCanvas.Editor.Static_autogen\include\Editor\View\Dialogs\ContainerWizard\ui_ContainerTypeLineEdit.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\ScriptCanvas.Editor.Static_autogen\include\Editor\View\Dialogs\ContainerWizard\ui_ContainerWizard.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\ScriptCanvas.Editor.Static_autogen\include\Editor\View\Widgets\ui_CanvasWidget.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\ScriptCanvas.Editor.Static_autogen\include\Editor\View\Widgets\ui_CommandLine.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\ScriptCanvas.Editor.Static_autogen\include\Editor\View\Widgets\ui_LogPanel.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\ScriptCanvas.Editor.Static_autogen\include\Editor\View\Widgets\ui_MainWindowStatusWidget.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\ScriptCanvas.Editor.Static_autogen\include\Editor\View\Widgets\ui_ScriptCanvasNodePaletteToolbar.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\ScriptCanvas.Editor.Static_autogen\include\Editor\View\Widgets\LoggingPanel\ui_LoggingWindow.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\ScriptCanvas.Editor.Static_autogen\include\Editor\View\Widgets\LoggingPanel\ui_LoggingWindowSession.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\ScriptCanvas.Editor.Static_autogen\include\Editor\View\Widgets\LoggingPanel\PivotTree\ui_PivotTreeWidget.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\ScriptCanvas.Editor.Static_autogen\include\Editor\View\Widgets\ValidationPanel\ui_GraphValidationPanel.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\ScriptCanvas.Editor.Static_autogen\include\Editor\View\Widgets\StatisticsDialog\ui_ScriptCanvasStatisticsDialog.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\ScriptCanvas.Editor.Static_autogen\include\Editor\View\Widgets\VariablePanel\ui_VariableDockWidget.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\ScriptCanvas.Editor.Static_autogen\include\Editor\View\Widgets\VariablePanel\ui_SlotTypeSelectorWidget.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\ScriptCanvas.Editor.Static_autogen\include\Editor\View\Widgets\UnitTestPanel\ui_UnitTestDockWidget.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\ScriptCanvas.Editor.Static_autogen\include\Editor\View\Windows\ui_ebushandleractionlistwidget.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\ScriptCanvas.Editor.Static_autogen\include\Editor\View\Windows\ui_mainwindow.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\ScriptCanvas.Editor.Static_autogen\include\Editor\View\Windows\Tools\UpgradeTool\ui_UpgradeHelper.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\ScriptCanvas.Editor.Static_autogen\include\Editor\View\Windows\Tools\UpgradeTool\ui_UpgradeTool.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\External\ScriptCanvas-b90fc184\Code\ScriptCanvas.Editor.Static_autogen\include\Editor\View\Windows\Tools\UpgradeTool\ui_VersionExplorer.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\View\Dialogs\NewGraphDialog.ui">
+      <Filter>Editor\View\Dialogs</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\View\Dialogs\SettingsDialog.ui">
+      <Filter>Editor\View\Dialogs</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\View\Dialogs\UnsavedChangesDialog.ui">
+      <Filter>Editor\View\Dialogs</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\View\Dialogs\ContainerWizard\ContainerTypeLineEdit.ui">
+      <Filter>Editor\View\Dialogs\ContainerWizard</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\View\Dialogs\ContainerWizard\ContainerWizard.ui">
+      <Filter>Editor\View\Dialogs\ContainerWizard</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\View\Widgets\CanvasWidget.ui">
+      <Filter>Editor\View\Widgets</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\View\Widgets\CommandLine.ui">
+      <Filter>Editor\View\Widgets</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\View\Widgets\LogPanel.ui">
+      <Filter>Editor\View\Widgets</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\View\Widgets\MainWindowStatusWidget.ui">
+      <Filter>Editor\View\Widgets</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\View\Widgets\ScriptCanvasNodePaletteToolbar.ui">
+      <Filter>Editor\View\Widgets</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\View\Widgets\LoggingPanel\LoggingWindow.ui">
+      <Filter>Editor\View\Widgets\LoggingPanel</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\View\Widgets\LoggingPanel\LoggingWindowSession.ui">
+      <Filter>Editor\View\Widgets\LoggingPanel</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\View\Widgets\LoggingPanel\PivotTree\PivotTreeWidget.ui">
+      <Filter>Editor\View\Widgets\LoggingPanel\PivotTree</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\View\Widgets\ValidationPanel\GraphValidationPanel.ui">
+      <Filter>Editor\View\Widgets\ValidationPanel</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\View\Widgets\StatisticsDialog\ScriptCanvasStatisticsDialog.ui">
+      <Filter>Editor\View\Widgets\StatisticsDialog</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\View\Widgets\VariablePanel\VariableDockWidget.ui">
+      <Filter>Editor\View\Widgets\VariablePanel</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\View\Widgets\VariablePanel\SlotTypeSelectorWidget.ui">
+      <Filter>Editor\View\Widgets\VariablePanel</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\View\Widgets\UnitTestPanel\UnitTestDockWidget.ui">
+      <Filter>Editor\View\Widgets\UnitTestPanel</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\View\Windows\ebushandleractionlistwidget.ui">
+      <Filter>Editor\View\Windows</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\View\Windows\mainwindow.ui">
+      <Filter>Editor\View\Windows</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\View\Windows\Tools\UpgradeTool\UpgradeHelper.ui">
+      <Filter>Editor\View\Windows\Tools\UpgradeTool</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\View\Windows\Tools\UpgradeTool\UpgradeTool.ui">
+      <Filter>Editor\View\Windows\Tools\UpgradeTool</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\View\Windows\Tools\UpgradeTool\VersionExplorer.ui">
+      <Filter>Editor\View\Windows\Tools\UpgradeTool</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\CMakeFiles\9b83a5c8674f1fb525f5620fbd563414\qrc_ScriptCanvasEditorResources.cpp.rule">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\CMakeLists.txt">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\Editor\View\Windows\ScriptCanvasEditorResources.qrc">
+      <Filter>Editor\View\Windows</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\scriptcanvasgem_editor_files.cmake" />
+    <None Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\scriptcanvasgem_editor_asset_files.cmake" />
+    <None Include="C:\Users\lesaelr\o3de\Gems\ScriptCanvas\Code\scriptcanvasgem_editor_builder_files.cmake" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Asset">
+      <UniqueIdentifier>{98022B63-35BB-3925-9320-9785170F276E}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Builder">
+      <UniqueIdentifier>{D8BA338B-236D-3BEC-81EF-F04002A4F878}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Editor">
+      <UniqueIdentifier>{AB7AD22B-4C45-3CDD-8A3C-7A5D74862736}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Editor\Assets">
+      <UniqueIdentifier>{11E78648-AB51-31F2-8A71-C0E448EFF4FA}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Editor\Components">
+      <UniqueIdentifier>{D3E62410-C54C-3362-9A29-9D8664CCBA17}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Editor\Framework">
+      <UniqueIdentifier>{679824BA-DA9A-353B-A64B-C9D029E1C13A}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Editor\GraphCanvas">
+      <UniqueIdentifier>{C1AF6A20-8A20-3E89-9C11-9BED560AAA13}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Editor\GraphCanvas\Components">
+      <UniqueIdentifier>{931541AB-9277-39E5-9CC3-D0E1FFC0BB38}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Editor\GraphCanvas\Components\NodeDescriptors">
+      <UniqueIdentifier>{8CA64476-6B2B-360E-8870-3B098FFB47CA}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Editor\GraphCanvas\DataInterfaces">
+      <UniqueIdentifier>{28F8590E-83DB-3E10-8DE4-10F3C49F6416}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Editor\GraphCanvas\PropertyInterfaces">
+      <UniqueIdentifier>{6D3DF543-1D7F-391D-9B7A-2928858FDF4D}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Editor\Include">
+      <UniqueIdentifier>{34FDBC73-F285-38A8-99E0-A56EDB5F822D}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Editor\Include\ScriptCanvas">
+      <UniqueIdentifier>{651404DE-8820-3FCC-84F0-C05E25ABF4B9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Editor\Include\ScriptCanvas\Assets">
+      <UniqueIdentifier>{12EE0E8D-1D3F-32A4-BC00-BF534FBB89D6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Editor\Include\ScriptCanvas\Bus">
+      <UniqueIdentifier>{73DD1B9A-CA86-32FA-AFA7-88D583D46E08}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Editor\Include\ScriptCanvas\Components">
+      <UniqueIdentifier>{8704F0B2-A7CA-3BCF-9A53-5DD890B0B94D}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Editor\Include\ScriptCanvas\GraphCanvas">
+      <UniqueIdentifier>{527CBB27-5A5A-3F10-B810-768A978D4C29}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Editor\Model">
+      <UniqueIdentifier>{E8A1B366-5E13-3B3E-86BC-0AF26AE12CE8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Editor\Nodes">
+      <UniqueIdentifier>{BAF8DFA2-8907-3C69-BDE4-EE3EFA3E7DCD}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Editor\Translation">
+      <UniqueIdentifier>{89821616-E97E-34B7-8AFC-52E5E540DBEE}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Editor\Undo">
+      <UniqueIdentifier>{C0DB55F6-73B7-33CE-B241-454C6F2E856D}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Editor\Utilities">
+      <UniqueIdentifier>{DBC27F29-BAEC-3E44-870A-0EFE41D34196}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Editor\View">
+      <UniqueIdentifier>{A9BC6FB3-A87F-39C0-82B3-04E420DC8B5C}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Editor\View\Dialogs">
+      <UniqueIdentifier>{2837F292-F1AB-3547-AA66-31FBBD8869E3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Editor\View\Dialogs\ContainerWizard">
+      <UniqueIdentifier>{34A76D1D-FA4B-304E-A407-8E5F6DEEB209}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Editor\View\Widgets">
+      <UniqueIdentifier>{0BD54EFD-BFC4-3EA5-892C-5741D5D3B7FC}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Editor\View\Widgets\DataTypePalette">
+      <UniqueIdentifier>{470F7AAE-AFC9-34AD-9589-45BB2D12FF1B}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Editor\View\Widgets\LoggingPanel">
+      <UniqueIdentifier>{D3690C50-5602-3E9B-9E3E-4E32F39FE3EA}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Editor\View\Widgets\LoggingPanel\AssetWindowSession">
+      <UniqueIdentifier>{F7DAFC16-7F3A-3DF4-93A5-0050C61C55CD}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Editor\View\Widgets\LoggingPanel\LiveWindowSession">
+      <UniqueIdentifier>{BF1947E8-E48E-33A0-AA7F-DC4D2C3A2E70}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Editor\View\Widgets\LoggingPanel\PivotTree">
+      <UniqueIdentifier>{11953D8C-472D-3EDE-8053-4711DBA50A62}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Editor\View\Widgets\LoggingPanel\PivotTree\EntityPivotTree">
+      <UniqueIdentifier>{8EA4DCB8-D711-3794-991D-DB67E035D7BE}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Editor\View\Widgets\LoggingPanel\PivotTree\GraphPivotTree">
+      <UniqueIdentifier>{06D4550E-4DB4-3358-9552-67943E0E1674}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Editor\View\Widgets\NodePalette">
+      <UniqueIdentifier>{D4A004A5-6AB9-3C47-87A6-FE8EF85E65F0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Editor\View\Widgets\StatisticsDialog">
+      <UniqueIdentifier>{1B495D0A-9C02-3635-8903-14835EF39CFA}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Editor\View\Widgets\UnitTestPanel">
+      <UniqueIdentifier>{5538A9B1-C190-383B-A35E-BC93D305BE71}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Editor\View\Widgets\ValidationPanel">
+      <UniqueIdentifier>{FE057B4A-4577-38AC-9272-A17702D5FFB5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Editor\View\Widgets\VariablePanel">
+      <UniqueIdentifier>{6817B88E-9BEB-3F9E-ACE7-61B2B53E4BC8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Editor\View\Windows">
+      <UniqueIdentifier>{3B4AB47F-C81C-3B03-AEA7-C04604B6E322}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Editor\View\Windows\Tools">
+      <UniqueIdentifier>{167FFB19-A707-3711-AD4A-20EC345E5B66}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Editor\View\Windows\Tools\UpgradeTool">
+      <UniqueIdentifier>{6B3375E4-0A6F-37AA-9C84-A0A8AA265909}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Generated Files">
+      <UniqueIdentifier>{FB9B7D8B-7F05-31D5-AA90-592248EDE1B3}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

@@ -1,0 +1,49 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\CMakeFiles\AzTestShared.dir\Unity\unity_0_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\AZTestShared\Utils\Utils.cpp">
+      <Filter>Tests\AZTestShared\Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\AZTestShared\Math\MathTestHelpers.cpp">
+      <Filter>Tests\AZTestShared\Math</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\AZTestShared\Utils\Utils.h">
+      <Filter>Tests\AZTestShared\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\AZTestShared\Math\MathTestHelpers.h">
+      <Filter>Tests\AZTestShared\Math</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\CMakeLists.txt">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\aztestshared_files.cmake">
+      <Filter>Tests</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Generated Files">
+      <UniqueIdentifier>{FB9B7D8B-7F05-31D5-AA90-592248EDE1B3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Tests">
+      <UniqueIdentifier>{042E9197-689D-3636-8A35-28EBCAA2BD47}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Tests\AZTestShared">
+      <UniqueIdentifier>{309D0791-D082-314D-A9DD-21F8F0BC410F}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Tests\AZTestShared\Math">
+      <UniqueIdentifier>{99567BA4-0F56-383D-A063-2CD95B6BE866}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Tests\AZTestShared\Utils">
+      <UniqueIdentifier>{A1C293A7-A3EA-3D0A-8E44-46C4B7224BF1}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

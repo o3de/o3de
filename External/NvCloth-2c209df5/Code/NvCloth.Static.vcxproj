@@ -1,0 +1,373 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <PreferredToolArchitecture>x64</PreferredToolArchitecture>
+  </PropertyGroup>
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="debug|x64">
+      <Configuration>debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="profile|x64">
+      <Configuration>profile</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="release|x64">
+      <Configuration>release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{44FD8E3D-7124-37D9-A2E1-1487EAD905FF}</ProjectGuid>
+    <WindowsTargetPlatformVersion>10.0.19041.0</WindowsTargetPlatformVersion>
+    <Keyword>Win32Proj</Keyword>
+    <Platform>x64</Platform>
+    <ProjectName>NvCloth.Static</ProjectName>
+    <VCProjectUpgraderObjectName>NoUpgrade</VCProjectUpgraderObjectName>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='debug|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v142</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='profile|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v142</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='release|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v142</PlatformToolset>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>10.0.20506.1</_ProjectFileVersion>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='debug|x64'">C:\Users\lesaelr\o3de\lib\debug\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='debug|x64'">NvCloth.Static.dir\debug\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='debug|x64'">NvCloth.Static</TargetName>
+    <TargetExt Condition="'$(Configuration)|$(Platform)'=='debug|x64'">.lib</TargetExt>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='profile|x64'">C:\Users\lesaelr\o3de\lib\profile\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='profile|x64'">NvCloth.Static.dir\profile\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='profile|x64'">NvCloth.Static</TargetName>
+    <TargetExt Condition="'$(Configuration)|$(Platform)'=='profile|x64'">.lib</TargetExt>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='release|x64'">C:\Users\lesaelr\o3de\lib\release\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='release|x64'">NvCloth.Static.dir\release\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='release|x64'">NvCloth.Static</TargetName>
+    <TargetExt Condition="'$(Configuration)|$(Platform)'=='release|x64'">.lib</TargetExt>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='debug|x64'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>C:\Users\lesaelr\o3de\Gems\NvCloth\Code\Include;C:\Users\lesaelr\o3de\Gems\NvCloth\Code\Source;C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\.;C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Include;C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Source;C:\Users\lesaelr\o3de\Gems\LmbrCentral\Code\include;C:\Users\lesaelr\o3de\Code\Framework\AzCore\.;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Common;C:\Users\lesaelr\o3de\Code\Framework\AzFramework\.;C:\Users\lesaelr\o3de\Code\Framework\AzFramework\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\GridMate\.;C:\Users\lesaelr\o3de\Code\Framework\GridMate\Platform\Windows;C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\.;C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\..;C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AtomCore\.;C:\Users\lesaelr\o3de\Gems\Atom\RPI\Code\Include;C:\Users\lesaelr\o3de\Gems\Atom\RPI\Code\External;C:\Users\lesaelr\o3de\Gems\Atom\RHI\Code\Include;C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Include;C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Include;C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\3rdParty\ACES;C:\Users\lesaelr\o3de\Gems\Atom\Utils\Code\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalOptions>%(AdditionalOptions) /Zc:__cplusplus /Zc:lambda /favor:AMD64 /bigobj /RTCsu /experimental:external /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/Lua-5.3.5-rev5-windows/lua/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/RapidJSON-1.1.0-rev1-multiplatform/RapidJSON/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/RapidXML-1.13-rev1-multiplatform/RapidXML/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/zlib-1.2.11-rev2-windows/zlib/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/zstd-1.35-multiplatform/zstd/lib /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/cityhash-1.1-multiplatform/cityhash/src /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/OpenSSL-1.1.1b-rev2-windows/OpenSSL/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/lz4-1.9.3-vcpkg-rev4-windows/lz4/lz4/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/NvCloth-v1.1.6-4-gd243404-pr58-rev1-windows/NvCloth/NvCloth/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/NvCloth-v1.1.6-4-gd243404-pr58-rev1-windows/NvCloth/NvCloth/extensions/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/NvCloth-v1.1.6-4-gd243404-pr58-rev1-windows/NvCloth/PxShared/include</AdditionalOptions>
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <BufferSecurityCheck>true</BufferSecurityCheck>
+      <CallingConvention>Cdecl</CallingConvention>
+      <ConformanceMode>true</ConformanceMode>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <DiagnosticsFormat>Caret</DiagnosticsFormat>
+      <DisableSpecificWarnings>4201</DisableSpecificWarnings>
+      <ExceptionHandling>
+      </ExceptionHandling>
+      <ExternalWarningLevel>TurnOffAllWarnings</ExternalWarningLevel>
+      <FloatingPointModel>Fast</FloatingPointModel>
+      <ForceConformanceInForLoopScope>true</ForceConformanceInForLoopScope>
+      <InlineFunctionExpansion>Disabled</InlineFunctionExpansion>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <Optimization>Disabled</Optimization>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <TreatSpecificWarningsAsErrors>4263;4264;4265;4266;4296;4426;4437;4774;4777;5031;5032;5233</TreatSpecificWarningsAsErrors>
+      <TreatWarningAsError>true</TreatWarningAsError>
+      <UseFullPaths>false</UseFullPaths>
+      <WarningLevel>Level4</WarningLevel>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);_HAS_EXCEPTIONS=0;_DEBUG;AZ_DEBUG_BUILD=1;AZ_ENABLE_TRACING;AZ_ENABLE_DEBUG_TOOLS;AZ_BUILD_CONFIGURATION_TYPE="debug";_ENABLE_EXTENDED_ALIGNED_STORAGE;_WIN32;WIN32;_WIN64;WIN64;NOMINMAX;EMFX_DEVELOPMENT_BUILD;OPENSSL_ENABLED;NV_CLOTH_IMPORT=;PX_CALL_CONV=;CMAKE_INTDIR="debug"</PreprocessorDefinitions>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);_DEBUG;_HAS_EXCEPTIONS=0;AZ_DEBUG_BUILD=1;AZ_ENABLE_TRACING;AZ_ENABLE_DEBUG_TOOLS;AZ_BUILD_CONFIGURATION_TYPE=\"debug\";_ENABLE_EXTENDED_ALIGNED_STORAGE;_WIN32;WIN32;_WIN64;WIN64;NOMINMAX;EMFX_DEVELOPMENT_BUILD;OPENSSL_ENABLED;NV_CLOTH_IMPORT=;PX_CALL_CONV=;CMAKE_INTDIR=\"debug\"</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>C:\Users\lesaelr\o3de\Gems\NvCloth\Code\Include;C:\Users\lesaelr\o3de\Gems\NvCloth\Code\Source;C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\.;C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Include;C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Source;C:\Users\lesaelr\o3de\Gems\LmbrCentral\Code\include;C:\Users\lesaelr\o3de\Code\Framework\AzCore\.;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Common;C:\Users\lesaelr\o3de\Code\Framework\AzFramework\.;C:\Users\lesaelr\o3de\Code\Framework\AzFramework\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\GridMate\.;C:\Users\lesaelr\o3de\Code\Framework\GridMate\Platform\Windows;C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\.;C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\..;C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AtomCore\.;C:\Users\lesaelr\o3de\Gems\Atom\RPI\Code\Include;C:\Users\lesaelr\o3de\Gems\Atom\RPI\Code\External;C:\Users\lesaelr\o3de\Gems\Atom\RHI\Code\Include;C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Include;C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Include;C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\3rdParty\ACES;C:\Users\lesaelr\o3de\Gems\Atom\Utils\Code\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+    </ResourceCompile>
+    <Midl>
+      <AdditionalIncludeDirectories>C:\Users\lesaelr\o3de\Gems\NvCloth\Code\Include;C:\Users\lesaelr\o3de\Gems\NvCloth\Code\Source;C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\.;C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Include;C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Source;C:\Users\lesaelr\o3de\Gems\LmbrCentral\Code\include;C:\Users\lesaelr\o3de\Code\Framework\AzCore\.;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Common;C:\Users\lesaelr\o3de\Code\Framework\AzFramework\.;C:\Users\lesaelr\o3de\Code\Framework\AzFramework\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\GridMate\.;C:\Users\lesaelr\o3de\Code\Framework\GridMate\Platform\Windows;C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\.;C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\..;C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AtomCore\.;C:\Users\lesaelr\o3de\Gems\Atom\RPI\Code\Include;C:\Users\lesaelr\o3de\Gems\Atom\RPI\Code\External;C:\Users\lesaelr\o3de\Gems\Atom\RHI\Code\Include;C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Include;C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Include;C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\3rdParty\ACES;C:\Users\lesaelr\o3de\Gems\Atom\Utils\Code\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+    <Lib>
+      <AdditionalOptions>%(AdditionalOptions) /machine:x64 /IGNORE:4099</AdditionalOptions>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <TargetMachine>MachineX64</TargetMachine>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='profile|x64'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>C:\Users\lesaelr\o3de\Gems\NvCloth\Code\Include;C:\Users\lesaelr\o3de\Gems\NvCloth\Code\Source;C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\.;C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Include;C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Source;C:\Users\lesaelr\o3de\Gems\LmbrCentral\Code\include;C:\Users\lesaelr\o3de\Code\Framework\AzCore\.;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Common;C:\Users\lesaelr\o3de\Code\Framework\AzFramework\.;C:\Users\lesaelr\o3de\Code\Framework\AzFramework\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\GridMate\.;C:\Users\lesaelr\o3de\Code\Framework\GridMate\Platform\Windows;C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\.;C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\..;C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AtomCore\.;C:\Users\lesaelr\o3de\Gems\Atom\RPI\Code\Include;C:\Users\lesaelr\o3de\Gems\Atom\RPI\Code\External;C:\Users\lesaelr\o3de\Gems\Atom\RHI\Code\Include;C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Include;C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Include;C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\3rdParty\ACES;C:\Users\lesaelr\o3de\Gems\Atom\Utils\Code\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalOptions>%(AdditionalOptions) /Zc:__cplusplus /Zc:lambda /favor:AMD64 /bigobj /experimental:external /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/Lua-5.3.5-rev5-windows/lua/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/RapidJSON-1.1.0-rev1-multiplatform/RapidJSON/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/RapidXML-1.13-rev1-multiplatform/RapidXML/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/zlib-1.2.11-rev2-windows/zlib/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/zstd-1.35-multiplatform/zstd/lib /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/cityhash-1.1-multiplatform/cityhash/src /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/OpenSSL-1.1.1b-rev2-windows/OpenSSL/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/lz4-1.9.3-vcpkg-rev4-windows/lz4/lz4/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/NvCloth-v1.1.6-4-gd243404-pr58-rev1-windows/NvCloth/NvCloth/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/NvCloth-v1.1.6-4-gd243404-pr58-rev1-windows/NvCloth/NvCloth/extensions/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/NvCloth-v1.1.6-4-gd243404-pr58-rev1-windows/NvCloth/PxShared/include</AdditionalOptions>
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <CallingConvention>Cdecl</CallingConvention>
+      <ConformanceMode>true</ConformanceMode>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <DiagnosticsFormat>Caret</DiagnosticsFormat>
+      <DisableSpecificWarnings>4201</DisableSpecificWarnings>
+      <ExceptionHandling>
+      </ExceptionHandling>
+      <ExternalWarningLevel>TurnOffAllWarnings</ExternalWarningLevel>
+      <FloatingPointModel>Fast</FloatingPointModel>
+      <ForceConformanceInForLoopScope>true</ForceConformanceInForLoopScope>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <Optimization>MaxSpeed</Optimization>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <RemoveUnreferencedCodeData>true</RemoveUnreferencedCodeData>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <StringPooling>true</StringPooling>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <TreatSpecificWarningsAsErrors>4263;4264;4265;4266;4296;4426;4437;4774;4777;5031;5032;5233</TreatSpecificWarningsAsErrors>
+      <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
+      <TreatWarningAsError>true</TreatWarningAsError>
+      <UseFullPaths>false</UseFullPaths>
+      <WarningLevel>Level4</WarningLevel>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);_HAS_EXCEPTIONS=0;_PROFILE;PROFILE;NDEBUG;AZ_ENABLE_TRACING;AZ_ENABLE_DEBUG_TOOLS;AZ_BUILD_CONFIGURATION_TYPE="profile";_ENABLE_EXTENDED_ALIGNED_STORAGE;_WIN32;WIN32;_WIN64;WIN64;NOMINMAX;EMFX_DEVELOPMENT_BUILD;OPENSSL_ENABLED;NV_CLOTH_IMPORT=;PX_CALL_CONV=;CMAKE_INTDIR="profile"</PreprocessorDefinitions>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);_HAS_EXCEPTIONS=0;_PROFILE;PROFILE;NDEBUG;AZ_ENABLE_TRACING;AZ_ENABLE_DEBUG_TOOLS;AZ_BUILD_CONFIGURATION_TYPE=\"profile\";_ENABLE_EXTENDED_ALIGNED_STORAGE;_WIN32;WIN32;_WIN64;WIN64;NOMINMAX;EMFX_DEVELOPMENT_BUILD;OPENSSL_ENABLED;NV_CLOTH_IMPORT=;PX_CALL_CONV=;CMAKE_INTDIR=\"profile\"</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>C:\Users\lesaelr\o3de\Gems\NvCloth\Code\Include;C:\Users\lesaelr\o3de\Gems\NvCloth\Code\Source;C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\.;C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Include;C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Source;C:\Users\lesaelr\o3de\Gems\LmbrCentral\Code\include;C:\Users\lesaelr\o3de\Code\Framework\AzCore\.;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Common;C:\Users\lesaelr\o3de\Code\Framework\AzFramework\.;C:\Users\lesaelr\o3de\Code\Framework\AzFramework\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\GridMate\.;C:\Users\lesaelr\o3de\Code\Framework\GridMate\Platform\Windows;C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\.;C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\..;C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AtomCore\.;C:\Users\lesaelr\o3de\Gems\Atom\RPI\Code\Include;C:\Users\lesaelr\o3de\Gems\Atom\RPI\Code\External;C:\Users\lesaelr\o3de\Gems\Atom\RHI\Code\Include;C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Include;C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Include;C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\3rdParty\ACES;C:\Users\lesaelr\o3de\Gems\Atom\Utils\Code\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+    </ResourceCompile>
+    <Midl>
+      <AdditionalIncludeDirectories>C:\Users\lesaelr\o3de\Gems\NvCloth\Code\Include;C:\Users\lesaelr\o3de\Gems\NvCloth\Code\Source;C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\.;C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Include;C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Source;C:\Users\lesaelr\o3de\Gems\LmbrCentral\Code\include;C:\Users\lesaelr\o3de\Code\Framework\AzCore\.;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Common;C:\Users\lesaelr\o3de\Code\Framework\AzFramework\.;C:\Users\lesaelr\o3de\Code\Framework\AzFramework\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\GridMate\.;C:\Users\lesaelr\o3de\Code\Framework\GridMate\Platform\Windows;C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\.;C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\..;C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AtomCore\.;C:\Users\lesaelr\o3de\Gems\Atom\RPI\Code\Include;C:\Users\lesaelr\o3de\Gems\Atom\RPI\Code\External;C:\Users\lesaelr\o3de\Gems\Atom\RHI\Code\Include;C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Include;C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Include;C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\3rdParty\ACES;C:\Users\lesaelr\o3de\Gems\Atom\Utils\Code\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+    <Lib>
+      <AdditionalOptions>%(AdditionalOptions) /machine:x64 /IGNORE:4099</AdditionalOptions>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <TargetMachine>MachineX64</TargetMachine>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='release|x64'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>C:\Users\lesaelr\o3de\Gems\NvCloth\Code\Include;C:\Users\lesaelr\o3de\Gems\NvCloth\Code\Source;C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\.;C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Include;C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Source;C:\Users\lesaelr\o3de\Gems\LmbrCentral\Code\include;C:\Users\lesaelr\o3de\Code\Framework\AzCore\.;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Common;C:\Users\lesaelr\o3de\Code\Framework\AzFramework\.;C:\Users\lesaelr\o3de\Code\Framework\AzFramework\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\GridMate\.;C:\Users\lesaelr\o3de\Code\Framework\GridMate\Platform\Windows;C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\.;C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\..;C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AtomCore\.;C:\Users\lesaelr\o3de\Gems\Atom\RPI\Code\Include;C:\Users\lesaelr\o3de\Gems\Atom\RPI\Code\External;C:\Users\lesaelr\o3de\Gems\Atom\RHI\Code\Include;C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Include;C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Include;C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\3rdParty\ACES;C:\Users\lesaelr\o3de\Gems\Atom\Utils\Code\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalOptions>%(AdditionalOptions) /Zc:__cplusplus /Zc:lambda /favor:AMD64 /bigobj /experimental:external /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/Lua-5.3.5-rev5-windows/lua/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/RapidJSON-1.1.0-rev1-multiplatform/RapidJSON/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/RapidXML-1.13-rev1-multiplatform/RapidXML/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/zlib-1.2.11-rev2-windows/zlib/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/zstd-1.35-multiplatform/zstd/lib /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/cityhash-1.1-multiplatform/cityhash/src /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/OpenSSL-1.1.1b-rev2-windows/OpenSSL/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/lz4-1.9.3-vcpkg-rev4-windows/lz4/lz4/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/NvCloth-v1.1.6-4-gd243404-pr58-rev1-windows/NvCloth/NvCloth/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/NvCloth-v1.1.6-4-gd243404-pr58-rev1-windows/NvCloth/NvCloth/extensions/include /external:IC:/Users/lesaelr/.o3de/3rdParty/packages/NvCloth-v1.1.6-4-gd243404-pr58-rev1-windows/NvCloth/PxShared/include</AdditionalOptions>
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <CallingConvention>Cdecl</CallingConvention>
+      <ConformanceMode>true</ConformanceMode>
+      <DiagnosticsFormat>Caret</DiagnosticsFormat>
+      <DisableSpecificWarnings>4201</DisableSpecificWarnings>
+      <ExceptionHandling>
+      </ExceptionHandling>
+      <ExternalWarningLevel>TurnOffAllWarnings</ExternalWarningLevel>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <FloatingPointModel>Fast</FloatingPointModel>
+      <ForceConformanceInForLoopScope>true</ForceConformanceInForLoopScope>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <OmitFramePointers>true</OmitFramePointers>
+      <Optimization>Full</Optimization>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <TreatSpecificWarningsAsErrors>4263;4264;4265;4266;4296;4426;4437;4774;4777;5031;5032;5233</TreatSpecificWarningsAsErrors>
+      <TreatWarningAsError>true</TreatWarningAsError>
+      <UseFullPaths>false</UseFullPaths>
+      <WarningLevel>Level4</WarningLevel>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);_HAS_EXCEPTIONS=0;_RELEASE;RELEASE;NDEBUG;AZ_BUILD_CONFIGURATION_TYPE="release";_ENABLE_EXTENDED_ALIGNED_STORAGE;_WIN32;WIN32;_WIN64;WIN64;NOMINMAX;EMFX_DEVELOPMENT_BUILD;OPENSSL_ENABLED;NV_CLOTH_IMPORT=;PX_CALL_CONV=;CMAKE_INTDIR="release"</PreprocessorDefinitions>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+      <DebugInformationFormat>
+      </DebugInformationFormat>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);_HAS_EXCEPTIONS=0;_RELEASE;RELEASE;NDEBUG;AZ_BUILD_CONFIGURATION_TYPE=\"release\";_ENABLE_EXTENDED_ALIGNED_STORAGE;_WIN32;WIN32;_WIN64;WIN64;NOMINMAX;EMFX_DEVELOPMENT_BUILD;OPENSSL_ENABLED;NV_CLOTH_IMPORT=;PX_CALL_CONV=;CMAKE_INTDIR=\"release\"</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>C:\Users\lesaelr\o3de\Gems\NvCloth\Code\Include;C:\Users\lesaelr\o3de\Gems\NvCloth\Code\Source;C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\.;C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Include;C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Source;C:\Users\lesaelr\o3de\Gems\LmbrCentral\Code\include;C:\Users\lesaelr\o3de\Code\Framework\AzCore\.;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Common;C:\Users\lesaelr\o3de\Code\Framework\AzFramework\.;C:\Users\lesaelr\o3de\Code\Framework\AzFramework\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\GridMate\.;C:\Users\lesaelr\o3de\Code\Framework\GridMate\Platform\Windows;C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\.;C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\..;C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AtomCore\.;C:\Users\lesaelr\o3de\Gems\Atom\RPI\Code\Include;C:\Users\lesaelr\o3de\Gems\Atom\RPI\Code\External;C:\Users\lesaelr\o3de\Gems\Atom\RHI\Code\Include;C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Include;C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Include;C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\3rdParty\ACES;C:\Users\lesaelr\o3de\Gems\Atom\Utils\Code\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+    </ResourceCompile>
+    <Midl>
+      <AdditionalIncludeDirectories>C:\Users\lesaelr\o3de\Gems\NvCloth\Code\Include;C:\Users\lesaelr\o3de\Gems\NvCloth\Code\Source;C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\.;C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Include;C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Source;C:\Users\lesaelr\o3de\Gems\LmbrCentral\Code\include;C:\Users\lesaelr\o3de\Code\Framework\AzCore\.;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AzCore\Platform\Common;C:\Users\lesaelr\o3de\Code\Framework\AzFramework\.;C:\Users\lesaelr\o3de\Code\Framework\AzFramework\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\GridMate\.;C:\Users\lesaelr\o3de\Code\Framework\GridMate\Platform\Windows;C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\.;C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\..;C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\Platform\Windows;C:\Users\lesaelr\o3de\Code\Framework\AtomCore\.;C:\Users\lesaelr\o3de\Gems\Atom\RPI\Code\Include;C:\Users\lesaelr\o3de\Gems\Atom\RPI\Code\External;C:\Users\lesaelr\o3de\Gems\Atom\RHI\Code\Include;C:\Users\lesaelr\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Include;C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Include;C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\3rdParty\ACES;C:\Users\lesaelr\o3de\Gems\Atom\Utils\Code\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+    <Lib>
+      <AdditionalOptions>%(AdditionalOptions) /machine:x64 /IGNORE:4099</AdditionalOptions>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <TargetMachine>MachineX64</TargetMachine>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Gems\NvCloth\Code\CMakeLists.txt">
+      <UseUtf8Encoding>Always</UseUtf8Encoding>
+      <Message Condition="'$(Configuration)|$(Platform)'=='debug|x64'">Building Custom Rule C:/Users/lesaelr/o3de/Gems/NvCloth/Code/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='debug|x64'">setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SC:/Users/lesaelr/o3de -BC:/Users/lesaelr/o3de --check-stamp-file C:/Users/lesaelr/o3de/External/NvCloth-2c209df5/Code/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='debug|x64'">C:\Users\lesaelr\.o3de\3rdParty\packages\NvCloth-v1.1.6-4-gd243404-pr58-rev1-windows\FindNvCloth.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\NvCloth-v1.1.6-4-gd243404-pr58-rev1-windows\PackageInfo.json;C:\Users\lesaelr\o3de\Gems\NvCloth\Code\Platform\Windows\PAL_windows.cmake;C:\Users\lesaelr\o3de\Gems\NvCloth\Code\nvcloth_editor_files.cmake;C:\Users\lesaelr\o3de\Gems\NvCloth\Code\nvcloth_editor_shared_files.cmake;C:\Users\lesaelr\o3de\Gems\NvCloth\Code\nvcloth_editor_tests_files.cmake;C:\Users\lesaelr\o3de\Gems\NvCloth\Code\nvcloth_files.cmake;C:\Users\lesaelr\o3de\Gems\NvCloth\Code\nvcloth_shared_files.cmake;C:\Users\lesaelr\o3de\Gems\NvCloth\Code\nvcloth_tests_files.cmake;C:\Users\lesaelr\o3de\cmake\Platform\Windows\LYTestWrappers_windows.cmake;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='debug|x64'">C:\Users\lesaelr\o3de\External\NvCloth-2c209df5\Code\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='debug|x64'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='profile|x64'">Building Custom Rule C:/Users/lesaelr/o3de/Gems/NvCloth/Code/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='profile|x64'">setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SC:/Users/lesaelr/o3de -BC:/Users/lesaelr/o3de --check-stamp-file C:/Users/lesaelr/o3de/External/NvCloth-2c209df5/Code/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='profile|x64'">C:\Users\lesaelr\.o3de\3rdParty\packages\NvCloth-v1.1.6-4-gd243404-pr58-rev1-windows\FindNvCloth.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\NvCloth-v1.1.6-4-gd243404-pr58-rev1-windows\PackageInfo.json;C:\Users\lesaelr\o3de\Gems\NvCloth\Code\Platform\Windows\PAL_windows.cmake;C:\Users\lesaelr\o3de\Gems\NvCloth\Code\nvcloth_editor_files.cmake;C:\Users\lesaelr\o3de\Gems\NvCloth\Code\nvcloth_editor_shared_files.cmake;C:\Users\lesaelr\o3de\Gems\NvCloth\Code\nvcloth_editor_tests_files.cmake;C:\Users\lesaelr\o3de\Gems\NvCloth\Code\nvcloth_files.cmake;C:\Users\lesaelr\o3de\Gems\NvCloth\Code\nvcloth_shared_files.cmake;C:\Users\lesaelr\o3de\Gems\NvCloth\Code\nvcloth_tests_files.cmake;C:\Users\lesaelr\o3de\cmake\Platform\Windows\LYTestWrappers_windows.cmake;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='profile|x64'">C:\Users\lesaelr\o3de\External\NvCloth-2c209df5\Code\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='profile|x64'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='release|x64'">Building Custom Rule C:/Users/lesaelr/o3de/Gems/NvCloth/Code/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='release|x64'">setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SC:/Users/lesaelr/o3de -BC:/Users/lesaelr/o3de --check-stamp-file C:/Users/lesaelr/o3de/External/NvCloth-2c209df5/Code/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='release|x64'">C:\Users\lesaelr\.o3de\3rdParty\packages\NvCloth-v1.1.6-4-gd243404-pr58-rev1-windows\FindNvCloth.cmake;C:\Users\lesaelr\.o3de\3rdParty\packages\NvCloth-v1.1.6-4-gd243404-pr58-rev1-windows\PackageInfo.json;C:\Users\lesaelr\o3de\Gems\NvCloth\Code\Platform\Windows\PAL_windows.cmake;C:\Users\lesaelr\o3de\Gems\NvCloth\Code\nvcloth_editor_files.cmake;C:\Users\lesaelr\o3de\Gems\NvCloth\Code\nvcloth_editor_shared_files.cmake;C:\Users\lesaelr\o3de\Gems\NvCloth\Code\nvcloth_editor_tests_files.cmake;C:\Users\lesaelr\o3de\Gems\NvCloth\Code\nvcloth_files.cmake;C:\Users\lesaelr\o3de\Gems\NvCloth\Code\nvcloth_shared_files.cmake;C:\Users\lesaelr\o3de\Gems\NvCloth\Code\nvcloth_tests_files.cmake;C:\Users\lesaelr\o3de\cmake\Platform\Windows\LYTestWrappers_windows.cmake;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='release|x64'">C:\Users\lesaelr\o3de\External\NvCloth-2c209df5\Code\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='release|x64'">false</LinkObjects>
+    </CustomBuild>
+  </ItemGroup>
+  <PropertyGroup>
+    <EnableUnitySupport>true</EnableUnitySupport>
+  </PropertyGroup>
+  <ItemGroup>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\NvCloth-2c209df5\Code\CMakeFiles\NvCloth.Static.dir\Unity\unity_1_cxx.cxx" IncludeInUnityFile="false" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/NvCloth-2c209df5/Code/CMakeFiles/NvCloth.Static.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\NvCloth-2c209df5\Code\CMakeFiles\NvCloth.Static.dir\Unity\unity_0_cxx.cxx" IncludeInUnityFile="false" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/NvCloth-2c209df5/Code/CMakeFiles/NvCloth.Static.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\NvCloth\Code\Include\NvCloth\IClothSystem.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\NvCloth\Code\Include\NvCloth\ISolver.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\NvCloth\Code\Include\NvCloth\ICloth.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\NvCloth\Code\Include\NvCloth\IClothConfigurator.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\NvCloth\Code\Include\NvCloth\IFabricCooker.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\NvCloth\Code\Include\NvCloth\ITangentSpaceHelper.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\NvCloth\Code\Include\NvCloth\Types.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\NvCloth\Code\Source\Components\ClothComponent.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/NvCloth-2c209df5/Code/CMakeFiles/NvCloth.Static.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\NvCloth\Code\Source\Components\ClothComponent.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\NvCloth\Code\Source\Components\ClothConfiguration.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/NvCloth-2c209df5/Code/CMakeFiles/NvCloth.Static.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\NvCloth\Code\Source\Components\ClothConfiguration.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\NvCloth\Code\Source\Components\ClothComponentMesh\ClothComponentMesh.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/NvCloth-2c209df5/Code/CMakeFiles/NvCloth.Static.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\NvCloth\Code\Source\Components\ClothComponentMesh\ClothComponentMesh.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\NvCloth\Code\Source\Components\ClothComponentMesh\ClothConstraints.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/NvCloth-2c209df5/Code/CMakeFiles/NvCloth.Static.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\NvCloth\Code\Source\Components\ClothComponentMesh\ClothConstraints.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\NvCloth\Code\Source\Components\ClothComponentMesh\ActorClothColliders.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/NvCloth-2c209df5/Code/CMakeFiles/NvCloth.Static.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\NvCloth\Code\Source\Components\ClothComponentMesh\ActorClothColliders.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\NvCloth\Code\Source\Components\ClothComponentMesh\ActorClothSkinning.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/NvCloth-2c209df5/Code/CMakeFiles/NvCloth.Static.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\NvCloth\Code\Source\Components\ClothComponentMesh\ActorClothSkinning.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\NvCloth\Code\Source\Components\ClothComponentMesh\ClothDebugDisplay.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/NvCloth-2c209df5/Code/CMakeFiles/NvCloth.Static.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\NvCloth\Code\Source\Components\ClothComponentMesh\ClothDebugDisplay.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\NvCloth\Code\Source\System\SystemComponent.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/NvCloth-2c209df5/Code/CMakeFiles/NvCloth.Static.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\NvCloth\Code\Source\System\SystemComponent.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\NvCloth\Code\Source\System\Factory.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/NvCloth-2c209df5/Code/CMakeFiles/NvCloth.Static.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\NvCloth\Code\Source\System\Factory.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\NvCloth\Code\Source\System\Solver.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/NvCloth-2c209df5/Code/CMakeFiles/NvCloth.Static.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\NvCloth\Code\Source\System\Solver.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\NvCloth\Code\Source\System\Cloth.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/NvCloth-2c209df5/Code/CMakeFiles/NvCloth.Static.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\NvCloth\Code\Source\System\Cloth.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\NvCloth\Code\Source\System\Fabric.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\NvCloth\Code\Source\System\FabricCooker.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/NvCloth-2c209df5/Code/CMakeFiles/NvCloth.Static.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\NvCloth\Code\Source\System\FabricCooker.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\NvCloth\Code\Source\System\TangentSpaceHelper.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/NvCloth-2c209df5/Code/CMakeFiles/NvCloth.Static.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\NvCloth\Code\Source\System\TangentSpaceHelper.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\NvCloth\Code\Source\System\NvTypes.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\NvCloth\Code\Source\System\NvTypes.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/NvCloth-2c209df5/Code/CMakeFiles/NvCloth.Static.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\NvCloth\Code\Source\Utils\Allocators.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\NvCloth\Code\Source\Utils\AssetHelper.h" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\NvCloth\Code\Source\Utils\AssetHelper.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/NvCloth-2c209df5/Code/CMakeFiles/NvCloth.Static.dir/Unity" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\NvCloth\Code\Source\Utils\MeshAssetHelper.cpp" IncludeInUnityFile="true" CustomUnityFile="true" UnityFilesDirectory="C:/Users/lesaelr/o3de/External/NvCloth-2c209df5/Code/CMakeFiles/NvCloth.Static.dir/Unity" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\NvCloth\Code\Source\Utils\MeshAssetHelper.h" />
+    <None Include="C:\Users\lesaelr\o3de\Gems\NvCloth\Code\nvcloth_files.cmake">
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\ZERO_CHECK.vcxproj">
+      <Project>{CDE32B4E-8490-3FC5-A3F2-976A0A5DE45E}</Project>
+      <Name>ZERO_CHECK</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\Code\Framework\AtomCore\AtomCore.vcxproj">
+      <Project>{6D55F49F-9D52-3893-81A0-A8698549AB69}</Project>
+      <Name>AtomCore</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\External\AtomLyIntegration-c3d5e932\CommonFeatures\Code\AtomLyIntegration_CommonFeatures.Public.vcxproj">
+      <Project>{617943C8-9D54-3E05-B08F-79A600BDD733}</Project>
+      <Name>AtomLyIntegration_CommonFeatures.Public</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\External\Atom-418206cc\Feature\Common\Code\Atom_Feature_Common.Public.vcxproj">
+      <Project>{D8CA174F-38B6-3076-82BE-72BE91AC1156}</Project>
+      <Name>Atom_Feature_Common.Public</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\External\Atom-418206cc\RHI\Code\Atom_RHI.Public.vcxproj">
+      <Project>{2E32222C-434D-3353-967C-88B4AA98F8F8}</Project>
+      <Name>Atom_RHI.Public</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\External\Atom-418206cc\RHI\Code\Atom_RHI.Reflect.vcxproj">
+      <Project>{34A5B279-91CB-334A-9CD9-0B3CFB872F2C}</Project>
+      <Name>Atom_RHI.Reflect</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\External\Atom-418206cc\RPI\Code\Atom_RPI.Public.vcxproj">
+      <Project>{ABB218FB-FD4C-33F6-B91D-28BD20400532}</Project>
+      <Name>Atom_RPI.Public</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\External\Atom-418206cc\Utils\Code\Atom_Utils.Static.vcxproj">
+      <Project>{094C724A-A8F2-33E3-8B7F-A0D452CB43A0}</Project>
+      <Name>Atom_Utils.Static</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\AzCore.vcxproj">
+      <Project>{8AC0D8DF-6487-39C7-A5F3-F77355B1ACD9}</Project>
+      <Name>AzCore</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\Code\Framework\AzFramework\AzFramework.vcxproj">
+      <Project>{E4BA859A-1109-3DBC-887D-DBC80D0DD65A}</Project>
+      <Name>AzFramework</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\Code\Legacy\CryCommon\CryCommon.vcxproj">
+      <Project>{CA3B5D54-5095-3557-9270-FD4F882B4C66}</Project>
+      <Name>CryCommon</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\External\EMotionFX-34d60ee3\Code\EMotionFXStaticLib.vcxproj">
+      <Project>{C3EEEEA5-78C3-33F2-8E25-E88BB964A847}</Project>
+      <Name>EMotionFXStaticLib</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\lesaelr\o3de\Code\Framework\GridMate\GridMate.vcxproj">
+      <Project>{FE67A854-57A6-3513-BAEF-9A7AC0A253E8}</Project>
+      <Name>GridMate</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

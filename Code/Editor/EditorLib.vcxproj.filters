@@ -1,0 +1,2333 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\EditorLib_autogen\mocs_compilation_debug.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\CMakeFiles\EditorLib.dir\Unity\unity_29_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\CMakeFiles\EditorLib.dir\Unity\unity_28_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\CMakeFiles\EditorLib.dir\Unity\unity_27_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\CMakeFiles\EditorLib.dir\Unity\unity_26_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\CMakeFiles\EditorLib.dir\Unity\unity_25_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\CMakeFiles\EditorLib.dir\Unity\unity_24_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\CMakeFiles\EditorLib.dir\Unity\unity_23_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\CMakeFiles\EditorLib.dir\Unity\unity_22_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\CMakeFiles\EditorLib.dir\Unity\unity_21_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\CMakeFiles\EditorLib.dir\Unity\unity_20_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\CMakeFiles\EditorLib.dir\Unity\unity_19_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\CMakeFiles\EditorLib.dir\Unity\unity_18_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\CMakeFiles\EditorLib.dir\Unity\unity_17_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\CMakeFiles\EditorLib.dir\Unity\unity_16_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\CMakeFiles\EditorLib.dir\Unity\unity_15_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\CMakeFiles\EditorLib.dir\Unity\unity_14_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\CMakeFiles\EditorLib.dir\Unity\unity_13_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\CMakeFiles\EditorLib.dir\Unity\unity_12_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\CMakeFiles\EditorLib.dir\Unity\unity_11_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\CMakeFiles\EditorLib.dir\Unity\unity_10_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\CMakeFiles\EditorLib.dir\Unity\unity_9_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\CMakeFiles\EditorLib.dir\Unity\unity_8_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\CMakeFiles\EditorLib.dir\Unity\unity_7_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\CMakeFiles\EditorLib.dir\Unity\unity_6_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\CMakeFiles\EditorLib.dir\Unity\unity_5_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\CMakeFiles\EditorLib.dir\Unity\unity_4_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\CMakeFiles\EditorLib.dir\Unity\unity_3_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\CMakeFiles\EditorLib.dir\Unity\unity_2_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\CMakeFiles\EditorLib.dir\Unity\unity_1_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\CMakeFiles\EditorLib.dir\Unity\unity_0_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\Plugin.cpp" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\PluginManager.cpp" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\IEditorImpl.cpp" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\CryEditPy.cpp" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\CryEdit.cpp" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\CVarMenu.cpp" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\EditorToolsApplication.cpp" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\Core\EditorMetricsPlainTextNameRegistration.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\MainWindow.cpp" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\Core\QtEditorApplication.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\Core\LevelEditorMenuHandler.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\StartupTraceHandler.cpp" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\LevelTreeModel.cpp" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\Util\AffineParts.cpp">
+      <Filter>Util</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\Objects\BaseObject.cpp">
+      <Filter>Objects</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\Animation\AnimationBipedBoneNames.cpp">
+      <Filter>Animation</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\AnimationContext.cpp" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\AzAssetBrowser\AzAssetBrowserRequestHandler.cpp">
+      <Filter>AzAssetBrowser</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\AzAssetBrowser\AzAssetBrowserWindow.cpp">
+      <Filter>AzAssetBrowser</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\AssetDatabase\AssetDatabaseLocationListener.cpp">
+      <Filter>AssetDatabase</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\AssetImporter\AssetImporterManager\AssetImporterDragAndDropHandler.cpp">
+      <Filter>AssetImporter\AssetImporterManager</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\AssetImporter\AssetImporterManager\AssetImporterManager.cpp">
+      <Filter>AssetImporter\AssetImporterManager</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\AssetImporter\UI\FilesAlreadyExistDialog.cpp">
+      <Filter>AssetImporter\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\AssetImporter\UI\ProcessingAssetsDialog.cpp">
+      <Filter>AssetImporter\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\AssetImporter\UI\SelectDestinationDialog.cpp">
+      <Filter>AssetImporter\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\AssetEditor\AssetEditorRequestsHandler.cpp">
+      <Filter>AssetEditor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\AssetEditor\AssetEditorWindow.cpp">
+      <Filter>AssetEditor</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\Commands\CommandManager.cpp">
+      <Filter>Commands</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\Controls\BitmapToolTip.cpp">
+      <Filter>Controls</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\Controls\ColorGradientCtrl.cpp">
+      <Filter>Controls</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\Controls\ConsoleSCB.cpp">
+      <Filter>Controls</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\Controls\FolderTreeCtrl.cpp">
+      <Filter>Controls</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\Controls\HotTrackingTreeCtrl.cpp">
+      <Filter>Controls</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\Controls\ImageHistogramCtrl.cpp">
+      <Filter>Controls</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\Controls\ImageListCtrl.cpp">
+      <Filter>Controls</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\Controls\MultiMonHelper.cpp">
+      <Filter>Controls</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\Controls\NumberCtrl.cpp">
+      <Filter>Controls</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\Controls\SplineCtrl.cpp">
+      <Filter>Controls</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\Controls\SplineCtrlEx.cpp">
+      <Filter>Controls</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\Controls\TextEditorCtrl.cpp">
+      <Filter>Controls</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\Controls\TimelineCtrl.cpp">
+      <Filter>Controls</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\Controls\ReflectedPropertyControl\PropertyGenericCtrl.cpp">
+      <Filter>Controls\ReflectedPropertyControl</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\Controls\ReflectedPropertyControl\PropertyMiscCtrl.cpp">
+      <Filter>Controls\ReflectedPropertyControl</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\Controls\ReflectedPropertyControl\PropertyMotionCtrl.cpp">
+      <Filter>Controls\ReflectedPropertyControl</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\Controls\ReflectedPropertyControl\PropertyResourceCtrl.cpp">
+      <Filter>Controls\ReflectedPropertyControl</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\Controls\ReflectedPropertyControl\PropertyCtrl.cpp">
+      <Filter>Controls\ReflectedPropertyControl</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\MainStatusBar.cpp" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\CrtDebug.cpp" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\CryEditDoc.cpp" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\GameEngine.cpp" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\LogFile.cpp" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\ActionManager.cpp" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\ShortcutDispatcher.cpp" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\BaseLibraryManager.cpp" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\CheckOutDialog.cpp" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\ConsoleDialog.cpp" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\CustomAspectRatioDlg.cpp" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\CustomResolutionDlg.cpp" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\ErrorReportDialog.cpp" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\GenericSelectItemDialog.cpp" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\GotoPositionDlg.cpp" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\LayoutConfigDialog.cpp" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\LevelFileDialog.cpp" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\QuickAccessBar.cpp" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\ResizeResolutionDialog.cpp" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\SelectEAXPresetDlg.cpp" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\SelectLightAnimationDialog.cpp" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\SelectSequenceDialog.cpp" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\StartupLogoDialog.cpp" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\StringDlg.cpp" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\ToolbarCustomizationDialog.cpp" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\ToolbarManager.cpp" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\ToolsConfigPage.cpp" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\UndoDropDown.cpp" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\DimensionsDialog.cpp" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\NewLevelDialog.cpp" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\Dialogs\PythonScriptsDialog.cpp">
+      <Filter>Dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\Dialogs\Generic\UserOptions.cpp">
+      <Filter>Dialogs\Generic</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\Export\ExportManager.cpp">
+      <Filter>Export</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\Export\OBJExporter.cpp">
+      <Filter>Export</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\Export\OCMExporter.cpp">
+      <Filter>Export</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\EditorFileMonitor.cpp" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\GameExporter.cpp" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\GameResourcesExporter.cpp" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\Geometry\TriMesh.cpp">
+      <Filter>Geometry</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\LevelIndependentFileMan.cpp" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\LogFileImpl.cpp" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\Objects\ClassDesc.cpp">
+      <Filter>Objects</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\Objects\SelectionGroup.cpp">
+      <Filter>Objects</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\Objects\SubObjSelection.cpp">
+      <Filter>Objects</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\Objects\ObjectLoader.cpp">
+      <Filter>Objects</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\Objects\ObjectManager.cpp">
+      <Filter>Objects</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\Objects\ObjectManagerLegacyUndo.cpp">
+      <Filter>Objects</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\Objects\DisplayContext.cpp">
+      <Filter>Objects</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\Objects\EntityObject.cpp">
+      <Filter>Objects</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\Objects\AxisGizmo.cpp">
+      <Filter>Objects</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\Objects\Gizmo.cpp">
+      <Filter>Objects</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\Objects\GizmoManager.cpp">
+      <Filter>Objects</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\Objects\LineGizmo.cpp">
+      <Filter>Objects</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\Objects\TrackGizmo.cpp">
+      <Filter>Objects</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\PythonEditorFuncs.cpp" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\QtUI\QCollapsibleGroupBox.cpp">
+      <Filter>QtUI</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\QtUI\ClickableLabel.cpp">
+      <Filter>QtUI</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\QtUI\PixmapLabelPreview.cpp">
+      <Filter>QtUI</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\QtUI\WaitCursor.cpp">
+      <Filter>QtUI</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\RenderHelpers\AxisHelper.cpp">
+      <Filter>RenderHelpers</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\CustomizeKeyboardDialog.cpp" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\KeyboardCustomizationSettings.cpp" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\Settings.cpp" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\SettingsManager.cpp" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\SettingsManagerDialog.cpp" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\PreferencesStdPages.cpp" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\EditorPreferencesPageGeneral.cpp" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\EditorPreferencesPageFiles.cpp" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\EditorPreferencesPageViewportGeneral.cpp" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\EditorPreferencesPageViewportManipulator.cpp" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\EditorPreferencesPageViewportCamera.cpp" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\EditorPreferencesPageViewportDebug.cpp" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\EditorPreferencesPageExperimentalLighting.cpp" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\EditorPreferencesPageAWS.cpp" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\EditorPreferencesDialog.cpp" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\EditorPreferencesTreeWidgetItem.cpp" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\EditorPreferencesTreeWidgetItemDelegate.cpp" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\AboutDialog.cpp" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\ErrorReportTableModel.cpp" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\EditMode\DeepSelection.cpp">
+      <Filter>EditMode</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\FBXExporterDialog.cpp" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\FileTypeUtils.cpp" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\LightmapCompiler\SimpleTriangleRasterizer.cpp">
+      <Filter>LightmapCompiler</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\ToolBox.cpp" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\TrackViewNewSequenceDialog.cpp" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\UndoConfigSpec.cpp" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\UndoViewPosition.cpp" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\UndoViewRotation.cpp" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\WipFeatureManager.cpp" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\WipFeaturesDlg.cpp" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\Dialogs\ErrorsDlg.cpp">
+      <Filter>Dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\DisplaySettings.cpp" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\DisplaySettingsPythonFuncs.cpp" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\ErrorReport.cpp" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\IconManager.cpp" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\LevelInfo.cpp" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\ProcessInfo.cpp" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\SurfaceTypeValidator.cpp" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\TrackView\AtomOutputFrameCapture.cpp">
+      <Filter>TrackView</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\TrackView\TrackViewDialog.cpp">
+      <Filter>TrackView</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\TrackView\TrackViewDopeSheetBase.cpp">
+      <Filter>TrackView</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\TrackView\TrackViewDoubleSpinBox.cpp">
+      <Filter>TrackView</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\TrackView\TrackViewPythonFuncs.cpp">
+      <Filter>TrackView</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\TrackView\TrackViewSequenceManager.cpp">
+      <Filter>TrackView</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\TrackView\TrackViewUndo.cpp">
+      <Filter>TrackView</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\TrackView\CommentNodeAnimator.cpp">
+      <Filter>TrackView</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\TrackView\DirectorNodeAnimator.cpp">
+      <Filter>TrackView</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\TrackViewExportKeyTimeDlg.cpp" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\TrackView\SequenceBatchRenderDialog.cpp">
+      <Filter>TrackView</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\TrackView\TrackViewCurveEditor.cpp">
+      <Filter>TrackView</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\TrackView\TrackViewFindDlg.cpp">
+      <Filter>TrackView</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\TrackView\TrackViewKeyPropertiesDlg.cpp">
+      <Filter>TrackView</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\TrackView\TrackViewNodes.cpp">
+      <Filter>TrackView</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\TrackView\TrackViewSplineCtrl.cpp">
+      <Filter>TrackView</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\TrackView\TrackViewTimeline.cpp">
+      <Filter>TrackView</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\TrackViewFBXImportPreviewDialog.cpp" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\TrackView\TVCustomizeTrackColorsDlg.cpp">
+      <Filter>TrackView</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\TrackView\2DBezierKeyUIControls.cpp">
+      <Filter>TrackView</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\TrackView\AssetBlendKeyUIControls.cpp">
+      <Filter>TrackView</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\TrackView\CaptureKeyUIControls.cpp">
+      <Filter>TrackView</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\TrackView\ConsoleKeyUIControls.cpp">
+      <Filter>TrackView</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\TrackView\EventKeyUIControls.cpp">
+      <Filter>TrackView</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\TrackView\GotoKeyUIControls.cpp">
+      <Filter>TrackView</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\TrackView\SelectKeyUIControls.cpp">
+      <Filter>TrackView</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\TrackView\SequenceKeyUIControls.cpp">
+      <Filter>TrackView</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\TrackView\SoundKeyUIControls.cpp">
+      <Filter>TrackView</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\TrackView\TrackEventKeyUIControls.cpp">
+      <Filter>TrackView</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\TrackView\TVEventsDialog.cpp">
+      <Filter>TrackView</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\TrackView\TVSequenceProps.cpp">
+      <Filter>TrackView</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\TrackView\CommentKeyUIControls.cpp">
+      <Filter>TrackView</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\TrackView\ScreenFaderKeyUIControls.cpp">
+      <Filter>TrackView</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\TrackView\TimeRangeKeyUIControls.cpp">
+      <Filter>TrackView</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\TrackView\TrackViewAnimNode.cpp">
+      <Filter>TrackView</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\TrackView\TrackViewTrack.cpp">
+      <Filter>TrackView</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\TrackView\TrackViewNode.cpp">
+      <Filter>TrackView</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\TrackView\TrackViewSequence.cpp">
+      <Filter>TrackView</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\TrackView\TrackViewNodeFactories.cpp">
+      <Filter>TrackView</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\TrackView\TrackViewEventNode.cpp">
+      <Filter>TrackView</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\ConfigGroup.cpp" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\Util\AutoLogTime.cpp">
+      <Filter>Util</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\Util\AutoDirectoryRestoreFileDialog.cpp">
+      <Filter>Util</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\Util\DynamicArray2D.cpp">
+      <Filter>Util</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\Util\EditorAutoLevelLoadTest.cpp">
+      <Filter>Util</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\Util\EditorUtils.cpp">
+      <Filter>Util</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\Util\FileEnum.cpp">
+      <Filter>Util</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\Util\FileUtil.cpp">
+      <Filter>Util</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\Util\GdiUtil.cpp">
+      <Filter>Util</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\Util\GeometryUtil.cpp">
+      <Filter>Util</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\Util\GuidUtil.cpp">
+      <Filter>Util</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\Util\KDTree.cpp">
+      <Filter>Util</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\Util\NamedData.cpp">
+      <Filter>Util</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\Util\PakFile.cpp">
+      <Filter>Util</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\Util\PredefinedAspectRatios.cpp">
+      <Filter>Util</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\Util\StringHelpers.cpp">
+      <Filter>Util</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\Util\Triangulate.cpp">
+      <Filter>Util</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\Util\XmlArchive.cpp">
+      <Filter>Util</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\Util\XmlTemplate.cpp">
+      <Filter>Util</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\WaitProgress.cpp" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\Util\FileUtil_impl.cpp">
+      <Filter>Util</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\Util\ImageUtil_impl.cpp">
+      <Filter>Util</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\Util\ColumnSortProxyModel.cpp">
+      <Filter>Util</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\Util\AbstractGroupProxyModel.cpp">
+      <Filter>Util</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\Util\AbstractSortModel.cpp">
+      <Filter>Util</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\Util\ColumnGroupProxyModel.cpp">
+      <Filter>Util</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\Util\ColumnGroupHeaderView.cpp">
+      <Filter>Util</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\Util\ColumnGroupItemDelegate.cpp">
+      <Filter>Util</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\Util\ColumnGroupTreeView.cpp">
+      <Filter>Util</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\Util\ModalWindowDismisser.cpp">
+      <Filter>Util</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\Util\3DConnexionDriver.cpp">
+      <Filter>Util</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\Util\FileChangeMonitor.cpp">
+      <Filter>Util</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\Util\ImageUtil.cpp">
+      <Filter>Util</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\Util\ImageASC.cpp">
+      <Filter>Util</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\Util\ImageBT.cpp">
+      <Filter>Util</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\Util\ImageGif.cpp">
+      <Filter>Util</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\Util\ImageTIF.cpp">
+      <Filter>Util</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\Util\UIEnumerations.cpp">
+      <Filter>Util</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\WelcomeScreen\WelcomeScreenDialog.cpp">
+      <Filter>WelcomeScreen</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\2DViewport.cpp" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\LayoutWnd.cpp" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\EditorViewportWidget.cpp" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\EditorViewportSettings.cpp" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\EditorViewportCamera.cpp" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\EditorModularViewportCameraComposer.cpp" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\ViewportManipulatorController.cpp" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\TopRendererWnd.cpp" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\ViewManager.cpp" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\ViewPane.cpp" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\Viewport.cpp" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\ViewportTitleDlg.cpp" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\EditorEnvironment.cpp" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\EditorPanelUtils.cpp" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\Platform\Windows\Util\Mailer_Windows.cpp">
+      <Filter>Platform\Windows\Util</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\EditorLib_autogen\EWIEGA46WW\qrc_MainWindow.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\EditorLib_autogen\RWI5I7HFOE\qrc_ConsoleSCB.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\EditorLib_autogen\EWIEGA46WW\qrc_LayoutConfigDialog.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\EditorLib_autogen\EWIEGA46WW\qrc_LevelFileDialog.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\EditorLib_autogen\EWIEGA46WW\qrc_StartupLogoDialog.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\EditorLib_autogen\EWIEGA46WW\qrc_WipFeaturesDlg.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\EditorLib_autogen\5TEU5FCKQB\qrc_TrackViewDialog.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\EditorLib_autogen\QHAH7VXK3V\qrc_WelcomeScreenDialog.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\EditorLib_autogen\mocs_compilation_profile.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Editor\EditorLib_autogen\mocs_compilation_release.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Plugin.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\PluginManager.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\IEditor.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\IEditorImpl.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\CryEdit.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\CVarMenu.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\EditorToolsApplication.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\EditorToolsApplicationAPI.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Core\EditorMetricsPlainTextNameRegistration.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\MainWindow.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Core\QtEditorApplication.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Core\LevelEditorMenuHandler.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\StartupTraceHandler.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\LevelTreeModel.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Include\Command.h">
+      <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Include\HitContext.h">
+      <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Include\IAnimationCompressionManager.h">
+      <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Include\IAssetItem.h">
+      <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Include\IAssetItemDatabase.h">
+      <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Include\ICommandManager.h">
+      <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Include\IConsoleConnectivity.h">
+      <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Include\IDataBaseItem.h">
+      <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Include\IDataBaseLibrary.h">
+      <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Include\IDataBaseManager.h">
+      <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Include\IDisplayViewport.h">
+      <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Include\IEditorClassFactory.h">
+      <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Include\IEventLoopHook.h">
+      <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Include\IExportManager.h">
+      <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Include\IGizmoManager.h">
+      <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Include\IIconManager.h">
+      <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Include\ILogFile.h">
+      <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Include\IKeyTimeSet.h">
+      <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Include\IObjectManager.h">
+      <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Include\IPlugin.h">
+      <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Include\IPreferencesPage.h">
+      <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Include\IRenderListener.h">
+      <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Include\ISourceControl.h">
+      <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Include\ITextureDatabaseUpdater.h">
+      <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Include\ITransformManipulator.h">
+      <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Include\IViewPane.h">
+      <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Include\ObjectEvent.h">
+      <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Objects\BaseObject.h">
+      <Filter>Objects</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Animation\AnimationBipedBoneNames.h">
+      <Filter>Animation</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\AnimationContext.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\AzAssetBrowser\AzAssetBrowserRequestHandler.h">
+      <Filter>AzAssetBrowser</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\AzAssetBrowser\AzAssetBrowserWindow.h">
+      <Filter>AzAssetBrowser</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\AssetDatabase\AssetDatabaseLocationListener.h">
+      <Filter>AssetDatabase</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\AssetImporter\AssetImporterManager\AssetImporterDragAndDropHandler.h">
+      <Filter>AssetImporter\AssetImporterManager</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\AssetImporter\AssetImporterManager\AssetImporterManager.h">
+      <Filter>AssetImporter\AssetImporterManager</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\AssetImporter\UI\FilesAlreadyExistDialog.h">
+      <Filter>AssetImporter\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\AssetImporter\UI\ProcessingAssetsDialog.h">
+      <Filter>AssetImporter\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\AssetImporter\UI\SelectDestinationDialog.h">
+      <Filter>AssetImporter\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\AssetEditor\AssetEditorRequestsHandler.h">
+      <Filter>AssetEditor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\AssetEditor\AssetEditorWindow.h">
+      <Filter>AssetEditor</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Commands\CommandManager.h">
+      <Filter>Commands</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Controls\BitmapToolTip.h">
+      <Filter>Controls</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Controls\ColorGradientCtrl.h">
+      <Filter>Controls</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Controls\ConsoleSCB.h">
+      <Filter>Controls</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Controls\FolderTreeCtrl.h">
+      <Filter>Controls</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Controls\HotTrackingTreeCtrl.h">
+      <Filter>Controls</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Controls\ImageHistogramCtrl.h">
+      <Filter>Controls</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Controls\ImageListCtrl.h">
+      <Filter>Controls</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Controls\MultiMonHelper.h">
+      <Filter>Controls</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Controls\NumberCtrl.h">
+      <Filter>Controls</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Controls\SplineCtrl.h">
+      <Filter>Controls</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Controls\SplineCtrlEx.h">
+      <Filter>Controls</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Controls\TextEditorCtrl.h">
+      <Filter>Controls</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Controls\TimelineCtrl.h">
+      <Filter>Controls</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Controls\WndGridHelper.h">
+      <Filter>Controls</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Controls\ReflectedPropertyControl\PropertyGenericCtrl.h">
+      <Filter>Controls\ReflectedPropertyControl</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Controls\ReflectedPropertyControl\PropertyMiscCtrl.h">
+      <Filter>Controls\ReflectedPropertyControl</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Controls\ReflectedPropertyControl\PropertyMotionCtrl.h">
+      <Filter>Controls\ReflectedPropertyControl</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Controls\ReflectedPropertyControl\PropertyResourceCtrl.h">
+      <Filter>Controls\ReflectedPropertyControl</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Controls\ReflectedPropertyControl\PropertyCtrl.h">
+      <Filter>Controls\ReflectedPropertyControl</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\MainStatusBar.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\MainStatusBarItems.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\CryEditDoc.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\EditorDefs.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\GameEngine.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Include\SandboxAPI.h">
+      <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\LogFile.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Resource.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\UserMessageDefines.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\ActionManager.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\ShortcutDispatcher.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\BaseLibraryItem.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\BaseLibraryManager.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\CheckOutDialog.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\ConsoleDialog.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\CustomAspectRatioDlg.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\CustomResolutionDlg.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\ErrorReportDialog.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\GenericSelectItemDialog.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\GotoPositionDlg.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\LayoutConfigDialog.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\LevelFileDialog.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\QuickAccessBar.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\ResizeResolutionDialog.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\SelectEAXPresetDlg.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\SelectLightAnimationDialog.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\SelectSequenceDialog.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\StartupLogoDialog.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\StringDlg.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\ToolbarCustomizationDialog.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\ToolbarManager.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\ToolsConfigPage.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\UndoDropDown.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\DimensionsDialog.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\NewLevelDialog.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Dialogs\PythonScriptsDialog.h">
+      <Filter>Dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Dialogs\Generic\UserOptions.h">
+      <Filter>Dialogs\Generic</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Export\ExportManager.h">
+      <Filter>Export</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Export\OBJExporter.h">
+      <Filter>Export</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Export\OCMExporter.h">
+      <Filter>Export</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\EditorFileMonitor.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Include\IEditorFileMonitor.h">
+      <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\GameExporter.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\GameResourcesExporter.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Geometry\TriMesh.h">
+      <Filter>Geometry</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\AboutDialog.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\DocMultiArchive.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\EditMode\DeepSelection.h">
+      <Filter>EditMode</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\FBXExporterDialog.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\FileTypeUtils.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\GridUtils.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\IObservable.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\IPostRenderer.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\LightmapCompiler\SimpleTriangleRasterizer.h">
+      <Filter>LightmapCompiler</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\ToolBox.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\TrackViewNewSequenceDialog.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\UndoConfigSpec.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\UndoViewPosition.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\UndoViewRotation.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Util\GeometryUtil.h">
+      <Filter>Util</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Util\KDTree.h">
+      <Filter>Util</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\WipFeaturesDlg.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\LevelIndependentFileMan.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\LogFileImpl.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Objects\ClassDesc.h">
+      <Filter>Objects</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Objects\DisplayContextShared.inl">
+      <Filter>Objects</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Objects\IEntityObjectListener.h">
+      <Filter>Objects</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Objects\SelectionGroup.h">
+      <Filter>Objects</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Objects\SubObjSelection.h">
+      <Filter>Objects</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Objects\ObjectLoader.h">
+      <Filter>Objects</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Objects\ObjectManager.h">
+      <Filter>Objects</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Objects\ObjectManagerLegacyUndo.h">
+      <Filter>Objects</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Objects\DisplayContext.h">
+      <Filter>Objects</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Objects\EntityObject.h">
+      <Filter>Objects</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Objects\AxisGizmo.h">
+      <Filter>Objects</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Objects\Gizmo.h">
+      <Filter>Objects</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Objects\GizmoManager.h">
+      <Filter>Objects</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Objects\LineGizmo.h">
+      <Filter>Objects</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Objects\TrackGizmo.h">
+      <Filter>Objects</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\PythonEditorFuncs.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\QtUI\QCollapsibleGroupBox.h">
+      <Filter>QtUI</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\QtUI\ClickableLabel.h">
+      <Filter>QtUI</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\QtUI\PixmapLabelPreview.h">
+      <Filter>QtUI</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\QtUI\WaitCursor.h">
+      <Filter>QtUI</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\RenderHelpers\AxisHelper.h">
+      <Filter>RenderHelpers</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\CustomizeKeyboardDialog.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\KeyboardCustomizationSettings.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\PreferencesStdPages.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\EditorPreferencesPageGeneral.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\EditorPreferencesPageFiles.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\EditorPreferencesPageViewportGeneral.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\EditorPreferencesPageViewportManipulator.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\EditorPreferencesPageViewportCamera.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\EditorPreferencesPageViewportDebug.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\EditorPreferencesPageExperimentalLighting.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\EditorPreferencesPageAWS.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\EditorPreferencesDialog.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\EditorPreferencesTreeWidgetItem.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\EditorPreferencesTreeWidgetItemDelegate.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Settings.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\SettingsManager.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\SettingsManagerDialog.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\ErrorReportTableModel.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\WipFeatureManager.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Dialogs\ErrorsDlg.h">
+      <Filter>Dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\DisplaySettings.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\DisplaySettingsPythonFuncs.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\ErrorReport.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\IconManager.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\LevelInfo.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\ProcessInfo.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Report.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\SurfaceTypeValidator.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\TrackView\AtomOutputFrameCapture.h">
+      <Filter>TrackView</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\TrackView\TrackViewDialog.h">
+      <Filter>TrackView</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\TrackView\TrackViewDopeSheetBase.h">
+      <Filter>TrackView</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\TrackView\TrackViewDoubleSpinBox.h">
+      <Filter>TrackView</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\TrackView\TrackViewPythonFuncs.h">
+      <Filter>TrackView</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\TrackView\TrackViewSequenceManager.h">
+      <Filter>TrackView</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\TrackView\TrackViewUndo.h">
+      <Filter>TrackView</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\TrackView\CommentNodeAnimator.h">
+      <Filter>TrackView</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\TrackView\DirectorNodeAnimator.h">
+      <Filter>TrackView</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\TrackViewExportKeyTimeDlg.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\TrackView\SequenceBatchRenderDialog.h">
+      <Filter>TrackView</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\TrackView\TrackViewCurveEditor.h">
+      <Filter>TrackView</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\TrackView\TrackViewFindDlg.h">
+      <Filter>TrackView</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\TrackView\TrackViewKeyPropertiesDlg.h">
+      <Filter>TrackView</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\TrackView\TrackViewNodes.h">
+      <Filter>TrackView</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\TrackView\TrackViewSplineCtrl.h">
+      <Filter>TrackView</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\TrackView\TrackViewTimeline.h">
+      <Filter>TrackView</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\TrackView\TVCustomizeTrackColorsDlg.h">
+      <Filter>TrackView</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\TrackViewFBXImportPreviewDialog.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\TrackView\TVEventsDialog.h">
+      <Filter>TrackView</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\TrackView\TVSequenceProps.h">
+      <Filter>TrackView</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\TrackView\TrackViewAnimNode.h">
+      <Filter>TrackView</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\TrackView\TrackViewTrack.h">
+      <Filter>TrackView</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\TrackView\TrackViewNode.h">
+      <Filter>TrackView</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\TrackView\TrackViewSequence.h">
+      <Filter>TrackView</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\TrackView\TrackViewNodeFactories.h">
+      <Filter>TrackView</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\TrackView\TrackViewEventNode.h">
+      <Filter>TrackView</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\ConfigGroup.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Util\AffineParts.h">
+      <Filter>Util</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Util\AutoLogTime.h">
+      <Filter>Util</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Util\AutoDirectoryRestoreFileDialog.h">
+      <Filter>Util</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Util\CryMemFile.h">
+      <Filter>Util</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Util\DynamicArray2D.h">
+      <Filter>Util</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Util\EditorAutoLevelLoadTest.h">
+      <Filter>Util</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Util\EditorUtils.h">
+      <Filter>Util</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Util\FileEnum.h">
+      <Filter>Util</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Util\FileUtil.h">
+      <Filter>Util</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Util\GdiUtil.h">
+      <Filter>Util</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Util\GuidUtil.h">
+      <Filter>Util</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Util\IObservable.h">
+      <Filter>Util</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Util\Mailer.h">
+      <Filter>Util</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Util\NamedData.h">
+      <Filter>Util</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Util\Observable.h">
+      <Filter>Util</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Util\PakFile.h">
+      <Filter>Util</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Util\PredefinedAspectRatios.h">
+      <Filter>Util</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Util\StringHelpers.h">
+      <Filter>Util</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Util\TRefCountBase.h">
+      <Filter>Util</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Util\Triangulate.h">
+      <Filter>Util</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Util\Util.h">
+      <Filter>Util</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Util\XmlArchive.h">
+      <Filter>Util</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Util\XmlTemplate.h">
+      <Filter>Util</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Util\bitarray.h">
+      <Filter>Util</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Util\fastlib.h">
+      <Filter>Util</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Util\smartptr.h">
+      <Filter>Util</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\WaitProgress.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Util\FileUtil_impl.h">
+      <Filter>Util</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Util\ImageUtil_impl.h">
+      <Filter>Util</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Util\ColumnSortProxyModel.h">
+      <Filter>Util</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Util\AbstractGroupProxyModel.h">
+      <Filter>Util</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Util\AbstractSortModel.h">
+      <Filter>Util</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Util\ColumnGroupProxyModel.h">
+      <Filter>Util</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Util\ColumnGroupHeaderView.h">
+      <Filter>Util</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Util\ColumnGroupItemDelegate.h">
+      <Filter>Util</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Util\ColumnGroupTreeView.h">
+      <Filter>Util</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Util\ModalWindowDismisser.h">
+      <Filter>Util</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Util\3DConnexionDriver.h">
+      <Filter>Util</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Util\FileChangeMonitor.h">
+      <Filter>Util</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Util\ImageUtil.h">
+      <Filter>Util</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Util\ImageASC.h">
+      <Filter>Util</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Util\ImageBT.h">
+      <Filter>Util</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Util\ImageGif.h">
+      <Filter>Util</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Util\ImageTIF.h">
+      <Filter>Util</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Util\Math.h">
+      <Filter>Util</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Util\UIEnumerations.h">
+      <Filter>Util</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\WelcomeScreen\WelcomeScreenDialog.h">
+      <Filter>WelcomeScreen</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\2DViewport.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\LayoutWnd.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\EditorViewportWidget.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\EditorViewportSettings.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\EditorViewportCamera.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\EditorModularViewportCameraComposer.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\EditorModularViewportCameraComposerBus.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\ViewportManipulatorController.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\TopRendererWnd.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\ViewManager.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\ViewPane.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\Viewport.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\ViewportTitleDlg.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\EditorEnvironment.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\IEditorPanelUtils.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\EditorPanelUtils.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\EditorLib_autogen\include\AzAssetBrowser\ui_AzAssetBrowserWindow.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\EditorLib_autogen\include\AssetImporter\UI\ui_FilesAlreadyExistDialog.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\EditorLib_autogen\include\AssetImporter\UI\ui_ProcessingAssetsDialog.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\EditorLib_autogen\include\AssetImporter\UI\ui_SelectDestinationDialog.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\EditorLib_autogen\include\AssetEditor\ui_AssetEditorWindow.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\EditorLib_autogen\include\Controls\ui_ConsoleSCB.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\EditorLib_autogen\include\ui_CheckOutDialog.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\EditorLib_autogen\include\ui_CustomAspectRatioDlg.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\EditorLib_autogen\include\ui_CustomResolutionDlg.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\EditorLib_autogen\include\ui_ErrorReportDialog.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\EditorLib_autogen\include\ui_GenericSelectItemDialog.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\EditorLib_autogen\include\ui_GotoPositionDlg.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\EditorLib_autogen\include\ui_LayoutConfigDialog.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\EditorLib_autogen\include\ui_LevelFileDialog.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\EditorLib_autogen\include\ui_QuickAccessBar.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\EditorLib_autogen\include\ui_ResizeResolutionDialog.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\EditorLib_autogen\include\ui_SelectEAXPresetDlg.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\EditorLib_autogen\include\ui_StartupLogoDialog.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\EditorLib_autogen\include\ui_ToolbarCustomizationDialog.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\EditorLib_autogen\include\ui_ToolsConfigPage.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\EditorLib_autogen\include\ui_IconListDialog.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\EditorLib_autogen\include\ui_DimensionsDialog.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\EditorLib_autogen\include\ui_NewLevelDialog.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\EditorLib_autogen\include\Dialogs\ui_PythonScriptsDialog.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\EditorLib_autogen\include\ui_AboutDialog.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\EditorLib_autogen\include\ui_WipFeaturesDlg.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\EditorLib_autogen\include\ui_CustomizeKeyboardDialog.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\EditorLib_autogen\include\ui_EditorPreferencesDialog.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\EditorLib_autogen\include\ui_SettingsManagerDialog.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\EditorLib_autogen\include\ui_FBXExporterDialog.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\EditorLib_autogen\include\ui_TrackViewNewSequenceDialog.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\EditorLib_autogen\include\Dialogs\ui_ErrorsDlg.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\EditorLib_autogen\include\ui_TrackViewExportKeyTimeDlg.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\EditorLib_autogen\include\TrackView\ui_TrackViewNodes.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\EditorLib_autogen\include\TrackView\ui_TVCustomizeTrackColorsDialog.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\EditorLib_autogen\include\ui_TrackViewFBXImportPreviewDialog.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\EditorLib_autogen\include\TrackView\ui_SequenceBatchRenderDialog.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\EditorLib_autogen\include\TrackView\ui_TrackViewCurveEditor.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\EditorLib_autogen\include\TrackView\ui_TrackViewFindDlg.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\EditorLib_autogen\include\TrackView\ui_TrackViewTrackPropsDlg.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\EditorLib_autogen\include\TrackView\ui_TVEventsDialog.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\EditorLib_autogen\include\TrackView\ui_TVSequenceProps.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\EditorLib_autogen\include\WelcomeScreen\ui_WelcomeScreenDialog.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Editor\EditorLib_autogen\include\ui_ViewportTitleDlg.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Code\Editor\AzAssetBrowser\AzAssetBrowserWindow.ui">
+      <Filter>AzAssetBrowser</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Code\Editor\AssetImporter\UI\FilesAlreadyExistDialog.ui">
+      <Filter>AssetImporter\UI</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Code\Editor\AssetImporter\UI\ProcessingAssetsDialog.ui">
+      <Filter>AssetImporter\UI</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Code\Editor\AssetImporter\UI\SelectDestinationDialog.ui">
+      <Filter>AssetImporter\UI</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Code\Editor\AssetEditor\AssetEditorWindow.ui">
+      <Filter>AssetEditor</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Code\Editor\Controls\ConsoleSCB.ui">
+      <Filter>Controls</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Code\Editor\CheckOutDialog.ui" />
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Code\Editor\CustomAspectRatioDlg.ui" />
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Code\Editor\CustomResolutionDlg.ui" />
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Code\Editor\ErrorReportDialog.ui" />
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Code\Editor\GenericSelectItemDialog.ui" />
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Code\Editor\GotoPositionDlg.ui" />
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Code\Editor\LayoutConfigDialog.ui" />
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Code\Editor\LevelFileDialog.ui" />
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Code\Editor\QuickAccessBar.ui" />
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Code\Editor\ResizeResolutionDialog.ui" />
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Code\Editor\SelectEAXPresetDlg.ui" />
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Code\Editor\StartupLogoDialog.ui" />
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Code\Editor\ToolbarCustomizationDialog.ui" />
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Code\Editor\ToolsConfigPage.ui" />
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Code\Editor\IconListDialog.ui" />
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Code\Editor\DimensionsDialog.ui" />
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Code\Editor\NewLevelDialog.ui" />
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Code\Editor\Dialogs\PythonScriptsDialog.ui">
+      <Filter>Dialogs</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Code\Editor\AboutDialog.ui" />
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Code\Editor\WipFeaturesDlg.ui" />
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Code\Editor\CustomizeKeyboardDialog.ui" />
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Code\Editor\EditorPreferencesDialog.ui" />
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Code\Editor\SettingsManagerDialog.ui" />
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Code\Editor\FBXExporterDialog.ui" />
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Code\Editor\TrackViewNewSequenceDialog.ui" />
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Code\Editor\Dialogs\ErrorsDlg.ui">
+      <Filter>Dialogs</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Code\Editor\TrackViewExportKeyTimeDlg.ui" />
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Code\Editor\TrackView\TrackViewNodes.ui">
+      <Filter>TrackView</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Code\Editor\TrackView\TVCustomizeTrackColorsDialog.ui">
+      <Filter>TrackView</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Code\Editor\TrackViewFBXImportPreviewDialog.ui" />
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Code\Editor\TrackView\SequenceBatchRenderDialog.ui">
+      <Filter>TrackView</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Code\Editor\TrackView\TrackViewCurveEditor.ui">
+      <Filter>TrackView</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Code\Editor\TrackView\TrackViewFindDlg.ui">
+      <Filter>TrackView</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Code\Editor\TrackView\TrackViewTrackPropsDlg.ui">
+      <Filter>TrackView</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Code\Editor\TrackView\TVEventsDialog.ui">
+      <Filter>TrackView</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Code\Editor\TrackView\TVSequenceProps.ui">
+      <Filter>TrackView</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Code\Editor\WelcomeScreen\WelcomeScreenDialog.ui">
+      <Filter>WelcomeScreen</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Code\Editor\ViewportTitleDlg.ui" />
+    <CustomBuild Include="C:\Users\lesaelr\o3de\CMakeFiles\08b24365a84bd27d080f6dd51f42b933\EditorLib_(CONFIG).stamp.rule">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\CMakeFiles\d8b679cdd6308b6c95de06804ea8c358\qrc_MainWindow.cpp.rule">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\CMakeFiles\a45f552e0adf03d07705965959969904\qrc_ConsoleSCB.cpp.rule">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\CMakeFiles\d8b679cdd6308b6c95de06804ea8c358\qrc_LayoutConfigDialog.cpp.rule">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\CMakeFiles\d8b679cdd6308b6c95de06804ea8c358\qrc_LevelFileDialog.cpp.rule">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\CMakeFiles\d8b679cdd6308b6c95de06804ea8c358\qrc_StartupLogoDialog.cpp.rule">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\CMakeFiles\d8b679cdd6308b6c95de06804ea8c358\qrc_WipFeaturesDlg.cpp.rule">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\CMakeFiles\bda1656e0d935c93ba5cd0437018e166\qrc_TrackViewDialog.cpp.rule">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\CMakeFiles\4c2acf9f2669da7922fa5d6c4e1e83a2\qrc_WelcomeScreenDialog.cpp.rule">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Code\Editor\CMakeLists.txt">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="C:\Users\lesaelr\o3de\Code\Editor\res\ribbon_system_button.png">
+      <Filter>res</Filter>
+    </Image>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\Translations\editor_en-us.ts">
+      <Filter>Translations</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\Translations\assetbrowser_en-us.ts">
+      <Filter>Translations</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\AVI_Recorder.bmp">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\ConsoleToolbar.bmp">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\CryEdit.ico">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\CryEdit.rc2">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\CryEditDoc.ico">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\Cursor_2.cur">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\Mouse.cur">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\Preferences.bmp">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\Toolbar.bmp">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\TreeView.bmp">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\VisualLog_PlayerButtons.bmp">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\ab_toolbar.bmp">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\anim.bmp">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\animatio.bmp">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\animations_tree_soundevent.bmp">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\animflag_inside_pak.bmp">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\animflag_on_disk.bmp">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\animtree.bmp">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\arhitype_tree.bmp">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\arr_addkey.cur">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\arrow.cur">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\arrow_down.cur">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\arrow_down_black.ico">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\arrow_downright.cur">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\arrow_up.cur">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\arrow_up_black.ico">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\arrow_upright.cur">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\arrowcop.cur">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\assetIsDraggable.ico">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\avi_reco.bmp">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\ball_disabled.ico">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\ball_offline.ico">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\ball_online.ico">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\ball_pending.ico">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\bitmap5.bmp">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\bitmap6.bmp">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\bmp00001.bmp">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\bmp00002.bmp">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\bmp00003.bmp">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\bmp00005.bmp">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\bmp00006.bmp">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\bmp00007.bmp">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\bmp00008.bmp">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\bmp00009.bmp">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\bmp00010.bmp">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\bmp00011.bmp">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\bmp00012.bmp">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\bmp00013.bmp">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\bmp00014.bmp">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\bmp00015.bmp">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\bmp00016.bmp">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\bmp00017.bmp">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\bmp00019.bmp">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\bmp00020.bmp">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\bmp00024.bmp">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\bmp00025.bmp">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\bmp00026.bmp">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\bmp00027.bmp">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\bmp00028.bmp">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\bmp00029.bmp">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\bmp00030.bmp">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\bmp00031.bmp">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\brush24bpp.bmp">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\ce_animations_toolbar.bmp">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\character_parts_bar.bmp">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\charedit.bmp">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\clapperboard_cancel.bmp">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\clapperboard_ready.bmp">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\clone.ico">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\cur00001.cur">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\cur00002.cur">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\cur00003.cur">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\cur00004.cur">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\cur00005.cur">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\cursor1.cur">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\cursor2.cur">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\db_gametoken.bmp">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\db_library_bar.bmp">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\db_library_item_bar.bmp">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\db_music.bmp">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\db_music_logic.bmp">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\db_standart.bmp">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\down_arr.ico">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\down_arrow.ico">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\dynamichelp.bmp">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\edit_mod.bmp">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\editwithbutton.bmp">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\editwithbutton_dark.bmp">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\entitybar.bmp">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\error_report.bmp">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\expand1.ico">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\expand2.ico">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\faceit_playbar.bmp">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\faceit_slidersbar.bmp">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\faceit_spline_bar.bmp">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\facejoystickbar.bmp">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\facesequence_bar.bmp">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\facialsequence_bar.bmp">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\feedback.ico">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\file_browse.ico">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\filesimage.bmp">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\filestatus.bmp">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\folder.ico">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\fopen_back.ico">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\fopen_up.ico">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\grid.ico">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\handDrag.cur">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\hit.cur">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\ico00001.ico">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\ico00002.ico">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\icon1.ico">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\icon_delete.ico">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\icon_export.ico">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\icon_import.ico">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\icon_new.ico">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\icon_pause.ico">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\icon_play.ico">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\icon_question.bmp">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\icon_question.ico">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\idb_.bmp">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\layouts.bmp">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\lc_connecting.ico">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\lc_running.ico">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\leftright.cur">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\litebulb.bmp">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\lock_sel.bmp">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\locksele.bmp">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\mainfram.bmp">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\mann_tagdef_toolbar.bmp">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\mann_tagdef_tree.bmp">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\material.bmp">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\material_browser.bmp">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\materialbar.bmp">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\maximize.ico">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\minus.ico">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\model_viewport_dock.bmp">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\model_viewport_fullscreen.bmp">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\musictree.bmp">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\nodrop.cur">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\object_move.cur">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\object_rotate.cur">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\object_scale.cur">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\objectsbrowser.bmp">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\panel_ve.bmp">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\panel_veg.bmp">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\particles_tree.bmp">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\particlesbar.bmp">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\pick.bmp">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\pick_cursor.cur">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\plus.ico">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\pointerDragItem.cur">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\pointerHit.cur">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\pointer_.cur">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\pointer_flatten.cur">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\pointer_getheight.cur">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\pointer_link.cur">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\pointer_linknow.cur">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\pointer_minus.cur">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\pointer_plus.cur">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\pointer_smooth.cur">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\pointer_so_sel_plus.cur">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\pointer_so_select.cur">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\proceduralmaterial_toolbar.bmp">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\progslider_end.bmp">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\progslider_marker.bmp">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\progslider_start.bmp">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\progslider_thumb.bmp">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\progslider_track.bmp">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\properties.bmp">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\psd.ico">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\rename.ico">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\replace.ico">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\selectobj.bmp">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\seq_1_colour_keys.bmp">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\seq_2_colour_keys.bmp">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\seq_3_colour_keys.bmp">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\seq_4_colour_keys.bmp">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\seq_5_colour_keys.bmp">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\seq_6_colour_keys.bmp">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\seq_7_colour_keys.bmp">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\sequencer_keys.bmp">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\sequencer_nodes.bmp">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\soundfiles.bmp">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\soundmood.bmp">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\soundpre.bmp">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\spline_edit_bar.bmp">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\splineextrabar.bmp">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\status_mem_low1.ico">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\status_mem_low2.ico">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\status_mem_ok.ico">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\stdviews.bmp">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\subobjseltype.bmp">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\sw_mapbar.bmp">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\sw_toolbar.bmp">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\tiff.ico">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\toolbar1.bmp">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\toolbar2.bmp">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\toolbox.bmp">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\trackvie.bmp">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\trackview.bmp">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\trackview_key.bmp">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\trackview_keys.bmp">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\trackview_nodes.bmp">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\trackview_play.bmp">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\trackview_view.bmp">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\tree_vie.bmp">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\uieditor_main.bmp">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\up_arrow.ico">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\veed_tree.bmp">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\vegetati.bmp">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\vegtree.bmp">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\video_record.ico">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\warning16x16.ico">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\water.bmp">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\work_in_progress_icon.ico">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\MannFileManagerImageList.bmp">
+      <Filter>res</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\infobar\CameraCollision-default.svg">
+      <Filter>res\infobar</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\infobar\GotoLocation-default.svg">
+      <Filter>res\infobar</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\infobar\LockScale-default.svg">
+      <Filter>res\infobar</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\infobar\LockSelection-default.svg">
+      <Filter>res\infobar</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\infobar\Mute-default.svg">
+      <Filter>res\infobar</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\infobar\NoPlayerSync-default.svg">
+      <Filter>res\infobar</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\infobar\NoPlayerSync-selected.svg">
+      <Filter>res\infobar</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\infobar\Pause-default.svg">
+      <Filter>res\infobar</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\infobar\PausePlay-default.svg">
+      <Filter>res\infobar</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\infobar\PhysicsCol-default.svg">
+      <Filter>res\infobar</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\infobar\VR-default.svg">
+      <Filter>res\infobar</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\res\infobar\XYZ-default.svg">
+      <Filter>res\infobar</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\MainWindow.qrc" />
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\Controls\ConsoleSCB.qrc">
+      <Filter>Controls</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\LayoutConfigDialog.qrc" />
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\LevelFileDialog.qrc" />
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\StartupLogoDialog.qrc" />
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\WipFeaturesDlg.qrc" />
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\TrackView\TrackViewDialog.qrc">
+      <Filter>TrackView</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\WelcomeScreen\WelcomeScreenDialog.qrc">
+      <Filter>WelcomeScreen</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\editor_lib_files.cmake" />
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\Platform\Windows\platform_windows_files.cmake">
+      <Filter>Platform\Windows</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\Platform\Windows\editor_lib_windows.cmake">
+      <Filter>Platform\Windows</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Editor\Platform\Common\MSVC\editor_lib_msvc.cmake">
+      <Filter>Platform\Common\MSVC</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\runtime_dependencies\debug\EditorLib_debug.stamp">
+      <Filter>Generated Files</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\runtime_dependencies\profile\EditorLib_profile.stamp">
+      <Filter>Generated Files</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\runtime_dependencies\release\EditorLib_release.stamp">
+      <Filter>Generated Files</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="C:\Users\lesaelr\o3de\Code\Editor\CryEdit.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <XML Include="C:\Users\lesaelr\o3de\Code\Editor\DPIAware.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Animation">
+      <UniqueIdentifier>{571B9952-D286-3DC3-9416-8F232EAD0909}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AssetDatabase">
+      <UniqueIdentifier>{725F785D-EBB7-3D86-9CE7-B5609BAA965A}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AssetEditor">
+      <UniqueIdentifier>{E136DF6A-7592-3DAE-9C98-2C7CDFC4D1DD}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AssetImporter">
+      <UniqueIdentifier>{6D1B1466-3553-3654-8B2B-3085FE496EDA}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AssetImporter\AssetImporterManager">
+      <UniqueIdentifier>{762948B0-D7BE-3D85-9646-C70DB84BFDB5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AssetImporter\UI">
+      <UniqueIdentifier>{D5EB9526-1F40-3830-AE21-779E0803551B}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzAssetBrowser">
+      <UniqueIdentifier>{C470792A-9BB1-3B37-9D2F-9270C9CFFBEC}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Commands">
+      <UniqueIdentifier>{9CDA775D-95D6-3109-AB5D-81AB1C69B4E1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Controls">
+      <UniqueIdentifier>{B78162EC-EA55-327D-93B0-31314D0B8F8E}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Controls\ReflectedPropertyControl">
+      <UniqueIdentifier>{CE05B3D2-0C2F-3848-BAB2-5B32A7467371}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Core">
+      <UniqueIdentifier>{E3CCD486-8733-34F6-9FD7-63AECACE8CDB}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dialogs">
+      <UniqueIdentifier>{974D9CAD-2E87-3D16-AAFF-5EB45345E267}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dialogs\Generic">
+      <UniqueIdentifier>{BE9EFA7E-4825-3726-B7A8-3D8649FBCC31}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="EditMode">
+      <UniqueIdentifier>{85E5E541-FB45-37F4-9809-A1AE1FEABD08}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Export">
+      <UniqueIdentifier>{DA400BA5-B60A-3DCF-A3C4-5006D15A7819}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Generated Files">
+      <UniqueIdentifier>{FB9B7D8B-7F05-31D5-AA90-592248EDE1B3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Geometry">
+      <UniqueIdentifier>{619D1D64-E11E-3BB0-81F5-4C3A9B9A7D41}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include">
+      <UniqueIdentifier>{E188105A-C8C4-34BB-9809-15E8410EF7F8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="LightmapCompiler">
+      <UniqueIdentifier>{C2BD8EA5-8599-3E04-91F8-DEF970C640B0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Objects">
+      <UniqueIdentifier>{D93A8D6C-9D90-33D0-8231-F4EB87BA57AA}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Platform">
+      <UniqueIdentifier>{378A8D8C-6CA1-3F6B-A02B-1E9FF64C97B2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Platform\Common">
+      <UniqueIdentifier>{0EAED895-BF71-3C34-B697-D34AC533F377}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Platform\Common\MSVC">
+      <UniqueIdentifier>{883C5313-C39C-3C49-9C84-39593C4125EC}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Platform\Windows">
+      <UniqueIdentifier>{63AEF2F6-51C7-306A-BFE8-A049C8C62EFB}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Platform\Windows\Util">
+      <UniqueIdentifier>{177D3009-4478-3DE9-AD10-C096C43174BB}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="QtUI">
+      <UniqueIdentifier>{9BCAEF24-1001-361F-B52E-53D4A608C5FB}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="RenderHelpers">
+      <UniqueIdentifier>{BAF5F58E-DD87-3466-9D4E-C518EFC3038A}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="TrackView">
+      <UniqueIdentifier>{37A298A5-227F-3A27-90F8-204DF9D852C1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Translations">
+      <UniqueIdentifier>{D4BADACC-8EBE-3606-8499-4ABA623294A3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Util">
+      <UniqueIdentifier>{CFE2217B-0C2E-336B-A1F7-F1C2582F509B}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="WelcomeScreen">
+      <UniqueIdentifier>{4BAFF3E3-A3EE-3F89-AB01-5EE6E88D6277}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="res">
+      <UniqueIdentifier>{DBD598DA-4A8D-3061-A439-19F31CDFCF17}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="res\infobar">
+      <UniqueIdentifier>{14EB178A-5AB0-32D4-93F0-22A405892A5C}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

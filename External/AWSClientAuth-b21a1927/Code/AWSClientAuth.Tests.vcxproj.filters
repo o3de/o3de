@@ -1,0 +1,86 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\AWSClientAuth-b21a1927\Code\CMakeFiles\AWSClientAuth.Tests.dir\Unity\unity_1_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\AWSClientAuth-b21a1927\Code\CMakeFiles\AWSClientAuth.Tests.dir\Unity\unity_0_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\AWSClientAuth\Code\Tests\AWSClientAuthGemTest.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\AWSClientAuth\Code\Tests\AWSClientAuthSystemComponentTest.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\AWSClientAuth\Code\Tests\Authentication\AuthenticationProviderManagerTest.cpp">
+      <Filter>Tests\Authentication</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\AWSClientAuth\Code\Tests\Authentication\AuthenticationProviderManagerScriptCanvasBusTest.cpp">
+      <Filter>Tests\Authentication</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\AWSClientAuth\Code\Tests\Authentication\AWSCognitoAuthenticationProviderTest.cpp">
+      <Filter>Tests\Authentication</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\AWSClientAuth\Code\Tests\Authentication\LWAAuthenticationProviderTest.cpp">
+      <Filter>Tests\Authentication</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\AWSClientAuth\Code\Tests\Authentication\GoogleAuthenticationProviderTest.cpp">
+      <Filter>Tests\Authentication</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\AWSClientAuth\Code\Tests\Authorization\AWSClientAuthPersistentCognitoIdentityProviderTest.cpp">
+      <Filter>Tests\Authorization</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\AWSClientAuth\Code\Tests\Authorization\AWSCognitoAuthorizationControllerTest.cpp">
+      <Filter>Tests\Authorization</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\AWSClientAuth\Code\Tests\UserManagement\AWSCognitoUserManagementControllerTest.cpp">
+      <Filter>Tests\UserManagement</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\AWSClientAuth\Code\Tests\AWSClientAuthGemMock.h">
+      <Filter>Tests</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\AWSClientAuth\Code\Tests\Authentication\AuthenticationProviderManagerMock.h">
+      <Filter>Tests\Authentication</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\CMakeFiles\08b24365a84bd27d080f6dd51f42b933\AWSClientAuth.Tests_(CONFIG).stamp.rule">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Gems\AWSClientAuth\Code\CMakeLists.txt">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="C:\Users\lesaelr\o3de\Gems\AWSClientAuth\Code\awsclientauth_test_files.cmake" />
+    <None Include="C:\Users\lesaelr\o3de\runtime_dependencies\debug\AWSClientAuth.Tests_debug.stamp">
+      <Filter>Generated Files</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\runtime_dependencies\profile\AWSClientAuth.Tests_profile.stamp">
+      <Filter>Generated Files</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\runtime_dependencies\release\AWSClientAuth.Tests_release.stamp">
+      <Filter>Generated Files</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Generated Files">
+      <UniqueIdentifier>{FB9B7D8B-7F05-31D5-AA90-592248EDE1B3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Tests">
+      <UniqueIdentifier>{042E9197-689D-3636-8A35-28EBCAA2BD47}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Tests\Authentication">
+      <UniqueIdentifier>{53EB4F01-03A9-38E6-8014-83806D568AB3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Tests\Authorization">
+      <UniqueIdentifier>{A4C8663D-7618-377D-9804-41D6DA6473BE}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Tests\UserManagement">
+      <UniqueIdentifier>{974F61A4-A24E-3186-ABCD-94B133A689D1}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

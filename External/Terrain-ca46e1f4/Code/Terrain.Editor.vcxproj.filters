@@ -1,0 +1,92 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\Terrain-ca46e1f4\Code\Terrain.Editor_autogen\mocs_compilation_debug.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\Terrain-ca46e1f4\Code\CMakeFiles\Terrain.Editor.dir\Unity\unity_0_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Terrain\Code\Source\EditorComponents\EditorTerrainHeightGradientListComponent.cpp">
+      <Filter>Source\EditorComponents</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Terrain\Code\Source\EditorComponents\EditorTerrainLayerSpawnerComponent.cpp">
+      <Filter>Source\EditorComponents</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Terrain\Code\Source\EditorComponents\EditorTerrainWorldComponent.cpp">
+      <Filter>Source\EditorComponents</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Terrain\Code\Source\EditorComponents\EditorTerrainWorldDebuggerComponent.cpp">
+      <Filter>Source\EditorComponents</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Terrain\Code\Source\EditorComponents\EditorTerrainSystemComponent.cpp">
+      <Filter>Source\EditorComponents</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Terrain\Code\Source\EditorTerrainModule.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Terrain\Code\Source\TerrainModule.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\Terrain-ca46e1f4\Code\Terrain.Editor_autogen\mocs_compilation_profile.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\Terrain-ca46e1f4\Code\Terrain.Editor_autogen\mocs_compilation_release.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Terrain\Code\Source\EditorComponents\EditorTerrainHeightGradientListComponent.h">
+      <Filter>Source\EditorComponents</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Terrain\Code\Source\EditorComponents\EditorTerrainLayerSpawnerComponent.h">
+      <Filter>Source\EditorComponents</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Terrain\Code\Source\EditorComponents\EditorTerrainWorldComponent.h">
+      <Filter>Source\EditorComponents</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Terrain\Code\Source\EditorComponents\EditorTerrainWorldDebuggerComponent.h">
+      <Filter>Source\EditorComponents</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Terrain\Code\Source\EditorComponents\EditorTerrainSystemComponent.h">
+      <Filter>Source\EditorComponents</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Terrain\Code\Source\EditorTerrainModule.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Terrain\Code\Source\TerrainModule.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\CMakeFiles\08b24365a84bd27d080f6dd51f42b933\Terrain.Editor_(CONFIG).stamp.rule">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Gems\Terrain\Code\CMakeLists.txt">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Terrain\Code\terrain_editor_shared_files.cmake" />
+    <None Include="C:\Users\lesaelr\o3de\runtime_dependencies\debug\Terrain.Editor_debug.stamp">
+      <Filter>Generated Files</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\runtime_dependencies\profile\Terrain.Editor_profile.stamp">
+      <Filter>Generated Files</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\runtime_dependencies\release\Terrain.Editor_release.stamp">
+      <Filter>Generated Files</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Generated Files">
+      <UniqueIdentifier>{FB9B7D8B-7F05-31D5-AA90-592248EDE1B3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source">
+      <UniqueIdentifier>{F3F0AD47-5F83-373B-A2BF-650D2E4FA3EA}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\EditorComponents">
+      <UniqueIdentifier>{BE2FFABE-15A6-3532-AFFB-AEAECEF0D8F6}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

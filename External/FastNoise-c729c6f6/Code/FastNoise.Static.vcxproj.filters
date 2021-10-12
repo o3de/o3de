@@ -1,0 +1,65 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\FastNoise-c729c6f6\Code\CMakeFiles\FastNoise.Static.dir\Unity\unity_0_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\FastNoise\Code\Source\FastNoiseSystemComponent.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\FastNoise\Code\Source\FastNoiseGradientComponent.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\FastNoise\Code\External\FastNoise\FastNoise.cpp">
+      <Filter>External\FastNoise</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\FastNoise\Code\Include\FastNoise\Ebuses\FastNoiseBus.h">
+      <Filter>Include\FastNoise\Ebuses</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\FastNoise\Code\Include\FastNoise\Ebuses\FastNoiseGradientRequestBus.h">
+      <Filter>Include\FastNoise\Ebuses</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\FastNoise\Code\Source\FastNoiseSystemComponent.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\FastNoise\Code\Source\FastNoiseGradientComponent.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\FastNoise\Code\External\FastNoise\FastNoise.h">
+      <Filter>External\FastNoise</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Gems\FastNoise\Code\CMakeLists.txt">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="C:\Users\lesaelr\o3de\Gems\FastNoise\Code\fastnoise_files.cmake" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="External">
+      <UniqueIdentifier>{B1D18D73-1244-3B1A-B29E-6F6B7F54F437}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="External\FastNoise">
+      <UniqueIdentifier>{78DC1D70-C18D-3BFA-BB72-4982463E4462}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Generated Files">
+      <UniqueIdentifier>{FB9B7D8B-7F05-31D5-AA90-592248EDE1B3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include">
+      <UniqueIdentifier>{E188105A-C8C4-34BB-9809-15E8410EF7F8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\FastNoise">
+      <UniqueIdentifier>{5FAD3955-E950-3381-976E-33E8965A8609}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\FastNoise\Ebuses">
+      <UniqueIdentifier>{6685479D-499B-323A-BC82-B3AC082824BC}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source">
+      <UniqueIdentifier>{F3F0AD47-5F83-373B-A2BF-650D2E4FA3EA}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

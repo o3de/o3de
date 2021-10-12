@@ -1,0 +1,30 @@
+{
+	"BUILD_DIR" : "C:/Users/lesaelr/o3de/Code/Editor/Editor_autogen",
+	"CMAKE_BINARY_DIR" : "C:/Users/lesaelr/o3de",
+	"CMAKE_CURRENT_BINARY_DIR" : "C:/Users/lesaelr/o3de/Code/Editor",
+	"CMAKE_CURRENT_SOURCE_DIR" : "C:/Users/lesaelr/o3de/Code/Editor",
+	"CMAKE_SOURCE_DIR" : "C:/Users/lesaelr/o3de",
+	"INCLUDE_DIR" : "C:/Users/lesaelr/o3de/Code/Editor/Editor_autogen/include",
+	"INCLUDE_DIR_debug" : "C:/Users/lesaelr/o3de/Code/Editor/Editor_autogen/include_debug",
+	"INCLUDE_DIR_profile" : "C:/Users/lesaelr/o3de/Code/Editor/Editor_autogen/include_profile",
+	"INCLUDE_DIR_release" : "C:/Users/lesaelr/o3de/Code/Editor/Editor_autogen/include_release",
+	"INPUTS" : 
+	[
+		"C:/Users/lesaelr/o3de/Code/Editor/Style/EditorPreferencesDialog.qss",
+		"C:/Users/lesaelr/o3de/Code/Editor/Style/Editor.qss",
+		"C:/Users/lesaelr/o3de/Code/Editor/Style/LayoutConfigDialog.qss"
+	],
+	"LOCK_FILE" : "C:/Users/lesaelr/o3de/Code/Editor/CMakeFiles/Editor_autogen.dir/AutoRcc_resources_ZTQVCGDY76_Lock.lock",
+	"MULTI_CONFIG" : true,
+	"OPTIONS" : [ "-name", "resources" ],
+	"OUTPUT_CHECKSUM" : "ZTQVCGDY76",
+	"OUTPUT_NAME" : "qrc_resources.cpp",
+	"RCC_EXECUTABLE" : "C:/Users/lesaelr/.o3de/3rdParty/packages/qt-5.15.2-rev4-windows/qt/bin/rcc.exe",
+	"RCC_LIST_OPTIONS" : [ "--list" ],
+	"SETTINGS_FILE" : "C:/Users/lesaelr/o3de/Code/Editor/CMakeFiles/Editor_autogen.dir/AutoRcc_resources_ZTQVCGDY76_Used.txt",
+	"SETTINGS_FILE_debug" : "C:/Users/lesaelr/o3de/Code/Editor/CMakeFiles/Editor_autogen.dir/AutoRcc_resources_ZTQVCGDY76_Used_debug.txt",
+	"SETTINGS_FILE_profile" : "C:/Users/lesaelr/o3de/Code/Editor/CMakeFiles/Editor_autogen.dir/AutoRcc_resources_ZTQVCGDY76_Used_profile.txt",
+	"SETTINGS_FILE_release" : "C:/Users/lesaelr/o3de/Code/Editor/CMakeFiles/Editor_autogen.dir/AutoRcc_resources_ZTQVCGDY76_Used_release.txt",
+	"SOURCE" : "C:/Users/lesaelr/o3de/Code/Editor/Style/resources.qrc",
+	"VERBOSITY" : 0
+}

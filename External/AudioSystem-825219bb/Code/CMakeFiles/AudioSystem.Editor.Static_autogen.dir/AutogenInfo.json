@@ -1,0 +1,488 @@
+{
+	"BUILD_DIR" : "C:/Users/lesaelr/o3de/External/AudioSystem-825219bb/Code/AudioSystem.Editor.Static_autogen",
+	"CMAKE_BINARY_DIR" : "C:/Users/lesaelr/o3de",
+	"CMAKE_CURRENT_BINARY_DIR" : "C:/Users/lesaelr/o3de/External/AudioSystem-825219bb/Code",
+	"CMAKE_CURRENT_SOURCE_DIR" : "C:/Users/lesaelr/o3de/Gems/AudioSystem/Code",
+	"CMAKE_EXECUTABLE" : "C:/Program Files/CMake/bin/cmake.exe",
+	"CMAKE_LIST_FILES" : 
+	[
+		"C:/Users/lesaelr/o3de/Gems/AudioSystem/Code/CMakeLists.txt",
+		"C:/Users/lesaelr/o3de/Gems/AudioSystem/Code/audiosystem_files.cmake",
+		"C:/Users/lesaelr/o3de/Gems/AudioSystem/Code/Platform/Windows/platform_windows_files.cmake",
+		"C:/Users/lesaelr/o3de/Gems/AudioSystem/Code/Platform/Windows/platform_windows.cmake",
+		"C:/Users/lesaelr/o3de/Gems/AudioSystem/Code/audiosystem_shared_files.cmake",
+		"C:/Users/lesaelr/o3de/Gems/AudioSystem/Code/audiosystem_tests_files.cmake",
+		"C:/Users/lesaelr/o3de/Gems/AudioSystem/Code/audiosystem_shared_files.cmake",
+		"C:/Users/lesaelr/o3de/cmake/Platform/Windows/LYTestWrappers_windows.cmake",
+		"C:/Users/lesaelr/o3de/Gems/AudioSystem/Code/audiosystem_editor_files.cmake",
+		"C:/Users/lesaelr/o3de/Gems/AudioSystem/Code/audiosystem_editor_shared_files.cmake",
+		"C:/Users/lesaelr/o3de/Gems/AudioSystem/Code/audiosystem_editor_tests_files.cmake",
+		"C:/Users/lesaelr/o3de/cmake/Platform/Windows/LYTestWrappers_windows.cmake",
+		"C:/Users/lesaelr/o3de/Gems/AudioSystem/Code/Source/Editor/AudioControlsEditorUI.qrc"
+	],
+	"CMAKE_SOURCE_DIR" : "C:/Users/lesaelr/o3de",
+	"DEP_FILE" : "",
+	"DEP_FILE_RULE_NAME" : "",
+	"HEADERS" : 
+	[
+		[
+			"C:/Users/lesaelr/o3de/Gems/AudioSystem/Code/Include/Editor/ACETypes.h",
+			"Mu",
+			"3HH4NHNY62/moc_ACETypes.cpp",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Gems/AudioSystem/Code/Include/Editor/IAudioConnection.h",
+			"Mu",
+			"3HH4NHNY62/moc_IAudioConnection.cpp",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Gems/AudioSystem/Code/Include/Editor/IAudioSystemControl.h",
+			"Mu",
+			"3HH4NHNY62/moc_IAudioSystemControl.cpp",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Gems/AudioSystem/Code/Include/Editor/IAudioSystemEditor.h",
+			"Mu",
+			"3HH4NHNY62/moc_IAudioSystemEditor.cpp",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Gems/AudioSystem/Code/Source/AudioSystemGemSystemComponent.h",
+			"Mu",
+			"CMBD5TGTP4/moc_AudioSystemGemSystemComponent.cpp",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Gems/AudioSystem/Code/Source/Editor/ACEEnums.h",
+			"Mu",
+			"VQH663J3CY/moc_ACEEnums.cpp",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Gems/AudioSystem/Code/Source/Editor/ATLControlsModel.h",
+			"Mu",
+			"VQH663J3CY/moc_ATLControlsModel.cpp",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Gems/AudioSystem/Code/Source/Editor/ATLControlsPanel.h",
+			"Mu",
+			"VQH663J3CY/moc_ATLControlsPanel.cpp",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Gems/AudioSystem/Code/Source/Editor/ATLControlsResourceDialog.h",
+			"Mu",
+			"VQH663J3CY/moc_ATLControlsResourceDialog.cpp",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Gems/AudioSystem/Code/Source/Editor/AudioControl.h",
+			"Mu",
+			"VQH663J3CY/moc_AudioControl.cpp",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Gems/AudioSystem/Code/Source/Editor/AudioControlFilters.h",
+			"Mu",
+			"VQH663J3CY/moc_AudioControlFilters.cpp",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Gems/AudioSystem/Code/Source/Editor/AudioControlsEditorPlugin.h",
+			"Mu",
+			"VQH663J3CY/moc_AudioControlsEditorPlugin.cpp",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Gems/AudioSystem/Code/Source/Editor/AudioControlsEditorUndo.h",
+			"Mu",
+			"VQH663J3CY/moc_AudioControlsEditorUndo.cpp",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Gems/AudioSystem/Code/Source/Editor/AudioControlsEditorWindow.h",
+			"Mu",
+			"VQH663J3CY/moc_AudioControlsEditorWindow.cpp",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Gems/AudioSystem/Code/Source/Editor/AudioControlsLoader.h",
+			"Mu",
+			"VQH663J3CY/moc_AudioControlsLoader.cpp",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Gems/AudioSystem/Code/Source/Editor/AudioControlsWriter.h",
+			"Mu",
+			"VQH663J3CY/moc_AudioControlsWriter.cpp",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Gems/AudioSystem/Code/Source/Editor/AudioResourceSelectors.h",
+			"Mu",
+			"VQH663J3CY/moc_AudioResourceSelectors.cpp",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Gems/AudioSystem/Code/Source/Editor/AudioSystemPanel.h",
+			"Mu",
+			"VQH663J3CY/moc_AudioSystemPanel.cpp",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Gems/AudioSystem/Code/Source/Editor/ImplementationManager.h",
+			"Mu",
+			"VQH663J3CY/moc_ImplementationManager.cpp",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Gems/AudioSystem/Code/Source/Editor/InspectorPanel.h",
+			"Mu",
+			"VQH663J3CY/moc_InspectorPanel.cpp",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Gems/AudioSystem/Code/Source/Editor/QATLControlsTreeModel.h",
+			"Mu",
+			"VQH663J3CY/moc_QATLControlsTreeModel.cpp",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Gems/AudioSystem/Code/Source/Editor/QAudioControlEditorIcons.h",
+			"Mu",
+			"VQH663J3CY/moc_QAudioControlEditorIcons.cpp",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Gems/AudioSystem/Code/Source/Editor/QAudioControlTreeWidget.h",
+			"Mu",
+			"VQH663J3CY/moc_QAudioControlTreeWidget.cpp",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Gems/AudioSystem/Code/Source/Editor/QConnectionListWidget.h",
+			"Mu",
+			"VQH663J3CY/moc_QConnectionListWidget.cpp",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Gems/AudioSystem/Code/Source/Editor/QConnectionsWidget.h",
+			"Mu",
+			"VQH663J3CY/moc_QConnectionsWidget.cpp",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Gems/AudioSystem/Code/Source/Editor/QSimpleAudioControlListWidget.h",
+			"Mu",
+			"VQH663J3CY/moc_QSimpleAudioControlListWidget.cpp",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Gems/AudioSystem/Code/Source/Editor/QTreeWidgetFilter.h",
+			"Mu",
+			"VQH663J3CY/moc_QTreeWidgetFilter.cpp",
+			null
+		]
+	],
+	"HEADER_EXTENSIONS" : [ "h", "hh", "h++", "hm", "hpp", "hxx", "in", "txx" ],
+	"INCLUDE_DIR" : "C:/Users/lesaelr/o3de/External/AudioSystem-825219bb/Code/AudioSystem.Editor.Static_autogen/include",
+	"INCLUDE_DIR_debug" : "C:/Users/lesaelr/o3de/External/AudioSystem-825219bb/Code/AudioSystem.Editor.Static_autogen/include_debug",
+	"INCLUDE_DIR_profile" : "C:/Users/lesaelr/o3de/External/AudioSystem-825219bb/Code/AudioSystem.Editor.Static_autogen/include_profile",
+	"INCLUDE_DIR_release" : "C:/Users/lesaelr/o3de/External/AudioSystem-825219bb/Code/AudioSystem.Editor.Static_autogen/include_release",
+	"MOC_COMPILATION_FILE" : "C:/Users/lesaelr/o3de/External/AudioSystem-825219bb/Code/AudioSystem.Editor.Static_autogen/mocs_compilation.cpp",
+	"MOC_COMPILATION_FILE_debug" : "C:/Users/lesaelr/o3de/External/AudioSystem-825219bb/Code/AudioSystem.Editor.Static_autogen/mocs_compilation_debug.cpp",
+	"MOC_COMPILATION_FILE_profile" : "C:/Users/lesaelr/o3de/External/AudioSystem-825219bb/Code/AudioSystem.Editor.Static_autogen/mocs_compilation_profile.cpp",
+	"MOC_COMPILATION_FILE_release" : "C:/Users/lesaelr/o3de/External/AudioSystem-825219bb/Code/AudioSystem.Editor.Static_autogen/mocs_compilation_release.cpp",
+	"MOC_DEFINITIONS" : 
+	[
+		"AUDIO_SYSTEM_EDITOR",
+		"EDITOR",
+		"EDITOR_COMMON_IMPORTS",
+		"ENABLE_AUDIO_LOGGING",
+		"NOMINMAX",
+		"OPENSSL_ENABLED",
+		"QT_CORE_LIB",
+		"QT_GUI_LIB",
+		"QT_NO_DEBUG",
+		"QT_SVG_LIB",
+		"QT_WIDGETS_LIB",
+		"QT_XML_LIB",
+		"WIN32",
+		"WIN64",
+		"_ENABLE_EXTENDED_ALIGNED_STORAGE",
+		"_HAS_EXCEPTIONS=0",
+		"_WIN32",
+		"_WIN64"
+	],
+	"MOC_DEFINITIONS_debug" : 
+	[
+		"AUDIO_SYSTEM_EDITOR",
+		"AZ_BUILD_CONFIGURATION_TYPE=\"debug\"",
+		"AZ_DEBUG_BUILD=1",
+		"AZ_ENABLE_DEBUG_TOOLS",
+		"AZ_ENABLE_TRACING",
+		"EDITOR",
+		"EDITOR_COMMON_IMPORTS",
+		"ENABLE_AUDIO_LOGGING",
+		"NOMINMAX",
+		"OPENSSL_ENABLED",
+		"QT_CORE_LIB",
+		"QT_GUI_LIB",
+		"QT_SVG_LIB",
+		"QT_WIDGETS_LIB",
+		"QT_XML_LIB",
+		"WIN32",
+		"WIN64",
+		"_DEBUG",
+		"_ENABLE_EXTENDED_ALIGNED_STORAGE",
+		"_HAS_EXCEPTIONS=0",
+		"_WIN32",
+		"_WIN64"
+	],
+	"MOC_DEFINITIONS_profile" : 
+	[
+		"AUDIO_SYSTEM_EDITOR",
+		"AZ_BUILD_CONFIGURATION_TYPE=\"profile\"",
+		"AZ_ENABLE_DEBUG_TOOLS",
+		"AZ_ENABLE_TRACING",
+		"EDITOR",
+		"EDITOR_COMMON_IMPORTS",
+		"ENABLE_AUDIO_LOGGING",
+		"NDEBUG",
+		"NOMINMAX",
+		"OPENSSL_ENABLED",
+		"PROFILE",
+		"QT_CORE_LIB",
+		"QT_GUI_LIB",
+		"QT_NO_DEBUG",
+		"QT_SVG_LIB",
+		"QT_WIDGETS_LIB",
+		"QT_XML_LIB",
+		"WIN32",
+		"WIN64",
+		"_ENABLE_EXTENDED_ALIGNED_STORAGE",
+		"_HAS_EXCEPTIONS=0",
+		"_PROFILE",
+		"_WIN32",
+		"_WIN64"
+	],
+	"MOC_DEFINITIONS_release" : 
+	[
+		"AUDIO_RELEASE",
+		"AUDIO_SYSTEM_EDITOR",
+		"AZ_BUILD_CONFIGURATION_TYPE=\"release\"",
+		"EDITOR",
+		"EDITOR_COMMON_IMPORTS",
+		"NDEBUG",
+		"NOMINMAX",
+		"OPENSSL_ENABLED",
+		"QT_CORE_LIB",
+		"QT_GUI_LIB",
+		"QT_NO_DEBUG",
+		"QT_SVG_LIB",
+		"QT_WIDGETS_LIB",
+		"QT_XML_LIB",
+		"RELEASE",
+		"WIN32",
+		"WIN64",
+		"_ENABLE_EXTENDED_ALIGNED_STORAGE",
+		"_HAS_EXCEPTIONS=0",
+		"_RELEASE",
+		"_WIN32",
+		"_WIN64"
+	],
+	"MOC_DEPEND_FILTERS" : 
+	[
+		[
+			"Q_PLUGIN_METADATA",
+			"[\n][ \t]*Q_PLUGIN_METADATA[ \t]*\\([^\\)]*FILE[ \t]*\"([^\"]+)\""
+		]
+	],
+	"MOC_INCLUDES" : 
+	[
+		"C:/Users/lesaelr/o3de/Gems/AudioSystem/Code",
+		"C:/Users/lesaelr/o3de/Gems/AudioSystem/Code/Source",
+		"C:/Users/lesaelr/o3de/Gems/AudioSystem/Code/Source/Engine",
+		"C:/Users/lesaelr/o3de/Gems/AudioSystem/Code/Include/Engine",
+		"C:/Users/lesaelr/o3de/Gems/AudioSystem/Code/Source/Editor",
+		"C:/Users/lesaelr/o3de/Gems/AudioSystem/Code/Platform/Windows",
+		"C:/Users/lesaelr/o3de/Gems/AudioSystem/Code/Include/Editor",
+		"C:/Users/lesaelr/o3de/External/AudioSystem-825219bb/Code/AudioSystem.Editor.Static_autogen/include",
+		"C:/Users/lesaelr/o3de/External/AudioSystem-825219bb/Code/AudioSystem.Editor.Static_autogen/include/Source",
+		"C:/Users/lesaelr/o3de/External/AudioSystem-825219bb/Code/AudioSystem.Editor.Static_autogen/include/Source/Engine",
+		"C:/Users/lesaelr/o3de/External/AudioSystem-825219bb/Code/AudioSystem.Editor.Static_autogen/include/Include/Engine",
+		"C:/Users/lesaelr/o3de/External/AudioSystem-825219bb/Code/AudioSystem.Editor.Static_autogen/include/Source/Editor",
+		"C:/Users/lesaelr/o3de/External/AudioSystem-825219bb/Code/AudioSystem.Editor.Static_autogen/include/Platform/Windows",
+		"C:/Users/lesaelr/o3de/External/AudioSystem-825219bb/Code/AudioSystem.Editor.Static_autogen/include/Include/Editor",
+		"C:/Users/lesaelr/o3de/Code/Framework/AzCore",
+		"C:/Users/lesaelr/o3de/Code/Framework/AzCore/Platform/Windows",
+		"C:/Users/lesaelr/o3de/Code/Framework/AzCore/Platform/Common",
+		"C:/Users/lesaelr/o3de/Code/Framework/AzToolsFramework",
+		"C:/Users/lesaelr/o3de/Code/Framework/AzToolsFramework/AzToolsFramework",
+		"C:/Users/lesaelr/o3de/Code/Framework/AzToolsFramework/Platform/Windows",
+		"C:/Users/lesaelr/o3de/Code/Framework/AzFramework",
+		"C:/Users/lesaelr/o3de/Code/Framework/AzFramework/Platform/Windows",
+		"C:/Users/lesaelr/o3de/Code/Framework/GridMate",
+		"C:/Users/lesaelr/o3de/Code/Framework/GridMate/Platform/Windows",
+		"C:/Users/lesaelr/o3de/Code/Framework/AzQtComponents",
+		"C:/Users/lesaelr/o3de/Code/Legacy/CryCommon",
+		"C:/Users/lesaelr/o3de/Code/Legacy",
+		"C:/Users/lesaelr/o3de/Code/Legacy/CryCommon/Platform/Windows",
+		"C:/Users/lesaelr/o3de/Code/Editor/Include",
+		"C:/Users/lesaelr/o3de/Code/Editor",
+		"C:/Users/lesaelr/o3de/Code",
+		"C:/Users/lesaelr/o3de/Code/Editor/Plugins/EditorCommon",
+		"C:/Users/lesaelr/o3de/Gems/AudioSystem/Code/Include"
+	],
+	"MOC_MACRO_NAMES" : [ "Q_OBJECT", "Q_GADGET", "Q_NAMESPACE", "Q_NAMESPACE_EXPORT" ],
+	"MOC_OPTIONS" : [],
+	"MOC_PATH_PREFIX" : false,
+	"MOC_PREDEFS_CMD" : [],
+	"MOC_PREDEFS_FILE" : "",
+	"MOC_RELAXED_MODE" : false,
+	"MOC_SKIP" : 
+	[
+		"C:/Users/lesaelr/o3de/External/AudioSystem-825219bb/Code/AudioSystem.Editor.Static_autogen/include/Source/Editor/ui_ATLControlsPanel.h",
+		"C:/Users/lesaelr/o3de/External/AudioSystem-825219bb/Code/AudioSystem.Editor.Static_autogen/include/Source/Editor/ui_AudioControlsEditorMainWindow.h",
+		"C:/Users/lesaelr/o3de/External/AudioSystem-825219bb/Code/AudioSystem.Editor.Static_autogen/include/Source/Editor/ui_AudioSystemPanel.h",
+		"C:/Users/lesaelr/o3de/External/AudioSystem-825219bb/Code/AudioSystem.Editor.Static_autogen/include/Source/Editor/ui_ConnectionsWidget.h",
+		"C:/Users/lesaelr/o3de/External/AudioSystem-825219bb/Code/AudioSystem.Editor.Static_autogen/include/Source/Editor/ui_InspectorPanel.h"
+	],
+	"MULTI_CONFIG" : true,
+	"PARALLEL" : 6,
+	"PARSE_CACHE_FILE" : "C:/Users/lesaelr/o3de/External/AudioSystem-825219bb/Code/CMakeFiles/AudioSystem.Editor.Static_autogen.dir/ParseCache.txt",
+	"PARSE_CACHE_FILE_debug" : "C:/Users/lesaelr/o3de/External/AudioSystem-825219bb/Code/CMakeFiles/AudioSystem.Editor.Static_autogen.dir/ParseCache_debug.txt",
+	"PARSE_CACHE_FILE_profile" : "C:/Users/lesaelr/o3de/External/AudioSystem-825219bb/Code/CMakeFiles/AudioSystem.Editor.Static_autogen.dir/ParseCache_profile.txt",
+	"PARSE_CACHE_FILE_release" : "C:/Users/lesaelr/o3de/External/AudioSystem-825219bb/Code/CMakeFiles/AudioSystem.Editor.Static_autogen.dir/ParseCache_release.txt",
+	"QT_MOC_EXECUTABLE" : "C:/Users/lesaelr/.o3de/3rdParty/packages/qt-5.15.2-rev4-windows/qt/bin/moc.exe",
+	"QT_UIC_EXECUTABLE" : "",
+	"QT_VERSION_MAJOR" : 5,
+	"QT_VERSION_MINOR" : 15,
+	"SETTINGS_FILE" : "C:/Users/lesaelr/o3de/External/AudioSystem-825219bb/Code/CMakeFiles/AudioSystem.Editor.Static_autogen.dir/AutogenUsed.txt",
+	"SETTINGS_FILE_debug" : "C:/Users/lesaelr/o3de/External/AudioSystem-825219bb/Code/CMakeFiles/AudioSystem.Editor.Static_autogen.dir/AutogenUsed_debug.txt",
+	"SETTINGS_FILE_profile" : "C:/Users/lesaelr/o3de/External/AudioSystem-825219bb/Code/CMakeFiles/AudioSystem.Editor.Static_autogen.dir/AutogenUsed_profile.txt",
+	"SETTINGS_FILE_release" : "C:/Users/lesaelr/o3de/External/AudioSystem-825219bb/Code/CMakeFiles/AudioSystem.Editor.Static_autogen.dir/AutogenUsed_release.txt",
+	"SOURCES" : 
+	[
+		[
+			"C:/Users/lesaelr/o3de/External/AudioSystem-825219bb/Code/CMakeFiles/AudioSystem.Editor.Static.dir/Unity/unity_0_cxx.cxx",
+			"Mu",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/External/AudioSystem-825219bb/Code/CMakeFiles/AudioSystem.Editor.Static.dir/Unity/unity_1_cxx.cxx",
+			"Mu",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/External/AudioSystem-825219bb/Code/CMakeFiles/AudioSystem.Editor.Static.dir/Unity/unity_2_cxx.cxx",
+			"Mu",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Gems/AudioSystem/Code/Source/AudioSystemGemSystemComponent.cpp",
+			"Mu",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Gems/AudioSystem/Code/Source/Editor/ATLControlsModel.cpp",
+			"Mu",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Gems/AudioSystem/Code/Source/Editor/ATLControlsPanel.cpp",
+			"Mu",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Gems/AudioSystem/Code/Source/Editor/ATLControlsResourceDialog.cpp",
+			"Mu",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Gems/AudioSystem/Code/Source/Editor/AudioControl.cpp",
+			"Mu",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Gems/AudioSystem/Code/Source/Editor/AudioControlFilters.cpp",
+			"Mu",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Gems/AudioSystem/Code/Source/Editor/AudioControlsEditorPlugin.cpp",
+			"Mu",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Gems/AudioSystem/Code/Source/Editor/AudioControlsEditorUndo.cpp",
+			"Mu",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Gems/AudioSystem/Code/Source/Editor/AudioControlsEditorWindow.cpp",
+			"Mu",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Gems/AudioSystem/Code/Source/Editor/AudioControlsLoader.cpp",
+			"Mu",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Gems/AudioSystem/Code/Source/Editor/AudioControlsWriter.cpp",
+			"Mu",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Gems/AudioSystem/Code/Source/Editor/AudioResourceSelectors.cpp",
+			"Mu",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Gems/AudioSystem/Code/Source/Editor/AudioSystemPanel.cpp",
+			"Mu",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Gems/AudioSystem/Code/Source/Editor/ImplementationManager.cpp",
+			"Mu",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Gems/AudioSystem/Code/Source/Editor/InspectorPanel.cpp",
+			"Mu",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Gems/AudioSystem/Code/Source/Editor/QATLControlsTreeModel.cpp",
+			"Mu",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Gems/AudioSystem/Code/Source/Editor/QAudioControlTreeWidget.cpp",
+			"Mu",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Gems/AudioSystem/Code/Source/Editor/QConnectionsWidget.cpp",
+			"Mu",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Gems/AudioSystem/Code/Source/Editor/QSimpleAudioControlListWidget.cpp",
+			"Mu",
+			null
+		],
+		[
+			"C:/Users/lesaelr/o3de/Gems/AudioSystem/Code/Source/Editor/QTreeWidgetFilter.cpp",
+			"Mu",
+			null
+		]
+	],
+	"VERBOSITY" : 0
+}

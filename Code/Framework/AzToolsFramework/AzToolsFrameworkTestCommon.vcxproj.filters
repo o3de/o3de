@@ -1,0 +1,52 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFrameworkTestCommon_autogen\mocs_compilation_debug.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\CMakeFiles\AzToolsFrameworkTestCommon.dir\Unity\unity_0_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UnitTest\AzToolsFrameworkTestHelpers.cpp">
+      <Filter>AzToolsFramework\UnitTest</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UnitTest\ToolsTestApplication.cpp">
+      <Filter>AzToolsFramework\UnitTest</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFrameworkTestCommon_autogen\mocs_compilation_profile.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFrameworkTestCommon_autogen\mocs_compilation_release.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UnitTest\AzToolsFrameworkTestHelpers.h">
+      <Filter>AzToolsFramework\UnitTest</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\UnitTest\ToolsTestApplication.h">
+      <Filter>AzToolsFramework\UnitTest</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\CMakeLists.txt">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="C:\Users\lesaelr\o3de\Code\Framework\AzToolsFramework\AzToolsFramework\aztoolsframeworktestcommon_files.cmake">
+      <Filter>AzToolsFramework</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="AzToolsFramework">
+      <UniqueIdentifier>{3FB87680-4AE7-3CD5-8680-BA4A4F9E0ED0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AzToolsFramework\UnitTest">
+      <UniqueIdentifier>{E9509C7C-97DB-3EBA-AA72-73741307DCD3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Generated Files">
+      <UniqueIdentifier>{FB9B7D8B-7F05-31D5-AA90-592248EDE1B3}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

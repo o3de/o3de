@@ -1,0 +1,463 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneCore\CMakeFiles\SceneCore.dir\Unity\unity_4_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneCore\CMakeFiles\SceneCore.dir\Unity\unity_3_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneCore\CMakeFiles\SceneCore.dir\Unity\unity_2_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneCore\CMakeFiles\SceneCore.dir\Unity\unity_1_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneCore\CMakeFiles\SceneCore.dir\Unity\unity_0_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneCore\DllMain.cpp" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneCore\SceneCoreStandaloneAllocator.cpp" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneCore\DataTypes\DataTypeUtilities.cpp">
+      <Filter>DataTypes</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneCore\Components\BehaviorComponent.cpp">
+      <Filter>Components</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneCore\Components\ExportingComponent.cpp">
+      <Filter>Components</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneCore\Components\RCExportingComponent.cpp">
+      <Filter>Components</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneCore\Components\GenerationComponent.cpp">
+      <Filter>Components</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneCore\Components\LoadingComponent.cpp">
+      <Filter>Components</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneCore\Components\SceneSystemComponent.cpp">
+      <Filter>Components</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneCore\Components\Utilities\EntityConstructor.cpp">
+      <Filter>Components\Utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneCore\Containers\GraphObjectProxy.cpp">
+      <Filter>Containers</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneCore\Containers\RuleContainer.cpp">
+      <Filter>Containers</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneCore\Containers\Scene.cpp">
+      <Filter>Containers</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneCore\Containers\SceneGraph.cpp">
+      <Filter>Containers</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneCore\Containers\SceneManifest.cpp">
+      <Filter>Containers</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneCore\Containers\Utilities\SceneUtilities.cpp">
+      <Filter>Containers\Utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneCore\Containers\Utilities\SceneGraphUtilities.cpp">
+      <Filter>Containers\Utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneCore\Events\CallProcessorBus.cpp">
+      <Filter>Events</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneCore\Events\ProcessingResult.cpp">
+      <Filter>Events</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneCore\Events\ExportEventContext.cpp">
+      <Filter>Events</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneCore\Events\ExportProductList.cpp">
+      <Filter>Events</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneCore\Events\GenerateEventContext.cpp">
+      <Filter>Events</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneCore\Events\ImportEventContext.cpp">
+      <Filter>Events</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneCore\Events\CallProcessorBinder.cpp">
+      <Filter>Events</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneCore\Events\AssetImportRequest.cpp">
+      <Filter>Events</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneCore\Events\ManifestMetaInfoBus.cpp">
+      <Filter>Events</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneCore\Import\ManifestImportRequestHandler.cpp">
+      <Filter>Import</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneCore\Export\MtlMaterialExporter.cpp">
+      <Filter>Export</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneCore\Utilities\CoordinateSystemConverter.cpp">
+      <Filter>Utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneCore\Utilities\SceneGraphSelector.cpp">
+      <Filter>Utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneCore\Utilities\FileUtilities.cpp">
+      <Filter>Utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneCore\Utilities\PatternMatcher.cpp">
+      <Filter>Utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneCore\Utilities\DebugOutput.cpp">
+      <Filter>Utilities</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneCore\SceneCoreConfiguration.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneCore\SceneBuilderDependencyBus.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneCore\SceneCoreStandaloneAllocator.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneCore\DataTypes\IManifestObject.h">
+      <Filter>DataTypes</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneCore\DataTypes\IGraphObject.h">
+      <Filter>DataTypes</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneCore\DataTypes\DataTypeUtilities.h">
+      <Filter>DataTypes</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneCore\DataTypes\DataTypeUtilities.inl">
+      <Filter>DataTypes</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneCore\DataTypes\GraphData\IMeshData.h">
+      <Filter>DataTypes\GraphData</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneCore\DataTypes\GraphData\IMeshVertexColorData.h">
+      <Filter>DataTypes\GraphData</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneCore\DataTypes\GraphData\IMeshVertexUVData.h">
+      <Filter>DataTypes\GraphData</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneCore\DataTypes\GraphData\IMeshVertexTangentData.h">
+      <Filter>DataTypes\GraphData</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneCore\DataTypes\GraphData\IMeshVertexBitangentData.h">
+      <Filter>DataTypes\GraphData</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneCore\DataTypes\GraphData\IMaterialData.h">
+      <Filter>DataTypes\GraphData</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneCore\DataTypes\GraphData\ITransform.h">
+      <Filter>DataTypes\GraphData</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneCore\DataTypes\GraphData\IBoneData.h">
+      <Filter>DataTypes\GraphData</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneCore\DataTypes\GraphData\ISkinWeightData.h">
+      <Filter>DataTypes\GraphData</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneCore\DataTypes\GraphData\IAnimationData.h">
+      <Filter>DataTypes\GraphData</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneCore\DataTypes\GraphData\IBlendShapeData.h">
+      <Filter>DataTypes\GraphData</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneCore\DataTypes\Groups\IGroup.h">
+      <Filter>DataTypes\Groups</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneCore\DataTypes\Groups\ISceneNodeGroup.h">
+      <Filter>DataTypes\Groups</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneCore\DataTypes\Groups\IMeshGroup.h">
+      <Filter>DataTypes\Groups</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneCore\DataTypes\Groups\ISkeletonGroup.h">
+      <Filter>DataTypes\Groups</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneCore\DataTypes\Groups\ISkinGroup.h">
+      <Filter>DataTypes\Groups</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneCore\DataTypes\Groups\IAnimationGroup.h">
+      <Filter>DataTypes\Groups</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneCore\DataTypes\ManifestBase\ISceneNodeSelectionList.h">
+      <Filter>DataTypes\ManifestBase</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneCore\DataTypes\Rules\IRule.h">
+      <Filter>DataTypes\Rules</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneCore\DataTypes\Rules\IBlendShapeRule.h">
+      <Filter>DataTypes\Rules</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneCore\DataTypes\Rules\ICommentRule.h">
+      <Filter>DataTypes\Rules</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneCore\DataTypes\Rules\ILodRule.h">
+      <Filter>DataTypes\Rules</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneCore\DataTypes\Rules\IMeshAdvancedRule.h">
+      <Filter>DataTypes\Rules</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneCore\DataTypes\Rules\IMaterialRule.h">
+      <Filter>DataTypes\Rules</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneCore\DataTypes\Rules\IScriptProcessorRule.h">
+      <Filter>DataTypes\Rules</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneCore\DataTypes\Rules\ISkeletonProxyRule.h">
+      <Filter>DataTypes\Rules</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneCore\DataTypes\Rules\ICoordinateSystemRule.h">
+      <Filter>DataTypes\Rules</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneCore\DataTypes\Rules\IClothRule.h">
+      <Filter>DataTypes\Rules</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneCore\DataTypes\Rules\ISkinRule.h">
+      <Filter>DataTypes\Rules</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneCore\Components\BehaviorComponent.h">
+      <Filter>Components</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneCore\Components\ExportingComponent.h">
+      <Filter>Components</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneCore\Components\RCExportingComponent.h">
+      <Filter>Components</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneCore\Components\GenerationComponent.h">
+      <Filter>Components</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneCore\Components\LoadingComponent.h">
+      <Filter>Components</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneCore\Components\SceneSystemComponent.h">
+      <Filter>Components</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneCore\Components\Utilities\EntityConstructor.h">
+      <Filter>Components\Utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneCore\Containers\GraphObjectProxy.h">
+      <Filter>Containers</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneCore\Containers\RuleContainer.h">
+      <Filter>Containers</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneCore\Containers\RuleContainer.inl">
+      <Filter>Containers</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneCore\Containers\Scene.h">
+      <Filter>Containers</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneCore\Containers\SceneGraph.h">
+      <Filter>Containers</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneCore\Containers\SceneGraph.inl">
+      <Filter>Containers</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneCore\Containers\SceneManifest.h">
+      <Filter>Containers</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneCore\Containers\SceneManifest.inl">
+      <Filter>Containers</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneCore\Containers\Views\View.h">
+      <Filter>Containers\Views</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneCore\Containers\Views\View.inl">
+      <Filter>Containers\Views</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneCore\Containers\Views\FilterIterator.h">
+      <Filter>Containers\Views</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneCore\Containers\Views\FilterIterator.inl">
+      <Filter>Containers\Views</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneCore\Containers\Views\PairIterator.h">
+      <Filter>Containers\Views</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneCore\Containers\Views\PairIterator.inl">
+      <Filter>Containers\Views</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneCore\Containers\Views\ConvertIterator.h">
+      <Filter>Containers\Views</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneCore\Containers\Views\ConvertIterator.inl">
+      <Filter>Containers\Views</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneCore\Containers\Views\SceneGraphUpwardsIterator.h">
+      <Filter>Containers\Views</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneCore\Containers\Views\SceneGraphUpwardsIterator.inl">
+      <Filter>Containers\Views</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneCore\Containers\Views\SceneGraphChildIterator.h">
+      <Filter>Containers\Views</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneCore\Containers\Views\SceneGraphChildIterator.inl">
+      <Filter>Containers\Views</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneCore\Containers\Views\SceneGraphDownwardsIterator.h">
+      <Filter>Containers\Views</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneCore\Containers\Views\SceneGraphDownwardsIterator.inl">
+      <Filter>Containers\Views</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneCore\Containers\Utilities\ProxyPointer.h">
+      <Filter>Containers\Utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneCore\Containers\Utilities\ProxyPointer.inl">
+      <Filter>Containers\Utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneCore\Containers\Utilities\Filters.h">
+      <Filter>Containers\Utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneCore\Containers\Utilities\Filters.inl">
+      <Filter>Containers\Utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneCore\Containers\Utilities\SceneUtilities.h">
+      <Filter>Containers\Utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneCore\Containers\Utilities\SceneGraphUtilities.h">
+      <Filter>Containers\Utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneCore\Containers\Utilities\SceneGraphUtilities.inl">
+      <Filter>Containers\Utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneCore\Events\CallProcessorBus.h">
+      <Filter>Events</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneCore\Events\CallProcessorBus.inl">
+      <Filter>Events</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneCore\Events\ProcessingResult.h">
+      <Filter>Events</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneCore\Events\ExportEventContext.h">
+      <Filter>Events</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneCore\Events\ExportProductList.h">
+      <Filter>Events</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneCore\Events\GenerateEventContext.h">
+      <Filter>Events</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneCore\Events\ImportEventContext.h">
+      <Filter>Events</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneCore\Events\CallProcessorBinder.h">
+      <Filter>Events</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneCore\Events\CallProcessorBinder.inl">
+      <Filter>Events</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneCore\Events\AssetImportRequest.h">
+      <Filter>Events</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneCore\Events\ManifestMetaInfoBus.h">
+      <Filter>Events</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneCore\Events\GraphMetaInfoBus.h">
+      <Filter>Events</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneCore\Events\SceneSerializationBus.h">
+      <Filter>Events</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneCore\Import\ManifestImportRequestHandler.h">
+      <Filter>Import</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneCore\Export\MtlMaterialExporter.h">
+      <Filter>Export</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneCore\Utilities\CoordinateSystemConverter.h">
+      <Filter>Utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneCore\Utilities\SceneGraphSelector.h">
+      <Filter>Utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneCore\Utilities\FileUtilities.h">
+      <Filter>Utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneCore\Utilities\Reporting.h">
+      <Filter>Utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneCore\Utilities\PatternMatcher.h">
+      <Filter>Utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneCore\Utilities\HashHelper.h">
+      <Filter>Utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneCore\Utilities\DebugOutput.h">
+      <Filter>Utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneCore\Utilities\DebugOutput.inl">
+      <Filter>Utilities</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\CMakeFiles\08b24365a84bd27d080f6dd51f42b933\SceneCore_(CONFIG).stamp.rule">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneCore\CMakeLists.txt">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="C:\Users\lesaelr\o3de\Code\Tools\SceneAPI\SceneCore\scenecore_files.cmake" />
+    <None Include="C:\Users\lesaelr\o3de\runtime_dependencies\debug\SceneCore_debug.stamp">
+      <Filter>Generated Files</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\runtime_dependencies\profile\SceneCore_profile.stamp">
+      <Filter>Generated Files</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\runtime_dependencies\release\SceneCore_release.stamp">
+      <Filter>Generated Files</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Components">
+      <UniqueIdentifier>{33222DEA-6358-30C7-8F3E-3871BB39FF00}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Components\Utilities">
+      <UniqueIdentifier>{2AEBD4C2-94D4-33E6-A20A-70146D603717}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Containers">
+      <UniqueIdentifier>{0335FA40-0F3F-3582-8A35-801DE7EDCD8F}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Containers\Utilities">
+      <UniqueIdentifier>{B4E1A5E1-E59B-32A2-BABE-8468C82B59F9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Containers\Views">
+      <UniqueIdentifier>{FDA7EA6B-92D2-3E01-913B-BC1D46E2F7D7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="DataTypes">
+      <UniqueIdentifier>{B85B29BC-73F3-3C07-90B9-961419A2D7A1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="DataTypes\GraphData">
+      <UniqueIdentifier>{6AD4C8A0-9246-378D-A480-DF8D7288D9C6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="DataTypes\Groups">
+      <UniqueIdentifier>{0826F216-DE69-3F84-AC22-BB0D7813E84F}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="DataTypes\ManifestBase">
+      <UniqueIdentifier>{C3692000-B585-33EF-A57C-E54C14A98FB5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="DataTypes\Rules">
+      <UniqueIdentifier>{FB5D0F27-703F-3D6C-A11C-397FBBF45446}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Events">
+      <UniqueIdentifier>{DB1D557C-EA85-3E6D-BA2E-74D988A550E4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Export">
+      <UniqueIdentifier>{DA400BA5-B60A-3DCF-A3C4-5006D15A7819}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Generated Files">
+      <UniqueIdentifier>{FB9B7D8B-7F05-31D5-AA90-592248EDE1B3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Import">
+      <UniqueIdentifier>{8CBB726B-499F-3467-B830-3DF2056B06A0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Utilities">
+      <UniqueIdentifier>{27C2A2C8-E715-391E-8EFA-79DDAC5751B4}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

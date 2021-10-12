@@ -1,0 +1,14 @@
+# CMake generation dependency list for this directory.
+C:/Users/lesaelr/.o3de/3rdParty/packages/xxhash-0.7.4-rev1-multiplatform/Findxxhash.cmake
+C:/Users/lesaelr/.o3de/3rdParty/packages/xxhash-0.7.4-rev1-multiplatform/PackageInfo.json
+C:/Users/lesaelr/o3de/Code/Tools/AssetProcessor/CMakeLists.txt
+C:/Users/lesaelr/o3de/Code/Tools/AssetProcessor/Platform/Windows/assetprocessor_gui_windows_files.cmake
+C:/Users/lesaelr/o3de/Code/Tools/AssetProcessor/Platform/Windows/assetprocessor_windows.cmake
+C:/Users/lesaelr/o3de/Code/Tools/AssetProcessor/Platform/Windows/assetprocessor_windows_files.cmake
+C:/Users/lesaelr/o3de/Code/Tools/AssetProcessor/assetprocessor_batch_files.cmake
+C:/Users/lesaelr/o3de/Code/Tools/AssetProcessor/assetprocessor_gui_files.cmake
+C:/Users/lesaelr/o3de/Code/Tools/AssetProcessor/assetprocessor_static_batch_files.cmake
+C:/Users/lesaelr/o3de/Code/Tools/AssetProcessor/assetprocessor_static_files.cmake
+C:/Users/lesaelr/o3de/Code/Tools/AssetProcessor/assetprocessor_test_files.cmake
+C:/Users/lesaelr/o3de/Code/Tools/AssetProcessor/native/ui/style/AssetProcessor.qrc
+C:/Users/lesaelr/o3de/cmake/Platform/Windows/LYTestWrappers_windows.cmake

@@ -1,0 +1,6 @@
+# CMake generation dependency list for this directory.
+C:/Users/lesaelr/o3de/Gems/LandscapeCanvas/Code/CMakeLists.txt
+C:/Users/lesaelr/o3de/Gems/LandscapeCanvas/Code/landscapecanvas_editor_files.cmake
+C:/Users/lesaelr/o3de/Gems/LandscapeCanvas/Code/landscapecanvas_editor_static_files.cmake
+C:/Users/lesaelr/o3de/Gems/LandscapeCanvas/Code/landscapecanvas_tests_editor_files.cmake
+C:/Users/lesaelr/o3de/cmake/Platform/Windows/LYTestWrappers_windows.cmake

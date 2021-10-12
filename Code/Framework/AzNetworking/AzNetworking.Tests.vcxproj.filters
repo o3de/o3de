@@ -1,0 +1,119 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\CMakeFiles\AzNetworking.Tests.dir\Unity\unity_2_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\CMakeFiles\AzNetworking.Tests.dir\Unity\unity_1_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\CMakeFiles\AzNetworking.Tests.dir\Unity\unity_0_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\Tests\Main.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\Tests\ConnectionLayer\ConnectionMetricsTests.cpp">
+      <Filter>Tests\ConnectionLayer</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\Tests\ConnectionLayer\SequenceGeneratorTests.cpp">
+      <Filter>Tests\ConnectionLayer</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\Tests\DataStructures\FixedSizeBitsetTests.cpp">
+      <Filter>Tests\DataStructures</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\Tests\DataStructures\FixedSizeBitsetViewTests.cpp">
+      <Filter>Tests\DataStructures</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\Tests\DataStructures\FixedSizeVectorBitsetTests.cpp">
+      <Filter>Tests\DataStructures</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\Tests\DataStructures\RingBufferBitsetTests.cpp">
+      <Filter>Tests\DataStructures</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\Tests\DataStructures\TimeoutQueueTests.cpp">
+      <Filter>Tests\DataStructures</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\Tests\Serialization\DeltaSerializerTests.cpp">
+      <Filter>Tests\Serialization</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\Tests\Serialization\HashSerializerTests.cpp">
+      <Filter>Tests\Serialization</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\Tests\Serialization\NetworkInputSerializerTests.cpp">
+      <Filter>Tests\Serialization</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\Tests\Serialization\NetworkOutputSerializerTests.cpp">
+      <Filter>Tests\Serialization</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\Tests\Serialization\TrackChangedSerializerTests.cpp">
+      <Filter>Tests\Serialization</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\Tests\TcpTransport\TcpTransportTests.cpp">
+      <Filter>Tests\TcpTransport</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\Tests\UdpTransport\UdpTransportTests.cpp">
+      <Filter>Tests\UdpTransport</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\Tests\Utilities\CidrAddressTests.cpp">
+      <Filter>Tests\Utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\Tests\Utilities\IpAddressTests.cpp">
+      <Filter>Tests\Utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\Tests\Utilities\NetworkCommonTests.cpp">
+      <Filter>Tests\Utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\Tests\Utilities\QuantizedValuesTests.cpp">
+      <Filter>Tests\Utilities</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\CMakeFiles\08b24365a84bd27d080f6dd51f42b933\AzNetworking.Tests_(CONFIG).stamp.rule">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\CMakeLists.txt">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="C:\Users\lesaelr\o3de\Code\Framework\AzNetworking\Tests\aznetworkingtests_files.cmake">
+      <Filter>Tests</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\runtime_dependencies\debug\AzNetworking.Tests_debug.stamp">
+      <Filter>Generated Files</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\runtime_dependencies\profile\AzNetworking.Tests_profile.stamp">
+      <Filter>Generated Files</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\runtime_dependencies\release\AzNetworking.Tests_release.stamp">
+      <Filter>Generated Files</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Generated Files">
+      <UniqueIdentifier>{FB9B7D8B-7F05-31D5-AA90-592248EDE1B3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Tests">
+      <UniqueIdentifier>{042E9197-689D-3636-8A35-28EBCAA2BD47}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Tests\ConnectionLayer">
+      <UniqueIdentifier>{DD7F6836-20C5-358A-B452-E007C7B571A5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Tests\DataStructures">
+      <UniqueIdentifier>{0E567094-017E-312F-86A1-B6A9189831AF}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Tests\Serialization">
+      <UniqueIdentifier>{B1C714D4-3105-3863-8E17-9735010556F2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Tests\TcpTransport">
+      <UniqueIdentifier>{85993B47-04C5-3A86-B574-8290E79C84A6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Tests\UdpTransport">
+      <UniqueIdentifier>{0B64575A-974B-3BA7-9196-73362A31112E}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Tests\Utilities">
+      <UniqueIdentifier>{F120318E-F727-3657-A461-5715851D5229}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

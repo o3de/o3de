@@ -1,0 +1,159 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Legacy\CrySystem\CMakeFiles\CrySystem.Static.dir\Unity\unity_3_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Legacy\CrySystem\CMakeFiles\CrySystem.Static.dir\Unity\unity_2_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Legacy\CrySystem\CMakeFiles\CrySystem.Static.dir\Unity\unity_1_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Legacy\CrySystem\CMakeFiles\CrySystem.Static.dir\Unity\unity_0_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Legacy\CrySystem\AZCrySystemInitLogSink.cpp" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Legacy\CrySystem\CmdLine.cpp" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Legacy\CrySystem\CmdLineArg.cpp" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Legacy\CrySystem\ConsoleBatchFile.cpp" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Legacy\CrySystem\ConsoleHelpGen.cpp" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Legacy\CrySystem\DebugCallStack.cpp" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Legacy\CrySystem\IDebugCallStack.cpp" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Legacy\CrySystem\Log.cpp" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Legacy\CrySystem\System.cpp" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Legacy\CrySystem\SystemCFG.cpp" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Legacy\CrySystem\SystemEventDispatcher.cpp" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Legacy\CrySystem\SystemInit.cpp" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Legacy\CrySystem\SystemWin32.cpp" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Legacy\CrySystem\Timer.cpp" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Legacy\CrySystem\XConsole.cpp" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Legacy\CrySystem\XConsoleVariable.cpp" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Legacy\CrySystem\XML\SerializeXMLReader.cpp">
+      <Filter>XML</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Legacy\CrySystem\XML\SerializeXMLWriter.cpp">
+      <Filter>XML</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Legacy\CrySystem\XML\xml.cpp">
+      <Filter>XML</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Legacy\CrySystem\XML\XmlUtils.cpp">
+      <Filter>XML</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Legacy\CrySystem\LocalizedStringManager.cpp" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Legacy\CrySystem\Huffman.cpp" />
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Legacy\CrySystem\RemoteConsole\RemoteConsole.cpp">
+      <Filter>RemoteConsole</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Legacy\CrySystem\LevelSystem\LevelSystem.cpp">
+      <Filter>LevelSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Legacy\CrySystem\LevelSystem\SpawnableLevelSystem.cpp">
+      <Filter>LevelSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Legacy\CrySystem\ViewSystem\DebugCamera.cpp">
+      <Filter>ViewSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Legacy\CrySystem\ViewSystem\View.cpp">
+      <Filter>ViewSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Legacy\CrySystem\ViewSystem\ViewSystem.cpp">
+      <Filter>ViewSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Legacy\CrySystem\WindowsErrorReporting.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CrySystem\AZCrySystemInitLogSink.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CrySystem\AZCoreLogSink.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CrySystem\CmdLine.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CrySystem\CmdLineArg.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CrySystem\ConsoleBatchFile.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CrySystem\ConsoleHelpGen.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CrySystem\DebugCallStack.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CrySystem\IDebugCallStack.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CrySystem\Log.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CrySystem\SimpleStringPool.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CrySystem\CrySystem_precompiled.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CrySystem\System.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CrySystem\SystemEventDispatcher.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CrySystem\Timer.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CrySystem\XConsole.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CrySystem\XConsoleVariable.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CrySystem\XML\SerializeXMLReader.h">
+      <Filter>XML</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CrySystem\XML\SerializeXMLWriter.h">
+      <Filter>XML</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CrySystem\XML\xml.h">
+      <Filter>XML</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CrySystem\XML\XmlUtils.h">
+      <Filter>XML</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CrySystem\LocalizedStringManager.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CrySystem\Huffman.h" />
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CrySystem\RemoteConsole\RemoteConsole.h">
+      <Filter>RemoteConsole</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CrySystem\RemoteConsole\RemoteConsole_impl.inl">
+      <Filter>RemoteConsole</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CrySystem\RemoteConsole\RemoteConsole_none.inl">
+      <Filter>RemoteConsole</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CrySystem\LevelSystem\LevelSystem.h">
+      <Filter>LevelSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CrySystem\LevelSystem\SpawnableLevelSystem.h">
+      <Filter>LevelSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CrySystem\ViewSystem\DebugCamera.h">
+      <Filter>ViewSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CrySystem\ViewSystem\View.h">
+      <Filter>ViewSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Legacy\CrySystem\ViewSystem\ViewSystem.h">
+      <Filter>ViewSystem</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Code\Legacy\CrySystem\CMakeLists.txt">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="C:\Users\lesaelr\o3de\Code\Legacy\CrySystem\crysystem_files.cmake" />
+    <None Include="C:\Users\lesaelr\o3de\Code\Legacy\CrySystem\Platform\Windows\platform_windows_files.cmake">
+      <Filter>Platform\Windows</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Legacy\CrySystem\Platform\Windows\platform_windows.cmake">
+      <Filter>Platform\Windows</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Generated Files">
+      <UniqueIdentifier>{FB9B7D8B-7F05-31D5-AA90-592248EDE1B3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="LevelSystem">
+      <UniqueIdentifier>{37AEDAF7-855D-3020-84E0-63494BF35995}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Platform">
+      <UniqueIdentifier>{378A8D8C-6CA1-3F6B-A02B-1E9FF64C97B2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Platform\Windows">
+      <UniqueIdentifier>{63AEF2F6-51C7-306A-BFE8-A049C8C62EFB}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="RemoteConsole">
+      <UniqueIdentifier>{5F202F98-5FAA-3481-AAD3-1C82D5E2F9C6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ViewSystem">
+      <UniqueIdentifier>{EF2BA944-D9A9-361D-8410-7034ED1F5C09}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="XML">
+      <UniqueIdentifier>{20DBFF76-8A75-3100-8B8B-DDC1F6551926}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

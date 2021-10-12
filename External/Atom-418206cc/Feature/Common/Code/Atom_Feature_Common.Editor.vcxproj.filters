@@ -1,0 +1,134 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\Atom-418206cc\Feature\Common\Code\CMakeFiles\Atom_Feature_Common.Editor.dir\Unity\unity_1_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\Atom-418206cc\Feature\Common\Code\CMakeFiles\Atom_Feature_Common.Editor.dir\Unity\unity_0_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\Utils\EditorLightingPreset.cpp">
+      <Filter>Source\Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\Utils\EditorModelPreset.cpp">
+      <Filter>Source\Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\EditorCommonSystemComponent.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\CommonModule.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\Material\ConvertEmissiveUnitFunctorSourceData.cpp">
+      <Filter>Source\Material</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\Material\MaterialConverterSystemComponent.cpp">
+      <Filter>Source\Material</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\Material\SubsurfaceTransmissionParameterFunctorSourceData.cpp">
+      <Filter>Source\Material</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\Material\Transform2DFunctorSourceData.cpp">
+      <Filter>Source\Material</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\Material\UseTextureFunctorSourceData.cpp">
+      <Filter>Source\Material</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\Material\DrawListFunctorSourceData.cpp">
+      <Filter>Source\Material</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Include\Atom\Feature\Utils\EditorRenderComponentAdapter.h">
+      <Filter>Include\Atom\Feature\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Include\Atom\Feature\Utils\EditorRenderComponentAdapter.inl">
+      <Filter>Include\Atom\Feature\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Include\Atom\Feature\Utils\EditorLightingPreset.h">
+      <Filter>Include\Atom\Feature\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Include\Atom\Feature\Utils\EditorModelPreset.h">
+      <Filter>Include\Atom\Feature\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\EditorCommonSystemComponent.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\RenderCommon.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\Material\ConvertEmissiveUnitFunctorSourceData.h">
+      <Filter>Source\Material</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\Material\MaterialConverterSystemComponent.h">
+      <Filter>Source\Material</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\Material\SubsurfaceTransmissionParameterFunctorSourceData.h">
+      <Filter>Source\Material</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\Material\Transform2DFunctorSourceData.h">
+      <Filter>Source\Material</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\Material\UseTextureFunctorSourceData.h">
+      <Filter>Source\Material</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\Material\DrawListFunctorSourceData.h">
+      <Filter>Source\Material</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\CMakeFiles\08b24365a84bd27d080f6dd51f42b933\Atom_Feature_Common.Editor_(CONFIG).stamp.rule">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\CMakeLists.txt">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\atom_feature_common_editor_files.cmake" />
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\Feature\Common\Code\Source\Platform\Windows\runtime_dependencies_tools.cmake">
+      <Filter>Source\Platform\Windows</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\runtime_dependencies\debug\Atom_Feature_Common.Editor_debug.stamp">
+      <Filter>Generated Files</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\runtime_dependencies\profile\Atom_Feature_Common.Editor_profile.stamp">
+      <Filter>Generated Files</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\runtime_dependencies\release\Atom_Feature_Common.Editor_release.stamp">
+      <Filter>Generated Files</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Generated Files">
+      <UniqueIdentifier>{FB9B7D8B-7F05-31D5-AA90-592248EDE1B3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include">
+      <UniqueIdentifier>{E188105A-C8C4-34BB-9809-15E8410EF7F8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\Atom">
+      <UniqueIdentifier>{D3FF6349-761F-30FE-A9A9-4A8D0DE47ADF}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\Atom\Feature">
+      <UniqueIdentifier>{2F0D75A6-C4B8-3529-BAE5-8F93C3A0A8D2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\Atom\Feature\Utils">
+      <UniqueIdentifier>{092AD097-879E-3832-A092-14A2F6607C36}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source">
+      <UniqueIdentifier>{F3F0AD47-5F83-373B-A2BF-650D2E4FA3EA}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Material">
+      <UniqueIdentifier>{CA24FD99-8DCF-3299-BBEF-6FFD7F143307}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Platform">
+      <UniqueIdentifier>{4FB794FF-EAE9-3B82-95CC-6241BAD0E3AC}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Platform\Windows">
+      <UniqueIdentifier>{2D0E7154-D797-393D-A7EB-8527ACAFB2BF}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Utils">
+      <UniqueIdentifier>{486E47BA-D6A3-3218-BB54-9CC9C06A2B4B}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

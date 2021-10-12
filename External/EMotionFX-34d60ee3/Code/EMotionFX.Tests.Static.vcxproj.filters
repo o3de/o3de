@@ -1,0 +1,68 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\EMotionFX-34d60ee3\Code\CMakeFiles\EMotionFX.Tests.Static.dir\Unity\unity_0_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Tests\TestAssetCode\JackActor.cpp">
+      <Filter>Tests\TestAssetCode</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Tests\TestAssetCode\SimpleActors.cpp">
+      <Filter>Tests\TestAssetCode</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Tests\TestAssetCode\MeshFactory.cpp">
+      <Filter>Tests\TestAssetCode</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Tests\TestAssetCode\AnimGraphFactory.cpp">
+      <Filter>Tests\TestAssetCode</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Tests\D6JointLimitConfiguration.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Tests\TestAssetCode\JackActor.h">
+      <Filter>Tests\TestAssetCode</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Tests\TestAssetCode\SimpleActors.h">
+      <Filter>Tests\TestAssetCode</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Tests\TestAssetCode\MeshFactory.h">
+      <Filter>Tests\TestAssetCode</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Tests\TestAssetCode\AnimGraphFactory.h">
+      <Filter>Tests\TestAssetCode</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Tests\TestAssetCode\AnimGraphAssetFactory.h">
+      <Filter>Tests\TestAssetCode</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Tests\TestAssetCode\ActorAssetFactory.h">
+      <Filter>Tests\TestAssetCode</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Tests\TestAssetCode\MotionSetAssetFactory.h">
+      <Filter>Tests\TestAssetCode</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\Tests\D6JointLimitConfiguration.h">
+      <Filter>Tests</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\CMakeLists.txt">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="C:\Users\lesaelr\o3de\Gems\EMotionFX\Code\emotionfx_shared_tests_files.cmake" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Generated Files">
+      <UniqueIdentifier>{FB9B7D8B-7F05-31D5-AA90-592248EDE1B3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Tests">
+      <UniqueIdentifier>{042E9197-689D-3636-8A35-28EBCAA2BD47}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Tests\TestAssetCode">
+      <UniqueIdentifier>{5956DB45-6A3E-3C93-B8A4-120E2FCC141E}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

@@ -1,0 +1,4 @@
+# CMake generation dependency list for this directory.
+C:/Users/lesaelr/o3de/Code/Editor/Plugins/PerforcePlugin/CMakeLists.txt
+C:/Users/lesaelr/o3de/Code/Editor/Plugins/PerforcePlugin/Platform/Windows/PAL_windows.cmake
+C:/Users/lesaelr/o3de/Code/Editor/Plugins/PerforcePlugin/perforceplugin_files.cmake

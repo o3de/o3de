@@ -1,0 +1,50 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\CertificateManager-a110b183\Code\CMakeFiles\CertificateManager.Static.dir\Unity\unity_0_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\CertificateManager\Code\Source\DataSource\FileDataSource.cpp">
+      <Filter>Source\DataSource</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\CertificateManager\Code\Include\CertificateManager\DataSource\FileDataSourceBus.h">
+      <Filter>Include\CertificateManager\DataSource</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\CertificateManager\Code\Include\CertificateManager\DataSource\IDataSource.h">
+      <Filter>Include\CertificateManager\DataSource</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\CertificateManager\Code\Source\DataSource\FileDataSource.h">
+      <Filter>Source\DataSource</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Gems\CertificateManager\Code\CMakeLists.txt">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="C:\Users\lesaelr\o3de\Gems\CertificateManager\Code\CertificateManager_files.cmake" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Generated Files">
+      <UniqueIdentifier>{FB9B7D8B-7F05-31D5-AA90-592248EDE1B3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include">
+      <UniqueIdentifier>{E188105A-C8C4-34BB-9809-15E8410EF7F8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\CertificateManager">
+      <UniqueIdentifier>{6FD96C87-F71D-3A62-9280-6AA7F8E9AC2D}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\CertificateManager\DataSource">
+      <UniqueIdentifier>{F860501C-5CC8-3058-9D14-F66D529CB0AD}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source">
+      <UniqueIdentifier>{F3F0AD47-5F83-373B-A2BF-650D2E4FA3EA}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\DataSource">
+      <UniqueIdentifier>{B7CFFFB1-A637-336E-AF34-C0840438C07A}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

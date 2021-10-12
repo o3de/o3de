@@ -1,0 +1,107 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\Atom-418206cc\RPI\Code\CMakeFiles\Atom_RPI.Builders.Static.dir\Unity\unity_1_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\Atom-418206cc\RPI\Code\CMakeFiles\Atom_RPI.Builders.Static.dir\Unity\unity_0_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\RPI\Code\Source\RPI.Builders\BuilderComponent.cpp">
+      <Filter>Source\RPI.Builders</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\RPI\Code\Source\RPI.Builders\Common\AnyAssetBuilder.cpp">
+      <Filter>Source\RPI.Builders\Common</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\RPI\Code\Source\RPI.Builders\Material\MaterialBuilder.cpp">
+      <Filter>Source\RPI.Builders\Material</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\RPI\Code\Source\RPI.Builders\Model\MaterialAssetBuilderComponent.cpp">
+      <Filter>Source\RPI.Builders\Model</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\RPI\Code\Source\RPI.Builders\Model\ModelAssetBuilderComponent.cpp">
+      <Filter>Source\RPI.Builders\Model</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\RPI\Code\Source\RPI.Builders\Model\ModelExporterComponent.cpp">
+      <Filter>Source\RPI.Builders\Model</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\RPI\Code\Source\RPI.Builders\Model\ModelExporterContexts.cpp">
+      <Filter>Source\RPI.Builders\Model</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\RPI\Code\Source\RPI.Builders\Model\MorphTargetExporter.cpp">
+      <Filter>Source\RPI.Builders\Model</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\RPI\Code\Source\RPI.Builders\Pass\PassBuilder.cpp">
+      <Filter>Source\RPI.Builders\Pass</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\Atom\RPI\Code\Source\RPI.Builders\ResourcePool\ResourcePoolBuilder.cpp">
+      <Filter>Source\RPI.Builders\ResourcePool</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\RPI\Code\Source\RPI.Builders\BuilderComponent.h">
+      <Filter>Source\RPI.Builders</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\RPI\Code\Source\RPI.Builders\Common\AnyAssetBuilder.h">
+      <Filter>Source\RPI.Builders\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\RPI\Code\Source\RPI.Builders\Material\MaterialBuilder.h">
+      <Filter>Source\RPI.Builders\Material</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\RPI\Code\Source\RPI.Builders\Model\MaterialAssetBuilderComponent.h">
+      <Filter>Source\RPI.Builders\Model</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\RPI\Code\Source\RPI.Builders\Model\ModelAssetBuilderComponent.h">
+      <Filter>Source\RPI.Builders\Model</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\RPI\Code\Source\RPI.Builders\Model\ModelExporterComponent.h">
+      <Filter>Source\RPI.Builders\Model</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\RPI\Code\Source\RPI.Builders\Model\ModelExporterContexts.h">
+      <Filter>Source\RPI.Builders\Model</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\RPI\Code\Source\RPI.Builders\Model\MorphTargetExporter.h">
+      <Filter>Source\RPI.Builders\Model</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\RPI\Code\Source\RPI.Builders\Pass\PassBuilder.h">
+      <Filter>Source\RPI.Builders\Pass</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\Atom\RPI\Code\Source\RPI.Builders\ResourcePool\ResourcePoolBuilder.h">
+      <Filter>Source\RPI.Builders\ResourcePool</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Gems\Atom\RPI\Code\CMakeLists.txt">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="C:\Users\lesaelr\o3de\Gems\Atom\RPI\Code\atom_rpi_builders_files.cmake" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Generated Files">
+      <UniqueIdentifier>{FB9B7D8B-7F05-31D5-AA90-592248EDE1B3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source">
+      <UniqueIdentifier>{F3F0AD47-5F83-373B-A2BF-650D2E4FA3EA}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\RPI.Builders">
+      <UniqueIdentifier>{2C15484B-D02D-3D7F-A775-5AD87DFEB873}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\RPI.Builders\Common">
+      <UniqueIdentifier>{6E000CAF-0444-3837-8F04-AF68AC4D8885}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\RPI.Builders\Material">
+      <UniqueIdentifier>{0C6540BE-B040-3822-BC6B-DFFBD0195686}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\RPI.Builders\Model">
+      <UniqueIdentifier>{354A136E-288F-3C7A-8948-AFF2AB2F5F04}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\RPI.Builders\Pass">
+      <UniqueIdentifier>{7E541B0A-F039-356D-A072-360E4FBCDE66}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\RPI.Builders\ResourcePool">
+      <UniqueIdentifier>{79FD3D3B-042E-30BE-B63E-F9F7844A6B68}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

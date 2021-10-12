@@ -1,0 +1,512 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\CMakeFiles\TestImpact.Runtime.Static.dir\Unity\unity_6_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\CMakeFiles\TestImpact.Runtime.Static.dir\Unity\unity_5_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\CMakeFiles\TestImpact.Runtime.Static.dir\Unity\unity_4_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\CMakeFiles\TestImpact.Runtime.Static.dir\Unity\unity_3_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\CMakeFiles\TestImpact.Runtime.Static.dir\Unity\unity_2_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\CMakeFiles\TestImpact.Runtime.Static.dir\Unity\unity_1_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\CMakeFiles\TestImpact.Runtime.Static.dir\Unity\unity_0_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\Artifact\Factory\TestImpactBuildTargetDescriptorFactory.cpp">
+      <Filter>Source\Artifact\Factory</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\Artifact\Factory\TestImpactTestEnumerationSuiteFactory.cpp">
+      <Filter>Source\Artifact\Factory</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\Artifact\Factory\TestImpactTestRunSuiteFactory.cpp">
+      <Filter>Source\Artifact\Factory</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\Artifact\Factory\TestImpactTestTargetMetaMapFactory.cpp">
+      <Filter>Source\Artifact\Factory</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\Artifact\Factory\TestImpactModuleCoverageFactory.cpp">
+      <Filter>Source\Artifact\Factory</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\Artifact\Static\TestImpactBuildTargetDescriptor.cpp">
+      <Filter>Source\Artifact\Static</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\Artifact\Static\TestImpactTargetDescriptorCompiler.cpp">
+      <Filter>Source\Artifact\Static</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\Artifact\Static\TestImpactProductionTargetDescriptor.cpp">
+      <Filter>Source\Artifact\Static</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\Artifact\Static\TestImpactTestTargetDescriptor.cpp">
+      <Filter>Source\Artifact\Static</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\Process\TestImpactProcess.cpp">
+      <Filter>Source\Process</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\Process\TestImpactProcessInfo.cpp">
+      <Filter>Source\Process</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\Process\JobRunner\TestImpactProcessJobMeta.cpp">
+      <Filter>Source\Process\JobRunner</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\Process\Scheduler\TestImpactProcessScheduler.cpp">
+      <Filter>Source\Process\Scheduler</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\Dependency\TestImpactDynamicDependencyMap.cpp">
+      <Filter>Source\Dependency</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\Dependency\TestImpactChangeDependencyList.cpp">
+      <Filter>Source\Dependency</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\Dependency\TestImpactSourceDependency.cpp">
+      <Filter>Source\Dependency</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\Dependency\TestImpactTestSelectorAndPrioritizer.cpp">
+      <Filter>Source\Dependency</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\Dependency\TestImpactSourceCoveringTestsList.cpp">
+      <Filter>Source\Dependency</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\Dependency\TestImpactSourceCoveringTestsSerializer.cpp">
+      <Filter>Source\Dependency</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\Target\TestImpactBuildTarget.cpp">
+      <Filter>Source\Target</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\Target\TestImpactProductionTarget.cpp">
+      <Filter>Source\Target</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\Target\TestImpactTestTarget.cpp">
+      <Filter>Source\Target</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\TestEngine\Enumeration\TestImpactTestEnumerationSerializer.cpp">
+      <Filter>Source\TestEngine\Enumeration</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\TestEngine\Enumeration\TestImpactTestEnumerator.cpp">
+      <Filter>Source\TestEngine\Enumeration</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\TestEngine\Run\TestImpactTestRunSerializer.cpp">
+      <Filter>Source\TestEngine\Run</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\TestEngine\Run\TestImpactTestRunner.cpp">
+      <Filter>Source\TestEngine\Run</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\TestEngine\Run\TestImpactInstrumentedTestRunner.cpp">
+      <Filter>Source\TestEngine\Run</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\TestEngine\Run\TestImpactTestRun.cpp">
+      <Filter>Source\TestEngine\Run</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\TestEngine\Run\TestImpactTestRunJobData.cpp">
+      <Filter>Source\TestEngine\Run</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\TestEngine\Run\TestImpactTestCoverage.cpp">
+      <Filter>Source\TestEngine\Run</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\TestEngine\JobRunner\TestImpactTestJobInfoGenerator.cpp">
+      <Filter>Source\TestEngine\JobRunner</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\TestEngine\TestImpactTestEngineJobFailure.cpp">
+      <Filter>Source\TestEngine</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\TestEngine\TestImpactTestEngine.cpp">
+      <Filter>Source\TestEngine</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\TestEngine\TestImpactTestEngineJob.cpp">
+      <Filter>Source\TestEngine</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\TestEngine\TestImpactTestEngineEnumeration.cpp">
+      <Filter>Source\TestEngine</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\TestEngine\TestImpactTestEngineRegularRun.cpp">
+      <Filter>Source\TestEngine</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\TestEngine\TestImpactTestEngineInstrumentedRun.cpp">
+      <Filter>Source\TestEngine</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\TestImpactException.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\TestImpactRuntime.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\TestImpactRuntimeUtils.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\TestImpactClientTestSelection.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\TestImpactClientTestRun.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\TestImpactClientSequenceReport.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\TestImpactChangeListSerializer.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\TestImpactClientSequenceReportSerializer.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\TestImpactRepoPath.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\TestImpactUtils.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\Platform\Windows\Process\TestImpactWin32_ProcessLauncher.cpp">
+      <Filter>Source\Platform\Windows\Process</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\Platform\Windows\Process\TestImpactWin32_Process.cpp">
+      <Filter>Source\Platform\Windows\Process</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\Platform\Windows\Process\TestImpactWin32_Pipe.cpp">
+      <Filter>Source\Platform\Windows\Process</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\Platform\Windows\TestEngine\JobRunner\TestImpactWin32_TestTargetExtension.cpp">
+      <Filter>Source\Platform\Windows\TestEngine\JobRunner</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\Platform\Windows\TestEngine\TestImpactWin32_TestEngineJobFailure.cpp">
+      <Filter>Source\Platform\Windows\TestEngine</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Include\TestImpactFramework\TestImpactException.h">
+      <Filter>Include\TestImpactFramework</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Include\TestImpactFramework\TestImpactRepoPath.h">
+      <Filter>Include\TestImpactFramework</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Include\TestImpactFramework\TestImpactRuntime.h">
+      <Filter>Include\TestImpactFramework</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Include\TestImpactFramework\TestImpactRuntimeException.h">
+      <Filter>Include\TestImpactFramework</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Include\TestImpactFramework\TestImpactConfiguration.h">
+      <Filter>Include\TestImpactFramework</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Include\TestImpactFramework\TestImpactConfigurationException.h">
+      <Filter>Include\TestImpactFramework</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Include\TestImpactFramework\TestImpactChangeList.h">
+      <Filter>Include\TestImpactFramework</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Include\TestImpactFramework\TestImpactChangeListSerializer.h">
+      <Filter>Include\TestImpactFramework</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Include\TestImpactFramework\TestImpactChangeListException.h">
+      <Filter>Include\TestImpactFramework</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Include\TestImpactFramework\TestImpactPolicy.h">
+      <Filter>Include\TestImpactFramework</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Include\TestImpactFramework\TestImpactTestSequence.h">
+      <Filter>Include\TestImpactFramework</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Include\TestImpactFramework\TestImpactClientTestSelection.h">
+      <Filter>Include\TestImpactFramework</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Include\TestImpactFramework\TestImpactClientTestRun.h">
+      <Filter>Include\TestImpactFramework</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Include\TestImpactFramework\TestImpactClientSequenceReport.h">
+      <Filter>Include\TestImpactFramework</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Include\TestImpactFramework\TestImpactUtils.h">
+      <Filter>Include\TestImpactFramework</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Include\TestImpactFramework\TestImpactClientSequenceReportSerializer.h">
+      <Filter>Include\TestImpactFramework</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Include\TestImpactFramework\TestImpactSequenceReportException.h">
+      <Filter>Include\TestImpactFramework</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\Artifact\TestImpactArtifactException.h">
+      <Filter>Source\Artifact</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\Artifact\Factory\TestImpactBuildTargetDescriptorFactory.h">
+      <Filter>Source\Artifact\Factory</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\Artifact\Factory\TestImpactTestEnumerationSuiteFactory.h">
+      <Filter>Source\Artifact\Factory</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\Artifact\Factory\TestImpactTestRunSuiteFactory.h">
+      <Filter>Source\Artifact\Factory</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\Artifact\Factory\TestImpactTestTargetMetaMapFactory.h">
+      <Filter>Source\Artifact\Factory</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\Artifact\Factory\TestImpactModuleCoverageFactory.h">
+      <Filter>Source\Artifact\Factory</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\Artifact\Static\TestImpactBuildTargetDescriptor.h">
+      <Filter>Source\Artifact\Static</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\Artifact\Static\TestImpactTargetDescriptorCompiler.h">
+      <Filter>Source\Artifact\Static</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\Artifact\Static\TestImpactProductionTargetDescriptor.h">
+      <Filter>Source\Artifact\Static</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\Artifact\Static\TestImpactTestTargetMeta.h">
+      <Filter>Source\Artifact\Static</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\Artifact\Static\TestImpactTestTargetDescriptor.h">
+      <Filter>Source\Artifact\Static</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\Artifact\Static\TestImpactDependencyGraphData.h">
+      <Filter>Source\Artifact\Static</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\Artifact\Dynamic\TestImpactTestEnumerationSuite.h">
+      <Filter>Source\Artifact\Dynamic</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\Artifact\Dynamic\TestImpactTestRunSuite.h">
+      <Filter>Source\Artifact\Dynamic</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\Artifact\Dynamic\TestImpactTestSuite.h">
+      <Filter>Source\Artifact\Dynamic</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\Artifact\Dynamic\TestImpactCoverage.h">
+      <Filter>Source\Artifact\Dynamic</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\Process\TestImpactProcess.h">
+      <Filter>Source\Process</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\Process\TestImpactProcessException.h">
+      <Filter>Source\Process</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\Process\TestImpactProcessInfo.h">
+      <Filter>Source\Process</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\Process\TestImpactProcessLauncher.h">
+      <Filter>Source\Process</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\Process\JobRunner\TestImpactProcessJob.h">
+      <Filter>Source\Process\JobRunner</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\Process\JobRunner\TestImpactProcessJobInfo.h">
+      <Filter>Source\Process\JobRunner</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\Process\JobRunner\TestImpactProcessJobMeta.h">
+      <Filter>Source\Process\JobRunner</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\Process\JobRunner\TestImpactProcessJobRunner.h">
+      <Filter>Source\Process\JobRunner</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\Process\Scheduler\TestImpactProcessScheduler.h">
+      <Filter>Source\Process\Scheduler</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\Dependency\TestImpactDynamicDependencyMap.h">
+      <Filter>Source\Dependency</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\Dependency\TestImpactChangeDependencyList.h">
+      <Filter>Source\Dependency</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\Dependency\TestImpactDependencyException.h">
+      <Filter>Source\Dependency</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\Dependency\TestImpactSourceDependency.h">
+      <Filter>Source\Dependency</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\Dependency\TestImpactTestSelectorAndPrioritizer.h">
+      <Filter>Source\Dependency</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\Dependency\TestImpactSourceCoveringTestsList.h">
+      <Filter>Source\Dependency</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\Dependency\TestImpactSourceCoveringTestsSerializer.h">
+      <Filter>Source\Dependency</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\Target\TestImpactBuildTarget.h">
+      <Filter>Source\Target</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\Target\TestImpactBuildTargetList.h">
+      <Filter>Source\Target</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\Target\TestImpactProductionTarget.h">
+      <Filter>Source\Target</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\Target\TestImpactProductionTargetList.h">
+      <Filter>Source\Target</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\Target\TestImpactTargetException.h">
+      <Filter>Source\Target</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\Target\TestImpactTestTarget.h">
+      <Filter>Source\Target</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\Target\TestImpactTestTargetList.h">
+      <Filter>Source\Target</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\TestEngine\Enumeration\TestImpactTestEnumeration.h">
+      <Filter>Source\TestEngine\Enumeration</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\TestEngine\Enumeration\TestImpactTestEnumerationSerializer.h">
+      <Filter>Source\TestEngine\Enumeration</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\TestEngine\Enumeration\TestImpactTestEnumerator.h">
+      <Filter>Source\TestEngine\Enumeration</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\TestEngine\Run\TestImpactTestRunSerializer.h">
+      <Filter>Source\TestEngine\Run</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\TestEngine\Run\TestImpactTestRunner.h">
+      <Filter>Source\TestEngine\Run</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\TestEngine\Run\TestImpactInstrumentedTestRunner.h">
+      <Filter>Source\TestEngine\Run</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\TestEngine\Run\TestImpactTestRun.h">
+      <Filter>Source\TestEngine\Run</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\TestEngine\Run\TestImpactTestRunJobData.h">
+      <Filter>Source\TestEngine\Run</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\TestEngine\Run\TestImpactTestCoverage.h">
+      <Filter>Source\TestEngine\Run</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\TestEngine\JobRunner\TestImpactTestJobRunner.h">
+      <Filter>Source\TestEngine\JobRunner</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\TestEngine\JobRunner\TestImpactTestJobInfoGenerator.h">
+      <Filter>Source\TestEngine\JobRunner</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\TestEngine\JobRunner\TestImpactTestTargetExtension.h">
+      <Filter>Source\TestEngine\JobRunner</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\TestEngine\TestImpactTestEngineJobFailure.h">
+      <Filter>Source\TestEngine</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\TestEngine\TestImpactTestSuiteContainer.h">
+      <Filter>Source\TestEngine</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\TestEngine\TestImpactTestEngine.h">
+      <Filter>Source\TestEngine</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\TestEngine\TestImpactTestEngineJob.h">
+      <Filter>Source\TestEngine</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\TestEngine\TestImpactTestEngineEnumeration.h">
+      <Filter>Source\TestEngine</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\TestEngine\TestImpactTestEngineRegularRun.h">
+      <Filter>Source\TestEngine</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\TestEngine\TestImpactTestEngineInstrumentedRun.h">
+      <Filter>Source\TestEngine</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\TestEngine\TestImpactTestEngineException.h">
+      <Filter>Source\TestEngine</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\TestImpactRuntimeUtils.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\Platform\Windows\Process\TestImpactWin32_Process.h">
+      <Filter>Source\Platform\Windows\Process</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\Platform\Windows\Process\TestImpactWin32_Handle.h">
+      <Filter>Source\Platform\Windows\Process</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\Platform\Windows\Process\TestImpactWin32_Pipe.h">
+      <Filter>Source\Platform\Windows\Process</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\CMakeLists.txt">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\testimpactframework_runtime_files.cmake" />
+    <None Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\Platform\Windows\platform_windows_files.cmake">
+      <Filter>Source\Platform\Windows</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Tools\TestImpactFramework\Runtime\Code\Source\Platform\Common\MSVC\testimpactframework_msvc.cmake">
+      <Filter>Source\Platform\Common\MSVC</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Generated Files">
+      <UniqueIdentifier>{FB9B7D8B-7F05-31D5-AA90-592248EDE1B3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include">
+      <UniqueIdentifier>{E188105A-C8C4-34BB-9809-15E8410EF7F8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\TestImpactFramework">
+      <UniqueIdentifier>{ECC17B5D-215C-3DFE-9ACF-A601797F1E98}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source">
+      <UniqueIdentifier>{F3F0AD47-5F83-373B-A2BF-650D2E4FA3EA}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Artifact">
+      <UniqueIdentifier>{31E1C57A-2818-357E-A1A6-E95B66FA8F72}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Artifact\Dynamic">
+      <UniqueIdentifier>{6E23EB50-5DF4-339F-8F82-05AECB87DB1D}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Artifact\Factory">
+      <UniqueIdentifier>{7F9C45B1-FA06-3BFD-B940-B73EF15BBF7C}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Artifact\Static">
+      <UniqueIdentifier>{78CBD9DD-56E1-3CEE-8CA9-E25F7F828FFE}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Dependency">
+      <UniqueIdentifier>{174C4663-9612-3268-A595-0ED676E0F261}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Platform">
+      <UniqueIdentifier>{4FB794FF-EAE9-3B82-95CC-6241BAD0E3AC}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Platform\Common">
+      <UniqueIdentifier>{36290816-6835-39C0-B301-795953CCC13E}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Platform\Common\MSVC">
+      <UniqueIdentifier>{E1E89B60-2468-3907-B827-F49D4366A0DE}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Platform\Windows">
+      <UniqueIdentifier>{2D0E7154-D797-393D-A7EB-8527ACAFB2BF}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Platform\Windows\Process">
+      <UniqueIdentifier>{15205CAD-560D-339B-A055-4BC05B81D226}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Platform\Windows\TestEngine">
+      <UniqueIdentifier>{62335D8B-B20C-3674-BC14-4BC417071094}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Platform\Windows\TestEngine\JobRunner">
+      <UniqueIdentifier>{C3FE8C54-DD00-3FBE-9C01-70D34C9702FC}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Process">
+      <UniqueIdentifier>{29721CAF-F96A-3124-8810-065C46CE43F8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Process\JobRunner">
+      <UniqueIdentifier>{51FA2900-11E3-324F-AACF-D54ACEBCB061}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Process\Scheduler">
+      <UniqueIdentifier>{C14BED94-3B0D-3242-936C-2C2949ECF867}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Target">
+      <UniqueIdentifier>{5523DB32-A6DB-3E1A-BD50-EBF9AD5EB6AA}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\TestEngine">
+      <UniqueIdentifier>{A750B8E3-F662-3C49-8AB4-A3E05BCA6044}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\TestEngine\Enumeration">
+      <UniqueIdentifier>{1CE07F6B-B3F9-3A73-805D-FFF1078A076A}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\TestEngine\JobRunner">
+      <UniqueIdentifier>{B2964764-51A6-37C6-BC84-4A9F54FD6843}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\TestEngine\Run">
+      <UniqueIdentifier>{751FA98C-B5F6-379B-BF9E-861231E2B7A8}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

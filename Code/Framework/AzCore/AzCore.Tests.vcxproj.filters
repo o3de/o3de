@@ -1,0 +1,793 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\CMakeFiles\AzCore.Tests.dir\Unity\unity_21_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\CMakeFiles\AzCore.Tests.dir\Unity\unity_20_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\CMakeFiles\AzCore.Tests.dir\Unity\unity_19_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\CMakeFiles\AzCore.Tests.dir\Unity\unity_18_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\CMakeFiles\AzCore.Tests.dir\Unity\unity_17_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\CMakeFiles\AzCore.Tests.dir\Unity\unity_16_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\CMakeFiles\AzCore.Tests.dir\Unity\unity_15_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\CMakeFiles\AzCore.Tests.dir\Unity\unity_14_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\CMakeFiles\AzCore.Tests.dir\Unity\unity_13_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\CMakeFiles\AzCore.Tests.dir\Unity\unity_12_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\CMakeFiles\AzCore.Tests.dir\Unity\unity_11_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\CMakeFiles\AzCore.Tests.dir\Unity\unity_10_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\CMakeFiles\AzCore.Tests.dir\Unity\unity_9_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\CMakeFiles\AzCore.Tests.dir\Unity\unity_8_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\CMakeFiles\AzCore.Tests.dir\Unity\unity_7_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\CMakeFiles\AzCore.Tests.dir\Unity\unity_6_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\CMakeFiles\AzCore.Tests.dir\Unity\unity_5_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\CMakeFiles\AzCore.Tests.dir\Unity\unity_4_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\CMakeFiles\AzCore.Tests.dir\Unity\unity_3_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\CMakeFiles\AzCore.Tests.dir\Unity\unity_2_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\CMakeFiles\AzCore.Tests.dir\Unity\unity_1_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\CMakeFiles\AzCore.Tests.dir\Unity\unity_0_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Main.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Asset\AssetCommon.cpp">
+      <Filter>Tests\Asset</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Asset\AssetDataStreamTests.cpp">
+      <Filter>Tests\Asset</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Asset\AssetManagerLoadingTests.cpp">
+      <Filter>Tests\Asset</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Asset\AssetManagerStreamingTests.cpp">
+      <Filter>Tests\Asset</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Asset\BaseAssetManagerTest.cpp">
+      <Filter>Tests\Asset</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\AssetJsonSerializerTests.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\EBus\ScheduledEventTests.cpp">
+      <Filter>Tests\EBus</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\AssetManager.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\TestCatalog.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\AssetSerializerTests.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\BehaviorContext.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Components.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Console\LoggerSystemComponentTests.cpp">
+      <Filter>Tests\Console</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Console\ConsoleTests.cpp">
+      <Filter>Tests\Console</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Debug.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\DLL.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\EBus.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\EntityIdTests.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\EntityTests.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\EnumTests.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\EventTests.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Geometry2DUtils.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Interface.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\IO\Path\PathTests.cpp">
+      <Filter>Tests\IO\Path</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\IPC.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Jobs.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\JSON.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\FixedWidthIntegers.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\GenericStreamTests.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Memory.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Module.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\OrderedEventBenchmarks.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\OrderedEventTests.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Outcome.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Patching.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\RemappableId.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Rtti.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Script.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\ScriptMath.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Serialization.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Slice.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\State.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Statistics.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\StreamerTests.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\StringFunc.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\SystemFile.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\TaskTests.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\TickBusTest.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\UUIDTests.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\XML.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Debug\AssetTracking.cpp">
+      <Filter>Tests\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Debug\LocalFileEventLoggerTests.cpp">
+      <Filter>Tests\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Debug\Trace.cpp">
+      <Filter>Tests\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Name\NameJsonSerializerTests.cpp">
+      <Filter>Tests\Name</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Name\NameTests.cpp">
+      <Filter>Tests\Name</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\RTTI\TypeSafeIntegralTests.cpp">
+      <Filter>Tests\RTTI</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\SettingsRegistryTests.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\SettingsRegistryMergeUtilsTests.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Settings\CommandLineTests.cpp">
+      <Filter>Tests\Settings</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Settings\SettingsRegistryConsoleUtilsTests.cpp">
+      <Filter>Tests\Settings</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Settings\SettingsRegistryScriptUtilsTests.cpp">
+      <Filter>Tests\Settings</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Streamer\BlockCacheTests.cpp">
+      <Filter>Tests\Streamer</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Streamer\DedicatedCacheTests.cpp">
+      <Filter>Tests\Streamer</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Streamer\FullDecompressorTests.cpp">
+      <Filter>Tests\Streamer</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Streamer\ReadSplitterTests.cpp">
+      <Filter>Tests\Streamer</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Streamer\SchedulerTests.cpp">
+      <Filter>Tests\Streamer</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Streamer\StreamStackEntryTests.cpp">
+      <Filter>Tests\Streamer</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Serialization\Json\ArraySerializerTests.cpp">
+      <Filter>Tests\Serialization\Json</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Serialization\Json\BaseJsonSerializerTests.cpp">
+      <Filter>Tests\Serialization\Json</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Serialization\Json\BasicContainerSerializerTests.cpp">
+      <Filter>Tests\Serialization\Json</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Serialization\Json\BoolSerializerTests.cpp">
+      <Filter>Tests\Serialization\Json</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Serialization\Json\ByteStreamSerializerTests.cpp">
+      <Filter>Tests\Serialization\Json</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Serialization\Json\ColorSerializerTests.cpp">
+      <Filter>Tests\Serialization\Json</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Serialization\Json\DoubleSerializerTests.cpp">
+      <Filter>Tests\Serialization\Json</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Serialization\Json\IntSerializerTests.cpp">
+      <Filter>Tests\Serialization\Json</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Serialization\Json\JsonRegistrationContextTests.cpp">
+      <Filter>Tests\Serialization\Json</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Serialization\Json\JsonSerializationMetadataTests.cpp">
+      <Filter>Tests\Serialization\Json</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Serialization\Json\JsonSerializationResultTests.cpp">
+      <Filter>Tests\Serialization\Json</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Serialization\Json\JsonSerializationTests.cpp">
+      <Filter>Tests\Serialization\Json</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Serialization\Json\JsonSerializationUtilsTests.cpp">
+      <Filter>Tests\Serialization\Json</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Serialization\Json\MapSerializerTests.cpp">
+      <Filter>Tests\Serialization\Json</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Serialization\Json\MathVectorSerializerTests.cpp">
+      <Filter>Tests\Serialization\Json</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Serialization\Json\MathMatrixSerializerTests.cpp">
+      <Filter>Tests\Serialization\Json</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Serialization\Json\SmartPointerSerializerTests.cpp">
+      <Filter>Tests\Serialization\Json</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Serialization\Json\StringSerializerTests.cpp">
+      <Filter>Tests\Serialization\Json</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Serialization\Json\TestCases_Base.cpp">
+      <Filter>Tests\Serialization\Json</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Serialization\Json\TestCases_Classes.cpp">
+      <Filter>Tests\Serialization\Json</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Serialization\Json\TestCases_Compare.cpp">
+      <Filter>Tests\Serialization\Json</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Serialization\Json\TestCases_Enum.cpp">
+      <Filter>Tests\Serialization\Json</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Serialization\Json\TestCases_Patching.cpp">
+      <Filter>Tests\Serialization\Json</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Serialization\Json\TestCases_Pointers.cpp">
+      <Filter>Tests\Serialization\Json</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Serialization\Json\TestCases_TypeId.cpp">
+      <Filter>Tests\Serialization\Json</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Serialization\Json\TransformSerializerTests.cpp">
+      <Filter>Tests\Serialization\Json</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Serialization\Json\TupleSerializerTests.cpp">
+      <Filter>Tests\Serialization\Json</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Serialization\Json\UnorderedSetSerializerTests.cpp">
+      <Filter>Tests\Serialization\Json</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Serialization\Json\UnsupportedTypesSerializerTests.cpp">
+      <Filter>Tests\Serialization\Json</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Serialization\Json\UuidSerializerTests.cpp">
+      <Filter>Tests\Serialization\Json</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Math\AabbTests.cpp">
+      <Filter>Tests\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Math\ColorTests.cpp">
+      <Filter>Tests\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Math\CrcTests.cpp">
+      <Filter>Tests\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Math\FrustumTests.cpp">
+      <Filter>Tests\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Math\FrustumPerformanceTests.cpp">
+      <Filter>Tests\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Math\IntersectionTests.cpp">
+      <Filter>Tests\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Math\MathIntrinsicsTests.cpp">
+      <Filter>Tests\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Math\MathUtilsTests.cpp">
+      <Filter>Tests\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Math\Matrix3x3PerformanceTests.cpp">
+      <Filter>Tests\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Math\Matrix3x3Tests.cpp">
+      <Filter>Tests\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Math\Matrix3x4PerformanceTests.cpp">
+      <Filter>Tests\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Math\Matrix3x4Tests.cpp">
+      <Filter>Tests\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Math\Matrix4x4PerformanceTests.cpp">
+      <Filter>Tests\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Math\Matrix4x4Tests.cpp">
+      <Filter>Tests\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Math\MatrixUtilsTests.cpp">
+      <Filter>Tests\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Math\ObbPerformanceTests.cpp">
+      <Filter>Tests\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Math\ObbTests.cpp">
+      <Filter>Tests\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Math\PlanePerformanceTests.cpp">
+      <Filter>Tests\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Math\PlaneTests.cpp">
+      <Filter>Tests\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Math\QuaternionPerformanceTests.cpp">
+      <Filter>Tests\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Math\QuaternionTests.cpp">
+      <Filter>Tests\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Math\RandomTests.cpp">
+      <Filter>Tests\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Math\ShapeIntersectionPerformanceTests.cpp">
+      <Filter>Tests\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Math\ShapeIntersectionTests.cpp">
+      <Filter>Tests\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Math\SfmtTests.cpp">
+      <Filter>Tests\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Math\SimdMathTests.cpp">
+      <Filter>Tests\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Math\SphereTests.cpp">
+      <Filter>Tests\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Math\SplineTests.cpp">
+      <Filter>Tests\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Math\TransformPerformanceTests.cpp">
+      <Filter>Tests\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Math\TransformTests.cpp">
+      <Filter>Tests\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Math\Vector2PerformanceTests.cpp">
+      <Filter>Tests\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Math\Vector2Tests.cpp">
+      <Filter>Tests\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Math\Vector3PerformanceTests.cpp">
+      <Filter>Tests\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Math\Vector3Tests.cpp">
+      <Filter>Tests\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Math\Vector4PerformanceTests.cpp">
+      <Filter>Tests\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Math\Vector4Tests.cpp">
+      <Filter>Tests\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Memory\AllocatorManager.cpp">
+      <Filter>Tests\Memory</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Memory\HphaSchema.cpp">
+      <Filter>Tests\Memory</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Memory\HphaSchemaErrorDetection.cpp">
+      <Filter>Tests\Memory</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Memory\LeakDetection.cpp">
+      <Filter>Tests\Memory</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Memory\MallocSchema.cpp">
+      <Filter>Tests\Memory</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\AZStd\Algorithms.cpp">
+      <Filter>Tests\AZStd</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\AZStd\Allocators.cpp">
+      <Filter>Tests\AZStd</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\AZStd\Atomics.cpp">
+      <Filter>Tests\AZStd</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\AZStd\Any.cpp">
+      <Filter>Tests\AZStd</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\AZStd\Bitset.cpp">
+      <Filter>Tests\AZStd</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\AZStd\CreateDestroy.cpp">
+      <Filter>Tests\AZStd</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\AZStd\ConcurrentAllocators.cpp">
+      <Filter>Tests\AZStd</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\AZStd\ConcurrentContainers.cpp">
+      <Filter>Tests\AZStd</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\AZStd\ChronoTests.cpp">
+      <Filter>Tests\AZStd</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\AZStd\DequeAndSimilar.cpp">
+      <Filter>Tests\AZStd</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\AZStd\Examples.cpp">
+      <Filter>Tests\AZStd</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\AZStd\FunctionalBasic.cpp">
+      <Filter>Tests\AZStd</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\AZStd\FunctorsBind.cpp">
+      <Filter>Tests\AZStd</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\AZStd\Hashed.cpp">
+      <Filter>Tests\AZStd</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\AZStd\Invoke.cpp">
+      <Filter>Tests\AZStd</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\AZStd\Iterators.cpp">
+      <Filter>Tests\AZStd</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\AZStd\Lists.cpp">
+      <Filter>Tests\AZStd</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\AZStd\ListsFixed.cpp">
+      <Filter>Tests\AZStd</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\AZStd\ListsIntrusive.cpp">
+      <Filter>Tests\AZStd</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\AZStd\LockFreeQueues.cpp">
+      <Filter>Tests\AZStd</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\AZStd\LockFreeStacks.cpp">
+      <Filter>Tests\AZStd</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\AZStd\LockTests.cpp">
+      <Filter>Tests\AZStd</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\AZStd\Numeric.cpp">
+      <Filter>Tests\AZStd</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\AZStd\Ordered.cpp">
+      <Filter>Tests\AZStd</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\AZStd\Optional.cpp">
+      <Filter>Tests\AZStd</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\AZStd\Pair.cpp">
+      <Filter>Tests\AZStd</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\AZStd\Parallel.cpp">
+      <Filter>Tests\AZStd</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\AZStd\ScopedLockTests.cpp">
+      <Filter>Tests\AZStd</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\AZStd\SetsIntrusive.cpp">
+      <Filter>Tests\AZStd</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\AZStd\SmartPtr.cpp">
+      <Filter>Tests\AZStd</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\AZStd\String.cpp">
+      <Filter>Tests\AZStd</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\AZStd\TypeTraits.cpp">
+      <Filter>Tests\AZStd</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\AZStd\Tuple.cpp">
+      <Filter>Tests\AZStd</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\AZStd\Variant.cpp">
+      <Filter>Tests\AZStd</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\AZStd\VariantSerialization.cpp">
+      <Filter>Tests\AZStd</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\AZStd\VectorAndArray.cpp">
+      <Filter>Tests\AZStd</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Platform\Common\WinAPI\Tests\UtilsTests_WinAPI.cpp">
+      <Filter>Tests\Platform\Windows\..\Common\WinAPI\Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Platform\Windows\Tests\IO\Streamer\StorageDriveTests_Windows.cpp">
+      <Filter>Tests\Platform\Windows\Tests\IO\Streamer</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Platform\Windows\Tests\Memory\OverrunDetectionAllocator_Windows.cpp">
+      <Filter>Tests\Platform\Windows\Tests\Memory</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Platform\Windows\Tests\Serialization_Windows.cpp">
+      <Filter>Tests\Platform\Windows\Tests</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Asset\BaseAssetManagerTest.h">
+      <Filter>Tests\Asset</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Asset\MockLoadAssetCatalogAndHandler.h">
+      <Filter>Tests\Asset</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Asset\TestAssetTypes.h">
+      <Filter>Tests\Asset</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\TestCatalog.h">
+      <Filter>Tests</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\BehaviorContextFixture.h">
+      <Filter>Tests</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\FileIOBaseTestTypes.h">
+      <Filter>Tests</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\GenericStreamMock.h">
+      <Filter>Tests</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\ModuleTestBus.h">
+      <Filter>Tests</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\SerializeContextFixture.h">
+      <Filter>Tests</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Streamer\IStreamerMock.h">
+      <Filter>Tests\Streamer</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Streamer\IStreamerTypesMock.h">
+      <Filter>Tests\Streamer</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Streamer\StreamStackEntryConformityTests.h">
+      <Filter>Tests\Streamer</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Streamer\StreamStackEntryMock.h">
+      <Filter>Tests\Streamer</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Serialization\Json\BaseJsonSerializerFixture.h">
+      <Filter>Tests\Serialization\Json</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Serialization\Json\JsonSerializationTests.h">
+      <Filter>Tests\Serialization\Json</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Serialization\Json\JsonSerializerConformityTests.h">
+      <Filter>Tests\Serialization\Json</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Serialization\Json\JsonSerializerMock.h">
+      <Filter>Tests\Serialization\Json</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Serialization\Json\TestCases.h">
+      <Filter>Tests\Serialization\Json</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Serialization\Json\TestCases_Base.h">
+      <Filter>Tests\Serialization\Json</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Serialization\Json\TestCases_Classes.h">
+      <Filter>Tests\Serialization\Json</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Serialization\Json\TestCases_Pointers.h">
+      <Filter>Tests\Serialization\Json</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Math\CrcTestsCompileTimeLiterals.h">
+      <Filter>Tests\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Math\MathTestData.h">
+      <Filter>Tests\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\AZStd\UserTypes.h">
+      <Filter>Tests\AZStd</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\CMakeFiles\08b24365a84bd27d080f6dd51f42b933\AzCore.Tests_(CONFIG).stamp.rule">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\CMakeLists.txt">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\azcoretests_files.cmake">
+      <Filter>Tests</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Platform\Windows\platform_windows_files.cmake">
+      <Filter>Tests\Platform\Windows</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Code\Framework\AzCore\Tests\Platform\Windows\platform_windows.cmake">
+      <Filter>Tests\Platform\Windows</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\runtime_dependencies\debug\AzCore.Tests_debug.stamp">
+      <Filter>Generated Files</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\runtime_dependencies\profile\AzCore.Tests_profile.stamp">
+      <Filter>Generated Files</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\runtime_dependencies\release\AzCore.Tests_release.stamp">
+      <Filter>Generated Files</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Generated Files">
+      <UniqueIdentifier>{FB9B7D8B-7F05-31D5-AA90-592248EDE1B3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Tests">
+      <UniqueIdentifier>{042E9197-689D-3636-8A35-28EBCAA2BD47}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Tests\AZStd">
+      <UniqueIdentifier>{78294313-E56F-39CD-A20D-A332019E6040}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Tests\Asset">
+      <UniqueIdentifier>{4000B152-7EA1-3E74-A36C-EB325F5EE520}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Tests\Console">
+      <UniqueIdentifier>{EF5D128C-AB2C-368C-BD9A-8037C000F5B2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Tests\Debug">
+      <UniqueIdentifier>{FBFC48A8-FEE1-3935-B607-0C8C6EB9E926}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Tests\EBus">
+      <UniqueIdentifier>{72417769-9A1E-3F6C-A321-C230A074BF6A}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Tests\IO">
+      <UniqueIdentifier>{D880EF1F-AEFC-3D8B-A9B7-E0A9D8E6F2C1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Tests\IO\Path">
+      <UniqueIdentifier>{190F4219-246B-310A-94D8-267D1711AB20}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Tests\Math">
+      <UniqueIdentifier>{E20DA7A8-4375-3645-95DB-6052E51A038B}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Tests\Memory">
+      <UniqueIdentifier>{E2CF803D-76A1-3688-809F-EB696403A845}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Tests\Name">
+      <UniqueIdentifier>{BCA4FCB5-E6D1-31E3-AF9B-2279B7892563}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Tests\Platform">
+      <UniqueIdentifier>{24997702-F848-3CC1-82C3-60A20FBE62DF}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Tests\Platform\Windows">
+      <UniqueIdentifier>{96A40B00-87E5-37D1-937D-A50368440427}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Tests\Platform\Windows\..">
+      <UniqueIdentifier>{1CE71AAA-24BA-3744-B615-1347B1078DCC}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Tests\Platform\Windows\..\Common">
+      <UniqueIdentifier>{0729C397-2CC6-3A20-BF0D-18DFF3D968FB}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Tests\Platform\Windows\..\Common\WinAPI">
+      <UniqueIdentifier>{09A4497B-BA19-3C4B-A93F-9F0A4969AB62}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Tests\Platform\Windows\..\Common\WinAPI\Tests">
+      <UniqueIdentifier>{6B89ACFA-0574-30E6-8B5C-7CF9CE90EB2F}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Tests\Platform\Windows\Tests">
+      <UniqueIdentifier>{54DCAB67-0AA7-3B81-947F-1D2694A52B3D}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Tests\Platform\Windows\Tests\IO">
+      <UniqueIdentifier>{09905CA6-1E94-3715-9D74-A5A50A0E4864}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Tests\Platform\Windows\Tests\IO\Streamer">
+      <UniqueIdentifier>{796621F8-38D9-340C-91F6-DDF6DD6C17FD}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Tests\Platform\Windows\Tests\Memory">
+      <UniqueIdentifier>{D5D9C3D6-C100-3F71-89FA-239AFCC98231}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Tests\RTTI">
+      <UniqueIdentifier>{CB2A9666-511B-3B3F-A9BD-71728C04ABF5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Tests\Serialization">
+      <UniqueIdentifier>{B1C714D4-3105-3863-8E17-9735010556F2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Tests\Serialization\Json">
+      <UniqueIdentifier>{0D500FC9-E855-3DCD-A64E-EC85DEC907B5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Tests\Settings">
+      <UniqueIdentifier>{52562946-AB8B-3BB4-9B39-BFF92FD16423}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Tests\Streamer">
+      <UniqueIdentifier>{87EE85ED-BFF4-39D5-9487-398B966C01B2}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

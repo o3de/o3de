@@ -1,0 +1,71 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="C:\Users\lesaelr\o3de\External\InAppPurchases-2ac0381c\Code\CMakeFiles\InAppPurchases.Static.dir\Unity\unity_0_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\InAppPurchases\Code\Source\InAppPurchasesSystemComponent.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\InAppPurchases\Code\Source\InAppPurchasesInterface.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Gems\InAppPurchases\Code\Source\Platform\Common\Unimplemented\InAppPurchases_Unimplemented.cpp">
+      <Filter>Source\Platform\Windows\..\Common\Unimplemented</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\InAppPurchases\Code\Include\InAppPurchases\InAppPurchasesBus.h">
+      <Filter>Include\InAppPurchases</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\InAppPurchases\Code\Include\InAppPurchases\InAppPurchasesInterface.h">
+      <Filter>Include\InAppPurchases</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Gems\InAppPurchases\Code\Include\InAppPurchases\InAppPurchasesResponseBus.h">
+      <Filter>Include\InAppPurchases</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Gems\InAppPurchases\Code\CMakeLists.txt">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="C:\Users\lesaelr\o3de\Gems\InAppPurchases\Code\inapppurchases_files.cmake" />
+    <None Include="C:\Users\lesaelr\o3de\Gems\InAppPurchases\Code\Source\Platform\Windows\platform_windows_files.cmake">
+      <Filter>Source\Platform\Windows</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\Gems\InAppPurchases\Code\Source\Platform\Windows\platform_windows.cmake">
+      <Filter>Source\Platform\Windows</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Generated Files">
+      <UniqueIdentifier>{FB9B7D8B-7F05-31D5-AA90-592248EDE1B3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include">
+      <UniqueIdentifier>{E188105A-C8C4-34BB-9809-15E8410EF7F8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\InAppPurchases">
+      <UniqueIdentifier>{B2AB7C10-198A-3F9C-AC80-67D2A783CE9F}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source">
+      <UniqueIdentifier>{F3F0AD47-5F83-373B-A2BF-650D2E4FA3EA}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Platform">
+      <UniqueIdentifier>{4FB794FF-EAE9-3B82-95CC-6241BAD0E3AC}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Platform\Windows">
+      <UniqueIdentifier>{2D0E7154-D797-393D-A7EB-8527ACAFB2BF}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Platform\Windows\..">
+      <UniqueIdentifier>{F7662613-E4CB-3520-9CE4-901D15E00EF5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Platform\Windows\..\Common">
+      <UniqueIdentifier>{A0FACE00-87FD-3D2A-94F4-6FB78E63F4CF}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Platform\Windows\..\Common\Unimplemented">
+      <UniqueIdentifier>{54AA1E4E-10BF-3AB8-97B6-7C12F7A94E80}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

@@ -1,0 +1,226 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\CMakeLists.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="C:\Users\lesaelr\o3de\cmake\Platform\Common\Configurations_common.cmake">
+      <Filter>cmake\Platform\Common</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\cmake\Platform\Common\MSVC\Configurations_msvc.cmake">
+      <Filter>cmake\Platform\Common\MSVC</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\cmake\Platform\Common\MSVC\CodeAnalysis.ruleset">
+      <Filter>cmake\Platform\Common\MSVC</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\cmake\Platform\Common\MSVC\Directory.Build.props">
+      <Filter>cmake\Platform\Common\MSVC</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\cmake\Platform\Common\MSVC\TestProject.props">
+      <Filter>cmake\Platform\Common\MSVC</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\cmake\Platform\Common\MSVC\VisualStudio_common.cmake">
+      <Filter>cmake\Platform\Common\MSVC</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\cmake\Platform\Common\Install_common.cmake">
+      <Filter>cmake\Platform\Common</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\cmake\Platform\Common\LYWrappers_default.cmake">
+      <Filter>cmake\Platform\Common</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\cmake\Platform\Common\TargetIncludeSystemDirectories_unsupported.cmake">
+      <Filter>cmake\Platform\Common</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\cmake\Platform\Windows\Configurations_windows.cmake">
+      <Filter>cmake\Platform\Windows</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\cmake\Platform\Windows\LYTestWrappers_windows.cmake">
+      <Filter>cmake\Platform\Windows</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\cmake\Platform\Windows\LYWrappers_windows.cmake">
+      <Filter>cmake\Platform\Windows</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\cmake\Platform\Windows\PAL_windows.cmake">
+      <Filter>cmake\Platform\Windows</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\cmake\Platform\Windows\PALDetection_windows.cmake">
+      <Filter>cmake\Platform\Windows</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\cmake\Platform\Windows\Install_windows.cmake">
+      <Filter>cmake\Platform\Windows</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\cmake\Platform\Windows\Packaging_windows.cmake">
+      <Filter>cmake\Platform\Windows</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\cmake\Platform\Windows\PackagingPostBuild.cmake">
+      <Filter>cmake\Platform\Windows</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\cmake\Platform\Windows\Packaging\Bootstrapper.wxs">
+      <Filter>cmake\Platform\Windows\Packaging</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\cmake\Platform\Windows\Packaging\BootstrapperTheme.wxl.in">
+      <Filter>cmake\Platform\Windows\Packaging</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\cmake\Platform\Windows\Packaging\BootstrapperTheme.xml.in">
+      <Filter>cmake\Platform\Windows\Packaging</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\cmake\Platform\Windows\Packaging\Shortcuts.wxs">
+      <Filter>cmake\Platform\Windows\Packaging</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\cmake\Platform\Windows\Packaging\Template.wxs.in">
+      <Filter>cmake\Platform\Windows\Packaging</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\cmake\Platform\Windows\platform_windows_files.cmake">
+      <Filter>cmake\Platform\Windows</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\cmake\3rdParty\BuiltInPackages.cmake">
+      <Filter>cmake\3rdParty</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\cmake\3rdParty\FindOpenGLInterface.cmake">
+      <Filter>cmake\3rdParty</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\cmake\3rdParty\FindPIX.cmake">
+      <Filter>cmake\3rdParty</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\cmake\3rdParty\FindVkValidation.cmake">
+      <Filter>cmake\3rdParty</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\cmake\3rdParty\FindWwise.cmake">
+      <Filter>cmake\3rdParty</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\cmake\3rdParty\cmake_files.cmake">
+      <Filter>cmake\3rdParty</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\cmake\3rdParty\Platform\Windows\BuiltInPackages_windows.cmake">
+      <Filter>cmake\3rdParty\Platform\Windows</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\cmake\3rdParty\Platform\Windows\Wwise_windows.cmake">
+      <Filter>cmake\3rdParty\Platform\Windows</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\cmake\3rdParty\Platform\Windows\cmake_windows_files.cmake">
+      <Filter>cmake\3rdParty\Platform\Windows</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\cmake\3rdParty.cmake">
+      <Filter>cmake</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\cmake\3rdPartyPackages.cmake">
+      <Filter>cmake</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\cmake\AzAutoGen.py">
+      <Filter>cmake</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\cmake\CMakeFiles.cmake">
+      <Filter>cmake</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\cmake\CommandExecution.cmake">
+      <Filter>cmake</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\cmake\Configurations.cmake">
+      <Filter>cmake</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\cmake\Dependencies.cmake">
+      <Filter>cmake</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\cmake\Deployment.cmake">
+      <Filter>cmake</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\cmake\FileUtil.cmake">
+      <Filter>cmake</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\cmake\Findo3de.cmake">
+      <Filter>cmake</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\cmake\Gems.cmake">
+      <Filter>cmake</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\cmake\GeneralSettings.cmake">
+      <Filter>cmake</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\cmake\Install.cmake">
+      <Filter>cmake</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\cmake\LyAutoGen.cmake">
+      <Filter>cmake</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\cmake\LYPackage_S3Downloader.cmake">
+      <Filter>cmake</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\cmake\LySet.cmake">
+      <Filter>cmake</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\cmake\LYTestWrappers.cmake">
+      <Filter>cmake</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\cmake\LYPython.cmake">
+      <Filter>cmake</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\cmake\LYWrappers.cmake">
+      <Filter>cmake</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\cmake\Monolithic.cmake">
+      <Filter>cmake</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\cmake\O3DEJson.cmake">
+      <Filter>cmake</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\cmake\OutputDirectory.cmake">
+      <Filter>cmake</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\cmake\Packaging.cmake">
+      <Filter>cmake</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\cmake\PAL.cmake">
+      <Filter>cmake</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\cmake\PALTools.cmake">
+      <Filter>cmake</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\cmake\Projects.cmake">
+      <Filter>cmake</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\cmake\RuntimeDependencies.cmake">
+      <Filter>cmake</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\cmake\SettingsRegistry.cmake">
+      <Filter>cmake</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\cmake\UnitTest.cmake">
+      <Filter>cmake</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\cmake\Version.cmake">
+      <Filter>cmake</Filter>
+    </None>
+    <None Include="C:\Users\lesaelr\o3de\cmake\cmake_files.cmake">
+      <Filter>cmake</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="cmake">
+      <UniqueIdentifier>{F889FF4C-A24A-38D9-939A-6846A3916431}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="cmake\3rdParty">
+      <UniqueIdentifier>{2F2525A2-D3C7-351B-A803-0EB55EB71D31}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="cmake\3rdParty\Platform">
+      <UniqueIdentifier>{542285A9-EA47-395D-8A54-A2FE873840C6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="cmake\3rdParty\Platform\Windows">
+      <UniqueIdentifier>{C9EA93BD-F22B-3980-B886-C24314C32942}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="cmake\Platform">
+      <UniqueIdentifier>{5119DC5D-D73A-3378-9F0D-764961B359D3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="cmake\Platform\Common">
+      <UniqueIdentifier>{BF5AA823-CF43-3A9D-BE0B-568A84718155}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="cmake\Platform\Common\MSVC">
+      <UniqueIdentifier>{69ACE1A5-F779-3F39-9793-BFA7A25FDDB0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="cmake\Platform\Windows">
+      <UniqueIdentifier>{9FABDF15-8C99-30AC-AA35-F75F6A11D166}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="cmake\Platform\Windows\Packaging">
+      <UniqueIdentifier>{36668ACF-35EE-304D-9DCC-B2B5D77CEA35}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

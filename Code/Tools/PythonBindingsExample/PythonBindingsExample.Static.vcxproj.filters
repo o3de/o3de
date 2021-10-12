@@ -1,0 +1,51 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\PythonBindingsExample\CMakeFiles\PythonBindingsExample.Static.dir\Unity\unity_0_cxx.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\PythonBindingsExample\source\Application.cpp">
+      <Filter>source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\lesaelr\o3de\Code\Tools\PythonBindingsExample\source\ApplicationParameters.cpp">
+      <Filter>source</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\PythonBindingsExample\source\Application.h">
+      <Filter>source</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\lesaelr\o3de\Code\Tools\PythonBindingsExample\source\ApplicationParameters.h">
+      <Filter>source</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\lesaelr\o3de\Code\Tools\PythonBindingsExample\CMakeLists.txt">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="C:\Users\lesaelr\o3de\Code\Tools\PythonBindingsExample\tool_dependencies.cmake" />
+    <None Include="C:\Users\lesaelr\o3de\Code\Tools\PythonBindingsExample\pythonbindingsexample_files.cmake" />
+    <None Include="C:\Users\lesaelr\o3de\Code\Tools\PythonBindingsExample\source\Platform\Common\MSVC\pythonbindingsexample_msvc.cmake">
+      <Filter>source\Platform\Common\MSVC</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Generated Files">
+      <UniqueIdentifier>{FB9B7D8B-7F05-31D5-AA90-592248EDE1B3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="source">
+      <UniqueIdentifier>{688443FA-03E8-36C5-B319-1AA129228091}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="source\Platform">
+      <UniqueIdentifier>{F7C7FB88-6D75-32A9-8C8D-5751920507C1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="source\Platform\Common">
+      <UniqueIdentifier>{DA12A3E7-4897-34FA-B31A-6333A2837FC0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="source\Platform\Common\MSVC">
+      <UniqueIdentifier>{60ED38C8-A3E0-3545-8875-CBE4E2D3B22D}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

@@ -1,0 +1,10 @@
+# CMake generation dependency list for this directory.
+C:/Users/lesaelr/o3de/Gems/Atom/Tools/MaterialEditor/Code/CMakeLists.txt
+C:/Users/lesaelr/o3de/Gems/Atom/Tools/MaterialEditor/Code/Source/Platform/Windows/PAL_windows.cmake
+C:/Users/lesaelr/o3de/Gems/Atom/Tools/MaterialEditor/Code/Source/Platform/Windows/platform_windows_files.cmake
+C:/Users/lesaelr/o3de/Gems/Atom/Tools/MaterialEditor/Code/Source/Platform/Windows/tool_dependencies_windows.cmake
+C:/Users/lesaelr/o3de/Gems/Atom/Tools/MaterialEditor/Code/Source/Window/MaterialEditor.qrc
+C:/Users/lesaelr/o3de/Gems/Atom/Tools/MaterialEditor/Code/materialeditor_files.cmake
+C:/Users/lesaelr/o3de/Gems/Atom/Tools/MaterialEditor/Code/materialeditordocument_files.cmake
+C:/Users/lesaelr/o3de/Gems/Atom/Tools/MaterialEditor/Code/materialeditorviewport_files.cmake
+C:/Users/lesaelr/o3de/Gems/Atom/Tools/MaterialEditor/Code/materialeditorwindow_files.cmake
