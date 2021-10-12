@@ -595,7 +595,6 @@ namespace AzToolsFramework
         EditorEntityInfoRequestBus::EventResult(
             visible, entityId, &EditorEntityInfoRequestBus::Events::IsVisible);
 
-        // Early out
         if (!visible)
         {
             return false;
@@ -605,34 +604,21 @@ namespace AzToolsFramework
         bool locked = false;
         EditorEntityInfoRequestBus::EventResult(locked, entityId, &EditorEntityInfoRequestBus::Events::IsLocked);
 
-        // Early out
         if (locked)
         {
             return false;
         }
 
         // Detect if the Entity is part of the Editor Focus
-        bool inFocus = false;
-        if (auto focusModeInterface = AZ::Interface<FocusModeInterface>::Get())
-        {
-            inFocus = focusModeInterface->IsInFocusSubTree(entityId);
-        }
-
-        // Early out
-        if (!inFocus)
+        if (auto focusModeInterface = AZ::Interface<FocusModeInterface>::Get();
+            !focusModeInterface->IsInFocusSubTree(entityId))
         {
             return false;
         }
 
         // Detect if the Entity is a descendant of a closed container
-        bool inClosedContainer = false;
-        if (ContainerEntityInterface* containerEntityInterface = AZ::Interface<ContainerEntityInterface>::Get())
-        {
-            inClosedContainer = containerEntityInterface->IsUnderClosedContainerEntity(entityId);
-        }
-
-        // Early out
-        if (inClosedContainer)
+        if (auto containerEntityInterface = AZ::Interface<ContainerEntityInterface>::Get();
+            containerEntityInterface->IsUnderClosedContainerEntity(entityId))
         {
             return false;
         }
