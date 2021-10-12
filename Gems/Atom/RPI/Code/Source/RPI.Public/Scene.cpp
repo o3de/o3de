@@ -400,8 +400,7 @@ namespace AZ
         {
             AZ_PROFILE_SCOPE(RPI, "Scene: Simulate");
 
-            const float millisecondsToSeconds = 0.001f;
-            m_simulationTime = tickInfo.m_currentGameTime * millisecondsToSeconds;
+            m_simulationTime = tickInfo.m_currentGameTime;
 
             // If previous simulation job wasn't done, wait for it to finish.
             if (m_taskGraphActive)
