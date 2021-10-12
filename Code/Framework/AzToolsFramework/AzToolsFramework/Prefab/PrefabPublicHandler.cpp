@@ -257,9 +257,10 @@ namespace AzToolsFramework
 
                 // Select Container Entity
                 {
-                    auto selectionUndo = aznew SelectionCommand({ containerEntityId }, "Select Prefab Container Entity");
+                    const EntityIdList selectedEntities = EntityIdList{ containerEntityId };
+                    auto selectionUndo = aznew SelectionCommand(selectedEntities, "Select Prefab Container Entity");
                     selectionUndo->SetParent(undoBatch.GetUndoBatch());
-                    ToolsApplicationRequestBus::Broadcast(&ToolsApplicationRequestBus::Events::RunRedoSeparately, selectionUndo);
+                    ToolsApplicationRequestBus::Broadcast(&ToolsApplicationRequestBus::Events::SetSelectedEntities, selectedEntities);
                 }
             }
 
@@ -1097,7 +1098,7 @@ namespace AzToolsFramework
                 // Select the duplicated entities/instances
                 auto selectionUndo = aznew SelectionCommand(duplicatedEntityAndInstanceIds, "Select Duplicated Entities/Instances");
                 selectionUndo->SetParent(undoBatch.GetUndoBatch());
-                ToolsApplicationRequestBus::Broadcast(&ToolsApplicationRequestBus::Events::RunRedoSeparately, selectionUndo);
+                ToolsApplicationRequestBus::Broadcast(&ToolsApplicationRequestBus::Events::SetSelectedEntities, duplicatedEntityAndInstanceIds);
             }
 
             return AZ::Success();
