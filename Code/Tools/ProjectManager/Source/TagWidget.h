@@ -14,8 +14,6 @@
 #include <QWidget>
 #endif
 
-QT_FORWARD_DECLARE_CLASS(QVBoxLayout)
-
 namespace O3DE::ProjectManager
 {
     // Single tag
@@ -40,9 +38,5 @@ namespace O3DE::ProjectManager
         ~TagContainerWidget() = default;
 
         void Update(const QStringList& tags);
-
-    private:
-        QVBoxLayout* m_layout = nullptr;
-        QWidget* m_widget = nullptr;
     };
 } // namespace O3DE::ProjectManager

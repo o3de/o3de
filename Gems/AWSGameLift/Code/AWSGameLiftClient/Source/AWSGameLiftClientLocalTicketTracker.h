@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <AzCore/std/parallel/binary_semaphore.h>
 #include <AzCore/std/parallel/mutex.h>
 #include <AzCore/std/parallel/thread.h>
 
@@ -58,5 +59,6 @@ namespace AWSGameLift
 
         AZStd::mutex m_trackerMutex;
         AZStd::thread m_trackerThread;
+        AZStd::binary_semaphore m_waitEvent;
     };
 } // namespace AWSGameLift

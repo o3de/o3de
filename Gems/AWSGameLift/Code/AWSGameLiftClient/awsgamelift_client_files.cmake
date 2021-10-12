@@ -30,6 +30,10 @@ set(FILES
     Source/Activity/AWSGameLiftSearchSessionsActivity.h
     Source/AWSGameLiftClientLocalTicketTracker.cpp
     Source/AWSGameLiftClientLocalTicketTracker.h
+    Source/Activity/AWSGameLiftStartMatchmakingActivity.cpp
+    Source/Activity/AWSGameLiftStartMatchmakingActivity.h
+    Source/Activity/AWSGameLiftStopMatchmakingActivity.cpp
+    Source/Activity/AWSGameLiftStopMatchmakingActivity.h
     Source/AWSGameLiftClientManager.cpp
     Source/AWSGameLiftClientManager.h
     Source/AWSGameLiftClientSystemComponent.cpp

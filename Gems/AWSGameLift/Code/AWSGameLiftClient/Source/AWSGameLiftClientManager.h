@@ -19,6 +19,8 @@ namespace AWSGameLift
     struct AWSGameLiftCreateSessionOnQueueRequest;
     struct AWSGameLiftJoinSessionRequest;
     struct AWSGameLiftSearchSessionsRequest;
+    struct AWSGameLiftStartMatchmakingRequest;
+    struct AWSGameLiftStopMatchmakingRequest;
 
     // MatchAcceptanceNotificationBus EBus handler for scripting
     class AWSGameLiftMatchAcceptanceNotificationBusHandler
@@ -160,5 +162,7 @@ namespace AWSGameLift
         AZStd::string CreateSessionOnQueueHelper(const AWSGameLiftCreateSessionOnQueueRequest& createSessionOnQueueRequest);
         bool JoinSessionHelper(const AWSGameLiftJoinSessionRequest& joinSessionRequest);
         AzFramework::SearchSessionsResponse SearchSessionsHelper(const AWSGameLiftSearchSessionsRequest& searchSessionsRequest) const;
+        AZStd::string StartMatchmakingHelper(const AWSGameLiftStartMatchmakingRequest& startMatchmakingRequest);
+        void StopMatchmakingHelper(const AWSGameLiftStopMatchmakingRequest& stopMatchmakingRequest);
     };
 } // namespace AWSGameLift
