@@ -82,14 +82,14 @@
                 m_shaderResourceGroup->SetConstant(m_colorGradingExposureIndex, settings->GetColorGradingExposure());
                 m_shaderResourceGroup->SetConstant(m_colorGradingContrastIndex, settings->GetColorGradingContrast());
                 m_shaderResourceGroup->SetConstant(m_colorGradingHueShiftIndex, settings->GetColorGradingHueShift());
-                m_shaderResourceGroup->SetConstant(m_colorGradingPreSaturationIndex, settings->GetColorGradingPreSaturation());
+                m_shaderResourceGroup->SetConstant(m_colorGradingPreSaturationIndex, settings->GetColorGradingPreSaturation() * 0.01f + 1.0f);
                 m_shaderResourceGroup->SetConstant(m_colorFilterIntensityIndex, settings->GetColorGradingFilterIntensity());
                 m_shaderResourceGroup->SetConstant(m_colorFilterMultiplyIndex, settings->GetColorGradingFilterMultiply());
                 m_shaderResourceGroup->SetConstant(m_whiteBalanceKelvinIndex, settings->GetWhiteBalanceKelvin());
                 m_shaderResourceGroup->SetConstant(m_whiteBalanceTintIndex, settings->GetWhiteBalanceTint());
                 m_shaderResourceGroup->SetConstant(m_splitToneBalanceIndex, settings->GetSplitToneBalance());
                 m_shaderResourceGroup->SetConstant(m_splitToneWeightIndex, settings->GetSplitToneWeight());
-                m_shaderResourceGroup->SetConstant(m_colorGradingPostSaturationIndex, settings->GetColorGradingPostSaturation());
+                m_shaderResourceGroup->SetConstant(m_colorGradingPostSaturationIndex, settings->GetColorGradingPostSaturation() * 0.01f + 1.0f);
                 m_shaderResourceGroup->SetConstant(m_smhShadowsStartIndex, settings->GetSmhShadowsStart());
                 m_shaderResourceGroup->SetConstant(m_smhShadowsEndIndex, settings->GetSmhShadowsEnd());
                 m_shaderResourceGroup->SetConstant(m_smhHighlightsStartIndex, settings->GetSmhHighlightsStart());

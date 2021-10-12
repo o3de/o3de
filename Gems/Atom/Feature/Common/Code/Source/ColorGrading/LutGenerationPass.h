@@ -20,6 +20,7 @@ namespace AZ
 {
     namespace Render
     {
+        // Performs color grading on an identity LUT strip
         class LutGenerationPass
             : public AZ::Render::HDRColorGradingPass
         {
@@ -58,12 +59,11 @@ namespace AZ
                 "m_identityLut16x16x16",
                 "m_identityLut32x32x32",
                 "m_identityLut64x64x64" };
+
             RHI::ShaderInputNameIndex m_lutResolutionIndex = "m_lutResolution";
             RHI::ShaderInputNameIndex m_lutShaperTypeIndex = "m_shaperType";
             RHI::ShaderInputNameIndex m_lutShaperBiasIndex = "m_shaperBias";
             RHI::ShaderInputNameIndex m_lutShaperScaleIndex = "m_shaperScale";
-
-            bool m_isInitialized = false;
         };
 
     } // namespace Render

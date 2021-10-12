@@ -6,8 +6,6 @@
  *
  */
 
-#pragma optimize("", off)
-
 #include <ColorGrading/LutGenerationPass.h>
 #include <Atom/Feature/ACES/AcesDisplayMapperFeatureProcessor.h>
 
@@ -121,5 +119,3 @@ namespace AZ
 
     } // namespace Render
 } // namespace AZ
-
-#pragma optimize("", on)

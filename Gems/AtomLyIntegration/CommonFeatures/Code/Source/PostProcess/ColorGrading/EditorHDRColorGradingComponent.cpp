@@ -185,6 +185,13 @@ namespace AZ
                 const char* LutAttachment = "LutOutput";
                 const AZStd::vector<AZStd::string> LutGenerationPassHierarchy{ "LutGenerationPass" };
 
+                char resolvedOutputFilePath[AZ_MAX_PATH_LEN] = { 0 };
+                AZ::IO::FileIOBase::GetDirectInstance()->ResolvePath(m_currentTiffFilePath.c_str(), resolvedOutputFilePath, AZ_MAX_PATH_LEN);
+
+                AZStd::string lutGenerationCacheFolder;
+                AzFramework::StringFunc::Path::GetFolderPath(resolvedOutputFilePath, lutGenerationCacheFolder);
+                AZ::IO::SystemFile::CreateDir(lutGenerationCacheFolder.c_str());
+
                 // capture frame
                 AZ::Render::FrameCaptureNotificationBus::Handler::BusConnect();
 
@@ -207,6 +214,10 @@ namespace AZ
             AZ::IO::FileIOBase::GetDirectInstance()->ResolvePath(m_currentTiffFilePath.c_str(), resolvedInputFilePath, AZ_MAX_PATH_LEN);
             char resolvedOutputFilePath[AZ_MAX_PATH_LEN] = { 0 };
             AZ::IO::FileIOBase::GetDirectInstance()->ResolvePath(m_currentLutFilePath.c_str(), resolvedOutputFilePath, AZ_MAX_PATH_LEN);
+
+            AZStd::string lutGenerationFolder;
+            AzFramework::StringFunc::Path::GetFolderPath(resolvedOutputFilePath, lutGenerationFolder);
+            AZ::IO::SystemFile::CreateDir(lutGenerationFolder.c_str());
 
             AZStd::vector<AZStd::string_view> pythonArgs
             {

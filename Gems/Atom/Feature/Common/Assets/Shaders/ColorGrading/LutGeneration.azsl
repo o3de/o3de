@@ -14,31 +14,15 @@
 
 #include <Atom/Features/PostProcessing/FullscreenVertex.azsli>
 
-#include <Atom/Features/ColorManagement/TransformColor.azsli>
 #include <Atom/Features/PostProcessing/Aces.azsli>
 #include <Atom/Features/PostProcessing/Shapers.azsli>
-#include <Atom/Features/PostProcessing/AcesColorSpaceConversion.azsli>
-#include <3rdParty/Features/PostProcessing/PSstyleColorBlends_Separable.azsli>
-#include <3rdParty/Features/PostProcessing/PSstyleColorBlends_NonSeparable.azsli>
-#include <3rdParty/Features/PostProcessing/KelvinToRgb.azsli>
-
-static const float FloatEpsilon = 1.192092896e-07; // 1.0 + FloatEpsilon != 1.0, smallest positive float   
-static const float FloatMin = FLOAT_32_MIN; // Min float number that is positive
-static const float FloatMax = FLOAT_32_MAX; // Max float number representable
-
-static const float AcesCcMidGrey = 0.4135884;
+#include <Atom/Features/PostProcessing/HDRColorGradingCommon.azsl>
 
 float3 convert2Dto3DLutCoords(float2 uv, float width, float height)
 {
-    //uint adjustedU = uv.x * (height-1)*(height-1);
-    //uint2 adjustedUv = uint2(uv.x * height*height, uv.y * (height-1));
-    //uint3 coords = uint3(adjustedUv.x%height, adjustedUv.y, adjustedU/(height-1));
-    //float3 coords = float3(clamp(((adjustedUv.x-1)%height+1), 0, height), adjustedUv.y, (int)(adjustedUv.x/height));
-
-    float2 adjustedUv = float2(uv.x * height*height, uv.y * height);
-    float3 coords = float3(adjustedUv.x%height, uv.x*height, adjustedUv.y);
+    float2 adjustedUv = float2(uv.x * width, uv.y * height);
+    float3 coords = float3(adjustedUv.x%height, 0.5 + int(adjustedUv.x/height), adjustedUv.y);
     return coords/height;
-    //return float3(uv.x, uv.x, uv.y);
 }
 
 enum class LutResolution
@@ -111,121 +95,33 @@ ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
     float4 m_smhHighlightsColor;
 }
 
-float SaturateWithEpsilon(float value)
+float3 ColorGrade(float3 linearColor)
 {
-    return clamp(value, FloatEpsilon, 1.0f);
-}
-
-// Below are the color grading functions. These expect the frame color to be in ACEScg space.
-// Note that some functions may have some quirks in their implementation and is subject to change.
-float3 ColorGradePostExposure (float3 frameColor, float exposure) 
-{
-    frameColor *= pow(2.0f, exposure);
-    return frameColor;
-}
-
-// The contrast equation is performed in ACEScc (logarithmic) color space.
-float3 ColorGradingContrast (float3 frameColor, float midgrey, float amount) 
-{
-    const float contrastAdjustment = amount * 0.01f + 1.0f;
-    frameColor = TransformColor(frameColor.rgb, ColorSpaceId::ACEScg, ColorSpaceId::ACEScc);
-    frameColor = (frameColor - midgrey) * contrastAdjustment + midgrey;
-    return frameColor = TransformColor(frameColor.rgb, ColorSpaceId::ACEScc, ColorSpaceId::ACEScg);
-}
-
-// The swatchColor param expects a linear RGB value.
-float3 ColorGradeColorFilter (float3 frameColor, float3 swatchColor, float alpha) 
-{
-    swatchColor = TransformColor(swatchColor, ColorSpaceId::LinearSRGB, ColorSpaceId::ACEScg);
-    swatchColor *= pow(2.0f, PassSrg::m_colorFilterIntensity);
-    const float3 frameAdjust = frameColor * swatchColor;
-    return frameColor = lerp(frameColor, frameAdjust, alpha);
-}
-
-float3 ColorGradeHueShift (float3 frameColor, float amount) 
-{
-    float3 frameHsv = RgbToHsv(frameColor);
-    const float hue = frameHsv.x + amount;
-    frameHsv.x = RotateHue(hue, 0.0, 1.0);
-    return HsvToRgb(frameHsv);
-}
-
-float3 ColorGradeSaturation (float3 frameColor, float control) 
-{
-    const float vLuminance = CalculateLuminance(frameColor, ColorSpaceId::LinearSRGB);
-    //const float vLuminance = CalculateLuminance(frameColor, ColorSpaceId::ACEScg);
-    return (frameColor - vLuminance) * control + vLuminance;
-}
-
-float3 ColorGradeKelvinColorTemp(float3 frameColor, float kelvin)
-{
-    const float3 kColor = TransformColor(KelvinToRgb(kelvin), ColorSpaceId::LinearSRGB, ColorSpaceId::ACEScg);
-    const float luminance = CalculateLuminance(frameColor, ColorSpaceId::ACEScg);
-    const float3 resHsl = RgbToHsl(frameColor.rgb * kColor.rgb);    // Apply Kelvin color and convert to HSL
-    return HslToRgb(float3(resHsl.xy, luminance));                  // Preserve luminance
-}
-
-// pow(f, e) won't work if f is negative, or may cause inf/NAN.
-float3 NoNanPow(float3 base, float3 power)
-{
-    return pow(max(abs(base), float3(FloatEpsilon, FloatEpsilon, FloatEpsilon)), power);
-}
-
-float3 ColorGradeSplitTone (float3 frameColor, float balance, float weight) 
-{
-    float3 frameSplitTone = NoNanPow(frameColor, 1.0 / 2.2);
-    const float t = SaturateWithEpsilon(CalculateLuminance(SaturateWithEpsilon(frameSplitTone), ColorSpaceId::ACEScg) + balance);
-    const float3 shadows = lerp(0.5, PassSrg::m_splitToneShadowsColor.rgb, 1.0 - t);
-    const float3 highlights = lerp(0.5, PassSrg::m_splitToneHighlightsColor.rgb, t);
-    frameSplitTone = BlendMode_SoftLight(frameSplitTone, shadows);
-    frameSplitTone = BlendMode_SoftLight(frameSplitTone, highlights);
-    frameSplitTone = NoNanPow(frameSplitTone, 2.2);
-    return lerp(frameColor.rgb, frameSplitTone.rgb, weight);
-}
-
-float3 ColorGradeChannelMixer (float3 frameColor) 
-{
-    return mul(float3x3(PassSrg::m_channelMixingRed.rgb,
-            PassSrg::m_channelMixingGreen.rgb,
-            PassSrg::m_channelMixingBlue.rgb),
-        frameColor);
-}
-
-float3 ColorGradeShadowsMidtonesHighlights (float3 frameColor, float shadowsStart, float shadowsEnd, 
-                                            float highlightsStart, float highlightsEnd, float weight,
-                                            float4 shadowsColor, float4 midtonesColor, float4 highlightsColor) 
-{
-    const float3 shadowsColorACEScg = TransformColor(shadowsColor.rgb, ColorSpaceId::LinearSRGB, ColorSpaceId::ACEScg);
-    const float3 midtonesColorACEScg = TransformColor(midtonesColor.rgb, ColorSpaceId::LinearSRGB, ColorSpaceId::ACEScg);
-    const float3 highlightsColorACEScg = TransformColor(highlightsColor.rgb, ColorSpaceId::LinearSRGB, ColorSpaceId::ACEScg);
-
-    const float cLuminance = CalculateLuminance(frameColor, ColorSpaceId::ACEScg);
-    const float shadowsWeight = 1.0 - smoothstep(shadowsStart, shadowsEnd, cLuminance);
-    const float highlightsWeight = smoothstep(highlightsStart, highlightsEnd, cLuminance);
-    const float midtonesWeight = 1.0 - shadowsWeight - highlightsWeight;
-
-    const float3 frameSmh = frameColor * shadowsColorACEScg * shadowsWeight +
-                       frameColor * midtonesColorACEScg * midtonesWeight +
-                       frameColor * highlightsColorACEScg * highlightsWeight;
-    return lerp(frameColor.rgb, frameSmh.rgb, weight);
-}
-
-float3 ColorGrade(float3 frameColor) 
-{
-    frameColor = ColorGradeSaturation(frameColor, PassSrg::m_colorGradingPreSaturation);
-    frameColor = ColorGradeSaturation(frameColor, PassSrg::m_colorGradingPostSaturation);
-    return frameColor.rgb;
+    float3 color = TransformColor(linearColor, ColorSpaceId::LinearSRGB, ColorSpaceId::ACEScg);
+    color = ColorGradePostExposure(color, PassSrg::m_colorGradingExposure);
+    color = ColorGradeKelvinColorTemp(color, PassSrg::m_whiteBalanceKelvin);
+    color = ColorGradingContrast(color, AcesCcMidGrey, PassSrg::m_colorGradingContrast);
+    color = ColorGradeColorFilter(color, PassSrg::m_colorFilterSwatch.rgb,
+                                         PassSrg::m_colorFilterMultiply, PassSrg::m_colorFilterIntensity);
+    color = max(color, 0.0);
+    color = ColorGradeSaturation(color, PassSrg::m_colorGradingPreSaturation);
+    color = ColorGradeSplitTone(color, PassSrg::m_splitToneBalance, PassSrg::m_splitToneWeight,
+                                        PassSrg::m_splitToneShadowsColor, PassSrg::m_splitToneHighlightsColor);
+    color = ColorGradeChannelMixer(color, PassSrg::m_channelMixingRed, PassSrg::m_channelMixingGreen, PassSrg::m_channelMixingBlue);
+    color = max(color, 0.0);
+    color = ColorGradeShadowsMidtonesHighlights(color, PassSrg::m_smhShadowsStart, PassSrg::m_smhShadowsEnd,
+                                                    PassSrg::m_smhHighlightsStart, PassSrg::m_smhHighlightsEnd, PassSrg::m_smhWeight,
+                                                    PassSrg::m_smhShadowsColor, PassSrg::m_smhMidtonesColor, PassSrg::m_smhHighlightsColor);
+    color = ColorGradeHueShift(color, PassSrg::m_colorGradingHueShift);
+    color = ColorGradeSaturation(color, PassSrg::m_colorGradingPostSaturation);
+    color = TransformColor(color, ColorSpaceId::ACEScg, ColorSpaceId::LinearSRGB);
+    return max(color.rgb, 0.0);
 }
 
 struct PSOutput
 {
     float4 m_lutOutput : SV_Target0;
 };
-
-float3 InverseGamma(float3 color)
-{
-    return pow(color, 2.2);
-}
 
 float3 GetSourceLutLinearColor(float3 baseColor, Texture3D<float4> sourceLut, ShaperType shaperType, float shaperBias, float shaperScale)
 {
@@ -239,7 +135,7 @@ float3 GetSourceLutLinearColor(float3 baseColor, Texture3D<float4> sourceLut, Sh
     float3 coordScale = (outputDimensions - 1.0) / outputDimensions;
     lutCoord = (lutCoord * coordScale) + coordBias;
 
-    float3 lutColor = sourceLut.SampleLevel(PassSrg::PointSampler, lutCoord, 0).rgb;
+    float3 lutColor = sourceLut.SampleLevel(PassSrg::LinearSampler, lutCoord, 0).rgb;
     // Convert to linear
     float3 linearColor = ShaperToLinear(lutColor, shaperType, shaperBias, shaperScale);
     return linearColor;
@@ -251,7 +147,6 @@ PSOutput MainPS(VSOutput IN)
 
     PSOutput OUT;
 
-    uint3 lutDimensions;
     float3 baseCoords = float3(0.0, 0.0, 0.0);
     float3 lutColor = float3(0.0, 0.0, 0.0);
     LutResolution lutRes = (LutResolution)PassSrg::m_lutResolution;
@@ -259,9 +154,9 @@ PSOutput MainPS(VSOutput IN)
     {
         case LutResolution::Lut16x16x16:
         {
+            // This seems correct.
             baseCoords = convert2Dto3DLutCoords(IN.m_texCoord, 256, 16);
             lutColor = PassSrg::m_identityLut16x16x16.Sample(PassSrg::PointSampler, baseCoords, 0.0).rgb;
-            //lutColor = TransformColor(lutColor, ColorSpaceId::LinearSRGB, ColorSpaceId::ACEScg);
             break;
         }
         case LutResolution::Lut32x32x32:
@@ -272,16 +167,27 @@ PSOutput MainPS(VSOutput IN)
         }
         case LutResolution::Lut64x64x64:
         {
+            // This doesn't look right.
             baseCoords = convert2Dto3DLutCoords(IN.m_texCoord, 4096, 64);
-            lutColor = PassSrg::m_identityLut64x64x64.Sample(PassSrg::PointSampler, baseCoords, 0.0).rgb;
+            float3 baseColor = ShaperToLinear(baseCoords, shaperType, PassSrg::m_shaperBias, PassSrg::m_shaperScale);
+            //lutColor = PassSrg::m_identityLut64x64x64.Sample(PassSrg::PointSampler, baseCoords, 0.0).rgb;
+            lutColor = GetSourceLutLinearColor(
+                baseColor,
+                PassSrg::m_identityLut64x64x64,
+                shaperType,
+                PassSrg::m_shaperBias,
+                PassSrg::m_shaperScale
+            );
             break;
         }
     }
-    //float3 lutColor = ShaperToLinear(baseCoords, shaperType, PassSrg::m_shaperBias, PassSrg::m_shaperScale);
-    float3 gradedColor = float4(ColorGrade(lutColor), 1.0);
-    //float3 finalColor = LinearToShaper(gradedColor, shaperType, PassSrg::m_shaperBias, PassSrg::m_shaperScale);
-    gradedColor = TransformColor(gradedColor, ColorSpaceId::LinearSRGB, ColorSpaceId::ACEScg);
-    OUT.m_lutOutput = float4(gradedColor, 1.0);
 
+    // color grade in linear sapce
+    float3 gradedColor = ColorGrade(lutColor);
+
+    float3 shapedColor = LinearToShaper(gradedColor, shaperType, PassSrg::m_shaperBias, PassSrg::m_shaperScale);
+    float3 clampedColor = saturate(gradedColor);
+
+    OUT.m_lutOutput = float4(clampedColor, 1.0);
     return OUT;
 }
