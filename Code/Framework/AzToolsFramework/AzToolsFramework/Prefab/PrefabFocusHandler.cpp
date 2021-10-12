@@ -71,9 +71,10 @@ namespace AzToolsFramework::Prefab
 
         // Clear selection
         {
-            auto selectionUndo = aznew SelectionCommand({}, "Clear Selection");
+            const EntityIdList selectedEntities = EntityIdList{};
+            auto selectionUndo = aznew SelectionCommand(selectedEntities, "Clear Selection");
             selectionUndo->SetParent(undoBatch.GetUndoBatch());
-            ToolsApplicationRequestBus::Broadcast(&ToolsApplicationRequestBus::Events::RunRedoSeparately, selectionUndo);
+            ToolsApplicationRequestBus::Broadcast(&ToolsApplicationRequestBus::Events::SetSelectedEntities, selectedEntities);
         }
 
         // Edit Prefab
