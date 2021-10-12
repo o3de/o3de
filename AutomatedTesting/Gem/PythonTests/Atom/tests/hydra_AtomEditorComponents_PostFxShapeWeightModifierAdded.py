@@ -22,8 +22,8 @@ class Tests:
         "PostFx Shape Weight Modifier component disabled",
         "PostFx Shape Weight Modifier component was not disabled.")
     postfx_layer_component = (
-        "Entity has an Actor component",
-        "Entity did not have an Actor component")
+        "Entity has a PostFX Layer component",
+        "Entity did not have an PostFX Layer component")
     shape_component = (
         "Entity has a Tube Shape component",
         "Entity did not have a Tube Shape component")
