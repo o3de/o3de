@@ -487,7 +487,6 @@ void SEditorSettings::Save()
     SaveValue("Settings", "AutoBackupTime", autoBackupTime);
     SaveValue("Settings", "AutoBackupMaxCount", autoBackupMaxCount);
     SaveValue("Settings", "AutoRemindTime", autoRemindTime);
-    SaveValue("Settings", "MaxDisplayedItemsNumInSearch", maxNumberOfItemsShownInSearch);
     SaveValue("Settings", "CameraMoveSpeed", cameraMoveSpeed);
     SaveValue("Settings", "CameraRotateSpeed", cameraRotateSpeed);
     SaveValue("Settings", "StylusMode", stylusMode);
@@ -682,7 +681,6 @@ void SEditorSettings::Load()
     LoadValue("Settings", "AutoBackupTime", autoBackupTime);
     LoadValue("Settings", "AutoBackupMaxCount", autoBackupMaxCount);
     LoadValue("Settings", "AutoRemindTime", autoRemindTime);
-    LoadValue("Settings", "MaxDisplayedItemsNumInSearch", maxNumberOfItemsShownInSearch);
     LoadValue("Settings", "CameraMoveSpeed", cameraMoveSpeed);
     LoadValue("Settings", "CameraRotateSpeed", cameraRotateSpeed);
     LoadValue("Settings", "StylusMode", stylusMode);
@@ -1172,9 +1170,4 @@ bool SEditorSettings::GetSettingsRegistry_Bool(const char* key, bool& value)
 AzToolsFramework::ConsoleColorTheme SEditorSettings::GetConsoleColorTheme() const
 {
     return consoleBackgroundColorTheme;
-}
-
-int SEditorSettings::GetMaxNumberOfItemsShownInSearchView() const
-{
-    return SEditorSettings::maxNumberOfItemsShownInSearch;
 }

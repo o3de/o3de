@@ -279,7 +279,6 @@ AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
     SettingOutcome GetValue(const AZStd::string_view path) override;
     SettingOutcome SetValue(const AZStd::string_view path, const AZStd::any& value) override;
     AzToolsFramework::ConsoleColorTheme GetConsoleColorTheme() const override;
-    int GetMaxNumberOfItemsShownInSearchView() const override;
 
     void ConvertPath(const AZStd::string_view sourcePath, AZStd::string& category, AZStd::string& attribute);
 
@@ -351,13 +350,6 @@ AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
     bool autoBackupEnabled;
     //! After this amount of minutes message box with reminder to save will pop on.
     int autoRemindTime;
-    //////////////////////////////////////////////////////////////////////////
-
-    //////////////////////////////////////////////////////////////////////////
-    // Asset Browser Search View.
-    //////////////////////////////////////////////////////////////////////////
-    //! Current maximum number of items that can be displayed in the AssetBrowser Search View.
-    int maxNumberOfItemsShownInSearch;
     //////////////////////////////////////////////////////////////////////////
 
 
