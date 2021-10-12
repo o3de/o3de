@@ -74,7 +74,6 @@ def AtomEditorComponents_postfx_layer_AddedToEntity():
 
     import azlmbr.legacy.general as general
 
-    from editor_python_test_tools.asset_utils import Asset
     from editor_python_test_tools.editor_entity_utils import EditorEntity
     from editor_python_test_tools.utils import Report, Tracer, TestHelper
 
