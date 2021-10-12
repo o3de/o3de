@@ -243,12 +243,8 @@ namespace AzToolsFramework
                     if (s_prefabPublicInterface->IsInstanceContainerEntity(selectedEntity))
                     {
                         // Edit Prefab
-                        if (prefabWipFeaturesEnabled)
+                        if (prefabWipFeaturesEnabled && !s_prefabFocusPublicInterface->IsOwningPrefabBeingFocused(selectedEntity))
                         {
-                            bool beingEdited = s_prefabFocusPublicInterface->IsOwningPrefabBeingFocused(selectedEntity);
-
-                            if (!beingEdited)
-                            {
                                 QAction* editAction = menu->addAction(QObject::tr("Edit Prefab"));
                                 editAction->setToolTip(QObject::tr("Edit the prefab in focus mode."));
 
@@ -257,7 +253,6 @@ namespace AzToolsFramework
                                 });
 
                                 itemWasShown = true;
-                            }
                         }
 
                         // Save Prefab
