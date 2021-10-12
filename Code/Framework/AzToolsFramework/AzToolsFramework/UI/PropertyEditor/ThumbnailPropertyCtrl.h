@@ -39,13 +39,13 @@ namespace AzToolsFramework
         //! Remove current thumbnail
         void ClearThumbnail();
 
-        //! Display a clickble dropdown arrow next to the thumbnail
+        //! Display a clickable dropdown arrow next to the thumbnail
         void ShowDropDownArrow(bool visible);
 
         //! Override the thumbnail widget with a custom image
         void SetCustomThumbnailEnabled(bool enabled);
 
-        //! Assign a custom image to dispsy in place of thumbnail
+        //! Assign a custom image to display in place of thumbnail
         void SetCustomThumbnailPixmap(const QPixmap& pixmap);
 
     Q_SIGNALS:
