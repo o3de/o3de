@@ -8,6 +8,9 @@
 
 #pragma once
 
+#include <AzCore/std/containers/unordered_map.h>
+#include <AzCore/std/string/string.h>
+
 #include <AzFramework/Matchmaking/MatchmakingRequests.h>
 
 namespace AWSGameLift
