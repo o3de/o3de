@@ -145,7 +145,17 @@ namespace AzToolsFramework
                 return true;
             }
 
-            AZ::TransformBus::EventResult(entityId, entityId, &AZ::TransformBus::Events::GetParentId);
+            AZ::EntityId parentId;
+            AZ::TransformBus::EventResult(parentId, entityId, &AZ::TransformBus::Events::GetParentId);
+
+            if (parentId == entityId)
+            {
+                // In some circumstances, querying a root level entity with GetParentId will return
+                // the entity itself instead of an invalid entityId. 
+                break;
+            }
+
+            entityId = parentId;
         }
 
         // All ancestors are either regular entities or open containers.
