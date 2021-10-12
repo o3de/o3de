@@ -16,9 +16,11 @@
 #include <AzCore/RTTI/AttributeReader.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzToolsFramework/Commands/EntityStateCommand.h>
+#include <AzToolsFramework/ContainerEntity/ContainerEntityInterface.h>
 #include <AzToolsFramework/Entity/EditorEntityInfoBus.h>
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 #include <AzToolsFramework/Entity/SliceEditorEntityOwnershipServiceBus.h>
+#include <AzToolsFramework/FocusMode/FocusModeInterface.h>
 #include <AzToolsFramework/Slice/SliceMetadataEntityContextBus.h>
 #include <AzToolsFramework/Slice/SliceUtilities.h>
 #include <AzToolsFramework/ToolsComponents/EditorLockComponentBus.h>
@@ -588,15 +590,54 @@ namespace AzToolsFramework
     {
         AZ_PROFILE_FUNCTION(AzToolsFramework);
 
+        // Detect if the Entity is Visible
         bool visible = false;
         EditorEntityInfoRequestBus::EventResult(
             visible, entityId, &EditorEntityInfoRequestBus::Events::IsVisible);
 
-        bool locked = false;
-        EditorEntityInfoRequestBus::EventResult(
-            locked, entityId, &EditorEntityInfoRequestBus::Events::IsLocked);
+        // Early out
+        if (!visible)
+        {
+            return false;
+        }
 
-        return visible && !locked;
+        // Detect if the Entity is Locked
+        bool locked = false;
+        EditorEntityInfoRequestBus::EventResult(locked, entityId, &EditorEntityInfoRequestBus::Events::IsLocked);
+
+        // Early out
+        if (locked)
+        {
+            return false;
+        }
+
+        // Detect if the Entity is part of the Editor Focus
+        bool inFocus = false;
+        if (auto focusModeInterface = AZ::Interface<FocusModeInterface>::Get())
+        {
+            inFocus = focusModeInterface->IsInFocusSubTree(entityId);
+        }
+
+        // Early out
+        if (!inFocus)
+        {
+            return false;
+        }
+
+        // Detect if the Entity is a descendant of a closed container
+        bool inClosedContainer = false;
+        if (ContainerEntityInterface* containerEntityInterface = AZ::Interface<ContainerEntityInterface>::Get())
+        {
+            inClosedContainer = containerEntityInterface->IsUnderClosedContainerEntity(entityId);
+        }
+
+        // Early out
+        if (inClosedContainer)
+        {
+            return false;
+        }
+        
+        return true;
     }
 
     static void SetEntityLockStateRecursively(
