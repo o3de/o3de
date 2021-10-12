@@ -32,8 +32,6 @@ namespace AZ
     {
         namespace EditorMaterialComponentInspector
         {
-            using PropertyChangedCallback = AZStd::function<void(const MaterialPropertyOverrideMap&)>;
-
             class MaterialPropertyInspector
                 : public AtomToolsFramework::InspectorWidget
                 , public AzToolsFramework::IPropertyEditorNotify

@@ -88,6 +88,7 @@ namespace AZ
 
         void EditorMaterialSystemComponent::Activate()
         {
+            EditorMaterialSystemComponentNotificationBus::Handler::BusConnect();
             EditorMaterialSystemComponentRequestBus::Handler::BusConnect();
             AzToolsFramework::AssetBrowser::AssetBrowserInteractionNotificationBus::Handler::BusConnect();
             AzToolsFramework::EditorMenuNotificationBus::Handler::BusConnect();
@@ -100,6 +101,7 @@ namespace AZ
         {
             AzFramework::ApplicationLifecycleEvents::Bus::Handler::BusDisconnect();
             AzFramework::AssetCatalogEventBus::Handler::BusDisconnect();
+            EditorMaterialSystemComponentNotificationBus::Handler::BusDisconnect();
             EditorMaterialSystemComponentRequestBus::Handler::BusDisconnect();
             AzToolsFramework::AssetBrowser::AssetBrowserInteractionNotificationBus::Handler::BusDisconnect();
             AzToolsFramework::EditorMenuNotificationBus::Handler::BusDisconnect();
@@ -167,6 +169,10 @@ namespace AZ
                 {
                     MaterialComponentRequestBus::EventResult(
                         materialAssetId, entityId, &MaterialComponentRequestBus::Events::GetDefaultMaterialAssetId, materialAssignmentId);
+                    if (!materialAssetId.IsValid())
+                    {
+                        return;
+                    }
                 }
 
                 AZ::Render::MaterialPropertyOverrideMap propertyOverrides;
@@ -191,6 +197,29 @@ namespace AZ
                               materialAssignmentId, pixmap);
                       } });
             }
+        }
+
+        QPixmap EditorMaterialSystemComponent::GetRenderedMaterialPreview(
+            const AZ::EntityId& entityId, const AZ::Render::MaterialAssignmentId& materialAssignmentId) const
+        {
+            const auto& itr1 = m_materialPreviews.find(entityId);
+            if (itr1 != m_materialPreviews.end())
+            {
+                const auto& itr2 = itr1->second.find(materialAssignmentId);
+                if (itr2 != itr1->second.end())
+                {
+                    return itr2->second;
+                }
+            }
+            return QPixmap();
+        }
+
+        void EditorMaterialSystemComponent::OnRenderMaterialPreviewComplete(
+            [[maybe_unused]] const AZ::EntityId& entityId,
+            [[maybe_unused]] const AZ::Render::MaterialAssignmentId& materialAssignmentId,
+            [[maybe_unused]] const QPixmap& pixmap)
+        {
+            m_materialPreviews[entityId][materialAssignmentId] = pixmap;
         }
 
         void EditorMaterialSystemComponent::OnPopulateToolMenuItems()

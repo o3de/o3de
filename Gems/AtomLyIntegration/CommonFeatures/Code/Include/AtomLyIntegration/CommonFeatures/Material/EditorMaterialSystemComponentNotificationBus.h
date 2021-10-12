@@ -10,7 +10,6 @@
 #include <Atom/Feature/Material/MaterialAssignmentId.h>
 #include <AzCore/Component/EntityId.h>
 #include <AzCore/EBus/EBus.h>
-#include <AzCore/std/string/string.h>
 
 class QPixmap;
 
@@ -18,11 +17,11 @@ namespace AZ
 {
     namespace Render
     {
-        //! EditorMaterialSystemComponentNotifications provides an interface to communicate with EditorMaterialSystemComponent
+        //! EditorMaterialSystemComponentNotifications is an interface for handling notifications from EditorMaterialSystemComponent, like
+        //! being informed that material preview images are available
         class EditorMaterialSystemComponentNotifications : public AZ::EBusTraits
         {
         public:
-            // Only a single handler is allowed
             static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::Single;
             static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Multiple;
 

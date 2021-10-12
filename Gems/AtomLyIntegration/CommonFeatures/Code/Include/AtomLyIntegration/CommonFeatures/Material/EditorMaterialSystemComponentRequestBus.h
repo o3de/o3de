@@ -17,7 +17,8 @@ namespace AZ
 {
     namespace Render
     {
-        //! EditorMaterialSystemComponentRequests provides an interface to communicate with MaterialEditor
+        //! EditorMaterialSystemComponentRequests provides an interface for interacting with EditorMaterialSystemComponent, performing
+        //! different operations like opening the material editor, the material instance inspector, and managing material preview images
         class EditorMaterialSystemComponentRequests : public AZ::EBusTraits
         {
         public:
@@ -35,6 +36,10 @@ namespace AZ
             //! Generate a material preview image
             virtual void RenderMaterialPreview(
                 const AZ::EntityId& entityId, const AZ::Render::MaterialAssignmentId& materialAssignmentId) = 0;
+
+            //! Get recently rendered material preview image
+            virtual QPixmap GetRenderedMaterialPreview(
+                const AZ::EntityId& entityId, const AZ::Render::MaterialAssignmentId& materialAssignmentId) const = 0;
         };
         using EditorMaterialSystemComponentRequestBus = AZ::EBus<EditorMaterialSystemComponentRequests>;
     } // namespace Render

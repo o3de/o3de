@@ -16,6 +16,7 @@
 #include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
 #include <AzToolsFramework/Viewport/ActionBus.h>
 #include <Material/MaterialBrowserInteractions.h>
+#include <QPixmap>
 
 namespace AZ
 {
@@ -24,6 +25,7 @@ namespace AZ
         //! System component that manages launching and maintaining connections with the material editor.
         class EditorMaterialSystemComponent final
             : public AZ::Component
+            , public EditorMaterialSystemComponentNotificationBus::Handler
             , public EditorMaterialSystemComponentRequestBus::Handler
             , public AzToolsFramework::AssetBrowser::AssetBrowserInteractionNotificationBus::Handler
             , public AzToolsFramework::EditorMenuNotificationBus::Handler
@@ -50,8 +52,13 @@ namespace AZ
             //! EditorMaterialSystemComponentRequestBus::Handler overrides...
             void OpenMaterialEditor(const AZStd::string& sourcePath) override;
             void OpenMaterialInspector(const AZ::EntityId& entityId, const AZ::Render::MaterialAssignmentId& materialAssignmentId) override;
-            void RenderMaterialPreview(
-                const AZ::EntityId& entityId, const AZ::Render::MaterialAssignmentId& materialAssignmentId) override;
+            void RenderMaterialPreview(const AZ::EntityId& entityId, const AZ::Render::MaterialAssignmentId& materialAssignmentId) override;
+            QPixmap GetRenderedMaterialPreview(
+                const AZ::EntityId& entityId, const AZ::Render::MaterialAssignmentId& materialAssignmentId) const override;
+
+            //! EditorMaterialSystemComponentNotificationBus::Handler overrides...
+            void OnRenderMaterialPreviewComplete(
+                const AZ::EntityId& entityId, const AZ::Render::MaterialAssignmentId& materialAssignmentId, const QPixmap& pixmap)override;
 
             //! AssetBrowserInteractionNotificationBus::Handler overrides...
             AzToolsFramework::AssetBrowser::SourceFileDetails GetSourceFileDetails(const char* fullSourceFileName) override;
@@ -73,6 +80,7 @@ namespace AZ
             QAction* m_openMaterialEditorAction = nullptr;
             AZStd::unique_ptr<MaterialBrowserInteractions> m_materialBrowserInteractions;
             AZStd::unique_ptr<AtomToolsFramework::PreviewRenderer> m_previewRenderer;
+            AZStd::unordered_map<AZ::EntityId, AZStd::unordered_map<AZ::Render::MaterialAssignmentId, QPixmap>> m_materialPreviews;
         };
     } // namespace Render
 } // namespace AZ

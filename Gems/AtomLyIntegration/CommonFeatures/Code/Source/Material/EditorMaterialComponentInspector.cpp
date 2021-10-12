@@ -170,6 +170,7 @@ namespace AZ
 
                 m_overviewImage = new QLabel(this);
                 m_overviewImage->setFixedSize(QSize(120, 120));
+                m_overviewImage->setScaledContents(true);
                 m_overviewImage->setVisible(false);
 
                 m_overviewText = new QLabel(this);
@@ -241,8 +242,14 @@ namespace AZ
 
                 m_overviewText->setText(materialInfo);
                 m_overviewText->setAlignment(Qt::AlignLeading | Qt::AlignLeft | Qt::AlignTop);
+
+                QPixmap pixmap;
+                EditorMaterialSystemComponentRequestBus::BroadcastResult(
+                    pixmap, &EditorMaterialSystemComponentRequestBus::Events::GetRenderedMaterialPreview, m_entityId,
+                    m_materialAssignmentId);
+                m_overviewImage->setPixmap(pixmap);
                 m_overviewImage->setVisible(true);
-                m_updatePreview = true;
+                m_updatePreview |= pixmap.isNull();
             }
 
             void MaterialPropertyInspector::AddUvNamesGroup()
@@ -400,7 +407,8 @@ namespace AZ
                     m_internalEditNotification = false;
                 }
 
-                m_updatePreview = true;
+                // m_updatePreview should be set to true here for continuous preview updates as slider/color properties change but needs
+                // throttling
             }
 
             void MaterialPropertyInspector::RunEditorMaterialFunctors()
@@ -779,5 +787,3 @@ namespace AZ
         } // namespace EditorMaterialComponentInspector
     } // namespace Render
 } // namespace AZ
-
-//#include <AtomLyIntegration/CommonFeatures/moc_EditorMaterialComponentInspector.cpp>
