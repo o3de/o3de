@@ -54,7 +54,7 @@ namespace AZ
                 AzFramework::AssetCatalogEventBus::Handler::BusDisconnect();
             }
 
-            void MaterialThumbnail::ThumbnailRendered(QPixmap& thumbnailImage)
+            void MaterialThumbnail::ThumbnailRendered(const QPixmap& thumbnailImage)
             {
                 m_pixmap = thumbnailImage;
                 m_renderWait.release();
