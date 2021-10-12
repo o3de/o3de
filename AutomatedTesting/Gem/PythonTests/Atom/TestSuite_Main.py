@@ -25,6 +25,7 @@ class TestAtomEditorComponentsMain(object):
 
     @pytest.mark.test_case_id("C32078118")  # Decal
     @pytest.mark.test_case_id("C32078119")  # DepthOfField
+    @pytest.mark.test_case_id("C32078120")  # Directional Light
     @pytest.mark.test_case_id("C32078121")  # Exposure Control
     @pytest.mark.test_case_id("C32078115")  # Global Skylight (IBL)
     @pytest.mark.test_case_id("C32078125")  # Physical Sky
@@ -68,6 +69,18 @@ class TestAtomEditorComponentsMain(object):
             "DepthOfField_test: Entity deleted: True",
             "DepthOfField_test: UNDO entity deletion works: True",
             "DepthOfField_test: REDO entity deletion works: True",
+            # Directional Light Component
+            "Directional Light Entity successfully created",
+            "Directional Light_test: Component added to the entity: True",
+            "Directional Light_test: Component removed after UNDO: True",
+            "Directional Light_test: Component added after REDO: True",
+            "Directional Light_test: Entered game mode: True",
+            "Directional Light_test: Exit game mode: True",
+            "Directional Light_test: Entity is hidden: True",
+            "Directional Light_test: Entity is shown: True",
+            "Directional Light_test: Entity deleted: True",
+            "Directional Light_test: UNDO entity deletion works: True",
+            "Directional Light_test: REDO entity deletion works: True",
             # Exposure Control Component
             "Exposure Control Entity successfully created",
             "Exposure Control_test: Component added to the entity: True",
