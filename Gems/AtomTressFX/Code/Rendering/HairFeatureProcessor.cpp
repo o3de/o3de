@@ -135,6 +135,11 @@ namespace AZ
 
             void HairFeatureProcessor::EnablePasses(bool enable)
             {
+                if (!m_initialized)
+                {
+                    return;
+                }
+
                 for (auto& [passName, pass] : m_computePasses)
                 {
                     pass->SetEnabled(enable);
@@ -201,7 +206,6 @@ namespace AZ
             void HairFeatureProcessor::Simulate(const FeatureProcessor::SimulatePacket& packet)
             {
                 AZ_PROFILE_FUNCTION(AzRender);
-                AZ_ATOM_PROFILE_FUNCTION("Hair", "HairFeatureProcessor: Simulate");
                 AZ_UNUSED(packet);
 
                 if (m_hairRenderObjects.empty())
@@ -222,27 +226,34 @@ namespace AZ
 
                 // Prepare materials array for the per pass srg
                 std::vector<const AMD::TressFXRenderParams*> hairObjectsRenderMaterials;
-                uint32_t obj = 0;
-                for (auto objIter = m_hairRenderObjects.begin(); objIter != m_hairRenderObjects.end(); ++objIter, ++obj)
+                uint32_t objectIndex = 0;
+                for (auto& renderObject : m_hairRenderObjects)
                 {
-                    HairRenderObject* renderObject = objIter->get();
                     if (!renderObject->IsEnabled())
                     {
                         continue;
                     }
-                    renderObject->Update();
+
+                    renderObject->SetRenderIndex(objectIndex);
 
                     // [To Do] Hair - update the following parameters for dynamic LOD control
                     // should change or when parameters are being changed on the editor side.
 //                         float Distance = sqrtf( m_activeScene.scene->GetCameraPos().x * m_activeScene.scene->GetCameraPos().x +
 //                                                  m_activeScene.scene->GetCameraPos().y * m_activeScene.scene->GetCameraPos().y +
 //                                                  m_activeScene.scene->GetCameraPos().z * m_activeScene.scene->GetCameraPos().z);
-//                    objIter->get()->UpdateRenderingParameters(
-//                              renderingSettings, m_nScreenWidth * m_nScreenHeight * AVE_FRAGS_PER_PIXEL, m_deltaTime, Distance);
+                    const float distanceFromCamera = 1.0f;      // fixed distance until LOD mechanism is worked on
+                    const float updateShadows = false;          // same here - currently cheap self shadow approx
+                    renderObject->UpdateRenderingParameters( nullptr, RESERVED_PIXELS_FOR_OIT, distanceFromCamera, updateShadows);
 
-                    // this will be used for the constant buffer
+                    // this will be used in the constant buffer to set the material array used by the resolve pass
                     hairObjectsRenderMaterials.push_back(renderObject->GetHairRenderParams());
+
+                    // The data update for the GPU bind - this should be the very last thing done after the
+                    // data has been read and / or altered on the CPU side.
+                    renderObject->Update();
+                    ++objectIndex;
                 }
+
                 FillHairMaterialsArray(hairObjectsRenderMaterials);
             }
 
@@ -250,7 +261,6 @@ namespace AZ
             void HairFeatureProcessor::Render([[maybe_unused]] const FeatureProcessor::RenderPacket& packet)
             {
                 AZ_PROFILE_FUNCTION(AzRender);
-                AZ_ATOM_PROFILE_FUNCTION("Hair", "HairFeatureProcessor: Render");
 
                 if (!m_initialized || !m_addDispatchEnabled)
                 {   // Skip adding dispatches / Draw packets for this frame until initialized and the shaders are ready
@@ -341,13 +351,13 @@ namespace AZ
                 resultSuccess &= InitPPLLFillPass();
                 resultSuccess &= InitPPLLResolvePass();
 
+                m_initialized = resultSuccess;
+
                 // Don't enable passes if no hair object was added yet (depending on activation order)
-                if (m_hairRenderObjects.empty())
+                if (m_initialized && m_hairRenderObjects.empty())
                 {
                     EnablePasses(false);
                 }
-
-                m_initialized = resultSuccess;
 
                 // this might not be an error - if the pass system is still empty / minimal
                 //  and these passes are not part of the minimal pipeline, they will not
@@ -529,4 +539,3 @@ namespace AZ
         } // namespace Hair
     } // namespace Render
 } // namespace AZ
-

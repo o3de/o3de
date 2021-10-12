@@ -173,6 +173,7 @@ namespace AZ
 
             if (assetTracker)
             {
+                assetTracker->FixUpAsset(*instance);
                 assetTracker->AddAsset(*instance);
             }
 
@@ -185,7 +186,20 @@ namespace AZ
             return context.Report(result, message);
         }
 
-        void SerializedAssetTracker::AddAsset(Asset<AssetData>& asset)
+        void SerializedAssetTracker::SetAssetFixUp(AssetFixUp assetFixUpCallback)
+        {
+            m_assetFixUpCallback = AZStd::move(assetFixUpCallback);
+        }
+
+        void SerializedAssetTracker::FixUpAsset(Asset<AssetData>& asset)
+        {
+            if (m_assetFixUpCallback)
+            {
+                m_assetFixUpCallback(asset);
+            }
+        }
+
+        void SerializedAssetTracker::AddAsset(Asset<AssetData> asset)
         {
             m_serializedAssets.emplace_back(asset);
         }
@@ -199,5 +213,6 @@ namespace AZ
         {
             return m_serializedAssets;
         }
+
     } // namespace Data
 } // namespace AZ

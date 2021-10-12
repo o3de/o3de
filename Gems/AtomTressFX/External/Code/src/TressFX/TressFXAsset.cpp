@@ -776,9 +776,11 @@ namespace AMD
                 EI_Read((char*)&skinData.weight[j], sizeof(AMD::real32), ioObject);
             }
 
+#if defined(AZ_ENABLE_TRACING)
             float weightSum = skinData.weight[0] + skinData.weight[1] + skinData.weight[2] + skinData.weight[3];
-
             AZ_Assert(weightSum > 0.0f, "Weight sum should be greater than 0");
+#endif // AZ_ENABLE_TRACING
+
             assert(skinData.weight[0] != 0.0f);
 
             // If bone index is -1, then it means that there is no bone associated to this. In this case we simply replace it with zero.
@@ -854,9 +856,11 @@ namespace AMD
                 stream->Read(sizeof(AMD::real32), &skinData.weight[j]);
             }
 
+#if defined(AZ_ENABLE_TRACING)
             float weightSum = skinData.weight[0] + skinData.weight[1] + skinData.weight[2] + skinData.weight[3];
-
             AZ_Assert(weightSum > 0.0f, "Weight sum should be greater than 0");
+#endif // AZ_ENABLE_TRACING
+
             assert(skinData.weight[0] != 0.0f);
 
             // If bone index is -1, then it means that there is no bone associated to this. In this case we simply replace it with zero.

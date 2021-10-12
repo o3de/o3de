@@ -28,8 +28,11 @@ namespace AzFramework
         //! @note This is used to drive event driven updates to the visibility system.
         virtual void RefreshEntityLocalBoundsUnion(AZ::EntityId entityId) = 0;
 
-        //! Returns the cached union of all component Aabbs.
+        //! Returns the cached union of all component Aabbs in local entity space.
         virtual AZ::Aabb GetEntityLocalBoundsUnion(AZ::EntityId entityId) const = 0;
+
+        //! Returns the cached union of all component Aabbs in world space.
+        virtual AZ::Aabb GetEntityWorldBoundsUnion(AZ::EntityId entityId) const = 0;
 
         //! Writes the current changes made to all entities (transforms and bounds) to the visibility system.
         //! @note During normal operation this is called every frame in OnTick but can

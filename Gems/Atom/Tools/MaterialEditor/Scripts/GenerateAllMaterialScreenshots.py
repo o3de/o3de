@@ -16,10 +16,10 @@ import sys
 import os.path
 import filecmp
 
-g_devroot = azlmbr.paths.devroot
-sys.path.append(os.path.join(g_devroot, 'Tests', 'Atom', 'Automated'))
+g_engroot = azlmbr.paths.engroot
+sys.path.append(os.path.join(g_engroot, 'Tests', 'Atom', 'Automated'))
 
-g_materialTestFolder = os.path.join(g_devroot,'Gems','Atom','TestData','TestData','Materials','StandardPbrTestCases')
+g_materialTestFolder = os.path.join(g_engroot,'Gems','Atom','TestData','TestData','Materials','StandardPbrTestCases')
 
 # Change this to True to replace the expected screenshot images
 g_replaceExpectedScreenshots = False

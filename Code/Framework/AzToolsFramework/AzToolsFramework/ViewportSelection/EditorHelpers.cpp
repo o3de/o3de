@@ -13,8 +13,9 @@
 #include <AzFramework/Viewport/CameraState.h>
 #include <AzFramework/Viewport/ViewportScreen.h>
 #include <AzFramework/Visibility/BoundsBus.h>
-#include <AzToolsFramework/FocusMode/FocusModeInterface.h>
 #include <AzToolsFramework/API/EditorViewportIconDisplayInterface.h>
+#include <AzToolsFramework/ContainerEntity/ContainerEntityInterface.h>
+#include <AzToolsFramework/FocusMode/FocusModeInterface.h>
 #include <AzToolsFramework/ToolsComponents/EditorEntityIconComponentBus.h>
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
 #include <AzToolsFramework/Viewport/ViewportTypes.h>
@@ -186,9 +187,16 @@ namespace AzToolsFramework
         }
 
         // Verify if the entity Id corresponds to an entity that is focused; if not, halt selection.
-        if (!m_focusModeInterface->IsInFocusSubTree(entityIdUnderCursor))
+        if (!IsSelectableAccordingToFocusMode(entityIdUnderCursor))
         {
             return AZ::EntityId();
+        }
+
+        // Container Entity support - if the entity that is being selected is part of a closed container,
+        // change the selection to the container instead.
+        if (ContainerEntityInterface* containerEntityInterface = AZ::Interface<ContainerEntityInterface>::Get())
+        {
+            return containerEntityInterface->FindHighestSelectableEntity(entityIdUnderCursor);
         }
 
         return entityIdUnderCursor;
@@ -208,7 +216,7 @@ namespace AzToolsFramework
             {
                 const AZ::EntityId entityId = m_entityDataCache->GetVisibleEntityId(entityCacheIndex);
 
-                if (!m_entityDataCache->IsVisibleEntityVisible(entityCacheIndex))
+                if (!m_entityDataCache->IsVisibleEntityVisible(entityCacheIndex) || !IsSelectableInViewport(entityId))
                 {
                     continue;
                 }
@@ -253,5 +261,25 @@ namespace AzToolsFramework
                                                              AZ::Vector2{ iconSize, iconSize } });
             }
         }
+    }
+
+    bool EditorHelpers::IsSelectableInViewport(AZ::EntityId entityId)
+    {
+        return IsSelectableAccordingToFocusMode(entityId) && IsSelectableAccordingToContainerEntities(entityId);
+    }
+
+    bool EditorHelpers::IsSelectableAccordingToFocusMode(AZ::EntityId entityId)
+    {
+        return m_focusModeInterface->IsInFocusSubTree(entityId);
+    }
+
+    bool EditorHelpers::IsSelectableAccordingToContainerEntities(AZ::EntityId entityId)
+    {
+        if (ContainerEntityInterface* containerEntityInterface = AZ::Interface<ContainerEntityInterface>::Get())
+        {
+            return !containerEntityInterface->IsUnderClosedContainerEntity(entityId);
+        }
+
+        return true;
     }
 } // namespace AzToolsFramework

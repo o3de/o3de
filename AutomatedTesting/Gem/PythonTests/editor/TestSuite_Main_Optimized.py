@@ -73,3 +73,7 @@ class TestAutomationAutoTestMode(EditorTestSuite):
     @pytest.mark.skip(reason="Times out due to dialogs failing to dismiss: LYN-4208")
     class test_Menus_FileMenuOptions_Work(EditorSharedTest):
         from .EditorScripts import Menus_FileMenuOptions as test_module
+
+    
+    class test_BasicEditorWorkflows_ExistingLevel_EntityComponentCRUD(EditorSharedTest):
+        from .EditorScripts import BasicEditorWorkflows_ExistingLevel_EntityComponentCRUD as test_module

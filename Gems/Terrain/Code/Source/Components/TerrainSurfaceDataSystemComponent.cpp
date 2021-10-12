@@ -156,9 +156,19 @@ namespace Terrain
                     point.m_entityId = GetEntityId();
                     point.m_position = AZ::Vector3(inPosition.GetX(), inPosition.GetY(), terrainHeight);
                     point.m_normal = terrain->GetNormal(inPosition);
+
+                    // Always add a "terrain" or "terrainHole" tag.
                     const AZ::Crc32 terrainTag =
                         isHole ? SurfaceData::Constants::s_terrainHoleTagCrc : SurfaceData::Constants::s_terrainTagCrc;
                     SurfaceData::AddMaxValueForMasks(point.m_masks, terrainTag, 1.0f);
+
+                    // Add all of the surface tags that the terrain has at this point.
+                    AzFramework::SurfaceData::OrderedSurfaceTagWeightSet surfaceWeights;
+                    terrain->GetSurfaceWeights(point.m_position, surfaceWeights);
+                    for (auto& tag : surfaceWeights)
+                    {
+                        SurfaceData::AddMaxValueForMasks(point.m_masks, tag.m_surfaceType, tag.m_weight);
+                    }
                     surfacePointList.push_back(point);
                 }
                 // Only one handler should exist.

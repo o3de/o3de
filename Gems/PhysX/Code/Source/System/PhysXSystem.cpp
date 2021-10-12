@@ -511,10 +511,12 @@ namespace PhysX
 
         materialLibrary.BlockUntilLoadComplete();
 
-        AZ_Warning("PhysX", (materialLibrary.GetData() != nullptr),
+        const bool loadedSuccessfully = materialLibrary.GetData() != nullptr && !materialLibrary.IsError();
+
+        AZ_Warning("PhysX", loadedSuccessfully,
             "LoadDefaultMaterialLibrary: Default Material Library asset data is invalid.");
         
-        return materialLibrary.GetData() != nullptr && !materialLibrary.IsError();
+        return loadedSuccessfully;
     }
 
     //TEMP -- until these are fully moved over here
