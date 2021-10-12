@@ -10,7 +10,6 @@
 #include <AzCore/Component/ComponentApplication.h>
 #include <TerrainRenderer/Components/TerrainSurfaceMaterialsListComponent.h>
 #include <MockAxisAlignedBoxShapeComponent.h>
-#include <Terrain/MockTerrainAreaMaterialRequestBus.h>
 
 using ::testing::NiceMock;
 using ::testing::AtLeast;
@@ -66,14 +65,16 @@ namespace UnitTest
 
     TEST_F(TerrainSurfaceMaterialsListTest, SurfaceGradientListRequiresShapeToActivate)
     {
+        // Check that the component requires a shape service to activate: trying to Activate the entity will cause the test to fail, so
+        // use the EvaluateDependenciesGetDetails function to check the dependencies are met.
+
         auto entity = CreateEntity();
 
         AddSurfaceMaterialListComponent(entity.get());
 
-        entity->Activate();
-
-        EXPECT_EQ(entity->GetState(), AZ::Entity::State::Active);
-
+        const AZ::Entity::DependencySortOutcome sortOutcome = entity->EvaluateDependenciesGetDetails();
+        EXPECT_FALSE(sortOutcome.IsSuccess());
+        
         entity.reset();
     }
 
