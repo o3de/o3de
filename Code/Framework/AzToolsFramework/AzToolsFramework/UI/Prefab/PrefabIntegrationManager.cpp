@@ -55,7 +55,6 @@
 #include <QScrollArea>
 #include <QVBoxLayout>
 #include <QWidget>
-#include <QWindow>
 
 
 namespace AzToolsFramework
