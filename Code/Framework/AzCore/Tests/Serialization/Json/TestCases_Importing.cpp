@@ -22,12 +22,8 @@ namespace JsonSerializationTests
 
 
         AZ::JsonSerializationResult::ResultCode ResolveImport(rapidjson::Value& importedValueOut,
-            const rapidjson::Value& importDirective, const AZ::IO::FixedMaxPath& importedFilePath,
-            rapidjson::Document::AllocatorType& allocator) override;
-        
-        AZ::JsonSerializationResult::ResultCode RestoreImport(rapidjson::Value& importDirectiveOut,
-            const rapidjson::Value& currentValue, const rapidjson::Value& importedValue,
-            rapidjson::Document::AllocatorType& allocator, const AZStd::string& importFilename) override;
+            rapidjson::Value& patch, const rapidjson::Value& importDirective,
+            const AZ::IO::FixedMaxPath& importedFilePath, rapidjson::Document::AllocatorType& allocator) override;
         
         JsonImporterCustom(JsonImportingTests* tests)
         {
@@ -169,15 +165,14 @@ namespace JsonSerializationTests
     };
 
     AZ::JsonSerializationResult::ResultCode JsonImporterCustom::ResolveImport(rapidjson::Value& importedValueOut,
-            const rapidjson::Value& importDirective, const AZ::IO::FixedMaxPath& importedFilePath,
-            rapidjson::Document::AllocatorType& allocator)
+        rapidjson::Value& patch, const rapidjson::Value& importDirective,
+        const AZ::IO::FixedMaxPath& importedFilePath, rapidjson::Document::AllocatorType& allocator)
     {
         AZ::JsonSerializationResult::ResultCode resultCode(AZ::JsonSerializationResult::Tasks::Import);
         
         rapidjson::Document importedDoc;
         testClass->GetTestDocument(importedFilePath.String(), importedDoc, allocator);
 
-        rapidjson::Value patch;
         if (importDirective.IsObject())
         {
             auto patchField = importDirective.FindMember("patch");
@@ -187,28 +182,7 @@ namespace JsonSerializationTests
             }
         }
 
-        if ((patch.IsObject() && patch.MemberCount() > 0) || (patch.IsArray() && !patch.Empty()))
-        {
-            AZ::JsonSerialization::ApplyPatch(importedDoc, allocator, patch, AZ::JsonMergeApproach::JsonMergePatch);
-        }
         importedValueOut.CopyFrom(importedDoc, allocator);
-
-        return resultCode;
-    }
-
-    AZ::JsonSerializationResult::ResultCode JsonImporterCustom::RestoreImport(rapidjson::Value& importDirectiveOut,
-            const rapidjson::Value& currentValue, const rapidjson::Value& importedValue,
-            rapidjson::Document::AllocatorType& allocator, const AZStd::string& importFilename)
-    {
-        AZ::JsonSerializationResult::ResultCode resultCode(AZ::JsonSerializationResult::Tasks::Import);
-
-        rapidjson::Value patch;
-        AZ::JsonSerialization::CreatePatch(patch, allocator, importedValue, currentValue, AZ::JsonMergeApproach::JsonMergePatch);
-        if ((patch.IsObject() && patch.MemberCount() > 0) || (patch.IsArray() && !patch.Empty()))
-        {
-            importDirectiveOut.AddMember(rapidjson::StringRef("filename"), rapidjson::StringRef(importFilename.c_str()), allocator);
-            importDirectiveOut.AddMember(rapidjson::StringRef("patch"), patch, allocator);
-        }
 
         return resultCode;
     }
@@ -333,6 +307,37 @@ namespace JsonSerializationTests
                         "field_1" : "value_1",
                         "field_2" : "value_2",
                         "field_3" : "value_3"
+                    }
+                }
+            }
+        )";
+
+        TestImportLoadStore(inputFile, expectedOutput);
+    }
+
+    TEST_F(JsonImportingTests, NestedImportPatchTest)
+    {
+        const char* inputFile = R"(
+            {
+                "name" : "nested_import",
+                "object": {
+                    "$import" : { 
+                        "filename" : "nested_import.json",
+                        "patch" : { "obj" : { "field_3" : "patched_value" } }
+                    }
+                }
+            }
+        )";
+
+        const char* expectedOutput = R"(
+            {
+                "name" : "nested_import",
+                "object": {
+                    "desc" : "Nested Import",
+                    "obj" : {
+                        "field_1" : "value_1",
+                        "field_2" : "value_2",
+                        "field_3" : "patched_value"
                     }
                 }
             }

@@ -706,7 +706,7 @@ namespace AZ
                             rapidjson::Value(rapidjson::kNullType), field.value, element, settings);
                     }
 
-                    if (result.GetOutcome() == Outcomes::Success)
+                    if (result.GetOutcome() == Outcomes::Success || result.GetOutcome() == Outcomes::PartialDefaults)
                     {
                         rapidjson::Value name;
                         name.CopyFrom(field.name, allocator, true);
@@ -755,7 +755,7 @@ namespace AZ
                     rapidjson::Value value;
                     ResultCode result = CreateMergePatchInternal(value, allocator,
                         rapidjson::Value(rapidjson::kNullType), field.value, element, settings);
-                    if (result.GetOutcome() == Outcomes::Success)
+                    if (result.GetOutcome() == Outcomes::Success || result.GetOutcome() == Outcomes::PartialDefaults)
                     {
                         rapidjson::Value name;
                         name.CopyFrom(field.name, allocator, true);
@@ -774,7 +774,6 @@ namespace AZ
             }
 
             patch = AZStd::move(resultValue);
-            resultCode.Combine(ResultCode(Tasks::CreatePatch, Outcomes::Success));
             return resultCode;
         }
         else

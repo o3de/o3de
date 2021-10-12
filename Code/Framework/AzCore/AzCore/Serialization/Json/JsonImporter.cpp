@@ -74,7 +74,8 @@ namespace AZ
                     }
                     importAbsPath.Append(importName);
 
-                    ResultCode resolveResult = settings.m_importer->ResolveImport(jsonDoc, importDirective, importAbsPath, allocator);
+                    rapidjson::Value patch;
+                    ResultCode resolveResult = settings.m_importer->ResolveImport(jsonDoc, patch, importDirective, importAbsPath, allocator);
                     if (resolveResult.GetOutcome() == Outcomes::Catastrophic)
                     {
                         return resolveResult;
@@ -95,6 +96,7 @@ namespace AZ
                     {
                         return result;
                     }
+                    settings.m_importer->ApplyPatch(jsonDoc, patch, allocator);
                 }
                 else if (field.value.IsObject() || field.value.IsArray())
                 {
@@ -169,8 +171,8 @@ namespace AZ
     }
 
     JsonSerializationResult::ResultCode BaseJsonImporter::ResolveImport(rapidjson::Value& importedValueOut,
-        const rapidjson::Value& importDirective, const AZ::IO::FixedMaxPath& importedFilePath,
-        rapidjson::Document::AllocatorType& allocator)
+        rapidjson::Value& patch, const rapidjson::Value& importDirective,
+        const AZ::IO::FixedMaxPath& importedFilePath, rapidjson::Document::AllocatorType& allocator)
     {
         using namespace JsonSerializationResult;
 
@@ -179,7 +181,6 @@ namespace AZ
         {
             rapidjson::Value& importedDoc = importedObject.GetValue();
 
-            rapidjson::Value patch;
             if (importDirective.IsObject())
             {
                 auto patchField = importDirective.FindMember("patch");
@@ -189,10 +190,6 @@ namespace AZ
                 }
             }
 
-            if ((patch.IsObject() && patch.MemberCount() > 0) || (patch.IsArray() && !patch.Empty()))
-            {
-                AZ::JsonSerialization::ApplyPatch(importedDoc, allocator, patch, JsonMergeApproach::JsonMergePatch);
-            }
             importedValueOut.CopyFrom(importedDoc, allocator);
         }
         else
@@ -215,6 +212,19 @@ namespace AZ
         {
             importDirectiveOut.AddMember(rapidjson::StringRef("filename"), rapidjson::StringRef(importFilename.c_str()), allocator);
             importDirectiveOut.AddMember(rapidjson::StringRef("patch"), patch, allocator);
+        }
+
+        return ResultCode(Tasks::Import, Outcomes::Success);
+    }
+
+    JsonSerializationResult::ResultCode BaseJsonImporter::ApplyPatch(rapidjson::Value& target,
+        const rapidjson::Value& patch, rapidjson::Document::AllocatorType& allocator)
+    {
+        using namespace JsonSerializationResult;
+
+        if ((patch.IsObject() && patch.MemberCount() > 0) || (patch.IsArray() && !patch.Empty()))
+        {
+            return AZ::JsonSerialization::ApplyPatch(target, allocator, patch, JsonMergeApproach::JsonMergePatch);
         }
 
         return ResultCode(Tasks::Import, Outcomes::Success);
