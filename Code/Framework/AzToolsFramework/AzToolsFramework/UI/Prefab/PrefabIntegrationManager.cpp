@@ -310,7 +310,7 @@ namespace AzToolsFramework
 
         void PrefabIntegrationManager::OnEscape()
         {
-            s_prefabFocusInterface->FocusOnOwningPrefab(AZ::EntityId());
+            s_prefabFocusPublicInterface->FocusOnOwningPrefab(AZ::EntityId());
         }
 
         void PrefabIntegrationManager::HandleSourceFileType(AZStd::string_view sourceFilePath, AZ::EntityId parentId, AZ::Vector3 position) const
