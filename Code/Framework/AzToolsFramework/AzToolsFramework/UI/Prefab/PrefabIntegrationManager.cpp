@@ -1394,30 +1394,32 @@ namespace AzToolsFramework
 
         AZStd::unique_ptr<AzQtComponents::Card> PrefabIntegrationManager::ConstructUnsavedPrefabsCard(TemplateId templateId)
         {
-            #if defined(Q_OS_LINUX)
-                // On Linux, we cannot use the AzToolsFramework::GetActiveWindow() helper function because it falls  
-                // back to the main window object, which causes falls back to trying to get the main window through
-                // the 'AzToolsFramework::EditorRequests::GetMainWindow' bus call. (On Linux, there is no active window
-                // because at this point, there are no widgets that have keyboard focus). 
-                // The main window widget causes a crash on Linux when applied to flow layout that is constructed
-                // for the custom Card widget. As a work around to prevent this crash, we will use the first available
-                // visible widget that has no parent as the parent for the flow layout.
-                QWidget* prefabCardParent = QApplication::activeWindow();
-                if (!prefabCardParent)
+#if defined(Q_OS_LINUX)
+            // TODO: Determine the proper fix for a Null Pointer Exception caused by using the main window widget
+            //       for FlowLayoutParent on Linux
+            // 
+            // On Linux, the AzToolsFramework::GetActiveWindow() will fall back to the main window
+            // because QApplication::activeWindow() is null. (There are no active windows that has keyboard
+            // focus). When using the main window as the parent for the FlowLayout below, the Prefabs Card
+            // will encounter a NPE, thus causing the editor to shut down and therefore lose any unsaved data.
+            // To temporarily prevent this, we use the first visible widget that we find that doesnt have a parent
+            // as the parent just for the FlowLayout, which prevents this problem.
+            QWidget* prefabCardParent = QApplication::activeWindow();
+            if (prefabCardParent == nullptr)
+            {
+                QWidgetList allWidgets = QApplication::allWidgets();
+                for (QWidget* widget : allWidgets)
                 {
-                    QWidgetList allWidgets = QApplication::allWidgets();
-                    for (QWidget* widget : allWidgets)
+                    if (widget->isVisible() && widget->parentWidget() == nullptr)
                     {
-                        if (widget->isVisible() && widget->parentWidget() == nullptr)
-                        {
-                            prefabCardParent = widget;
-                            break;
-                        }
+                        prefabCardParent = widget;
+                        break;
                     }
                 }
-            #else
-                QWidget* prefabCardParent = AzToolsFramework::GetActiveWindow();
-            #endif
+            }
+#else
+            QWidget* prefabCardParent = AzToolsFramework::GetActiveWindow();
+#endif // defined(Q_OS_LINUX)
 
             FlowLayout* unsavedPrefabsLayout = new FlowLayout(prefabCardParent);
 
