@@ -16,6 +16,7 @@ namespace AzToolsFramework::Prefab
     class PrefabFocusInterface;
     class PrefabFocusPublicInterface;
 
+    //! Undo node for prefab focus change operations.
     class PrefabFocusUndo
         : public UndoSystem::URSequencePoint
     {
@@ -34,7 +35,5 @@ namespace AzToolsFramework::Prefab
 
         AZ::EntityId m_beforeEntityId;
         AZ::EntityId m_afterEntityId;
-
-        bool m_changed;
     };
 } // namespace AzToolsFramework::Prefab

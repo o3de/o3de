@@ -17,7 +17,6 @@ namespace AzToolsFramework::Prefab
 {
     PrefabFocusUndo::PrefabFocusUndo(const AZStd::string& undoOperationName)
         : UndoSystem::URSequencePoint(undoOperationName)
-        , m_changed(true)
     {
         m_prefabFocusInterface = AZ::Interface<PrefabFocusInterface>::Get();
         AZ_Assert(m_prefabFocusInterface, "PrefabFocusUndo - Failed to grab prefab focus interface");
@@ -28,7 +27,7 @@ namespace AzToolsFramework::Prefab
 
     bool PrefabFocusUndo::Changed() const
     {
-        return m_changed;
+        return true;
     }
 
     void PrefabFocusUndo::Capture(AZ::EntityId entityId)
