@@ -8,6 +8,8 @@
 
 #include <GraphCanvas/Styling/StyleHelper.h>
 
+#include <QDebug>
+
 namespace GraphCanvas
 {
     namespace Styling
