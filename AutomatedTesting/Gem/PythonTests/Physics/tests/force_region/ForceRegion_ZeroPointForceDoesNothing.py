@@ -77,7 +77,7 @@ def ForceRegion_ZeroPointForceDoesNothing():
 
     helper.init_idle()
 
-    TIMEOUT_SECONDS = 3.0
+    TIMEOUT_SECONDS = 5.0
     X_Y_Z_TOLERANCE = 1.5
     REGION_HEIGHT = 3.0
     TERRAIN_HEIGHT = 32.0

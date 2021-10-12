@@ -217,7 +217,7 @@ TEST_F(AWSResourceMappingManagerTest, ActivateManager_ParseValidConfigFile_Confi
     CreateTestConfigFile(TEST_VALID_RESOURCE_MAPPING_CONFIG_FILE);
     m_resourceMappingManager->ActivateManager();
 
-    int testThreadNumber = 10;
+    constexpr int testThreadNumber = 10;
     AZStd::atomic<int> actualEbusCalls = 0;
     AZStd::vector<AZStd::thread> testThreadPool;
     for (int index = 0; index < testThreadNumber; index++)
@@ -226,7 +226,7 @@ TEST_F(AWSResourceMappingManagerTest, ActivateManager_ParseValidConfigFile_Confi
             AZStd::string actualAccountId;
             AWSResourceMappingRequestBus::BroadcastResult(actualAccountId, &AWSResourceMappingRequests::GetDefaultAccountId);
             EXPECT_FALSE(actualAccountId.empty());
-            actualEbusCalls++;
+            ++actualEbusCalls;
         }));
     }
 

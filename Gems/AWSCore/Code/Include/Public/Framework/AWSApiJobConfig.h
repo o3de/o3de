@@ -96,9 +96,6 @@ namespace AWSCore
 
         /// Initialize an AwsApiClientJobConfig object.
         ///
-        /// \param DefaultConfigType - the type of the config object from which
-        /// default values will be taken.
-        ///
         /// \param defaultConfig - the config object that provides values when
         /// no override has been set in this object. The default is nullptr, which
         /// will cause a default value to be used.
@@ -146,7 +143,7 @@ namespace AWSCore
 #endif
         Override<Aws::String> caFile;
 
-        /// Applys settings changes made after first use.
+        /// Applies settings changes made after first use.
         virtual void ApplySettings();
 
         //////////////////////////////////////////////////////////////////////////
@@ -217,7 +214,7 @@ namespace AWSCore
         : protected AWSCoreNotificationsBus::Handler
     {
     public:
-        ~AwsApiJobConfigHolder()
+        ~AwsApiJobConfigHolder() override
         {
             AWSCoreNotificationsBus::Handler::BusDisconnect();
         }

@@ -185,7 +185,7 @@ PbrLightingOutput ForwardPassPS_Common(VSOutput IN, bool isFrontFace, out float 
     float2 normalUv = IN.m_uv[MaterialSrg::m_normalMapUvIndex];
     float3x3 uvMatrix = MaterialSrg::m_normalMapUvIndex == 0 ? MaterialSrg::m_uvMatrix : CreateIdentity3x3(); // By design, only UV0 is allowed to apply transforms.
     float detailLayerNormalFactor = MaterialSrg::m_detail_normal_factor * detailLayerBlendFactor;
-
+    surface.vertexNormal = normalize(IN.m_normal);
     surface.normal = GetDetailedNormalInputWS(
         isFrontFace, IN.m_normal,
         tangents[MaterialSrg::m_normalMapUvIndex],      bitangents[MaterialSrg::m_normalMapUvIndex],      MaterialSrg::m_normalMap,             MaterialSrg::m_sampler, normalUv, MaterialSrg::m_normalFactor,  MaterialSrg::m_flipNormalX,         MaterialSrg::m_flipNormalY,         uvMatrix,                      o_normal_useTexture,

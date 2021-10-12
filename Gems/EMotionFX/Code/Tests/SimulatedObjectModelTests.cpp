@@ -22,17 +22,21 @@
 #include <Tests/UI/UIFixture.h>
 #include <Tests/TestAssetCode/SimpleActors.h>
 #include <Tests/TestAssetCode/ActorFactory.h>
+#include <Tests/TestAssetCode/TestActorAssets.h>
 
 namespace EMotionFX
 {
     using SimulatedObjectModelTestsFixture = UIFixture;
     TEST_F(SimulatedObjectModelTestsFixture, CanUndoAddSimulatedObjectAndSimulatedJointWithChildren)
     {
-        AutoRegisteredActor actor = ActorFactory::CreateAndInit<SimpleJointChainActor>(3, "simulatedObjectModelTestActor");
+        AZ::Data::AssetId actorAssetId("{5060227D-B6F4-422E-BF82-41AAC5F228A5}");
+        AZ::Data::Asset<Integration::ActorAsset> actorAsset =
+            TestActorAssets::CreateActorAssetAndRegister<SimpleJointChainActor>(actorAssetId, 3, "simulatedObjectModelTestActor");
+        const Actor* actor = actorAsset->GetActor();
 
         EMotionFX::SimulatedObjectWidget* simulatedObjectWidget = static_cast<EMotionFX::SimulatedObjectWidget*>(EMStudio::GetPluginManager()->FindActivePlugin(EMotionFX::SimulatedObjectWidget::CLASS_ID));
         ASSERT_TRUE(simulatedObjectWidget) << "Simulated Object plugin not loaded";
-        simulatedObjectWidget->ActorSelectionChanged(actor.get());
+        simulatedObjectWidget->ActorSelectionChanged(actorAsset->GetActor());
 
         SimulatedObjectModel* model = simulatedObjectWidget->GetSimulatedObjectModel();
 
