@@ -14,32 +14,23 @@ namespace AtomToolsFramework
     PreviewRendererCaptureState::PreviewRendererCaptureState(PreviewRenderer* renderer)
         : PreviewRendererState(renderer)
     {
-    }
-
-    void PreviewRendererCaptureState::Start()
-    {
-        m_ticksToCapture = 1;
         m_renderer->PoseContent();
         AZ::TickBus::Handler::BusConnect();
     }
 
-    void PreviewRendererCaptureState::Stop()
+    PreviewRendererCaptureState::~PreviewRendererCaptureState()
     {
-        m_renderer->EndCapture();
-        AZ::TickBus::Handler::BusDisconnect();
         AZ::Render::FrameCaptureNotificationBus::Handler::BusDisconnect();
+        AZ::TickBus::Handler::BusDisconnect();
+        m_renderer->EndCapture();
     }
 
     void PreviewRendererCaptureState::OnTick([[maybe_unused]] float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time)
     {
-        if (m_ticksToCapture-- <= 0)
+        if ((m_ticksToCapture-- <= 0) && m_renderer->StartCapture())
         {
-            // Reset the capture flag if the capture request was successful. Otherwise try capture it again next tick.
-            if (m_renderer->StartCapture())
-            {
-                AZ::Render::FrameCaptureNotificationBus::Handler::BusConnect();
-                AZ::TickBus::Handler::BusDisconnect();
-            }
+            AZ::Render::FrameCaptureNotificationBus::Handler::BusConnect();
+            AZ::TickBus::Handler::BusDisconnect();
         }
     }
 

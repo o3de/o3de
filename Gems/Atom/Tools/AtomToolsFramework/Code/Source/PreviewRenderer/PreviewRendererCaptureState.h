@@ -22,9 +22,7 @@ namespace AtomToolsFramework
     {
     public:
         PreviewRendererCaptureState(PreviewRenderer* renderer);
-
-        void Start() override;
-        void Stop() override;
+        ~PreviewRendererCaptureState();
 
     private:
         //! AZ::TickBus::Handler interface overrides...
@@ -34,6 +32,6 @@ namespace AtomToolsFramework
         void OnCaptureFinished(AZ::Render::FrameCaptureResult result, const AZStd::string& info) override;
 
         //! This is necessary to suspend capture to allow a frame for Material and Mesh components to assign materials
-        int m_ticksToCapture = 0;
+        int m_ticksToCapture = 1;
     };
 } // namespace AtomToolsFramework

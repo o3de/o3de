@@ -14,30 +14,23 @@ namespace AtomToolsFramework
     PreviewRendererLoadState::PreviewRendererLoadState(PreviewRenderer* renderer)
         : PreviewRendererState(renderer)
     {
-    }
-
-    void PreviewRendererLoadState::Start()
-    {
         m_renderer->LoadContent();
-        m_timeRemainingS = TimeOutS;
         AZ::TickBus::Handler::BusConnect();
     }
 
-    void PreviewRendererLoadState::Stop()
+    PreviewRendererLoadState::~PreviewRendererLoadState()
     {
         AZ::TickBus::Handler::BusDisconnect();
     }
 
     void PreviewRendererLoadState::OnTick(float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time)
     {
-        m_timeRemainingS -= deltaTime;
-        if (m_timeRemainingS > 0.0f)
-        {
-            m_renderer->UpdateLoadContent();
-        }
-        else
+        if ((m_timeRemainingS += deltaTime) > TimeOutS)
         {
             m_renderer->CancelLoadContent();
+            return;
         }
+
+        m_renderer->UpdateLoadContent();
     }
 } // namespace AtomToolsFramework

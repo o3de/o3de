@@ -14,14 +14,10 @@ namespace AtomToolsFramework
     PreviewRendererIdleState::PreviewRendererIdleState(PreviewRenderer* renderer)
         : PreviewRendererState(renderer)
     {
-    }
-
-    void PreviewRendererIdleState::Start()
-    {
         AZ::TickBus::Handler::BusConnect();
     }
 
-    void PreviewRendererIdleState::Stop()
+    PreviewRendererIdleState::~PreviewRendererIdleState()
     {
         AZ::TickBus::Handler::BusDisconnect();
     }

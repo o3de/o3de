@@ -47,17 +47,6 @@ namespace AtomToolsFramework
         AZ::RPI::ViewPtr GetView() const;
         AZ::Uuid GetEntityContextId() const;
 
-        enum class State : AZ::s8
-        {
-            None,
-            IdleState,
-            LoadState,
-            CaptureState
-        };
-
-        void SetState(State state);
-        State GetState() const;
-
         void ProcessCaptureRequests();
         void CancelCaptureRequest();
         void CompleteCaptureRequest();
@@ -91,7 +80,6 @@ namespace AtomToolsFramework
         AZStd::queue<CaptureRequest> m_captureRequestQueue;
         CaptureRequest m_currentCaptureRequest;
 
-        AZStd::unordered_map<State, AZStd::shared_ptr<PreviewRendererState>> m_states;
-        State m_currentState = PreviewRenderer::State::None;
+        AZStd::unique_ptr<PreviewRendererState> m_state;
     };
 } // namespace AtomToolsFramework

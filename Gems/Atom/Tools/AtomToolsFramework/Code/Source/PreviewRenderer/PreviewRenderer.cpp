@@ -79,17 +79,15 @@ namespace AtomToolsFramework
         m_view->SetViewToClipMatrix(viewToClipMatrix);
         m_renderPipeline->SetDefaultView(m_view);
 
-        m_states[PreviewRenderer::State::IdleState] = AZStd::make_shared<PreviewRendererIdleState>(this);
-        m_states[PreviewRenderer::State::LoadState] = AZStd::make_shared<PreviewRendererLoadState>(this);
-        m_states[PreviewRenderer::State::CaptureState] = AZStd::make_shared<PreviewRendererCaptureState>(this);
-        SetState(PreviewRenderer::State::IdleState);
+        m_state.reset(new PreviewRendererIdleState(this));
     }
 
     PreviewRenderer::~PreviewRenderer()
     {
         PreviewerFeatureProcessorProviderBus::Handler::BusDisconnect();
 
-        SetState(PreviewRenderer::State::None);
+        m_state.reset();
+
         m_currentCaptureRequest = {};
         m_captureRequestQueue = {};
 
@@ -120,28 +118,6 @@ namespace AtomToolsFramework
         return m_entityContext->GetContextId();
     }
 
-    void PreviewRenderer::SetState(State state)
-    {
-        auto stepItr = m_states.find(m_currentState);
-        if (stepItr != m_states.end())
-        {
-            stepItr->second->Stop();
-        }
-
-        m_currentState = state;
-
-        stepItr = m_states.find(m_currentState);
-        if (stepItr != m_states.end())
-        {
-            stepItr->second->Start();
-        }
-    }
-
-    PreviewRenderer::State PreviewRenderer::GetState() const
-    {
-        return m_currentState;
-    }
-
     void PreviewRenderer::ProcessCaptureRequests()
     {
         if (!m_captureRequestQueue.empty())
@@ -150,19 +126,22 @@ namespace AtomToolsFramework
             m_currentCaptureRequest = m_captureRequestQueue.front();
             m_captureRequestQueue.pop();
 
-            SetState(PreviewRenderer::State::LoadState);
+            m_state.reset();
+            m_state.reset(new PreviewRendererLoadState(this));
         }
     }
 
     void PreviewRenderer::CancelCaptureRequest()
     {
         m_currentCaptureRequest.m_captureFailedCallback();
-        SetState(PreviewRenderer::State::IdleState);
+        m_state.reset();
+        m_state.reset(new PreviewRendererIdleState(this));
     }
 
     void PreviewRenderer::CompleteCaptureRequest()
     {
-        SetState(PreviewRenderer::State::IdleState);
+        m_state.reset();
+        m_state.reset(new PreviewRendererIdleState(this));
     }
 
     void PreviewRenderer::LoadContent()
@@ -174,7 +153,8 @@ namespace AtomToolsFramework
     {
         if (m_currentCaptureRequest.m_content->IsReady())
         {
-            SetState(PreviewRenderer::State::CaptureState);
+            m_state.reset();
+            m_state.reset(new PreviewRendererCaptureState(this));
             return;
         }
 

@@ -20,9 +20,7 @@ namespace AtomToolsFramework
     {
     public:
         PreviewRendererIdleState(PreviewRenderer* renderer);
-
-        void Start() override;
-        void Stop() override;
+        ~PreviewRendererIdleState();
 
     private:
         //! AZ::TickBus::Handler interface overrides...

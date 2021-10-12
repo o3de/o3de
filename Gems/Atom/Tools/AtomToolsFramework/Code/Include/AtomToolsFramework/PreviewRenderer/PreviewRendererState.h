@@ -23,12 +23,6 @@ namespace AtomToolsFramework
 
         virtual ~PreviewRendererState() = default;
 
-        //! Start is called when state begins execution
-        virtual void Start() = 0;
-
-        //! Stop is called when state ends execution
-        virtual void Stop() = 0;
-
     protected:
         PreviewRenderer* m_renderer = {};
     };

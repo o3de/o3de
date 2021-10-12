@@ -20,15 +20,13 @@ namespace AtomToolsFramework
     {
     public:
         PreviewRendererLoadState(PreviewRenderer* renderer);
-
-        void Start() override;
-        void Stop() override;
+        ~PreviewRendererLoadState();
 
     private:
         //! AZ::TickBus::Handler interface overrides...
         void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
 
         static constexpr float TimeOutS = 5.0f;
-        float m_timeRemainingS = TimeOutS;
+        float m_timeRemainingS = 0.0f;
     };
 } // namespace AtomToolsFramework
