@@ -8,12 +8,18 @@
 
 #pragma once
 
+#if defined(IMGUI_ENABLED)
+
+#include <CpuProfiler.h>
+
 #include <AzCore/Component/TickBus.h>
 #include <AzCore/IO/Path/Path.h>
 #include <AzCore/Math/Random.h>
+#include <AzCore/std/containers/map.h>
+#include <AzCore/std/containers/set.h>
+#include <AzCore/std/containers/unordered_set.h>
 
-#include <Atom/RHI/CpuProfiler.h>
-
+#include <imgui/imgui.h>
 
 namespace Profiler
 {
@@ -35,7 +41,7 @@ namespace Profiler
         };
 
         // Update running statistics with new region data
-        void RecordRegion(const AZ::RHI::CachedTimeRegion& region, size_t threadId);
+        void RecordRegion(const CachedTimeRegion& region, size_t threadId);
 
         void ResetPerFrameStatistics();
 
@@ -47,7 +53,7 @@ namespace Profiler
 
         // --- Per frame statistics ---
 
-        u64 m_invocationsLastFrame = 0;
+        AZ::u64 m_invocationsLastFrame = 0;
 
         // NOTE: set over unordered_set so the threads can be shown in increasing order in tooltip.
         AZStd::set<size_t> m_executingThreads;
@@ -59,7 +65,7 @@ namespace Profiler
 
         // --- Aggregate statistics ---
 
-        u64 m_invocationsTotal = 0;
+        AZ::u64 m_invocationsTotal = 0;
 
         // Running average of Mean Time Per Call
         AZStd::sys_time_t m_runningAverageTicks = 0;
@@ -69,15 +75,15 @@ namespace Profiler
     //! Offers both a statistical view (with sorting and searching capability) and a visualizer
     //! similar to RAD and other profiling tools.
     class ImGuiCpuProfiler
-        : SystemTickBus::Handler
+        : public AZ::SystemTickBus::Handler
     {
         // Region Name -> statistical view row data
         using RegionRowMap = AZStd::map<AZStd::string, TableRow>;
         // Group Name -> RegionRowMap
         using GroupRegionMap = AZStd::map<AZStd::string, RegionRowMap>;
 
-        using TimeRegion = AZ::RHI::CachedTimeRegion;
-        using GroupRegionName = AZ::RHI::CachedTimeRegion::GroupRegionName;
+        using TimeRegion = CachedTimeRegion;
+        using GroupRegionName = CachedTimeRegion::GroupRegionName;
 
     public:
         struct CpuTimingEntry
@@ -129,13 +135,13 @@ namespace Profiler
         void CullFrameData();
 
         // Draws a single block onto the timeline into the specified row
-        void DrawBlock(const TimeRegion& block, u64 targetRow);
+        void DrawBlock(const TimeRegion& block, AZ::u64 targetRow);
 
         // Draw horizontal lines between threads in the timeline
-        void DrawThreadSeparator(u64 threadBoundary, u64 maxDepth);
+        void DrawThreadSeparator(AZ::u64 threadBoundary, AZ::u64 maxDepth);
 
         // Draw the "Thread XXXXX" label onto the viewport
-        void DrawThreadLabel(u64 baseRow, size_t threadId);
+        void DrawThreadLabel(AZ::u64 baseRow, size_t threadId);
 
         // Draw the vertical lines separating frames in the timeline
         void DrawFrameBoundaries();
@@ -156,14 +162,14 @@ namespace Profiler
         ImU32 GetBlockColor(const TimeRegion& block);
 
         // System tick bus overrides
-        virtual void OnSystemTick() override;
+        void OnSystemTick() override;
 
         //  --- Visualizer Members ---
 
         int m_framesToCollect = DefaultFramesToCollect;
 
         // Tally of the number of saved profiling events so far
-        u64 m_savedRegionCount = 0;
+        AZ::u64 m_savedRegionCount = 0;
 
         // Viewport tick bounds, these are used to convert tick space -> screen space and cull so we only draw onscreen objects
         AZStd::sys_time_t m_viewportStartTick;
@@ -175,7 +181,7 @@ namespace Profiler
         AZStd::unordered_map<size_t, AZStd::vector<TimeRegion>> m_savedData;
 
         // Region color cache
-        AZStd::unordered_map<GroupRegionName, ImVec4, RHI::CachedTimeRegion::GroupRegionName::Hash> m_regionColorMap;
+        AZStd::unordered_map<GroupRegionName, ImVec4, CachedTimeRegion::GroupRegionName::Hash> m_regionColorMap;
 
         // Tracks the frame boundaries
         AZStd::vector<AZStd::sys_time_t> m_frameEndTicks = { INT64_MIN };
@@ -213,7 +219,7 @@ namespace Profiler
         bool m_showFilePicker = false;
 
         // Cached file paths to previous traces on disk, sorted with the most recent trace at the front.
-        AZStd::vector<IO::Path> m_cachedCapturePaths;
+        AZStd::vector<AZ::IO::Path> m_cachedCapturePaths;
 
         // Index into the file picker, used to determine which file to load when "Load File" is pressed.
         int m_currentFileIndex = 0;
@@ -221,8 +227,8 @@ namespace Profiler
 
         // --- Loading capture state ---
         AZStd::unordered_set<AZStd::string> m_deserializedStringPool;
-        AZStd::unordered_set<RHI::CachedTimeRegion::GroupRegionName, RHI::CachedTimeRegion::GroupRegionName::Hash> m_deserializedGroupRegionNamePool;
+        AZStd::unordered_set<CachedTimeRegion::GroupRegionName, CachedTimeRegion::GroupRegionName::Hash> m_deserializedGroupRegionNamePool;
     };
 } // namespace Profiler
 
-#include "ImGuiCpuProfiler.inl"
+#endif // defined(IMGUI_ENABLED)

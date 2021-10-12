@@ -6,14 +6,13 @@
  *
  */
 
-#include <Atom/RHI/CpuProfilerImpl.h>
-
-#include <AzCore/Interface/Interface.h>
-#include <AzCore/std/smart_ptr/shared_ptr.h>
+#include <CpuProfilerImpl.h>
 
 #include <AzCore/Debug/Timer.h>
+#include <AzCore/Interface/Interface.h>
+#include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Statistics/StatisticalProfilerProxy.h>
-#include <Atom/RHI/RHIUtils.h>
+#include <AzCore/std/smart_ptr/shared_ptr.h>
 
 namespace Profiler
 {
@@ -23,7 +22,7 @@ namespace Profiler
 
     CpuProfiler* CpuProfiler::Get()
     {
-        return Interface<CpuProfiler>::Get();
+        return AZ::Interface<CpuProfiler>::Get();
     }
 
     // --- CachedTimeRegion ---
@@ -67,10 +66,10 @@ namespace Profiler
 
     void CpuProfilerImpl::Init()
     {
-        Interface<AZ::Debug::Profiler>::Register(this);
-        Interface<CpuProfiler>::Register(this);
+        AZ::Interface<AZ::Debug::Profiler>::Register(this);
+        AZ::Interface<CpuProfiler>::Register(this);
         m_initialized = true;
-        SystemTickBus::Handler::BusConnect();
+        AZ::SystemTickBus::Handler::BusConnect();
         m_continuousCaptureData.set_capacity(10);
 
         if (auto statsProfiler = AZ::Interface<AZ::Statistics::StatisticalProfilerProxy>::Get(); statsProfiler)
@@ -86,8 +85,8 @@ namespace Profiler
             return;
         }
         // When this call is made, no more thread profiling calls can be performed anymore
-        Interface<CpuProfiler>::Unregister(this);
-        Interface<AZ::Debug::Profiler>::Unregister(this);
+        AZ::Interface<CpuProfiler>::Unregister(this);
+        AZ::Interface<AZ::Debug::Profiler>::Unregister(this);
 
         // Wait for the remaining threads that might still be processing its profiling calls
         AZStd::unique_lock<AZStd::shared_mutex> shutdownLock(m_shutdownMutex);
@@ -100,7 +99,7 @@ namespace Profiler
         m_initialized = false;
         m_continuousCaptureInProgress.store(false);
         m_continuousCaptureData.clear();
-        SystemTickBus::Handler::BusDisconnect();
+        AZ::SystemTickBus::Handler::BusDisconnect();
     }
 
     void CpuProfilerImpl::BeginRegion(const AZ::Debug::Budget* budget, const char* eventName)
@@ -247,7 +246,7 @@ namespace Profiler
         }
 
         // Clear all TLS that flagged themselves to be deleted, meaning that the thread is already terminated
-        AZStd::remove_if(m_registeredThreads.begin(), m_registeredThreads.end(), [](const RHI::Ptr<CpuTimingLocalStorage>& thread)
+        AZStd::remove_if(m_registeredThreads.begin(), m_registeredThreads.end(), [](const AZStd::intrusive_ptr<CpuTimingLocalStorage>& thread)
         {
             return thread->m_deleteFlag.load();
         });
@@ -383,7 +382,7 @@ namespace Profiler
 
     // --- CpuProfilingStatisticsSerializer ---
 
-    CpuProfilingStatisticsSerializer::CpuProfilingStatisticsSerializer(const AZStd::ring_buffer<RHI::CpuProfiler::TimeRegionMap>& continuousData)
+    CpuProfilingStatisticsSerializer::CpuProfilingStatisticsSerializer(const AZStd::ring_buffer<CpuProfiler::TimeRegionMap>& continuousData)
     {
         // Create serializable entries
         for (const auto& timeRegionMap : continuousData)
@@ -407,8 +406,7 @@ namespace Profiler
         {
             serializeContext->Class<CpuProfilingStatisticsSerializer>()
                 ->Version(1)
-                ->Field("cpuProfilingStatisticsSerializerEntries", &CpuProfilingStatisticsSerializer::m_cpuProfilingStatisticsSerializerEntries)
-                ;
+                ->Field("cpuProfilingStatisticsSerializerEntries", &CpuProfilingStatisticsSerializer::m_cpuProfilingStatisticsSerializerEntries);
         }
 
         CpuProfilingStatisticsSerializerEntry::Reflect(context);
@@ -417,7 +415,7 @@ namespace Profiler
     // --- CpuProfilingStatisticsSerializerEntry ---
 
     CpuProfilingStatisticsSerializer::CpuProfilingStatisticsSerializerEntry::CpuProfilingStatisticsSerializerEntry(
-        const RHI::CachedTimeRegion& cachedTimeRegion, AZStd::thread_id threadId)
+        const CachedTimeRegion& cachedTimeRegion, AZStd::thread_id threadId)
     {
         m_groupName = cachedTimeRegion.m_groupRegionName.m_groupName;
         m_regionName = cachedTimeRegion.m_groupRegionName.m_regionName;
@@ -438,8 +436,7 @@ namespace Profiler
                 ->Field("stackDepth", &CpuProfilingStatisticsSerializerEntry::m_stackDepth)
                 ->Field("startTick", &CpuProfilingStatisticsSerializerEntry::m_startTick)
                 ->Field("endTick", &CpuProfilingStatisticsSerializerEntry::m_endTick)
-                ->Field("threadId", &CpuProfilingStatisticsSerializerEntry::m_threadId)
-                ;
+                ->Field("threadId", &CpuProfilingStatisticsSerializerEntry::m_threadId);
         }
     }
 } // namespace Profiler

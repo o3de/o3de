@@ -21,6 +21,7 @@ ly_add_target(
         PUBLIC
             AZ::AzCore
             AZ::AzFramework
+            Gem::ImGui.Static
 )
 
 # Here add Profiler target, it depends on the Profiler.Static
@@ -37,6 +38,8 @@ ly_add_target(
     BUILD_DEPENDENCIES
         PRIVATE
             Gem::Profiler.Static
+    RUNTIME_DEPENDENCIES
+        Gem::ImGui
 )
 
 # By default, we will specify that the above target Profiler would be used by

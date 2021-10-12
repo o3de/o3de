@@ -6,30 +6,28 @@
  *
  */
 
-#include <Atom/Feature/Utils/ProfilingCaptureBus.h>
-#include <Atom/RHI/CpuProfiler.h>
-#include <Atom/RHI/CpuProfilerImpl.h>
-#include <Atom/RPI.Edit/Common/JsonUtils.h>
-#include <Atom/RPI.Public/RPISystemInterface.h>
+#if defined(IMGUI_ENABLED)
 
-#include <AzCore/Casting/lossy_cast.h>
+#include <ImGuiCpuProfiler.h>
+
+#include <CpuProfilerImpl.h>
+
 #include <AzCore/IO/FileIO.h>
 #include <AzCore/JSON/filereadstream.h>
-#include <AzCore/Statistics/StatisticalProfilerProxy.h>
+#include <AzCore/Outcome/Outcome.h>
 #include <AzCore/Serialization/Json/JsonSerialization.h>
 #include <AzCore/Serialization/Json/JsonSerializationResult.h>
-#include <AzCore/std/containers/map.h>
-#include <AzCore/std/containers/set.h>
+#include <AzCore/Statistics/StatisticalProfilerProxy.h>
 #include <AzCore/std/limits.h>
 #include <AzCore/std/sort.h>
+#include <AzCore/std/string/conversions.h>
 #include <AzCore/std/time.h>
-
 
 namespace Profiler
 {
     namespace CpuProfilerImGuiHelper
     {
-        inline float TicksToMs(double ticks)
+        float TicksToMs(double ticks)
         {
             // Note: converting to microseconds integer before converting to milliseconds float
             const AZStd::sys_time_t ticksPerSecond = AZStd::GetTimeTicksPerSecond();
@@ -37,27 +35,28 @@ namespace Profiler
             return static_cast<float>((ticks * 1000) / (ticksPerSecond / 1000)) / 1000.0f;
         }
 
-        inline float TicksToMs(AZStd::sys_time_t ticks)
+        float TicksToMs(AZStd::sys_time_t ticks)
         {
             return TicksToMs(static_cast<double>(ticks));
         }
 
-        using DeserializedCpuData = AZStd::vector<RHI::CpuProfilingStatisticsSerializer::CpuProfilingStatisticsSerializerEntry>;
-        inline Outcome<DeserializedCpuData, AZStd::string> LoadSavedCpuProfilingStatistics(const AZStd::string& capturePath)
-        {
-            auto* base = IO::FileIOBase::GetInstance();
+        using DeserializedCpuData = AZStd::vector<CpuProfilingStatisticsSerializer::CpuProfilingStatisticsSerializerEntry>;
 
-            char resolvedPath[IO::MaxPathLength];
-            if (!base->ResolvePath(capturePath.c_str(), resolvedPath, IO::MaxPathLength))
+        AZ::Outcome<DeserializedCpuData, AZStd::string> LoadSavedCpuProfilingStatistics(const AZStd::string& capturePath)
+        {
+            auto* base = AZ::IO::FileIOBase::GetInstance();
+
+            char resolvedPath[AZ::IO::MaxPathLength];
+            if (!base->ResolvePath(capturePath.c_str(), resolvedPath, AZ::IO::MaxPathLength))
             {
-                return Failure(AZStd::string::format("Could not resolve the path to file %s, is the path correct?", resolvedPath));
+                return AZ::Failure(AZStd::string::format("Could not resolve the path to file %s, is the path correct?", resolvedPath));
             }
 
-            u64 captureSizeBytes;
-            const IO::Result fileSizeResult = base->Size(resolvedPath, captureSizeBytes);
+            AZ::u64 captureSizeBytes;
+            const AZ::IO::Result fileSizeResult = base->Size(resolvedPath, captureSizeBytes);
             if (!fileSizeResult)
             {
-                return Failure(AZStd::string::format("Could not read the size of file %s, is the path correct?", resolvedPath));
+                return AZ::Failure(AZStd::string::format("Could not read the size of file %s, is the path correct?", resolvedPath));
             }
 
             // NOTE: this uses raw file pointers over the abstractions and utility functions provided by AZ::JsonSerializationUtils because
@@ -66,7 +65,7 @@ namespace Profiler
             azfopen(&fp, resolvedPath, "rb");
             if (!fp)
             {
-                return Failure(AZStd::string::format("Could not fopen file %s, is the path correct?\n", resolvedPath));
+                return AZ::Failure(AZStd::string::format("Could not fopen file %s, is the path correct?\n", resolvedPath));
             }
 
             constexpr AZStd::size_t MaxBufSize = 65536;
@@ -83,37 +82,35 @@ namespace Profiler
             if (document.HasParseError())
             {
                 const auto pe = document.GetParseError();
-                return Failure(AZStd::string::format(
+                return AZ::Failure(AZStd::string::format(
                     "Rapidjson could not parse the document with ParseErrorCode %u. See 3rdParty/rapidjson/error.h for definitions.\n", pe));
             }
 
             if (!document.IsObject() || !document.HasMember("ClassData"))
             {
-                return Failure(AZStd::string::format(
+                return AZ::Failure(AZStd::string::format(
                     "Error in loading saved capture: top-level object does not have a ClassData field. Did the serialization format change recently?\n"));
             }
 
             AZ_TracePrintf("JsonUtils", "Successfully loaded JSON into memory.\n");
 
             const auto& root = document["ClassData"];
-            RHI::CpuProfilingStatisticsSerializer serializer;
-            const JsonSerializationResult::ResultCode deserializationResult = JsonSerialization::Load(serializer, root);
-            if (deserializationResult.GetProcessing() == JsonSerializationResult::Processing::Halted
+            CpuProfilingStatisticsSerializer serializer;
+            const AZ::JsonSerializationResult::ResultCode deserializationResult = AZ::JsonSerialization::Load(serializer, root);
+            if (deserializationResult.GetProcessing() == AZ::JsonSerializationResult::Processing::Halted
                 || serializer.m_cpuProfilingStatisticsSerializerEntries.empty())
             {
-                return Failure(AZStd::string::format("Error in deserializing document: %s\n", deserializationResult.ToString(capturePath.c_str()).c_str()));
+                return AZ::Failure(AZStd::string::format("Error in deserializing document: %s\n", deserializationResult.ToString(capturePath.c_str()).c_str()));
             }
 
             AZ_TracePrintf("JsonUtils", "Successfully loaded CPU profiling data with %zu profiling entries.\n",
                  serializer.m_cpuProfilingStatisticsSerializerEntries.size());
 
-            return Success(AZStd::move(serializer.m_cpuProfilingStatisticsSerializerEntries));
+            return AZ::Success(AZStd::move(serializer.m_cpuProfilingStatisticsSerializerEntries));
         }
     } // namespace CpuProfilerImGuiHelper
 
-
-
-    inline void ImGuiCpuProfiler::Draw(bool& keepDrawing)
+    void ImGuiCpuProfiler::Draw(bool& keepDrawing)
     {
         // Cache the value to detect if it was changed by ImGui(user pressed 'x')
         const bool cachedShowCpuProfiler = keepDrawing;
@@ -132,9 +129,9 @@ namespace Profiler
                 CullFrameData();
 
                 // Only listen to system ticks when the profiler is active
-                if (!SystemTickBus::Handler::BusIsConnected())
+                if (!AZ::SystemTickBus::Handler::BusIsConnected())
                 {
-                    SystemTickBus::Handler::BusConnect();
+                    AZ::SystemTickBus::Handler::BusConnect();
                 }
             }
 
@@ -159,27 +156,25 @@ namespace Profiler
             AZStd::sys_time_t timeNow = AZStd::GetTimeNowSecond();
             AZStd::string timeString;
             AZStd::to_string(timeString, timeNow);
-            u64 currentTick = AZ::RPI::RPISystemInterface::Get()->GetCurrentTick();
             const AZStd::string frameDataFilePath = AZStd::string::format(
-                "@user@/CpuProfiler/%s_%llu.json",
-                timeString.c_str(),
-                currentTick);
+                "@user@/CpuProfiler/%s.json",
+                timeString.c_str());
             char resolvedPath[AZ::IO::MaxPathLength];
             AZ::IO::FileIOBase::GetInstance()->ResolvePath(frameDataFilePath.c_str(), resolvedPath, AZ::IO::MaxPathLength);
             m_lastCapturedFilePath = resolvedPath;
-            AZ::Render::ProfilingCaptureRequestBus::Broadcast(
-                &AZ::Render::ProfilingCaptureRequestBus::Events::CaptureCpuProfilingStatistics, frameDataFilePath);
+            //AZ::Render::ProfilingCaptureRequestBus::Broadcast(
+            //    &AZ::Render::ProfilingCaptureRequestBus::Events::CaptureCpuProfilingStatistics, frameDataFilePath);
         }
         m_captureToFile = false;
 
         // Toggle if the bool isn't the same as the cached value
         if (cachedShowCpuProfiler != keepDrawing)
         {
-            AZ::RHI::CpuProfiler::Get()->SetProfilerEnabled(keepDrawing);
+            CpuProfiler::Get()->SetProfilerEnabled(keepDrawing);
         }
     }
 
-    inline void ImGuiCpuProfiler::DrawCommonHeader()
+    void ImGuiCpuProfiler::DrawCommonHeader()
     {
         if (!m_lastCapturedFilePath.empty())
         {
@@ -192,11 +187,11 @@ namespace Profiler
         }
 
         ImGui::SameLine();
-        m_paused = !AZ::RHI::CpuProfiler::Get()->IsProfilerEnabled();
+        m_paused = !CpuProfiler::Get()->IsProfilerEnabled();
         if (ImGui::Button(m_paused ? "Resume" : "Pause"))
         {
             m_paused = !m_paused;
-            AZ::RHI::CpuProfiler::Get()->SetProfilerEnabled(!m_paused);
+            CpuProfiler::Get()->SetProfilerEnabled(!m_paused);
         }
 
         ImGui::SameLine();
@@ -206,7 +201,7 @@ namespace Profiler
         }
 
         ImGui::SameLine();
-        bool isInProgress = RHI::CpuProfiler::Get()->IsContinuousCaptureInProgress();
+        bool isInProgress = CpuProfiler::Get()->IsContinuousCaptureInProgress();
         if (ImGui::Button(isInProgress ? "End" : "Begin"))
         {
             if (isInProgress)
@@ -214,23 +209,21 @@ namespace Profiler
                 AZStd::sys_time_t timeNow = AZStd::GetTimeNowSecond();
                 AZStd::string timeString;
                 AZStd::to_string(timeString, timeNow);
-                u64 currentTick = AZ::RPI::RPISystemInterface::Get()->GetCurrentTick();
                 const AZStd::string frameDataFilePath = AZStd::string::format(
-                    "@user@/CpuProfiler/%s_%llu.json",
-                    timeString.c_str(),
-                    currentTick);
+                    "@user@/CpuProfiler/%s.json",
+                    timeString.c_str());
                 char resolvedPath[AZ::IO::MaxPathLength];
                 AZ::IO::FileIOBase::GetInstance()->ResolvePath(frameDataFilePath.c_str(), resolvedPath, AZ::IO::MaxPathLength);
                 m_lastCapturedFilePath = resolvedPath;
-                AZ::Render::ProfilingCaptureRequestBus::Broadcast(
-                    &AZ::Render::ProfilingCaptureRequestBus::Events::EndContinuousCpuProfilingCapture, frameDataFilePath);
+                //AZ::Render::ProfilingCaptureRequestBus::Broadcast(
+                //    &AZ::Render::ProfilingCaptureRequestBus::Events::EndContinuousCpuProfilingCapture, frameDataFilePath);
                 m_paused = true;
             }
 
             else
             {
-                AZ::Render::ProfilingCaptureRequestBus::Broadcast(
-                    &AZ::Render::ProfilingCaptureRequestBus::Events::BeginContinuousCpuProfilingCapture);
+                //AZ::Render::ProfilingCaptureRequestBus::Broadcast(
+                //    &AZ::Render::ProfilingCaptureRequestBus::Events::BeginContinuousCpuProfilingCapture);
             }
         }
 
@@ -248,21 +241,21 @@ namespace Profiler
                 defaultSavedCapturePath.c_str(), "*.json",
                 [&paths = m_cachedCapturePaths](const char* path) -> bool
                 {
-                    auto foundPath = IO::Path(path);
+                    auto foundPath = AZ::IO::Path(path);
                     paths.push_back(foundPath);
                     return true;
                 });
 
             // Sort by decreasing modification time (most recent at the top)
             AZStd::sort(m_cachedCapturePaths.begin(), m_cachedCapturePaths.end(),
-                [&base](const IO::Path& lhs, const IO::Path& rhs)
+                [&base](const AZ::IO::Path& lhs, const AZ::IO::Path& rhs)
                 {
                     return base->ModificationTime(lhs.c_str()) > base->ModificationTime(rhs.c_str());
                 });
         }
     }
 
-    inline void ImGuiCpuProfiler::DrawTable()
+    void ImGuiCpuProfiler::DrawTable()
     {
         const auto flags =
             ImGuiTableFlags_Borders | ImGuiTableFlags_Sortable | ImGuiTableFlags_Resizable | ImGuiTableFlags_Reorderable;
@@ -326,7 +319,7 @@ namespace Profiler
         ImGui::EndTable();
     }
 
-    inline void ImGuiCpuProfiler::SortTable(ImGuiTableSortSpecs* sortSpecs)
+    void ImGuiCpuProfiler::SortTable(ImGuiTableSortSpecs* sortSpecs)
     {
         const bool ascending = sortSpecs->Specs->SortDirection == ImGuiSortDirection_Ascending;
         const ImS16 columnToSort = sortSpecs->Specs->ColumnIndex;
@@ -355,7 +348,7 @@ namespace Profiler
         sortSpecs->SpecsDirty = false;
     }
 
-    inline void ImGuiCpuProfiler::DrawStatisticsView()
+    void ImGuiCpuProfiler::DrawStatisticsView()
     {
         DrawCommonHeader();
 
@@ -400,7 +393,7 @@ namespace Profiler
         }
     }
 
-    inline void ImGuiCpuProfiler::DrawFilePicker()
+    void ImGuiCpuProfiler::DrawFilePicker()
     {
         ImGui::SetNextWindowSize({ 500, 200 }, ImGuiCond_Once);
         if (ImGui::Begin("File Picker", &m_showFilePicker))
@@ -412,7 +405,7 @@ namespace Profiler
 
             auto getter = [](void* vectorPointer, int idx, const char** out_text) -> bool
             {
-                const auto& pathVec = *static_cast<AZStd::vector<IO::Path>*>(vectorPointer);
+                const auto& pathVec = *static_cast<AZStd::vector<AZ::IO::Path>*>(vectorPointer);
                 if (idx < 0 || idx >= pathVec.size())
                 {
                     return false;
@@ -427,9 +420,9 @@ namespace Profiler
         ImGui::End();
     }
 
-    inline void ImGuiCpuProfiler::LoadFile()
+    void ImGuiCpuProfiler::LoadFile()
     {
-        const IO::Path& pathToLoad = m_cachedCapturePaths[m_currentFileIndex];
+        const AZ::IO::Path& pathToLoad = m_cachedCapturePaths[m_currentFileIndex];
         auto loadResult = CpuProfilerImGuiHelper::LoadSavedCpuProfilingStatistics(pathToLoad.String());
         if (!loadResult.IsSuccess())
         {
@@ -437,13 +430,14 @@ namespace Profiler
             return;
         }
 
-        AZStd::vector<RHI::CpuProfilingStatisticsSerializer::CpuProfilingStatisticsSerializerEntry> deserializedData = loadResult.TakeValue();
+        AZStd::vector<CpuProfilingStatisticsSerializer::CpuProfilingStatisticsSerializerEntry> deserializedData = loadResult.TakeValue();
 
         // Clear visualizer and statistics view state
         m_savedRegionCount = deserializedData.size();
         m_savedData.clear();
         m_paused = true;
-        AZ::RHI::CpuProfiler::Get()->SetProfilerEnabled(false);
+
+        CpuProfiler::Get()->SetProfilerEnabled(false);
         m_frameEndTicks.clear();
 
         m_tableData.clear();
@@ -456,11 +450,11 @@ namespace Profiler
             const auto [groupRegionNameItr, wasGroupRegionNameInserted] =
                 m_deserializedGroupRegionNamePool.emplace(groupNameItr->c_str(), regionNameItr->c_str());
 
-            const RHI::CachedTimeRegion newRegion(*groupRegionNameItr, entry.m_stackDepth, entry.m_startTick, entry.m_endTick);
+            const CachedTimeRegion newRegion(*groupRegionNameItr, entry.m_stackDepth, entry.m_startTick, entry.m_endTick);
             m_savedData[entry.m_threadId].push_back(newRegion);
 
             // Since we don't serialize the frame boundaries, we need to use the RPI's OnSystemTick event as a heuristic.
-            const static Name frameBoundaryName = Name("RPISystem: OnSystemTick");
+            const static AZ::Name frameBoundaryName = AZ::Name("RPISystem: OnSystemTick");
             if (entry.m_regionName == frameBoundaryName)
             {
                 m_frameEndTicks.push_back(entry.m_endTick);
@@ -492,7 +486,7 @@ namespace Profiler
     }
 
     // -- CPU Visualizer --
-    inline void ImGuiCpuProfiler::DrawVisualizer()
+    void ImGuiCpuProfiler::DrawVisualizer()
     {
         DrawCommonHeader();
 
@@ -556,7 +550,7 @@ namespace Profiler
             }
 
             // Main draw loop
-            u64 baseRow = 0;
+            AZ::u64 baseRow = 0;
             for (const auto& [currentThreadId, singleThreadData] : m_savedData)
             {
                 // Find the first TimeRegion that we should draw
@@ -573,7 +567,7 @@ namespace Profiler
                 }
 
                 // Draw all of the blocks for a given thread/row
-                u64 maxDepth = 0;
+                AZ::u64 maxDepth = 0;
                 while (regionItr != singleThreadData.end())
                 {
                     const TimeRegion& region = *regionItr;
@@ -583,8 +577,8 @@ namespace Profiler
                     {
                         break;
                     }
-                    u64 targetRow = region.m_stackDepth + baseRow;
-                    maxDepth = AZStd::max(aznumeric_cast<u64>(region.m_stackDepth), maxDepth);
+                    AZ::u64 targetRow = region.m_stackDepth + baseRow;
+                    maxDepth = AZStd::max(aznumeric_cast<AZ::u64>(region.m_stackDepth), maxDepth);
 
                     DrawBlock(region, targetRow);
 
@@ -649,7 +643,7 @@ namespace Profiler
         ImGui::EndChild();
     }
 
-    inline void ImGuiCpuProfiler::CacheCpuTimingStatistics()
+    void ImGuiCpuProfiler::CacheCpuTimingStatistics()
     {
         using namespace AZ::Statistics;
 
@@ -675,7 +669,7 @@ namespace Profiler
         }
     }
 
-    inline void ImGuiCpuProfiler::CollectFrameData()
+    void ImGuiCpuProfiler::CollectFrameData()
     {
         // We maintain separate datastores for the visualizer and the statistical view because they require different
         // data formats - one grouped by thread ID versus the other organized by group + region. Since the statistical
@@ -683,10 +677,10 @@ namespace Profiler
         // compared to if we needed to transform the visualizer's data into the statistical format every frame.
 
         // Get the latest TimeRegionMap
-        const RHI::CpuProfiler::TimeRegionMap& timeRegionMap = RHI::CpuProfiler::Get()->GetTimeRegionMap();
+        const CpuProfiler::TimeRegionMap& timeRegionMap = CpuProfiler::Get()->GetTimeRegionMap();
 
-        m_viewportStartTick = AZStd::numeric_limits<s64>::max();
-        m_viewportEndTick = AZStd::numeric_limits<s64>::lowest();
+        m_viewportStartTick = AZStd::numeric_limits<AZ::s64>::max();
+        m_viewportEndTick = AZStd::numeric_limits<AZ::s64>::lowest();
 
         // Iterate through the entire TimeRegionMap and copy the data since it will get deleted on the next frame
         for (const auto& [threadId, singleThreadRegionMap] : timeRegionMap)
@@ -743,7 +737,7 @@ namespace Profiler
         }
     }
 
-    inline void ImGuiCpuProfiler::CullFrameData()
+    void ImGuiCpuProfiler::CullFrameData()
     {
         const AZStd::sys_time_t deleteBeforeTick = AZStd::GetTimeNowTicks() - m_frameToFrameTime * m_framesToCollect;
 
@@ -783,7 +777,7 @@ namespace Profiler
             });
     }
 
-    inline void ImGuiCpuProfiler::DrawBlock(const TimeRegion& block, u64 targetRow)
+    void ImGuiCpuProfiler::DrawBlock(const TimeRegion& block, AZ::u64 targetRow)
     {
         // Don't draw anything if the user is searching for regions and this block doesn't pass the filter
         if (!m_visualizerHighlightFilter.PassFilter(block.m_groupRegionName.m_regionName))
@@ -864,7 +858,7 @@ namespace Profiler
         }
     }
 
-    inline ImU32 ImGuiCpuProfiler::GetBlockColor(const TimeRegion& block)
+    ImU32 ImGuiCpuProfiler::GetBlockColor(const TimeRegion& block)
     {
         // Use the GroupRegionName pointer a key into the cache, equal regions will have equal pointers
         const GroupRegionName& key = block.m_groupRegionName;
@@ -874,7 +868,7 @@ namespace Profiler
         }
 
         // Cache miss, generate a new random color
-        AZ::SimpleLcgRandom rand(aznumeric_cast<u64>(AZStd::GetTimeNowTicks()));
+        AZ::SimpleLcgRandom rand(aznumeric_cast<AZ::u64>(AZStd::GetTimeNowTicks()));
         const float r = AZStd::clamp(rand.GetRandomFloat(), .1f, .9f);
         const float g = AZStd::clamp(rand.GetRandomFloat(), .1f, .9f);
         const float b = AZStd::clamp(rand.GetRandomFloat(), .1f, .9f);
@@ -883,7 +877,7 @@ namespace Profiler
         return ImGui::GetColorU32(randomColor);
     }
 
-    inline void ImGuiCpuProfiler::DrawThreadSeparator(u64 baseRow, u64 maxDepth)
+    void ImGuiCpuProfiler::DrawThreadSeparator(AZ::u64 baseRow, AZ::u64 maxDepth)
     {
         const ImU32 red = ImGui::GetColorU32({ 1, 0, 0, 1 });
 
@@ -895,7 +889,7 @@ namespace Profiler
         ImGui::GetWindowDrawList()->AddLine({ wx, boundaryY }, { wx + windowWidth, boundaryY }, red, 1.0f);
     }
 
-    inline void ImGuiCpuProfiler::DrawThreadLabel(u64 baseRow, size_t threadId)
+    void ImGuiCpuProfiler::DrawThreadLabel(AZ::u64 baseRow, size_t threadId)
     {
         auto [wx, wy] = ImGui::GetWindowPos();
         wy -= ImGui::GetScrollY();
@@ -904,7 +898,7 @@ namespace Profiler
         ImGui::GetWindowDrawList()->AddText({ wx + 10, wy + baseRow * RowHeight}, IM_COL32_WHITE, threadIdText.c_str());
     }
 
-    inline void ImGuiCpuProfiler::DrawFrameBoundaries()
+    void ImGuiCpuProfiler::DrawFrameBoundaries()
     {
         ImDrawList* drawList = ImGui::GetWindowDrawList();
 
@@ -923,7 +917,7 @@ namespace Profiler
         }
     }
 
-    inline void ImGuiCpuProfiler::DrawRuler()
+    void ImGuiCpuProfiler::DrawRuler()
     {
         // Use a pair of iterators to go through all saved frame boundaries and draw ruler lines
         auto lastFrameBoundaryItr = AZStd::lower_bound(m_frameEndTicks.begin(), m_frameEndTicks.end(), m_viewportStartTick);
@@ -1001,7 +995,7 @@ namespace Profiler
         }
     }
 
-    inline void ImGuiCpuProfiler::DrawFrameTimeHistogram()
+    void ImGuiCpuProfiler::DrawFrameTimeHistogram()
     {
         ImDrawList* drawList = ImGui::GetWindowDrawList();
         const auto [wx, wy] = ImGui::GetWindowPos();
@@ -1083,12 +1077,12 @@ namespace Profiler
         }
     }
 
-    inline AZStd::sys_time_t ImGuiCpuProfiler::GetViewportTickWidth() const
+    AZStd::sys_time_t ImGuiCpuProfiler::GetViewportTickWidth() const
     {
         return m_viewportEndTick - m_viewportStartTick;
     }
 
-    inline float ImGuiCpuProfiler::ConvertTickToPixelSpace(AZStd::sys_time_t tick, AZStd::sys_time_t leftBound, AZStd::sys_time_t rightBound) const
+    float ImGuiCpuProfiler::ConvertTickToPixelSpace(AZStd::sys_time_t tick, AZStd::sys_time_t leftBound, AZStd::sys_time_t rightBound) const
     {
         const float wx = ImGui::GetWindowPos().x;
         const float tickSpaceShifted = aznumeric_cast<float>(tick - leftBound); // This will be close to zero, so FP inaccuracy should not be too bad
@@ -1098,11 +1092,11 @@ namespace Profiler
     }
 
     // System tick bus overrides
-    inline void ImGuiCpuProfiler::OnSystemTick()
+    void ImGuiCpuProfiler::OnSystemTick()
     {
         if (m_paused)
         {
-            SystemTickBus::Handler::BusDisconnect();
+            AZ::SystemTickBus::Handler::BusDisconnect();
         }
         else
         {
@@ -1120,7 +1114,7 @@ namespace Profiler
 
     // ---- TableRow impl ----
 
-    inline void TableRow::RecordRegion(const AZ::RHI::CachedTimeRegion& region, size_t threadId)
+    void TableRow::RecordRegion(const CachedTimeRegion& region, size_t threadId)
     {
         const AZStd::sys_time_t deltaTime = region.m_endTick - region.m_startTick;
 
@@ -1136,7 +1130,7 @@ namespace Profiler
         ++m_invocationsTotal;
     }
 
-    inline void TableRow::ResetPerFrameStatistics()
+    void TableRow::ResetPerFrameStatistics()
     {
         m_invocationsLastFrame = 0;
         m_executingThreads.clear();
@@ -1144,7 +1138,7 @@ namespace Profiler
         m_maxTicks = 0;
     }
 
-    inline AZStd::string TableRow::GetExecutingThreadsLabel() const
+    AZStd::string TableRow::GetExecutingThreadsLabel() const
     {
         auto threadString = AZStd::string::format("Executed in %zu threads\n", m_executingThreads.size());
         for (const auto& threadId : m_executingThreads)
@@ -1154,3 +1148,5 @@ namespace Profiler
         return threadString;
     }
 } // namespace Profiler
+
+#endif // defined(IMGUI_ENABLED)

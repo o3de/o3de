@@ -7,8 +7,7 @@
  */
 #pragma once
 
-#include <Atom/RHI/CpuProfiler.h>
-#include <Atom/RHI.Reflect/Base.h>
+#include <CpuProfiler.h>
 
 #include <AzCore/Component/TickBus.h>
 #include <AzCore/Memory/OSAllocator.h>
@@ -19,14 +18,13 @@
 #include <AzCore/std/parallel/shared_mutex.h>
 #include <AzCore/std/smart_ptr/intrusive_refcount.h>
 
-
 namespace Profiler
 {
     //! Thread local class to keep track of the thread's cached time regions.
     //! Each thread keeps track of its own time regions, which is communicated from the CpuProfilerImpl.
     //! The CpuProfilerImpl is able to request the cached time regions from the CpuTimingLocalStorage.
-    class CpuTimingLocalStorage :
-        public AZStd::intrusive_refcount<AZStd::atomic_uint>
+    class CpuTimingLocalStorage
+        : public AZStd::intrusive_refcount<AZStd::atomic_uint>
     {
         friend class CpuProfilerImpl;
 
@@ -85,7 +83,7 @@ namespace Profiler
     class CpuProfilerImpl final
         : public AZ::Debug::Profiler
         , public CpuProfiler
-        , public SystemTickBus::Handler
+        , public AZ::SystemTickBus::Handler
     {
         friend class CpuTimingLocalStorage;
 
@@ -101,7 +99,7 @@ namespace Profiler
         //! Unregisters the CpuProfilerImpl instance from the interface
         void Shutdown();
 
-        // SystemTickBus::Handler overrides
+        // AZ::SystemTickBus::Handler overrides
         // When fired, the profiler collects all profiling data from registered threads and updates
         // m_timeRegionMap so that the next frame has up-to-date profiling data.
         void OnSystemTick() final override;
@@ -130,7 +128,7 @@ namespace Profiler
         TimeRegionMap m_timeRegionMap;
 
         // Set of registered threads when created
-        AZStd::vector<RHI::Ptr<CpuTimingLocalStorage>, AZ::OSStdAllocator> m_registeredThreads;
+        AZStd::vector<AZStd::intrusive_ptr<CpuTimingLocalStorage>, AZ::OSStdAllocator> m_registeredThreads;
         AZStd::mutex m_threadRegisterMutex;
 
         // Thread local storage, gets lazily allocated when a thread is created
@@ -164,10 +162,10 @@ namespace Profiler
             static void Reflect(AZ::ReflectContext* context);
 
             CpuProfilingStatisticsSerializerEntry() = default;
-            CpuProfilingStatisticsSerializerEntry(const RHI::CachedTimeRegion& cachedTimeRegion, AZStd::thread_id threadId);
+            CpuProfilingStatisticsSerializerEntry(const CachedTimeRegion& cachedTimeRegion, AZStd::thread_id threadId);
 
-            Name m_groupName;
-            Name m_regionName;
+            AZ::Name m_groupName;
+            AZ::Name m_regionName;
             uint16_t m_stackDepth;
             AZStd::sys_time_t m_startTick;
             AZStd::sys_time_t m_endTick;
@@ -178,7 +176,7 @@ namespace Profiler
         static void Reflect(AZ::ReflectContext* context);
 
         CpuProfilingStatisticsSerializer() = default;
-        CpuProfilingStatisticsSerializer(const AZStd::ring_buffer<RHI::CpuProfiler::TimeRegionMap>& continuousData);
+        CpuProfilingStatisticsSerializer(const AZStd::ring_buffer<CpuProfiler::TimeRegionMap>& continuousData);
 
         AZStd::vector<CpuProfilingStatisticsSerializerEntry> m_cpuProfilingStatisticsSerializerEntries;
     };
