@@ -666,9 +666,13 @@ namespace O3DE::ProjectManager
                 gemInfo.m_creator = Py_To_String_Optional(data, "origin", "");
                 gemInfo.m_documentationLink = Py_To_String_Optional(data, "documentation_url", "");
 
-                if (gemInfo.m_creator.contains("Open 3D Engine") || gemInfo.m_creator.contains("Amazon Web Services"))
+                if (gemInfo.m_creator.contains("Open 3D Engine"))
                 {
                     gemInfo.m_gemOrigin = GemInfo::GemOrigin::Open3DEEngine;
+                }
+                else if (gemInfo.m_creator.contains("Amazon Web Services"))
+                {
+                    gemInfo.m_gemOrigin = GemInfo::GemOrigin::Local;
                 }
                 else if (data.contains("origin"))
                 {

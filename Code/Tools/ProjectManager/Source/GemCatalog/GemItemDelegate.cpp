@@ -21,12 +21,12 @@
 #include <QTextDocument>
 #include <QAbstractTextDocumentLayout>
 #include <QDesktopServices>
+#include <QMovie>
 
 namespace O3DE::ProjectManager
 {
-    GemItemDelegate::GemItemDelegate(QAbstractItemModel* model, QListView* view, QObject* parent)
+    GemItemDelegate::GemItemDelegate(QAbstractItemModel* model, QObject* parent)
         : QStyledItemDelegate(parent)
-        , m_view(view)
         , m_model(model)
     {
         AddPlatformIcon(GemInfo::Android, ":/Android.svg");
@@ -35,8 +35,8 @@ namespace O3DE::ProjectManager
         AddPlatformIcon(GemInfo::macOS, ":/macOS.svg");
         AddPlatformIcon(GemInfo::Windows, ":/Windows.svg");
 
-        SetStatusIcon(&m_notDownloadedPixmap, ":/Download.svg");
-        SetStatusIcon(&m_unknownStatusPixmap, ":/X.svg");
+        SetStatusIcon(m_notDownloadedPixmap, ":/Download.svg");
+        SetStatusIcon(m_unknownStatusPixmap, ":/X.svg");
 
         m_downloadingMovie = new QMovie(":/in_progress.gif");
     }
@@ -48,7 +48,7 @@ namespace O3DE::ProjectManager
         m_platformIcons.insert(platform, QIcon(iconPath).pixmap(static_cast<int>(static_cast<qreal>(s_platformIconSize) * aspectRatio), s_platformIconSize));
     }
 
-    void GemItemDelegate::SetStatusIcon(QPixmap** m_iconPixmap, const QString& iconPath)
+    void GemItemDelegate::SetStatusIcon(QPixmap& m_iconPixmap, const QString& iconPath)
     {
         QPixmap pixmap(iconPath);
         float aspectRatio = static_cast<float>(pixmap.width()) / pixmap.height();
@@ -64,7 +64,7 @@ namespace O3DE::ProjectManager
             xScaler = static_cast<int>(aspectRatio * s_statusIconSize);
         }
 
-        *m_iconPixmap = new QPixmap(QIcon(iconPath).pixmap(xScaler, yScaler));
+        m_iconPixmap = QPixmap(QIcon(iconPath).pixmap(xScaler, yScaler));
     }
 
     void GemItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& modelIndex) const
@@ -466,24 +466,14 @@ namespace O3DE::ProjectManager
             return;
         }
 
-        painter->save();
-
         QPixmap currentFrame;
         const QPixmap* statusPixmap;
         if (downloadStatus == GemInfo::DownloadStatus::Downloading)
         {
-            static bool movieStarted = false;
-            if (!movieStarted)
+            if (m_downloadingMovie->state() != QMovie::Running)
             {
                 m_downloadingMovie->start();
-
-                // Force redraw when download movie is playing so animation is smooth
-                connect(m_downloadingMovie, &QMovie::frameChanged, this, [=]
-                {
-                    m_view->viewport()->repaint();
-                });
-
-                movieStarted = true;
+                emit MovieStartedPlaying(m_downloadingMovie);
             }
 
             currentFrame = m_downloadingMovie->currentPixmap();
@@ -492,11 +482,11 @@ namespace O3DE::ProjectManager
         }
         else if (downloadStatus == GemInfo::DownloadStatus::NotDownloaded)
         {
-            statusPixmap = m_notDownloadedPixmap;
+            statusPixmap = &m_notDownloadedPixmap;
         }
         else
         {
-            statusPixmap = m_unknownStatusPixmap;
+            statusPixmap = &m_unknownStatusPixmap;
         }
 
         QSize statusSize = statusPixmap->size();

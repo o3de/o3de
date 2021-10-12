@@ -16,7 +16,6 @@
 #endif
 
 QT_FORWARD_DECLARE_CLASS(QEvent)
-QT_FORWARD_DECLARE_CLASS(QListView)
 
 namespace O3DE::ProjectManager
 {
@@ -26,7 +25,7 @@ namespace O3DE::ProjectManager
         Q_OBJECT // AUTOMOC
 
     public:
-        explicit GemItemDelegate(QAbstractItemModel* model, QListView* view, QObject* parent = nullptr);
+        explicit GemItemDelegate(QAbstractItemModel* model, QObject* parent = nullptr);
         ~GemItemDelegate() = default;
 
         void paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& modelIndex) const override;
@@ -66,6 +65,9 @@ namespace O3DE::ProjectManager
         inline constexpr static int s_featureTagBorderMarginY = 3;
         inline constexpr static int s_featureTagSpacing = 7;
 
+    signals:
+        void MovieStartedPlaying(const QMovie* playingMovie) const;
+
     protected:
         bool editorEvent(QEvent* event, QAbstractItemModel* model, const QStyleOptionViewItem& option, const QModelIndex& modelIndex) override;
         bool helpEvent(QHelpEvent* event, QAbstractItemView* view, const QStyleOptionViewItem& option, const QModelIndex& index) override;
@@ -81,7 +83,6 @@ namespace O3DE::ProjectManager
         void DrawDownloadStatusIcon(QPainter* painter, const QRect& contentRect, const QRect& buttonRect, const QModelIndex& modelIndex) const;
 
         QAbstractItemModel* m_model = nullptr;
-        QListView* m_view = nullptr;
 
     private:
         // Platform icons
@@ -90,12 +91,12 @@ namespace O3DE::ProjectManager
         QHash<GemInfo::Platform, QPixmap> m_platformIcons;
 
         // Status icons
-        void SetStatusIcon(QPixmap** m_iconPixmap, const QString& iconPath);
+        void SetStatusIcon(QPixmap& m_iconPixmap, const QString& iconPath);
         inline constexpr static int s_statusIconSize = 16;
         inline constexpr static int s_statusButtonSpacing = 5;
 
-        QPixmap* m_unknownStatusPixmap = nullptr;
-        QPixmap* m_notDownloadedPixmap = nullptr;
+        QPixmap m_unknownStatusPixmap;
+        QPixmap m_notDownloadedPixmap;
         QMovie* m_downloadingMovie = nullptr;
     };
 } // namespace O3DE::ProjectManager

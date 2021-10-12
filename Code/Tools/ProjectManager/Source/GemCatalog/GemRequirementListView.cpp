@@ -20,6 +20,6 @@ namespace O3DE::ProjectManager
 
         setModel(model);
         setSelectionModel(selectionModel);
-        setItemDelegate(new GemRequirementDelegate(model, this, this));
+        setItemDelegate(new GemRequirementDelegate(model, this));
     }
 } // namespace O3DE::ProjectManager
