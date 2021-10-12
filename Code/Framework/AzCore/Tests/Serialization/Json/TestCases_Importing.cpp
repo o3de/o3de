@@ -189,7 +189,7 @@ namespace JsonSerializationTests
 
         if ((patch.IsObject() && patch.MemberCount() > 0) || (patch.IsArray() && !patch.Empty()))
         {
-            AZ::JsonSerialization::ApplyPatch(importedDoc.GetObject(), allocator, patch, AZ::JsonMergeApproach::JsonMergePatch);
+            AZ::JsonSerialization::ApplyPatch(importedDoc, allocator, patch, AZ::JsonMergeApproach::JsonMergePatch);
         }
         importedValueOut.CopyFrom(importedDoc, allocator);
 
@@ -215,7 +215,7 @@ namespace JsonSerializationTests
 
     // Test Cases
 
-    TEST_F(JsonImportingTests, ImportSimpleObjectLoadStoreTest)
+    TEST_F(JsonImportingTests, ImportSimpleObjectTest)
     {
         const char* inputFile = R"(
             {
@@ -238,7 +238,35 @@ namespace JsonSerializationTests
         TestImportLoadStore(inputFile, expectedOutput);
     }
 
-    TEST_F(JsonImportingTests, ImportSimpleArrayLoadStoreTest)
+    TEST_F(JsonImportingTests, ImportSimpleObjectPatchTest)
+    {
+        const char* inputFile = R"(
+            {
+                "name" : "simple_object_import",
+                "object": {
+                    "$import" : { 
+                        "filename" : "object.json",
+                        "patch" : { "field_2" : "patched_value" }
+                    }
+                }
+            }
+        )";
+
+        const char* expectedOutput = R"(
+            {
+                "name" : "simple_object_import",
+                "object": {
+                    "field_1" : "value_1",
+                    "field_2" : "patched_value",
+                    "field_3" : "value_3"
+                }
+            }
+        )";
+
+        TestImportLoadStore(inputFile, expectedOutput);
+    }
+
+    TEST_F(JsonImportingTests, ImportSimpleArrayTest)
     {
         const char* inputFile = R"(
             {
@@ -261,7 +289,33 @@ namespace JsonSerializationTests
         TestImportLoadStore(inputFile, expectedOutput);
     }
 
-    TEST_F(JsonImportingTests, ImportNestedImportLoadStoreTest)
+    TEST_F(JsonImportingTests, ImportSimpleArrayPatchTest)
+    {
+        const char* inputFile = R"(
+            {
+                "name" : "simple_array_import",
+                "object": {
+                    "$import" : {
+                        "filename" : "array.json",
+                        "patch" : [ { "element_1" : "patched_value" } ]
+                    }
+                }
+            }
+        )";
+
+        const char* expectedOutput = R"(
+            {
+                "name" : "simple_array_import",
+                "object": [
+                    { "element_1" : "patched_value" }
+                ]
+            }
+        )";
+
+        TestImportLoadStore(inputFile, expectedOutput);
+    }
+
+    TEST_F(JsonImportingTests, NestedImportTest)
     {
         const char* inputFile = R"(
             {
@@ -287,7 +341,7 @@ namespace JsonSerializationTests
         TestImportLoadStore(inputFile, expectedOutput);
     }
 
-    TEST_F(JsonImportingTests, ImportNestedImportCycleTest)
+    TEST_F(JsonImportingTests, NestedImportCycleTest)
     {
         const char* inputFile = R"(
             {

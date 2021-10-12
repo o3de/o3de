@@ -57,22 +57,24 @@ namespace AZ
                 if(strcmp(field.name.GetString(), "$import") == 0)
                 {
                     const rapidjson::Value& importDirective = field.value;
-                    AZ::IO::FixedMaxPath importPath = importPathStack.back();
-                    importPath.RemoveFilename();
+                    AZ::IO::FixedMaxPath importAbsPath = importPathStack.back();
+                    importAbsPath.RemoveFilename();
+                    AZStd::string importName;
                     if (importDirective.IsObject())
                     {
                         auto filenameField = importDirective.FindMember("filename");
                         if (filenameField != importDirective.MemberEnd())
                         {
-                            importPath.Append(filenameField->value.GetString());
+                            importName = filenameField->value.GetString();
                         }
                     }
                     else
                     {
-                        importPath.Append(importDirective.GetString());
+                        importName = importDirective.GetString();
                     }
+                    importAbsPath.Append(importName);
 
-                    ResultCode resolveResult = settings.m_importer->ResolveImport(jsonDoc, importDirective, importPath, allocator);
+                    ResultCode resolveResult = settings.m_importer->ResolveImport(jsonDoc, importDirective, importAbsPath, allocator);
                     if (resolveResult.GetOutcome() == Outcomes::Catastrophic)
                     {
                         return resolveResult;
@@ -81,15 +83,14 @@ namespace AZ
                     if (settings.m_resolveFlags & TRACK_IMPORTS)
                     {
                         rapidjson::Pointer path(element.Get().data(), element.Get().size());
-                        AZStd::string importField = AZStd::string(field.value.GetString());
-                        settings.m_importer->AddImportDirective(path, importField);
+                        settings.m_importer->AddImportDirective(path, importName);
                     }
                     if (settings.m_resolveFlags & TRACK_DEPENDENCIES)
                     {
-                        settings.m_importer->AddImportedFile(importPath.String());
+                        settings.m_importer->AddImportedFile(importAbsPath.String());
                     }
 
-                    ResultCode result = ResolveNestedImports(jsonDoc, allocator, importPathStack, settings, importPath, element);
+                    ResultCode result = ResolveNestedImports(jsonDoc, allocator, importPathStack, settings, importAbsPath, element);
                     if (result.GetOutcome() == Outcomes::Catastrophic)
                     {
                         return result;
