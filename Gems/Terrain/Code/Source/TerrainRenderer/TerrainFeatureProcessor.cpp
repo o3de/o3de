@@ -494,7 +494,7 @@ namespace Terrain
 
                 if (m_areaData.m_macroMaterialsUpdated)
                 {
-                    // sectors were rebuilt, so any cached macro materail data needs to be regenerated
+                    // sectors were rebuilt, so any cached macro material data needs to be regenerated
                     for (SectorData& sectorData : m_sectorData)
                     {
                         for (MacroMaterialData& macroMaterialData : m_macroMaterials.GetDataVector())
@@ -502,7 +502,7 @@ namespace Terrain
                             if (macroMaterialData.m_bounds.Overlaps(sectorData.m_aabb))
                             {
                                 sectorData.m_macroMaterials.push_back(m_macroMaterials.GetIndexForData(&macroMaterialData));
-                                if (sectorData.m_macroMaterials.size() == 4)
+                                if (sectorData.m_macroMaterials.size() == MaxMaterialsPerSector)
                                 {
                                     break;
                                 }
@@ -586,7 +586,7 @@ namespace Terrain
                         sectorData.m_srg->SetImageView(m_macroNormalMapIndex, normalImageView, i);
 
                         // set flags for which images are used.
-                        shaderData.m_mapsInUse = (colorImageView ? 0b01 : 0b00) | (normalImageView ? 0b10 : 0b00);
+                        shaderData.m_mapsInUse = (colorImageView ? ColorImageUsed : 0) | (normalImageView ? NormalImageUsed : 0);
                     }
 
                     sectorData.m_srg->SetConstantArray(m_macroMaterialDataIndex, macroMaterialData);
@@ -614,7 +614,15 @@ namespace Terrain
                     const AZ::Vector2 sectorCenterXY = AZ::Vector2(sectorData.m_aabb.GetCenter().GetX(), sectorData.m_aabb.GetCenter().GetY());
 
                     const float sectorDistance = sectorCenterXY.GetDistance(cameraPositionXY);
-                    const float lodForCamera = floorf(AZ::GetMax(0.0f, log2f(sectorDistance / (GridMeters * 4.0f))));
+
+                    // This will be configurable later
+                    const float minDistanceForLod0 = (GridMeters * 4.0f);
+
+                    // For every distance doubling beyond a minDistanceForLod0, we only need half the mesh density. Each LOD
+                    // is exactly half the resolution of the last.
+                    const float lodForCamera = floorf(AZ::GetMax(0.0f, log2f(sectorDistance / minDistanceForLod0)));
+
+                    // All cameras should render the same LOD so effects like shadows are consistent.
                     lodChoice = AZ::GetMin(lodChoice, aznumeric_cast<uint8_t>(lodForCamera));
                 }
             }

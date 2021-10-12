@@ -60,6 +60,12 @@ namespace Terrain
         using MaterialInstance = AZ::Data::Instance<AZ::RPI::Material>;
         static constexpr uint32_t MaxMaterialsPerSector = 4;
 
+        enum MacroMaterialFlags
+        {
+            ColorImageUsed = 0b01,
+            NormalImageUsed = 0b10,
+        };
+
         struct ShaderTerrainData // Must align with struct in Object Srg
         {
             AZStd::array<float, 2> m_uvMin;

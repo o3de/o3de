@@ -143,7 +143,7 @@ namespace AZ::Render
     }
     
     template<typename DataType, typename IndexType>
-    IndexType IndexedDataVector<DataType, IndexType>::GetIndexForData(DataType* data) const
+    IndexType IndexedDataVector<DataType, IndexType>::GetIndexForData(const DataType* data) const
     {
         if (data >= &m_data.front() && data <= &m_data.back())
         {

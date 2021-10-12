@@ -43,7 +43,7 @@ namespace AZ::Render
         const AZStd::vector<IndexType>& GetIndexVector() const;
 
         IndexType GetRawIndex(IndexType index) const;
-        IndexType GetIndexForData(DataType* data) const;
+        IndexType GetIndexForData(const DataType* data) const;
 
     private:
         constexpr static size_t InitialReservedSize = 128;
