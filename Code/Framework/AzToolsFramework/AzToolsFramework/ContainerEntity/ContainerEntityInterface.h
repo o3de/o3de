@@ -65,6 +65,9 @@ namespace AzToolsFramework
         //! @return An error message if any container was registered for the context, success otherwise.
         virtual ContainerEntityOperationResult Clear(AzFramework::EntityContextId entityContextId) = 0;
 
+        //! Returns true if one of the ancestors of entityId is a closed container entity.
+        virtual bool IsUnderClosedContainerEntity(AZ::EntityId entityId) const = 0;
+
     };
 
 } // namespace AzToolsFramework
