@@ -6,20 +6,22 @@
  *
  */
 
+#include <ProfilerImGuiSystemComponent.h>
+#include <ProfilerSystemComponent.h>
+
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/Module/Module.h>
-#include <ProfilerSystemComponent.h>
 
 namespace Profiler
 {
-    class ProfilerModuleInterface
+    class ProfilerImGuiModule
         : public AZ::Module
     {
     public:
-        AZ_RTTI(ProfilerModuleInterface, "{c966e43a-420d-41c9-bd0d-4cb0bca0d3e1}", AZ::Module);
-        AZ_CLASS_ALLOCATOR(ProfilerModuleInterface, AZ::SystemAllocator, 0);
+        AZ_RTTI(ProfilerImGuiModule, "{5946991E-A96C-4E7A-A9B3-605E3C8EC3CB}", AZ::Module);
+        AZ_CLASS_ALLOCATOR(ProfilerImGuiModule, AZ::SystemAllocator, 0);
 
-        ProfilerModuleInterface()
+        ProfilerImGuiModule()
         {
             // Push results of [MyComponent]::CreateDescriptor() into m_descriptors here.
             // Add ALL components descriptors associated with this gem to m_descriptors.
@@ -27,7 +29,8 @@ namespace Profiler
             // This happens through the [MyComponent]::Reflect() function.
             m_descriptors.insert(m_descriptors.end(), {
                 ProfilerSystemComponent::CreateDescriptor(),
-                });
+                ProfilerImGuiSystemComponent::CreateDescriptor(),
+            });
         }
 
         /**
@@ -37,7 +40,10 @@ namespace Profiler
         {
             return AZ::ComponentTypeList{
                 azrtti_typeid<ProfilerSystemComponent>(),
+                azrtti_typeid<ProfilerImGuiSystemComponent>(),
             };
         }
     };
 }// namespace Profiler
+
+AZ_DECLARE_MODULE_CLASS(Gem_Profiler, Profiler::ProfilerImGuiModule)

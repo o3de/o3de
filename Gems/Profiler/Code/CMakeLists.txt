@@ -21,7 +21,6 @@ ly_add_target(
         PUBLIC
             AZ::AzCore
             AZ::AzFramework
-            Gem::ImGui.Static
 )
 
 # Here add Profiler target, it depends on the Profiler.Static
@@ -38,6 +37,22 @@ ly_add_target(
     BUILD_DEPENDENCIES
         PRIVATE
             Gem::Profiler.Static
+)
+
+ly_add_target(
+    NAME ProfilerImGui ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
+    NAMESPACE Gem
+    FILES_CMAKE
+        profiler_imgui_shared_files.cmake
+    INCLUDE_DIRECTORIES
+        PUBLIC
+            Include
+        PRIVATE
+            Source
+    BUILD_DEPENDENCIES
+        PRIVATE
+            Gem::Profiler.Static
+            Gem::ImGui.Static
     RUNTIME_DEPENDENCIES
         Gem::ImGui
 )
@@ -45,5 +60,5 @@ ly_add_target(
 # By default, we will specify that the above target Profiler would be used by
 # Client and Server type targets when this gem is enabled.  If you don't want it
 # active in Clients or Servers by default, delete one of both of the following lines:
-ly_create_alias(NAME Profiler.Clients NAMESPACE Gem TARGETS Gem::Profiler)
+ly_create_alias(NAME Profiler.Clients NAMESPACE Gem TARGETS Gem::ProfilerImGui)
 ly_create_alias(NAME Profiler.Servers NAMESPACE Gem TARGETS Gem::Profiler)

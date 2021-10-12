@@ -9,19 +9,26 @@
 #pragma once
 
 #include <Profiler/ProfilerBus.h>
-#include <CpuProfilerImpl.h>
+
+#include <ImGuiCpuProfiler.h>
 
 #include <AzCore/Component/Component.h>
 
+#if defined(IMGUI_ENABLED)
+#include <ImGuiBus.h>
+#include <imgui/imgui.h>
+#endif // defined(IMGUI_ENABLED)
 
 namespace Profiler
 {
-    class ProfilerSystemComponent
+    class ProfilerImGuiSystemComponent
         : public AZ::Component
-        , protected ProfilerRequestBus::Handler
+#if defined(IMGUI_ENABLED)
+        , public ImGui::ImGuiUpdateListenerBus::Handler
+#endif // defined(IMGUI_ENABLED)
     {
     public:
-        AZ_COMPONENT(ProfilerSystemComponent, "{3f52c1d7-d920-4781-8ed7-88077ec4f305}");
+        AZ_COMPONENT(ProfilerImGuiSystemComponent, "{E59A8A53-6784-4CCB-A8B5-9F91DA9BF1C5}");
 
         static void Reflect(AZ::ReflectContext* context);
 
@@ -30,24 +37,26 @@ namespace Profiler
         static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required);
         static void GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent);
 
-        ProfilerSystemComponent();
-        ~ProfilerSystemComponent();
+        ProfilerImGuiSystemComponent();
+        ~ProfilerImGuiSystemComponent();
 
     protected:
-        ////////////////////////////////////////////////////////////////////////
-        // ProfilerRequestBus interface implementation
-
-        ////////////////////////////////////////////////////////////////////////
-
-        ////////////////////////////////////////////////////////////////////////
         // AZ::Component interface implementation
         void Init() override;
         void Activate() override;
         void Deactivate() override;
-        ////////////////////////////////////////////////////////////////////////
 
+#if defined(IMGUI_ENABLED)
+        // ImGuiUpdateListenerBus overrides
+        void OnImGuiUpdate() override;
+        void OnImGuiMainMenuUpdate() override;
+#endif // defined(IMGUI_ENABLED)
 
-        CpuProfilerImpl m_cpuProfiler;
+    private:
+#if defined(IMGUI_ENABLED)
+        ImGuiCpuProfiler m_imguiCpuProfiler;
+        bool m_showCpuProfiler{ false };
+#endif // defined(IMGUI_ENABLED)
     };
 
 } // namespace Profiler

@@ -14,33 +14,35 @@
 
 namespace Profiler
 {
+    static constexpr AZ::Crc32 profilerServiceCrc = AZ_CRC_CE("ProfilerService");
+
     void ProfilerSystemComponent::Reflect(AZ::ReflectContext* context)
     {
         if (AZ::SerializeContext* serialize = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serialize->Class<ProfilerSystemComponent, AZ::Component>()
-                ->Version(0)
-                ;
+                ->Version(0);
 
             if (AZ::EditContext* ec = serialize->GetEditContext())
             {
-                ec->Class<ProfilerSystemComponent>("Profiler", "[Description of functionality provided by this System Component]")
+                ec->Class<ProfilerSystemComponent>("Profiler", "Provides a custom implementation of the AZ::Debug::Profiler interface for capturing performance data")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System"))
-                        ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ;
+                        ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
             }
         }
+
+        CpuProfilingStatisticsSerializer::Reflect(context);
     }
 
     void ProfilerSystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC_CE("ProfilerService"));
+        provided.push_back(profilerServiceCrc);
     }
 
     void ProfilerSystemComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
-        incompatible.push_back(AZ_CRC_CE("ProfilerService"));
+        incompatible.push_back(profilerServiceCrc);
     }
 
     void ProfilerSystemComponent::GetRequiredServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& required)
@@ -74,17 +76,14 @@ namespace Profiler
     void ProfilerSystemComponent::Activate()
     {
         ProfilerRequestBus::Handler::BusConnect();
-        AZ::TickBus::Handler::BusConnect();
+
+        m_cpuProfiler.Init();
     }
 
     void ProfilerSystemComponent::Deactivate()
     {
-        AZ::TickBus::Handler::BusDisconnect();
+        m_cpuProfiler.Shutdown();
+
         ProfilerRequestBus::Handler::BusDisconnect();
     }
-
-    void ProfilerSystemComponent::OnTick([[maybe_unused]] float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time)
-    {
-    }
-
 } // namespace Profiler

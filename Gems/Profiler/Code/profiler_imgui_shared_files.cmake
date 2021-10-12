@@ -7,10 +7,9 @@
 #
 
 set(FILES
-    Include/Profiler/ProfilerBus.h
-    Source/CpuProfiler.h
-    Source/CpuProfilerImpl.cpp
-    Source/CpuProfilerImpl.h
-    Source/ProfilerSystemComponent.cpp
-    Source/ProfilerSystemComponent.h
+    Source/ImGuiCpuProfiler.cpp
+    Source/ImGuiCpuProfiler.h
+    Source/ProfilerImGuiModule.cpp
+    Source/ProfilerImGuiSystemComponent.cpp
+    Source/ProfilerImGuiSystemComponent.h
 )

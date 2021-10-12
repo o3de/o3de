@@ -6,17 +6,40 @@
  *
  */
 
-#include <ProfilerModuleInterface.h>
 #include <ProfilerSystemComponent.h>
+
+#include <AzCore/Memory/SystemAllocator.h>
+#include <AzCore/Module/Module.h>
 
 namespace Profiler
 {
     class ProfilerModule
-        : public ProfilerModuleInterface
+        : public AZ::Module
     {
     public:
-        AZ_RTTI(ProfilerModule, "{1908f95f-30b9-4e27-8ae7-1e9fe487ef87}", ProfilerModuleInterface);
+        AZ_RTTI(ProfilerModule, "{4A286414-B387-4D20-9A7E-2F792755B769}", AZ::Module);
         AZ_CLASS_ALLOCATOR(ProfilerModule, AZ::SystemAllocator, 0);
+
+        ProfilerModule()
+        {
+            // Push results of [MyComponent]::CreateDescriptor() into m_descriptors here.
+            // Add ALL components descriptors associated with this gem to m_descriptors.
+            // This will associate the AzTypeInfo information for the components with the the SerializeContext, BehaviorContext and EditContext.
+            // This happens through the [MyComponent]::Reflect() function.
+            m_descriptors.insert(m_descriptors.end(), {
+                ProfilerSystemComponent::CreateDescriptor(),
+            });
+        }
+
+        /**
+         * Add required SystemComponents to the SystemEntity.
+         */
+        AZ::ComponentTypeList GetRequiredSystemComponents() const override
+        {
+            return AZ::ComponentTypeList{
+                azrtti_typeid<ProfilerSystemComponent>(),
+            };
+        }
     };
 }// namespace Profiler
 
