@@ -36,8 +36,6 @@
 #include <aws/gamelift/model/StopMatchmakingRequest.h>
 #include <aws/gamelift/model/StopMatchmakingResult.h>
 
-#include <Request/IAWSGameLiftMatchmakingInternalRequests.h>
-
 using namespace Aws::GameLift;
 
 class GameLiftClientMock

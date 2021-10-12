@@ -33,19 +33,28 @@ namespace AzFramework
         // @return The result of all OnSessionHealthCheck
         virtual bool OnSessionHealthCheck() = 0;
 
-        // OnCreateSessionBegin is fired at the beginning of session creation
+        // OnCreateSessionBegin is fired at the beginning of session creation process
         // @param  sessionConfig The properties to describe a session
         // @return The result of all OnCreateSessionBegin notifications
         virtual bool OnCreateSessionBegin(const SessionConfig& sessionConfig) = 0;
 
-        // OnDestroySessionBegin is fired at the beginning of session termination
+        // OnCreateSessionEnd is fired at the end of session creation process
+        virtual void OnCreateSessionEnd() = 0;
+
+        // OnDestroySessionBegin is fired at the beginning of session termination process
         // @return The result of all OnDestroySessionBegin notifications
         virtual bool OnDestroySessionBegin() = 0;
 
-        // OnUpdateSessionBegin is fired at the beginning of session update
+        // OnDestroySessionEnd is fired at the end of session termination process
+        virtual void OnDestroySessionEnd() = 0;
+
+        // OnUpdateSessionBegin is fired at the beginning of session update process
         // @param sessionConfig The properties to describe a session
         // @param updateReason The reason for session update
         virtual void OnUpdateSessionBegin(const SessionConfig& sessionConfig, const AZStd::string& updateReason) = 0;
+
+        // OnUpdateSessionBegin is fired at the end of session update process
+        virtual void OnUpdateSessionEnd() = 0;
     };
     using SessionNotificationBus = AZ::EBus<SessionNotifications>;
 } // namespace AzFramework

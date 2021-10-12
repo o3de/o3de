@@ -94,4 +94,37 @@ namespace AWSGameLift
         static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::Single;
     };
     using AWSGameLiftMatchmakingRequestBus = AZ::EBus<AzFramework::IMatchmakingRequests, AWSGameLiftMatchmakingRequests>;
+
+    //! IAWSGameLiftMatchmakingEventRequests
+    //! GameLift Gem matchmaking event interfaces which is used to track matchmaking event
+    class IAWSGameLiftMatchmakingEventRequests
+    {
+    public:
+        AZ_RTTI(IAWSGameLiftMatchmakingEventRequests, "{C2DA440E-74E0-411E-813D-5880B50B0C9E}");
+
+        IAWSGameLiftMatchmakingEventRequests() = default;
+        virtual ~IAWSGameLiftMatchmakingEventRequests() = default;
+
+        //! StartPolling
+        //! Request to start process for polling matchmaking ticket based on given ticket id,
+        //! if requested ticket is complete, join player to the match
+        //! @param ticketId The requested matchmaking ticket id
+        //! @param playerId The requested matchmaking player id
+        virtual void StartPolling(const AZStd::string& ticketId, const AZStd::string& playerId) = 0;
+
+        //! StopPolling
+        //! Request to stop process for polling matchmaking ticket
+        virtual void StopPolling() = 0;
+    };
+
+    // IAWSGameLiftMatchmakingEventRequests EBus wrapper for scripting
+    class AWSGameLiftMatchmakingEventRequests
+        : public AZ::EBusTraits
+    {
+    public:
+        using MutexType = AZStd::recursive_mutex;
+        static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single;
+        static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::Single;
+    };
+    using AWSGameLiftMatchmakingEventRequestBus = AZ::EBus<IAWSGameLiftMatchmakingEventRequests, AWSGameLiftMatchmakingEventRequests>;
 } // namespace AWSGameLift
