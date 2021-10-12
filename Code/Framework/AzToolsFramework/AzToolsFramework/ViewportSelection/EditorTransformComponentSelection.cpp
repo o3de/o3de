@@ -407,7 +407,7 @@ namespace AzToolsFramework
             const AzFramework::CameraState cameraState = GetCameraState(viewportId);
             for (size_t entityCacheIndex = 0; entityCacheIndex < entityDataCache.VisibleEntityDataCount(); ++entityCacheIndex)
             {
-                if (entityDataCache.IsVisibleEntityLocked(entityCacheIndex) || !entityDataCache.IsVisibleEntityVisible(entityCacheIndex))
+                if (!entityDataCache.IsVisibleEntitySelectableInViewport(entityCacheIndex))
                 {
                     continue;
                 }
