@@ -9,6 +9,7 @@
 #pragma once
 
 #include <AzCore/Interface/Interface.h>
+#include <AzFramework/Matchmaking/MatchmakingNotifications.h>
 #include <AzFramework/Session/ISessionRequests.h>
 #include <AzFramework/Session/ISessionHandlingRequests.h>
 #include <AzFramework/Matchmaking/MatchmakingNotifications.h>
@@ -18,6 +19,8 @@
 #include <aws/core/utils/Outcome.h>
 #include <aws/gamelift/GameLiftClient.h>
 #include <aws/gamelift/GameLiftErrors.h>
+#include <aws/gamelift/model/AcceptMatchRequest.h>
+#include <aws/gamelift/model/AcceptMatchResult.h>
 #include <aws/gamelift/model/CreateGameSessionRequest.h>
 #include <aws/gamelift/model/CreateGameSessionResult.h>
 #include <aws/gamelift/model/CreatePlayerSessionRequest.h>
@@ -46,6 +49,7 @@ public:
     {
     }
 
+    MOCK_CONST_METHOD1(AcceptMatch, Model::AcceptMatchOutcome(const Model::AcceptMatchRequest&));
     MOCK_CONST_METHOD1(CreateGameSession, Model::CreateGameSessionOutcome(const Model::CreateGameSessionRequest&));
     MOCK_CONST_METHOD1(CreatePlayerSession, Model::CreatePlayerSessionOutcome(const Model::CreatePlayerSessionRequest&));
     MOCK_CONST_METHOD1(DescribeMatchmaking, Model::DescribeMatchmakingOutcome(const Model::DescribeMatchmakingRequest&));
