@@ -119,7 +119,7 @@ namespace PhysX
         void Start(int waitTimeMilliseconds)
         {
             m_waitTimeMilliseconds = waitTimeMilliseconds;
-            m_thread = AZStd::thread(AZStd::bind(&SceneQueryBase::Tick, this), &m_threadDesc);
+            m_thread = AZStd::thread(m_threadDesc, AZStd::bind(&SceneQueryBase::Tick, this));
         }
 
         void Join()

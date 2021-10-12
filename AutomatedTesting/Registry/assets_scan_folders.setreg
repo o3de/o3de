@@ -51,6 +51,14 @@
                 [
                     "Gems/UiBasics"
                 ]
+            },
+            "Hair":
+            {
+                "SourcePaths":
+                [
+                    "Gems/AtomTressFX/Assets",
+                    "Gems/AtomTressFX/Assets/Passes"
+                ]
             }
         }
     }

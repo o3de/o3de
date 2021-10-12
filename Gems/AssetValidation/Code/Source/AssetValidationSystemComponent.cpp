@@ -142,14 +142,14 @@ namespace AssetValidation
         system.GetIConsole()->AddCommand("addseedlist", ConsoleCommandAddSeedList);
         system.GetIConsole()->AddCommand("removeseedlist", ConsoleCommandRemoveSeedList);
         system.GetIConsole()->AddCommand("printexcluded", ConsoleCommandTogglePrintExcluded);
-    }       
+    }
 
     bool AssetValidationSystemComponent::IsKnownAsset(const char* assetPath)
     {
         AZStd::string lowerAsset{ assetPath };
         AZStd::replace(lowerAsset.begin(), lowerAsset.end(), AZ_WRONG_DATABASE_SEPARATOR, AZ_CORRECT_DATABASE_SEPARATOR);
 
-        const AZStd::vector<AZStd::string> prefixes = { "./", "@assets@/" };
+        const AZStd::vector<AZStd::string> prefixes = { "./", "@products@/" };
         for (const AZStd::string& prefix : prefixes)
         {
             if (lowerAsset.starts_with(prefix))
@@ -392,7 +392,7 @@ namespace AssetValidation
         AssetValidationRequestBus::Broadcast(&AssetValidationRequestBus::Events::AddSeedList, seedfilepath);
     }
 
-    bool AssetValidationSystemComponent::AddSeedsFor(const AzFramework::AssetSeedList& seedList, AZ::u32 seedId) 
+    bool AssetValidationSystemComponent::AddSeedsFor(const AzFramework::AssetSeedList& seedList, AZ::u32 seedId)
     {
         for (const AzFramework::SeedInfo& thisSeed : seedList)
         {
@@ -401,7 +401,7 @@ namespace AssetValidation
         return true;
     }
 
-    bool AssetValidationSystemComponent::RemoveSeedsFor(const AzFramework::AssetSeedList& seedList, AZ::u32 seedId) 
+    bool AssetValidationSystemComponent::RemoveSeedsFor(const AzFramework::AssetSeedList& seedList, AZ::u32 seedId)
     {
         AssetValidationRequests::AssetSourceList removeList;
         for (const AzFramework::SeedInfo& thisSeed : seedList)

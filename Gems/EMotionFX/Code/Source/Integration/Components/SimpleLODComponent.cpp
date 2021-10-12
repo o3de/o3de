@@ -142,12 +142,31 @@ namespace EMotionFX
         {
             ActorComponentNotificationBus::Handler::BusConnect(GetEntityId());
             AZ::TickBus::Handler::BusConnect();
+
+            // Remember the lod type and level so that we can set it back to the previous one on deactivation of the component.
+            AZ::Render::MeshComponentRequestBus::EventResult(m_previousLodType,
+                GetEntityId(),
+                &AZ::Render::MeshComponentRequestBus::Events::GetLodType);
+
+            if (m_actorInstance)
+            {
+                m_previousLodLevel = m_actorInstance->GetLODLevel();
+            }
         }
 
         void SimpleLODComponent::Deactivate()
         {
             AZ::TickBus::Handler::BusDisconnect();
             ActorComponentNotificationBus::Handler::BusDisconnect();
+
+            AZ::Render::MeshComponentRequestBus::Event(GetEntityId(),
+                &AZ::Render::MeshComponentRequestBus::Events::SetLodType,
+                m_previousLodType);
+
+            if (m_actorInstance)
+            {
+                m_actorInstance->SetLODLevel(m_previousLodLevel);
+            }
         }
 
         void SimpleLODComponent::OnActorInstanceCreated(EMotionFX::ActorInstance* actorInstance)
@@ -183,7 +202,7 @@ namespace EMotionFX
             return max - 1;
         }
 
-        void SimpleLODComponent::UpdateLodLevelByDistance(EMotionFX::ActorInstance * actorInstance, const Configuration& configuration, AZ::EntityId entityId)
+        void SimpleLODComponent::UpdateLodLevelByDistance(EMotionFX::ActorInstance* actorInstance, const Configuration& configuration, AZ::EntityId entityId)
         {
             if (actorInstance)
             {
@@ -201,15 +220,30 @@ namespace EMotionFX
                 AZ::RPI::ViewportContextPtr defaultViewportContext =
                     viewportContextManager->GetViewportContextByName(viewportContextManager->GetDefaultViewportContextName());
                 const float distance = worldPos.GetDistance(defaultViewportContext->GetCameraTransform().GetTranslation());
-                const size_t lodByDistance = GetLodByDistance(configuration.m_lodDistances, distance);
-                actorInstance->SetLODLevel(lodByDistance);
+                const size_t requestedLod = GetLodByDistance(configuration.m_lodDistances, distance);
+                actorInstance->SetLODLevel(requestedLod);
 
                 if (configuration.m_enableLodSampling)
                 {
-                    const float animGraphSampleRate = configuration.m_lodSampleRates[lodByDistance];
+                    const float animGraphSampleRate = configuration.m_lodSampleRates[requestedLod];
                     const float updateRateInSeconds = animGraphSampleRate > 0.0f ? 1.0f / animGraphSampleRate : 0.0f;
                     actorInstance->SetMotionSamplingRate(updateRateInSeconds);
                 }
+
+                // Disable the automatic mesh LOD level adjustment based on screen space in case a simple LOD component is present.
+                // The simple LOD component overrides the mesh LOD level and syncs the skeleton with the mesh LOD level.
+                AZ::Render::MeshComponentRequestBus::Event(entityId,
+                    &AZ::Render::MeshComponentRequestBus::Events::SetLodType,
+                    AZ::RPI::Cullable::LodType::SpecificLod);
+
+                // When setting the actor instance LOD level, a change is just requested and with the next update it will get applied.
+                // This means that the current LOD level might differ from the requested one. We need to sync the Atom LOD level with the
+                // current LOD level of the actor instance to avoid skinning artifacts. The requested LOD level will be present and applied
+                // the following frame.
+                const size_t currentLod = actorInstance->GetLODLevel();
+                AZ::Render::MeshComponentRequestBus::Event(entityId,
+                    &AZ::Render::MeshComponentRequestBus::Events::SetLodOverride,
+                    static_cast<AZ::RPI::Cullable::LodOverride>(currentLod));
             }
         }
     } // namespace integration

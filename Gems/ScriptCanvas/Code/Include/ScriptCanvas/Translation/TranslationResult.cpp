@@ -72,6 +72,15 @@ namespace ScriptCanvas
                 resultString += entry->GetDescription();
             }
 
+            for (const auto& errors : m_errors)
+            {
+                for (auto& entry : errors.second)
+                {
+                    resultString += "* ";
+                    resultString += entry->GetDescription();
+                }
+            }
+
             return resultString;
         }
 

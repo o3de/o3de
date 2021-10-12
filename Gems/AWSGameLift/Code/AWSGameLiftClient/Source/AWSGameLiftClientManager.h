@@ -9,15 +9,9 @@
 #pragma once
 
 #include <AzCore/std/smart_ptr/shared_ptr.h>
-#include <Request/IAWSGameLiftRequests.h>
+#include <AzFramework/Matchmaking/MatchmakingNotifications.h>
 
-namespace Aws
-{
-    namespace GameLift
-    {
-        class GameLiftClient;
-    }
-}
+#include <Request/IAWSGameLiftRequests.h>
 
 namespace AWSGameLift
 {
@@ -25,6 +19,54 @@ namespace AWSGameLift
     struct AWSGameLiftCreateSessionOnQueueRequest;
     struct AWSGameLiftJoinSessionRequest;
     struct AWSGameLiftSearchSessionsRequest;
+
+    // MatchAcceptanceNotificationBus EBus handler for scripting
+    class AWSGameLiftMatchAcceptanceNotificationBusHandler
+        : public AzFramework::MatchAcceptanceNotificationBus::Handler
+        , public AZ::BehaviorEBusHandler
+    {
+    public:
+        AZ_EBUS_BEHAVIOR_BINDER(
+            AWSGameLiftMatchAcceptanceNotificationBusHandler,
+            "{CBE057D3-F5CE-46D3-B02D-8A6A1446B169}",
+            AZ::SystemAllocator,
+            OnMatchAcceptance);
+
+        void OnMatchAcceptance() override
+        {
+            Call(FN_OnMatchAcceptance);
+        }
+    };
+
+    // MatchmakingAsyncRequestNotificationBus EBus handler for scripting
+    class AWSGameLiftMatchmakingAsyncRequestNotificationBusHandler
+        : public AzFramework::MatchmakingAsyncRequestNotificationBus::Handler
+        , public AZ::BehaviorEBusHandler
+    {
+    public:
+        AZ_EBUS_BEHAVIOR_BINDER(
+            AWSGameLiftMatchmakingAsyncRequestNotificationBusHandler,
+            "{2045EE8F-2AB7-4ED0-9614-3496A1A43677}",
+            AZ::SystemAllocator,
+            OnAcceptMatchAsyncComplete,
+            OnStartMatchmakingAsyncComplete,
+            OnStopMatchmakingAsyncComplete);
+
+        void OnAcceptMatchAsyncComplete() override
+        {
+            Call(FN_OnAcceptMatchAsyncComplete);
+        }
+
+        void OnStartMatchmakingAsyncComplete(const AZStd::string& matchmakingTicketId) override
+        {
+            Call(FN_OnStartMatchmakingAsyncComplete, matchmakingTicketId);
+        }
+
+        void OnStopMatchmakingAsyncComplete() override
+        {
+            Call(FN_OnStopMatchmakingAsyncComplete);
+        }
+    };
 
     // SessionAsyncRequestNotificationBus EBus handler for scripting
     class AWSGameLiftSessionAsyncRequestNotificationBusHandler
@@ -66,6 +108,8 @@ namespace AWSGameLift
     //! GameLift client manager to support game and player session related client requests
     class AWSGameLiftClientManager
         : public AWSGameLiftRequestBus::Handler
+        , public AWSGameLiftMatchmakingAsyncRequestBus::Handler
+        , public AWSGameLiftMatchmakingRequestBus::Handler
         , public AWSGameLiftSessionAsyncRequestBus::Handler
         , public AWSGameLiftSessionRequestBus::Handler
     {
@@ -75,13 +119,11 @@ namespace AWSGameLift
             "Missing AWS region for GameLift client.";
         static constexpr const char AWSGameLiftClientCredentialMissingErrorMessage[] =
             "Missing AWS credential for GameLift client.";
-        static constexpr const char AWSGameLiftClientMissingErrorMessage[] =
-            "GameLift client is not configured yet.";
 
         static constexpr const char AWSGameLiftCreateSessionRequestInvalidErrorMessage[] =
             "Invalid GameLift CreateSession or CreateSessionOnQueue request.";
 
-        AWSGameLiftClientManager();
+        AWSGameLiftClientManager() = default;
         virtual ~AWSGameLiftClientManager() = default;
 
         virtual void ActivateManager();
@@ -91,11 +133,21 @@ namespace AWSGameLift
         bool ConfigureGameLiftClient(const AZStd::string& region) override;
         AZStd::string CreatePlayerId(bool includeBrackets, bool includeDashes) override;
 
+        // AWSGameLiftMatchmakingAsyncRequestBus interface implementation
+        void AcceptMatchAsync(const AzFramework::AcceptMatchRequest& acceptMatchRequest) override;
+        void StartMatchmakingAsync(const AzFramework::StartMatchmakingRequest& startMatchmakingRequest) override;
+        void StopMatchmakingAsync(const AzFramework::StopMatchmakingRequest& stopMatchmakingRequest) override;
+
         // AWSGameLiftSessionAsyncRequestBus interface implementation
         void CreateSessionAsync(const AzFramework::CreateSessionRequest& createSessionRequest) override;
         void JoinSessionAsync(const AzFramework::JoinSessionRequest& joinSessionRequest) override;
         void SearchSessionsAsync(const AzFramework::SearchSessionsRequest& searchSessionsRequest) const override;
         void LeaveSessionAsync() override;
+
+        // AWSGameLiftMatchmakingRequestBus interface implementation
+        void AcceptMatch(const AzFramework::AcceptMatchRequest& acceptMatchRequest) override;
+        AZStd::string StartMatchmaking(const AzFramework::StartMatchmakingRequest& startMatchmakingRequest) override;
+        void StopMatchmaking(const AzFramework::StopMatchmakingRequest& stopMatchmakingRequest) override;
 
         // AWSGameLiftSessionRequestBus interface implementation
         AZStd::string CreateSession(const AzFramework::CreateSessionRequest& createSessionRequest) override;
@@ -103,16 +155,10 @@ namespace AWSGameLift
         AzFramework::SearchSessionsResponse SearchSessions(const AzFramework::SearchSessionsRequest& searchSessionsRequest) const override;
         void LeaveSession() override;
 
-    protected:
-        // Use for automation tests only to inject mock objects. 
-        void SetGameLiftClient(AZStd::shared_ptr<Aws::GameLift::GameLiftClient> gameliftClient);
-
     private:
         AZStd::string CreateSessionHelper(const AWSGameLiftCreateSessionRequest& createSessionRequest);
         AZStd::string CreateSessionOnQueueHelper(const AWSGameLiftCreateSessionOnQueueRequest& createSessionOnQueueRequest);
         bool JoinSessionHelper(const AWSGameLiftJoinSessionRequest& joinSessionRequest);
         AzFramework::SearchSessionsResponse SearchSessionsHelper(const AWSGameLiftSearchSessionsRequest& searchSessionsRequest) const;
-
-        AZStd::shared_ptr<Aws::GameLift::GameLiftClient> m_gameliftClient;
     };
 } // namespace AWSGameLift

@@ -198,6 +198,7 @@ namespace AzToolsFramework
 
         m_proxyModel = aznew EntityOutlinerSortFilterProxyModel(this);
         m_proxyModel->setSourceModel(m_listModel);
+
         m_gui->m_objectTree->setModel(m_proxyModel);
 
         // Link up signals for informing the model of tree changes using the proxy as an intermediary
@@ -905,8 +906,12 @@ namespace AzToolsFramework
         }
     }
 
-    void EntityOutlinerWidget::OnTreeItemDoubleClicked(const QModelIndex& /*index*/)
+    void EntityOutlinerWidget::OnTreeItemDoubleClicked(const QModelIndex& index)
     {
+        if (AZ::EntityId entityId = GetEntityIdFromIndex(index); auto entityUiHandler = m_editorEntityUiInterface->GetHandler(entityId))
+        {
+            entityUiHandler->OnDoubleClick(entityId);
+        }
     }
 
     void EntityOutlinerWidget::OnTreeItemExpanded(const QModelIndex& index)
@@ -1142,7 +1147,7 @@ namespace AzToolsFramework
     {
         QTimer::singleShot(1, this, [this]() {
             m_gui->m_objectTree->setUpdatesEnabled(true);
-            m_gui->m_objectTree->expand(m_proxyModel->index(0,0));
+            m_gui->m_objectTree->expandToDepth(0);
         });
     }
 

@@ -627,8 +627,10 @@ namespace O3DELauncher
             AZ_TracePrintf("Launcher", "Application is configured for VFS");
             AZ_TracePrintf("Launcher", "Log and cache files will be written to the Cache directory on your host PC");
 
+#if defined(AZ_ENABLE_TRACING)
             constexpr const char* message = "If your game does not run, check any of the following:\n"
                                             "\t- Verify the remote_ip address is correct in bootstrap.cfg";
+#endif
             if (mainInfo.m_additionalVfsResolution)
             {
                 AZ_TracePrintf("Launcher", "%s\n%s", message, mainInfo.m_additionalVfsResolution)

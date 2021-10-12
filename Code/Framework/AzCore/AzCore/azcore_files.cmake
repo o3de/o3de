@@ -633,10 +633,14 @@ set(FILES
     Task/TaskGraph.cpp
     Task/TaskGraph.h
     Task/TaskGraph.inl
+    Task/TaskGraphSystemComponent.h
+    Task/TaskGraphSystemComponent.cpp
     Threading/ThreadSafeDeque.h
     Threading/ThreadSafeDeque.inl
     Threading/ThreadSafeObject.h
     Threading/ThreadSafeObject.inl
+    Threading/ThreadUtils.h
+    Threading/ThreadUtils.cpp
     Time/ITime.h
     Time/TimeSystemComponent.cpp
     Time/TimeSystemComponent.h

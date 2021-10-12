@@ -246,8 +246,10 @@ namespace O3DE::ProjectManager
         if (Py_IsInitialized())
         {
             AZ_Warning("python", false, "Python is already active");
-            return false;
+            return m_pythonStarted;
         }
+
+        m_pythonStarted = false;
 
         // set PYTHON_HOME
         AZStd::string pyBasePath = Platform::GetPythonHomePath(PY_PACKAGE, m_enginePath.c_str());
@@ -304,7 +306,8 @@ namespace O3DE::ProjectManager
             // make sure the engine is registered
             RegisterThisEngine();
 
-            return !PyErr_Occurred();
+            m_pythonStarted = !PyErr_Occurred();
+            return m_pythonStarted;
         }
         catch ([[maybe_unused]] const std::exception& e)
         {

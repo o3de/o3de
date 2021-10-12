@@ -14,8 +14,10 @@
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/XML/rapidxml.h>
 #include <AzCore/XML/rapidxml_print.h>
+#include <AzCore/IO/Path/Path.h>
 #include <AzCore/IO/SystemFile.h>
 #include <AzCore/std/string/conversions.h>
+#include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/Casting/numeric_cast.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <AzFramework/API/ApplicationAPI.h>
@@ -170,11 +172,14 @@ namespace AZ
             {
                 using AzToolsFramework::AssetSystemRequestBus;
 
-                const char* path = nullptr;
-                AssetSystemRequestBus::BroadcastResult(path, &AssetSystemRequestBus::Events::GetAbsoluteDevGameFolderPath);
-                if (path)
+                AZ::IO::Path projectPath;
+                if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
                 {
-                    return path;
+                    settingsRegistry->Get(projectPath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_ProjectPath);
+                }
+                if (!projectPath.empty())
+                {
+                    return projectPath.Native();
                 }
                 else
                 {

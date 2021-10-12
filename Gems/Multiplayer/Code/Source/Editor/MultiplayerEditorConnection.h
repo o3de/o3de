@@ -33,7 +33,6 @@ namespace Multiplayer
         MultiplayerEditorConnection();
         ~MultiplayerEditorConnection() = default;
 
-        bool IsHandshakeComplete() const { return true; };
         bool HandleRequest(AzNetworking::IConnection* connection, const AzNetworking::IPacketHeader& packetHeader, MultiplayerEditorPackets::EditorServerInit& packet);
         bool HandleRequest(AzNetworking::IConnection* connection, const AzNetworking::IPacketHeader& packetHeader, MultiplayerEditorPackets::EditorServerReady& packet);
         
