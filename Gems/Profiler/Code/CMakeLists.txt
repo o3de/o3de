@@ -6,7 +6,7 @@
 #
 #
 
-# Add the Profiler.Static target
+# data portion
 ly_add_target(
     NAME Profiler.Static STATIC
     NAMESPACE Gem
@@ -23,7 +23,6 @@ ly_add_target(
             AZ::AzFramework
 )
 
-# Here add Profiler target, it depends on the Profiler.Static
 ly_add_target(
     NAME Profiler ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
     NAMESPACE Gem
@@ -39,6 +38,9 @@ ly_add_target(
             Gem::Profiler.Static
 )
 
+ly_create_alias(NAME Profiler.Servers NAMESPACE Gem TARGETS Gem::Profiler)
+
+# visualization portion
 ly_add_target(
     NAME ProfilerImGui ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
     NAMESPACE Gem
@@ -52,13 +54,10 @@ ly_add_target(
     BUILD_DEPENDENCIES
         PRIVATE
             Gem::Profiler.Static
-            Gem::ImGui.Static
+            Gem::ImGui.imguilib
     RUNTIME_DEPENDENCIES
-        Gem::ImGui
+        Gem::ImGui.imguilib
 )
 
-# By default, we will specify that the above target Profiler would be used by
-# Client and Server type targets when this gem is enabled.  If you don't want it
-# active in Clients or Servers by default, delete one of both of the following lines:
 ly_create_alias(NAME Profiler.Clients NAMESPACE Gem TARGETS Gem::ProfilerImGui)
-ly_create_alias(NAME Profiler.Servers NAMESPACE Gem TARGETS Gem::Profiler)
+ly_create_alias(NAME Profiler.Tools NAMESPACE Gem TARGETS Gem::ProfilerImGui)
