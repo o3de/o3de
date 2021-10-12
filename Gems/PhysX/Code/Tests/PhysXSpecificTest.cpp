@@ -13,6 +13,7 @@
 #include <AzCore/Asset/AssetManager.h>
 #include <AzCore/UnitTest/UnitTest.h>
 #include <AZTestShared/Math/MathTestHelpers.h>
+#include <AZTestShared/Utils/Utils.h>
 
 #include <AzFramework/Physics/SystemBus.h>
 #include <AzFramework/Physics/Collision/CollisionGroups.h>
@@ -1335,7 +1336,7 @@ namespace PhysX
     };
 
     class MassComputeFixture
-        : public ::testing::TestWithParam<::testing::tuple<SimulatedShapesMode, AzPhysics::MassComputeFlags, bool, Physics::ShapeType>>
+        : public ::testing::TestWithParam<::testing::tuple<Physics::ShapeType, SimulatedShapesMode, AzPhysics::MassComputeFlags, bool, bool>>
     {
     public:
         void SetUp() override final
@@ -1371,24 +1372,37 @@ namespace PhysX
             m_rigidBody = nullptr;
         }
 
-        SimulatedShapesMode GetShapesMode() const
+        Physics::ShapeType GetShapeType() const
         {
             return ::testing::get<0>(GetParam());
         }
 
-        AzPhysics::MassComputeFlags GetMassComputeFlags() const
+        SimulatedShapesMode GetShapesMode() const
         {
             return ::testing::get<1>(GetParam());
         }
 
-        bool IsMultiShapeTest() const
+        AzPhysics::MassComputeFlags GetMassComputeFlags() const
         {
-            return ::testing::get<2>(GetParam());
+            const AzPhysics::MassComputeFlags massComputeFlags = ::testing::get<2>(GetParam());
+            if (IncludeAllShapes())
+            {
+                return massComputeFlags | AzPhysics::MassComputeFlags::INCLUDE_ALL_SHAPES;
+            }
+            else
+            {
+                return massComputeFlags;
+            }
         }
 
-        Physics::ShapeType GetShapeType() const
+        bool IncludeAllShapes() const
         {
             return ::testing::get<3>(GetParam());
+        }
+
+        bool IsMultiShapeTest() const
+        {
+            return ::testing::get<4>(GetParam());
         }
 
         bool IsMassExpectedToChange() const
@@ -1437,10 +1451,10 @@ namespace PhysX
 
     TEST_P(MassComputeFixture, RigidBody_ComputeMassFlagsCombinationsTwoShapes_MassPropertiesCalculatedAccordingly)
     {
+        const Physics::ShapeType shapeType = GetShapeType();
         const SimulatedShapesMode shapeMode = GetShapesMode();
         const AzPhysics::MassComputeFlags massComputeFlags = GetMassComputeFlags();
         const bool multiShapeTest = IsMultiShapeTest();
-        const Physics::ShapeType shapeType = GetShapeType();
 
         // Save initial values
         const AZ::Vector3 comBefore = m_rigidBody->GetCenterOfMassWorld();
@@ -1509,45 +1523,90 @@ namespace PhysX
     {
         // No compute
         AzPhysics::MassComputeFlags::NONE,
-        AzPhysics::MassComputeFlags::INCLUDE_ALL_SHAPES,
 
         // Compute Mass only
         AzPhysics::MassComputeFlags::COMPUTE_MASS,
-        AzPhysics::MassComputeFlags::COMPUTE_MASS | AzPhysics::MassComputeFlags::INCLUDE_ALL_SHAPES,
 
         // Compute Inertia only
         AzPhysics::MassComputeFlags::COMPUTE_INERTIA,
-        AzPhysics::MassComputeFlags::COMPUTE_INERTIA | AzPhysics::MassComputeFlags::INCLUDE_ALL_SHAPES,
 
         // Compute COM only
         AzPhysics::MassComputeFlags::COMPUTE_COM,
-        AzPhysics::MassComputeFlags::COMPUTE_COM | AzPhysics::MassComputeFlags::INCLUDE_ALL_SHAPES,
 
         // Compute combinations of 2
         AzPhysics::MassComputeFlags::COMPUTE_MASS | AzPhysics::MassComputeFlags::COMPUTE_COM,
         AzPhysics::MassComputeFlags::COMPUTE_MASS | AzPhysics::MassComputeFlags::COMPUTE_INERTIA,
         AzPhysics::MassComputeFlags::COMPUTE_COM | AzPhysics::MassComputeFlags::COMPUTE_INERTIA,
-        AzPhysics::MassComputeFlags::COMPUTE_MASS | AzPhysics::MassComputeFlags::COMPUTE_COM | AzPhysics::MassComputeFlags::INCLUDE_ALL_SHAPES,
-        AzPhysics::MassComputeFlags::COMPUTE_MASS | AzPhysics::MassComputeFlags::COMPUTE_INERTIA | AzPhysics::MassComputeFlags::INCLUDE_ALL_SHAPES,
-        AzPhysics::MassComputeFlags::COMPUTE_COM | AzPhysics::MassComputeFlags::COMPUTE_INERTIA | AzPhysics::MassComputeFlags::INCLUDE_ALL_SHAPES,
 
         // Compute all
         AzPhysics::MassComputeFlags::DEFAULT, // COMPUTE_COM | COMPUTE_INERTIA | COMPUTE_MASS
-        AzPhysics::MassComputeFlags::DEFAULT | AzPhysics::MassComputeFlags::INCLUDE_ALL_SHAPES
-    };
-
-    static const Physics::ShapeType PossibleShapeTypes[] =
-    {
-        Physics::ShapeType::Sphere,
-        Physics::ShapeType::Box,
-        Physics::ShapeType::Capsule
     };
 
     INSTANTIATE_TEST_CASE_P(PhysX, MassComputeFixture, ::testing::Combine(
+        ::testing::ValuesIn({ Physics::ShapeType::Sphere, Physics::ShapeType::Box, Physics::ShapeType::Capsule }), // Values for GetShapeType()
         ::testing::ValuesIn({ SimulatedShapesMode::NONE, SimulatedShapesMode::MIXED, SimulatedShapesMode::ALL }), // Values for GetShapesMode()
         ::testing::ValuesIn(PossibleMassComputeFlags), // Values for GetMassComputeFlags()
-        ::testing::Bool(), // Values for IsMultiShapeTest(),
-        ::testing::ValuesIn(PossibleShapeTypes))); // Values for GetShapeType()
+        ::testing::Bool(), // Values for IncludeAllShapes()
+        ::testing::Bool())); // Values for IsMultiShapeTest()
 
+    class MassPropertiesWithTriangleMesh
+        : public ::testing::TestWithParam<AzPhysics::MassComputeFlags>
+    {
+    public:
+        void SetUp() override
+        {
+            if (auto* physicsSystem = AZ::Interface<AzPhysics::SystemInterface>::Get())
+            {
+                AzPhysics::SceneConfiguration sceneConfiguration = physicsSystem->GetDefaultSceneConfiguration();
+                sceneConfiguration.m_sceneName = AzPhysics::DefaultPhysicsSceneName;
+                m_testSceneHandle = physicsSystem->AddScene(sceneConfiguration);
+            }
+        }
+
+        void TearDown() override
+        {
+            // Clean up the Test scene
+            if (auto* physicsSystem = AZ::Interface<AzPhysics::SystemInterface>::Get())
+            {
+                physicsSystem->RemoveScene(m_testSceneHandle);
+            }
+            m_testSceneHandle = AzPhysics::InvalidSceneHandle;
+        }
+
+        AzPhysics::MassComputeFlags GetMassComputeFlags() const
+        {
+            return GetParam();
+        }
+
+        AzPhysics::SceneHandle m_testSceneHandle = AzPhysics::InvalidSceneHandle;
+    };
+
+    TEST_P(MassPropertiesWithTriangleMesh, KinematicRigidBody_ComputeMsss_WorksAsExpected)
+    {
+        const AzPhysics::MassComputeFlags flags = GetMassComputeFlags();
+
+        const bool doesComputeMassOrInertia =
+            AzPhysics::MassComputeFlags::COMPUTE_MASS == (flags & AzPhysics::MassComputeFlags::COMPUTE_MASS) ||
+            AzPhysics::MassComputeFlags::COMPUTE_INERTIA == (flags & AzPhysics::MassComputeFlags::COMPUTE_INERTIA);
+
+        // Expect 1 warning when computing mass or inertia
+        const int expectedWarningCount = doesComputeMassOrInertia ? 1 : 0;
+
+        UnitTest::ErrorHandler computeMassPropertiesWarningHandler(
+            "Rigid body '' cannot compute mass or inertia because it contains Triangle Mesh shapes. Mass will default to 1.0 and Inertia to (X:1.000000, Y:1.000000, Z:1.000000).");
+
+        AzPhysics::SimulatedBodyHandle rigidBodyhandle = TestUtils::AddKinematicTriangleMeshCubeToScene(m_testSceneHandle, 3.0f, flags);
+
+        EXPECT_TRUE(rigidBodyhandle != AzPhysics::InvalidSimulatedBodyHandle);
+        EXPECT_EQ(computeMassPropertiesWarningHandler.GetExpectedWarningCount(), expectedWarningCount);
+
+        if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
+        {
+            sceneInterface->RemoveSimulatedBody(m_testSceneHandle, rigidBodyhandle);
+        }
+    }
+
+    INSTANTIATE_TEST_CASE_P(PhysX, MassPropertiesWithTriangleMesh,
+        ::testing::ValuesIn(PossibleMassComputeFlags)); // Values for GetMassComputeFlags()
 } // namespace PhysX
 
