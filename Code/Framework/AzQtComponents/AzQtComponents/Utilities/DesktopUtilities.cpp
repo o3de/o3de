@@ -28,7 +28,7 @@ namespace AzQtComponents
 
         QProcess::startDetached("explorer", args);
 
-#else
+#elif defined(AZ_PLATFORM_MAC)
 
         if (QFileInfo(path).isDir())
         {
@@ -43,7 +43,8 @@ namespace AzQtComponents
 
         QProcess::startDetached("/usr/bin/osascript", { "-e",
                     QStringLiteral("tell application \"Finder\" to activate") });
-
+#else
+        QProcess::startDetached("/usr/bin/xdg-open", { path });
 #endif
     }
 
