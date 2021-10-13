@@ -24,12 +24,9 @@ class Tests:
     postfx_layer_component = (
         "Entity has a PostFX Layer component",
         "Entity did not have an PostFX Layer component")
-    shape_component = (
+    tube_shape_component = (
         "Entity has a Tube Shape component",
         "Entity did not have a Tube Shape component")
-    shape_undo = (
-        "Entity shape component add undone",
-        "Entity shape component undo failed to remove shape")
     postfx_shape_weight_enabled = (
         "PostFx Shape Weight Modifier component enabled",
         "PostFx Shape Weight Modifier component was not enabled.")
@@ -78,8 +75,8 @@ def AtomEditorComponents_postfx_shape_weight_AddedToEntity():
     6) Add PostFX Layer component since it is required by the PostFx Shape Weight Modifier component.
     7) Verify PostFx Shape Weight Modifier component is NOT enabled since it also requires a shape.
     8) Add a required shape looping over a list and checking if it enables PostFX Shape Weight Modifier.
-    9) Undo to remove each added shape and verify PostFX Shape Weight Modifier is not enabled
-    10) Verify PostFx Shape Weight Modifier component is enabled by adding Spline and Tube Shape componen.
+    9) Undo to remove each added shape and verify PostFX Shape Weight Modifier is not enabled.
+    10) Verify PostFx Shape Weight Modifier component is enabled by adding Spline and Tube Shape component.
     11) Enter/Exit game mode.
     12) Test IsHidden.
     13) Test IsVisible.
@@ -146,10 +143,10 @@ def AtomEditorComponents_postfx_shape_weight_AddedToEntity():
         postfx_shape_weight_entity.add_component(postfx_layer_name)
         Report.result(Tests.postfx_layer_component, postfx_shape_weight_entity.has_component(postfx_layer_name))
 
-        # 7. Verify PostFx Shape Weight Modifier component not enabled because shape is also required.
+        # 7. Verify PostFx Shape Weight Modifier component is NOT enabled since it also requires a shape.
         Report.result(Tests.postfx_shape_weight_disabled, not postfx_shape_weight_component.is_enabled())
 
-        # 8. Add remove each shape to test if the PostFX Shape Weight Modifier is enabled by having a required shape
+        # 8. Add a required shape looping over a list and checking if it enables PostFX Shape Weight Modifier.
         for shape in ['Axis Aligned Box Shape', 'Box Shape', 'Capsule Shape', 'Compound Shape', 'Cylinder Shape',
                       'Disk Shape', 'Polygon Prism Shape', 'Quad Shape', 'Sphere Shape', 'Vegetation Reference Shape']:
             postfx_shape_weight_entity.add_component(shape)
@@ -158,18 +155,16 @@ def AtomEditorComponents_postfx_shape_weight_AddedToEntity():
                 f"Entity did not have a {shape} component")
             Report.result(test_shape, postfx_shape_weight_entity.has_component(shape))
 
-            #Check if required shape allows PostFX Shape Weight Modifier to be enabled
+            # Check if required shape allows PostFX Shape Weight Modifier to be enabled
             Report.result(Tests.postfx_shape_weight_enabled, postfx_shape_weight_component.is_enabled())
 
-            # 9. UNDO component addition and check that PostFX Shape Weight Modifier is not enabled
+            # 9. Undo to remove each added shape and verify PostFX Shape Weight Modifier is not enabled.
             general.undo()
-            general.idle_wait_frames(1)
-            Report.result(Tests.shape_undo, not postfx_shape_weight_entity.has_component(shape))
             Report.result(Tests.postfx_shape_weight_disabled, not postfx_shape_weight_component.is_enabled())
 
-        # 10. Add Tube Shape and Spline to fulfil the required shape component
+        # 10. Verify PostFx Shape Weight Modifier component is enabled by adding Spline and Tube Shape component.
         postfx_shape_weight_entity.add_components(['Spline', 'Tube Shape'])
-        Report.result(Tests.shape_component, postfx_shape_weight_entity.has_component('Tube Shape'))
+        Report.result(Tests.tube_shape_component, postfx_shape_weight_entity.has_component('Tube Shape'))
         Report.result(Tests.postfx_shape_weight_enabled, postfx_shape_weight_component.is_enabled())
 
         # 11. Enter/Exit game mode.
