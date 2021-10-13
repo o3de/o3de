@@ -160,6 +160,7 @@ def AtomEditorComponents_postfx_shape_weight_AddedToEntity():
 
             # 9. Undo to remove each added shape and verify PostFX Shape Weight Modifier is not enabled.
             general.undo()
+            TestHelper.wait_for_condition(lambda: not postfx_shape_weight_entity.has_component(shape), 1.0)
             Report.result(Tests.postfx_shape_weight_disabled, not postfx_shape_weight_component.is_enabled())
 
         # 10. Verify PostFx Shape Weight Modifier component is enabled by adding Spline and Tube Shape component.

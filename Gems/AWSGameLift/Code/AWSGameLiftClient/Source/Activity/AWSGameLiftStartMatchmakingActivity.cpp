@@ -5,11 +5,15 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+
 #include <AzCore/Interface/Interface.h>
 
 #include <Activity/AWSGameLiftActivityUtils.h>
 #include <Activity/AWSGameLiftStartMatchmakingActivity.h>
 #include <AWSGameLiftSessionConstants.h>
+
+#include <aws/core/utils/Outcome.h>
+#include <aws/gamelift/model/StartMatchmakingRequest.h>
 
 namespace AWSGameLift
 {

@@ -113,7 +113,6 @@ def create_basic_atom_level(level_name):
         general.close_pane("Error Log")
     general.idle_wait(1.0)
     general.run_console("r_displayInfo=0")
-    general.run_console("r_antialiasingmode=0")
     general.idle_wait(1.0)
 
     # Delete all existing entities & create default_level entity
