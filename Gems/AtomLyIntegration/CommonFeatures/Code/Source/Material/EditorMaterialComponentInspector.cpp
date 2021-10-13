@@ -521,15 +521,15 @@ namespace AZ
             {
                 if (IsInstanceNodePropertyModifed(node))
                 {
-                    return ":/PropertyEditor/Resources/changed_data_item.png";
+                    return ":/Icons/changed_property.svg";
                 }
-                return ":/PropertyEditor/Resources/blank.png";
+                return ":/Icons/blank.png";
             }
 
             bool MaterialPropertyInspector::SaveMaterial() const
             {
                 const QString defaultPath = AtomToolsFramework::GetUniqueFileInfo(
-                    QString(AZ::IO::FileIOBase::GetInstance()->GetAlias("@devassets@")) +
+                    QString(AZ::IO::FileIOBase::GetInstance()->GetAlias("@projectroot@")) +
                     AZ_CORRECT_FILESYSTEM_SEPARATOR + "Materials" +
                     AZ_CORRECT_FILESYSTEM_SEPARATOR + "untitled." +
                     AZ::RPI::MaterialSourceData::Extension).absoluteFilePath();

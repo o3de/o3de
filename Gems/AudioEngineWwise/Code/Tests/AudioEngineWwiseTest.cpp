@@ -231,7 +231,7 @@ namespace UnitTest
             m_app.Start(AZ::ComponentApplication::Descriptor());
 
             // Without this, the user settings component would attempt to save on finalize/shutdown. Since the file is
-            // shared across the whole engine, if multiple tests are run in parallel, the saving could cause a crash 
+            // shared across the whole engine, if multiple tests are run in parallel, the saving could cause a crash
             // shared across the whole engine, if multiple tests are run in parallel, the saving could cause a crash
             // in the unit tests.
             AZ::UserSettingsComponentRequestBus::Broadcast(&AZ::UserSettingsComponentRequests::DisableSaveOnFinalize);
@@ -253,10 +253,10 @@ namespace UnitTest
             AZ_TEST_ASSERT(serializeContext != nullptr);
             Audio::Wwise::ConfigurationSettings::Reflect(serializeContext);
 
-            // Set the @assets@ alias to the path where *this* cpp file lives.
+            // Set the @products@ alias to the path where *this* cpp file lives.
             AZStd::string rootFolder(AZ::Test::GetCurrentExecutablePath());
             AZ::StringFunc::Path::Join(rootFolder.c_str(), "Test.Assets/Gems/AudioEngineWwise", rootFolder);
-            m_fileIO->SetAlias("@assets@", rootFolder.c_str());
+            m_fileIO->SetAlias("@products@", rootFolder.c_str());
 
             // So we don't have to compute it in each test...
             AZStd::string defaultBanksPath(Audio::Wwise::DefaultBanksPath);
@@ -303,26 +303,12 @@ namespace UnitTest
         m_mapEntry.m_bankSubPath = "soundbanks";
         config.m_platformMappings.push_back(m_mapEntry);
 
-        // Unfortunately we are writing to the config file that is simulated to be in the @assets@ subfolder
-        // This will cause an issue during save. Since 'm_configFilePath' is an absolute path, we need to
-        // reset the @assets@ alias to a meaningful assets path that does not contain any root of the m_configFilePath
-        // in order to write to the config file and proceed
-        //AZStd::string rootFolder(AZ::Test::GetCurrentExecutablePath());
-        //AZ::IO::Path tempAssetPath(rootFolder);
-        //tempAssetPath /= "Cache";
-
-        //AZStd::string previousAlias = m_fileIO->GetAlias("@assets@");
-        //m_fileIO->SetAlias("@assets@", tempAssetPath.c_str());
-
         config.Save(m_configFilePath);
 
-        //m_fileIO->SetAlias("@assets@", previousAlias.c_str());
         m_wwiseImpl.SetBankPaths();
 
-        //m_fileIO->SetAlias("@assets@", tempAssetPath.c_str());
         m_fileIO->Remove(m_configFilePath.c_str());
 
-        //m_fileIO->SetAlias("@assets@", previousAlias.c_str());
         EXPECT_STREQ(m_wwiseImpl.m_soundbankFolder.c_str(), "sounds/wwise/soundbanks/");
     }
 

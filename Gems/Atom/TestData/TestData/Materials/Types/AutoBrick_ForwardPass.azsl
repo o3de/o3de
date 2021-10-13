@@ -170,6 +170,7 @@ ForwardPassOutput AutoBrick_ForwardPassPS(VSOutput IN)
     // Position, Normal, Roughness
     surface.position = IN.m_worldPosition.xyz;
     surface.normal = normalize(normal);
+    surface.vertexNormal = surfaceNormal;
     surface.roughnessLinear = 1.0f;
     surface.CalculateRoughnessA();
 

@@ -202,9 +202,6 @@ namespace QtForPython
     QtBootstrapParameters QtForPythonSystemComponent::GetQtBootstrapParameters() const
     {
         QtBootstrapParameters params;
-
-        char devroot[AZ_MAX_PATH_LEN];
-        AZ::IO::FileIOBase::GetInstance()->ResolvePath("@devroot@", devroot, AZ_MAX_PATH_LEN);
        
 #if !defined(Q_OS_WIN)
 #error Unsupported OS platform for this QtForPython gem

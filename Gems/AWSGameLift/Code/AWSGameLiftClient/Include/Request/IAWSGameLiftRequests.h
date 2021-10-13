@@ -11,6 +11,7 @@
 #include <AzCore/EBus/EBus.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/std/string/string.h>
+#include <AzFramework/Matchmaking/IMatchmakingRequests.h>
 #include <AzFramework/Session/ISessionRequests.h>
 
 namespace AWSGameLift
@@ -71,4 +72,26 @@ namespace AWSGameLift
         static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::Single;
     };
     using AWSGameLiftSessionRequestBus = AZ::EBus<AzFramework::ISessionRequests, AWSGameLiftSessionRequests>;
+
+    // IMatchmakingAsyncRequests EBus wrapper for scripting
+    class AWSGameLiftMatchmakingAsyncRequests
+        : public AZ::EBusTraits
+    {
+    public:
+        using MutexType = AZStd::recursive_mutex;
+        static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single;
+        static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::Single;
+    };
+    using AWSGameLiftMatchmakingAsyncRequestBus = AZ::EBus<AzFramework::IMatchmakingAsyncRequests, AWSGameLiftMatchmakingAsyncRequests>;
+
+    // IMatchmakingRequests EBus wrapper for scripting
+    class AWSGameLiftMatchmakingRequests
+        : public AZ::EBusTraits
+    {
+    public:
+        using MutexType = AZStd::recursive_mutex;
+        static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single;
+        static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::Single;
+    };
+    using AWSGameLiftMatchmakingRequestBus = AZ::EBus<AzFramework::IMatchmakingRequests, AWSGameLiftMatchmakingRequests>;
 } // namespace AWSGameLift

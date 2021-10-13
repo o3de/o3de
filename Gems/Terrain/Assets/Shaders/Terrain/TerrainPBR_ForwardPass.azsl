@@ -68,7 +68,6 @@ VSOutput TerrainPBR_MainPassVS(VertexInput IN)
 ForwardPassOutput TerrainPBR_MainPassPS(VSOutput IN)
 {
     // ------- Surface -------
-
     Surface surface;
     
     // Position
@@ -83,21 +82,39 @@ ForwardPassOutput TerrainPBR_MainPassPS(VSOutput IN)
     
     // ------- Normal -------
     float3 macroNormal = IN.m_normal;
-    if (o_macroNormal_useTexture)
-    {
-        macroNormal = GetNormalInputTS(TerrainMaterialSrg::m_macroNormalMap, TerrainMaterialSrg::m_sampler, 
-            origUv, TerrainMaterialSrg::m_flipMacroNormalX, TerrainMaterialSrg::m_flipMacroNormalY, CreateIdentity3x3(), true, 1.0);
-    }
     
+    // ------- Macro Color / Normal -------
+    float3 macroColor = TerrainMaterialSrg::m_baseColor.rgb;
+    [unroll] for (uint i = 0; i < 4; ++i)
+    {
+        float2 macroUvMin = ObjectSrg::m_macroMaterialData[i].m_uvMin;
+        float2 macroUvMax = ObjectSrg::m_macroMaterialData[i].m_uvMax;
+        float2 macroUv = lerp(macroUvMin, macroUvMax, IN.m_uv);
+        if (macroUv.x >= 0.0 && macroUv.x <= 1.0 && macroUv.y >= 0.0 && macroUv.y <= 1.0)
+        {
+            if ((ObjectSrg::m_macroMaterialData[i].m_mapsInUse & 1) > 0)
+            {
+                macroColor = GetBaseColorInput(ObjectSrg::m_macroColorMap[i], TerrainMaterialSrg::m_sampler, macroUv, macroColor, true);
+            }
+            if ((ObjectSrg::m_macroMaterialData[i].m_mapsInUse & 2) > 0)
+            {
+                bool flipX = ObjectSrg::m_macroMaterialData[i].m_flipNormalX;
+                bool flipY = ObjectSrg::m_macroMaterialData[i].m_flipNormalY;
+                bool factor = ObjectSrg::m_macroMaterialData[i].m_normalFactor;
+                macroNormal = GetNormalInputTS(ObjectSrg::m_macroNormalMap[i], TerrainMaterialSrg::m_sampler, 
+                    macroUv, flipX, flipY, CreateIdentity3x3(), true, factor);
+            }
+            break;
+        }
+    }
+
     float3 detailNormal = GetNormalInputTS(TerrainMaterialSrg::m_normalMap, TerrainMaterialSrg::m_sampler, 
         detailUv, TerrainMaterialSrg::m_flipNormalX, TerrainMaterialSrg::m_flipNormalY, CreateIdentity3x3(), o_normal_useTexture, TerrainMaterialSrg::m_normalFactor);
 
     detailNormal = ReorientTangentSpaceNormal(macroNormal, detailNormal);
     surface.normal = lerp(detailNormal, macroNormal, detailFactor);
     surface.normal = normalize(surface.normal);
-
-    // ------- Macro Color -------
-    float3 macroColor = GetBaseColorInput(TerrainMaterialSrg::m_macroColorMap, TerrainMaterialSrg::m_sampler, origUv, TerrainMaterialSrg::m_baseColor.rgb, o_baseColor_useTexture);
+    surface.vertexNormal = normalize(IN.m_normal);
 
     // ------- Base Color -------
     float3 detailColor = GetBaseColorInput(TerrainMaterialSrg::m_baseColorMap, TerrainMaterialSrg::m_sampler, detailUv, TerrainMaterialSrg::m_baseColor.rgb, o_baseColor_useTexture);

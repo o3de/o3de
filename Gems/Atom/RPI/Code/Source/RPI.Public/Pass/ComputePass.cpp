@@ -107,30 +107,13 @@ namespace AZ
             dispatchArgs.m_totalNumberOfThreadsY = passData->m_totalNumberOfThreadsY;
             dispatchArgs.m_totalNumberOfThreadsZ = passData->m_totalNumberOfThreadsZ;
 
-            const auto numThreads = m_shader->GetAsset()->GetAttribute(RHI::ShaderStage::Compute, Name{ "numthreads" });
-            if (numThreads)
+            const auto outcome = RPI::GetComputeShaderNumThreads(m_shader->GetAsset(), dispatchArgs);
+            if (!outcome.IsSuccess())
             {
-                const RHI::ShaderStageAttributeArguments& args = *numThreads;
-                bool validArgs = args.size() == 3;
-                if (validArgs)
-                {
-                    validArgs &= args[0].type() == azrtti_typeid<int>();
-                    validArgs &= args[1].type() == azrtti_typeid<int>();
-                    validArgs &= args[2].type() == azrtti_typeid<int>();
-                }
-
-                if (!validArgs)
-                {
-                    AZ_Error("PassSystem", false, "[ComputePass '%s']: Shader '%s' contains invalid numthreads arguments.",
-                        GetPathName().GetCStr(),
-                        passData->m_shaderReference.m_filePath.data());
-                    return;
-                }
-
-                dispatchArgs.m_threadsPerGroupX = aznumeric_cast<uint16_t>(AZStd::any_cast<int>(args[0]));
-                dispatchArgs.m_threadsPerGroupY = aznumeric_cast<uint16_t>(AZStd::any_cast<int>(args[1]));
-                dispatchArgs.m_threadsPerGroupZ = aznumeric_cast<uint16_t>(AZStd::any_cast<int>(args[2]));
+                AZ_Error("PassSystem", false, "[ComputePass '%s']: Shader '%.*s' contains invalid numthreads arguments:\n%s",
+                        GetPathName().GetCStr(), passData->m_shaderReference.m_filePath.size(), passData->m_shaderReference.m_filePath.data(), outcome.GetError().c_str());
             }
+
             m_dispatchItem.m_arguments = dispatchArgs;
 
             m_isFullscreenPass = passData->m_makeFullscreenPass;

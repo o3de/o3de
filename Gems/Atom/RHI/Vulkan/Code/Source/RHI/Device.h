@@ -126,7 +126,7 @@ namespace AZ
             void EndFrameInternal() override;
             void WaitForIdleInternal() override;
             void CompileMemoryStatisticsInternal(RHI::MemoryStatisticsBuilder& builder) override;
-            void UpdateCpuTimingStatisticsInternal(RHI::CpuTimingStatistics& cpuTimingStatistics) const override;
+            void UpdateCpuTimingStatisticsInternal() const override;
             AZStd::vector<RHI::Format> GetValidSwapChainImageFormats(const RHI::WindowHandle& windowHandle) const override;
             AZStd::chrono::microseconds GpuTimestampToMicroseconds(uint64_t gpuTimestamp, RHI::HardwareQueueClass queueClass) const override;
             void FillFormatsCapabilitiesInternal(FormatCapabilitiesList& formatsCapabilities) override;

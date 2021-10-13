@@ -173,7 +173,7 @@ namespace AtomToolsFramework
         AzToolsFramework::AssetBrowser::AssetDatabaseLocationNotificationBus::Broadcast(
             &AzToolsFramework::AssetBrowser::AssetDatabaseLocationNotifications::OnDatabaseInitialized);
 
-        AZ::Data::AssetCatalogRequestBus::Broadcast(&AZ::Data::AssetCatalogRequestBus::Events::LoadCatalog, "@assets@/assetcatalog.xml");
+        AZ::Data::AssetCatalogRequestBus::Broadcast(&AZ::Data::AssetCatalogRequestBus::Events::LoadCatalog, "@products@/assetcatalog.xml");
 
         if (!AZ::RPI::RPISystemInterface::Get()->IsInitialized())
         {
@@ -289,7 +289,7 @@ namespace AtomToolsFramework
             ExitMainLoop();
         }
     }
-    
+
     void AtomToolsApplication::SaveSettings()
     {
         if (m_activatedLocalUserSettings)
@@ -378,7 +378,7 @@ namespace AtomToolsFramework
             ExitMainLoop();
         }
     }
-    
+
     bool AtomToolsApplication::LaunchLocalServer()
     {
         // Determine if this is the first launch of the tool by attempting to connect to a running server

@@ -566,6 +566,8 @@ set(FILES
     Settings/SettingsRegistryMergeUtils.h
     Settings/SettingsRegistryScriptUtils.cpp
     Settings/SettingsRegistryScriptUtils.h
+    Settings/SettingsRegistryVisitorUtils.cpp
+    Settings/SettingsRegistryVisitorUtils.h
     State/HSM.cpp
     State/HSM.h
     Statistics/NamedRunningStatistic.h
@@ -639,6 +641,8 @@ set(FILES
     Threading/ThreadSafeDeque.inl
     Threading/ThreadSafeObject.h
     Threading/ThreadSafeObject.inl
+    Threading/ThreadUtils.h
+    Threading/ThreadUtils.cpp
     Time/ITime.h
     Time/TimeSystemComponent.cpp
     Time/TimeSystemComponent.h

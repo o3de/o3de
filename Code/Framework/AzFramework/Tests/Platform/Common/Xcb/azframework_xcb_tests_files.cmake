@@ -9,9 +9,12 @@
 set(FILES
     Actions.h
     Main.cpp
+    Matchers.h
     MockXcbInterface.cpp
     MockXcbInterface.h
     Printers.cpp
     Printers.h
+    XcbBaseTestFixture.cpp
+    XcbBaseTestFixture.h
     XcbInputDeviceKeyboardTests.cpp
 )
