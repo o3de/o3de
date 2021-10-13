@@ -93,12 +93,12 @@ void CEditorPreferencesPage_Files::Reflect(AZ::SerializeContext& serialize)
             ->Attribute(AZ::Edit::Attributes::Max, 5000);
 
         editContext->Class<CEditorPreferencesPage_Files>("File Preferences", "Class for handling File Preferences")
-             ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-             ->Attribute(AZ::Edit::Attributes::Visibility, AZ_CRC("PropertyVisibility_ShowChildrenOnly", 0xef428f20))
-             ->DataElement(AZ::Edit::UIHandlers::Default, &CEditorPreferencesPage_Files::m_files, "Files", "File Preferences")
-             ->DataElement(AZ::Edit::UIHandlers::Default, &CEditorPreferencesPage_Files::m_editors, "External Editors", "External Editors")
-             ->DataElement(AZ::Edit::UIHandlers::Default, &CEditorPreferencesPage_Files::m_autoBackup, "Auto Backup", "Auto Backup")
-             ->DataElement(AZ::Edit::UIHandlers::Default, &CEditorPreferencesPage_Files::m_assetBrowserSettings, "Asset Browser Settings","Asset Browser Settings");
+            ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
+            ->Attribute(AZ::Edit::Attributes::Visibility, AZ_CRC("PropertyVisibility_ShowChildrenOnly", 0xef428f20))
+            ->DataElement(AZ::Edit::UIHandlers::Default, &CEditorPreferencesPage_Files::m_files, "Files", "File Preferences")
+            ->DataElement(AZ::Edit::UIHandlers::Default, &CEditorPreferencesPage_Files::m_editors, "External Editors", "External Editors")
+            ->DataElement(AZ::Edit::UIHandlers::Default, &CEditorPreferencesPage_Files::m_autoBackup, "Auto Backup", "Auto Backup")
+            ->DataElement(AZ::Edit::UIHandlers::Default, &CEditorPreferencesPage_Files::m_assetBrowserSettings, "Asset Browser Settings","Asset Browser Settings");
     }
 }
 
