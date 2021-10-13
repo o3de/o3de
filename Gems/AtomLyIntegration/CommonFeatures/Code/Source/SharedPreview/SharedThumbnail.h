@@ -13,7 +13,6 @@
 #include <AzFramework/Asset/AssetCatalogBus.h>
 #include <AzToolsFramework/Thumbnails/Thumbnail.h>
 #include <AzToolsFramework/Thumbnails/ThumbnailerBus.h>
-#include <SharedPreview/SharedPreviewRenderer.h>
 #endif
 
 namespace AZ
@@ -22,9 +21,7 @@ namespace AZ
     {
         namespace Thumbnails
         {
-            /**
-             * Custom material or model thumbnail that detects when an asset changes and updates the thumbnail
-             */
+            //! Custom thumbnail that detects when an asset changes and updates the thumbnail
             class SharedThumbnail
                 : public AzToolsFramework::Thumbnailer::Thumbnail
                 , public AzToolsFramework::Thumbnailer::ThumbnailerRendererNotificationBus::Handler
@@ -48,11 +45,10 @@ namespace AZ
 
                 AZStd::binary_semaphore m_renderWait;
                 Data::AssetId m_assetId;
+                AZ::Uuid m_typeId;
             };
 
-            /**
-             * Cache configuration for large material thumbnails
-             */
+            //! Cache configuration for large thumbnails
             class SharedThumbnailCache
                 : public AzToolsFramework::Thumbnailer::ThumbnailCache<SharedThumbnail>
             {
@@ -63,7 +59,7 @@ namespace AZ
                 int GetPriority() const override;
                 const char* GetProviderName() const override;
 
-                static constexpr const char* ProviderName = "Material Thumbnails";
+                static constexpr const char* ProviderName = "Common Feature Shared Thumbnail= Provider";
 
             protected:
                 bool IsSupportedThumbnail(AzToolsFramework::Thumbnailer::SharedThumbnailKey key) const override;

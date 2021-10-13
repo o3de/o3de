@@ -28,6 +28,7 @@ namespace AZ
             , public AzToolsFramework::EditorLevelNotificationBus::Handler
             , public AzToolsFramework::SliceEditorEntityOwnershipServiceNotificationBus::Handler
             , public AzToolsFramework::AssetBrowser::PreviewerRequestBus::Handler
+            , public AzFramework::AssetCatalogEventBus::Handler
             , public AzFramework::ApplicationLifecycleEvents::Bus::Handler
         {
         public:
@@ -56,11 +57,17 @@ namespace AZ
             void OnSliceInstantiated(const AZ::Data::AssetId&, AZ::SliceComponent::SliceInstanceAddress&, const AzFramework::SliceInstantiationTicket&) override;
             void OnSliceInstantiationFailed(const AZ::Data::AssetId&, const AzFramework::SliceInstantiationTicket&) override;
 
+            // AzFramework::AssetCatalogEventBus::Handler overrides ...
+            void OnCatalogLoaded(const char* catalogFile) override;
+
             // AzToolsFramework::AssetBrowser::PreviewerRequestBus::Handler overrides...
             const AzToolsFramework::AssetBrowser::PreviewerFactory* GetPreviewerFactory(const AzToolsFramework::AssetBrowser::AssetBrowserEntry* entry) const override;
 
             // AzFramework::ApplicationLifecycleEvents overrides...
             void OnApplicationAboutToStop() override;
+
+            void SetupThumbnails();
+            void TeardownThumbnails();
 
         private:
             AZStd::unique_ptr<SkinnedMeshDebugDisplay> m_skinnedMeshDebugDisplay;

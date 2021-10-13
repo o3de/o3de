@@ -25,10 +25,10 @@ namespace AZ
             SharedPreviewRenderer::SharedPreviewRenderer()
                 : m_data(new SharedPreviewRendererData)
             {
-                // SharedPreviewRenderer supports both models and materials, but we connect on materialAssetType
-                // since MaterialOrModelThumbnail dispatches event on materialAssetType address too
-                AzToolsFramework::Thumbnailer::ThumbnailerRendererRequestBus::MultiHandler::BusConnect(RPI::MaterialAsset::RTTI_Type());
-                AzToolsFramework::Thumbnailer::ThumbnailerRendererRequestBus::MultiHandler::BusConnect(RPI::ModelAsset::RTTI_Type());
+                for (const AZ::Uuid& typeId : SharedPreviewUtils::GetSupportedAssetTypes())
+                {
+                    AzToolsFramework::Thumbnailer::ThumbnailerRendererRequestBus::MultiHandler::BusConnect(typeId);
+                }
                 SystemTickBus::Handler::BusConnect();
                 ThumbnailFeatureProcessorProviderBus::Handler::BusConnect();
 

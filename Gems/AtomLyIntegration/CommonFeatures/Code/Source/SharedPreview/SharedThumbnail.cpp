@@ -8,8 +8,8 @@
 
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <QtConcurrent/QtConcurrent>
-#include <SharedPreview/SharedThumbnail.h>
 #include <SharedPreview/SharedPreviewUtils.h>
+#include <SharedPreview/SharedThumbnail.h>
 
 namespace AZ
 {
@@ -17,7 +17,7 @@ namespace AZ
     {
         namespace Thumbnails
         {
-            static constexpr const int SharedThumbnailSize = 512; // 512 is the default size in render to texture pass
+            static constexpr const int SharedThumbnailSize = 256;
 
             //////////////////////////////////////////////////////////////////////////
             // SharedThumbnail
@@ -25,25 +25,27 @@ namespace AZ
             SharedThumbnail::SharedThumbnail(AzToolsFramework::Thumbnailer::SharedThumbnailKey key)
                 : Thumbnail(key)
             {
-                m_assetId = GetAssetId(key, RPI::MaterialAsset::RTTI_Type());
-                if (!m_assetId.IsValid())
+                for (const AZ::Uuid& typeId : SharedPreviewUtils::GetSupportedAssetTypes())
                 {
-                    AZ_Error("SharedThumbnail", false, "Failed to find matching assetId for the thumbnailKey.");
-                    m_state = State::Failed;
-                    return;
+                    const AZ::Data::AssetId& assetId = SharedPreviewUtils::GetAssetId(key, typeId);
+                    if (assetId.IsValid())
+                    {
+                        m_assetId = assetId;
+                        m_typeId = typeId;
+                        AzToolsFramework::Thumbnailer::ThumbnailerRendererNotificationBus::Handler::BusConnect(key);
+                        AzFramework::AssetCatalogEventBus::Handler::BusConnect();
+                        return;
+                    }
                 }
 
-                AzToolsFramework::Thumbnailer::ThumbnailerRendererNotificationBus::Handler::BusConnect(key);
-                AzFramework::AssetCatalogEventBus::Handler::BusConnect();
+                AZ_Error("SharedThumbnail", false, "Failed to find matching assetId for the thumbnailKey.");
+                m_state = State::Failed;
             }
 
             void SharedThumbnail::LoadThread()
             {
                 AzToolsFramework::Thumbnailer::ThumbnailerRendererRequestBus::QueueEvent(
-                    RPI::MaterialAsset::RTTI_Type(),
-                    &AzToolsFramework::Thumbnailer::ThumbnailerRendererRequests::RenderThumbnail,
-                    m_key,
-                    SharedThumbnailSize);
+                    m_typeId, &AzToolsFramework::Thumbnailer::ThumbnailerRendererRequests::RenderThumbnail, m_key, SharedThumbnailSize);
                 // wait for response from thumbnail renderer
                 m_renderWait.acquire();
             }
@@ -68,8 +70,7 @@ namespace AZ
 
             void SharedThumbnail::OnCatalogAssetChanged([[maybe_unused]] const AZ::Data::AssetId& assetId)
             {
-                if (m_assetId == assetId &&
-                    m_state == State::Ready)
+                if (m_assetId == assetId && m_state == State::Ready)
                 {
                     m_state = State::Unloaded;
                     Load();
@@ -88,7 +89,7 @@ namespace AZ
 
             int SharedThumbnailCache::GetPriority() const
             {
-                // Material thumbnails override default source thumbnails, so carry higher priority
+                // Thumbnails override default source thumbnails, so carry higher priority
                 return 1;
             }
 
@@ -99,11 +100,7 @@ namespace AZ
 
             bool SharedThumbnailCache::IsSupportedThumbnail(AzToolsFramework::Thumbnailer::SharedThumbnailKey key) const
             {
-                return
-                    GetAssetId(key, RPI::MaterialAsset::RTTI_Type()).IsValid() &&
-                    // in case it's a source scene file, it will contain both material and model products
-                    // model thumbnails are handled by MeshThumbnail
-                    !GetAssetId(key, RPI::ModelAsset::RTTI_Type()).IsValid();
+                return SharedPreviewUtils::IsSupportedAssetType(key);
             }
         } // namespace Thumbnails
     } // namespace LyIntegration

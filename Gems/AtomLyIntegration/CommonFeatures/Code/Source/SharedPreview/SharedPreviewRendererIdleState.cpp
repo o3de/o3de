@@ -49,7 +49,7 @@ namespace AZ
 
                     // Find whether thumbnailkey contains a material asset or set a default material
                     m_context->GetData()->m_materialAsset = m_context->GetData()->m_defaultMaterialAsset;
-                    Data::AssetId materialAssetId = GetAssetId(m_context->GetData()->m_thumbnailKeyRendered, RPI::MaterialAsset::RTTI_Type());
+                    Data::AssetId materialAssetId = SharedPreviewUtils::GetAssetId(m_context->GetData()->m_thumbnailKeyRendered, RPI::MaterialAsset::RTTI_Type());
                     if (materialAssetId.IsValid())
                     {
                         if (m_context->GetData()->m_assetsToLoad.emplace(materialAssetId).second)
@@ -61,7 +61,7 @@ namespace AZ
 
                     // Find whether thumbnailkey contains a model asset or set a default model
                     m_context->GetData()->m_modelAsset = m_context->GetData()->m_defaultModelAsset;
-                    Data::AssetId modelAssetId = GetAssetId(m_context->GetData()->m_thumbnailKeyRendered, RPI::ModelAsset::RTTI_Type());
+                    Data::AssetId modelAssetId = SharedPreviewUtils::GetAssetId(m_context->GetData()->m_thumbnailKeyRendered, RPI::ModelAsset::RTTI_Type());
                     if (modelAssetId.IsValid())
                     {
                         if (m_context->GetData()->m_assetsToLoad.emplace(modelAssetId).second)

@@ -50,7 +50,7 @@ namespace AZ
             ~SharedPreviewer();
 
             // AzToolsFramework::AssetBrowser::Previewer overrides...
-            void Clear() const override {}
+            void Clear() const override;
             void Display(const AzToolsFramework::AssetBrowser::AssetBrowserEntry* entry) override;
             const QString& GetName() const override;
 

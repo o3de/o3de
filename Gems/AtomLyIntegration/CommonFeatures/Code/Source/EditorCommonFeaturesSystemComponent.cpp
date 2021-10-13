@@ -15,6 +15,8 @@
 #include <AzFramework/API/ApplicationAPI.h>
 #include <AzToolsFramework/API/EditorCameraBus.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
+#include <AzToolsFramework/Thumbnails/ThumbnailContext.h>
+#include <SharedPreview/SharedThumbnail.h>
 
 #include <IEditor.h>
 
@@ -68,7 +70,7 @@ namespace AZ
 
         void EditorCommonFeaturesSystemComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
         {
-            AZ_UNUSED(required);
+            required.push_back(AZ_CRC_CE("ThumbnailerService"));
         }
 
         void EditorCommonFeaturesSystemComponent::GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent)
@@ -82,24 +84,23 @@ namespace AZ
 
         void EditorCommonFeaturesSystemComponent::Activate()
         {
-            m_renderer = AZStd::make_unique<AZ::LyIntegration::Thumbnails::SharedPreviewRenderer>();
-            m_previewerFactory = AZStd::make_unique <LyIntegration::SharedPreviewerFactory>();
             m_skinnedMeshDebugDisplay = AZStd::make_unique<SkinnedMeshDebugDisplay>();
 
             AzToolsFramework::EditorLevelNotificationBus::Handler::BusConnect();
             AzToolsFramework::AssetBrowser::PreviewerRequestBus::Handler::BusConnect();
+            AzFramework::AssetCatalogEventBus::Handler::BusConnect();
             AzFramework::ApplicationLifecycleEvents::Bus::Handler::BusConnect();
         }
 
         void EditorCommonFeaturesSystemComponent::Deactivate()
         {
-            AzToolsFramework::EditorLevelNotificationBus::Handler::BusDisconnect();
             AzFramework::ApplicationLifecycleEvents::Bus::Handler::BusDisconnect();
+            AzFramework::AssetCatalogEventBus::Handler::BusDisconnect();
+            AzToolsFramework::EditorLevelNotificationBus::Handler::BusDisconnect();
             AzToolsFramework::AssetBrowser::PreviewerRequestBus::Handler::BusDisconnect();
 
             m_skinnedMeshDebugDisplay.reset();
-            m_previewerFactory.reset();
-            m_renderer.reset();
+            TeardownThumbnails();
         }
 
         void EditorCommonFeaturesSystemComponent::OnNewLevelCreated()
@@ -191,6 +192,13 @@ namespace AZ
             }
         }
 
+        void EditorCommonFeaturesSystemComponent::OnCatalogLoaded([[maybe_unused]] const char* catalogFile)
+        {
+            AZ::TickBus::QueueFunction([this](){
+                SetupThumbnails();
+            });
+        }
+
         const AzToolsFramework::AssetBrowser::PreviewerFactory* EditorCommonFeaturesSystemComponent::GetPreviewerFactory(
             const AzToolsFramework::AssetBrowser::AssetBrowserEntry* entry) const
         {
@@ -199,7 +207,33 @@ namespace AZ
 
         void EditorCommonFeaturesSystemComponent::OnApplicationAboutToStop()
         {
+            TeardownThumbnails();
+        }
+
+        void EditorCommonFeaturesSystemComponent::SetupThumbnails()
+        {
+            using namespace AzToolsFramework::Thumbnailer;
+            using namespace LyIntegration;
+
+            ThumbnailerRequestsBus::Broadcast(
+                &ThumbnailerRequests::RegisterThumbnailProvider, MAKE_TCACHE(AZ::LyIntegration::Thumbnails::SharedThumbnailCache),
+                ThumbnailContext::DefaultContext);
+
+            m_renderer = AZStd::make_unique<AZ::LyIntegration::Thumbnails::SharedPreviewRenderer>();
+            m_previewerFactory = AZStd::make_unique<LyIntegration::SharedPreviewerFactory>();
+        }
+
+        void EditorCommonFeaturesSystemComponent::TeardownThumbnails()
+        {
+            using namespace AzToolsFramework::Thumbnailer;
+            using namespace LyIntegration;
+
+            ThumbnailerRequestsBus::Broadcast(
+                &ThumbnailerRequests::UnregisterThumbnailProvider, AZ::LyIntegration::Thumbnails::SharedThumbnailCache::ProviderName,
+                ThumbnailContext::DefaultContext);
+
             m_renderer.reset();
+            m_previewerFactory.reset();
         }
     } // namespace Render
 } // namespace AZ

@@ -43,6 +43,10 @@ namespace AZ
         {
         }
 
+        void SharedPreviewer::Clear() const
+        {
+        }
+
         void SharedPreviewer::Display(const AzToolsFramework::AssetBrowser::AssetBrowserEntry* entry)
         {
             using namespace AzToolsFramework::AssetBrowser;
@@ -68,7 +72,7 @@ namespace AZ
 
         void SharedPreviewer::UpdateFileInfo() const
         {
-            m_ui->m_fileInfoLabel->setText(Thumbnails::WordWrap(m_fileInfo, m_ui->m_fileInfoLabel->width() / CharWidth));
+            m_ui->m_fileInfoLabel->setText(SharedPreviewUtils::WordWrap(m_fileInfo, m_ui->m_fileInfoLabel->width() / CharWidth));
         }
     } // namespace LyIntegration
 } // namespace AZ

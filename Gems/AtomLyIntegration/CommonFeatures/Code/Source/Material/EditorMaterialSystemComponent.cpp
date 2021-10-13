@@ -16,7 +16,6 @@
 #include <AzFramework/Application/Application.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzToolsFramework/API/ViewPaneOptions.h>
-#include <AzToolsFramework/Thumbnails/ThumbnailContext.h>
 #include <Editor/LyViewPaneNames.h>
 #include <Material/EditorMaterialComponentInspector.h>
 #include <Material/EditorMaterialSystemComponent.h>
@@ -69,11 +68,6 @@ namespace AZ
         void EditorMaterialSystemComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
         {
             incompatible.push_back(AZ_CRC("EditorMaterialSystem", 0x5c93bc4e));
-        }
-
-        void EditorMaterialSystemComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
-        {
-            required.push_back(AZ_CRC("ThumbnailerService", 0x65422b97));
         }
 
         void EditorMaterialSystemComponent::GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent)
