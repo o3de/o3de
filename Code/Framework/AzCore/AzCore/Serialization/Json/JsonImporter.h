@@ -27,16 +27,20 @@ namespace AZ
         typedef AZStd::vector<AZStd::pair<rapidjson::Pointer, AZStd::string>> ImportDirectivesList;
         typedef AZStd::unordered_set<AZStd::string> ImportedFilesList;
 
-        virtual JsonSerializationResult::ResultCode ResolveImport(rapidjson::Value& importedValueOut,
+        virtual JsonSerializationResult::ResultCode ResolveImport(rapidjson::Value* importPtr,
             rapidjson::Value& patch, const rapidjson::Value& importDirective,
             const AZ::IO::FixedMaxPath& importedFilePath, rapidjson::Document::AllocatorType& allocator);
 
-        virtual JsonSerializationResult::ResultCode RestoreImport(rapidjson::Value& importDirectiveOut,
-            const rapidjson::Value& currentValue, const rapidjson::Value& importedValue,
-            rapidjson::Document::AllocatorType& allocator, const AZStd::string& importFilename);
+        virtual JsonSerializationResult::ResultCode RestoreImport(rapidjson::Value* importPtr,
+            rapidjson::Value& patch, rapidjson::Document::AllocatorType& allocator,
+            const AZStd::string& importFilename);
 
         virtual JsonSerializationResult::ResultCode ApplyPatch(rapidjson::Value& target,
             const rapidjson::Value& patch, rapidjson::Document::AllocatorType& allocator);
+
+        virtual JsonSerializationResult::ResultCode CreatePatch(rapidjson::Value& patch,
+            const rapidjson::Value& source, const rapidjson::Value& target,
+            rapidjson::Document::AllocatorType& allocator);
 
         void AddImportDirective(const rapidjson::Pointer& jsonPtr, const AZStd::string& importFile);
         const ImportDirectivesList& GetImportDirectives();

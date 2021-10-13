@@ -75,7 +75,7 @@ namespace AZ
                     importAbsPath.Append(importName);
 
                     rapidjson::Value patch;
-                    ResultCode resolveResult = settings.m_importer->ResolveImport(jsonDoc, patch, importDirective, importAbsPath, allocator);
+                    ResultCode resolveResult = settings.m_importer->ResolveImport(&jsonDoc, patch, importDirective, importAbsPath, allocator);
                     if (resolveResult.GetOutcome() == Outcomes::Catastrophic)
                     {
                         return resolveResult;
@@ -152,25 +152,16 @@ namespace AZ
                     return resolveResult;
                 }
 
-                rapidjson::Value importDirective(rapidjson::kObjectType);
-                settings.m_importer->RestoreImport(importDirective, *currentValue, importedValue, allocator, import->second);
-                
-                currentValue->SetObject();
-                if (importDirective.IsObject() && importDirective.MemberCount() > 0)
-                {
-                    currentValue->AddMember(rapidjson::StringRef("$import"), importDirective, allocator);
-                }
-                else
-                {
-                    currentValue->AddMember(rapidjson::StringRef("$import"), rapidjson::StringRef(import->second.c_str()), allocator);
-                }
+                rapidjson::Value patch;
+                settings.m_importer->CreatePatch(patch, importedValue, *currentValue, allocator);
+                settings.m_importer->RestoreImport(currentValue, patch, allocator, import->second);
             }
         }
 
         return ResultCode(Tasks::Import, Outcomes::Success);
     }
 
-    JsonSerializationResult::ResultCode BaseJsonImporter::ResolveImport(rapidjson::Value& importedValueOut,
+    JsonSerializationResult::ResultCode BaseJsonImporter::ResolveImport(rapidjson::Value* importPtr,
         rapidjson::Value& patch, const rapidjson::Value& importDirective,
         const AZ::IO::FixedMaxPath& importedFilePath, rapidjson::Document::AllocatorType& allocator)
     {
@@ -190,7 +181,7 @@ namespace AZ
                 }
             }
 
-            importedValueOut.CopyFrom(importedDoc, allocator);
+            importPtr->CopyFrom(importedDoc, allocator);
         }
         else
         {
@@ -200,18 +191,22 @@ namespace AZ
         return ResultCode(Tasks::Import, Outcomes::Success);
     }
 
-    JsonSerializationResult::ResultCode BaseJsonImporter::RestoreImport(rapidjson::Value& importDirectiveOut,
-        const rapidjson::Value& currentValue, const rapidjson::Value& importedValue,
-        rapidjson::Document::AllocatorType& allocator, const AZStd::string& importFilename)
+    JsonSerializationResult::ResultCode BaseJsonImporter::RestoreImport(rapidjson::Value* importPtr,
+        rapidjson::Value& patch, rapidjson::Document::AllocatorType& allocator, const AZStd::string& importFilename)
     {
         using namespace JsonSerializationResult;
-
-        rapidjson::Value patch;
-        JsonSerialization::CreatePatch(patch, allocator, importedValue, currentValue, JsonMergeApproach::JsonMergePatch);
+        
+        importPtr->SetObject();
         if ((patch.IsObject() && patch.MemberCount() > 0) || (patch.IsArray() && !patch.Empty()))
         {
-            importDirectiveOut.AddMember(rapidjson::StringRef("filename"), rapidjson::StringRef(importFilename.c_str()), allocator);
-            importDirectiveOut.AddMember(rapidjson::StringRef("patch"), patch, allocator);
+            rapidjson::Value importDirective(rapidjson::kObjectType);
+            importDirective.AddMember(rapidjson::StringRef("filename"), rapidjson::StringRef(importFilename.c_str()), allocator);
+            importDirective.AddMember(rapidjson::StringRef("patch"), patch, allocator);
+            importPtr->AddMember(rapidjson::StringRef("$import"), importDirective, allocator);
+        }
+        else
+        {
+            importPtr->AddMember(rapidjson::StringRef("$import"), rapidjson::StringRef(importFilename.c_str()), allocator);
         }
 
         return ResultCode(Tasks::Import, Outcomes::Success);
@@ -228,6 +223,13 @@ namespace AZ
         }
 
         return ResultCode(Tasks::Import, Outcomes::Success);
+    }
+
+    JsonSerializationResult::ResultCode BaseJsonImporter::CreatePatch(rapidjson::Value& patch,
+        const rapidjson::Value& source, const rapidjson::Value& target,
+        rapidjson::Document::AllocatorType& allocator)
+    {
+        return JsonSerialization::CreatePatch(patch, allocator, source, target, JsonMergeApproach::JsonMergePatch);
     }
 
     void BaseJsonImporter::AddImportDirective(const rapidjson::Pointer& jsonPtr, const AZStd::string& importFile)

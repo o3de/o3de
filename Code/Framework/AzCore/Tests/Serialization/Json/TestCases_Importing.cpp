@@ -21,7 +21,7 @@ namespace JsonSerializationTests
         AZ_RTTI(JsonImporterCustom, "{003F5896-71E0-4A50-A14F-08C319B06AD0}");
 
 
-        AZ::JsonSerializationResult::ResultCode ResolveImport(rapidjson::Value& importedValueOut,
+        AZ::JsonSerializationResult::ResultCode ResolveImport(rapidjson::Value* importPtr,
             rapidjson::Value& patch, const rapidjson::Value& importDirective,
             const AZ::IO::FixedMaxPath& importedFilePath, rapidjson::Document::AllocatorType& allocator) override;
         
@@ -164,9 +164,9 @@ namespace JsonSerializationTests
         }
     };
 
-    AZ::JsonSerializationResult::ResultCode JsonImporterCustom::ResolveImport(rapidjson::Value& importedValueOut,
-        rapidjson::Value& patch, const rapidjson::Value& importDirective,
-        const AZ::IO::FixedMaxPath& importedFilePath, rapidjson::Document::AllocatorType& allocator)
+    AZ::JsonSerializationResult::ResultCode JsonImporterCustom::ResolveImport(rapidjson::Value* importPtr,
+        rapidjson::Value& patch, const rapidjson::Value& importDirective, const AZ::IO::FixedMaxPath& importedFilePath,
+        rapidjson::Document::AllocatorType& allocator)
     {
         AZ::JsonSerializationResult::ResultCode resultCode(AZ::JsonSerializationResult::Tasks::Import);
         
@@ -182,7 +182,7 @@ namespace JsonSerializationTests
             }
         }
 
-        importedValueOut.CopyFrom(importedDoc, allocator);
+        importPtr->CopyFrom(importedDoc, allocator);
 
         return resultCode;
     }
