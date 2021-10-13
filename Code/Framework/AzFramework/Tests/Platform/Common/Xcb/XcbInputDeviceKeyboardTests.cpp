@@ -12,6 +12,7 @@
 
 #include <xcb/xcb.h>
 
+#include <AzCore/UserSettings/UserSettingsComponent.h>
 #include <AzFramework/XcbApplication.h>
 #include <AzFramework/XcbInputDeviceKeyboard.h>
 #include <AzFramework/Input/Buses/Notifications/InputTextNotificationBus.h>
@@ -196,6 +197,7 @@ namespace AzFramework
 
         Application application;
         application.Start({}, {});
+        AZ::UserSettingsComponentRequestBus::Broadcast(&AZ::UserSettingsComponentRequests::DisableSaveOnFinalize);
 
         const InputChannel* inputChannel = InputChannelRequests::FindInputChannel(InputDeviceKeyboard::Key::AlphanumericA);
         ASSERT_TRUE(inputChannel);
@@ -420,6 +422,7 @@ namespace AzFramework
 
         Application application;
         application.Start({}, {});
+        AZ::UserSettingsComponentRequestBus::Broadcast(&AZ::UserSettingsComponentRequests::DisableSaveOnFinalize);
 
         for (int i = 0; i < 4; ++i)
         {
