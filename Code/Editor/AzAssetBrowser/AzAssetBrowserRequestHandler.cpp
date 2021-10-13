@@ -705,6 +705,9 @@ void AzAssetBrowserRequestHandler::OpenAssetInAssociatedEditor(const AZ::Data::A
 
 bool AzAssetBrowserRequestHandler::OpenWithOS(const AZStd::string& fullEntryPath)
 {
+    char debug[256] = {};
+    sprintf(debug,"%s",QUrl::fromLocalFile(QString::fromUtf8(fullEntryPath.c_str())).toString().toUtf8().constData());
+    
     bool openedSuccessfully = QDesktopServices::openUrl(QUrl::fromLocalFile(QString::fromUtf8(fullEntryPath.c_str())));
     if (!openedSuccessfully)
     {
