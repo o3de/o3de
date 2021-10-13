@@ -30,7 +30,7 @@ namespace AzToolsFramework
 
     namespace Prefab
     {
-        class PrefabFocusInterface;
+        class PrefabFocusPublicInterface;
         class PrefabLoaderInterface;
 
         //! Structure for saving/retrieving user settings related to prefab workflows.
@@ -144,7 +144,7 @@ namespace AzToolsFramework
 
             static ContainerEntityInterface* s_containerEntityInterface;
             static EditorEntityUiInterface* s_editorEntityUiInterface;
-            static PrefabFocusInterface* s_prefabFocusInterface;
+            static PrefabFocusPublicInterface* s_prefabFocusPublicInterface;
             static PrefabLoaderInterface* s_prefabLoaderInterface;
             static PrefabPublicInterface* s_prefabPublicInterface;
             static PrefabSystemComponentInterface* s_prefabSystemComponentInterface;
