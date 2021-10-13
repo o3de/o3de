@@ -552,6 +552,12 @@ namespace AzToolsFramework
             return;
         }
 
+        // Do not display the context menu if the item under the mouse cursor is unselectable.
+        if (!m_gui->m_objectTree->indexAt(pos).flags() & Qt::ItemIsSelectable)
+        {
+            return;
+        }
+
         QMenu* contextMenu = new QMenu(this);
 
         // Populate global context menu.
