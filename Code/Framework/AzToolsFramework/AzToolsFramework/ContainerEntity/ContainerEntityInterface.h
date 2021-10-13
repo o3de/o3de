@@ -11,6 +11,8 @@
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/Serialization/SerializeContext.h>
 
+#include <AzFramework/Entity/EntityContextBus.h>
+
 namespace AzToolsFramework
 {
     //! Outcome object that returns an error message in case of failure to allow caller to handle internal errors.
@@ -43,7 +45,7 @@ namespace AzToolsFramework
         //! @param entityId The entityId whose open state will be set.
         //! @param open True if the container should be opened, false if it should be closed.
         //! @return An error message if the operation was invalid, success otherwise.
-        virtual ContainerEntityOperationResult SetContainerOpenState(AZ::EntityId entityId, bool open) = 0;
+        virtual ContainerEntityOperationResult SetContainerOpen(AZ::EntityId entityId, bool open) = 0;
 
         //! If the entity id provided is registered as a container, it returns whether it's open.
         //! @note the default value for non-containers is true, so this function can be called without
@@ -55,6 +57,16 @@ namespace AzToolsFramework
         //! Detects if one of the ancestors of entityId is a closed container entity.
         //! @return The highest closed entity container id if any, or entityId otherwise.
         virtual AZ::EntityId FindHighestSelectableEntity(AZ::EntityId entityId) const = 0;
+
+        //! Clears all open state information for Container Entities for the EntityContextId provided.
+        //! Used when context is switched, for example in the case of a new root prefab being loaded
+        //! in place of an old one.
+        //! @note Clear is meant to be called when no container is registered for the context provided.
+        //! @return An error message if any container was registered for the context, success otherwise.
+        virtual ContainerEntityOperationResult Clear(AzFramework::EntityContextId entityContextId) = 0;
+
+        //! Returns true if one of the ancestors of entityId is a closed container entity.
+        virtual bool IsUnderClosedContainerEntity(AZ::EntityId entityId) const = 0;
 
     };
 
