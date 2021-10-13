@@ -596,7 +596,7 @@ namespace EditorPythonBindings
         
         jsonString.erase(AZStd::remove(jsonString.begin(), jsonString.end(), '\n'), jsonString.end());
         auto pythonCode = AZStd::string::format(
-            R"PYTHON(eval('exec("import json") or json.loads("""%s""")'))PYTHON", jsonString.c_str());
+            R"PYTHON(exec("import json") or json.loads("""%s"""))PYTHON", jsonString.c_str());
 
         return pybind11::eval(pythonCode.c_str());
     }
