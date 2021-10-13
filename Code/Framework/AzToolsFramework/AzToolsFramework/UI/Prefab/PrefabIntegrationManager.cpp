@@ -252,14 +252,14 @@ namespace AzToolsFramework
                         // Edit Prefab
                         if (prefabWipFeaturesEnabled && !s_prefabFocusPublicInterface->IsOwningPrefabBeingFocused(selectedEntity))
                         {
-                                QAction* editAction = menu->addAction(QObject::tr("Edit Prefab"));
-                                editAction->setToolTip(QObject::tr("Edit the prefab in focus mode."));
+                            QAction* editAction = menu->addAction(QObject::tr("Edit Prefab"));
+                            editAction->setToolTip(QObject::tr("Edit the prefab in focus mode."));
 
-                                QObject::connect(editAction, &QAction::triggered, editAction, [selectedEntity] {
-                                    ContextMenu_EditPrefab(selectedEntity);
-                                });
+                            QObject::connect(editAction, &QAction::triggered, editAction, [selectedEntity] {
+                                ContextMenu_EditPrefab(selectedEntity);
+                            });
 
-                                itemWasShown = true;
+                            itemWasShown = true;
                         }
 
                         // Save Prefab
