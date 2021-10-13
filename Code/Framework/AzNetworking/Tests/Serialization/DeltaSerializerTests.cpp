@@ -37,6 +37,7 @@ namespace UnitTest
         AZStd::string m_containerName;
         AZStd::array<DeltaDataElement, 32> m_container;
 
+        // This logic is modeled after NetworkInputArray serialization in the Multiplayer Gem
         bool Serialize(AzNetworking::ISerializer& serializer)
         {
             // Always serialize the full first element
