@@ -346,7 +346,7 @@ namespace AZ::Render
 
     void ProjectedShadowFeatureProcessor::CacheEsmShadowmapsPass(const AZStd::vector<RPI::RenderPipelineId>& validPipelineIds)
     {
-        static const Name LightTypeName = Name("projected");
+        const Name LightTypeName = Name("projected");
 
         const auto* passSystem = RPI::PassSystemInterface::Get();
         const AZStd::vector<RPI::Pass*> passes = passSystem->GetPassesForTemplateName(Name("EsmShadowmapsTemplate"));

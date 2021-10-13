@@ -391,6 +391,20 @@ namespace O3DE::ProjectManager
         return false;
     }
 
+    bool GemModel::HasDependentGemsToRemove() const
+    {
+        for (int row = 0; row < rowCount(); ++row)
+        {
+            const QModelIndex modelIndex = index(row, 0);
+            if (GemModel::NeedsToBeRemoved(modelIndex, /*includeDependencies=*/true) &&
+                GemModel::WasPreviouslyAddedDependency(modelIndex))
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
     QVector<QModelIndex> GemModel::GatherGemDependencies(const QModelIndex& modelIndex) const 
     {
         QVector<QModelIndex> result;

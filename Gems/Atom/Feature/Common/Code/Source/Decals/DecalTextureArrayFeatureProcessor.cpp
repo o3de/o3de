@@ -357,7 +357,7 @@ namespace AZ
             // Texture2DArray<float2> m_decalTextureArrayNormalMaps0;
             // Texture2DArray<float2> m_decalTextureArrayNormalMaps1;
             // Texture2DArray<float2> m_decalTextureArrayNormalMaps2;
-            static const AZStd::array<AZStd::string, DecalMapType_Num> ShaderNames = { "m_decalTextureArrayDiffuse",
+            static constexpr AZStd::array<AZStd::string_view, DecalMapType_Num> ShaderNames = { "m_decalTextureArrayDiffuse",
                                                                                        "m_decalTextureArrayNormalMaps" };
 
             for (int mapType = 0; mapType < DecalMapType_Num; ++mapType)
@@ -365,7 +365,7 @@ namespace AZ
                 for (int texArrayIdx = 0; texArrayIdx < NumTextureArrays; ++texArrayIdx)
                 {
                     const RHI::ShaderResourceGroupLayout* viewSrgLayout = RPI::RPISystemInterface::Get()->GetViewSrgLayout().get();
-                    const AZStd::string baseName = ShaderNames[mapType] + AZStd::to_string(texArrayIdx);
+                    const AZStd::string baseName = AZStd::string(ShaderNames[mapType]) + AZStd::to_string(texArrayIdx);
 
                     m_decalTextureArrayIndices[texArrayIdx][mapType] = viewSrgLayout->FindShaderInputImageIndex(Name(baseName.c_str()));
                     AZ_Warning(
