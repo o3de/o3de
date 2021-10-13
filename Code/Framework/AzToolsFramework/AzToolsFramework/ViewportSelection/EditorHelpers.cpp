@@ -9,6 +9,7 @@
 #include "EditorHelpers.h"
 
 #include <AzCore/Console/Console.h>
+#include <AzCore/Math/VectorConversions.h>
 #include <AzFramework/Entity/EntityDebugDisplayBus.h>
 #include <AzFramework/Viewport/CameraState.h>
 #include <AzFramework/Viewport/ViewportScreen.h>
@@ -186,13 +187,27 @@ namespace AzToolsFramework
             }
         }
 
-        // Verify if the entity Id corresponds to an entity that is focused; if not, halt selection.
+        // verify if the entity Id corresponds to an entity that is focused; if not, halt selection.
         if (!IsSelectableAccordingToFocusMode(entityIdUnderCursor))
         {
+            if (mouseInteraction.m_mouseInteraction.m_mouseButtons.Left() &&
+                mouseInteraction.m_mouseEvent == ViewportInteraction::MouseEvent::Down ||
+                mouseInteraction.m_mouseEvent == ViewportInteraction::MouseEvent::DoubleClick)
+            {
+                AZ::TickBus::Handler::BusConnect();
+
+                DecayingCircle decayingCircle;
+                decayingCircle.m_position = mouseInteraction.m_mouseInteraction.m_mousePick.m_screenCoordinates;
+                decayingCircle.m_opacity = 1.0f;
+                decayingCircle.m_radius = 0.0f;
+
+                m_decayingCircles.push_back(decayingCircle);
+            }
+
             return AZ::EntityId();
         }
 
-        // Container Entity support - if the entity that is being selected is part of a closed container,
+        // container entity support - if the entity that is being selected is part of a closed container,
         // change the selection to the container instead.
         if (ContainerEntityInterface* containerEntityInterface = AZ::Interface<ContainerEntityInterface>::Get())
         {
@@ -200,6 +215,46 @@ namespace AzToolsFramework
         }
 
         return entityIdUnderCursor;
+    }
+
+    void EditorHelpers::OnTick(const float deltaTime, [[maybe_unused]] const AZ::ScriptTimePoint time)
+    {
+        for (auto& decayingCircle : m_decayingCircles)
+        {
+            decayingCircle.m_opacity = AZStd::max(decayingCircle.m_opacity - deltaTime * 1.0f /*scale*/, 0.0f);
+            decayingCircle.m_radius += deltaTime * 10.0f /*radius scale*/;
+        }
+
+        m_decayingCircles.erase(
+            AZStd::remove_if(
+                m_decayingCircles.begin(), m_decayingCircles.end(),
+                [](const DecayingCircle& decayingCircle)
+                {
+                    return decayingCircle.m_opacity <= 0.0f;
+                }),
+            m_decayingCircles.end());
+
+        if (m_decayingCircles.empty() && AZ::TickBus::Handler::BusIsConnected())
+        {
+            AZ::TickBus::Handler::BusDisconnect();
+        }
+    }
+
+    void EditorHelpers::Display2d(
+        [[maybe_unused]] const AzFramework::ViewportInfo& viewportInfo, AzFramework::DebugDisplayRequests& debugDisplay)
+    {
+        const AZ::Vector2 viewportSize = AzToolsFramework::GetCameraState(viewportInfo.m_viewportId).m_viewportSize;
+        
+        debugDisplay.DepthTestOff();
+
+        for (const auto& decayingCircle : m_decayingCircles)
+        {
+            const auto position = AzFramework::Vector2FromScreenPoint(decayingCircle.m_position) / viewportSize;
+            debugDisplay.SetColor(AZ::Color(1.0f, 1.0f, 1.0f, decayingCircle.m_opacity));
+            debugDisplay.DrawWireCircle2d(position, decayingCircle.m_radius * 0.005f, 0.0f);
+        }
+
+        debugDisplay.DepthTestOn();
     }
 
     void EditorHelpers::DisplayHelpers(
@@ -263,19 +318,19 @@ namespace AzToolsFramework
         }
     }
 
-    bool EditorHelpers::IsSelectableInViewport(AZ::EntityId entityId)
+    bool EditorHelpers::IsSelectableInViewport(const AZ::EntityId entityId) const
     {
         return IsSelectableAccordingToFocusMode(entityId) && IsSelectableAccordingToContainerEntities(entityId);
     }
 
-    bool EditorHelpers::IsSelectableAccordingToFocusMode(AZ::EntityId entityId)
+    bool EditorHelpers::IsSelectableAccordingToFocusMode(const AZ::EntityId entityId) const
     {
         return m_focusModeInterface->IsInFocusSubTree(entityId);
     }
 
-    bool EditorHelpers::IsSelectableAccordingToContainerEntities(AZ::EntityId entityId)
+    bool EditorHelpers::IsSelectableAccordingToContainerEntities(const AZ::EntityId entityId) const
     {
-        if (ContainerEntityInterface* containerEntityInterface = AZ::Interface<ContainerEntityInterface>::Get())
+        if (const auto* containerEntityInterface = AZ::Interface<ContainerEntityInterface>::Get())
         {
             return !containerEntityInterface->IsUnderClosedContainerEntity(entityId);
         }
