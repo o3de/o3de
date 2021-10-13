@@ -70,6 +70,9 @@ namespace UnitTest
         {
             PrefabTestFixture::SetUpEditorFixtureImpl();
 
+            m_prefabFocusInterface = AZ::Interface<PrefabFocusInterface>::Get();
+            ASSERT_TRUE(m_prefabFocusInterface != nullptr);
+
             m_prefabFocusPublicInterface = AZ::Interface<PrefabFocusPublicInterface>::Get();
             ASSERT_TRUE(m_prefabFocusPublicInterface != nullptr);
 
