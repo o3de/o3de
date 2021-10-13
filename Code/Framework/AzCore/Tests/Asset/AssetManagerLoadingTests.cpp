@@ -736,7 +736,10 @@ namespace UnitTest
         auto& assetManager = AssetManager::Instance();
 
         AssetBusCallbacks callbacks{};
+        AZ_PUSH_DISABLE_WARNING(5233, "-Wunknown-warning-option") // Older versions of MSVC toolchain require to pass constexpr in the
+                                                                  // capture. Newer versions issue unused warning
         callbacks.SetOnAssetReadyCallback([&, AssetNoRefB](const Asset<AssetData>&, AssetBusCallbacks&)
+        AZ_POP_DISABLE_WARNING
             {
                 // This callback should run inside the "main thread" dispatch events loop
                 auto loadAsset = assetManager.GetAsset<AssetWithSerializedData>(AZ::Uuid(AssetNoRefB), AssetLoadBehavior::Default);
