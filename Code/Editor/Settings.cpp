@@ -10,6 +10,7 @@
 #include "EditorDefs.h"
 
 #include "Settings.h"
+#include "EditorViewportSettings.h"
 
 // Qt
 #include <QGuiApplication>
@@ -1170,4 +1171,9 @@ bool SEditorSettings::GetSettingsRegistry_Bool(const char* key, bool& value)
 AzToolsFramework::ConsoleColorTheme SEditorSettings::GetConsoleColorTheme() const
 {
     return consoleBackgroundColorTheme;
+}
+
+AZ::u64 SEditorSettings::GetMaxNumberOfItemsShownInSearchView() const
+{
+    return SandboxEditor::MaxItemsShowInAssetBrowserSearch();
 }

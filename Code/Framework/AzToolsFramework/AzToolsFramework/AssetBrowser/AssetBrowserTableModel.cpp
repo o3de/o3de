@@ -179,6 +179,9 @@ namespace AzToolsFramework
             m_indexMap.clear();
             m_rowMap.clear();
 
+            AzToolsFramework::EditorSettingsAPIBus::BroadcastResult(
+                m_numberOfItemsDisplayed, &AzToolsFramework::EditorSettingsAPIBus::Handler::GetMaxNumberOfItemsShownInSearchView);
+
             BuildTableModelMap(sourceModel());
             emit layoutChanged();
         }

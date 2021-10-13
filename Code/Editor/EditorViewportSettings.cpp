@@ -15,6 +15,7 @@
 
 namespace SandboxEditor
 {
+    constexpr AZStd::string_view AssetBrowserMaxItemsShownInSearchSetting = "/Amazon/Preferences/Editor/AssetBrowser/MaxItemsShowInSearch";
     constexpr AZStd::string_view GridSnappingSetting = "/Amazon/Preferences/Editor/GridSnapping";
     constexpr AZStd::string_view GridSizeSetting = "/Amazon/Preferences/Editor/GridSize";
     constexpr AZStd::string_view AngleSnappingSetting = "/Amazon/Preferences/Editor/AngleSnapping";
@@ -108,6 +109,16 @@ namespace SandboxEditor
     AZStd::unique_ptr<EditorViewportSettingsCallbacks> CreateEditorViewportSettingsCallbacks()
     {
         return AZStd::make_unique<EditorViewportSettingsCallbacksImpl>();
+    }
+
+    AZ::u64 MaxItemsShowInAssetBrowserSearch()
+    {
+        return GetRegistry(AssetBrowserMaxItemsShownInSearchSetting, aznumeric_cast<AZ::u64>(50));
+    }
+
+    void SetMaxItemsShowInAssetBrowserSearch(const AZ::u64 numberOfItemsShown)
+    {
+        SetRegistry(AssetBrowserMaxItemsShownInSearchSetting, numberOfItemsShown);
     }
 
     bool GridSnappingEnabled()
