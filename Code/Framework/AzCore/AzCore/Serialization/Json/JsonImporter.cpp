@@ -19,7 +19,7 @@ namespace AZ
 
         for (auto& path : importPathStack)
         {
-            if (importPath.Compare(path) == 0)
+            if (importPath == path)
             {
                 return settings.m_reporting(
                     AZStd::string::format("%s was already imported in this chain. This indicates a cyclic dependency.", importPath.c_str()),
