@@ -228,9 +228,6 @@ namespace AZ
             
             PipelineViewMap m_pipelineViewsByTag;
             
-            /// The system time when the last time this pipeline render was started
-            float m_lastRenderStartTime = 0;
-            
             // RenderPipeline's name id, it will be used to identify the render pipeline when it's added to a Scene
             RenderPipelineId m_nameId;
             

@@ -8,7 +8,9 @@
 
 #include <AzToolsFramework/UI/Prefab/PrefabUiHandler.h>
 
-#include <AzToolsFramework/Prefab/PrefabFocusInterface.h>
+#include <AzFramework/API/ApplicationAPI.h>
+
+#include <AzToolsFramework/Prefab/PrefabFocusPublicInterface.h>
 #include <AzToolsFramework/Prefab/PrefabPublicInterface.h>
 #include <AzToolsFramework/UI/Outliner/EntityOutlinerListModel.hxx>
 
@@ -33,10 +35,10 @@ namespace AzToolsFramework
             return;
         }
 
-        m_prefabFocusInterface = AZ::Interface<Prefab::PrefabFocusInterface>::Get();
-        if (m_prefabFocusInterface == nullptr)
+        m_prefabFocusPublicInterface = AZ::Interface<Prefab::PrefabFocusPublicInterface>::Get();
+        if (m_prefabFocusPublicInterface == nullptr)
         {
-            AZ_Assert(false, "PrefabUiHandler - could not get PrefabFocusInterface on PrefabUiHandler construction.");
+            AZ_Assert(false, "PrefabUiHandler - could not get PrefabFocusPublicInterface on PrefabUiHandler construction.");
             return;
         }
     }
@@ -81,7 +83,7 @@ namespace AzToolsFramework
 
     QIcon PrefabUiHandler::GenerateItemIcon(AZ::EntityId entityId) const
     {
-        if (m_prefabFocusInterface->IsOwningPrefabBeingFocused(entityId))
+        if (m_prefabFocusPublicInterface->IsOwningPrefabBeingFocused(entityId))
         {
             return QIcon(m_prefabEditIconPath);
         }
@@ -103,7 +105,7 @@ namespace AzToolsFramework
         const bool hasVisibleChildren = index.data(EntityOutlinerListModel::ExpandedRole).value<bool>() && index.model()->hasChildren(index);
 
         QColor backgroundColor = m_prefabCapsuleColor;
-        if (m_prefabFocusInterface->IsOwningPrefabBeingFocused(entityId))
+        if (m_prefabFocusPublicInterface->IsOwningPrefabBeingFocused(entityId))
         {
             backgroundColor = m_prefabCapsuleEditColor;
         }
@@ -189,7 +191,7 @@ namespace AzToolsFramework
         const bool isLastColumn = descendantIndex.column() == EntityOutlinerListModel::ColumnLockToggle;
 
         QColor borderColor = m_prefabCapsuleColor;
-        if (m_prefabFocusInterface->IsOwningPrefabBeingFocused(entityId))
+        if (m_prefabFocusPublicInterface->IsOwningPrefabBeingFocused(entityId))
         {
             borderColor = m_prefabCapsuleEditColor;
         }
@@ -316,5 +318,18 @@ namespace AzToolsFramework
         QModelIndex lastChild = model->index(childCount - 1, EntityOutlinerListModel::ColumnName, index);
 
         return Internal_GetLastVisibleChild(model, lastChild);
+    }
+
+    void PrefabUiHandler::OnDoubleClick(AZ::EntityId entityId) const
+    {
+        bool prefabWipFeaturesEnabled = false;
+        AzFramework::ApplicationRequests::Bus::BroadcastResult(
+            prefabWipFeaturesEnabled, &AzFramework::ApplicationRequests::ArePrefabWipFeaturesEnabled);
+
+        if (prefabWipFeaturesEnabled)
+        {
+            // Focus on this prefab
+            m_prefabFocusPublicInterface->FocusOnOwningPrefab(entityId);
+        }
     }
 }

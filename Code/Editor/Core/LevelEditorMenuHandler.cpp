@@ -32,6 +32,7 @@
 #include <AzFramework/API/ApplicationAPI.h>
 
 // AzToolsFramework
+#include <AzToolsFramework/Viewport/ViewportMessages.h>
 #include <AzToolsFramework/ViewportSelection/EditorTransformComponentSelectionRequestBus.h>
 
 // AzQtComponents
@@ -166,15 +167,14 @@ LevelEditorMenuHandler::LevelEditorMenuHandler(MainWindow* mainWindow, QtViewPan
     m_mainWindow->menuBar()->setNativeMenuBar(true);
 #endif
 
-    ComponentModeFramework::EditorComponentModeNotificationBus::Handler::BusConnect(
-        AzToolsFramework::GetEntityContextId());
+    ViewportEditorModeNotificationsBus::Handler::BusConnect(GetEntityContextId());
     EditorMenuRequestBus::Handler::BusConnect();
 }
 
 LevelEditorMenuHandler::~LevelEditorMenuHandler()
 {
     EditorMenuRequestBus::Handler::BusDisconnect();
-    ComponentModeFramework::EditorComponentModeNotificationBus::Handler::BusDisconnect();
+    ViewportEditorModeNotificationsBus::Handler::BusDisconnect();
 }
 
 void LevelEditorMenuHandler::Initialize()
@@ -487,8 +487,6 @@ void LevelEditorMenuHandler::PopulateEditMenu(ActionManager::MenuWrapper& editMe
     editMenu.AddAction(AzToolsFramework::EditPivot);
     editMenu.AddAction(AzToolsFramework::EditReset);
     editMenu.AddAction(AzToolsFramework::EditResetManipulator);
-    editMenu.AddAction(AzToolsFramework::EditResetLocal);
-    editMenu.AddAction(AzToolsFramework::EditResetWorld);
 
     // Hide Selection
     editMenu.AddAction(AzToolsFramework::HideSelection);
@@ -1186,36 +1184,44 @@ void LevelEditorMenuHandler::AddDisableActionInSimModeListener(QAction* action)
     }));
 }
 
-void LevelEditorMenuHandler::EnteredComponentMode(const AZStd::vector<AZ::Uuid>& /*componentModeTypes*/)
+void LevelEditorMenuHandler::OnEditorModeActivated(
+    [[maybe_unused]] const AzToolsFramework::ViewportEditorModesInterface& editorModeState, AzToolsFramework::ViewportEditorMode mode)
 {
-    auto menuWrapper = m_actionManager->FindMenu(s_editMenuId);
-    if (!menuWrapper.isNull())
+    if (mode == ViewportEditorMode::Component)
     {
-        // copy of menu actions
-        auto actions = menuWrapper.Get()->actions();
-        // remove all non-reserved edit menu options
-        actions.erase(
-            std::remove_if(actions.begin(), actions.end(), [](QAction* action)
-            {
-                return !action->property("Reserved").toBool();
-            }),
-            actions.end());
+        if (auto menuWrapper = m_actionManager->FindMenu(s_editMenuId);
+            !menuWrapper.isNull())
+        {
+            // copy of menu actions
+            auto actions = menuWrapper.Get()->actions();
+            // remove all non-reserved edit menu options
+            actions.erase(
+                std::remove_if(actions.begin(), actions.end(), [](QAction* action)
+                {
+                    return !action->property("Reserved").toBool();
+                }),
+                actions.end());
 
-        // clear and update the menu with new actions
-        menuWrapper.Get()->clear();
-        menuWrapper.Get()->addActions(actions);
+            // clear and update the menu with new actions
+            menuWrapper.Get()->clear();
+            menuWrapper.Get()->addActions(actions);
+        }
     }
 }
 
-void LevelEditorMenuHandler::LeftComponentMode(const AZStd::vector<AZ::Uuid>& /*componentModeTypes*/)
+void LevelEditorMenuHandler::OnEditorModeDeactivated(
+    [[maybe_unused]] const AzToolsFramework::ViewportEditorModesInterface& editorModeState, AzToolsFramework::ViewportEditorMode mode)
 {
-    RestoreEditMenuToDefault();
+    if (mode == ViewportEditorMode::Component)
+    {
+        RestoreEditMenuToDefault();
+    }
 }
 
 void LevelEditorMenuHandler::AddEditMenuAction(QAction* action)
 {
-    auto menuWrapper = m_actionManager->FindMenu(s_editMenuId);
-    if (!menuWrapper.isNull())
+    if (auto menuWrapper = m_actionManager->FindMenu(s_editMenuId);
+        !menuWrapper.isNull())
     {
         menuWrapper.Get()->addAction(action);
     }
@@ -1239,8 +1245,8 @@ void LevelEditorMenuHandler::AddMenuAction(AZStd::string_view categoryId, QActio
 
 void LevelEditorMenuHandler::RestoreEditMenuToDefault()
 {
-    auto menuWrapper = m_actionManager->FindMenu(s_editMenuId);
-    if (!menuWrapper.isNull())
+    if (auto menuWrapper = m_actionManager->FindMenu(s_editMenuId);
+        !menuWrapper.isNull())
     {
         menuWrapper.Get()->clear();
         PopulateEditMenu(menuWrapper);

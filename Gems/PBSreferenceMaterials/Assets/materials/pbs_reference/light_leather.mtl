@@ -1,9 +1,0 @@
-<Material MtlFlags="524288" Shader="Illum" GenMask="80000081" StringGenMask="%ALLOW_SILHOUETTE_POM%BUMP_MAP%SUBSURFACE_SCATTERING" SurfaceType="mat_plastic" MatTemplate="" Diffuse="1,1,1" Specular="0.038472746,0.038472746,0.038472746" Emissive="0,0,0" Shininess="255" Opacity="1" LayerAct="1">
- <Textures>
-  <Texture Map="Diffuse" File="materials/pbs_reference/light_leather_diff.tif">
-   <TexMod TileU="5" TileV="5"/>
-  </Texture>
-  <Texture Map="Bumpmap" File="materials/pbs_reference/leather_ddna.tif"/>
- </Textures>
- <PublicParams SSSIndex="0" IndirectColor="0.25,0.25,0.25"/>
-</Material>

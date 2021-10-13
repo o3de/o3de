@@ -6,6 +6,7 @@
  *
  */
 
+#include <aws/core/utils/json/JsonSerializer.h>
 #include <Activity/AWSGameLiftActivityUtils.h>
 
 namespace AWSGameLift
@@ -30,6 +31,54 @@ namespace AWSGameLift
                 outGamePropertiesOutput =
                     outGamePropertiesOutput.substr(0, outGamePropertiesOutput.size() - 1); // Trim last comma to fit array format
             }
+        }
+
+        void ConvertPlayerAttributes(
+            const AZStd::unordered_map<AZStd::string, AZStd::string>& playerAttributes,
+            Aws::Map<Aws::String, Aws::GameLift::Model::AttributeValue>& outPlayerAttributes)
+        {
+            outPlayerAttributes.clear();
+            for (auto& playerAttribute : playerAttributes)
+            {               
+                Aws::Utils::Json::JsonValue keyJsonValue(playerAttribute.second.c_str());
+                Aws::GameLift::Model::AttributeValue attribute(keyJsonValue);
+                outPlayerAttributes[playerAttribute.first.c_str()] = attribute;
+            }
+        }
+
+        void ConvertRegionToLatencyMap(
+            const AZStd::unordered_map<AZStd::string, int>& regionToLatencyMap,
+            Aws::Map<Aws::String, int>& outRegionToLatencyMap)
+        {
+            outRegionToLatencyMap.clear();
+            for (auto& regionToLatencyPair : regionToLatencyMap)
+            {
+                outRegionToLatencyMap[regionToLatencyPair.first.c_str()] = regionToLatencyPair.second;
+            }
+        }
+
+        bool ValidatePlayerAttributes(
+            const AZStd::unordered_map<AZStd::string, AZStd::string>& playerAttributes)
+        {
+            for (auto& playerAttribute : playerAttributes)
+            {
+                Aws::Utils::Json::JsonValue keyJsonValue(playerAttribute.second.c_str());
+                Aws::GameLift::Model::AttributeValue attribute(keyJsonValue);
+
+                // Each AttributeValue object can use only one of the available properties:
+                // 1) number values (N)
+                // 2) single string values (S)
+                // 3) string to double map (SDM)
+                // 4) array of strings (SL)
+                if (!attribute.SHasBeenSet() &&
+                    !attribute.NHasBeenSet() &&
+                    !attribute.SDMHasBeenSet() &&
+                    !attribute.SLHasBeenSet())
+                {
+                    return false;
+                }
+            }
+            return true;
         }
     } // namespace AWSGameLiftActivityUtils
 } // namespace AWSGameLift

@@ -40,6 +40,7 @@ namespace O3DE::ProjectManager
         static GemInfo::GemOrigin GetGemOrigin(const QModelIndex& modelIndex);
         static GemInfo::Platforms GetPlatforms(const QModelIndex& modelIndex);
         static GemInfo::Types GetTypes(const QModelIndex& modelIndex);
+        static GemInfo::DownloadStatus GetDownloadStatus(const QModelIndex& modelIndex);
         static QString GetSummary(const QModelIndex& modelIndex);
         static QString GetDirectoryLink(const QModelIndex& modelIndex);
         static QString GetDocLink(const QModelIndex& modelIndex);
@@ -64,8 +65,10 @@ namespace O3DE::ProjectManager
         static bool NeedsToBeRemoved(const QModelIndex& modelIndex, bool includeDependencies = false);
         static bool HasRequirement(const QModelIndex& modelIndex);
         static void UpdateDependencies(QAbstractItemModel& model, const QModelIndex& modelIndex);
+        static void SetDownloadStatus(QAbstractItemModel& model, const QModelIndex& modelIndex, GemInfo::DownloadStatus status);
 
         bool DoGemsToBeAddedHaveRequirements() const;
+        bool HasDependentGemsToRemove() const;
 
         QVector<QModelIndex> GatherGemDependencies(const QModelIndex& modelIndex) const;
         QVector<QModelIndex> GatherDependentGems(const QModelIndex& modelIndex, bool addedOnly = false) const;
@@ -100,7 +103,8 @@ namespace O3DE::ProjectManager
             RoleFeatures,
             RoleTypes,
             RolePath,
-            RoleRequirement
+            RoleRequirement,
+            RoleDownloadStatus
         };
 
         QHash<QString, QModelIndex> m_nameToIndexMap;

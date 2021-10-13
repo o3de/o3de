@@ -86,11 +86,7 @@ namespace AtomImGuiTools
         }
         if (m_showCpuProfiler)
         {
-            const AZ::RHI::CpuTimingStatistics* stats = AZ::RHI::RHISystemInterface::Get()->GetCpuTimingStatistics();
-            if (stats)
-            {
-                m_imguiCpuProfiler.Draw(m_showCpuProfiler, *stats);
-            }
+            m_imguiCpuProfiler.Draw(m_showCpuProfiler);
         }
         if (m_showTransientAttachmentProfiler)
         {

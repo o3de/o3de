@@ -119,7 +119,7 @@ namespace AWSCore
         Error error;
 
         /// Determines if the AWS credentials, as supplied by the credentialsProvider from
-        /// the ServiceReqestJobConfig object (which defaults to the user's credentials), 
+        /// the ServiceRequestJobConfig object (which defaults to the user's credentials), 
         /// are used to sign the request. The default is true. Override this and return false 
         /// if calling a public API and want to avoid the overhead of signing requests.
         bool UseAWSCredentials() {
@@ -565,13 +565,11 @@ namespace AWSCore
             }
 
             AZStd::string requestContent;
-            AZStd::string responseContent;
-
-            std::istreambuf_iterator<AZStd::string::value_type> eos;
 
             std::shared_ptr<Aws::IOStream> requestStream = response->GetOriginatingRequest().GetContentBody();
             if (requestStream)
             {
+                std::istreambuf_iterator<AZStd::string::value_type> eos;
                 requestStream->clear();
                 requestStream->seekg(0);
                 requestContent = AZStd::string{ std::istreambuf_iterator<AZStd::string::value_type>(*requestStream.get()),eos };
@@ -584,7 +582,7 @@ namespace AWSCore
             Aws::IOStream& responseStream = response->GetResponseBody();
             responseStream.clear();
             responseStream.seekg(0);
-            responseContent = AZStd::string{ std::istreambuf_iterator<AZStd::string::value_type>(responseStream),responseEos };
+            AZStd::string responseContent = AZStd::string{ std::istreambuf_iterator<AZStd::string::value_type>(responseStream), responseEos };
             responseContent = EscapePercentCharsInString(responseContent);
             responseStream.seekg(0);
 
