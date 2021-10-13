@@ -1249,9 +1249,13 @@ namespace AzToolsFramework
                 return AZ::Failure(AZStd::string("Cannot detach Prefab Instance with invalid container entity."));
             }
 
-            if (IsLevelInstanceContainerEntity(containerEntityId))
+            auto editorEntityContextId = AzFramework::EntityContextId::CreateNull();
+            EditorEntityContextRequestBus::BroadcastResult(editorEntityContextId, &EditorEntityContextRequests::GetEditorEntityContextId);
+
+
+            if (containerEntityId == m_prefabFocusPublicInterface->GetFocusedPrefabContainerEntityId(editorEntityContextId))
             {
-                return AZ::Failure(AZStd::string("Cannot detach level Prefab Instance."));
+                return AZ::Failure(AZStd::string("Cannot detach focused Prefab Instance."));
             }
 
             InstanceOptionalReference owningInstance = GetOwnerInstanceByEntityId(containerEntityId);
@@ -1474,9 +1478,12 @@ namespace AzToolsFramework
 
             AZStd::queue<AZ::Entity*> entityQueue;
 
+            auto editorEntityContextId = AzFramework::EntityContextId::CreateNull();
+            EditorEntityContextRequestBus::BroadcastResult(editorEntityContextId, &EditorEntityContextRequests::GetEditorEntityContextId);
+
             for (auto inputEntity : inputEntities)
             {
-                if (inputEntity && !IsLevelInstanceContainerEntity(inputEntity->GetId()))
+                if (inputEntity && inputEntity->GetId() != m_prefabFocusPublicInterface->GetFocusedPrefabContainerEntityId(editorEntityContextId))
                 {
                     entityQueue.push(inputEntity);
                 }

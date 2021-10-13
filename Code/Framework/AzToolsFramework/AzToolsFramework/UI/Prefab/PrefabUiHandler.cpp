@@ -178,12 +178,6 @@ namespace AzToolsFramework
 
         AZ::EntityId entityId(index.data(EntityOutlinerListModel::EntityIdRole).value<AZ::u64>());
 
-        // We hide the root instance container entity from the Outliner, so avoid drawing its full container on children
-        if (m_prefabPublicInterface->IsLevelInstanceContainerEntity(entityId))
-        {
-            return;
-        }
-
         const QTreeView* outlinerTreeView(qobject_cast<const QTreeView*>(option.widget));
         const int ancestorLeft = outlinerTreeView->visualRect(index).left() + (m_prefabBorderThickness / 2) - 1;
         const int curveRectSize = m_prefabCapsuleRadius * 2;
