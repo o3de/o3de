@@ -391,14 +391,7 @@ def unmount_volume_from_device():
     print('Unmounting EBS volume from device...')
     if os.name == 'nt':
         kill_processes(MOUNT_PATH + 'workspace')
-        f = tempfile.NamedTemporaryFile(delete=False)
-        f.write("""
-          select disk 1
-          offline disk
-          """.encode('utf-8'))
-        f.close()
-        subprocess.call('diskpart /s %s' % f.name)
-        os.unlink(f.name)
+        offline_drive()
     else:
         kill_processes(MOUNT_PATH)
         subprocess.call(['umount', '-f', MOUNT_PATH])
