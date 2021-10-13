@@ -138,6 +138,11 @@ namespace AzToolsFramework
 
     bool EntityIdUnderCursor::IsPrefabEntity() const
     {
+        if (m_entityId == AZ::EntityId())
+        {
+            return false;
+        }
+
         return m_entityId != m_rootEntityId;
     }
 

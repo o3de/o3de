@@ -45,7 +45,7 @@ namespace AzToolsFramework
         AZ::EntityId GetRootEntityId() const;
 
         //! Returns true if the entity id under the cursor is part of a prefab, otherwise false.
-        //! @note In the case of no entity id under the cursor, true is returned (although consider this behavior undefined).
+        //! @note In the case of no entity id under the cursor, false is returned.
         bool IsPrefabEntity() const;
 
     private:
