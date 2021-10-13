@@ -15,7 +15,7 @@ using namespace Intersect;
 // IntersectSegmentTriangleCCW
 // [10/21/2009]
 //=========================================================================
-int Intersect::IntersectSegmentTriangleCCW(
+bool Intersect::IntersectSegmentTriangleCCW(
     const Vector3& p, const Vector3& q, const Vector3& a, const Vector3& b, const Vector3& c,
     /*float &u, float &v, float &w,*/ Vector3& normal, float& t)
 {
@@ -34,7 +34,7 @@ int Intersect::IntersectSegmentTriangleCCW(
     float d = qp.Dot(normal);
     if (d <= 0.0f)
     {
-        return 0;
+        return false;
     }
 
     // Compute intersection t value of pq with plane of triangle. A ray
@@ -46,7 +46,7 @@ int Intersect::IntersectSegmentTriangleCCW(
     // range segment check t[0,1] (it this case [0,d])
     if (t < 0.0f || t > d)
     {
-        return 0;
+        return false;
     }
 
     // Compute barycentric coordinate components and test if within bounds
@@ -54,12 +54,12 @@ int Intersect::IntersectSegmentTriangleCCW(
     v = ac.Dot(e);
     if (v < 0.0f || v > d)
     {
-        return 0;
+        return false;
     }
     w = -ab.Dot(e);
     if (w < 0.0f || v + w > d)
     {
-        return 0;
+        return false;
     }
 
     // Segment/ray intersects triangle. Perform delayed division and
@@ -72,14 +72,14 @@ int Intersect::IntersectSegmentTriangleCCW(
 
     normal.Normalize();
 
-    return 1;
+    return true;
 }
 
 //=========================================================================
 // IntersectSegmentTriangle
 // [10/21/2009]
 //=========================================================================
-int
+bool
 Intersect::IntersectSegmentTriangle(
     const Vector3& p, const Vector3& q, const Vector3& a, const Vector3& b, const Vector3& c,
     /*float &u, float &v, float &w,*/ Vector3& normal, float& t)
@@ -111,7 +111,7 @@ Intersect::IntersectSegmentTriangle(
         // so either have a parallel ray or our normal is flipped
         if (d >= -Constants::FloatEpsilon)
         {
-            return 0; // parallel
+            return false; // parallel
         }
         d = -d;
         e = ap.Cross(qp);
@@ -125,19 +125,19 @@ Intersect::IntersectSegmentTriangle(
     // range segment check t[0,1] (it this case [0,d])
     if (t < 0.0f || t > d)
     {
-        return 0;
+        return false;
     }
 
     // Compute barycentric coordinate components and test if within bounds
     v = ac.Dot(e);
     if (v < 0.0f || v > d)
     {
-        return 0;
+        return false;
     }
     w = -ab.Dot(e);
     if (w < 0.0f || v + w > d)
     {
-        return 0;
+        return false;
     }
 
     // Segment/ray intersects the triangle. Perform delayed division and
@@ -150,7 +150,7 @@ Intersect::IntersectSegmentTriangle(
 
     normal.Normalize();
 
-    return 1;
+    return true;
 }
 
 //=========================================================================
