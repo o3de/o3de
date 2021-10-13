@@ -1413,10 +1413,8 @@ namespace PhysX
 
         bool IsComExpectedToChange() const
         {
-            // Note: PhysX computation of Center of Mass always use all shapes inside the rigid body,
-            //       it does not filter by SimulatedShapesMode or m_includeAllShapesInMassCalculation, like
-            //       mass and inertia computation does.
-            return m_rigidBodyConfig.m_computeCenterOfMass;
+            return m_rigidBodyConfig.m_computeCenterOfMass &&
+                (GetShapesMode() != SimulatedShapesMode::NONE || m_rigidBodyConfig.m_includeAllShapesInMassCalculation);
         }
 
         bool IsInertiaExpectedToChange() const
@@ -1585,20 +1583,23 @@ namespace PhysX
     {
         const AzPhysics::MassComputeFlags flags = GetMassComputeFlags();
 
-        const bool doesComputeMassOrInertia =
-            AzPhysics::MassComputeFlags::COMPUTE_MASS == (flags & AzPhysics::MassComputeFlags::COMPUTE_MASS) ||
-            AzPhysics::MassComputeFlags::COMPUTE_INERTIA == (flags & AzPhysics::MassComputeFlags::COMPUTE_INERTIA);
+        const bool doesComputeCenterOfMass = AzPhysics::MassComputeFlags::COMPUTE_COM == (flags & AzPhysics::MassComputeFlags::COMPUTE_COM);
+        const bool doesComputeMass = AzPhysics::MassComputeFlags::COMPUTE_MASS == (flags & AzPhysics::MassComputeFlags::COMPUTE_MASS);
+        const bool doesComputeInertia = AzPhysics::MassComputeFlags::COMPUTE_INERTIA == (flags & AzPhysics::MassComputeFlags::COMPUTE_INERTIA);
 
-        // Expect 1 warning when computing mass or inertia
-        const int expectedWarningCount = doesComputeMassOrInertia ? 1 : 0;
-
-        UnitTest::ErrorHandler computeMassPropertiesWarningHandler(
-            "Rigid body '' cannot compute mass or inertia because it contains Triangle Mesh shapes. Mass will default to 1.0 and Inertia to (X:1.000000, Y:1.000000, Z:1.000000).");
+        UnitTest::ErrorHandler computeCenterOfMassWarningHandler(
+            "Rigid body '' cannot compute COM because it contains Triangle Mesh shapes, it will default to (X:0.000000, Y:0.000000, Z:0.000000).");
+        UnitTest::ErrorHandler computeMassWarningHandler(
+            "Rigid body '' cannot compute Mass because it contains Triangle Mesh shapes, it will default to 1.0.");
+        UnitTest::ErrorHandler computeIneriaWarningHandler(
+            "Rigid body '' cannot compute Inertia because it contains Triangle Mesh shapes, it will default to (X:1.000000, Y:1.000000, Z:1.000000).");
 
         AzPhysics::SimulatedBodyHandle rigidBodyhandle = TestUtils::AddKinematicTriangleMeshCubeToScene(m_testSceneHandle, 3.0f, flags);
 
         EXPECT_TRUE(rigidBodyhandle != AzPhysics::InvalidSimulatedBodyHandle);
-        EXPECT_EQ(computeMassPropertiesWarningHandler.GetExpectedWarningCount(), expectedWarningCount);
+        EXPECT_EQ(computeCenterOfMassWarningHandler.GetExpectedWarningCount(), doesComputeCenterOfMass ? 1 : 0);
+        EXPECT_EQ(computeMassWarningHandler.GetExpectedWarningCount(), doesComputeMass ? 1 : 0);
+        EXPECT_EQ(computeIneriaWarningHandler.GetExpectedWarningCount(), doesComputeInertia ? 1 : 0);
 
         if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
         {

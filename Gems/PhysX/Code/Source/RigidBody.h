@@ -116,9 +116,8 @@ namespace PhysX
     private:
         void CreatePhysXActor(const AzPhysics::RigidBodyConfiguration& configuration);
 
-        void UpdateComputedCenterOfMass();
+        void UpdateCenterOfMass(bool includeAllShapesInMassCalculation);
         void SetInertia(const AZ::Matrix3x3& inertia);
-        void SetZeroCenterOfMass();
 
         AZStd::shared_ptr<physx::PxRigidDynamic> m_pxRigidActor;
         AZStd::vector<AZStd::shared_ptr<PhysX::Shape>> m_shapes;

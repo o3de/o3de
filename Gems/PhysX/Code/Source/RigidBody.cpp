@@ -24,6 +24,13 @@
 
 namespace PhysX
 {
+    namespace
+    {
+        const AZ::Vector3 DefaultCenterOfMass = AZ::Vector3::CreateZero();
+        const float DefaultMass = 1.0f;
+        const AZ::Matrix3x3 DefaultInertiaTensor = AZ::Matrix3x3::CreateIdentity();
+    }
+
     void RigidBody::Reflect(AZ::ReflectContext* context)
     {
         AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context);
@@ -155,20 +162,61 @@ namespace PhysX
 
     void RigidBody::UpdateMassProperties(AzPhysics::MassComputeFlags flags, const AZ::Vector3& centerOfMassOffsetOverride, const AZ::Matrix3x3& inertiaTensorOverride, const float massOverride)
     {
-        const AZ::Vector3 defaultCenterOfMass = AZ::Vector3::CreateZero();
-        const float defaultMass = 1.0f;
-        const AZ::Matrix3x3 defaultIntertiaTensor = AZ::Matrix3x3::CreateIdentity();
-
         const bool computeCenterOfMass = AzPhysics::MassComputeFlags::COMPUTE_COM == (flags & AzPhysics::MassComputeFlags::COMPUTE_COM);
         const bool computeInertiaTensor = AzPhysics::MassComputeFlags::COMPUTE_INERTIA == (flags & AzPhysics::MassComputeFlags::COMPUTE_INERTIA);
         const bool computeMass = AzPhysics::MassComputeFlags::COMPUTE_MASS == (flags & AzPhysics::MassComputeFlags::COMPUTE_MASS);
+        const bool needsCompute = computeCenterOfMass || computeInertiaTensor || computeMass;
+        const bool includeAllShapesInMassCalculation = AzPhysics::MassComputeFlags::INCLUDE_ALL_SHAPES == (flags & AzPhysics::MassComputeFlags::INCLUDE_ALL_SHAPES);
+
+        // Basic case where all properties are set directly.
+        if (!needsCompute)
+        {
+            SetCenterOfMassOffset(centerOfMassOffsetOverride);
+            SetMass(massOverride);
+            SetInertia(inertiaTensorOverride);
+            return;
+        }
 
         // If there are no shapes then set the properties directly without computing anything.
         if (m_shapes.empty())
         {
-            SetCenterOfMassOffset(computeCenterOfMass ? defaultCenterOfMass  : centerOfMassOffsetOverride);
-            SetMass(computeMass ? defaultMass : massOverride);
-            SetInertia(computeInertiaTensor ? defaultIntertiaTensor : inertiaTensorOverride);
+            SetCenterOfMassOffset(computeCenterOfMass ? DefaultCenterOfMass  : centerOfMassOffsetOverride);
+            SetMass(computeMass ? DefaultMass : massOverride);
+            SetInertia(computeInertiaTensor ? DefaultInertiaTensor : inertiaTensorOverride);
+            return;
+        }
+
+        auto containsTriangleMeshShape = [this, includeAllShapesInMassCalculation]
+        {
+            PHYSX_SCENE_READ_LOCK(m_pxRigidActor->getScene());
+            return AZStd::any_of(m_shapes.cbegin(), m_shapes.cend(),
+                [includeAllShapesInMassCalculation](const AZStd::shared_ptr<PhysX::Shape>& shape)
+                {
+                    const bool includeShape = includeAllShapesInMassCalculation ||
+                        physx::PxShapeFlag::eSIMULATION_SHAPE == (shape->GetPxShape()->getFlags() & physx::PxShapeFlag::eSIMULATION_SHAPE);
+
+                    return includeShape &&
+                        shape->GetPxShape()->getGeometryType() == physx::PxGeometryType::eTRIANGLEMESH;
+                });
+        };
+
+        // If there are triangle mesh shapes then it's not possible
+        // to compute mass properties and default values will be used.
+        if (containsTriangleMeshShape())
+        {
+            AZ_Warning("RigidBody", !computeCenterOfMass,
+                "Rigid body '%s' cannot compute COM because it contains Triangle Mesh shapes, it will default to %s.",
+                GetName().c_str(), AZ::ToString(DefaultCenterOfMass).c_str());
+            AZ_Warning("RigidBody", !computeMass,
+                "Rigid body '%s' cannot compute Mass because it contains Triangle Mesh shapes, it will default to %0.1f.",
+                GetName().c_str(), DefaultMass);
+            AZ_Warning("RigidBody", !computeInertiaTensor,
+                "Rigid body '%s' cannot compute Inertia because it contains Triangle Mesh shapes, it will default to %s.",
+                GetName().c_str(), AZ::ToString(DefaultInertiaTensor.RetrieveScale()).c_str());
+
+            SetCenterOfMassOffset(computeCenterOfMass ? DefaultCenterOfMass : centerOfMassOffsetOverride);
+            SetMass(computeMass ? DefaultMass : massOverride);
+            SetInertia(computeInertiaTensor ? DefaultInertiaTensor : inertiaTensorOverride);
             return;
         }
 
@@ -176,41 +224,14 @@ namespace PhysX
         // it's needed when computing mass and inertia.
         if (computeCenterOfMass)
         {
-            UpdateComputedCenterOfMass();
+            // Compute Center of Mass
+            UpdateCenterOfMass(includeAllShapesInMassCalculation);
         }
         else
         {
             SetCenterOfMassOffset(centerOfMassOffsetOverride);
         }
-
-        auto containsTriangleMeshShape = [this]
-        {
-            PHYSX_SCENE_READ_LOCK(m_pxRigidActor->getScene());
-            return AZStd::any_of(m_shapes.cbegin(), m_shapes.cend(),
-                [](const AZStd::shared_ptr<PhysX::Shape>& shape)
-                {
-                    return shape->GetPxShape()->getGeometryType() == physx::PxGeometryType::eTRIANGLEMESH;
-                });
-        };
-
-        // If there are triangle mesh shapes then it's not possible to compute mass or inertia.
-        if ((computeMass || computeInertiaTensor) &&
-            containsTriangleMeshShape())
-        {
-            AZ_Warning("RigidBody", false,
-                "Rigid body '%s' cannot compute mass or inertia because it contains Triangle Mesh shapes. "
-                "Mass will default to %0.1f and Inertia to %s.",
-                GetName().c_str(), defaultMass, AZ::ToString(defaultIntertiaTensor.RetrieveScale()).c_str());
-
-            SetMass(computeMass ? defaultMass : massOverride);
-            SetInertia(computeInertiaTensor ? defaultIntertiaTensor : inertiaTensorOverride);
-            return;
-        }
-
         const auto pxCenterOfMass = PxMathConvert(GetCenterOfMassLocal());
-
-        const bool includeAllShapesInMassCalculation =
-            AzPhysics::MassComputeFlags::INCLUDE_ALL_SHAPES == (flags & AzPhysics::MassComputeFlags::INCLUDE_ALL_SHAPES);
 
         if (computeMass)
         {
@@ -348,60 +369,51 @@ namespace PhysX
         }
     }
 
-    void RigidBody::UpdateComputedCenterOfMass()
+    void RigidBody::UpdateCenterOfMass(bool includeAllShapesInMassCalculation)
     {
-        if (m_pxRigidActor)
+        if (m_shapes.empty())
         {
-            physx::PxU32 shapeCount = 0;
+            SetCenterOfMassOffset(AZ::Vector3::CreateZero());
+            return;
+        }
+
+        AZStd::vector<physx::PxShape*> pxShapes;
+        pxShapes.reserve(m_shapes.size());
+        {
+            // Filter shapes in the same way that updateMassAndInertia function does.
+            PHYSX_SCENE_READ_LOCK(m_pxRigidActor->getScene());
+            for (const auto& shape : m_shapes)
             {
-                PHYSX_SCENE_READ_LOCK(m_pxRigidActor->getScene());
-                shapeCount = m_pxRigidActor->getNbShapes();
-            }
-            if (shapeCount > 0)
-            {
-                AZStd::vector<physx::PxShape*> shapes(shapeCount);
+                const bool includeShape = includeAllShapesInMassCalculation ||
+                    physx::PxShapeFlag::eSIMULATION_SHAPE == (shape->GetPxShape()->getFlags() & physx::PxShapeFlag::eSIMULATION_SHAPE);
 
+                if (includeShape)
                 {
-                    PHYSX_SCENE_READ_LOCK(m_pxRigidActor->getScene());
-                    m_pxRigidActor->getShapes(&shapes[0], shapeCount);
-
-                    shapes.erase(AZStd::remove_if(shapes.begin()
-                        , shapes.end()
-                        , [](const physx::PxShape* shape)
-                          { 
-                            return shape->getFlags() & physx::PxShapeFlag::eTRIGGER_SHAPE;
-                          })
-                        , shapes.end());
+                    pxShapes.emplace_back(shape->GetPxShape());
                 }
-                shapeCount = static_cast<physx::PxU32>(shapes.size());
-
-                if (shapeCount == 0)
-                {
-                    SetZeroCenterOfMass();
-                    return;
-                }
-
-                {
-                    // Note 1: PhysX computation of Center of Mass always use all shapes inside the rigid body,
-                    //         it does not filter by SimulatedShapesMode or m_includeAllShapesInMassCalculation, like
-                    //         mass and inertia computation does.
-                    // Note 2: PhysX computeMassPropertiesFromShapes function does not use density
-                    //         to compute mass and inertia (only geometry), which are used to calculate
-                    //         the center of masses. This differs from updateMassAndInertia and setMassAndUpdateInertia
-                    //         functions, which do rely on density values.
-                    // Note 3: The usage of triangle mesh shapes do not error and will be treated with default mass
-                    //         and inertia values.
-                    PHYSX_SCENE_WRITE_LOCK(m_pxRigidActor->getScene());
-                    const auto properties = physx::PxRigidBodyExt::computeMassPropertiesFromShapes(&shapes[0], shapeCount);
-                    const physx::PxTransform computedCenterOfMass(properties.centerOfMass);
-                    m_pxRigidActor->setCMassLocalPose(computedCenterOfMass);
-                }
-            }
-            else
-            {
-                SetZeroCenterOfMass();
             }
         }
+        pxShapes.shrink_to_fit();
+
+        if (pxShapes.empty())
+        {
+            SetCenterOfMassOffset(AZ::Vector3::CreateZero());
+            return;
+        }
+
+        const physx::PxMassProperties pxMassProperties = [this, &pxShapes]
+        {
+            // Note: PhysX computeMassPropertiesFromShapes function does not use densities
+            //       to compute the shape's masses, which are needed to calculate the center of masses.
+            //       This differs from updateMassAndInertia function, which uses material density values.
+            //       So the masses used during center of masses calculation do not match the masses
+            //       used during mass/inertia calculation. This is not an issue but more like an inconsistency
+            //       in PhysX.
+            PHYSX_SCENE_READ_LOCK(m_pxRigidActor->getScene());
+            return physx::PxRigidBodyExt::computeMassPropertiesFromShapes(pxShapes.data(), static_cast<physx::PxU32>(pxShapes.size()));
+        }();
+
+        SetCenterOfMassOffset(PxMathConvert(pxMassProperties.centerOfMass));
     }
 
     void RigidBody::SetInertia(const AZ::Matrix3x3& inertia)
@@ -784,14 +796,5 @@ namespace PhysX
     const AZStd::string& RigidBody::GetName() const
     {
         return m_name;
-    }
-
-    void RigidBody::SetZeroCenterOfMass()
-    {
-        if (m_pxRigidActor)
-        {
-            PHYSX_SCENE_WRITE_LOCK(m_pxRigidActor->getScene());
-            m_pxRigidActor->setCMassLocalPose(physx::PxTransform(PxMathConvert(AZ::Vector3::CreateZero())));
-        }
     }
 }
