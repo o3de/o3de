@@ -335,7 +335,8 @@ def mount_volume_to_device(created):
 
             if created:
                 print('Creating filesystem on new volume')
-                f.write("""create partition primary
+                f.write("""
+                create partition primary
                 select partition 1
                 format quick fs=ntfs
                 assign
