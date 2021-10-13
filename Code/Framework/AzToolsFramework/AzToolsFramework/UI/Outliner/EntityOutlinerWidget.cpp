@@ -553,7 +553,7 @@ namespace AzToolsFramework
         }
 
         // Do not display the context menu if the item under the mouse cursor is unselectable.
-        if (!m_gui->m_objectTree->indexAt(pos).flags() & Qt::ItemIsSelectable)
+        if (const QModelIndex& index = m_gui->m_objectTree->indexAt(pos); index.isValid() && !(index.flags() & Qt::ItemIsSelectable))
         {
             return;
         }
