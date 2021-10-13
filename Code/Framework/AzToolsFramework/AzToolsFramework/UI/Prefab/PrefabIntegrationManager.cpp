@@ -137,6 +137,7 @@ namespace AzToolsFramework
             }
 
             EditorContextMenuBus::Handler::BusConnect();
+            EditorEventsBus::Handler::BusConnect();
             PrefabInstanceContainerNotificationBus::Handler::BusConnect();
             AZ::Interface<PrefabIntegrationInterface>::Register(this);
             AssetBrowser::AssetBrowserSourceDropBus::Handler::BusConnect(s_prefabFileExtension);
@@ -147,6 +148,7 @@ namespace AzToolsFramework
             AssetBrowser::AssetBrowserSourceDropBus::Handler::BusDisconnect();
             AZ::Interface<PrefabIntegrationInterface>::Unregister(this);
             PrefabInstanceContainerNotificationBus::Handler::BusDisconnect();
+            EditorEventsBus::Handler::BusDisconnect();
             EditorContextMenuBus::Handler::BusDisconnect();
         }
 
@@ -311,6 +313,11 @@ namespace AzToolsFramework
                         });
                 }
             }
+        }
+
+        void PrefabIntegrationManager::OnEscape()
+        {
+            s_prefabFocusInterface->FocusOnOwningPrefab(AZ::EntityId());
         }
 
         void PrefabIntegrationManager::HandleSourceFileType(AZStd::string_view sourceFilePath, AZ::EntityId parentId, AZ::Vector3 position) const
@@ -1393,7 +1400,7 @@ namespace AzToolsFramework
 
         AZStd::unique_ptr<AzQtComponents::Card> PrefabIntegrationManager::ConstructUnsavedPrefabsCard(TemplateId templateId)
         {
-            FlowLayout* unsavedPrefabsLayout = new FlowLayout(AzToolsFramework::GetActiveWindow());
+            FlowLayout* unsavedPrefabsLayout = new FlowLayout(nullptr);
 
             AZStd::set<AZ::IO::PathView> dirtyTemplatePaths = s_prefabSystemComponentInterface->GetDirtyTemplatePaths(templateId);
 

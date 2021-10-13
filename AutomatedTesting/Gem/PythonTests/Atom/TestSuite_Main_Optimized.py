@@ -63,5 +63,9 @@ class TestAutomation(EditorTestSuite):
     class AtomEditorComponents_MaterialAdded(EditorSharedTest):
         from Atom.tests import hydra_AtomEditorComponents_MaterialAdded as test_module
 
+    @pytest.mark.test_case_id("C32078127")
+    class AtomEditorComponents_PostFXLayerAdded(EditorSharedTest):
+        from Atom.tests import hydra_AtomEditorComponents_PostFXLayerAdded as test_module
+
     class ShaderAssetBuilder_RecompilesShaderAsChainOfDependenciesChanges(EditorSharedTest):
         from Atom.tests import hydra_ShaderAssetBuilder_RecompilesShaderAsChainOfDependenciesChanges as test_module

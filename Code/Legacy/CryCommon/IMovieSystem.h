@@ -13,6 +13,7 @@
 #include <AzCore/Math/Crc.h>
 #include <AzCore/Math/Quaternion.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/std/allocator_stateless.h>
 
 #include <Range.h>
 #include <AnimKey.h>
@@ -181,7 +182,7 @@ public:
 
 private:
     AnimParamType m_type;
-    AZStd::string m_name;
+    AZStd::basic_string<char, AZStd::char_traits<char>, AZStd::stateless_allocator> m_name;
 };
 
 namespace AZStd
@@ -617,7 +618,7 @@ public:
             , valueType(_valueType)
             , flags(_flags) {};
 
-        AZStd::string name;           // parameter name.
+        AZStd::basic_string<char, AZStd::char_traits<char>, AZStd::stateless_allocator> name;           // parameter name.
         CAnimParamType paramType;     // parameter id.
         AnimValueType valueType;       // value type, defines type of track to use for animating this parameter.
         ESupportedParamFlags flags; // combination of flags from ESupportedParamFlags.

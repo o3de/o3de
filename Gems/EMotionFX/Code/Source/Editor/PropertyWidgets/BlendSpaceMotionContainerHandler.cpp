@@ -55,6 +55,7 @@ namespace EMotionFX
         m_spinboxX->setDecimals(4);
         m_spinboxX->setRange(-FLT_MAX, FLT_MAX);
         m_spinboxX->setProperty("motionId", motionId.c_str());
+        m_spinboxX->setKeyboardTracking(false);
         layoutX->addWidget(m_spinboxX);
 
         layout->addLayout(layoutX, row, column);
@@ -76,6 +77,7 @@ namespace EMotionFX
             m_spinboxY->setDecimals(4);
             m_spinboxY->setRange(-FLT_MAX, FLT_MAX);
             m_spinboxY->setProperty("motionId", motionId.c_str());
+            m_spinboxX->setKeyboardTracking(false);
             layoutY->addWidget(m_spinboxY);
 
             layout->addLayout(layoutY, row, column);
