@@ -61,10 +61,16 @@ set(FILES
 #)
 #
 #set(atom_hair_passes
+    # The simulation pass class shared by all simulation / skinning compute passes
     Code/Passes/HairSkinningComputePass.h
     Code/Passes/HairSkinningComputePass.cpp
+    # Base class of all geometry raster passes
+    Code/Passes/HairGeometryRasterPass.h
+    Code/Passes/HairGeometryRasterPass.cpp
+    # PPLL rendering technique - geometry raster pass
     Code/Passes/HairPPLLRasterPass.h
     Code/Passes/HairPPLLRasterPass.cpp
+    # PP full screen resolve pass 
     Code/Passes/HairPPLLResolvePass.h
     Code/Passes/HairPPLLResolvePass.cpp
 #)
