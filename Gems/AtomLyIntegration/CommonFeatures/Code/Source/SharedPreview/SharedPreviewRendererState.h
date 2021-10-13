@@ -12,26 +12,27 @@ namespace AZ
 {
     namespace LyIntegration
     {
-        namespace Thumbnails
+        class SharedPreviewRendererContext;
+
+        //! SharedPreviewRendererState decouples SharedPreviewRenderer logic into easy-to-understand and debug pieces
+        class SharedPreviewRendererState
         {
-            class SharedPreviewRendererContext;
-
-            //! SharedPreviewRendererState decouples SharedPreviewRenderer logic into easy-to-understand and debug pieces
-            class SharedPreviewRendererState
+        public:
+            explicit SharedPreviewRendererState(SharedPreviewRendererContext* context)
+                : m_context(context)
             {
-            public:
-                explicit SharedPreviewRendererState(SharedPreviewRendererContext* context) : m_context(context) {}
-                virtual ~SharedPreviewRendererState() = default;
+            }
 
-                //! Start is called when step begins execution
-                virtual void Start() {}
-                //! Stop is called when step ends execution
-                virtual void Stop() {}
+            virtual ~SharedPreviewRendererState() = default;
 
-            protected:
-                SharedPreviewRendererContext* m_context;
-            };
-        } // namespace Thumbnails
+            //! Start is called when step begins execution
+            virtual void Start() = 0;
+
+            //! Stop is called when step ends execution
+            virtual void Stop() = 0;
+
+        protected:
+            SharedPreviewRendererContext* m_context = nullptr;
+        };
     } // namespace LyIntegration
 } // namespace AZ
-

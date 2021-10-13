@@ -14,24 +14,20 @@ namespace AZ
 {
     namespace LyIntegration
     {
-        namespace Thumbnails
+        //! SharedPreviewRendererInitState sets up RPI system and scene and prepares it for rendering thumbnail entities
+        //! This step is only called once when SharedPreviewRenderer begins rendering its first thumbnail
+        class SharedPreviewRendererInitState : public SharedPreviewRendererState
         {
-            //! SharedPreviewRendererInitState sets up RPI system and scene and prepares it for rendering thumbnail entities
-            //! This step is only called once when SharedPreviewRenderer begins rendering its first thumbnail
-            class SharedPreviewRendererInitState
-                : public SharedPreviewRendererState
-            {
-            public:
-                SharedPreviewRendererInitState(SharedPreviewRendererContext* context);
+        public:
+            SharedPreviewRendererInitState(SharedPreviewRendererContext* context);
 
-                void Start() override;
+            void Start() override;
+            void Stop() override;
 
-            private:
-                static constexpr float AspectRatio = 1.0f;
-                static constexpr float NearDist = 0.1f;
-                static constexpr float FarDist = 100.0f;
-            };
-        } // namespace Thumbnails
+        private:
+            static constexpr float AspectRatio = 1.0f;
+            static constexpr float NearDist = 0.1f;
+            static constexpr float FarDist = 100.0f;
+        };
     } // namespace LyIntegration
 } // namespace AZ
-

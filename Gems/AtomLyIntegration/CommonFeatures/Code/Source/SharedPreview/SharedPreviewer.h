@@ -5,16 +5,17 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+
 #pragma once
 
 #if !defined(Q_MOC_RUN)
-#include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/Asset/AssetCommon.h>
+#include <AzCore/Memory/SystemAllocator.h>
 #include <AzToolsFramework/AssetBrowser/Previewer/Previewer.h>
 
 AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option") // disable warnings spawned by QT
-#include <QWidget>
 #include <QScopedPointer>
+#include <QWidget>
 AZ_POP_DISABLE_WARNING
 #endif
 
@@ -30,8 +31,8 @@ namespace AzToolsFramework
         class ProductAssetBrowserEntry;
         class SourceAssetBrowserEntry;
         class AssetBrowserEntry;
-    }
-}
+    } // namespace AssetBrowser
+} // namespace AzToolsFramework
 
 class QResizeEvent;
 
@@ -39,8 +40,7 @@ namespace AZ
 {
     namespace LyIntegration
     {
-        class SharedPreviewer final
-            : public AzToolsFramework::AssetBrowser::Previewer
+        class SharedPreviewer final : public AzToolsFramework::AssetBrowser::Previewer
         {
             Q_OBJECT
         public:
@@ -50,7 +50,7 @@ namespace AZ
             ~SharedPreviewer();
 
             // AzToolsFramework::AssetBrowser::Previewer overrides...
-            void Clear() const override {}
+            void Clear() const override;
             void Display(const AzToolsFramework::AssetBrowser::AssetBrowserEntry* entry) override;
             const QString& GetName() const override;
 

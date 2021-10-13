@@ -5,6 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+
 #pragma once
 
 #include <AzCore/EBus/EBus.h>
@@ -14,20 +15,16 @@ namespace AZ
 {
     namespace LyIntegration
     {
-        namespace Thumbnails
+        //! ThumbnailFeatureProcessorProviderRequests allows registering custom Feature Processors for thumbnail generation
+        //! Duplicates will be ignored
+        //! You can check minimal feature processors that are already registered in SharedPreviewRenderer.cpp
+        class ThumbnailFeatureProcessorProviderRequests : public AZ::EBusTraits
         {
-            //! ThumbnailFeatureProcessorProviderRequests allows registering custom Feature Processors for thumbnail generation
-            //! Duplicates will be ignored
-            //! You can check minimal feature processors that are already registered in SharedPreviewRenderer.cpp
-            class ThumbnailFeatureProcessorProviderRequests
-                : public AZ::EBusTraits
-            {
-            public:
-                //! Get a list of custom feature processors to register with thumbnail renderer
-                virtual const AZStd::vector<AZStd::string>& GetCustomFeatureProcessors() const = 0;
-            };
+        public:
+            //! Get a list of custom feature processors to register with thumbnail renderer
+            virtual const AZStd::vector<AZStd::string>& GetCustomFeatureProcessors() const = 0;
+        };
 
-            using ThumbnailFeatureProcessorProviderBus = AZ::EBus<ThumbnailFeatureProcessorProviderRequests>;
-        } // namespace Thumbnails
+        using ThumbnailFeatureProcessorProviderBus = AZ::EBus<ThumbnailFeatureProcessorProviderRequests>;
     } // namespace LyIntegration
 } // namespace AZ

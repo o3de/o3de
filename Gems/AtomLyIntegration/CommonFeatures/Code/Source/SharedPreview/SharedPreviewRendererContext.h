@@ -15,28 +15,25 @@ namespace AZ
 {
     namespace LyIntegration
     {
-        namespace Thumbnails
+        struct SharedPreviewRendererData;
+
+        enum class State
         {
-            struct SharedPreviewRendererData;
+            None,
+            Init,
+            Idle,
+            Load,
+            Capture,
+            Release
+        };
 
-            enum class State
-            {
-                None,
-                Init,
-                Idle,
-                Load,
-                Capture,
-                Release
-            };
-
-            //! An interface for SharedPreviewRendererStates to communicate with thumbnail renderer
-            class SharedPreviewRendererContext
-            {
-            public:
-                virtual void SetState(State step) = 0;
-                virtual State GetState() const = 0;
-                virtual AZStd::shared_ptr<SharedPreviewRendererData> GetData() const = 0;
-            };
-        } // namespace Thumbnails
+        //! An interface for SharedPreviewRendererStates to communicate with thumbnail renderer
+        class SharedPreviewRendererContext
+        {
+        public:
+            virtual void SetState(State step) = 0;
+            virtual State GetState() const = 0;
+            virtual AZStd::shared_ptr<SharedPreviewRendererData> GetData() const = 0;
+        };
     } // namespace LyIntegration
 } // namespace AZ

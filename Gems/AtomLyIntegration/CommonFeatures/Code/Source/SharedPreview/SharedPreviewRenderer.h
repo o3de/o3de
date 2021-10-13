@@ -16,7 +16,7 @@
 #include <AtomLyIntegration/CommonFeatures/Thumbnails/ThumbnailFeatureProcessorProviderBus.h>
 
 // Disables warning messages triggered by the Qt library
-// 4251: class needs to have dll-interface to be used by clients of class 
+// 4251: class needs to have dll-interface to be used by clients of class
 // 4800: forcing value to bool 'true' or 'false' (performance warning)
 AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option")
 #include <QPixmap>
@@ -26,44 +26,41 @@ namespace AZ
 {
     namespace LyIntegration
     {
-        namespace Thumbnails
+        class SharedPreviewRendererState;
+
+        //! Provides custom rendering of material and model thumbnails
+        class SharedPreviewRenderer
+            : public SharedPreviewRendererContext
+            , private AzToolsFramework::Thumbnailer::ThumbnailerRendererRequestBus::MultiHandler
+            , private SystemTickBus::Handler
+            , private ThumbnailFeatureProcessorProviderBus::Handler
         {
-            class SharedPreviewRendererState;
+        public:
+            AZ_CLASS_ALLOCATOR(SharedPreviewRenderer, AZ::SystemAllocator, 0)
 
-            //! Provides custom rendering of material and model thumbnails
-            class SharedPreviewRenderer
-                : public SharedPreviewRendererContext
-                , private AzToolsFramework::Thumbnailer::ThumbnailerRendererRequestBus::MultiHandler
-                , private SystemTickBus::Handler
-                , private ThumbnailFeatureProcessorProviderBus::Handler
-            {
-            public:
-                AZ_CLASS_ALLOCATOR(SharedPreviewRenderer, AZ::SystemAllocator, 0)
+            SharedPreviewRenderer();
+            ~SharedPreviewRenderer();
 
-                SharedPreviewRenderer();
-                ~SharedPreviewRenderer();
+            //! SharedPreviewRendererContext overrides...
+            void SetState(State step) override;
+            State GetState() const override;
+            AZStd::shared_ptr<SharedPreviewRendererData> GetData() const override;
 
-                //! SharedPreviewRendererContext overrides...
-                void SetState(State step) override;
-                State GetState() const override;
-                AZStd::shared_ptr<SharedPreviewRendererData> GetData() const override;
+        private:
+            //! ThumbnailerRendererRequestsBus::Handler interface overrides...
+            void RenderThumbnail(AzToolsFramework::Thumbnailer::SharedThumbnailKey thumbnailKey, int thumbnailSize) override;
+            bool Installed() const override;
 
-            private:
-                //! ThumbnailerRendererRequestsBus::Handler interface overrides...
-                void RenderThumbnail(AzToolsFramework::Thumbnailer::SharedThumbnailKey thumbnailKey, int thumbnailSize) override;
-                bool Installed() const override;
+            //! SystemTickBus::Handler interface overrides...
+            void OnSystemTick() override;
 
-                //! SystemTickBus::Handler interface overrides...
-                void OnSystemTick() override;
+            //! Render::ThumbnailFeatureProcessorProviderBus::Handler interface overrides...
+            const AZStd::vector<AZStd::string>& GetCustomFeatureProcessors() const override;
 
-                //! Render::ThumbnailFeatureProcessorProviderBus::Handler interface overrides...
-                const AZStd::vector<AZStd::string>& GetCustomFeatureProcessors() const override;
-
-                AZStd::unordered_map<State, AZStd::shared_ptr<SharedPreviewRendererState>> m_steps;
-                State m_currentState = State::None;
-                AZStd::shared_ptr<SharedPreviewRendererData> m_data;
-                AZStd::vector<AZStd::string> m_minimalFeatureProcessors;
-            };
-        } // namespace Thumbnails
+            AZStd::unordered_map<State, AZStd::shared_ptr<SharedPreviewRendererState>> m_steps;
+            State m_currentState = State::None;
+            AZStd::shared_ptr<SharedPreviewRendererData> m_data;
+            AZStd::vector<AZStd::string> m_minimalFeatureProcessors;
+        };
     } // namespace LyIntegration
 } // namespace AZ

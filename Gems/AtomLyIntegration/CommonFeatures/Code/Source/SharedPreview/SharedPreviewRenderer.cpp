@@ -9,112 +9,110 @@
 #include <Atom/RPI.Reflect/Material/MaterialAsset.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
 #include <SharedPreview/SharedPreviewRenderer.h>
-#include <SharedPreview/SharedPreviewRendererData.h>
 #include <SharedPreview/SharedPreviewRendererCaptureState.h>
+#include <SharedPreview/SharedPreviewRendererData.h>
 #include <SharedPreview/SharedPreviewRendererIdleState.h>
 #include <SharedPreview/SharedPreviewRendererInitState.h>
-#include <SharedPreview/SharedPreviewRendererReleaseState.h>
 #include <SharedPreview/SharedPreviewRendererLoadState.h>
+#include <SharedPreview/SharedPreviewRendererReleaseState.h>
 
 namespace AZ
 {
     namespace LyIntegration
     {
-        namespace Thumbnails
+        SharedPreviewRenderer::SharedPreviewRenderer()
+            : m_data(new SharedPreviewRendererData)
         {
-            SharedPreviewRenderer::SharedPreviewRenderer()
-                : m_data(new SharedPreviewRendererData)
+            for (const AZ::Uuid& typeId : SharedPreviewUtils::GetSupportedAssetTypes())
             {
-                // SharedPreviewRenderer supports both models and materials, but we connect on materialAssetType
-                // since MaterialOrModelThumbnail dispatches event on materialAssetType address too
-                AzToolsFramework::Thumbnailer::ThumbnailerRendererRequestBus::MultiHandler::BusConnect(RPI::MaterialAsset::RTTI_Type());
-                AzToolsFramework::Thumbnailer::ThumbnailerRendererRequestBus::MultiHandler::BusConnect(RPI::ModelAsset::RTTI_Type());
-                SystemTickBus::Handler::BusConnect();
-                ThumbnailFeatureProcessorProviderBus::Handler::BusConnect();
-
-                m_steps[State::Init] = AZStd::make_shared<SharedPreviewRendererInitState>(this);
-                m_steps[State::Idle] = AZStd::make_shared<SharedPreviewRendererIdleState>(this);
-                m_steps[State::Load] = AZStd::make_shared<SharedPreviewRendererLoadState>(this);
-                m_steps[State::Capture] = AZStd::make_shared<SharedPreviewRendererCaptureState>(this);
-                m_steps[State::Release] = AZStd::make_shared<SharedPreviewRendererReleaseState>(this);
-
-                m_minimalFeatureProcessors =
-                {
-                    "AZ::Render::TransformServiceFeatureProcessor",
-                    "AZ::Render::MeshFeatureProcessor",
-                    "AZ::Render::SimplePointLightFeatureProcessor",
-                    "AZ::Render::SimpleSpotLightFeatureProcessor",
-                    "AZ::Render::PointLightFeatureProcessor",
-                    // There is currently a bug where having multiple DirectionalLightFeatureProcessors active can result in shadow
-                    // flickering [ATOM-13568]
-                    // as well as continually rebuilding MeshDrawPackets [ATOM-13633]. Lets just disable the directional light FP for now.
-                    // Possibly re-enable with [GFX TODO][ATOM-13639]
-                    // "AZ::Render::DirectionalLightFeatureProcessor",
-                    "AZ::Render::DiskLightFeatureProcessor",
-                    "AZ::Render::CapsuleLightFeatureProcessor",
-                    "AZ::Render::QuadLightFeatureProcessor",
-                    "AZ::Render::DecalTextureArrayFeatureProcessor",
-                    "AZ::Render::ImageBasedLightFeatureProcessor",
-                    "AZ::Render::PostProcessFeatureProcessor",
-                    "AZ::Render::SkyBoxFeatureProcessor"
-                };
+                AzToolsFramework::Thumbnailer::ThumbnailerRendererRequestBus::MultiHandler::BusConnect(typeId);
             }
 
-            SharedPreviewRenderer::~SharedPreviewRenderer()
-            {
-                if (m_currentState != State::None)
-                {
-                    SharedPreviewRenderer::SetState(State::Release);
-                }
-                AzToolsFramework::Thumbnailer::ThumbnailerRendererRequestBus::MultiHandler::BusDisconnect();
-                SystemTickBus::Handler::BusDisconnect();
-                ThumbnailFeatureProcessorProviderBus::Handler::BusDisconnect();
-            }
+            SystemTickBus::Handler::BusConnect();
+            ThumbnailFeatureProcessorProviderBus::Handler::BusConnect();
 
-            void SharedPreviewRenderer::SetState(State step)
-            {
-                if (m_currentState != State::None)
-                {
-                    m_steps[m_currentState]->Stop();
-                }
-                m_currentState = step;
-                m_steps[m_currentState]->Start();
-            }
+            m_steps[State::Init] = AZStd::make_shared<SharedPreviewRendererInitState>(this);
+            m_steps[State::Idle] = AZStd::make_shared<SharedPreviewRendererIdleState>(this);
+            m_steps[State::Load] = AZStd::make_shared<SharedPreviewRendererLoadState>(this);
+            m_steps[State::Capture] = AZStd::make_shared<SharedPreviewRendererCaptureState>(this);
+            m_steps[State::Release] = AZStd::make_shared<SharedPreviewRendererReleaseState>(this);
 
-            State SharedPreviewRenderer::GetState() const
+            m_minimalFeatureProcessors =
             {
-                return m_currentState;
-            }
+                "AZ::Render::TransformServiceFeatureProcessor",
+                "AZ::Render::MeshFeatureProcessor",
+                "AZ::Render::SimplePointLightFeatureProcessor",
+                "AZ::Render::SimpleSpotLightFeatureProcessor",
+                "AZ::Render::PointLightFeatureProcessor",
+                // There is currently a bug where having multiple DirectionalLightFeatureProcessors active can result in shadow
+                // flickering [ATOM-13568]
+                // as well as continually rebuilding MeshDrawPackets [ATOM-13633]. Lets just disable the directional light FP for now.
+                // Possibly re-enable with [GFX TODO][ATOM-13639]
+                // "AZ::Render::DirectionalLightFeatureProcessor",
+                "AZ::Render::DiskLightFeatureProcessor",
+                "AZ::Render::CapsuleLightFeatureProcessor",
+                "AZ::Render::QuadLightFeatureProcessor",
+                "AZ::Render::DecalTextureArrayFeatureProcessor",
+                "AZ::Render::ImageBasedLightFeatureProcessor",
+                "AZ::Render::PostProcessFeatureProcessor",
+                "AZ::Render::SkyBoxFeatureProcessor"
+            };
+        }
 
-            bool SharedPreviewRenderer::Installed() const
+        SharedPreviewRenderer::~SharedPreviewRenderer()
+        {
+            if (m_currentState != State::None)
             {
-                return true;
+                SharedPreviewRenderer::SetState(State::Release);
             }
+            AzToolsFramework::Thumbnailer::ThumbnailerRendererRequestBus::MultiHandler::BusDisconnect();
+            SystemTickBus::Handler::BusDisconnect();
+            ThumbnailFeatureProcessorProviderBus::Handler::BusDisconnect();
+        }
 
-            void SharedPreviewRenderer::OnSystemTick()
+        void SharedPreviewRenderer::SetState(State step)
+        {
+            if (m_currentState != State::None)
             {
-                AzToolsFramework::Thumbnailer::ThumbnailerRendererRequestBus::ExecuteQueuedEvents();
+                m_steps[m_currentState]->Stop();
             }
+            m_currentState = step;
+            m_steps[m_currentState]->Start();
+        }
 
-            const AZStd::vector<AZStd::string>& SharedPreviewRenderer::GetCustomFeatureProcessors() const
-            {
-                return m_minimalFeatureProcessors;
-            }
-            
-            AZStd::shared_ptr<SharedPreviewRendererData> SharedPreviewRenderer::GetData() const
-            {
-                return m_data;
-            }
+        State SharedPreviewRenderer::GetState() const
+        {
+            return m_currentState;
+        }
 
-            void SharedPreviewRenderer::RenderThumbnail(AzToolsFramework::Thumbnailer::SharedThumbnailKey thumbnailKey, int thumbnailSize)
+        bool SharedPreviewRenderer::Installed() const
+        {
+            return true;
+        }
+
+        void SharedPreviewRenderer::OnSystemTick()
+        {
+            AzToolsFramework::Thumbnailer::ThumbnailerRendererRequestBus::ExecuteQueuedEvents();
+        }
+
+        const AZStd::vector<AZStd::string>& SharedPreviewRenderer::GetCustomFeatureProcessors() const
+        {
+            return m_minimalFeatureProcessors;
+        }
+
+        AZStd::shared_ptr<SharedPreviewRendererData> SharedPreviewRenderer::GetData() const
+        {
+            return m_data;
+        }
+
+        void SharedPreviewRenderer::RenderThumbnail(AzToolsFramework::Thumbnailer::SharedThumbnailKey thumbnailKey, int thumbnailSize)
+        {
+            m_data->m_thumbnailSize = thumbnailSize;
+            m_data->m_thumbnailQueue.push(thumbnailKey);
+            if (m_currentState == State::None)
             {
-                m_data->m_thumbnailSize = thumbnailSize;
-                m_data->m_thumbnailQueue.push(thumbnailKey);
-                if (m_currentState == State::None)
-                {
-                    SetState(State::Init);
-                }
+                SetState(State::Init);
             }
-        } // namespace Thumbnails
+        }
     } // namespace LyIntegration
 } // namespace AZ

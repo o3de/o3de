@@ -6,8 +6,8 @@
  *
  */
 
-#include <Atom/RPI.Public/RenderPipeline.h>
 #include <Atom/RPI.Public/RPISystemInterface.h>
+#include <Atom/RPI.Public/RenderPipeline.h>
 #include <Atom/RPI.Public/Scene.h>
 #include <AzFramework/Scene/Scene.h>
 #include <AzFramework/Scene/SceneSystemInterface.h>
@@ -19,39 +19,41 @@ namespace AZ
 {
     namespace LyIntegration
     {
-        namespace Thumbnails
+        SharedPreviewRendererReleaseState::SharedPreviewRendererReleaseState(SharedPreviewRendererContext* context)
+            : SharedPreviewRendererState(context)
         {
-            SharedPreviewRendererReleaseState::SharedPreviewRendererReleaseState(SharedPreviewRendererContext* context)
-                : SharedPreviewRendererState(context)
+        }
+
+        void SharedPreviewRendererReleaseState::Start()
+        {
+            auto data = m_context->GetData();
+
+            data->m_defaultMaterialAsset.Release();
+            data->m_defaultModelAsset.Release();
+            data->m_materialAsset.Release();
+            data->m_modelAsset.Release();
+            data->m_lightingPresetAsset.Release();
+
+            if (data->m_modelEntity)
             {
+                AzFramework::EntityContextRequestBus::Event(
+                    data->m_entityContext->GetContextId(), &AzFramework::EntityContextRequestBus::Events::DestroyEntity,
+                    data->m_modelEntity);
+                data->m_modelEntity = nullptr;
             }
 
-            void SharedPreviewRendererReleaseState::Start()
-            {
-                auto data = m_context->GetData();
-                
-                data->m_defaultMaterialAsset.Release();
-                data->m_defaultModelAsset.Release();
-                data->m_materialAsset.Release();
-                data->m_modelAsset.Release();
-                data->m_lightingPresetAsset.Release();
+            data->m_scene->Deactivate();
+            data->m_scene->RemoveRenderPipeline(data->m_renderPipeline->GetId());
+            RPI::RPISystemInterface::Get()->UnregisterScene(data->m_scene);
+            data->m_frameworkScene->UnsetSubsystem(data->m_scene);
+            data->m_frameworkScene->UnsetSubsystem(data->m_entityContext.get());
+            data->m_scene = nullptr;
+            data->m_frameworkScene = nullptr;
+            data->m_renderPipeline = nullptr;
+        }
 
-                if (data->m_modelEntity)
-                {
-                    AzFramework::EntityContextRequestBus::Event(data->m_entityContext->GetContextId(),
-                        &AzFramework::EntityContextRequestBus::Events::DestroyEntity, data->m_modelEntity);
-                    data->m_modelEntity = nullptr;
-                }
-
-                data->m_scene->Deactivate();
-                data->m_scene->RemoveRenderPipeline(data->m_renderPipeline->GetId());
-                RPI::RPISystemInterface::Get()->UnregisterScene(data->m_scene);
-                data->m_frameworkScene->UnsetSubsystem(data->m_scene);
-                data->m_frameworkScene->UnsetSubsystem(data->m_entityContext.get());
-                data->m_scene = nullptr;
-                data->m_frameworkScene = nullptr;
-                data->m_renderPipeline = nullptr;
-            }
-        } // namespace Thumbnails
+        void SharedPreviewRendererReleaseState::Stop()
+        {
+        }
     } // namespace LyIntegration
 } // namespace AZ
