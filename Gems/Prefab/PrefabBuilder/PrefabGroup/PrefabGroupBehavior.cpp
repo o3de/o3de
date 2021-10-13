@@ -126,7 +126,7 @@ namespace AZ::SceneAPI::Behaviors
 
         const rapidjson::Document& generatedInstanceDom = prefabSystemComponentInterface->FindTemplateDom(templateId);
         auto proceduralPrefab = AZStd::make_unique<rapidjson::Document>(rapidjson::kObjectType);
-        instanceToTemplateInterface->GenerateDomForInstance(*proceduralPrefab.get(), *instance.get());
+        proceduralPrefab->CopyFrom(generatedInstanceDom, proceduralPrefab->GetAllocator(), true);
 
         return proceduralPrefab;
     }
