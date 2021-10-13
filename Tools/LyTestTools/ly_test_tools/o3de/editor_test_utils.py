@@ -3,6 +3,8 @@ Copyright (c) Contributors to the Open 3D Engine Project.
 For complete copyright and license terms please see the LICENSE at the root of this distribution.
 
 SPDX-License-Identifier: Apache-2.0 OR MIT
+
+Utility functions for the editor_test module
 """
 
 import os
@@ -15,6 +17,12 @@ import ly_test_tools.environment.waiter as waiter
 logger = logging.getLogger(__name__)
 
 def kill_all_ly_processes(include_asset_processor=True):
+    # type (bool) -> None
+    """
+    Kills all common O3DE processes such as the Editor, Game Launchers, and Asset Processor.
+    :param include_asset_processor: Boolean flag whether or not to kill the AP
+    :return: None
+    """
     LY_PROCESSES = [
         'Editor', 'Profiler', 'RemoteConsole',
     ]
@@ -47,7 +55,8 @@ def get_module_filename(testcase_module):
     """
     return os.path.splitext(os.path.basename(testcase_module.__file__))[0]
 
-def retrieve_log_path(run_id : int, workspace):
+def retrieve_log_path(run_id, workspace):
+    # type (int, ly_test_tools._internal.managers.workspace.AbstractWorkspaceManager) -> str
     """
     return the log/ project path for this test run.
     :param run_id: editor id that will be used for differentiating paths
@@ -56,7 +65,8 @@ def retrieve_log_path(run_id : int, workspace):
     """
     return os.path.join(workspace.paths.project(), "user", f"log_test_{run_id}")
 
-def retrieve_crash_output(run_id : int, workspace, timeout : float):
+def retrieve_crash_output(run_id, workspace, timeout):
+    # type (int, ly_test_tools._internal.managers.workspace.AbstractWorkspaceManager, float) -> str
     """
     returns the crash output string for the given test run.
     :param run_id: editor id that will be used for differentiating paths
@@ -79,7 +89,8 @@ def retrieve_crash_output(run_id : int, workspace, timeout : float):
         crash_info += f"\n{str(ex)}"
     return crash_info
 
-def cycle_crash_report(run_id : int, workspace):
+def cycle_crash_report(run_id, workspace):
+    # type (int, ly_test_tools._internal.managers.workspace.AbstractWorkspaceManager) -> None
     """
     Attempts to rename error.log and error.dmp(crash files) into new names with the timestamp on it.
     :param run_id: editor id that will be used for differentiating paths
@@ -99,10 +110,12 @@ def cycle_crash_report(run_id : int, workspace):
             except Exception as ex:
                 logger.warning(f"Couldn't cycle file {filepath}. Error: {str(ex)}")
 
-def retrieve_editor_log_content(run_id : int, log_name : str, workspace, timeout=10):
+def retrieve_editor_log_content(run_id, log_name, workspace, timeout=10):
+    # type (int , str, ly_test_tools._internal.managers.workspace.AbstractWorkspaceManager, int) -> str
     """
     Retrieves the contents of the given editor log file.
     :param run_id: editor id that will be used for differentiating paths
+    :log_name: The name of the editor log to retrieve
     :param workspace: Workspace fixture
     :timeout: Maximum time to wait for the log file to appear
     :return str: The contents of the log
@@ -124,7 +137,8 @@ def retrieve_editor_log_content(run_id : int, log_name : str, workspace, timeout
         editor_info = f"-- Error reading editor.log: {str(ex)} --"
     return editor_info
 
-def retrieve_last_run_test_index_from_output(test_spec_list, output : str):
+def retrieve_last_run_test_index_from_output(test_spec_list, output):
+    # type (list, str) -> int
     """
     Finds out what was the last test that was run by inspecting the input.
     This is used for determining what was the batched test has crashed the editor

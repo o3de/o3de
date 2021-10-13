@@ -369,3 +369,14 @@ class TestFixtures(object):
 
         mock_request.addfinalizer.call_args[0][0]()
         mock_stop.assert_called_once()
+
+    @mock.patch('inspect.isclass', mock.MagicMock(return_value=True))
+    def test_PytestPycollectMakeitem_ValidArgs_CallsCorrectly(self):
+        mock_collector = mock.MagicMock()
+        mock_name = mock.MagicMock()
+        mock_obj = mock.MagicMock()
+        mock_base = mock.MagicMock()
+        mock_obj.__bases__ = [mock_base]
+
+        test_tools_fixtures.pytest_pycollect_makeitem(mock_collector, mock_name, mock_obj)
+        mock_base.pytest_custom_makeitem.assert_called_once_with(mock_collector, mock_name, mock_obj)

@@ -55,8 +55,16 @@ def pytest_configure(config):
     ly_test_tools._internal.pytest_plugin.build_directory = _get_build_directory(config)
     ly_test_tools._internal.pytest_plugin.output_path = _get_output_path(config)
 
-
 def pytest_pycollect_makeitem(collector, name, obj):
+    # type (PyCollector, str, object) -> Collector
+    """
+    Create a custom custom item collection if the class defines pytest_custom_makeitem function. This is used for
+    automtically generating test functions with a custom collector.
+    :param collector: The Python test collector
+    :param name: Name of the collector
+    :param obj: The custom collector, normally an EditorTestSuite.EditorTestClass object
+    :return: Returns the custom collector
+    """
     import inspect
     if inspect.isclass(obj):
         for base in obj.__bases__:
