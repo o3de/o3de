@@ -11,42 +11,37 @@
 #include <AssetBrowser/Thumbnails/SourceThumbnail.h>
 #include <Atom/RPI.Reflect/Material/MaterialAsset.h>
 #include <Atom/RPI.Reflect/Model/ModelAsset.h>
-#include <Atom/RPI.Reflect/System/AnyAsset.h>
 #include <SharedPreview/SharedPreviewUtils.h>
 
 namespace AZ
 {
     namespace LyIntegration
     {
-        namespace SharedPreviewUtils
+        namespace Thumbnails
         {
-            Data::AssetId GetAssetId(
-                AzToolsFramework::Thumbnailer::SharedThumbnailKey key,
-                const Data::AssetType& assetType,
-                const Data::AssetId& defaultAssetId)
+            Data::AssetId GetAssetId(AzToolsFramework::Thumbnailer::SharedThumbnailKey key, const Data::AssetType& assetType)
             {
+                static const Data::AssetId invalidAssetId;
+
                 // if it's a source thumbnail key, find first product with a matching asset type
                 auto sourceKey = azrtti_cast<const AzToolsFramework::AssetBrowser::SourceThumbnailKey*>(key.data());
                 if (sourceKey)
                 {
                     bool foundIt = false;
                     AZStd::vector<Data::AssetInfo> productsAssetInfo;
-                    AzToolsFramework::AssetSystemRequestBus::BroadcastResult(
-                        foundIt, &AzToolsFramework::AssetSystemRequestBus::Events::GetAssetsProducedBySourceUUID,
-                        sourceKey->GetSourceUuid(), productsAssetInfo);
+                    AzToolsFramework::AssetSystemRequestBus::BroadcastResult(foundIt, &AzToolsFramework::AssetSystemRequestBus::Events::GetAssetsProducedBySourceUUID, sourceKey->GetSourceUuid(), productsAssetInfo);
                     if (!foundIt)
                     {
-                        return defaultAssetId;
+                        return invalidAssetId;
                     }
-                    auto assetInfoIt = AZStd::find_if(
-                        productsAssetInfo.begin(), productsAssetInfo.end(),
+                    auto assetInfoIt = AZStd::find_if(productsAssetInfo.begin(), productsAssetInfo.end(),
                         [&assetType](const Data::AssetInfo& assetInfo)
                         {
                             return assetInfo.m_assetType == assetType;
                         });
                     if (assetInfoIt == productsAssetInfo.end())
                     {
-                        return defaultAssetId;
+                        return invalidAssetId;
                     }
 
                     return assetInfoIt->m_assetId;
@@ -58,8 +53,9 @@ namespace AZ
                 {
                     return productKey->GetAssetId();
                 }
-                return defaultAssetId;
+                return invalidAssetId;
             }
+
 
             QString WordWrap(const QString& string, int maxLength)
             {
@@ -85,32 +81,6 @@ namespace AZ
                 }
                 return result;
             }
-
-            AZStd::unordered_set<AZ::Uuid> GetSupportedAssetTypes()
-            {
-                return { RPI::AnyAsset::RTTI_Type(), RPI::MaterialAsset::RTTI_Type(), RPI::ModelAsset::RTTI_Type() };
-            }
-
-            bool IsSupportedAssetType(AzToolsFramework::Thumbnailer::SharedThumbnailKey key)
-            {
-                for (const AZ::Uuid& typeId : SharedPreviewUtils::GetSupportedAssetTypes())
-                {
-                    const AZ::Data::AssetId& assetId = SharedPreviewUtils::GetAssetId(key, typeId);
-                    if (assetId.IsValid())
-                    {
-                        if (typeId == RPI::AnyAsset::RTTI_Type())
-                        {
-                            AZ::Data::AssetInfo assetInfo;
-                            AZ::Data::AssetCatalogRequestBus::BroadcastResult(
-                                assetInfo, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetInfoById, assetId);
-                            return AzFramework::StringFunc::EndsWith(assetInfo.m_relativePath.c_str(), "lightingpreset.azasset");
-                        }
-                        return true;
-                    }
-                }
-
-                return false;
-            }
-        } // namespace SharedPreviewUtils
+        } // namespace Thumbnails
     } // namespace LyIntegration
 } // namespace AZ

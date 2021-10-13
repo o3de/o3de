@@ -6,10 +6,12 @@
  *
  */
 
+#include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/EditContextConstants.inl>
-#include <AzCore/Serialization/SerializeContext.h>
-#include <Mesh/EditorMeshSystemComponent.h>
+#include <AzCore/Utils/Utils.h>
+#include <AzToolsFramework/Thumbnails/ThumbnailContext.h>
+#include <Source/Mesh/EditorMeshSystemComponent.h>
 
 namespace AZ
 {
@@ -42,6 +44,11 @@ namespace AZ
         void EditorMeshSystemComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
         {
             incompatible.push_back(AZ_CRC_CE("EditorMeshSystem"));
+        }
+
+        void EditorMeshSystemComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
+        {
+            required.push_back(AZ_CRC_CE("ThumbnailerService"));
         }
 
         void EditorMeshSystemComponent::GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent)

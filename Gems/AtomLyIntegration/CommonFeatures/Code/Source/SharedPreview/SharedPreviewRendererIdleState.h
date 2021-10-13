@@ -14,22 +14,27 @@ namespace AZ
 {
     namespace LyIntegration
     {
-        //! SharedPreviewRendererIdleState checks whether there are any new thumbnails that need to be rendered every tick
-        class SharedPreviewRendererIdleState
-            : public SharedPreviewRendererState
-            , private TickBus::Handler
+        namespace Thumbnails
         {
-        public:
-            SharedPreviewRendererIdleState(SharedPreviewRendererContext* context);
+            //! SharedPreviewRendererIdleState checks whether there are any new thumbnails that need to be rendered every tick
+            class SharedPreviewRendererIdleState
+                : public SharedPreviewRendererState
+                , private TickBus::Handler
+            {
+            public:
+                SharedPreviewRendererIdleState(SharedPreviewRendererContext* context);
 
-            void Start() override;
-            void Stop() override;
+                void Start() override;
+                void Stop() override;
 
-        private:
-            //! AZ::TickBus::Handler interface overrides...
-            void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
+            private:
 
-            void PickNextThumbnail();
-        };
+                //! AZ::TickBus::Handler interface overrides...
+                void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
+
+                void PickNextThumbnail();
+            };
+        } // namespace Thumbnails
     } // namespace LyIntegration
 } // namespace AZ
+

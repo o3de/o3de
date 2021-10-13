@@ -7,9 +7,11 @@
  */
 
 #include <AzToolsFramework/AssetBrowser/AssetBrowserEntry.h>
-#include <SharedPreview/SharedPreviewUtils.h>
+#include <Atom/RPI.Reflect/Material/MaterialAsset.h>
+#include <Atom/RPI.Reflect/Model/ModelAsset.h>
 #include <SharedPreview/SharedPreviewer.h>
 #include <SharedPreview/SharedPreviewerFactory.h>
+#include <SharedPreview/SharedPreviewUtils.h>
 
 namespace AZ
 {
@@ -22,7 +24,9 @@ namespace AZ
 
         bool SharedPreviewerFactory::IsEntrySupported(const AzToolsFramework::AssetBrowser::AssetBrowserEntry* entry) const
         {
-            return SharedPreviewUtils::IsSupportedAssetType(entry->GetThumbnailKey());
+            return
+                Thumbnails::GetAssetId(entry->GetThumbnailKey(), RPI::MaterialAsset::RTTI_Type()).IsValid() ||
+                Thumbnails::GetAssetId(entry->GetThumbnailKey(), RPI::ModelAsset::RTTI_Type()).IsValid();
         }
 
         const QString& SharedPreviewerFactory::GetName() const

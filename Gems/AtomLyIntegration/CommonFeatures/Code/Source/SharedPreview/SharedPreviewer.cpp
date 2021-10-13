@@ -7,21 +7,23 @@
  */
 
 #include <AzCore/IO/FileIO.h>
-#include <AzToolsFramework/API/EditorAssetSystemAPI.h>
+
 #include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserEntry.h>
-#include <AzToolsFramework/Thumbnails/Thumbnail.h>
 #include <AzToolsFramework/Thumbnails/ThumbnailContext.h>
-#include <SharedPreview/SharedPreviewUtils.h>
+#include <AzToolsFramework/API/EditorAssetSystemAPI.h>
+#include <AzToolsFramework/Thumbnails/Thumbnail.h>
+
 #include <SharedPreview/SharedPreviewer.h>
+#include <SharedPreview/SharedPreviewUtils.h>
 
 // Disables warning messages triggered by the Qt library
-// 4251: class needs to have dll-interface to be used by clients of class
+// 4251: class needs to have dll-interface to be used by clients of class 
 // 4800: forcing value to bool 'true' or 'false' (performance warning)
 AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option")
-#include <QResizeEvent>
-#include <QString>
 #include <SharedPreview/ui_SharedPreviewer.h>
+#include <QString>
+#include <QResizeEvent>
 AZ_POP_DISABLE_WARNING
 
 namespace AZ
@@ -38,10 +40,6 @@ namespace AZ
         }
 
         SharedPreviewer::~SharedPreviewer()
-        {
-        }
-
-        void SharedPreviewer::Clear() const
         {
         }
 
@@ -70,7 +68,7 @@ namespace AZ
 
         void SharedPreviewer::UpdateFileInfo() const
         {
-            m_ui->m_fileInfoLabel->setText(SharedPreviewUtils::WordWrap(m_fileInfo, m_ui->m_fileInfoLabel->width() / CharWidth));
+            m_ui->m_fileInfoLabel->setText(Thumbnails::WordWrap(m_fileInfo, m_ui->m_fileInfoLabel->width() / CharWidth));
         }
     } // namespace LyIntegration
 } // namespace AZ

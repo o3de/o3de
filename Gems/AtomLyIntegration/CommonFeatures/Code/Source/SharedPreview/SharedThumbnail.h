@@ -13,53 +13,61 @@
 #include <AzFramework/Asset/AssetCatalogBus.h>
 #include <AzToolsFramework/Thumbnails/Thumbnail.h>
 #include <AzToolsFramework/Thumbnails/ThumbnailerBus.h>
+#include <SharedPreview/SharedPreviewRenderer.h>
 #endif
 
 namespace AZ
 {
     namespace LyIntegration
     {
-        //! Custom thumbnail that detects when an asset changes and updates the thumbnail
-        class SharedThumbnail final
-            : public AzToolsFramework::Thumbnailer::Thumbnail
-            , public AzToolsFramework::Thumbnailer::ThumbnailerRendererNotificationBus::Handler
-            , private AzFramework::AssetCatalogEventBus::Handler
+        namespace Thumbnails
         {
-            Q_OBJECT
-        public:
-            SharedThumbnail(AzToolsFramework::Thumbnailer::SharedThumbnailKey key);
-            ~SharedThumbnail() override;
+            /**
+             * Custom material or model thumbnail that detects when an asset changes and updates the thumbnail
+             */
+            class SharedThumbnail
+                : public AzToolsFramework::Thumbnailer::Thumbnail
+                , public AzToolsFramework::Thumbnailer::ThumbnailerRendererNotificationBus::Handler
+                , private AzFramework::AssetCatalogEventBus::Handler
+            {
+                Q_OBJECT
+            public:
+                SharedThumbnail(AzToolsFramework::Thumbnailer::SharedThumbnailKey key);
+                ~SharedThumbnail() override;
 
-            //! AzToolsFramework::ThumbnailerRendererNotificationBus::Handler overrides...
-            void ThumbnailRendered(const QPixmap& thumbnailImage) override;
-            void ThumbnailFailedToRender() override;
+                //! AzToolsFramework::ThumbnailerRendererNotificationBus::Handler overrides...
+                void ThumbnailRendered(const QPixmap& thumbnailImage) override;
+                void ThumbnailFailedToRender() override;
 
-        protected:
-            void LoadThread() override;
+            protected:
+                void LoadThread() override;
 
-        private:
-            // AzFramework::AssetCatalogEventBus::Handler interface overrides...
-            void OnCatalogAssetChanged(const AZ::Data::AssetId& assetId) override;
+            private:
+                // AzFramework::AssetCatalogEventBus::Handler interface overrides...
+                void OnCatalogAssetChanged(const AZ::Data::AssetId& assetId) override;
 
-            AZStd::binary_semaphore m_renderWait;
-            Data::AssetId m_assetId;
-            AZ::Uuid m_typeId;
-        };
+                AZStd::binary_semaphore m_renderWait;
+                Data::AssetId m_assetId;
+            };
 
-        //! Cache configuration for large thumbnails
-        class SharedThumbnailCache final : public AzToolsFramework::Thumbnailer::ThumbnailCache<SharedThumbnail>
-        {
-        public:
-            SharedThumbnailCache();
-            ~SharedThumbnailCache() override;
+            /**
+             * Cache configuration for large material thumbnails
+             */
+            class SharedThumbnailCache
+                : public AzToolsFramework::Thumbnailer::ThumbnailCache<SharedThumbnail>
+            {
+            public:
+                SharedThumbnailCache();
+                ~SharedThumbnailCache() override;
 
-            int GetPriority() const override;
-            const char* GetProviderName() const override;
+                int GetPriority() const override;
+                const char* GetProviderName() const override;
 
-            static constexpr const char* ProviderName = "Common Feature Shared Thumbnail= Provider";
+                static constexpr const char* ProviderName = "Material Thumbnails";
 
-        protected:
-            bool IsSupportedThumbnail(AzToolsFramework::Thumbnailer::SharedThumbnailKey key) const override;
-        };
+            protected:
+                bool IsSupportedThumbnail(AzToolsFramework::Thumbnailer::SharedThumbnailKey key) const override;
+            };
+        } // namespace Thumbnails
     } // namespace LyIntegration
 } // namespace AZ

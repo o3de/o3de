@@ -15,32 +15,36 @@ namespace AZ
 {
     namespace LyIntegration
     {
-        //! SharedPreviewRendererLoadState pauses further rendering until all assets used for rendering a thumbnail have been loaded
-        class SharedPreviewRendererLoadState
-            : public SharedPreviewRendererState
-            , private Data::AssetBus::Handler
-            , private TickBus::Handler
+        namespace Thumbnails
         {
-        public:
-            SharedPreviewRendererLoadState(SharedPreviewRendererContext* context);
+            //! SharedPreviewRendererLoadState pauses further rendering until all assets used for rendering a thumbnail have been loaded
+            class SharedPreviewRendererLoadState
+                : public SharedPreviewRendererState
+                , private Data::AssetBus::Handler
+                , private TickBus::Handler
+            {
+            public:
+                SharedPreviewRendererLoadState(SharedPreviewRendererContext* context);
 
-            void Start() override;
-            void Stop() override;
+                void Start() override;
+                void Stop() override;
 
-        private:
-            void LoadNextAsset();
+            private:
+                void LoadNextAsset();
 
-            // AZ::Data::AssetBus::Handler
-            void OnAssetReady(Data::Asset<Data::AssetData> asset) override;
-            void OnAssetError(Data::Asset<Data::AssetData> asset) override;
-            void OnAssetCanceled(Data::AssetId assetId) override;
+                // AZ::Data::AssetBus::Handler
+                void OnAssetReady(Data::Asset<Data::AssetData> asset) override;
+                void OnAssetError(Data::Asset<Data::AssetData> asset) override;
+                void OnAssetCanceled(Data::AssetId assetId) override;
 
-            //! AZ::TickBus::Handler interface overrides...
-            void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
+                //! AZ::TickBus::Handler interface overrides...
+                void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
 
-            static constexpr float TimeOutS = 3.0f;
-            Data::AssetId m_assetId;
-            float m_timeRemainingS = 0;
-        };
+                static constexpr float TimeOutS = 3.0f;
+                Data::AssetId m_assetId;
+                float m_timeRemainingS = 0;
+            };
+        } // namespace Thumbnails
     } // namespace LyIntegration
 } // namespace AZ
+

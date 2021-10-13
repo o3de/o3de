@@ -14,13 +14,17 @@ namespace AZ
 {
     namespace LyIntegration
     {
-        class SharedPreviewRendererReleaseState : public SharedPreviewRendererState
+        namespace Thumbnails
         {
-        public:
-            SharedPreviewRendererReleaseState(SharedPreviewRendererContext* context);
+            class SharedPreviewRendererReleaseState
+                : public SharedPreviewRendererState
+            {
+            public:
+                SharedPreviewRendererReleaseState(SharedPreviewRendererContext* context);
 
-            void Start() override;
-            void Stop() override;
-        };
+                void Start() override;
+            };
+        } // namespace Thumbnails
     } // namespace LyIntegration
 } // namespace AZ
+
