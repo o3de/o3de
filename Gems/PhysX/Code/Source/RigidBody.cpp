@@ -193,7 +193,7 @@ namespace PhysX
                 [includeAllShapesInMassCalculation](const AZStd::shared_ptr<PhysX::Shape>& shape)
                 {
                     const bool includeShape = includeAllShapesInMassCalculation ||
-                        physx::PxShapeFlag::eSIMULATION_SHAPE == (shape->GetPxShape()->getFlags() & physx::PxShapeFlag::eSIMULATION_SHAPE);
+                        (shape->GetPxShape()->getFlags() & physx::PxShapeFlag::eSIMULATION_SHAPE);
 
                     return includeShape &&
                         shape->GetPxShape()->getGeometryType() == physx::PxGeometryType::eTRIANGLEMESH;
@@ -231,7 +231,7 @@ namespace PhysX
         {
             SetCenterOfMassOffset(centerOfMassOffsetOverride);
         }
-        const auto pxCenterOfMass = PxMathConvert(GetCenterOfMassLocal());
+        const physx::PxVec3 pxCenterOfMass = PxMathConvert(GetCenterOfMassLocal());
 
         if (computeMass)
         {
@@ -385,7 +385,7 @@ namespace PhysX
             for (const auto& shape : m_shapes)
             {
                 const bool includeShape = includeAllShapesInMassCalculation ||
-                    physx::PxShapeFlag::eSIMULATION_SHAPE == (shape->GetPxShape()->getFlags() & physx::PxShapeFlag::eSIMULATION_SHAPE);
+                    (shape->GetPxShape()->getFlags() & physx::PxShapeFlag::eSIMULATION_SHAPE);
 
                 if (includeShape)
                 {
@@ -393,7 +393,6 @@ namespace PhysX
                 }
             }
         }
-        pxShapes.shrink_to_fit();
 
         if (pxShapes.empty())
         {
