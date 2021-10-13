@@ -147,6 +147,29 @@ namespace JsonSerializationTests
             delete importerObj;
         }
 
+        void TestInsertNewImport(const char* input, const char* expectedRestoredValue)
+        {
+            m_jsonDocument->Parse(input);
+            ASSERT_FALSE(m_jsonDocument->HasParseError());
+
+            JsonImporterCustom* importerObj = new JsonImporterCustom(this);
+
+            TestResolveImports(importerObj);
+
+            importerObj->AddImportDirective(rapidjson::Pointer("/object_2"), "object.json");
+
+            rapidjson::Document expectedOutput;
+            expectedOutput.Parse(expectedRestoredValue);
+            ASSERT_FALSE(expectedOutput.HasParseError());
+
+            TestRestoreImports(importerObj);
+
+            Expect_DocStrEq(m_jsonDocument->GetObject(), expectedOutput.GetObject());
+            
+            m_jsonDocument->SetObject();
+            delete importerObj;
+        }
+
         AZ::JsonSerializationResult::ResultCode TestResolveImports(JsonImporterCustom* importerObj)
         {
             AZ::JsonImportSettings settings;
@@ -356,5 +379,35 @@ namespace JsonSerializationTests
         )";
 
         TestImportCycle(inputFile);
+    }
+
+    TEST_F(JsonImportingTests, InsertNewImportTest)
+    {
+        const char* inputFile = R"(
+            {
+                "name" : "simple_object_import",
+                "object_1": {"$import" : "object.json"},
+                "object_2": {
+                    "field_1" : "other_value",
+                    "field_2" : "value_2",
+                    "field_3" : "value_3"
+                }
+            }
+        )";
+
+        const char* expectedOutput = R"(
+            {
+                "name" : "simple_object_import",
+                "object_1": {"$import" : "object.json"},
+                "object_2": {
+                    "$import" : { 
+                        "filename" : "object.json",
+                        "patch" : { "field_1" : "other_value" }
+                    }
+                }
+            }
+        )";
+
+        TestInsertNewImport(inputFile, expectedOutput);
     }
 }
