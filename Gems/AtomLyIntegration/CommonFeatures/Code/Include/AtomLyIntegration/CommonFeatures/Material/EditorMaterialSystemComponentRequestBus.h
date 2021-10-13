@@ -12,6 +12,7 @@
 #include <AzCore/Component/EntityId.h>
 #include <AzCore/EBus/EBus.h>
 #include <AzCore/std/string/string.h>
+#include <QPixmap>
 
 namespace AZ
 {
