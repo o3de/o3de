@@ -9,6 +9,8 @@
 #include <Activity/AWSGameLiftStartMatchmakingActivity.h>
 #include <AWSGameLiftClientFixture.h>
 
+#include <aws/gamelift/model/StartMatchmakingRequest.h>
+
 using namespace AWSGameLift;
 
 using AWSGameLiftStartMatchmakingActivityTest = AWSGameLiftClientFixture;
