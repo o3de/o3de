@@ -18,4 +18,4 @@ namespace AWSCore
     static constexpr char AwsAttributionAttributeKeyActiveAWSGems[] = "aws_gems";
     static constexpr char AwsAttributionAttributeKeyTimestamp[] = "timestamp";
 
-} // namespace AWSCOre
+} // namespace AWSCore

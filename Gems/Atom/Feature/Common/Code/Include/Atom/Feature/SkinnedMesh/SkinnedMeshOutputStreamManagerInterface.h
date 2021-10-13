@@ -51,7 +51,7 @@ namespace AZ
             }
 
             //! Returns the buffer asset that is used for all skinned mesh outputs
-            virtual Data::Asset<RPI::BufferAsset> GetBufferAsset() const = 0;
+            virtual Data::Asset<RPI::BufferAsset> GetBufferAsset() = 0;
 
             //! Returns the buffer that is used for all skinned mesh outputs
             virtual Data::Instance<RPI::Buffer> GetBuffer() = 0;

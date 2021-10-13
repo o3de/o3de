@@ -22,13 +22,13 @@ namespace EMotionFX
         void SetUp()
         {
             ActorFixture::SetUp();
-            m_actor->AddLODLevel();
+            GetActor()->AddLODLevel();
             DisableJointsForLOD(m_disabledJointNames, 1);
         }
 
         void DisableJointsForLOD(const std::vector<std::string>& jointNames, size_t lodLevel)
         {
-            const Skeleton* skeleton = m_actor->GetSkeleton();
+            const Skeleton* skeleton = GetActor()->GetSkeleton();
             for (const std::string& jointName : jointNames)
             {
                 Node* joint = skeleton->FindNodeByName(jointName.c_str());
