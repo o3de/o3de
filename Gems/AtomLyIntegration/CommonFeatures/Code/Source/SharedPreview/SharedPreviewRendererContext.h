@@ -33,7 +33,7 @@ namespace AZ
             class SharedPreviewRendererContext
             {
             public:
-                virtual void SetState(State step) = 0;
+                virtual void SetState(State state) = 0;
                 virtual State GetState() const = 0;
                 virtual AZStd::shared_ptr<SharedPreviewRendererData> GetData() const = 0;
             };

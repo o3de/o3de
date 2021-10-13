@@ -44,7 +44,7 @@ namespace AZ
                 ~SharedPreviewRenderer();
 
                 //! SharedPreviewRendererContext overrides...
-                void SetState(State step) override;
+                void SetState(State state) override;
                 State GetState() const override;
                 AZStd::shared_ptr<SharedPreviewRendererData> GetData() const override;
 
@@ -59,7 +59,7 @@ namespace AZ
                 //! Render::ThumbnailFeatureProcessorProviderBus::Handler interface overrides...
                 const AZStd::vector<AZStd::string>& GetCustomFeatureProcessors() const override;
 
-                AZStd::unordered_map<State, AZStd::shared_ptr<SharedPreviewRendererState>> m_steps;
+                AZStd::unordered_map<State, AZStd::shared_ptr<SharedPreviewRendererState>> m_states;
                 State m_currentState = State::None;
                 AZStd::shared_ptr<SharedPreviewRendererData> m_data;
                 AZStd::vector<AZStd::string> m_minimalFeatureProcessors;

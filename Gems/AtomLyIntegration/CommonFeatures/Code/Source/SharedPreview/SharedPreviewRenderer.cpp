@@ -32,11 +32,11 @@ namespace AZ
                 SystemTickBus::Handler::BusConnect();
                 ThumbnailFeatureProcessorProviderBus::Handler::BusConnect();
 
-                m_steps[State::Init] = AZStd::make_shared<SharedPreviewRendererInitState>(this);
-                m_steps[State::Idle] = AZStd::make_shared<SharedPreviewRendererIdleState>(this);
-                m_steps[State::Load] = AZStd::make_shared<SharedPreviewRendererLoadState>(this);
-                m_steps[State::Capture] = AZStd::make_shared<SharedPreviewRendererCaptureState>(this);
-                m_steps[State::Release] = AZStd::make_shared<SharedPreviewRendererReleaseState>(this);
+                m_states[State::Init] = AZStd::make_shared<SharedPreviewRendererInitState>(this);
+                m_states[State::Idle] = AZStd::make_shared<SharedPreviewRendererIdleState>(this);
+                m_states[State::Load] = AZStd::make_shared<SharedPreviewRendererLoadState>(this);
+                m_states[State::Capture] = AZStd::make_shared<SharedPreviewRendererCaptureState>(this);
+                m_states[State::Release] = AZStd::make_shared<SharedPreviewRendererReleaseState>(this);
 
                 m_minimalFeatureProcessors =
                 {
@@ -71,14 +71,14 @@ namespace AZ
                 ThumbnailFeatureProcessorProviderBus::Handler::BusDisconnect();
             }
 
-            void SharedPreviewRenderer::SetState(State step)
+            void SharedPreviewRenderer::SetState(State state)
             {
                 if (m_currentState != State::None)
                 {
-                    m_steps[m_currentState]->Stop();
+                    m_states[m_currentState]->Stop();
                 }
-                m_currentState = step;
-                m_steps[m_currentState]->Start();
+                m_currentState = state;
+                m_states[m_currentState]->Start();
             }
 
             State SharedPreviewRenderer::GetState() const

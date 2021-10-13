@@ -23,9 +23,9 @@ namespace AZ
                 explicit SharedPreviewRendererState(SharedPreviewRendererContext* context) : m_context(context) {}
                 virtual ~SharedPreviewRendererState() = default;
 
-                //! Start is called when step begins execution
+                //! Start is called when state begins execution
                 virtual void Start() {}
-                //! Stop is called when step ends execution
+                //! Stop is called when state ends execution
                 virtual void Stop() {}
 
             protected:

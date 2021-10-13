@@ -17,7 +17,7 @@ namespace AZ
         namespace Thumbnails
         {
             //! SharedPreviewRendererInitState sets up RPI system and scene and prepares it for rendering thumbnail entities
-            //! This step is only called once when SharedPreviewRenderer begins rendering its first thumbnail
+            //! This state is only called once when SharedPreviewRenderer begins rendering its first thumbnail
             class SharedPreviewRendererInitState
                 : public SharedPreviewRendererState
             {
