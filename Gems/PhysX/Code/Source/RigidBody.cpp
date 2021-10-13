@@ -373,7 +373,7 @@ namespace PhysX
     {
         if (m_shapes.empty())
         {
-            SetCenterOfMassOffset(AZ::Vector3::CreateZero());
+            SetCenterOfMassOffset(DefaultCenterOfMass);
             return;
         }
 
@@ -397,7 +397,7 @@ namespace PhysX
 
         if (pxShapes.empty())
         {
-            SetCenterOfMassOffset(AZ::Vector3::CreateZero());
+            SetCenterOfMassOffset(DefaultCenterOfMass);
             return;
         }
 
