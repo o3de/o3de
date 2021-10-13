@@ -43,6 +43,12 @@ namespace AzToolsFramework
             m_instanceToTemplateInterface = AZ::Interface<InstanceToTemplateInterface>::Get();
             AZ_Assert(m_instanceToTemplateInterface, "PrefabPublicHandler - Could not retrieve instance of InstanceToTemplateInterface");
 
+            m_prefabFocusInterface = AZ::Interface<PrefabFocusInterface>::Get();
+            AZ_Assert(m_prefabFocusInterface, "Could not get PrefabFocusInterface on PrefabPublicHandler construction.");
+
+            m_prefabFocusPublicInterface = AZ::Interface<PrefabFocusPublicInterface>::Get();
+            AZ_Assert(m_prefabFocusPublicInterface, "Could not get PrefabFocusPublicInterface on PrefabPublicHandler construction.");
+
             m_prefabLoaderInterface = AZ::Interface<PrefabLoaderInterface>::Get();
             AZ_Assert(m_prefabLoaderInterface, "Could not get PrefabLoaderInterface on PrefabPublicHandler construction.");
 
@@ -552,6 +558,13 @@ namespace AzToolsFramework
 
         PrefabEntityResult PrefabPublicHandler::CreateEntity(AZ::EntityId parentId, const AZ::Vector3& position)
         {
+            // If the parent is invalid, parent to the container of the currently focused prefab.
+            if (!parentId.IsValid())
+            {
+                AzFramework::EntityContextId editorEntityContextId = AzToolsFramework::GetEntityContextId();
+                parentId = m_prefabFocusPublicInterface->GetFocusedPrefabContainerEntityId(editorEntityContextId);
+            }
+
             InstanceOptionalReference owningInstanceOfParentEntity = GetOwnerInstanceByEntityId(parentId);
             if (!owningInstanceOfParentEntity)
             {
@@ -968,13 +981,13 @@ namespace AzToolsFramework
                 return AZ::Failure(AZStd::string("No entities to duplicate."));
             }
 
-            const EntityIdList entityIdsNoLevelInstance = GenerateEntityIdListWithoutLevelInstance(entityIds);
-            if (entityIdsNoLevelInstance.empty())
+            const EntityIdList entityIdsNoFocusContainer = GenerateEntityIdListWithoutFocusedInstanceContainer(entityIds);
+            if (entityIdsNoFocusContainer.empty())
             {
                 return AZ::Failure(AZStd::string("No entities to duplicate because only instance selected is the level instance."));
             }
 
-            if (!EntitiesBelongToSameInstance(entityIdsNoLevelInstance))
+            if (!EntitiesBelongToSameInstance(entityIdsNoFocusContainer))
             {
                 return AZ::Failure(AZStd::string("Cannot duplicate multiple entities belonging to different instances with one operation."
                     "Change your selection to contain entities in the same instance."));
@@ -982,7 +995,7 @@ namespace AzToolsFramework
 
             // We've already verified the entities are all owned by the same instance,
             // so we can just retrieve our instance from the first entity in the list.
-            AZ::EntityId firstEntityIdToDuplicate = entityIdsNoLevelInstance[0];
+            AZ::EntityId firstEntityIdToDuplicate = entityIdsNoFocusContainer[0];
             InstanceOptionalReference commonOwningInstance = GetOwnerInstanceByEntityId(firstEntityIdToDuplicate);
             if (!commonOwningInstance.has_value())
             {
@@ -1002,7 +1015,7 @@ namespace AzToolsFramework
 
             // This will cull out any entities that have ancestors in the list, since we will end up duplicating
             // the full nested hierarchy with what is returned from RetrieveAndSortPrefabEntitiesAndInstances
-            AzToolsFramework::EntityIdSet duplicationSet = AzToolsFramework::GetCulledEntityHierarchy(entityIdsNoLevelInstance);
+            AzToolsFramework::EntityIdSet duplicationSet = AzToolsFramework::GetCulledEntityHierarchy(entityIdsNoFocusContainer);
 
             AZ_PROFILE_FUNCTION(AzToolsFramework);
 
@@ -1106,19 +1119,21 @@ namespace AzToolsFramework
 
         PrefabOperationResult PrefabPublicHandler::DeleteFromInstance(const EntityIdList& entityIds, bool deleteDescendants)
         {
-            const EntityIdList entityIdsNoLevelInstance = GenerateEntityIdListWithoutLevelInstance(entityIds);
+            // Remove the container entity of the focused prefab from the list, if it is included.
+            const EntityIdList entityIdsNoFocusContainer = GenerateEntityIdListWithoutFocusedInstanceContainer(entityIds);
 
-            if (entityIdsNoLevelInstance.empty())
+            if (entityIdsNoFocusContainer.empty())
             {
                 return AZ::Success();
             }
 
-            if (!EntitiesBelongToSameInstance(entityIdsNoLevelInstance))
+            // All entities in this list need to belong to the same prefab instance for the operation to be valid.
+            if (!EntitiesBelongToSameInstance(entityIdsNoFocusContainer))
             {
                 return AZ::Failure(AZStd::string("Cannot delete multiple entities belonging to different instances with one operation."));
             }
 
-            AZ::EntityId firstEntityIdToDelete = entityIdsNoLevelInstance[0];
+            AZ::EntityId firstEntityIdToDelete = entityIdsNoFocusContainer[0];
             InstanceOptionalReference commonOwningInstance = GetOwnerInstanceByEntityId(firstEntityIdToDelete);
 
             // If the first entity id is a container entity id, then we need to mark its parent as the common owning instance because you
@@ -1128,8 +1143,15 @@ namespace AzToolsFramework
                 commonOwningInstance = commonOwningInstance->get().GetParentInstance();
             }
 
+            // We only allow explicit deletions for entities inside the currently focused prefab.
+            AzFramework::EntityContextId editorEntityContextId = AzToolsFramework::GetEntityContextId();
+            if (&m_prefabFocusInterface->GetFocusedPrefabInstance(editorEntityContextId)->get() != &commonOwningInstance->get())
+            {
+                return AZ::Failure(AZStd::string("Cannot delete entities belonging to an instance that is not being edited."));
+            }
+
             // Retrieve entityList from entityIds
-            EntityList inputEntityList = EntityIdListToEntityList(entityIdsNoLevelInstance);
+            EntityList inputEntityList = EntityIdListToEntityList(entityIdsNoFocusContainer);
 
             AZ_PROFILE_FUNCTION(AzToolsFramework);
 
@@ -1186,7 +1208,7 @@ namespace AzToolsFramework
                 }
                 else
                 {
-                    for (AZ::EntityId entityId : entityIdsNoLevelInstance)
+                    for (AZ::EntityId entityId : entityIdsNoFocusContainer)
                     {
                         InstanceOptionalReference owningInstance = m_instanceEntityMapperInterface->FindOwningInstance(entityId);
                         // If this is the container entity, it actually represents the instance so get its owner
@@ -1548,19 +1570,19 @@ namespace AzToolsFramework
             return AZ::Success();
         }
 
-        EntityIdList PrefabPublicHandler::GenerateEntityIdListWithoutLevelInstance(
+        EntityIdList PrefabPublicHandler::GenerateEntityIdListWithoutFocusedInstanceContainer(
             const EntityIdList& entityIds) const
         {
-            EntityIdList outEntityIds;
-            outEntityIds.reserve(entityIds.size()); // Actual size could be smaller.
+            EntityIdList outEntityIds(entityIds);
 
-            for (const AZ::EntityId& entityId : entityIds)
+            AzFramework::EntityContextId editorEntityContextId = AzToolsFramework::GetEntityContextId();
+            AZ::EntityId focusedInstanceContainerEntityId = m_prefabFocusPublicInterface->GetFocusedPrefabContainerEntityId(editorEntityContextId);
+
+            if (auto iter = AZStd::find(outEntityIds.begin(), outEntityIds.end(), focusedInstanceContainerEntityId); iter != outEntityIds.end())
             {
-                if (!IsLevelInstanceContainerEntity(entityId))
-                {
-                    outEntityIds.emplace_back(entityId);
-                }
+                outEntityIds.erase(iter);
             }
+            
             return outEntityIds;
         }
 
