@@ -52,9 +52,6 @@ def Joints_BallLeadFollowerCollide():
     from editor_python_test_tools.utils import Report
     from editor_python_test_tools.utils import TestHelper as helper
 
-    import azlmbr.legacy.general as general
-    import azlmbr.bus
-
     from JointsHelper import JointEntityCollisionAware
 
     # Helper Entity class - self.collided flag is set when instance receives collision event.
@@ -75,16 +72,11 @@ def Joints_BallLeadFollowerCollide():
     lead = Entity("lead")
     follower = Entity("follower")
 
-    # 4) Wait for several seconds
-    general.idle_wait(2.0) # wait for lead and follower to move
+    # 4) Wait for collision between lead and follower or timeout
+    Report.critical_result(Tests.check_collision_happened, helper.wait_for_condition(lambda: lead.collided and follower.collided, 10.0))
 
-    # 5) Check to see if lead and follower behaved as expected
-    Report.critical_result(Tests.check_collision_happened, lead.collided and follower.collided)
-
-    # 6) Exit Game Mode
+    # 5) Exit Game Mode
     helper.exit_game_mode(Tests.exit_game_mode)
-
-
 
 if __name__ == "__main__":
     from editor_python_test_tools.utils import Report
