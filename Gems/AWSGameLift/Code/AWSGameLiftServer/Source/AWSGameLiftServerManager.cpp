@@ -177,7 +177,16 @@ namespace AWSGameLift
                     for (auto iter = attributeDocument.MemberBegin()->value.MemberBegin();
                          iter != attributeDocument.MemberBegin()->value.MemberEnd(); iter++)
                     {
-                        playerAttribute.AddStringAndDouble(iter->name.GetString(), iter->value.GetDouble());
+                        if (iter->name.IsString() && iter->value.IsNumber())
+                        {
+                            playerAttribute.AddStringAndDouble(iter->name.GetString(), iter->value.GetDouble());
+                        }
+                        else
+                        {
+                            AZ_Error(AWSGameLiftServerManagerName, false, AWSGameLiftMatchmakingPlayerAttributeInvalidErrorMessage,
+                                player.m_playerId.c_str(), "String double map key must be string type and value must be number type");
+                            return false;
+                        }
                     }
                 }
                 else if ((attributeDocument.HasMember(AWSGameLiftMatchmakingPlayerAttributeSLTypeName) ||
@@ -188,7 +197,16 @@ namespace AWSGameLift
                     for (auto iter = attributeDocument.MemberBegin()->value.Begin();
                         iter != attributeDocument.MemberBegin()->value.End(); iter++)
                     {
-                        playerAttribute.AddString(iter->GetString());
+                        if (iter->IsString())
+                        {
+                            playerAttribute.AddString(iter->GetString());
+                        }
+                        else
+                        {
+                            AZ_Error(AWSGameLiftServerManagerName, false, AWSGameLiftMatchmakingPlayerAttributeInvalidErrorMessage,
+                                player.m_playerId.c_str(), "String list element must be string type");
+                            return false;
+                        }
                     }
                 }
                 else
@@ -245,7 +263,7 @@ namespace AWSGameLift
         int maxPlayerSession = m_gameSession.GetMaximumPlayerSessionCount();
 
         AZStd::vector<Aws::GameLift::Server::Model::PlayerSession> activePlayerSessions;
-        if (maxPlayerSession <= AWSGameLiftDescirbePlayerSessionsPageSize)
+        if (maxPlayerSession <= AWSGameLiftDescribePlayerSessionsPageSize)
         {
             describeRequest.SetLimit(maxPlayerSession);
             auto outcome = m_gameLiftServerSDKWrapper->DescribePlayerSessions(describeRequest);
@@ -264,7 +282,7 @@ namespace AWSGameLift
         }
         else
         {
-            describeRequest.SetLimit(AWSGameLiftDescirbePlayerSessionsPageSize);
+            describeRequest.SetLimit(AWSGameLiftDescribePlayerSessionsPageSize);
             while (true)
             {
                 auto outcome = m_gameLiftServerSDKWrapper->DescribePlayerSessions(describeRequest);
@@ -301,12 +319,12 @@ namespace AWSGameLift
         rapidjson::Value& teams = m_matchmakingData[AWSGameLiftMatchmakingTeamsKeyName];
 
         // Iterate through teams to find target player
-        for (rapidjson::SizeType teamIndex = 0; teamIndex < teams.Size(); teamIndex++)
+        for (rapidjson::SizeType teamIndex = 0; teamIndex < teams.Size(); ++teamIndex)
         {
             rapidjson::Value& players = teams[teamIndex][AWSGameLiftMatchmakingPlayersKeyName];
 
             // Iterate through players under the team to find target player
-            for (rapidjson::SizeType playerIndex = 0; playerIndex < players.Size(); playerIndex++)
+            for (rapidjson::SizeType playerIndex = 0; playerIndex < players.Size(); ++playerIndex)
             {
                 if (std::strcmp(players[playerIndex][AWSGameLiftMatchmakingPlayerIdKeyName].GetString(), playerId.c_str()) == 0)
                 {
@@ -315,18 +333,8 @@ namespace AWSGameLift
                     // Get player attributes if target player has
                     if (players[playerIndex].HasMember(AWSGameLiftMatchmakingPlayerAttributesKeyName))
                     {
-                        rapidjson::Value& playerAttributes = players[playerIndex][AWSGameLiftMatchmakingPlayerAttributesKeyName];
-                        for (auto iter = playerAttributes.MemberBegin(); iter != playerAttributes.MemberEnd(); iter++)
-                        {
-                            AZStd::string attributeName = iter->name.GetString();
-                            AZStd::string attributeType = iter->value[AWSGameLiftMatchmakingPlayerAttributeTypeKeyName].GetString();
-                            rapidjson::StringBuffer jsonStringBuffer;
-                            rapidjson::Writer<rapidjson::StringBuffer> writer(jsonStringBuffer);
-                            iter->value[AWSGameLiftMatchmakingPlayerAttributeValueKeyName].Accept(writer);
-                            AZStd::string attributeValue =
-                                AZStd::string::format("{\"%s\": %s}", attributeType.c_str(), jsonStringBuffer.GetString());
-                            outPlayer.m_playerAttributes.emplace(attributeName, attributeValue);
-                        }
+                        BuildServerMatchBackfillPlayerAttributes(
+                            players[playerIndex][AWSGameLiftMatchmakingPlayerAttributesKeyName], outPlayer);
                     }
                 }
                 else
@@ -336,6 +344,67 @@ namespace AWSGameLift
             }
         }
         return true;
+    }
+
+    void AWSGameLiftServerManager::BuildServerMatchBackfillPlayerAttributes(
+        const rapidjson::Value& playerAttributes, AWSGameLiftPlayer& outPlayer)
+    {
+        for (auto iter = playerAttributes.MemberBegin(); iter != playerAttributes.MemberEnd(); iter++)
+        {
+            AZStd::string attributeName = iter->name.GetString();
+
+            rapidjson::StringBuffer jsonStringBuffer;
+            rapidjson::Writer<rapidjson::StringBuffer> writer(jsonStringBuffer);
+            iter->value[AWSGameLiftMatchmakingPlayerAttributeValueKeyName].Accept(writer);
+            AZStd::string attributeType = iter->value[AWSGameLiftMatchmakingPlayerAttributeTypeKeyName].GetString();
+            AZStd::string attributeValue = AZStd::string::format("{\"%s\": %s}",
+                attributeType.c_str(), jsonStringBuffer.GetString());
+
+            outPlayer.m_playerAttributes.emplace(attributeName, attributeValue);
+        }
+    }
+
+    bool AWSGameLiftServerManager::BuildStartMatchBackfillRequest(
+        const AZStd::string& ticketId,
+        const AZStd::vector<AWSGameLiftPlayer>& players,
+        Aws::GameLift::Server::Model::StartMatchBackfillRequest& outRequest)
+    {
+        outRequest.SetGameSessionArn(m_gameSession.GetGameSessionId());
+        outRequest.SetMatchmakingConfigurationArn(m_matchmakingData[AWSGameLiftMatchmakingConfigurationKeyName].GetString());
+        if (!ticketId.empty())
+        {
+            outRequest.SetTicketId(ticketId.c_str());
+        }
+
+        AZStd::vector<AWSGameLiftPlayer> requestPlayers(players);
+        if (players.size() == 0)
+        {
+            requestPlayers = GetActiveServerMatchBackfillPlayers();
+        }
+        for (auto player : requestPlayers)
+        {
+            Aws::GameLift::Server::Model::Player backfillPlayer;
+            if (BuildServerMatchBackfillPlayer(player, backfillPlayer))
+            {
+                outRequest.AddPlayer(backfillPlayer);
+            }
+            else
+            {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    void AWSGameLiftServerManager::BuildStopMatchBackfillRequest(
+        const AZStd::string& ticketId, Aws::GameLift::Server::Model::StopMatchBackfillRequest& outRequest)
+    {
+        outRequest.SetGameSessionArn(m_gameSession.GetGameSessionId());
+        outRequest.SetMatchmakingConfigurationArn(m_matchmakingData[AWSGameLiftMatchmakingConfigurationKeyName].GetString());
+        if (!ticketId.empty())
+        {
+            outRequest.SetTicketId(ticketId.c_str());
+        }
     }
 
     AZ::IO::Path AWSGameLiftServerManager::GetExternalSessionCertificate()
@@ -569,31 +638,10 @@ namespace AWSGameLift
             return false;
         }
 
-        // Prepare start match backfill request
         Aws::GameLift::Server::Model::StartMatchBackfillRequest request;
-        request.SetGameSessionArn(m_gameSession.GetGameSessionId());
-        request.SetMatchmakingConfigurationArn(m_matchmakingData[AWSGameLiftMatchmakingConfigurationKeyName].GetString());
-        if (!ticketId.empty())
+        if (!BuildStartMatchBackfillRequest(ticketId, players, request))
         {
-            request.SetTicketId(ticketId.c_str());
-        }
-
-        AZStd::vector<AWSGameLiftPlayer> requestPlayers(players);
-        if (players.size() == 0)
-        {
-            requestPlayers = GetActiveServerMatchBackfillPlayers();
-        }
-        for (auto player : requestPlayers)
-        {
-            Aws::GameLift::Server::Model::Player backfillPlayer;
-            if (BuildServerMatchBackfillPlayer(player, backfillPlayer))
-            {
-                request.AddPlayer(backfillPlayer);
-            }
-            else
-            {
-                return false;
-            }
+            return false;
         }
 
         AZ_TracePrintf(AWSGameLiftServerManagerName, "Starting match backfill %s ...", ticketId.c_str());
@@ -625,14 +673,8 @@ namespace AWSGameLift
             return false;
         }
 
-        // Prepare stop match backfill request
         Aws::GameLift::Server::Model::StopMatchBackfillRequest request;
-        request.SetGameSessionArn(m_gameSession.GetGameSessionId());
-        request.SetMatchmakingConfigurationArn(m_matchmakingData[AWSGameLiftMatchmakingConfigurationKeyName].GetString());
-        if (!ticketId.empty())
-        {
-            request.SetTicketId(ticketId.c_str());
-        }
+        BuildStopMatchBackfillRequest(ticketId, request);
 
         AZ_TracePrintf(AWSGameLiftServerManagerName, "Stopping match backfill %s ...", ticketId.c_str());
         auto outcome = m_gameLiftServerSDKWrapper->StopMatchBackfill(request);

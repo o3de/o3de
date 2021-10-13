@@ -21,29 +21,28 @@ R"({
     "matchId":"testmatchid",
     "matchmakingConfigurationArn":"testmatchconfig",
     "teams":[
-	   {"name":"testteam",
-		"players":[
-           {"playerId":"testplayer",
-			"attributes":{
-				"skills":{
-					"attributeType":"STRING_DOUBLE_MAP",
-					"valueAttribute":{"test1":10.0,"test2":20.0,"test3":30.0,"test4":40.0}
-                },
-                "mode":{
-                    "attributeType":"STRING",
-                    "valueAttribute":"testmode"
-                },
-                "level":{
-                    "attributeType":"NUMBER",
-                    "valueAttribute":10.0
-                },
-                "items":{
-                    "attributeType":"STRING_LIST",
-                    "valueAttribute":["test1","test2","test3"]
-                }
-            }}
-        ]
-       }
+        {"name":"testteam",
+         "players":[
+             {"playerId":"testplayer",
+              "attributes":{
+                  "skills":{
+                      "attributeType":"STRING_DOUBLE_MAP",
+                      "valueAttribute":{"test1":10.0,"test2":20.0,"test3":30.0,"test4":40.0}
+                  },
+                  "mode":{
+                      "attributeType":"STRING",
+                      "valueAttribute":"testmode"
+                  },
+                  "level":{
+                      "attributeType":"NUMBER",
+                      "valueAttribute":10.0
+                  },
+                  "items":{
+                      "attributeType":"STRING_LIST",
+                      "valueAttribute":["test1","test2","test3"]
+                  }
+              }}
+         ]}
     ]
 })";
 
@@ -791,6 +790,36 @@ R"({
         AWSGameLiftPlayer testPlayer = GetTestGameLiftPlayer();
         testPlayer.m_playerAttributes.clear();
         testPlayer.m_playerAttributes.emplace("invalidattribute", "{\"UNEXPECTED\": [\"test1\"]}");
+
+        AZ_TEST_START_TRACE_SUPPRESSION;
+        auto actualResult = m_serverManager->StartMatchBackfill("testticket", { testPlayer });
+        AZ_TEST_STOP_TRACE_SUPPRESSION(1);
+        EXPECT_FALSE(actualResult);
+    }
+
+    TEST_F(GameLiftServerManagerTest, StartMatchBackfill_CallWithWrongSLPlayerAttributeValue_GetExpectedError)
+    {
+        m_serverManager->InitializeGameLiftServerSDK();
+        m_serverManager->SetupTestMatchmakingData(TEST_SERVER_MATCHMAKING_DATA);
+
+        AWSGameLiftPlayer testPlayer = GetTestGameLiftPlayer();
+        testPlayer.m_playerAttributes.clear();
+        testPlayer.m_playerAttributes.emplace("invalidattribute", "{\"SL\": [10.0]}");
+
+        AZ_TEST_START_TRACE_SUPPRESSION;
+        auto actualResult = m_serverManager->StartMatchBackfill("testticket", { testPlayer });
+        AZ_TEST_STOP_TRACE_SUPPRESSION(1);
+        EXPECT_FALSE(actualResult);
+    }
+
+    TEST_F(GameLiftServerManagerTest, StartMatchBackfill_CallWithWrongSDMPlayerAttributeValue_GetExpectedError)
+    {
+        m_serverManager->InitializeGameLiftServerSDK();
+        m_serverManager->SetupTestMatchmakingData(TEST_SERVER_MATCHMAKING_DATA);
+
+        AWSGameLiftPlayer testPlayer = GetTestGameLiftPlayer();
+        testPlayer.m_playerAttributes.clear();
+        testPlayer.m_playerAttributes.emplace("invalidattribute", "{\"SDM\": {10.0: \"test1\"}}");
 
         AZ_TEST_START_TRACE_SUPPRESSION;
         auto actualResult = m_serverManager->StartMatchBackfill("testticket", { testPlayer });

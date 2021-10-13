@@ -99,7 +99,7 @@ namespace AWSGameLift
         static constexpr const char AWSGameLiftMatchmakingPlayerAttributeSLServerTypeName[] = "STRING_LIST";
         static constexpr const char AWSGameLiftMatchmakingPlayerAttributeSDMTypeName[] = "SDM";
         static constexpr const char AWSGameLiftMatchmakingPlayerAttributeSDMServerTypeName[] = "STRING_DOUBLE_MAP";
-        static constexpr const uint16_t AWSGameLiftDescirbePlayerSessionsPageSize = 30;
+        static constexpr const uint16_t AWSGameLiftDescribePlayerSessionsPageSize = 30;
 
         AWSGameLiftServerManager();
         virtual ~AWSGameLiftServerManager();
@@ -135,14 +135,26 @@ namespace AWSGameLift
         void UpdateGameSessionData(const Aws::GameLift::Server::Model::GameSession& gameSession);
 
     private:
+        //! Build the serverProcessDesc with appropriate server port number and log paths.
+        GameLiftServerProcessDesc BuildGameLiftServerProcessDesc();
+
         //! Build active server player data from lazy loaded game session based on player id
         bool BuildActiveServerMatchBackfillPlayer(const AZStd::string& playerId, AWSGameLiftPlayer& outPlayer);
+
+        //! Build server player attribute data from lazy load matchmaking data
+        void BuildServerMatchBackfillPlayerAttributes(const rapidjson::Value& playerAttributes, AWSGameLiftPlayer& outPlayer);
 
         //! Build server player data for server match backfill
         bool BuildServerMatchBackfillPlayer(const AWSGameLiftPlayer& player, Aws::GameLift::Server::Model::Player& outBackfillPlayer);
 
-        //! Build the serverProcessDesc with appropriate server port number and log paths.
-        GameLiftServerProcessDesc BuildGameLiftServerProcessDesc();
+        //! Build start match backfill request for StartMatchBackfill operation
+        bool BuildStartMatchBackfillRequest(
+            const AZStd::string& ticketId,
+            const AZStd::vector<AWSGameLiftPlayer>& players,
+            Aws::GameLift::Server::Model::StartMatchBackfillRequest& outRequest);
+
+        //! Build stop match backfill request for StopMatchBackfill operation
+        void BuildStopMatchBackfillRequest(const AZStd::string& ticketId, Aws::GameLift::Server::Model::StopMatchBackfillRequest& outRequest);
 
         //! Build session config by using AWS GameLift Server GameSession Model.
         AzFramework::SessionConfig BuildSessionConfig(const Aws::GameLift::Server::Model::GameSession& gameSession);
@@ -182,6 +194,9 @@ namespace AWSGameLift
 
         // Lazy loaded game session and matchmaking data
         Aws::GameLift::Server::Model::GameSession m_gameSession;
+        // Matchmaking data contains a unique match ID, it identifies the matchmaker that created the match
+        // and describes the teams, team assignments, and players.
+        // Reference https://docs.aws.amazon.com/gamelift/latest/flexmatchguide/match-server.html#match-server-data
         rapidjson::Document m_matchmakingData;
     };
 } // namespace AWSGameLift
