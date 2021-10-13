@@ -27,6 +27,7 @@
 #include <AzToolsFramework/Manipulators/ScaleManipulators.h>
 #include <AzToolsFramework/Manipulators/TranslationManipulators.h>
 #include <AzToolsFramework/Maths/TransformUtils.h>
+#include <AzToolsFramework/Prefab/PrefabFocusInterface.h>
 #include <AzToolsFramework/ToolsComponents/EditorLockComponentBus.h>
 #include <AzToolsFramework/ToolsComponents/EditorVisibilityBus.h>
 #include <AzToolsFramework/ToolsComponents/TransformComponent.h>
@@ -1799,7 +1800,8 @@ namespace AzToolsFramework
         const AzFramework::ViewportId viewportId = mouseInteraction.m_mouseInteraction.m_interactionId.m_viewportId;
         const AzFramework::CameraState cameraState = GetCameraState(viewportId);
 
-        m_cachedEntityIdUnderCursor = m_editorHelpers->HandleMouseInteraction(cameraState, mouseInteraction);
+        const auto entityIdsUnderCursor = m_editorHelpers->GetEntityIdUnderCursor(cameraState, mouseInteraction);
+        m_cachedEntityIdUnderCursor = entityIdsUnderCursor.GetRootEntityId();
 
         const auto selectClickEvent = ClickDetectorEventFromViewportInteraction(mouseInteraction);
         m_cursorState.SetCurrentPosition(mouseInteraction.m_mouseInteraction.m_mousePick.m_screenCoordinates);
@@ -1825,8 +1827,6 @@ namespace AzToolsFramework
             }
         }
 
-        const AZ::EntityId entityIdUnderCursor = m_cachedEntityIdUnderCursor;
-
         EditorContextMenuUpdate(m_contextMenu, mouseInteraction);
 
         m_boxSelect.HandleMouseInteraction(mouseInteraction);
@@ -1840,6 +1840,21 @@ namespace AzToolsFramework
             SetTransformMode(static_cast<Mode>(nextMode));
 
             return true;
+        }
+
+        if (mouseInteraction.m_mouseEvent == ViewportInteraction::MouseEvent::DoubleClick &&
+            mouseInteraction.m_mouseInteraction.m_mouseButtons.Left())
+        {
+            if (entityIdsUnderCursor.IsChildEntity())
+            {
+                 auto prefabFocusInterface = AZ::Interface<Prefab::PrefabFocusInterface>::Get();
+                 if (prefabFocusInterface)
+                {
+                    // Focus on this prefab
+                    prefabFocusInterface->FocusOnOwningPrefab(entityIdsUnderCursor.GetRootEntityId());
+                    return false;
+                }
+            }
         }
 
         bool stickySelect = false;
@@ -1863,7 +1878,7 @@ namespace AzToolsFramework
         // select/deselect (add/remove) entities with ctrl held
         if (Input::AdditiveIndividualSelect(clickOutcome, mouseInteraction))
         {
-            if (SelectDeselect(entityIdUnderCursor))
+            if (SelectDeselect(m_cachedEntityIdUnderCursor))
             {
                 if (m_selectedEntityIds.empty())
                 {
@@ -1877,13 +1892,13 @@ namespace AzToolsFramework
         if (!m_selectedEntityIds.empty())
         {
             // group copying/alignment to specific entity - 'ditto' position/orientation for group
-            if (Input::GroupDitto(mouseInteraction) && PerformGroupDitto(entityIdUnderCursor))
+            if (Input::GroupDitto(mouseInteraction) && PerformGroupDitto(m_cachedEntityIdUnderCursor))
             {
                 return false;
             }
 
             // individual copying/alignment to specific entity - 'ditto' position/orientation for individual
-            if (Input::IndividualDitto(mouseInteraction) && PerformIndividualDitto(entityIdUnderCursor))
+            if (Input::IndividualDitto(mouseInteraction) && PerformIndividualDitto(m_cachedEntityIdUnderCursor))
             {
                 return false;
             }
@@ -1898,7 +1913,7 @@ namespace AzToolsFramework
             // set manipulator pivot override translation or orientation (update manipulators)
             if (Input::ManipulatorDitto(clickOutcome, mouseInteraction))
             {
-                PerformManipulatorDitto(entityIdUnderCursor);
+                PerformManipulatorDitto(m_cachedEntityIdUnderCursor);
                 return false;
             }
 
@@ -1913,11 +1928,11 @@ namespace AzToolsFramework
         {
             if (!stickySelect)
             {
-                ChangeSelectedEntity(entityIdUnderCursor);
+                ChangeSelectedEntity(m_cachedEntityIdUnderCursor);
             }
             else
             {
-                SelectDeselect(entityIdUnderCursor);
+                SelectDeselect(m_cachedEntityIdUnderCursor);
             }
         }
 

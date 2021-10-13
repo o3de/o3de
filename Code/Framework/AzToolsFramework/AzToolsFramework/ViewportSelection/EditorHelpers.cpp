@@ -114,6 +114,34 @@ namespace AzToolsFramework
         }
     }
 
+    EntityIdUnderCursor::EntityIdUnderCursor(AZ::EntityId entityId)
+        : m_entityId(entityId)
+        , m_rootEntityId(entityId)
+    {
+    }
+
+    EntityIdUnderCursor::EntityIdUnderCursor(AZ::EntityId entityId, AZ::EntityId rootEntityId)
+        : m_entityId(entityId)
+        , m_rootEntityId(rootEntityId)
+    {
+    }
+
+    AZ::EntityId EntityIdUnderCursor::GetEntityId() const
+    {
+        return m_entityId;
+    }
+
+    AZ::EntityId EntityIdUnderCursor::GetRootEntityId() const
+    {
+        return m_rootEntityId;
+    }
+
+    bool EntityIdUnderCursor::IsChildEntity() const
+    {
+        return m_entityId != m_rootEntityId;
+    }
+
+
     EditorHelpers::EditorHelpers(const EditorVisibleEntityDataCache* entityDataCache)
         : m_entityDataCache(entityDataCache)
     {
@@ -125,7 +153,7 @@ namespace AzToolsFramework
             "Check that it is being correctly initialized.");
     }
 
-    AZ::EntityId EditorHelpers::HandleMouseInteraction(
+    EntityIdUnderCursor EditorHelpers::GetEntityIdUnderCursor(
         const AzFramework::CameraState& cameraState, const ViewportInteraction::MouseInteractionEvent& mouseInteraction)
     {
         AZ_PROFILE_FUNCTION(AzToolsFramework);
@@ -189,7 +217,7 @@ namespace AzToolsFramework
         // Verify if the entity Id corresponds to an entity that is focused; if not, halt selection.
         if (!m_focusModeInterface->IsInFocusSubTree(entityIdUnderCursor))
         {
-            return AZ::EntityId();
+            return EntityIdUnderCursor(AZ::EntityId());
         }
 
         // Container Entity support - if the entity that is being selected is part of a closed container,
@@ -197,10 +225,11 @@ namespace AzToolsFramework
         ContainerEntityInterface* containerEntityInterface = AZ::Interface<ContainerEntityInterface>::Get();
         if (containerEntityInterface)
         {
-            return containerEntityInterface->FindHighestSelectableEntity(entityIdUnderCursor);
+            const auto highestSelectableEntity = containerEntityInterface->FindHighestSelectableEntity(entityIdUnderCursor);
+            return EntityIdUnderCursor(entityIdUnderCursor, highestSelectableEntity);
         }
 
-        return entityIdUnderCursor;
+        return EntityIdUnderCursor(entityIdUnderCursor);
     }
 
     void EditorHelpers::DisplayHelpers(

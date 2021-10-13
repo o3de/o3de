@@ -80,7 +80,7 @@ namespace AzToolsFramework
 
         const AzFramework::CameraState cameraState = GetCameraState(viewportId);
 
-        m_cachedEntityIdUnderCursor = m_editorHelpers->HandleMouseInteraction(cameraState, mouseInteraction);
+        m_cachedEntityIdUnderCursor = m_editorHelpers->GetEntityIdUnderCursor(cameraState, mouseInteraction).GetRootEntityId();
 
         // when left clicking, if we successfully clicked an entity, assign that
         // to the entity field selected in the entity inspector (RPE)

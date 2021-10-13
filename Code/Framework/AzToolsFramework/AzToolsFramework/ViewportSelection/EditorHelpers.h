@@ -29,6 +29,22 @@ namespace AzToolsFramework
         struct MouseInteractionEvent;
     }
 
+    //!< Represents the result of a query to find the id of the entity under the cursor (if any).
+    class EntityIdUnderCursor
+    {
+    public:
+        EntityIdUnderCursor(AZ::EntityId entityId);
+        EntityIdUnderCursor(AZ::EntityId entityId, AZ::EntityId rootEntityId);
+
+        AZ::EntityId GetEntityId() const;
+        AZ::EntityId GetRootEntityId() const;
+        bool IsChildEntity() const;
+
+    private:
+        AZ::EntityId m_entityId; //<! The entity id under the cursor.
+        AZ::EntityId m_rootEntityId; //<! For prefabs, the root entity id, otherwise the entity id under the cursor.
+    };
+
     //! EditorHelpers are the visualizations that appear for entities
     //! when 'Display Helpers' is toggled on inside the editor.
     //! These include but are not limited to entity icons and shape visualizations.
@@ -44,9 +60,9 @@ namespace AzToolsFramework
         EditorHelpers& operator=(const EditorHelpers&) = delete;
         ~EditorHelpers() = default;
 
-        //! Handle any mouse interaction with the EditorHelpers.
+        //! Determines the id of the entity under the cursor (if any). For prefabs, also determines the root entity id.
         //! Used to check if a particular entity was selected.
-        AZ::EntityId HandleMouseInteraction(
+        EntityIdUnderCursor GetEntityIdUnderCursor(
             const AzFramework::CameraState& cameraState, const ViewportInteraction::MouseInteractionEvent& mouseInteraction);
 
         //! Do the drawing responsible for the EditorHelpers.
