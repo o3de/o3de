@@ -1393,7 +1393,7 @@ namespace AzToolsFramework
 
         AZStd::unique_ptr<AzQtComponents::Card> PrefabIntegrationManager::ConstructUnsavedPrefabsCard(TemplateId templateId)
         {
-            FlowLayout* unsavedPrefabsLayout = new FlowLayout(AzToolsFramework::GetActiveWindow());
+            FlowLayout* unsavedPrefabsLayout = new FlowLayout(nullptr);
 
             AZStd::set<AZ::IO::PathView> dirtyTemplatePaths = s_prefabSystemComponentInterface->GetDirtyTemplatePaths(templateId);
 
