@@ -955,8 +955,8 @@ class TestRunningTests(unittest.TestCase):
         mock_test_spec_list = [mock.MagicMock(), mock.MagicMock()]
         mock_test_data = mock.MagicMock()
 
-        mock_test_suite._run_parallel_tests(mock.MagicMock(), mock.MagicMock(), mock.MagicMock(), mock_test_data,
-                                            mock_test_spec_list, [])
+        mock_test_suite._run_parallel_batched_tests(mock.MagicMock(), mock.MagicMock(), mock.MagicMock(),
+                                                    mock_test_data, mock_test_spec_list, [])
 
         assert mock_setup_test.called
         assert mock_test_data.results.update.call_count == len(mock_test_spec_list)
@@ -965,7 +965,7 @@ class TestRunningTests(unittest.TestCase):
     @mock.patch('threading.Thread')
     @mock.patch('ly_test_tools.o3de.editor_test.EditorTestSuite._get_number_parallel_editors')
     @mock.patch('ly_test_tools.o3de.editor_test.EditorTestSuite._setup_editor_test')
-    def test_RunParallelBatchedTests_TenTestsAndTwoEditors_TenThreads(self, mock_setup_test, mock_get_num_editors,
+    def test_RunParallelBatchedTests_TenTestsAndTwoEditors_2Threads(self, mock_setup_test, mock_get_num_editors,
                                                                       mock_thread):
         mock_test_suite = ly_test_tools.o3de.editor_test.EditorTestSuite()
         mock_get_num_editors.return_value = 2
@@ -974,17 +974,17 @@ class TestRunningTests(unittest.TestCase):
             mock_test_spec_list.append(mock.MagicMock())
         mock_test_data = mock.MagicMock()
 
-        mock_test_suite._run_parallel_tests(mock.MagicMock(), mock.MagicMock(), mock.MagicMock(), mock_test_data,
-                                            mock_test_spec_list, [])
+        mock_test_suite._run_parallel_batched_tests(mock.MagicMock(), mock.MagicMock(), mock.MagicMock(),
+                                                    mock_test_data, mock_test_spec_list, [])
 
         assert mock_setup_test.called
-        assert mock_test_data.results.update.call_count == len(mock_test_spec_list)
-        assert mock_thread.call_count == len(mock_test_spec_list)
+        assert mock_test_data.results.update.call_count == 2
+        assert mock_thread.call_count == 2
 
     @mock.patch('threading.Thread')
     @mock.patch('ly_test_tools.o3de.editor_test.EditorTestSuite._get_number_parallel_editors')
     @mock.patch('ly_test_tools.o3de.editor_test.EditorTestSuite._setup_editor_test')
-    def test_RunParallelBatchedTests_TenTestsAndThreeEditors_TenThreads(self, mock_setup_test, mock_get_num_editors,
+    def test_RunParallelBatchedTests_TenTestsAndThreeEditors_ThreeThreads(self, mock_setup_test, mock_get_num_editors,
                                                                         mock_thread):
         mock_test_suite = ly_test_tools.o3de.editor_test.EditorTestSuite()
         mock_get_num_editors.return_value = 3
@@ -993,12 +993,12 @@ class TestRunningTests(unittest.TestCase):
             mock_test_spec_list.append(mock.MagicMock())
         mock_test_data = mock.MagicMock()
 
-        mock_test_suite._run_parallel_tests(mock.MagicMock(), mock.MagicMock(), mock.MagicMock(), mock_test_data,
-                                            mock_test_spec_list, [])
+        mock_test_suite._run_parallel_batched_tests(mock.MagicMock(), mock.MagicMock(), mock.MagicMock(),
+                                                    mock_test_data, mock_test_spec_list, [])
 
         assert mock_setup_test.called
-        assert mock_test_data.results.update.call_count == len(mock_test_spec_list)
-        assert mock_thread.call_count == len(mock_test_spec_list)
+        assert mock_test_data.results.update.call_count == 3
+        assert mock_thread.call_count == 3
 
     def test_GetNumberParallelEditors_ConfigExists_ReturnsConfig(self):
         mock_test_suite = ly_test_tools.o3de.editor_test.EditorTestSuite()
@@ -1015,3 +1015,99 @@ class TestRunningTests(unittest.TestCase):
 
         num_of_editors = mock_test_suite._get_number_parallel_editors(mock_request)
         assert num_of_editors == mock_test_suite.get_number_parallel_editors()
+
+@mock.patch('_pytest.python.Class.collect')
+class TestEditorTestClass(unittest.TestCase):
+
+    def setUp(self):
+        mock_name = mock.MagicMock()
+        mock_collector = mock.MagicMock()
+        self.mock_test_class = ly_test_tools.o3de.editor_test.EditorTestSuite.EditorTestClass(mock_name, mock_collector)
+        self.mock_test_class.obj = mock.MagicMock()
+        single_1 = mock.MagicMock()
+        single_1.__name__ = 'single_1_name'
+        single_2 = mock.MagicMock()
+        single_2.__name__ = 'single_2_name'
+        self.mock_test_class.obj.get_single_tests.return_value = [single_1, single_2]
+        batch_1 = mock.MagicMock()
+        batch_1.__name__ = 'batch_1_name'
+        batch_2 = mock.MagicMock()
+        batch_2.__name__ = 'batch_2_name'
+        parallel_1 = mock.MagicMock()
+        parallel_1.__name__ = 'parallel_1_name'
+        parallel_2 = mock.MagicMock()
+        parallel_2.__name__ = 'parallel_2_name'
+        both_1 = mock.MagicMock()
+        both_1.__name__ = 'both_1_name'
+        both_2 = mock.MagicMock()
+        both_2.__name__ = 'both_2_name'
+        self.mock_test_class.obj.filter_shared_tests.side_effect = [ [batch_1, batch_2],
+                                                                     [parallel_1, parallel_2],
+                                                                     [both_1, both_2] ]
+
+    def test_Collect_NoParallelNoBatched_RunsAsSingleTests(self, mock_collect):
+        self.mock_test_class.config.getoption.return_value = True
+        self.mock_test_class.collect()
+        assert self.mock_test_class.obj.single_1_name.__name__ == 'single_run'
+        assert self.mock_test_class.obj.single_2_name.__name__ == 'single_run'
+        assert self.mock_test_class.obj.batch_1_name.__name__ == 'single_run'
+        assert self.mock_test_class.obj.batch_2_name.__name__ == 'single_run'
+        assert self.mock_test_class.obj.parallel_1_name.__name__ == 'single_run'
+        assert self.mock_test_class.obj.parallel_2_name.__name__ == 'single_run'
+        assert self.mock_test_class.obj.both_1_name.__name__ == 'single_run'
+        assert self.mock_test_class.obj.both_2_name.__name__ == 'single_run'
+
+    def test_Collect_AllValidTests_RunsAsInteded(self, mock_collect):
+        self.mock_test_class.config.getoption.return_value = False
+        self.mock_test_class.collect()
+        assert self.mock_test_class.obj.single_1_name.__name__ == 'single_run'
+        assert self.mock_test_class.obj.single_2_name.__name__ == 'single_run'
+        assert self.mock_test_class.obj.batch_1_name.__name__ == 'result'
+        assert self.mock_test_class.obj.batch_2_name.__name__ == 'result'
+        assert self.mock_test_class.obj.parallel_1_name.__name__ == 'result'
+        assert self.mock_test_class.obj.parallel_2_name.__name__ == 'result'
+        assert self.mock_test_class.obj.both_1_name.__name__ == 'result'
+        assert self.mock_test_class.obj.both_2_name.__name__ == 'result'
+
+    def test_Collect_AllValidTests_CallsCollect(self, mock_collect):
+        self.mock_test_class.collect()
+        assert mock_collect.called
+
+    def test_Collect_NormalCollection_ReturnsFilteredRuns(self, mock_collect):
+        mock_run = mock.MagicMock()
+        mock_run.obj.marks = {"run_type": 'run_shared'}
+        mock_run_2 = mock.MagicMock()
+        mock_run_2.obj.marks = {"run_type": 'result'}
+        mock_instance = mock.MagicMock()
+        mock_instance.collect.return_value = [mock_run, mock_run_2]
+        mock_collect.return_value = [mock_instance]
+
+        collection = self.mock_test_class.collect()
+        assert collection == [mock_run_2]
+
+    def test_Collect_NormalRun_ReturnsRunners(self, mock_collect):
+        self.mock_test_class.collect()
+        runners =  self.mock_test_class.obj._runners
+
+        assert runners[0].name == 'run_batched_tests'
+        assert runners[1].name == 'run_parallel_tests'
+        assert runners[2].name == 'run_parallel_batched_tests'
+
+    def test_Collect_NormalCollection_StoresRunners(self, mock_collect):
+        mock_runner = mock.MagicMock()
+        mock_run = mock.MagicMock()
+        mock_run.obj.marks = {"run_type": 'run_shared'}
+        mock_run.function.marks = {"runner": mock_runner}
+        mock_runner_2 = mock.MagicMock()
+        mock_runner_2.result_pytestfuncs = []
+        mock_run_2 = mock.MagicMock()
+        mock_run_2.obj.marks = {"run_type": 'result'}
+        mock_run_2.function.marks = {"runner": mock_runner_2}
+        mock_instance = mock.MagicMock()
+        mock_instance.collect.return_value = [mock_run, mock_run_2]
+        mock_collect.return_value = [mock_instance]
+
+        self.mock_test_class.collect()
+
+        assert mock_runner.run_pytestfunc == mock_run
+        assert mock_run_2 in mock_runner_2.result_pytestfuncs
