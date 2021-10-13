@@ -35,7 +35,7 @@ namespace AZ
                 ~MeshThumbnail() override;
 
                 //! AzToolsFramework::ThumbnailerRendererNotificationBus::Handler overrides...
-                void ThumbnailRendered(QPixmap& thumbnailImage) override;
+                void ThumbnailRendered(const QPixmap& thumbnailImage) override;
                 void ThumbnailFailedToRender() override;
 
             protected:

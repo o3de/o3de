@@ -58,7 +58,19 @@ namespace AzToolsFramework
             AzFramework::DebugDisplayRequests& debugDisplay,
             const AZStd::function<bool(AZ::EntityId)>& showIconCheck);
 
+        //! Returns whether the entityId can be selected in the viewport according
+        //! to the current Editor Focus Mode and Container Entity setup.
+        bool IsSelectableInViewport(AZ::EntityId entityId);
+
     private:
+        //! Returns whether the entityId can be selected in the viewport according
+        //! to the current Editor Focus Mode setup.
+        bool IsSelectableAccordingToFocusMode(AZ::EntityId entityId);
+
+        //! Returns whether the entityId can be selected in the viewport according
+        //! to the current Container Entityu setup.
+        bool IsSelectableAccordingToContainerEntities(AZ::EntityId entityId);
+
         const EditorVisibleEntityDataCache* m_entityDataCache = nullptr; //!< Entity Data queried by the EditorHelpers.
         const FocusModeInterface* m_focusModeInterface = nullptr;
     };

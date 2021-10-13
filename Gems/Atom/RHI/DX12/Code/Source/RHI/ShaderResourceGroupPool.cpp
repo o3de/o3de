@@ -206,12 +206,21 @@ namespace AZ
             auto& device = static_cast<Device&>(GetDevice());
             group.m_compiledDataIndex = (group.m_compiledDataIndex + 1) % RHI::Limits::Device::FrameCountMax;
 
-            if (m_constantBufferSize)
+            if (!groupData.IsAnyResourceTypeUpdated())
+            {
+                return RHI::ResultCode::Success;
+            }
+
+            if (m_constantBufferSize &&
+                groupData.IsResourceTypeEnabledForCompilation(static_cast<uint32_t>(RHI::ShaderResourceGroupData::ResourceTypeMask::ConstantDataMask)))
             {
                 memcpy(group.GetCompiledData().m_cpuConstantAddress, groupData.GetConstantData().data(), groupData.GetConstantData().size());
             }
 
-            if (m_viewsDescriptorTableSize)
+            if (m_viewsDescriptorTableSize &&
+                groupData.IsResourceTypeEnabledForCompilation(
+                    static_cast<uint32_t>(RHI::ShaderResourceGroupData::ResourceTypeMask::ImageViewMask) |
+                    static_cast<uint32_t>(RHI::ShaderResourceGroupData::ResourceTypeMask::BufferViewMask)))
             {
                 //Lazy initialization for cbv/srv/uav Descriptor Tables
                 if (!group.m_viewsDescriptorTable.IsValid())
@@ -236,12 +245,17 @@ namespace AZ
                 UpdateViewsDescriptorTable(descriptorTable, groupData);
             }
 
-            if (m_unboundedArrayCount)
+            if (m_unboundedArrayCount &&
+                groupData.IsResourceTypeEnabledForCompilation(
+                    static_cast<uint32_t>(RHI::ShaderResourceGroupData::ResourceTypeMask::ImageViewUnboundedArrayMask) |
+                    static_cast<uint32_t>(RHI::ShaderResourceGroupData::ResourceTypeMask::BufferViewUnboundedArrayMask)))
             {
                 UpdateUnboundedArrayDescriptorTables(group, groupData);
             }
 
-            if (m_samplersDescriptorTableSize)
+            if (m_samplersDescriptorTableSize &&
+                groupData.IsResourceTypeEnabledForCompilation(
+                    static_cast<uint32_t>(RHI::ShaderResourceGroupData::ResourceTypeMask::SamplerMask)))
             {
                 const DescriptorTable descriptorTable(
                     group.m_samplersDescriptorTable.GetOffset() + group.m_compiledDataIndex * m_samplersDescriptorTableSize,
