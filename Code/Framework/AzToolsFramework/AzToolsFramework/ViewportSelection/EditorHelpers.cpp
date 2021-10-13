@@ -187,15 +187,14 @@ namespace AzToolsFramework
         }
 
         // Verify if the entity Id corresponds to an entity that is focused; if not, halt selection.
-        if (!m_focusModeInterface->IsInFocusSubTree(entityIdUnderCursor))
+        if (!IsSelectableAccordingToFocusMode(entityIdUnderCursor))
         {
             return AZ::EntityId();
         }
 
         // Container Entity support - if the entity that is being selected is part of a closed container,
         // change the selection to the container instead.
-        ContainerEntityInterface* containerEntityInterface = AZ::Interface<ContainerEntityInterface>::Get();
-        if (containerEntityInterface)
+        if (ContainerEntityInterface* containerEntityInterface = AZ::Interface<ContainerEntityInterface>::Get())
         {
             return containerEntityInterface->FindHighestSelectableEntity(entityIdUnderCursor);
         }
@@ -217,7 +216,7 @@ namespace AzToolsFramework
             {
                 const AZ::EntityId entityId = m_entityDataCache->GetVisibleEntityId(entityCacheIndex);
 
-                if (!m_entityDataCache->IsVisibleEntityVisible(entityCacheIndex))
+                if (!m_entityDataCache->IsVisibleEntityVisible(entityCacheIndex) || !IsSelectableInViewport(entityId))
                 {
                     continue;
                 }
@@ -262,5 +261,25 @@ namespace AzToolsFramework
                                                              AZ::Vector2{ iconSize, iconSize } });
             }
         }
+    }
+
+    bool EditorHelpers::IsSelectableInViewport(AZ::EntityId entityId)
+    {
+        return IsSelectableAccordingToFocusMode(entityId) && IsSelectableAccordingToContainerEntities(entityId);
+    }
+
+    bool EditorHelpers::IsSelectableAccordingToFocusMode(AZ::EntityId entityId)
+    {
+        return m_focusModeInterface->IsInFocusSubTree(entityId);
+    }
+
+    bool EditorHelpers::IsSelectableAccordingToContainerEntities(AZ::EntityId entityId)
+    {
+        if (ContainerEntityInterface* containerEntityInterface = AZ::Interface<ContainerEntityInterface>::Get())
+        {
+            return !containerEntityInterface->IsUnderClosedContainerEntity(entityId);
+        }
+
+        return true;
     }
 } // namespace AzToolsFramework

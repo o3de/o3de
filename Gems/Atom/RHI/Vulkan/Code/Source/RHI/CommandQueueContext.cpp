@@ -13,7 +13,6 @@
 #include <RHI/Semaphore.h>
 #include <RHI/Conversion.h>
 #include <RHI/SwapChain.h>
-#include <Atom/RHI.Reflect/CpuTimingStatistics.h>
 
 namespace AZ
 {
@@ -363,17 +362,22 @@ namespace AZ
             return queueSelection.m_familyIndex != InvalidFamilyIndex;
         }
 
-        void CommandQueueContext::UpdateCpuTimingStatistics(RHI::CpuTimingStatistics& cpuTimingStatistics) const
+        void CommandQueueContext::UpdateCpuTimingStatistics() const
         {
-            cpuTimingStatistics.Reset();
-
-            AZStd::sys_time_t presentDuration = 0;
-            for (const RHI::Ptr<CommandQueue>& commandQueue : m_commandQueues)
+            if (auto statsProfiler = AZ::Interface<AZ::Statistics::StatisticalProfilerProxy>::Get(); statsProfiler)
             {
-                cpuTimingStatistics.m_queueStatistics.push_back({ commandQueue->GetName(), commandQueue->GetLastExecuteDuration() });
-                presentDuration += commandQueue->GetLastPresentDuration();
+                auto& rhiMetrics = statsProfiler->GetProfiler(rhiMetricsId);
+
+                AZStd::sys_time_t presentDuration = 0;
+                for (const RHI::Ptr<CommandQueue>& commandQueue : m_commandQueues)
+                {
+                    const AZ::Crc32 commandQueueId(commandQueue->GetName().GetHash());
+                    rhiMetrics.PushSample(commandQueueId, static_cast<double>(commandQueue->GetLastExecuteDuration()));
+                    presentDuration += commandQueue->GetLastPresentDuration();
+                }
+
+                rhiMetrics.PushSample(AZ_CRC_CE("Present"), static_cast<double>(presentDuration));
             }
-            cpuTimingStatistics.m_presentDuration = presentDuration;
         }
     }
 }

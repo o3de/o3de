@@ -8,6 +8,7 @@
 
 #include <GemRepo/GemRepoItemDelegate.h>
 #include <GemRepo/GemRepoModel.h>
+#include <ProjectManagerDefs.h>
 
 #include <QEvent>
 #include <QPainter>
@@ -95,7 +96,7 @@ namespace O3DE::ProjectManager
         painter->drawText(repoCreatorRect, Qt::TextSingleLine, repoCreator);
 
         // Repo update
-        QString repoUpdatedDate = GemRepoModel::GetLastUpdated(modelIndex).toString("dd/MM/yyyy hh:mmap");
+        QString repoUpdatedDate = GemRepoModel::GetLastUpdated(modelIndex).toString(RepoTimeFormat);
         repoUpdatedDate = standardFontMetrics.elidedText(repoUpdatedDate, Qt::TextElideMode::ElideRight, s_updatedMaxWidth);
 
         QRect repoUpdatedDateRect = GetTextRect(standardFont, repoUpdatedDate, s_fontSize);

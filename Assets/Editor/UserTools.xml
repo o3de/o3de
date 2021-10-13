@@ -7,8 +7,6 @@
  <Tool Title="| Draw Helpers" Command="p_draw_helpers" EditorCmd="" ToggleVar="1"/>
  <Tool Title="| AI Debug Draw" Command="ai_DebugDraw" EditorCmd="" ToggleVar="1"/>
  <Tool Title="| Toggle Music" Command="s_MusicEnable" EditorCmd="" ToggleVar="1"/>
- <Tool Title="| Toggle Sound" Command="s_SoundEnable" EditorCmd="" ToggleVar="1"/>
- <Tool Title="| Toggle ForcefeedBack" Command="i_forcefeedback" EditorCmd="" ToggleVar="1"/>
  <Tool Title="| Freeze Camera " Command="e_CameraFreeze" EditorCmd="" ToggleVar="1"/>
  <Tool Title="| Log Verbosity 0" Command="log_Verbosity 0" EditorCmd="" ToggleVar="0"/>
  <Tool Title="| SaveLevelStats" Command="savelevelstats" EditorCmd="" ToggleVar="0"/>
