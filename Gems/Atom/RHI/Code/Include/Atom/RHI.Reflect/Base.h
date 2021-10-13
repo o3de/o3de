@@ -16,6 +16,7 @@
 #include <AzCore/std/smart_ptr/intrusive_ptr.h>
 
 AZ_DECLARE_BUDGET(RHI);
+inline static constexpr AZ::Crc32 rhiMetricsId = AZ_CRC_CE("RHI");
 
 namespace UnitTest
 {

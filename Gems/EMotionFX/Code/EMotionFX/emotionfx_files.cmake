@@ -25,7 +25,6 @@ set(FILES
     Source/AttachmentNode.h
     Source/AttachmentSkin.cpp
     Source/AttachmentSkin.h
-    Source/AutoRegisteredActor.h
     Source/BaseObject.cpp
     Source/BaseObject.h
     Source/CompressedKeyFrames.h

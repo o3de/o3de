@@ -24,10 +24,12 @@
 
 #include <Tests/TestAssetCode/SimpleActors.h>
 #include <Tests/TestAssetCode/ActorFactory.h>
+#include <Tests/TestAssetCode/TestActorAssets.h>
 #include <Editor/Plugins/SimulatedObject/SimulatedObjectWidget.h>
 #include <Editor/Plugins/SkeletonOutliner/SkeletonOutlinerPlugin.h>
 #include <EMotionFX/Rendering/OpenGL2/Source/GraphicsManager.h>
 #include <EMotionFX/Source/AnimGraphReferenceNode.h>
+#include <EMotionFX/Source/ActorManager.h>
 #include <EMotionFX/CommandSystem/Source/CommandManager.h>
 #include <EMotionFX/CommandSystem/Source/AnimGraphNodeCommands.h>
 #include <EMotionFX/CommandSystem/Source/MotionCommands.h>
@@ -141,8 +143,10 @@ namespace EMotionFX
         {
             if (EMotionFX::GetActorManager().GetNumActorInstances() == 0)
             {
-                AutoRegisteredActor actor = ActorFactory::CreateAndInit<SimpleJointChainActor>(2, "CanAddSimulatedObjectWithJointsActor");
-                ActorInstance::Create(actor.get());
+                AZ::Data::AssetId actorAssetId("{5060227D-B6F4-422E-BF82-41AAC5F228A5}");
+                AZ::Data::Asset<Integration::ActorAsset> actorAsset =
+                    TestActorAssets::CreateActorAssetAndRegister<SimpleJointChainActor>(actorAssetId, 2, "CanAddSimulatedObjectWithJointsActor");
+                ActorInstance::Create(actorAsset->GetActor());
 
                 EXPECT_EQ(EMotionFX::GetActorManager().GetNumActorInstances(), 1) << "Failed to create actor set for reset test.";
             }
@@ -152,15 +156,16 @@ namespace EMotionFX
         {
             if (EMotionFX::GetActorManager().GetNumActorInstances() == 0)
             {
-                AutoRegisteredActor actor = ActorFactory::CreateAndInit<SimpleJointChainActor>(2, "CanAddSimulatedObjectWithJointsActor");
-                ActorInstance::Create(actor.get());
+                AZ::Data::AssetId actorAssetId("{5060227D-B6F4-422E-BF82-41AAC5F228A5}");
+                AZ::Data::Asset<Integration::ActorAsset> actorAsset = TestActorAssets::CreateActorAssetAndRegister<SimpleJointChainActor>(
+                    actorAssetId, 2, "CanAddSimulatedObjectWithJointsActor");
+                ActorInstance::Create(actorAsset->GetActor());
 
                 EXPECT_EQ(EMotionFX::GetActorManager().GetNumActorInstances(), 1) << "Failed to create actor set for reset test.";
-
-                actor->SetFileName(filename);
+                actorAsset->GetActor()->SetFileName(filename);
 
                 AZStd::string stringFilename = filename;
-                ExporterLib::SaveActor(stringFilename, actor.get(), MCore::Endian::ENDIAN_LITTLE);
+                ExporterLib::SaveActor(stringFilename, actorAsset->GetActor(), MCore::Endian::ENDIAN_LITTLE);
             }
         }
 
@@ -239,7 +244,6 @@ namespace EMotionFX
 
             // Load the actor we just saved, with replaceScene set to true to represent a load.
             LoadActor(actorFilename.toUtf8().data(), true);
-            
             ASSERT_EQ(EMotionFX::GetActorManager().GetNumActorInstances(), 1) << "Failed to load Actor.";
 
             // Do it again to verify that number of actors stays the same when replaceScene is true.
@@ -551,7 +555,7 @@ namespace EMotionFX
 
         QString GetTestMotionFileName() const
         {
-            AZStd::string resolvedAssetPath = this->ResolvePath("@devroot@/Gems/EMotionFX/Code/Tests/TestAssets/Rin/rin_idle.motion");
+            AZStd::string resolvedAssetPath = this->ResolvePath("@engroot@/Gems/EMotionFX/Code/Tests/TestAssets/Rin/rin_idle.motion");
             return QString::fromUtf8(resolvedAssetPath.data(), aznumeric_cast<int>(resolvedAssetPath.size()));
         }
 
@@ -696,7 +700,10 @@ namespace EMotionFX
 
         TestResetMenuItem(fileMenu);
 
-        TestActorMenus(fileMenu);
+        // Temporarily disable loading actor test.
+        // This is because the importer command now load actor asset instead of reading from disk. We do not want to add dependency to the asset processor
+        // in this test.
+        // TestActorMenus(fileMenu);
 
         TestSaveAllMenuItem(fileMenu);
     }

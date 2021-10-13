@@ -179,6 +179,10 @@ if (PAL_TRAIT_BUILD_TESTS_SUPPORTED)
     ly_add_googletest(
         NAME Gem::Multiplayer.Tests
     )
+    ly_add_googlebenchmark(
+        NAME Gem::Multiplayer.Benchmarks
+        TARGET Gem::Multiplayer.Tests
+    )
     
     if (PAL_TRAIT_BUILD_HOST_TOOLS)
         ly_add_target(

@@ -23,9 +23,6 @@ class _LinuxResourceManager(AbstractResourceLocator):
     """
     Override for locating resources in a Linux operating system running LyTestTools.
     """
-    def __init__(self, build_directory: str, project: str):
-        pass
-
     def platform_config_file(self):
         """
         :return: path to the platform config file

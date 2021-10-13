@@ -19,6 +19,7 @@
 
 #include <AzToolsFramework/API/ComponentEntitySelectionBus.h>
 #include <AzToolsFramework/ViewportSelection/EditorSelectionUtil.h>
+#include <AzToolsFramework/Viewport/ViewportMessages.h>
 
 // Editor
 #include "ViewManager.h"
@@ -173,8 +174,6 @@ QtViewport::QtViewport(QWidget* parent)
 
     m_bAdvancedSelectMode = false;
 
-    m_pVisibleObjectsCache = new CBaseObjectsCache;
-
     m_constructionPlane.SetPlane(Vec3_OneZ, Vec3_Zero);
     m_constructionPlaneAxisX = Vec3_Zero;
     m_constructionPlaneAxisY = Vec3_Zero;
@@ -204,8 +203,6 @@ QtViewport::QtViewport(QWidget* parent)
 //////////////////////////////////////////////////////////////////////////
 QtViewport::~QtViewport()
 {
-    delete m_pVisibleObjectsCache;
-
     GetIEditor()->GetViewManager()->UnregisterViewport(this);
 }
 
@@ -376,11 +373,6 @@ void QtViewport::OnDeactivate()
 void QtViewport::ResetContent()
 {
     m_pMouseOverObject = nullptr;
-
-    // Need to clear visual object cache.
-    // Right after loading new level, some code(e.g. OnMouseMove) access invalid
-    // previous level object before cache updated.
-    GetVisibleObjectsCache()->ClearObjects();
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -398,11 +390,8 @@ void QtViewport::Update()
     m_viewportUi.Update();
 
     m_bAdvancedSelectMode = false;
-    bool bSpaceClick = false;
-    {
-        bSpaceClick = CheckVirtualKey(Qt::Key_Space) & !CheckVirtualKey(Qt::Key_Shift) /*& !CheckVirtualKey(Qt::Key_Control)*/;
-    }
-    if (bSpaceClick && hasFocus())
+
+    if (CheckVirtualKey(Qt::Key_Space) && !CheckVirtualKey(Qt::Key_Shift) && hasFocus())
     {
         m_bAdvancedSelectMode = true;
     }

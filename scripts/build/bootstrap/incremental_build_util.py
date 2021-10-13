@@ -18,6 +18,8 @@ from contextlib import contextmanager
 import threading
 import _thread
 
+from botocore.config import Config
+
 DEFAULT_REGION = 'us-west-2'
 DEFAULT_DISK_SIZE = 300
 DEFAULT_DISK_TYPE = 'gp2'
@@ -173,8 +175,25 @@ def get_region_name():
 
 
 def get_ec2_client(region):
-    client = boto3.client('ec2', region_name=region)
+    client_config = Config(
+        region_name=region,
+        retries={
+            'mode': 'standard'
+        }
+    )
+    client = boto3.client('ec2', config=client_config)
     return client
+
+
+def get_ec2_resource(region):
+    resource_config = Config(
+        region_name=region,
+        retries={
+            'mode': 'standard'
+        }
+    )
+    resource = boto3.resource('ec2', config=resource_config)
+    return resource
 
 
 def get_ec2_instance_id():
@@ -395,14 +414,11 @@ def detach_volume_from_ec2_instance(volume, ec2_instance_id, force, timeout_dura
 
 
 def mount_ebs(snapshot_hint, repository_name, project, pipeline, branch, platform, build_type, disk_size, disk_type):
-    session = boto3.session.Session()
-    region = session.region_name
-    if region is None:
-        region = DEFAULT_REGION
+    region = get_region_name()
     ec2_client = get_ec2_client(region)
     ec2_instance_id = get_ec2_instance_id()
     ec2_availability_zone = get_availability_zone()
-    ec2_resource = boto3.resource('ec2', region_name=region)
+    ec2_resource = get_ec2_resource(region)
     ec2_instance = ec2_resource.Instance(ec2_instance_id)
 
     for volume in ec2_instance.volumes.all():
@@ -469,7 +485,7 @@ def mount_ebs(snapshot_hint, repository_name, project, pipeline, branch, platfor
 def unmount_ebs():
     region = get_region_name()
     ec2_instance_id = get_ec2_instance_id()
-    ec2_resource = boto3.resource('ec2', region_name=region)
+    ec2_resource = get_ec2_resource(region)
     ec2_instance = ec2_resource.Instance(ec2_instance_id)
 
     if os.path.isfile('envinject.properties'):

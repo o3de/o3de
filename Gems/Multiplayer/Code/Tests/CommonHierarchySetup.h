@@ -11,6 +11,7 @@
 #include <MockInterfaces.h>
 #include <AzCore/Component/Entity.h>
 #include <AzCore/Console/Console.h>
+#include <AzCore/Math/Vector3.h>
 #include <AzCore/Name/Name.h>
 #include <AzCore/Name/NameDictionary.h>
 #include <AzCore/Serialization/SerializeContext.h>
@@ -25,10 +26,10 @@
 #include <Multiplayer/Components/NetworkHierarchyChildComponent.h>
 #include <Multiplayer/Components/NetworkHierarchyRootComponent.h>
 #include <Multiplayer/Components/NetworkTransformComponent.h>
+#include <Multiplayer/NetworkEntity/EntityReplication/EntityReplicationManager.h>
+#include <Multiplayer/NetworkEntity/EntityReplication/EntityReplicator.h>
 #include <NetworkEntity/NetworkEntityAuthorityTracker.h>
 #include <NetworkEntity/NetworkEntityTracker.h>
-#include <NetworkEntity/EntityReplication/EntityReplicationManager.h>
-#include <NetworkEntity/EntityReplication/EntityReplicator.h>
 
 namespace Multiplayer
 {
@@ -205,7 +206,7 @@ namespace Multiplayer
         NetworkEntityHandle AddEntityToEntityMap(NetEntityId netEntityId, AZ::Entity* entity)
         {
             m_networkEntityMap[netEntityId] = entity;
-            return NetworkEntityHandle(entity, netEntityId, m_networkEntityTracker.get());
+            return NetworkEntityHandle(entity, m_networkEntityTracker.get());
         }
 
         ConstNetworkEntityHandle GetEntity(NetEntityId netEntityId) const
@@ -248,17 +249,19 @@ namespace Multiplayer
 
         void SetupEntity(const AZStd::unique_ptr<AZ::Entity>& entity, NetEntityId netId, NetEntityRole role)
         {
-            const auto netBindComponent = entity->FindComponent<Multiplayer::NetBindComponent>();
-            EXPECT_NE(netBindComponent, nullptr);
-            netBindComponent->PreInit(entity.get(), PrefabEntityId{ AZ::Name("test"), 1 }, netId, role);
-            entity->Init();
+            if (const auto netBindComponent = entity->FindComponent<Multiplayer::NetBindComponent>())
+            {
+                netBindComponent->PreInit(entity.get(), PrefabEntityId{ AZ::Name("test"), 1 }, netId, role);
+                entity->Init();
+            }
         }
 
         static void StopEntity(const AZStd::unique_ptr<AZ::Entity>& entity)
         {
-            const auto netBindComponent = entity->FindComponent<Multiplayer::NetBindComponent>();
-            EXPECT_NE(netBindComponent, nullptr);
-            netBindComponent->StopEntity();
+            if (const auto netBindComponent = entity->FindComponent<Multiplayer::NetBindComponent>())
+            {
+                netBindComponent->StopEntity();
+            }
         }
 
         static void StopAndDeactivateEntity(AZStd::unique_ptr<AZ::Entity>& entity)
@@ -303,6 +306,29 @@ namespace Multiplayer
             inSerializer.Serialize(reinterpret_cast<uint32_t&>(netParentId),
                 "parentEntityId", /* Derived from NetworkTransformComponent.AutoComponent.xml */
                 AZStd::numeric_limits<uint32_t>::min(), AZStd::numeric_limits<uint32_t>::max());
+
+            NetworkOutputSerializer outSerializer(buffer.begin(), bufferSize);
+
+            ReplicationRecord notifyRecord = currentRecord;
+            entity->FindComponent<NetworkTransformComponent>()->SerializeStateDeltaMessage(currentRecord, outSerializer);
+            entity->FindComponent<NetworkTransformComponent>()->NotifyStateDeltaChanges(notifyRecord);
+        }
+
+        void SetTranslationOnNetworkTransform(const AZStd::unique_ptr<AZ::Entity>& entity, AZ::Vector3 translation)
+        {
+            /* Derived from NetworkTransformComponent.AutoComponent.xml */
+            constexpr int totalBits = 6 /*NetworkTransformComponentInternal::AuthorityToClientDirtyEnum::Count*/;
+            constexpr int translationBit = 1 /*NetworkTransformComponentInternal::AuthorityToClientDirtyEnum::translation_DirtyFlag*/;
+
+            ReplicationRecord currentRecord;
+            currentRecord.m_authorityToClient.AddBits(totalBits);
+            currentRecord.m_authorityToClient.SetBit(translationBit, true);
+
+            constexpr uint32_t bufferSize = 100;
+            AZStd::array<uint8_t, bufferSize> buffer = {};
+            NetworkInputSerializer inSerializer(buffer.begin(), bufferSize);
+            static_cast<ISerializer*>(&inSerializer)->Serialize(translation,
+                "translation" /* Derived from NetworkTransformComponent.AutoComponent.xml */);
 
             NetworkOutputSerializer outSerializer(buffer.begin(), bufferSize);
 

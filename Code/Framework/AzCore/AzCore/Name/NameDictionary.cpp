@@ -21,23 +21,18 @@ namespace AZ
 
     namespace NameDictionaryInternal
     {
-        static AZ::EnvironmentVariable<NameDictionary*> s_instance = nullptr;
+        static AZ::EnvironmentVariable<NameDictionary> s_instance = nullptr;
     }
 
     void NameDictionary::Create()
     {
         using namespace NameDictionaryInternal;
 
-        AZ_Assert(!s_instance || !s_instance.Get(), "NameDictionary already created!");
+        AZ_Assert(!s_instance, "NameDictionary already created!");
 
         if (!s_instance)
         {
-            s_instance = AZ::Environment::CreateVariable<NameDictionary*>(NameDictionaryInstanceName);
-        }
-
-        if (!s_instance.Get())
-        {
-            s_instance.Set(aznew NameDictionary());
+            s_instance = AZ::Environment::CreateVariable<NameDictionary>(NameDictionaryInstanceName);
         }
     }
 
@@ -46,8 +41,7 @@ namespace AZ
         using namespace NameDictionaryInternal;
 
         AZ_Assert(s_instance, "NameDictionary not created!");
-        delete (*s_instance);
-        *s_instance = nullptr;
+        s_instance.Reset();
     }
 
     bool NameDictionary::IsReady()
@@ -56,10 +50,10 @@ namespace AZ
 
         if (!s_instance)
         {
-            s_instance = Environment::FindVariable<NameDictionary*>(NameDictionaryInstanceName);
+            s_instance = Environment::FindVariable<NameDictionary>(NameDictionaryInstanceName);
         }
 
-        return s_instance && *s_instance;
+        return s_instance.IsConstructed();
     }
 
     NameDictionary& NameDictionary::Instance()
@@ -68,12 +62,12 @@ namespace AZ
 
         if (!s_instance)
         {
-            s_instance = Environment::FindVariable<NameDictionary*>(NameDictionaryInstanceName);
+            s_instance = Environment::FindVariable<NameDictionary>(NameDictionaryInstanceName);
         }
 
-        AZ_Assert(s_instance && *s_instance, "NameDictionary has not been initialized yet.");
+        AZ_Assert(s_instance.IsConstructed(), "NameDictionary has not been initialized yet.");
 
-        return *(*s_instance);
+        return *s_instance;
     }
     
     NameDictionary::NameDictionary()

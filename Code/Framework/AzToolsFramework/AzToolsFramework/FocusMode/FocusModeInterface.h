@@ -10,6 +10,7 @@
 
 #include <AzCore/Component/EntityId.h>
 #include <AzCore/Interface/Interface.h>
+#include <AzCore/Component/Entity.h>
 #include <AzCore/Serialization/SerializeContext.h>
 
 #include <AzFramework/Entity/EntityContextBus.h>
