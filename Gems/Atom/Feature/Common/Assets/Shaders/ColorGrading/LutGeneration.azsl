@@ -99,12 +99,13 @@ float3 ColorGrade(float3 linearColor)
 {
     float3 color = TransformColor(linearColor, ColorSpaceId::LinearSRGB, ColorSpaceId::ACEScg);
     color = ColorGradePostExposure(color, PassSrg::m_colorGradingExposure);
-    color = ColorGradeKelvinColorTemp(color, PassSrg::m_whiteBalanceKelvin);
+    //color = ColorGradeKelvinColorTemp(color, PassSrg::m_whiteBalanceKelvin);
     color = ColorGradingContrast(color, AcesCcMidGrey, PassSrg::m_colorGradingContrast);
     color = ColorGradeColorFilter(color, PassSrg::m_colorFilterSwatch.rgb,
                                          PassSrg::m_colorFilterMultiply, PassSrg::m_colorFilterIntensity);
     color = max(color, 0.0);
     color = ColorGradeSaturation(color, PassSrg::m_colorGradingPreSaturation);
+
     color = ColorGradeSplitTone(color, PassSrg::m_splitToneBalance, PassSrg::m_splitToneWeight,
                                         PassSrg::m_splitToneShadowsColor, PassSrg::m_splitToneHighlightsColor);
     color = ColorGradeChannelMixer(color, PassSrg::m_channelMixingRed, PassSrg::m_channelMixingGreen, PassSrg::m_channelMixingBlue);
@@ -112,8 +113,10 @@ float3 ColorGrade(float3 linearColor)
     color = ColorGradeShadowsMidtonesHighlights(color, PassSrg::m_smhShadowsStart, PassSrg::m_smhShadowsEnd,
                                                     PassSrg::m_smhHighlightsStart, PassSrg::m_smhHighlightsEnd, PassSrg::m_smhWeight,
                                                     PassSrg::m_smhShadowsColor, PassSrg::m_smhMidtonesColor, PassSrg::m_smhHighlightsColor);
-    color = ColorGradeHueShift(color, PassSrg::m_colorGradingHueShift);
+
     color = ColorGradeSaturation(color, PassSrg::m_colorGradingPostSaturation);
+
+    color = ColorGradeHueShift(color, PassSrg::m_colorGradingHueShift);
     color = TransformColor(color, ColorSpaceId::ACEScg, ColorSpaceId::LinearSRGB);
     return max(color.rgb, 0.0);
 }
@@ -123,27 +126,10 @@ struct PSOutput
     float4 m_lutOutput : SV_Target0;
 };
 
-float3 GetSourceLutLinearColor(float3 baseColor, Texture3D<float4> sourceLut, ShaperType shaperType, float shaperBias, float shaperScale)
-{
-    // Convert from reference linearColor to the lutCoordinate for this Lut
-    float3 lutCoord = LinearToShaper(baseColor, shaperType, shaperBias, shaperScale);
-
-    // Adjust coordinate to the domain excluding the outer half texel in all directions
-    uint3 outputDimensions;
-    sourceLut.GetDimensions(outputDimensions.x, outputDimensions.y, outputDimensions.z);
-    float3 coordBias = 1.0 / (2.0 * outputDimensions);
-    float3 coordScale = (outputDimensions - 1.0) / outputDimensions;
-    lutCoord = (lutCoord * coordScale) + coordBias;
-
-    float3 lutColor = sourceLut.SampleLevel(PassSrg::LinearSampler, lutCoord, 0).rgb;
-    // Convert to linear
-    float3 linearColor = ShaperToLinear(lutColor, shaperType, shaperBias, shaperScale);
-    return linearColor;
-}
-
 PSOutput MainPS(VSOutput IN)
 {
     ShaperType shaperType = (ShaperType)PassSrg::m_shaperType;
+
 
     PSOutput OUT;
 
@@ -154,40 +140,29 @@ PSOutput MainPS(VSOutput IN)
     {
         case LutResolution::Lut16x16x16:
         {
-            // This seems correct.
             baseCoords = convert2Dto3DLutCoords(IN.m_texCoord, 256, 16);
             lutColor = PassSrg::m_identityLut16x16x16.Sample(PassSrg::PointSampler, baseCoords, 0.0).rgb;
             break;
         }
         case LutResolution::Lut32x32x32:
         {
+            // This seems correct intuitively, but is turning grey into green!
             baseCoords = convert2Dto3DLutCoords(IN.m_texCoord, 1024, 32);
             lutColor = PassSrg::m_identityLut32x32x32.Sample(PassSrg::PointSampler, baseCoords, 0.0).rgb;
             break;
         }
         case LutResolution::Lut64x64x64:
         {
-            // This doesn't look right.
             baseCoords = convert2Dto3DLutCoords(IN.m_texCoord, 4096, 64);
-            float3 baseColor = ShaperToLinear(baseCoords, shaperType, PassSrg::m_shaperBias, PassSrg::m_shaperScale);
-            //lutColor = PassSrg::m_identityLut64x64x64.Sample(PassSrg::PointSampler, baseCoords, 0.0).rgb;
-            lutColor = GetSourceLutLinearColor(
-                baseColor,
-                PassSrg::m_identityLut64x64x64,
-                shaperType,
-                PassSrg::m_shaperBias,
-                PassSrg::m_shaperScale
-            );
+            lutColor = PassSrg::m_identityLut64x64x64.Sample(PassSrg::PointSampler, baseCoords, 0.0).rgb;
             break;
         }
     }
 
-    // color grade in linear sapce
     float3 gradedColor = ColorGrade(lutColor);
 
-    float3 shapedColor = LinearToShaper(gradedColor, shaperType, PassSrg::m_shaperBias, PassSrg::m_shaperScale);
-    float3 clampedColor = saturate(gradedColor);
+    gradedColor = ShaperToLinear(gradedColor, shaperType, PassSrg::m_shaperBias, PassSrg::m_shaperScale);
 
-    OUT.m_lutOutput = float4(clampedColor, 1.0);
+    OUT.m_lutOutput = float4(gradedColor, 1.0);
     return OUT;
 }

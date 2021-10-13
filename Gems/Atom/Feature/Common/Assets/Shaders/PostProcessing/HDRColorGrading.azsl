@@ -64,7 +64,7 @@ ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
 float3 ColorGrade(float3 frameColor)
 {
     frameColor = ColorGradePostExposure(frameColor, PassSrg::m_colorGradingExposure);
-    frameColor = ColorGradeKelvinColorTemp(frameColor, PassSrg::m_whiteBalanceKelvin);
+    //frameColor = ColorGradeKelvinColorTemp(frameColor, PassSrg::m_whiteBalanceKelvin);
     frameColor = ColorGradingContrast(frameColor, AcesCcMidGrey, PassSrg::m_colorGradingContrast);
     frameColor = ColorGradeColorFilter(frameColor, PassSrg::m_colorFilterSwatch.rgb,
                                          PassSrg::m_colorFilterMultiply, PassSrg::m_colorFilterIntensity);

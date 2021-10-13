@@ -250,7 +250,7 @@ namespace AZ
             uuid.ToString(uuidString);
 
             m_currentTiffFilePath = AZStd::string::format(TempTiffFilePath, uuidString.c_str());
-            m_currentLutFilePath = "@devassets@/" + AZStd::string::format(GeneratedLutRelativePath, uuidString.c_str());
+            m_currentLutFilePath = "@projectroot@/" + AZStd::string::format(GeneratedLutRelativePath, uuidString.c_str());
 
             m_lutGenerationInProgress = true;
             m_controller.m_configuration.m_generateLut = true;
