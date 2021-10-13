@@ -106,7 +106,7 @@
                 // "exclude": "mac"
                 // }
 
-                "ScanFolder Game": {
+                "ScanFolder Project/Assets": {
                     "watch": "@PROJECTROOT@",
                     "display": "@PROJECTNAME@",
                     "recursive": 1,

@@ -1,11 +1,6 @@
 {
     "Amazon": {
         "AssetProcessor": {
-            "ScanFolder Game": {
-                "watch": "@PROJECTROOT@/Assets",
-                "recursive": 1,
-                "order": 0
-            },
             "ScanFolder Project/ShaderLib": {
                 "watch": "@PROJECTROOT@/ShaderLib",
                 "recursive": 1,
