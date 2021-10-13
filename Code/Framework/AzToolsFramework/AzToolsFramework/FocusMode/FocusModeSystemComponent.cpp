@@ -71,9 +71,6 @@ namespace AzToolsFramework
             return;
         }
 
-        m_focusRoot = entityId;
-        FocusModeNotificationBus::Broadcast(&FocusModeNotifications::OnEditorFocusChanged, m_focusRoot);
-
         if (auto tracker = AZ::Interface<ViewportEditorModeTrackerInterface>::Get();
             tracker != nullptr)
         {
@@ -86,6 +83,9 @@ namespace AzToolsFramework
                 tracker->DeactivateMode({ GetEntityContextId() }, ViewportEditorMode::Focus);
             }
         }
+
+        m_focusRoot = entityId;
+        FocusModeNotificationBus::Broadcast(&FocusModeNotifications::OnEditorFocusChanged, m_focusRoot);
     }
 
     void FocusModeSystemComponent::ClearFocusRoot([[maybe_unused]] AzFramework::EntityContextId entityContextId)
