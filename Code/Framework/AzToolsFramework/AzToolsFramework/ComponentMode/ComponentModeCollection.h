@@ -9,6 +9,7 @@
 #pragma once
 
 #include <AzCore/std/containers/vector.h>
+#include <AzToolsFramework/API/ComponentModeCollectionInterface.h>
 #include <AzToolsFramework/ComponentMode/ComponentModeViewportUi.h>
 #include <AzToolsFramework/ComponentMode/EditorComponentModeBus.h>
 
@@ -21,6 +22,7 @@ namespace AzToolsFramework
     {
         /// Manages all individual ComponentModes for a single instance of Editor wide ComponentMode.
         class ComponentModeCollection
+            : public ComponentModeCollectionInterface
         {
         public:
             AZ_CLASS_ALLOCATOR_DECL
@@ -88,6 +90,9 @@ namespace AzToolsFramework
             /// Populate Viewport UI elements to use for this ComponentMode.
             /// Called once each time a ComponentMode is added.
             void PopulateViewportUi();
+
+            // ComponentModeCollectionInterface overrides ...
+            AZStd::vector<AZ::Uuid> GetComponentTypes() const override;
 
         private:
             // Internal helper used by Select[|Prev|Next]ActiveComponentMode

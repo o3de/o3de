@@ -114,6 +114,7 @@ ForwardPassOutput TerrainPBR_MainPassPS(VSOutput IN)
     detailNormal = ReorientTangentSpaceNormal(macroNormal, detailNormal);
     surface.normal = lerp(detailNormal, macroNormal, detailFactor);
     surface.normal = normalize(surface.normal);
+    surface.vertexNormal = normalize(IN.m_normal);
 
     // ------- Base Color -------
     float3 detailColor = GetBaseColorInput(TerrainMaterialSrg::m_baseColorMap, TerrainMaterialSrg::m_sampler, detailUv, TerrainMaterialSrg::m_baseColor.rgb, o_baseColor_useTexture);

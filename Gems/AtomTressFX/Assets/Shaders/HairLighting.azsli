@@ -197,6 +197,7 @@ float3 CalculateLighting(
     surface.position = vPositionWS;
     surface.tangent = vTangent;         // Redundant - will be calculated per light
     surface.normal = float3(0, 0, 0);   // Will fail lights that did not initialize properly. 
+    surface.vertexNormal = float3(0,0,0); // [To Do] - vertex normals are not handled yet in the hair shader.
     surface.roughnessLinear = material.m_roughness;
     surface.cuticleTilt = material.m_cuticleTilt;
     surface.thickness = thickness;
