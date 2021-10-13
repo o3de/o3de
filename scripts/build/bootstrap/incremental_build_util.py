@@ -333,14 +333,14 @@ def mount_volume_to_device(created):
             attribute disk clear readonly
             """.encode('utf-8'))  # assume disk # for now
 
-        if created:
-            print('Creating filesystem on new volume')
-            f.write("""create partition primary
-            select partition 1
-            format quick fs=ntfs
-            assign
-            active
-            """.encode('utf-8'))
+            if created:
+                print('Creating filesystem on new volume')
+                f.write("""create partition primary
+                select partition 1
+                format quick fs=ntfs
+                assign
+                active
+                """.encode('utf-8'))
 
         subprocess.call(['diskpart', '/s', f.name])
 
