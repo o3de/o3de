@@ -40,7 +40,7 @@ public:
         AWSCoreNotificationsBus::Handler::BusConnect();
     }
 
-    ~AWSCoreNotificationsBusMock()
+    ~AWSCoreNotificationsBusMock() override
     {
         AWSCoreNotificationsBus::Handler::BusDisconnect();
     }

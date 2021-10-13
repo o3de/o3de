@@ -80,6 +80,20 @@ def RigidBody_KinematicModeWorks():
     ramp_id = general.find_game_entity("Ramp")
     Report.result(Tests.find_ramp, ramp_id.IsValid())
 
+    # 2.1) setup collision handler
+    class RampTouched:
+        value = False
+
+    def on_collision_begin(args):
+        other_id = args[0]
+        if other_id.Equal(ramp_id):
+            Report.info("Box touched ramp")
+            RampTouched.value = True
+
+    handler = azlmbr.physics.CollisionNotificationBusHandler()
+    handler.connect(box_id)
+    handler.add_callback("OnCollisionBegin", on_collision_begin)
+
     # 3) Check for kinematic ramp and not kinematic box
     box_kinematic = azlmbr.physics.RigidBodyRequestBus(azlmbr.bus.Event, "IsKinematic", box_id)
     Report.result(Tests.box_is_not_kinematic, not box_kinematic)
@@ -98,21 +112,7 @@ def RigidBody_KinematicModeWorks():
     ramp_pos_start = azlmbr.components.TransformBus(azlmbr.bus.Event, "GetWorldTranslation", ramp_id)
     Report.info("Ramp's initial position: {}".format(ramp_pos_start))
 
-    # 6) Check to see that the box hits the ramp
-    class RampTouched:
-        value = False
-
-    def on_collision_begin(args):
-        other_id = args[0]
-        if other_id.Equal(ramp_id):
-            Report.info("Box touched ramp")
-            RampTouched.value = True
-
-    handler = azlmbr.physics.CollisionNotificationBusHandler()
-    handler.connect(box_id)
-    handler.add_callback("OnCollisionBegin", on_collision_begin)
-
-    # 6.5) Wait for the box to touch the ramp or timeout
+    # 6) Wait for the box to touch the ramp or timeout
     helper.wait_for_condition(lambda: RampTouched.value, TIME_OUT)
     Report.result(Tests.box_touched_ramp, RampTouched.value)
 

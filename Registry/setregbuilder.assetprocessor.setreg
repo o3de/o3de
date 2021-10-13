@@ -25,7 +25,8 @@
                     "/Amazon/AzCore/Bootstrap/project_cache_path",
                     "/Amazon/AzCore/Bootstrap/project_user_path",
                     "/Amazon/AzCore/Bootstrap/project_log_path",
-                    "/Amazon/Project/Settings/Build/project_build_path"
+                    "/Amazon/Project/Settings/Build/project_build_path",
+		    "/O3DE/Runtime"
                 ]
             }
         }

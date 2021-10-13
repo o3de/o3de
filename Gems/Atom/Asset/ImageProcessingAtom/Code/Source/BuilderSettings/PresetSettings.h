@@ -31,7 +31,8 @@ namespace ImageProcessingAtom
         bool operator== (const PresetSettings& other) const;
         static void Reflect(AZ::ReflectContext* context);
         
-        //unique id for the preset
+        // unique id for the preset
+        // this uuid will be deprecated. The preset name will be used as an unique id for the preset
         AZ::Uuid m_uuid = 0;
 
         PresetName m_name;

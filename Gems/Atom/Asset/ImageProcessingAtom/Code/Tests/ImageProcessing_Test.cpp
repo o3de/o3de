@@ -20,6 +20,7 @@
 #include <AzCore/Jobs/JobManager.h>
 #include <AzCore/Memory/Memory.h>
 #include <AzCore/Memory/PoolAllocator.h>
+#include <AzCore/Name/NameDictionary.h>
 #include <AzCore/RTTI/ReflectionManager.h>
 #include <AzCore/Serialization/DataPatch.h>
 #include <AzCore/Serialization/Json/JsonSystemComponent.h>
@@ -145,6 +146,8 @@ namespace UnitTest
             AZ::Data::AssetManager::Descriptor desc;
             AZ::Data::AssetManager::Create(desc);
 
+            AZ::NameDictionary::Create();
+
             m_assetHandlers.emplace_back(AZ::RPI::MakeAssetHandler<AZ::RPI::ImageMipChainAssetHandler>());
             m_assetHandlers.emplace_back(AZ::RPI::MakeAssetHandler<AZ::RPI::StreamingImageAssetHandler>());
             m_assetHandlers.emplace_back(AZ::RPI::MakeAssetHandler<AZ::RPI::StreamingImagePoolAssetHandler>());
@@ -153,6 +156,7 @@ namespace UnitTest
 
             //prepare reflection
             m_context = AZStd::make_unique<AZ::SerializeContext>();
+            AZ::Name::Reflect(m_context.get());
             BuilderPluginComponent::Reflect(m_context.get());
             AZ::DataPatch::Reflect(m_context.get());
             AZ::RHI::ReflectSystemComponent::Reflect(m_context.get());
@@ -164,6 +168,7 @@ namespace UnitTest
             m_jsonRegistrationContext = AZStd::make_unique<AZ::JsonRegistrationContext>();
             m_jsonSystemComponent = AZStd::make_unique<AZ::JsonSystemComponent>();
             m_jsonSystemComponent->Reflect(m_jsonRegistrationContext.get());
+            AZ::Name::Reflect(m_jsonRegistrationContext.get());
             BuilderPluginComponent::Reflect(m_jsonRegistrationContext.get());
 
             // Setup job context for job system
@@ -227,13 +232,17 @@ namespace UnitTest
             m_jsonRegistrationContext->EnableRemoveReflection();
             m_jsonSystemComponent->Reflect(m_jsonRegistrationContext.get());
             BuilderPluginComponent::Reflect(m_jsonRegistrationContext.get());
+            AZ::Name::Reflect(m_jsonRegistrationContext.get());
             m_jsonRegistrationContext->DisableRemoveReflection();
             m_jsonRegistrationContext.reset();
             m_jsonSystemComponent.reset();
 
             m_context.reset();
             BuilderSettingManager::DestroyInstance();
+
             CPixelFormats::DestroyInstance();
+
+            AZ::NameDictionary::Destroy();
 
             AZ::Data::AssetManager::Destroy();
 
@@ -426,94 +435,12 @@ namespace UnitTest
             return isDifferent;
         }
 
-
-        bool CompareDDSImage(const QString& imagePath1, const QString& imagePath2, QString& output)
-        {
-            IImageObjectPtr image1, alphaImage1, image2, alphaImage2;
-
-
-            image1 = IImageObjectPtr(DdsLoader::LoadImageFromFileLegacy(imagePath1.toUtf8().constData()));
-            if (image1 && image1->HasImageFlags(EIF_AttachedAlpha))
-            {
-                if (image1->HasImageFlags(EIF_Splitted))
-                {
-                    alphaImage1 = IImageObjectPtr(DdsLoader::LoadImageFromFileLegacy(QString(imagePath1 + ".a").toUtf8().constData()));
-                }
-                else
-                {
-                    alphaImage1 = IImageObjectPtr(DdsLoader::LoadAttachedImageFromDdsFileLegacy(imagePath1.toUtf8().constData(), image1));
-                }
-            }
-
-            image2 = IImageObjectPtr(DdsLoader::LoadImageFromFileLegacy(imagePath2.toUtf8().constData()));
-            if (image2 && image2->HasImageFlags(EIF_AttachedAlpha))
-            {
-                if (image2->HasImageFlags(EIF_Splitted))
-                {
-                    alphaImage2 = IImageObjectPtr(DdsLoader::LoadImageFromFileLegacy(QString(imagePath2 + ".a").toUtf8().constData()));
-                }
-                else
-                {
-                    alphaImage2 = IImageObjectPtr(DdsLoader::LoadAttachedImageFromDdsFileLegacy(imagePath2.toUtf8().constData(), image2));
-                }
-            }
-
-            if (!image1 && !image2)
-            {
-                output += "Cannot load both image file! ";
-                return false;
-            }
-            bool isDifferent = false;
-
-            isDifferent = GetComparisonResult(image1, image2, output);
-
-
-            QFileInfo fi(imagePath1);
-            AZStd::string imageName = fi.baseName().toUtf8().constData();
-            SaveImageToFile(image1, imageName + "_new");
-            SaveImageToFile(image2, imageName + "_old");
-
-            if (alphaImage1 || alphaImage2)
-            {
-                isDifferent |= GetComparisonResult(alphaImage1, alphaImage2, output);
-            }
-
-            return isDifferent;
-        }
     };
 
     // test CPixelFormats related functions
     TEST_F(ImageProcessingTest, TestPixelFormats)
     {
         CPixelFormats& pixelFormats = CPixelFormats::GetInstance();
-
-        //verify names which was used for legacy rc.ini
-        ASSERT_TRUE(pixelFormats.FindPixelFormatByLegacyName("BC7t") == ePixelFormat_BC7t);
-        ASSERT_TRUE(pixelFormats.FindPixelFormatByLegacyName("ETC2A") == ePixelFormat_ETC2a);
-        ASSERT_TRUE(pixelFormats.FindPixelFormatByLegacyName("PVRTC4") == ePixelFormat_PVRTC4);
-        ASSERT_TRUE(pixelFormats.FindPixelFormatByLegacyName("BC1") == ePixelFormat_BC1);
-        ASSERT_TRUE(pixelFormats.FindPixelFormatByLegacyName("ETC2") == ePixelFormat_ETC2);
-        ASSERT_TRUE(pixelFormats.FindPixelFormatByLegacyName("BC1a") == ePixelFormat_BC1a);
-        ASSERT_TRUE(pixelFormats.FindPixelFormatByLegacyName("BC3") == ePixelFormat_BC3);
-        ASSERT_TRUE(pixelFormats.FindPixelFormatByLegacyName("BC7") == ePixelFormat_BC7);
-        ASSERT_TRUE(pixelFormats.FindPixelFormatByLegacyName("BC5s") == ePixelFormat_BC5s);
-        ASSERT_TRUE(pixelFormats.FindPixelFormatByLegacyName("EAC_RG11") == ePixelFormat_EAC_RG11);
-        ASSERT_TRUE(pixelFormats.FindPixelFormatByLegacyName("BC4") == ePixelFormat_BC4);
-        ASSERT_TRUE(pixelFormats.FindPixelFormatByLegacyName("EAC_R11") == ePixelFormat_EAC_R11);
-        ASSERT_TRUE(pixelFormats.FindPixelFormatByLegacyName("A8R8G8B8") == ePixelFormat_R8G8B8A8);
-        ASSERT_TRUE(pixelFormats.FindPixelFormatByLegacyName("BC6UH") == ePixelFormat_BC6UH);
-        ASSERT_TRUE(pixelFormats.FindPixelFormatByLegacyName("R9G9B9E5") == ePixelFormat_R9G9B9E5);
-        ASSERT_TRUE(pixelFormats.FindPixelFormatByLegacyName("X8R8G8B8") == ePixelFormat_R8G8B8X8);
-        ASSERT_TRUE(pixelFormats.FindPixelFormatByLegacyName("A16B16G16R16F") == ePixelFormat_R16G16B16A16F);
-        ASSERT_TRUE(pixelFormats.FindPixelFormatByLegacyName("G8R8") == ePixelFormat_R8G8);
-        ASSERT_TRUE(pixelFormats.FindPixelFormatByLegacyName("G16R16") == ePixelFormat_R16G16);
-        ASSERT_TRUE(pixelFormats.FindPixelFormatByLegacyName("G16R16F") == ePixelFormat_R16G16F);
-
-        //some legacy format need to be mapping to new format.
-        ASSERT_TRUE(pixelFormats.FindPixelFormatByLegacyName("DXT1") == ePixelFormat_BC1);
-        ASSERT_TRUE(pixelFormats.FindPixelFormatByLegacyName("DXT5") == ePixelFormat_BC3);
-
-        //calculate mipmap count. no cubemap support at this moment
 
         //for all the non-compressed textures, if there minimum required texture size is 1x1
         for (uint32 i = 0; i < ePixelFormat_Count; i++)
@@ -543,13 +470,6 @@ namespace UnitTest
         }
 
         //check function IsImageSizeValid && EvaluateImageDataSize function
-        ASSERT_TRUE(pixelFormats.IsImageSizeValid(ePixelFormat_PVRTC4, 2, 1, false) == false);
-        ASSERT_TRUE(pixelFormats.IsImageSizeValid(ePixelFormat_PVRTC4, 4, 4, false) == false);
-        ASSERT_TRUE(pixelFormats.IsImageSizeValid(ePixelFormat_PVRTC4, 16, 16, false) == true);
-        ASSERT_TRUE(pixelFormats.IsImageSizeValid(ePixelFormat_PVRTC4, 16, 32, false) == false);
-        ASSERT_TRUE(pixelFormats.IsImageSizeValid(ePixelFormat_PVRTC4, 34, 34, false) == false);
-        ASSERT_TRUE(pixelFormats.IsImageSizeValid(ePixelFormat_PVRTC4, 256, 256, false) == true);
-
         ASSERT_TRUE(pixelFormats.IsImageSizeValid(ePixelFormat_BC1, 2, 1, false) == false);
         ASSERT_TRUE(pixelFormats.IsImageSizeValid(ePixelFormat_BC1, 16, 16, false) == true);
         ASSERT_TRUE(pixelFormats.IsImageSizeValid(ePixelFormat_BC1, 16, 32, false) == true);
@@ -834,9 +754,7 @@ namespace UnitTest
             if (formatInfo->bCompressed)
             {
                 // skip ASTC formats which are tested in TestConvertASTCCompressor
-                if (!IsASTCFormat(pixelFormat)
-                    && pixelFormat != ePixelFormat_PVRTC2 && pixelFormat != ePixelFormat_PVRTC4
-                    && !IsETCFormat(pixelFormat)) // skip ETC since it's very slow
+                if (!IsASTCFormat(pixelFormat))
                 {
                     compressedFormats.push_back(pixelFormat);
                 }
@@ -1112,62 +1030,13 @@ namespace UnitTest
         }
     }
 
-    TEST_F(ImageProcessingTest, DISABLED_CompareOutputImage)
-    {
-        AZStd::string curretTextureFolder = "../TestAssets/TextureAssets/assets_new/textures";
-        AZStd::string oldTextureFolder = "../TestAssets/TextureAssets/assets_old/textures";
-        bool outputOnlyDifferent = false;
-        QDirIterator it(curretTextureFolder.c_str(), QStringList() << "*.dds", QDir::Files, QDirIterator::Subdirectories);
-        QFile f("../texture_comparison_output.csv");
-        f.open(QIODevice::ReadWrite | QIODevice::Truncate);
-        // Write a header for csv file
-        f.write("Texture Name, Path, Mip new/old, MipDiff, Format new/old, Flag new/old, MemSize new/old, MemDiff, Error, AlphaMip new/old, AlphaMipDiff, AlphaFormat new/old, AlphaFlag new/old, AlphaMemSize new/old, AlphaMemDiff, AlphaError\r\n");
-        int i = 0;
-        while (it.hasNext())
-        {
-            i++;
-            it.next();
-
-            QString fileName = it.fileName();
-            QString newFilePath = it.filePath();
-            QString sharedPath = QString(newFilePath).remove(curretTextureFolder.c_str());
-            QString oldFilePath = QString(oldTextureFolder.c_str()) + sharedPath;
-            QString output;
-            if (QFile::exists(oldFilePath))
-            {
-                bool isDifferent = CompareDDSImage(newFilePath, oldFilePath, output);
-                if (outputOnlyDifferent && !isDifferent)
-                {
-                    continue;
-                }
-                else
-                {
-                    f.write(fileName.toUtf8().constData());
-                    f.write(",");
-                    f.write(sharedPath.toUtf8().constData());
-                    f.write(output.toUtf8().constData());
-                }
-            }
-            else
-            {
-                f.write(fileName.toUtf8().constData());
-                f.write(",");
-                f.write(sharedPath.toUtf8().constData());
-                output += ",No old file for comparison!";
-                f.write(output.toUtf8().constData());
-            }
-            f.write("\r\n");
-        }
-        f.close();
-    }
-
     TEST_F(ImageProcessingTest, TextureSettingReflect_SerializingModernDataInAndOut_WritesAndParsesFileAccurately)
     {
         AZStd::string filepath = "test.xml";
 
         // Fill-in structure with test data
         TextureSettings fakeTextureSettings;
-        fakeTextureSettings.m_preset = AZ::Uuid::CreateRandom();
+        fakeTextureSettings.m_preset = "testPreset";
         fakeTextureSettings.m_sizeReduceLevel = 0;
         fakeTextureSettings.m_suppressEngineReduce = true;
         fakeTextureSettings.m_enableMipmap = false;
