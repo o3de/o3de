@@ -325,24 +325,22 @@ def mount_volume_to_device(created):
         # Verify drive is in an offline state.
         # Some Windows configs will automatically set new drives as online causing diskpart setup script to fail.
         offline_drive()
-        
-        f = tempfile.NamedTemporaryFile(delete=False)
-        f.write("""
-      select disk 1
-      online disk
-      attribute disk clear readonly
-      """.encode('utf-8'))  # assume disk # for now
+
+        with tempfile.NamedTemporaryFile(delete=False) as f:
+            f.write("""
+            select disk 1
+            online disk
+            attribute disk clear readonly
+            """.encode('utf-8'))  # assume disk # for now
 
         if created:
             print('Creating filesystem on new volume')
             f.write("""create partition primary
-          select partition 1
-          format quick fs=ntfs
-          assign
-          active
-          """.encode('utf-8'))
-
-        f.close()
+            select partition 1
+            format quick fs=ntfs
+            assign
+            active
+            """.encode('utf-8'))
 
         subprocess.call(['diskpart', '/s', f.name])
 
