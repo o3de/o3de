@@ -417,11 +417,11 @@ namespace AzToolsFramework
         AZ::TransformBus::EventResult(descendantIds, entityId, &AZ::TransformBus::Events::GetAllDescendants);
 
         // Update cached values
-        for (AZ::EntityId descendantId : descendantIds)
+        if (auto containerEntityInterface = AZ::Interface<ContainerEntityInterface>::Get())
         {
-            if (AZStd::optional<size_t> entityIndex = GetVisibleEntityIndexFromId(descendantId))
+            for (AZ::EntityId descendantId : descendantIds)
             {
-                if (auto containerEntityInterface = AZ::Interface<ContainerEntityInterface>::Get())
+                if (AZStd::optional<size_t> entityIndex = GetVisibleEntityIndexFromId(descendantId))
                 {
                     m_impl->m_visibleEntityDatas[entityIndex.value()].m_descendantOfClosedContainer =
                         containerEntityInterface->IsUnderClosedContainerEntity(descendantId);
@@ -450,11 +450,11 @@ namespace AzToolsFramework
             descendantsSet.insert(newDescendantIds.begin(), newDescendantIds.end());
 
             // Update cached values
-            for (const AZ::EntityId& descendantId : descendantsSet)
+            if (auto focusModeInterface = AZ::Interface<FocusModeInterface>::Get())
             {
-                if (AZStd::optional<size_t> entityIndex = GetVisibleEntityIndexFromId(descendantId))
+                for (const AZ::EntityId& descendantId : descendantsSet)
                 {
-                    if (auto focusModeInterface = AZ::Interface<FocusModeInterface>::Get())
+                    if (AZStd::optional<size_t> entityIndex = GetVisibleEntityIndexFromId(descendantId))
                     {
                         m_impl->m_visibleEntityDatas[entityIndex.value()].m_inFocus = focusModeInterface->IsInFocusSubTree(descendantId);
                     }
@@ -464,11 +464,11 @@ namespace AzToolsFramework
         else
         {
             // If either focus was the invalid entity, refresh all entities.
-            for (size_t entityIndex = 0; entityIndex < m_impl->m_visibleEntityDatas.size(); ++entityIndex)
+            if (auto focusModeInterface = AZ::Interface<FocusModeInterface>::Get())
             {
-                if (AZ::EntityId descendantId = GetVisibleEntityId(entityIndex);  descendantId.IsValid())
+                for (size_t entityIndex = 0; entityIndex < m_impl->m_visibleEntityDatas.size(); ++entityIndex)
                 {
-                    if (auto focusModeInterface = AZ::Interface<FocusModeInterface>::Get())
+                    if (AZ::EntityId descendantId = GetVisibleEntityId(entityIndex); descendantId.IsValid())
                     {
                         m_impl->m_visibleEntityDatas[entityIndex].m_inFocus = focusModeInterface->IsInFocusSubTree(descendantId);
                     }
