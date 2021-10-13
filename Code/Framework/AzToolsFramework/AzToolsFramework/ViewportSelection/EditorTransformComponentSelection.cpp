@@ -1845,7 +1845,7 @@ namespace AzToolsFramework
         if (mouseInteraction.m_mouseEvent == ViewportInteraction::MouseEvent::DoubleClick &&
             mouseInteraction.m_mouseInteraction.m_mouseButtons.Left())
         {
-            if (entityIdsUnderCursor.IsChildEntity())
+            if (entityIdsUnderCursor.IsPrefabEntity())
             {
                  auto prefabFocusInterface = AZ::Interface<Prefab::PrefabFocusInterface>::Get();
                  if (prefabFocusInterface)

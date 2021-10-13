@@ -136,7 +136,7 @@ namespace AzToolsFramework
         return m_rootEntityId;
     }
 
-    bool EntityIdUnderCursor::IsChildEntity() const
+    bool EntityIdUnderCursor::IsPrefabEntity() const
     {
         return m_entityId != m_rootEntityId;
     }

@@ -36,9 +36,17 @@ namespace AzToolsFramework
         EntityIdUnderCursor(AZ::EntityId entityId);
         EntityIdUnderCursor(AZ::EntityId entityId, AZ::EntityId rootEntityId);
 
+        //! Returns the entity id under the cursor (if any).
+        //! @note In the case of no entity id under the cursor, an invalid entity id is returned.
         AZ::EntityId GetEntityId() const;
+
+        //! Returns the root entity id if the entity id under the cursor is part of a prefab, otherwise returns the entity id.
+        //! @note In the case of no entity id under the cursor, an invalid entity id is returned.
         AZ::EntityId GetRootEntityId() const;
-        bool IsChildEntity() const;
+
+        //! Returns true if the entity id under the cursor is part of a prefab, otherwise false.
+        //! @note In the case of no entity id under the cursor, true is returned (although consider this behavior undefined).
+        bool IsPrefabEntity() const;
 
     private:
         AZ::EntityId m_entityId; //<! The entity id under the cursor.
