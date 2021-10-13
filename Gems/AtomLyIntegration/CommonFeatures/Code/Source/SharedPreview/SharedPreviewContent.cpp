@@ -44,7 +44,7 @@ namespace AZ
         {
             // Create preview model
             AzFramework::EntityContextRequestBus::EventResult(
-                m_modelEntity, m_entityContextId, &AzFramework::EntityContextRequestBus::Events::CreateEntity, "ThumbnailPreviewModel");
+                m_modelEntity, m_entityContextId, &AzFramework::EntityContextRequestBus::Events::CreateEntity, "SharedPreviewContentModel");
             m_modelEntity->CreateComponent(Render::MeshComponentTypeId);
             m_modelEntity->CreateComponent(Render::MaterialComponentTypeId);
             m_modelEntity->CreateComponent(azrtti_typeid<AzFramework::TransformComponent>());
@@ -60,6 +60,7 @@ namespace AZ
         {
             if (m_modelEntity)
             {
+                m_modelEntity->Deactivate();
                 AzFramework::EntityContextRequestBus::Event(
                     m_entityContextId, &AzFramework::EntityContextRequestBus::Events::DestroyEntity, m_modelEntity);
                 m_modelEntity = nullptr;

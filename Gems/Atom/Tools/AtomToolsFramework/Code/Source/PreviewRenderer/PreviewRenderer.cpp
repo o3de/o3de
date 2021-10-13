@@ -96,6 +96,7 @@ namespace AtomToolsFramework
         AZ::RPI::RPISystemInterface::Get()->UnregisterScene(m_scene);
         m_frameworkScene->UnsetSubsystem(m_scene);
         m_frameworkScene->UnsetSubsystem(m_entityContext.get());
+        m_entityContext->DestroyContext();
     }
 
     void PreviewRenderer::AddCaptureRequest(const CaptureRequest& captureRequest)
