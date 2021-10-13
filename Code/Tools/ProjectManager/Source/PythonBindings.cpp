@@ -668,7 +668,7 @@ namespace O3DE::ProjectManager
 
                 if (gemInfo.m_creator.contains("Open 3D Engine"))
                 {
-                    gemInfo.m_gemOrigin = GemInfo::GemOrigin::Open3DEEngine;
+                    gemInfo.m_gemOrigin = GemInfo::GemOrigin::Open3DEngine;
                 }
                 else if (gemInfo.m_creator.contains("Amazon Web Services"))
                 {

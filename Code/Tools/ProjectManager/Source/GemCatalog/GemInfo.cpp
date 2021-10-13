@@ -64,7 +64,7 @@ namespace O3DE::ProjectManager
     {
         switch (origin)
         {
-        case Open3DEEngine:
+        case Open3DEngine:
             return QObject::tr("Open 3D Engine");
         case Local:
             return QObject::tr("Local");

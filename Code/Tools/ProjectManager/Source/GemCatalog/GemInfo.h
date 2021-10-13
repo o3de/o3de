@@ -44,7 +44,7 @@ namespace O3DE::ProjectManager
 
         enum GemOrigin
         {
-            Open3DEEngine = 1 << 0,
+            Open3DEngine = 1 << 0,
             Local = 1 << 1,
             Remote = 1 << 2,
             NumGemOrigins = 3
