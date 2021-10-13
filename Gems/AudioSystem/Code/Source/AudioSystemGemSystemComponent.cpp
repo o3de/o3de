@@ -90,6 +90,9 @@ namespace AudioSystemGem
 
     AudioSystemGemSystemComponent::~AudioSystemGemSystemComponent()
     {
+        // The audio system uses the Audio::AudioSystemAllocator
+        // so it needs to be deleted before the allocator is shutdown
+        m_audioSystem.reset();
         Audio::Platform::ShutdownAudioAllocators();
     }
 
