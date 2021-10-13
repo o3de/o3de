@@ -155,9 +155,7 @@ namespace AzToolsFramework
         EditorEntityIconComponentNotificationBus::Router::BusRouterConnect();
         ToolsApplicationNotificationBus::Handler::BusConnect();
 
-        AzFramework::EntityContextId editorEntityContextId = AzFramework::EntityContextId::CreateNull();
-        AzToolsFramework::EditorEntityContextRequestBus::BroadcastResult(
-            editorEntityContextId, &AzToolsFramework::EditorEntityContextRequestBus::Events::GetEditorEntityContextId);
+        AzFramework::EntityContextId editorEntityContextId = AzToolsFramework::GetEntityContextId();
 
         ContainerEntityNotificationBus::Handler::BusConnect(editorEntityContextId);
         FocusModeNotificationBus::Handler::BusConnect(editorEntityContextId);
@@ -468,8 +466,7 @@ namespace AzToolsFramework
             // If either focus was the invalid entity, refresh all entities.
             for (size_t entityIndex = 0; entityIndex < m_impl->m_visibleEntityDatas.size(); ++entityIndex)
             {
-                AZ::EntityId descendantId = GetVisibleEntityId(entityIndex);
-                if (descendantId.IsValid())
+                if (AZ::EntityId descendantId = GetVisibleEntityId(entityIndex);  descendantId.IsValid())
                 {
                     if (auto focusModeInterface = AZ::Interface<FocusModeInterface>::Get())
                     {
@@ -478,8 +475,6 @@ namespace AzToolsFramework
                 }
             }
         }
-
-
     }
 
 } // namespace AzToolsFramework
