@@ -771,6 +771,12 @@ namespace AZ
                         resultCode.Combine(result);
                     }
                 }
+                
+                if (target.MemberCount() == 0)
+                {
+                    resultCode.Combine(settings.m_reporting("Added empty object to JSON Merge Patch.",
+                        ResultCode(Tasks::CreatePatch, Outcomes::Success), element));
+                }
             }
 
             patch = AZStd::move(resultValue);
