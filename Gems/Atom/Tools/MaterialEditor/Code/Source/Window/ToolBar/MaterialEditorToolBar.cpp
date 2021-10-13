@@ -88,17 +88,17 @@ namespace MaterialEditor
         toneMappingButton->setVisible(true);
         addWidget(toneMappingButton);
 
-        // Add model combo box
-        auto modelPresetComboBox = new ModelPresetComboBox(this);
-        modelPresetComboBox->setSizeAdjustPolicy(QComboBox::SizeAdjustPolicy::AdjustToContents);
-        modelPresetComboBox->view()->setMinimumWidth(200);
-        addWidget(modelPresetComboBox);
-
         // Add lighting preset combo box
         auto lightingPresetComboBox = new LightingPresetComboBox(this);
         lightingPresetComboBox->setSizeAdjustPolicy(QComboBox::SizeAdjustPolicy::AdjustToContents);
         lightingPresetComboBox->view()->setMinimumWidth(200);
         addWidget(lightingPresetComboBox);
+
+        // Add model combo box
+        auto modelPresetComboBox = new ModelPresetComboBox(this);
+        modelPresetComboBox->setSizeAdjustPolicy(QComboBox::SizeAdjustPolicy::AdjustToContents);
+        modelPresetComboBox->view()->setMinimumWidth(200);
+        addWidget(modelPresetComboBox);
 
         MaterialViewportNotificationBus::Handler::BusConnect();
     }

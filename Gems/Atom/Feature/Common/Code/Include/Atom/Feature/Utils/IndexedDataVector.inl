@@ -83,6 +83,16 @@ namespace AZ::Render
         m_indices.at(index) = m_firstFreeSlot;
         m_firstFreeSlot = index;
     }
+    
+    template<typename DataType, typename IndexType>
+    inline void IndexedDataVector<DataType, IndexType>::RemoveData(DataType* data)
+    {
+        IndexType indexForData = GetIndexForData(data);
+        if (indexForData != NoFreeSlot)
+        {
+            RemoveIndex(indexForData);
+        }
+    }
 
     template<typename DataType, typename IndexType>
     inline DataType& IndexedDataVector<DataType, IndexType>::GetData(IndexType index)
@@ -130,5 +140,15 @@ namespace AZ::Render
     IndexType IndexedDataVector<DataType, IndexType>::GetRawIndex(IndexType index) const
     {
         return m_indices.at(index);
+    }
+    
+    template<typename DataType, typename IndexType>
+    IndexType IndexedDataVector<DataType, IndexType>::GetIndexForData(const DataType* data) const
+    {
+        if (data >= &m_data.front() && data <= &m_data.back())
+        {
+            return m_dataToIndices.at(data - &m_data.front());
+        }
+        return NoFreeSlot;
     }
 } // namespace AZ::Render
