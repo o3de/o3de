@@ -10,9 +10,7 @@
 
 #include <Request/AWSGameLiftStartMatchmakingRequest.h>
 
-#include <aws/core/utils/Outcome.h>
 #include <aws/gamelift/GameLiftClient.h>
-#include <aws/gamelift/model/StartMatchmakingRequest.h>
 
 namespace AWSGameLift
 {
@@ -25,7 +23,6 @@ namespace AWSGameLift
         Aws::GameLift::Model::StartMatchmakingRequest BuildAWSGameLiftStartMatchmakingRequest(const AWSGameLiftStartMatchmakingRequest& startMatchmakingRequest);
 
         // Create StartMatchmakingRequest and make a StartMatchmaking call through GameLift client
-        // Will also start polling the matchmaking ticket when get success outcome from GameLift client
         AZStd::string StartMatchmaking(const Aws::GameLift::GameLiftClient& gameliftClient, const AWSGameLiftStartMatchmakingRequest& startMatchmakingRequest);
 
         // Validate StartMatchmakingRequest and check required request parameters
