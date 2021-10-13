@@ -9,7 +9,7 @@
 #pragma once
 
 #include <AzCore/Asset/AssetCommon.h>
-#include <Thumbnails/Rendering/ThumbnailRendererSteps/ThumbnailRendererStep.h>
+#include <SharedPreview/SharedPreviewRendererState.h>
 
 namespace AZ
 {
@@ -17,14 +17,14 @@ namespace AZ
     {
         namespace Thumbnails
         {
-            //! WaitForAssetsToLoadStep pauses further rendering until all assets used for rendering a thumbnail have been loaded
-            class WaitForAssetsToLoadStep
-                : public ThumbnailRendererStep
+            //! SharedPreviewRendererLoadState pauses further rendering until all assets used for rendering a thumbnail have been loaded
+            class SharedPreviewRendererLoadState
+                : public SharedPreviewRendererState
                 , private Data::AssetBus::Handler
                 , private TickBus::Handler
             {
             public:
-                WaitForAssetsToLoadStep(ThumbnailRendererContext* context);
+                SharedPreviewRendererLoadState(SharedPreviewRendererContext* context);
 
                 void Start() override;
                 void Stop() override;

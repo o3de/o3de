@@ -30,9 +30,9 @@
 #include <AtomLyIntegration/CommonFeatures/Mesh/MeshComponentConstants.h>
 #include <AtomLyIntegration/CommonFeatures/Thumbnails/ThumbnailFeatureProcessorProviderBus.h>
 
-#include <Thumbnails/Rendering/ThumbnailRendererData.h>
-#include <Thumbnails/Rendering/ThumbnailRendererContext.h>
-#include <Thumbnails/Rendering/ThumbnailRendererSteps/InitializeStep.h>
+#include <SharedPreview/SharedPreviewRendererData.h>
+#include <SharedPreview/SharedPreviewRendererContext.h>
+#include <SharedPreview/SharedPreviewRendererInitState.h>
 
 namespace AZ
 {
@@ -40,12 +40,12 @@ namespace AZ
     {
         namespace Thumbnails
         {
-            InitializeStep::InitializeStep(ThumbnailRendererContext* context)
-                : ThumbnailRendererStep(context)
+            SharedPreviewRendererInitState::SharedPreviewRendererInitState(SharedPreviewRendererContext* context)
+                : SharedPreviewRendererState(context)
             {
             }
 
-            void InitializeStep::Start()
+            void SharedPreviewRendererInitState::Start()
             {
                 auto data = m_context->GetData();
 
@@ -112,7 +112,7 @@ namespace AZ
                 data->m_renderPipeline->SetDefaultView(data->m_view);
 
                 // Create lighting preset
-                data->m_lightingPresetAsset = AZ::RPI::AssetUtils::LoadAssetByProductPath<AZ::RPI::AnyAsset>(ThumbnailRendererData::LightingPresetPath);
+                data->m_lightingPresetAsset = AZ::RPI::AssetUtils::LoadAssetByProductPath<AZ::RPI::AnyAsset>(SharedPreviewRendererData::LightingPresetPath);
                 if (data->m_lightingPresetAsset.IsReady())
                 {
                     auto preset = data->m_lightingPresetAsset->GetDataAs<Render::LightingPreset>();
@@ -162,7 +162,7 @@ namespace AZ
                     m_context->GetData()->DefaultModelPath,
                     RPI::ModelAsset::RTTI_Type(),
                     false);
-                AZ_Error("ThumbnailRenderer", defaultModelAssetId.IsValid(), "Default model asset is invalid. Verify the asset %s exists.", m_context->GetData()->DefaultModelPath);
+                AZ_Error("SharedPreviewRenderer", defaultModelAssetId.IsValid(), "Default model asset is invalid. Verify the asset %s exists.", m_context->GetData()->DefaultModelPath);
                 if (m_context->GetData()->m_assetsToLoad.emplace(defaultModelAssetId).second)
                 {
                     data->m_defaultModelAsset.Create(defaultModelAssetId);
@@ -177,14 +177,14 @@ namespace AZ
                     m_context->GetData()->DefaultMaterialPath,
                     RPI::MaterialAsset::RTTI_Type(),
                     false);
-                AZ_Error("ThumbnailRenderer", defaultMaterialAssetId.IsValid(), "Default material asset is invalid. Verify the asset %s exists.", m_context->GetData()->DefaultMaterialPath);
+                AZ_Error("SharedPreviewRenderer", defaultMaterialAssetId.IsValid(), "Default material asset is invalid. Verify the asset %s exists.", m_context->GetData()->DefaultMaterialPath);
                 if (m_context->GetData()->m_assetsToLoad.emplace(defaultMaterialAssetId).second)
                 {
                     data->m_defaultMaterialAsset.Create(defaultMaterialAssetId);
                     data->m_defaultMaterialAsset.QueueLoad();
                 }
 
-                m_context->SetStep(Step::FindThumbnailToRender);
+                m_context->SetState(State::Idle);
             }
         } // namespace Thumbnails
     } // namespace LyIntegration

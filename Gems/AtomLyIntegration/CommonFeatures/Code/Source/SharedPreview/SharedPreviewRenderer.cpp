@@ -8,13 +8,13 @@
 
 #include <Atom/RPI.Reflect/Material/MaterialAsset.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
-#include <Thumbnails/Rendering/CommonThumbnailRenderer.h>
-#include <Thumbnails/Rendering/ThumbnailRendererData.h>
-#include <Thumbnails/Rendering/ThumbnailRendererSteps/CaptureStep.h>
-#include <Thumbnails/Rendering/ThumbnailRendererSteps/FindThumbnailToRenderStep.h>
-#include <Thumbnails/Rendering/ThumbnailRendererSteps/InitializeStep.h>
-#include <Thumbnails/Rendering/ThumbnailRendererSteps/ReleaseResourcesStep.h>
-#include <Thumbnails/Rendering/ThumbnailRendererSteps/WaitForAssetsToLoadStep.h>
+#include <SharedPreview/SharedPreviewRenderer.h>
+#include <SharedPreview/SharedPreviewRendererData.h>
+#include <SharedPreview/SharedPreviewRendererCaptureState.h>
+#include <SharedPreview/SharedPreviewRendererIdleState.h>
+#include <SharedPreview/SharedPreviewRendererInitState.h>
+#include <SharedPreview/SharedPreviewRendererReleaseState.h>
+#include <SharedPreview/SharedPreviewRendererLoadState.h>
 
 namespace AZ
 {
@@ -22,21 +22,21 @@ namespace AZ
     {
         namespace Thumbnails
         {
-            CommonThumbnailRenderer::CommonThumbnailRenderer()
-                : m_data(new ThumbnailRendererData)
+            SharedPreviewRenderer::SharedPreviewRenderer()
+                : m_data(new SharedPreviewRendererData)
             {
-                // CommonThumbnailRenderer supports both models and materials, but we connect on materialAssetType
+                // SharedPreviewRenderer supports both models and materials, but we connect on materialAssetType
                 // since MaterialOrModelThumbnail dispatches event on materialAssetType address too
                 AzToolsFramework::Thumbnailer::ThumbnailerRendererRequestBus::MultiHandler::BusConnect(RPI::MaterialAsset::RTTI_Type());
                 AzToolsFramework::Thumbnailer::ThumbnailerRendererRequestBus::MultiHandler::BusConnect(RPI::ModelAsset::RTTI_Type());
                 SystemTickBus::Handler::BusConnect();
                 ThumbnailFeatureProcessorProviderBus::Handler::BusConnect();
 
-                m_steps[Step::Initialize] = AZStd::make_shared<InitializeStep>(this);
-                m_steps[Step::FindThumbnailToRender] = AZStd::make_shared<FindThumbnailToRenderStep>(this);
-                m_steps[Step::WaitForAssetsToLoad] = AZStd::make_shared<WaitForAssetsToLoadStep>(this);
-                m_steps[Step::Capture] = AZStd::make_shared<CaptureStep>(this);
-                m_steps[Step::ReleaseResources] = AZStd::make_shared<ReleaseResourcesStep>(this);
+                m_steps[State::Init] = AZStd::make_shared<SharedPreviewRendererInitState>(this);
+                m_steps[State::Idle] = AZStd::make_shared<SharedPreviewRendererIdleState>(this);
+                m_steps[State::Load] = AZStd::make_shared<SharedPreviewRendererLoadState>(this);
+                m_steps[State::Capture] = AZStd::make_shared<SharedPreviewRendererCaptureState>(this);
+                m_steps[State::Release] = AZStd::make_shared<SharedPreviewRendererReleaseState>(this);
 
                 m_minimalFeatureProcessors =
                 {
@@ -60,59 +60,59 @@ namespace AZ
                 };
             }
 
-            CommonThumbnailRenderer::~CommonThumbnailRenderer()
+            SharedPreviewRenderer::~SharedPreviewRenderer()
             {
-                if (m_currentStep != Step::None)
+                if (m_currentState != State::None)
                 {
-                    CommonThumbnailRenderer::SetStep(Step::ReleaseResources);
+                    SharedPreviewRenderer::SetState(State::Release);
                 }
                 AzToolsFramework::Thumbnailer::ThumbnailerRendererRequestBus::MultiHandler::BusDisconnect();
                 SystemTickBus::Handler::BusDisconnect();
                 ThumbnailFeatureProcessorProviderBus::Handler::BusDisconnect();
             }
 
-            void CommonThumbnailRenderer::SetStep(Step step)
+            void SharedPreviewRenderer::SetState(State step)
             {
-                if (m_currentStep != Step::None)
+                if (m_currentState != State::None)
                 {
-                    m_steps[m_currentStep]->Stop();
+                    m_steps[m_currentState]->Stop();
                 }
-                m_currentStep = step;
-                m_steps[m_currentStep]->Start();
+                m_currentState = step;
+                m_steps[m_currentState]->Start();
             }
 
-            Step CommonThumbnailRenderer::GetStep() const
+            State SharedPreviewRenderer::GetState() const
             {
-                return m_currentStep;
+                return m_currentState;
             }
 
-            bool CommonThumbnailRenderer::Installed() const
+            bool SharedPreviewRenderer::Installed() const
             {
                 return true;
             }
 
-            void CommonThumbnailRenderer::OnSystemTick()
+            void SharedPreviewRenderer::OnSystemTick()
             {
                 AzToolsFramework::Thumbnailer::ThumbnailerRendererRequestBus::ExecuteQueuedEvents();
             }
 
-            const AZStd::vector<AZStd::string>& CommonThumbnailRenderer::GetCustomFeatureProcessors() const
+            const AZStd::vector<AZStd::string>& SharedPreviewRenderer::GetCustomFeatureProcessors() const
             {
                 return m_minimalFeatureProcessors;
             }
             
-            AZStd::shared_ptr<ThumbnailRendererData> CommonThumbnailRenderer::GetData() const
+            AZStd::shared_ptr<SharedPreviewRendererData> SharedPreviewRenderer::GetData() const
             {
                 return m_data;
             }
 
-            void CommonThumbnailRenderer::RenderThumbnail(AzToolsFramework::Thumbnailer::SharedThumbnailKey thumbnailKey, int thumbnailSize)
+            void SharedPreviewRenderer::RenderThumbnail(AzToolsFramework::Thumbnailer::SharedThumbnailKey thumbnailKey, int thumbnailSize)
             {
                 m_data->m_thumbnailSize = thumbnailSize;
                 m_data->m_thumbnailQueue.push(thumbnailKey);
-                if (m_currentStep == Step::None)
+                if (m_currentState == State::None)
                 {
-                    SetStep(Step::Initialize);
+                    SetState(State::Init);
                 }
             }
         } // namespace Thumbnails

@@ -8,10 +8,10 @@
 
 #include <Atom/RPI.Reflect/Material/MaterialAsset.h>
 #include <Atom/RPI.Reflect/Model/ModelAsset.h>
-#include <Thumbnails/ThumbnailUtils.h>
-#include <Thumbnails/Rendering/ThumbnailRendererContext.h>
-#include <Thumbnails/Rendering/ThumbnailRendererData.h>
-#include <Thumbnails/Rendering/ThumbnailRendererSteps/FindThumbnailToRenderStep.h>
+#include <SharedPreview/SharedPreviewUtils.h>
+#include <SharedPreview/SharedPreviewRendererContext.h>
+#include <SharedPreview/SharedPreviewRendererData.h>
+#include <SharedPreview/SharedPreviewRendererIdleState.h>
 
 namespace AZ
 {
@@ -19,27 +19,27 @@ namespace AZ
     {
         namespace Thumbnails
         {
-            FindThumbnailToRenderStep::FindThumbnailToRenderStep(ThumbnailRendererContext* context)
-                : ThumbnailRendererStep(context)
+            SharedPreviewRendererIdleState::SharedPreviewRendererIdleState(SharedPreviewRendererContext* context)
+                : SharedPreviewRendererState(context)
             {
             }
 
-            void FindThumbnailToRenderStep::Start()
+            void SharedPreviewRendererIdleState::Start()
             {
                 TickBus::Handler::BusConnect();
             }
 
-            void FindThumbnailToRenderStep::Stop()
+            void SharedPreviewRendererIdleState::Stop()
             {
                 TickBus::Handler::BusDisconnect();
             }
 
-            void FindThumbnailToRenderStep::OnTick([[maybe_unused]] float deltaTime, [[maybe_unused]] ScriptTimePoint time)
+            void SharedPreviewRendererIdleState::OnTick([[maybe_unused]] float deltaTime, [[maybe_unused]] ScriptTimePoint time)
             {
                 PickNextThumbnail();
             }
 
-            void FindThumbnailToRenderStep::PickNextThumbnail()
+            void SharedPreviewRendererIdleState::PickNextThumbnail()
             {
                 if (!m_context->GetData()->m_thumbnailQueue.empty())
                 {
@@ -71,7 +71,7 @@ namespace AZ
                         }
                     }
 
-                    m_context->SetStep(Step::WaitForAssetsToLoad);
+                    m_context->SetState(State::Load);
                 }
             }
         } // namespace Thumbnails

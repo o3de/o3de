@@ -9,27 +9,27 @@
 #include <AzToolsFramework/AssetBrowser/AssetBrowserEntry.h>
 #include <Atom/RPI.Reflect/Material/MaterialAsset.h>
 #include <Atom/RPI.Reflect/Model/ModelAsset.h>
-#include <Source/Thumbnails/Preview/CommonPreviewer.h>
-#include <Source/Thumbnails/Preview/CommonPreviewerFactory.h>
-#include <Source/Thumbnails/ThumbnailUtils.h>
+#include <SharedPreview/SharedPreviewer.h>
+#include <SharedPreview/SharedPreviewerFactory.h>
+#include <SharedPreview/SharedPreviewUtils.h>
 
 namespace AZ
 {
     namespace LyIntegration
     {
-        AzToolsFramework::AssetBrowser::Previewer* CommonPreviewerFactory::CreatePreviewer(QWidget* parent) const
+        AzToolsFramework::AssetBrowser::Previewer* SharedPreviewerFactory::CreatePreviewer(QWidget* parent) const
         {
-            return new CommonPreviewer(parent);
+            return new SharedPreviewer(parent);
         }
 
-        bool CommonPreviewerFactory::IsEntrySupported(const AzToolsFramework::AssetBrowser::AssetBrowserEntry* entry) const
+        bool SharedPreviewerFactory::IsEntrySupported(const AzToolsFramework::AssetBrowser::AssetBrowserEntry* entry) const
         {
             return
                 Thumbnails::GetAssetId(entry->GetThumbnailKey(), RPI::MaterialAsset::RTTI_Type()).IsValid() ||
                 Thumbnails::GetAssetId(entry->GetThumbnailKey(), RPI::ModelAsset::RTTI_Type()).IsValid();
         }
 
-        const QString& CommonPreviewerFactory::GetName() const
+        const QString& SharedPreviewerFactory::GetName() const
         {
             return m_name;
         }

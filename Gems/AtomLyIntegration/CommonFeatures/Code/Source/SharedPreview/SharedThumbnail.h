@@ -13,7 +13,7 @@
 #include <AzFramework/Asset/AssetCatalogBus.h>
 #include <AzToolsFramework/Thumbnails/Thumbnail.h>
 #include <AzToolsFramework/Thumbnails/ThumbnailerBus.h>
-#include <Thumbnails/Rendering/CommonThumbnailRenderer.h>
+#include <SharedPreview/SharedPreviewRenderer.h>
 #endif
 
 namespace AZ
@@ -25,15 +25,15 @@ namespace AZ
             /**
              * Custom material or model thumbnail that detects when an asset changes and updates the thumbnail
              */
-            class MaterialThumbnail
+            class SharedThumbnail
                 : public AzToolsFramework::Thumbnailer::Thumbnail
                 , public AzToolsFramework::Thumbnailer::ThumbnailerRendererNotificationBus::Handler
                 , private AzFramework::AssetCatalogEventBus::Handler
             {
                 Q_OBJECT
             public:
-                MaterialThumbnail(AzToolsFramework::Thumbnailer::SharedThumbnailKey key);
-                ~MaterialThumbnail() override;
+                SharedThumbnail(AzToolsFramework::Thumbnailer::SharedThumbnailKey key);
+                ~SharedThumbnail() override;
 
                 //! AzToolsFramework::ThumbnailerRendererNotificationBus::Handler overrides...
                 void ThumbnailRendered(const QPixmap& thumbnailImage) override;
@@ -53,12 +53,12 @@ namespace AZ
             /**
              * Cache configuration for large material thumbnails
              */
-            class MaterialThumbnailCache
-                : public AzToolsFramework::Thumbnailer::ThumbnailCache<MaterialThumbnail>
+            class SharedThumbnailCache
+                : public AzToolsFramework::Thumbnailer::ThumbnailCache<SharedThumbnail>
             {
             public:
-                MaterialThumbnailCache();
-                ~MaterialThumbnailCache() override;
+                SharedThumbnailCache();
+                ~SharedThumbnailCache() override;
 
                 int GetPriority() const override;
                 const char* GetProviderName() const override;

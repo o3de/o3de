@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include <Thumbnails/Rendering/ThumbnailRendererSteps/ThumbnailRendererStep.h>
+#include <SharedPreview/SharedPreviewRendererState.h>
 
 namespace AZ
 {
@@ -16,11 +16,11 @@ namespace AZ
     {
         namespace Thumbnails
         {
-            class ReleaseResourcesStep
-                : public ThumbnailRendererStep
+            class SharedPreviewRendererReleaseState
+                : public SharedPreviewRendererState
             {
             public:
-                ReleaseResourcesStep(ThumbnailRendererContext* context);
+                SharedPreviewRendererReleaseState(SharedPreviewRendererContext* context);
 
                 void Start() override;
             };

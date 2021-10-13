@@ -8,10 +8,10 @@
 
 #include "Thumbnails/ThumbnailerBus.h"
 
-#include <Thumbnails/Rendering/ThumbnailRendererData.h>
-#include <Thumbnails/Rendering/ThumbnailRendererContext.h>
-#include <Thumbnails/Rendering/ThumbnailRendererSteps/CaptureStep.h>
-#include <Thumbnails/Rendering/ThumbnailRendererSteps/WaitForAssetsToLoadStep.h>
+#include <SharedPreview/SharedPreviewRendererData.h>
+#include <SharedPreview/SharedPreviewRendererContext.h>
+#include <SharedPreview/SharedPreviewRendererCaptureState.h>
+#include <SharedPreview/SharedPreviewRendererLoadState.h>
 
 namespace AZ
 {
@@ -19,29 +19,29 @@ namespace AZ
     {
         namespace Thumbnails
         {
-            WaitForAssetsToLoadStep::WaitForAssetsToLoadStep(ThumbnailRendererContext* context)
-                : ThumbnailRendererStep(context)
+            SharedPreviewRendererLoadState::SharedPreviewRendererLoadState(SharedPreviewRendererContext* context)
+                : SharedPreviewRendererState(context)
             {
             }
 
-            void WaitForAssetsToLoadStep::Start()
+            void SharedPreviewRendererLoadState::Start()
             {
                 LoadNextAsset();
             }
 
-            void WaitForAssetsToLoadStep::Stop()
+            void SharedPreviewRendererLoadState::Stop()
             {
                 Data::AssetBus::Handler::BusDisconnect();
                 TickBus::Handler::BusDisconnect();
                 m_context->GetData()->m_assetsToLoad.clear();
             }
 
-            void WaitForAssetsToLoadStep::LoadNextAsset()
+            void SharedPreviewRendererLoadState::LoadNextAsset()
             {
                 if (m_context->GetData()->m_assetsToLoad.empty())
                 {
                     // When all assets are loaded, render the thumbnail itself
-                    m_context->SetStep(Step::Capture);
+                    m_context->SetState(State::Capture);
                 }
                 else
                 {
@@ -59,41 +59,41 @@ namespace AZ
                 }
             }
 
-            void WaitForAssetsToLoadStep::OnAssetReady([[maybe_unused]] Data::Asset<Data::AssetData> asset)
+            void SharedPreviewRendererLoadState::OnAssetReady([[maybe_unused]] Data::Asset<Data::AssetData> asset)
             {
                 Data::AssetBus::Handler::BusDisconnect();
                 LoadNextAsset();
             }
 
-            void WaitForAssetsToLoadStep::OnAssetError([[maybe_unused]] Data::Asset<Data::AssetData> asset)
+            void SharedPreviewRendererLoadState::OnAssetError([[maybe_unused]] Data::Asset<Data::AssetData> asset)
             {
                 Data::AssetBus::Handler::BusDisconnect();
                 AzToolsFramework::Thumbnailer::ThumbnailerRendererNotificationBus::Event(
                     m_context->GetData()->m_thumbnailKeyRendered,
                     &AzToolsFramework::Thumbnailer::ThumbnailerRendererNotifications::ThumbnailFailedToRender);
-                m_context->SetStep(Step::FindThumbnailToRender);
+                m_context->SetState(State::Idle);
             }
 
-            void WaitForAssetsToLoadStep::OnAssetCanceled([[maybe_unused]] Data::AssetId assetId)
+            void SharedPreviewRendererLoadState::OnAssetCanceled([[maybe_unused]] Data::AssetId assetId)
             {
                 Data::AssetBus::Handler::BusDisconnect();
                 AzToolsFramework::Thumbnailer::ThumbnailerRendererNotificationBus::Event(
                     m_context->GetData()->m_thumbnailKeyRendered,
                     &AzToolsFramework::Thumbnailer::ThumbnailerRendererNotifications::ThumbnailFailedToRender);
-                m_context->SetStep(Step::FindThumbnailToRender);
+                m_context->SetState(State::Idle);
             }
 
-            void WaitForAssetsToLoadStep::OnTick(float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time)
+            void SharedPreviewRendererLoadState::OnTick(float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time)
             {
                 m_timeRemainingS -= deltaTime;
                 if (m_timeRemainingS < 0)
                 {
                     auto assetIdStr = m_assetId.ToString<AZStd::string>();
-                    AZ_Warning("CommonThumbnailRenderer", false, "Timed out waiting for asset %s to load.", assetIdStr.c_str());
+                    AZ_Warning("SharedPreviewRenderer", false, "Timed out waiting for asset %s to load.", assetIdStr.c_str());
                     AzToolsFramework::Thumbnailer::ThumbnailerRendererNotificationBus::Event(
                         m_context->GetData()->m_thumbnailKeyRendered,
                         &AzToolsFramework::Thumbnailer::ThumbnailerRendererNotifications::ThumbnailFailedToRender);
-                    m_context->SetStep(Step::FindThumbnailToRender);
+                    m_context->SetState(State::Idle);
                 }
             }
         } // namespace Thumbnails

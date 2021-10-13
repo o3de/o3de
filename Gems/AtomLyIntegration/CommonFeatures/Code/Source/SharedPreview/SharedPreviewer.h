@@ -20,7 +20,7 @@ AZ_POP_DISABLE_WARNING
 
 namespace Ui
 {
-    class CommonPreviewerClass;
+    class SharedPreviewerClass;
 }
 
 namespace AzToolsFramework
@@ -39,15 +39,15 @@ namespace AZ
 {
     namespace LyIntegration
     {
-        class CommonPreviewer final
+        class SharedPreviewer final
             : public AzToolsFramework::AssetBrowser::Previewer
         {
             Q_OBJECT
         public:
-            AZ_CLASS_ALLOCATOR(CommonPreviewer, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(SharedPreviewer, AZ::SystemAllocator, 0);
 
-            explicit CommonPreviewer(QWidget* parent = nullptr);
-            ~CommonPreviewer();
+            explicit SharedPreviewer(QWidget* parent = nullptr);
+            ~SharedPreviewer();
 
             // AzToolsFramework::AssetBrowser::Previewer overrides...
             void Clear() const override {}
@@ -60,9 +60,9 @@ namespace AZ
         private:
             void UpdateFileInfo() const;
 
-            QScopedPointer<Ui::CommonPreviewerClass> m_ui;
+            QScopedPointer<Ui::SharedPreviewerClass> m_ui;
             QString m_fileInfo;
-            QString m_name = "CommonPreviewer";
+            QString m_name = "SharedPreviewer";
         };
     } // namespace LyIntegration
 } // namespace AZ

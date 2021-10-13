@@ -10,8 +10,8 @@
 
 #include <AzToolsFramework/Thumbnails/Thumbnail.h>
 #include <AzToolsFramework/Thumbnails/ThumbnailerBus.h>
-#include <Thumbnails/Rendering/ThumbnailRendererContext.h>
-#include <Thumbnails/Rendering/ThumbnailRendererData.h>
+#include <SharedPreview/SharedPreviewRendererContext.h>
+#include <SharedPreview/SharedPreviewRendererData.h>
 
 #include <AtomLyIntegration/CommonFeatures/Thumbnails/ThumbnailFeatureProcessorProviderBus.h>
 
@@ -28,25 +28,25 @@ namespace AZ
     {
         namespace Thumbnails
         {
-            class ThumbnailRendererStep;
+            class SharedPreviewRendererState;
 
             //! Provides custom rendering of material and model thumbnails
-            class CommonThumbnailRenderer
-                : public ThumbnailRendererContext
+            class SharedPreviewRenderer
+                : public SharedPreviewRendererContext
                 , private AzToolsFramework::Thumbnailer::ThumbnailerRendererRequestBus::MultiHandler
                 , private SystemTickBus::Handler
                 , private ThumbnailFeatureProcessorProviderBus::Handler
             {
             public:
-                AZ_CLASS_ALLOCATOR(CommonThumbnailRenderer, AZ::SystemAllocator, 0)
+                AZ_CLASS_ALLOCATOR(SharedPreviewRenderer, AZ::SystemAllocator, 0)
 
-                CommonThumbnailRenderer();
-                ~CommonThumbnailRenderer();
+                SharedPreviewRenderer();
+                ~SharedPreviewRenderer();
 
-                //! ThumbnailRendererContext overrides...
-                void SetStep(Step step) override;
-                Step GetStep() const override;
-                AZStd::shared_ptr<ThumbnailRendererData> GetData() const override;
+                //! SharedPreviewRendererContext overrides...
+                void SetState(State step) override;
+                State GetState() const override;
+                AZStd::shared_ptr<SharedPreviewRendererData> GetData() const override;
 
             private:
                 //! ThumbnailerRendererRequestsBus::Handler interface overrides...
@@ -59,9 +59,9 @@ namespace AZ
                 //! Render::ThumbnailFeatureProcessorProviderBus::Handler interface overrides...
                 const AZStd::vector<AZStd::string>& GetCustomFeatureProcessors() const override;
 
-                AZStd::unordered_map<Step, AZStd::shared_ptr<ThumbnailRendererStep>> m_steps;
-                Step m_currentStep = Step::None;
-                AZStd::shared_ptr<ThumbnailRendererData> m_data;
+                AZStd::unordered_map<State, AZStd::shared_ptr<SharedPreviewRendererState>> m_steps;
+                State m_currentState = State::None;
+                AZStd::shared_ptr<SharedPreviewRendererData> m_data;
                 AZStd::vector<AZStd::string> m_minimalFeatureProcessors;
             };
         } // namespace Thumbnails

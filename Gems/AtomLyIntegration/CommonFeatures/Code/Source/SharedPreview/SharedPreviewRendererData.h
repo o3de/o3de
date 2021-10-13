@@ -15,7 +15,6 @@
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Math/Transform.h>
 #include <AzFramework/Entity/GameEntityContextComponent.h>
-#include <Thumbnails/Thumbnail.h>
 
 namespace AzFramework
 {
@@ -28,8 +27,8 @@ namespace AZ
     {
         namespace Thumbnails
         {
-            //! ThumbnailRendererData encapsulates all data used by thumbnail renderer and caches assets
-            struct ThumbnailRendererData final
+            //! SharedPreviewRendererData encapsulates all data used by thumbnail renderer and caches assets
+            struct SharedPreviewRendererData final
             {
                 static constexpr const char* LightingPresetPath = "lightingpresets/thumbnail.lightingpreset.azasset";
                 static constexpr const char* DefaultModelPath = "models/sphere.azmodel";

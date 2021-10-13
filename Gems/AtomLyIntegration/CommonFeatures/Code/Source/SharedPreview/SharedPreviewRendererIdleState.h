@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include <Thumbnails/Rendering/ThumbnailRendererSteps/ThumbnailRendererStep.h>
+#include <SharedPreview/SharedPreviewRendererState.h>
 
 namespace AZ
 {
@@ -16,13 +16,13 @@ namespace AZ
     {
         namespace Thumbnails
         {
-            //! FindThumbnailToRenderStep checks whether there are any new thumbnails that need to be rendered every tick
-            class FindThumbnailToRenderStep
-                : public ThumbnailRendererStep
+            //! SharedPreviewRendererIdleState checks whether there are any new thumbnails that need to be rendered every tick
+            class SharedPreviewRendererIdleState
+                : public SharedPreviewRendererState
                 , private TickBus::Handler
             {
             public:
-                FindThumbnailToRenderStep(ThumbnailRendererContext* context);
+                SharedPreviewRendererIdleState(SharedPreviewRendererContext* context);
 
                 void Start() override;
                 void Stop() override;

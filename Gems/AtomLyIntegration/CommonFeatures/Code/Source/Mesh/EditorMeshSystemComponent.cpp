@@ -12,7 +12,6 @@
 #include <AzCore/Utils/Utils.h>
 #include <AzToolsFramework/Thumbnails/ThumbnailContext.h>
 #include <Source/Mesh/EditorMeshSystemComponent.h>
-#include <Source/Mesh/MeshThumbnail.h>
 
 namespace AZ
 {
@@ -59,39 +58,10 @@ namespace AZ
         
         void EditorMeshSystemComponent::Activate()
         {
-            AzFramework::ApplicationLifecycleEvents::Bus::Handler::BusConnect();
-            SetupThumbnails();
         }
 
         void EditorMeshSystemComponent::Deactivate()
         {
-            TeardownThumbnails();
-            AzFramework::ApplicationLifecycleEvents::Bus::Handler::BusDisconnect();
-        }
-
-        void EditorMeshSystemComponent::OnApplicationAboutToStop()
-        {
-            TeardownThumbnails();
-        }
-
-        void EditorMeshSystemComponent::SetupThumbnails()
-        {
-            using namespace AzToolsFramework::Thumbnailer;
-            using namespace LyIntegration;
-            
-            ThumbnailerRequestsBus::Broadcast(&ThumbnailerRequests::RegisterThumbnailProvider,
-                MAKE_TCACHE(Thumbnails::MeshThumbnailCache),
-                ThumbnailContext::DefaultContext);
-        }
-
-        void EditorMeshSystemComponent::TeardownThumbnails()
-        {
-            using namespace AzToolsFramework::Thumbnailer;
-            using namespace LyIntegration;
-
-            ThumbnailerRequestsBus::Broadcast(&ThumbnailerRequests::UnregisterThumbnailProvider,
-                Thumbnails::MeshThumbnailCache::ProviderName,
-                ThumbnailContext::DefaultContext);
         }
     } // namespace Render
 } // namespace AZ

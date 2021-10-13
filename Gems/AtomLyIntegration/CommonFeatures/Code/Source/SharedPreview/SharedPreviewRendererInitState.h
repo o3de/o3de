@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include <Thumbnails/Rendering/ThumbnailRendererSteps/ThumbnailRendererStep.h>
+#include <SharedPreview/SharedPreviewRendererState.h>
 
 namespace AZ
 {
@@ -16,13 +16,13 @@ namespace AZ
     {
         namespace Thumbnails
         {
-            //! InitializeStep sets up RPI system and scene and prepares it for rendering thumbnail entities
-            //! This step is only called once when CommonThumbnailRenderer begins rendering its first thumbnail
-            class InitializeStep
-                : public ThumbnailRendererStep
+            //! SharedPreviewRendererInitState sets up RPI system and scene and prepares it for rendering thumbnail entities
+            //! This step is only called once when SharedPreviewRenderer begins rendering its first thumbnail
+            class SharedPreviewRendererInitState
+                : public SharedPreviewRendererState
             {
             public:
-                InitializeStep(ThumbnailRendererContext* context);
+                SharedPreviewRendererInitState(SharedPreviewRendererContext* context);
 
                 void Start() override;
 

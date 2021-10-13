@@ -11,9 +11,9 @@
 #include <Atom/RPI.Public/Scene.h>
 #include <AzFramework/Scene/Scene.h>
 #include <AzFramework/Scene/SceneSystemInterface.h>
-#include <Thumbnails/Rendering/ThumbnailRendererContext.h>
-#include <Thumbnails/Rendering/ThumbnailRendererData.h>
-#include <Thumbnails/Rendering/ThumbnailRendererSteps/ReleaseResourcesStep.h>
+#include <SharedPreview/SharedPreviewRendererContext.h>
+#include <SharedPreview/SharedPreviewRendererData.h>
+#include <SharedPreview/SharedPreviewRendererReleaseState.h>
 
 namespace AZ
 {
@@ -21,12 +21,12 @@ namespace AZ
     {
         namespace Thumbnails
         {
-            ReleaseResourcesStep::ReleaseResourcesStep(ThumbnailRendererContext* context)
-                : ThumbnailRendererStep(context)
+            SharedPreviewRendererReleaseState::SharedPreviewRendererReleaseState(SharedPreviewRendererContext* context)
+                : SharedPreviewRendererState(context)
             {
             }
 
-            void ReleaseResourcesStep::Start()
+            void SharedPreviewRendererReleaseState::Start()
             {
                 auto data = m_context->GetData();
                 

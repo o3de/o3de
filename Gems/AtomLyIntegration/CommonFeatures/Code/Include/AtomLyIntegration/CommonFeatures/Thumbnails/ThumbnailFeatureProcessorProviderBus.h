@@ -18,7 +18,7 @@ namespace AZ
         {
             //! ThumbnailFeatureProcessorProviderRequests allows registering custom Feature Processors for thumbnail generation
             //! Duplicates will be ignored
-            //! You can check minimal feature processors that are already registered in CommonThumbnailRenderer.cpp
+            //! You can check minimal feature processors that are already registered in SharedPreviewRenderer.cpp
             class ThumbnailFeatureProcessorProviderRequests
                 : public AZ::EBusTraits
             {

@@ -15,9 +15,9 @@
 #include <AzCore/Component/Entity.h>
 #include <AzCore/Component/TransformBus.h>
 #include <AzToolsFramework/Thumbnails/ThumbnailerBus.h>
-#include <Thumbnails/Rendering/ThumbnailRendererContext.h>
-#include <Thumbnails/Rendering/ThumbnailRendererData.h>
-#include <Thumbnails/Rendering/ThumbnailRendererSteps/CaptureStep.h>
+#include <SharedPreview/SharedPreviewRendererContext.h>
+#include <SharedPreview/SharedPreviewRendererData.h>
+#include <SharedPreview/SharedPreviewRendererCaptureState.h>
 #include <AzCore/Math/MatrixUtils.h>
 
 namespace AZ
@@ -26,12 +26,12 @@ namespace AZ
     {
         namespace Thumbnails
         {
-            CaptureStep::CaptureStep(ThumbnailRendererContext* context)
-                : ThumbnailRendererStep(context)
+            SharedPreviewRendererCaptureState::SharedPreviewRendererCaptureState(SharedPreviewRendererContext* context)
+                : SharedPreviewRendererState(context)
             {
             }
 
-            void CaptureStep::Start()
+            void SharedPreviewRendererCaptureState::Start()
             {
                 if (!m_context->GetData()->m_materialAsset ||
                     !m_context->GetData()->m_modelAsset)
@@ -39,7 +39,7 @@ namespace AZ
                     AzToolsFramework::Thumbnailer::ThumbnailerRendererNotificationBus::Event(
                         m_context->GetData()->m_thumbnailKeyRendered,
                         &AzToolsFramework::Thumbnailer::ThumbnailerRendererNotifications::ThumbnailFailedToRender);
-                    m_context->SetStep(Step::FindThumbnailToRender);
+                    m_context->SetState(State::Idle);
                     return;
                 }
                 Render::MaterialComponentRequestBus::Event(
@@ -56,14 +56,14 @@ namespace AZ
                 TickBus::Handler::BusConnect();
             }
 
-            void CaptureStep::Stop()
+            void SharedPreviewRendererCaptureState::Stop()
             {
                 m_context->GetData()->m_renderPipeline->RemoveFromRenderTick();
                 TickBus::Handler::BusDisconnect();
                 Render::FrameCaptureNotificationBus::Handler::BusDisconnect();
             }
 
-            void CaptureStep::RepositionCamera() const
+            void SharedPreviewRendererCaptureState::RepositionCamera() const
             {
                 // Get bounding sphere of the model asset and estimate how far the camera needs to be see all of it
                 const Aabb& aabb = m_context->GetData()->m_modelAsset->GetAabb();
@@ -81,7 +81,7 @@ namespace AZ
                 m_context->GetData()->m_view->SetCameraTransform(Matrix3x4::CreateFromTransform(cameraTransform));
             }
 
-            void CaptureStep::OnTick([[maybe_unused]] float deltaTime, [[maybe_unused]] ScriptTimePoint time)
+            void SharedPreviewRendererCaptureState::OnTick([[maybe_unused]] float deltaTime, [[maybe_unused]] ScriptTimePoint time)
             {
                 if (m_readyToCapture && m_ticksToCapture-- <= 0)
                 {
@@ -121,9 +121,9 @@ namespace AZ
                 }
             }
 
-            void CaptureStep::OnCaptureFinished([[maybe_unused]] Render::FrameCaptureResult result, [[maybe_unused]] const AZStd::string& info)
+            void SharedPreviewRendererCaptureState::OnCaptureFinished([[maybe_unused]] Render::FrameCaptureResult result, [[maybe_unused]] const AZStd::string& info)
             {
-                m_context->SetStep(Step::FindThumbnailToRender);
+                m_context->SetState(State::Idle);
             }
         } // namespace Thumbnails
     } // namespace LyIntegration

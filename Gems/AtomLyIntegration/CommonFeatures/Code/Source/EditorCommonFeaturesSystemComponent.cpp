@@ -82,8 +82,8 @@ namespace AZ
 
         void EditorCommonFeaturesSystemComponent::Activate()
         {
-            m_renderer = AZStd::make_unique<AZ::LyIntegration::Thumbnails::CommonThumbnailRenderer>();
-            m_previewerFactory = AZStd::make_unique <LyIntegration::CommonPreviewerFactory>();
+            m_renderer = AZStd::make_unique<AZ::LyIntegration::Thumbnails::SharedPreviewRenderer>();
+            m_previewerFactory = AZStd::make_unique <LyIntegration::SharedPreviewerFactory>();
             m_skinnedMeshDebugDisplay = AZStd::make_unique<SkinnedMeshDebugDisplay>();
 
             AzToolsFramework::EditorLevelNotificationBus::Handler::BusConnect();

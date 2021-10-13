@@ -9,7 +9,7 @@
 #pragma once
 
 #include <AzCore/std/smart_ptr/shared_ptr.h>
-#include <Thumbnails/Rendering/ThumbnailRendererSteps/ThumbnailRendererStep.h>
+#include <SharedPreview/SharedPreviewRendererState.h>
 
 namespace AZ
 {
@@ -17,25 +17,25 @@ namespace AZ
     {
         namespace Thumbnails
         {
-            struct ThumbnailRendererData;
+            struct SharedPreviewRendererData;
 
-            enum class Step
+            enum class State
             {
                 None,
-                Initialize,
-                FindThumbnailToRender,
-                WaitForAssetsToLoad,
+                Init,
+                Idle,
+                Load,
                 Capture,
-                ReleaseResources
+                Release
             };
 
-            //! An interface for ThumbnailRendererSteps to communicate with thumbnail renderer
-            class ThumbnailRendererContext
+            //! An interface for SharedPreviewRendererStates to communicate with thumbnail renderer
+            class SharedPreviewRendererContext
             {
             public:
-                virtual void SetStep(Step step) = 0;
-                virtual Step GetStep() const = 0;
-                virtual AZStd::shared_ptr<ThumbnailRendererData> GetData() const = 0;
+                virtual void SetState(State step) = 0;
+                virtual State GetState() const = 0;
+                virtual AZStd::shared_ptr<SharedPreviewRendererData> GetData() const = 0;
             };
         } // namespace Thumbnails
     } // namespace LyIntegration

@@ -14,14 +14,14 @@ namespace AZ
     {
         namespace Thumbnails
         {
-            class ThumbnailRendererContext;
+            class SharedPreviewRendererContext;
 
-            //! ThumbnailRendererStep decouples CommonThumbnailRenderer logic into easy-to-understand and debug pieces
-            class ThumbnailRendererStep
+            //! SharedPreviewRendererState decouples SharedPreviewRenderer logic into easy-to-understand and debug pieces
+            class SharedPreviewRendererState
             {
             public:
-                explicit ThumbnailRendererStep(ThumbnailRendererContext* context) : m_context(context) {}
-                virtual ~ThumbnailRendererStep() = default;
+                explicit SharedPreviewRendererState(SharedPreviewRendererContext* context) : m_context(context) {}
+                virtual ~SharedPreviewRendererState() = default;
 
                 //! Start is called when step begins execution
                 virtual void Start() {}
@@ -29,7 +29,7 @@ namespace AZ
                 virtual void Stop() {}
 
             protected:
-                ThumbnailRendererContext* m_context;
+                SharedPreviewRendererContext* m_context;
             };
         } // namespace Thumbnails
     } // namespace LyIntegration
