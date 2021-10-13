@@ -21,6 +21,34 @@
 #include <AzCore/std/sort.h>
 #include <AzCore/std/parallel/scoped_lock.h>
 
+namespace AZ::SettingsRegistryImplInternal
+{
+    AZ::SettingsRegistryInterface::Type RapidjsonToSettingsRegistryType(const rapidjson::Value& value)
+    {
+        using Type = AZ::SettingsRegistryInterface::Type;
+        switch (value.GetType())
+        {
+        case rapidjson::Type::kNullType:
+            return Type::Null;
+        case rapidjson::Type::kFalseType:
+            return Type::Boolean;
+        case rapidjson::Type::kTrueType:
+            return Type::Boolean;
+        case rapidjson::Type::kObjectType:
+            return Type::Object;
+        case rapidjson::Type::kArrayType:
+            return Type::Array;
+        case rapidjson::Type::kStringType:
+            return Type::String;
+        case rapidjson::Type::kNumberType:
+            return value.IsDouble() ? Type::FloatingPoint :
+                Type::Integer;
+        }
+
+        return Type::NoType;
+    }
+}
+
 namespace AZ
 {
     template<typename T>
@@ -314,39 +342,19 @@ namespace AZ
     {
         if (path.empty())
         {
-            //rapidjson::Pointer assets that the supplied string
+            //rapidjson::Pointer asserts that the supplied string
             // is not nullptr even if the supplied size is 0
             // Setting to empty string to prevent assert
             path = "";
         }
 
-
         rapidjson::Pointer pointer(path.data(), path.length());
         if (pointer.IsValid())
         {
             AZStd::scoped_lock lock(m_settingMutex);
-            const rapidjson::Value* value = pointer.Get(m_settings);
-            if (value)
+            if (const rapidjson::Value* value = pointer.Get(m_settings); value != nullptr)
             {
-                switch (value->GetType())
-                {
-                case rapidjson::Type::kNullType:
-                    return Type::Null;
-                case rapidjson::Type::kFalseType:
-                    return Type::Boolean;
-                case rapidjson::Type::kTrueType:
-                    return Type::Boolean;
-                case rapidjson::Type::kObjectType:
-                    return Type::Object;
-                case rapidjson::Type::kArrayType:
-                    return Type::Array;
-                case rapidjson::Type::kStringType:
-                    return Type::String;
-                case rapidjson::Type::kNumberType:
-                    return 
-                        value->IsDouble() ? Type::FloatingPoint :
-                        Type::Integer;
-                }
+                return SettingsRegistryImplInternal::RapidjsonToSettingsRegistryType(*value);
             }
         }
         return Type::NoType;
@@ -477,7 +485,6 @@ namespace AZ
             path = "";
         }
 
-
         rapidjson::Pointer pointer(path.data(), path.length());
         if (pointer.IsValid())
         {
@@ -486,10 +493,14 @@ namespace AZ
                 value, nullptr, valueTypeID, m_serializationSettings);
             if (jsonResult.GetProcessing() != JsonSerializationResult::Processing::Halted)
             {
-                AZStd::scoped_lock lock(m_settingMutex);
-                rapidjson::Value& setting = pointer.Create(m_settings, m_settings.GetAllocator());
-                setting = AZStd::move(store);
-                SignalNotifier(path, Type::Object);
+                auto anchorType = Type::NoType;
+                {
+                    AZStd::scoped_lock lock(m_settingMutex);
+                    rapidjson::Value& setting = pointer.Create(m_settings, m_settings.GetAllocator());
+                    setting = AZStd::move(store);
+                    anchorType = SettingsRegistryImplInternal::RapidjsonToSettingsRegistryType(setting);
+                }
+                SignalNotifier(path, anchorType);
                 return true;
             }
         }
@@ -605,7 +616,7 @@ namespace AZ
         return Set(key, value);
     }
 
-    bool SettingsRegistryImpl::MergeSettings(AZStd::string_view data, Format format)
+    bool SettingsRegistryImpl::MergeSettings(AZStd::string_view data, Format format, AZStd::string_view anchorKey)
     {
         rapidjson::Document jsonPatch;
         constexpr int flags = rapidjson::kParseStopWhenDoneFlag | rapidjson::kParseCommentsFlag | rapidjson::kParseTrailingCommasFlag;
@@ -631,17 +642,43 @@ namespace AZ
             return false;
         }
 
-        AZStd::scoped_lock lock(m_settingMutex);
-
-        JsonSerializationResult::ResultCode mergeResult =
-            JsonSerialization::ApplyPatch(m_settings, m_settings.GetAllocator(), jsonPatch, mergeApproach);
-        if (mergeResult.GetProcessing() != JsonSerializationResult::Processing::Completed)
+        rapidjson::Pointer anchorPath;
+        if (!anchorKey.empty())
         {
-            AZ_Error("Settings Registry", false, "Failed to fully merge data into registry.");
-            return false;
+            anchorPath = rapidjson::Pointer(anchorKey.data(), anchorKey.size());
+            if (!anchorPath.IsValid())
+            {
+                rapidjson::Pointer pointer(AZ_SETTINGS_REGISTRY_HISTORY_KEY "/-");
+                AZ_Error("Settings Registry", false, R"(Anchor path "%.*s" is invalid.)", AZ_STRING_ARG(anchorKey));
+                AZStd::scoped_lock lock(m_settingMutex);
+                pointer.Create(m_settings, m_settings.GetAllocator()).SetObject()
+                    .AddMember(rapidjson::StringRef("Error"), rapidjson::StringRef("Invalid anchor key."), m_settings.GetAllocator())
+                    .AddMember(rapidjson::StringRef("Path"),
+                    rapidjson::Value(anchorKey.data(), aznumeric_caster(anchorKey.size()), m_settings.GetAllocator()),
+                    m_settings.GetAllocator());
+                return false;
+            }
         }
 
-        SignalNotifier("", Type::Object);
+        auto anchorType = AZ::SettingsRegistryInterface::Type::NoType;
+        {
+            AZStd::scoped_lock lock(m_settingMutex);
+            rapidjson::Value& anchorRoot = anchorPath.IsValid() ? anchorPath.Create(m_settings, m_settings.GetAllocator())
+                : m_settings;
+
+            JsonSerializationResult::ResultCode mergeResult =
+                JsonSerialization::ApplyPatch(anchorRoot, m_settings.GetAllocator(), jsonPatch, mergeApproach);
+            if (mergeResult.GetProcessing() != JsonSerializationResult::Processing::Completed)
+            {
+                AZ_Error("Settings Registry", false, "Failed to fully merge data into registry.");
+                return false;
+            }
+
+            // The settings have been successfully merged, query the type at the anchor key
+            anchorType = SettingsRegistryImplInternal::RapidjsonToSettingsRegistryType(anchorRoot);
+        }
+
+        SignalNotifier(anchorKey, anchorType);
 
         return true;
     }
@@ -1225,10 +1262,12 @@ namespace AZ
         ScopedMergeEvent scopedMergeEvent(m_preMergeEvent, m_postMergeEvent, path, rootKey);
 
         JsonSerializationResult::ResultCode mergeResult(JsonSerializationResult::Tasks::Merge);
+        auto anchorType = Type::NoType;
         if (rootKey.empty())
         {
             AZStd::scoped_lock lock(m_settingMutex);
             mergeResult = JsonSerialization::ApplyPatch(m_settings, m_settings.GetAllocator(), jsonPatch, mergeApproach, m_applyPatchSettings);
+            anchorType = SettingsRegistryImplInternal::RapidjsonToSettingsRegistryType(m_settings);
         }
         else
         {
@@ -1238,6 +1277,7 @@ namespace AZ
                 AZStd::scoped_lock lock(m_settingMutex);
                 Value& rootValue = root.Create(m_settings, m_settings.GetAllocator());
                 mergeResult = JsonSerialization::ApplyPatch(rootValue, m_settings.GetAllocator(), jsonPatch, mergeApproach, m_applyPatchSettings);
+                anchorType = SettingsRegistryImplInternal::RapidjsonToSettingsRegistryType(rootValue);
             }
             else
             {
@@ -1265,7 +1305,7 @@ namespace AZ
             pointer.Create(m_settings, m_settings.GetAllocator()).SetString(path, m_settings.GetAllocator());
         }
 
-        SignalNotifier("", Type::Object);
+        SignalNotifier(rootKey, anchorType);
 
         return true;
     }
