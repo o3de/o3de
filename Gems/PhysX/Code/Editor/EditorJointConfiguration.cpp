@@ -71,7 +71,7 @@ namespace PhysX
                     ->Attribute(AZ::Edit::Attributes::Max, s_springMax)
                     ->Attribute(AZ::Edit::Attributes::Min, s_springMin)
                     ->DataElement(0, &PhysX::EditorJointLimitConfig::m_stiffness, "Stiffness",
-                        "The spring's drive relative to the position of the follower when outside the rotation limit.")
+                        "The spring's drive relative to the position of the follower when outside the joint limit.")
                     ->Attribute(AZ::Edit::Attributes::Visibility, &EditorJointLimitConfig::IsSoftLimited)
                     ->Attribute(AZ::Edit::Attributes::Max, s_springMax)
                     ->Attribute(AZ::Edit::Attributes::Min, s_springMin)
