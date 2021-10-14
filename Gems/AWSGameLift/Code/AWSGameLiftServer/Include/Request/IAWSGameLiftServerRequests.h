@@ -9,9 +9,11 @@
 #pragma once
 
 #include <AzCore/EBus/EBus.h>
-#include <AzCore/RTTI/BehaviorContext.h>
+#include <AzCore/RTTI/RTTI.h>
+#include <AzCore/std/containers/vector.h>
 #include <AzCore/std/string/string.h>
-#include <AzFramework/Session/ISessionRequests.h>
+
+#include <AWSGameLiftPlayer.h>
 
 namespace AWSGameLift
 {
@@ -26,8 +28,21 @@ namespace AWSGameLift
         virtual ~IAWSGameLiftServerRequests() = default;
 
         //! Notify GameLift that the server process is ready to host a game session.
-        //! @return Whether the ProcessReady notification is sent to GameLift.
+        //! @return True if the ProcessReady notification is sent to GameLift successfully, false otherwise
         virtual bool NotifyGameLiftProcessReady() = 0;
+
+        //! Sends a request to find new players for open slots in a game session created with FlexMatch.
+        //! @param  ticketId Unique identifier for match backfill request ticket
+        //! @param  players A set of data representing all players who are currently in the game session,
+        //!         if not provided, system will use lazy loaded game session data which is not guaranteed to
+        //!         be accurate (no latency data either)
+        //! @return True if StartMatchBackfill succeeds, false otherwise
+        virtual bool StartMatchBackfill(const AZStd::string& ticketId, const AZStd::vector<AWSGameLiftPlayer>& players) = 0;
+
+        //! Cancels an active match backfill request that was created with StartMatchBackfill
+        //! @param  ticketId Unique identifier of the backfill request ticket to be canceled
+        //! @return True if StopMatchBackfill succeeds, false otherwise
+        virtual bool StopMatchBackfill(const AZStd::string& ticketId) = 0;
     };
 
     // IAWSGameLiftServerRequests EBus wrapper for scripting

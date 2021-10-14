@@ -27,16 +27,6 @@ ShaderResourceGroup ObjectSrg : SRG_PerObject
         return SceneSrg::GetObjectToWorldInverseTransposeMatrix(m_objectId);
     }
 
-    //[GFX TODO][ATOM-15280] Move wrinkle mask data from the default object srg into something specific to the Skin shader
-    uint m_wrinkle_mask_count;
-    float4 m_wrinkle_mask_weights[4];
-    Texture2D m_wrinkle_masks[16];
-
-    float GetWrinkleMaskWeight(uint index)
-    {
-        return m_wrinkle_mask_weights[index / 4][index % 4];
-    }
-
     //! Reflection Probe (smallest probe volume that overlaps the object position)
     struct ReflectionProbeData
     {

@@ -308,6 +308,12 @@ namespace Multiplayer
         return true;
     }
 
+    void MultiplayerSystemComponent::OnUpdateSessionBegin(const AzFramework::SessionConfig& sessionConfig, const AZStd::string& updateReason)
+    {
+        AZ_UNUSED(sessionConfig);
+        AZ_UNUSED(updateReason);
+    }
+
     void MultiplayerSystemComponent::OnTick(float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time)
     {
         const AZ::TimeMs deltaTimeMs = aznumeric_cast<AZ::TimeMs>(static_cast<int32_t>(deltaTime * 1000.0f));
@@ -497,6 +503,8 @@ namespace Multiplayer
         AZ::Interface<AZ::IConsole>::Get()->PerformCommand(commandString.c_str());
         AZ::CVarFixedString loadLevelString = "LoadLevel " + packet.GetMap();
         AZ::Interface<AZ::IConsole>::Get()->PerformCommand(loadLevelString.c_str());
+
+        m_serverAcceptanceReceivedEvent.Signal();
         return true;
     }
 
@@ -821,6 +829,11 @@ namespace Multiplayer
         handler.Connect(m_connectionAcquiredEvent);
     }
 
+    void MultiplayerSystemComponent::AddServerAcceptanceReceivedHandler(ServerAcceptanceReceivedEvent::Handler& handler)
+    {
+        handler.Connect(m_serverAcceptanceReceivedEvent);
+    }
+
     void MultiplayerSystemComponent::AddSessionInitHandler(SessionInitEvent::Handler& handler)
     {
         handler.Connect(m_initEvent);
@@ -1034,7 +1047,7 @@ namespace Multiplayer
         INetworkEntityManager::EntityList entityList = m_networkEntityManager.CreateEntitiesImmediate(playerPrefabEntityId, NetEntityRole::Authority, AZ::Transform::CreateIdentity(), Multiplayer::AutoActivate::DoNotActivate);
 
         NetworkEntityHandle controlledEntity;
-        if (entityList.size() > 0)
+        if (!entityList.empty())
         {
             controlledEntity = entityList[0];
         }

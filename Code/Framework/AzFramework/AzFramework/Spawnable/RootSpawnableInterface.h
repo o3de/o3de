@@ -61,6 +61,10 @@ namespace AzFramework
         //! be deleted and the spawnable asset to be released. This call is automatically done when
         //! AssignRootSpawnable is called while a root spawnable is assigned.
         virtual void ReleaseRootSpawnable() = 0;
+        //! Force processing all SpawnableEntitiesManager requests immediately
+        //! This is useful when loading a different level while SpawnableEntitiesManager still has
+        //! pending requests
+        virtual void ProcessSpawnableQueue() = 0;
     };
 
     using RootSpawnableInterface = AZ::Interface<RootSpawnableDefinition>;

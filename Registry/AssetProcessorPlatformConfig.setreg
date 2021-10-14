@@ -106,7 +106,7 @@
                 // "exclude": "mac"
                 // }
 
-                "ScanFolder Game": {
+                "ScanFolder Project/Assets": {
                     "watch": "@PROJECTROOT@",
                     "display": "@PROJECTNAME@",
                     "recursive": 1,
@@ -128,6 +128,11 @@
                     "recursive": 1,
                     "order": 30000,
                     "include": "tools,renderer"
+                },
+                "ScanFolder Engine/Registry": {
+                    "watch": "@ENGINEROOT@/Registry",
+                    "recursive": 1,
+                    "order": 40000
                 },
 
                 // Excludes files that match the pattern or glob 

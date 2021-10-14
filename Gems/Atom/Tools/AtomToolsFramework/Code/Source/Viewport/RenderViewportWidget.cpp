@@ -214,20 +214,17 @@ namespace AtomToolsFramework
         m_mouseOver = false;
     }
 
-    void RenderViewportWidget::mouseMoveEvent(QMouseEvent* event)
-    {
-        m_mousePosition = event->localPos();
-    }
-
     void RenderViewportWidget::SendWindowResizeEvent()
     {
         // Scale the size by the DPI of the platform to
         // get the proper size in pixels.
+        const auto pixelRatio = devicePixelRatioF();
         const QSize uiWindowSize = size();
-        const QSize windowSize = uiWindowSize * devicePixelRatioF();
+        const QSize windowSize = uiWindowSize * pixelRatio;
 
         const AzFramework::NativeWindowHandle windowId = reinterpret_cast<AzFramework::NativeWindowHandle>(winId());
-        AzFramework::WindowNotificationBus::Event(windowId, &AzFramework::WindowNotifications::OnWindowResized, windowSize.width(), windowSize.height());
+        AzFramework::WindowNotificationBus::Event(
+            windowId, &AzFramework::WindowNotifications::OnWindowResized, windowSize.width(), windowSize.height());
     }
 
     AZ::Name RenderViewportWidget::GetCurrentContextName() const

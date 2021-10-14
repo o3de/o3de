@@ -37,6 +37,8 @@ namespace AzNetworking
 
 namespace Multiplayer
 {
+    AZ_CVAR_EXTERNED(AZ::CVarFixedString, sv_defaultPlayerSpawnAsset);
+
     //! Multiplayer system component wraps the bridging logic between the game and transport layer.
     class MultiplayerSystemComponent final
         : public AZ::Component
@@ -68,6 +70,7 @@ namespace Multiplayer
         bool OnSessionHealthCheck() override;
         bool OnCreateSessionBegin(const AzFramework::SessionConfig& sessionConfig) override;
         bool OnDestroySessionBegin() override;
+        void OnUpdateSessionBegin(const AzFramework::SessionConfig& sessionConfig, const AZStd::string& updateReason) override;
         //! @}
 
         //! AZ::TickBus::Handler overrides.
@@ -116,6 +119,7 @@ namespace Multiplayer
         void AddConnectionAcquiredHandler(ConnectionAcquiredEvent::Handler& handler) override;
         void AddSessionInitHandler(SessionInitEvent::Handler& handler) override;
         void AddSessionShutdownHandler(SessionShutdownEvent::Handler& handler) override;
+        void AddServerAcceptanceReceivedHandler(ServerAcceptanceReceivedEvent::Handler& handler) override;
         void SendNotifyClientMigrationEvent(const HostId& hostId, uint64_t userIdentifier, ClientInputId lastClientInputId) override;
         void SendNotifyEntityMigrationEvent(const ConstNetworkEntityHandle& entityHandle, const HostId& remoteHostId) override;
         void SendReadyForEntityUpdates(bool readyForEntityUpdates) override;
@@ -157,6 +161,7 @@ namespace Multiplayer
         SessionInitEvent m_initEvent;
         SessionShutdownEvent m_shutdownEvent;
         ConnectionAcquiredEvent m_connectionAcquiredEvent;
+        ServerAcceptanceReceivedEvent m_serverAcceptanceReceivedEvent;
         ClientDisconnectedEvent m_clientDisconnectedEvent;
         ClientMigrationStartEvent m_clientMigrationStartEvent;
         ClientMigrationEndEvent m_clientMigrationEndEvent;

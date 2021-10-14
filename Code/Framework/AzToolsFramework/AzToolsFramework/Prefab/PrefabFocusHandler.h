@@ -13,6 +13,7 @@
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 #include <AzToolsFramework/FocusMode/FocusModeInterface.h>
 #include <AzToolsFramework/Prefab/PrefabFocusInterface.h>
+#include <AzToolsFramework/Prefab/PrefabFocusPublicInterface.h>
 #include <AzToolsFramework/Prefab/Template/Template.h>
 
 namespace AzToolsFramework
@@ -28,6 +29,7 @@ namespace AzToolsFramework::Prefab
     //! Handles Prefab Focus mode, determining which prefab file entity changes will target.
     class PrefabFocusHandler final
         : private PrefabFocusInterface
+        , private PrefabFocusPublicInterface
         , private EditorEntityContextNotificationBus::Handler
     {
     public:
@@ -39,10 +41,14 @@ namespace AzToolsFramework::Prefab
         void Initialize();
 
         // PrefabFocusInterface overrides ...
-        PrefabFocusOperationResult FocusOnOwningPrefab(AZ::EntityId entityId) override;
-        PrefabFocusOperationResult FocusOnPathIndex(AzFramework::EntityContextId entityContextId, int index) override;
+        PrefabFocusOperationResult FocusOnPrefabInstanceOwningEntityId(AZ::EntityId entityId) override;
         TemplateId GetFocusedPrefabTemplateId(AzFramework::EntityContextId entityContextId) const override;
         InstanceOptionalReference GetFocusedPrefabInstance(AzFramework::EntityContextId entityContextId) const override;
+
+        // PrefabFocusPublicInterface overrides ...
+        PrefabFocusOperationResult FocusOnOwningPrefab(AZ::EntityId entityId) override;
+        PrefabFocusOperationResult FocusOnPathIndex(AzFramework::EntityContextId entityContextId, int index) override;
+        AZ::EntityId GetFocusedPrefabContainerEntityId(AzFramework::EntityContextId entityContextId) const override;
         bool IsOwningPrefabBeingFocused(AZ::EntityId entityId) const override;
         const AZ::IO::Path& GetPrefabFocusPath(AzFramework::EntityContextId entityContextId) const override;
         const int GetPrefabFocusPathLength(AzFramework::EntityContextId entityContextId) const override;
