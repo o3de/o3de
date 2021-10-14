@@ -13,20 +13,20 @@ class Tests:
         "REDO Entity creation success",
         "REDO Entity creation failed")
     postfx_gradient_weight_creation = (
-        "PostFx Gradient Weight Modifier Entity successfully created",
-        "PostFx Gradient Weight Modifier Entity failed to be created")
+        "PostFX Gradient Weight Modifier Entity successfully created",
+        "PostFX Gradient Weight Modifier Entity failed to be created")
     postfx_gradient_weight_component = (
-        "Entity has a PostFx Gradient Weight Modifier component",
-        "Entity failed to find PostFx Gradient Weight Modifier component")
+        "Entity has a PostFX Gradient Weight Modifier component",
+        "Entity failed to find PostFX Gradient Weight Modifier component")
     postfx_gradient_weight_disabled = (
-        "PostFx Gradient Weight Modifier component disabled",
-        "PostFx Gradient Weight Modifier component was not disabled.")
+        "PostFX Gradient Weight Modifier component disabled",
+        "PostFX Gradient Weight Modifier component was not disabled.")
     postfx_layer_component = (
         "Entity has a PostFX Layer component",
         "Entity did not have an PostFX Layer component")
     postfx_gradient_weight_enabled = (
-        "PostFx Gradient Weight Modifier component enabled",
-        "PostFx Gradient Weight Modifier component was not enabled.")
+        "PostFX Gradient Weight Modifier component enabled",
+        "PostFX Gradient Weight Modifier component was not enabled.")
     enter_game_mode = (
         "Entered game mode",
         "Failed to enter game mode")
@@ -50,10 +50,10 @@ class Tests:
         "REDO deletion failed")
 
 
-def AtomEditorComponents_postfx_gradient_weight_AddedToEntity():
+def AtomEditorComponents_PostFXGradientWeightModifier_AddedToEntity():
     """
     Summary:
-    Tests the PostFx Gradient Weight Modifier component can be added to an entity and has the expected functionality.
+    Tests the PostFX Gradient Weight Modifier component can be added to an entity and has the expected functionality.
 
     Test setup:
     - Wait for Editor idle loop.
@@ -64,17 +64,17 @@ def AtomEditorComponents_postfx_gradient_weight_AddedToEntity():
     Creation and deletion undo/redo should also work.
 
     Test Steps:
-    1) Create a PostFx Gradient Weight Modifier entity with no components.
-    2) Add a PostFx Gradient Weight Modifier component to PostFx Gradient Weight Modifier entity.
+    1) Create a PostFX Gradient Weight Modifier entity with no components.
+    2) Add a PostFX Gradient Weight Modifier component to PostFX Gradient Weight Modifier entity.
     3) UNDO the entity creation and component addition.
     4) REDO the entity creation and component addition.
-    5) Verify PostFx Gradient Weight Modifier component not enabled.
-    6) Add PostFX Layer component since it is required by the PostFx Gradient Weight Modifier component.
-    7) Verify PostFx Gradient Weight Modifier component is enabled.
+    5) Verify PostFX Gradient Weight Modifier component not enabled.
+    6) Add PostFX Layer component since it is required by the PostFX Gradient Weight Modifier component.
+    7) Verify PostFX Gradient Weight Modifier component is enabled.
     8) Enter/Exit game mode.
     9) Test IsHidden.
     10) Test IsVisible.
-    11) Delete PostFx Gradient Weight Modifier entity.
+    11) Delete PostFX Gradient Weight Modifier entity.
     12) UNDO deletion.
     13) REDO deletion.
     14) Look for errors.
@@ -94,12 +94,12 @@ def AtomEditorComponents_postfx_gradient_weight_AddedToEntity():
         TestHelper.open_level("", "Base")
 
         # Test steps begin.
-        # 1. Create a PostFx Gradient Weight Modifier entity with no components.
+        # 1. Create a PostFX Gradient Weight Modifier entity with no components.
         postfx_gradient_weight_name = "PostFX Gradient Weight Modifier"
         postfx_gradient_weight_entity = EditorEntity.create_editor_entity(postfx_gradient_weight_name)
         Report.critical_result(Tests.postfx_gradient_weight_creation, postfx_gradient_weight_entity.exists())
 
-        # 2. Add a PostFx Gradient Weight Modifier component to PostFx Gradient Weight Modifier entity.
+        # 2. Add a PostFX Gradient Weight Modifier component to PostFX Gradient Weight Modifier entity.
         postfx_gradient_weight_component = postfx_gradient_weight_entity.add_component(postfx_gradient_weight_name)
         Report.critical_result(
             Tests.postfx_gradient_weight_component,
@@ -129,15 +129,15 @@ def AtomEditorComponents_postfx_gradient_weight_AddedToEntity():
         general.idle_wait_frames(1)
         Report.result(Tests.creation_redo, postfx_gradient_weight_entity.exists())
 
-        # 5. Verify PostFx Gradient Weight Modifier component not enabled.
+        # 5. Verify PostFX Gradient Weight Modifier component not enabled.
         Report.result(Tests.postfx_gradient_weight_disabled, not postfx_gradient_weight_component.is_enabled())
 
-        # 6. Add PostFX Layer component since it is required by the PostFx Gradient Weight Modifier component.
+        # 6. Add PostFX Layer component since it is required by the PostFX Gradient Weight Modifier component.
         postfx_layer_name = "PostFX Layer"
         postfx_gradient_weight_entity.add_component(postfx_layer_name)
         Report.result(Tests.postfx_layer_component, postfx_gradient_weight_entity.has_component(postfx_layer_name))
 
-        # 7. Verify PostFx Gradient Weight Modifier component is enabled.
+        # 7. Verify PostFX Gradient Weight Modifier component is enabled.
         Report.result(Tests.postfx_gradient_weight_enabled, postfx_gradient_weight_component.is_enabled())
 
         # 8. Enter/Exit game mode.
@@ -154,7 +154,7 @@ def AtomEditorComponents_postfx_gradient_weight_AddedToEntity():
         general.idle_wait_frames(1)
         Report.result(Tests.is_visible, postfx_gradient_weight_entity.is_visible() is True)
 
-        # 11. Delete PostFx Gradient Weight Modifier entity.
+        # 11. Delete PostFX Gradient Weight Modifier entity.
         postfx_gradient_weight_entity.delete()
         Report.result(Tests.entity_deleted, not postfx_gradient_weight_entity.exists())
 
@@ -176,4 +176,4 @@ def AtomEditorComponents_postfx_gradient_weight_AddedToEntity():
 
 if __name__ == "__main__":
     from editor_python_test_tools.utils import Report
-    Report.start_test(AtomEditorComponents_postfx_gradient_weight_AddedToEntity)
+    Report.start_test(AtomEditorComponents_PostFXGradientWeightModifier_AddedToEntity)
