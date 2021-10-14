@@ -202,8 +202,6 @@ namespace AzNetworking
         }
         else // If we are not gathering records, then we are comparing them
         {
-            AZ_Assert(baseValue != nullptr, "Expected to find an existing record but got null at index %d", m_objectCounter - 1);
-
             bool different = false;
 
             if (baseValue)
