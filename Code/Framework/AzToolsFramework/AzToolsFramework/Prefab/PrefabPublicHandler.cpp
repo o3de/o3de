@@ -984,7 +984,7 @@ namespace AzToolsFramework
             const EntityIdList entityIdsNoFocusContainer = GenerateEntityIdListWithoutFocusedInstanceContainer(entityIds);
             if (entityIdsNoFocusContainer.empty())
             {
-                return AZ::Failure(AZStd::string("No entities to duplicate because only instance selected is the level instance."));
+                return AZ::Failure(AZStd::string("No entities to duplicate because only instance selected is the container entity of the focused instance."));
             }
 
             if (!EntitiesBelongToSameInstance(entityIdsNoFocusContainer))
@@ -1252,7 +1252,6 @@ namespace AzToolsFramework
             auto editorEntityContextId = AzFramework::EntityContextId::CreateNull();
             EditorEntityContextRequestBus::BroadcastResult(editorEntityContextId, &EditorEntityContextRequests::GetEditorEntityContextId);
 
-
             if (containerEntityId == m_prefabFocusPublicInterface->GetFocusedPrefabContainerEntityId(editorEntityContextId))
             {
                 return AZ::Failure(AZStd::string("Cannot detach focused Prefab Instance."));
@@ -1481,9 +1480,11 @@ namespace AzToolsFramework
             auto editorEntityContextId = AzFramework::EntityContextId::CreateNull();
             EditorEntityContextRequestBus::BroadcastResult(editorEntityContextId, &EditorEntityContextRequests::GetEditorEntityContextId);
 
+            AZ::EntityId focusedPrefabContainerEntityId =
+                m_prefabFocusPublicInterface->GetFocusedPrefabContainerEntityId(editorEntityContextId);
             for (auto inputEntity : inputEntities)
             {
-                if (inputEntity && inputEntity->GetId() != m_prefabFocusPublicInterface->GetFocusedPrefabContainerEntityId(editorEntityContextId))
+                if (inputEntity && inputEntity->GetId() != focusedPrefabContainerEntityId)
                 {
                     entityQueue.push(inputEntity);
                 }
