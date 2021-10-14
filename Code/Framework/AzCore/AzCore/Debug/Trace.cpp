@@ -553,16 +553,12 @@ namespace AZ
     {
         StackFrame frames[25];
 
-        // Without StackFrame explicit alignment frames array is aligned to 4 bytes
-        // which causes the stack tracing to fail.
-        //size_t bla = AZStd::alignment_of<StackFrame>::value;
-        //printf("Alignment value %d address 0x%08x : 0x%08x\n",bla,frames);
         SymbolStorage::StackLine lines[AZ_ARRAY_SIZE(frames)];
         unsigned int numFrames = 0;
 
         if (!nativeContext)
         {
-            suppressCount += 1; /// If we don't provide a context we will capture in the RecordFunction, so skip us (Trace::PrinCallstack).
+            suppressCount += 1; /// If we don't provide a context we will capture in the RecordFunction, so skip us (Trace::PrintCallstack).
             numFrames = StackRecorder::Record(frames, AZ_ARRAY_SIZE(frames), suppressCount);
         }
         else
