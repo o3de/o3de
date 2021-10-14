@@ -71,5 +71,9 @@ class TestAutomation(EditorTestSuite):
     class AtomEditorComponents_PostFXShapeWeightModifierAdded(EditorSharedTest):
         from Atom.tests import hydra_AtomEditorComponents_PostFxShapeWeightModifierAdded as test_module
 
+    @pytest.mark.test_case_id("C36525664")
+    class AtomEditorComponents_PostFXGradientWeightModifierAdded(EditorSharedTest):
+        from Atom.tests import hydra_AtomEditorComponents_PostFxGradientWeightModifierAdded as test_module
+
     class ShaderAssetBuilder_RecompilesShaderAsChainOfDependenciesChanges(EditorSharedTest):
         from Atom.tests import hydra_ShaderAssetBuilder_RecompilesShaderAsChainOfDependenciesChanges as test_module
