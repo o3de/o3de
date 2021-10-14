@@ -1039,10 +1039,10 @@ namespace AzToolsFramework
                 DuplicateNestedEntitiesInInstance(commonOwningInstance->get(),
                     entities, instanceDomAfter, duplicatedEntityAndInstanceIds, duplicateEntityAliasMap);
 
-                PrefabUndoInstance* command = aznew PrefabUndoInstance("Entity/Instance duplication");
+                PrefabUndoInstance* command = aznew PrefabUndoInstance("Entity/Instance duplication", false);
                 command->SetParent(undoBatch.GetUndoBatch());
                 command->Capture(instanceDomBefore, instanceDomAfter, commonOwningInstance->get().GetTemplateId());
-                command->RedoBatched();
+                command->Redo();
 
                 DuplicateNestedInstancesInInstance(commonOwningInstance->get(),
                     instances, instanceDomAfter, duplicatedEntityAndInstanceIds, newInstanceAliasToOldInstanceMap);
@@ -1298,7 +1298,7 @@ namespace AzToolsFramework
                     Prefab::PrefabDom instanceDomAfter;
                     m_instanceToTemplateInterface->GenerateDomForInstance(instanceDomAfter, parentInstance);
 
-                    PrefabUndoInstance* command = aznew PrefabUndoInstance("Instance detachment");
+                    PrefabUndoInstance* command = aznew PrefabUndoInstance("Instance detachment", false);
                     command->Capture(instanceDomBefore, instanceDomAfter, parentTemplateId);
                     command->SetParent(undoBatch.GetUndoBatch());
                     {

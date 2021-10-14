@@ -37,6 +37,7 @@ namespace AzToolsFramework
             InstanceToTemplateInterface* m_instanceToTemplateInterface = nullptr;
 
             bool m_changed;
+            bool m_useImmediatePropagation = true;
         };
 
         //! handles the addition and removal of entities from instances
@@ -44,7 +45,7 @@ namespace AzToolsFramework
             : public PrefabUndoBase
         {
         public:
-            explicit PrefabUndoInstance(const AZStd::string& undoOperationName);
+            PrefabUndoInstance(const AZStd::string& undoOperationName, const bool useImmediatePropagation = true);
 
             void Capture(
                 const PrefabDom& initialState,
@@ -53,7 +54,6 @@ namespace AzToolsFramework
 
             void Undo() override;
             void Redo() override;
-            void RedoBatched();
         };
 
         //! handles entity updates, such as when the values on an entity change

@@ -25,9 +25,10 @@ namespace AzToolsFramework
         }
 
         //PrefabInstanceUndo
-        PrefabUndoInstance::PrefabUndoInstance(const AZStd::string& undoOperationName)
+        PrefabUndoInstance::PrefabUndoInstance(const AZStd::string& undoOperationName, const bool useImmediatePropagation)
             : PrefabUndoBase(undoOperationName)
         {
+            m_useImmediatePropagation = useImmediatePropagation;
         }
 
         void PrefabUndoInstance::Capture(
@@ -43,17 +44,12 @@ namespace AzToolsFramework
 
         void PrefabUndoInstance::Undo()
         {
-            m_instanceToTemplateInterface->PatchTemplate(m_undoPatch, m_templateId, true);
+            m_instanceToTemplateInterface->PatchTemplate(m_undoPatch, m_templateId, m_useImmediatePropagation);
         }
 
         void PrefabUndoInstance::Redo()
         {
-            m_instanceToTemplateInterface->PatchTemplate(m_redoPatch, m_templateId, true);
-        }
-
-        void PrefabUndoInstance::RedoBatched()
-        {
-            m_instanceToTemplateInterface->PatchTemplate(m_redoPatch, m_templateId);
+            m_instanceToTemplateInterface->PatchTemplate(m_redoPatch, m_templateId, m_useImmediatePropagation);
         }
 
 
