@@ -66,7 +66,7 @@ namespace AzToolsFramework::Prefab
         }
 
         bool result = false;
-        AZ::EntityId commonRoot;
+        [[maybe_unused]] AZ::EntityId commonRoot;
         EntityList topLevelEntities;
         AzToolsFramework::ToolsApplicationRequestBus::BroadcastResult(result, &AzToolsFramework::ToolsApplicationRequestBus::Events::FindCommonRootInactive,
             entities, commonRoot, &topLevelEntities);
