@@ -1165,7 +1165,7 @@ cleanup:
 
         LeaveCriticalSection(&g_csDbgHelpDll);
 #else
-        AZ_UNUSED(frame);
+        AZ_UNUSED(frames);
         AZ_UNUSED(maxNumOfFrames);
         AZ_UNUSED(nativeContext);
 #endif
