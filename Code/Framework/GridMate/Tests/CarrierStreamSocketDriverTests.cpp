@@ -172,7 +172,7 @@ public:
 
 namespace UnitTest
 {
-    class Integ_CarrierStreamBasicTest
+    class CarrierStreamBasicTest
         : public GridMateMPTestFixture
         , protected SocketDriverSupplier
     {
@@ -330,7 +330,7 @@ namespace UnitTest
         }
     };
 
-    class Integ_CarrierStreamAsyncHandshakeTest
+    class CarrierStreamAsyncHandshakeTest
         : public GridMateMPTestFixture
         , protected SocketDriverSupplier
     {
@@ -462,7 +462,7 @@ namespace UnitTest
         }
     };
 
-    class Integ_CarrierStreamStressTest
+    class CarrierStreamStressTest
         : public GridMateMPTestFixture
         , protected SocketDriverSupplier
         , public ::testing::Test
@@ -470,7 +470,7 @@ namespace UnitTest
     public:
     };
 
-    TEST_F(Integ_CarrierStreamStressTest, Stress_Test)
+    TEST_F(CarrierStreamStressTest, DISABLED_Stress_Test)
     {
         CarrierStreamCallbacksHandler clientCB, serverCB;
         UnitTest::TestCarrierDesc serverCarrierDesc, clientCarrierDesc;
@@ -581,7 +581,7 @@ namespace UnitTest
         //////////////////////////////////////////////////////////////////////////
     }
 
-    class Integ_CarrierStreamTest
+    class CarrierStreamTest
         : public GridMateMPTestFixture
         , protected SocketDriverSupplier
     {
@@ -783,7 +783,7 @@ namespace UnitTest
         }
     };
 
-    class Integ_CarrierStreamDisconnectDetectionTest
+    class CarrierStreamDisconnectDetectionTest
         : public GridMateMPTestFixture
         , protected SocketDriverSupplier
     {
@@ -873,7 +873,7 @@ namespace UnitTest
         }
     };
 
-    class Integ_CarrierStreamMultiChannelTest
+    class CarrierStreamMultiChannelTest
         : public GridMateMPTestFixture
         , protected SocketDriverSupplier
     {
@@ -999,8 +999,8 @@ namespace UnitTest
 }
 
 GM_TEST_SUITE(CarrierStreamSuite)
-    GM_TEST(Integ_CarrierStreamBasicTest)
-    GM_TEST(Integ_CarrierStreamTest)
-    GM_TEST(Integ_CarrierStreamAsyncHandshakeTest)
-    GM_TEST(Integ_CarrierStreamMultiChannelTest)
+    GM_TEST(CarrierStreamBasicTest)
+    GM_TEST(CarrierStreamTest)
+    GM_TEST(CarrierStreamAsyncHandshakeTest)
+    GM_TEST(CarrierStreamMultiChannelTest)
 GM_TEST_SUITE_END()
