@@ -254,7 +254,7 @@ namespace PhysX
 
             // There is no physx function to only compute the mass without
             // computing the inertia. So now that both have been computed
-            // we can override the inertia if it's suppose to use an
+            // we can override the inertia if it's suppose to use a
             // specific value set by the user.
             if (!computeInertiaTensor)
             {
@@ -403,11 +403,10 @@ namespace PhysX
         const physx::PxMassProperties pxMassProperties = [this, &pxShapes]
         {
             // Note: PhysX computeMassPropertiesFromShapes function does not use densities
-            //       to compute the shape's masses, which are needed to calculate the center of masses.
+            //       to compute the shape's masses, which are needed to calculate the center of mass.
             //       This differs from updateMassAndInertia function, which uses material density values.
-            //       So the masses used during center of masses calculation do not match the masses
-            //       used during mass/inertia calculation. This is not an issue but more like an inconsistency
-            //       in PhysX.
+            //       So the masses used during center of mass calculation do not match the masses
+            //       used during mass/inertia calculation. This is an inconsistency in PhysX.
             PHYSX_SCENE_READ_LOCK(m_pxRigidActor->getScene());
             return physx::PxRigidBodyExt::computeMassPropertiesFromShapes(pxShapes.data(), static_cast<physx::PxU32>(pxShapes.size()));
         }();

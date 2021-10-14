@@ -1588,11 +1588,11 @@ namespace PhysX
         const bool doesComputeInertia = AzPhysics::MassComputeFlags::COMPUTE_INERTIA == (flags & AzPhysics::MassComputeFlags::COMPUTE_INERTIA);
 
         UnitTest::ErrorHandler computeCenterOfMassWarningHandler(
-            "Rigid body '' cannot compute COM because it contains Triangle Mesh shapes, it will default to (X:0.000000, Y:0.000000, Z:0.000000).");
+            "cannot compute COM");
         UnitTest::ErrorHandler computeMassWarningHandler(
-            "Rigid body '' cannot compute Mass because it contains Triangle Mesh shapes, it will default to 1.0.");
+            "cannot compute Mass");
         UnitTest::ErrorHandler computeIneriaWarningHandler(
-            "Rigid body '' cannot compute Inertia because it contains Triangle Mesh shapes, it will default to (X:1.000000, Y:1.000000, Z:1.000000).");
+            "cannot compute Inertia");
 
         AzPhysics::SimulatedBodyHandle rigidBodyhandle = TestUtils::AddKinematicTriangleMeshCubeToScene(m_testSceneHandle, 3.0f, flags);
 
