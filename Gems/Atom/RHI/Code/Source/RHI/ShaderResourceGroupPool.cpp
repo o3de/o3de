@@ -111,13 +111,18 @@ namespace AZ
         {
             AZStd::lock_guard<AZStd::shared_mutex> lock(m_groupsToCompileMutex);
 
-            AZ_Assert(!shaderResourceGroup.IsQueuedForCompile(), "Attempting to compile an SRG that's already been queued for compile. Only compile an SRG once per frame.");            
+            AZ_Warning(
+                "ShaderResourceGroupPool", !shaderResourceGroup.IsQueuedForCompile(),
+                "Attempting to compile an SRG that's already been queued for compile. Only compile an SRG once per frame.");            
 
-            CalculateGroupDataDiff(shaderResourceGroup, groupData);
+            if (!shaderResourceGroup.IsQueuedForCompile())
+            {
+                CalculateGroupDataDiff(shaderResourceGroup, groupData);
 
-            shaderResourceGroup.SetData(groupData);
+                shaderResourceGroup.SetData(groupData);
 
-            QueueForCompileNoLock(shaderResourceGroup);
+                QueueForCompileNoLock(shaderResourceGroup);
+            }
         }
 
         void ShaderResourceGroupPool::QueueForCompile(ShaderResourceGroup& group)
