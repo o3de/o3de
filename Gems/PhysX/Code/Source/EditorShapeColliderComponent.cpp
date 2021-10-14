@@ -127,7 +127,7 @@ namespace PhysX
         incompatible.push_back(AZ_CRC_CE("DiskShapeService"));
         incompatible.push_back(AZ_CRC_CE("QuadShapeService"));
         incompatible.push_back(AZ_CRC_CE("TubeShapeService"));
-        incompatible.push_back(AZ_CRC_CE("VegetationReferenceShapeService"));
+        incompatible.push_back(AZ_CRC_CE("ReferenceShapeService"));
     }
 
     const AZStd::vector<AZ::Vector3>& EditorShapeColliderComponent::GetSamplePoints() const
