@@ -232,19 +232,17 @@ namespace AzToolsFramework
                         auto bellowSourceEntry = azrtti_cast<const SourceAssetBrowserEntry*>(bellowEntry);
                         auto aboveSourceEntry = azrtti_cast<const SourceAssetBrowserEntry*>(aboveEntry);
 
-                        // The index below is a Source Entry and
-                        // the index above is invalid or is valid but it is also a source entry
-                        // then the current index is the only child.
-                        if ((indexBelow.isValid() && bellowSourceEntry &&
-                             (!indexAbove.isValid() || (indexAbove.isValid() && aboveSourceEntry))))
+                        // Last item and the above entry is a source entry
+                        // or indeBellow is a source entry and the index above is not
+                        if ((index.row() == viewModel->rowCount() - 1 && !aboveSourceEntry) || (bellowSourceEntry && !aboveSourceEntry))
+                        {
+                            DrawBranchPixMap(EntryBranchType::Last, painter, branchIconTopLeft, iconSize);
+                        }
+                        else if (bellowSourceEntry && aboveSourceEntry)
                         {
                             DrawBranchPixMap(EntryBranchType::OneChild, painter, branchIconTopLeft, iconSize); // Draw One Child Icon
                         }
-                        else if (index.row() == viewModel->rowCount() - 1 || indexBelow.isValid() && bellowSourceEntry) //is the last entry or The index bellow is a source entry
-                        {
-                            DrawBranchPixMap(EntryBranchType::Last, painter, branchIconTopLeft, iconSize); // Draw Last child Icon
-                        }
-                        else if (indexAbove.isValid() && aboveSourceEntry) // The index above is a source entry
+                        else if (aboveSourceEntry) // The index above is a source entry
                         {
                             DrawBranchPixMap(EntryBranchType::First, painter, branchIconTopLeft, iconSize); // Draw First Child Icon
                         }
