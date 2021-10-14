@@ -1175,5 +1175,5 @@ AzToolsFramework::ConsoleColorTheme SEditorSettings::GetConsoleColorTheme() cons
 
 AZ::u64 SEditorSettings::GetMaxNumberOfItemsShownInSearchView() const
 {
-    return SandboxEditor::MaxItemsShowInAssetBrowserSearch();
+    return SandboxEditor::MaxItemsShownInAssetBrowserSearch();
 }

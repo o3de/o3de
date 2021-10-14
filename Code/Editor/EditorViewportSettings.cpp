@@ -111,12 +111,12 @@ namespace SandboxEditor
         return AZStd::make_unique<EditorViewportSettingsCallbacksImpl>();
     }
 
-    AZ::u64 MaxItemsShowInAssetBrowserSearch()
+    AZ::u64 MaxItemsShownInAssetBrowserSearch()
     {
         return GetRegistry(AssetBrowserMaxItemsShownInSearchSetting, aznumeric_cast<AZ::u64>(50));
     }
 
-    void SetMaxItemsShowInAssetBrowserSearch(const AZ::u64 numberOfItemsShown)
+    void SetMaxItemsShownInAssetBrowserSearch(const AZ::u64 numberOfItemsShown)
     {
         SetRegistry(AssetBrowserMaxItemsShownInSearchSetting, numberOfItemsShown);
     }

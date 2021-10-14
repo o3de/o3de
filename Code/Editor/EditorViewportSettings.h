@@ -32,8 +32,8 @@ namespace SandboxEditor
     //! event will fire when a value in the settings registry (editorpreferences.setreg) is modified.
     SANDBOX_API AZStd::unique_ptr<EditorViewportSettingsCallbacks> CreateEditorViewportSettingsCallbacks();
 
-    SANDBOX_API AZ::u64 MaxItemsShowInAssetBrowserSearch();
-    SANDBOX_API void SetMaxItemsShowInAssetBrowserSearch(AZ::u64 numberOfItemsShown);
+    SANDBOX_API AZ::u64 MaxItemsShownInAssetBrowserSearch();
+    SANDBOX_API void SetMaxItemsShownInAssetBrowserSearch(AZ::u64 numberOfItemsShown);
 
     SANDBOX_API bool GridSnappingEnabled();
     SANDBOX_API void SetGridSnapping(bool enabled);

@@ -46,7 +46,7 @@ void CEditorPreferencesPage_Files::Reflect(AZ::SerializeContext& serialize)
 
     serialize.Class<AssetBrowserSettings>()
         ->Version(1)
-        ->Field("MaxNumOfEntriesShown", &AssetBrowserSettings::m_maxNumberOfItemsShownInSearch);
+        ->Field("MaxEntriesShownCount", &AssetBrowserSettings::m_maxNumberOfItemsShownInSearch);
 
     serialize.Class<CEditorPreferencesPage_Files>()
         ->Version(1)
@@ -88,7 +88,7 @@ void CEditorPreferencesPage_Files::Reflect(AZ::SerializeContext& serialize)
          editContext->Class<AssetBrowserSettings>("Asset Browser Settings", "Asset Browser Settings")
             ->DataElement(
                 AZ::Edit::UIHandlers::SpinBox, &AssetBrowserSettings::m_maxNumberOfItemsShownInSearch, "Maximum number of displayed items",
-                "Maximum number of displayed items displayed in the Search View")
+                "Maximum number of items to display in the Search View.")
             ->Attribute(AZ::Edit::Attributes::Min, 50)
             ->Attribute(AZ::Edit::Attributes::Max, 5000);
 
@@ -119,8 +119,6 @@ void CEditorPreferencesPage_Files::OnApply()
 {
     using namespace AzToolsFramework::SliceUtilities;
 
-    SandboxEditor::SetMaxItemsShowInAssetBrowserSearch(m_assetBrowserSettings.m_maxNumberOfItemsShownInSearch);
-
     auto sliceSettings = AZ::UserSettings::CreateFind<SliceUserSettings>(AZ_CRC("SliceUserSettings", 0x055b32eb), AZ::UserSettings::CT_LOCAL);
     sliceSettings->m_autoNumber = m_files.m_autoNumberSlices;
     sliceSettings->m_saveLocation = m_files.m_saveLocation;
@@ -140,14 +138,14 @@ void CEditorPreferencesPage_Files::OnApply()
     gSettings.autoBackupTime = m_autoBackup.m_timeInterval;
     gSettings.autoBackupMaxCount = m_autoBackup.m_maxCount;
     gSettings.autoRemindTime = m_autoBackup.m_remindTime;
+
+    SandboxEditor::SetMaxItemsShownInAssetBrowserSearch(m_assetBrowserSettings.m_maxNumberOfItemsShownInSearch);
 }
 
 void CEditorPreferencesPage_Files::InitializeSettings()
 {
     using namespace AzToolsFramework::SliceUtilities;
     auto sliceSettings = AZ::UserSettings::CreateFind<SliceUserSettings>(AZ_CRC("SliceUserSettings", 0x055b32eb), AZ::UserSettings::CT_LOCAL);
-
-    m_assetBrowserSettings.m_maxNumberOfItemsShownInSearch = SandboxEditor::MaxItemsShowInAssetBrowserSearch();
 
     m_files.m_autoNumberSlices = sliceSettings->m_autoNumber;
     m_files.m_saveLocation = sliceSettings->m_saveLocation;
@@ -166,4 +164,6 @@ void CEditorPreferencesPage_Files::InitializeSettings()
     m_autoBackup.m_timeInterval = gSettings.autoBackupTime;
     m_autoBackup.m_maxCount = gSettings.autoBackupMaxCount;
     m_autoBackup.m_remindTime = gSettings.autoRemindTime;
+
+    m_assetBrowserSettings.m_maxNumberOfItemsShownInSearch = SandboxEditor::MaxItemsShownInAssetBrowserSearch();
 }
