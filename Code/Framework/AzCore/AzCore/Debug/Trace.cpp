@@ -31,6 +31,8 @@ namespace AZ
 {
     namespace Debug
     {
+        struct StackFrame;
+
         namespace Platform
         {
 #if defined(AZ_ENABLE_DEBUG_TOOLS)
@@ -556,12 +558,18 @@ namespace AZ
         //size_t bla = AZStd::alignment_of<StackFrame>::value;
         //printf("Alignment value %d address 0x%08x : 0x%08x\n",bla,frames);
         SymbolStorage::StackLine lines[AZ_ARRAY_SIZE(frames)];
+        unsigned int numFrames = 0;
 
         if (!nativeContext)
         {
             suppressCount += 1; /// If we don't provide a context we will capture in the RecordFunction, so skip us (Trace::PrinCallstack).
+            numFrames = StackRecorder::Record(frames, AZ_ARRAY_SIZE(frames), suppressCount);
         }
-        unsigned int numFrames = StackRecorder::Record(frames, AZ_ARRAY_SIZE(frames), suppressCount, nativeContext);
+        else
+        {
+            numFrames = StackConverter::FromNative(frames, AZ_ARRAY_SIZE(frames), nativeContext);
+        }
+
         if (numFrames)
         {
             SymbolStorage::DecodeFrames(frames, numFrames, lines);
