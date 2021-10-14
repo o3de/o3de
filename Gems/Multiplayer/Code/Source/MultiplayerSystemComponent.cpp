@@ -308,6 +308,12 @@ namespace Multiplayer
         return true;
     }
 
+    void MultiplayerSystemComponent::OnUpdateSessionBegin(const AzFramework::SessionConfig& sessionConfig, const AZStd::string& updateReason)
+    {
+        AZ_UNUSED(sessionConfig);
+        AZ_UNUSED(updateReason);
+    }
+
     void MultiplayerSystemComponent::OnTick(float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time)
     {
         const AZ::TimeMs deltaTimeMs = aznumeric_cast<AZ::TimeMs>(static_cast<int32_t>(deltaTime * 1000.0f));
