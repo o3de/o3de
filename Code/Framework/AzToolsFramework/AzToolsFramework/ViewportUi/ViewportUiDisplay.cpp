@@ -292,7 +292,7 @@ namespace AzToolsFramework::ViewportUi::Internal
 
     void ViewportUiDisplay::CreateComponentModeBorder(const AZStd::string& borderTitle)
     {
-        AZStd::string styleSheet = AZStd::string::format(
+        const AZStd::string styleSheet = AZStd::string::format(
             "border: %dpx solid %s; border-top: %dpx solid %s;", HighlightBorderSize, HighlightBorderColor, TopHighlightBorderSize,
             HighlightBorderColor);
         m_uiOverlay.setStyleSheet(styleSheet.c_str());
@@ -420,6 +420,7 @@ namespace AzToolsFramework::ViewportUi::Internal
             m_uiMainWindow.setVisible(true);
             m_uiOverlay.setVisible(true);
         }
+
         m_uiMainWindow.setMask(region);
     }
 
@@ -437,6 +438,7 @@ namespace AzToolsFramework::ViewportUi::Internal
         {
             return element->second;
         }
+
         return ViewportUiElementInfo{ nullptr, InvalidViewportUiElementId, false };
     }
 
