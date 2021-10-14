@@ -227,8 +227,13 @@ namespace AZ
 
         for (const auto& functor : m_commands)
         {
+            if (functor.second.empty())
+            {
+                continue;
+            }
+
             // Filter functors registered with the same name
-            ConsoleFunctorBase* curr = functor.second.front();
+            const ConsoleFunctorBase* curr = functor.second.front();
 
             if ((curr->GetFlags() & ConsoleFunctorFlags::IsInvisible) == ConsoleFunctorFlags::IsInvisible)
             {
@@ -279,7 +284,10 @@ namespace AZ
     {
         for (auto& curr : m_commands)
         {
-            visitor(curr.second.front());
+            if (!curr.second.empty())
+            {
+                visitor(curr.second.front());
+            }
         }
     }
 
