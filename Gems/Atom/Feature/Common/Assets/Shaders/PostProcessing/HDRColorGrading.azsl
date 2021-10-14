@@ -12,7 +12,6 @@
 
 #include <Atom/Features/PostProcessing/FullscreenPixelInfo.azsli>
 #include <Atom/Features/PostProcessing/FullscreenVertex.azsli>
-#include <Atom/Features/PostProcessing/HDRColorGradingCommon.azsl>
 
 ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
 {
@@ -60,27 +59,7 @@ ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
     float4 m_smhHighlightsColor;
 }
 
-// perform color grading in ACEScg space
-float3 ColorGrade(float3 frameColor)
-{
-    frameColor = ColorGradePostExposure(frameColor, PassSrg::m_colorGradingExposure);
-    //frameColor = ColorGradeKelvinColorTemp(frameColor, PassSrg::m_whiteBalanceKelvin);
-    frameColor = ColorGradingContrast(frameColor, AcesCcMidGrey, PassSrg::m_colorGradingContrast);
-    frameColor = ColorGradeColorFilter(frameColor, PassSrg::m_colorFilterSwatch.rgb,
-                                         PassSrg::m_colorFilterMultiply, PassSrg::m_colorFilterIntensity);
-    frameColor = max(frameColor, 0.0);
-    frameColor = ColorGradeSaturation(frameColor, PassSrg::m_colorGradingPreSaturation);
-    frameColor = ColorGradeSplitTone(frameColor, PassSrg::m_splitToneBalance, PassSrg::m_splitToneWeight,
-                                        PassSrg::m_splitToneShadowsColor, PassSrg::m_splitToneHighlightsColor);
-    frameColor = ColorGradeChannelMixer(frameColor, PassSrg::m_channelMixingRed, PassSrg::m_channelMixingGreen, PassSrg::m_channelMixingBlue);
-    frameColor = max(frameColor, 0.0);
-    frameColor = ColorGradeShadowsMidtonesHighlights(frameColor, PassSrg::m_smhShadowsStart, PassSrg::m_smhShadowsEnd,
-                                                    PassSrg::m_smhHighlightsStart, PassSrg::m_smhHighlightsEnd, PassSrg::m_smhWeight,
-                                                    PassSrg::m_smhShadowsColor, PassSrg::m_smhMidtonesColor, PassSrg::m_smhHighlightsColor);
-    frameColor = ColorGradeHueShift(frameColor, PassSrg::m_colorGradingHueShift);
-    frameColor = ColorGradeSaturation(frameColor, PassSrg::m_colorGradingPostSaturation);
-    return max(frameColor.rgb, 0.0);
-}
+#include <Atom/Features/PostProcessing/HDRColorGradingCommon.azsl>
 
 PSOutput MainPS(VSOutput IN)
 {

@@ -104,9 +104,8 @@ namespace AZ
 
         bool LutGenerationPass::IsEnabled() const
         {
-            //const auto* colorGradingSettings = GetHDRColorGradingSettings();
-            //return colorGradingSettings ? colorGradingSettings->GetGenerateLut() : false;
-            return true;
+            const auto* colorGradingSettings = GetHDRColorGradingSettings();
+            return colorGradingSettings ? colorGradingSettings->GetGenerateLut() : false;
         }
 
         void LutGenerationPass::SetViewportScissorFromImageSize(const RHI::Size& imageSize)

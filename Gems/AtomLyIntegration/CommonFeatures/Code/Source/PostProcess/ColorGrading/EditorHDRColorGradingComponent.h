@@ -34,10 +34,6 @@ namespace AZ
 
             static void Reflect(AZ::ReflectContext* context);
 
-            static const int FramesToWait = 5;
-            //static const char* LutAttachment;
-            //static const AZStd::vector<AZStd::string> LutGenerationPassHierarchy;
-
             EditorHDRColorGradingComponent() = default;
             EditorHDRColorGradingComponent(const HDRColorGradingComponentConfig& config);
 
@@ -55,8 +51,7 @@ namespace AZ
             AZ::u32 ActivateLut();
             bool GetGeneratedLutVisibilitySettings();
 
-            AZStd::atomic_bool m_lutGenerationInProgress = false;
-            int m_frameCounter;
+            bool m_waitOneFrame = false;
             AZStd::string m_currentTiffFilePath;
             AZStd::string m_currentLutFilePath;
 

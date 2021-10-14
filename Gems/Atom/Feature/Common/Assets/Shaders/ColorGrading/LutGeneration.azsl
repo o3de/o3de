@@ -16,7 +16,6 @@
 
 #include <Atom/Features/PostProcessing/Aces.azsli>
 #include <Atom/Features/PostProcessing/Shapers.azsli>
-#include <Atom/Features/PostProcessing/HDRColorGradingCommon.azsl>
 
 float3 convert2Dto3DLutCoords(float2 uv, float width, float height)
 {
@@ -95,31 +94,7 @@ ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
     float4 m_smhHighlightsColor;
 }
 
-float3 ColorGrade(float3 linearColor)
-{
-    float3 color = TransformColor(linearColor, ColorSpaceId::LinearSRGB, ColorSpaceId::ACEScg);
-    color = ColorGradePostExposure(color, PassSrg::m_colorGradingExposure);
-    //color = ColorGradeKelvinColorTemp(color, PassSrg::m_whiteBalanceKelvin);
-    color = ColorGradingContrast(color, AcesCcMidGrey, PassSrg::m_colorGradingContrast);
-    color = ColorGradeColorFilter(color, PassSrg::m_colorFilterSwatch.rgb,
-                                         PassSrg::m_colorFilterMultiply, PassSrg::m_colorFilterIntensity);
-    color = max(color, 0.0);
-    color = ColorGradeSaturation(color, PassSrg::m_colorGradingPreSaturation);
-
-    color = ColorGradeSplitTone(color, PassSrg::m_splitToneBalance, PassSrg::m_splitToneWeight,
-                                        PassSrg::m_splitToneShadowsColor, PassSrg::m_splitToneHighlightsColor);
-    color = ColorGradeChannelMixer(color, PassSrg::m_channelMixingRed, PassSrg::m_channelMixingGreen, PassSrg::m_channelMixingBlue);
-    color = max(color, 0.0);
-    color = ColorGradeShadowsMidtonesHighlights(color, PassSrg::m_smhShadowsStart, PassSrg::m_smhShadowsEnd,
-                                                    PassSrg::m_smhHighlightsStart, PassSrg::m_smhHighlightsEnd, PassSrg::m_smhWeight,
-                                                    PassSrg::m_smhShadowsColor, PassSrg::m_smhMidtonesColor, PassSrg::m_smhHighlightsColor);
-
-    color = ColorGradeSaturation(color, PassSrg::m_colorGradingPostSaturation);
-
-    color = ColorGradeHueShift(color, PassSrg::m_colorGradingHueShift);
-    color = TransformColor(color, ColorSpaceId::ACEScg, ColorSpaceId::LinearSRGB);
-    return max(color.rgb, 0.0);
-}
+#include <Atom/Features/PostProcessing/HDRColorGradingCommon.azsl>
 
 struct PSOutput
 {
@@ -130,39 +105,43 @@ PSOutput MainPS(VSOutput IN)
 {
     ShaperType shaperType = (ShaperType)PassSrg::m_shaperType;
 
-
     PSOutput OUT;
 
+    // baseCoords are from 0-1
     float3 baseCoords = float3(0.0, 0.0, 0.0);
-    float3 lutColor = float3(0.0, 0.0, 0.0);
     LutResolution lutRes = (LutResolution)PassSrg::m_lutResolution;
     switch(lutRes)
     {
         case LutResolution::Lut16x16x16:
         {
             baseCoords = convert2Dto3DLutCoords(IN.m_texCoord, 256, 16);
-            lutColor = PassSrg::m_identityLut16x16x16.Sample(PassSrg::PointSampler, baseCoords, 0.0).rgb;
+            baseCoords = PassSrg::m_identityLut16x16x16.Sample(PassSrg::PointSampler, baseCoords, 0.0).rgb;
             break;
         }
         case LutResolution::Lut32x32x32:
         {
-            // This seems correct intuitively, but is turning grey into green!
             baseCoords = convert2Dto3DLutCoords(IN.m_texCoord, 1024, 32);
-            lutColor = PassSrg::m_identityLut32x32x32.Sample(PassSrg::PointSampler, baseCoords, 0.0).rgb;
+            baseCoords = PassSrg::m_identityLut32x32x32.Sample(PassSrg::PointSampler, baseCoords, 0.0).rgb;
             break;
         }
         case LutResolution::Lut64x64x64:
         {
             baseCoords = convert2Dto3DLutCoords(IN.m_texCoord, 4096, 64);
-            lutColor = PassSrg::m_identityLut64x64x64.Sample(PassSrg::PointSampler, baseCoords, 0.0).rgb;
+            baseCoords = PassSrg::m_identityLut64x64x64.Sample(PassSrg::PointSampler, baseCoords, 0.0).rgb;
             break;
         }
     }
 
-    float3 gradedColor = ColorGrade(lutColor);
+    float3 linearColor = ShaperToLinear(baseCoords, shaperType, PassSrg::m_shaperBias, PassSrg::m_shaperScale);
 
-    gradedColor = ShaperToLinear(gradedColor, shaperType, PassSrg::m_shaperBias, PassSrg::m_shaperScale);
+    linearColor = TransformColor(linearColor, ColorSpaceId::LinearSRGB, ColorSpaceId::ACEScg);
+    float3 gradedColor = ColorGrade(linearColor);
+    gradedColor = TransformColor(gradedColor, ColorSpaceId::ACEScg, ColorSpaceId::LinearSRGB);
 
-    OUT.m_lutOutput = float4(gradedColor, 1.0);
+    // Bring back coordinates into 0-1
+    float3 shapedColor = LinearToShaper(gradedColor, shaperType, PassSrg::m_shaperBias, PassSrg::m_shaperScale);
+    shapedColor = saturate(shapedColor);
+
+    OUT.m_lutOutput = float4(shapedColor, 1.0);
     return OUT;
 }

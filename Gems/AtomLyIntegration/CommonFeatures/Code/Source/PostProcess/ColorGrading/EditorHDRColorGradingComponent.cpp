@@ -104,7 +104,7 @@ namespace AZ
                             ->Attribute(Edit::Attributes::Min, 0.0f)
                             ->Attribute(Edit::Attributes::Max, 1.0f)
                         ->DataElement(AZ::Edit::UIHandlers::Slider, &HDRColorGradingComponentConfig::m_splitToneBalance, "Split Tone Balance", "Split Tone Balance Value")
-                            ->Attribute(Edit::Attributes::Min, 0.0f)
+                            ->Attribute(Edit::Attributes::Min, -1.0f)
                             ->Attribute(Edit::Attributes::Max, 1.0f)
                         ->DataElement(AZ::Edit::UIHandlers::Color, &HDRColorGradingComponentConfig::m_splitToneShadowsColor, "Split Tone Shadows Color", "Split Tone Shadows Color")
                         ->DataElement(AZ::Edit::UIHandlers::Color, &HDRColorGradingComponentConfig::m_splitToneHighlightsColor, "Split Tone Highlights Color", "Split Tone Highlights Color")
@@ -175,36 +175,35 @@ namespace AZ
 
         void EditorHDRColorGradingComponent::OnTick([[maybe_unused]] float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time)
         {
-            if (m_controller.m_configuration.m_generateLut && m_frameCounter)
+            if (m_waitOneFrame)
             {
-                --m_frameCounter;
+                m_waitOneFrame = false;
                 return;
             }
-            else if (m_controller.m_configuration.m_generateLut && m_lutGenerationInProgress)
+
+            const char* LutAttachment = "LutOutput";
+            const AZStd::vector<AZStd::string> LutGenerationPassHierarchy{ "LutGenerationPass" };
+
+            char resolvedOutputFilePath[AZ_MAX_PATH_LEN] = { 0 };
+            AZ::IO::FileIOBase::GetDirectInstance()->ResolvePath(m_currentTiffFilePath.c_str(), resolvedOutputFilePath, AZ_MAX_PATH_LEN);
+
+            AZStd::string lutGenerationCacheFolder;
+            AzFramework::StringFunc::Path::GetFolderPath(resolvedOutputFilePath, lutGenerationCacheFolder);
+            AZ::IO::SystemFile::CreateDir(lutGenerationCacheFolder.c_str());
+
+            bool startedCapture = false;
+            AZ::Render::FrameCaptureRequestBus::BroadcastResult(
+                startedCapture,
+                &AZ::Render::FrameCaptureRequestBus::Events::CapturePassAttachment,
+                LutGenerationPassHierarchy,
+                AZStd::string(LutAttachment),
+                m_currentTiffFilePath,
+                AZ::RPI::PassAttachmentReadbackOption::Output);
+
+            if (startedCapture)
             {
-                const char* LutAttachment = "LutOutput";
-                const AZStd::vector<AZStd::string> LutGenerationPassHierarchy{ "LutGenerationPass" };
-
-                char resolvedOutputFilePath[AZ_MAX_PATH_LEN] = { 0 };
-                AZ::IO::FileIOBase::GetDirectInstance()->ResolvePath(m_currentTiffFilePath.c_str(), resolvedOutputFilePath, AZ_MAX_PATH_LEN);
-
-                AZStd::string lutGenerationCacheFolder;
-                AzFramework::StringFunc::Path::GetFolderPath(resolvedOutputFilePath, lutGenerationCacheFolder);
-                AZ::IO::SystemFile::CreateDir(lutGenerationCacheFolder.c_str());
-
-                // capture frame
+                AZ::TickBus::Handler::BusDisconnect();
                 AZ::Render::FrameCaptureNotificationBus::Handler::BusConnect();
-
-                bool startedCapture = false;
-                AZ::Render::FrameCaptureRequestBus::BroadcastResult(
-                    startedCapture,
-                    &AZ::Render::FrameCaptureRequestBus::Events::CapturePassAttachment,
-                    LutGenerationPassHierarchy,
-                    AZStd::string(LutAttachment),
-                    m_currentTiffFilePath,
-                    AZ::RPI::PassAttachmentReadbackOption::Output);
-
-                m_lutGenerationInProgress = !startedCapture;
             }
         }
 
@@ -238,7 +237,6 @@ namespace AZ
                 &AzToolsFramework::PropertyEditorGUIMessages::RequestRefresh,
                 AzToolsFramework::PropertyModificationRefreshLevel::Refresh_EntireTree);
 
-            AZ::TickBus::Handler::BusDisconnect();
             AZ::Render::FrameCaptureNotificationBus::Handler::BusDisconnect();
         }
 
@@ -252,11 +250,10 @@ namespace AZ
             m_currentTiffFilePath = AZStd::string::format(TempTiffFilePath, uuidString.c_str());
             m_currentLutFilePath = "@projectroot@/" + AZStd::string::format(GeneratedLutRelativePath, uuidString.c_str());
 
-            m_lutGenerationInProgress = true;
-            m_controller.m_configuration.m_generateLut = true;
+            m_controller.SetGenerateLut(true);
             m_controller.OnConfigChanged();
 
-            m_frameCounter = FramesToWait;
+            m_waitOneFrame = true;
 
             AZ::TickBus::Handler::BusConnect();
         }
