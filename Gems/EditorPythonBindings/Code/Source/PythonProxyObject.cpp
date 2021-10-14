@@ -588,11 +588,18 @@ namespace EditorPythonBindings
 
         if (resultCode.GetProcessing() == AZ::JsonSerializationResult::Processing::Halted)
         {
-            AZ_Error("EntityUtilityComponent", false, "Failed to serialize to json")
+            AZ_Error("PythonProxyObject", false, "Failed to serialize to json");
+            return pybind11::cast<pybind11::none>(Py_None);
         }
 
         AZStd::string jsonString;
         AZ::Outcome<void, AZStd::string> outcome = AZ::JsonSerializationUtils::WriteJsonString(document, jsonString);
+
+        if (!outcome.IsSuccess())
+        {
+            AZ_Error("PythonProxyObject", false, "Failed to write json string: %s", outcome.GetError().c_str());
+            return pybind11::cast<pybind11::none>(Py_None);
+        }
         
         jsonString.erase(AZStd::remove(jsonString.begin(), jsonString.end(), '\n'), jsonString.end());
         auto pythonCode = AZStd::string::format(
