@@ -1315,14 +1315,17 @@ namespace SettingsRegistryTests
     TEST_F(SettingsRegistryTest, MergeSettings_NotifierSignals_AtAnchorKeyAndStoresMergeType)
     {
         AZStd::string_view anchorKey = "/Anchor/Root";
-        auto callback = [anchorKey](AZStd::string_view path, AZ::SettingsRegistryInterface::Type type)
+        bool callbackInvoked{};
+        auto callback = [anchorKey, &callbackInvoked](AZStd::string_view path, AZ::SettingsRegistryInterface::Type type)
         {
             EXPECT_EQ(anchorKey, path);
             EXPECT_EQ(AZ::SettingsRegistryInterface::Type::Array, type);
+            callbackInvoked = true;
         };
         auto testNotifier1 = m_registry->RegisterNotifier(callback);
         constexpr auto mergeFormat = AZ::SettingsRegistryInterface::Format::JsonMergePatch;
         EXPECT_TRUE(m_registry->MergeSettings(R"([ "Test" ])", mergeFormat, anchorKey));
+        EXPECT_TRUE(callbackInvoked);
     }
 
     //

@@ -56,7 +56,7 @@ namespace AZ
     {
         if (path.empty())
         {
-            // rapidjson::Pointer assets that the supplied string
+            // rapidjson::Pointer asserts that the supplied string
             // is not nullptr even if the supplied size is 0
             // Setting to empty string to prevent assert
             path = "";
@@ -98,7 +98,7 @@ namespace AZ
     {
         if (path.empty())
         {
-            // rapidjson::Pointer assets that the supplied string
+            // rapidjson::Pointer asserts that the supplied string
             // is not nullptr even if the supplied size is 0
             // Setting to empty string to prevent assert
             path = "";
@@ -189,7 +189,7 @@ namespace AZ
     {
         if (path.empty())
         {
-            // rapidjson::Pointer assets that the supplied string
+            // rapidjson::Pointer asserts that the supplied string
             // is not nullptr even if the supplied size is 0
             // Setting to empty string to prevent assert
             path = "";
@@ -400,7 +400,7 @@ namespace AZ
     {
         if (path.empty())
         {
-            // rapidjson::Pointer assets that the supplied string
+            // rapidjson::Pointer asserts that the supplied string
             // is not nullptr even if the supplied size is 0
             // Setting to empty string to prevent assert
             path = "";
@@ -479,7 +479,7 @@ namespace AZ
     {
         if (path.empty())
         {
-            //rapidjson::Pointer assets that the supplied string
+            // rapidjson::Pointer asserts that the supplied string
             // is not nullptr even if the supplied size is 0
             // Setting to empty string to prevent assert
             path = "";
@@ -511,7 +511,7 @@ namespace AZ
     {
         if (path.empty())
         {
-            // rapidjson::Pointer assets that the supplied string
+            // rapidjson::Pointer asserts that the supplied string
             // is not nullptr even if the supplied size is 0
             // Setting to empty string to prevent assert
             path = "";

@@ -76,10 +76,10 @@ namespace AZ
 
         bool Remove(AZStd::string_view path) override;
 
-        bool MergeCommandLineArgument(AZStd::string_view argument, AZStd::string_view rootKey,
+        bool MergeCommandLineArgument(AZStd::string_view argument, AZStd::string_view anchorKey,
             const CommandLineArgumentSettings& commandLineSettings) override;
         bool MergeSettings(AZStd::string_view data, Format format, AZStd::string_view anchorKey = "") override;
-        bool MergeSettingsFile(AZStd::string_view path, Format format, AZStd::string_view anchorKey ="",
+        bool MergeSettingsFile(AZStd::string_view path, Format format, AZStd::string_view anchorKey = "",
             AZStd::vector<char>* scratchBuffer = nullptr) override;
         bool MergeSettingsFolder(AZStd::string_view path, const Specializations& specializations,
             AZStd::string_view platform, AZStd::string_view anchorKey = "", AZStd::vector<char>* scratchBuffer = nullptr) override;
