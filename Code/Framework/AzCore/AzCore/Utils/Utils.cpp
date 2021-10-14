@@ -165,13 +165,12 @@ namespace AZ::Utils
         }
 
         Container fileContent;
-        fileContent.resize(length);
+        fileContent.resize_no_construct(length);
         AZ::IO::SizeType bytesRead = file.Read(length, fileContent.data());
         file.Close();
 
         // Resize again just in case bytesRead is less than length for some reason
-        fileContent.resize(bytesRead);
-
+        fileContent.resize_no_construct(bytesRead);
         return AZ::Success(AZStd::move(fileContent));
     }
 

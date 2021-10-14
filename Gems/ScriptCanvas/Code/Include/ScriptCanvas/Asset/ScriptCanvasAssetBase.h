@@ -8,16 +8,17 @@
 
 #pragma once
 
+#include <AzCore/std/smart_ptr/enable_shared_from_this.h>
 #include <AzCore/Asset/AssetCommon.h>
 #include <Editor/Include/ScriptCanvas/Assets/ScriptCanvasAssetBus.h>
 #include <Editor/Include/ScriptCanvas/Assets/ScriptCanvasBaseAssetData.h>
-
 #include <ScriptCanvas/Asset/AssetDescription.h>
 
 namespace ScriptCanvas
 {
     class ScriptCanvasAssetBase
         : public AZ::Data::AssetData
+        , public AZStd::enable_shared_from_this<ScriptCanvasAssetBase>
         , ScriptCanvas::ScriptCanvasAssetBusRequestBus::Handler
     {
 

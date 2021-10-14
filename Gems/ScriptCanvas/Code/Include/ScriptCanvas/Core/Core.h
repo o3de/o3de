@@ -26,6 +26,8 @@
 
 #define OBJECT_STREAM_EDITOR_ASSET_LOADING_SUPPORT_ENABLED
 
+#define EDITOR_ASSET_SUPPORT_ENABLED
+
 namespace AZ
 {
     class Entity;
@@ -61,6 +63,10 @@ namespace ScriptCanvas
 
     class Node;
     class Edge;
+    class Graph;
+
+    using GraphPtr = Graph*;
+    using GraphPtrConst = const Graph*;
 
     using ID = AZ::EntityId;
 
@@ -295,6 +301,24 @@ namespace ScriptCanvas
     };
 
     void ReflectEventTypeOnDemand(const AZ::TypeId& typeId, AZStd::string_view name, AZ::IRttiHelper* rttiHelper = nullptr);
+}
+
+namespace ScriptCanvas
+{
+    class ScriptCanvasData;
+
+    using DataPtr = AZStd::shared_ptr<ScriptCanvasData>;
+    using DataPtrConst = AZStd::shared_ptr<const ScriptCanvasData>;
+}
+
+namespace ScriptCanvasEditor
+{
+    class Graph;
+    
+    using GraphPtr = Graph*;
+    using GraphPtrConst = const Graph*;
+
+    class SourceHandle;
 }
 
 namespace AZStd

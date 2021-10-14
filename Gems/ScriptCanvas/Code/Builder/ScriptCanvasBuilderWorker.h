@@ -42,7 +42,6 @@ namespace ScriptCanvasEditor
 namespace ScriptCanvasBuilder
 {
     constexpr const char* s_scriptCanvasBuilder = "ScriptCanvasBuilder";
-    constexpr const char* s_scriptCanvasCopyJobKey = "Script Canvas Copy Job";
     constexpr const char* s_scriptCanvasProcessJobKey = "Script Canvas Process Job";
     constexpr const char* s_unitTestParseErrorPrefix = "LY_SC_UnitTest";
 
@@ -59,6 +58,10 @@ namespace ScriptCanvasBuilder
         PrefabIntegration,
         CorrectGraphVariableVersion,
         ReflectEntityIdNodes,
+
+        ForceBuildForDevTest0,
+        ForceBuildForDevTest1,
+
         // add new entries above
         Current,
     };

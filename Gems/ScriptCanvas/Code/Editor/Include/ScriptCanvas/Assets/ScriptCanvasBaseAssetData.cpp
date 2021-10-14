@@ -11,13 +11,23 @@
 
 namespace ScriptCanvas
 {
+    const Graph* ScriptCanvasData::GetGraph() const
+    {
+        return AZ::EntityUtils::FindFirstDerivedComponent<ScriptCanvas::Graph>(m_scriptCanvasEntity.get());
+    }
+
+    const ScriptCanvasEditor::Graph* ScriptCanvasData::GetEditorGraph() const
+    {
+        return AZ::EntityUtils::FindFirstDerivedComponent<ScriptCanvasEditor::Graph>(m_scriptCanvasEntity.get());
+    }
+
     Graph* ScriptCanvasData::ModGraph()
     {
         return AZ::EntityUtils::FindFirstDerivedComponent<ScriptCanvas::Graph>(m_scriptCanvasEntity.get());
     }
 
-    const Graph* ScriptCanvasData::GetGraph() const
+    ScriptCanvasEditor::Graph* ScriptCanvasData::ModEditorGraph()
     {
-        return AZ::EntityUtils::FindFirstDerivedComponent<ScriptCanvas::Graph>(m_scriptCanvasEntity.get());
+        return AZ::EntityUtils::FindFirstDerivedComponent<ScriptCanvasEditor::Graph>(m_scriptCanvasEntity.get());
     }
 }
