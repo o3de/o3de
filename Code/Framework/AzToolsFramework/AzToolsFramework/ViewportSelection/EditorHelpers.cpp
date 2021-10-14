@@ -191,7 +191,7 @@ namespace AzToolsFramework
         if (!IsSelectableAccordingToFocusMode(entityIdUnderCursor))
         {
             if (mouseInteraction.m_mouseInteraction.m_mouseButtons.Left() &&
-                mouseInteraction.m_mouseEvent == ViewportInteraction::MouseEvent::Down ||
+                    mouseInteraction.m_mouseEvent == ViewportInteraction::MouseEvent::Down ||
                 mouseInteraction.m_mouseEvent == ViewportInteraction::MouseEvent::DoubleClick)
             {
                 AZ::TickBus::Handler::BusConnect();
@@ -244,7 +244,7 @@ namespace AzToolsFramework
         [[maybe_unused]] const AzFramework::ViewportInfo& viewportInfo, AzFramework::DebugDisplayRequests& debugDisplay)
     {
         const AZ::Vector2 viewportSize = AzToolsFramework::GetCameraState(viewportInfo.m_viewportId).m_viewportSize;
-        
+
         debugDisplay.DepthTestOff();
 
         for (const auto& decayingCircle : m_decayingCircles)
@@ -252,6 +252,14 @@ namespace AzToolsFramework
             const auto position = AzFramework::Vector2FromScreenPoint(decayingCircle.m_position) / viewportSize;
             debugDisplay.SetColor(AZ::Color(1.0f, 1.0f, 1.0f, decayingCircle.m_opacity));
             debugDisplay.DrawWireCircle2d(position, decayingCircle.m_radius * 0.005f, 0.0f);
+
+            // feedback top left (temp)
+            debugDisplay.Draw2dTextLabel(2.0f, 2.0f, 1.0f, "Cannot Select In Focus Mode...");
+
+            // feedback under cursor (temp)
+            debugDisplay.Draw2dTextLabel(
+                aznumeric_cast<float>(decayingCircle.m_position.m_x), aznumeric_cast<float>(decayingCircle.m_position.m_y) - 20.0f, 1.0f,
+                "Cannot Select In Focus Mode...");
         }
 
         debugDisplay.DepthTestOn();
