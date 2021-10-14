@@ -10,6 +10,8 @@ ly_add_external_target(
     NAME renderdoc
     3RDPARTY_ROOT_DIRECTORY "${LY_RENDERDOC_PATH}"
     VERSION
-    INCLUDE_DIRECTORIES .
+    INCLUDE_DIRECTORIES
+        .
+        include
     COMPILE_DEFINITIONS USE_RENDERDOC
 )

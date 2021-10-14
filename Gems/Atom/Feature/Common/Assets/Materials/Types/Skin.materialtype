@@ -973,15 +973,15 @@
             "tag": "ForwardPass"
         },
         {
-            "file": "Shaders/Shadow/Shadowmap.shader",
+            "file": "Shaders/Shadow/ShadowmapSkin.shader",
             "tag": "Shadowmap"
         },
         {
-            "file": "Shaders/Depth/DepthPass.shader",
+            "file": "Shaders/Depth/DepthPassSkin.shader",
             "tag": "DepthPass"
         },
         {
-            "file": "Shaders/MotionVector/MeshMotionVector.shader",
+            "file": "Shaders/MotionVector/MeshMotionVectorSkin.shader",
             "tag": "MeshMotionVector"
         }
     ],

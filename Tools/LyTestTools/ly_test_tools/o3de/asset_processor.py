@@ -488,6 +488,9 @@ class AssetProcessor(object):
         logger.info(f"Launching AP with command: {command}")
         try:
             self._ap_proc = subprocess.Popen(command, cwd=ap_exe_path, env=process_utils.get_display_env())
+            time.sleep(1)
+            if self._ap_proc.poll() is not None:
+                raise AssetProcessorError(f"AssetProcessor immediately quit with errorcode {self._ap_proc.returncode}")
 
             if accept_input:
                 self.connect_control()
@@ -506,10 +509,11 @@ class AssetProcessor(object):
             logger.exception("Exception while starting Asset Processor", be)
             # clean up to avoid leaking open AP process to future tests
             try:
-                self._ap_proc.kill()
+                if self._ap_proc:
+                    self._ap_proc.kill()
             except Exception as ex:
                 logger.exception("Ignoring exception while trying to terminate Asset Processor", ex)
-            raise  # raise whatever prompted us to clean up
+            raise be  # raise whatever prompted us to clean up
 
     def connect_listen(self, timeout=DEFAULT_TIMEOUT_SECONDS):
         # Wait for the AP we launched to be ready to accept a connection
