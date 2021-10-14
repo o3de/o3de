@@ -41,6 +41,11 @@ namespace AzFramework
         // OnDestroySessionBegin is fired at the beginning of session termination
         // @return The result of all OnDestroySessionBegin notifications
         virtual bool OnDestroySessionBegin() = 0;
+
+        // OnUpdateSessionBegin is fired at the beginning of session update
+        // @param sessionConfig The properties to describe a session
+        // @param updateReason The reason for session update
+        virtual void OnUpdateSessionBegin(const SessionConfig& sessionConfig, const AZStd::string& updateReason) = 0;
     };
     using SessionNotificationBus = AZ::EBus<SessionNotifications>;
 } // namespace AzFramework

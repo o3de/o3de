@@ -210,6 +210,7 @@ namespace AWSGameLift
                 ->Property("SessionId", BehaviorValueProperty(&AzFramework::SessionConfig::m_sessionId))
                 ->Property("SessionName", BehaviorValueProperty(&AzFramework::SessionConfig::m_sessionName))
                 ->Property("SessionProperties", BehaviorValueProperty(&AzFramework::SessionConfig::m_sessionProperties))
+                ->Property("MatchmakingData", BehaviorValueProperty(&AzFramework::SessionConfig::m_matchmakingData))
                 ->Property("Status", BehaviorValueProperty(&AzFramework::SessionConfig::m_status))
                 ->Property("StatusReason", BehaviorValueProperty(&AzFramework::SessionConfig::m_statusReason))
                 ->Property("TerminationTime", BehaviorValueProperty(&AzFramework::SessionConfig::m_terminationTime))

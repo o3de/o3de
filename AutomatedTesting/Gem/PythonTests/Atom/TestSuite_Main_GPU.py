@@ -148,7 +148,7 @@ class TestAllComponentsIndepthTests(object):
             golden_image_path = os.path.join(golden_images_directory(), golden_image)
             golden_images.append(golden_image_path)
 
-        expected_lines = ["Light component tests completed."]
+        expected_lines = ["spot_light Controller|Configuration|Shadows|Shadowmap size: SUCCESS"]
         unexpected_lines = [
             "Trace::Assert",
             "Trace::Error",
