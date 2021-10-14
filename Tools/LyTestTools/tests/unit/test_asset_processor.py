@@ -45,6 +45,7 @@ class TestAssetProcessor(object):
     @mock.patch('subprocess.Popen')
     @mock.patch('ly_test_tools.o3de.asset_processor.AssetProcessor.connect_socket')
     @mock.patch('ly_test_tools.o3de.asset_processor.ASSET_PROCESSOR_PLATFORM_MAP', {'foo': 'bar'})
+    @mock.patch('time.sleep', mock.MagicMock())
     def test_Start_NoneRunning_ProcStarted(self, mock_connect, mock_popen, mock_workspace):
         mock_ap_path = 'mock_ap_path'
         mock_workspace.asset_processor_platform = 'foo'
@@ -54,6 +55,9 @@ class TestAssetProcessor(object):
         under_test = ly_test_tools.o3de.asset_processor.AssetProcessor(mock_workspace)
         under_test.enable_asset_processor_platform = mock.MagicMock()
         under_test.wait_for_idle = mock.MagicMock()
+        mock_proc_object = mock.MagicMock()
+        mock_proc_object.poll.return_value = None
+        mock_popen.return_value = mock_proc_object
 
         under_test.start(connect_to_ap=True)
 

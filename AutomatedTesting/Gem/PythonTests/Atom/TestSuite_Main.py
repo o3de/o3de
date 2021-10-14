@@ -23,20 +23,20 @@ TEST_DIRECTORY = os.path.join(os.path.dirname(__file__), "tests")
 class TestAtomEditorComponentsMain(object):
     """Holds tests for Atom components."""
 
+    @pytest.mark.test_case_id("C32078118")  # Decal
+    @pytest.mark.test_case_id("C32078119")  # DepthOfField
+    @pytest.mark.test_case_id("C32078120")  # Directional Light
+    @pytest.mark.test_case_id("C32078121")  # Exposure Control
+    @pytest.mark.test_case_id("C32078115")  # Global Skylight (IBL)
+    @pytest.mark.test_case_id("C32078125")  # Physical Sky
+    @pytest.mark.test_case_id("C32078127")  # PostFX Layer
+    @pytest.mark.test_case_id("C32078131")  # PostFX Radius Weight Modifier
+    @pytest.mark.test_case_id("C32078117")  # Light
+    @pytest.mark.test_case_id("C36525660")  # Display Mapper
     def test_AtomEditorComponents_AddedToEntity(self, request, editor, level, workspace, project, launcher_platform):
         """
         Please review the hydra script run by this test for more specific test info.
-        Tests the following Atom components and verifies all "expected_lines" appear in Editor.log:
-        1. Display Mapper
-        2. Light
-        3. PostFX Radius Weight Modifier
-        4. PostFX Layer
-        5. Physical Sky
-        6. Global Skylight (IBL)
-        7. Exposure Control
-        8. Directional Light
-        9. DepthOfField
-        10. Decal
+        Tests the Atom components & verifies all "expected_lines" appear in Editor.log
         """
         cfg_args = [level]
 
@@ -69,6 +69,18 @@ class TestAtomEditorComponentsMain(object):
             "DepthOfField_test: Entity deleted: True",
             "DepthOfField_test: UNDO entity deletion works: True",
             "DepthOfField_test: REDO entity deletion works: True",
+            # Directional Light Component
+            "Directional Light Entity successfully created",
+            "Directional Light_test: Component added to the entity: True",
+            "Directional Light_test: Component removed after UNDO: True",
+            "Directional Light_test: Component added after REDO: True",
+            "Directional Light_test: Entered game mode: True",
+            "Directional Light_test: Exit game mode: True",
+            "Directional Light_test: Entity is hidden: True",
+            "Directional Light_test: Entity is shown: True",
+            "Directional Light_test: Entity deleted: True",
+            "Directional Light_test: UNDO entity deletion works: True",
+            "Directional Light_test: REDO entity deletion works: True",
             # Exposure Control Component
             "Exposure Control Entity successfully created",
             "Exposure Control_test: Component added to the entity: True",
@@ -180,6 +192,7 @@ class TestAtomEditorComponentsMain(object):
             cfg_args=cfg_args,
         )
 
+    @pytest.mark.test_case_id("C34525095")
     def test_AtomEditorComponents_LightComponent(
             self, request, editor, workspace, project, launcher_platform, level):
         """
@@ -266,6 +279,15 @@ class TestMaterialEditorBasicTests(object):
         request.addfinalizer(teardown)
 
     @pytest.mark.parametrize("exe_file_name", ["MaterialEditor"])
+    @pytest.mark.test_case_id("C34448113")  # Creating a New Asset.
+    @pytest.mark.test_case_id("C34448114")  # Opening an Existing Asset.
+    @pytest.mark.test_case_id("C34448115")  # Closing Selected Material.
+    @pytest.mark.test_case_id("C34448116")  # Closing All Materials.
+    @pytest.mark.test_case_id("C34448117")  # Closing all but Selected Material.
+    @pytest.mark.test_case_id("C34448118")  # Saving Material.
+    @pytest.mark.test_case_id("C34448119")  # Saving as a New Material.
+    @pytest.mark.test_case_id("C34448120")  # Saving as a Child Material.
+    @pytest.mark.test_case_id("C34448121")  # Saving all Open Materials.
     def test_MaterialEditorBasicTests(
             self, request, workspace, project, launcher_platform, generic_launcher, exe_file_name):
 

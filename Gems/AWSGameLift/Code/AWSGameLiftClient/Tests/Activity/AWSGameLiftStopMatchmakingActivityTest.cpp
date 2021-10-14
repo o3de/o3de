@@ -9,6 +9,8 @@
 #include <Activity/AWSGameLiftStopMatchmakingActivity.h>
 #include <AWSGameLiftClientFixture.h>
 
+#include <aws/gamelift/model/StopMatchmakingRequest.h>
+
 using namespace AWSGameLift;
 
 using AWSGameLiftStopMatchmakingActivityTest = AWSGameLiftClientFixture;

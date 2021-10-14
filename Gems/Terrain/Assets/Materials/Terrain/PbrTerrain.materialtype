@@ -133,67 +133,6 @@
                     }
                 }
             ],
-            "macroColor": [
-                {
-                    "id": "textureMap",
-                    "displayName": "Texture",
-                    "description": "Macro color texture map",
-                    "type": "Image",
-                    "connection": {
-                        "type": "ShaderInput",
-                        "id": "m_macroColorMap"
-                    }
-                },
-                {
-                    "id": "useTexture",
-                    "displayName": "Use Texture",
-                    "description": "Whether to use the texture.",
-                    "type": "Bool",
-                    "defaultValue": true
-                }
-
-            ],
-            "macroNormal": [
-                {
-                    "id": "textureMap",
-                    "displayName": "Texture",
-                    "description": "Macro normal texture map",
-                    "type": "Image",
-                    "connection": {
-                        "type": "ShaderInput",
-                        "id": "m_macroNormalMap"
-                    }
-                },
-                {
-                    "id": "useTexture",
-                    "displayName": "Use Texture",
-                    "description": "Whether to use the texture.",
-                    "type": "Bool",
-                    "defaultValue": true
-                },
-                {
-                    "id": "flipX",
-                    "displayName": "Flip X Channel",
-                    "description": "Flip tangent direction for this normal map.",
-                    "type": "Bool",
-                    "defaultValue": false,
-                    "connection": {
-                        "type": "ShaderInput",
-                        "id": "m_flipMacroNormalX"
-                    }
-                },
-                {
-                    "id": "flipY",
-                    "displayName": "Flip Y Channel",
-                    "description": "Flip bitangent direction for this normal map.",
-                    "type": "Bool",
-                    "defaultValue": false,
-                    "connection": {
-                        "type": "ShaderInput",
-                        "id": "m_flipMacroNormalY"
-                    }
-                }
-            ],
             "baseColor": [
                 {
                     "id": "color",
@@ -380,22 +319,6 @@
         }
     ],
     "functors": [
-        {
-            "type": "UseTexture",
-            "args": {
-                "textureProperty": "macroColor.textureMap",
-                "useTextureProperty": "macroColor.useTexture",
-                "shaderOption": "o_macroColor_useTexture"
-            }
-        },
-        {
-            "type": "UseTexture",
-            "args": {
-                "textureProperty": "macroNormal.textureMap",
-                "useTextureProperty": "macroNormal.useTexture",
-                "shaderOption": "o_macroNormal_useTexture"
-            }
-        },
         {
             "type": "UseTexture",
             "args": {

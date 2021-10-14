@@ -64,7 +64,7 @@ ly_add_target(
             3rdParty::Qt::Gui
             3rdParty::astc-encoder
             3rdParty::squish-ccr
-            3rdParty::tiff
+            3rdParty::TIFF
             3rdParty::ISPCTexComp
             3rdParty::ilmbase
             AZ::AzFramework
