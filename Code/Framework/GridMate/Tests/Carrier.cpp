@@ -1544,13 +1544,13 @@ namespace UnitTest
     //Create specific tests
     using CarrierBasicTest = CarrierBasicTestTemplate<>;
     using CarrierTest = CarrierTestTemplate<>;
-    using CarrierDisconnectDetectionTest = CarrierDisconnectDetectionTestTemplate<>;
-    using CarrierAsyncHandshakeTest = CarrierAsyncHandshakeTestTemplate<>;
+    using DISABLED_CarrierDisconnectDetectionTest = CarrierDisconnectDetectionTestTemplate<>;
+    using DISABLED_CarrierAsyncHandshakeTest = CarrierAsyncHandshakeTestTemplate<>;
     using DISABLED_CarrierStressTest = CarrierStressTestTemplate<>;
-    using CarrierMultiChannelTest = CarrierMultiChannelTestTemplate<>;
-    using CarrierMultiStressTest = CarrierMultiStressTestTemplate<>;
-    using CarrierBackpressureTest = CarrierBackpressureTestTemplate<>;
-    using CarrierACKTest = CarrierACKTestTemplate<>;
+    using DISABLED_CarrierMultiChannelTest = CarrierMultiChannelTestTemplate<>;
+    using DISABLED_CarrierMultiStressTest = CarrierMultiStressTestTemplate<>;
+    using DISABLED_CarrierBackpressureTest = CarrierBackpressureTestTemplate<>;
+    using DISABLED_CarrierACKTest = CarrierACKTestTemplate<>;
 
 #if AZ_TRAIT_GRIDMATE_TEST_WITH_SECURE_SOCKET_DRIVER
 
@@ -1658,20 +1658,20 @@ namespace UnitTest
     using SecureProviderBadHost = SecureDriverProvider<SecureSocketDriver, SecureSocketHandshakeDrop<false>>;
     using SecureProviderBadBoth = SecureDriverProvider<SecureSocketHandshakeDrop<true>, SecureSocketHandshakeDrop<false>>;
 
-    using CarrierSecureSocketHandshakeTestClient = CarrierBasicTestTemplate<SecureProviderBadClient, 200>;
-    using CarrierSecureSocketHandshakeTestHost = CarrierBasicTestTemplate<SecureProviderBadHost, 200>;
-    using CarrierSecureSocketHandshakeTestBoth = CarrierBasicTestTemplate<SecureProviderBadBoth, 200>;
+    using DISABLED_CarrierSecureSocketHandshakeTestClient = CarrierBasicTestTemplate<SecureProviderBadClient, 200>;
+    using DISABLED_CarrierSecureSocketHandshakeTestHost = CarrierBasicTestTemplate<SecureProviderBadHost, 200>;
+    using DISABLED_CarrierSecureSocketHandshakeTestBoth = CarrierBasicTestTemplate<SecureProviderBadBoth, 200>;
 
     //Create secure socket variants of tests
     using CarrierBasicTestSecure = CarrierBasicTestTemplate<SecureDriverProvider<>>;
     using CarrierTestSecure = CarrierTestTemplate<SecureDriverProvider<>>;
-    using CarrierDisconnectDetectionTestSecure = CarrierDisconnectDetectionTestTemplate<SecureDriverProvider<>>;
-    using CarrierAsyncHandshakeTestSecure = CarrierAsyncHandshakeTestTemplate<SecureDriverProvider<>>;
+    using DISABLED_CarrierDisconnectDetectionTestSecure = CarrierDisconnectDetectionTestTemplate<SecureDriverProvider<>>;
+    using DISABLED_CarrierAsyncHandshakeTestSecure = CarrierAsyncHandshakeTestTemplate<SecureDriverProvider<>>;
     using DISABLED_CarrierStressTestSecure = CarrierStressTestTemplate<SecureDriverProvider<>>;
-    using CarrierMultiChannelTestSecure = CarrierMultiChannelTestTemplate<SecureDriverProvider<>>;
-    using CarrierMultiStressTestSecure = CarrierMultiStressTestTemplate<SecureDriverProvider<>>;
-    using CarrierBackpressureTestSecure = CarrierBackpressureTestTemplate<SecureDriverProvider<>>;
-    using CarrierACKTestSecure = CarrierACKTestTemplate<SecureDriverProvider<>>;
+    using DISABLED_CarrierMultiChannelTestSecure = CarrierMultiChannelTestTemplate<SecureDriverProvider<>>;
+    using DISABLED_CarrierMultiStressTestSecure = CarrierMultiStressTestTemplate<SecureDriverProvider<>>;
+    using DISABLED_CarrierBackpressureTestSecure = CarrierBackpressureTestTemplate<SecureDriverProvider<>>;
+    using DISABLED_CarrierACKTestSecure = CarrierACKTestTemplate<SecureDriverProvider<>>;
 
 #endif
 }
@@ -1720,30 +1720,30 @@ GM_TEST_SUITE(CarrierSuite)
 GM_TEST(CarrierBasicTest)
 GM_TEST(CarrierTest)
 #endif //AZ_TRAIT_GRIDMATE_UNIT_TEST_DISABLE_CARRIER_SESSION_TESTS
-GM_TEST(CarrierAsyncHandshakeTest)
+GM_TEST(DISABLED_CarrierAsyncHandshakeTest)
 #if !defined(AZ_DEBUG_BUILD) // this test is a little slow for debug
 GM_TEST(DISABLED_CarrierStressTest)
-GM_TEST(CarrierMultiStressTest)
+GM_TEST(DISABLED_CarrierMultiStressTest)
 #endif
-GM_TEST(CarrierMultiChannelTest)
-GM_TEST(CarrierBackpressureTest)
-GM_TEST(CarrierACKTest)
+GM_TEST(DISABLED_CarrierMultiChannelTest)
+GM_TEST(DISABLED_CarrierBackpressureTest)
+GM_TEST(DISABLED_CarrierACKTest)
 
 
 #if AZ_TRAIT_GRIDMATE_TEST_WITH_SECURE_SOCKET_DRIVER
-GM_TEST(CarrierBasicTestSecure)
-GM_TEST(CarrierSecureSocketHandshakeTestClient)
-GM_TEST(CarrierSecureSocketHandshakeTestHost)
-GM_TEST(CarrierSecureSocketHandshakeTestBoth)
+GM_TEST(DISABLED_CarrierBasicTestSecure)
+GM_TEST(DISABLED_CarrierSecureSocketHandshakeTestClient)
+GM_TEST(DISABLED_CarrierSecureSocketHandshakeTestHost)
+GM_TEST(DISABLED_CarrierSecureSocketHandshakeTestBoth)
 GM_TEST(CarrierTestSecure)
-GM_TEST(CarrierAsyncHandshakeTestSecure)
+GM_TEST(DISABLED_CarrierAsyncHandshakeTestSecure)
 #if !defined(AZ_DEBUG_BUILD) // this test is a little slow for debug
 GM_TEST(DISABLED_CarrierStressTestSecure)
-GM_TEST(CarrierMultiStressTestSecure)
+GM_TEST(DISABLED_CarrierMultiStressTestSecure)
 #endif
-GM_TEST(CarrierMultiChannelTestSecure)
-GM_TEST(CarrierBackpressureTestSecure)
-GM_TEST(CarrierACKTestSecure)
+GM_TEST(DISABLED_CarrierMultiChannelTestSecure)
+GM_TEST(DISABLED_CarrierBackpressureTestSecure)
+GM_TEST(DISABLED_CarrierACKTestSecure)
 
 #endif
 

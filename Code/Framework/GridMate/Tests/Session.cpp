@@ -40,7 +40,7 @@ namespace UnitTest
         }
     }
 
-    class LANSessionMatchmakingParamsTest
+    class DISABLED_LANSessionMatchmakingParamsTest
         : public GridMateMPTestFixture
         , public SessionEventBus::MultiHandler
     {
@@ -52,7 +52,7 @@ namespace UnitTest
         }
 
     public:
-        LANSessionMatchmakingParamsTest(bool useIPv6 = false)
+        DISABLED_LANSessionMatchmakingParamsTest(bool useIPv6 = false)
             : m_hostSession(nullptr)
             , m_clientGridMate(nullptr)
         {
@@ -71,7 +71,7 @@ namespace UnitTest
             AZ_TEST_ASSERT(GridMate::LANSessionServiceBus::FindFirstHandler(m_clientGridMate) != nullptr);
             //////////////////////////////////////////////////////////////////////////
         }
-        ~LANSessionMatchmakingParamsTest() override
+        ~DISABLED_LANSessionMatchmakingParamsTest() override
         {
             SessionEventBus::MultiHandler::BusDisconnect(m_gridMate);
             SessionEventBus::MultiHandler::BusDisconnect(m_clientGridMate);
@@ -192,7 +192,7 @@ namespace UnitTest
         IGridMate* m_clientGridMate;
     };
 
-    class LANSessionTest
+    class DISABLED_LANSessionTest
         : public GridMateMPTestFixture
     {
         class TestPeerInfo
@@ -264,7 +264,7 @@ namespace UnitTest
         };
 
     public:
-        LANSessionTest(bool useIPv6 = false)
+        DISABLED_LANSessionTest(bool useIPv6 = false)
         {
             m_driverType = useIPv6 ? Driver::BSD_AF_INET6 : Driver::BSD_AF_INET;
             m_doSessionParamsTest = k_numMachines > 1;
@@ -290,7 +290,7 @@ namespace UnitTest
                 AZ_TEST_ASSERT(LANSessionServiceBus::FindFirstHandler(m_peers[i].m_gridMate) != nullptr);
             }
         }
-        ~LANSessionTest() override
+        ~DISABLED_LANSessionTest() override
         {
             StopGridMateService<LANSessionService>(m_peers[0].m_gridMate);
 
@@ -556,14 +556,14 @@ namespace UnitTest
     };
 
     class DISABLED_LANSessionTestIPv6
-        : public LANSessionTest
+        : public DISABLED_LANSessionTest
     {
     public:
         DISABLED_LANSessionTestIPv6()
-            : LANSessionTest(true) {}
+            : DISABLED_LANSessionTest(true) {}
     };
 
-    class LANMultipleSessionTest
+    class DISABLED_LANMultipleSessionTest
         : public GridMateMPTestFixture
         , public SessionEventBus::Handler
     {
@@ -620,7 +620,7 @@ namespace UnitTest
             m_sessions[i] = nullptr;
         }
 
-        LANMultipleSessionTest()
+        DISABLED_LANMultipleSessionTest()
             : GridMateMPTestFixture(200 * 1024 * 1024)
         {
             //////////////////////////////////////////////////////////////////////////
@@ -645,7 +645,7 @@ namespace UnitTest
             }
         }
 
-        ~LANMultipleSessionTest() override
+        ~DISABLED_LANMultipleSessionTest() override
         {
             GridMate::StopGridMateService<GridMate::LANSessionService>(m_gridMates[0]);
 
@@ -799,7 +799,7 @@ namespace UnitTest
      * Testing session with low latency. This is special mode usually used by tools and communication channels
      * where we try to response instantly on messages.
      */
-    class LANLatencySessionTest
+    class DISABLED_LANLatencySessionTest
         : public GridMateMPTestFixture
         , public SessionEventBus::Handler
     {
@@ -857,7 +857,7 @@ namespace UnitTest
             m_sessions[i] = nullptr;
         }
 
-        LANLatencySessionTest()
+        DISABLED_LANLatencySessionTest()
 #ifdef AZ_TEST_LANLATENCY_ENABLE_MONSTER_BUFFER
             : GridMateMPTestFixture(50 * 1024 * 1024)
 #endif
@@ -884,7 +884,7 @@ namespace UnitTest
             }
         }
 
-        ~LANLatencySessionTest() override
+        ~DISABLED_LANLatencySessionTest() override
         {
             StopGridMateService<LANSessionService>(m_gridMates[0]);
 
@@ -2122,13 +2122,13 @@ namespace UnitTest
 }
 
 GM_TEST_SUITE(SessionSuite)
-GM_TEST(LANSessionMatchmakingParamsTest)
-GM_TEST(LANSessionTest)
+GM_TEST(DISABLED_LANSessionMatchmakingParamsTest)
+GM_TEST(DISABLED_LANSessionTest)
 #if (AZ_TRAIT_GRIDMATE_TEST_SOCKET_IPV6_SUPPORT_ENABLED)
 GM_TEST(DISABLED_LANSessionTestIPv6)
 #endif
-GM_TEST(LANMultipleSessionTest)
-GM_TEST(LANLatencySessionTest)
+GM_TEST(DISABLED_LANMultipleSessionTest)
+GM_TEST(DISABLED_LANLatencySessionTest)
 
 // Manually enabled tests (require 2+ machines and online services)
 //GM_TEST(LANSessionMigarationTestTest)

@@ -172,7 +172,7 @@ public:
 
 namespace UnitTest
 {
-    class CarrierStreamBasicTest
+    class DISABLED_CarrierStreamBasicTest
         : public GridMateMPTestFixture
         , protected SocketDriverSupplier
     {
@@ -330,7 +330,7 @@ namespace UnitTest
         }
     };
 
-    class CarrierStreamAsyncHandshakeTest
+    class DISABLED_CarrierStreamAsyncHandshakeTest
         : public GridMateMPTestFixture
         , protected SocketDriverSupplier
     {
@@ -581,7 +581,7 @@ namespace UnitTest
         //////////////////////////////////////////////////////////////////////////
     }
 
-    class CarrierStreamTest
+    class DISABLED_CarrierStreamTest
         : public GridMateMPTestFixture
         , protected SocketDriverSupplier
     {
@@ -783,7 +783,7 @@ namespace UnitTest
         }
     };
 
-    class CarrierStreamDisconnectDetectionTest
+    class DISABLED_CarrierStreamDisconnectDetectionTest
         : public GridMateMPTestFixture
         , protected SocketDriverSupplier
     {
@@ -873,7 +873,7 @@ namespace UnitTest
         }
     };
 
-    class CarrierStreamMultiChannelTest
+    class DISABLED_CarrierStreamMultiChannelTest
         : public GridMateMPTestFixture
         , protected SocketDriverSupplier
     {
@@ -999,8 +999,8 @@ namespace UnitTest
 }
 
 GM_TEST_SUITE(CarrierStreamSuite)
-    GM_TEST(CarrierStreamBasicTest)
-    GM_TEST(CarrierStreamTest)
-    GM_TEST(CarrierStreamAsyncHandshakeTest)
-    GM_TEST(CarrierStreamMultiChannelTest)
+    GM_TEST(DISABLED_CarrierStreamBasicTest)
+    GM_TEST(DISABLED_CarrierStreamTest)
+    GM_TEST(DISABLED_CarrierStreamAsyncHandshakeTest)
+    GM_TEST(DISABLED_CarrierStreamMultiChannelTest)
 GM_TEST_SUITE_END()

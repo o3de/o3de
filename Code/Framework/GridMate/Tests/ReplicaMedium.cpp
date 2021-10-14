@@ -596,12 +596,12 @@ public:
 
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-class MPSession
+class MPSessionMedium
     : public CarrierEventBus::Handler
 {
 public:
 
-    ~MPSession() override
+    ~MPSessionMedium() override
     {
         CarrierEventBus::Handler::BusDisconnect();
     }
@@ -858,7 +858,7 @@ public:
     }
 
     int m_sessionCount;
-    AZStd::array<MPSession, 10> m_sessions;
+    AZStd::array<MPSessionMedium, 10> m_sessions;
     AZStd::unique_ptr<DefaultSimulator> m_defaultSimulator;
 };
 
@@ -893,7 +893,7 @@ public:
     ReplicaId m_replicaId;
 };
 
-TEST_F(ReplicaChunkRPCExec, ReplicaChunkRPCExec)
+TEST_F(ReplicaChunkRPCExec, DISABLED_ReplicaChunkRPCExec)
 {
     RunTickLoop([this](int tick) -> TestStatus
     {
@@ -1080,7 +1080,7 @@ public:
     ReplicaId m_repId[2];
 };
 
-TEST_F(ReplicaDestroyedInRPC, ReplicaDestroyedInRPC)
+TEST_F(ReplicaDestroyedInRPC, DISABLED_ReplicaDestroyedInRPC)
 {
     RunTickLoop([this](int tick)->TestStatus
     {
@@ -1161,7 +1161,7 @@ public:
     ReplicaId m_replicaId;
 };
 
-TEST_F(ReplicaChunkAddWhileReplicated, ReplicaChunkAddWhileReplicated)
+TEST_F(ReplicaChunkAddWhileReplicated, DISABLED_ReplicaChunkAddWhileReplicated)
 {
     RunTickLoop([this](int tick)-> TestStatus
     {
@@ -1236,7 +1236,7 @@ public:
     ReplicaId m_replicaId;
 };
 
-TEST_F(ReplicaRPCValues, ReplicaRPCValues)
+TEST_F(ReplicaRPCValues, DISABLED_ReplicaRPCValues)
 {
     RunTickLoop([this](int tick)-> TestStatus
     {
@@ -1290,7 +1290,7 @@ public:
     ReplicaId m_replicaId;
 };
 
-TEST_F(FullRPCValues, FullRPCValues)
+TEST_F(FullRPCValues, DISABLED_FullRPCValues)
 {
     RunTickLoop([this](int tick)-> TestStatus
     {
@@ -1395,7 +1395,7 @@ public:
     ReplicaId m_replicaId;
 };
 
-TEST_F(ReplicaRemoveProxy, ReplicaRemoveProxy)
+TEST_F(ReplicaRemoveProxy, DISABLED_ReplicaRemoveProxy)
 {
     RunTickLoop([this](int tick)-> TestStatus
     {
@@ -1463,7 +1463,7 @@ public:
     AllEventChunk::Ptr m_proxyChunk;
 };
 
-TEST_F(ReplicaChunkEvents, ReplicaChunkEvents)
+TEST_F(ReplicaChunkEvents, DISABLED_ReplicaChunkEvents)
 {
     RunTickLoop([this](int tick)-> TestStatus
     {
@@ -1537,7 +1537,7 @@ public:
     ReplicaId m_replicaId;
 };
 
-TEST_F(ReplicaChunksBeyond32, ReplicaChunksBeyond32)
+TEST_F(ReplicaChunksBeyond32, DISABLED_ReplicaChunksBeyond32)
 {
     RunTickLoop([this](int tick)-> TestStatus
     {
@@ -1604,7 +1604,7 @@ public:
     AllEventChunk::Ptr m_proxyChunk;
 };
 
-TEST_F(ReplicaChunkEventsDeactivate, ReplicaChunkEventsDeactivate)
+TEST_F(ReplicaChunkEventsDeactivate, DISABLED_ReplicaChunkEventsDeactivate)
 {
     RunTickLoop([this](int tick)-> TestStatus
     {
@@ -2115,7 +2115,7 @@ public:
     DataSetChunk::Ptr m_chunk;
 };
 
-TEST_F(DataSetChangedTest, DataSetChangedTest)
+TEST_F(DataSetChangedTest, DISABLED_DataSetChangedTest)
 {
     RunTickLoop([this](int tick)-> TestStatus
     {
@@ -2181,7 +2181,7 @@ public:
     AZStd::scoped_ptr<CustomHandler> m_proxyHandler;
 };
 
-TEST_F(CustomHandlerTest, CustomHandlerTest)
+TEST_F(CustomHandlerTest, DISABLED_CustomHandlerTest)
 {
     RunTickLoop([this](int tick)-> TestStatus
     {
@@ -2266,7 +2266,7 @@ public:
     NonConstMarshalerChunk::Ptr m_chunk;
 };
 
-TEST_F(NonConstMarshalerTest, NonConstMarshalerTest)
+TEST_F(NonConstMarshalerTest, DISABLED_NonConstMarshalerTest)
 {
     RunTickLoop([this](int tick)-> TestStatus
     {
@@ -2343,7 +2343,7 @@ public:
     SourcePeerChunk::Ptr m_chunk2;
 };
 
-TEST_F(SourcePeerTest, SourcePeerTest)
+TEST_F(SourcePeerTest, DISABLED_SourcePeerTest)
 {
     RunTickLoop([this](int tick)-> TestStatus
     {
@@ -2597,7 +2597,7 @@ public:
     unsigned int m_numRpcCalled = 0;
 };
 
-TEST_F(SuspendUpdatesTest, SuspendUpdatesTest)
+TEST_F(SuspendUpdatesTest, DISABLED_SuspendUpdatesTest)
 {
     RunTickLoop([this](int tick)-> TestStatus
     {
@@ -2697,14 +2697,14 @@ public:
 int BasicHostChunkDescriptorTest::HostChunk::nPrimaryActivations = 0;
 int BasicHostChunkDescriptorTest::HostChunk::nProxyActivations = 0;
 
-TEST_F(BasicHostChunkDescriptorTest, BasicHostChunkDescriptorTest)
+TEST_F(BasicHostChunkDescriptorTest, DISABLED_BasicHostChunkDescriptorTest)
 {
     AZ_TracePrintf("GridMate", "\n");
 
     // Register test chunks
     ReplicaChunkDescriptorTable::Get().RegisterChunkType<HostChunk, GridMate::BasicHostChunkDescriptor<HostChunk>>();
 
-    MPSession nodes[nNodes];
+    MPSessionMedium nodes[nNodes];
 
     // initialize transport
     int basePort = 4427;
@@ -2827,7 +2827,7 @@ public:
     }
 };
 
-TEST_F(CreateDestroyPrimary, CreateDestroyPrimary)
+TEST_F(CreateDestroyPrimary, DISABLED_CreateDestroyPrimary)
 {
     RunTickLoop([this](int tick)-> TestStatus
     {

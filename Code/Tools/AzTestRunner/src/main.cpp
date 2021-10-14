@@ -18,10 +18,6 @@ namespace AzTestRunner
     const int LIB_NOT_FOUND = 102;
     const int SYMBOL_NOT_FOUND = 103;
 
-    // note that MODULE_SKIPPED is not an error condition, but not 0 to indicate its not the
-    // same as successfully running tests and finding them.
-    const int MODULE_SKIPPED = 104;
-
     //! display proper usage of the application
     void usage([[maybe_unused]] AZ::Test::Platform& platform)
     {

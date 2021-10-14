@@ -6,7 +6,6 @@
  *
  */
 #include "Tests.h"
-#include "TestProfiler.h"
 
 #include <GridMate/Replica/ReplicaFunctions.h>
 
@@ -1893,7 +1892,7 @@ class ReplicaGMTest
     , public ::testing::Test
 {};
 
-TEST_F(ReplicaGMTest, ReplicaTest)
+TEST_F(ReplicaGMTest, DISABLED_ReplicaTest)
     {
         ReplicaChunkDescriptorTable::Get().RegisterChunkType<MigratableReplica, MigratableReplica::Descriptor>();
         ReplicaChunkDescriptorTable::Get().RegisterChunkType<NonMigratableReplica>();
@@ -2209,7 +2208,7 @@ const int ForcedReplicaMigrationTest::k_frameTimePerNodeMs;
 const int ForcedReplicaMigrationTest::k_numFramesToRun;
 const int ForcedReplicaMigrationTest::k_hostSendRateMs;
 
-TEST_F(ForcedReplicaMigrationTest, ForcedReplicaMigrationTest)
+TEST_F(ForcedReplicaMigrationTest, DISABLED_ForcedReplicaMigrationTest)
     {
         ReplicaChunkDescriptorTable::Get().RegisterChunkType<MigratableReplica, MigratableReplica::Descriptor>();
         ReplicaChunkDescriptorTable::Get().RegisterChunkType<NonMigratableReplica>();
@@ -2516,7 +2515,7 @@ public:
     static const int k_hostSendTimeMs = k_frameTimePerNodeMs * TotalNodes * 4; // limiting host send rate to be x4 times slower than tick
 };
 
-TEST_F(ReplicaMigrationRequestTest, ReplicaMigrationRequestTest)
+TEST_F(ReplicaMigrationRequestTest, DISABLED_ReplicaMigrationRequestTest)
     {
         /*
         Topology:
@@ -2864,7 +2863,7 @@ public:
     ~PeerRejoinTest()   { ReplicaMgrCallbackBus::Handler::BusDisconnect(); }
 };
 
-TEST_F(PeerRejoinTest, PeerRejoinTest)
+TEST_F(PeerRejoinTest, DISABLED_PeerRejoinTest)
     {
         ReplicaChunkDescriptorTable::Get().RegisterChunkType<MigratableReplica, MigratableReplica::Descriptor>();
         ReplicaChunkDescriptorTable::Get().RegisterChunkType<NonMigratableReplica>();
@@ -3156,7 +3155,7 @@ public:
     using TestChunkPtr = AZStd::intrusive_ptr<TestChunk> ;
 };
 
-TEST_F(ReplicationSecurityOptionsTest, ReplicationSecurityOptionsTest)
+TEST_F(ReplicationSecurityOptionsTest, DISABLED_ReplicationSecurityOptionsTest)
     {
         AZ_TracePrintf("GridMate", "\n");
 
@@ -3356,7 +3355,7 @@ TEST_F(ReplicationSecurityOptionsTest, ReplicationSecurityOptionsTest)
         Replica update time (msec): avg=4.94, min=1, max=9 (peers=40, replicas=16000, freq=10%, samples=4000)
         Replica update time (msec): avg=8.05, min=6, max=15 (peers=40, replicas=16000, freq=100%, samples=4000)
 */
-class ReplicaStressTest
+class DISABLED_ReplicaStressTest
     : public UnitTest::GridMateMPTestFixture
 {
 public:
@@ -3388,7 +3387,7 @@ public:
     static const int BASE_PORT = 44270;
 
     // TODO: Reduce the size or disable the test for platforms which can't allocate 2 GiB
-    ReplicaStressTest()
+    DISABLED_ReplicaStressTest()
         : UnitTest::GridMateMPTestFixture(2000u * 1024u * 1024u)
     {}
 
@@ -3516,33 +3515,33 @@ public:
     virtual void RunStressTests(MPSession* sessions, vector<AZStd::pair<ReplicaPtr, StressTestReplica::Ptr> >& replicas)
     {
         // testing 3 cases & waiting for system to settle in between
-        TestProfiler::StartProfiling();
+        //TestProfiler::StartProfiling();
         Wait(sessions, replicas, 50, FRAME_TIME);
-        TestProfiler::PrintProfilingTotal("GridMate");
+        //TestProfiler::PrintProfilingTotal("GridMate");
 
         Wait(sessions, replicas, 20, FRAME_TIME);
-        TestProfiler::StartProfiling();
+        //TestProfiler::StartProfiling();
         TestReplicas(sessions, replicas, 100, FRAME_TIME, 0.0); // no replicas are dirty
-        TestProfiler::PrintProfilingTotal("GridMate");
+        //TestProfiler::PrintProfilingTotal("GridMate");
 
         Wait(sessions, replicas, 20, FRAME_TIME);
-        TestProfiler::StartProfiling();
+        //TestProfiler::StartProfiling();
         TestReplicas(sessions, replicas, 1, FRAME_TIME, 1.0); // single burst dirty replicas
         Wait(sessions, replicas, 2, FRAME_TIME);
-        TestProfiler::PrintProfilingTotal("GridMate");
+        //TestProfiler::PrintProfilingTotal("GridMate");
 
         Wait(sessions, replicas, 20, FRAME_TIME);
-        TestProfiler::StartProfiling();
+        //TestProfiler::StartProfiling();
         TestReplicas(sessions, replicas, 100, FRAME_TIME, 0.1); // 10% of replicas are marked dirty every frame
-        TestProfiler::PrintProfilingTotal("GridMate");
+        //TestProfiler::PrintProfilingTotal("GridMate");
 
         Wait(sessions, replicas, 20, FRAME_TIME);
-        TestProfiler::StartProfiling();
+        //TestProfiler::StartProfiling();
         TestReplicas(sessions, replicas, 100, FRAME_TIME, 1.0); // every replica is marked dirty every frame
-        TestProfiler::PrintProfilingTotal("GridMate");
-        TestProfiler::PrintProfilingSelf("GridMate");
+        //TestProfiler::PrintProfilingTotal("GridMate");
+        //TestProfiler::PrintProfilingSelf("GridMate");
 
-        TestProfiler::StopProfiling();
+        //TestProfiler::StopProfiling();
     }
 
     virtual void MarkChanging(vector<AZStd::pair<ReplicaPtr, StressTestReplica::Ptr> >& replicas, double freq)
@@ -3623,8 +3622,8 @@ public:
         Replica update time (msec): avg=2.01, min=1, max=5 (peers=40, replicas=16000, freq=10%, samples=4000)
         Replica update time (msec): avg=4.61, min=3, max=10 (peers=40, replicas=16000, freq=50%, samples=4000)
 */
-class ReplicaStableStressTest
-    : public ReplicaStressTest
+class DISABLED_ReplicaStableStressTest
+    : public DISABLED_ReplicaStressTest
 {
 public:
 
@@ -3636,21 +3635,21 @@ public:
 
     void RunStressTests(MPSession* sessions, vector<AZStd::pair<ReplicaPtr, StressTestReplica::Ptr> >& replicas) override
     {
-        ReplicaStressTest::MarkChanging(replicas, 0.1); // picks 10% of replicas
+        DISABLED_ReplicaStressTest::MarkChanging(replicas, 0.1); // picks 10% of replicas
         Wait(sessions, replicas, 20, FRAME_TIME);
-        TestProfiler::StartProfiling();
+        //TestProfiler::StartProfiling();
         TestReplicas(sessions, replicas, 100, FRAME_TIME, 0.1);
-        TestProfiler::PrintProfilingTotal("GridMate");
-        TestProfiler::PrintProfilingSelf("GridMate");
+        /*TestProfiler::PrintProfilingTotal("GridMate");
+        TestProfiler::PrintProfilingSelf("GridMate");*/
 
-        ReplicaStressTest::MarkChanging(replicas, 0.5); // picks 50% of replicas
+        DISABLED_ReplicaStressTest::MarkChanging(replicas, 0.5); // picks 50% of replicas
         Wait(sessions, replicas, 20, FRAME_TIME);
-        TestProfiler::StartProfiling();
+        //TestProfiler::StartProfiling();
         TestReplicas(sessions, replicas, 100, FRAME_TIME, 0.5);
-        TestProfiler::PrintProfilingTotal("GridMate");
+        /*TestProfiler::PrintProfilingTotal("GridMate");
         TestProfiler::PrintProfilingSelf("GridMate");
 
-        TestProfiler::StopProfiling();
+        TestProfiler::StopProfiling();*/
     }
 };
 
@@ -3666,7 +3665,7 @@ public:
 *   expected |none |brst |  capped  |under cap |brst |  capped  |
 *
 */
-class ReplicaBandiwdthTest
+class DISABLED_ReplicaBandiwdthTest
     : public UnitTest::GridMateMPTestFixture
 {
 public:
@@ -3944,9 +3943,9 @@ GM_TEST_SUITE(ReplicaSuite)
 GM_TEST(InterpolatorTest)
 
 #if !defined(AZ_DEBUG_BUILD) // these tests are a little slow for debug
-GM_TEST(ReplicaBandiwdthTest)
-GM_TEST(ReplicaStressTest)
-GM_TEST(ReplicaStableStressTest)
+GM_TEST(DISABLED_ReplicaBandiwdthTest)
+GM_TEST(DISABLED_ReplicaStressTest)
+GM_TEST(DISABLED_ReplicaStableStressTest)
 #endif
 
 GM_TEST_SUITE_END()
