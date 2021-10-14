@@ -17,7 +17,7 @@ ly_associate_package(PACKAGE_NAME glad-2.0.0-beta-rev2-multiplatform TARGETS gla
 ly_associate_package(PACKAGE_NAME lux_core-2.2-rev5-multiplatform    TARGETS lux_core   PACKAGE_HASH c8c13cf7bc351643e1abd294d0841b24dee60e51647dff13db7aec396ad1e0b5)
 
 # platform-specific:
-ly_associate_package(PACKAGE_NAME tiff-4.2.0.15-rev2-ios         TARGETS tiff            PACKAGE_HASH d864beb0c955a55f28c2a993843afb2ecf6e01519ddfc857cedf34fc5db68d49)
+ly_associate_package(PACKAGE_NAME tiff-4.2.0.15-rev3-ios         TARGETS TIFF            PACKAGE_HASH e9067e88649fb6e93a926d9ed38621a9fae360a2e6f6eb24ebca63c1bc7761ea)
 ly_associate_package(PACKAGE_NAME freetype-2.10.4.16-ios         TARGETS freetype        PACKAGE_HASH 3ac3c35e056ae4baec2e40caa023d76a7a3320895ef172b6655e9261b0dc2e29)
 ly_associate_package(PACKAGE_NAME AWSNativeSDK-1.7.167-rev4-ios  TARGETS AWSNativeSDK    PACKAGE_HASH d10e7496ca705577032821011beaf9f2507689f23817bfa0ed4d2a2758afcd02)
 ly_associate_package(PACKAGE_NAME Lua-5.3.5-rev5-ios             TARGETS Lua             PACKAGE_HASH c2d3c4e67046c293049292317a7d60fdb8f23effeea7136aefaef667163e5ffe)

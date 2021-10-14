@@ -77,9 +77,11 @@ namespace AZ
     public:
         /**
          * Allocator used by the EBus.
-         * The default setting is AZStd::allocator, which uses AZ::SystemAllocator.
+         * The default setting is Internal EBusEnvironmentAllocator
+         * EBus code stores their Context instances in static memory
+         * Therfore the configured allocator must last as long as the EBus in a module
          */
-        using AllocatorType = AZStd::allocator;
+        using AllocatorType = AZ::Internal::EBusEnvironmentAllocator;
 
         /**
          * Defines how many handlers can connect to an address on the EBus
@@ -236,6 +238,17 @@ namespace AZ
         * code before or after an event.
         */
         using EventProcessingPolicy = EBusEventProcessingPolicy;
+
+        /**
+        * Template Lock Guard class that wraps around the Mutex
+        * The EBus Context uses the LockGuard when dispatching
+        * (either AZStd::scoped_lock<MutexType> or NullLockGuard<MutexType>)
+        * The IsLocklessDispatch bool is there to defer evaluation of the LocklessDispatch constant
+        * Otherwise the value above in EBusTraits.h is always used and not the value
+        * that the derived trait class sets.
+        */
+        template <typename DispatchMutex, bool IsLocklessDispatch>
+        using DispatchLockGuard = AZStd::conditional_t<IsLocklessDispatch, AZ::Internal::NullLockGuard<DispatchMutex>, AZStd::scoped_lock<DispatchMutex>>;
     };
 
     namespace Internal
@@ -496,6 +509,14 @@ namespace AZ
          */
         static const bool HasId = Traits::AddressPolicy != EBusAddressPolicy::Single;
 
+        /**
+        * Template Lock Guard class that wraps around the Mutex
+        * The EBus uses for Dispatching Events.
+        * This is not EBus Context Mutex when LocklessDispatch is set
+        */
+        template <typename DispatchMutex>
+        using DispatchLockGuard = typename ImplTraits::template DispatchLockGuard<DispatchMutex>;
+
         //////////////////////////////////////////////////////////////////////////
         // Check to help identify common mistakes
         /// @cond EXCLUDE_DOCS
@@ -620,11 +641,11 @@ namespace AZ
             using ContextMutexType = AZStd::conditional_t<BusTraits::LocklessDispatch && AZStd::is_same_v<MutexType, AZ::NullMutex>, AZStd::shared_mutex, MutexType>;
 
             /**
-             * The scoped lock guard to use (either AZStd::scoped_lock<MutexType> or NullLockGuard<MutexType>
+             * The scoped lock guard to use
              * during broadcast/event dispatch.
              * @see EBusTraits::LocklessDispatch
              */
-            using DispatchLockGuard = AZStd::conditional_t<BusTraits::LocklessDispatch, AZ::Internal::NullLockGuard<ContextMutexType>, AZStd::scoped_lock<ContextMutexType>>;
+            using DispatchLockGuard = DispatchLockGuard<ContextMutexType>;
 
             /**
             * The scoped lock guard to use during connection.  Some specialized policies execute handler methods which
@@ -704,6 +725,11 @@ namespace AZ
         static Context& GetOrCreateContext(bool trackCallstack=true);
 
         static bool IsInDispatch(Context* context = GetContext(false));
+
+        /**
+         * Returns whether the EBus context is in the middle of a dispatch on the current thread
+        */
+        static bool IsInDispatchThisThread(Context* context = GetContext(false));
         /// @cond EXCLUDE_DOCS
         struct RouterCallstackEntry
             : public CallstackEntry
@@ -1206,6 +1232,13 @@ AZ_POP_DISABLE_WARNING
     bool EBus<Interface, Traits>::IsInDispatch(Context* context)
     {
         return context != nullptr && context->m_dispatches > 0;
+    }
+
+    template<class Interface, class Traits>
+    bool EBus<Interface, Traits>::IsInDispatchThisThread(Context* context)
+    {
+        return context != nullptr && context->s_callstack != nullptr
+            && context->s_callstack->m_prev != nullptr;
     }
 
     //=========================================================================

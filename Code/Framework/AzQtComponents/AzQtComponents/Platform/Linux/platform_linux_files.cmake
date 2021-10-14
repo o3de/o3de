@@ -12,4 +12,7 @@ set(FILES
     ../../Utilities/QtWindowUtilities_linux.cpp
     ../../Utilities/ScreenGrabber_linux.cpp
     ../../../Platform/Linux/AzQtComponents/Components/StyledDockWidget_Linux.cpp
+    ../../../Platform/Linux/AzQtComponents/Utilities/DesktopUtilities_Linux.cpp
+    ../../../Platform/Linux/AzQtComponents/AzQtComponents_Traits_Linux.h
+    ../../../Platform/Linux/AzQtComponents/AzQtComponents_Traits_Platform.h
 )

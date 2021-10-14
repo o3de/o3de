@@ -10,6 +10,7 @@
 #include <AzCore/std/bind/bind.h>
 #include <AzCore/std/smart_ptr/shared_ptr.h>
 #include <AzFramework/Session/ISessionHandlingRequests.h>
+#include <AzFramework/Matchmaking/MatchmakingNotifications.h>
 
 #include <AWSGameLiftClientLocalTicketTracker.h>
 #include <AWSGameLiftSessionConstants.h>
@@ -47,6 +48,15 @@ namespace AWSGameLift
             AZ_TracePrintf(AWSGameLiftClientLocalTicketTrackerName, "Matchmaking ticket tracker is running.");
             return;
         }
+
+        // Make sure thread and wait event are both in clean state before starting new one
+        m_waitEvent.release();
+        if (m_trackerThread.joinable())
+        {
+            m_trackerThread.join();
+        }
+        m_waitEvent.acquire();
+
         m_status = TicketTrackerStatus::Running;
         m_trackerThread = AZStd::thread(AZStd::bind(
             &AWSGameLiftClientLocalTicketTracker::ProcessPolling, this, ticketId, playerId));
@@ -56,6 +66,7 @@ namespace AWSGameLift
     {
         AZStd::lock_guard<AZStd::mutex> lock(m_trackerMutex);
         m_status = TicketTrackerStatus::Idle;
+        m_waitEvent.release();
         if (m_trackerThread.joinable())
         {
             m_trackerThread.join();
@@ -81,24 +92,25 @@ namespace AWSGameLift
                         auto ticket = describeMatchmakingOutcome.GetResult().GetTicketList().front();
                         if (ticket.GetStatus() == Aws::GameLift::Model::MatchmakingConfigurationStatus::COMPLETED)
                         {
-                            m_status = TicketTrackerStatus::Idle;
                             AZ_TracePrintf(AWSGameLiftClientLocalTicketTrackerName,
                                 "Matchmaking ticket %s is complete.", ticket.GetTicketId().c_str());
                             RequestPlayerJoinMatch(ticket, playerId);
+                            m_status = TicketTrackerStatus::Idle;
                             return;
                         }
                         else if (ticket.GetStatus() == Aws::GameLift::Model::MatchmakingConfigurationStatus::TIMED_OUT ||
                             ticket.GetStatus() == Aws::GameLift::Model::MatchmakingConfigurationStatus::FAILED ||
                             ticket.GetStatus() == Aws::GameLift::Model::MatchmakingConfigurationStatus::CANCELLED)
                         {
-                            m_status = TicketTrackerStatus::Idle;
                             AZ_Error(AWSGameLiftClientLocalTicketTrackerName, false, "Matchmaking ticket %s is not complete, %s",
                                 ticket.GetTicketId().c_str(), ticket.GetStatusReason().c_str());
+                            m_status = TicketTrackerStatus::Idle;
                             return;
                         }
                         else if (ticket.GetStatus() == Aws::GameLift::Model::MatchmakingConfigurationStatus::REQUIRES_ACCEPTANCE)
                         {
                             // broadcast acceptance requires to player
+                            AzFramework::MatchAcceptanceNotificationBus::Broadcast(&AzFramework::MatchAcceptanceNotifications::OnMatchAcceptance);
                         }
                         else
                         {
@@ -122,7 +134,7 @@ namespace AWSGameLift
             {
                 AZ_Error(AWSGameLiftClientLocalTicketTrackerName, false, AWSGameLiftClientMissingErrorMessage);
             }
-            AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(m_pollingPeriodInMS));
+            m_waitEvent.try_acquire_for(AZStd::chrono::milliseconds(m_pollingPeriodInMS));
         }
     }
 

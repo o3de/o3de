@@ -135,6 +135,7 @@ void SetNormalAndUpdateLightingParams(
 
     float3 projectedNormal = cross(biNormal, tangent);
     surface.normal = normalize(projectedNormal);    // the normalization might be redundunt 
+    surface.vertexNormal = surface.normal; // [To Do] - support proper vertex normals in the hair shader.
 
     // Next is important in order to set NdotV and other PBR settings - needs to be set once per light
     UpdateLightingParameters(lightingData, surface.position, surface.normal, surface.roughnessLinear);
@@ -362,7 +363,7 @@ void ApplyDirectionalLights(Surface surface, inout LightingData lightingData)
         litRatio = DirectionalLightShadow::GetVisibility(
             shadowIndex,
             lightingData.shadowCoords,
-            surface.normal,
+            surface.vertexNormal,
             debugInfo);
     }
 

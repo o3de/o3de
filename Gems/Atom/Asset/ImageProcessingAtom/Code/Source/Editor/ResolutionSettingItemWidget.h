@@ -60,7 +60,7 @@ namespace ImageProcessingAtomEditor
         void SetupFormatComboBox();
         void SetupResolutionInfo();
         void RefreshUI();
-        QString GetFinalFormat(const AZ::Uuid& presetId);
+        QString GetFinalFormat(const ImageProcessingAtom::PresetName& preset);
 
         QScopedPointer<Ui::ResolutionSettingItemWidget> m_ui;
         ResoultionWidgetType m_type;

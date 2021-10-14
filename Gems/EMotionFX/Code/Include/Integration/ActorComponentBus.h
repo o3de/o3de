@@ -16,7 +16,7 @@
 #include <AzCore/RTTI/TypeInfo.h>
 #include <AzFramework/Physics/AnimationConfiguration.h>
 #include <AzFramework/Physics/Character.h>
-
+#include <Integration/Assets/ActorAsset.h>
 
 namespace EMotionFX
 {
@@ -95,6 +95,9 @@ namespace EMotionFX
 
             /// Returns skinning method used by the actor.
             virtual SkinningMethod GetSkinningMethod() const = 0;
+
+            // Use this to alter the actor asset.
+            virtual void SetActorAsset(AZ::Data::Asset<EMotionFX::Integration::ActorAsset> actorAsset) = 0;
 
             static const size_t s_invalidJointIndex = std::numeric_limits<size_t>::max();
         };

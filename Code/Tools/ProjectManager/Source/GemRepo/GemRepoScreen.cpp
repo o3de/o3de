@@ -13,6 +13,7 @@
 #include <GemRepo/GemRepoAddDialog.h>
 #include <GemRepo/GemRepoInspector.h>
 #include <PythonBindingsInterface.h>
+#include <ProjectManagerDefs.h>
 
 #include <QVBoxLayout>
 #include <QHBoxLayout>
@@ -104,9 +105,29 @@ namespace O3DE::ProjectManager
         {
             // Add all available repos to the model
             const QVector<GemRepoInfo> allGemRepoInfos = allGemRepoInfosResult.GetValue();
+            QDateTime oldestRepoUpdate;
+            if (!allGemRepoInfos.isEmpty())
+            {
+                oldestRepoUpdate = allGemRepoInfos[0].m_lastUpdated;
+            }
             for (const GemRepoInfo& gemRepoInfo : allGemRepoInfos)
             {
                 m_gemRepoModel->AddGemRepo(gemRepoInfo);
+
+                // Find least recently updated repo
+                if (gemRepoInfo.m_lastUpdated < oldestRepoUpdate)
+                {
+                    oldestRepoUpdate = gemRepoInfo.m_lastUpdated;
+                }
+            }
+
+            if (!allGemRepoInfos.isEmpty())
+            {
+                m_lastAllUpdateLabel->setText(tr("Last Updated: %1").arg(oldestRepoUpdate.toString(RepoTimeFormat)));
+            }
+            else
+            {
+                m_lastAllUpdateLabel->setText(tr("Last Updated: Never"));
             }
         }
         else

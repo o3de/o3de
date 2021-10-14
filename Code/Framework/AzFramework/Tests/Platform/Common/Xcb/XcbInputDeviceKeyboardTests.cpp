@@ -19,6 +19,7 @@
 #include "Matchers.h"
 #include "Actions.h"
 #include "XcbBaseTestFixture.h"
+#include "XcbTestApplication.h"
 
 template<typename T>
 xcb_generic_event_t MakeEvent(T event)
@@ -32,6 +33,7 @@ namespace AzFramework
     class XcbInputDeviceKeyboardTests
         : public XcbBaseTestFixture
     {
+    public:
         void SetUp() override
         {
             using testing::Return;
@@ -122,6 +124,15 @@ namespace AzFramework
 
         static constexpr xcb_keycode_t s_keycodeForAKey{38};
         static constexpr xcb_keycode_t s_keycodeForShiftLKey{50};
+
+        XcbTestApplication m_application{
+            /*enabledGamepadsCount=*/0,
+            /*keyboardEnabled=*/true,
+            /*motionEnabled=*/false,
+            /*mouseEnabled=*/false,
+            /*touchEnabled=*/false,
+            /*virtualKeyboardEnabled=*/false
+        };
     };
 
     class InputTextNotificationListener
@@ -194,26 +205,23 @@ namespace AzFramework
         EXPECT_CALL(m_interface, xkb_state_key_get_one_sym(&m_xkbState, s_keycodeForAKey))
             .Times(2);
 
-        Application application;
-        application.Start({}, {});
+        m_application.Start();
 
         const InputChannel* inputChannel = InputChannelRequests::FindInputChannel(InputDeviceKeyboard::Key::AlphanumericA);
         ASSERT_TRUE(inputChannel);
         EXPECT_THAT(inputChannel->GetState(), Eq(InputChannel::State::Idle));
 
-        application.PumpSystemEventLoopUntilEmpty();
-        application.TickSystem();
-        application.Tick();
+        m_application.PumpSystemEventLoopUntilEmpty();
+        m_application.TickSystem();
+        m_application.Tick();
 
         EXPECT_THAT(inputChannel->GetState(), Eq(InputChannel::State::Began));
 
-        application.PumpSystemEventLoopUntilEmpty();
-        application.TickSystem();
-        application.Tick();
+        m_application.PumpSystemEventLoopUntilEmpty();
+        m_application.TickSystem();
+        m_application.Tick();
 
         EXPECT_THAT(inputChannel->GetState(), Eq(InputChannel::State::Ended));
-
-        application.Stop();
     }
 
     TEST_F(XcbInputDeviceKeyboardTests, TextEnteredFromXcbKeyPressEvents)
@@ -418,16 +426,13 @@ namespace AzFramework
         EXPECT_CALL(textListener, OnInputTextEvent(StrEq("a"), _)).Times(1);
         EXPECT_CALL(textListener, OnInputTextEvent(StrEq("A"), _)).Times(1);
 
-        Application application;
-        application.Start({}, {});
+        m_application.Start();
 
         for (int i = 0; i < 4; ++i)
         {
-            application.PumpSystemEventLoopUntilEmpty();
-            application.TickSystem();
-            application.Tick();
+            m_application.PumpSystemEventLoopUntilEmpty();
+            m_application.TickSystem();
+            m_application.Tick();
         }
-
-        application.Stop();
     }
 } // namespace AzFramework

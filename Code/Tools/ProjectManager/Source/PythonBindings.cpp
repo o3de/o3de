@@ -668,7 +668,21 @@ namespace O3DE::ProjectManager
 
                 if (gemInfo.m_creator.contains("Open 3D Engine"))
                 {
-                    gemInfo.m_gemOrigin = GemInfo::GemOrigin::Open3DEEngine;
+                    gemInfo.m_gemOrigin = GemInfo::GemOrigin::Open3DEngine;
+                }
+                else if (gemInfo.m_creator.contains("Amazon Web Services"))
+                {
+                    gemInfo.m_gemOrigin = GemInfo::GemOrigin::Local;
+                }
+                else if (data.contains("origin"))
+                {
+                    gemInfo.m_gemOrigin = GemInfo::GemOrigin::Remote;
+                }
+
+                // As long Base Open3DEngine gems are installed before first startup non-remote gems will be downloaded
+                if (gemInfo.m_gemOrigin != GemInfo::GemOrigin::Remote)
+                {
+                    gemInfo.m_downloadStatus = GemInfo::DownloadStatus::Downloaded;
                 }
 
                 if (data.contains("user_tags"))
@@ -932,13 +946,55 @@ namespace O3DE::ProjectManager
         return AZ::Failure<AZStd::string>("Adding Gem Repo not implemented yet in o3de scripts.");
     }
 
-    GemRepoInfo PythonBindings::GemRepoInfoFromPath(pybind11::handle path, pybind11::handle pyEnginePath)
+    GemRepoInfo PythonBindings::GetGemRepoInfo(pybind11::handle repoUri)
     {
-        /* Placeholder Logic */
-        (void)path;
-        (void)pyEnginePath;
+        GemRepoInfo gemRepoInfo;
+        gemRepoInfo.m_repoLink = Py_To_String(repoUri);
 
-        return GemRepoInfo();
+        auto data = m_manifest.attr("get_repo_json_data")(repoUri);
+        if (pybind11::isinstance<pybind11::dict>(data))
+        {
+            try
+            {
+                // required
+                gemRepoInfo.m_repoLink = Py_To_String(data["repo_uri"]);
+                gemRepoInfo.m_name = Py_To_String(data["repo_name"]);
+                gemRepoInfo.m_creator = Py_To_String(data["origin"]);
+
+                // optional
+                gemRepoInfo.m_summary = Py_To_String_Optional(data, "summary", "No summary provided.");
+                gemRepoInfo.m_additionalInfo = Py_To_String_Optional(data, "additional_info", "");
+
+                auto repoPath = m_manifest.attr("get_repo_path")(repoUri);
+                gemRepoInfo.m_path = gemRepoInfo.m_directoryLink = Py_To_String(repoPath);
+
+                QString lastUpdated = Py_To_String_Optional(data, "last_updated", "");
+                gemRepoInfo.m_lastUpdated = QDateTime::fromString(lastUpdated, RepoTimeFormat);
+
+                if (data.contains("enabled"))
+                {
+                    gemRepoInfo.m_isEnabled = data["enabled"].cast<bool>();
+                }
+                else
+                {
+                    gemRepoInfo.m_isEnabled = false;
+                }
+
+                if (data.contains("gem_paths"))
+                {
+                    for (auto gemPath : data["gem_paths"])
+                    {
+                        gemRepoInfo.m_includedGemPaths.push_back(Py_To_String(gemPath));
+                    }
+                }
+            }
+            catch ([[maybe_unused]] const std::exception& e)
+            {
+                AZ_Warning("PythonBindings", false, "Failed to get GemRepoInfo for repo %s", Py_To_String(repoUri));
+            }
+        }
+
+        return gemRepoInfo;
     }
 
 //#define MOCK_GEM_REPO_INFO true
@@ -951,14 +1007,10 @@ namespace O3DE::ProjectManager
         auto result = ExecuteWithLockErrorHandling(
             [&]
             {
-                /* Placeholder Logic, o3de scripts need method added
-                * 
-                for (auto path : m_manifest.attr("get_gem_repos")())
+                for (auto repoUri : m_manifest.attr("get_repos")())
                 {
-                    gemRepos.push_back(GemRepoInfoFromPath(path, pybind11::none()));
+                    gemRepos.push_back(GetGemRepoInfo(repoUri));
                 }
-                *
-                */
             });
         if (!result.IsSuccess())
         {

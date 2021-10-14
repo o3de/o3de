@@ -19,11 +19,14 @@
 #include <AWSGameLiftClientManager.h>
 #include <AWSGameLiftClientMocks.h>
 
+#include <Request/AWSGameLiftAcceptMatchRequest.h>
 #include <Request/AWSGameLiftCreateSessionOnQueueRequest.h>
 #include <Request/AWSGameLiftCreateSessionRequest.h>
 #include <Request/AWSGameLiftJoinSessionRequest.h>
 #include <Request/AWSGameLiftSearchSessionsRequest.h>
 #include <Request/IAWSGameLiftInternalRequests.h>
+#include <Request/AWSGameLiftStartMatchmakingRequest.h>
+#include <Request/AWSGameLiftStopMatchmakingRequest.h>
 
 using namespace AWSGameLift;
 
@@ -205,6 +208,7 @@ protected:
         sessionConfig.m_terminationTime = 0;
         sessionConfig.m_creatorId = "dummyCreatorId";
         sessionConfig.m_sessionProperties["dummyKey"] = "dummyValue";
+        sessionConfig.m_matchmakingData = "dummyMatchmakingData";
         sessionConfig.m_sessionId = "dummyGameSessionId";
         sessionConfig.m_sessionName = "dummyGameSessionName";
         sessionConfig.m_ipAddress = "dummyIpAddress";
@@ -223,10 +227,42 @@ protected:
         return response;
     }
 
+    AWSGameLiftStartMatchmakingRequest GetValidStartMatchmakingRequest()
+    {
+        AWSGameLiftStartMatchmakingRequest request;
+        request.m_configurationName = "dummyConfiguration";
+        request.m_ticketId = DummyMatchmakingTicketId;
+
+        AWSGameLiftPlayer player;
+        player.m_playerAttributes["dummy"] = "{\"N\": \"1\"}";
+        player.m_playerId = DummyPlayerId;
+        player.m_latencyInMs["us-east-1"] = 10;
+        request.m_players.emplace_back(player);
+
+        return request;
+    }
+
+    Aws::GameLift::Model::StartMatchmakingOutcome GetValidStartMatchmakingResponse()
+    {
+        Aws::GameLift::Model::MatchmakingTicket ticket;
+        ticket.SetTicketId(DummyMatchmakingTicketId);
+        Aws::GameLift::Model::StartMatchmakingResult result;
+        result.SetMatchmakingTicket(ticket);
+        Aws::GameLift::Model::StartMatchmakingOutcome outcome(result);
+
+        return outcome;
+    }
+
+    static const char* const DummyMatchmakingTicketId;
+    static const char* const DummyPlayerId;
+
 public:
     AZStd::unique_ptr<AWSGameLiftClientManager> m_gameliftClientManager;
     AZStd::shared_ptr<GameLiftClientMock> m_gameliftClientMockPtr;
 };
+
+const char* const AWSGameLiftClientManagerTest::DummyMatchmakingTicketId = "dummyTicketId";
+const char* const AWSGameLiftClientManagerTest::DummyPlayerId = "dummyPlayerId";
 
 TEST_F(AWSGameLiftClientManagerTest, ConfigureGameLiftClient_CallWithoutRegion_GetFalseAsResult)
 {
@@ -761,4 +797,316 @@ TEST_F(AWSGameLiftClientManagerTest, LeaveSessionAsync_CallWithInterfaceRegister
     EXPECT_CALL(sessionHandlerMock, OnLeaveSessionAsyncComplete()).Times(1);
 
     m_gameliftClientManager->LeaveSessionAsync();
+}
+
+TEST_F(AWSGameLiftClientManagerTest, StartMatchmaking_CallWithoutClientSetup_GetFalseResponse)
+{
+    AWSGameLiftStartMatchmakingRequest request = GetValidStartMatchmakingRequest();
+
+    AZ_TEST_START_TRACE_SUPPRESSION;
+    m_gameliftClientManager->ConfigureGameLiftClient("");
+    AZStd::string response = m_gameliftClientManager->StartMatchmaking(request);
+    AZ_TEST_STOP_TRACE_SUPPRESSION(2); // capture 2 error message
+    EXPECT_TRUE(response.empty());
+
+}
+TEST_F(AWSGameLiftClientManagerTest, StartMatchmaking_CallWithInvalidRequest_GetErrorWithEmptyResponse)
+{
+    AWSGameLiftStartMatchmakingRequest request;
+    request.m_configurationName = "dummyConfiguration";
+    AWSGameLiftPlayer player;
+    player.m_playerAttributes["dummy"] = "{\"A\": \"1\"}";
+    request.m_players.emplace_back(player);
+
+    AZ_TEST_START_TRACE_SUPPRESSION;
+    AZStd::string response = m_gameliftClientManager->StartMatchmaking(request);
+    AZ_TEST_STOP_TRACE_SUPPRESSION(1); // capture 1 error message
+    EXPECT_TRUE(response.empty());
+}
+
+TEST_F(AWSGameLiftClientManagerTest, StartMatchmaking_CallWithValidRequest_GetSuccessOutcome)
+{
+    AWSGameLiftStartMatchmakingRequest request = GetValidStartMatchmakingRequest();
+    Aws::GameLift::Model::StartMatchmakingOutcome outcome = GetValidStartMatchmakingResponse();
+
+    EXPECT_CALL(*m_gameliftClientMockPtr, StartMatchmaking(::testing::_))
+        .Times(1)
+        .WillOnce(::testing::Return(outcome));
+
+    AZStd::string response = m_gameliftClientManager->StartMatchmaking(request);
+    EXPECT_EQ(response, DummyMatchmakingTicketId);
+}
+
+TEST_F(AWSGameLiftClientManagerTest, StartMatchmaking_CallWithValidRequest_GetErrorOutcome)
+{
+    AWSGameLiftStartMatchmakingRequest request = GetValidStartMatchmakingRequest();
+
+    Aws::Client::AWSError<Aws::GameLift::GameLiftErrors> error;
+    Aws::GameLift::Model::StartMatchmakingOutcome outcome(error);
+
+    EXPECT_CALL(*m_gameliftClientMockPtr, StartMatchmaking(::testing::_))
+        .Times(1)
+        .WillOnce(::testing::Return(outcome));
+    AZ_TEST_START_TRACE_SUPPRESSION;
+    m_gameliftClientManager->StartMatchmaking(request);
+    AZ_TEST_STOP_TRACE_SUPPRESSION(1); // capture 1 error message
+}
+
+TEST_F(AWSGameLiftClientManagerTest, StartMatchmakingAsync_CallWithInvalidRequest_GetNotificationWithErrorOutcome)
+{
+    AWSGameLiftStartMatchmakingRequest request;
+    request.m_configurationName = "dummyConfiguration";
+    AWSGameLiftPlayer player;
+    player.m_playerAttributes["dummy"] = "{\"A\": \"1\"}";
+    request.m_players.emplace_back(player);
+
+    MatchmakingAsyncRequestNotificationsHandlerMock matchmakingHandlerMock;
+    EXPECT_CALL(matchmakingHandlerMock, OnStartMatchmakingAsyncComplete(AZStd::string{})).Times(1);
+
+    AZ_TEST_START_TRACE_SUPPRESSION;
+    m_gameliftClientManager->StartMatchmakingAsync(request);
+    AZ_TEST_STOP_TRACE_SUPPRESSION(1); // capture 1 error message
+}
+
+TEST_F(AWSGameLiftClientManagerTest, StartMatchmakingAsync_CallWithValidRequest_GetNotificationWithSuccessOutcome)
+{
+    AWSCoreRequestsHandlerMock handlerMock;
+    EXPECT_CALL(handlerMock, GetDefaultJobContext()).Times(1).WillOnce(::testing::Return(m_jobContext.get()));
+
+    AWSGameLiftStartMatchmakingRequest request = GetValidStartMatchmakingRequest();
+    Aws::GameLift::Model::StartMatchmakingOutcome outcome = GetValidStartMatchmakingResponse();
+
+    EXPECT_CALL(*m_gameliftClientMockPtr, StartMatchmaking(::testing::_))
+        .Times(1)
+        .WillOnce(::testing::Return(outcome));
+
+    MatchmakingAsyncRequestNotificationsHandlerMock matchmakingHandlerMock;
+    EXPECT_CALL(matchmakingHandlerMock, OnStartMatchmakingAsyncComplete(AZStd::string(DummyMatchmakingTicketId))).Times(1);
+
+    m_gameliftClientManager->StartMatchmakingAsync(request);
+}
+
+TEST_F(AWSGameLiftClientManagerTest, StartMatchmakingAsync_CallWithValidRequest_GetNotificationWithErrorOutcome)
+{
+    AWSCoreRequestsHandlerMock handlerMock;
+    EXPECT_CALL(handlerMock, GetDefaultJobContext()).Times(1).WillOnce(::testing::Return(m_jobContext.get()));
+
+    AWSGameLiftStartMatchmakingRequest request = GetValidStartMatchmakingRequest();
+
+    Aws::Client::AWSError<Aws::GameLift::GameLiftErrors> error;
+    Aws::GameLift::Model::StartMatchmakingOutcome outcome(error);
+    EXPECT_CALL(*m_gameliftClientMockPtr, StartMatchmaking(::testing::_))
+        .Times(1)
+        .WillOnce(::testing::Return(outcome));
+
+    MatchmakingAsyncRequestNotificationsHandlerMock matchmakingHandlerMock;
+    EXPECT_CALL(matchmakingHandlerMock, OnStartMatchmakingAsyncComplete(AZStd::string{})).Times(1);
+
+    AZ_TEST_START_TRACE_SUPPRESSION;
+    m_gameliftClientManager->StartMatchmakingAsync(request);
+    AZ_TEST_STOP_TRACE_SUPPRESSION(1); // capture 1 error message
+}
+
+TEST_F(AWSGameLiftClientManagerTest, StopMatchmaking_CallWithoutClientSetup_GetError)
+{
+    AZ_TEST_START_TRACE_SUPPRESSION;
+    m_gameliftClientManager->ConfigureGameLiftClient("");
+    AWSGameLiftStopMatchmakingRequest request;
+    request.m_ticketId = DummyMatchmakingTicketId;
+
+    m_gameliftClientManager->StopMatchmaking(request);
+    AZ_TEST_STOP_TRACE_SUPPRESSION(2); // capture 2 error message
+}
+TEST_F(AWSGameLiftClientManagerTest, StopMatchmaking_CallWithInvalidRequest_GetError)
+{
+    AZ_TEST_START_TRACE_SUPPRESSION;
+    m_gameliftClientManager->StopMatchmaking(AzFramework::StopMatchmakingRequest());
+    AZ_TEST_STOP_TRACE_SUPPRESSION(1); // capture 1 error message
+}
+
+TEST_F(AWSGameLiftClientManagerTest, StopMatchmaking_CallWithValidRequest_Success)
+{
+    AWSGameLiftStopMatchmakingRequest request;
+    request.m_ticketId = DummyMatchmakingTicketId;
+
+    Aws::GameLift::Model::StopMatchmakingResult result;
+    Aws::GameLift::Model::StopMatchmakingResult outcome(result);
+    EXPECT_CALL(*m_gameliftClientMockPtr, StopMatchmaking(::testing::_))
+        .Times(1)
+        .WillOnce(::testing::Return(outcome));
+
+    m_gameliftClientManager->StopMatchmaking(request);
+}
+
+TEST_F(AWSGameLiftClientManagerTest, StopMatchmaking_CallWithValidRequest_GetError)
+{
+    AWSGameLiftStopMatchmakingRequest request;
+    request.m_ticketId = DummyMatchmakingTicketId;
+
+    Aws::Client::AWSError<Aws::GameLift::GameLiftErrors> error;
+    Aws::GameLift::Model::StopMatchmakingOutcome outcome(error);
+
+    EXPECT_CALL(*m_gameliftClientMockPtr, StopMatchmaking(::testing::_))
+        .Times(1)
+        .WillOnce(::testing::Return(outcome));
+    AZ_TEST_START_TRACE_SUPPRESSION;
+    m_gameliftClientManager->StopMatchmaking(request);
+    AZ_TEST_STOP_TRACE_SUPPRESSION(1); // capture 1 error message
+}
+
+TEST_F(AWSGameLiftClientManagerTest, StopMatchmakingAsync_CallWithInvalidRequest_GetNotificationWithError)
+{
+    AWSGameLiftStopMatchmakingRequest request;
+
+    MatchmakingAsyncRequestNotificationsHandlerMock matchmakingHandlerMock;
+    EXPECT_CALL(matchmakingHandlerMock, OnStopMatchmakingAsyncComplete()).Times(1);
+
+    AZ_TEST_START_TRACE_SUPPRESSION;
+    m_gameliftClientManager->StopMatchmakingAsync(request);
+    AZ_TEST_STOP_TRACE_SUPPRESSION(1); // capture 1 error message
+}
+
+TEST_F(AWSGameLiftClientManagerTest, StopMatchmakingAsync_CallWithValidRequest_GetNotification)
+{
+    AWSCoreRequestsHandlerMock handlerMock;
+    EXPECT_CALL(handlerMock, GetDefaultJobContext()).Times(1).WillOnce(::testing::Return(m_jobContext.get()));
+
+    AWSGameLiftStopMatchmakingRequest request;
+    request.m_ticketId = DummyMatchmakingTicketId;
+
+    Aws::GameLift::Model::StopMatchmakingResult result;
+    Aws::GameLift::Model::StopMatchmakingOutcome outcome(result);
+    EXPECT_CALL(*m_gameliftClientMockPtr, StopMatchmaking(::testing::_))
+        .Times(1)
+        .WillOnce(::testing::Return(outcome));
+
+    MatchmakingAsyncRequestNotificationsHandlerMock matchmakingHandlerMock;
+    EXPECT_CALL(matchmakingHandlerMock, OnStopMatchmakingAsyncComplete()).Times(1);
+
+    m_gameliftClientManager->StopMatchmakingAsync(request);
+}
+
+TEST_F(AWSGameLiftClientManagerTest, StopMatchmakingAsync_CallWithValidRequest_GetNotificationWithError)
+{
+    AWSCoreRequestsHandlerMock handlerMock;
+    EXPECT_CALL(handlerMock, GetDefaultJobContext()).Times(1).WillOnce(::testing::Return(m_jobContext.get()));
+
+    AWSGameLiftStopMatchmakingRequest request;
+    request.m_ticketId = DummyMatchmakingTicketId;
+
+    Aws::Client::AWSError<Aws::GameLift::GameLiftErrors> error;
+    Aws::GameLift::Model::StopMatchmakingOutcome outcome(error);
+    EXPECT_CALL(*m_gameliftClientMockPtr, StopMatchmaking(::testing::_))
+        .Times(1)
+        .WillOnce(::testing::Return(outcome));
+
+    MatchmakingAsyncRequestNotificationsHandlerMock matchmakingHandlerMock;
+    EXPECT_CALL(matchmakingHandlerMock, OnStopMatchmakingAsyncComplete()).Times(1);
+
+    AZ_TEST_START_TRACE_SUPPRESSION;
+    m_gameliftClientManager->StopMatchmakingAsync(request);
+    AZ_TEST_STOP_TRACE_SUPPRESSION(1); // capture 1 error message
+}
+
+TEST_F(AWSGameLiftClientManagerTest, AcceptMatch_CallWithoutClientSetup_GetError)
+{
+    AZ_TEST_START_TRACE_SUPPRESSION;
+    m_gameliftClientManager->ConfigureGameLiftClient("");
+    AWSGameLiftAcceptMatchRequest request;
+    request.m_acceptMatch = true;
+    request.m_playerIds = { DummyPlayerId };
+    request.m_ticketId = DummyMatchmakingTicketId;
+
+    m_gameliftClientManager->AcceptMatch(request);
+    AZ_TEST_STOP_TRACE_SUPPRESSION(2); // capture 2 error message
+}
+TEST_F(AWSGameLiftClientManagerTest, AcceptMatch_CallWithInvalidRequest_GetError)
+{
+    AZ_TEST_START_TRACE_SUPPRESSION;
+    m_gameliftClientManager->AcceptMatch(AzFramework::AcceptMatchRequest());
+    AZ_TEST_STOP_TRACE_SUPPRESSION(1); // capture 1 error message
+}
+
+TEST_F(AWSGameLiftClientManagerTest, AcceptMatch_CallWithValidRequest_Success)
+{
+    AWSGameLiftAcceptMatchRequest request;
+    request.m_acceptMatch = true;
+    request.m_playerIds = { DummyPlayerId };
+    request.m_ticketId = DummyMatchmakingTicketId;
+
+    Aws::GameLift::Model::AcceptMatchResult result;
+    Aws::GameLift::Model::AcceptMatchResult outcome(result);
+    EXPECT_CALL(*m_gameliftClientMockPtr, AcceptMatch(::testing::_)).Times(1).WillOnce(::testing::Return(outcome));
+
+    m_gameliftClientManager->AcceptMatch(request);
+}
+
+TEST_F(AWSGameLiftClientManagerTest, AcceptMatch_CallWithValidRequest_GetError)
+{
+    AWSGameLiftAcceptMatchRequest request;
+    request.m_acceptMatch = true;
+    request.m_playerIds = { DummyPlayerId };
+    request.m_ticketId = DummyMatchmakingTicketId;
+
+    Aws::Client::AWSError<Aws::GameLift::GameLiftErrors> error;
+    Aws::GameLift::Model::AcceptMatchOutcome outcome(error);
+
+    EXPECT_CALL(*m_gameliftClientMockPtr, AcceptMatch(::testing::_)).Times(1).WillOnce(::testing::Return(outcome));
+    AZ_TEST_START_TRACE_SUPPRESSION;
+    m_gameliftClientManager->AcceptMatch(request);
+    AZ_TEST_STOP_TRACE_SUPPRESSION(1); // capture 1 error message
+}
+
+TEST_F(AWSGameLiftClientManagerTest, AcceptMatchAsync_CallWithInvalidRequest_GetNotificationWithError)
+{
+    AWSGameLiftAcceptMatchRequest request;
+
+    MatchmakingAsyncRequestNotificationsHandlerMock matchmakingHandlerMock;
+    EXPECT_CALL(matchmakingHandlerMock, OnAcceptMatchAsyncComplete()).Times(1);
+
+    AZ_TEST_START_TRACE_SUPPRESSION;
+    m_gameliftClientManager->AcceptMatchAsync(request);
+    AZ_TEST_STOP_TRACE_SUPPRESSION(1); // capture 1 error message
+}
+
+TEST_F(AWSGameLiftClientManagerTest, AcceptMatchAsync_CallWithValidRequest_GetNotification)
+{
+    AWSCoreRequestsHandlerMock handlerMock;
+    EXPECT_CALL(handlerMock, GetDefaultJobContext()).Times(1).WillOnce(::testing::Return(m_jobContext.get()));
+
+    AWSGameLiftAcceptMatchRequest request;
+    request.m_acceptMatch = true;
+    request.m_playerIds = { DummyPlayerId };
+    request.m_ticketId = DummyMatchmakingTicketId;
+
+    Aws::GameLift::Model::AcceptMatchResult result;
+    Aws::GameLift::Model::AcceptMatchOutcome outcome(result);
+    EXPECT_CALL(*m_gameliftClientMockPtr, AcceptMatch(::testing::_)).Times(1).WillOnce(::testing::Return(outcome));
+
+    MatchmakingAsyncRequestNotificationsHandlerMock matchmakingHandlerMock;
+    EXPECT_CALL(matchmakingHandlerMock, OnAcceptMatchAsyncComplete()).Times(1);
+
+    m_gameliftClientManager->AcceptMatchAsync(request);
+}
+
+TEST_F(AWSGameLiftClientManagerTest, AcceptMatchAsync_CallWithValidRequest_GetNotificationWithError)
+{
+    AWSCoreRequestsHandlerMock handlerMock;
+    EXPECT_CALL(handlerMock, GetDefaultJobContext()).Times(1).WillOnce(::testing::Return(m_jobContext.get()));
+
+    AWSGameLiftAcceptMatchRequest request;
+    request.m_acceptMatch = true;
+    request.m_playerIds = { DummyPlayerId };
+    request.m_ticketId = DummyMatchmakingTicketId;
+
+    Aws::Client::AWSError<Aws::GameLift::GameLiftErrors> error;
+    Aws::GameLift::Model::AcceptMatchOutcome outcome(error);
+    EXPECT_CALL(*m_gameliftClientMockPtr, AcceptMatch(::testing::_)).Times(1).WillOnce(::testing::Return(outcome));
+
+    MatchmakingAsyncRequestNotificationsHandlerMock matchmakingHandlerMock;
+    EXPECT_CALL(matchmakingHandlerMock, OnAcceptMatchAsyncComplete()).Times(1);
+
+    AZ_TEST_START_TRACE_SUPPRESSION;
+    m_gameliftClientManager->AcceptMatchAsync(request);
+    AZ_TEST_STOP_TRACE_SUPPRESSION(1); // capture 1 error message
 }
