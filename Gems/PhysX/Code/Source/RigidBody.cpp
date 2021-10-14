@@ -29,6 +29,21 @@ namespace PhysX
         const AZ::Vector3 DefaultCenterOfMass = AZ::Vector3::CreateZero();
         const float DefaultMass = 1.0f;
         const AZ::Matrix3x3 DefaultInertiaTensor = AZ::Matrix3x3::CreateIdentity();
+
+        bool IsSimulationShape(const physx::PxShape& pxShape)
+        {
+            return (pxShape.getFlags() & physx::PxShapeFlag::eSIMULATION_SHAPE);
+        }
+
+        bool CanShapeComputeMassProperties(const physx::PxShape& pxShape)
+        {
+            // Note: List based on computeMassAndInertia function in ExtRigidBodyExt.cpp file in PhysX.
+            const physx::PxGeometryType::Enum geometryType = pxShape.getGeometryType();
+            return geometryType == physx::PxGeometryType::eSPHERE
+                || geometryType == physx::PxGeometryType::eBOX
+                || geometryType == physx::PxGeometryType::eCAPSULE
+                || geometryType == physx::PxGeometryType::eCONVEXMESH;
+        }
     }
 
     void RigidBody::Reflect(AZ::ReflectContext* context)
@@ -186,32 +201,31 @@ namespace PhysX
             return;
         }
 
-        auto containsTriangleMeshShape = [this, includeAllShapesInMassCalculation]
+        auto cannotComputeMassProperties = [this, includeAllShapesInMassCalculation]
         {
             PHYSX_SCENE_READ_LOCK(m_pxRigidActor->getScene());
             return AZStd::any_of(m_shapes.cbegin(), m_shapes.cend(),
                 [includeAllShapesInMassCalculation](const AZStd::shared_ptr<PhysX::Shape>& shape)
                 {
-                    const bool includeShape = includeAllShapesInMassCalculation ||
-                        (shape->GetPxShape()->getFlags() & physx::PxShapeFlag::eSIMULATION_SHAPE);
+                    const physx::PxShape& pxShape = *shape->GetPxShape();
+                    const bool includeShape = includeAllShapesInMassCalculation || IsSimulationShape(pxShape);
 
-                    return includeShape &&
-                        shape->GetPxShape()->getGeometryType() == physx::PxGeometryType::eTRIANGLEMESH;
+                    return includeShape && !CanShapeComputeMassProperties(pxShape);
                 });
         };
 
-        // If there are triangle mesh shapes then it's not possible
-        // to compute mass properties and default values will be used.
-        if (containsTriangleMeshShape())
+        // If contains shapes that cannot compute mass properties (triangle mesh,
+        // plane or heightfield) then default values will be used.
+        if (cannotComputeMassProperties())
         {
             AZ_Warning("RigidBody", !computeCenterOfMass,
-                "Rigid body '%s' cannot compute COM because it contains Triangle Mesh shapes, it will default to %s.",
+                "Rigid body '%s' cannot compute COM because it contains triangle mesh, plane or heightfield shapes, it will default to %s.",
                 GetName().c_str(), AZ::ToString(DefaultCenterOfMass).c_str());
             AZ_Warning("RigidBody", !computeMass,
-                "Rigid body '%s' cannot compute Mass because it contains Triangle Mesh shapes, it will default to %0.1f.",
+                "Rigid body '%s' cannot compute Mass because it contains triangle mesh, plane or heightfield shapes, it will default to %0.1f.",
                 GetName().c_str(), DefaultMass);
             AZ_Warning("RigidBody", !computeInertiaTensor,
-                "Rigid body '%s' cannot compute Inertia because it contains Triangle Mesh shapes, it will default to %s.",
+                "Rigid body '%s' cannot compute Inertia because it contains triangle mesh, plane or heightfield shapes, it will default to %s.",
                 GetName().c_str(), AZ::ToString(DefaultInertiaTensor.RetrieveScale()).c_str());
 
             SetCenterOfMassOffset(computeCenterOfMass ? DefaultCenterOfMass : centerOfMassOffsetOverride);
@@ -377,19 +391,19 @@ namespace PhysX
             return;
         }
 
-        AZStd::vector<physx::PxShape*> pxShapes;
+        AZStd::vector<const physx::PxShape*> pxShapes;
         pxShapes.reserve(m_shapes.size());
         {
             // Filter shapes in the same way that updateMassAndInertia function does.
             PHYSX_SCENE_READ_LOCK(m_pxRigidActor->getScene());
             for (const auto& shape : m_shapes)
             {
-                const bool includeShape = includeAllShapesInMassCalculation ||
-                    (shape->GetPxShape()->getFlags() & physx::PxShapeFlag::eSIMULATION_SHAPE);
+                const physx::PxShape& pxShape = *shape->GetPxShape();
+                const bool includeShape = includeAllShapesInMassCalculation || IsSimulationShape(pxShape);
 
-                if (includeShape)
+                if (includeShape && CanShapeComputeMassProperties(pxShape))
                 {
-                    pxShapes.emplace_back(shape->GetPxShape());
+                    pxShapes.emplace_back(&pxShape);
                 }
             }
         }
