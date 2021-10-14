@@ -429,7 +429,6 @@ class TestsFBX_AllPlatforms(object):
                     product.product_name = job.platform + "/" \
                                            + product.product_name
 
-    @pytest.mark.SUITE_sandbox
     def run_fbx_test(self, workspace, ap_setup_fixture, asset_processor,
                      project, blackbox_params: BlackboxAssetTest, overrideAsset = False):
         """
