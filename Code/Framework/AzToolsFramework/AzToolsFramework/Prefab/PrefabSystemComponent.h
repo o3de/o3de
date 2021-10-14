@@ -27,6 +27,7 @@
 #include <AzToolsFramework/Prefab/PrefabPublicRequestHandler.h>
 #include <AzToolsFramework/Prefab/PrefabSystemComponentInterface.h>
 #include <AzToolsFramework/Prefab/Template/Template.h>
+#include <Prefab/PrefabSystemScriptingHandler.h>
 
 namespace AZ
 {
@@ -219,7 +220,7 @@ namespace AzToolsFramework
                 const AZStd::vector<AZ::Entity*>& entities, AZStd::vector<AZStd::unique_ptr<Instance>>&& instancesToConsume,
                 AZ::IO::PathView filePath, AZStd::unique_ptr<AZ::Entity> containerEntity = nullptr,
                 InstanceOptionalReference parent = AZStd::nullopt, bool shouldCreateLinks = true) override;
-
+            
             PrefabDom& FindTemplateDom(TemplateId templateId) override;
 
             /**
@@ -244,7 +245,7 @@ namespace AzToolsFramework
 
         private:
             AZ_DISABLE_COPY_MOVE(PrefabSystemComponent);
-
+            
             /**
             * Builds a new Prefab Template out of entities and instances and returns the first instance comprised of
             * these entities and instances.
@@ -412,6 +413,8 @@ namespace AzToolsFramework
 
             // Handler of the public Prefab requests.
             PrefabPublicRequestHandler m_prefabPublicRequestHandler;
+
+            PrefabSystemScriptingHandler m_prefabSystemScriptingHandler;
         };
     } // namespace Prefab
 } // namespace AzToolsFramework

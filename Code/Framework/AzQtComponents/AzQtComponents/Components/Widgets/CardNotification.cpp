@@ -33,6 +33,9 @@ namespace AzQtComponents
         titleLabel->setObjectName("Title");
         titleLabel->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
         titleLabel->setWordWrap(true);
+        titleLabel->setTextFormat(Qt::RichText);
+        titleLabel->setTextInteractionFlags(Qt::TextBrowserInteraction);
+        titleLabel->setOpenExternalLinks(true);
 
         QHBoxLayout* headerLayout = new QHBoxLayout(headerFrame);
         headerLayout->setSizeConstraint(QLayout::SetMinimumSize);

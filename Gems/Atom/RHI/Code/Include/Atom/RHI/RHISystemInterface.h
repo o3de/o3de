@@ -27,7 +27,6 @@ namespace AZ
         class PipelineStateCache;
         class PlatformLimitsDescriptor;
         class RayTracingShaderTable;
-        struct CpuTimingStatistics;
         struct FrameSchedulerCompileRequest;
         struct TransientAttachmentStatistics;
         struct TransientAttachmentPoolDescriptor;
@@ -55,7 +54,7 @@ namespace AZ
 
             virtual void ModifyFrameSchedulerStatisticsFlags(RHI::FrameSchedulerStatisticsFlags statisticsFlags, bool enableFlags) = 0;
 
-            virtual const RHI::CpuTimingStatistics* GetCpuTimingStatistics() const = 0;
+            virtual double GetCpuFrameTime() const = 0;
 
             virtual const RHI::TransientAttachmentStatistics* GetTransientAttachmentStatistics() const = 0;
 

@@ -4,8 +4,21 @@
     "parentMaterial": "",
     "propertyLayoutVersion": 1,
     "properties": {
-        "settings": {
-            "baseColor": [ 0.78, 0.59, 0.48 ]
+        "baseColor": {
+            "color": [ 0.18, 0.18, 0.18 ],
+            "useTexture": false
+        },
+        "normal":
+        {
+            "useTexture": false
+        },
+        "roughness":
+        {   
+            "useTexture": false
+        },
+        "specularF0":
+        {
+            "useTexture": false
         }
     }
 }

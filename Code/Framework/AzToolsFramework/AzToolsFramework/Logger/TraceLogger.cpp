@@ -66,7 +66,7 @@ namespace AzToolsFramework
         StringFunc::Path::Join(resolveBuffer, "log", logDirectory);
         fileIO->SetAlias("@log@", logDirectory.c_str());
 
-        fileIO->CreatePath("@root@");
+        fileIO->CreatePath("@products@");
         fileIO->CreatePath("@user@");
         fileIO->CreatePath("@log@");
 
