@@ -569,8 +569,8 @@ namespace UnitTest
         FillSpawnable(NumEntities);
         CreateEntityReferences(refScheme);
 
-        AZ_PUSH_DISABLE_WARNING(5233, "-Wunknown-warning-option") // Older versions of MSVC toolchain require to pass constexpr in the
-                                                                  // capture. Newer versions issue unused warning
+        AZ_PUSH_DISABLE_WARNING(5233, "-Wunused-lambda-capture") // Older versions of MSVC toolchain require to pass constexpr in the
+                                                                 // capture. Newer versions issue unused warning
         auto callback =
             [this, refScheme, NumEntities](AzFramework::EntitySpawnTicket::Id, AzFramework::SpawnableConstEntityContainerView entities)
         AZ_POP_DISABLE_WARNING
@@ -592,8 +592,8 @@ namespace UnitTest
         FillSpawnable(NumEntities);
         CreateEntityReferences(refScheme);
 
-        AZ_PUSH_DISABLE_WARNING(5233, "-Wunknown-warning-option") // Older versions of MSVC toolchain require to pass constexpr in the
-                                                                  // capture. Newer versions issue unused warning
+        AZ_PUSH_DISABLE_WARNING(5233, "-Wunused-lambda-capture") // Older versions of MSVC toolchain require to pass constexpr in the
+                                                                 // capture. Newer versions issue unused warning
         auto callback =
             [this, refScheme, NumEntities](AzFramework::EntitySpawnTicket::Id, AzFramework::SpawnableConstEntityContainerView entities)
         AZ_POP_DISABLE_WARNING
@@ -722,8 +722,8 @@ namespace UnitTest
         FillSpawnable(NumEntities);
         CreateEntityReferences(refScheme);
 
-        AZ_PUSH_DISABLE_WARNING(5233, "-Wunknown-warning-option") // Older versions of MSVC toolchain require to pass constexpr in the
-                                                                  // capture. Newer versions issue unused warning
+        AZ_PUSH_DISABLE_WARNING(5233, "-Wunused-lambda-capture") // Older versions of MSVC toolchain require to pass constexpr in the
+                                                                 // capture. Newer versions issue unused warning
         auto callback =
             [this, refScheme, NumEntities](AzFramework::EntitySpawnTicket::Id, AzFramework::SpawnableConstEntityContainerView entities)
         AZ_POP_DISABLE_WARNING
