@@ -96,7 +96,6 @@ namespace AtomToolsFramework
         AZ::RPI::RPISystemInterface::Get()->UnregisterScene(m_scene);
         m_frameworkScene->UnsetSubsystem(m_scene);
         m_frameworkScene->UnsetSubsystem(m_entityContext.get());
-        m_entityContext->DestroyContext();
     }
 
     void PreviewRenderer::AddCaptureRequest(const CaptureRequest& captureRequest)
@@ -134,7 +133,10 @@ namespace AtomToolsFramework
 
     void PreviewRenderer::CancelCaptureRequest()
     {
-        m_currentCaptureRequest.m_captureFailedCallback();
+        if (m_currentCaptureRequest.m_captureFailedCallback)
+        {
+            m_currentCaptureRequest.m_captureFailedCallback();
+        }
         m_state.reset();
         m_state.reset(new PreviewRendererIdleState(this));
     }
@@ -179,17 +181,25 @@ namespace AtomToolsFramework
 
     bool PreviewRenderer::StartCapture()
     {
-        auto captureCallback = [currentCaptureRequest = m_currentCaptureRequest](const AZ::RPI::AttachmentReadback::ReadbackResult& result)
+        auto captureCompleteCallback = m_currentCaptureRequest.m_captureCompleteCallback;
+        auto captureFailedCallback = m_currentCaptureRequest.m_captureFailedCallback;
+        auto captureCallback = [captureCompleteCallback, captureFailedCallback](const AZ::RPI::AttachmentReadback::ReadbackResult& result)
         {
             if (result.m_dataBuffer)
             {
-                currentCaptureRequest.m_captureCompleteCallback(QPixmap::fromImage(QImage(
-                    result.m_dataBuffer.get()->data(), result.m_imageDescriptor.m_size.m_width, result.m_imageDescriptor.m_size.m_height,
-                    QImage::Format_RGBA8888)));
+                if (captureCompleteCallback)
+                {
+                    captureCompleteCallback(QPixmap::fromImage(QImage(
+                        result.m_dataBuffer.get()->data(), result.m_imageDescriptor.m_size.m_width,
+                        result.m_imageDescriptor.m_size.m_height, QImage::Format_RGBA8888)));
+                }
             }
             else
             {
-                currentCaptureRequest.m_captureFailedCallback();
+                if (captureFailedCallback)
+                {
+                    captureFailedCallback();
+                }
             }
         };
 
@@ -209,6 +219,7 @@ namespace AtomToolsFramework
 
     void PreviewRenderer::EndCapture()
     {
+        m_currentCaptureRequest = {};
         m_renderPipeline->RemoveFromRenderTick();
     }
 
