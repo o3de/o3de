@@ -4,42 +4,59 @@
         "version": 1,
         "groups": [
             {
-                "id": "settings",
-                "displayName": "Settings"
+                "name": "baseColor",
+                "displayName": "Base Color",
+                "description": "Properties for configuring the surface reflected color for dielectrics or reflectance values for metals."
+            },
+            {
+                "name": "normal",
+                "displayName": "Normal",
+                "description": "Properties related to configuring surface normal."
             }
         ],
         "properties": {
-            "macroColor": [
+            "baseColor": [
                 {
-                    "id": "useTexture",
-                    "displayName": "Use Texture",
-                    "description": "Whether to use the texture.",
-                    "type": "Bool",
-                    "defaultValue": true
+                    "name": "textureMap",
+                    "displayName": "Texture",
+                    "description": "Base color of the macro material",
+                    "type": "Image"
                 }
-
             ],
-            "macroNormal": [
+            "normal": [
                 {
-                    "id": "useTexture",
-                    "displayName": "Use Texture",
-                    "description": "Whether to use the texture.",
+                    "name": "textureMap",
+                    "displayName": "Texture",
+                    "description": "Texture for defining surface normal direction. These will override normals generated from the geometry.",
+                    "type": "Image"
+                },
+                {
+                    "name": "flipX",
+                    "displayName": "Flip X Channel",
+                    "description": "Flip tangent direction for this normal map.",
                     "type": "Bool",
-                    "defaultValue": true
+                    "defaultValue": false
+                },
+                {
+                    "name": "flipY",
+                    "displayName": "Flip Y Channel",
+                    "description": "Flip bitangent direction for this normal map.",
+                    "type": "Bool",
+                    "defaultValue": false
+                },
+                {
+                    "name": "factor",
+                    "displayName": "Factor",
+                    "description": "Strength factor for scaling the values",
+                    "type": "Float",
+                    "defaultValue": 1.0,
+                    "min": 0.0,
+                    "softMax": 2.0
                 }
             ]
         }
     },
     "shaders": [
-        {
-            "file": "../../Shaders/Terrain/TerrainPBR_ForwardPass.shader"
-        },
-        {
-            "file": "../../Shaders/Terrain/Terrain_Shadowmap.shader"
-        },
-        {
-            "file": "../../Shaders/Terrain/Terrain_DepthPass.shader"
-        }
     ],
     "functors": [
     ]
