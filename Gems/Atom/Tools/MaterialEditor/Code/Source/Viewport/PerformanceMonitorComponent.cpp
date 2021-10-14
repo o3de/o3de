@@ -65,10 +65,6 @@ namespace MaterialEditor
             AZ_Error("PerformanceMonitorComponent", false, "Failed to find root pass.");
         }
 
-        AZ::RHI::RHISystemInterface::Get()->ModifyFrameSchedulerStatisticsFlags(
-            AZ::RHI::FrameSchedulerStatisticsFlags::GatherCpuTimingStatistics,
-            enabled);
-
         if (enabled)
         {
             ResetStats();
