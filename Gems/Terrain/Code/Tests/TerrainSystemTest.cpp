@@ -43,10 +43,6 @@ namespace UnitTest
         AZ::ComponentApplication m_app;
         AZStd::unique_ptr<Terrain::TerrainSystem> m_terrainSystem;
 
-        AZStd::unique_ptr<NiceMock<UnitTest::MockBoxShapeComponentRequests>> m_boxShapeRequests;
-        AZStd::unique_ptr<NiceMock<UnitTest::MockShapeComponentRequests>> m_shapeRequests;
-        AZStd::unique_ptr<NiceMock<UnitTest::MockTerrainAreaHeightRequests>> m_terrainAreaHeightRequests;
-
         void SetUp() override
         {
             AZ::ComponentApplication::Descriptor appDesc;
@@ -60,9 +56,6 @@ namespace UnitTest
         void TearDown() override
         {
             m_terrainSystem.reset();
-            m_boxShapeRequests.reset();
-            m_shapeRequests.reset();
-            m_terrainAreaHeightRequests.reset();
             m_app.Destroy();
         }
 
@@ -109,22 +102,30 @@ namespace UnitTest
         }
 
         AZStd::unique_ptr<AZ::Entity> CreateAndActivateMockTerrainLayerSpawner(
-            const AZ::Aabb& spawnerBox, const AZStd::function<void(AZ::Vector3& position, bool& terrainExists)>& mockHeights)
+            const AZ::Aabb& spawnerBox,
+            AZ::u32 layer,
+            AZ::u32 priority,
+            AZStd::unique_ptr<NiceMock<UnitTest::MockShapeComponentRequests>>& shapeRequests,
+            AZStd::unique_ptr<NiceMock<UnitTest::MockTerrainAreaHeightRequests>>& terrainAreaHeightRequests,
+            const AZStd::function<void(AZ::Vector3& position, bool& terrainExists)>& mockHeights)
         {
             // Create the base entity with a mock box shape, Terrain Layer Spawner, and height provider.
             auto entity = CreateEntity();
             CreateComponent<UnitTest::MockAxisAlignedBoxShapeComponent>(entity.get());
-            CreateComponent<Terrain::TerrainLayerSpawnerComponent>(entity.get());
 
-            m_boxShapeRequests = AZStd::make_unique<NiceMock<UnitTest::MockBoxShapeComponentRequests>>(entity->GetId());
-            m_shapeRequests = AZStd::make_unique<NiceMock<UnitTest::MockShapeComponentRequests>>(entity->GetId());
+            Terrain::TerrainLayerSpawnerConfig spawnerConfig;
+            spawnerConfig.m_layer = layer;
+            spawnerConfig.m_priority = priority;
+            CreateComponent<Terrain::TerrainLayerSpawnerComponent>(entity.get(), spawnerConfig);
+
+            shapeRequests = AZStd::make_unique<NiceMock<UnitTest::MockShapeComponentRequests>>(entity->GetId());
 
             // Set up the box shape to return whatever spawnerBox was passed in.
-            ON_CALL(*m_shapeRequests, GetEncompassingAabb).WillByDefault(Return(spawnerBox));
+            ON_CALL(*shapeRequests, GetEncompassingAabb).WillByDefault(Return(spawnerBox));
 
             // Set up a mock height provider to use the passed-in mock height function to generate a height.
-            m_terrainAreaHeightRequests = AZStd::make_unique<NiceMock<UnitTest::MockTerrainAreaHeightRequests>>(entity->GetId());
-            ON_CALL(*m_terrainAreaHeightRequests, GetHeight)
+            terrainAreaHeightRequests = AZStd::make_unique<NiceMock<UnitTest::MockTerrainAreaHeightRequests>>(entity->GetId());
+            ON_CALL(*terrainAreaHeightRequests, GetHeight)
                 .WillByDefault(
                     [mockHeights](const AZ::Vector3& inPosition, AZ::Vector3& outPosition, bool& terrainExists)
                     {
@@ -231,8 +232,13 @@ namespace UnitTest
         // Create a mock terrain layer spawner that uses a box of (0,0,5) - (10,10,15) and always returns a height of 5.
         constexpr float spawnerHeight = 5.0f;
         const AZ::Aabb spawnerBox = AZ::Aabb::CreateFromMinMaxValues(0.0f, 0.0f, 5.0f, 10.0f, 10.0f, 15.0f);
+
+        AZStd::unique_ptr<NiceMock<UnitTest::MockShapeComponentRequests>> shapeRequests;
+        AZStd::unique_ptr<NiceMock<UnitTest::MockTerrainAreaHeightRequests>> terrainAreaHeightRequests;
+
         auto entity = CreateAndActivateMockTerrainLayerSpawner(
-            spawnerBox,
+            spawnerBox, 1, 1, shapeRequests,
+            terrainAreaHeightRequests,
             [](AZ::Vector3& position, bool& terrainExists)
             {
                 position.SetZ(spawnerHeight);
@@ -273,6 +279,9 @@ namespace UnitTest
                 }
             }
         }
+
+        terrainAreaHeightRequests.reset();
+        shapeRequests.reset();
     }
 
     TEST_F(TerrainSystemTest, TerrainHeightQueriesWithExactSamplersIgnoreQueryGrid)
@@ -286,8 +295,13 @@ namespace UnitTest
         constexpr float amplitudeMeters = 10.0f;
         constexpr float frequencyMeters = 1.0f;
         const AZ::Aabb spawnerBox = AZ::Aabb::CreateFromMinMaxValues(0.0f, 0.0f, 5.0f, 10.0f, 10.0f, 15.0f);
+
+        AZStd::unique_ptr<NiceMock<UnitTest::MockShapeComponentRequests>> shapeRequests;
+        AZStd::unique_ptr<NiceMock<UnitTest::MockTerrainAreaHeightRequests>> terrainAreaHeightRequests;
+
         auto entity = CreateAndActivateMockTerrainLayerSpawner(
-            spawnerBox,
+            spawnerBox, 1, 1, shapeRequests,
+            terrainAreaHeightRequests,
             [](AZ::Vector3& position, bool& terrainExists)
             {
                 position.SetZ(amplitudeMeters * sin(AZ::Constants::TwoPi * (position.GetX() / frequencyMeters)));
@@ -327,6 +341,9 @@ namespace UnitTest
             constexpr float epsilon = 0.0001f;
             EXPECT_NEAR(height, 0.0f, epsilon);
         }
+
+        terrainAreaHeightRequests.reset();
+        shapeRequests.reset();
     }
 
     TEST_F(TerrainSystemTest, TerrainHeightQueriesWithClampSamplersUseQueryGrid)
@@ -337,8 +354,12 @@ namespace UnitTest
         // Create a mock terrain layer spawner that uses a box of (-10,-10,-5) - (10,10,15) and generates a height equal
         // to the X + Y position, so if either one doesn't get clamped we'll get an unexpected result.
         const AZ::Aabb spawnerBox = AZ::Aabb::CreateFromMinMaxValues(-10.0f, -10.0f, -5.0f, 10.0f, 10.0f, 15.0f);
+
+        AZStd::unique_ptr<NiceMock<UnitTest::MockShapeComponentRequests>> shapeRequests;
+        AZStd::unique_ptr<NiceMock<UnitTest::MockTerrainAreaHeightRequests>> terrainAreaHeightRequests;
         auto entity = CreateAndActivateMockTerrainLayerSpawner(
-            spawnerBox,
+            spawnerBox, 1, 1, shapeRequests,
+            terrainAreaHeightRequests,
             [](AZ::Vector3& position, bool& terrainExists)
             {
                 position.SetZ(position.GetX() + position.GetY());
@@ -376,6 +397,9 @@ namespace UnitTest
             constexpr float epsilon = 0.0001f;
             EXPECT_NEAR(height, expectedHeight, epsilon);
         }
+
+        terrainAreaHeightRequests.reset();
+        shapeRequests.reset();
     }
 
     TEST_F(TerrainSystemTest, TerrainHeightQueriesWithBilinearSamplersUseQueryGridToInterpolate)
@@ -393,8 +417,13 @@ namespace UnitTest
         const AZ::Aabb spawnerBox = AZ::Aabb::CreateFromMinMaxValues(-10.0f, -10.0f, -5.0f, 10.0f, 10.0f, 15.0f);
         const float amplitudeMeters = 10.0f;
         const float frequencyMeters = 1.0f;
+
+        AZStd::unique_ptr<NiceMock<UnitTest::MockShapeComponentRequests>> shapeRequests;
+        AZStd::unique_ptr<NiceMock<UnitTest::MockTerrainAreaHeightRequests>> terrainAreaHeightRequests;
+
         auto entity = CreateAndActivateMockTerrainLayerSpawner(
-            spawnerBox,
+            spawnerBox, 1, 1, shapeRequests,
+            terrainAreaHeightRequests,
             [amplitudeMeters, frequencyMeters](AZ::Vector3& position, bool& terrainExists)
             {
                 // Our generated height will be X + Y.
@@ -473,6 +502,9 @@ namespace UnitTest
             constexpr float epsilon = 0.0001f;
             EXPECT_NEAR(height, expectedHeight, epsilon);
         }
+
+        terrainAreaHeightRequests.reset();
+        shapeRequests.reset();
     }
 
     TEST_F(TerrainSystemTest, GetSurfaceWeightsReturnsAllValidSurfaceWeights)
@@ -480,8 +512,13 @@ namespace UnitTest
         CreateAndActivateTerrainSystem();
 
         const AZ::Aabb aabb = AZ::Aabb::CreateFromMinMax(AZ::Vector3::CreateZero(), AZ::Vector3::CreateOne());
+
+        AZStd::unique_ptr<NiceMock<UnitTest::MockShapeComponentRequests>> shapeRequests;
+        AZStd::unique_ptr<NiceMock<UnitTest::MockTerrainAreaHeightRequests>> terrainAreaHeightRequests;
+
         auto entity = CreateAndActivateMockTerrainLayerSpawner(
-            aabb,
+            aabb, 1, 1, shapeRequests,
+            terrainAreaHeightRequests,
             [](AZ::Vector3& position, bool& terrainExists)
             {
                 position.SetZ(1.0f);
@@ -516,6 +553,9 @@ namespace UnitTest
         m_terrainSystem->GetSurfaceWeights(aabb.GetCenter(), outSurfaceWeights);
 
         EXPECT_EQ(outSurfaceWeights.size(), 2);
+
+        terrainAreaHeightRequests.reset();
+        shapeRequests.reset();
     }
 
     TEST_F(TerrainSystemTest, GetMaxSurfaceWeightsReturnsBiggestValidSurfaceWeight)
@@ -523,8 +563,13 @@ namespace UnitTest
         CreateAndActivateTerrainSystem();
 
         const AZ::Aabb aabb = AZ::Aabb::CreateFromMinMax(AZ::Vector3::CreateZero(), AZ::Vector3::CreateOne());
+
+        AZStd::unique_ptr<NiceMock<UnitTest::MockShapeComponentRequests>> shapeRequests;
+        AZStd::unique_ptr<NiceMock<UnitTest::MockTerrainAreaHeightRequests>> terrainAreaHeightRequests;
+
         auto entity = CreateAndActivateMockTerrainLayerSpawner(
-            aabb,
+            aabb, 1, 1, shapeRequests,
+            terrainAreaHeightRequests,
             [](AZ::Vector3& position, bool& terrainExists)
             {
                 position.SetZ(1.0f);
@@ -560,5 +605,115 @@ namespace UnitTest
 
         EXPECT_EQ(tagWeight.m_surfaceType, tagWeight1.m_surfaceType);
         EXPECT_NEAR(tagWeight.m_weight, tagWeight1.m_weight, 0.01f);
+
+        terrainAreaHeightRequests.reset();
+        shapeRequests.reset();
+    }
+    
+    TEST_F(TerrainSystemTest, LayerPrioritiesOrderByLayer)
+    {
+        // Ensure that layers provided by layer spawners are sorted correctly with the highest layer value first.
+        CreateAndActivateTerrainSystem();
+
+        const AZ::Aabb aabb = AZ::Aabb::CreateFromMinMax(AZ::Vector3::CreateZero(), AZ::Vector3::CreateOne());
+
+        // Create a layer spawner
+        const AZ::u32 layer1 = 10;
+        const AZ::u32 priority1 = 10;
+        const float z1 = 1.0f;
+
+        AZStd::unique_ptr<NiceMock<UnitTest::MockShapeComponentRequests>> shapeRequests1;
+        AZStd::unique_ptr<NiceMock<UnitTest::MockTerrainAreaHeightRequests>> terrainAreaHeightRequests1;
+        auto e1 = CreateAndActivateMockTerrainLayerSpawner(
+            aabb, layer1, priority1, shapeRequests1,
+            terrainAreaHeightRequests1,
+            [z1](AZ::Vector3& position, bool& terrainExists)
+            {
+                position.SetZ(z1);
+                terrainExists = true;
+            });
+
+        // Create a second layer spawner
+        const AZ::u32 layer2 = 1;
+        const AZ::u32 priority2 = 1;
+        const float z2 = 0.8f;
+
+        AZStd::unique_ptr<NiceMock<UnitTest::MockShapeComponentRequests>> shapeRequests2;
+        AZStd::unique_ptr<NiceMock<UnitTest::MockTerrainAreaHeightRequests>> terrainAreaHeightRequests2;
+        auto e2 = CreateAndActivateMockTerrainLayerSpawner(
+            aabb, layer2, priority2, shapeRequests2,
+            terrainAreaHeightRequests2,
+            [z2](AZ::Vector3& position, bool& terrainExists)
+            {
+                position.SetZ(z2);
+                terrainExists = true;
+            });
+
+
+        // Register them with the terrain system, This should result in them being correctly sorted.
+        m_terrainSystem->RegisterArea(e1->GetId());
+        m_terrainSystem->RegisterArea(e2->GetId());
+
+        const float height = m_terrainSystem->GetHeight(aabb.GetCenter(), AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT);
+
+        EXPECT_NEAR(height, z1, 0.01f);
+
+        terrainAreaHeightRequests1.reset();
+        shapeRequests1.reset();
+        terrainAreaHeightRequests2.reset();
+        shapeRequests2.reset();
+    }
+
+    TEST_F(TerrainSystemTest, LayerPrioritiesOrderByPriority)
+    {
+        // Ensure that layers provided by layer spawners are sorted correctly with the highest priority value first if the layer values are the same.
+        CreateAndActivateTerrainSystem();
+
+        const AZ::Aabb aabb = AZ::Aabb::CreateFromMinMax(AZ::Vector3::CreateZero(), AZ::Vector3::CreateOne());
+
+        // Create a layer spawner
+        AZStd::unique_ptr<NiceMock<UnitTest::MockShapeComponentRequests>> shapeRequests1;
+        AZStd::unique_ptr<NiceMock<UnitTest::MockTerrainAreaHeightRequests>> terrainAreaHeightRequests1;
+
+        const AZ::u32 layer1 = 1;
+        const AZ::u32 priority1 = 3;
+        const float z1 = 1.0f;
+
+        auto e1 = CreateAndActivateMockTerrainLayerSpawner(
+            aabb, layer1, priority1, shapeRequests1, terrainAreaHeightRequests1,
+            [z1](AZ::Vector3& position, bool& terrainExists)
+            {
+                position.SetZ(z1);
+                terrainExists = true;
+            });
+
+        // Create a second layer spawner
+        AZStd::unique_ptr<NiceMock<UnitTest::MockShapeComponentRequests>> shapeRequests2;
+        AZStd::unique_ptr<NiceMock<UnitTest::MockTerrainAreaHeightRequests>> terrainAreaHeightRequests2;
+
+        const AZ::u32 layer2 = 1;
+        const AZ::u32 priority2 = 5;
+        const float z2 = 0.8f;
+
+        auto e2 = CreateAndActivateMockTerrainLayerSpawner(
+            aabb, layer2, priority2, shapeRequests2, terrainAreaHeightRequests2,
+            [z2](AZ::Vector3& position, bool& terrainExists)
+            {
+                position.SetZ(z2);
+                terrainExists = true;
+            });
+
+        // Register them with the terrain system, This should result in them being correctly sorted.
+        m_terrainSystem->RegisterArea(e1->GetId());
+        m_terrainSystem->RegisterArea(e2->GetId());
+
+        const float height = m_terrainSystem->GetHeight(aabb.GetCenter(), AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT);
+
+        EXPECT_NEAR(height, z2, 0.01f);
+
+        terrainAreaHeightRequests1.reset();
+        shapeRequests1.reset();
+        terrainAreaHeightRequests2.reset();
+        shapeRequests2.reset();
     }
 } // namespace UnitTest
