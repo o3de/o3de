@@ -101,6 +101,8 @@ namespace ScriptCanvasEditor
     public:
         AZ_COMPONENT(Graph, "{4D755CA9-AB92-462C-B24F-0B3376F19967}", ScriptCanvas::Graph);
 
+        static ScriptCanvas::DataPtr Create();
+
         static void Reflect(AZ::ReflectContext* context);
 
         Graph(const ScriptCanvas::ScriptCanvasId& scriptCanvasId = AZ::Entity::MakeId())

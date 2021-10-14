@@ -28,9 +28,13 @@ namespace ScriptCanvas
 
         AZ::Entity* GetScriptCanvasEntity() const { return m_scriptCanvasEntity.get(); }
 
+        const Graph* GetGraph() const;
+
+        const ScriptCanvasEditor::Graph* GetEditorGraph() const;
+
         Graph* ModGraph();
 
-        const Graph* GetGraph() const;
+        ScriptCanvasEditor::Graph* ModEditorGraph();
 
         AZStd::unique_ptr<AZ::Entity> m_scriptCanvasEntity;
     private:

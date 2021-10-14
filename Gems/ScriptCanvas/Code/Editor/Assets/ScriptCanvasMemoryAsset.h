@@ -172,7 +172,6 @@ namespace ScriptCanvasEditor
 
         bool IsSourceInError() const;
 
-        void OnSourceAssetFinalized(const AZStd::string& fullPath, AZ::Uuid sourceAssetId);
         void SavingComplete(const AZStd::string& fullPath, AZ::Uuid sourceAssetId);
 
         AZ::Data::AssetId GetSourceUuid() const { return m_sourceUuid; }

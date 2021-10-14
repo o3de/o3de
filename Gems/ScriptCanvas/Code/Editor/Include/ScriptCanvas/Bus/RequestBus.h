@@ -126,7 +126,7 @@ namespace ScriptCanvasEditor
         virtual void DisconnectEndpoints(const AZ::EntityId& /*sceneId*/, const AZStd::vector<GraphCanvas::Endpoint>& /*endpoints*/) {}
 
         virtual void PostUndoPoint(ScriptCanvas::ScriptCanvasId) = 0;
-        virtual void SignalSceneDirty(AZ::Data::AssetId) = 0;
+        virtual void SignalSceneDirty(SourceHandle) = 0;
 
         // Increment the value of the ignore undo point tracker
         virtual void PushPreventUndoStateUpdate() = 0;

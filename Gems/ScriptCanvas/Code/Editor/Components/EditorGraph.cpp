@@ -77,6 +77,7 @@ AZ_POP_DISABLE_WARNING
 #include <Libraries/Core/EBusEventHandler.h>
 #include <Libraries/Core/ReceiveScriptEvent.h>
 #include <Libraries/Core/ScriptEventBase.h>
+#include <ScriptCanvas/Assets/ScriptCanvasBaseAssetData.h>
 #include <Libraries/Core/SendScriptEvent.h>
 #include <ScriptCanvas/Asset/RuntimeAsset.h>
 #include <ScriptCanvas/Core/Connection.h>
@@ -1039,6 +1040,24 @@ namespace ScriptCanvasEditor
 
             DisconnectById(scConnectionId);
         }
+    }
+
+    ScriptCanvas::DataPtr Graph::Create()
+    {
+        if (AZ::Entity* entity = aznew AZ::Entity("Script Canvas Graph"))
+        {
+            auto graph = entity->CreateComponent<ScriptCanvasEditor::Graph>();
+            graph->SetAssetType(azrtti_typeid<ScriptCanvasAsset>());
+            entity->CreateComponent<EditorGraphVariableManagerComponent>(graph->GetScriptCanvasId());
+
+            if (ScriptCanvas::DataPtr data = AZStd::make_shared<ScriptCanvas::ScriptCanvasData>())
+            {
+                data->m_scriptCanvasEntity.reset(entity);
+                return data;
+            }
+        }
+
+        return nullptr;
     }
 
     bool Graph::CreateConnection(const GraphCanvas::ConnectionId& connectionId, const GraphCanvas::Endpoint& sourcePoint, const GraphCanvas::Endpoint& targetPoint)
