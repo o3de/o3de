@@ -140,34 +140,33 @@ def AtomEditorComponents_postfx_gradient_weight_AddedToEntity():
         # 7. Verify PostFx Gradient Weight Modifier component is enabled.
         Report.result(Tests.postfx_gradient_weight_enabled, postfx_gradient_weight_component.is_enabled())
 
-
-        # 11. Enter/Exit game mode.
+        # 8. Enter/Exit game mode.
         TestHelper.enter_game_mode(Tests.enter_game_mode)
         general.idle_wait_frames(1)
         TestHelper.exit_game_mode(Tests.exit_game_mode)
 
-        # 12. Test IsHidden.
+        # 9. Test IsHidden.
         postfx_gradient_weight_entity.set_visibility_state(False)
         Report.result(Tests.is_hidden, postfx_gradient_weight_entity.is_hidden() is True)
 
-        # 13. Test IsVisible.
+        # 10. Test IsVisible.
         postfx_gradient_weight_entity.set_visibility_state(True)
         general.idle_wait_frames(1)
         Report.result(Tests.is_visible, postfx_gradient_weight_entity.is_visible() is True)
 
-        # 14. Delete PostFx Gradient Weight Modifier entity.
+        # 11. Delete PostFx Gradient Weight Modifier entity.
         postfx_gradient_weight_entity.delete()
         Report.result(Tests.entity_deleted, not postfx_gradient_weight_entity.exists())
 
-        # 15. UNDO deletion.
+        # 12. UNDO deletion.
         general.undo()
         Report.result(Tests.deletion_undo, postfx_gradient_weight_entity.exists())
 
-        # 16. REDO deletion.
+        # 13. REDO deletion.
         general.redo()
         Report.result(Tests.deletion_redo, not postfx_gradient_weight_entity.exists())
 
-        # 17. Look for errors or asserts.
+        # 14. Look for errors or asserts.
         TestHelper.wait_for_condition(lambda: error_tracer.has_errors or error_tracer.has_asserts, 1.0)
         for error_info in error_tracer.errors:
             Report.info(f"Error: {error_info.filename} {error_info.function} | {error_info.message}")
