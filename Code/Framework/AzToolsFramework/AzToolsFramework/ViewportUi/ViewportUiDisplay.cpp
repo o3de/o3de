@@ -290,7 +290,7 @@ namespace AzToolsFramework::ViewportUi::Internal
         return false;
     }
 
-    void ViewportUiDisplay::CreateComponentModeBorder(const AZStd::string& borderTitle)
+    void ViewportUiDisplay::CreateViewportBorder(const AZStd::string& borderTitle)
     {
         const AZStd::string styleSheet = AZStd::string::format(
             "border: %dpx solid %s; border-top: %dpx solid %s;", HighlightBorderSize, HighlightBorderColor, TopHighlightBorderSize,
@@ -303,7 +303,7 @@ namespace AzToolsFramework::ViewportUi::Internal
         m_componentModeBorderText.setText(borderTitle.c_str());
     }
 
-    void ViewportUiDisplay::RemoveComponentModeBorder()
+    void ViewportUiDisplay::RemoveViewportBorder()
     {
         m_componentModeBorderText.setVisible(false);
         m_uiOverlay.setStyleSheet("border: none;");

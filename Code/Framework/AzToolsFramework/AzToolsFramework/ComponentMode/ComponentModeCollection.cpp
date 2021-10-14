@@ -291,7 +291,7 @@ namespace AzToolsFramework
             // wish to modify state to indicate this (e.g. appearance, functionality etc.)
             m_viewportEditorModeTracker->DeactivateMode({ GetEntityContextId() }, ViewportEditorMode::Component);
             ViewportUi::ViewportUiRequestBus::Event(
-                ViewportUi::DefaultViewportId, &ViewportUi::ViewportUiRequestBus::Events::RemoveComponentModeBorder);
+                ViewportUi::DefaultViewportId, &ViewportUi::ViewportUiRequestBus::Events::RemoveViewportBorder);
 
             // clear stored modes and builders for this ComponentMode
             // TLDR: avoid 'use after free' error
@@ -445,7 +445,7 @@ namespace AzToolsFramework
                     }
 
                     ViewportUi::ViewportUiRequestBus::Event(
-                        ViewportUi::DefaultViewportId, &ViewportUi::ViewportUiRequestBus::Events::CreateComponentModeBorder,
+                        ViewportUi::DefaultViewportId, &ViewportUi::ViewportUiRequestBus::Events::CreateViewportBorder,
                         componentMode.m_componentMode->GetComponentModeName().c_str());
                 }
 

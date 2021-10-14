@@ -3663,26 +3663,52 @@ namespace AzToolsFramework
     void EditorTransformComponentSelection::OnEditorModeActivated(
         [[maybe_unused]] const ViewportEditorModesInterface& editorModeState, ViewportEditorMode mode)
     {
-        if (mode == ViewportEditorMode::Component)
+        switch (mode)
         {
-            SetAllViewportUiVisible(false);
+        case ViewportEditorMode::Component:
+            {
+                SetAllViewportUiVisible(false);
 
-            EditorEntityLockComponentNotificationBus::Router::BusRouterDisconnect();
-            EditorEntityVisibilityNotificationBus::Router::BusRouterDisconnect();
-            ToolsApplicationNotificationBus::Handler::BusDisconnect();
+                EditorEntityLockComponentNotificationBus::Router::BusRouterDisconnect();
+                EditorEntityVisibilityNotificationBus::Router::BusRouterDisconnect();
+                ToolsApplicationNotificationBus::Handler::BusDisconnect();
+            }
+            break;
+        case ViewportEditorMode::Focus:
+            {
+                ViewportUi::ViewportUiRequestBus::Event(
+                    ViewportUi::DefaultViewportId, &ViewportUi::ViewportUiRequestBus::Events::CreateViewportBorder, "Focus Mode");
+            }
+            break;
+        default:
+            // noop
+            break;
         }
     }
 
     void EditorTransformComponentSelection::OnEditorModeDeactivated(
         [[maybe_unused]] const ViewportEditorModesInterface& editorModeState, ViewportEditorMode mode)
     {
-        if (mode == ViewportEditorMode::Component)
+        switch (mode)
         {
-            SetAllViewportUiVisible(true);
+        case ViewportEditorMode::Component:
+            {
+                SetAllViewportUiVisible(true);
 
-            ToolsApplicationNotificationBus::Handler::BusConnect();
-            EditorEntityVisibilityNotificationBus::Router::BusRouterConnect();
-            EditorEntityLockComponentNotificationBus::Router::BusRouterConnect();
+                ToolsApplicationNotificationBus::Handler::BusConnect();
+                EditorEntityVisibilityNotificationBus::Router::BusRouterConnect();
+                EditorEntityLockComponentNotificationBus::Router::BusRouterConnect();
+            }
+            break;
+        case ViewportEditorMode::Focus:
+            {
+                ViewportUi::ViewportUiRequestBus::Event(
+                    ViewportUi::DefaultViewportId, &ViewportUi::ViewportUiRequestBus::Events::RemoveViewportBorder);
+            }
+            break;
+        default:
+            // noop
+            break;
         }
     }
 
