@@ -93,6 +93,9 @@ namespace AzToolsFramework
         using DecayingCircles = AZStd::vector<DecayingCircle>;
         DecayingCircles m_decayingCircles; //!< Collection of decaying circles to draw for clicks that have not effect.
 
+        float m_toastMessage = 1.5f; //!< The time to display the invalid click message.
+        AzFramework::ScreenPoint m_invalidClickPosition; //!< The position to display the invalid click message.
+
         const EditorVisibleEntityDataCache* m_entityDataCache = nullptr; //!< Entity Data queried by the EditorHelpers.
         const FocusModeInterface* m_focusModeInterface = nullptr; //!< API to interact with focus mode functionality.
     };
