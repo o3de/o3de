@@ -310,6 +310,10 @@ namespace AzToolsFramework
             virtual void EndCursorCapture() = 0;
             //! Is the mouse over the viewport.
             virtual bool IsMouseOver() const = 0;
+            //!
+            virtual void PushOverrideCursor(/*enum*/) {} // make virtual
+            //!
+            virtual void PopOverrideCursor() {} // make virtual
 
         protected:
             ~ViewportMouseCursorRequests() = default;

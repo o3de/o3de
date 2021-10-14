@@ -256,6 +256,14 @@ namespace AzToolsFramework
             // If our focus changes, go ahead and reset all input devices.
             HandleFocusChange(event);
 
+            if (eventType == QEvent::FocusOut)
+            {
+                if (m_capturingCursor)
+                {
+                    qApp->restoreOverrideCursor();
+                }
+            }
+
             // If we focus in on the source widget and the mouse is contained in its
             // bounds, refresh the cached cursor position to ensure it is up to date (this
             // ensures cursor positions are refreshed correctly with context menu focus changes)
@@ -264,6 +272,11 @@ namespace AzToolsFramework
                 const auto globalCursorPosition = QCursor::pos();
                 if (m_sourceWidget->geometry().contains(globalCursorPosition))
                 {
+                    if (m_capturingCursor)
+                    {
+                        qApp->setOverrideCursor(Qt::ForbiddenCursor);
+                    }
+
                     HandleMouseMoveEvent(globalCursorPosition);
                 }
             }
@@ -450,6 +463,24 @@ namespace AzToolsFramework
                 channelData.second->UpdateState(false);
                 NotifyUpdateChannelIfNotIdle(channelData.second, event);
             }
+        }
+    }
+
+    void QtEventToAzInputMapper::PushCursor(/*enum*/)
+    {
+        if (!m_overrideCursor)
+        {
+            qApp->setOverrideCursor(Qt::ForbiddenCursor);
+            m_overrideCursor = true;
+        }
+    }
+
+    void QtEventToAzInputMapper::PopCursor()
+    {
+        if (m_overrideCursor)
+        {
+            qApp->restoreOverrideCursor();
+            m_overrideCursor = false;
         }
     }
 } // namespace AzToolsFramework

@@ -367,6 +367,16 @@ namespace AtomToolsFramework
         m_inputChannelMapper->SetCursorCaptureEnabled(false);
     }
 
+    void RenderViewportWidget::PushOverrideCursor(/*enum*/)
+    {
+        m_inputChannelMapper->PushCursor();
+    }
+
+    void RenderViewportWidget::PopOverrideCursor()
+    {
+        m_inputChannelMapper->PopCursor();
+    }
+
     void RenderViewportWidget::SetWindowTitle(const AZStd::string& title)
     {
         setWindowTitle(QString::fromUtf8(title.c_str()));

@@ -55,6 +55,9 @@ namespace AzToolsFramework
         //! like a dolly or rotation, where mouse movement is important but cursor location is not.
         void SetCursorCaptureEnabled(bool enabled);
 
+        void PushCursor(/*enum*/);
+        void PopCursor();
+
         // QObject overrides...
         bool eventFilter(QObject* object, QEvent* event) override;
 
@@ -164,6 +167,8 @@ namespace AzToolsFramework
         bool m_enabled = true;
         // Flags whether or not the cursor is being constrained to the source widget (for invisible mouse movement).
         bool m_capturingCursor = false;
+        //
+        bool m_overrideCursor = true;
 
         // Our viewport-specific AZ devices. We control their internal input channel states.
         AZStd::unique_ptr<EditorQtMouseDevice> m_mouseDevice;

@@ -102,6 +102,8 @@ namespace AtomToolsFramework
         void BeginCursorCapture() override;
         void EndCursorCapture() override;
         bool IsMouseOver() const override;
+        void PushOverrideCursor(/*enum*/) override;
+        void PopOverrideCursor() override;
 
         // AzFramework::WindowRequestBus::Handler overrides ...
         void SetWindowTitle(const AZStd::string& title) override;
