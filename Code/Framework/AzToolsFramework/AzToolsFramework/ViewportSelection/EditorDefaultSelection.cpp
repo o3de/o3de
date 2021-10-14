@@ -27,6 +27,10 @@ namespace AzToolsFramework
         , m_viewportEditorModeTracker(viewportEditorModeTracker)
         , m_componentModeCollection(viewportEditorModeTracker)
     {
+        AZ_Assert(
+            AZ::Interface<ComponentModeCollectionInterface>::Get() == nullptr, "Unexpected registration of component mode collection.")
+        AZ::Interface<ComponentModeCollectionInterface>::Register(&m_componentModeCollection);
+
         ActionOverrideRequestBus::Handler::BusConnect(GetEntityContextId());
         ComponentModeFramework::ComponentModeSystemRequestBus::Handler::BusConnect();
 
@@ -40,6 +44,11 @@ namespace AzToolsFramework
         ComponentModeFramework::ComponentModeSystemRequestBus::Handler::BusDisconnect();
         ActionOverrideRequestBus::Handler::BusDisconnect();
         m_viewportEditorModeTracker->DeactivateMode({ GetEntityContextId() }, ViewportEditorMode::Default);
+
+        AZ_Assert(
+            AZ::Interface<ComponentModeCollectionInterface>::Get() != nullptr,
+            "Unexpected unregistration of component mode collection.")
+        AZ::Interface<ComponentModeCollectionInterface>::Unregister(&m_componentModeCollection);
     }
 
     void EditorDefaultSelection::SetOverridePhantomWidget(QWidget* phantomOverrideWidget)

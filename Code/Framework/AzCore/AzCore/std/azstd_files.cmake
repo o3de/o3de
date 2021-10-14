@@ -12,6 +12,8 @@ set(FILES
     allocator.h
     allocator_ref.h
     allocator_stack.h
+    allocator_stateless.cpp
+    allocator_stateless.h
     allocator_static.h
     allocator_traits.h
     any.h

@@ -10,16 +10,19 @@
 
 #include <AzCore/Component/TransformBus.h>
 #include <AzToolsFramework/ContainerEntity/ContainerEntityNotificationBus.h>
+#include <AzToolsFramework/API/ToolsApplicationAPI.h>
 
 namespace AzToolsFramework
 {
     void ContainerEntitySystemComponent::Activate()
     {
         AZ::Interface<ContainerEntityInterface>::Register(this);
+        EditorEntityContextNotificationBus::Handler::BusConnect();
     }
 
     void ContainerEntitySystemComponent::Deactivate()
     {
+        EditorEntityContextNotificationBus::Handler::BusDisconnect();
         AZ::Interface<ContainerEntityInterface>::Unregister(this);
     }
 
@@ -63,7 +66,7 @@ namespace AzToolsFramework
         return m_containers.contains(entityId);
     }
 
-    ContainerEntityOperationResult ContainerEntitySystemComponent::SetContainerOpenState(AZ::EntityId entityId, bool open)
+    ContainerEntityOperationResult ContainerEntitySystemComponent::SetContainerOpen(AZ::EntityId entityId, bool open)
     {
         if (!IsContainer(entityId))
         {
@@ -87,7 +90,7 @@ namespace AzToolsFramework
 
     bool ContainerEntitySystemComponent::IsContainerOpen(AZ::EntityId entityId) const
     {
-        // If the entity is not a container, it should behave as open.
+        // Non-container entities behave the same as open containers. This saves the caller an additional check.
         if(!m_containers.contains(entityId))
         {
             return true;
@@ -99,7 +102,16 @@ namespace AzToolsFramework
 
     AZ::EntityId ContainerEntitySystemComponent::FindHighestSelectableEntity(AZ::EntityId entityId) const
     {
+        if (!entityId.IsValid())
+        {
+            return entityId;
+        }
+
+        // Return the highest closed container, or the entity if none is found.
         AZ::EntityId highestSelectableEntityId = entityId;
+
+        // Skip the queried entity, as we only want to check its ancestors.
+        AZ::TransformBus::EventResult(entityId, entityId, &AZ::TransformBus::Events::GetParentId);
 
         // Go up the hierarchy until you hit the root
         while (entityId.IsValid())
@@ -115,6 +127,74 @@ namespace AzToolsFramework
         }
 
         return highestSelectableEntityId;
+    }
+
+    void ContainerEntitySystemComponent::OnEntityStreamLoadSuccess()
+    {
+        // We don't yet support multiple entity contexts, so just use the default.
+        auto editorEntityContextId = AzFramework::EntityContextId::CreateNull();
+        EditorEntityContextRequestBus::BroadcastResult(editorEntityContextId, &EditorEntityContextRequests::GetEditorEntityContextId);
+
+        Clear(editorEntityContextId);
+    }
+
+    ContainerEntityOperationResult ContainerEntitySystemComponent::Clear(AzFramework::EntityContextId entityContextId)
+    {
+        // We don't yet support multiple entity contexts, so only clear the default.
+        auto editorEntityContextId = AzFramework::EntityContextId::CreateNull();
+        EditorEntityContextRequestBus::BroadcastResult(editorEntityContextId, &EditorEntityContextRequests::GetEditorEntityContextId);
+
+        if (entityContextId != editorEntityContextId)
+        {
+            return AZ::Failure(AZStd::string(
+                "Error in ContainerEntitySystemComponent::Clear - cannot clear non-default Entity Context!"));
+        }
+
+        if (!m_containers.empty())
+        {
+            return AZ::Failure(AZStd::string(
+                "Error in ContainerEntitySystemComponent::Clear - cannot clear container states if entities are still registered!"));
+        }
+
+        m_openContainers.clear();
+
+        return AZ::Success();
+    }
+
+    bool ContainerEntitySystemComponent::IsUnderClosedContainerEntity(AZ::EntityId entityId) const
+    {
+        if (!entityId.IsValid())
+        {
+            return false;
+        }
+
+        // Skip the queried entity, as we only want to check its ancestors.
+        AZ::TransformBus::EventResult(entityId, entityId, &AZ::TransformBus::Events::GetParentId);
+
+        // Go up the hierarchy until you hit the root.
+        while (entityId.IsValid())
+        {
+            if (!IsContainerOpen(entityId))
+            {
+                // One of the ancestors is a container and it's closed.
+                return true;
+            }
+
+            AZ::EntityId parentId;
+            AZ::TransformBus::EventResult(parentId, entityId, &AZ::TransformBus::Events::GetParentId);
+
+            if (parentId == entityId)
+            {
+                // In some circumstances, querying a root level entity with GetParentId will return
+                // the entity itself instead of an invalid entityId. 
+                break;
+            }
+
+            entityId = parentId;
+        }
+
+        // All ancestors are either regular entities or open containers.
+        return false;
     }
 
 } // namespace AzToolsFramework
