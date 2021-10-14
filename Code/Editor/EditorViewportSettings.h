@@ -12,6 +12,7 @@
 
 #include <AzCore/Settings/SettingsRegistry.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
+#include <AzCore/Math/Vector3.h>
 #include <AzFramework/Input/Channels/InputChannelId.h>
 
 namespace SandboxEditor
@@ -31,6 +32,8 @@ namespace SandboxEditor
     //! Note: EditorViewportSettingsCallbacks is implemented in EditorViewportSettings.cpp - a change
     //! event will fire when a value in the settings registry (editorpreferences.setreg) is modified.
     SANDBOX_API AZStd::unique_ptr<EditorViewportSettingsCallbacks> CreateEditorViewportSettingsCallbacks();
+
+    SANDBOX_API AZ::Vector3 DefaultEditorCameraPosition();
 
     SANDBOX_API bool GridSnappingEnabled();
     SANDBOX_API void SetGridSnapping(bool enabled);

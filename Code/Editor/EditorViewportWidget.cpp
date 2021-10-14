@@ -166,9 +166,6 @@ EditorViewportWidget::EditorViewportWidget(const QString& name, QWidget* parent)
 
     m_defaultViewTM.SetIdentity();
 
-    //Set the camera position to a more sensible default.
-    m_defaultViewTM.SetTranslation(Vec3(0.f, -10.f, 4.f));
-
     if (GetIEditor()->GetViewManager()->GetSelectedViewport() == nullptr)
     {
         GetIEditor()->GetViewManager()->SelectViewport(this);
@@ -626,16 +623,10 @@ void EditorViewportWidget::OnEditorNotifyEvent(EEditorNotifyEvent event)
         PopDisableRendering();
 
         {
-            AZ::Aabb terrainAabb = AZ::Aabb::CreateFromPoint(AZ::Vector3::CreateZero());
-            AzFramework::Terrain::TerrainDataRequestBus::BroadcastResult(terrainAabb, &AzFramework::Terrain::TerrainDataRequests::GetTerrainAabb);
-            float sx = terrainAabb.GetXExtent();
-            float sy = terrainAabb.GetYExtent();
-
             Matrix34 viewTM;
             viewTM.SetIdentity();
-            // Initial camera will be at middle of the map at the height of 2
-            // meters above the terrain (default terrain height is 32)
-            viewTM.SetTranslation(Vec3(sx * 0.5f, sy * 0.5f, 34.0f));
+
+            viewTM.SetTranslation(Vec3(m_editorViewportSettings.DefaultEditorCameraPosition()));
             SetViewTM(viewTM);
 
             UpdateScene();
@@ -650,16 +641,10 @@ void EditorViewportWidget::OnEditorNotifyEvent(EEditorNotifyEvent event)
         PopDisableRendering();
 
         {
-            AZ::Aabb terrainAabb = AZ::Aabb::CreateFromPoint(AZ::Vector3::CreateZero());
-            AzFramework::Terrain::TerrainDataRequestBus::BroadcastResult(terrainAabb, &AzFramework::Terrain::TerrainDataRequests::GetTerrainAabb);
-            float sx = terrainAabb.GetXExtent();
-            float sy = terrainAabb.GetYExtent();
-
             Matrix34 viewTM;
             viewTM.SetIdentity();
-            // Initial camera will be at middle of the map at the height of 2
-            // meters above the terrain (default terrain height is 32)
-            viewTM.SetTranslation(Vec3(sx * 0.5f, sy * 0.5f, 34.0f));
+
+            viewTM.SetTranslation(Vec3(m_editorViewportSettings.DefaultEditorCameraPosition()));
             SetViewTM(viewTM);
         }
         break;
@@ -2035,6 +2020,9 @@ void EditorViewportWidget::SetDefaultCamera()
     m_viewSourceType = ViewSourceType::None;
     GetViewManager()->SetCameraObjectId(GUID_NULL);
     SetName(m_defaultViewName);
+
+    // Set the default Editor Camera position.
+    m_defaultViewTM.SetTranslation(Vec3(m_editorViewportSettings.DefaultEditorCameraPosition()));
     SetViewTM(m_defaultViewTM);
 
     // Synchronize the configured editor viewport FOV to the default camera
@@ -2535,6 +2523,11 @@ float EditorViewportSettings::ManipulatorCircleBoundWidth() const
 bool EditorViewportSettings::StickySelectEnabled() const
 {
     return SandboxEditor::StickySelectEnabled();
+}
+
+AZ::Vector3 EditorViewportSettings::DefaultEditorCameraPosition() const
+{
+    return SandboxEditor::DefaultEditorCameraPosition();
 }
 
 AZ_CVAR_EXTERNED(bool, ed_previewGameInFullscreen_once);
