@@ -105,6 +105,7 @@ namespace AWSGameLift
                 session.m_status = AWSGameLiftSessionStatusNames[(int)gameSession.GetStatus()];
                 session.m_statusReason = AWSGameLiftSessionStatusReasons[(int)gameSession.GetStatusReason()];
                 session.m_terminationTime = gameSession.GetTerminationTime().Millis();
+                session.m_matchmakingData = gameSession.GetMatchmakerData().c_str();
                 // TODO: Update the AWS Native SDK to get the new game session attributes.
                 //session.m_dnsName = gameSession.GetDnsName();
 

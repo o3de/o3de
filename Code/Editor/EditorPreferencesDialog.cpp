@@ -264,6 +264,9 @@ void EditorPreferencesDialog::SetFilter(const QString& filter)
     else if (m_currentPageItem)
     {
         m_currentPageItem->UpdateEditorFilter(ui->propertyEditor, m_filter);
+
+        // Refresh the Stylesheet - when using search functionality.
+        AzQtComponents::StyleManager::repolishStyleSheet(this);
     }
 }
 

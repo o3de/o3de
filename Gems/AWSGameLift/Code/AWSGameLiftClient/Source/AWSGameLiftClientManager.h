@@ -15,6 +15,7 @@
 
 namespace AWSGameLift
 {
+    struct AWSGameLiftAcceptMatchRequest;
     struct AWSGameLiftCreateSessionRequest;
     struct AWSGameLiftCreateSessionOnQueueRequest;
     struct AWSGameLiftJoinSessionRequest;
@@ -158,6 +159,7 @@ namespace AWSGameLift
         void LeaveSession() override;
 
     private:
+        void AcceptMatchHelper(const AWSGameLiftAcceptMatchRequest& createSessionRequest);
         AZStd::string CreateSessionHelper(const AWSGameLiftCreateSessionRequest& createSessionRequest);
         AZStd::string CreateSessionOnQueueHelper(const AWSGameLiftCreateSessionOnQueueRequest& createSessionOnQueueRequest);
         bool JoinSessionHelper(const AWSGameLiftJoinSessionRequest& joinSessionRequest);
