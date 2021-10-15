@@ -114,7 +114,7 @@ set(FILES
 #    Assets/Shaders/HairCollisionPrepareSDF.azsl
 #    Assets/Shaders/HairCollisionWithSDF.azsl
 
-    # Simulation .shader files
+    # Simulation Compute .shader files
     Assets/Shaders/HairGlobalShapeConstraintsCompute.shader  
     Assets/Shaders/HairCalculateStrandLevelDataCompute.shader
     Assets/Shaders/HairVelocityShockPropagationCompute.shader
@@ -122,9 +122,15 @@ set(FILES
     Assets/Shaders/HairLengthConstraintsWindAndCollisionCompute.shader  
     Assets/Shaders/HairUpdateFollowHairCompute.shader
     
-    # Rendering .shader file
+    # PPLL Render .shader file
     Assets/Shaders/HairRenderingFillPPLL.shader
     Assets/Shaders/HairRenderingResolvePPLL.shader
+
+    # ShortCut Render .shader file
+    Assets/Shaders/HairShortCutGeometryDepthAlpha.shader
+    Assets/Shaders/HairShortCutResolveDepth.shader
+    Assets/Shaders/HairShortCutGeometryShading.shader
+    Assets/Shaders/HairShortCutResolveColor.shader
     
     # Colisions .shader files - to be included soon
 #    Assets/Shaders/HairCollisionInitializeSDF.shader 
@@ -134,6 +140,7 @@ set(FILES
 #)
 #
 #set(atom_hair_passes
+    # Compute simulation and skinning passes
     Assets/Passes/HairParentPass.pass
     Assets/Passes/HairGlobalShapeConstraintsCompute.pass
     Assets/Passes/HairCalculateStrandLevelDataCompute.pass
@@ -141,8 +148,16 @@ set(FILES
     Assets/Passes/HairLocalShapeConstraintsCompute.pass
     Assets/Passes/HairLengthConstraintsWindAndCollisionCompute.pass
     Assets/Passes/HairUpdateFollowHairCompute.pass
+
+    # PPLL render passes
     Assets/Passes/HairFillPPLL.pass
     Assets/Passes/HairResolvePPLL.pass
+
+    # Shortcut render passes
+    Assets/Passes/HairShortCutGeometryDepthAlpha.pass
+    Assets/Passes/HairShortCutResolveDepth.pass
+    Assets/Passes/HairShortCutGeometryShading.pass
+    Assets/Passes/HairShortCutResolveColor.pass
 )
 
 set(SKIP_UNITY_BUILD_INCLUSION_FILES

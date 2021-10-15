@@ -30,8 +30,6 @@
 
 #include <Atom/Features/SrgSemantics.azsli>
 #include <HairRenderingSrgs.azsli>
-#include <HairStrands.azsli>        // VS resides here
-#include <HairLighting.azsli>
 
 //!------------------------------ SRG Structure --------------------------------
 //! Per pass SRG that holds the dynamic shared read-write buffer shared 
@@ -71,19 +69,26 @@ ShaderResourceGroup HairDynamicDataSrg : SRG_PerObject // space 1 - per instance
 };
 //------------------------------------------------------------------------------
 // Allow for the code to run with minimal changes - skinning / simulation compute passes
-
 // Usage of per-instance buffer
 #define g_GuideHairVertexPositions  HairDynamicDataSrg::m_hairVertexPositions
 #define g_GuideHairVertexTangents   HairDynamicDataSrg::m_hairVertexTangents
+//------------------------------------------------------------------------------
+
+#include <HairStrands.azsli>        // VS resides here
 
 //!=============================================================================
-//! This is the first pass of the ShortCut rendering method.
-//! Depth Alpha PS
+//!         Geometry Depth Alpha - First Pass of ShortCut Render
 //! It is a Geometry pass that stores the K=3 front fragment depths, and accumulates 
-//! product of 1-alpha values in the render target.
+//! product of 1-alpha multiplications (fade out) of the input render target.
+//! 
+//! Short explanation: in the original AMD implementation 1-alpha is multiplied
+//! repeatedly with the incoming render target (back buffer) hence blending out 
+//! the existing back buffer color based on the density and transparency of the hair.
+//! This implies that later on the hair color should be added based on the inverse
+//! of this operation.
 //!=============================================================================
 [earlydepthstencil]
-float DepthsAlphaPS(PS_INPUT_HAIR input) : SV_Target
+float HairShortCutDepthsAlphaPS(PS_INPUT_HAIR input) : SV_Target
 {
     //////////////////////////////////////////////////////////////////////
     // [To Do] Hair: anti aliasing via coverage requires work and is disabled for now
@@ -122,5 +127,7 @@ float DepthsAlphaPS(PS_INPUT_HAIR input) : SV_Target
 
     InterlockedMin(PassSrg::m_RWFragmentDepthsTexture[uint3(vScreenAddress, 2)], uDepth, uDepth2Prev);
 
-    return 1.0 - alpha;
+    // Remark: seems to pick a random alpha depending on order of fragments - this will almost render
+    // the blend to be useless as there is no accumulation of the closest fragments or correct weight
+    return 1.0 - alpha; 
 }

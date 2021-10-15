@@ -34,9 +34,6 @@
 
 #pragma once
 
-#include <viewsrg.srgi>
-
-
 #define SHORTCUT_MIN_ALPHA 0.02
 
 #define TRESSFX_FLOAT_EPSILON 1e-7

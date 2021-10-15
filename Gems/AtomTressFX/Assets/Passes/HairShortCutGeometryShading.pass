@@ -1,0 +1,67 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PassAsset",
+    "ClassData": {
+        "PassTemplate": {
+            "Name": "HairShortCutGeometryShadingPassTemplate",
+            "PassClass": "HairShortCutGeometryShadingPass",
+            "Slots": [
+                //------ General Input/Output resources and Render Target ------
+                {
+                    "Name": "ColorRenderTarget",
+                    "SlotType": "Output",
+                    "ScopeAttachmentUsage": "RenderTarget"
+                },
+                { // Used to get the transform from screen space to world space.
+                    "Name": "DepthLinear",
+                    "SlotType": "Input",
+                    "ShaderInputName": "m_linearDepth",
+                    "ScopeAttachmentUsage": "Shader"
+                },
+                {
+                    "Name": "SkinnedHairSharedBuffer",
+                    "ShaderInputName": "m_skinnedHairSharedBuffer",
+                    "SlotType": "Input",
+                    "ScopeAttachmentUsage": "Shader"
+                }
+            ],
+            "ImageAttachments": [
+                {
+                    "Name": "ColorRenderTarget",
+                    "SizeSource": {
+                        "Source": {
+                            "Pass": "Parent",
+                            "Attachment": "DepthLinear"
+                        }
+                    },
+                    "ImageDescriptor": {
+                        "Format": "R16G16B16A16_FLOAT",
+                        "SharedQueueMask": "Graphics",
+                        "BindFlags": [
+                            "Color",
+                            "ShaderRead"
+                        ]
+                    }
+                }
+            ],
+            "Connections": [
+                {
+                    "LocalSlot": "ColorRenderTarget",
+                    "AttachmentRef": {
+                        "Pass": "This",
+                        "Attachment": "ColorRenderTarget"
+                    }
+                }
+            ],
+            "PassData": {
+                "$type": "FullscreenTrianglePassData",
+                "ShaderAsset": {
+                    // Looking for it in the Shaders directory relative to the Assets directory
+                    "FilePath": "Shaders/HairShortCutGeometryShading.shader"
+                }
+            }
+        }
+    }
+}
+
