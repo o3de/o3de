@@ -76,7 +76,6 @@ namespace AZ
 
                 // Pass behavior overrides
                 void InitializeInternal() override;
-//                void BuildInternal() override;
                 void FrameBeginInternal(FramePrepareParams params) override;
 
                 // Scope producer functions...
