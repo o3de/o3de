@@ -225,8 +225,16 @@ namespace AZ
 
         ConsoleCommandContainer commandSubset;
 
-        for (ConsoleFunctorBase* curr = m_head; curr != nullptr; curr = curr->m_next)
+        for (const auto& functor : m_commands)
         {
+            if (functor.second.empty())
+            {
+                continue;
+            }
+
+            // Filter functors registered with the same name
+            const ConsoleFunctorBase* curr = functor.second.front();
+
             if ((curr->GetFlags() & ConsoleFunctorFlags::IsInvisible) == ConsoleFunctorFlags::IsInvisible)
             {
                 // Filter functors marked as invisible
@@ -236,7 +244,12 @@ namespace AZ
             if (StringFunc::StartsWith(curr->m_name, command, false))
             {
                 AZLOG_INFO("- %s : %s\n", curr->m_name, curr->m_desc);
-                commandSubset.push_back(curr->m_name);
+
+                if (commandSubset.size() < MaxConsoleCommandPlusArgsLength)
+                {
+                    commandSubset.push_back(curr->m_name);
+                }
+
                 if (matches)
                 {
                     matches->push_back(curr->m_name);
@@ -271,7 +284,10 @@ namespace AZ
     {
         for (auto& curr : m_commands)
         {
-            visitor(curr.second.front());
+            if (!curr.second.empty())
+            {
+                visitor(curr.second.front());
+            }
         }
     }
 
@@ -335,6 +351,11 @@ namespace AZ
             if (iter2 != iter->second.end())
             {
                 iter->second.erase(iter2);
+            }
+
+            if (iter->second.empty())
+            {
+                m_commands.erase(iter);
             }
         }
         functor->Unlink(m_head);
