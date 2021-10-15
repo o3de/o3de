@@ -78,7 +78,7 @@ namespace AzToolsFramework::ViewportUi
         virtual void RegisterSwitcherEventHandler(SwitcherId switcherId, AZ::Event<ButtonId>::Handler& handler) = 0;
         //! Removes a cluster from the Viewport UI system.
         virtual void RemoveCluster(ClusterId clusterId) = 0;
-        //!
+        //! Removes a switcher from the Viewport UI system.
         virtual void RemoveSwitcher(SwitcherId switcherId) = 0;
         //! Sets the visibility of the cluster.
         virtual void SetClusterVisible(ClusterId clusterId, bool visible) = 0;
@@ -96,12 +96,12 @@ namespace AzToolsFramework::ViewportUi
         //! Sets the visibility of the text field.
         virtual void SetTextFieldVisible(TextFieldId textFieldId, bool visible) = 0;
         //! Create the highlight border for Component Mode.
-        virtual void CreateComponentModeBorder(const AZStd::string& borderTitle) = 0;
+        virtual void CreateViewportBorder(const AZStd::string& borderTitle) = 0;
         //! Remove the highlight border for Component Mode.
-        virtual void RemoveComponentModeBorder() = 0;
-        //! Invoke a button press in a cluster.
+        virtual void RemoveViewportBorder() = 0;
+        //! Invoke a button press on a cluster.
         virtual void PressButton(ClusterId clusterId, ButtonId buttonId) = 0;
-        //!
+        //! Invoke a button press on a switcher.
         virtual void PressButton(SwitcherId switcherId, ButtonId buttonId) = 0;
     };
 
