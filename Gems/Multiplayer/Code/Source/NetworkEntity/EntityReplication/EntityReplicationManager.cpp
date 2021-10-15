@@ -865,10 +865,10 @@ namespace Multiplayer
         {
             AZLOG_INFO
             (
-                "EntityReplicationManager: Dropping remote RPC message for component %s of rpc index %s, entityId %u has already been deleted",
+                "EntityReplicationManager: Dropping remote RPC message for component %s of rpc index %s, entityId %llu has already been deleted",
                 GetMultiplayerComponentRegistry()->GetComponentName(message.GetComponentId()),
                 GetMultiplayerComponentRegistry()->GetComponentRpcName(message.GetComponentId(), message.GetRpcIndex()),
-                message.GetEntityId()
+                static_cast<AZ::u64>(message.GetEntityId())
             );
             return false;
         }
