@@ -28,16 +28,20 @@ namespace AZ
 
         void ReflectionCopyFrameBufferPass::BuildInternal()
         {
-            RPI::PassHierarchyFilter passFilter(AZ::Name("ReflectionScreenSpaceBlurPass"));
-            const AZStd::vector<RPI::Pass*>& passes = RPI::PassSystemInterface::Get()->FindPasses(passFilter);
-            if (!passes.empty())
-            {
-                Render::ReflectionScreenSpaceBlurPass* blurPass = azrtti_cast<ReflectionScreenSpaceBlurPass*>(passes.front());
-                Data::Instance<RPI::AttachmentImage>& frameBufferAttachment = blurPass->GetFrameBufferImageAttachment();
+            RPI::PassFilter passFilter = RPI::PassFilter::CreateWithPassName(AZ::Name("ReflectionScreenSpaceBlurPass"), GetRenderPipeline());
 
-                RPI::PassAttachmentBinding& outputBinding = GetOutputBinding(0);
-                AttachImageToSlot(outputBinding.m_name, frameBufferAttachment);
-            }
+            RPI::PassSystemInterface::Get()->ForEachPass(passFilter, [this](RPI::Pass* pass) -> bool
+                {
+                    Render::ReflectionScreenSpaceBlurPass* blurPass = azrtti_cast<ReflectionScreenSpaceBlurPass*>(pass);
+                
+                    Data::Instance<RPI::AttachmentImage>& frameBufferAttachment = blurPass->GetFrameBufferImageAttachment();
+
+                    RPI::PassAttachmentBinding& outputBinding = GetOutputBinding(0);
+                    AttachImageToSlot(outputBinding.m_name, frameBufferAttachment);
+
+                    // Only handles the first ReflectionScreenSpaceBlurPass found in the same render pipeline
+                     return true;
+                });
 
             FullscreenTrianglePass::BuildInternal();
         }

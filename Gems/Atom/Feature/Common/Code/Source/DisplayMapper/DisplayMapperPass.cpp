@@ -10,9 +10,10 @@
 #include <ACES/Aces.h>
 #include <Atom/Feature/ACES/AcesDisplayMapperFeatureProcessor.h>
 #include <Atom/RPI.Public/Pass/FullscreenTrianglePass.h>
-#include <Atom/RPI.Public/Pass/PassUtils.h>
+#include <Atom/RPI.Public/Pass/PassFilter.h>
 #include <Atom/RPI.Public/Pass/PassFactory.h>
 #include <Atom/RPI.Public/Pass/PassSystemInterface.h>
+#include <Atom/RPI.Public/Pass/PassUtils.h>
 #include <Atom/RPI.Public/Pass/Specific/SwapChainPass.h>
 #include <Atom/RPI.Public/RenderPipeline.h>
 #include <Atom/RPI.Public/RPIUtils.h>
@@ -66,13 +67,9 @@ namespace AZ
         {
             // Need to invalidate the CopyToSwapChain pass so that it updates the pipeline state in the event that 
             // the swapchain format changed (for example, moving from LDR to HDR display)
-            auto* passSystem = RPI::PassSystemInterface::Get();
             const Name fullscreenCopyTemplateName("FullscreenCopyTemplate");
-
-            if (passSystem->HasPassesForTemplateName(fullscreenCopyTemplateName))
-            {
-                const AZStd::vector<RPI::Pass*>& passes = passSystem->GetPassesForTemplateName(fullscreenCopyTemplateName);
-                for (RPI::Pass* pass : passes)
+            RPI::PassFilter passFilter = RPI::PassFilter::CreateWithTemplateName(fullscreenCopyTemplateName, GetRenderPipeline());
+            RPI::PassSystemInterface::Get()->ForEachPass(passFilter, [](RPI::Pass* pass) -> bool
                 {
                     RPI::FullscreenTrianglePass* fullscreenTrianglePass = azrtti_cast<RPI::FullscreenTrianglePass*>(pass);
                     const Name& passName = fullscreenTrianglePass->GetName();
@@ -80,8 +77,9 @@ namespace AZ
                     {
                         fullscreenTrianglePass->QueueForInitialization();
                     }
-                }
-            }
+                    return false; // keep visit other matching passes
+                });
+
             ConfigureDisplayParameters();
         }
 

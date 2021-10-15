@@ -15,6 +15,7 @@
 #include <AzFramework/Asset/AssetSystemBus.h>
 
 #include <Atom/RPI.Public/Image/ImageSystemInterface.h>
+#include <Atom/RPI.Public/Pass/PassFilter.h>
 #include <Atom/RPI.Public/Pass/PassSystemInterface.h>
 #include <Atom/RPI.Public/RenderPipeline.h>
 #include <Atom/RPI.Public/RPIUtils.h>
@@ -259,15 +260,12 @@ namespace AZ
 
         // [GFX TODO][ATOM-3035]This function is temporary and will change with improvement to the draw list tag system
         void DepthOfFieldSettings::UpdateAutoFocusDepth(bool enabled)
-        {
-            auto* passSystem = AZ::RPI::PassSystemInterface::Get();
+        {            
             const Name TemplateNameReadBackFocusDepth = Name("DepthOfFieldReadBackFocusDepthTemplate");
-            if (passSystem->HasPassesForTemplateName(TemplateNameReadBackFocusDepth))
-            {
-                const AZStd::vector<RPI::Pass*>& dofPasses = passSystem->GetPassesForTemplateName(TemplateNameReadBackFocusDepth);
-                for (RPI::Pass* pass : dofPasses)
+            RPI::PassFilter passFilter = RPI::PassFilter::CreateWithTemplateName(TemplateNameReadBackFocusDepth, GetParentScene());
+            RPI::PassSystemInterface::Get()->ForEachPass(passFilter, [this, enabled](RPI::Pass* pass) -> bool
                 {
-                    auto* dofPass = azrtti_cast<AZ::Render::DepthOfFieldReadBackFocusDepthPass*>(pass);
+                   auto* dofPass = azrtti_cast<AZ::Render::DepthOfFieldReadBackFocusDepthPass*>(pass);
                     // Check this pass belongs to a render pipeline of the scene.
                     // [GFX TODO][ATOM-4908] multiple camera should be distingushed.
                     const RPI::RenderPipelineId pipelineId = dofPass->GetRenderPipeline()->GetId();
@@ -275,8 +273,8 @@ namespace AZ
                     {
                         m_normalizedFocusDistanceForAutoFocus = dofPass->GetNormalizedFocusDistanceForAutoFocus();
                     }
-                }
-            }
+                    return false; // keep visit other matching passes
+                });
         }
 
         void DepthOfFieldSettings::SetCameraEntityId(EntityId cameraEntityId)

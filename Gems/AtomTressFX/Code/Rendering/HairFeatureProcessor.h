@@ -150,6 +150,8 @@ namespace AZ
 
                 void EnablePasses(bool enable);
 
+                bool HasHairParentPass();
+
                 //! The following will serve to register the FP in the Thumbnail system
                 AZStd::vector<AZStd::string> m_hairFeatureProcessorRegistryName;
 

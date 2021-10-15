@@ -456,11 +456,6 @@ namespace AZ
             return m_passLibrary.HasPassesForTemplate(templateName);
         }
 
-        const AZStd::vector<Pass*>& PassSystem::GetPassesForTemplateName(const Name& templateName) const
-        {
-            return m_passLibrary.GetPassesForTemplate(templateName);
-        }
-
         bool PassSystem::AddPassTemplate(const Name& name, const AZStd::shared_ptr<PassTemplate>& passTemplate)
         {
             return m_passLibrary.AddPassTemplate(name, passTemplate);
@@ -487,10 +482,10 @@ namespace AZ
             RemovePassFromLibrary(pass);
             --m_passCounter;
         }
-
-        AZStd::vector<Pass*> PassSystem::FindPasses(const PassFilter& passFilter) const
+                
+        void PassSystem::ForEachPass(const PassFilter& filter, AZStd::function<bool(Pass*)> passFunction)
         {
-            return m_passLibrary.FindPasses(passFilter);
+            return m_passLibrary.ForEachPass(filter, passFunction);
         }
 
         SwapChainPass* PassSystem::FindSwapChainPass(AzFramework::NativeWindowHandle windowHandle) const

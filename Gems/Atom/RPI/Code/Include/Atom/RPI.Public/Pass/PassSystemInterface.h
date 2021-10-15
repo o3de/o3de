@@ -186,9 +186,6 @@ namespace AZ
             //! Returns true if the pass factory contains passes created with the given template name
             virtual bool HasPassesForTemplateName(const Name& templateName) const = 0;
 
-            //! Get the passes created with the given template name.
-            virtual const AZStd::vector<Pass*>& GetPassesForTemplateName(const Name& templateName) const = 0;
-
             //! Adds a PassTemplate to the library
             virtual bool AddPassTemplate(const Name& name, const AZStd::shared_ptr<PassTemplate>& passTemplate) = 0;
 
@@ -197,9 +194,12 @@ namespace AZ
 
             //! Removes all references to the given pass from the pass library
             virtual void RemovePassFromLibrary(Pass* pass) = 0;
-
-            //! Find matching passes from registered passes with specified filter
-            virtual AZStd::vector<Pass*> FindPasses(const PassFilter& passFilter) const = 0;
+                        
+            //! Visit the matching passes from registered passes with specified filter
+            //! The visit may stop if the passFunction returns true.
+            //! Note: this function will find all the passes which match the pass filter even they are for render pipelines which are not added to a scene
+            //! This function is fast if a pass name or a pass template name is specified. 
+            virtual void ForEachPass(const PassFilter& filter, AZStd::function<bool(Pass*)> passFunction) = 0;
 
         private:
             // These functions are only meant to be used by the Pass class
