@@ -99,6 +99,7 @@ def update_manifest(scene):
 
     created_entities = []
     previous_entity_id = azlmbr.entity.InvalidEntityId
+    first_mesh = True
 
     # Loop every mesh node in the scene
     for activeMeshIndex in range(len(mesh_name_list)):
@@ -137,7 +138,8 @@ def update_manifest(scene):
             raise RuntimeError("UpdateComponentForEntity failed for Mesh component")
 
         # an example of adding a material component to override the default material
-        if previous_entity_id is azlmbr.entity.InvalidEntityId:
+        if previous_entity_id is not None and first_mesh:
+            first_mesh = False
             add_material_component(entity_id)
 
         # Get the transform component
