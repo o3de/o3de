@@ -13,10 +13,8 @@ import azlmbr.bus as azbus
 import azlmbr.script as azscript
 import azlmbr.legacy.general as azgeneral
 
-def _dump_class_symbol(class_symbol):
-    """
-    class_symbol of type azlmbr.lua.ClassSymbol
-    """
+
+def _dump_class_symbol(class_symbol: azlmbr.script.ClassSymbol):
     print(f"** {class_symbol}")
     print("Properties:")
     for property_symbol in class_symbol.properties:
@@ -24,6 +22,7 @@ def _dump_class_symbol(class_symbol):
     print("Methods:")
     for method_symbol in class_symbol.methods:
         print(f"   - {method_symbol}")
+
 
 def _dump_lua_classes():
     class_symbols = azscript.SymbolsReporterBus(azbus.Broadcast,
@@ -34,17 +33,6 @@ def _dump_lua_classes():
         _dump_class_symbol(class_symbol)
         print("\n\n")
 
-def _dump_global_property(property_symbol):
-    """
-    class_symbol of type azlmbr.lua.ClassSymbol
-    """
-    print(f"** {class_symbol}")
-    print("Properties:")
-    for property_symbol in class_symbol.properties:
-        print(f"   - {property_symbol}")
-    print("Methods:")
-    for method_symbol in class_symbol.methods:
-        print(f"   - {method_symbol}")
 
 def _dump_lua_globals():
     global_properties = azscript.SymbolsReporterBus(azbus.Broadcast,
@@ -63,7 +51,7 @@ def _dump_lua_globals():
     print("\n\n")    
 
 
-def _dump_lua_ebus(ebus_symbol):
+def _dump_lua_ebus(ebus_symbol: azlmbr.script.EBusSymbol):
     print(f">> {ebus_symbol}")
     sorted_senders = sorted(ebus_symbol.senders, key=lambda symbol: symbol.name)
     for sender in sorted_senders:
@@ -81,6 +69,11 @@ def _dump_lua_ebuses():
     print("\n\n")
 
 
+class WhatToDo:
+    DumpClasses = "c"
+    DumpGlobals = "g"
+    DumpEBuses  = "e"
+
 if __name__ == "__main__":
     redirecting_stdout = False
     orig_stdout = sys.stdout
@@ -90,30 +83,26 @@ if __name__ == "__main__":
             game_root_path = os.path.normpath(azgeneral.get_game_folder())
             output_file_name = os.path.join(game_root_path, output_file_name)
         try:
-            fileObj = open(output_file_name, 'wt')
-            sys.stdout = fileObj
+            file_obj = open(output_file_name, 'wt')
+            sys.stdout = file_obj
             redirecting_stdout = True
-        except:
-            print(f"Failed to open {output_file_name}")
+        except Exception as e:
+            print(f"Failed to open {output_file_name}: {e}")
             sys.exit(-1)
 
-    what_to_do = []
-    if len(sys.argv) > 2:
-        what_to_do.append(sys.argv[2].lower())
-    if len(sys.argv) > 3:
-        what_to_do.append(sys.argv[3].lower())
-    if len(sys.argv) > 4:
-        what_to_do.append(sys.argv[4].lower())
+    what_to_do = [action.lower() for action in sys.argv[2:]]
 
+    # If the user did not specify what to do, then let's dump
+    # all the symbols.
     if len(what_to_do) < 1:
-        what_to_do = ("c", "g", "e")
+        what_to_do = [WhatToDo.DumpClasses, WhatToDo.DumpGlobals, WhatToDo.DumpEBuses]
 
     for action in what_to_do:
-        if action == "c":
+        if action == WhatToDo.DumpClasses:
             _dump_lua_classes()
-        elif action == "g":
+        elif action == WhatToDo.DumpGlobals:
             _dump_lua_globals()
-        elif action == "e":
+        elif action == WhatToDo.DumpEBuses:
             _dump_lua_ebuses()
     
     if redirecting_stdout:

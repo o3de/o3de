@@ -16,7 +16,6 @@ namespace AzToolsFramework
 {
     namespace Script
     {
-
         /// System component for LuaSymbolsReporter editor
         class SymbolsReporterSystemComponent
             : public AZ::Component
@@ -32,23 +31,17 @@ namespace AzToolsFramework
             SymbolsReporterSystemComponent();
             ~SymbolsReporterSystemComponent();
 
-        ///////////////////////////////////////////////////////////////////////////
-        /// SymbolsReporterRequestBus::Handler
-        const AZStd::vector<ClassSymbol>& GetListOfClasses() override;
-        const AZStd::vector<PropertySymbol>& GetListOfGlobalProperties() override;
-        const AZStd::vector<MethodSymbol>& GetListOfGlobalFunctions() override;
-        const AZStd::vector<EBusSymbol>& GetListOfEBuses() override;
-        ///////////////////////////////////////////////////////////////////////////
-
-        // Technically private functions, but made public so lambdas get access to the data.
-        AZStd::vector<ClassSymbol>& GetClassSymbols() { return m_classSymbols; }
-        AZStd::unordered_map<AZ::Uuid, size_t>& GetClassUuidToIndexMap() { return m_classUuidToIndexMap; }
-        AZStd::vector<PropertySymbol>& GetGlobalPropertySymbols() { return m_globalPropertySymbols; }
-        AZStd::vector<MethodSymbol>& GetGlobalFunctionSymbols() { return m_globalFunctionSymbols; }
-        AZStd::vector<EBusSymbol>& GetEBusSymbols() { return m_ebusSymbols; }
-        AZStd::unordered_map<AZStd::string, size_t>& GetEBusNameToIndexMap() { return m_ebusNameToIndexMap; }
+            ///////////////////////////////////////////////////////////////////////////
+            /// LuaSymbolsReporterRequestBus::Handler
+            const AZStd::vector<ClassSymbol>& GetListOfClasses() override;
+            const AZStd::vector<PropertySymbol>& GetListOfGlobalProperties() override;
+            const AZStd::vector<MethodSymbol>& GetListOfGlobalFunctions() override;
+            const AZStd::vector<EBusSymbol>& GetListOfEBuses() override;
+            ///////////////////////////////////////////////////////////////////////////
 
         private:
+            friend class IntrusiveHelper;
+
             static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided);
             static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible);
             static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required);
@@ -75,6 +68,5 @@ namespace AzToolsFramework
             AZStd::unordered_map<AZStd::string, size_t> m_ebusNameToIndexMap;
             
         };
-
     } // namespace Script
 } // namespace AzToolsFramework
