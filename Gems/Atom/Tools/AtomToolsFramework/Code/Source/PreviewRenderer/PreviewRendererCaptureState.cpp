@@ -6,7 +6,7 @@
  *
  */
 
-#include <AtomToolsFramework/PreviewRenderer/PreviewRenderer.h>
+#include <PreviewRenderer/PreviewRenderer.h>
 #include <PreviewRenderer/PreviewRendererCaptureState.h>
 
 namespace AtomToolsFramework

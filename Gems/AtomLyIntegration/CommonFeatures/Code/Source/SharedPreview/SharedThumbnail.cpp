@@ -87,7 +87,7 @@ namespace AZ
 
         int SharedThumbnailCache::GetPriority() const
         {
-            // Thumbnails override default source thumbnails, so carry higher priority
+            // Custom thumbnails have a higher priority to override default source thumbnails
             return 1;
         }
 

@@ -12,7 +12,7 @@ namespace AtomToolsFramework
 {
     class PreviewRenderer;
 
-    //! PreviewRendererState decouples PreviewRenderer logic into easy-to-understand and debug pieces
+    //! PreviewRendererState is an interface for defining states that manages the logic flow of the PreviewRenderer
     class PreviewRendererState
     {
     public:

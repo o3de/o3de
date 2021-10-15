@@ -11,41 +11,31 @@
 #include <Atom/RPI.Public/Base.h>
 #include <Atom/RPI.Public/Pass/AttachmentReadback.h>
 #include <AtomToolsFramework/PreviewRenderer/PreviewContent.h>
-#include <AtomToolsFramework/PreviewRenderer/PreviewRendererState.h>
+#include <AtomToolsFramework/PreviewRenderer/PreviewRendererCaptureRequest.h>
+#include <AtomToolsFramework/PreviewRenderer/PreviewRendererInterface.h>
 #include <AtomToolsFramework/PreviewRenderer/PreviewerFeatureProcessorProviderBus.h>
 #include <AzFramework/Entity/GameEntityContextComponent.h>
-
-namespace AzFramework
-{
-    class Scene;
-}
-
-class QPixmap;
+#include <PreviewRenderer/PreviewRendererState.h>
 
 namespace AtomToolsFramework
 {
     //! Processes requests for setting up content that gets rendered to a texture and captured to an image
-    class PreviewRenderer final : public PreviewerFeatureProcessorProviderBus::Handler
+    class PreviewRenderer final
+        : public PreviewRendererInterface
+        , public PreviewerFeatureProcessorProviderBus::Handler
     {
     public:
         AZ_CLASS_ALLOCATOR(PreviewRenderer, AZ::SystemAllocator, 0);
+        AZ_RTTI(PreviewRenderer, "{60FCB7AB-2A94-417A-8C5E-5B588D17F5D1}", PreviewRendererInterface);
 
         PreviewRenderer(const AZStd::string& sceneName, const AZStd::string& pipelineName);
-        ~PreviewRenderer();
+        ~PreviewRenderer() override;
 
-        struct CaptureRequest final
-        {
-            int m_size = 512;
-            AZStd::shared_ptr<PreviewContent> m_content;
-            AZStd::function<void()> m_captureFailedCallback;
-            AZStd::function<void(const QPixmap&)> m_captureCompleteCallback;
-        };
+        void AddCaptureRequest(const PreviewRendererCaptureRequest& captureRequest) override;
 
-        void AddCaptureRequest(const CaptureRequest& captureRequest);
-
-        AZ::RPI::ScenePtr GetScene() const;
-        AZ::RPI::ViewPtr GetView() const;
-        AZ::Uuid GetEntityContextId() const;
+        AZ::RPI::ScenePtr GetScene() const override;
+        AZ::RPI::ViewPtr GetView() const override;
+        AZ::Uuid GetEntityContextId() const override;
 
         void ProcessCaptureRequests();
         void CancelCaptureRequest();
@@ -77,8 +67,8 @@ namespace AtomToolsFramework
         AZStd::unique_ptr<AzFramework::EntityContext> m_entityContext;
 
         //! Incoming requests are appended to this queue and processed one at a time in OnTick function.
-        AZStd::queue<CaptureRequest> m_captureRequestQueue;
-        CaptureRequest m_currentCaptureRequest;
+        AZStd::queue<PreviewRendererCaptureRequest> m_captureRequestQueue;
+        PreviewRendererCaptureRequest m_currentCaptureRequest;
 
         AZStd::unique_ptr<PreviewRendererState> m_state;
     };
