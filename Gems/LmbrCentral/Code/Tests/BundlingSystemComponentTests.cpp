@@ -26,12 +26,12 @@
 namespace UnitTest
 {
 
-    class Integ_BundlingSystemComponentFixture :
+    class BundlingSystemComponentFixture :
         public ::testing::Test
 
     {
     public:
-        Integ_BundlingSystemComponentFixture() = default;
+        BundlingSystemComponentFixture() = default;
 
         bool TestAsset(const char* assetPath)
         {
@@ -59,7 +59,7 @@ namespace UnitTest
         }
     };
 
-    TEST_F(Integ_BundlingSystemComponentFixture, HasBundle_LoadBundles_Success)
+    TEST_F(BundlingSystemComponentFixture, DISABLED_HasBundle_LoadBundles_Success)
     {
         // This asset lives only within LmbrCentral/Assets/Test/Bundle/staticdata.pak which is copied to our
         // cache as test/bundle/staticdata.pak and should be loaded below
@@ -72,7 +72,7 @@ namespace UnitTest
         EXPECT_FALSE(TestAsset(testAssetPath));
     }
 
-    TEST_F(Integ_BundlingSystemComponentFixture, HasBundle_LoadBundlesCatalogChecks_Success)
+    TEST_F(BundlingSystemComponentFixture, DISABLED_HasBundle_LoadBundlesCatalogChecks_Success)
     {
         // This asset lives only within LmbrCentral/Assets/Test/Bundle/staticdata.pak which is copied to our
         // cache as test/bundle/staticdata.pak and should be loaded below
@@ -92,7 +92,7 @@ namespace UnitTest
         EXPECT_FALSE(TestAsset(noCatalogAsset));
     }
 
-    TEST_F(Integ_BundlingSystemComponentFixture, BundleSystemComponent_SingleUnloadCheckCatalog_Success)
+    TEST_F(BundlingSystemComponentFixture, DISABLED_BundleSystemComponent_SingleUnloadCheckCatalog_Success)
     {
         // This asset lives only within LmbrCentral/Assets/Test/Bundle/staticdata.pak which is copied to our
         // cache as test/bundle/staticdata.pak and should be loaded below
@@ -132,7 +132,7 @@ namespace UnitTest
         EXPECT_FALSE(TestAssetId(testDDSAsset));
     }
 
-    TEST_F(Integ_BundlingSystemComponentFixture, BundleSystemComponent_SingleLoadAndBundleMode_Success)
+    TEST_F(BundlingSystemComponentFixture, DISABLED_BundleSystemComponent_SingleLoadAndBundleMode_Success)
     {
         // This asset lives only within LmbrCentral/Assets/Test/Bundle/staticdata.pak which is copied to our
         // cache as test/bundle/staticdata.pak and should be loaded below
@@ -157,7 +157,7 @@ namespace UnitTest
         EXPECT_FALSE(TestAssetId(testMTLAsset));
     }
 
-    TEST_F(Integ_BundlingSystemComponentFixture, BundleSystemComponent_OpenClosePackCount_Match)
+    TEST_F(BundlingSystemComponentFixture, DISABLED_BundleSystemComponent_OpenClosePackCount_Match)
     {
         // This asset lives only within LmbrCentral/Assets/Test/Bundle/staticdata.pak which is copied to our
         // cache as test/bundle/staticdata.pak and should be loaded below
@@ -198,7 +198,7 @@ namespace UnitTest
         EXPECT_EQ(bundleCount, 0);
     }
 
-    TEST_F(Integ_BundlingSystemComponentFixture, BundleSystemComponent_SplitPakTestWithAsset_Success)
+    TEST_F(BundlingSystemComponentFixture, DISABLED_BundleSystemComponent_SplitPakTestWithAsset_Success)
     {
         // This asset lives only within LmbrCentral/Assets/Test/SplitBundleTest/splitbundle__1.pak which is a dependent bundle of splitbundle.pak
         const char testDDSAsset_split[] = "textures/milestone2/am_floor_tile_ddna_test.dds.7";
@@ -228,7 +228,7 @@ namespace UnitTest
     }
 
     // Verify that our bundles using catalogs of the same name work properly
-    TEST_F(Integ_BundlingSystemComponentFixture, BundleSystemComponent_SharedCatalogName_Success)
+    TEST_F(BundlingSystemComponentFixture, DISABLED_BundleSystemComponent_SharedCatalogName_Success)
     {
         // This bundle was built for PC but is generic and the test should work fine on other platforms
         // gamepropertioessmall_pc.pak has a smaller version of the gameproperties csv

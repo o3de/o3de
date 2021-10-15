@@ -12,6 +12,7 @@ set(FILES
     Session.cpp
     Serialize.cpp
     Certificates.cpp
+    Replica.cpp
     ReplicaSmall.cpp
     ReplicaMedium.cpp
     ReplicaBehavior.cpp

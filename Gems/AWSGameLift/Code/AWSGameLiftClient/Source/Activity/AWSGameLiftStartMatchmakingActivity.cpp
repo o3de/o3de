@@ -10,6 +10,7 @@
 
 #include <Activity/AWSGameLiftActivityUtils.h>
 #include <Activity/AWSGameLiftStartMatchmakingActivity.h>
+#include <AWSGameLiftPlayer.h>
 #include <AWSGameLiftSessionConstants.h>
 
 #include <aws/core/utils/Outcome.h>
@@ -29,7 +30,7 @@ namespace AWSGameLift
             }
 
             Aws::Vector<Aws::GameLift::Model::Player> players;
-            for (const AWSGameLiftPlayerInformation& playerInfo : startMatchmakingRequest.m_players)
+            for (const AWSGameLiftPlayer& playerInfo : startMatchmakingRequest.m_players)
             {
                 Aws::GameLift::Model::Player player;
                 if (!playerInfo.m_playerId.empty())
@@ -109,7 +110,7 @@ namespace AWSGameLift
 
             if (isValid)
             {
-                for (const AWSGameLiftPlayerInformation& playerInfo : gameliftStartMatchmakingRequest->m_players)
+                for (const AWSGameLiftPlayer& playerInfo : gameliftStartMatchmakingRequest->m_players)
                 {
                     isValid &= !playerInfo.m_playerId.empty();
                     isValid &= AWSGameLiftActivityUtils::ValidatePlayerAttributes(playerInfo.m_playerAttributes);
