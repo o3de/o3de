@@ -76,6 +76,7 @@ ly_add_target(
     FILES_CMAKE
         atom_feature_common_shared_files.cmake
         ../Assets/atom_feature_common_asset_files.cmake
+        ../Editor/atom_feature_common_editor_script_files.cmake
     PLATFORM_INCLUDE_FILES
         ${pal_source_dir}/runtime_dependencies_clients.cmake
     INCLUDE_DIRECTORIES

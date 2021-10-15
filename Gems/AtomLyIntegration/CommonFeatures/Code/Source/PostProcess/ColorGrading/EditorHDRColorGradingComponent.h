@@ -17,10 +17,10 @@ namespace AZ
 {
     namespace Render
     {
-        static const char* const TempTiffFilePath{ "@usercache@/LutGeneration/SavedLut_%s.tiff" };
-        static const char* const GeneratedLutRelativePath = { "LutGeneration/SavedLut_%s" };
-        static const char* const TiffToAzassetPythonScriptPath{ "@engroot@/Gems/Atom/Feature/Common/Editor/Scripts/ColorGrading/tiff_to_3dl_azasset.py" };
-        static const char* const ActivateLutAssetPythonScriptPath{ "@engroot@/Gems/Atom/Feature/Common/Assets/Scripts/activate_lut_asset.py" };
+        static constexpr const char* const TempTiffFilePath{ "@usercache@/LutGeneration/SavedLut_%s.tiff" };
+        static constexpr const char* const GeneratedLutRelativePath = { "LutGeneration/SavedLut_%s" };
+        static constexpr const char* const TiffToAzassetPythonScriptPath{ "@engroot@/Gems/Atom/Feature/Common/Editor/Scripts/ColorGrading/tiff_to_3dl_azasset.py" };
+        static constexpr const char* const ActivateLutAssetPythonScriptPath{ "@engroot@/Gems/Atom/Feature/Common/Editor/Scripts/ColorGrading/activate_lut_asset.py" };
 
         class EditorHDRColorGradingComponent final
             : public AzToolsFramework::Components::

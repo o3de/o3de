@@ -22,7 +22,6 @@ LOOK_MODIFICATION_COMPONENT_ID = azlmbr.editor.EditorComponentAPIBus(azlmbr.bus.
 
 
 def disable_hdr_color_grading_component(entity_id):
-    typeIdsList = azlmbr.editor.EditorComponentAPIBus(azlmbr.bus.Broadcast, 'FindComponentTypeIdsByEntityType', ["HDR Color Grading"], 0)
     componentOutcome = azlmbr.editor.EditorComponentAPIBus(azlmbr.bus.Broadcast, 'GetComponentOfType', entity_id, COLOR_GRADING_COMPONENT_ID[0])
     if(componentOutcome.IsSuccess()):
         azlmbr.editor.EditorComponentAPIBus(azlmbr.bus.Broadcast, 'DisableComponents', [componentOutcome.GetValue()])
@@ -35,6 +34,8 @@ def get_look_modification_component(entity_id):
     componentOutcome = azlmbr.editor.EditorComponentAPIBus(azlmbr.bus.Broadcast, 'GetComponentOfType', entity_id, LOOK_MODIFICATION_COMPONENT_ID[0])
     if componentOutcome.IsSuccess():
         return componentOutcome.GetValue()
+    else:
+        return None
 
 def activate_look_modification_lut(look_modification_component, asset_relative_path):
     print(asset_relative_path)
