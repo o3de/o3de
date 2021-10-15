@@ -116,7 +116,7 @@ namespace AzToolsFramework
         {
             return AZ::Intersect::IntersectRayBox(
                        rayOrigin, rayDirection, m_center, m_axis1, m_axis2, m_axis3, m_halfExtents.GetX(), m_halfExtents.GetY(),
-                       m_halfExtents.GetZ(), rayIntersectionDistance) > 0;
+                       m_halfExtents.GetZ(), rayIntersectionDistance);
         }
 
         void ManipulatorBoundBox::SetShapeData(const BoundRequestShapeBase& shapeData)

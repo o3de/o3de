@@ -7,21 +7,22 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 A class to control functionality of Lumberyard's asset processor.
 The class manages a workspace's asset processor and asset configurations.
 """
-import os
-import datetime
 import logging
-import subprocess
-import socket
-import time
-import tempfile
-import shutil
-import stat
-from typing import List, Tuple
+import os
 import psutil
+import shutil
+import socket
+import stat
+import subprocess
+import tempfile
+import time
+
+from typing import List, Tuple
 
 import ly_test_tools
-import ly_test_tools.environment.waiter as waiter
 import ly_test_tools.environment.file_system as file_system
+import ly_test_tools.environment.process_utils as process_utils
+import ly_test_tools.environment.waiter as waiter
 import ly_test_tools.o3de.pipeline_utils as utils
 from ly_test_tools.o3de.ap_log_parser import APLogParser
 
@@ -177,24 +178,26 @@ class AssetProcessor(object):
         """
         Read the a port chosen by AP from the log
         """
-        start_time = time.time()
-        read_port_timeout = 10
-        while (time.time() - start_time) < read_port_timeout:
+        port = None
+
+        def _get_port_from_log():
+            nonlocal port
             if not os.path.exists(self._workspace.paths.ap_gui_log()):
-                logger.debug(f"Log at {self._workspace.paths.ap_gui_log()} doesn't exist, sleeping")
-            else:
-                log = APLogParser(self._workspace.paths.ap_gui_log())
-                if len(log.runs):
-                    try:
-                        port = log.runs[-1][port_type]
-                        if port:
-                            logger.info(f"Read port type {port_type} : {port}")
-                            return port
-                    except Exception:  # intentionally broad
-                        pass
-            time.sleep(1)
-        logger.warning(f"Failed to read port type {port_type}")
-        return 0
+                return False
+
+            log = APLogParser(self._workspace.paths.ap_gui_log())
+            if len(log.runs):
+                try:
+                    port = log.runs[-1][port_type]
+                    logger.debug(f"Read port type {port_type} : {port}")
+                    return True
+                except Exception as ex:  # intentionally broad
+                    logger.debug("Failed to read port from file", exc_info=ex)
+            return False
+
+        err = AssetProcessorError(f"Failed to read port type {port_type} from {self._workspace.paths.ap_gui_log()}")
+        waiter.wait_for(_get_port_from_log, timeout=10, exc=err)
+        return port
 
     def set_control_connection(self, connection):
         self._control_connection = connection
@@ -206,13 +209,8 @@ class AssetProcessor(object):
         """
         if not self._control_connection:
             control_timeout = 60
-            try:
-                return self.connect_socket("Control Connection", self.read_control_port,
-                                           set_port_method=self.set_control_connection, timeout=control_timeout)
-            except AssetProcessorError as e:
-                # We dont want a failure of our test socket connection to fail the entire test automatically.
-                logger.error(f"Failed to connect control socket with error {e}")
-                pass
+            return self.connect_socket("Control Connection", self.read_control_port,
+                                       set_port_method=self.set_control_connection, timeout=control_timeout)
         return True, None
 
     def using_temp_workspace(self):
@@ -227,34 +225,40 @@ class AssetProcessor(object):
         :param set_port_method: If set, method to call with the established connection
         :param timeout: Max seconds to attempt connection for
         """
-
-        connection_timeout = timeout
         connect_port = read_port_method()
-        logger.debug(f"Waiting for connection to AP {port_name}: {host}:{connect_port}, "
-                     f"{connection_timeout} seconds remaining")
-        start_time = time.time()
-        while (time.time() - start_time) < connection_timeout:
+        logger.debug(f"Attempting to for connect to AP {port_name}: {host}:{connect_port} for {timeout} seconds")
+
+        def _attempt_connection():
+            nonlocal connect_port
+            if self._ap_proc.poll() is not None:
+                raise AssetProcessorError(f"Asset processor exited early with errorcode: {self._ap_proc.returncode}")
+
             connection_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            connection_socket.settimeout(10.0)
+            connection_socket.settimeout(timeout)
             try:
                 connection_socket.connect((host, connect_port))
                 logger.debug(f"Connection to AP {port_name} was successful")
                 if set_port_method is not None:
                     set_port_method(connection_socket)
-                return True, None
-            except Exception:  # Purposefully broad
-                # Short delay to prevent immediate failure due to slower starting applications such as debug builds
-                time.sleep(0.01)
+                return True
+            except Exception as ex:  # Purposefully broad
+                logger.debug(f"Failed to connect to {host}:{connect_port}", exc_info=ex)
                 if not connect_port or not self.using_temp_workspace():
                     # If we're not using a temp workspace with a fresh log it's possible we're reading a port from
                     # a previous run and the log just hasn't written yet, we need to keep checking the log for a new
                     # port to use
-                    new_connect_port = read_port_method()
-                    if new_connect_port != connect_port:
-                        logger.debug(
-                            f"Read new connect port for {port_name}: {host}:{new_connect_port}")
-                        connect_port = new_connect_port
-        raise AssetProcessorError(f"Could not connect to AP {port_name}")
+                    try:
+                        new_connect_port = read_port_method()
+                        if new_connect_port != connect_port:
+                            logger.debug(f"Found new connect port for {port_name}: {host}:{new_connect_port}")
+                            connect_port = new_connect_port
+                    except Exception as read_exception:  # Purposefully broad
+                        logger.debug(f"Failed to read port data", exc_info=read_exception)
+            return False
+
+        err = AssetProcessorError(f"Could not connect to AP {port_name} on {host}:{connect_port}")
+        waiter.wait_for(_attempt_connection, timeout=timeout, exc=err)
+        return True, None
 
     def stop(self, timeout=60):
         """
@@ -436,14 +440,13 @@ class AssetProcessor(object):
                     extra_params=None, add_gem_scan_folders=None, add_config_scan_folders=None, decode=True,
                     expect_failure=False, quitonidle=False, connect_to_ap=False, accept_input=True, run_until_idle=True,
                     scan_folder_pattern=None):
-        ap_path = self._workspace.paths.asset_processor()
+        ap_path = os.path.abspath(self._workspace.paths.asset_processor())
+        ap_exe_path = os.path.dirname(ap_path)
         extra_gui_params = []
         if quitonidle:
             extra_gui_params.append("--quitonidle")
         if accept_input:
             extra_gui_params.append("--acceptInput")
-
-        ap_exe_path = os.path.dirname(self._workspace.paths.asset_processor())
 
         logger.info("Starting asset processor")
         if self.process_exists():
@@ -483,20 +486,34 @@ class AssetProcessor(object):
             logger.warning(f"Cannot capture output when leaving AP connection open.")
 
         logger.info(f"Launching AP with command: {command}")
-        self._ap_proc = subprocess.Popen(command, cwd=ap_exe_path)
+        try:
+            self._ap_proc = subprocess.Popen(command, cwd=ap_exe_path, env=process_utils.get_display_env())
+            time.sleep(1)
+            if self._ap_proc.poll() is not None:
+                raise AssetProcessorError(f"AssetProcessor immediately quit with errorcode {self._ap_proc.returncode}")
 
-        if accept_input and not quitonidle:
-            self.connect_control()
+            if accept_input:
+                self.connect_control()
 
-        if connect_to_ap:
-            self.connect_listen()
+            if connect_to_ap:
+                self.connect_listen()
 
-        if quitonidle:
-            waiter.wait_for(lambda: not self.process_exists(), timeout=timeout)
-        elif run_until_idle and accept_input:
-            if not self.wait_for_idle():
-                return False, None
-        return True, None
+            if quitonidle:
+                waiter.wait_for(lambda: not self.process_exists(), timeout=timeout,
+                                exc=AssetProcessorError(f"Failed to quit on idle within {timeout} seconds"))
+            elif run_until_idle and accept_input:
+                if not self.wait_for_idle():
+                    return False, None
+            return True, None
+        except BaseException as be:  # purposefully broad
+            logger.exception("Exception while starting Asset Processor", be)
+            # clean up to avoid leaking open AP process to future tests
+            try:
+                if self._ap_proc:
+                    self._ap_proc.kill()
+            except Exception as ex:
+                logger.exception("Ignoring exception while trying to terminate Asset Processor", ex)
+            raise be  # raise whatever prompted us to clean up
 
     def connect_listen(self, timeout=DEFAULT_TIMEOUT_SECONDS):
         # Wait for the AP we launched to be ready to accept a connection
@@ -574,21 +591,17 @@ class AssetProcessor(object):
                                expect_failure=False):
         """
         In case of a timeout, the asset processor and associated processes are killed and the function returns False.
-        
+
         :param timeout: seconds to wait before aborting
         :param capture_output = Capture output which will be returned in the second of the return pair
         :param decode: decode byte strings from captured output to utf-8
         :param expect_failure: asset processing is expected to fail, so don't error on a failure, and assert on no failure.
         """
         logger.info(f"Launching AP with command: {command}")
-        start = datetime.datetime.now()
-        try:
-            duration = datetime.timedelta(seconds=timeout)
-        except TypeError:
-            logger.warning("Cannot set timeout value of '{}' seconds, defaulting to {} hours".format(
-                timeout, DEFAULT_TIMEOUT_HOURS))
-            duration = datetime.timedelta(hours=DEFAULT_TIMEOUT_HOURS)
-            timeout = duration.total_seconds()
+        start = time.time()
+        if type(timeout) not in [int, float] or timeout < 1:
+            logger.warning(f"Invalid timeout {timeout} - defaulting to {DEFAULT_TIMEOUT_SECONDS} seconds")
+            timeout = DEFAULT_TIMEOUT_SECONDS
 
         run_result = subprocess.run(command, close_fds=True, timeout=timeout, capture_output=capture_output)
         output_list = None
@@ -609,8 +622,7 @@ class AssetProcessor(object):
         elif expect_failure:
             logger.error(f"{command} was expected to fail, but instead ran without failure.")
             return True, output_list
-        logger.info(
-            f"{command} completed successfully in {(datetime.datetime.now() - start).seconds} seconds")
+        logger.info(f"{command} completed successfully in {time.time() - start} seconds")
         return True, output_list
 
     def set_failure_log_folder(self, log_root):
@@ -743,14 +755,14 @@ class AssetProcessor(object):
         :return: Absolute path of added scan folder
         """
         if os.path.isabs(folder_name):
-            if not folder_name in self._override_scan_folders:
+            if folder_name not in self._override_scan_folders:
                 self._override_scan_folders.append(folder_name)
                 logger.info(f'Adding override scan folder {folder_name}')
             return folder_name
         else:
             if not self._temp_asset_root:
-                logger.warning(f"Can't create scan folder, no temporary asset workspace has been created")
-                return
+                logger.warning(f"Can not create scan folder, no temporary asset workspace has been created")
+                return ""
             scan_folder = os.path.join(self._temp_asset_root if self._temp_asset_root else self._workspace.paths.engine_root(),
                                        folder_name)
             if not os.path.isdir(scan_folder):
@@ -802,9 +814,9 @@ class AssetProcessor(object):
         if not use_current_root:
             self.create_temp_asset_root()
         test_asset_root = os.path.join(self._temp_asset_root, self._workspace.project if relative_asset_root is None
-        else relative_asset_root)
+                                       else relative_asset_root)
         test_folder = os.path.join(test_asset_root, function_name if existing_function_name is None
-        else existing_function_name)
+                                   else existing_function_name)
         if not os.path.isdir(test_folder):
             os.makedirs(test_folder)
         if add_scan_folder:

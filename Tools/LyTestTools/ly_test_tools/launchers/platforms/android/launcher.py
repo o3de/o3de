@@ -208,13 +208,6 @@ class AndroidLauncher(Launcher):
         with self.android_vfs_setreg_path.open('w') as android_vfs_setreg:
             json.dump(vfs_settings, android_vfs_setreg, indent=4)
 
-        self.workspace.settings.modify_platform_setting('r_AssetProcessorShaderCompiler', 1)
-        self.workspace.settings.modify_platform_setting('r_ShadersAsyncCompiling', 0)
-        self.workspace.settings.modify_platform_setting('r_ShadersRemoteCompiler', 1)
-        self.workspace.settings.modify_platform_setting('r_ShadersAllowCompilation', 1)
-        self.workspace.settings.modify_platform_setting('r_ShadersAsyncActivation', 0)
-        self.workspace.settings.modify_platform_setting('r_ShaderCompilerServer', '127.0.0.1')
-        self.workspace.settings.modify_platform_setting('r_ShaderCompilerPort', '61453')
         self.workspace.settings.modify_platform_setting("log_RemoteConsoleAllowedAddresses", '127.0.0.1')
 
     def launch(self):

@@ -77,9 +77,11 @@ namespace AZ
     public:
         /**
          * Allocator used by the EBus.
-         * The default setting is AZStd::allocator, which uses AZ::SystemAllocator.
+         * The default setting is Internal EBusEnvironmentAllocator
+         * EBus code stores their Context instances in static memory
+         * Therfore the configured allocator must last as long as the EBus in a module
          */
-        using AllocatorType = AZStd::allocator;
+        using AllocatorType = AZ::Internal::EBusEnvironmentAllocator;
 
         /**
          * Defines how many handlers can connect to an address on the EBus
