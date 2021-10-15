@@ -83,7 +83,7 @@ namespace AzToolsFramework::Prefab
         FocusModeInterface* m_focusModeInterface = nullptr;
         InstanceEntityMapperInterface* m_instanceEntityMapperInterface = nullptr;
 
-        bool m_isInitialized = false;
+        bool m_initialized = false;
     };
 
 } // namespace AzToolsFramework::Prefab

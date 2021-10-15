@@ -67,7 +67,7 @@ namespace AzToolsFramework::Prefab
             "Instance Entity Mapper Interface could not be found. "
             "Check that it is being correctly initialized.");
 
-        m_isInitialized = true;
+        m_initialized = true;
     }
 
     PrefabFocusOperationResult PrefabFocusHandler::FocusOnOwningPrefab(AZ::EntityId entityId)
@@ -140,7 +140,7 @@ namespace AzToolsFramework::Prefab
             return AZ::Failure(AZStd::string("Prefab Focus Handler: invalid instance to focus on."));
         }
 
-        if (!m_isInitialized)
+        if (!m_initialized)
         {
             Initialize();
         }
@@ -229,7 +229,7 @@ namespace AzToolsFramework::Prefab
 
     void PrefabFocusHandler::OnContextReset()
     {
-        if (!m_isInitialized)
+        if (!m_initialized)
         {
             Initialize();
         }
