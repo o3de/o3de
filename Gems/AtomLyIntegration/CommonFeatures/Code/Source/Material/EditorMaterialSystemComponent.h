@@ -7,29 +7,31 @@
  */
 #pragma once
 
+#include <AtomLyIntegration/CommonFeatures/Material/EditorMaterialSystemComponentRequestBus.h>
+#include <AtomToolsFramework/PreviewRenderer/PreviewRenderer.h>
+#include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Component/Component.h>
 #include <AzFramework/Application/Application.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
-#include <AzToolsFramework/Thumbnails/Thumbnail.h>
 #include <AzToolsFramework/Viewport/ActionBus.h>
-
-#include <AtomLyIntegration/CommonFeatures/Material/EditorMaterialSystemComponentRequestBus.h>
-
 #include <Material/MaterialBrowserInteractions.h>
+#include <QPixmap>
 
 namespace AZ
 {
     namespace Render
     {
         //! System component that manages launching and maintaining connections with the material editor.
-        class EditorMaterialSystemComponent
+        class EditorMaterialSystemComponent final
             : public AZ::Component
-            , private EditorMaterialSystemComponentRequestBus::Handler
-            , private AzFramework::ApplicationLifecycleEvents::Bus::Handler
-            , private AzToolsFramework::AssetBrowser::AssetBrowserInteractionNotificationBus::Handler
-            , private AzToolsFramework::EditorMenuNotificationBus::Handler
-            , private AzToolsFramework::EditorEvents::Bus::Handler
+            , public EditorMaterialSystemComponentNotificationBus::Handler
+            , public EditorMaterialSystemComponentRequestBus::Handler
+            , public AzToolsFramework::AssetBrowser::AssetBrowserInteractionNotificationBus::Handler
+            , public AzToolsFramework::EditorMenuNotificationBus::Handler
+            , public AzToolsFramework::EditorEvents::Bus::Handler
+            , public AzFramework::AssetCatalogEventBus::Handler
+            , public AzFramework::ApplicationLifecycleEvents::Bus::Handler
         {
         public:
             AZ_COMPONENT(EditorMaterialSystemComponent, "{96652157-DA0B-420F-B49C-0207C585144C}");
@@ -38,7 +40,6 @@ namespace AZ
 
             static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided);
             static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible);
-            static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required);
             static void GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent);
 
         protected:
@@ -51,9 +52,13 @@ namespace AZ
             //! EditorMaterialSystemComponentRequestBus::Handler overrides...
             void OpenMaterialEditor(const AZStd::string& sourcePath) override;
             void OpenMaterialInspector(const AZ::EntityId& entityId, const AZ::Render::MaterialAssignmentId& materialAssignmentId) override;
+            void RenderMaterialPreview(const AZ::EntityId& entityId, const AZ::Render::MaterialAssignmentId& materialAssignmentId) override;
+            QPixmap GetRenderedMaterialPreview(
+                const AZ::EntityId& entityId, const AZ::Render::MaterialAssignmentId& materialAssignmentId) const override;
 
-            // AzFramework::ApplicationLifecycleEvents overrides...
-            void OnApplicationAboutToStop() override;
+            //! EditorMaterialSystemComponentNotificationBus::Handler overrides...
+            void OnRenderMaterialPreviewComplete(
+                const AZ::EntityId& entityId, const AZ::Render::MaterialAssignmentId& materialAssignmentId, const QPixmap& pixmap)override;
 
             //! AssetBrowserInteractionNotificationBus::Handler overrides...
             AzToolsFramework::AssetBrowser::SourceFileDetails GetSourceFileDetails(const char* fullSourceFileName) override;
@@ -65,12 +70,17 @@ namespace AZ
             // AztoolsFramework::EditorEvents::Bus::Handler overrides...
             void NotifyRegisterViews() override;
 
-            void SetupThumbnails();
-            void TeardownThumbnails();
+
+            // AzFramework::AssetCatalogEventBus::Handler overrides ...
+            void OnCatalogLoaded(const char* catalogFile) override;
+
+            // AzFramework::ApplicationLifecycleEvents overrides...
+            void OnApplicationAboutToStop() override;
 
             QAction* m_openMaterialEditorAction = nullptr;
-
             AZStd::unique_ptr<MaterialBrowserInteractions> m_materialBrowserInteractions;
+            AZStd::unique_ptr<AtomToolsFramework::PreviewRenderer> m_previewRenderer;
+            AZStd::unordered_map<AZ::EntityId, AZStd::unordered_map<AZ::Render::MaterialAssignmentId, QPixmap>> m_materialPreviews;
         };
     } // namespace Render
 } // namespace AZ

@@ -89,8 +89,8 @@ namespace AzToolsFramework::ViewportUi::Internal
         AZStd::shared_ptr<QWidget> GetViewportUiElement(ViewportUiElementId elementId);
         bool IsViewportUiElementVisible(ViewportUiElementId elementId);
 
-        void CreateComponentModeBorder(const AZStd::string& borderTitle);
-        void RemoveComponentModeBorder();
+        void CreateViewportBorder(const AZStd::string& borderTitle);
+        void RemoveViewportBorder();
 
     private:
         void PrepareWidgetForViewportUi(QPointer<QWidget> widget);

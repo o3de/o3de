@@ -25,7 +25,7 @@
 namespace AtomToolsFramework
 {
     //! The RenderViewportWidget class is a Qt wrapper around an Atom viewport.
-    //! RenderViewportWidget renders to an internal window using RPI::ViewportContext
+    //! RenderViewportWidget renders to an internal window using AZ::RPI::ViewportContext
     //! and delegates input via its internal ViewportControllerList.
     //! @see AZ::RPI::ViewportContext for Atom's API for setting up 
     class RenderViewportWidget
@@ -39,7 +39,7 @@ namespace AtomToolsFramework
     public:
         //! Creates a RenderViewportWidget.
         //! Requires the Atom RPI to be initialized in order
-        //! to internally construct an RPI::ViewportContext.
+        //! to internally construct an AZ::RPI::ViewportContext.
         //! If initializeViewportContext is set to false, nothing will be displayed on-screen until InitiliazeViewportContext is called.
         explicit RenderViewportWidget(QWidget* parent = nullptr, bool shouldInitializeViewportContext = true);
         ~RenderViewportWidget();

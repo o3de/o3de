@@ -90,13 +90,6 @@ namespace AZ
             }
         }
 
-        //! Filter out integration tests from the test run
-        void excludeIntegTests()
-        {
-            AddExcludeFilter("INTEG_*");
-            AddExcludeFilter("Integ_*");
-        }
-
         void ApplyGlobalParameters(int* argc, char** argv)
         {
             // this is a hook that can be used to apply any other global parameters that we use.
@@ -164,7 +157,6 @@ namespace AZ
                 }
 
                 ::testing::InitGoogleMock(&argc, argv);
-                AZ::Test::excludeIntegTests();
                 AZ::Test::ApplyGlobalParameters(&argc, argv);
                 AZ::Test::printUnusedParametersWarning(argc, argv);
                 AZ::Test::addTestEnvironments(m_envs);
@@ -285,7 +277,6 @@ namespace AZ
                 }
             }
 
-            AZ::Test::excludeIntegTests();
             AZ::Test::printUnusedParametersWarning(argc, argv);
 
             return RUN_ALL_TESTS();

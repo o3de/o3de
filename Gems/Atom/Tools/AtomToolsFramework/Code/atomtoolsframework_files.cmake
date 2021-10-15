@@ -58,4 +58,15 @@ set(FILES
     Source/Window/AtomToolsMainWindow.cpp
     Source/Window/AtomToolsMainWindowSystemComponent.cpp
     Source/Window/AtomToolsMainWindowSystemComponent.h
+    Include/AtomToolsFramework/PreviewRenderer/PreviewContent.h
+    Include/AtomToolsFramework/PreviewRenderer/PreviewRenderer.h
+    Include/AtomToolsFramework/PreviewRenderer/PreviewRendererState.h
+    Include/AtomToolsFramework/PreviewRenderer/PreviewerFeatureProcessorProviderBus.h
+    Source/PreviewRenderer/PreviewRenderer.cpp
+    Source/PreviewRenderer/PreviewRendererIdleState.cpp
+    Source/PreviewRenderer/PreviewRendererIdleState.h
+    Source/PreviewRenderer/PreviewRendererLoadState.cpp
+    Source/PreviewRenderer/PreviewRendererLoadState.h
+    Source/PreviewRenderer/PreviewRendererCaptureState.cpp
+    Source/PreviewRenderer/PreviewRendererCaptureState.h
 )
