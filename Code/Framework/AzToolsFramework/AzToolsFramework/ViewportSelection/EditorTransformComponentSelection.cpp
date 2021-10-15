@@ -3560,6 +3560,8 @@ namespace AzToolsFramework
         DrawAxisGizmo(viewportInfo, debugDisplay);
 
         m_boxSelect.Display2d(viewportInfo, debugDisplay);
+
+        m_editorHelpers->Display2d(viewportInfo, debugDisplay);
     }
 
     void EditorTransformComponentSelection::RefreshSelectedEntityIds()
@@ -3663,26 +3665,63 @@ namespace AzToolsFramework
     void EditorTransformComponentSelection::OnEditorModeActivated(
         [[maybe_unused]] const ViewportEditorModesInterface& editorModeState, ViewportEditorMode mode)
     {
-        if (mode == ViewportEditorMode::Component)
+        switch (mode)
         {
-            SetAllViewportUiVisible(false);
+        case ViewportEditorMode::Component:
+            {
+                SetAllViewportUiVisible(false);
 
-            EditorEntityLockComponentNotificationBus::Router::BusRouterDisconnect();
-            EditorEntityVisibilityNotificationBus::Router::BusRouterDisconnect();
-            ToolsApplicationNotificationBus::Handler::BusDisconnect();
+                EditorEntityLockComponentNotificationBus::Router::BusRouterDisconnect();
+                EditorEntityVisibilityNotificationBus::Router::BusRouterDisconnect();
+                ToolsApplicationNotificationBus::Handler::BusDisconnect();
+            }
+            break;
+        case ViewportEditorMode::Focus:
+            {
+                ViewportUi::ViewportUiRequestBus::Event(
+                    ViewportUi::DefaultViewportId, &ViewportUi::ViewportUiRequestBus::Events::CreateViewportBorder, "Focus Mode");
+            }
+            break;
+        case ViewportEditorMode::Default:
+        case ViewportEditorMode::Pick:
+            // noop
+            break;
         }
     }
 
     void EditorTransformComponentSelection::OnEditorModeDeactivated(
-        [[maybe_unused]] const ViewportEditorModesInterface& editorModeState, ViewportEditorMode mode)
+        const ViewportEditorModesInterface& editorModeState, const ViewportEditorMode mode)
     {
-        if (mode == ViewportEditorMode::Component)
+        switch (mode)
         {
-            SetAllViewportUiVisible(true);
+        case ViewportEditorMode::Component:
+            {
+                SetAllViewportUiVisible(true);
 
-            ToolsApplicationNotificationBus::Handler::BusConnect();
-            EditorEntityVisibilityNotificationBus::Router::BusRouterConnect();
-            EditorEntityLockComponentNotificationBus::Router::BusRouterConnect();
+                ToolsApplicationNotificationBus::Handler::BusConnect();
+                EditorEntityVisibilityNotificationBus::Router::BusRouterConnect();
+                EditorEntityLockComponentNotificationBus::Router::BusRouterConnect();
+
+                // note: when leaving component mode, we check if we're still in focus mode (i.e. component mode was
+                // started from within focus mode), if we are, ensure we create/update the viewport border (as leaving
+                // component mode will attempt to remove it)
+                if (editorModeState.IsModeActive(ViewportEditorMode::Focus))
+                {
+                    ViewportUi::ViewportUiRequestBus::Event(
+                        ViewportUi::DefaultViewportId, &ViewportUi::ViewportUiRequestBus::Events::CreateViewportBorder, "Focus Mode");
+                }
+            }
+            break;
+        case ViewportEditorMode::Focus:
+            {
+                ViewportUi::ViewportUiRequestBus::Event(
+                    ViewportUi::DefaultViewportId, &ViewportUi::ViewportUiRequestBus::Events::RemoveViewportBorder);
+            }
+            break;
+        case ViewportEditorMode::Default:
+        case ViewportEditorMode::Pick:
+            // noop
+            break;
         }
     }
 
