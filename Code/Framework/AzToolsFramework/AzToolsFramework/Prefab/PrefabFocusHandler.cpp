@@ -244,17 +244,15 @@ namespace AzToolsFramework::Prefab
     void PrefabFocusHandler::OnEntityInfoUpdatedName(AZ::EntityId entityId, [[maybe_unused]]const AZStd::string& name)
     {
         // Determine if the entityId is the container for any of the instances in the vector
-        bool isContainerOfInstanceInVector = false;
-        for (const InstanceOptionalReference& instance : m_instanceFocusVector)
-        {
-            if (instance->get().GetContainerEntityId() == entityId)
+        auto result = AZStd::find_if(
+            m_instanceFocusVector.begin(), m_instanceFocusVector.end(),
+            [entityId](const InstanceOptionalReference& instance)
             {
-                isContainerOfInstanceInVector = true;
-                break;
+                return (instance->get().GetContainerEntityId() == entityId);
             }
-        }
+        );
 
-        if (isContainerOfInstanceInVector)
+        if (result != m_instanceFocusVector.end())
         {
             // Refresh the path and notify changes.
             RefreshInstanceFocusPath();
