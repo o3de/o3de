@@ -87,7 +87,7 @@ namespace Terrain
 
         //////////////////////////////////////////////////////////////////////////
         // TerrainAreaMaterialRequestBus
-        AZStd::vector<TerrainSurfaceMaterialMapping> GetSurfaceMaterialMappings(AZ::Aabb& region) const override;
+        const AZStd::vector<TerrainSurfaceMaterialMapping>& GetSurfaceMaterialMappings(AZ::Aabb& region) const override;
 
         //////////////////////////////////////////////////////////////////////////
         // AZ::Data::AssetBus::Handler

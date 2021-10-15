@@ -59,8 +59,9 @@ namespace Terrain
         AZ::SerializeContext* serialize = azrtti_cast<AZ::SerializeContext*>(context);
         if (serialize)
         {
-            serialize->Class<TerrainSurfaceMaterialsListConfig, AZ::ComponentConfig>()->Version(1)->Field(
-                "Mappings", &TerrainSurfaceMaterialsListConfig::m_surfaceMaterials);
+            serialize->Class<TerrainSurfaceMaterialsListConfig, AZ::ComponentConfig>()
+                ->Version(1)
+                ->Field("Mappings", &TerrainSurfaceMaterialsListConfig::m_surfaceMaterials);
 
             AZ::EditContext* edit = serialize->GetEditContext();
             if (edit)
@@ -100,8 +101,9 @@ namespace Terrain
         AZ::SerializeContext* serialize = azrtti_cast<AZ::SerializeContext*>(context);
         if (serialize)
         {
-            serialize->Class<TerrainSurfaceMaterialsListComponent, AZ::Component>()->Version(0)->Field(
-                "Configuration", &TerrainSurfaceMaterialsListComponent::m_configuration);
+            serialize->Class<TerrainSurfaceMaterialsListComponent, AZ::Component>()
+                ->Version(0)
+                ->Field("Configuration", &TerrainSurfaceMaterialsListComponent::m_configuration);
         }
     }
 
@@ -272,7 +274,7 @@ namespace Terrain
              m_cachedAabb);
      }
 
-    AZStd::vector<TerrainSurfaceMaterialMapping> TerrainSurfaceMaterialsListComponent::GetSurfaceMaterialMappings(
+    const AZStd::vector<TerrainSurfaceMaterialMapping>& TerrainSurfaceMaterialsListComponent::GetSurfaceMaterialMappings(
          AZ::Aabb& region) const
     {
         region = m_cachedAabb;
