@@ -74,9 +74,13 @@ namespace AzToolsFramework::Prefab
         void OpenInstanceContainers(const AZStd::vector<InstanceOptionalReference>& instances) const;
         void CloseInstanceContainers(const AZStd::vector<InstanceOptionalReference>& instances) const;
 
+        //! The instance the editor is currently focusing on.
         InstanceOptionalReference m_focusedInstance;
+        //! The templateId of the focused instance.
         TemplateId m_focusedTemplateId;
-        AZStd::vector<InstanceOptionalReference> m_instanceFocusVector;
+        //! The list of instances going from the root (index 0) to the focused instance.
+        AZStd::vector<InstanceOptionalReference> m_instanceFocusHierarchy;
+        //! A path containing the names of the containers in the instance focus hierarchy, separated with a /.
         AZ::IO::Path m_instanceFocusPath;
 
         ContainerEntityInterface* m_containerEntityInterface = nullptr;

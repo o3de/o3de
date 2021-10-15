@@ -96,12 +96,12 @@ namespace AzToolsFramework::Prefab
 
     PrefabFocusOperationResult PrefabFocusHandler::FocusOnPathIndex([[maybe_unused]] AzFramework::EntityContextId entityContextId, int index)
     {
-        if (index < 0 || index >= m_instanceFocusVector.size())
+        if (index < 0 || index >= m_instanceFocusHierarchy.size())
         {
             return AZ::Failure(AZStd::string("Prefab Focus Handler: Invalid index on FocusOnPathIndex."));
         }
 
-        InstanceOptionalReference focusedInstance = m_instanceFocusVector[index];
+        InstanceOptionalReference focusedInstance = m_instanceFocusHierarchy[index];
 
         FocusOnOwningPrefab(focusedInstance->get().GetContainerEntityId());
 
@@ -146,7 +146,7 @@ namespace AzToolsFramework::Prefab
         }
 
         // Close all container entities in the old path
-        CloseInstanceContainers(m_instanceFocusVector);
+        CloseInstanceContainers(m_instanceFocusHierarchy);
 
         m_focusedInstance = focusedInstance;
         m_focusedTemplateId = focusedInstance->get().GetTemplateId();
@@ -170,7 +170,7 @@ namespace AzToolsFramework::Prefab
         RefreshInstanceFocusPath();
 
         // Open all container entities in the new path
-        OpenInstanceContainers(m_instanceFocusVector);
+        OpenInstanceContainers(m_instanceFocusHierarchy);
 
         PrefabFocusNotificationBus::Broadcast(&PrefabFocusNotifications::OnPrefabFocusChanged);
 
@@ -224,7 +224,7 @@ namespace AzToolsFramework::Prefab
 
     const int PrefabFocusHandler::GetPrefabFocusPathLength([[maybe_unused]] AzFramework::EntityContextId entityContextId) const
     {
-        return aznumeric_cast<int>(m_instanceFocusVector.size());
+        return aznumeric_cast<int>(m_instanceFocusHierarchy.size());
     }
 
     void PrefabFocusHandler::OnContextReset()
@@ -235,7 +235,7 @@ namespace AzToolsFramework::Prefab
         }
 
         // Clear the old focus vector
-        m_instanceFocusVector.clear();
+        m_instanceFocusHierarchy.clear();
 
         // Focus on the root prefab (AZ::EntityId() will default to it)
         FocusOnPrefabInstanceOwningEntityId(AZ::EntityId());
@@ -245,14 +245,14 @@ namespace AzToolsFramework::Prefab
     {
         // Determine if the entityId is the container for any of the instances in the vector
         auto result = AZStd::find_if(
-            m_instanceFocusVector.begin(), m_instanceFocusVector.end(),
+            m_instanceFocusHierarchy.begin(), m_instanceFocusHierarchy.end(),
             [entityId](const InstanceOptionalReference& instance)
             {
                 return (instance->get().GetContainerEntityId() == entityId);
             }
         );
 
-        if (result != m_instanceFocusVector.end())
+        if (result != m_instanceFocusHierarchy.end())
         {
             // Refresh the path and notify changes.
             RefreshInstanceFocusPath();
@@ -269,27 +269,27 @@ namespace AzToolsFramework::Prefab
 
     void PrefabFocusHandler::RefreshInstanceFocusList()
     {
-        m_instanceFocusVector.clear();
+        m_instanceFocusHierarchy.clear();
 
         AZStd::list<InstanceOptionalReference> instanceFocusList;
 
         InstanceOptionalReference currentInstance = m_focusedInstance;
         while (currentInstance.has_value())
         {
-            m_instanceFocusVector.emplace_back(currentInstance);
+            m_instanceFocusHierarchy.emplace_back(currentInstance);
 
             currentInstance = currentInstance->get().GetParentInstance();
         }
 
         // Invert the vector, since we need the top instance to be at index 0
-        AZStd::reverse(m_instanceFocusVector.begin(), m_instanceFocusVector.end());
+        AZStd::reverse(m_instanceFocusHierarchy.begin(), m_instanceFocusHierarchy.end());
     }
 
     void PrefabFocusHandler::RefreshInstanceFocusPath()
     {
         m_instanceFocusPath.clear();
 
-        for (const InstanceOptionalReference& instance : m_instanceFocusVector)
+        for (const InstanceOptionalReference& instance : m_instanceFocusHierarchy)
         {
             m_instanceFocusPath.Append(instance->get().GetContainerEntity()->get().GetName());
         }
