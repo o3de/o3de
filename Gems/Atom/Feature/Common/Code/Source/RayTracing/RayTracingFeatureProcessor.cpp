@@ -507,7 +507,8 @@ namespace AZ
                     }
                 }
 
-                //Check if buffer view data changed from previous frame. 
+                // Check if buffer view data changed from previous frame.
+                // Look into making 'm_meshBuffers != meshBuffers' faster by possibly building a crc and doing a crc check.
                 if (m_meshBuffers.size() != meshBuffers.size() || m_meshBuffers != meshBuffers)
                 {
                     m_meshBuffers = meshBuffers;
