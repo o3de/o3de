@@ -10,7 +10,6 @@
 #include <AzCore/Component/ComponentApplication.h>
 #include <TerrainRenderer/Components/TerrainSurfaceMaterialsListComponent.h>
 #include <MockAxisAlignedBoxShapeComponent.h>
-#include <Terrain/MockTerrainAreaMaterialRequestBus.h>
 
 using ::testing::NiceMock;
 using ::testing::AtLeast;
