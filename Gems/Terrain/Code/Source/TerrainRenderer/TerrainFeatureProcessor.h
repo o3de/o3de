@@ -124,6 +124,74 @@ namespace Terrain
             float m_normalFactor{ 0.0f };
         };
 
+        enum DetailTextureFlags : uint32_t
+        {
+            UseTextureColor =      0b0000'0000'0000'0000'0000'0000'0000'0001,
+            UseTextureNormal =     0b0000'0000'0000'0000'0000'0000'0000'0010,
+            UseTextureMetallic =   0b0000'0000'0000'0000'0000'0000'0000'0100,
+            UseTextureRoughness =  0b0000'0000'0000'0000'0000'0000'0000'1000,
+            UseTextureOcclusion =  0b0000'0000'0000'0000'0000'0000'0001'0000,
+            UseTextureHeight =     0b0000'0000'0000'0000'0000'0000'0010'0000,
+
+            FlipNormalX =          0b0000'0000'0000'0000'0000'0000'0100'0000,
+            FlipNormalY =          0b0000'0000'0000'0000'0000'0000'1000'0000,
+
+            BlendModeMask =        0b0000'0000'0000'0000'0000'0011'0000'0000,
+            BlendModeLerp =        0b0000'0000'0000'0000'0000'0000'0000'0000,
+            BlendModeLinearLight = 0b0000'0000'0000'0000'0000'0001'0000'0000,
+            BlendModeMultiply =    0b0000'0000'0000'0000'0000'0010'0000'0000,
+            BlendModeOverlay =     0b0000'0000'0000'0000'0000'0011'0000'0000,
+        };
+
+        struct DetailMaterialShaderProperties
+        {
+            // Uv
+            AZStd::array<float, 12> m_uvTransform;
+
+            // Factor / Scale / Bias for input textures
+            float m_baseColorFactor{ 1.0f };
+            float m_normalFactor{ 1.0f };
+            float m_metalFactor{ 1.0f };
+            float m_roughnessScale{ 1.0f };
+
+            float m_roughnessBias{ 0.0f };
+            float m_occlusionFactor{ 1.0f };
+            float m_heightFactor{ 1.0f };
+            float m_heightOffset{ 0.0f };
+
+            float m_heightBlendFactor{ 0.5f };
+
+            // Flags
+            DetailTextureFlags m_flags{ 0 };
+
+            AZStd::array<float, 2> m_padding; // 16 byte aligned
+        };
+
+        struct DetailMaterialData
+        {
+            AZ::Data::Instance<AZ::RPI::Image> m_colorImage;
+            AZ::Data::Instance<AZ::RPI::Image> m_normalImage;
+            AZ::Data::Instance<AZ::RPI::Image> m_roughnessImage;
+            AZ::Data::Instance<AZ::RPI::Image> m_metalnessImage;
+            AZ::Data::Instance<AZ::RPI::Image> m_occlusionImage;
+            AZ::Data::Instance<AZ::RPI::Image> m_heightImage;
+
+            DetailMaterialShaderProperties m_properties; // maps directly to shader
+        };
+
+        struct DetailMaterialSurface
+        {
+            AZ::Crc32 m_surfaceId;
+            uint32_t m_detailMaterailId;
+        };
+
+        struct DetailMaterialListRegion
+        {
+            AZ::Aabb m_region;
+            AZStd::vector<DetailMaterialSurface> m_materialsForSurfaces;
+        };
+
+
         // AZ::RPI::MaterialReloadNotificationBus::Handler overrides...
         void OnMaterialReinitialized(const MaterialInstance& material) override;
 
@@ -197,5 +265,6 @@ namespace Terrain
         AZStd::vector<SectorData> m_sectorData;
 
         AZ::Render::IndexedDataVector<MacroMaterialData> m_macroMaterials;
+        AZ::Render::IndexedDataVector<DetailMaterialData> m_detailMaterials;
     };
 }
