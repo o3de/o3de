@@ -28,41 +28,10 @@ namespace AZ
         {
         }
 
-        void LutGenerationPass::BuildInternal()
-        {
-            auto scene = GetScene();
-            if (scene)
-            {
-                AcesDisplayMapperFeatureProcessor* dmfp = scene->GetFeatureProcessor<AcesDisplayMapperFeatureProcessor>();
-                if (dmfp)
-                {
-                    for (int i = 0; i < NumLuts; ++i)
-                    {
-                        auto assetId = AZ::RPI::AssetUtils::GetAssetIdForProductPath(LutIdentityProductPath[i], AZ::RPI::AssetUtils::TraceLevel::Error);
-                        AZ_Assert(assetId.IsValid(), "LUT Asset is not valid.");
-                        dmfp->GetLutFromAssetId(m_colorGradingLuts[i], assetId);
-
-                        m_shaderResourceGroup->SetImageView(m_identityLutIndices[i], m_colorGradingLuts[i].m_lutStreamingImage->GetImageView());
-
-                        m_colorGradingLutSizes[i] = RHI::Size(
-                            m_colorGradingLuts[i].m_lutStreamingImage->GetDescriptor().m_size.m_width * m_colorGradingLuts[i].m_lutStreamingImage->GetDescriptor().m_size.m_width,
-                            m_colorGradingLuts[i].m_lutStreamingImage->GetDescriptor().m_size.m_height,
-                            1);
-                    }
-                }
-            }
-
-            HDRColorGradingPass::BuildInternal();
-        }
-
         void LutGenerationPass::InitializeInternal()
         {
             HDRColorGradingPass::InitializeInternal();
 
-            for (int i = 0; i < NumLuts; ++i)
-            {
-                m_identityLutIndices[i].Reset();
-            }
             m_lutResolutionIndex.Reset();
             m_lutShaperTypeIndex.Reset();
             m_lutShaperScaleIndex.Reset();
@@ -92,12 +61,13 @@ namespace AZ
             const auto* colorGradingSettings = GetHDRColorGradingSettings();
             if (colorGradingSettings)
             {
-                LutResolution lutResolution = colorGradingSettings->GetLutResolution();
+                uint32_t lutResolution = aznumeric_cast<uint32_t>(colorGradingSettings->GetLutResolution());
+                RHI::Size lutSize{ lutResolution * lutResolution, lutResolution, 1 };
 
                 RPI::Ptr<RPI::PassAttachment> attachment = FindOwnedAttachment(Name{ "ColorGradingLut" });
                 RHI::ImageDescriptor& imageDescriptor = attachment->m_descriptor.m_image;
-                imageDescriptor.m_size = m_colorGradingLutSizes[(int)lutResolution];
-                SetViewportScissorFromImageSize(m_colorGradingLutSizes[(int)lutResolution]);
+                imageDescriptor.m_size = lutSize;
+                SetViewportScissorFromImageSize(lutSize);
             }
             HDRColorGradingPass::BuildCommandListInternal(context);
         }

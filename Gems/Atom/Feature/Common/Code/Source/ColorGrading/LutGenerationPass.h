@@ -38,7 +38,6 @@ namespace AZ
         protected:
             LutGenerationPass(const RPI::PassDescriptor& descriptor);
 
-            void BuildInternal() override;
             void InitializeInternal() override;
             void FrameBeginInternal(FramePrepareParams params) override;
             void BuildCommandListInternal(const RHI::FrameGraphExecuteContext& context) override;
@@ -48,17 +47,6 @@ namespace AZ
             void SetViewportScissorFromImageSize(const RHI::Size& imageSize);
 
             DisplayMapperAssetLut m_colorGradingLuts[NumLuts];
-            RHI::Size m_colorGradingLutSizes[NumLuts];
-
-            const char* const LutIdentityProductPath[NumLuts] = {
-                "lookuptables/lut_identitylinear_16x16x16.azasset",
-                "lookuptables/lut_identitylinear_32x32x32.azasset",
-                "lookuptables/lut_identitylinear_64x64x64.azasset" };
-
-            RHI::ShaderInputNameIndex m_identityLutIndices[NumLuts] = {
-                "m_identityLut16x16x16",
-                "m_identityLut32x32x32",
-                "m_identityLut64x64x64" };
 
             RHI::ShaderInputNameIndex m_lutResolutionIndex = "m_lutResolution";
             RHI::ShaderInputNameIndex m_lutShaperTypeIndex = "m_shaperType";

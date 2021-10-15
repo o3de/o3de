@@ -19,17 +19,14 @@
 
 float3 convert2Dto3DLutCoords(float2 uv, float width, float height)
 {
-    float2 adjustedUv = float2(uv.x * width, uv.y * height);
-    float3 coords = float3(adjustedUv.x%height, 0.5 + int(adjustedUv.x/height), adjustedUv.y);
-    return coords/height;
-}
+    // convert from center pixel uvs to [0,1]
+    float offset = 1.0/height/2.0;
+    float scale = 1.0 - offset*2.0;
 
-enum class LutResolution
-{
-    Lut16x16x16,
-    Lut32x32x32,
-    Lut64x64x64
-};
+    float2 adjustedUv = float2(uv.x * width, uv.y * height);
+    float3 coords = float3(adjustedUv.x%height, 0.5 + int(adjustedUv.x/height), adjustedUv.y)/height;
+    return (coords - offset)/scale;
+}
 
 ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
 {
@@ -43,21 +40,6 @@ ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
         AddressV = Clamp;
         AddressW = Clamp;
     };
-
-    Sampler LinearSampler
-    {
-        MinFilter = Linear;
-        MagFilter = Linear;
-        MipFilter = Linear;
-        AddressU = Clamp;
-        AddressV = Clamp;
-        AddressW = Clamp;
-    };
-
-    // Identity LUTs
-    Texture3D<float4> m_identityLut16x16x16;
-    Texture3D<float4> m_identityLut32x32x32;
-    Texture3D<float4> m_identityLut64x64x64;
 
     int m_lutResolution;
     int m_shaperType;
@@ -104,33 +86,12 @@ struct PSOutput
 PSOutput MainPS(VSOutput IN)
 {
     ShaperType shaperType = (ShaperType)PassSrg::m_shaperType;
+    int lutResolution = PassSrg::m_lutResolution;
 
     PSOutput OUT;
 
     // baseCoords are from 0-1
-    float3 baseCoords = float3(0.0, 0.0, 0.0);
-    LutResolution lutRes = (LutResolution)PassSrg::m_lutResolution;
-    switch(lutRes)
-    {
-        case LutResolution::Lut16x16x16:
-        {
-            baseCoords = convert2Dto3DLutCoords(IN.m_texCoord, 256, 16);
-            baseCoords = PassSrg::m_identityLut16x16x16.Sample(PassSrg::PointSampler, baseCoords, 0.0).rgb;
-            break;
-        }
-        case LutResolution::Lut32x32x32:
-        {
-            baseCoords = convert2Dto3DLutCoords(IN.m_texCoord, 1024, 32);
-            baseCoords = PassSrg::m_identityLut32x32x32.Sample(PassSrg::PointSampler, baseCoords, 0.0).rgb;
-            break;
-        }
-        case LutResolution::Lut64x64x64:
-        {
-            baseCoords = convert2Dto3DLutCoords(IN.m_texCoord, 4096, 64);
-            baseCoords = PassSrg::m_identityLut64x64x64.Sample(PassSrg::PointSampler, baseCoords, 0.0).rgb;
-            break;
-        }
-    }
+    float3 baseCoords = convert2Dto3DLutCoords(IN.m_texCoord, lutResolution*lutResolution, lutResolution);
 
     float3 linearColor = ShaperToLinear(baseCoords, shaperType, PassSrg::m_shaperBias, PassSrg::m_shaperScale);
 

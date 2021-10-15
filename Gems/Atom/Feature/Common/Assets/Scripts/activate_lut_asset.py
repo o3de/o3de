@@ -5,6 +5,13 @@ For complete copyright and license terms please see the LICENSE at the root of t
 SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 
+"""
+This script is used by the Editor HDR Color Grading component to use a stored lut asset path
+and pass it onto a Look Modification Component.
+
+The HDR Color Grading component will be disabled as it is not compatible with the Look 
+Modification Component.
+"""
 import azlmbr
 import azlmbr.legacy.general as general
 

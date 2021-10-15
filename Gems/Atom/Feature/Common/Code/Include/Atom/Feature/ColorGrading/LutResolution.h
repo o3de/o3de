@@ -14,9 +14,9 @@
     {
         enum class LutResolution
         {
-            Lut16x16x16,
-            Lut32x32x32,
-            Lut64x64x64
+            Lut16x16x16 = 16,
+            Lut32x32x32 = 32,
+            Lut64x64x64 = 64
         };
     }
 }
