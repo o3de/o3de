@@ -275,6 +275,9 @@ namespace EMotionFX
 
                     SetNewMotionTime(m_motionInstance->GetCurrentTime());
                 }
+
+                // Do this always, elsewise we search for the lowest cost frame index too many times.
+                SetTimeSinceLastFrameSwitch(0.0f);
             }
 
             //AZ_Printf("EMotionFX", "Update: %f   newTime=%f", m_motionInstance->GetCurrentTime(), newMotionTime);

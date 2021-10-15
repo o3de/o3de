@@ -47,7 +47,7 @@ namespace EMotionFX
             AZ_RTTI(LocomotionBehavior, "{ACCA8610-5F87-49D7-8064-17DA281F8CD0}", Behavior)
             AZ_CLASS_ALLOCATOR_DECL
 
-            struct EMFX_API TweakFactors
+            struct EMFX_API FactorWeights
             {
                 float m_footPositionFactor = 1.0f;
                 float m_footVelocityFactor = 1.0f;
@@ -70,9 +70,9 @@ namespace EMotionFX
 
             static void Reflect(AZ::ReflectContext* context);
 
-            AZ_INLINE TweakFactors& GetTweakFactors() { return m_tweakFactors; }
-            AZ_INLINE const TweakFactors& GetTweakFactors() const { return m_tweakFactors; }
-            AZ_INLINE void SetTweakFactors(const TweakFactors& factors) { m_tweakFactors = factors; }
+            AZ_INLINE FactorWeights& GetFactorWeights() { return m_factorWeights; }
+            AZ_INLINE const FactorWeights& GetFactorWeights() const { return m_factorWeights; }
+            AZ_INLINE void SetFactorWeights(const FactorWeights& factors) { m_factorWeights = factors; }
 
         private:
             void OnSettingsChanged();
@@ -86,7 +86,7 @@ namespace EMotionFX
             size_t m_rootNodeIndex = InvalidIndex32;
             size_t m_leftFootNodeIndex = InvalidIndex32;
             size_t m_rightFootNodeIndex = InvalidIndex32;
-            TweakFactors m_tweakFactors;
+            FactorWeights m_factorWeights;
         };
     } // namespace MotionMatching
 } // namespace EMotionFX

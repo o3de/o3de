@@ -36,6 +36,7 @@ namespace EMotionFX
             void Clear();
             void PrintStats();
 
+            size_t GetNumNodes() const;
             size_t GetNumDimensions() const;
             size_t CalcMemoryUsageInBytes() const;
             bool IsInitialized() const;
