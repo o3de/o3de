@@ -318,7 +318,7 @@ namespace AzToolsFramework
             virtual bool IsMouseOver() const = 0;
             //! Set the cursor style override.
             virtual void SetOverrideCursor(CursorStyleOverride cursorStyleOverride) = 0;
-            //! Clear the current cursor style override.
+            //! Clear the cursor style override.
             virtual void ClearOverrideCursor() = 0;
 
         protected:
