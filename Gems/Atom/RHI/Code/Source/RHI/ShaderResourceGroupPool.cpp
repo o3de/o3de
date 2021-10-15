@@ -111,11 +111,12 @@ namespace AZ
         {
             AZStd::lock_guard<AZStd::shared_mutex> lock(m_groupsToCompileMutex);
 
+            bool isQueuedForCompile = shaderResourceGroup.IsQueuedForCompile();
             AZ_Warning(
-                "ShaderResourceGroupPool", !shaderResourceGroup.IsQueuedForCompile(),
+                "ShaderResourceGroupPool", !isQueuedForCompile,
                 "Attempting to compile an SRG that's already been queued for compile. Only compile an SRG once per frame.");            
 
-            if (!shaderResourceGroup.IsQueuedForCompile())
+            if (!isQueuedForCompile)
             {
                 CalculateGroupDataDiff(shaderResourceGroup, groupData);
 
