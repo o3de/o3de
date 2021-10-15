@@ -44,6 +44,13 @@ AZ_CVAR(
     nullptr,
     AZ::ConsoleFunctorFlags::Null,
     "Display the aggregate world bounds for a given entity (the union of all world component Aabbs)");
+AZ_CVAR(
+    bool,
+    ed_useCursorLockIconInFocusMode,
+    false,
+    nullptr,
+    AZ::ConsoleFunctorFlags::Null,
+    "Use a lock icon when the cursor is over entities that cannot be interacted with");
 
 namespace AzToolsFramework
 {
@@ -195,9 +202,12 @@ namespace AzToolsFramework
         // verify if the entity Id corresponds to an entity that is focused; if not, halt selection.
         if (entityIdUnderCursor.IsValid() && !IsSelectableAccordingToFocusMode(entityIdUnderCursor))
         {
-            ViewportInteraction::ViewportMouseCursorRequestBus::Event(
-                viewportId, &ViewportInteraction::ViewportMouseCursorRequestBus::Events::SetOverrideCursor,
-                ViewportInteraction::CursorStyleOverride::Forbidden);
+            if (ed_useCursorLockIconInFocusMode)
+            {
+                ViewportInteraction::ViewportMouseCursorRequestBus::Event(
+                    viewportId, &ViewportInteraction::ViewportMouseCursorRequestBus::Events::SetOverrideCursor,
+                    ViewportInteraction::CursorStyleOverride::Forbidden);
+            }
                 
             if (mouseInteraction.m_mouseInteraction.m_mouseButtons.Left() &&
                     mouseInteraction.m_mouseEvent == ViewportInteraction::MouseEvent::Down ||
