@@ -33,9 +33,6 @@
 
 #include <Atom/Features/SrgSemantics.azsli>
 #include <HairRenderingSrgs.azsli>
-#include <HairStrands.azsli>            // VS resides here
-#include <HairFullScreenUtils.azsli>    // Required for world coordinates calculation
-#include <HairLighting.azsli>
 
 #define AMD_TRESSFX_MAX_HAIR_GROUP_RENDER 16
 
@@ -47,6 +44,10 @@
 //! Once the compute pases are done, it is read by the rendering shaders.  
 ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
 {
+    //! This shared buffer needs to match the SharedBuffer structure  
+    //! shared between all draw calls / dispatches for the hair skinning
+    StructuredBuffer<int>   m_skinnedHairSharedBuffer;
+
     //! Per hair object material array used by the PPLL resolve pass
     //! Originally in TressFXRendering.hlsl this is space 0 
     HairObjectShadeParams   m_hairParams[AMD_TRESSFX_MAX_HAIR_GROUP_RENDER];
@@ -102,20 +103,25 @@ ShaderResourceGroup HairDynamicDataSrg : SRG_PerObject // space 1 - per instance
 };
 //------------------------------------------------------------------------------
 // Allow for the code to run with minimal changes - skinning / simulation compute passes
-
 // Usage of per-instance buffer
 #define g_GuideHairVertexPositions  HairDynamicDataSrg::m_hairVertexPositions
 #define g_GuideHairVertexTangents   HairDynamicDataSrg::m_hairVertexTangents
+//------------------------------------------------------------------------------
 
+#include <HairStrands.azsli>            // VS resides here
+#include <HairFullScreenUtils.azsli>    // Required for world coordinates calculation
+#include <HairLighting.azsli>
 
 //!=============================================================================
-//! This is the third pass of ShortCut.
-//! It is a Geometry pass that shades pixels passing early depth test. It is limited 
-//! to near fragments due to previous depth write pass that will early cull all others.
-//! Colors are accumulated in render target for a weighted average in final pass.
+//!             Geometry Shading - Third Pass of ShortCut Render
+//! Geometry pass that shades pixels that passes the early depth test. Due to this, it
+//! is limited to the stored K near fragments due to previous depth write pass that 
+//! wrote the furthest depth of the K stored depths.
+//! Colors are accumulated in the render target for a weighted average in final pass.
+//! [To Do] - in the original short cut, the alpha is taken from the depth alpha pass 
 //!=============================================================================
 [earlydepthstencil]
-float4 HairColorPS(PS_INPUT_HAIR input) : SV_Target
+float4 HairShortCutGeometryColorPS(PS_INPUT_HAIR input) : SV_Target
 {
     // Strand Color read in is either the BaseMatColor, or BaseMatColor modulated with a color read from texture 
     // on vertex shader for base color along with modulation by the tip color  
@@ -157,8 +163,10 @@ float4 HairColorPS(PS_INPUT_HAIR input) : SV_Target
 
     float2 pixelCoord = input.Position.xy;
     float depth = input.Position.z;
-    float thickess = 0.5f;  // [To Do] - this will need to be corrected somehow since this technique doesn't quite support it
-    float3 TressFXShading(pixelCoord, depth, input.Tangent.xyz, strandColor.rgb, thickness, RenderParamsIndex);
+    // [To Do] - the thickness will need to be corrected somehow since this technique doesn't 
+    // keeps track of the accumulated alpha / thickness
+    float thickness = alpha;  
+    float3 shadedFragment = TressFXShading(pixelCoord, depth, input.Tangent.xyz, strandColor.rgb, thickness, RenderParamsIndex);
 
-    return float4(color * alpha, alpha);
+    return float4(shadedFragment * alpha, alpha);
 }

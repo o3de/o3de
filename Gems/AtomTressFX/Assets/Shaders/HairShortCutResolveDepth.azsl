@@ -6,9 +6,6 @@
 *
 */
 
-//------------------------------------------------------------------------------
-// Shader code related to lighting and shadowing for TressFX
-//------------------------------------------------------------------------------
 //
 // Copyright (c) 2019 Advanced Micro Devices, Inc. All rights reserved.
 //
@@ -32,7 +29,6 @@
 //
 
 #include <Atom/Features/SrgSemantics.azsli>
-#include <HairFullScreenUtils.azsli>    // provides the Vertex Shader
 
 //!------------------------------ SRG Structure --------------------------------
 //! Per pass SRG that holds the dynamic shared read-write buffer shared 
@@ -42,14 +38,22 @@
 //! Once the compute pases are done, it is read by the rendering shaders.  
 ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
 {
-    // Originally: [[vk::binding(0, 0)]] Texture2DArray<uint> FragmentDepthsTexture : register(t0, space0);
-    Texture2DArray<uint> m_fragmentDepthsTexture; 
-}
+    // Linear depth is used for getting the screen to world transform
+    Texture2D<float>        m_linearDepth;
 
-//////////////////////////////////////////////////////////////
-//! Resolve Depth PS - second pass of ShortCut.
-//! Full-screen pass that writes the farthest of the near depths for depth culling.
-float ResolveDepthPS(VSOutput input) : SV_Depth
+    // Originally: [[vk::binding(0, 0)]] Texture2DArray<uint> FragmentDepthsTexture : register(t0, space0);
+    Texture2DArray<uint>    m_fragmentDepthsTexture; 
+}
+//------------------------------------------------------------------------------
+
+#include <HairFullScreenUtils.azsli>    // provides the Vertex Shader
+
+//!=============================================================================
+//!                 Resolve Depth - Second Pass of ShortCut
+//! Full-screen pass that writes the farthest of the stored K near depths so it 
+//! could be used for depth culling during the following geometry shading pass.
+//!=============================================================================
+float HairShortCutResolveDepthPS(VSOutput input) : SV_Depth
 {
     // Blend the layers of fragments from back to front
     int2 vScreenAddress = int2(input.m_position.xy);
