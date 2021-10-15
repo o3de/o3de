@@ -24,11 +24,14 @@
 #include <FeaturePosition.h>
 #include <FeatureTrajectory.h>
 #include <FeatureVelocity.h>
+#include <KdTree.h>
 #include <EMotionFX/Source/Node.h>
 #include <EMotionFX/Source/Parameter/FloatSliderParameter.h>
 #include <EMotionFX/Source/Parameter/ParameterFactory.h>
 #include <EMotionFX/Source/Skeleton.h>
+#include <ImGuiMonitorBus.h>
 
+#include <AzCore/Debug/Timer.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 
@@ -112,7 +115,7 @@ namespace EMotionFX
             m_leftFootVelocityData = aznew FeatureVelocity();
             m_leftFootVelocityData->SetNodeIndex(m_leftFootNodeIndex);
             m_leftFootVelocityData->SetRelativeToNodeIndex(m_rootNodeIndex);
-            m_leftFootVelocityData->SetDebugDrawColor(AZ::Colors::Teal);
+            m_leftFootVelocityData->SetDebugDrawColor(AZ::Colors::Cyan);
             m_leftFootVelocityData->SetDebugDrawEnabled(true);
             m_leftFootVelocityData->SetIncludeInKdTree(true);
             m_features.RegisterFeature(m_leftFootVelocityData);
@@ -192,7 +195,7 @@ namespace EMotionFX
 
                 for (size_t i = 0; i < spline.m_futureSplinePoints.size(); ++i)
                 {
-                    draw.DrawMarker(spline.m_futureSplinePoints[i].m_position, AZ::Colors::White, 0.02f);
+                    draw.DrawMarker(spline.m_futureSplinePoints[i].m_position, AZ::Colors::Magenta, 0.02f);
                 }
             }
 
@@ -202,12 +205,12 @@ namespace EMotionFX
                 {
                     const AZ::Vector3& posA = spline.m_pastSplinePoints[i].m_position;
                     const AZ::Vector3& posB = spline.m_pastSplinePoints[i + 1].m_position;
-                    draw.DrawLine(posA, posB, AZ::Colors::Orange);
+                    draw.DrawLine(posA, posB, AZ::Colors::Magenta);
                 }
 
                 for (size_t i = 0; i < spline.m_pastSplinePoints.size(); ++i)
                 {
-                    draw.DrawMarker(spline.m_pastSplinePoints[i].m_position, AZ::Colors::Yellow, 0.02f);
+                    draw.DrawMarker(spline.m_pastSplinePoints[i].m_position, AZ::Colors::Magenta, 0.02f);
                 }
             }
         }
@@ -218,6 +221,9 @@ namespace EMotionFX
 
         size_t LocomotionBehavior::FindLowestCostFrameIndex(BehaviorInstance* behaviorInstance, const Pose& inputPose, [[maybe_unused]] const Pose& previousPose, size_t currentFrameIndex, [[maybe_unused]] float timeDelta)
         {
+            AZ::Debug::Timer timer;
+            timer.Stamp();
+
             AZ_PROFILE_SCOPE(Animation, "LocomotionBehavior::FindLowestCostFrameIndex");
 
             // Prepare our current pose data.
@@ -268,6 +274,14 @@ namespace EMotionFX
             // Find the actual best frame.
             float minCost = FLT_MAX;
             size_t minCostFrameIndex = 0;
+
+            float minLeftFootPositionCost = 0.0f;
+            float minRightFootPositionCost = 0.0f;
+            float minLeftFootVelocityCost = 0.0f;
+            float minRightFootVelocityCost = 0.0f;
+            float minTrajectoryPastCost = 0.0f;
+            float minTrajectoryFutureCost = 0.0f;
+
             for (const size_t frameIndex : behaviorInstance->GetNearestFrames())
             {
                 const Frame& frame = m_data.GetFrame(frameIndex);
@@ -277,21 +291,24 @@ namespace EMotionFX
                     continue;
                 }
 
+                const float leftFootPositionCost = m_leftFootPositionData->CalculateFrameCost(frameIndex, leftFootPosContext);
+                const float rightFootPositionCost = m_rightFootPositionData->CalculateFrameCost(frameIndex, rightFootPosContext);
+                
+                const float leftFootVelocityCost = m_leftFootVelocityData->CalculateFrameCost(frameIndex, leftFootVelocityContext);
+                const float rightFootVelocityCost = m_rightFootVelocityData->CalculateFrameCost(frameIndex, rightFootVelocityContext);
+            
+                const float trajectoryPastCost = m_rootTrajectoryData->CalculatePastFrameCost(frameIndex, rootTrajectoryContext);
+                const float trajectoryFutureCost = m_rootTrajectoryData->CalculateFutureFrameCost(frameIndex, rootTrajectoryContext);
+
                 float totalCost =
-                    m_tweakFactors.m_footPositionFactor * m_leftFootPositionData->CalculateFrameCost(frameIndex, leftFootPosContext) +
-                    m_tweakFactors.m_footPositionFactor * m_rightFootPositionData->CalculateFrameCost(frameIndex, rightFootPosContext) +
-
-                    m_tweakFactors.m_footVelocityFactor * m_leftFootVelocityData->CalculateFrameCost(frameIndex, leftFootVelocityContext) +
-                    m_tweakFactors.m_footVelocityFactor * m_rightFootVelocityData->CalculateFrameCost(frameIndex, rightFootVelocityContext) +
-
-                    m_tweakFactors.m_rootFutureFactor * m_rootTrajectoryData->CalculateFutureFrameCost(frameIndex, rootTrajectoryContext) +
-                    m_tweakFactors.m_rootPastFactor * m_rootTrajectoryData->CalculatePastFrameCost(frameIndex, rootTrajectoryContext);
-
-                    //m_tweakFactors.m_rootDirectionFactor * m_rootDirectionData->CalculateFrameCost(frameIndex, rootDirectionContext);
+                    m_factorWeights.m_footPositionFactor * leftFootPositionCost + m_factorWeights.m_footPositionFactor * rightFootPositionCost + // foot position
+                    m_factorWeights.m_footVelocityFactor * leftFootVelocityCost + m_factorWeights.m_footVelocityFactor * rightFootVelocityCost + // foot velocity
+                    m_factorWeights.m_rootPastFactor * trajectoryPastCost + m_factorWeights.m_rootFutureFactor * trajectoryFutureCost; // trajectory
+                    //m_factorWeights.m_rootDirectionFactor * m_rootDirectionData->CalculateFrameCost(frameIndex, rootDirectionContext);
 
                 if (frame.GetSourceMotion() != currentFrame.GetSourceMotion())
                 {
-                    totalCost *= m_tweakFactors.m_differentMotionFactor;
+                    totalCost *= m_factorWeights.m_differentMotionFactor;
                 }
 
                 // Track the minimum cost value and frame.
@@ -299,8 +316,34 @@ namespace EMotionFX
                 {
                     minCost = totalCost;
                     minCostFrameIndex = frameIndex;
+
+                    minLeftFootPositionCost = leftFootPositionCost;
+                    minRightFootPositionCost = rightFootPositionCost;
+                    minLeftFootVelocityCost = leftFootVelocityCost;
+                    minRightFootVelocityCost = rightFootVelocityCost;
+                    minTrajectoryPastCost = trajectoryPastCost;
+                    minTrajectoryFutureCost = trajectoryFutureCost;
                 }
             }
+
+            const float time = timer.GetDeltaTimeInSeconds();
+            ImGuiMonitorRequestBus::Broadcast(&ImGuiMonitorRequests::PushPerformanceHistogramValue, "FindLowestCostFrameIndex", time * 1000.0f);
+
+            ImGuiMonitorRequestBus::Broadcast(&ImGuiMonitorRequests::PushCostHistogramValue, "Left Foot Position Cost", minLeftFootPositionCost);
+            ImGuiMonitorRequestBus::Broadcast(&ImGuiMonitorRequests::PushCostHistogramValue, "Right Foot Position Cost", minRightFootPositionCost);
+            ImGuiMonitorRequestBus::Broadcast(&ImGuiMonitorRequests::PushCostHistogramValue, "Left Foot Velocity Cost", minLeftFootVelocityCost);
+            ImGuiMonitorRequestBus::Broadcast(&ImGuiMonitorRequests::PushCostHistogramValue, "Right Foot Velocity Cost", minRightFootVelocityCost);
+            ImGuiMonitorRequestBus::Broadcast(&ImGuiMonitorRequests::PushCostHistogramValue, "Trajectory Past Cost", minTrajectoryPastCost);
+            ImGuiMonitorRequestBus::Broadcast(&ImGuiMonitorRequests::PushCostHistogramValue, "Trajectory Future Cost", minTrajectoryFutureCost);
+            ImGuiMonitorRequestBus::Broadcast(&ImGuiMonitorRequests::PushCostHistogramValue, "Total Cost", minCost);
+
+            ImGuiMonitorRequestBus::Broadcast(&ImGuiMonitorRequests::SetKdTreeMemoryUsage, m_features.GetKdTree().CalcMemoryUsageInBytes());
+            ImGuiMonitorRequestBus::Broadcast(&ImGuiMonitorRequests::SetKdTreeNumNodes, m_features.GetKdTree().GetNumNodes());
+            ImGuiMonitorRequestBus::Broadcast(&ImGuiMonitorRequests::SetKdTreeNumDimensions, m_features.GetKdTree().GetNumDimensions());
+
+            ImGuiMonitorRequestBus::Broadcast(&ImGuiMonitorRequests::SetFeatureMatrixMemoryUsage, m_features.GetFeatureMatrix().CalcMemoryUsageInBytes());
+            ImGuiMonitorRequestBus::Broadcast(&ImGuiMonitorRequests::SetFeatureMatrixNumFrames, m_features.GetFeatureMatrix().rows());
+            ImGuiMonitorRequestBus::Broadcast(&ImGuiMonitorRequests::SetFeatureMatrixNumComponents, m_features.GetFeatureMatrix().cols());
 
             //AZ_Printf("EMotionFX", "Frame %d = %f    %f/%f   %d nearest",
             //    minCostFrameIndex,

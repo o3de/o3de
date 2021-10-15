@@ -31,6 +31,7 @@ ly_add_target(
             AZ::AzCore
             AZ::AzFramework
             Gem::EMotionFXStaticLib
+            Gem::ImguiAtom.Static
 )
 
 # Here add MotionMatching target, it depends on the MotionMatching.Static
@@ -48,6 +49,8 @@ ly_add_target(
     BUILD_DEPENDENCIES
         PRIVATE
             Gem::MotionMatching.Static
+            Gem::ImGui.Static
+            Gem::ImGui.ImGuiLYUtils
 )
 
 # By default, we will specify that the above target MotionMatching would be used by

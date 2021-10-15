@@ -18,6 +18,7 @@
 #include <BehaviorInstance.h>
 #include <LocomotionBehavior.h>
 #include <TrajectoryHistory.h>
+#include <ImGuiMonitor.h>
 
 namespace EMotionFX
 {
@@ -109,9 +110,11 @@ namespace EMotionFX
             bool m_mirror = false;
 
             AZ::Debug::Timer m_timer;
-            float m_updateTime = 0.0f;
-            float m_postUpdateTime = 0.0f;
-            float m_outputTime = 0.0f;
+            float m_updateTimeInMs = 0.0f;
+            float m_postUpdateTimeInMs = 0.0f;
+            float m_outputTimeInMs = 0.0f;
+
+            ImGuiMonitor m_imguiMonitor;
         };
     } // namespace MotionMatching
 } // namespace EMotionFX

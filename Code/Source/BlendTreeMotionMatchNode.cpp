@@ -163,7 +163,9 @@ namespace EMotionFX
             uniqueData->Clear();
             if (uniqueData->GetHasError())
             {
-                m_updateTime = 0.0f;
+                m_updateTimeInMs = 0.0f;
+                m_postUpdateTimeInMs = 0.0f;
+                m_outputTimeInMs = 0.0f;
                 return;
             }
 
@@ -194,7 +196,7 @@ namespace EMotionFX
                 
             //AZ_Printf("EMotionFX", "%f, %f    =    %f", uniqueData->GetPreSyncTime(), uniqueData->GetCurrentPlayTime(), uniqueData->GetCurrentPlayTime() - uniqueData->GetPreSyncTime());
             
-            m_updateTime = m_timer.GetDeltaTimeInSeconds();
+            m_updateTimeInMs = m_timer.GetDeltaTimeInSeconds() * 1000.0f;
         }
 
         void BlendTreeMotionMatchNode::PostUpdate(AnimGraphInstance* animGraphInstance, float timePassedInSeconds)
@@ -234,7 +236,7 @@ namespace EMotionFX
             data->SetTrajectoryDelta(trajectoryDelta);
             data->SetTrajectoryDeltaMirrored(trajectoryDelta); // TODO: use a real mirrored version here.
 
-            m_postUpdateTime = m_timer.GetDeltaTimeInSeconds();
+            m_postUpdateTimeInMs = m_timer.GetDeltaTimeInSeconds() * 1000.0f;
         }
 
         void BlendTreeMotionMatchNode::Output(AnimGraphInstance* animGraphInstance)
@@ -273,14 +275,14 @@ namespace EMotionFX
             Pose& outTransformPose = outputPose->GetPose();
 
             MotionMatching::LocomotionBehavior* behavior = uniqueData->m_behavior;
-            MotionMatching::LocomotionBehavior::TweakFactors& factors = behavior->GetTweakFactors();
+            MotionMatching::LocomotionBehavior::FactorWeights& factors = behavior->GetFactorWeights();
             factors.m_footPositionFactor = m_footPositionFactor;
             factors.m_footVelocityFactor = m_footVelocityFactor;
             factors.m_rootFutureFactor = m_rootFutureFactor;
             factors.m_rootPastFactor = m_rootPastFactor;
             factors.m_differentMotionFactor = m_differentMotionFactor;
             factors.m_rootDirectionFactor = m_rootDirectionFactor;
-            behavior->SetTweakFactors(factors);
+            behavior->SetFactorWeights(factors);
 
             MotionMatching::BehaviorInstance* behaviorInstance = uniqueData->m_behaviorInstance;
             behaviorInstance->SetLowestCostSearchFrequency(m_lowestCostSearchFrequency);
@@ -290,19 +292,15 @@ namespace EMotionFX
             if (GetEMotionFX().GetIsInEditorMode() && GetCanVisualize(animGraphInstance))
             {
                 uniqueData->m_behaviorInstance->DebugDraw();
-                //uniqueData->m_rootHistory.DebugDraw(actorInstance, AZ::Colors::Red);
-                //uniqueData->m_rootHistory.DebugDrawSampled(actorInstance, 6, AZ::Colors::Orange);
-                //actorInstance->DrawSkeleton(outTransformPose, mVisualizeColor);
             }
 
-            m_outputTime = m_timer.GetDeltaTimeInSeconds();
-
-            static int counter = 0;
-            counter++;
-            if (counter > 10)
+            // Performance metrics
+            m_outputTimeInMs = m_timer.GetDeltaTimeInSeconds() * 1000.0f;
             {
-                AZ_Printf("MotionMatch", "Update = %.2f, PostUpdate = %.2f, Output = %.2f", m_updateTime * 1000.0f, m_postUpdateTime * 1000.0f, m_outputTime * 1000.0f);
-                counter = 0;
+                //AZ_Printf("MotionMatch", "Update = %.2f, PostUpdate = %.2f, Output = %.2f", m_updateTime, m_postUpdateTime, m_outputTime);
+                ImGuiMonitorRequestBus::Broadcast(&ImGuiMonitorRequests::PushPerformanceHistogramValue, "Update", m_updateTimeInMs);
+                ImGuiMonitorRequestBus::Broadcast(&ImGuiMonitorRequests::PushPerformanceHistogramValue, "Post Update", m_postUpdateTimeInMs);
+                ImGuiMonitorRequestBus::Broadcast(&ImGuiMonitorRequests::PushPerformanceHistogramValue, "Output", m_outputTimeInMs);
             }
         }
 

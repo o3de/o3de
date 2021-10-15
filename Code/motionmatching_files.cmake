@@ -32,6 +32,9 @@ set(FILES
     Source/TrajectoryHistory.h
     Source/FrameDatabase.cpp
     Source/FrameDatabase.h
+    Source/ImGuiMonitor.cpp
+    Source/ImGuiMonitor.h
+    Source/ImGuiMonitorBus.h
     Source/KdTree.cpp
     Source/KdTree.h
     Source/LocomotionBehavior.cpp

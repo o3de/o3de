@@ -100,6 +100,7 @@ namespace EMotionFX
                 totalBytes += node->m_frames.capacity() * sizeof(size_t);
             }
 
+            totalBytes += m_frameFloats.capacity() * sizeof(float);
             totalBytes += sizeof(KdTree);
             return totalBytes;
         }
@@ -107,6 +108,11 @@ namespace EMotionFX
         bool KdTree::IsInitialized() const
         {
             return (m_numDimensions != 0);
+        }
+
+        size_t KdTree::GetNumNodes() const
+        {
+            return m_nodes.size();
         }
 
         size_t KdTree::GetNumDimensions() const

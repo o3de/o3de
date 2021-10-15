@@ -109,7 +109,7 @@ namespace EMotionFX
             float totalCost = 0.0f;
             totalCost += 2.0f - (1.0f + dotResult);
             //totalCost *= speedDiff;
-            return totalCost;
+            return AZ::GetAbs(totalCost);
         }
 
         void FeatureVelocity::Reflect(AZ::ReflectContext* context)
