@@ -59,22 +59,22 @@ namespace PhysX
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &D6JointLimitConfiguration::m_swingLimitY, "Swing limit Y",
-                        "Maximum angle from the Y axis of the joint frame")
+                        "The rotation angle limit around the joint's Y axis.")
                     ->Attribute(AZ::Edit::Attributes::Suffix, " degrees")
                     ->Attribute(AZ::Edit::Attributes::Min, JointConstants::MinSwingLimitDegrees)
                     ->Attribute(AZ::Edit::Attributes::Max, 180.0f)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &D6JointLimitConfiguration::m_swingLimitZ, "Swing limit Z",
-                        "Maximum angle from the Z axis of the joint frame")
+                        "The rotation angle limit around the joint's Z axis.")
                     ->Attribute(AZ::Edit::Attributes::Suffix, " degrees")
                     ->Attribute(AZ::Edit::Attributes::Min, JointConstants::MinSwingLimitDegrees)
                     ->Attribute(AZ::Edit::Attributes::Max, 180.0f)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &D6JointLimitConfiguration::m_twistLimitLower, "Twist lower limit",
-                        "Lower limit for rotation about the X axis of the joint frame")
+                        "The lower rotation angle limit around the joint's X axis.")
                     ->Attribute(AZ::Edit::Attributes::Suffix, " degrees")
                     ->Attribute(AZ::Edit::Attributes::Min, -180.0f)
                     ->Attribute(AZ::Edit::Attributes::Max, 180.0f)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &D6JointLimitConfiguration::m_twistLimitUpper, "Twist upper limit",
-                        "Upper limit for rotation about the X axis of the joint frame")
+                        "The upper rotation angle limit around the joint's X axis.")
                     ->Attribute(AZ::Edit::Attributes::Suffix, " degrees")
                     ->Attribute(AZ::Edit::Attributes::Min, -180.0f)
                     ->Attribute(AZ::Edit::Attributes::Max, 180.0f)
