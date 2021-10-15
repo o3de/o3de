@@ -87,10 +87,8 @@ namespace AzToolsFramework
             // Put your public methods here
 
             virtual const AZStd::vector<ClassSymbol>& GetListOfClasses() = 0;
-
             virtual const AZStd::vector<PropertySymbol>& GetListOfGlobalProperties() = 0;
             virtual const AZStd::vector<MethodSymbol>& GetListOfGlobalFunctions() = 0;
-
             virtual const AZStd::vector<EBusSymbol>& GetListOfEBuses() = 0;
 
         };

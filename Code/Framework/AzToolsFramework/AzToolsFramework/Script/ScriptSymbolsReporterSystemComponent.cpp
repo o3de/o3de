@@ -140,6 +140,20 @@ namespace AzToolsFramework
             }
         }
 
+        //! This local class helps us keeping private the sensitive data in SymbolsReporterSystemComponent
+        //! Used inside the function pointers for several AZ::SciptContextDebug::Enumerate* functions.
+        class IntrusiveHelper
+        {
+        public:
+            // Technically private functions, but made public so lambdas get access to the data.
+            static AZStd::vector<ClassSymbol>& GetClassSymbols(SymbolsReporterSystemComponent& symbolsReporter) { return symbolsReporter.m_classSymbols; }
+            static AZStd::unordered_map<AZ::Uuid, size_t>& GetClassUuidToIndexMap(SymbolsReporterSystemComponent& symbolsReporter) { return symbolsReporter.m_classUuidToIndexMap; }
+            static AZStd::vector<PropertySymbol>& GetGlobalPropertySymbols(SymbolsReporterSystemComponent& symbolsReporter) { return symbolsReporter.m_globalPropertySymbols; }
+            static AZStd::vector<MethodSymbol>& GetGlobalFunctionSymbols(SymbolsReporterSystemComponent& symbolsReporter) { return symbolsReporter.m_globalFunctionSymbols; }
+            static AZStd::vector<EBusSymbol>& GetEBusSymbols(SymbolsReporterSystemComponent& symbolsReporter) { return symbolsReporter.m_ebusSymbols; }
+            static AZStd::unordered_map<AZStd::string, size_t>& GetEBusNameToIndexMap(SymbolsReporterSystemComponent& symbolsReporter) { return symbolsReporter.m_ebusNameToIndexMap; }
+        };
+
         void SymbolsReporterSystemComponent::Reflect(AZ::ReflectContext* context)
         {
             PropertySymbol::Reflect(context);
@@ -239,7 +253,7 @@ namespace AzToolsFramework
             auto enumMethodFunc = +[]([[maybe_unused]] const AZ::Uuid* classTypeId, [[maybe_unused]] const char* methodName, [[maybe_unused]] const char* debugArgumentInfo, [[maybe_unused]] void* userData) -> bool
             {
                 auto& mySelf = *reinterpret_cast<SymbolsReporterSystemComponent*>(userData);
-                auto& methodSymbols = mySelf.GetGlobalFunctionSymbols();
+                auto& methodSymbols = IntrusiveHelper::GetGlobalFunctionSymbols(mySelf);
                 methodSymbols.push_back({});
                 auto& methodSymbol = methodSymbols.back();
                 methodSymbol.m_name = methodName;
@@ -253,7 +267,7 @@ namespace AzToolsFramework
             auto enumPropertyFunc = +[]([[maybe_unused]] const AZ::Uuid* classTypeId, [[maybe_unused]] const char* propertyName, [[maybe_unused]] bool canRead, [[maybe_unused]] bool canWrite, [[maybe_unused]] void* userData) -> bool
             {
                 auto& mySelf = *reinterpret_cast<SymbolsReporterSystemComponent*>(userData);
-                auto& propertySymbols = mySelf.GetGlobalPropertySymbols();
+                auto& propertySymbols = IntrusiveHelper::GetGlobalPropertySymbols(mySelf);
                 propertySymbols.push_back({});
                 auto& propertySymbol = propertySymbols.back();
                 propertySymbol.m_name = propertyName;
@@ -295,13 +309,13 @@ namespace AzToolsFramework
             {
                 auto& mySelf = *reinterpret_cast<SymbolsReporterSystemComponent*>(userData);
 
-                auto& classSymbols =  mySelf.GetClassSymbols();
+                auto& classSymbols =  IntrusiveHelper::GetClassSymbols(mySelf);
                 classSymbols.push_back({});
                 auto& classSymbol = classSymbols.back();
                 classSymbol.m_name = className;
                 classSymbol.m_typeId = classTypeId;
 
-                auto& uuidToClassMap = mySelf.GetClassUuidToIndexMap();
+                auto& uuidToClassMap = IntrusiveHelper::GetClassUuidToIndexMap(mySelf);
                 uuidToClassMap.emplace(classTypeId, classSymbols.size() - 1);
 
                 return true;
@@ -310,7 +324,7 @@ namespace AzToolsFramework
             auto enumMethodFunc = +[]([[maybe_unused]] const AZ::Uuid* classTypeId, [[maybe_unused]] const char* methodName, [[maybe_unused]] const char* debugArgumentInfo, [[maybe_unused]] void* userData) -> bool
             {
                 auto& mySelf = *reinterpret_cast<SymbolsReporterSystemComponent*>(userData);
-                auto& classUuidToIndexMap = mySelf.GetClassUuidToIndexMap();
+                auto& classUuidToIndexMap = IntrusiveHelper::GetClassUuidToIndexMap(mySelf);
                 auto itor = classUuidToIndexMap.find(*classTypeId);
                 if (itor == classUuidToIndexMap.end())
                 {
@@ -319,7 +333,7 @@ namespace AzToolsFramework
                 }
 
                 auto classIndex = itor->second;
-                auto& classSymbols = mySelf.GetClassSymbols();
+                auto& classSymbols = IntrusiveHelper::GetClassSymbols(mySelf);
                 auto& classSymbol = classSymbols[classIndex];
                 classSymbol.m_methods.push_back({});
                 auto& methodSymbol = classSymbol.m_methods.back();
@@ -334,7 +348,7 @@ namespace AzToolsFramework
             auto enumPropertyFunc = +[]([[maybe_unused]] const AZ::Uuid* classTypeId, [[maybe_unused]] const char* propertyName, [[maybe_unused]] bool canRead, [[maybe_unused]] bool canWrite, [[maybe_unused]] void* userData) -> bool
             {
                 auto& mySelf = *reinterpret_cast<SymbolsReporterSystemComponent*>(userData);
-                auto& classUuidToIndexMap = mySelf.GetClassUuidToIndexMap();
+                auto& classUuidToIndexMap = IntrusiveHelper::GetClassUuidToIndexMap(mySelf);
                 auto itor = classUuidToIndexMap.find(*classTypeId);
                 if (itor == classUuidToIndexMap.end())
                 {
@@ -343,7 +357,7 @@ namespace AzToolsFramework
                 }
 
                 auto classIndex = itor->second;
-                auto& classSymbols = mySelf.GetClassSymbols();
+                auto& classSymbols = IntrusiveHelper::GetClassSymbols(mySelf);
                 auto& classSymbol = classSymbols[classIndex];
                 classSymbol.m_properties.push_back({});
                 auto& propertySymbol = classSymbol.m_properties.back();
@@ -410,7 +424,7 @@ namespace AzToolsFramework
             {
                 auto& mySelf = *reinterpret_cast<SymbolsReporterSystemComponent*>(userData);
 
-                auto& ebusSymbols = mySelf.GetEBusSymbols();
+                auto& ebusSymbols = IntrusiveHelper::GetEBusSymbols(mySelf);
                 ebusSymbols.push_back({});
                 auto& ebusSymbol = ebusSymbols.back();
                 ebusSymbol.m_name = ebusName;
@@ -418,7 +432,7 @@ namespace AzToolsFramework
                 ebusSymbol.m_canQueue = canQueue;
                 ebusSymbol.m_hasHandler = hasHandler;
 
-                auto& nameToIndexMap = mySelf.GetEBusNameToIndexMap();
+                auto& nameToIndexMap = IntrusiveHelper::GetEBusNameToIndexMap(mySelf);
                 nameToIndexMap.emplace(ebusName, ebusSymbols.size() - 1);
 
                 return true;
@@ -427,7 +441,7 @@ namespace AzToolsFramework
             auto enumEBusSenderFunc = +[](const AZStd::string& ebusName, const AZStd::string& senderName, const AZStd::string& debugArgumentInfo, const AZStd::string& category, void* userData) -> bool
             {
                 auto& mySelf = *reinterpret_cast<SymbolsReporterSystemComponent*>(userData);
-                auto& nameToIndexMap = mySelf.GetEBusNameToIndexMap();
+                auto& nameToIndexMap = IntrusiveHelper::GetEBusNameToIndexMap(mySelf);
                 auto itor = nameToIndexMap.find(ebusName);
                 if (itor == nameToIndexMap.end())
                 {
@@ -436,7 +450,7 @@ namespace AzToolsFramework
                 }
 
                 auto ebusIndex = itor->second;
-                auto& ebusSymbols = mySelf.GetEBusSymbols();
+                auto& ebusSymbols = IntrusiveHelper::GetEBusSymbols(mySelf);
                 auto& ebusSymbol = ebusSymbols[ebusIndex];
 
                 ebusSymbol.m_senders.push_back({});
