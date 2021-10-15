@@ -567,13 +567,15 @@ namespace Terrain
                         ShaderMacroMaterialData& shaderData = macroMaterialData.at(i);
                         const AZ::Aabb& materialBounds = materialData.m_bounds;
 
+                        // Use reverse coordinates (1 - y) for the y direction so that the lower left corner of the macro material images
+                        // map to the lower left corner in world space.  This will match up with the height uv coordinate mapping.
                         shaderData.m_uvMin = {
                             (xPatch - materialBounds.GetMin().GetX()) / materialBounds.GetXExtent(),
-                            (yPatch - materialBounds.GetMin().GetY()) / materialBounds.GetYExtent()
+                            1.0f - ((yPatch - materialBounds.GetMin().GetY()) / materialBounds.GetYExtent())
                         };
                         shaderData.m_uvMax = {
                             ((xPatch + GridMeters) - materialBounds.GetMin().GetX()) / materialBounds.GetXExtent(),
-                            ((yPatch + GridMeters) - materialBounds.GetMin().GetY()) / materialBounds.GetYExtent()
+                            1.0f - (((yPatch + GridMeters) - materialBounds.GetMin().GetY()) / materialBounds.GetYExtent())
                         };
                         shaderData.m_normalFactor = materialData.m_normalFactor;
                         shaderData.m_flipNormalX = materialData.m_normalFlipX;
