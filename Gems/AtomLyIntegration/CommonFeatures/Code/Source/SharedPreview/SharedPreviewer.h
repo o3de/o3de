@@ -5,22 +5,23 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+
 #pragma once
 
 #if !defined(Q_MOC_RUN)
-#include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/Asset/AssetCommon.h>
+#include <AzCore/Memory/SystemAllocator.h>
 #include <AzToolsFramework/AssetBrowser/Previewer/Previewer.h>
 
 AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option") // disable warnings spawned by QT
-#include <QWidget>
 #include <QScopedPointer>
+#include <QWidget>
 AZ_POP_DISABLE_WARNING
 #endif
 
 namespace Ui
 {
-    class CommonPreviewerClass;
+    class SharedPreviewerClass;
 }
 
 namespace AzToolsFramework
@@ -30,8 +31,8 @@ namespace AzToolsFramework
         class ProductAssetBrowserEntry;
         class SourceAssetBrowserEntry;
         class AssetBrowserEntry;
-    }
-}
+    } // namespace AssetBrowser
+} // namespace AzToolsFramework
 
 class QResizeEvent;
 
@@ -39,18 +40,17 @@ namespace AZ
 {
     namespace LyIntegration
     {
-        class CommonPreviewer final
-            : public AzToolsFramework::AssetBrowser::Previewer
+        class SharedPreviewer final : public AzToolsFramework::AssetBrowser::Previewer
         {
             Q_OBJECT
         public:
-            AZ_CLASS_ALLOCATOR(CommonPreviewer, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(SharedPreviewer, AZ::SystemAllocator, 0);
 
-            explicit CommonPreviewer(QWidget* parent = nullptr);
-            ~CommonPreviewer();
+            explicit SharedPreviewer(QWidget* parent = nullptr);
+            ~SharedPreviewer();
 
             // AzToolsFramework::AssetBrowser::Previewer overrides...
-            void Clear() const override {}
+            void Clear() const override;
             void Display(const AzToolsFramework::AssetBrowser::AssetBrowserEntry* entry) override;
             const QString& GetName() const override;
 
@@ -60,9 +60,9 @@ namespace AZ
         private:
             void UpdateFileInfo() const;
 
-            QScopedPointer<Ui::CommonPreviewerClass> m_ui;
+            QScopedPointer<Ui::SharedPreviewerClass> m_ui;
             QString m_fileInfo;
-            QString m_name = "CommonPreviewer";
+            QString m_name = "SharedPreviewer";
         };
     } // namespace LyIntegration
 } // namespace AZ

@@ -5,6 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+
 #pragma once
 
 #include <AzCore/Memory/SystemAllocator.h>
@@ -18,14 +19,13 @@ namespace AZ
 {
     namespace LyIntegration
     {
-        class CommonPreviewerFactory final
-            : public AzToolsFramework::AssetBrowser::PreviewerFactory
+        class SharedPreviewerFactory final : public AzToolsFramework::AssetBrowser::PreviewerFactory
         {
         public:
-            AZ_CLASS_ALLOCATOR(CommonPreviewerFactory, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(SharedPreviewerFactory, AZ::SystemAllocator, 0);
 
-            CommonPreviewerFactory() = default;
-            ~CommonPreviewerFactory() = default;
+            SharedPreviewerFactory() = default;
+            ~SharedPreviewerFactory() = default;
 
             // AzToolsFramework::AssetBrowser::PreviewerFactory overrides...
             AzToolsFramework::AssetBrowser::Previewer* CreatePreviewer(QWidget* parent = nullptr) const override;
@@ -33,7 +33,7 @@ namespace AZ
             const QString& GetName() const override;
 
         private:
-            QString m_name = "CommonPreviewer";
+            QString m_name = "SharedPreviewer";
         };
     } // namespace LyIntegration
 } // namespace AZ
