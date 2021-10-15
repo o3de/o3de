@@ -313,7 +313,8 @@ namespace AzToolsFramework
         StyledTreeView::StartCustomDrag(indexListSorted, supportedActions);
     }
 
-    void EntityOutlinerTreeView::OnEditorFocusChanged([[maybe_unused]] AZ::EntityId entityId)
+    void EntityOutlinerTreeView::OnEditorFocusChanged(
+        [[maybe_unused]] AZ::EntityId previousFocusEntityId, [[maybe_unused]] AZ::EntityId newFocusEntityId)
     {
         viewport()->repaint();
     }

@@ -90,7 +90,6 @@ namespace AzToolsFramework
 
         void SetComponentOverridden(const bool overridden);
 
-        // Calls match EditorComponentModeNotificationBus - called from EntityPropertyEditor
         void EnteredComponentMode(const AZStd::vector<AZ::Uuid>& componentModeTypes);
         void LeftComponentMode(const AZStd::vector<AZ::Uuid>& componentModeTypes);
         void ActiveComponentModeChanged(const AZ::Uuid& componentType);

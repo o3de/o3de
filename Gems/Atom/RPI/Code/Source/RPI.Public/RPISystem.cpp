@@ -263,7 +263,7 @@ namespace AZ
             AZ::TickRequestBus::BroadcastResult(m_tickTime.m_gameDeltaTime, &AZ::TickRequestBus::Events::GetTickDeltaTime);
             ScriptTimePoint currentTime;
             AZ::TickRequestBus::BroadcastResult(currentTime, &AZ::TickRequestBus::Events::GetTimeAtCurrentTick);
-            m_tickTime.m_currentGameTime = static_cast<float>(currentTime.GetMilliseconds());
+            m_tickTime.m_currentGameTime = static_cast<float>(currentTime.GetSeconds());
         }
 
         void RPISystem::RenderTick()
