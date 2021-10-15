@@ -11,9 +11,11 @@
 #include <AzCore/Memory/SystemAllocator.h>
 
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
+#include <AzToolsFramework/Entity/EditorEntityInfoBus.h>
 #include <AzToolsFramework/FocusMode/FocusModeInterface.h>
 #include <AzToolsFramework/Prefab/PrefabFocusInterface.h>
 #include <AzToolsFramework/Prefab/PrefabFocusPublicInterface.h>
+#include <AzToolsFramework/Prefab/PrefabPublicNotificationBus.h>
 #include <AzToolsFramework/Prefab/Template/Template.h>
 
 namespace AzToolsFramework
@@ -30,7 +32,9 @@ namespace AzToolsFramework::Prefab
     class PrefabFocusHandler final
         : private PrefabFocusInterface
         , private PrefabFocusPublicInterface
+        , private PrefabPublicNotificationBus::Handler
         , private EditorEntityContextNotificationBus::Handler
+        , private EditorEntityInfoNotificationBus::Handler
     {
     public:
         AZ_CLASS_ALLOCATOR(PrefabFocusHandler, AZ::SystemAllocator, 0);
@@ -54,11 +58,18 @@ namespace AzToolsFramework::Prefab
         const int GetPrefabFocusPathLength(AzFramework::EntityContextId entityContextId) const override;
 
         // EditorEntityContextNotificationBus overrides ...
-        void OnEntityStreamLoadSuccess() override;
+        void OnContextReset() override;
+        
+        // EditorEntityInfoNotificationBus overrides ...
+        void OnEntityInfoUpdatedName(AZ::EntityId entityId, const AZStd::string& name) override;
+
+        // PrefabPublicNotifications overrides ...
+        void OnPrefabInstancePropagationEnd();
 
     private:
         PrefabFocusOperationResult FocusOnPrefabInstance(InstanceOptionalReference focusedInstance);
         void RefreshInstanceFocusList();
+        void RefreshInstanceFocusPath();
 
         void OpenInstanceContainers(const AZStd::vector<InstanceOptionalReference>& instances) const;
         void CloseInstanceContainers(const AZStd::vector<InstanceOptionalReference>& instances) const;
