@@ -19,7 +19,8 @@ namespace AZ
 {
     namespace LyIntegration
     {
-        //! Custom thumbnail that detects when an asset changes and updates the thumbnail
+        //! Custom thumbnail for most common Atom assets
+        //! Detects asset changes and updates the thumbnail
         class SharedThumbnail final
             : public AzToolsFramework::Thumbnailer::Thumbnail
             , public AzToolsFramework::Thumbnailer::ThumbnailerRendererNotificationBus::Handler
@@ -46,7 +47,7 @@ namespace AZ
             AZ::Uuid m_typeId;
         };
 
-        //! Cache configuration for large thumbnails
+        //! Cache configuration for shared thumbnails
         class SharedThumbnailCache final : public AzToolsFramework::Thumbnailer::ThumbnailCache<SharedThumbnail>
         {
         public:
@@ -56,7 +57,7 @@ namespace AZ
             int GetPriority() const override;
             const char* GetProviderName() const override;
 
-            static constexpr const char* ProviderName = "Common Feature Shared Thumbnail= Provider";
+            static constexpr const char* ProviderName = "Common Feature Shared Thumbnail Provider";
 
         protected:
             bool IsSupportedThumbnail(AzToolsFramework::Thumbnailer::SharedThumbnailKey key) const override;
