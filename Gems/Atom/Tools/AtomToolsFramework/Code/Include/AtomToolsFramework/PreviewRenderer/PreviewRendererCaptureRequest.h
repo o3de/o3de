@@ -10,6 +10,9 @@
 
 #include <AtomToolsFramework/PreviewRenderer/PreviewContent.h>
 #include <AzCore/Memory/Memory.h>
+#include <AzCore/Memory/SystemAllocator.h>
+#include <AzCore/std/functional.h>
+#include <AzCore/std/smart_ptr/shared_ptr.h>
 
 class QPixmap;
 
