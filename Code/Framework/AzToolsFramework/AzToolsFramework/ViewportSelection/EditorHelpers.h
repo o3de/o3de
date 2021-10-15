@@ -9,11 +9,11 @@
 #pragma once
 
 #include <AzCore/Component/EntityId.h>
-#include <AzCore/Component/TickBus.h>
 #include <AzCore/Memory/Memory.h>
 #include <AzCore/std/functional.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzFramework/Viewport/ScreenGeometry.h>
+#include <AzToolsFramework/ViewportSelection/InvalidClicks.h>
 
 namespace AzFramework
 {
@@ -35,7 +35,7 @@ namespace AzToolsFramework
     //! EditorHelpers are the visualizations that appear for entities
     //! when 'Display Helpers' is toggled on inside the editor.
     //! These include but are not limited to entity icons and shape visualizations.
-    class EditorHelpers : private AZ::TickBus::Handler
+    class EditorHelpers
     {
     public:
         AZ_CLASS_ALLOCATOR_DECL
@@ -71,9 +71,6 @@ namespace AzToolsFramework
         bool IsSelectableInViewport(AZ::EntityId entityId) const;
 
     private:
-        //! AZ::TickBus overrides ...
-        void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
-
         //! Returns whether the entityId can be selected in the viewport according
         //! to the current Editor Focus Mode setup.
         bool IsSelectableAccordingToFocusMode(AZ::EntityId entityId) const;
@@ -82,19 +79,7 @@ namespace AzToolsFramework
         //! to the current Container Entity setup.
         bool IsSelectableAccordingToContainerEntities(AZ::EntityId entityId) const;
 
-        //! Stores a circle representation with a lifetime to grow and fade out over time.
-        struct DecayingCircle
-        {
-            AzFramework::ScreenPoint m_position;
-            float m_radius;
-            float m_opacity;
-        };
-
-        using DecayingCircles = AZStd::vector<DecayingCircle>;
-        DecayingCircles m_decayingCircles; //!< Collection of decaying circles to draw for clicks that have not effect.
-
-        float m_toastMessage = 1.5f; //!< The time to display the invalid click message.
-        AzFramework::ScreenPoint m_invalidClickPosition; //!< The position to display the invalid click message.
+        AZStd::unique_ptr<InvalidClicks> m_invalidClicks; //!< Display for invalid click behavior.
 
         const EditorVisibleEntityDataCache* m_entityDataCache = nullptr; //!< Entity Data queried by the EditorHelpers.
         const FocusModeInterface* m_focusModeInterface = nullptr; //!< API to interact with focus mode functionality.

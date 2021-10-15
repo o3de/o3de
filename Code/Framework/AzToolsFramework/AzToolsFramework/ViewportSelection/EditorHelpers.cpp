@@ -124,6 +124,11 @@ namespace AzToolsFramework
             "EditorHelpers - "
             "Focus Mode Interface could not be found. "
             "Check that it is being correctly initialized.");
+
+        AZStd::vector<AZStd::unique_ptr<InvalidClick>> invalidClicks;
+        invalidClicks.push_back(AZStd::make_unique<FadingText>("Not in focus"));
+        invalidClicks.push_back(AZStd::make_unique<ExpandingFadingCircles>());
+        m_invalidClicks = AZStd::make_unique<InvalidClicks>(AZStd::move(invalidClicks));
     }
 
     AZ::EntityId EditorHelpers::HandleMouseInteraction(
@@ -194,17 +199,7 @@ namespace AzToolsFramework
                     mouseInteraction.m_mouseEvent == ViewportInteraction::MouseEvent::Down ||
                 mouseInteraction.m_mouseEvent == ViewportInteraction::MouseEvent::DoubleClick)
             {
-                AZ::TickBus::Handler::BusConnect();
-
-                DecayingCircle decayingCircle;
-                decayingCircle.m_position = mouseInteraction.m_mouseInteraction.m_mousePick.m_screenCoordinates;
-                decayingCircle.m_opacity = 1.0f;
-                decayingCircle.m_radius = 0.0f;
-
-                m_decayingCircles.push_back(decayingCircle);
-
-                m_toastMessage = 1.0f;
-                m_invalidClickPosition = mouseInteraction.m_mouseInteraction.m_mousePick.m_screenCoordinates;
+                m_invalidClicks->AddInvalidClick(mouseInteraction.m_mouseInteraction.m_mousePick.m_screenCoordinates);
             }
 
             return AZ::EntityId();
@@ -220,56 +215,10 @@ namespace AzToolsFramework
         return entityIdUnderCursor;
     }
 
-    void EditorHelpers::OnTick(const float deltaTime, [[maybe_unused]] const AZ::ScriptTimePoint time)
-    {
-        for (auto& decayingCircle : m_decayingCircles)
-        {
-            decayingCircle.m_opacity = AZStd::max(decayingCircle.m_opacity - deltaTime * 1.0f /*scale*/, 0.0f);
-            decayingCircle.m_radius += deltaTime * 10.0f /*radius scale*/;
-        }
-
-        m_toastMessage -= deltaTime;
-
-        m_decayingCircles.erase(
-            AZStd::remove_if(
-                m_decayingCircles.begin(), m_decayingCircles.end(),
-                [](const DecayingCircle& decayingCircle)
-                {
-                    return decayingCircle.m_opacity <= 0.0f;
-                }),
-            m_decayingCircles.end());
-
-        if (m_decayingCircles.empty() && AZ::TickBus::Handler::BusIsConnected())
-        {
-            AZ::TickBus::Handler::BusDisconnect();
-        }
-    }
-
     void EditorHelpers::Display2d(
         [[maybe_unused]] const AzFramework::ViewportInfo& viewportInfo, AzFramework::DebugDisplayRequests& debugDisplay)
     {
-        const AZ::Vector2 viewportSize = AzToolsFramework::GetCameraState(viewportInfo.m_viewportId).m_viewportSize;
-
-        debugDisplay.DepthTestOff();
-
-        if (m_toastMessage >= 0.05f)
-        {
-            debugDisplay.SetColor(AZ::Color(1.0f, 1.0f, 1.0f, AZStd::max(0.0f, m_toastMessage)));
-
-            // feedback under cursor (temp)
-            debugDisplay.Draw2dTextLabel(
-                aznumeric_cast<float>(m_invalidClickPosition.m_x), aznumeric_cast<float>(m_invalidClickPosition.m_y) - 30.0f, 0.8f,
-                "Not in focus", true);
-        }
-
-        for (const auto& decayingCircle : m_decayingCircles)
-        {
-            const auto position = AzFramework::Vector2FromScreenPoint(decayingCircle.m_position) / viewportSize;
-            debugDisplay.SetColor(AZ::Color(1.0f, 1.0f, 1.0f, decayingCircle.m_opacity));
-            debugDisplay.DrawWireCircle2d(position, decayingCircle.m_radius * 0.005f, 0.0f);
-        }
-
-        debugDisplay.DepthTestOn();
+        m_invalidClicks->Display2d(viewportInfo, debugDisplay);
     }
 
     void EditorHelpers::DisplayHelpers(
