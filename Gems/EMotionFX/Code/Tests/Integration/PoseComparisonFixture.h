@@ -27,7 +27,7 @@ namespace EMotionFX
         {}
     };
 
-    class INTEG_PoseComparisonFixture
+    class PoseComparisonFixture
         : public SystemComponentFixture
         , public ::testing::WithParamInterface<PoseComparisonFixtureParams>
     {
@@ -47,8 +47,8 @@ namespace EMotionFX
     // This fixture exists to separate the tests that test the pose comparsion
     // functionality from the tests that use the pose comparison functionality
     // (even though it doesn't use the recording)
-    class INTEG_TestPoseComparisonFixture
-        : public INTEG_PoseComparisonFixture
+    class TestPoseComparisonFixture
+        : public PoseComparisonFixture
     {
     };
 }; // namespace EMotionFX
