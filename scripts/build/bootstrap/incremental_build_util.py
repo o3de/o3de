@@ -252,6 +252,18 @@ def find_snapshot_id(ec2_client, snapshot_hint, repository_name, project, pipeli
                     snapshot_id = snapshot['SnapshotId']
     return snapshot_id
 
+
+def offline_drive(disk_number=1):
+    """Use diskpart to offline a Windows drive"""
+    with tempfile.NamedTemporaryFile(delete=False) as f:
+        f.write(f"""
+        select disk {disk_number}
+        offline disk
+        """.encode('utf-8'))
+    subprocess.run(['diskpart', '/s', f.name])
+    os.unlink(f.name)
+
+
 def create_volume(ec2_client, availability_zone, snapshot_hint, repository_name, project, pipeline, branch, platform, build_type, disk_size, disk_type):
     # The actual EBS default calculation for IOps is a floating point number, the closest approxmiation is 4x of the disk size for simplicity
     mount_name = get_mount_name(repository_name, project, pipeline, branch, platform, build_type)
@@ -310,23 +322,26 @@ def create_volume(ec2_client, availability_zone, snapshot_hint, repository_name,
 def mount_volume_to_device(created):
     print('Mounting volume...')
     if os.name == 'nt':
-        f = tempfile.NamedTemporaryFile(delete=False)
-        f.write("""
-      select disk 1
-      online disk
-      attribute disk clear readonly
-      """.encode('utf-8'))  # assume disk # for now
+        # Verify drive is in an offline state.
+        # Some Windows configs will automatically set new drives as online causing diskpart setup script to fail.
+        offline_drive()
 
-        if created:
-            print('Creating filesystem on new volume')
-            f.write("""create partition primary
-          select partition 1
-          format quick fs=ntfs
-          assign
-          active
-          """.encode('utf-8'))
+        with tempfile.NamedTemporaryFile(delete=False) as f:
+            f.write("""
+            select disk 1
+            online disk
+            attribute disk clear readonly
+            """.encode('utf-8'))  # assume disk # for now
 
-        f.close()
+            if created:
+                print('Creating filesystem on new volume')
+                f.write("""
+                create partition primary
+                select partition 1
+                format quick fs=ntfs
+                assign
+                active
+                """.encode('utf-8'))
 
         subprocess.call(['diskpart', '/s', f.name])
 
@@ -377,14 +392,7 @@ def unmount_volume_from_device():
     print('Unmounting EBS volume from device...')
     if os.name == 'nt':
         kill_processes(MOUNT_PATH + 'workspace')
-        f = tempfile.NamedTemporaryFile(delete=False)
-        f.write("""
-          select disk 1
-          offline disk
-          """.encode('utf-8'))
-        f.close()
-        subprocess.call('diskpart /s %s' % f.name)
-        os.unlink(f.name)
+        offline_drive()
     else:
         kill_processes(MOUNT_PATH)
         subprocess.call(['umount', '-f', MOUNT_PATH])

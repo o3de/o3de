@@ -10,9 +10,7 @@
 
 #include <Request/AWSGameLiftStopMatchmakingRequest.h>
 
-#include <aws/core/utils/Outcome.h>
 #include <aws/gamelift/GameLiftClient.h>
-#include <aws/gamelift/model/StopMatchmakingRequest.h>
 
 namespace AWSGameLift
 {
@@ -25,7 +23,6 @@ namespace AWSGameLift
         Aws::GameLift::Model::StopMatchmakingRequest BuildAWSGameLiftStopMatchmakingRequest(const AWSGameLiftStopMatchmakingRequest& stopMatchmakingRequest);
 
         // Create StopMatchmakingRequest and make a StopMatchmaking call through GameLift client
-        // Will also stop polling the matchmaking ticket when get success outcome from GameLift client
         void StopMatchmaking(const Aws::GameLift::GameLiftClient& gameliftClient, const AWSGameLiftStopMatchmakingRequest& stopMatchmakingRequest);
 
         // Validate StopMatchmakingRequest and check required request parameters

@@ -646,6 +646,9 @@ set(FILES
     Prefab/PrefabFocusHandler.cpp
     Prefab/PrefabFocusInterface.h
     Prefab/PrefabFocusNotificationBus.h
+    Prefab/PrefabFocusPublicInterface.h
+    Prefab/PrefabFocusUndo.h
+    Prefab/PrefabFocusUndo.cpp
     Prefab/PrefabIdTypes.h
     Prefab/PrefabLoader.h
     Prefab/PrefabLoader.cpp
