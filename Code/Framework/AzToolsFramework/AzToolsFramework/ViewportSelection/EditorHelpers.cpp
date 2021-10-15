@@ -9,6 +9,7 @@
 #include "EditorHelpers.h"
 
 #include <AzCore/Console/Console.h>
+#include <AzCore/Math/VectorConversions.h>
 #include <AzFramework/Entity/EntityDebugDisplayBus.h>
 #include <AzFramework/Viewport/CameraState.h>
 #include <AzFramework/Viewport/ViewportScreen.h>
@@ -123,6 +124,11 @@ namespace AzToolsFramework
             "EditorHelpers - "
             "Focus Mode Interface could not be found. "
             "Check that it is being correctly initialized.");
+
+        AZStd::vector<AZStd::unique_ptr<InvalidClick>> invalidClicks;
+        invalidClicks.push_back(AZStd::make_unique<FadingText>("Not in focus"));
+        invalidClicks.push_back(AZStd::make_unique<ExpandingFadingCircles>());
+        m_invalidClicks = AZStd::make_unique<InvalidClicks>(AZStd::move(invalidClicks));
     }
 
     AZ::EntityId EditorHelpers::HandleMouseInteraction(
@@ -186,12 +192,19 @@ namespace AzToolsFramework
             }
         }
 
-        // Verify if the entity Id corresponds to an entity that is focused; if not, halt selection.
+        // verify if the entity Id corresponds to an entity that is focused; if not, halt selection.
         if (entityIdUnderCursor.IsValid() && !IsSelectableAccordingToFocusMode(entityIdUnderCursor))
         {
             ViewportInteraction::ViewportMouseCursorRequestBus::Event(
                 viewportId, &ViewportInteraction::ViewportMouseCursorRequestBus::Events::SetOverrideCursor,
                 ViewportInteraction::CursorStyleOverride::Forbidden);
+                
+            if (mouseInteraction.m_mouseInteraction.m_mouseButtons.Left() &&
+                    mouseInteraction.m_mouseEvent == ViewportInteraction::MouseEvent::Down ||
+                mouseInteraction.m_mouseEvent == ViewportInteraction::MouseEvent::DoubleClick)
+            {
+                m_invalidClicks->AddInvalidClick(mouseInteraction.m_mouseInteraction.m_mousePick.m_screenCoordinates);
+            }
 
             return AZ::EntityId();
         }
@@ -199,7 +212,7 @@ namespace AzToolsFramework
         ViewportInteraction::ViewportMouseCursorRequestBus::Event(
             viewportId, &ViewportInteraction::ViewportMouseCursorRequestBus::Events::ClearOverrideCursor);
 
-        // Container Entity support - if the entity that is being selected is part of a closed container,
+        // container entity support - if the entity that is being selected is part of a closed container,
         // change the selection to the container instead.
         if (ContainerEntityInterface* containerEntityInterface = AZ::Interface<ContainerEntityInterface>::Get())
         {
@@ -207,6 +220,12 @@ namespace AzToolsFramework
         }
 
         return entityIdUnderCursor;
+    }
+
+    void EditorHelpers::Display2d(
+        [[maybe_unused]] const AzFramework::ViewportInfo& viewportInfo, AzFramework::DebugDisplayRequests& debugDisplay)
+    {
+        m_invalidClicks->Display2d(viewportInfo, debugDisplay);
     }
 
     void EditorHelpers::DisplayHelpers(
@@ -270,19 +289,19 @@ namespace AzToolsFramework
         }
     }
 
-    bool EditorHelpers::IsSelectableInViewport(AZ::EntityId entityId)
+    bool EditorHelpers::IsSelectableInViewport(const AZ::EntityId entityId) const
     {
         return IsSelectableAccordingToFocusMode(entityId) && IsSelectableAccordingToContainerEntities(entityId);
     }
 
-    bool EditorHelpers::IsSelectableAccordingToFocusMode(AZ::EntityId entityId)
+    bool EditorHelpers::IsSelectableAccordingToFocusMode(const AZ::EntityId entityId) const
     {
         return m_focusModeInterface->IsInFocusSubTree(entityId);
     }
 
-    bool EditorHelpers::IsSelectableAccordingToContainerEntities(AZ::EntityId entityId)
+    bool EditorHelpers::IsSelectableAccordingToContainerEntities(const AZ::EntityId entityId) const
     {
-        if (ContainerEntityInterface* containerEntityInterface = AZ::Interface<ContainerEntityInterface>::Get())
+        if (const auto* containerEntityInterface = AZ::Interface<ContainerEntityInterface>::Get())
         {
             return !containerEntityInterface->IsUnderClosedContainerEntity(entityId);
         }
