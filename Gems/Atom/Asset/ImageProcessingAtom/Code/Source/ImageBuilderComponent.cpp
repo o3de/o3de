@@ -74,7 +74,7 @@ namespace ImageProcessingAtom
         builderDescriptor.m_busId = azrtti_typeid<ImageBuilderWorker>();
         builderDescriptor.m_createJobFunction = AZStd::bind(&ImageBuilderWorker::CreateJobs, &m_imageBuilder, AZStd::placeholders::_1, AZStd::placeholders::_2);
         builderDescriptor.m_processJobFunction = AZStd::bind(&ImageBuilderWorker::ProcessJob, &m_imageBuilder, AZStd::placeholders::_1, AZStd::placeholders::_2);
-        builderDescriptor.m_version = 24;   // [SPEC-7821]
+        builderDescriptor.m_version = 25;   // [ATOM-16575]
         builderDescriptor.m_analysisFingerprint = ImageProcessingAtom::BuilderSettingManager::Instance()->GetAnalysisFingerprint();
         m_imageBuilder.BusConnect(builderDescriptor.m_busId);
         AssetBuilderSDK::AssetBuilderBus::Broadcast(&AssetBuilderSDK::AssetBuilderBusTraits::RegisterBuilderInformation, builderDescriptor);
@@ -164,7 +164,7 @@ namespace ImageProcessingAtom
         AZStd::vector<AssetBuilderSDK::JobProduct> outProducts;
 
         AZStd::string_view presetFilePath;
-        const PresetSettings* preset = BuilderSettingManager::Instance()->GetPreset(presetName, platformName, &presetFilePath);
+        const PresetSettings* preset = BuilderSettingManager::Instance()->GetPreset(PresetName(presetName), platformName, &presetFilePath);
         if (preset == nullptr)
         {
             AZ_Assert(false, "Cannot find preset with name %s.", presetName.c_str());
@@ -173,7 +173,7 @@ namespace ImageProcessingAtom
 
         AZStd::unique_ptr<ImageConvertProcessDescriptor> desc = AZStd::make_unique<ImageConvertProcessDescriptor>();
         TextureSettings& textureSettings = desc->m_textureSetting;
-        textureSettings.m_preset = preset->m_uuid;
+        textureSettings.m_preset = preset->m_name;
         desc->m_inputImage = imageObject;
         desc->m_presetSetting = *preset;
         desc->m_isPreview = false;
@@ -204,7 +204,7 @@ namespace ImageProcessingAtom
     bool BuilderPluginComponent::IsPresetFormatSquarePow2(const AZStd::string& presetName, const AZStd::string& platformName)
     {
         AZStd::string_view filePath;
-        const PresetSettings* preset = BuilderSettingManager::Instance()->GetPreset(presetName, platformName, &filePath);
+        const PresetSettings* preset = BuilderSettingManager::Instance()->GetPreset(PresetName(presetName), platformName, &filePath);
         if (preset == nullptr)
         {
             AZ_Assert(false, "Cannot find preset with name %s.", presetName.c_str());

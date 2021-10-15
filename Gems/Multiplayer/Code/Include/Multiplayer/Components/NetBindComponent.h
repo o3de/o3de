@@ -193,6 +193,7 @@ namespace Multiplayer
         friend class EntityReplicationManager;
 
         friend class HierarchyTests;
+        friend class HierarchyBenchmarkBase;
     };
 
     bool NetworkRoleHasController(NetEntityRole networkRole);

@@ -14,11 +14,6 @@
 
 namespace AZ
 {
-    namespace RHI
-    {
-        struct CpuTimingStatistics;
-    }
-
     namespace DX12
     {
         class CommandQueueContext
@@ -49,7 +44,7 @@ namespace AZ
                 RHI::HardwareQueueClass hardwareQueueClass,
                 const ExecuteWorkRequest& request);
 
-            void UpdateCpuTimingStatistics(RHI::CpuTimingStatistics& cpuTimingStatistics) const;
+            void UpdateCpuTimingStatistics() const;
             
             // Fences across all queues that are compiled by the frame graph compilation phase
             const FenceSet& GetCompiledFences();

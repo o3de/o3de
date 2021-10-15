@@ -265,7 +265,7 @@ class AbstractResourceLocator(object):
         Return path to AssetProcessor's log file using the project bin dir
         :return: path to 'AP_Gui.log' file in <ap_log_dir> folder
         """
-        return os.path.join(self.ap_log_dir(), 'AP_Gui.log')
+        return os.path.join(self.ap_log_dir(), 'AP_GUI.log')
 
     def project_cache(self):
         """

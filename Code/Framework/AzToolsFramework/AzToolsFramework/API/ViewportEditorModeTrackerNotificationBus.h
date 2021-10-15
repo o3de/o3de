@@ -34,6 +34,8 @@ namespace AzToolsFramework
     class ViewportEditorModesInterface
     {
     public:
+        AZ_RTTI(ViewportEditorModesInterface, "{2421496C-4A46-41C9-8AEF-AE2B6E43E6CF}");
+
         virtual ~ViewportEditorModesInterface() = default;
 
         //! Returns true if the specified editor mode is active, otherwise false.
@@ -51,6 +53,9 @@ namespace AzToolsFramework
         static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::ById;
         using BusIdType = ViewportEditorModeTrackerInfo::IdType;
         //////////////////////////////////////////////////////////////////////////
+
+        AZ_RTTI(ViewportEditorModeNotifications, "{9469DE39-6C21-423C-94FA-EF3A9616B14F}", AZ::EBusTraits);
+        static void Reflect(AZ::ReflectContext* context);
 
         //! Notifies subscribers of the a given viewport to the activation of the specified editor mode.
         virtual void OnEditorModeActivated([[maybe_unused]] const ViewportEditorModesInterface& editorModeState, [[maybe_unused]] ViewportEditorMode mode)

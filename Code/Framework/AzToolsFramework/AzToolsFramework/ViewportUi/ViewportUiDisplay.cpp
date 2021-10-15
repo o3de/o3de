@@ -339,7 +339,7 @@ namespace AzToolsFramework::ViewportUi::Internal
     {
         // no background for the widget else each set of buttons/text-fields/etc would have a black box around them
         SetTransparentBackground(mainWindow);
-        mainWindow->setWindowFlags(Qt::Window | Qt::FramelessWindowHint | Qt::WindowDoesNotAcceptFocus);
+        mainWindow->setWindowFlags(Qt::Tool | Qt::FramelessWindowHint | Qt::WindowDoesNotAcceptFocus);
     }
 
     void ViewportUiDisplay::InitializeUiOverlay()

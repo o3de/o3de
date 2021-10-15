@@ -325,6 +325,12 @@ namespace Multiplayer
         return true;
     }
 
+    void MultiplayerSystemComponent::OnUpdateSessionBegin(const AzFramework::SessionConfig& sessionConfig, const AZStd::string& updateReason)
+    {
+        AZ_UNUSED(sessionConfig);
+        AZ_UNUSED(updateReason);
+    }
+
     void MultiplayerSystemComponent::OnTick(float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time)
     {
         if (bg_multiplayerDebugDraw)
@@ -463,9 +469,9 @@ namespace Multiplayer
         MultiplayerPackets::SyncConsole m_syncPacket;
     };
 
-    bool MultiplayerSystemComponent::IsHandshakeComplete() const
+    bool MultiplayerSystemComponent::IsHandshakeComplete(AzNetworking::IConnection* connection) const
     {
-        return m_didHandshake;
+        return reinterpret_cast<IConnectionData*>(connection->GetUserData())->DidHandshake();
     }
 
     bool MultiplayerSystemComponent::HandleRequest
@@ -520,7 +526,7 @@ namespace Multiplayer
 
         if (connection->SendReliablePacket(MultiplayerPackets::Accept(sv_map)))
         {
-            m_didHandshake = true;
+            reinterpret_cast<ServerToClientConnectionData*>(connection->GetUserData())->SetDidHandshake(true);
             if (packet.GetTemporaryUserId() == 0)
             {
                 // Sync our console
@@ -539,7 +545,7 @@ namespace Multiplayer
         [[maybe_unused]] MultiplayerPackets::Accept& packet
     )
     {
-        m_didHandshake = true;
+        reinterpret_cast<ClientToServerConnectionData*>(connection->GetUserData())->SetDidHandshake(true);
         if (m_temporaryUserIdentifier == 0)
         {
             AZ::CVarFixedString commandString = "sv_map " + packet.GetMap();
@@ -560,6 +566,8 @@ namespace Multiplayer
                 connectionData->GetReplicationManager().AddAutonomousEntityReplicatorCreatedHandler(m_autonomousEntityReplicatorCreatedHandler);
             }
         }
+
+        m_serverAcceptanceReceivedEvent.Signal();
         return true;
     }
 
@@ -878,6 +886,11 @@ namespace Multiplayer
         handler.Connect(m_connectionAcquiredEvent);
     }
 
+    void MultiplayerSystemComponent::AddServerAcceptanceReceivedHandler(ServerAcceptanceReceivedEvent::Handler& handler)
+    {
+        handler.Connect(m_serverAcceptanceReceivedEvent);
+    }
+
     void MultiplayerSystemComponent::AddSessionInitHandler(SessionInitEvent::Handler& handler)
     {
         handler.Connect(m_initEvent);
@@ -1120,7 +1133,7 @@ namespace Multiplayer
         INetworkEntityManager::EntityList entityList = m_networkEntityManager.CreateEntitiesImmediate(playerPrefabEntityId, NetEntityRole::Authority, AZ::Transform::CreateIdentity(), Multiplayer::AutoActivate::DoNotActivate);
 
         NetworkEntityHandle controlledEntity;
-        if (entityList.size() > 0)
+        if (!entityList.empty())
         {
             controlledEntity = entityList[0];
         }

@@ -34,6 +34,8 @@ namespace Multiplayer
         void Update() override;
         bool CanSendUpdates() const override;
         void SetCanSendUpdates(bool canSendUpdates) override;
+        bool DidHandshake() const override;
+        void SetDidHandshake(bool didHandshake) override;
         //! @}
 
         NetworkEntityHandle GetPrimaryPlayerEntity();
@@ -53,6 +55,7 @@ namespace Multiplayer
         AZStd::string m_providerTicket;
         AzNetworking::IConnection* m_connection = nullptr;
         bool m_canSendUpdates = false;
+        bool m_didHandshake = false;
     };
 }
 

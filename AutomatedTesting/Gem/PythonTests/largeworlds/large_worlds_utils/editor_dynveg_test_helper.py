@@ -17,7 +17,7 @@ import azlmbr.vegetation as vegetation
 import azlmbr.areasystem as areasystem
 import azlmbr.paths
 
-sys.path.append(os.path.join(azlmbr.paths.devroot, 'AutomatedTesting', 'Gem', 'PythonTests'))
+sys.path.append(os.path.join(azlmbr.paths.projectroot, 'Gem', 'PythonTests'))
 import editor_python_test_tools.hydra_editor_utils as hydra
 
 
@@ -25,7 +25,7 @@ def create_surface_entity(name, center_point, box_size_x, box_size_y, box_size_z
     # Create a "flat surface" entity to use as a plantable vegetation surface
     surface_entity = hydra.Entity(name)
     surface_entity.create_entity(
-        center_point, 
+        center_point,
         ["Box Shape", "Shape Surface Tag Emitter"]
         )
     if surface_entity.id.IsValid():
@@ -56,7 +56,7 @@ def create_vegetation_area(name, center_point, box_size_x, box_size_y, box_size_
     # Create a vegetation area entity to use as our test vegetation spawner
     spawner_entity = hydra.Entity(name)
     spawner_entity.create_entity(
-        center_point, 
+        center_point,
         ["Vegetation Layer Spawner", "Box Shape", "Vegetation Asset List"]
         )
     if spawner_entity.id.IsValid():

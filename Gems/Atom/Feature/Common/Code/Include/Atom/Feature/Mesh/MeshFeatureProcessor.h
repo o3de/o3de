@@ -14,10 +14,14 @@
 #include <Atom/RPI.Public/Shader/ShaderSystemInterface.h>
 #include <Atom/Feature/Material/MaterialAssignment.h>
 #include <Atom/Feature/TransformService/TransformServiceFeatureProcessor.h>
+#include <Atom/Feature/Mesh/ModelReloaderSystemInterface.h>
 #include <RayTracing/RayTracingFeatureProcessor.h>
 #include <AzCore/Asset/AssetCommon.h>
 #include <AtomCore/std/parallel/concurrency_checker.h>
 #include <AzCore/Console/Console.h>
+#include <AzFramework/Asset/AssetCatalogBus.h>
+
+#include <AzCore/Component/TickBus.h>
 
 namespace AZ
 {
@@ -38,6 +42,7 @@ namespace AZ
         private:
             class MeshLoader
                 : private Data::AssetBus::Handler
+                , private AzFramework::AssetCatalogEventBus::Handler
             {
             public:
                 using ModelChangedEvent = MeshFeatureProcessorInterface::ModelChangedEvent;
@@ -52,6 +57,15 @@ namespace AZ
                 void OnAssetReady(Data::Asset<Data::AssetData> asset) override;
                 void OnAssetError(Data::Asset<Data::AssetData> asset) override;
 
+                // AssetCatalogEventBus::Handler overrides...
+                void OnCatalogAssetChanged(const AZ::Data::AssetId& assetId) override;
+                void OnCatalogAssetAdded(const AZ::Data::AssetId& assetId) override;
+
+                void OnModelReloaded(Data::Asset<Data::AssetData> asset);
+                ModelReloadedEvent::Handler m_modelReloadedEventHandler { [&](Data::Asset<RPI::ModelAsset> modelAsset)
+                                                                  {
+                                                                             OnModelReloaded(modelAsset);
+                                                                  } };
                 MeshFeatureProcessorInterface::ModelChangedEvent m_modelChangedEvent;
                 Data::Asset<RPI::ModelAsset> m_modelAsset;
                 MeshDataInstance* m_parent = nullptr;
@@ -61,6 +75,7 @@ namespace AZ
             void Init(Data::Instance<RPI::Model> model);
             void BuildDrawPacketList(size_t modelLodIndex);
             void SetRayTracingData();
+            void RemoveRayTracingData();
             void SetSortKey(RHI::DrawItemSortKey sortKey);
             RHI::DrawItemSortKey GetSortKey() const;
             void SetMeshLodConfiguration(RPI::Cullable::LodConfiguration meshLodConfig);

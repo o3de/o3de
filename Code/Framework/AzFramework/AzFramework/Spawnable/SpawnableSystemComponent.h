@@ -75,6 +75,7 @@ namespace AzFramework
 
         uint64_t AssignRootSpawnable(AZ::Data::Asset<Spawnable> rootSpawnable) override;
         void ReleaseRootSpawnable() override;
+        void ProcessSpawnableQueue() override;
 
         //
         // RootSpawnbleNotificationBus
