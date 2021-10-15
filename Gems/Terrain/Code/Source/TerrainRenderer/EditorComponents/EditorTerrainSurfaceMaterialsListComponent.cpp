@@ -6,7 +6,7 @@
  *
  */
 
-#include <Terrainrenderer/EditorComponents/EditorTerrainSurfaceMaterialsListComponent.h>
+#include <TerrainRenderer/EditorComponents/EditorTerrainSurfaceMaterialsListComponent.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
 
