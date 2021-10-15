@@ -98,6 +98,7 @@ AZ_POP_DISABLE_WARNING
 #include "ActionManager.h"
 
 #include <ImGuiBus.h>
+#include <AzToolsFramework/Viewport/ViewportMessages.h>
 #include <LmbrCentral/Audio/AudioSystemComponentBus.h>
 
 using namespace AZ;

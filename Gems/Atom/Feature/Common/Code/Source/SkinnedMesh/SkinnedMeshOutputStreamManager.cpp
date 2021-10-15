@@ -8,6 +8,8 @@
 
 #include <SkinnedMesh/SkinnedMeshOutputStreamManager.h>
 
+#include <AzCore/Console/IConsole.h>
+
 #include <Atom/Feature/SkinnedMesh/SkinnedMeshVertexStreams.h>
 #include <Atom/Feature/SkinnedMesh/SkinnedMeshFeatureProcessorBus.h>
 
@@ -72,11 +74,32 @@ namespace AZ
             creator.End(m_bufferAsset);
         }
 
+
+        // default value of 256mb supports roughly 42 character instances at 100,000 vertices per character x 64 bytes per vertex (12 byte position + 12 byte previous frame position + 12 byte normal + 16 byte tangent + 12 byte bitangent)
+        // This includes only the output of the skinning compute shader, not the input buffers or bone transforms
+        AZ_CVAR(
+            int,
+            r_skinnedMeshInstanceMemoryPoolSize,
+            256,
+            nullptr,
+            AZ::ConsoleFunctorFlags::NeedsReload,
+            "The amount of memory in Mb available for all actor skinning data. Note that this must only be set once at application startup"
+        );
+
         void SkinnedMeshOutputStreamManager::Init()
         {
-            // 256mb supports roughly 42 character instances at 100,000 vertices per character x 64 bytes per vertex (12 byte position + 12 byte previous frame position + 12 byte normal + 16 byte tangent + 12 byte bitangent)
-            // This includes only the output of the skinning compute shader, not the input buffers or bone transforms
-            m_sizeInBytes = 256u * (1024u * 1024u);
+        }
+
+        void SkinnedMeshOutputStreamManager::EnsureInit()
+        {
+            if (!m_needsInit)
+            {
+                return;
+            }
+            m_needsInit = false;
+
+            const AZ::u64 sizeInMb = r_skinnedMeshInstanceMemoryPoolSize;
+            m_sizeInBytes = sizeInMb * (1024u * 1024u);
 
             CalculateAlignment();
 
@@ -90,6 +113,8 @@ namespace AZ
             RHI::VirtualAddress result;
             {
                 AZStd::lock_guard<AZStd::mutex> lock(m_allocatorMutex);
+
+                EnsureInit();
                 result = m_freeListAllocator.Allocate(byteCount, m_alignment);
             }
 
@@ -127,13 +152,15 @@ namespace AZ
             }
         }
 
-        Data::Asset<RPI::BufferAsset> SkinnedMeshOutputStreamManager::GetBufferAsset() const
+        Data::Asset<RPI::BufferAsset> SkinnedMeshOutputStreamManager::GetBufferAsset()
         {
+            EnsureInit();
             return m_bufferAsset;
         }
 
         Data::Instance<RPI::Buffer> SkinnedMeshOutputStreamManager::GetBuffer()
         {
+            EnsureInit();
             if (!m_buffer)
             {
                 m_buffer = RPI::Buffer::FindOrCreate(m_bufferAsset);

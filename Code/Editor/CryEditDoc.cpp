@@ -1273,7 +1273,7 @@ bool CCryEditDoc::SaveLevel(const QString& filename)
         if (savedEntities)
         {
             AZ_PROFILE_SCOPE(AzToolsFramework, "CCryEditDoc::SaveLevel Updated PakFile levelEntities.editor_xml");
-            pakFile.UpdateFile("LevelEntities.editor_xml", entitySaveBuffer.begin(), static_cast<int>(entitySaveBuffer.size()));
+            pakFile.UpdateFile("levelentities.editor_xml", entitySaveBuffer.begin(), static_cast<int>(entitySaveBuffer.size()));
 
             // Save XML archive to pak file.
             bool bSaved = xmlAr.SaveToPak(Path::GetPath(tempSaveFile), pakFile);
@@ -1501,7 +1501,7 @@ bool CCryEditDoc::LoadEntitiesFromLevel(const QString& levelPakFile)
         bool pakOpened = pakSystem->OpenPack(levelPakFile.toUtf8().data());
         if (pakOpened)
         {
-            const QString entityFilename = Path::GetPath(levelPakFile) + "LevelEntities.editor_xml";
+            const QString entityFilename = Path::GetPath(levelPakFile) + "levelentities.editor_xml";
 
             CCryFile entitiesFile;
             if (entitiesFile.Open(entityFilename.toUtf8().data(), "rt"))

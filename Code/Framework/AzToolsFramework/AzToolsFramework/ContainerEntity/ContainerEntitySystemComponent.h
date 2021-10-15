@@ -12,6 +12,7 @@
 #include <AzCore/Memory/SystemAllocator.h>
 
 #include <AzToolsFramework/ContainerEntity/ContainerEntityInterface.h>
+#include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 
 namespace AzToolsFramework
 {
@@ -23,6 +24,7 @@ namespace AzToolsFramework
     class ContainerEntitySystemComponent final
         : public AZ::Component
         , private ContainerEntityInterface
+        , private EditorEntityContextNotificationBus::Handler
     {
     public:
         AZ_COMPONENT(ContainerEntitySystemComponent, "{74349759-B36B-44A6-B89F-F45D7111DD11}");
@@ -42,9 +44,14 @@ namespace AzToolsFramework
         ContainerEntityOperationResult RegisterEntityAsContainer(AZ::EntityId entityId) override;
         ContainerEntityOperationResult UnregisterEntityAsContainer(AZ::EntityId entityId) override;
         bool IsContainer(AZ::EntityId entityId) const override;
-        ContainerEntityOperationResult SetContainerOpenState(AZ::EntityId entityId, bool open) override;
+        ContainerEntityOperationResult SetContainerOpen(AZ::EntityId entityId, bool open) override;
         bool IsContainerOpen(AZ::EntityId entityId) const override;
         AZ::EntityId FindHighestSelectableEntity(AZ::EntityId entityId) const override;
+        ContainerEntityOperationResult Clear(AzFramework::EntityContextId entityContextId) override;
+        bool IsUnderClosedContainerEntity(AZ::EntityId entityId) const override;
+
+        // EditorEntityContextNotificationBus overrides ...
+        void OnEntityStreamLoadSuccess() override;
 
     private:
         AZStd::unordered_set<AZ::EntityId> m_containers;      //!< All entities in this set are containers.

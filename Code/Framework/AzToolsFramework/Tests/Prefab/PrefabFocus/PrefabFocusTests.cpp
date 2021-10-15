@@ -10,6 +10,7 @@
 #include <AzToolsFramework/Entity/EditorEntityHelpers.h>
 #include <AzToolsFramework/Entity/PrefabEditorEntityOwnershipInterface.h>
 #include <AzToolsFramework/Prefab/PrefabFocusInterface.h>
+#include <AzToolsFramework/Prefab/PrefabFocusPublicInterface.h>
 #include <Prefab/PrefabTestFixture.h>
 
 namespace UnitTest
@@ -72,6 +73,9 @@ namespace UnitTest
             m_prefabFocusInterface = AZ::Interface<PrefabFocusInterface>::Get();
             ASSERT_TRUE(m_prefabFocusInterface != nullptr);
 
+            m_prefabFocusPublicInterface = AZ::Interface<PrefabFocusPublicInterface>::Get();
+            ASSERT_TRUE(m_prefabFocusPublicInterface != nullptr);
+
             AzToolsFramework::EditorEntityContextRequestBus::BroadcastResult(
                 m_editorEntityContextId, &AzToolsFramework::EditorEntityContextRequestBus::Events::GetEditorEntityContextId);
 
@@ -91,6 +95,7 @@ namespace UnitTest
         AZStd::unique_ptr<AzToolsFramework::Prefab::Instance> m_rootInstance;
 
         PrefabFocusInterface* m_prefabFocusInterface = nullptr;
+        PrefabFocusPublicInterface* m_prefabFocusPublicInterface = nullptr;
         AzFramework::EntityContextId m_editorEntityContextId = AzFramework::EntityContextId::CreateNull();
 
         inline static const char* CityEntityName = "City";
@@ -105,7 +110,7 @@ namespace UnitTest
     {
         // Verify FocusOnOwningPrefab works when passing the container entity of the root prefab.
         {
-            m_prefabFocusInterface->FocusOnOwningPrefab(m_instanceMap[CityEntityName]->GetContainerEntityId());
+            m_prefabFocusPublicInterface->FocusOnOwningPrefab(m_instanceMap[CityEntityName]->GetContainerEntityId());
             EXPECT_EQ(
                 m_prefabFocusInterface->GetFocusedPrefabTemplateId(m_editorEntityContextId),
                 m_instanceMap[CityEntityName]->GetTemplateId());
@@ -120,7 +125,7 @@ namespace UnitTest
     {
         // Verify FocusOnOwningPrefab works when passing a nested entity of the root prefab.
         {
-            m_prefabFocusInterface->FocusOnOwningPrefab(m_entityMap[CityEntityName]->GetId());
+            m_prefabFocusPublicInterface->FocusOnOwningPrefab(m_entityMap[CityEntityName]->GetId());
             EXPECT_EQ(
                 m_prefabFocusInterface->GetFocusedPrefabTemplateId(m_editorEntityContextId),
                 m_instanceMap[CityEntityName]->GetTemplateId());
@@ -135,7 +140,7 @@ namespace UnitTest
     {
         // Verify FocusOnOwningPrefab works when passing the container entity of a nested prefab.
         {
-            m_prefabFocusInterface->FocusOnOwningPrefab(m_instanceMap[CarEntityName]->GetContainerEntityId());
+            m_prefabFocusPublicInterface->FocusOnOwningPrefab(m_instanceMap[CarEntityName]->GetContainerEntityId());
             EXPECT_EQ(
                 m_prefabFocusInterface->GetFocusedPrefabTemplateId(m_editorEntityContextId), m_instanceMap[CarEntityName]->GetTemplateId());
 
@@ -149,7 +154,7 @@ namespace UnitTest
     {
         // Verify FocusOnOwningPrefab works when passing a nested entity of the a nested prefab.
         {
-            m_prefabFocusInterface->FocusOnOwningPrefab(m_entityMap[Passenger1EntityName]->GetId());
+            m_prefabFocusPublicInterface->FocusOnOwningPrefab(m_entityMap[Passenger1EntityName]->GetId());
             EXPECT_EQ(
                 m_prefabFocusInterface->GetFocusedPrefabTemplateId(m_editorEntityContextId), m_instanceMap[CarEntityName]->GetTemplateId());
 
@@ -169,7 +174,7 @@ namespace UnitTest
                 prefabEditorEntityOwnershipInterface->GetRootPrefabInstance();
             EXPECT_TRUE(rootPrefabInstance.has_value());
 
-            m_prefabFocusInterface->FocusOnOwningPrefab(AZ::EntityId());
+            m_prefabFocusPublicInterface->FocusOnOwningPrefab(AZ::EntityId());
             EXPECT_EQ(
                 m_prefabFocusInterface->GetFocusedPrefabTemplateId(m_editorEntityContextId), rootPrefabInstance->get().GetTemplateId());
 
@@ -183,10 +188,10 @@ namespace UnitTest
     {
         // Verify IsOwningPrefabBeingFocused returns true for all entities in a focused prefab (container/nested)
         {
-            m_prefabFocusInterface->FocusOnOwningPrefab(m_instanceMap[CityEntityName]->GetContainerEntityId());
+            m_prefabFocusPublicInterface->FocusOnOwningPrefab(m_instanceMap[CityEntityName]->GetContainerEntityId());
 
-            EXPECT_TRUE(m_prefabFocusInterface->IsOwningPrefabBeingFocused(m_instanceMap[CityEntityName]->GetContainerEntityId()));
-            EXPECT_TRUE(m_prefabFocusInterface->IsOwningPrefabBeingFocused(m_entityMap[CityEntityName]->GetId()));
+            EXPECT_TRUE(m_prefabFocusPublicInterface->IsOwningPrefabBeingFocused(m_instanceMap[CityEntityName]->GetContainerEntityId()));
+            EXPECT_TRUE(m_prefabFocusPublicInterface->IsOwningPrefabBeingFocused(m_entityMap[CityEntityName]->GetId()));
         }
     }
 
@@ -194,13 +199,13 @@ namespace UnitTest
     {
         // Verify IsOwningPrefabBeingFocused returns false for all entities not in a focused prefab (ancestors/descendants)
         {
-            m_prefabFocusInterface->FocusOnOwningPrefab(m_instanceMap[StreetEntityName]->GetContainerEntityId());
+            m_prefabFocusPublicInterface->FocusOnOwningPrefab(m_instanceMap[StreetEntityName]->GetContainerEntityId());
 
-            EXPECT_TRUE(m_prefabFocusInterface->IsOwningPrefabBeingFocused(m_instanceMap[StreetEntityName]->GetContainerEntityId()));
-            EXPECT_FALSE(m_prefabFocusInterface->IsOwningPrefabBeingFocused(m_instanceMap[CityEntityName]->GetContainerEntityId()));
-            EXPECT_FALSE(m_prefabFocusInterface->IsOwningPrefabBeingFocused(m_entityMap[CityEntityName]->GetId()));
-            EXPECT_FALSE(m_prefabFocusInterface->IsOwningPrefabBeingFocused(m_instanceMap[CarEntityName]->GetContainerEntityId()));
-            EXPECT_FALSE(m_prefabFocusInterface->IsOwningPrefabBeingFocused(m_entityMap[Passenger1EntityName]->GetId()));
+            EXPECT_TRUE(m_prefabFocusPublicInterface->IsOwningPrefabBeingFocused(m_instanceMap[StreetEntityName]->GetContainerEntityId()));
+            EXPECT_FALSE(m_prefabFocusPublicInterface->IsOwningPrefabBeingFocused(m_instanceMap[CityEntityName]->GetContainerEntityId()));
+            EXPECT_FALSE(m_prefabFocusPublicInterface->IsOwningPrefabBeingFocused(m_entityMap[CityEntityName]->GetId()));
+            EXPECT_FALSE(m_prefabFocusPublicInterface->IsOwningPrefabBeingFocused(m_instanceMap[CarEntityName]->GetContainerEntityId()));
+            EXPECT_FALSE(m_prefabFocusPublicInterface->IsOwningPrefabBeingFocused(m_entityMap[Passenger1EntityName]->GetId()));
         }
     }
 
@@ -208,12 +213,12 @@ namespace UnitTest
     {
         // Verify IsOwningPrefabBeingFocused returns false for all entities not in a focused prefab (siblings)
         {
-            m_prefabFocusInterface->FocusOnOwningPrefab(m_instanceMap[SportsCarEntityName]->GetContainerEntityId());
+            m_prefabFocusPublicInterface->FocusOnOwningPrefab(m_instanceMap[SportsCarEntityName]->GetContainerEntityId());
 
-            EXPECT_TRUE(m_prefabFocusInterface->IsOwningPrefabBeingFocused(m_instanceMap[SportsCarEntityName]->GetContainerEntityId()));
-            EXPECT_TRUE(m_prefabFocusInterface->IsOwningPrefabBeingFocused(m_entityMap[Passenger2EntityName]->GetId()));
-            EXPECT_FALSE(m_prefabFocusInterface->IsOwningPrefabBeingFocused(m_instanceMap[CarEntityName]->GetContainerEntityId()));
-            EXPECT_FALSE(m_prefabFocusInterface->IsOwningPrefabBeingFocused(m_entityMap[Passenger1EntityName]->GetId()));
+            EXPECT_TRUE(m_prefabFocusPublicInterface->IsOwningPrefabBeingFocused(m_instanceMap[SportsCarEntityName]->GetContainerEntityId()));
+            EXPECT_TRUE(m_prefabFocusPublicInterface->IsOwningPrefabBeingFocused(m_entityMap[Passenger2EntityName]->GetId()));
+            EXPECT_FALSE(m_prefabFocusPublicInterface->IsOwningPrefabBeingFocused(m_instanceMap[CarEntityName]->GetContainerEntityId()));
+            EXPECT_FALSE(m_prefabFocusPublicInterface->IsOwningPrefabBeingFocused(m_entityMap[Passenger1EntityName]->GetId()));
         }
     }
 

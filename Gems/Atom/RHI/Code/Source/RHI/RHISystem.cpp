@@ -254,9 +254,9 @@ namespace AZ
                 : RHI::ResetBits(m_compileRequest.m_statisticsFlags, statisticsFlags);
         }
 
-        const RHI::CpuTimingStatistics* RHISystem::GetCpuTimingStatistics() const
+        double RHISystem::GetCpuFrameTime() const
         {
-            return m_frameScheduler.GetCpuTimingStatistics();
+            return m_frameScheduler.GetCpuFrameTime();
         }
 
         const RHI::TransientAttachmentStatistics* RHISystem::GetTransientAttachmentStatistics() const

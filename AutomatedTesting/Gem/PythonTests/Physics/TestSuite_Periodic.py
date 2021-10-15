@@ -525,10 +525,6 @@ class TestAutomation(TestAutomationBase):
         from .tests.joints import Joints_BallNoLimitsConstrained as test_module
         self._run_test(request, workspace, editor, test_module)
 
-    def test_Joints_FixedLeadFollowerCollide(self, request, workspace, editor, launcher_platform):
-        from .tests.joints import Joints_FixedLeadFollowerCollide as test_module
-        self._run_test(request, workspace, editor, test_module)
-
     def test_Joints_GlobalFrameConstrained(self, request, workspace, editor, launcher_platform):
         from .tests.joints import Joints_GlobalFrameConstrained as test_module
         self._run_test(request, workspace, editor, test_module)

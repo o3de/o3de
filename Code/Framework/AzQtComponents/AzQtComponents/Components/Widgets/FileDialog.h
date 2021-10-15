@@ -24,6 +24,12 @@ namespace AzQtComponents
         static QString GetSaveFileName(QWidget* parent = nullptr, const QString& caption = QString(),
             const QString& dir = QString(), const QString& filter = QString(),
             QString* selectedFilter = nullptr, QFileDialog::Options options = QFileDialog::Options());
+
+        //! Helper method that parses a selected filter from Qt's QFileDialog::getSaveFileName and applies the 
+        //! selected filter's extension to the filePath if it doesnt already have the extension. This is needed
+        //! on platforms that do not have a default file dialog (These platforms uses Qt's custom file dialog which will
+        //! not apply the filter's extension automatically on user entered filenames)
+        static bool ApplyMissingExtension(const QString& selectedFilter, QString& filePath);
     };
 
 } // namespace AzQtComponents
