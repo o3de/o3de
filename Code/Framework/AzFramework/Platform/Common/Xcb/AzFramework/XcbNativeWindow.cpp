@@ -10,6 +10,7 @@
 #include <AzFramework/Windowing/NativeWindow.h>
 #include <AzFramework/XcbNativeWindow.h>
 #include <AzFramework/XcbConnectionManager.h>
+#include <AzFramework/XcbInterface.h>
 
 #include <xcb/xcb.h>
 
