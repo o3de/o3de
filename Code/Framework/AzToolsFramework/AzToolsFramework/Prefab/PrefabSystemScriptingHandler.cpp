@@ -6,11 +6,14 @@
  *
  */
 
+#include <API/ToolsApplicationAPI.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <Prefab/PrefabSystemComponentInterface.h>
 #include <Prefab/PrefabSystemScriptingHandler.h>
 #include <AzCore/Component/Entity.h>
+#include <AzCore/Component/TransformBus.h>
+#include <ToolsComponents/TransformComponent.h>
 
 namespace AzToolsFramework::Prefab
 {
@@ -61,9 +64,29 @@ namespace AzToolsFramework::Prefab
                 entities.push_back(entity);
             }
         }
-        
-        auto prefab = m_prefabSystemComponentInterface->CreatePrefab(entities, {}, AZ::IO::PathView(AZStd::string_view(filePath)));
 
+        bool result = false;
+        [[maybe_unused]] AZ::EntityId commonRoot;
+        EntityList topLevelEntities;
+        AzToolsFramework::ToolsApplicationRequestBus::BroadcastResult(result, &AzToolsFramework::ToolsApplicationRequestBus::Events::FindCommonRootInactive,
+            entities, commonRoot, &topLevelEntities);
+
+        auto containerEntity = AZStd::make_unique<AZ::Entity>();
+
+        for (AZ::Entity* entity : topLevelEntities)
+        {
+            AzToolsFramework::Components::TransformComponent* transformComponent =
+                entity->FindComponent<AzToolsFramework::Components::TransformComponent>();
+
+            if (transformComponent)
+            {
+                transformComponent->SetParent(containerEntity->GetId());
+            }
+        }
+
+        auto prefab = m_prefabSystemComponentInterface->CreatePrefab(
+            entities, {}, AZ::IO::PathView(AZStd::string_view(filePath)), AZStd::move(containerEntity));
+        
         if (!prefab)
         {
             AZ_Error("PrefabSystemComponenent", false, "Failed to create prefab %s", filePath.c_str());
