@@ -60,7 +60,7 @@ namespace AzToolsFramework
         };
 
         using FadingCircles = AZStd::vector<FadingCircle>;
-        FadingCircles m_fadingCircles; //!< Collection of fading circles to draw for clicks that have not effect.
+        FadingCircles m_fadingCircles; //!< Collection of fading circles to draw for clicks that have no effect.
     };
 
     //! Display fading text where an invalid click happened.

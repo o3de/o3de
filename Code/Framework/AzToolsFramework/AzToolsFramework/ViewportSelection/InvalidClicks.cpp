@@ -91,8 +91,6 @@ namespace AzToolsFramework
         if (constexpr float MinOpacity = 0.05f; m_opacity >= MinOpacity)
         {
             debugDisplay.SetColor(AZ::Color(1.0f, 1.0f, 1.0f, m_opacity));
-
-            // feedback under cursor (temp)
             debugDisplay.Draw2dTextLabel(
                 aznumeric_cast<float>(m_invalidClickPosition.m_x),
                 aznumeric_cast<float>(m_invalidClickPosition.m_y) - ed_invalidClickMessageVerticalOffset, ed_invalidClickMessageSize,
