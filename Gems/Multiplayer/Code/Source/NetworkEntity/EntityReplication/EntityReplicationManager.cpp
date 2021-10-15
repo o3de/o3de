@@ -259,8 +259,8 @@ namespace Multiplayer
             {
                 AZLOG_WARN
                 (
-                    "Serializing extremely large entity (%u) - MaxPayload: %d NeededSize %d",
-                    aznumeric_cast<uint32_t>(replicator->GetEntityHandle().GetNetEntityId()),
+                    "Serializing extremely large entity (%llu) - MaxPayload: %d NeededSize %d",
+                    aznumeric_cast<AZ::u64>(replicator->GetEntityHandle().GetNetEntityId()),
                     m_maxPayloadSize,
                     nextMessageSize
                 );
@@ -373,19 +373,19 @@ namespace Multiplayer
 
                 if (changedRemoteRole || changedLocalRole)
                 {
-                    const uint32_t intEntityId = static_cast<uint32_t>(netBindComponent->GetNetEntityId());
+                    const AZ::u64 intEntityId = static_cast<AZ::u64>(netBindComponent->GetNetEntityId());
                     const char* entityName = entityReplicator->GetEntityHandle().GetEntity()->GetName().c_str();
                     if (changedLocalRole)
                     {
                         const char* oldRoleString = GetEnumString(entityReplicator->GetRemoteNetworkRole());
                         const char* newRoleString = GetEnumString(remoteNetworkRole);
-                        AZLOG(NET_ReplicatorRoles, "Replicator %s(%u) changed local role, old role = %s, new role = %s", entityName, intEntityId, oldRoleString, newRoleString);
+                        AZLOG(NET_ReplicatorRoles, "Replicator %s(%llu) changed local role, old role = %s, new role = %s", entityName, intEntityId, oldRoleString, newRoleString);
                     }
                     if (changedRemoteRole)
                     {
                         const char* oldRoleString = GetEnumString(entityReplicator->GetBoundLocalNetworkRole());
                         const char* newRoleString = GetEnumString(netBindComponent->GetNetEntityRole());
-                        AZLOG(NET_ReplicatorRoles, "Replicator %s(%u) changed remote role, old role = %s, new role = %s", entityName, intEntityId, oldRoleString, newRoleString);
+                        AZLOG(NET_ReplicatorRoles, "Replicator %s(%llu) changed remote role, old role = %s, new role = %s", entityName, intEntityId, oldRoleString, newRoleString);
                     }
 
                     // If we changed roles, we need to reset everything
@@ -402,8 +402,8 @@ namespace Multiplayer
                 AZLOG
                 (
                     NET_RepDeletes,
-                    "Reinited replicator for %u from remote host %s role %d",
-                    entityHandle.GetNetEntityId(),
+                    "Reinited replicator for netEntityId %llu from remote host %s role %d",
+                    static_cast<AZ::u64>(entityHandle.GetNetEntityId()),
                     GetRemoteHostId().GetString().c_str(),
                     aznumeric_cast<int32_t>(remoteNetworkRole)
                 );
@@ -419,8 +419,8 @@ namespace Multiplayer
                 AZLOG
                 (
                     NET_RepDeletes,
-                    "Added replicator for %u from remote host %s role %d",
-                    entityHandle.GetNetEntityId(),
+                    "Added replicator for netEntityId %llu from remote host %s role %d",
+                    static_cast<AZ::u64>(entityHandle.GetNetEntityId()),
                     GetRemoteHostId().GetString().c_str(),
                     aznumeric_cast<int32_t>(remoteNetworkRole)
                 );
@@ -428,7 +428,7 @@ namespace Multiplayer
         }
         else
         {
-            AZLOG_ERROR("Failed to add entity replicator, entity does not exist, entity id %u", entityHandle.GetNetEntityId());
+            AZLOG_ERROR("Failed to add entity replicator, entity does not exist, netEntityId %llu", static_cast<AZ::u64>(entityHandle.GetNetEntityId()));
             AZ_Assert(false, "Failed to add entity replicator, entity does not exist");
         }
         return entityReplicator;
@@ -517,18 +517,18 @@ namespace Multiplayer
         {
             if (entityReplicator->IsMarkedForRemoval())
             {
-                AZLOG(NET_RepDeletes, "Got a replicator delete message that is a duplicate id %u remote host %s", updateMessage.GetEntityId(), GetRemoteHostId().GetString().c_str());
+                AZLOG(NET_RepDeletes, "Got a replicator delete message that is a duplicate id %llu remote host %s", static_cast<AZ::u64>(updateMessage.GetEntityId()), GetRemoteHostId().GetString().c_str());
             }
             else if (entityReplicator->OwnsReplicatorLifetime())
             {
                 // This can occur if we migrate entities quickly - if this is a replicator from C to A, A migrates to B, B then migrates to C, and A's delete replicator has not arrived at C
-                AZLOG(NET_RepDeletes, "Got a replicator delete message for a replicator we own id %u remote host %s", updateMessage.GetEntityId(), GetRemoteHostId().GetString().c_str());
+                AZLOG(NET_RepDeletes, "Got a replicator delete message for a replicator we own id %llu remote host %s", static_cast<AZ::u64>(updateMessage.GetEntityId()), GetRemoteHostId().GetString().c_str());
             }
             else
             {
                 shouldDeleteEntity = true;
                 entityReplicator->MarkForRemoval();
-                AZLOG(NET_RepDeletes, "Deleting replicater for entity id %u remote host %s", updateMessage.GetEntityId(), GetRemoteHostId().GetString().c_str());
+                AZLOG(NET_RepDeletes, "Deleting replicater for entity id %llu remote host %s", static_cast<AZ::u64>(updateMessage.GetEntityId()), GetRemoteHostId().GetString().c_str());
             }
         }
 
@@ -540,17 +540,17 @@ namespace Multiplayer
             {
                 if (updateMessage.GetWasMigrated())
                 {
-                    AZLOG(NET_RepDeletes, "Leaving id %u using timeout remote host %s", entity.GetNetEntityId(), GetRemoteHostId().GetString().c_str());
+                    AZLOG(NET_RepDeletes, "Leaving id %llu using timeout remote host %s", static_cast<AZ::u64>(entity.GetNetEntityId()), GetRemoteHostId().GetString().c_str());
                 }
                 else
                 {
-                    AZLOG(NET_RepDeletes, "Deleting entity id %u remote host %s", entity.GetNetEntityId(), GetRemoteHostId().GetString().c_str());
+                    AZLOG(NET_RepDeletes, "Deleting entity id %llu remote host %s", static_cast<AZ::u64>(entity.GetNetEntityId()), GetRemoteHostId().GetString().c_str());
                     GetNetworkEntityManager()->MarkForRemoval(entity);
                 }
             }
             else
             {
-                AZLOG(NET_RepDeletes, "Trying to delete entity id %u remote host %s, but it has been removed", entity.GetNetEntityId(), GetRemoteHostId().GetString().c_str());
+                AZLOG(NET_RepDeletes, "Trying to delete entity id %llu remote host %s, but it has been removed", static_cast<AZ::u64>(entity.GetNetEntityId()), GetRemoteHostId().GetString().c_str());
             }
         }
 
@@ -606,9 +606,9 @@ namespace Multiplayer
             AZ_Assert(localNetworkRole != NetEntityRole::Authority, "UpdateMessage trying to set local role to Authority, this should only happen via migration");
             AZLOG_INFO
             (
-                "EntityReplicationManager: Changing network role on entity %s(%u), old role %s new role %s",
+                "EntityReplicationManager: Changing network role on entity %s(%llu), old role %s new role %s",
                 replicatorEntity.GetEntity()->GetName().c_str(),
-                aznumeric_cast<uint32_t>(netEntityId),
+                aznumeric_cast<AZ::u64>(netEntityId),
                 GetEnumString(netBindComponent->GetNetEntityRole()),
                 GetEnumString(localNetworkRole)
             );
@@ -720,9 +720,9 @@ namespace Multiplayer
                     AZLOG_WARN
                     (
                         "Dropping Packet and LocalServerToRemoteClient connection, unexpected packet "
-                        "LocalShard=%s EntityId=%u RemoteNetworkRole=%u BoundLocalNetworkRole=%u ActualNetworkRole=%u IsMarkedForRemoval=%s",
+                        "LocalShard=%s EntityId=%llu RemoteNetworkRole=%u BoundLocalNetworkRole=%u ActualNetworkRole=%u IsMarkedForRemoval=%s",
                         GetNetworkEntityManager()->GetHostId().GetString().c_str(),
-                        aznumeric_cast<uint32_t>(entityReplicator->GetEntityHandle().GetNetEntityId()),
+                        aznumeric_cast<AZ::u64>(entityReplicator->GetEntityHandle().GetNetEntityId()),
                         aznumeric_cast<uint32_t>(entityReplicator->GetRemoteNetworkRole()),
                         aznumeric_cast<uint32_t>(entityReplicator->GetBoundLocalNetworkRole()),
                         aznumeric_cast<uint32_t>(entityReplicator->GetNetBindComponent()->GetNetEntityRole()),
@@ -772,13 +772,13 @@ namespace Multiplayer
                 result = UpdateValidationResult::DropMessage;
                 if (updateMessage.GetIsDelete())
                 {
-                    AZLOG(NET_RepDeletes, "EntityReplicationManager: Received old DeleteProxy message for entity id %u, sequence %d latest sequence %d from remote host %s",
-                        updateMessage.GetEntityId(), (uint32_t)packetId, (uint32_t)propSubscriber->GetLastReceivedPacketId(), GetRemoteHostId().GetString().c_str());
+                    AZLOG(NET_RepDeletes, "EntityReplicationManager: Received old DeleteProxy message for entity id %llu, sequence %d latest sequence %d from remote host %s",
+                        (AZ::u64)updateMessage.GetEntityId(), (uint32_t)packetId, (uint32_t)propSubscriber->GetLastReceivedPacketId(), GetRemoteHostId().GetString().c_str());
                 }
                 else
                 {
-                    AZLOG(NET_RepUpdate, "EntityReplicationManager: Received old PropertyChangeMessage message for entity id %u, sequence %d latest sequence %d from remote host %s",
-                        updateMessage.GetEntityId(), (uint32_t)packetId, (uint32_t)propSubscriber->GetLastReceivedPacketId(), GetRemoteHostId().GetString().c_str());
+                    AZLOG(NET_RepUpdate, "EntityReplicationManager: Received old PropertyChangeMessage message for entity id %llu, sequence %d latest sequence %d from remote host %s",
+                        (AZ::u64)updateMessage.GetEntityId(), (uint32_t)packetId, (uint32_t)propSubscriber->GetLastReceivedPacketId(), GetRemoteHostId().GetString().c_str());
                 }
             }
         }
@@ -1213,7 +1213,7 @@ namespace Multiplayer
         // Change the role on the replicator
         AddEntityReplicator(entityHandle, NetEntityRole::Server);
 
-        AZLOG(NET_RepDeletes, "Handle Migration %u new authority from remote host %s", entityHandle.GetNetEntityId(), GetRemoteHostId().GetString().c_str());
+        AZLOG(NET_RepDeletes, "Handle Migration %llu new authority from remote host %s", static_cast<AZ::u64>(entityHandle.GetNetEntityId()), GetRemoteHostId().GetString().c_str());
         return true;
     }
 

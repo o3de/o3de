@@ -103,8 +103,8 @@ namespace Multiplayer
         AZ_Assert
         (
             m_boundLocalNetworkRole != m_remoteNetworkRole,
-            "Invalid configuration detected, bound local role must differ from remote network role Role: %d",
-            aznumeric_cast<int32_t>(m_boundLocalNetworkRole)
+            "Invalid configuration detected, bound local role must differ from remote network role: %s",
+            GetEnumString(m_boundLocalNetworkRole)
         );
 
         if (RemoteManagerOwnsEntityLifetime())
@@ -247,7 +247,7 @@ namespace Multiplayer
 
         if (entity->GetState() != AZ::Entity::State::Init)
         {
-            AZLOG_WARN("Trying to activate an entity that is not in the Init state (%u)", GetEntityHandle().GetNetEntityId());
+            AZLOG_WARN("Trying to activate an entity that is not in the Init state (%llu)", static_cast<AZ::u64>(GetEntityHandle().GetNetEntityId()));
         }
 
         entity->Activate();
@@ -430,9 +430,9 @@ namespace Multiplayer
                     AZLOG
                     (
                         NET_HierarchyActivationInfo,
-                        "Hierchical entity %s asking for activation - waiting on the parent %u",
+                        "Hierchical entity %s asking for activation - waiting on the parent %llu",
                         entity->GetName().c_str(),
-                        aznumeric_cast<uint32_t>(parentId)
+                        aznumeric_cast<AZ::u64>(parentId)
                     );
                     return false;
                 }
@@ -450,8 +450,8 @@ namespace Multiplayer
             AZLOG
             (
                 NET_RepDeletes,
-                "Sending delete replicator id %u migrated %d to remote host %s",
-                aznumeric_cast<uint32_t>(GetEntityHandle().GetNetEntityId()),
+                "Sending delete replicator id %llu migrated %d to remote host %s",
+                aznumeric_cast<AZ::u64>(GetEntityHandle().GetNetEntityId()),
                 WasMigrated() ? 1 : 0,
                 m_replicationManager.GetRemoteHostId().GetString().c_str()
             );
@@ -620,8 +620,8 @@ namespace Multiplayer
             {
                 AZLOG_ERROR
                 (
-                    "Dropping RPC and Connection EntityId=%u LocalRole=%s RemoteRole=%s RpcDeliveryType=%u RpcName=%s IsReliable=%s IsMarkedForRemoval=%s",
-                    aznumeric_cast<uint32_t>(m_entityHandle.GetNetEntityId()),
+                    "Dropping RPC and Connection EntityId=%llu LocalRole=%s RemoteRole=%s RpcDeliveryType=%u RpcName=%s IsReliable=%s IsMarkedForRemoval=%s",
+                    aznumeric_cast<AZ::u64>(m_entityHandle.GetNetEntityId()),
                     GetEnumString(GetBoundLocalNetworkRole()),
                     GetEnumString(GetRemoteNetworkRole()),
                     aznumeric_cast<uint32_t>(entityRpcMessage.GetRpcDeliveryType()),
@@ -637,8 +637,8 @@ namespace Multiplayer
             AZLOG
             (
                 NET_Rpc,
-                "Dropping RPC EntityId=%u LocalRole=%s RemoteRole=%s RpcDeliveryType=%u RpcName=%s IsReliable=%s IsMarkedForRemoval=%s",
-                aznumeric_cast<uint32_t>(m_entityHandle.GetNetEntityId()),
+                "Dropping RPC EntityId=%llu LocalRole=%s RemoteRole=%s RpcDeliveryType=%u RpcName=%s IsReliable=%s IsMarkedForRemoval=%s",
+                aznumeric_cast<AZ::u64>(m_entityHandle.GetNetEntityId()),
                 GetEnumString(GetBoundLocalNetworkRole()),
                 GetEnumString(GetRemoteNetworkRole()),
                 aznumeric_cast<uint32_t>(entityRpcMessage.GetRpcDeliveryType()),
@@ -661,8 +661,8 @@ namespace Multiplayer
         {
             AZLOG_WARN
             (
-                "Dropping RPC since entity deleted EntityId=%u LocalRole=%s RemoteRole=%s RpcDeliveryType=%u RpcName=%s IsReliable=%s IsMarkedForRemoval=%s",
-                aznumeric_cast<uint32_t>(m_entityHandle.GetNetEntityId()),
+                "Dropping RPC since entity deleted EntityId=%llu LocalRole=%s RemoteRole=%s RpcDeliveryType=%u RpcName=%s IsReliable=%s IsMarkedForRemoval=%s",
+                aznumeric_cast<AZ::u64>(m_entityHandle.GetNetEntityId()),
                 GetEnumString(GetBoundLocalNetworkRole()),
                 GetEnumString(GetRemoteNetworkRole()),
                 aznumeric_cast<uint32_t>(entityRpcMessage.GetRpcDeliveryType()),
