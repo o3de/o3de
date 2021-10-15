@@ -17,8 +17,6 @@ namespace AzToolsFramework
     {
         PrefabUndoBase::PrefabUndoBase(const AZStd::string& undoOperationName)
             : UndoSystem::URSequencePoint(undoOperationName)
-            , m_changed(true)
-            , m_templateId(InvalidTemplateId)
         {
             m_instanceToTemplateInterface = AZ::Interface<InstanceToTemplateInterface>::Get();
             AZ_Assert(m_instanceToTemplateInterface, "Failed to grab instance to template interface");
