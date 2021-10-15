@@ -367,14 +367,14 @@ namespace AtomToolsFramework
         m_inputChannelMapper->SetCursorCaptureEnabled(false);
     }
 
-    void RenderViewportWidget::PushOverrideCursor(/*enum*/)
+    void RenderViewportWidget::SetOverrideCursor(AzToolsFramework::ViewportInteraction::CursorStyleOverride cursorStyleOverride)
     {
-        m_inputChannelMapper->PushCursor();
+        m_inputChannelMapper->SetOverrideCursor(cursorStyleOverride);
     }
 
-    void RenderViewportWidget::PopOverrideCursor()
+    void RenderViewportWidget::ClearOverrideCursor()
     {
-        m_inputChannelMapper->PopCursor();
+        m_inputChannelMapper->ClearOverrideCursor();
     }
 
     void RenderViewportWidget::SetWindowTitle(const AZStd::string& title)

@@ -187,16 +187,17 @@ namespace AzToolsFramework
         }
 
         // Verify if the entity Id corresponds to an entity that is focused; if not, halt selection.
-        if (!IsSelectableAccordingToFocusMode(entityIdUnderCursor))
+        if (entityIdUnderCursor.IsValid() && !IsSelectableAccordingToFocusMode(entityIdUnderCursor))
         {
             ViewportInteraction::ViewportMouseCursorRequestBus::Event(
-                viewportId, &ViewportInteraction::ViewportMouseCursorRequestBus::Events::PushOverrideCursor);
+                viewportId, &ViewportInteraction::ViewportMouseCursorRequestBus::Events::SetOverrideCursor,
+                ViewportInteraction::CursorStyleOverride::Forbidden);
 
             return AZ::EntityId();
         }
 
         ViewportInteraction::ViewportMouseCursorRequestBus::Event(
-            viewportId, &ViewportInteraction::ViewportMouseCursorRequestBus::Events::PopOverrideCursor);
+            viewportId, &ViewportInteraction::ViewportMouseCursorRequestBus::Events::ClearOverrideCursor);
 
         // Container Entity support - if the entity that is being selected is part of a closed container,
         // change the selection to the container instead.

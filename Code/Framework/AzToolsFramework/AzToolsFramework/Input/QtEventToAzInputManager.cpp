@@ -244,6 +244,16 @@ namespace AzToolsFramework
 
         const auto eventType = event->type();
 
+        if (eventType == QEvent::Type::MouseMove)
+        {
+            const auto* mouseEvent = static_cast<const QMouseEvent*>(event);
+            if (m_overrideCursor && !m_sourceWidget->geometry().contains(mouseEvent->pos()))
+            {
+                qApp->restoreOverrideCursor();
+                m_overrideCursor = false;
+            }
+        }
+
         // Only accept mouse & key release events that originate from an object that is not our target widget,
         // as we don't want to erroneously intercept user input meant for another component.
         if (object != m_sourceWidget && eventType != QEvent::Type::KeyRelease && eventType != QEvent::Type::MouseButtonRelease)
@@ -256,27 +266,14 @@ namespace AzToolsFramework
             // If our focus changes, go ahead and reset all input devices.
             HandleFocusChange(event);
 
-            if (eventType == QEvent::FocusOut)
-            {
-                if (m_capturingCursor)
-                {
-                    qApp->restoreOverrideCursor();
-                }
-            }
-
             // If we focus in on the source widget and the mouse is contained in its
             // bounds, refresh the cached cursor position to ensure it is up to date (this
             // ensures cursor positions are refreshed correctly with context menu focus changes)
             if (eventType == QEvent::FocusIn)
             {
                 const auto globalCursorPosition = QCursor::pos();
-                if (m_sourceWidget->geometry().contains(globalCursorPosition))
+                if (m_sourceWidget->geometry().contains(m_sourceWidget->mapFromGlobal(globalCursorPosition)))
                 {
-                    if (m_capturingCursor)
-                    {
-                        qApp->setOverrideCursor(Qt::ForbiddenCursor);
-                    }
-
                     HandleMouseMoveEvent(globalCursorPosition);
                 }
             }
@@ -466,16 +463,26 @@ namespace AzToolsFramework
         }
     }
 
-    void QtEventToAzInputMapper::PushCursor(/*enum*/)
+    static Qt::CursorShape QtCursorFromAzCursor(const ViewportInteraction::CursorStyleOverride cursorStyleOverride)
     {
-        if (!m_overrideCursor)
+        switch (cursorStyleOverride)
         {
-            qApp->setOverrideCursor(Qt::ForbiddenCursor);
-            m_overrideCursor = true;
+        case ViewportInteraction::CursorStyleOverride::Forbidden:
+            return Qt::ForbiddenCursor;
+        default:
+            return Qt::ArrowCursor;
         }
     }
 
-    void QtEventToAzInputMapper::PopCursor()
+    void QtEventToAzInputMapper::SetOverrideCursor(ViewportInteraction::CursorStyleOverride cursorStyleOverride)
+    {
+        ClearOverrideCursor();
+
+        qApp->setOverrideCursor(QtCursorFromAzCursor(cursorStyleOverride));
+        m_overrideCursor = true;
+    }
+
+    void QtEventToAzInputMapper::ClearOverrideCursor()
     {
         if (m_overrideCursor)
         {

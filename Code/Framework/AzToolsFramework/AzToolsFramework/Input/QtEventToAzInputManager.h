@@ -15,9 +15,10 @@
 #include <AzFramework/Input/Channels/InputChannelDeltaWithSharedPosition2D.h>
 #include <AzFramework/Input/Channels/InputChannelDigitalWithSharedModifierKeyStates.h>
 #include <AzFramework/Input/Channels/InputChannelDigitalWithSharedPosition2D.h>
-
 #include <AzFramework/Input/Devices/Keyboard/InputDeviceKeyboard.h>
 #include <AzFramework/Input/Devices/Mouse/InputDeviceMouse.h>
+
+#include <AzToolsFramework/Viewport/ViewportMessages.h>
 
 #include <QEvent>
 #include <QObject>
@@ -55,8 +56,8 @@ namespace AzToolsFramework
         //! like a dolly or rotation, where mouse movement is important but cursor location is not.
         void SetCursorCaptureEnabled(bool enabled);
 
-        void PushCursor(/*enum*/);
-        void PopCursor();
+        void SetOverrideCursor(ViewportInteraction::CursorStyleOverride cursorStyleOverride);
+        void ClearOverrideCursor();
 
         // QObject overrides...
         bool eventFilter(QObject* object, QEvent* event) override;
@@ -167,8 +168,8 @@ namespace AzToolsFramework
         bool m_enabled = true;
         // Flags whether or not the cursor is being constrained to the source widget (for invisible mouse movement).
         bool m_capturingCursor = false;
-        //
-        bool m_overrideCursor = true;
+        // Flags whether the cursor has been overridden.
+        bool m_overrideCursor = false;
 
         // Our viewport-specific AZ devices. We control their internal input channel states.
         AZStd::unique_ptr<EditorQtMouseDevice> m_mouseDevice;
