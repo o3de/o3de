@@ -1157,7 +1157,7 @@ namespace Multiplayer
             AZ_Assert(didSucceed, "Failed to migrate entity from server");
 
             m_sendMigrateEntityEvent.Signal(m_connection, message);
-            AZLOG(NET_RepDeletes, "Migration packet sent %u to remote host %s", netEntityId, GetRemoteHostId().GetString().c_str());
+            AZLOG(NET_RepDeletes, "Migration packet sent %llu to remote host %s", static_cast<AZ::u64>(netEntityId), GetRemoteHostId().GetString().c_str());
 
             // Notify all other EntityReplicationManagers that this entity has migrated so they can adjust their own replicators given our new proxy status
             GetMultiplayer()->SendNotifyEntityMigrationEvent(entityHandle, GetRemoteHostId());
