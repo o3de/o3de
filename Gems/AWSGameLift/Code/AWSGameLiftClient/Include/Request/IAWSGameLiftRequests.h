@@ -96,7 +96,12 @@ namespace AWSGameLift
     using AWSGameLiftMatchmakingRequestBus = AZ::EBus<AzFramework::IMatchmakingRequests, AWSGameLiftMatchmakingRequests>;
 
     //! IAWSGameLiftMatchmakingEventRequests
-    //! GameLift Gem matchmaking event interfaces which is used to track matchmaking event
+    //! GameLift Gem matchmaking event interfaces which is used to track matchmaking ticket event
+    //! Developer should define the way to poll matchmaking ticket event and behavior based on the ticket status
+    //! Use AWSGameLiftClientLocalTicketTracker as an example, it uses continuous polling to query matchmaking ticket:
+    //! StartPolling - local ticket tracker starts monitor process for matchmaking ticket, and joins player
+    //!                to the match once ticket is complete
+    //! StopPolling - local ticket tracker cancels ongoing matchmaking ticket and stops monitoring process
     class IAWSGameLiftMatchmakingEventRequests
     {
     public:
@@ -106,8 +111,7 @@ namespace AWSGameLift
         virtual ~IAWSGameLiftMatchmakingEventRequests() = default;
 
         //! StartPolling
-        //! Request to start process for polling matchmaking ticket based on given ticket id,
-        //! if requested ticket is complete, join player to the match
+        //! Request to start process for polling matchmaking ticket based on given ticket id and player Id
         //! @param ticketId The requested matchmaking ticket id
         //! @param playerId The requested matchmaking player id
         virtual void StartPolling(const AZStd::string& ticketId, const AZStd::string& playerId) = 0;

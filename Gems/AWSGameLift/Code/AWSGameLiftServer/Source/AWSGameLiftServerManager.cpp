@@ -460,7 +460,7 @@ namespace AWSGameLift
         Aws::GameLift::GenericOutcome processEndingOutcome = m_gameLiftServerSDKWrapper->ProcessEnding();
         if (processEndingOutcome.IsSuccess())
         {
-            AZ_TracePrintf(AWSGameLiftServerManagerName, "ProcessEnding request against Amazon GameLift service is complete.");
+            AZ_TracePrintf(AWSGameLiftServerManagerName, "ProcessEnding request against Amazon GameLift service succeeded.");
             AzFramework::SessionNotificationBus::Broadcast(&AzFramework::SessionNotifications::OnDestroySessionEnd);
         }
         else
@@ -550,7 +550,7 @@ namespace AWSGameLift
 
             if (activationOutcome.IsSuccess())
             {
-                AZ_TracePrintf(AWSGameLiftServerManagerName, "ActivateGameSession request against Amazon GameLift service is complete.");
+                AZ_TracePrintf(AWSGameLiftServerManagerName, "ActivateGameSession request against Amazon GameLift service succeeded.");
                 // Register server manager as handler once game session has been activated
                 if (!AZ::Interface<AzFramework::ISessionHandlingProviderRequests>::Get())
                 {
@@ -657,7 +657,7 @@ namespace AWSGameLift
         }
         else
         {
-            AZ_TracePrintf(AWSGameLiftServerManagerName, "StartMatchBackfill request against Amazon GameLift service is complete.");
+            AZ_TracePrintf(AWSGameLiftServerManagerName, "StartMatchBackfill request against Amazon GameLift service succeeded.");
             return true;
         }
     }
@@ -689,7 +689,7 @@ namespace AWSGameLift
         }
         else
         {
-            AZ_TracePrintf(AWSGameLiftServerManagerName, "StopMatchBackfill request against Amazon GameLift service is complete.");
+            AZ_TracePrintf(AWSGameLiftServerManagerName, "StopMatchBackfill request against Amazon GameLift service succeeded.");
             return true;
         }
     }
