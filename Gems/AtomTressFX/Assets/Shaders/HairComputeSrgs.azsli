@@ -29,7 +29,7 @@
 // THE SOFTWARE.
 //
 //------------------------------------------------------------------------------
-// File: HairSRGs.azsli
+// File: HairComputeSrgs.azsli
 //
 // Declarations of SRGs used by the hair shaders.
 //------------------------------------------------------------------------------

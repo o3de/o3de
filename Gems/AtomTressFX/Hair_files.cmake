@@ -84,28 +84,35 @@ set(FILES
     Code/Assets/HairAsset.cpp
 #)
 #set(shaders_sources
-    # Srgs and Utility files
-    Assets/Shaders/HairSrgs.azsli
-    Assets/Shaders/HairSimulationSrgs.azsli
+    # Geometry and Full Screen azsl utility files
     Assets/Shaders/HairRenderingSrgs.azsli
-    Assets/Shaders/HairSimulationCommon.azsli
     Assets/Shaders/HairStrands.azsli
     Assets/Shaders/HairUtilities.azsli
+    Assets/Shaders/HairFullScreenUtils.azsli
     Assets/Shaders/HairLighting.azsli    
     Assets/Shaders/HairLightingEquations.azsli    
     Assets/Shaders/HairLightTypes.azsli
     Assets/Shaders/HairSurface.azsli
 
-    # Simulation Compute shaders
-    Assets/Shaders/HairSimulationCompute.azsl   
-    
-    # Collision shaders - to be included soon
-#    Assets/Shaders/HairCollisionPrepareSDF.azsl
-#    Assets/Shaders/HairCollisionWithSDF.azsl
+    # ShortCut technique shaders (using multiple RTs instead of PPLL for GPU memory reduction) 
+    Assets/Shaders/HairShortCutGeometryDepthAlpha.azsl
+    Assets/Shaders/HairShortCutResolveDepth.azsl
+    Assets/Shaders/HairShortCutGeometryShading.azsl
+    Assets/Shaders/HairShortCutResolveColor.azsl
 
-    # Rendering shaders
+    # Rendering azsl files
     Assets/Shaders/HairRenderingFillPPLL.azsl
     Assets/Shaders/HairRenderingResolvePPLL.azsl  
+
+    # Simulation Compute azsl files
+    Assets/Shaders/HairComputeSrgs.azsli
+    Assets/Shaders/HairSimulationComputeSrgs.azsli
+    Assets/Shaders/HairSimulationCommon.azsli
+    Assets/Shaders/HairSimulationCompute.azsl   
+    
+    # Collision azsl files - to be included soon
+#    Assets/Shaders/HairCollisionPrepareSDF.azsl
+#    Assets/Shaders/HairCollisionWithSDF.azsl
 
     # Simulation .shader files
     Assets/Shaders/HairGlobalShapeConstraintsCompute.shader  
