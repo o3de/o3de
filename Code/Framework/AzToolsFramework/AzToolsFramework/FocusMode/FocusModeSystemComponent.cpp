@@ -71,8 +71,7 @@ namespace AzToolsFramework
             return;
         }
 
-        if (auto tracker = AZ::Interface<ViewportEditorModeTrackerInterface>::Get();
-            tracker != nullptr)
+        if (auto tracker = AZ::Interface<ViewportEditorModeTrackerInterface>::Get())
         {
             if (!m_focusRoot.IsValid() && entityId.IsValid())
             {

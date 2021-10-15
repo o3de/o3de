@@ -30,27 +30,25 @@ namespace AzToolsFramework
     }
 
     //!< Represents the result of a query to find the id of the entity under the cursor (if any).
-    class EntityIdUnderCursor
+    class CursorEntityIdQuery
     {
     public:
-        EntityIdUnderCursor(AZ::EntityId entityId);
-        EntityIdUnderCursor(AZ::EntityId entityId, AZ::EntityId rootEntityId);
+        CursorEntityIdQuery(AZ::EntityId entityId, AZ::EntityId rootEntityId);
 
         //! Returns the entity id under the cursor (if any).
         //! @note In the case of no entity id under the cursor, an invalid entity id is returned.
-        AZ::EntityId GetEntityId() const;
+        AZ::EntityId EntityIdUnderCursor() const;
 
-        //! Returns the root entity id if the entity id under the cursor is part of a prefab, otherwise returns the entity id.
+        //! Returns the topmost container entity id in the hierarchy if the entity id under the cursor is inside a container entity, otherwise returns the entity id.
         //! @note In the case of no entity id under the cursor, an invalid entity id is returned.
-        AZ::EntityId GetRootEntityId() const;
+        AZ::EntityId ContainerAncestorEntityId() const;
 
-        //! Returns true if the entity id under the cursor is part of a prefab, otherwise false.
-        //! @note In the case of no entity id under the cursor, false is returned.
-        bool IsPrefabEntity() const;
+        //! Returns true if the query has a container ancestor entity id, otherwise false.
+        bool HasContainerAncestorEntityId() const;
 
     private:
         AZ::EntityId m_entityId; //<! The entity id under the cursor.
-        AZ::EntityId m_rootEntityId; //<! For prefabs, the root entity id, otherwise the entity id under the cursor.
+        AZ::EntityId m_containerAncestorEntityId; //<! For entities in container entities, the topmost container entity id in the hierarchy, otherwise the entity id under the cursor.
     };
 
     //! EditorHelpers are the visualizations that appear for entities
@@ -68,9 +66,9 @@ namespace AzToolsFramework
         EditorHelpers& operator=(const EditorHelpers&) = delete;
         ~EditorHelpers() = default;
 
-        //! Determines the id of the entity under the cursor (if any). For prefabs, also determines the root entity id.
+        //! Finds the id of the entity under the cursor (if any). For entities in container entities, also finds the topmost container entity id in the hierarchy.
         //! Used to check if a particular entity was selected.
-        EntityIdUnderCursor GetEntityIdUnderCursor(
+        CursorEntityIdQuery FindEntityIdUnderCursor(
             const AzFramework::CameraState& cameraState, const ViewportInteraction::MouseInteractionEvent& mouseInteraction);
 
         //! Do the drawing responsible for the EditorHelpers.

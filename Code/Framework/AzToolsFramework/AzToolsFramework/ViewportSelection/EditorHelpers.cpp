@@ -114,36 +114,30 @@ namespace AzToolsFramework
         }
     }
 
-    EntityIdUnderCursor::EntityIdUnderCursor(AZ::EntityId entityId)
+    CursorEntityIdQuery::CursorEntityIdQuery(AZ::EntityId entityId, AZ::EntityId rootEntityId)
         : m_entityId(entityId)
-        , m_rootEntityId(entityId)
+        , m_containerAncestorEntityId(rootEntityId)
     {
     }
 
-    EntityIdUnderCursor::EntityIdUnderCursor(AZ::EntityId entityId, AZ::EntityId rootEntityId)
-        : m_entityId(entityId)
-        , m_rootEntityId(rootEntityId)
-    {
-    }
-
-    AZ::EntityId EntityIdUnderCursor::GetEntityId() const
+    AZ::EntityId CursorEntityIdQuery::EntityIdUnderCursor() const
     {
         return m_entityId;
     }
 
-    AZ::EntityId EntityIdUnderCursor::GetRootEntityId() const
+    AZ::EntityId CursorEntityIdQuery::ContainerAncestorEntityId() const
     {
-        return m_rootEntityId;
+        return m_containerAncestorEntityId;
     }
 
-    bool EntityIdUnderCursor::IsPrefabEntity() const
+    bool CursorEntityIdQuery::HasContainerAncestorEntityId() const
     {
-        if (m_entityId == AZ::EntityId())
+        if (m_entityId.IsValid())
         {
-            return false;
+            return m_entityId != m_containerAncestorEntityId;
         }
 
-        return m_entityId != m_rootEntityId;
+        return false;
     }
 
 
@@ -158,7 +152,7 @@ namespace AzToolsFramework
             "Check that it is being correctly initialized.");
     }
 
-    EntityIdUnderCursor EditorHelpers::GetEntityIdUnderCursor(
+    CursorEntityIdQuery EditorHelpers::FindEntityIdUnderCursor(
         const AzFramework::CameraState& cameraState, const ViewportInteraction::MouseInteractionEvent& mouseInteraction)
     {
         AZ_PROFILE_FUNCTION(AzToolsFramework);
@@ -222,7 +216,7 @@ namespace AzToolsFramework
         // Verify if the entity Id corresponds to an entity that is focused; if not, halt selection.
         if (!IsSelectableAccordingToFocusMode(entityIdUnderCursor))
         {
-            return EntityIdUnderCursor(AZ::EntityId());
+            return CursorEntityIdQuery(AZ::EntityId(), AZ::EntityId());
         }
 
         // Container Entity support - if the entity that is being selected is part of a closed container,
@@ -230,10 +224,10 @@ namespace AzToolsFramework
         if (ContainerEntityInterface* containerEntityInterface = AZ::Interface<ContainerEntityInterface>::Get())
         {
             const auto highestSelectableEntity = containerEntityInterface->FindHighestSelectableEntity(entityIdUnderCursor);
-            return EntityIdUnderCursor(entityIdUnderCursor, highestSelectableEntity);
+            return CursorEntityIdQuery(entityIdUnderCursor, highestSelectableEntity);
         }
 
-        return EntityIdUnderCursor(entityIdUnderCursor);
+        return CursorEntityIdQuery(entityIdUnderCursor, AZ::EntityId());
     }
 
     void EditorHelpers::DisplayHelpers(

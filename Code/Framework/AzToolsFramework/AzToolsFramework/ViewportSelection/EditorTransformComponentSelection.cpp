@@ -1800,8 +1800,8 @@ namespace AzToolsFramework
         const AzFramework::ViewportId viewportId = mouseInteraction.m_mouseInteraction.m_interactionId.m_viewportId;
         const AzFramework::CameraState cameraState = GetCameraState(viewportId);
 
-        const auto entityIdsUnderCursor = m_editorHelpers->GetEntityIdUnderCursor(cameraState, mouseInteraction);
-        m_cachedEntityIdUnderCursor = entityIdsUnderCursor.GetRootEntityId();
+        const auto cursorEntityIdQuery = m_editorHelpers->FindEntityIdUnderCursor(cameraState, mouseInteraction);
+        m_cachedEntityIdUnderCursor = cursorEntityIdQuery.ContainerAncestorEntityId();
 
         const auto selectClickEvent = ClickDetectorEventFromViewportInteraction(mouseInteraction);
         m_cursorState.SetCurrentPosition(mouseInteraction.m_mouseInteraction.m_mousePick.m_screenCoordinates);
@@ -1842,16 +1842,16 @@ namespace AzToolsFramework
             return true;
         }
 
+        const AZ::EntityId entityIdUnderCursor = m_cachedEntityIdUnderCursor;
+
         if (mouseInteraction.m_mouseEvent == ViewportInteraction::MouseEvent::DoubleClick &&
             mouseInteraction.m_mouseInteraction.m_mouseButtons.Left())
         {
-            if (entityIdsUnderCursor.IsPrefabEntity())
+            if (cursorEntityIdQuery.HasContainerAncestorEntityId())
             {
-                 auto prefabFocusInterface = AZ::Interface<Prefab::PrefabFocusInterface>::Get();
-                 if (prefabFocusInterface)
+                if (auto prefabFocusInterface = AZ::Interface<Prefab::PrefabFocusInterface>::Get())
                 {
-                    // Focus on this prefab
-                    prefabFocusInterface->FocusOnOwningPrefab(entityIdsUnderCursor.GetRootEntityId());
+                    prefabFocusInterface->FocusOnOwningPrefab(cursorEntityIdQuery.ContainerAncestorEntityId());
                     return false;
                 }
             }
@@ -1878,7 +1878,7 @@ namespace AzToolsFramework
         // select/deselect (add/remove) entities with ctrl held
         if (Input::AdditiveIndividualSelect(clickOutcome, mouseInteraction))
         {
-            if (SelectDeselect(m_cachedEntityIdUnderCursor))
+            if (SelectDeselect(entityIdUnderCursor))
             {
                 if (m_selectedEntityIds.empty())
                 {
@@ -1892,13 +1892,13 @@ namespace AzToolsFramework
         if (!m_selectedEntityIds.empty())
         {
             // group copying/alignment to specific entity - 'ditto' position/orientation for group
-            if (Input::GroupDitto(mouseInteraction) && PerformGroupDitto(m_cachedEntityIdUnderCursor))
+            if (Input::GroupDitto(mouseInteraction) && PerformGroupDitto(entityIdUnderCursor))
             {
                 return false;
             }
 
             // individual copying/alignment to specific entity - 'ditto' position/orientation for individual
-            if (Input::IndividualDitto(mouseInteraction) && PerformIndividualDitto(m_cachedEntityIdUnderCursor))
+            if (Input::IndividualDitto(mouseInteraction) && PerformIndividualDitto(entityIdUnderCursor))
             {
                 return false;
             }
@@ -1913,7 +1913,7 @@ namespace AzToolsFramework
             // set manipulator pivot override translation or orientation (update manipulators)
             if (Input::ManipulatorDitto(clickOutcome, mouseInteraction))
             {
-                PerformManipulatorDitto(m_cachedEntityIdUnderCursor);
+                PerformManipulatorDitto(entityIdUnderCursor);
                 return false;
             }
 
@@ -1928,11 +1928,11 @@ namespace AzToolsFramework
         {
             if (!stickySelect)
             {
-                ChangeSelectedEntity(m_cachedEntityIdUnderCursor);
+                ChangeSelectedEntity(entityIdUnderCursor);
             }
             else
             {
-                SelectDeselect(m_cachedEntityIdUnderCursor);
+                SelectDeselect(entityIdUnderCursor);
             }
         }
 
