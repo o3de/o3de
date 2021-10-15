@@ -336,14 +336,11 @@ namespace AWSGameLift
                         BuildServerMatchBackfillPlayerAttributes(
                             players[playerIndex][AWSGameLiftMatchmakingPlayerAttributesKeyName], outPlayer);
                     }
-                }
-                else
-                {
-                    return false;
+                    return true;
                 }
             }
         }
-        return true;
+        return false;
     }
 
     void AWSGameLiftServerManager::BuildServerMatchBackfillPlayerAttributes(

@@ -34,12 +34,19 @@ R"({
                       "valueAttribute":"testmode"
                   },
                   "level":{
-                      "attributeType":"NUMBER",
+                      "attributeType":"DOUBLE",
                       "valueAttribute":10.0
                   },
                   "items":{
                       "attributeType":"STRING_LIST",
                       "valueAttribute":["test1","test2","test3"]
+                  }
+              }},
+             {"playerId":"secondplayer",
+              "attributes":{
+                  "mode":{
+                      "attributeType":"STRING",
+                      "valueAttribute":"testmode"
                   }
               }}
          ]}
