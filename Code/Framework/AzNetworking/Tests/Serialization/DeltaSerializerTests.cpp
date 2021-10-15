@@ -89,6 +89,22 @@ namespace UnitTest
 
             return true;
         }
+
+        // This logic is modeled after NetworkInputArray serialization in the Multiplayer Gem
+        bool SerializeNoDelta(AzNetworking::ISerializer& serializer)
+        {
+            
+
+            for (uint32_t i = 0; i < m_container.size(); ++i)
+            {
+                if(!m_container[i].Serialize(serializer))
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
     };
 
     class DeltaSerializerTests
@@ -169,6 +185,22 @@ namespace UnitTest
         EXPECT_FALSE(createSerializer.GetTrackedChangesFlag());
         EXPECT_TRUE(createSerializer.BeginObject("CreateSerializer", "Begin"));
         EXPECT_TRUE(createSerializer.EndObject("CreateSerializer", "End"));
+    }
+
+    TEST_F(DeltaSerializerTests, DeltaArraySize)
+    {
+        DeltaDataContainer deltaContainer = TestDeltaContainer();
+        DeltaDataContainer noDeltaContainer = TestDeltaContainer();
+
+        AZStd::array<uint8_t, 2048> deltaBuffer;
+        AzNetworking::NetworkInputSerializer deltaSerializer(deltaBuffer.data(), static_cast<uint32_t>(deltaBuffer.size()));
+        AZStd::array<uint8_t, 2048> noDeltaBuffer;
+        AzNetworking::NetworkInputSerializer noDeltaSerializer(noDeltaBuffer.data(), static_cast<uint32_t>(noDeltaBuffer.size()));
+
+        EXPECT_TRUE(deltaContainer.Serialize(deltaSerializer));
+        EXPECT_FALSE(noDeltaContainer.SerializeNoDelta(noDeltaSerializer)); // Should run out of space
+        EXPECT_EQ(noDeltaSerializer.GetCapacity(), noDeltaSerializer.GetSize()); // Verify that the serializer filled up
+        EXPECT_FALSE(noDeltaSerializer.IsValid()); // and that it is no longer valid due to lack of space
     }
 
     TEST_F(DeltaSerializerTests, DeltaSerializerApplyUnused)
