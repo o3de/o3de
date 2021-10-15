@@ -246,8 +246,9 @@ namespace AzToolsFramework
 
         if (eventType == QEvent::Type::MouseMove)
         {
+            // clear override cursor when moving outside of the viewport
             const auto* mouseEvent = static_cast<const QMouseEvent*>(event);
-            if (m_overrideCursor && !m_sourceWidget->geometry().contains(mouseEvent->pos()))
+            if (m_overrideCursor && !m_sourceWidget->geometry().contains(m_sourceWidget->mapFromGlobal(mouseEvent->globalPos())))
             {
                 qApp->restoreOverrideCursor();
                 m_overrideCursor = false;
