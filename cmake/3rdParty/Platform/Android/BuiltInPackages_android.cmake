@@ -16,7 +16,7 @@ ly_associate_package(PACKAGE_NAME zstd-1.35-multiplatform            TARGETS zst
 ly_associate_package(PACKAGE_NAME glad-2.0.0-beta-rev2-multiplatform TARGETS glad      PACKAGE_HASH ff97ee9664e97d0854b52a3734c2289329d9f2b4cd69478df6d0ca1f1c9392ee)
 ly_associate_package(PACKAGE_NAME lux_core-2.2-rev5-multiplatform    TARGETS lux_core  PACKAGE_HASH c8c13cf7bc351643e1abd294d0841b24dee60e51647dff13db7aec396ad1e0b5)
 # platform-specific:
-ly_associate_package(PACKAGE_NAME tiff-4.2.0.15-rev2-android         TARGETS tiff            PACKAGE_HASH 252b99e5886ec59fdccf38603c1399dd3fc02d878641aba35a7f8d2504065a06)
+ly_associate_package(PACKAGE_NAME tiff-4.2.0.15-rev4-android         TARGETS TIFF            PACKAGE_HASH 2c62cdf34a8ee6c7eb091d05d98f60b4da7634c74054d4dbb8736886182f4589)
 ly_associate_package(PACKAGE_NAME freetype-2.10.4.16-android         TARGETS freetype        PACKAGE_HASH df9e4d559ea0f03b0666b48c79813b1cd4d9624429148a249865de9f5c2c11cd)
 ly_associate_package(PACKAGE_NAME AWSNativeSDK-1.9.50-rev1-android   TARGETS AWSNativeSDK    PACKAGE_HASH 33771499f9080cbaab613459927e52911e68f94fa356397885e85005efbd1490)
 ly_associate_package(PACKAGE_NAME Lua-5.3.5-rev5-android             TARGETS Lua             PACKAGE_HASH 1f638e94a17a87fe9e588ea456d5893876094b4db191234380e4c4eb9e06c300)

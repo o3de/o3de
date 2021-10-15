@@ -48,6 +48,7 @@ namespace O3DE::ProjectManager
         item->setData(gemInfo.m_features, RoleFeatures);
         item->setData(gemInfo.m_path, RolePath);
         item->setData(gemInfo.m_requirement, RoleRequirement);
+        item->setData(gemInfo.m_downloadStatus, RoleDownloadStatus);
 
         appendRow(item);
 
@@ -130,6 +131,11 @@ namespace O3DE::ProjectManager
     GemInfo::Types GemModel::GetTypes(const QModelIndex& modelIndex)
     {
         return static_cast<GemInfo::Types>(modelIndex.data(RoleTypes).toInt());
+    }
+
+    GemInfo::DownloadStatus GemModel::GetDownloadStatus(const QModelIndex& modelIndex)
+    {
+        return static_cast<GemInfo::DownloadStatus>(modelIndex.data(RoleDownloadStatus).toInt());
     }
 
     QString GemModel::GetSummary(const QModelIndex& modelIndex)
@@ -371,6 +377,11 @@ namespace O3DE::ProjectManager
             added |= modelIndex.data(RoleIsAddedDependency).toBool();
         }
         return previouslyAdded && !added;
+    }
+
+    void GemModel::SetDownloadStatus(QAbstractItemModel& model, const QModelIndex& modelIndex, GemInfo::DownloadStatus status)
+    {
+        model.setData(modelIndex, status, RoleDownloadStatus);
     }
 
     bool GemModel::HasRequirement(const QModelIndex& modelIndex)

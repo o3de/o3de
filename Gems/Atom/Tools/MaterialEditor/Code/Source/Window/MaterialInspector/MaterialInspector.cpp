@@ -101,9 +101,9 @@ namespace MaterialEditor
     {
         if (IsInstanceNodePropertyModifed(node))
         {
-            return ":/PropertyEditor/Resources/changed_data_item.png";
+            return ":/Icons/changed_property.svg";
         }
-        return ":/PropertyEditor/Resources/blank.png";
+        return ":/Icons/blank.png";
     }
 
     void MaterialInspector::AddOverviewGroup()

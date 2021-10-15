@@ -15,7 +15,7 @@ namespace AzToolsFramework
 
     namespace Prefab
     {
-        class PrefabFocusInterface;
+        class PrefabFocusPublicInterface;
         class PrefabPublicInterface;
     };
 
@@ -39,7 +39,7 @@ namespace AzToolsFramework
         void OnDoubleClick(AZ::EntityId entityId) const override;
 
     private:
-        Prefab::PrefabFocusInterface* m_prefabFocusInterface = nullptr;
+        Prefab::PrefabFocusPublicInterface* m_prefabFocusPublicInterface = nullptr;
         Prefab::PrefabPublicInterface* m_prefabPublicInterface = nullptr;
 
         static bool IsLastVisibleChild(const QModelIndex& parent, const QModelIndex& child);
