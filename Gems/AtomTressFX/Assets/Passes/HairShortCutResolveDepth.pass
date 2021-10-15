@@ -1,0 +1,85 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PassAsset",
+    "ClassData": {
+        "PassTemplate": {
+            "Name": "HairShortCutResolveDepthPassTemplate",
+            "PassClass": "HairShortCutResolveDepthPass",
+            "Slots": [
+                //------ General Input/Output resources and Render Target ------
+                {
+                    "Name": "Depth",
+                    "SlotType": "InputOutput",
+                    "ScopeAttachmentUsage": "DepthStencil",
+                    "LoadStoreAction": {
+                        "LoadAction": "Load",
+                        "StoreAction": "Store"
+                    }
+                },
+                { // Used to get the transform from screen space to world space.
+                    "Name": "DepthLinear",
+                    "SlotType": "Input",
+                    "ShaderInputName": "m_linearDepth",
+                    "ScopeAttachmentUsage": "Shader"
+                },
+                {
+                    "Name": "HairDepthsTextureArray",
+                    "SlotType": "Input",
+                    "ScopeAttachmentUsage": "Shader",
+                    "ShaderInputName": "m_fragmentDepthsTexture"
+                }
+            ],
+            "ImageAttachments": [
+                {
+                    "Name": "HairDepthsTextureArray",
+                    "SizeSource": {
+                        "Source": {
+                            "Pass": "Parent",
+                            "Attachment": "RenderTargetInputOutput"
+                        }
+                    },
+                    "ImageDescriptor": {
+                        "Format": "D32_FLOAT",
+                        "ArraySize": "3",
+                        "MultisampleState": {
+                            "samples": 1
+                        },
+                        "SharedQueueMask": "Graphics"
+                    }
+                }
+            ],
+            "Connections": [
+                {
+                    "LocalSlot": "Depth",
+                    "AttachmentRef": {
+                        "Pass": "Parent",
+                        "Attachment": "Depth"
+                    }
+                },
+                {
+                    "LocalSlot": "DepthLinear",
+                    "AttachmentRef": {
+                        "Pass": "Parent",
+                        "Attachment": "DepthLinear"
+                    }
+                },
+                {
+                    "LocalSlot": "HairDepthsTextureArray",
+                    "AttachmentRef": {
+                        "Pass": "HairShortCutGeometryDepthAlphaPass",
+                        "Attachment": "HairDepthsTextureArray"
+                    }
+                }
+            ],
+            "PassData": {
+                "$type": "FullscreenTrianglePassData",
+                "ShaderAsset": {
+                    // Looking for it in the Shaders directory relative to the Assets directory
+                    "FilePath": "Shaders/HairShortCutResolveDepth.shader"
+                }
+            }
+        }
+    }
+}
+
