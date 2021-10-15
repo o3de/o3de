@@ -145,7 +145,6 @@ namespace AzToolsFramework
         class IntrusiveHelper
         {
         public:
-            // Technically private functions, but made public so lambdas get access to the data.
             static AZStd::vector<ClassSymbol>& GetClassSymbols(SymbolsReporterSystemComponent& symbolsReporter) { return symbolsReporter.m_classSymbols; }
             static AZStd::unordered_map<AZ::Uuid, size_t>& GetClassUuidToIndexMap(SymbolsReporterSystemComponent& symbolsReporter) { return symbolsReporter.m_classUuidToIndexMap; }
             static AZStd::vector<PropertySymbol>& GetGlobalPropertySymbols(SymbolsReporterSystemComponent& symbolsReporter) { return symbolsReporter.m_globalPropertySymbols; }
