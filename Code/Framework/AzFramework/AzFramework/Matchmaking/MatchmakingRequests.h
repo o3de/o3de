@@ -9,6 +9,7 @@
 #pragma once
 
 #include <AzCore/RTTI/RTTI.h>
+#include <AzCore/std/containers/vector.h>
 #include <AzCore/std/string/string.h>
 
 namespace AZ

@@ -45,8 +45,13 @@ class JointEntity:
 # Entity class that sets a flag when an instance receives collision events.
 class JointEntityCollisionAware(JointEntity):
     def on_collision_begin(self, args):
-        if not self.collided:
-            self.collided = True
+        self.collided = True
+    
+    def on_collision_persist(self, args):
+        self.collided = True
+
+    def on_collision_end(self, args):
+        self.collided = True
 
     def __init__(self, name):
         self.id = general.find_game_entity(name)
@@ -58,3 +63,5 @@ class JointEntityCollisionAware(JointEntity):
         self.handler = azlmbr.physics.CollisionNotificationBusHandler()
         self.handler.connect(self.id)
         self.handler.add_callback("OnCollisionBegin", self.on_collision_begin)
+        self.handler.add_callback("OnCollisionPresist", self.on_collision_persist)
+        self.handler.add_callback("OnCollisionEnd", self.on_collision_end)

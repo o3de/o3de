@@ -48,6 +48,7 @@ namespace O3DE::ProjectManager
         item->setData(gemInfo.m_features, RoleFeatures);
         item->setData(gemInfo.m_path, RolePath);
         item->setData(gemInfo.m_requirement, RoleRequirement);
+        item->setData(gemInfo.m_downloadStatus, RoleDownloadStatus);
 
         appendRow(item);
 
@@ -130,6 +131,11 @@ namespace O3DE::ProjectManager
     GemInfo::Types GemModel::GetTypes(const QModelIndex& modelIndex)
     {
         return static_cast<GemInfo::Types>(modelIndex.data(RoleTypes).toInt());
+    }
+
+    GemInfo::DownloadStatus GemModel::GetDownloadStatus(const QModelIndex& modelIndex)
+    {
+        return static_cast<GemInfo::DownloadStatus>(modelIndex.data(RoleDownloadStatus).toInt());
     }
 
     QString GemModel::GetSummary(const QModelIndex& modelIndex)
@@ -373,6 +379,11 @@ namespace O3DE::ProjectManager
         return previouslyAdded && !added;
     }
 
+    void GemModel::SetDownloadStatus(QAbstractItemModel& model, const QModelIndex& modelIndex, GemInfo::DownloadStatus status)
+    {
+        model.setData(modelIndex, status, RoleDownloadStatus);
+    }
+
     bool GemModel::HasRequirement(const QModelIndex& modelIndex)
     {
         return !modelIndex.data(RoleRequirement).toString().isEmpty();
@@ -384,6 +395,20 @@ namespace O3DE::ProjectManager
         {
             const QModelIndex modelIndex = index(row, 0);
             if (NeedsToBeAdded(modelIndex) && HasRequirement(modelIndex))
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    bool GemModel::HasDependentGemsToRemove() const
+    {
+        for (int row = 0; row < rowCount(); ++row)
+        {
+            const QModelIndex modelIndex = index(row, 0);
+            if (GemModel::NeedsToBeRemoved(modelIndex, /*includeDependencies=*/true) &&
+                GemModel::WasPreviouslyAddedDependency(modelIndex))
             {
                 return true;
             }

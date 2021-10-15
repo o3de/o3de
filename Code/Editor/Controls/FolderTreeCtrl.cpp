@@ -279,7 +279,7 @@ void CFolderTreeCtrl::LoadTreeRec(const QString& currentFolder)
 void CFolderTreeCtrl::AddItem(const QString& path)
 {
     AZ::IO::FixedMaxPath folder{ AZ::IO::PathView(path.toUtf8().constData()) };
-    AZ::IO::FixedMaxPath fileNameWithoutExtension = folder.Extension();
+    AZ::IO::FixedMaxPath fileNameWithoutExtension = folder.Stem();
     folder = folder.ParentPath();
 
     auto regex = QRegExp(m_fileNameSpec, Qt::CaseInsensitive, QRegExp::Wildcard);

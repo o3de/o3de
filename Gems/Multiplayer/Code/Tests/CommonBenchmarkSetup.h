@@ -328,6 +328,7 @@ namespace Multiplayer
         void Terminate([[maybe_unused]] AzNetworking::DisconnectReason reason) override {}
         void AddClientDisconnectedHandler([[maybe_unused]] ClientDisconnectedEvent::Handler& handler) override {}
         void AddConnectionAcquiredHandler([[maybe_unused]] ConnectionAcquiredEvent::Handler& handler) override {}
+        void AddServerAcceptanceReceivedHandler([[maybe_unused]] ServerAcceptanceReceivedEvent::Handler& handler) override {}
         void AddSessionInitHandler([[maybe_unused]] SessionInitEvent::Handler& handler) override {}
         void AddSessionShutdownHandler([[maybe_unused]] SessionShutdownEvent::Handler& handler) override {}
         void SendReadyForEntityUpdates([[maybe_unused]] bool readyForEntityUpdates) override {}

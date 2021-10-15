@@ -74,7 +74,7 @@ namespace AzToolsFramework
                 Instance& commonRootEntityOwningInstance,
                 EntityList& outEntities,
                 AZStd::vector<Instance*>& outInstances) const;
-            EntityIdList GenerateEntityIdListWithoutLevelInstance(const EntityIdList& entityIds) const;
+            EntityIdList GenerateEntityIdListWithoutFocusedInstanceContainer(const EntityIdList& entityIds) const;
 
             InstanceOptionalReference GetOwnerInstanceByEntityId(AZ::EntityId entityId) const;
             bool EntitiesBelongToSameInstance(const EntityIdList& entityIds) const;
@@ -187,6 +187,8 @@ namespace AzToolsFramework
 
             InstanceEntityMapperInterface* m_instanceEntityMapperInterface = nullptr;
             InstanceToTemplateInterface* m_instanceToTemplateInterface = nullptr;
+            PrefabFocusInterface* m_prefabFocusInterface = nullptr;
+            PrefabFocusPublicInterface* m_prefabFocusPublicInterface = nullptr;
             PrefabLoaderInterface* m_prefabLoaderInterface = nullptr;
             PrefabSystemComponentInterface* m_prefabSystemComponentInterface = nullptr;
 

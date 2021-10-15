@@ -282,6 +282,7 @@ set(FILES
     Math/Internal/VertexContainer.inl
     Math/InterpolationSample.h
     Math/IntersectPoint.h
+    Math/IntersectSegment.inl
     Math/IntersectSegment.cpp
     Math/IntersectSegment.h
     Math/MathIntrinsics.h
@@ -566,6 +567,8 @@ set(FILES
     Settings/SettingsRegistryMergeUtils.h
     Settings/SettingsRegistryScriptUtils.cpp
     Settings/SettingsRegistryScriptUtils.h
+    Settings/SettingsRegistryVisitorUtils.cpp
+    Settings/SettingsRegistryVisitorUtils.h
     State/HSM.cpp
     State/HSM.h
     Statistics/NamedRunningStatistic.h
