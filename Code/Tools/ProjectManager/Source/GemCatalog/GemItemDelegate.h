@@ -49,13 +49,13 @@ namespace O3DE::ProjectManager
 
         // Margin and borders
         inline constexpr static QMargins s_itemMargins = QMargins(/*left=*/16, /*top=*/8, /*right=*/16, /*bottom=*/8); // Item border distances
-        inline constexpr static QMargins s_contentMargins = QMargins(/*left=*/20, /*top=*/12, /*right=*/15, /*bottom=*/12); // Distances of the elements within an item to the item borders
+        inline constexpr static QMargins s_contentMargins = QMargins(/*left=*/20, /*top=*/12, /*right=*/20, /*bottom=*/12); // Distances of the elements within an item to the item borders
         inline constexpr static int s_borderWidth = 4;
 
         // Button
-        inline constexpr static int s_buttonWidth = 55;
-        inline constexpr static int s_buttonHeight = 18;
-        inline constexpr static int s_buttonBorderRadius = 9;
+        inline constexpr static int s_buttonWidth = 32;
+        inline constexpr static int s_buttonHeight = 16;
+        inline constexpr static int s_buttonBorderRadius = s_buttonHeight / 2;
         inline constexpr static int s_buttonCircleRadius = s_buttonBorderRadius - 2;
         inline constexpr static qreal s_buttonFontSize = 10.0;
 
@@ -64,6 +64,9 @@ namespace O3DE::ProjectManager
         inline constexpr static int s_featureTagBorderMarginX = 3;
         inline constexpr static int s_featureTagBorderMarginY = 3;
         inline constexpr static int s_featureTagSpacing = 7;
+
+    signals:
+        void MovieStartedPlaying(const QMovie* playingMovie) const;
 
     protected:
         bool editorEvent(QEvent* event, QAbstractItemModel* model, const QStyleOptionViewItem& option, const QModelIndex& modelIndex) override;
@@ -74,9 +77,10 @@ namespace O3DE::ProjectManager
         QRect CalcButtonRect(const QRect& contentRect) const;
         QRect CalcSummaryRect(const QRect& contentRect, bool hasTags) const;
         void DrawPlatformIcons(QPainter* painter, const QRect& contentRect, const QModelIndex& modelIndex) const;
-        void DrawButton(QPainter* painter, const QRect& contentRect, const QModelIndex& modelIndex) const;
+        void DrawButton(QPainter* painter, const QRect& buttonRect, const QModelIndex& modelIndex) const;
         void DrawFeatureTags(QPainter* painter, const QRect& contentRect, const QStringList& featureTags, const QFont& standardFont, const QRect& summaryRect) const;
         void DrawText(const QString& text, QPainter* painter, const QRect& rect, const QFont& standardFont) const;
+        void DrawDownloadStatusIcon(QPainter* painter, const QRect& contentRect, const QRect& buttonRect, const QModelIndex& modelIndex) const;
 
         QAbstractItemModel* m_model = nullptr;
 
@@ -85,5 +89,14 @@ namespace O3DE::ProjectManager
         void AddPlatformIcon(GemInfo::Platform platform, const QString& iconPath);
         inline constexpr static int s_platformIconSize = 12;
         QHash<GemInfo::Platform, QPixmap> m_platformIcons;
+
+        // Status icons
+        void SetStatusIcon(QPixmap& m_iconPixmap, const QString& iconPath);
+        inline constexpr static int s_statusIconSize = 16;
+        inline constexpr static int s_statusButtonSpacing = 5;
+
+        QPixmap m_unknownStatusPixmap;
+        QPixmap m_notDownloadedPixmap;
+        QMovie* m_downloadingMovie = nullptr;
     };
 } // namespace O3DE::ProjectManager

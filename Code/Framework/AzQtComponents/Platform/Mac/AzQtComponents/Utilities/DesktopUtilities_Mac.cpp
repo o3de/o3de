@@ -15,21 +15,6 @@ namespace AzQtComponents
 {
     void ShowFileOnDesktop(const QString& path)
     {
-#if defined(AZ_PLATFORM_WINDOWS)
-
-        // Launch explorer at the path provided
-        QStringList args;
-        if (!QFileInfo(path).isDir())
-        {
-            // Folders are just opened, files are selected
-            args << "/select,";
-        }
-        args << QDir::toNativeSeparators(path);
-
-        QProcess::startDetached("explorer", args);
-
-#else
-
         if (QFileInfo(path).isDir())
         {
             QProcess::startDetached("/usr/bin/osascript", { "-e",
@@ -43,19 +28,11 @@ namespace AzQtComponents
 
         QProcess::startDetached("/usr/bin/osascript", { "-e",
                     QStringLiteral("tell application \"Finder\" to activate") });
-
-#endif
     }
 
     QString fileBrowserActionName()
     {
-#ifdef AZ_PLATFORM_WINDOWS
-        const char* exploreActionName = "Open in Explorer";
-#elif defined(AZ_PLATFORM_MAC)
         const char* exploreActionName = "Open in Finder";
-#else
-        const char* exploreActionName = "Open in file browser";
-#endif
         return QObject::tr(exploreActionName);
     }
 }

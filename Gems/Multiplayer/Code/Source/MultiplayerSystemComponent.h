@@ -70,6 +70,7 @@ namespace Multiplayer
         bool OnSessionHealthCheck() override;
         bool OnCreateSessionBegin(const AzFramework::SessionConfig& sessionConfig) override;
         bool OnDestroySessionBegin() override;
+        void OnUpdateSessionBegin(const AzFramework::SessionConfig& sessionConfig, const AZStd::string& updateReason) override;
         //! @}
 
         //! AZ::TickBus::Handler overrides.
