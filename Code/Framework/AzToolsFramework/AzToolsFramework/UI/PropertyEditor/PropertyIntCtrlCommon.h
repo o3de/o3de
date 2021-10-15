@@ -38,7 +38,7 @@ namespace AzToolsFramework
         static bool UnsignedToolTip(QWidget* widget, QString& toolTipString);
     };
 
-    //! Base class for integer widget handlers to provide functionality independant
+    //! Base class for integer widget handlers to provide functionality independent
     //! of widget type.
     //! @tparam ValueType The integer primitive type of the handler.
     //! @tparam PropertyControl The widget type of the handler.
@@ -167,8 +167,7 @@ namespace AzToolsFramework
         PropertyControl* newCtrl = aznew PropertyControl(pParent);
         this->connect(newCtrl, &PropertyControl::valueChanged, this, [newCtrl]()
         {
-            EBUS_EVENT(PropertyEditorGUIMessages::Bus, RequestWrite, newCtrl);
-            AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(&PropertyEditorGUIMessages::Bus::Handler::RequestWrite, newCtrl);
+            AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(&PropertyEditorGUIMessages::Bus::Events::RequestWrite, newCtrl);
         });
         // note:  Qt automatically disconnects objects from each other when either end is destroyed, no need to worry about delete.
 

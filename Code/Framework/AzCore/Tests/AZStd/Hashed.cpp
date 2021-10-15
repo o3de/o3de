@@ -1413,7 +1413,7 @@ namespace UnitTest
         >;
     TYPED_TEST_CASE(HashedSetDifferentAllocatorFixture, SetTemplateConfigs);
 
-#if GTEST_OS_SUPPORTS_DEATH_TEST
+#if GTEST_HAS_DEATH_TEST
     TYPED_TEST(HashedSetDifferentAllocatorFixture, InsertNodeHandleWithDifferentAllocatorsLogsTraceMessages)
     {
         using ContainerType = typename TypeParam::ContainerType;
@@ -1435,7 +1435,7 @@ namespace UnitTest
                 }
             }, ".*");
     }
-#endif // GTEST_OS_SUPPORTS_DEATH_TEST
+#endif // GTEST_HAS_DEATH_TEST
 
     template<typename ContainerType>
     class HashedMapContainers
@@ -1811,7 +1811,7 @@ namespace UnitTest
     >;
     TYPED_TEST_CASE(HashedMapDifferentAllocatorFixture, MapTemplateConfigs);
 
-#if GTEST_OS_SUPPORTS_DEATH_TEST
+#if GTEST_HAS_DEATH_TEST
     TYPED_TEST(HashedMapDifferentAllocatorFixture, InsertNodeHandleWithDifferentAllocatorsLogsTraceMessages)
     {
         using ContainerType = typename TypeParam::ContainerType;
@@ -1833,7 +1833,7 @@ namespace UnitTest
             }
         } , ".*");
     }
-#endif // GTEST_OS_SUPPORTS_DEATH_TEST
+#endif // GTEST_HAS_DEATH_TEST
 
     namespace HashedContainerTransparentTestInternal
     {

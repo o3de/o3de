@@ -1582,6 +1582,24 @@ namespace AssetProcessor
                     gemOrder,
                     /*scanFolderId*/ 0,
                     /*canSaveNewAssets*/ true)); // Users can create assets like slices in Gem asset folders.
+
+                // Now add another scan folder on Gem/GemName/Registry...
+                gemFolder = gemDir.absoluteFilePath(AzFramework::GemInfo::GetGemRegistryFolder());
+                gemFolder = AssetUtilities::NormalizeDirectoryPath(gemFolder);
+
+                assetBrowserDisplayName = AzFramework::GemInfo::GetGemRegistryFolder();
+                portableKey = QString("gemregistry-%1").arg(gemNameAsUuid);
+                gemOrder++;
+
+                AZ_TracePrintf(AssetProcessor::DebugChannel, "Adding GEM registry folder for monitoring / scanning: %s.\n", gemFolder.toUtf8().data());
+                AddScanFolder(ScanFolderInfo(
+                    gemFolder,
+                    assetBrowserDisplayName,
+                    portableKey,
+                    isRoot,
+                    isRecursive,
+                    platforms,
+                    gemOrder));
             }
         }
     }

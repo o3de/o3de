@@ -30,6 +30,7 @@ class TestAtomEditorComponentsSandbox(object):
     class TestAtomEditorComponentsMain(object):
         """Holds tests for Atom components."""
 
+        @pytest.mark.test_case_id("C32078128")
         def test_AtomEditorComponents_ReflectionProbeAddedToEntity(
                 self, request, editor, level, workspace, project, launcher_platform):
             """

@@ -13,6 +13,7 @@
 
 #include <unordered_map>
 #include <unordered_set>
+#include <AzCore/std/allocator_stateless.h>
 #include <AzCore/std/containers/unordered_map.h>
 #include <AzCore/std/containers/unordered_set.h>
 #include <AzCore/std/string/string.h>
@@ -489,6 +490,13 @@ namespace stl
     inline const char* constchar_cast(const Type& type)
     {
         return type;
+    }
+
+    //! Specialization of string to const char cast.
+    template <>
+    inline const char* constchar_cast(const AZStd::basic_string<char, AZStd::char_traits<char>, AZStd::stateless_allocator>& type)
+    {
+        return type.c_str();
     }
 
     //! Specialization of string to const char cast.
