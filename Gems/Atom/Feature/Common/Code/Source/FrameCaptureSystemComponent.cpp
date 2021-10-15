@@ -54,10 +54,14 @@ namespace AZ
         {
             AZStd::shared_ptr<AZStd::vector<uint8_t>> buffer = readbackResult.m_dataBuffer;
 
+            RHI::Format finalFormat = readbackResult.m_imageDescriptor.m_format;
+
             // convert bgra to rgba by swapping channels
             const int numChannels = AZ::RHI::GetFormatComponentCount(readbackResult.m_imageDescriptor.m_format);
             if (readbackResult.m_imageDescriptor.m_format == RHI::Format::B8G8R8A8_UNORM)
             {
+                finalFormat = RHI::Format::R8G8B8A8_UNORM;
+
                 buffer = AZStd::make_shared<AZStd::vector<uint8_t>>(readbackResult.m_dataBuffer->size());
                 AZStd::copy(readbackResult.m_dataBuffer->begin(), readbackResult.m_dataBuffer->end(), buffer->begin());
 
@@ -89,7 +93,7 @@ namespace AZ
                 jobCompletion.StartAndWaitForCompletion();
             }
 
-            Utils::PngFile image = Utils::PngFile::Create(readbackResult.m_imageDescriptor.m_size, readbackResult.m_imageDescriptor.m_format, *buffer);
+            Utils::PngFile image = Utils::PngFile::Create(readbackResult.m_imageDescriptor.m_size, finalFormat, *buffer);
 
             Utils::PngFile::SaveSettings saveSettings;
             saveSettings.m_compressionLevel = r_pngCompressionLevel;
