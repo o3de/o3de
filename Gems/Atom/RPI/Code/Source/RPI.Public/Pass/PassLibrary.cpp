@@ -19,8 +19,6 @@
 #include <Atom/RPI.Reflect/Pass/ComputePassData.h>
 #include <Atom/RPI.Reflect/Asset/AssetUtils.h>
 
-#pragma optimize("", off)
-
 namespace AZ
 {
     namespace RPI
@@ -455,4 +453,3 @@ namespace AZ
     }   // namespace RPI
 }   // namespace AZ
 
-#pragma optimize("", on)
