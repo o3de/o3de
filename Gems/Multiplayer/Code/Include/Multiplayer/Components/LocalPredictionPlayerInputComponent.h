@@ -57,6 +57,14 @@ namespace Multiplayer
             const AzNetworking::PacketEncodingBuffer& correction
         ) override;
 
+        //! Forcibly enables ProcessInput to execute on the entity.
+        //! Note that this function is quite dangerous and should normally never be used
+        void ForceEnableAutonomousUpdate();
+
+        //! Forcibly disables ProcessInput from executing on the entity.
+        //! Note that this function is quite dangerous and should normally never be used
+        void ForceDisableAutonomousUpdate();
+
         //! Return true if we're currently migrating from one host to another.
         //! @return boolean true if we're currently migrating from one host to another
         bool IsMigrating() const;
