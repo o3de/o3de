@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include <Profiler/ProfilerBus.h>
+#include <Profiler/ProfilerImGuiBus.h>
 
 #include <ImGuiCpuProfiler.h>
 
@@ -24,6 +24,7 @@ namespace Profiler
     class ProfilerImGuiSystemComponent
         : public AZ::Component
 #if defined(IMGUI_ENABLED)
+        , public ProfilerImGuiRequestBus::Handler
         , public ImGui::ImGuiUpdateListenerBus::Handler
 #endif // defined(IMGUI_ENABLED)
     {
@@ -42,11 +43,13 @@ namespace Profiler
 
     protected:
         // AZ::Component interface implementation
-        void Init() override;
         void Activate() override;
         void Deactivate() override;
 
 #if defined(IMGUI_ENABLED)
+        // ProfilerImGuiRequestBus interface implementation
+        void ShowCpuProfilerWindow(bool& keepDrawing) override;
+
         // ImGuiUpdateListenerBus overrides
         void OnImGuiUpdate() override;
         void OnImGuiMainMenuUpdate() override;

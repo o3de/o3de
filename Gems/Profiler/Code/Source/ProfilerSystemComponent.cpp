@@ -200,6 +200,11 @@ namespace Profiler
         }
     }
 
+    void ProfilerSystemComponent::SetProfilerEnabled(bool enabled)
+    {
+        m_cpuProfiler.SetProfilerEnabled(enabled);
+    }
+
     bool ProfilerSystemComponent::CaptureCpuProfilingStatistics(const AZStd::string& outputFilePath)
     {
         bool expected = false;

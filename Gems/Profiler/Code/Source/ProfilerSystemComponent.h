@@ -39,6 +39,7 @@ namespace Profiler
         void Deactivate() override;
 
         // ProfilerRequestBus interface implementation
+        void SetProfilerEnabled(bool enabled) override;
         bool CaptureCpuProfilingStatistics(const AZStd::string& outputFilePath) override;
         bool BeginContinuousCpuProfilingCapture() override;
         bool EndContinuousCpuProfilingCapture(const AZStd::string& outputFilePath) override;

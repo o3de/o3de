@@ -8,6 +8,7 @@
 
 set(FILES
     Include/Profiler/ProfilerBus.h
+    Include/Profiler/ProfilerImGuiBus.h
     Source/CpuProfiler.h
     Source/CpuProfilerImpl.cpp
     Source/CpuProfilerImpl.h

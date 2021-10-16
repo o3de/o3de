@@ -61,13 +61,10 @@ namespace Profiler
     {
     }
 
-    void ProfilerImGuiSystemComponent::Init()
-    {
-    }
-
     void ProfilerImGuiSystemComponent::Activate()
     {
 #if defined(IMGUI_ENABLED)
+        ProfilerImGuiRequestBus::Handler::BusConnect();
         ImGui::ImGuiUpdateListenerBus::Handler::BusConnect();
 #endif // defined(IMGUI_ENABLED)
     }
@@ -75,16 +72,22 @@ namespace Profiler
     void ProfilerImGuiSystemComponent::Deactivate()
     {
 #if defined(IMGUI_ENABLED)
+        ProfilerImGuiRequestBus::Handler::BusDisconnect();
         ImGui::ImGuiUpdateListenerBus::Handler::BusDisconnect();
 #endif // defined(IMGUI_ENABLED)
     }
 
 #if defined(IMGUI_ENABLED)
+    void ProfilerImGuiSystemComponent::ShowCpuProfilerWindow(bool& keepDrawing)
+    {
+        m_imguiCpuProfiler.Draw(keepDrawing);
+    }
+
     void ProfilerImGuiSystemComponent::OnImGuiUpdate()
     {
         if (m_showCpuProfiler)
         {
-            m_imguiCpuProfiler.Draw(m_showCpuProfiler);
+            ShowCpuProfilerWindow(m_showCpuProfiler);
         }
     }
 

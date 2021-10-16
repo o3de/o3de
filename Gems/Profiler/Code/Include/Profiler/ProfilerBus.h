@@ -19,6 +19,9 @@ namespace Profiler
         AZ_RTTI(ProfilerRequests, "{3757c4e5-1941-457c-85ae-16305e17a4c6}");
         virtual ~ProfilerRequests() = default;
 
+        //! Enable/Disable the CpuProfiler
+        virtual void SetProfilerEnabled(bool enabled) = 0;
+
         //! Dump a single frame of Cpu profiling data
         virtual bool CaptureCpuProfilingStatistics(const AZStd::string& outputFilePath) = 0;
 
