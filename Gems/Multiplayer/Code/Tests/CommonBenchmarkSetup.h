@@ -342,8 +342,11 @@ namespace Multiplayer
         void AddClientMigrationEndEventHandler([[maybe_unused]] ClientMigrationEndEvent::Handler& handler) override {}
         void AddNotifyClientMigrationHandler([[maybe_unused]] NotifyClientMigrationEvent::Handler& handler) override {}
         void AddNotifyEntityMigrationEventHandler([[maybe_unused]] NotifyEntityMigrationEvent::Handler& handler) override {}
-        void SendNotifyClientMigrationEvent([[maybe_unused]] const HostId& hostId, [[maybe_unused]] uint64_t userIdentifier, [[maybe_unused]] ClientInputId lastClientInputId) override {}
+        void SendNotifyClientMigrationEvent([[maybe_unused]] AzNetworking::ConnectionId connectionId, [[maybe_unused]] const HostId& hostId,
+            [[maybe_unused]] uint64_t userIdentifier, [[maybe_unused]] ClientInputId lastClientInputId, [[maybe_unused]] NetEntityId netEntityId) override {}
         void SendNotifyEntityMigrationEvent([[maybe_unused]] const ConstNetworkEntityHandle& entityHandle, [[maybe_unused]] const HostId& remoteHostId) override {}
+        void RegisterPlayerIdentifierForRejoin(uint64_t, NetEntityId) override {}
+        void CompleteClientMigration(uint64_t, AzNetworking::ConnectionId, const HostId&, ClientInputId) override {}
         void SetShouldSpawnNetworkEntities([[maybe_unused]] bool value) override {}
         bool GetShouldSpawnNetworkEntities() const override { return true; }
 
