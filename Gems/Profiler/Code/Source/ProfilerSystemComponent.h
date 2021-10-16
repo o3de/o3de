@@ -12,7 +12,7 @@
 #include <CpuProfilerImpl.h>
 
 #include <AzCore/Component/Component.h>
-
+#include <AzCore/std/parallel/thread.h>
 
 namespace Profiler
 {
@@ -34,18 +34,20 @@ namespace Profiler
         ~ProfilerSystemComponent();
 
     protected:
-        ////////////////////////////////////////////////////////////////////////
-        // ProfilerRequestBus interface implementation
-
-        ////////////////////////////////////////////////////////////////////////
-
-        ////////////////////////////////////////////////////////////////////////
         // AZ::Component interface implementation
-        void Init() override;
         void Activate() override;
         void Deactivate() override;
-        ////////////////////////////////////////////////////////////////////////
 
+        // ProfilerRequestBus interface implementation
+        bool CaptureCpuProfilingStatistics(const AZStd::string& outputFilePath) override;
+        bool BeginContinuousCpuProfilingCapture() override;
+        bool EndContinuousCpuProfilingCapture(const AZStd::string& outputFilePath) override;
+
+
+        AZStd::thread m_cpuDataSerializationThread;
+        AZStd::atomic_bool m_cpuDataSerializationInProgress{ false };
+
+        AZStd::atomic_bool m_cpuCaptureInProgress{ false };
 
         CpuProfilerImpl m_cpuProfiler;
     };

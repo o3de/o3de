@@ -38,7 +38,6 @@ namespace AZ
                 OnCaptureQueryTimestampFinished,
                 OnCaptureCpuFrameTimeFinished,
                 OnCaptureQueryPipelineStatisticsFinished,
-                OnCaptureCpuProfilingStatisticsFinished,
                 OnCaptureBenchmarkMetadataFinished
             );
 
@@ -55,11 +54,6 @@ namespace AZ
             void OnCaptureQueryPipelineStatisticsFinished(bool result, const AZStd::string& info) override
             {
                 Call(FN_OnCaptureQueryPipelineStatisticsFinished, result, info);
-            }
-
-            void OnCaptureCpuProfilingStatisticsFinished(bool result, const AZStd::string& info) override
-            {
-                Call(FN_OnCaptureCpuProfilingStatisticsFinished, result, info);
             }
 
             void OnCaptureBenchmarkMetadataFinished(bool result, const AZStd::string& info) override
@@ -357,7 +351,6 @@ namespace AZ
                     ->Event("CapturePassTimestamp", &ProfilingCaptureRequestBus::Events::CapturePassTimestamp)
                     ->Event("CaptureCpuFrameTime", &ProfilingCaptureRequestBus::Events::CaptureCpuFrameTime)
                     ->Event("CapturePassPipelineStatistics", &ProfilingCaptureRequestBus::Events::CapturePassPipelineStatistics)
-                    ->Event("CaptureCpuProfilingStatistics", &ProfilingCaptureRequestBus::Events::CaptureCpuProfilingStatistics)
                     ->Event("CaptureBenchmarkMetadata", &ProfilingCaptureRequestBus::Events::CaptureBenchmarkMetadata)
                     ;
 
@@ -365,6 +358,7 @@ namespace AZ
             }
 
             TimestampSerializer::Reflect(context);
+            CpuFrameTimeSerializer::Reflect(context);
             PipelineStatisticsSerializer::Reflect(context);
             BenchmarkMetadataSerializer::Reflect(context);
         }
@@ -379,12 +373,6 @@ namespace AZ
             TickBus::Handler::BusDisconnect();
 
             ProfilingCaptureRequestBus::Handler::BusDisconnect();
-
-            // Block deactivation until the IO thread has finished serializing the CPU data
-            if (m_cpuDataSerializationThread.joinable())
-            {
-                m_cpuDataSerializationThread.join();
-            }
         }
 
         bool ProfilingCaptureSystemComponent::CapturePassTimestamp(const AZStd::string& outputFilePath)
@@ -525,24 +513,6 @@ namespace AZ
             return captureStarted;
         }
 
-        bool ProfilingCaptureSystemComponent::CaptureCpuProfilingStatistics([[maybe_unused]] const AZStd::string& outputFilePath)
-        {
-            AZ_Warning("ProfilingCaptureSystemComponent", false, "CaptureCpuProfilingStatistics has been disabled");
-            return false;
-        }
-
-        bool ProfilingCaptureSystemComponent::BeginContinuousCpuProfilingCapture()
-        {
-            AZ_Warning("ProfilingCaptureSystemComponent", false, "BeginContinuousCpuProfilingCapture has been disabled");
-            return false;
-        }
-
-        bool ProfilingCaptureSystemComponent::EndContinuousCpuProfilingCapture([[maybe_unused]] const AZStd::string& outputFilePath)
-        {
-            AZ_Warning("ProfilingCaptureSystemComponent", false, "EndContinuousCpuProfilingCapture has been disabled");
-            return false;
-        }
-
         bool ProfilingCaptureSystemComponent::CaptureBenchmarkMetadata(const AZStd::string& benchmarkName, const AZStd::string& outputFilePath)
         {
             const bool captureStarted = m_benchmarkMetadataCapture.StartCapture([benchmarkName, outputFilePath]()
@@ -621,11 +591,10 @@ namespace AZ
             m_timestampCapture.UpdateCapture();
             m_cpuFrameTimeStatisticsCapture.UpdateCapture();
             m_pipelineStatisticsCapture.UpdateCapture();
-            m_cpuProfilingStatisticsCapture.UpdateCapture();
             m_benchmarkMetadataCapture.UpdateCapture();
 
             // Disconnect from the TickBus if all capture states are set to idle.
-            if (m_timestampCapture.IsIdle() && m_pipelineStatisticsCapture.IsIdle() && m_cpuProfilingStatisticsCapture.IsIdle() && m_benchmarkMetadataCapture.IsIdle() && m_cpuFrameTimeStatisticsCapture.IsIdle())
+            if (m_timestampCapture.IsIdle() && m_pipelineStatisticsCapture.IsIdle() && m_benchmarkMetadataCapture.IsIdle() && m_cpuFrameTimeStatisticsCapture.IsIdle())
             {
                 TickBus::Handler::BusDisconnect();
             }
