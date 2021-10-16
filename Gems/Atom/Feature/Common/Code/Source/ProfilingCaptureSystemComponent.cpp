@@ -103,6 +103,19 @@ namespace AZ
             AZStd::vector<TimestampSerializerEntry> m_timestampEntries;
         };
 
+        // Intermediate class to serialize CPU frame time statistics.
+        class CpuFrameTimeSerializer
+        {
+        public:
+            AZ_TYPE_INFO(Render::CpuFrameTimeSerializer, "{584B415E-8769-4757-AC64-EA57EDBCBC3E}");
+            static void Reflect(AZ::ReflectContext* context);
+
+            CpuFrameTimeSerializer() = default;
+            CpuFrameTimeSerializer(double frameTime);
+
+            double m_frameTime;
+        };
+
         // Intermediate class to serialize pass' PipelineStatistics data.
         class PipelineStatisticsSerializer
         {
@@ -223,6 +236,24 @@ namespace AZ
                     ->Version(1)
                     ->Field("passName", &TimestampSerializerEntry::m_passName)
                     ->Field("timestampResultInNanoseconds", &TimestampSerializerEntry::m_timestampResultInNanoseconds)
+                    ;
+            }
+        }
+
+        // --- CpuFrameTimeSerializer ---
+
+        CpuFrameTimeSerializer::CpuFrameTimeSerializer(double frameTime)
+        {
+            m_frameTime = frameTime;
+        }
+
+        void CpuFrameTimeSerializer::Reflect(AZ::ReflectContext* context)
+        {
+            if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+            {
+                serializeContext->Class<CpuFrameTimeSerializer>()
+                    ->Version(1)
+                    ->Field("frameTime", &CpuFrameTimeSerializer::m_frameTime)
                     ;
             }
         }
@@ -406,10 +437,42 @@ namespace AZ
             return captureStarted;
         }
 
-        bool ProfilingCaptureSystemComponent::CaptureCpuFrameTime([[maybe_unused]] const AZStd::string& outputFilePath)
+        bool ProfilingCaptureSystemComponent::CaptureCpuFrameTime(const AZStd::string& outputFilePath)
         {
-            AZ_Warning("ProfilingCaptureSystemComponent", false, "CaptureCpuFrameTime has been disabled");
-            return false;
+            const bool captureStarted = m_cpuFrameTimeStatisticsCapture.StartCapture([outputFilePath]()
+            {
+                JsonSerializerSettings serializationSettings;
+                serializationSettings.m_keepDefaults = true;
+
+                double frameTime = AZ::RHI::RHISystemInterface::Get()->GetCpuFrameTime();
+                AZ_Warning("ProfilingCaptureSystemComponent", frameTime > 0, "Failed to get Cpu frame time");
+
+                CpuFrameTimeSerializer serializer(frameTime);
+                const auto saveResult = JsonSerializationUtils::SaveObjectToFile(&serializer,
+                    outputFilePath, (CpuFrameTimeSerializer*)nullptr, &serializationSettings);
+
+                AZStd::string captureInfo = outputFilePath;
+                if (!saveResult.IsSuccess())
+                {
+                    captureInfo = AZStd::string::format("Failed to save Cpu frame time to file '%s'. Error: %s",
+                        outputFilePath.c_str(),
+                        saveResult.GetError().c_str());
+                    AZ_Warning("ProfilingCaptureSystemComponent", false, captureInfo.c_str());
+                }
+
+                // Notify listeners that the Cpu frame time statistics capture has finished.
+                ProfilingCaptureNotificationBus::Broadcast(&ProfilingCaptureNotificationBus::Events::OnCaptureCpuFrameTimeFinished,
+                    saveResult.IsSuccess(),
+                    captureInfo);
+            });
+
+            // Start the TickBus.
+            if (captureStarted)
+            {
+                TickBus::Handler::BusConnect();
+            }
+
+            return captureStarted;
         }
 
         bool ProfilingCaptureSystemComponent::CapturePassPipelineStatistics(const AZStd::string& outputFilePath)
