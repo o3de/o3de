@@ -10,6 +10,7 @@
 
 #include <ImGuiCpuProfiler.h>
 
+#include <Profiler/ProfilerBus.h>
 #include <CpuProfilerImpl.h>
 
 #include <AzCore/IO/FileIO.h>
@@ -25,6 +26,8 @@
 
 namespace Profiler
 {
+    static constexpr const char* defaultSaveLocation = "@user@/Profiler";
+
     namespace CpuProfilerImGuiHelper
     {
         float TicksToMs(double ticks)
@@ -153,17 +156,16 @@ namespace Profiler
 
         if (m_captureToFile)
         {
-            AZStd::sys_time_t timeNow = AZStd::GetTimeNowSecond();
             AZStd::string timeString;
-            AZStd::to_string(timeString, timeNow);
-            const AZStd::string frameDataFilePath = AZStd::string::format(
-                "@user@/CpuProfiler/%s.json",
-                timeString.c_str());
+            AZStd::to_string(timeString, AZStd::GetTimeNowSecond());
+
+            const AZStd::string frameDataFilePath = AZStd::string::format("%s/cpu_single_%s.json", defaultSaveLocation, timeString.c_str());
+
             char resolvedPath[AZ::IO::MaxPathLength];
             AZ::IO::FileIOBase::GetInstance()->ResolvePath(frameDataFilePath.c_str(), resolvedPath, AZ::IO::MaxPathLength);
             m_lastCapturedFilePath = resolvedPath;
-            //AZ::Render::ProfilingCaptureRequestBus::Broadcast(
-            //    &AZ::Render::ProfilingCaptureRequestBus::Events::CaptureCpuProfilingStatistics, frameDataFilePath);
+
+            ProfilerRequestBus::Broadcast(&ProfilerRequestBus::Events::CaptureCpuProfilingStatistics, frameDataFilePath);
         }
         m_captureToFile = false;
 
@@ -206,24 +208,22 @@ namespace Profiler
         {
             if (isInProgress)
             {
-                AZStd::sys_time_t timeNow = AZStd::GetTimeNowSecond();
                 AZStd::string timeString;
-                AZStd::to_string(timeString, timeNow);
-                const AZStd::string frameDataFilePath = AZStd::string::format(
-                    "@user@/CpuProfiler/%s.json",
-                    timeString.c_str());
+                AZStd::to_string(timeString, AZStd::GetTimeNowSecond());
+
+                const AZStd::string frameDataFilePath = AZStd::string::format("%s/cpu_multi_%s.json", defaultSaveLocation, timeString.c_str());
+
                 char resolvedPath[AZ::IO::MaxPathLength];
                 AZ::IO::FileIOBase::GetInstance()->ResolvePath(frameDataFilePath.c_str(), resolvedPath, AZ::IO::MaxPathLength);
                 m_lastCapturedFilePath = resolvedPath;
-                //AZ::Render::ProfilingCaptureRequestBus::Broadcast(
-                //    &AZ::Render::ProfilingCaptureRequestBus::Events::EndContinuousCpuProfilingCapture, frameDataFilePath);
+
+                ProfilerRequestBus::Broadcast(&ProfilerRequestBus::Events::EndContinuousCpuProfilingCapture, frameDataFilePath);
+
                 m_paused = true;
             }
-
             else
             {
-                //AZ::Render::ProfilingCaptureRequestBus::Broadcast(
-                //    &AZ::Render::ProfilingCaptureRequestBus::Events::BeginContinuousCpuProfilingCapture);
+                ProfilerRequestBus::Broadcast(&ProfilerRequestBus::Events::BeginContinuousCpuProfilingCapture);
             }
         }
 
@@ -233,12 +233,10 @@ namespace Profiler
             m_showFilePicker = true;
 
             // Only update the cached file list when opened so that we aren't making IO calls on every frame.
-            auto* base = AZ::IO::FileIOBase::GetInstance();
-            const AZStd::string defaultSavedCapturePath = "@user@/CpuProfiler";
-
             m_cachedCapturePaths.clear();
-            base->FindFiles(
-                defaultSavedCapturePath.c_str(), "*.json",
+
+            auto* base = AZ::IO::FileIOBase::GetInstance();
+            base->FindFiles(defaultSaveLocation, "*.json",
                 [&paths = m_cachedCapturePaths](const char* path) -> bool
                 {
                     auto foundPath = AZ::IO::Path(path);
