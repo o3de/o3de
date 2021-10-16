@@ -38,12 +38,12 @@ namespace AzGameFramework
         {
             // fall back to checking Project Cache Root.
             enginePakPath /= "engine.pak";
-            enginePakOpened = m_archive->OpenPack("@projectproductassets@", enginePakPath.Native());
+            enginePakOpened = m_archive->OpenPack("@products@", enginePakPath.Native());
         }
         if (!enginePakOpened)
         {
             enginePakPath = AZ::IO::FixedMaxPath(AZ::Utils::GetExecutableDirectory()) / "engine.pak";
-            m_archive->OpenPack("@projectproductassets@", enginePakPath.Native());
+            m_archive->OpenPack("@products@", enginePakPath.Native());
         }
     }
 
@@ -96,6 +96,8 @@ namespace AzGameFramework
         AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_CommandLine(registry, m_commandLine, false);
         AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_ProjectUserRegistry(registry, AZ_TRAIT_OS_PLATFORM_CODENAME, specializations, &scratchBuffer);
         AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_CommandLine(registry, m_commandLine, true);
+#else
+        AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_CommandLine(registry, m_commandLine, false);
 #endif
         // Update the Runtime file paths in case the "{BootstrapSettingsRootKey}/assets" key was overriden by a setting registry
         AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddRuntimeFilePaths(registry);

@@ -8,6 +8,9 @@
 
 
 #include <AzCore/Component/Entity.h>
+#include <AzCore/std/allocator_stateless.h>
+#include <AzCore/std/containers/map.h>
+#include <AzCore/std/containers/unordered_map.h>
 #include <AzFramework/Components/CameraBus.h>
 #include <Maestro/Bus/SequenceComponentBus.h>
 #include "Movie.h"
@@ -73,22 +76,32 @@ static SMovieSequenceAutoComplete s_movieSequenceAutoComplete;
 #endif
 
 //////////////////////////////////////////////////////////////////////////
-// Serialization for anim nodes & param types
-#define REGISTER_NODE_TYPE(name) assert(g_animNodeEnumToStringMap.find(AnimNodeType::name) == g_animNodeEnumToStringMap.end()); \
-    g_animNodeEnumToStringMap[AnimNodeType::name] = AZ_STRINGIZE(name);                                                         \
-    g_animNodeStringToEnumMap[AZStd::string(AZ_STRINGIZE(name))] = AnimNodeType::name;
+namespace
+{
+    using AnimParamSystemString = AZStd::basic_string<char, AZStd::char_traits<char>, AZStd::stateless_allocator>;
 
-#define REGISTER_PARAM_TYPE(name) assert(g_animParamEnumToStringMap.find(AnimParamType::name) == g_animParamEnumToStringMap.end()); \
-    g_animParamEnumToStringMap[AnimParamType::name] = AZ_STRINGIZE(name);                                                           \
-    g_animParamStringToEnumMap[AZStd::string(AZ_STRINGIZE(name))] = AnimParamType::name;
+    template <typename KeyType, typename MappedType, typename Compare = AZStd::less<KeyType>>
+    using AnimSystemOrderedMap = AZStd::map<KeyType, MappedType, Compare, AZStd::stateless_allocator>;
+    template <typename KeyType, typename MappedType, typename Hasher = AZStd::hash<KeyType>, typename EqualKey = AZStd::equal_to<KeyType>>
+    using AnimSystemUnorderedMap = AZStd::unordered_map<KeyType, MappedType, Hasher, EqualKey, AZStd::stateless_allocator>;
+}
+
+// Serialization for anim nodes & param types
+#define REGISTER_NODE_TYPE(name) assert(!g_animNodeEnumToStringMap.contains(AnimNodeType::name)); \
+    g_animNodeEnumToStringMap[AnimNodeType::name] = AZ_STRINGIZE(name);                          \
+    g_animNodeStringToEnumMap[AnimParamSystemString(AZ_STRINGIZE(name))] = AnimNodeType::name;
+
+#define REGISTER_PARAM_TYPE(name) assert(!g_animParamEnumToStringMap.contains(AnimParamType::name)); \
+    g_animParamEnumToStringMap[AnimParamType::name] = AZ_STRINGIZE(name);                           \
+    g_animParamStringToEnumMap[AnimParamSystemString(AZ_STRINGIZE(name))] = AnimParamType::name;
 
 namespace
 {
-    AZStd::unordered_map<AnimNodeType, AZStd::string> g_animNodeEnumToStringMap;
-    StaticInstance<std::map<AZStd::string, AnimNodeType, stl::less_stricmp<AZStd::string> >> g_animNodeStringToEnumMap;
+    AnimSystemUnorderedMap<AnimNodeType, AnimParamSystemString> g_animNodeEnumToStringMap;
+    AnimSystemOrderedMap<AnimParamSystemString, AnimNodeType, stl::less_stricmp<AnimParamSystemString>> g_animNodeStringToEnumMap;
 
-    AZStd::unordered_map<AnimParamType, AZStd::string> g_animParamEnumToStringMap;
-    StaticInstance<std::map<AZStd::string, AnimParamType, stl::less_stricmp<AZStd::string> >> g_animParamStringToEnumMap;
+    AnimSystemUnorderedMap<AnimParamType, AnimParamSystemString> g_animParamEnumToStringMap;
+    AnimSystemOrderedMap<AnimParamSystemString, AnimParamType, stl::less_stricmp<AnimParamSystemString>> g_animParamStringToEnumMap;
 
     // If you get an assert in this function, it means two node types have the same enum value.
     void RegisterNodeTypes()

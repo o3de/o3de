@@ -546,7 +546,7 @@ namespace AZ::SettingsRegistryMergeUtils
         AZ::IO::FixedMaxPath path = AZ::Utils::GetExecutableDirectory();
         registry.Set(FilePathKey_BinaryFolder, path.LexicallyNormal().Native());
 
-        // Engine root folder - corresponds to the @engroot@ and @devroot@ aliases
+        // Engine root folder - corresponds to the @engroot@ and @engroot@ aliases
         AZ::IO::FixedMaxPath engineRoot = FindEngineRoot(registry);
         registry.Set(FilePathKey_EngineRootFolder, engineRoot.LexicallyNormal().Native());
 
@@ -570,7 +570,7 @@ namespace AZ::SettingsRegistryMergeUtils
                 assetPlatform = AZ::OSPlatformToDefaultAssetPlatform(AZ_TRAIT_OS_PLATFORM_CODENAME);
             }
 
-            // Project path - corresponds to the @devassets@ alias
+            // Project path - corresponds to the @projectroot@ alias
             // NOTE: Here we append to engineRoot, but if projectPathValue is absolute then engineRoot is discarded.
             path = engineRoot / projectPathValue;
 
@@ -662,7 +662,7 @@ namespace AZ::SettingsRegistryMergeUtils
                 }
                 else
                 {
-                    // Cache: root - same as the @root@ alias, this is the starting path for cache files.
+                    // Cache: root - same as the @products@ alias, this is the starting path for cache files.
                     path = normalizedProjectPath / "Cache";
                     registry.Set(FilePathKey_CacheProjectRootFolder, path.LexicallyNormal().Native());
                     path /= assetPlatform;

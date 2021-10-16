@@ -26,8 +26,24 @@ ShaderResourceGroup ObjectSrg : SRG_PerObject
         float m_heightScale;
     };
 
+    struct MacroMaterialData
+    {
+        float2 m_uvMin;
+        float2 m_uvMax;
+        float m_normalFactor;
+        bool m_flipNormalX;
+        bool m_flipNormalY;
+        uint m_mapsInUse;
+    };
+
     TerrainData m_terrainData;
 
+    MacroMaterialData m_macroMaterialData[4];
+    uint m_macroMaterialCount;
+
+    Texture2D m_macroColorMap[4];
+    Texture2D m_macroNormalMap[4];
+    
     // The below shouldn't be in this SRG but needs to be for now because the lighting functions depend on them.
 
     //! Reflection Probe (smallest probe volume that overlaps the object position)
@@ -101,14 +117,6 @@ ShaderResourceGroup TerrainMaterialSrg : SRG_PerMaterial
         MaxAnisotropy = 16;
     };
 
-    // Macro Color
-    Texture2D m_macroColorMap;
-
-    // Macro normal
-    Texture2D m_macroNormalMap;
-    bool m_flipMacroNormalX;
-    bool m_flipMacroNormalY;
-
     // Base Color
     float3 m_baseColor;
     float m_baseColorFactor;
@@ -130,8 +138,6 @@ ShaderResourceGroup TerrainMaterialSrg : SRG_PerMaterial
 }
 
 option bool o_useTerrainSmoothing = false;
-option bool o_macroColor_useTexture = true;
-option bool o_macroNormal_useTexture = true;
 option bool o_baseColor_useTexture = true;
 option bool o_specularF0_useTexture = true;
 option bool o_normal_useTexture = true;

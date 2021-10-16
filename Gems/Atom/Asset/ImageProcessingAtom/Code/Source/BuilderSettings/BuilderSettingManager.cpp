@@ -137,25 +137,6 @@ namespace ImageProcessingAtom
         return nullptr;
     }
 
-    const PresetSettings* BuilderSettingManager::GetPreset(const AZ::Uuid presetId, const PlatformName& platform, AZStd::string_view* settingsFilePathOut)
-    {
-        AZStd::lock_guard<AZStd::recursive_mutex> lock(m_presetMapLock);
-
-        for (const auto& namePreset : m_presets)
-        {
-            if (namePreset.second.m_multiPreset.GetPresetId() == presetId)
-            {
-                if (settingsFilePathOut)
-                {
-                    *settingsFilePathOut = namePreset.second.m_presetFilePath;
-                }
-                return namePreset.second.m_multiPreset.GetPreset(platform);
-            }
-        }
-
-        return nullptr;
-    }
-
     const BuilderSettings* BuilderSettingManager::GetBuilderSetting(const PlatformName& platform)
     {
         if (m_builderSettings.find(platform) != m_builderSettings.end())
@@ -180,24 +161,10 @@ namespace ImageProcessingAtom
         return platforms;
     }
 
-    const AZStd::map <FileMask, AZStd::set<PresetName>>& BuilderSettingManager::GetPresetFilterMap()
+    const AZStd::map <FileMask, AZStd::unordered_set<PresetName>>& BuilderSettingManager::GetPresetFilterMap()
     {
         AZStd::lock_guard<AZStd::recursive_mutex> lock(m_presetMapLock);
         return m_presetFilterMap;
-    }
-
-    const AZ::Uuid BuilderSettingManager::GetPresetIdFromName(const PresetName& presetName)
-    {
-        AZStd::lock_guard<AZStd::recursive_mutex> lock(m_presetMapLock);
-
-        auto itr = m_presets.find(presetName);
-
-        if (itr != m_presets.end())
-        {
-            return itr->second.m_multiPreset.GetPresetId();
-        }
-
-        return AZ::Uuid::CreateNull();
     }
 
     const PresetName BuilderSettingManager::GetPresetNameFromId(const AZ::Uuid& presetId)
@@ -212,7 +179,7 @@ namespace ImageProcessingAtom
             }
         }
 
-        return "Unknown";
+        return {};
     }
 
     void BuilderSettingManager::ClearSettings()
@@ -244,7 +211,7 @@ namespace ImageProcessingAtom
         }
 
         AZ::IO::FixedMaxPath projectConfigFolder;
-        if (auto sourceGameRoot = fileIoBase->ResolvePath("@devassets@"); sourceGameRoot.has_value())
+        if (auto sourceGameRoot = fileIoBase->ResolvePath("@projectroot@"); sourceGameRoot.has_value())
         {
             projectConfigFolder = *sourceGameRoot;
             projectConfigFolder /= s_projectConfigRelativeFolder;
@@ -296,7 +263,7 @@ namespace ImageProcessingAtom
 
             AZ_Warning("Image Processing", presetName == preset.GetPresetName(), "Preset file name '%s' is not"
                 " same as preset name '%s'. Using preset file name as preset name",
-                filePath.toUtf8().data(), preset.GetPresetName().c_str());
+                filePath.toUtf8().data(), preset.GetPresetName().GetCStr());
 
             preset.SetPresetName(presetName);
 
@@ -442,8 +409,20 @@ namespace ImageProcessingAtom
         return AZStd::string();
     }
 
-    AZ::Uuid BuilderSettingManager::GetSuggestedPreset(AZStd::string_view imageFilePath, IImageObjectPtr imageFromFile)
+    bool BuilderSettingManager::IsValidPreset(PresetName presetName) const
     {
+        if (presetName.IsEmpty())
+        {
+            return false;
+        }
+
+        return m_presets.find(presetName) != m_presets.end();
+    }
+
+    PresetName BuilderSettingManager::GetSuggestedPreset(AZStd::string_view imageFilePath, IImageObjectPtr imageFromFile)
+    {
+        PresetName emptyPreset;
+
         //load the image to get its size for later use
         IImageObjectPtr image = imageFromFile;
         //if the input image is empty we will try to load it from the path
@@ -454,34 +433,37 @@ namespace ImageProcessingAtom
 
         if (image == nullptr)
         {
-            return AZ::Uuid::CreateNull();
+            return emptyPreset;
         }
 
         //get file mask of this image file
         AZStd::string fileMask = GetFileMask(imageFilePath);
 
-        AZ::Uuid outPreset = AZ::Uuid::CreateNull();
+        PresetName outPreset = emptyPreset;
 
         //check default presets for some file masks
         if (m_defaultPresetByFileMask.find(fileMask) != m_defaultPresetByFileMask.end())
         {
             outPreset = m_defaultPresetByFileMask[fileMask];
+            if (!IsValidPreset(outPreset))
+            {
+                outPreset = emptyPreset;
+            }
         }
 
         //use the preset filter map to find
-        if (outPreset.IsNull() && !fileMask.empty())
+        if (outPreset.IsEmpty() && !fileMask.empty())
         {
             auto& presetFilterMap = GetPresetFilterMap();
             if (presetFilterMap.find(fileMask) != presetFilterMap.end())
             {
-                AZStd::string presetName = *(presetFilterMap.find(fileMask)->second.begin());
-                outPreset = GetPresetIdFromName(presetName);
+                outPreset = *(presetFilterMap.find(fileMask)->second.begin());
             }
         }
 
         const PresetSettings* presetInfo = nullptr;
 
-        if (!outPreset.IsNull())
+        if (!outPreset.IsEmpty())
         {
             presetInfo = GetPreset(outPreset);
 
@@ -491,12 +473,12 @@ namespace ImageProcessingAtom
                 // If it's not a latitude-longitude map or it doesn't match any cubemap layouts then reset its preset
                 if (!IsValidLatLongMap(image) && CubemapLayout::GetCubemapLayoutInfo(image) == nullptr)
                 {
-                    outPreset = AZ::Uuid::CreateNull();
+                    outPreset = emptyPreset;
                 }
             }
         }
 
-        if (outPreset.IsNull())
+        if (outPreset == emptyPreset)
         {
             if (image->GetAlphaContent() == EAlphaContent::eAlphaContent_Absent)
             {
@@ -521,7 +503,7 @@ namespace ImageProcessingAtom
             }
             else
             {
-                AZ_Warning("Image Processing", false, "Image dimensions are not compatible with preset '%s'. The default preset will be used.", presetInfo->m_name.c_str());
+                AZ_Warning("Image Processing", false, "Image dimensions are not compatible with preset '%s'. The default preset will be used.", presetInfo->m_name.GetCStr());
             }
         }
 
@@ -540,7 +522,7 @@ namespace ImageProcessingAtom
         for (const auto& element : m_presets)
         {
             const PresetEntry& presetEntry = element.second;
-            AZStd::string fileName = AZStd::string::format("%s.preset", presetEntry.m_multiPreset.GetDefaultPreset().m_name.c_str());
+            AZStd::string fileName = AZStd::string::format("%s.preset", presetEntry.m_multiPreset.GetDefaultPreset().m_name.GetCStr());
             AZStd::string filePath;
             if (!AzFramework::StringFunc::Path::Join(outputFolder.data(), fileName.c_str(), filePath))
             {
@@ -552,7 +534,7 @@ namespace ImageProcessingAtom
             if (!result.IsSuccess())
             {
                 AZ_Warning("Image Processing", false, "Failed to save preset '%s' to file '%s'. Error: %s", 
-                    presetEntry.m_multiPreset.GetDefaultPreset().m_name.c_str(), filePath.c_str(), result.GetError().c_str());
+                    presetEntry.m_multiPreset.GetDefaultPreset().m_name.GetCStr(), filePath.c_str(), result.GetError().c_str());
             }
         }
     }

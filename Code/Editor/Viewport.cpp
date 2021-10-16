@@ -19,6 +19,7 @@
 
 #include <AzToolsFramework/API/ComponentEntitySelectionBus.h>
 #include <AzToolsFramework/ViewportSelection/EditorSelectionUtil.h>
+#include <AzToolsFramework/Viewport/ViewportMessages.h>
 
 // Editor
 #include "ViewManager.h"

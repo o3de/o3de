@@ -22,6 +22,7 @@
 #include "CommandManager.h"
 #include <EMotionFX/Source/EMotionFXManager.h>
 #include <AzFramework/API/ApplicationAPI.h>
+#include <Source/Integration/Assets/ActorAsset.h>
 
 
 namespace CommandSystem
@@ -729,7 +730,8 @@ namespace CommandSystem
         m_oldWorkspaceDirtyFlag = GetCommandManager()->GetWorkspaceDirtyFlag();
 
         // get rid of the actor
-        EMotionFX::GetActorManager().UnregisterActor(EMotionFX::GetActorManager().FindSharedActorByID(actor->GetID()));
+        const AZ::Data::AssetId actorAssetId = EMotionFX::GetActorManager().FindAssetIdByActorId(actor->GetID());
+        EMotionFX::GetActorManager().UnregisterActor(actorAssetId);
 
         // mark the workspace as dirty
         GetCommandManager()->SetWorkspaceDirtyFlag(true);
@@ -818,9 +820,13 @@ namespace CommandSystem
                 {
                     continue;
                 }
-
                 // ignore visualization actor instances
                 if (actorInstance->GetIsUsedForVisualization())
+                {
+                    continue;
+                }
+                // Ignore actor instances owned by entity
+                if (actorInstance->GetEntity())
                 {
                     continue;
                 }
@@ -848,12 +854,6 @@ namespace CommandSystem
             {
                 // get the current actor
                 EMotionFX::Actor* actor = EMotionFX::GetActorManager().GetActor(i);
-
-                // ignore runtime-owned actors
-                if (actor->GetIsOwnedByRuntime())
-                {
-                    continue;
-                }
 
                 // ignore visualization actors
                 if (actor->GetIsUsedForVisualization())

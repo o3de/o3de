@@ -269,6 +269,7 @@ namespace AZ
                 void UpdateSimulationParameters(const AMD::TressFXSimulationSettings* settings, float timeStep);
 
                 void SetWind(const Vector3& windDir, float windMag, int frame);
+                void SetRenderIndex(uint32_t renderIndex) { m_RenderIndex = renderIndex; }
 
                 void ResetPositions() { m_simCB->g_ResetPositions = 1.0f; }
                 void IncreaseSimulationFrame()
@@ -315,6 +316,10 @@ namespace AZ
 
                 float m_frameDeltaTime = 0.02;
 
+                //! The following are the configuration settings that might be required during the update.
+                AMD::TressFXSimulationSettings* m_simSettings = nullptr;
+                AMD::TressFXRenderingSettings* m_renderSettings = nullptr;
+
                 //! Hair asset information
                 uint32_t m_TotalIndices = 0;
                 uint32_t m_NumTotalVertices = 0;
@@ -331,7 +336,7 @@ namespace AZ
 
                 //! Controls reset / copy base hair state
                 uint32_t m_SimulationFrame = 0;
-                // [To Do] - verify if still required
+                //! The index used as a look up into the material array during the resolve pass
                 uint32_t m_RenderIndex = 0;
 
                 //!-----------------------------------------------------------------
