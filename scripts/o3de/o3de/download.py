@@ -218,8 +218,8 @@ def add_parser_args(parser):
     parser.add_argument('-dp', '--dest-path', type=str, required=False,
                             default=None,
                             help='Optional destination folder to download into.'
-                                 ' i.e. download --project-name "AtomSamplerViewer" --dest-path "C:/projects"'
-                                 ' will result in C:/projects/AtomSampleViewer'
+                                 ' i.e. download --project-name "CustomProject" --dest-path "C:/projects"'
+                                 ' will result in C:/projects/CustomProject'
                                  ' If blank will download to default object type folder')
     parser.add_argument('-sar', '--skip-auto-register', action='store_true', required=False,
                             default=False,
