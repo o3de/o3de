@@ -181,6 +181,20 @@ namespace EMStudio
         ResetEnvironment();
     }
 
+    AZ::Vector3 AnimViewportRenderer::GetCenter() const
+    {
+        AZ::Vector3 result = AZ::Vector3::CreateZero();
+        if (!m_actorEntities.empty())
+        {
+            // Just return the position of the first entity.
+            AZ::Transform worldTransform;
+            AZ::TransformBus::EventResult(worldTransform, m_actorEntities[0]->GetId(), &AZ::TransformBus::Events::GetWorldTM);
+            result = worldTransform.GetTranslation();
+        }
+
+        return result;
+    }
+
     void AnimViewportRenderer::ResetEnvironment()
     {
         // Reset environment
