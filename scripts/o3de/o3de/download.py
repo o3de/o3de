@@ -43,15 +43,15 @@ def validate_downloaded_zip_sha256(download_uri_json_data: dict, download_zip_pa
     try:
         sha256A = download_uri_json_data['sha256']
     except KeyError as e:
-        logger.warn(f'SECURITY WARNING: The advertised o3de object you downloaded has no "sha256"!!! Be VERY careful!!!'
-                    f' We cannot verify this is the actually the advertised object!!!')
-        return 0
+        logger.warn('SECURITY WARNING: The advertised o3de object you downloaded has no "sha256"!!! Be VERY careful!!!'
+                    ' We cannot verify this is the actually the advertised object!!!')
+        return 1
     else:
         sha256B = hashlib.sha256(download_zip_path.open('rb').read()).hexdigest()
         if sha256A != sha256B:
             logger.error(f'SECURITY VIOLATION: Downloaded zip sha256 {sha256B} does not match'
                          f' the advertised "sha256":{sha256A} in the f{manifest_json_name}.')
-            return 1
+            return 0
 
     unzipped_manifest_json_data = unzip_manifest_json_data(download_zip_path, manifest_json_name)
 
@@ -65,11 +65,11 @@ def validate_downloaded_zip_sha256(download_uri_json_data: dict, download_zip_pa
     sha256A = hashlib.sha256(json.dumps(download_uri_json_data, indent=4).encode('utf8')).hexdigest()
     sha256B = hashlib.sha256(json.dumps(unzipped_manifest_json_data, indent=4).encode('utf8')).hexdigest()
     if sha256A != sha256B:
-        logger.error(f'SECURITY VIOLATION: Downloaded manifest json does not match'
-                     f' the advertised manifest json.')
+        logger.error('SECURITY VIOLATION: Downloaded manifest json does not match'
+                     ' the advertised manifest json.')
         return 0
 
-    return 0
+    return 1
 
 
 def get_downloadable(engine_name: str = None,
@@ -101,14 +101,14 @@ def download_o3de_object(object_name: str, default_folder_name: str, dest_path: 
         logger.error(f'Downloadable o3de object {object_name} not found.')
         return 1
 
-    url = downloadable_object_data['originuri']
-    parsed_uri = urllib.parse.urlparse(url)
+    origin_uri = downloadable_object_data['originuri']
+    parsed_uri = urllib.parse.urlparse(origin_uri)
 
     download_zip_result = utils.download_zip_file(parsed_uri, download_zip_path)
     if download_zip_result != 0:
         return download_zip_result
 
-    if validate_downloaded_zip_sha256(downloadable_object_data, download_zip_path, f'{object_type}.json'):
+    if not validate_downloaded_zip_sha256(downloadable_object_data, download_zip_path, f'{object_type}.json'):
         logger.error(f'Could not validate zip, deleting {download_zip_path}')
         os.unlink(download_zip_path)
         return 1
@@ -121,7 +121,7 @@ def download_o3de_object(object_name: str, default_folder_name: str, dest_path: 
         dest_path = pathlib.Path(dest_path).resolve()
 
     if not dest_path:
-        logger.error(f'Destination path not cannot be empty.')
+        logger.error(f'Destination path cannot be empty.')
         return 1
     if dest_path.exists():
         logger.error(f'Destination path {dest_path} already exists.')
@@ -218,7 +218,7 @@ def add_parser_args(parser):
     parser.add_argument('-dp', '--dest-path', type=str, required=False,
                             default=None,
                             help='Optional destination folder to download into.'
-                                 ' i.e. download --project-name "AstomSamplerViewer" --dest-path "C:/projects"'
+                                 ' i.e. download --project-name "AtomSamplerViewer" --dest-path "C:/projects"'
                                  ' will result in C:/projects/AtomSampleViewer'
                                  ' If blank will download to default object type folder')
     parser.add_argument('-sar', '--skip-auto-register', action='store_true', required=False,
