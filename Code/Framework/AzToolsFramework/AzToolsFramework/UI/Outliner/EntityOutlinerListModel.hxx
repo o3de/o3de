@@ -145,6 +145,8 @@ namespace AzToolsFramework
 
         void SetSortMode(EntityOutliner::DisplaySortMode sortMode) { m_sortMode = sortMode; }
         void SetDropOperationInProgress(bool inProgress);
+        void ProcessEntityUpdates();
+
     Q_SIGNALS:
         void ExpandEntity(const AZ::EntityId& entityId, bool expand);
         void SelectEntity(const AZ::EntityId& entityId, bool select);
@@ -178,7 +180,6 @@ namespace AzToolsFramework
         void QueueEntityUpdate(AZ::EntityId entityId);
         void QueueAncestorUpdate(AZ::EntityId entityId);
         void QueueEntityToExpand(AZ::EntityId entityId, bool expand);
-        void ProcessEntityUpdates();
         void ProcessEntityInfoResetEnd();
         AZStd::unordered_set<AZ::EntityId> m_entitySelectQueue;
         AZStd::unordered_set<AZ::EntityId> m_entityExpandQueue;
