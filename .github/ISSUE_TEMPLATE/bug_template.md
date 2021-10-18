@@ -29,7 +29,14 @@ Provide sample assets needed to reproduce the issue.
 **Screenshots/Video**
 If applicable, add screenshots and/or a video to help explain your problem.
 
-**Found in Branch**
+**O3DE Version information**
+
+Provide information we can use to identify the version of O3DE this occured in. As a suggestion, fill in:
+
+* Version number:
+* Branch name:
+* Commit hash:
+
 Name of or link to the branch where the issue occurs.
 
 **Desktop/Device (please complete the following information):**
@@ -39,7 +46,7 @@ Name of or link to the branch where the issue occurs.
  - CPU [e.g. Intel I9-9900k , Ryzen 5900x, ]
  - GPU [AMD 6800 XT, NVidia RTX 3090]
  - Memory [e.g. 16GB]
- - O3DE version or commit hash [e.g. d5fdcf769]
+
 
 **Additional context**
 Add any other context about the problem here.
