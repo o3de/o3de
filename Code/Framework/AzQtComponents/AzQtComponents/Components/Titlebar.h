@@ -123,6 +123,7 @@ namespace AzQtComponents
         QSize sizeHint() const override;
         const QString& windowTitleOverride() const { return m_titleOverride; }
         void setWindowTitleOverride(const QString&);
+        DockTabBar* tabBar() { return m_tabBar; }
 
         /**
          * Sets the titlebar buttons to show.

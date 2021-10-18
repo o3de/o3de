@@ -13,17 +13,22 @@
 #include <AzQtComponents/Components/Widgets/TabWidget.h>
 
 #include <QMap>
+#include <QWidget>
 #endif
+
 
 class QDockWidget;
 class QMouseEvent;
+class QVBoxLayout;
+class QStackedWidget;
 
 namespace AzQtComponents
 {
     class DockTabBar;
+    class TitleBar;
 
     class AZ_QT_COMPONENTS_API DockTabWidget
-        : public TabWidget
+        : public QWidget
     {
         Q_OBJECT
     public:
@@ -38,6 +43,14 @@ namespace AzQtComponents
         void mouseReleaseEvent(QMouseEvent* event) override;
         void mouseDoubleClickEvent(QMouseEvent* event) override;
         void finishDrag();
+        QString tabText(int index) const;
+        void setCurrentIndex(int index);
+        void setCurrentWidget(QWidget* widget);
+        int indexOf(QWidget* widget);
+        int count();
+        int currentIndex();
+        DockTabBar* tabBar();
+        QWidget* widget(int index);
 
         static bool IsTabbed(QDockWidget* dockWidget);
         static DockTabWidget* ParentTabWidget(QDockWidget* dockWidget);
@@ -48,21 +61,32 @@ namespace AzQtComponents
         void tabWidgetInserted(QWidget* widget);
         void undockTab(int index);
         void tabBarDoubleClicked();
+        void currentChanged(int index);
+
 
     protected:
         void closeEvent(QCloseEvent* event) override;
         void contextMenuEvent(QContextMenuEvent* event) override;
-        void tabInserted(int index) override;
-        void tabRemoved(int index) override;
+        // void tabInserted(int index);
+        // void tabRemoved(int index);
 
     protected Q_SLOTS:
         bool handleTabCloseRequested(int index);
         void handleTabAboutToClose();
         void handleTabIndexPressed(int index);
 
+    private Q_SLOTS:
+        void onTabMoved(int from, int to);
+        void onRemovedTab(int index);
+        void onShowTab(int index);
+
     private:
+        QVBoxLayout* m_mainLayout;
+        QStackedWidget* m_stack;
+
+        TitleBar* m_tilteBar;
+        QWidget* m_mainEditorWindow; 
         DockTabBar* m_tabBar;
-        QWidget* m_mainEditorWindow;
 
         AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
         QMap<QDockWidget*, QMetaObject::Connection> m_titleBarChangedConnections;

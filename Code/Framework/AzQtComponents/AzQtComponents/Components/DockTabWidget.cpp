@@ -10,11 +10,14 @@
 #include <AzQtComponents/Components/DockTabBar.h>
 #include <AzQtComponents/Components/StyledDockWidget.h>
 #include <AzQtComponents/Components/RepolishMinimizer.h>
+#include <AzQtComponents/Components/Titlebar.h>
 
 #include <QContextMenuEvent>
 #include <QDockWidget>
 #include <QStackedWidget>
 #include <QString>
+#include <QStackedWidget>
+#include <QVBoxLayout>
 
 
 namespace AzQtComponents
@@ -23,14 +26,18 @@ namespace AzQtComponents
      * Create a dock tab widget that extends a QTabWidget with a custom DockTabBar to replace the default tab bar
      */
     DockTabWidget::DockTabWidget(QWidget* mainEditorWindow, QWidget* parent)
-        : TabWidget(parent)
-        , m_tabBar(new DockTabBar)
+        : QWidget(parent)
+        , m_mainLayout(new QVBoxLayout(this))
+        , m_tilteBar(new TitleBar(this))
+        , m_stack(new QStackedWidget(this))
         , m_mainEditorWindow(mainEditorWindow)
+        , m_tabBar(m_tilteBar->tabBar())
     {
         // Replace the default tab bar with our custom DockTabBar to override the styling and docking behaviors.
         // Setting the custom tab bar parents it to ourself, so it will get cleaned up whenever our DockTabWidget is destroyed.
-        setCustomTabBar(m_tabBar);
+        // setCustomTabBar(m_tabBar);
 
+        // DockTabBar* tabBar = tabBar();
         // Listen for selected tab changes
         QObject::connect(m_tabBar, &DockTabBar::tabBarClicked, this, &DockTabWidget::handleTabIndexPressed);
 
@@ -40,8 +47,58 @@ namespace AzQtComponents
         // Forward on undock requests from our tabs
         QObject::connect(m_tabBar, &DockTabBar::undockTab, this, &DockTabWidget::undockTab);
 
+        // tab moved
+        QObject::connect(m_tabBar, &DockTabBar::tabMoved, this, &DockTabWidget::onTabMoved);
+        QObject::connect(m_tabBar, &DockTabBar::currentChanged, this, &DockTabWidget::onShowTab);
+        QObject::connect(m_stack, &QStackedWidget::widgetRemoved, this, &DockTabWidget::onRemovedTab);
+
+        m_tilteBar->setTearEnabled(true);
+        m_tilteBar->setDrawSideBorders(false);
+        m_tilteBar->setDrawSimple(false);
+        // m_tilteBar->setDragEnabled(true);
+        m_tilteBar->setButtons( {DockBarButton::MinimizeButton, DockBarButton::MaximizeButton, DockBarButton::CloseButton });
+
         // Enable spacing of the overflow button to allow dragging even when the TabBar gets crowded
-        setOverflowButtonSpacing(true);
+        // setOverflowButtonSpacing(true);
+        m_mainLayout->addWidget(m_tilteBar);
+        m_mainLayout->addWidget(m_stack, 1);
+        setLayout(m_mainLayout);
+
+
+        setStyleSheet("background-color:pink;");
+    }
+
+
+    void DockTabWidget::setCurrentIndex(int index) {
+        m_tabBar->setCurrentIndex(index);
+    }
+
+    int DockTabWidget::currentIndex() {
+        return m_stack->currentIndex();
+    }
+
+
+    DockTabBar* DockTabWidget::tabBar() {
+        return m_tabBar;
+    }
+
+    void DockTabWidget::onShowTab(int index) {
+        if (index < m_stack->count() && index >= 0) {
+            m_stack->setCurrentIndex(index);
+            emit currentChanged(index);
+        }
+    }
+
+    void DockTabWidget::onTabMoved(int from, int to) {
+        const QSignalBlocker blocker(m_stack);
+        QWidget *w = m_stack->widget(from);
+        m_stack->removeWidget(w);
+        m_stack->insertWidget(to, w);
+    }
+
+
+    void DockTabWidget::onRemovedTab(int index) {
+        m_tabBar->tabRemoved(index);
     }
 
     /**
@@ -61,7 +118,10 @@ namespace AzQtComponents
 
         // Let the QTabWidget handle the rest
         AzQtComponents::RepolishMinimizer minimizer;
-        int tab = TabWidget::addTab(page, page->windowTitle());
+        int tab = m_tabBar->insertTab(-1, page->windowTitle());
+        m_stack->insertWidget(-1, page);
+        
+        // int tab = TabWidget::addTab(page, );
 
         // If a tabbed dock widget is about to close, we need to remove it from
         // our tab widget ourselves, otherwise it won't know to recreate its
@@ -75,10 +135,10 @@ namespace AzQtComponents
         // Make sure that changes to the window title get reflected by the tab too
         m_titleBarChangedConnections[page] = connect(page, &QWidget::windowTitleChanged, this, [this, page]() {
             // have to find this widget in the list, since the index might have changed
-            int tabIndex = indexOf(page);
+            int tabIndex = m_stack->indexOf(page);
             if (tabIndex != -1)
             {
-                setTabText(tabIndex, page->windowTitle());
+                m_tabBar->setTabText(tabIndex, page->windowTitle());
             }
         });
 
@@ -92,9 +152,11 @@ namespace AzQtComponents
      */
     void DockTabWidget::removeTab(int index)
     {
-        AzQtComponents::StyledDockWidget* dockWidget = qobject_cast<AzQtComponents::StyledDockWidget*>(widget(index));
+        AzQtComponents::StyledDockWidget* dockWidget = qobject_cast<AzQtComponents::StyledDockWidget*>(m_stack->widget(index));
         if (dockWidget)
         {
+            m_stack->removeWidget(dockWidget);
+
             // Stop listening to title bar changed events
             if (m_titleBarChangedConnections.find(dockWidget) != m_titleBarChangedConnections.end())
             {
@@ -119,12 +181,20 @@ namespace AzQtComponents
         }
     }
 
+    int DockTabWidget::count() {
+        return m_stack->count();
+    }
+
+
+    void DockTabWidget::setCurrentWidget(QWidget* widget) {
+        setCurrentIndex(m_stack->indexOf(widget));
+    }
     /**
      * Overloaded function to be able to remove a tab by passing the dock widget
      */
     void DockTabWidget::removeTab(QDockWidget* page)
     {
-        int index = indexOf(page);
+        int index =  m_stack->indexOf(page);
         if (index != -1)
         {
             removeTab(index);
@@ -157,6 +227,19 @@ namespace AzQtComponents
         m_tabBar->moveTab(from, to);
     }
 
+
+    QString DockTabWidget::tabText(int index) const {
+        return m_tabBar->tabText(index);
+    }
+    
+    int DockTabWidget::indexOf(QWidget* widget) {
+        return m_stack->indexOf(widget);
+    }
+
+    QWidget* DockTabWidget::widget(int index) {
+        return m_stack->widget(index);
+    }
+
     /**
      * Handle the close event for our tab widget by trying to close all of the tabs
      */
@@ -169,7 +252,7 @@ namespace AzQtComponents
             return;
         }
 
-        TabWidget::closeEvent(event);
+        // TabWidget::closeEvent(event);
     }
 
     /**
@@ -188,30 +271,31 @@ namespace AzQtComponents
         }
     }
 
-    /**
-     * Emit a signal with a reference to the widget that was inserted
-     */
-    void DockTabWidget::tabInserted(int index)
-    {
-        TabWidget::tabInserted(index);
-        emit tabWidgetInserted(widget(index));
-    }
+// TODO: need to implement tabInsert and tabRemoved
+    // /**
+    //  * Emit a signal with a reference to the widget that was inserted
+    //  */
+    // void DockTabWidget::tabInserted(int index)
+    // {
+    //     // TabWidget::tabInserted(index);
+    //     emit tabWidgetInserted(widget(index));
+    // }
 
-    /**
-     * Emit our tab count changed signal whenever a tab is removed (we use this elsewhere to handle tearing down the tab widget when no tabs are left)
-     */
-    void DockTabWidget::tabRemoved(int index)
-    {
-        TabWidget::tabRemoved(index);
-        emit tabCountChanged(count());
-    }
+    // /**
+    //  * Emit our tab count changed signal whenever a tab is removed (we use this elsewhere to handle tearing down the tab widget when no tabs are left)
+    //  */
+    // void DockTabWidget::tabRemoved(int index)
+    // {
+    //     // TabWidget::tabRemoved(index);
+    //     emit tabCountChanged(count());
+    // }
 
     /**
      * Handle closing tabs when requested from our tab bar close button
      */
     bool DockTabWidget::handleTabCloseRequested(int index)
     {
-        AzQtComponents::StyledDockWidget* dockWidget = qobject_cast<AzQtComponents::StyledDockWidget*>(widget(index));
+        AzQtComponents::StyledDockWidget* dockWidget = qobject_cast<AzQtComponents::StyledDockWidget*>(m_stack->widget(index));
         if (dockWidget)
         {
             // Send the close event to the widget, so it has the opportunity to reject or save its state.
@@ -237,7 +321,7 @@ namespace AzQtComponents
     {
         // Give the dock widget for the selected tab focus, since the user is explicitly switching
         // to that tab
-        QDockWidget* dockWidget = qobject_cast<QDockWidget*>(widget(index));
+        QDockWidget* dockWidget = qobject_cast<QDockWidget*>(m_stack->widget(index));
         if (dockWidget)
         {
             dockWidget->setFocus();
@@ -258,7 +342,7 @@ namespace AzQtComponents
         }
         else
         {
-            TabWidget::mousePressEvent(event);
+            QWidget::mousePressEvent(event);
         }
     }
 
@@ -286,7 +370,7 @@ namespace AzQtComponents
         }
         else
         {
-            TabWidget::mouseDoubleClickEvent(event);
+            QWidget::mouseDoubleClickEvent(event);
         }
     }
 

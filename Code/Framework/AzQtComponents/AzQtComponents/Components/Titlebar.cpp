@@ -187,6 +187,8 @@ namespace AzQtComponents
 
         connect(&m_enableMouseTrackingTimer, &QTimer::timeout, this, &TitleBar::checkEnableMouseTracking);
         m_enableMouseTrackingTimer.setInterval(500);
+
+        setStyleSheet("background-color:pink;");
     }
 
     TitleBar::~TitleBar()
@@ -1046,7 +1048,7 @@ namespace AzQtComponents
 
     bool TitleBar::isTitleBarForDockWidget() const
     {
-        return qobject_cast<StyledDockWidget*>(parent()) != nullptr;
+        return qobject_cast<StyledDockWidget*>(parent()) != nullptr || qobject_cast<DockTabWidget*>(parent()) != nullptr;
     }
 
     void TitleBar::mouseMoveEvent(QMouseEvent* ev)

@@ -456,7 +456,7 @@ namespace AzQtComponents
         }
 
         // Show Action Toolbar
-        tabWidget->setActionToolBarVisible(true);
+        // tabWidget->setActionToolBarVisible(true);
 
         // Minimize Icon
         QAction* minimizeAction = new QAction(tr("Minimize"));
@@ -511,7 +511,8 @@ namespace AzQtComponents
         }
 
         // Hide Action Toolbar
-        tabWidget->setActionToolBarVisible(false);
+        // TODO: need to change tab bar style
+        // tabWidget->setActionToolBarVisible(false);
 
         for (QAction* action : tabWidget->actions())
         {
@@ -2592,11 +2593,13 @@ namespace AzQtComponents
                 DockTabWidget* tabWidget = DockTabWidget::ParentTabWidget(dropTarget);
                 if (QDockWidget* dock = qobject_cast<QDockWidget*>(tabWidget->parentWidget()))
                 {
+                    qDebug() << "FancyDocking: 1";
                     return tabifyDockWidget(dock, dropped, mainWindow, droppedGrab);
                 }
             }
         }
 
+        qDebug() << "FancyDocking: 2";
         // Flag that we have a tabify action in progress so that we can ignore our
         // destroyIfUseless cleanup method that gets inadvertantly triggered
         // while we are tabifying
@@ -2629,6 +2632,7 @@ namespace AzQtComponents
             m_lastFloatingScreenGrab[saveGrabName] = { dropTarget->grab(), dropTarget->size() };
         }
 
+        qDebug() << "FancyDocking: 3";
         if (!tabWidget)
         {
             // The drop target wasn't already a custom tab widget, so create one and replace the drop target
@@ -2651,6 +2655,8 @@ namespace AzQtComponents
         int newActiveIndex = 0;
         if (m_state.floatingDockContainer && droppedName.startsWith(m_tabContainerIdentifierPrefix))
         {
+
+        qDebug() << "FancyDocking: 4";
             DockTabWidget* oldTabWidget = qobject_cast<DockTabWidget*>(dropped->widget());
             if (!oldTabWidget)
             {
