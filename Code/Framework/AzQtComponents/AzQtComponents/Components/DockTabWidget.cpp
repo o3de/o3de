@@ -57,18 +57,20 @@ namespace AzQtComponents
 
         m_stack->setSizePolicy(QSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred, QSizePolicy::TabWidget));
 
-
         m_tilteBar->setTearEnabled(true);
         m_tilteBar->setDrawSideBorders(false);
         m_tilteBar->setDrawMode(TitleBar::TitleBarDrawMode::Tabbed);
         m_tilteBar->setDragEnabled(true);
-        m_tilteBar->setButtons( {DockBarButton::MinimizeButton, DockBarButton::MaximizeButton, DockBarButton::CloseButton });
 
-        // Enable spacing of the overflow button to allow dragging even when the TabBar gets crowded
-        // setOverflowButtonSpacing(true);
         m_mainLayout->addWidget(m_tilteBar);
         m_mainLayout->addWidget(m_stack, 1);
         setLayout(m_mainLayout);
+    }
+
+
+    void DockTabWidget::setButtons(WindowDecorationButtons buttons) 
+    {
+        m_tilteBar->setButtons(buttons);
     }
 
 
@@ -155,7 +157,7 @@ namespace AzQtComponents
      */
     void DockTabWidget::removeTab(int index)
     {
-        AzQtComponents::StyledDockWidget* dockWidget = qobject_cast<AzQtComponents::StyledDockWidget*>(m_stack->widget(index));
+        AzQtComponents::StyledDockWidget* dockWidget = qobject_cast<AzQtComponents::StyledDockWidget*>(widget(index));
         if (dockWidget)
         {
             m_stack->removeWidget(dockWidget);

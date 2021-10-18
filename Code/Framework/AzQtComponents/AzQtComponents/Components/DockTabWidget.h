@@ -11,6 +11,7 @@
 #if !defined(Q_MOC_RUN)
 #include <AzQtComponents/AzQtComponentsAPI.h>
 #include <AzQtComponents/Components/Widgets/TabWidget.h>
+#include <AzQtComponents/Components/DockBarButton.h>
 
 #include <QMap>
 #include <QWidget>
@@ -26,6 +27,7 @@ namespace AzQtComponents
 {
     class DockTabBar;
     class TitleBar;
+    typedef QList<DockBarButton::WindowDecorationButton> WindowDecorationButtons;
 
     class AZ_QT_COMPONENTS_API DockTabWidget
         : public QWidget
@@ -33,6 +35,7 @@ namespace AzQtComponents
         Q_OBJECT
     public:
         explicit DockTabWidget(QWidget* mainEditorWindow, QWidget* parent = nullptr);
+        void setButtons(WindowDecorationButtons buttons);
         int addTab(QDockWidget* page);
         void removeTab(int index);
         void removeTab(QDockWidget* page);
@@ -62,7 +65,6 @@ namespace AzQtComponents
         void undockTab(int index);
         void tabBarDoubleClicked();
         void currentChanged(int index);
-
 
     protected:
         void closeEvent(QCloseEvent* event) override;
