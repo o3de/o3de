@@ -100,7 +100,11 @@ namespace AZ
             RHI::Ptr<CommandList> AcquireCommandList(uint32_t familyQueueIndex, VkCommandBufferLevel level = VK_COMMAND_BUFFER_LEVEL_PRIMARY);
             RHI::Ptr<CommandList> AcquireCommandList(RHI::HardwareQueueClass queueClass, VkCommandBufferLevel level = VK_COMMAND_BUFFER_LEVEL_PRIMARY);
 
-            RHI::Ptr<Memory> AllocateMemory(uint64_t sizeInBytes, const uint32_t memoryTypeMask, const VkMemoryPropertyFlags flags);
+            RHI::Ptr<Memory> AllocateMemory(
+                uint64_t sizeInBytes,
+                const uint32_t memoryTypeMask,
+                const VkMemoryPropertyFlags flags,
+                const RHI::BufferBindFlags bufferBindFlags = RHI::BufferBindFlags::None);
             
             uint32_t GetCurrentFrameIndex() const;
 
