@@ -121,6 +121,13 @@ namespace SandboxEditor
         return AZ::Vector3(xPosition, yPosition, zPosition);
     }
 
+    void SetDefaultCameraEditorPosition(const AZ::Vector3 defaultCameraPosition)
+    {
+        SetRegistry(CameraDefaultStartingPositionX, defaultCameraPosition.GetX());
+        SetRegistry(CameraDefaultStartingPositionY, defaultCameraPosition.GetY());
+        SetRegistry(CameraDefaultStartingPositionZ, defaultCameraPosition.GetZ());
+    }
+
     bool GridSnappingEnabled()
     {
         return GetRegistry(GridSnappingSetting, false);

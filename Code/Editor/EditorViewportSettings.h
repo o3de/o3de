@@ -34,6 +34,7 @@ namespace SandboxEditor
     SANDBOX_API AZStd::unique_ptr<EditorViewportSettingsCallbacks> CreateEditorViewportSettingsCallbacks();
 
     SANDBOX_API AZ::Vector3 DefaultEditorCameraPosition();
+    SANDBOX_API void SetDefaultCameraEditorPosition(AZ::Vector3 defaultCameraPosition);
 
     SANDBOX_API bool GridSnappingEnabled();
     SANDBOX_API void SetGridSnapping(bool enabled);
