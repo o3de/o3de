@@ -8,11 +8,10 @@
 #
 #
 # -------------------------------------------------------------------------
-# DCCsi\\Tools\\DCC\\Maya\\start.py
+# DCCsi\\Tools\\DCC\\Maya\\config.py
 
 """DccScriptingInterface (DCCsi)
-The DCCsi bootstraps tools like Maya with additional code access and extensions.
-This module manages the synthetic evironment context for boostrapping (via dynaconf).
+This is the dynamic config (dynaconf) for O3DE Maya DCCsi interface
 """
 
 ###########################################################################

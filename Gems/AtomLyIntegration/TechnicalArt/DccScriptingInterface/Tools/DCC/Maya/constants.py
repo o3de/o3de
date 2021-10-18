@@ -8,14 +8,9 @@
 #
 #
 # -------------------------------------------------------------------------
+# DCCsi\\Tools\\DCC\\Maya\\constsants.py
 
-__all__ = [
-    'create_maya_files',
-    'constants'
-    'image_conversion',
-    'isolate_and_assign',
-    'lumberyard_data',
-    'cli_control',
-    'utilities',
-    'main'
-]
+"""DccScriptingInterface (DCCsi)
+This module contains constants for the O3DE Maya DCCsi interface
+"""
+
