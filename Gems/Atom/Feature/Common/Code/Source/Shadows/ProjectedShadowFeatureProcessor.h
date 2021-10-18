@@ -49,7 +49,6 @@ namespace AZ::Render
         void SetShadowmapMaxResolution(ShadowId id, ShadowmapSize size) override;
         void SetShadowBias(ShadowId id, float bias) override;
         void SetShadowFilterMethod(ShadowId id, ShadowFilterMethod method) override;
-        void SetSofteningBoundaryWidthAngle(ShadowId id, float boundaryWidthRadians) override;
         void SetFilteringSampleCount(ShadowId id, uint16_t count) override;
         void SetShadowProperties(ShadowId id, const ProjectedShadowDescriptor& descriptor) override;
         const ProjectedShadowDescriptor& GetShadowProperties(ShadowId id) override;
@@ -101,8 +100,7 @@ namespace AZ::Render
             
         //! Functions to update the parameter of Gaussian filter used in ESM.
         void UpdateFilterParameters();
-        void UpdateStandardDeviations();
-        void UpdateFilterOffsetsCounts();
+        void UpdateEsmPassEnabled();
         void SetFilterParameterToPass();
         bool FilterMethodIsEsm(const ShadowData& shadowData) const;
 

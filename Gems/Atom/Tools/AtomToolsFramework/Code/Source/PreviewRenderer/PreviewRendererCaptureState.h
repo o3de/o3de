@@ -9,8 +9,8 @@
 #pragma once
 
 #include <Atom/Feature/Utils/FrameCaptureBus.h>
-#include <AtomToolsFramework/PreviewRenderer/PreviewRendererState.h>
 #include <AzCore/Component/TickBus.h>
+#include <PreviewRenderer/PreviewRendererState.h>
 
 namespace AtomToolsFramework
 {

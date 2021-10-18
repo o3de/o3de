@@ -12,7 +12,6 @@
 #include <Atom/RPI.Reflect/Material/MaterialAsset.h>
 #include <Atom/RPI.Reflect/Model/ModelAsset.h>
 #include <Atom/RPI.Reflect/System/AnyAsset.h>
-#include <AtomToolsFramework/PreviewRenderer/PreviewRenderer.h>
 #include <AzCore/Component/TickBus.h>
 #include <AzToolsFramework/Thumbnails/Thumbnail.h>
 #include <AzToolsFramework/Thumbnails/ThumbnailerBus.h>
@@ -22,7 +21,7 @@ namespace AZ
 {
     namespace LyIntegration
     {
-        //! Provides custom rendering thumbnails of supported asset types
+        //! Provides custom thumbnail rendering of supported asset types
         class SharedThumbnailRenderer final
             : public AzToolsFramework::Thumbnailer::ThumbnailerRendererRequestBus::MultiHandler
             , public SystemTickBus::Handler
@@ -53,8 +52,6 @@ namespace AZ
             static constexpr const char* DefaultMaterialPath = "";
             const Data::AssetId DefaultMaterialAssetId;
             Data::Asset<RPI::MaterialAsset> m_defaultMaterialAsset;
-
-            AZStd::unique_ptr<AtomToolsFramework::PreviewRenderer> m_previewRenderer;
         };
     } // namespace LyIntegration
 } // namespace AZ

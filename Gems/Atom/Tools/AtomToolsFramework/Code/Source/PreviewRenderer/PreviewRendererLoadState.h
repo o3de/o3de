@@ -9,7 +9,7 @@
 #pragma once
 
 #include <AzCore/Component/TickBus.h>
-#include <AtomToolsFramework/PreviewRenderer/PreviewRendererState.h>
+#include <PreviewRenderer/PreviewRendererState.h>
 
 namespace AtomToolsFramework
 {
