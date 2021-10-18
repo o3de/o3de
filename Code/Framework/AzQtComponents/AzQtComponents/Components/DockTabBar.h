@@ -47,7 +47,6 @@ namespace AzQtComponents
 
     Q_SIGNALS:
         void closeTab(int index);
-        void currentChanged(int index);
         void undockTab(int index);
         void singleTabFillsWidthChanged(bool singleTabFillsWidth);
 

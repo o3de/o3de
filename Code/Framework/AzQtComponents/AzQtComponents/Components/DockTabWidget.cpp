@@ -33,6 +33,9 @@ namespace AzQtComponents
         , m_mainEditorWindow(mainEditorWindow)
         , m_tabBar(m_tilteBar->tabBar())
     {
+        //TODO: 
+        m_tabBar->removeTab(0);
+
         // Replace the default tab bar with our custom DockTabBar to override the styling and docking behaviors.
         // Setting the custom tab bar parents it to ourself, so it will get cleaned up whenever our DockTabWidget is destroyed.
         // setCustomTabBar(m_tabBar);
@@ -52,10 +55,13 @@ namespace AzQtComponents
         QObject::connect(m_tabBar, &DockTabBar::currentChanged, this, &DockTabWidget::onShowTab);
         QObject::connect(m_stack, &QStackedWidget::widgetRemoved, this, &DockTabWidget::onRemovedTab);
 
+        m_stack->setSizePolicy(QSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred, QSizePolicy::TabWidget));
+
+
         m_tilteBar->setTearEnabled(true);
         m_tilteBar->setDrawSideBorders(false);
-        m_tilteBar->setDrawSimple(false);
-        // m_tilteBar->setDragEnabled(true);
+        m_tilteBar->setDrawMode(TitleBar::TitleBarDrawMode::Tabbed);
+        m_tilteBar->setDragEnabled(true);
         m_tilteBar->setButtons( {DockBarButton::MinimizeButton, DockBarButton::MaximizeButton, DockBarButton::CloseButton });
 
         // Enable spacing of the overflow button to allow dragging even when the TabBar gets crowded
@@ -63,9 +69,6 @@ namespace AzQtComponents
         m_mainLayout->addWidget(m_tilteBar);
         m_mainLayout->addWidget(m_stack, 1);
         setLayout(m_mainLayout);
-
-
-        setStyleSheet("background-color:pink;");
     }
 
 
@@ -98,7 +101,7 @@ namespace AzQtComponents
 
 
     void DockTabWidget::onRemovedTab(int index) {
-        m_tabBar->tabRemoved(index);
+        m_tabBar->removeTab(index);
     }
 
     /**
@@ -298,6 +301,7 @@ namespace AzQtComponents
         AzQtComponents::StyledDockWidget* dockWidget = qobject_cast<AzQtComponents::StyledDockWidget*>(m_stack->widget(index));
         if (dockWidget)
         {
+            removeTab(index);
             // Send the close event to the widget, so it has the opportunity to reject or save its state.
             // If the DeleteOnClose attribute is set, then the tab will be removed automatically if the
             // close is successful when the widget is deleted. Otherwise, it will get removed since we

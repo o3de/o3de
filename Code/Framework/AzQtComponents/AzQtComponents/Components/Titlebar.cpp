@@ -188,7 +188,6 @@ namespace AzQtComponents
         connect(&m_enableMouseTrackingTimer, &QTimer::timeout, this, &TitleBar::checkEnableMouseTracking);
         m_enableMouseTrackingTimer.setInterval(500);
 
-        setStyleSheet("background-color:pink;");
     }
 
     TitleBar::~TitleBar()
@@ -428,6 +427,10 @@ namespace AzQtComponents
 
     void TitleBar::updateTitle()
     {
+        if(drawTabbed()) 
+        {
+            return;
+        }
         // The configured title needs to be simplified since it could have line breaks or
         // carriage returns that should be replaced with spaces so that all the text will
         // be on a single line
@@ -440,8 +443,12 @@ namespace AzQtComponents
     {
         setFixedHeight(style()->pixelMetric(QStyle::PM_TitleBarHeight, nullptr, this));
         m_label->setVisible(drawSimple() ? m_showLabelWhenSimple : true);
-        const int currentIndex = !drawSimple() && m_appearAsTabBar && isTitleBarForDockWidget() ? 0 : 1;
-        m_stackedLayout->setCurrentIndex(currentIndex);
+        if(drawTabbed()) {
+            m_stackedLayout->setCurrentIndex(0);
+        } else {
+            const int currentIndex = !drawSimple() && m_appearAsTabBar && isTitleBarForDockWidget() ? 0 : 1;
+            m_stackedLayout->setCurrentIndex(currentIndex);
+        }
     }
     
     void TitleBar::setIsShowingWindowControls(bool show)
@@ -470,6 +477,10 @@ namespace AzQtComponents
 
     bool TitleBar::eventFilter(QObject* watched, QEvent* event)
     {
+        if(drawTabbed() && watched == m_tabBar) {
+            return QFrame::eventFilter(watched, event);
+        }
+
         if (watched != m_tabBar)
         {
             return QFrame::eventFilter(watched, event);
@@ -724,12 +735,17 @@ namespace AzQtComponents
             m_undockGroupMenuAction = m_tabsContextMenu->addAction(tr("Undock Tab Group"));
         }
 
-        // Update the menu labels for the close/undock actions
-        // We need to check where we should get the title text from based on whether
-        // or not the tab bar or the label are currently being shown
-        QString titleLabel = m_tabBar->isVisible() ? m_tabBar->tabText(0) : m_label->ElidedText();
-        m_closeTabMenuAction->setText(tr("Close %1").arg(titleLabel));
-        m_undockMenuAction->setText(tr("Undock %1").arg(titleLabel));
+
+        if(!drawTabbed()) 
+        {
+            // Update the menu labels for the close/undock actions
+            // We need to check where we should get the title text from based on whether
+            // or not the tab bar or the label are currently being shown
+            QString titleLabel = m_tabBar->isVisible() ? m_tabBar->tabText(0) : m_label->ElidedText();
+            m_closeTabMenuAction->setText(tr("Close %1").arg(titleLabel));
+            m_undockMenuAction->setText(tr("Undock %1").arg(titleLabel));
+        }
+        
 
         // Don't enable the undock action if this dock widget is the only pane
         // in a floating window or if it isn't docked in one of our dock main windows

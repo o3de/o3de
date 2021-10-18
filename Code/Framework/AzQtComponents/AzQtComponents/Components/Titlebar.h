@@ -102,6 +102,7 @@ namespace AzQtComponents
         {
             Main = 0,
             Simple,
+            Tabbed,
             Hidden
         };
 
@@ -111,6 +112,7 @@ namespace AzQtComponents
         void setDrawSideBorders(bool);
         bool drawSimple() const { return m_drawMode == TitleBarDrawMode::Simple; }
         bool drawHidden() const { return m_drawMode == TitleBarDrawMode::Hidden; }
+        bool drawTabbed() const { return m_drawMode == TitleBarDrawMode::Tabbed; }
         TitleBarDrawMode drawMode() const { return m_drawMode; }
         void setDrawSimple(bool enable);
         void setDrawMode(TitleBarDrawMode drawMode);
