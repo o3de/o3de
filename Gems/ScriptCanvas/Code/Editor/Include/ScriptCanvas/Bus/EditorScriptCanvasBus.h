@@ -121,8 +121,6 @@ namespace ScriptCanvasEditor
         static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::ById;
         using BusIdType = ScriptCanvas::ScriptCanvasId;
 
-        virtual void SetAssetId(const AZ::Data::AssetId& assetId) = 0;
-
         virtual void CreateGraphCanvasScene() = 0;
         virtual void ClearGraphCanvasScene() = 0;
         virtual GraphCanvas::GraphId GetGraphCanvasGraphId() const = 0;

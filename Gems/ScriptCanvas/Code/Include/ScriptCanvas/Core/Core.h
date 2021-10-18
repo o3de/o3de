@@ -20,7 +20,7 @@
 #include <AzCore/std/hash.h>
 #include <AzCore/Component/EntityUtils.h>
 #include <AzCore/Component/NamedEntityId.h>
-
+#include <AzCore/Math/Uuid.h>
 #include <Core/NamedId.h>
 #include <ScriptCanvas/Grammar/PrimitivesDeclarations.h>
 
@@ -318,7 +318,39 @@ namespace ScriptCanvasEditor
     using GraphPtr = Graph*;
     using GraphPtrConst = const Graph*;
 
-    class SourceHandle;
+    class SourceHandle
+    {
+    public:
+        AZ_TYPE_INFO(SourceHandle, "{65855A98-AE2F-427F-BFC8-69D45265E312}");
+        AZ_CLASS_ALLOCATOR(SourceHandle, AZ::SystemAllocator, 0);
+
+        SourceHandle() = default;
+
+        SourceHandle(ScriptCanvas::DataPtr graph, const AZ::Uuid& id, AZStd::string_view path);
+
+        void Clear();
+
+        GraphPtrConst Get() const;
+
+        const AZ::Uuid& Id() const;
+
+        bool IsValid() const;
+
+        GraphPtr Mod() const;
+
+        operator bool() const;
+
+        bool operator!() const;
+
+        const AZStd::string& Path() const;
+
+        AZStd::string ToString() const;
+
+    private:
+        ScriptCanvas::DataPtr m_data;
+        AZ::Uuid m_id = AZ::Uuid::CreateNull();
+        AZStd::string m_path;
+    };
 }
 
 namespace AZStd

@@ -141,7 +141,7 @@ namespace ScriptCanvasEditor
         ////
 
         // RuntimeBus
-        AZ::Data::AssetId GetAssetId() const override { return m_assetId; }
+        //AZ::Data::AssetId GetAssetId() const override { return m_assetId; }
         ////
 
         // GraphCanvas::GraphModelRequestBus
@@ -224,7 +224,7 @@ namespace ScriptCanvasEditor
         ///////////////////////////
 
         // EditorGraphRequestBus
-        void SetAssetId(const AZ::Data::AssetId& assetId) override { m_assetId = assetId; }
+        // void SetAssetId(const AZ::Data::AssetId& assetId) override { m_assetId = assetId; }
 
         void CreateGraphCanvasScene() override;
         void ClearGraphCanvasScene() override;
@@ -392,6 +392,6 @@ namespace ScriptCanvasEditor
         //! Defaults to true to signal that this graph does not have the GraphCanvas stuff intermingled
         bool m_saveFormatConverted = true;
 
-        AZ::Data::AssetId m_assetId;
+        ScriptCanvasEditor::SourceHandle m_assetId;
     };
 }

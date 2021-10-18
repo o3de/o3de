@@ -53,11 +53,10 @@ namespace ScriptCanvasEditor
                 AZ_RTTI(WorkspaceAssetSaveData, "{927368CA-096F-4CF1-B2E0-1B9E4A93EA57}");
 
                 WorkspaceAssetSaveData();
-                WorkspaceAssetSaveData(const AZ::Data::AssetId& assetId);
+                WorkspaceAssetSaveData(SourceHandle assetId);
                 virtual ~WorkspaceAssetSaveData() = default;
 
-                AZ::Data::AssetId m_assetId;
-                AZ::Data::AssetType m_assetType;
+                SourceHandle m_assetId;
             };
 
         
@@ -69,9 +68,9 @@ namespace ScriptCanvasEditor
 
             EditorWorkspace() = default;
 
-            void ConfigureActiveAssets(AZ::Data::AssetId focusedAssetId, const AZStd::vector< WorkspaceAssetSaveData >& activeAssetIds);
+            void ConfigureActiveAssets(SourceHandle focusedAsset, const AZStd::vector< WorkspaceAssetSaveData >& activeAssetIds);
             
-            AZ::Data::AssetId GetFocusedAssetId() const;
+            SourceHandle GetFocusedAssetId() const;
             AZStd::vector< WorkspaceAssetSaveData > GetActiveAssetData() const;
 
             void Init(const QByteArray& windowState, const QByteArray& windowGeometry);
@@ -79,7 +78,7 @@ namespace ScriptCanvasEditor
 
             void Clear()
             {
-                m_focusedAssetId.SetInvalid();
+                m_focusedAssetId.Clear();
                 m_activeAssetData.clear();
             }
 
@@ -91,7 +90,7 @@ namespace ScriptCanvasEditor
             AZStd::vector<AZ::u8> m_windowGeometry;
             AZStd::vector<AZ::u8> m_windowState;
 
-            AZ::Data::AssetId m_focusedAssetId;
+            SourceHandle m_focusedAssetId;
             AZStd::vector< WorkspaceAssetSaveData > m_activeAssetData;
 
         };

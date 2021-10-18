@@ -153,7 +153,7 @@ namespace ScriptCanvasEditor
         }
     };
 
-    //! Manages the Save/Restore operations of the user's las topened and focused graphs
+    //! Manages the Save/Restore operations of the user's last opened and focused graphs
     class Workspace
         : AssetTrackerNotificationBus::MultiHandler
     {
@@ -415,17 +415,17 @@ namespace ScriptCanvasEditor
 
         void CloseNextTab();
 
-        bool IsTabOpen(const ScriptCanvasEditor::SourceHandle& assetId, int& outTabIndex) const;
-        QVariant GetTabData(const ScriptCanvasEditor::SourceHandle& assetId);
+        bool IsTabOpen(const SourceHandle& assetId, int& outTabIndex) const;
+        QVariant GetTabData(const SourceHandle& assetId);
 
         //! GeneralRequestBus
-        AZ::Outcome<int, AZStd::string> OpenScriptCanvasAssetId(const ScriptCanvasEditor::SourceHandle& assetId) override;
-        AZ::Outcome<int, AZStd::string> OpenScriptCanvasAsset(ScriptCanvasEditor::SourceHandle scriptCanvasAssetId, int tabIndex = -1) override;
+        AZ::Outcome<int, AZStd::string> OpenScriptCanvasAssetId(const SourceHandle& assetId) override;
+        AZ::Outcome<int, AZStd::string> OpenScriptCanvasAsset(SourceHandle scriptCanvasAssetId, int tabIndex = -1) override;
         AZ::Outcome<int, AZStd::string> OpenScriptCanvasAsset(const ScriptCanvasMemoryAsset& scriptCanvasAsset, int tabIndex = -1);
-        int CloseScriptCanvasAsset(const ScriptCanvasEditor::SourceHandle& assetId) override;
+        int CloseScriptCanvasAsset(const SourceHandle& assetId) override;
         bool CreateScriptCanvasAssetFor(const TypeDefs::EntityComponentId& requestingEntityId) override;
 
-        bool IsScriptCanvasAssetOpen(const ScriptCanvasEditor::SourceHandle& assetId) const override;
+        bool IsScriptCanvasAssetOpen(const SourceHandle& assetId) const override;
 
         const CategoryInformation* FindNodePaletteCategoryInformation(AZStd::string_view categoryPath) const override;
         const NodePaletteModelInformation* FindNodePaletteModelInformation(const ScriptCanvas::NodeTypeIdentifier& nodeType) const override;
@@ -625,15 +625,7 @@ namespace ScriptCanvasEditor
 
         ScriptCanvasEditor::SourceHandle GetSourceAssetId(const ScriptCanvasEditor::SourceHandle& memoryAssetId) const
         {
-            ScriptCanvasMemoryAsset::pointer memoryAsset;
-            AssetTrackerRequestBus::BroadcastResult(memoryAsset, &AssetTrackerRequests::GetAsset, memoryAssetId);
-
-            if (memoryAsset)
-            {
-                return memoryAsset->GetFileAssetId();
-            }
-
-            return ScriptCanvasEditor::SourceHandle();
+            return memoryAssetId;
         }
 
         int InsertTabForAsset(AZStd::string_view assetPath, ScriptCanvasEditor::SourceHandle assetId, int tabIndex = -1);
