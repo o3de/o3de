@@ -150,6 +150,7 @@ namespace AZ::IO
 
         //! CompressionBus Handler implementation.
         void FindCompressionInfo(bool& found, AZ::IO::CompressionInfo& info, const AZStd::string_view filename) override;
+        void OnSerializerAvailable() override;
 
         // Set the localization folder
         void SetLocalizationFolder(AZStd::string_view sLocalizationFolder) override;
@@ -339,5 +340,33 @@ namespace AZ::IO
         // [LYN-2376] Remove once legacy slice support is removed
         LevelPackOpenEvent m_levelOpenEvent;
         LevelPackCloseEvent m_levelCloseEvent;
+
+        // If pak files are loaded before the serialization and bundling system
+        // are ready to go, their asset catalogs can't be loaded.
+        // In this case, cache information about those archives,
+        // and attempt to load the catalogs later, when the required systems are enabled.
+        struct ArchivesWithCatalogsToLoad
+        {
+            ArchivesWithCatalogsToLoad(AZStd::string_view fullPath,
+                AZStd::string_view bindRoot,
+                int flags,
+                AZ::IO::PathView nextBundle,
+                AZ::IO::Path strFileName) :
+                m_fullPath(fullPath),
+                m_bindRoot(bindRoot),
+                m_flags(flags),
+                m_nextBundle(nextBundle),
+                m_strFileName(strFileName)
+            {
+
+            }
+            AZ::IO::Path m_strFileName;
+            AZStd::string m_fullPath;
+            AZStd::string m_bindRoot;
+            AZ::IO::PathView m_nextBundle;
+            int m_flags;
+        };
+
+        AZStd::list<ArchivesWithCatalogsToLoad> m_archivesWithCatalogsToLoad;
     };
 }

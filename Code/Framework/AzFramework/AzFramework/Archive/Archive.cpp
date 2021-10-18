@@ -1175,11 +1175,17 @@ namespace AZ::IO
             }
         }
 
-        auto bundleManifest = GetBundleManifest(desc.pZip);
         AZStd::shared_ptr<AzFramework::AssetRegistry> bundleCatalog;
+        auto bundleManifest = GetBundleManifest(desc.pZip);
         if (bundleManifest)
         {
             bundleCatalog = GetBundleCatalog(desc.pZip, bundleManifest->GetCatalogName());
+        }
+        
+        // If this archive is loaded before the serialize context is available, then the manifest and catalog will need to be loaded later.
+        if(!bundleManifest || !bundleCatalog)
+        {
+            m_archivesWithCatalogsToLoad.push_back(ArchivesWithCatalogsToLoad(szFullPath, szBindRoot, flags, nextBundle, desc.m_strFileName));
         }
 
         bool usePrefabSystemForLevels = false;
@@ -1219,12 +1225,14 @@ namespace AZ::IO
             m_levelOpenEvent.Signal(levelDirs);
         }
 
-        AZ::IO::ArchiveNotificationBus::Broadcast([](AZ::IO::ArchiveNotifications* archiveNotifications, const char* bundleName,
-            AZStd::shared_ptr<AzFramework::AssetBundleManifest> bundleManifest, const AZ::IO::FixedMaxPath& nextBundle, AZStd::shared_ptr<AzFramework::AssetRegistry> bundleCatalog)
+        if(bundleManifest && bundleCatalog)
         {
-            archiveNotifications->BundleOpened(bundleName, bundleManifest, nextBundle.c_str(), bundleCatalog);
-        }, desc.m_strFileName.c_str(), bundleManifest, nextBundle, bundleCatalog);
-
+            AZ::IO::ArchiveNotificationBus::Broadcast([](AZ::IO::ArchiveNotifications* archiveNotifications, const char* bundleName,
+                AZStd::shared_ptr<AzFramework::AssetBundleManifest> bundleManifest, const AZ::IO::FixedMaxPath& nextBundle, AZStd::shared_ptr<AzFramework::AssetRegistry> bundleCatalog)
+            {
+                archiveNotifications->BundleOpened(bundleName, bundleManifest, nextBundle.c_str(), bundleCatalog);
+            }, desc.m_strFileName.c_str(), bundleManifest, nextBundle, bundleCatalog);
+        }
         return true;
     }
 
@@ -2176,5 +2184,35 @@ namespace AZ::IO
         auto catalogInfo = AZStd::shared_ptr<AzFramework::AssetRegistry>(AZ::Utils::LoadObjectFromBuffer<AzFramework::AssetRegistry>(fileData->GetData(), fileData->GetFileEntry()->desc.lSizeUncompressed));
 
         return catalogInfo;
+    }
+
+    void Archive::OnSerializerAvailable()
+    {
+        for (const auto& archiveInfo : m_archivesWithCatalogsToLoad)
+        {
+            
+            AZStd::intrusive_ptr<INestedArchive> archive = OpenArchive(archiveInfo.m_fullPath, archiveInfo.m_bindRoot, archiveInfo.m_flags, nullptr);
+            if (!archive)
+            {
+                continue;
+            }
+
+            ZipDir::CachePtr pZip = static_cast<NestedArchive*>(archive.get())->GetCache();
+
+            AZStd::shared_ptr<AzFramework::AssetRegistry> bundleCatalog;
+            auto bundleManifest = GetBundleManifest(pZip);
+            if (bundleManifest)
+            {
+                bundleCatalog = GetBundleCatalog(pZip, bundleManifest->GetCatalogName());
+            }
+            
+            AZ::IO::ArchiveNotificationBus::Broadcast([](AZ::IO::ArchiveNotifications* archiveNotifications, const char* bundleName,
+                AZStd::shared_ptr<AzFramework::AssetBundleManifest> bundleManifest, const AZ::IO::FixedMaxPath& nextBundle, AZStd::shared_ptr<AzFramework::AssetRegistry> bundleCatalog)
+            {
+                archiveNotifications->BundleOpened(bundleName, bundleManifest, nextBundle.c_str(), bundleCatalog);
+            }, archiveInfo.m_strFileName.c_str(), bundleManifest, archiveInfo.m_nextBundle, bundleCatalog);
+
+        }
+        m_archivesWithCatalogsToLoad.clear();
     }
 }

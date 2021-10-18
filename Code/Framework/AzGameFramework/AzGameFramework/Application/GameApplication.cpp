@@ -45,6 +45,8 @@ namespace AzGameFramework
             enginePakPath = AZ::IO::FixedMaxPath(AZ::Utils::GetExecutableDirectory()) / "engine.pak";
             m_archive->OpenPack("@products@", enginePakPath.Native());
         }
+        constexpr AZStd::string_view paksFolder = "@products@/*.pak"; // (@products@ assumed)
+        m_archive->OpenPacks(paksFolder);
     }
 
     GameApplication::~GameApplication()

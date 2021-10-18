@@ -795,10 +795,6 @@ void CSystem::OpenBasicPaks()
     }
     bBasicPaksLoaded = true;
 
-    // open pak files
-    constexpr AZStd::string_view paksFolder = "@products@/*.pak"; // (@products@ assumed)
-    m_env.pCryPak->OpenPacks(paksFolder);
-
     InlineInitializationProcessing("CSystem::OpenBasicPaks OpenPacks( paksFolder.c_str() )");
 
     //////////////////////////////////////////////////////////////////////////
