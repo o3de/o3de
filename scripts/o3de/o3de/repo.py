@@ -122,9 +122,9 @@ def get_gem_json_paths_from_cached_repo(repo_uri : str) -> list:
             for o3de_object_uri in o3de_object_uris:
                 manifest_json_uri = f'{o3de_object_uri}/{manifest_json}'
                 manifest_json_sha256 = hashlib.sha256(manifest_json_uri.encode())
-                cache_file = cache_folder / str(manifest_json_sha256.hexdigest() + '.json')
-                if cache_file.is_file():
-                    gem_list.append(cache_file)
+                cache_gem_json_filepath = cache_folder / str(manifest_json_sha256.hexdigest() + '.json')
+                if cache_gem_json_filepath.is_file():
+                    gem_list.append(cache_gem_json_filepath)
 
     return gem_list
 
