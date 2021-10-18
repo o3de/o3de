@@ -11,7 +11,6 @@
 #include <Atom/RHI/CpuProfilerImpl.h>
 #include <Atom/RHI/RHIUtils.h>
 #include <Atom/RHI/RHISystemInterface.h>
-#include <Atom/RHI.Reflect/CpuTimingStatistics.h>
 #include <AzCore/Statistics/RunningStatistic.h>
 
 #include <Atom/RPI.Public/GpuQuery/GpuQueryTypes.h>
@@ -457,17 +456,8 @@ namespace AZ
                 JsonSerializerSettings serializationSettings;
                 serializationSettings.m_keepDefaults = true;
 
-                double frameTime = 0.0;
-                const AZ::RHI::CpuTimingStatistics* stats = AZ::RHI::RHISystemInterface::Get()->GetCpuTimingStatistics();
-                if (stats)
-                {
-                    frameTime = stats->GetFrameToFrameTimeMilliseconds();
-                }
-                else
-                {
-                    AZStd::string warning = AZStd::string::format("Failed to get Cpu frame time");
-                    AZ_Warning("ProfilingCaptureSystemComponent", false, warning.c_str());
-                }
+                double frameTime = AZ::RHI::RHISystemInterface::Get()->GetCpuFrameTime();
+                AZ_Warning("ProfilingCaptureSystemComponent", frameTime > 0, "Failed to get Cpu frame time");
 
                 CpuFrameTimeSerializer serializer(frameTime);
                 const auto saveResult = JsonSerializationUtils::SaveObjectToFile(&serializer,

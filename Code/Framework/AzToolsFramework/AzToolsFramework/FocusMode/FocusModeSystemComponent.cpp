@@ -11,6 +11,7 @@
 #include <AzToolsFramework/API/ViewportEditorModeTrackerInterface.h>
 #include <AzToolsFramework/FocusMode/FocusModeNotificationBus.h>
 #include <AzToolsFramework/FocusMode/FocusModeSystemComponent.h>
+#include <AzToolsFramework/Viewport/ViewportMessages.h>
 
 namespace AzToolsFramework
 {
@@ -70,10 +71,21 @@ namespace AzToolsFramework
             return;
         }
 
-        m_focusRoot = entityId;
-        FocusModeNotificationBus::Broadcast(&FocusModeNotifications::OnEditorFocusChanged, m_focusRoot);
+        if (auto tracker = AZ::Interface<ViewportEditorModeTrackerInterface>::Get())
+        {
+            if (!m_focusRoot.IsValid() && entityId.IsValid())
+            {
+                tracker->ActivateMode({ GetEntityContextId() }, ViewportEditorMode::Focus);
+            }
+            else if (m_focusRoot.IsValid() && !entityId.IsValid())
+            {
+                tracker->DeactivateMode({ GetEntityContextId() }, ViewportEditorMode::Focus);
+            }
+        }
 
-        // TODO - If m_focusRoot != AZ::EntityId(), activate focus mode via ViewportEditorModeTrackerInterface; else, deactivate focus mode
+        AZ::EntityId previousFocusEntityId = m_focusRoot;
+        m_focusRoot = entityId;
+        FocusModeNotificationBus::Broadcast(&FocusModeNotifications::OnEditorFocusChanged, previousFocusEntityId, m_focusRoot);
     }
 
     void FocusModeSystemComponent::ClearFocusRoot([[maybe_unused]] AzFramework::EntityContextId entityContextId)

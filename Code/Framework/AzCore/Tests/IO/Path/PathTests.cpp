@@ -698,7 +698,7 @@ AZ_POP_DISABLE_WARNING
 
     using PathViewLexicallyProximateFixture = PathLexicallyFixture<PathViewLexicallyProximateParams>;
 
-    TEST_P(PathViewLexicallyProximateFixture, LexicallyProximate_ReturnsRelativePathIfNotEmptyOrTestPathIfNot)
+    TEST_P(PathViewLexicallyProximateFixture, LexicallyProximate_ReturnsRelativePathIfNotEmptyOrTestPath)
     {
         const auto& testParams = GetParam();
         AZ::IO::PathView testPath(testParams.m_testPathString, testParams.m_preferredSeparator);

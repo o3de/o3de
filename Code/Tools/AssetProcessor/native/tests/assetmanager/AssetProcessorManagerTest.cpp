@@ -9,6 +9,7 @@
 #include "AssetProcessorManagerTest.h"
 #include "native/AssetManager/PathDependencyManager.h"
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
+#include <AzToolsFramework/Asset/AssetProcessorMessages.h>
 #include <AzToolsFramework/ToolsFileUtils/ToolsFileUtils.h>
 
 #include <AzTest/AzTest.h>
@@ -4130,11 +4131,21 @@ struct LockedFileTest
     MOCK_METHOD2(SendResponse, size_t (unsigned, const AzFramework::AssetSystem::BaseAssetProcessorMessage&));
     MOCK_METHOD1(RemoveResponseHandler, void (unsigned));
 
-    size_t Send(unsigned, const AzFramework::AssetSystem::BaseAssetProcessorMessage&) override
+    size_t Send(unsigned, const AzFramework::AssetSystem::BaseAssetProcessorMessage& message) override
     {
-        if(m_callback)
+        using SourceFileNotificationMessage = AzToolsFramework::AssetSystem::SourceFileNotificationMessage;
+        switch (message.GetMessageType())
         {
-            m_callback();
+        case SourceFileNotificationMessage::MessageType:
+            if (const auto sourceFileMessage = azrtti_cast<const SourceFileNotificationMessage*>(&message);
+                sourceFileMessage != nullptr && sourceFileMessage->m_type == SourceFileNotificationMessage::NotificationType::FileRemoved
+                && m_callback)
+            {
+                m_callback();
+            }
+            break;
+        default:
+            break;
         }
 
         return 0;

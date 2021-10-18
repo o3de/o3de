@@ -17,6 +17,7 @@
 
 #include <AzToolsFramework/API/EntityCompositionNotificationBus.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
+#include <AzToolsFramework/ContainerEntity/ContainerEntityNotificationBus.h>
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 #include <AzToolsFramework/Entity/EditorEntityInfoBus.h>
 #include <AzToolsFramework/Entity/EditorEntityRuntimeActivationBus.h>
@@ -54,6 +55,7 @@ namespace AzToolsFramework
         , private EntityCompositionNotificationBus::Handler
         , private EditorEntityRuntimeActivationChangeNotificationBus::Handler
         , private AZ::EntitySystemBus::Handler
+        , private ContainerEntityNotificationBus::Handler
     {
         Q_OBJECT;
 
@@ -143,6 +145,8 @@ namespace AzToolsFramework
 
         void SetSortMode(EntityOutliner::DisplaySortMode sortMode) { m_sortMode = sortMode; }
         void SetDropOperationInProgress(bool inProgress);
+        void ProcessEntityUpdates();
+
     Q_SIGNALS:
         void ExpandEntity(const AZ::EntityId& entityId, bool expand);
         void SelectEntity(const AZ::EntityId& entityId, bool select);
@@ -176,7 +180,6 @@ namespace AzToolsFramework
         void QueueEntityUpdate(AZ::EntityId entityId);
         void QueueAncestorUpdate(AZ::EntityId entityId);
         void QueueEntityToExpand(AZ::EntityId entityId, bool expand);
-        void ProcessEntityUpdates();
         void ProcessEntityInfoResetEnd();
         AZStd::unordered_set<AZ::EntityId> m_entitySelectQueue;
         AZStd::unordered_set<AZ::EntityId> m_entityExpandQueue;
@@ -215,6 +218,9 @@ namespace AzToolsFramework
 
         // EditorEntityRuntimeActivationChangeNotificationBus::Handler
         void OnEntityRuntimeActivationChanged(AZ::EntityId entityId, bool activeOnStart) override;
+
+        // ContainerEntityNotificationBus overrides ...
+        void OnContainerEntityStatusChanged(AZ::EntityId entityId, bool open) override;
 
         // Drag/Drop of components from Component Palette.
         bool dropMimeDataComponentPalette(const QMimeData* data, Qt::DropAction action, int row, int column, const QModelIndex& parent);

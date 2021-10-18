@@ -52,11 +52,13 @@ def Joints_HingeNoLimitsConstrained():
     """
     import os
     import sys
+    import math
     from editor_python_test_tools.utils import Report
     from editor_python_test_tools.utils import TestHelper as helper
 
     import azlmbr.legacy.general as general
     import azlmbr.bus
+    import azlmbr.math as azmath
 
     import JointsHelper
     from JointsHelper import JointEntity
@@ -84,27 +86,64 @@ def Joints_HingeNoLimitsConstrained():
     Report.info_vector3(lead.position, "lead initial position:")
     Report.info_vector3(follower.position, "follower initial position:")
     leadInitialPosition = lead.position
-    followerInitialPosition = follower.position
 
-    # 4) Wait for several seconds
-    general.idle_wait(4.0) # wait for lead and follower to move
+    # 4) Wait for the follower to move above and over the lead or Timeout
+    normalizedStartPos = JointsHelper.getRelativeVector(lead.position, follower.position)
+    normalizedStartPos = normalizedStartPos.GetNormalizedSafe()
+
+    class WaitCondition:
+        ANGLE_CHECKPOINT_1 = math.radians(90)
+        ANGLE_CHECKPOINT_2 = math.radians(200)
+
+        angleAchieved = 0.0
+        followerMovedAbove90Deg = False #this is expected to be true to pass the test
+        followerMovedAbove200Deg = False #this is expected to be true to pass the test
+
+        jointNormal = azmath.Vector3(0.0, -1.0, 0.0) # the joint rotates around the y axis
+        def checkConditionMet(self):
+            #calculate the current follower-lead vector
+            normalVec = JointsHelper.getRelativeVector(lead.position, follower.position)
+            normalVec = normalVec.GetNormalizedSafe()
+
+            #triple product and get the angle
+            tripleProduct = normalizedStartPos.dot(normalVec.cross(self.jointNormal))
+            currentAngle = math.acos(normalizedStartPos.Dot(normalVec))
+            if tripleProduct < 0:
+                currentAngle = (2*math.pi) - currentAngle
+
+            #if the angle is now less then last time, it is no longer rising, so end the test.
+            if currentAngle < self.angleAchieved:
+                return True
+            
+            #once we're passed the final check point, end the test
+            if currentAngle > self.ANGLE_CHECKPOINT_2:
+                self.followerMovedAbove200Deg = True
+                return True
+            
+            self.angleAchieved = currentAngle
+            self.followerMovedAbove90Deg = currentAngle > self.ANGLE_CHECKPOINT_1
+            return False
+
+        def isFollowerPositionCorrect(self):
+            return self.followerMovedAbove90Deg and self.followerMovedAbove200Deg
+
+    waitCondition = WaitCondition()
+
+    MAX_WAIT_TIME = 10.0 #seconds
+    conditionMet = helper.wait_for_condition(lambda: waitCondition.checkConditionMet(), MAX_WAIT_TIME)
 
     # 5) Check to see if lead and follower behaved as expected
-    Report.info_vector3(lead.position, "lead position after 1 second:")
-    Report.info_vector3(follower.position, "follower position after 1 second:")
+    Report.info_vector3(lead.position, "lead position after test run:")
+    Report.info_vector3(follower.position, "follower position after test run:")
 
     leadPositionDelta = lead.position.Subtract(leadInitialPosition)
     leadRemainedStill = JointsHelper.vector3SmallerThanScalar(leadPositionDelta, FLOAT_EPSILON)
     Report.critical_result(Tests.check_lead_position, leadRemainedStill)
 
-    followerSwingedOverLead = (follower.position.x < leadInitialPosition.x  and
-                        follower.position.z > leadInitialPosition.z)
-    Report.critical_result(Tests.check_follower_position, followerSwingedOverLead)
+    Report.critical_result(Tests.check_follower_position, conditionMet and waitCondition.isFollowerPositionCorrect())
 
     # 6) Exit Game Mode
     helper.exit_game_mode(Tests.exit_game_mode)
-
-
 
 if __name__ == "__main__":
     from editor_python_test_tools.utils import Report

@@ -60,7 +60,7 @@ public:
             m_normalizedSourceProjectFolder.c_str(), AZ::SettingsRegistryInterface::RegistryFolder);
         AzFramework::StringFunc::Path::Normalize(m_normalizedSetRegFolderPath);
 
-        m_localFileIO->SetAlias("@devassets@", m_normalizedSourceProjectFolder.c_str());
+        m_localFileIO->SetAlias("@projectroot@", m_normalizedSourceProjectFolder.c_str());
 
         CreateTestSetRegFile(TEST_VALID_RESOURCE_MAPPING_SETREG);
     }
@@ -122,7 +122,7 @@ private:
 TEST_F(AWSCoreConfigurationTest, InitConfig_NoSourceProjectFolderFound_ReturnEmptyConfigFilePath)
 {
     m_settingsRegistry->MergeSettingsFile(m_normalizedSetRegFilePath, AZ::SettingsRegistryInterface::Format::JsonMergePatch, {});
-    m_localFileIO->ClearAlias("@devassets@");
+    m_localFileIO->ClearAlias("@projectroot@");
 
     AZ_TEST_START_TRACE_SUPPRESSION;
     m_awsCoreConfiguration->InitConfig();
@@ -154,7 +154,7 @@ TEST_F(AWSCoreConfigurationTest, InitConfig_LoadValidSettingsRegistry_ReturnNonE
 TEST_F(AWSCoreConfigurationTest, ReloadConfiguration_NoSourceProjectFolderFound_ReturnEmptyConfigFilePath)
 {
     m_settingsRegistry->MergeSettingsFile(m_normalizedSetRegFilePath, AZ::SettingsRegistryInterface::Format::JsonMergePatch, {});
-    m_localFileIO->ClearAlias("@devassets@");
+    m_localFileIO->ClearAlias("@projectroot@");
     m_awsCoreConfiguration->ReloadConfiguration();
 
     auto actualConfigFilePath = m_awsCoreConfiguration->GetResourceMappingConfigFilePath();

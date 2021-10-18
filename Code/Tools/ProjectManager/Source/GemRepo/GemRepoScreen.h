@@ -39,6 +39,7 @@ namespace O3DE::ProjectManager
 
     public slots:
         void HandleAddRepoButton();
+        void HandleRemoveRepoButton(const QModelIndex& modelIndex);
 
     private:
         void FillModel();

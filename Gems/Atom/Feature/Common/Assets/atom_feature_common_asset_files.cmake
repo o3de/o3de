@@ -160,6 +160,8 @@ set(FILES
     Passes/LuminanceHistogramGenerator.pass
     Passes/MainPipeline.pass
     Passes/MainPipelineRenderToTexture.pass
+    Passes/ThumbnailPipeline.pass
+    Passes/ThumbnailPipelineRenderToTexture.pass
     Passes/MeshMotionVector.pass
     Passes/ModulateTexture.pass
     Passes/MorphTarget.pass
@@ -284,7 +286,6 @@ set(FILES
     ShaderLib/Atom/Features/ScreenSpace/ScreenSpaceUtil.azsli
     ShaderLib/Atom/Features/Shadow/BicubicPcfFilters.azsli
     ShaderLib/Atom/Features/Shadow/DirectionalLightShadow.azsli
-    ShaderLib/Atom/Features/Shadow/JitterTablePcf.azsli
     ShaderLib/Atom/Features/Shadow/ProjectedShadow.azsli
     ShaderLib/Atom/Features/Shadow/Shadow.azsli
     ShaderLib/Atom/Features/Shadow/ShadowmapAtlasLib.azsli

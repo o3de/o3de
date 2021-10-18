@@ -123,8 +123,8 @@ namespace Multiplayer
         if (IsAutonomous())
         {
             m_autonomousUpdateEvent.Enqueue(AZ::TimeMs{ 1 }, true);
-            GetParent().GetNetBindComponent()->AddEntityMigrationStartEventHandler(m_migrateStartHandler);
-            GetParent().GetNetBindComponent()->AddEntityMigrationEndEventHandler(m_migrateEndHandler);
+            GetMultiplayer()->AddClientMigrationStartEventHandler(m_migrateStartHandler);
+            GetMultiplayer()->AddClientMigrationEndEventHandler(m_migrateEndHandler);
         }
     }
 

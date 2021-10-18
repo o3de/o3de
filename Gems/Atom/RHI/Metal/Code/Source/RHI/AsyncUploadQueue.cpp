@@ -33,6 +33,7 @@ namespace AZ
             
             // Use separate work submission queue from the hw copy queue to avoid the per frame sync.
             m_copyQueue = CommandQueue::Create();
+            m_copyQueue->SetName(AZ::Name("AsyncUpload Queue"));
 
             RHI::CommandQueueDescriptor commandQueueDescriptor;
             commandQueueDescriptor.m_hardwareQueueClass = RHI::HardwareQueueClass::Copy;

@@ -35,6 +35,9 @@ namespace AzFramework
         
         // A collection of custom properties for a session.
         AZStd::unordered_map<AZStd::string, AZStd::string> m_sessionProperties;
+
+        // The matchmaking process information that was used to create the session.
+        AZStd::string m_matchmakingData;
         
         // A unique identifier for the session.
         AZStd::string m_sessionId;

@@ -43,29 +43,25 @@
             }
         },
         "DefaultPresetsByFileMask": {
-            "_basecolor": "{08A95286-ADB2-41E4-96EB-DB48F4726D6A}",
-            "_cch": "{0A17A85F-07EE-48A0-8BF8-D42F0A5E0B3C}",
-            "_ccm": "{2174E04B-73BB-4DF1-8961-4900DC3C9D72}",
-            "_cm": "{A13B2FCE-2F6A-4634-B112-5A0A912B50CE}",
-            "_ddn": "{508B21D5-5250-4003-97EC-1CF28D571ACF}",
-            "_ddna": "{6EE749F4-846E-4F7A-878C-F211F85EA59F}",
-            "_diff": "{08A95286-ADB2-41E4-96EB-DB48F4726D6A}",
-            "_diffuse": "{08A95286-ADB2-41E4-96EB-DB48F4726D6A}",			
-            "_glossness": "{7A3CC95E-0A0C-4CA1-8357-5712B028B77D}",
-            "_ibldiffusecm": "{E3706342-BF21-4D9C-AE28-9670EB3EF3C5}",
-            "_iblskyboxcm": "{E6441EAC-9843-484B-8EFC-C03B2935B48D}",
-            "_iblglobalcm": "{A13B2FCE-2F6A-4634-B112-5A0A912B50CE}",
-            "_iblspecularcm": "{908DA68C-97FB-4C4A-97BC-5A55F30F14FA}",
-            "_metallic": "{7A3CC95E-0A0C-4CA1-8357-5712B028B77D}",
-            "_normal": "{508B21D5-5250-4003-97EC-1CF28D571ACF}",
-            "_refl": "{7A3CC95E-0A0C-4CA1-8357-5712B028B77D}",
-            "_roughness": "{7A3CC95E-0A0C-4CA1-8357-5712B028B77D}",
-            "_skyboxcm": "{F359CD3B-37E6-4627-B4F6-2DFC2C0E3C1C}",
-            "_spec": "{7A3CC95E-0A0C-4CA1-8357-5712B028B77D}",
-            "_specular": "{7A3CC95E-0A0C-4CA1-8357-5712B028B77D}"
+            "_basecolor": "Albedo",
+            "_diff": "Albedo",
+            "_diffuse": "Albedo",
+            "_ddn": "Normals",
+            "_normal": "Normals",
+            "_ddna": "NormalsWithSmoothness",
+            "_glossness": "Reflectance",
+            "_spec": "Reflectance",
+            "_specular": "Reflectance",
+            "_metallic": "Reflectance",
+            "_refl": "Reflectance",
+            "_roughness": "Reflectance",
+            "_ibldiffusecm": "IBLDiffuse",
+            "_iblskyboxcm": "IBLSkybox",
+            "_iblspecularcm": "IBLSpecular",
+            "_skyboxcm": "Skybox"
         },
-        "DefaultPreset": "{08A95286-ADB2-41E4-96EB-DB48F4726D6A}",
-        "DefaultPresetAlpha": "{5D9ECB52-4CD9-4CB8-80E3-10CAE5EFB8A2}",
-        "DefaultPresetNonePOT": "{C659D222-F56B-4B61-A2F8-C1FA547F3C39}"
+        "DefaultPreset": "Albedo",
+        "DefaultPresetAlpha": "AlbedoWithGenericAlpha",
+        "DefaultPresetNonePOT": "ReferenceImage"
     }
 }

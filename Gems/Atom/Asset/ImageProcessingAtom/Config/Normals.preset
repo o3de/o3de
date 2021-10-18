@@ -11,6 +11,7 @@
             "FileMasks": [
                 "_ddn",
                 "_normal",
+                "_normalmap",
                 "_normals",
                 "_norm",
                 "_nor",
@@ -35,6 +36,7 @@
                 "FileMasks": [
                     "_ddn",
                     "_normal",
+                    "_normalmap",
                     "_normals",
                     "_norm",
                     "_nor",
@@ -59,6 +61,7 @@
                 "FileMasks": [
                     "_ddn",
                     "_normal",
+                    "_normalmap",
                     "_normals",
                     "_norm",
                     "_nor",
@@ -83,6 +86,7 @@
                 "FileMasks": [
                     "_ddn",
                     "_normal",
+                    "_normalmap",
                     "_normals",
                     "_norm",
                     "_nor",
@@ -106,6 +110,7 @@
                 "FileMasks": [
                     "_ddn",
                     "_normal",
+                    "_normalmap",
                     "_normals",
                     "_norm",
                     "_nor",

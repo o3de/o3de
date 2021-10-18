@@ -7,6 +7,12 @@
 
 #pragma once
 
+#include <../Materials/Types/MaterialInputs/BaseColorInput.azsli>
+#include <../Materials/Types/MaterialInputs/RoughnessInput.azsli>
+#include <../Materials/Types/MaterialInputs/MetallicInput.azsli>
+#include <../Materials/Types/MaterialInputs/SpecularInput.azsli>
+#include <../Materials/Types/MaterialInputs/NormalInput.azsli>
+
 ShaderResourceGroup ObjectSrg : SRG_PerObject
 {
     row_major float3x4 m_modelToWorld;
@@ -20,8 +26,24 @@ ShaderResourceGroup ObjectSrg : SRG_PerObject
         float m_heightScale;
     };
 
+    struct MacroMaterialData
+    {
+        float2 m_uvMin;
+        float2 m_uvMax;
+        float m_normalFactor;
+        bool m_flipNormalX;
+        bool m_flipNormalY;
+        uint m_mapsInUse;
+    };
+
     TerrainData m_terrainData;
 
+    MacroMaterialData m_macroMaterialData[4];
+    uint m_macroMaterialCount;
+
+    Texture2D m_macroColorMap[4];
+    Texture2D m_macroNormalMap[4];
+    
     // The below shouldn't be in this SRG but needs to be for now because the lighting functions depend on them.
 
     //! Reflection Probe (smallest probe volume that overlaps the object position)
@@ -70,7 +92,10 @@ ShaderResourceGroup ObjectSrg : SRG_PerObject
 
 ShaderResourceGroup TerrainMaterialSrg : SRG_PerMaterial
 {
-    Texture2D<float> m_heightmapImage;
+    Texture2D m_heightmapImage;
+    float m_detailTextureMultiplier;
+    float m_detailFadeDistance;
+    float m_detailFadeLength;
 
     Sampler HeightmapSampler
     {
@@ -82,11 +107,42 @@ ShaderResourceGroup TerrainMaterialSrg : SRG_PerMaterial
         AddressW = Clamp;
     };
 
+    Sampler m_sampler
+    {
+        AddressU = Wrap;
+        AddressV = Wrap;
+        MinFilter = Linear;
+        MagFilter = Linear;
+        MipFilter = Linear;
+        MaxAnisotropy = 16;
+    };
+
+    // Base Color
     float3 m_baseColor;
-    float m_roughness;
+    float m_baseColorFactor;
+    Texture2D m_baseColorMap;
+
+    // Normal
+    Texture2D m_normalMap;
+    bool m_flipNormalX;
+    bool m_flipNormalY;
+    float m_normalFactor;
+
+    // Roughness
+    Texture2D m_roughnessMap;
+    float m_roughnessFactor;
+
+    // Specular
+    Texture2D m_specularF0Map;
+    float m_specularF0Factor;
 }
 
 option bool o_useTerrainSmoothing = false;
+option bool o_baseColor_useTexture = true;
+option bool o_specularF0_useTexture = true;
+option bool o_normal_useTexture = true;
+option bool o_roughness_useTexture = true;
+option TextureBlendMode o_baseColorTextureBlendMode = TextureBlendMode::Multiply;
 
 struct VertexInput
 {
@@ -98,7 +154,7 @@ struct VertexInput
 // This function samples a 4x4 neighborhood around the uv. Normally this would take 16 samples, but by taking
 // advantage of bilinear filtering this can be done with 9 taps on the edges between pixels. The cost is further
 // reduced by dropping the diagonals.
-float SampleBSpline5Tap(Texture2D<float> texture, SamplerState textureSampler, float2 uv, float2 textureSize, float2 rcpTextureSize)
+float SampleBSpline5Tap(Texture2D texture, SamplerState textureSampler, float2 uv, float2 textureSize, float2 rcpTextureSize)
 {
     // Think of sample locations in the 4x4 neighborhood as having a top left coordinate of 0,0 and
     // a bottom right coordinate of 3,3.

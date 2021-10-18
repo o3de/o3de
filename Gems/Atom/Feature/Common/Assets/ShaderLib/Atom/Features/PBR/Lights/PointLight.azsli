@@ -83,7 +83,7 @@ void ApplyPointLight(ViewSrg::PointLight light, Surface surface, inout LightingD
                     light.m_position,
                     surface.position,
                     lightDir,
-                    surface.normal);
+                    surface.vertexNormal);
                         
             // Use backShadowRatio to carry thickness from shadow map for thick mode
             backShadowRatio = 1.0 - litRatio;

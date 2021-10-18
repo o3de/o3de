@@ -105,7 +105,9 @@ namespace EMStudio
             }
         }
 
-        commandString = AZStd::string::format("%s -filename \"%s\"", command, resultFileName.c_str());
+        AZStd::string resultFilenameString = resultFileName.c_str();
+        AzFramework::StringFunc::AssetDatabasePath::Normalize(resultFilenameString);
+        commandString = AZStd::string::format("%s -filename \"%s\"", command, resultFilenameString.c_str());
 
         if (additionalParameters)
         {
@@ -428,7 +430,13 @@ namespace EMStudio
                 continue;
             }
 
-            AzFramework::StringFunc::Replace(commands[i], "@assets@/", assetCacheFolder.c_str(), true /* case sensitive */);
+            AzFramework::StringFunc::Replace(commands[i], "@products@", assetCacheFolder.c_str());
+            AzFramework::StringFunc::Replace(commands[i], "@assets@", assetCacheFolder.c_str());
+            AzFramework::StringFunc::Replace(commands[i], "@root@", assetCacheFolder.c_str());
+            AzFramework::StringFunc::Replace(commands[i], "@projectplatformcache@", assetCacheFolder.c_str());
+            AzFramework::StringFunc::Replace(commands[i], "//", AZ_CORRECT_FILESYSTEM_SEPARATOR_STRING);
+            AzFramework::StringFunc::Replace(commands[i], "\\\\", AZ_CORRECT_FILESYSTEM_SEPARATOR_STRING);
+            AzFramework::StringFunc::Replace(commands[i], "/\\", AZ_CORRECT_FILESYSTEM_SEPARATOR_STRING);
 
             // add the command to the command group
             commandGroup->AddCommandString(commands[i]);
