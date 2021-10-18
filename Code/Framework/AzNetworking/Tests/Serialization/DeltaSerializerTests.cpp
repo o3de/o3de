@@ -122,6 +122,9 @@ namespace UnitTest
         }
     };
 
+    static constexpr float BLEND_FACTOR_SCALE = 1.1f;
+    static constexpr uint32_t TIME_SCALE = 10;
+
     DeltaDataContainer TestDeltaContainer()
     {
         DeltaDataContainer testContainer;
@@ -133,8 +136,8 @@ namespace UnitTest
         {
             testContainer.m_container[i].m_packetId = AzNetworking::PacketId(i);
             testContainer.m_container[i].m_id = i;
-            testContainer.m_container[i].m_timeMs = AZ::TimeMs(i * 10);
-            testContainer.m_container[i].m_blendFactor = 1.1f * i;
+            testContainer.m_container[i].m_timeMs = AZ::TimeMs(i * TIME_SCALE);
+            testContainer.m_container[i].m_blendFactor = BLEND_FACTOR_SCALE * i;
             growVector.push_back(i);
             testContainer.m_container[i].m_growVector = growVector;
             shrinkVector.resize(testContainer.m_container.array_size - i);

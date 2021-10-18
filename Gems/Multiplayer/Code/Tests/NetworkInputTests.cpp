@@ -63,6 +63,9 @@ namespace Multiplayer
         AZStd::unique_ptr<EntityInfo> m_root;
     };
 
+    constexpr float BLEND_FACTOR_SCALE = 1.1f;
+    constexpr uint32_t TIME_SCALE = 10;
+
     TEST_F(NetworkInputTests, NetworkInputMembers)
     {
         const NetworkEntityHandle handle(m_root->m_entity.get(), m_networkEntityTracker.get());
@@ -72,13 +75,13 @@ namespace Multiplayer
         {
             inArray[i].SetClientInputId(ClientInputId(i));
             inArray[i].SetHostFrameId(HostFrameId(i));
-            inArray[i].SetHostBlendFactor(i * 1.1f);
-            inArray[i].SetHostTimeMs(AZ::TimeMs(i * 10));
+            inArray[i].SetHostBlendFactor(i * BLEND_FACTOR_SCALE);
+            inArray[i].SetHostTimeMs(AZ::TimeMs(i * TIME_SCALE));
 
             EXPECT_EQ(inArray[i].GetClientInputId(), ClientInputId(i));
             EXPECT_EQ(inArray[i].GetHostFrameId(), HostFrameId(i));
-            EXPECT_NEAR(inArray[i].GetHostBlendFactor(), i * 1.1f, 0.001f);
-            EXPECT_EQ(inArray[i].GetHostTimeMs(), AZ::TimeMs(i * 10));
+            EXPECT_NEAR(inArray[i].GetHostBlendFactor(), i * BLEND_FACTOR_SCALE, 0.001f);
+            EXPECT_EQ(inArray[i].GetHostTimeMs(), AZ::TimeMs(i * TIME_SCALE));
         }
 
         for (uint32_t i = 0; i < NetworkInputArray::MaxElements; ++i)
@@ -88,7 +91,7 @@ namespace Multiplayer
             HostFrameId& hid = inArray[i].ModifyHostFrameId();
             hid = HostFrameId(i * 2);
             AZ::TimeMs& time = inArray[i].ModifyHostTimeMs();
-            time = AZ::TimeMs(i * 20);
+            time = AZ::TimeMs(i * 2 * TIME_SCALE);
 
             EXPECT_EQ(inArray[i].GetClientInputId(), cid);
             EXPECT_EQ(inArray[i].GetHostFrameId(), hid);
@@ -105,8 +108,8 @@ namespace Multiplayer
         {
             inArray[i].SetClientInputId(ClientInputId(i));
             inArray[i].SetHostFrameId(HostFrameId(i));
-            inArray[i].SetHostBlendFactor(i * 1.1f);
-            inArray[i].SetHostTimeMs(AZ::TimeMs(i * 10));
+            inArray[i].SetHostBlendFactor(i * BLEND_FACTOR_SCALE);
+            inArray[i].SetHostTimeMs(AZ::TimeMs(i * TIME_SCALE));
         }
 
         AZStd::array<uint8_t, 1024> buffer;
@@ -139,8 +142,8 @@ namespace Multiplayer
         {
             inArray[i].SetClientInputId(ClientInputId(i));
             inArray[i].SetHostFrameId(HostFrameId(i));
-            inArray[i].SetHostBlendFactor(i * 1.1f);
-            inArray[i].SetHostTimeMs(AZ::TimeMs(i * 10));
+            inArray[i].SetHostBlendFactor(i * BLEND_FACTOR_SCALE);
+            inArray[i].SetHostTimeMs(AZ::TimeMs(i * TIME_SCALE));
 
             inHistory.PushBack(inArray[i]);
         }
@@ -152,8 +155,8 @@ namespace Multiplayer
             NetworkInput input = inHistory.Front();
             EXPECT_EQ(input.GetClientInputId(), ClientInputId(i));
             EXPECT_EQ(input.GetHostFrameId(), HostFrameId(i));
-            EXPECT_NEAR(input.GetHostBlendFactor(), i * 1.1f, 0.001f);
-            EXPECT_EQ(input.GetHostTimeMs(), AZ::TimeMs(i * 10));
+            EXPECT_NEAR(input.GetHostBlendFactor(), i * BLEND_FACTOR_SCALE, 0.001f);
+            EXPECT_EQ(input.GetHostTimeMs(), AZ::TimeMs(i * TIME_SCALE));
             inHistory.PopFront();
         }
 
@@ -170,8 +173,8 @@ namespace Multiplayer
         {
             inArray[i].SetClientInputId(ClientInputId(i));
             inArray[i].SetHostFrameId(HostFrameId(i));
-            inArray[i].SetHostBlendFactor(i * 1.1f);
-            inArray[i].SetHostTimeMs(AZ::TimeMs(i * 10));
+            inArray[i].SetHostBlendFactor(i * BLEND_FACTOR_SCALE);
+            inArray[i].SetHostTimeMs(AZ::TimeMs(i * TIME_SCALE));
 
             inVector.PushBack(inArray[i]);
         }
