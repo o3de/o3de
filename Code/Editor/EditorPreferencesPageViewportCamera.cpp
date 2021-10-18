@@ -159,14 +159,14 @@ void CEditorPreferencesPage_ViewportCamera::Reflect(AZ::SerializeContext& serial
                 AZ::Edit::UIHandlers::CheckBox, &CameraMovementSettings::m_captureCursorLook, "Camera Capture Look Cursor",
                 "Should the cursor be captured (hidden) while performing free look")
             ->DataElement(
-                AZ::Edit::UIHandlers::SpinBox, &CameraMovementSettings::m_defaultCameraPositionX, "Default Camera X Position",
-                "Default Camera X Position when a level is opened")
+                AZ::Edit::UIHandlers::SpinBox, &CameraMovementSettings::m_defaultCameraPositionX, "Default X Camera Position",
+                "Default X Camera Position when a level is opened")
             ->DataElement(
-                AZ::Edit::UIHandlers::SpinBox, &CameraMovementSettings::m_defaultCameraPositionY, "Default Camera Y Position",
-                "Default Camera Y Position when a level is opened")
+                AZ::Edit::UIHandlers::SpinBox, &CameraMovementSettings::m_defaultCameraPositionY, "Default Y Camera Position",
+                "Default Y Camera Position when a level is opened")
             ->DataElement(
-                AZ::Edit::UIHandlers::SpinBox, &CameraMovementSettings::m_defaultCameraPositionZ, "Default Camera Z Position",
-                "Default Camera Z Position when a level is opened");
+                AZ::Edit::UIHandlers::SpinBox, &CameraMovementSettings::m_defaultCameraPositionZ, "Default Z Camera Position",
+                "Default Z Camera Position when a level is opened");
 
         editContext->Class<CameraInputSettings>("Camera Input Settings", "")
             ->DataElement(
