@@ -3574,7 +3574,7 @@ namespace AssetProcessor
                     QString relativeSearch = encodedFileData.mid(slashBeforeWildcardIndex + 1); // skip the slash
 
                     // Absolute path, just check the 1 scan folder
-                    if (!AZ::StringFunc::Path::IsRelative(encodedFileData.toUtf8().constData()))
+                    if (AZ::IO::PathView(encodedFileData.toUtf8().constData()).IsAbsolute())
                     {
                         QString scanFolderName;
                         if (!m_platformConfig->ConvertToRelativePath(encodedFileData, resultDatabaseSourceName, scanFolderName))
