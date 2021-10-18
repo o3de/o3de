@@ -10,7 +10,6 @@
 
 #include <Atom/Feature/Material/MaterialAssignment.h>
 #include <Atom/RPI.Reflect/Material/MaterialAsset.h>
-#include <AtomLyIntegration/CommonFeatures/Material/EditorMaterialSystemComponentRequestBus.h>
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Component/Component.h>
 #include <LmbrCentral/Shape/ShapeComponentBus.h>
