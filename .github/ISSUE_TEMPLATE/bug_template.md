@@ -39,6 +39,7 @@ Name of or link to the branch where the issue occurs.
  - CPU [e.g. Intel I9-9900k , Ryzen 5900x, ]
  - GPU [AMD 6800 XT, NVidia RTX 3090]
  - Memory [e.g. 16GB]
+ - O3DE version or commit hash [e.g. d5fdcf769]
 
 **Additional context**
 Add any other context about the problem here.
