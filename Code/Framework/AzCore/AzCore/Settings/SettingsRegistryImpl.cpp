@@ -13,7 +13,7 @@
 #include <AzCore/IO/FileReader.h>
 #include <AzCore/IO/Path/Path.h>
 #include <AzCore/JSON/error/en.h>
-#include <AzCore/NativeUI//NativeUIRequests.h>
+#include <AzCore/NativeUI/NativeUIRequests.h>
 #include <AzCore/Serialization/Json/JsonSerialization.h>
 #include <AzCore/Serialization/Json/StackedString.h>
 #include <AzCore/Settings/SettingsRegistryImpl.h>
@@ -240,17 +240,7 @@ namespace AZ
         return Visit(visitor, path);
     }
 
-    auto SettingsRegistryImpl::RegisterNotifier(const NotifyCallback& callback) -> NotifyEventHandler
-    {
-        NotifyEventHandler notifyHandler{ callback };
-        {
-            AZStd::scoped_lock lock(m_notifierMutex);
-            notifyHandler.Connect(m_notifiers);
-        }
-        return notifyHandler;
-    }
-
-    auto SettingsRegistryImpl::RegisterNotifier(NotifyCallback&& callback) -> NotifyEventHandler
+    auto SettingsRegistryImpl::RegisterNotifier(NotifyCallback callback) -> NotifyEventHandler
     {
         NotifyEventHandler notifyHandler{ AZStd::move(callback) };
         {
@@ -260,23 +250,19 @@ namespace AZ
         return notifyHandler;
     }
 
+    auto SettingsRegistryImpl::RegisterNotifier(NotifyEventHandler& notifyHandler) -> void
+    {
+        AZStd::scoped_lock lock(m_notifierMutex);
+        notifyHandler.Connect(m_notifiers);
+    }
+
     void SettingsRegistryImpl::ClearNotifiers()
     {
         AZStd::scoped_lock lock(m_notifierMutex);
         m_notifiers.DisconnectAllHandlers();
     }
 
-    auto SettingsRegistryImpl::RegisterPreMergeEvent(const PreMergeEventCallback& callback) -> PreMergeEventHandler
-    {
-        PreMergeEventHandler preMergeHandler{ callback };
-        {
-            AZStd::scoped_lock lock(m_settingMutex);
-            preMergeHandler.Connect(m_preMergeEvent);
-        }
-        return preMergeHandler;
-    }
-
-    auto SettingsRegistryImpl::RegisterPreMergeEvent(PreMergeEventCallback&& callback) -> PreMergeEventHandler
+    auto SettingsRegistryImpl::RegisterPreMergeEvent(PreMergeEventCallback callback) -> PreMergeEventHandler
     {
         PreMergeEventHandler preMergeHandler{ AZStd::move(callback) };
         {
@@ -286,17 +272,13 @@ namespace AZ
         return preMergeHandler;
     }
 
-    auto SettingsRegistryImpl::RegisterPostMergeEvent(const PostMergeEventCallback& callback) -> PostMergeEventHandler
+    auto SettingsRegistryImpl::RegisterPreMergeEvent(PreMergeEventHandler& preMergeHandler) -> void
     {
-        PostMergeEventHandler postMergeHandler{ callback };
-        {
-            AZStd::scoped_lock lock(m_settingMutex);
-            postMergeHandler.Connect(m_postMergeEvent);
-        }
-        return postMergeHandler;
+        AZStd::scoped_lock lock(m_settingMutex);
+        preMergeHandler.Connect(m_preMergeEvent);
     }
 
-    auto SettingsRegistryImpl::RegisterPostMergeEvent(PostMergeEventCallback&& callback) -> PostMergeEventHandler
+    auto SettingsRegistryImpl::RegisterPostMergeEvent(PostMergeEventCallback callback) -> PostMergeEventHandler
     {
         PostMergeEventHandler postMergeHandler{ AZStd::move(callback) };
         {
@@ -304,6 +286,12 @@ namespace AZ
             postMergeHandler.Connect(m_postMergeEvent);
         }
         return postMergeHandler;
+    }
+
+    auto SettingsRegistryImpl::RegisterPostMergeEvent(PostMergeEventHandler& postMergeHandler) -> void
+    {
+        AZStd::scoped_lock lock(m_settingMutex);
+        postMergeHandler.Connect(m_postMergeEvent);
     }
 
     void SettingsRegistryImpl::ClearMergeEvents()
@@ -325,7 +313,36 @@ namespace AZ
             localNotifierEvent = AZStd::move(m_notifiers);
         }
 
-        localNotifierEvent.Signal(jsonPath, type);
+        // Signal the NotifyEvent for each queued argument
+        decltype(m_signalNotifierQueue) localNotifierQueue;
+        {
+            AZStd::scoped_lock signalLock(m_signalMutex);
+            m_signalNotifierQueue.push_back({ FixedValueString{jsonPath}, type });
+            // If the signal count was 0, then a dispatch is in progress
+            if (m_signalCount++ == 0)
+            {
+                AZStd::swap(localNotifierQueue, m_signalNotifierQueue);
+            }
+        }
+
+        while (!localNotifierQueue.empty())
+        {
+            for (SignalNotifierArgs notifierArgs : localNotifierQueue)
+            {
+                localNotifierEvent.Signal(notifierArgs.m_jsonPath, notifierArgs.m_type);
+            }
+            // Clear the local notifier queue and check if more notifiers have been added
+            localNotifierQueue = {};
+            {
+                AZStd::scoped_lock signalLock(m_signalMutex);
+                AZStd::swap(localNotifierQueue, m_signalNotifierQueue);
+            }
+        }
+
+        {
+            AZStd::scoped_lock signalLock(m_signalMutex);
+            --m_signalCount;
+        }
 
         {
             // Swap the local handlers with the current m_notifiers which

@@ -192,26 +192,34 @@ namespace AZ
         //! @param path An offset at which traversal should start.
         //! @return Whether or not entries could be visited.
         virtual bool Visit(const VisitorCallback& callback, AZStd::string_view path) const = 0;
+
         //! Register a callback that will be called whenever an entry gets a new/updated value.
+        //!
         //! @callback The function to call when an entry gets a new/updated value.
-        [[nodiscard]] virtual NotifyEventHandler RegisterNotifier(const NotifyCallback& callback) = 0;
-        //! Register a callback that will be called whenever an entry gets a new/updated value.
-        //! @callback The function to call when an entry gets a new/updated value.
-        [[nodiscard]] virtual NotifyEventHandler RegisterNotifier(NotifyCallback&& callback) = 0;
+        //! @return NotifyEventHandler instance which must persist to receive event signal
+        [[nodiscard]] virtual NotifyEventHandler RegisterNotifier(NotifyCallback callback) = 0;
+        //! Register a notify event handler with the NotifyEvent.
+        //! The handler will be called whenever an entry gets a new/updated value.
+        //! @param handler The handler to register with the NotifyEvent.
+        virtual void RegisterNotifier(NotifyEventHandler& handler) = 0;
 
         //! Register a function that will be called before a file is merged.
-        //! @callback The function to call before a file is merged.
-        [[nodiscard]] virtual PreMergeEventHandler RegisterPreMergeEvent(const PreMergeEventCallback& callback) = 0;
-        //! Register a function that will be called before a file is merged.
-        //! @callback The function to call before a file is merged.
-        [[nodiscard]] virtual PreMergeEventHandler RegisterPreMergeEvent(PreMergeEventCallback&& callback) = 0;
+        //! @param callback The function to call before a file is merged.
+        //! @return PreMergeEventHandler instance which must persist to receive event signal
+        [[nodiscard]] virtual PreMergeEventHandler RegisterPreMergeEvent(PreMergeEventCallback callback) = 0;
+        //! Register a pre-merge handler with the PreMergeEvent.
+        //! The handler will be called before a file is merged.
+        //! @param handler The hanlder to register with the PreMergeEvent.
+        virtual void RegisterPreMergeEvent(PreMergeEventHandler& handler) = 0;
 
         //! Register a function that will be called after a file is merged.
-        //! @callback The function to call after a file is merged.
-        [[nodiscard]] virtual PostMergeEventHandler RegisterPostMergeEvent(const PostMergeEventCallback& callback) = 0;
-        //! Register a function that will be called after a file is merged.
-        //! @callback The function to call after a file is merged.
-        [[nodiscard]] virtual PostMergeEventHandler RegisterPostMergeEvent(PostMergeEventCallback&& callback) = 0;
+        //! @param callback The function to call after a file is merged.
+        //! @return PostMergeEventHandler instance which must persist to receive event signal
+        [[nodiscard]] virtual PostMergeEventHandler RegisterPostMergeEvent(PostMergeEventCallback callback) = 0;
+        //! Register a post-merge hahndler with the PostMergeEvent.
+        //! The handler will be called after a file is merged.
+        //! @param handler The handler to register with the PostmergeEVent.
+        virtual void RegisterPostMergeEvent(PostMergeEventHandler& hanlder) = 0;
 
         //! Gets the boolean value at the provided path.
         //! @param result The target to write the result to.
