@@ -36,6 +36,7 @@ namespace AzManipulatorTestFramework
         int GetViewportId() const override;
         void UpdateVisibility() override;
         void SetStickySelect(bool enabled) override;
+        AZ::Vector3 DefaultEditorCameraPosition() override;
 
         // ViewportInteractionRequestBus overrides ...
         AzFramework::CameraState GetCameraState() override;

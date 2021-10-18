@@ -120,6 +120,11 @@ namespace AzManipulatorTestFramework
         m_stickySelect = enabled;
     }
 
+    AZ::Vector3 ViewportInteraction::DefaultEditorCameraPosition()
+    {
+        return {};
+    }
+
     void ViewportInteraction::SetGridSize(float size)
     {
         m_gridSize = size;
