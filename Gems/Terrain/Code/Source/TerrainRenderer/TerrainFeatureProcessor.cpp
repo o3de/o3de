@@ -60,6 +60,38 @@ namespace Terrain
         static const char* const MacroNormalFactor("normal.factor");
     }
 
+    namespace DetailMaterialInputs
+    {
+        static const char* const BaseColorMap("baseColor.textureMap");
+        static const char* const BaseColorUseTexture("baseColor.useTexture");
+        static const char* const BaseColorFactor("baseColor.factor");
+        static const char* const BaseColorBlendMode("baseColor.textureBlendMode");
+        static const char* const MetallicMap("metallic.textureMap");
+        static const char* const MetallicUseTexture("metallic.useTexture");
+        static const char* const MetallicFactor("metallic.factor");
+        static const char* const RoughnessMap("roughness.textureMap");
+        static const char* const RoughnessUseTexture("roughness.useTexture");
+        static const char* const RoughnessFactor("roughness.factor");
+        static const char* const RoughnessUpperBound("roughness.lowerBound");
+        static const char* const RoughnessLowerBound("roughness.upperBound");
+        static const char* const SpecularF0Map("specularF0.textureMap");
+        static const char* const SpecularF0UseTexture("specularF0.useTexture");
+        static const char* const SpecularF0Factor("specularF0.factor");
+        static const char* const NormalMap("normal.textureMap");
+        static const char* const NormalUseTexture("normal.useTexture");
+        static const char* const NormalFactor("normal.factor");
+        static const char* const NormalFlipX("normal.flipX");
+        static const char* const NormalFlipY("normal.flipY");
+        static const char* const DiffuseOcclusionMap("occlusion.diffuseTextureMap");
+        static const char* const DiffuseOcclusionUseTexture("occlusion.diffuseUseTexture");
+        static const char* const DiffuseOcclusionFactor("occlusion.diffuseFactor");
+        static const char* const HeightMap("parallax.textureMap");
+        static const char* const HeightUseTexture("parallax.useTexture");
+        static const char* const HeightFactor("parallax.factor");
+        static const char* const HeightOffset("parallax.offset");
+        static const char* const HeightBlendFactor("parallax.blendFactor");
+    }
+
     namespace ShaderInputs
     {
         static const char* const ModelToWorld("m_modelToWorld");
@@ -187,7 +219,7 @@ namespace Terrain
     
     void TerrainFeatureProcessor::OnTerrainMacroMaterialCreated(AZ::EntityId entityId, MaterialInstance material, const AZ::Aabb& region)
     {
-        MacroMaterialData& materialData = FindOrCreateMacroMaterial(entityId);
+        MacroMaterialData& materialData = FindOrCreateMaterial(entityId, m_macroMaterials);
         materialData.m_bounds = region;
 
         UpdateMacroMaterialData(materialData, material);
@@ -207,18 +239,18 @@ namespace Terrain
     {
         if (macroMaterial)
         {
-            MacroMaterialData& data = FindOrCreateMacroMaterial(entityId);
+            MacroMaterialData& data = FindOrCreateMaterial(entityId, m_macroMaterials);
             UpdateMacroMaterialData(data, macroMaterial);
         }
         else
         {
-            RemoveMacroMaterial(entityId);
+            RemoveMaterial(entityId, m_macroMaterials);
         }
     }
     
     void TerrainFeatureProcessor::OnTerrainMacroMaterialRegionChanged(AZ::EntityId entityId, [[maybe_unused]] const AZ::Aabb& oldRegion, const AZ::Aabb& newRegion)
     {
-        MacroMaterialData& materialData = FindOrCreateMacroMaterial(entityId);
+        MacroMaterialData& materialData = FindOrCreateMaterial(entityId, m_macroMaterials);
         for (SectorData& sectorData : m_sectorData)
         {
             bool overlapsOld = sectorData.m_aabb.Overlaps(materialData.m_bounds);
@@ -250,7 +282,7 @@ namespace Terrain
 
     void TerrainFeatureProcessor::OnTerrainMacroMaterialDestroyed(AZ::EntityId entityId)
     {
-        MacroMaterialData* materialData = FindMacroMaterial(entityId);
+        MacroMaterialData* materialData = FindMaterial(entityId, m_macroMaterials);
 
         if (materialData)
         {
@@ -269,6 +301,154 @@ namespace Terrain
         }
         
         m_areaData.m_macroMaterialsUpdated = true;
+    }
+
+    void TerrainFeatureProcessor::OnTerrainSurfaceMaterialMappingCreated(AZ::EntityId entityId, SurfaceData::SurfaceTag surfaceTag, MaterialInstance material)
+    {
+        DetailMaterialListRegion& materialRegion = FindOrCreateMaterial(entityId, m_detailMaterialRegions);
+
+        // Validate that the surface tag is new
+        for (DetailMaterialSurface& surface : materialRegion.m_materialsForSurfaces)
+        {
+            if (surface.m_surfaceId == surfaceTag)
+            {
+                AZ_Error(TerrainFPName, false, "Already have a surface material mapping for this surface tag.");
+                return;
+            }
+        }
+
+        for (DetailMaterialData& detailMaterial : m_detailMaterials.GetDataVector())
+        {
+            if (detailMaterial.m_assetId == material->GetAssetId())
+            {
+                UpdateDetailMaterialData(detailMaterial, material);
+
+            }
+        }
+
+        uint32_t detailMaterialId = 0;
+        materialRegion.m_materialsForSurfaces.emplace_back(surfaceTag, detailMaterialId);
+        
+    }
+
+    void TerrainFeatureProcessor::OnTerrainSurfaceMaterialMappingDestroyed(AZ::EntityId entityId, SurfaceData::SurfaceTag surfaceTag)
+    {
+
+    }
+
+    void TerrainFeatureProcessor::OnTerrainSurfaceMaterialMappingChanged(AZ::EntityId entityId, SurfaceData::SurfaceTag surfaceTag, MaterialInstance material)
+    {
+
+    }
+
+    void TerrainFeatureProcessor::OnTerrainSurfaceMaterialMappingRegionChanged(AZ::EntityId entityId, const AZ::Aabb& oldRegion, const AZ::Aabb& newRegion)
+    {
+
+    }
+
+    void TerrainFeatureProcessor::UpdateDetailMaterialData(DetailMaterialData& materialData, MaterialInstance material)
+    {
+        if (materialData.m_materialChangeId != material->GetCurrentChangeId())
+        {
+            materialData = {};
+            DetailTextureFlags& flags = materialData.m_properties.m_flags;
+            materialData.m_materialChangeId = material->GetCurrentChangeId();
+            
+            const auto materialLayout = material->GetMaterialPropertiesLayout();
+
+            auto getIndex = [&](const char* const indexName) -> AZ::RPI::MaterialPropertyIndex
+            {
+                const AZ::RPI::MaterialPropertyIndex index = materialLayout->FindPropertyIndex(AZ::Name(indexName));
+                AZ_Warning(TerrainFPName, index.IsValid(), "Failed to find shader input constant %s.", indexName);
+                return index;
+            };
+
+            auto applyProperty = [&](const char* const indexName, auto& ref) -> void
+            {
+                const auto index = getIndex(indexName);
+                if (index.IsValid())
+                {
+                    ref = material->GetPropertyValue(index).GetValue<decltype(ref)>();
+                }
+            };
+            
+            auto applyFlag = [&](const char* const indexName, DetailTextureFlags flagToSet) -> void
+            {
+                const auto index = getIndex(indexName);
+                if (index.IsValid())
+                {
+                    bool flagValue = material->GetPropertyValue(index).GetValue<bool>();
+                    flags = DetailTextureFlags(flagValue ? flags | flagToSet : flags);
+                }
+            };
+
+            using namespace DetailMaterialInputs;
+            applyProperty(BaseColorMap, materialData.m_colorImage);
+            applyFlag(BaseColorUseTexture, DetailTextureFlags::UseTextureBaseColor);
+            applyProperty(BaseColorFactor, materialData.m_properties.m_baseColorFactor);
+
+            AZStd::string blendModeString;
+            applyProperty(BaseColorBlendMode, blendModeString);
+            if (blendModeString == "Multiply")
+            {
+                flags = DetailTextureFlags(flags | DetailTextureFlags::BlendModeMultiply);
+            }
+            else if (blendModeString == "LinearLight")
+            {
+                flags = DetailTextureFlags(flags | DetailTextureFlags::BlendModeLinearLight);
+            }
+            else if (blendModeString == "Lerp")
+            {
+                flags = DetailTextureFlags(flags | DetailTextureFlags::BlendModeLerp);
+            }
+            else if (blendModeString == "Overlay")
+            {
+                flags = DetailTextureFlags(flags | DetailTextureFlags::BlendModeOverlay);
+            }
+            
+            applyProperty(MetallicMap, materialData.m_metalnessImage);
+            applyFlag(MetallicUseTexture, DetailTextureFlags::UseTextureMetallic);
+            applyProperty(MetallicFactor, materialData.m_properties.m_metalFactor);
+            
+            applyProperty(RoughnessMap, materialData.m_roughnessImage);
+            applyFlag(RoughnessUseTexture, DetailTextureFlags::UseTextureRoughness);
+
+            if (flags & DetailTextureFlags::UseTextureRoughness > 0)
+            {
+                float lowerBound = 0.0;
+                float upperBound = 1.0;
+                applyProperty(RoughnessLowerBound, lowerBound);
+                applyProperty(RoughnessUpperBound, upperBound);
+                materialData.m_properties.m_roughnessBias = lowerBound;
+                materialData.m_properties.m_roughnessScale = upperBound - lowerBound;
+            }
+            else
+            {
+                materialData.m_properties.m_roughnessBias = 0.0;
+                applyProperty(RoughnessFactor, materialData.m_properties.m_roughnessScale);
+            }
+            
+            applyProperty(SpecularF0Map, materialData.m_specularF0Image);
+            applyFlag(SpecularF0UseTexture, DetailTextureFlags::UseTextureSpecularF0);
+            applyProperty(SpecularF0Factor, materialData.m_properties.m_specularF0Factor);
+            
+            applyProperty(NormalMap, materialData.m_normalImage);
+            applyFlag(NormalUseTexture, DetailTextureFlags::UseTextureNormal);
+            applyProperty(NormalFactor, materialData.m_properties.m_normalFactor);
+            applyFlag(NormalFlipX, DetailTextureFlags::FlipNormalX);
+            applyFlag(NormalFlipY, DetailTextureFlags::FlipNormalY);
+            
+            applyProperty(DiffuseOcclusionMap, materialData.m_occlusionImage);
+            applyFlag(DiffuseOcclusionUseTexture, DetailTextureFlags::UseTextureOcclusion);
+            applyProperty(DiffuseOcclusionFactor, materialData.m_properties.m_occlusionFactor);
+            
+            applyProperty(HeightMap, materialData.m_heightImage);
+            applyFlag(HeightUseTexture, DetailTextureFlags::UseTextureHeight);
+            applyProperty(HeightFactor, materialData.m_properties.m_heightFactor);
+            applyProperty(HeightOffset, materialData.m_properties.m_heightOffset);
+            applyProperty(HeightBlendFactor, materialData.m_properties.m_heightBlendFactor);
+
+        }
     }
 
     void TerrainFeatureProcessor::UpdateTerrainData()
@@ -391,6 +571,22 @@ namespace Terrain
             }
         );
         TerrainMacroMaterialNotificationBus::Handler::BusConnect();
+        
+        TerrainAreaMaterialRequestBus::EnumerateHandlers(
+            [&](TerrainAreaMaterialRequests* handler)
+            {
+                AZ::Aabb bounds;
+                const AZStd::vector<TerrainSurfaceMaterialMapping> materialMappings = handler->GetSurfaceMaterialMappings(bounds);
+                AZ::EntityId entityId = *(Terrain::TerrainMacroMaterialRequestBus::GetCurrentBusId());
+                for (const auto& materialMapping : materialMappings)
+                {
+                    OnTerrainSurfaceMaterialMappingCreated(entityId, materialMapping.m_surfaceTag, materialMapping.m_materialInstance);
+                }
+                return true;
+            }
+        );
+        TerrainAreaMaterialNotificationBus::Handler::BusConnect();
+
     }
 
     void TerrainFeatureProcessor::UpdateMacroMaterialData(MacroMaterialData& macroMaterialData, MaterialInstance material)
@@ -781,9 +977,10 @@ namespace Terrain
         // larger but this will limit how much is rendered.
     }
     
-    TerrainFeatureProcessor::MacroMaterialData* TerrainFeatureProcessor::FindMacroMaterial(AZ::EntityId entityId)
+    template <typename T>
+    T* TerrainFeatureProcessor::FindMaterial(AZ::EntityId entityId, const AZ::Render::IndexedDataVector<T>& container)
     {
-        for (MacroMaterialData& data : m_macroMaterials.GetDataVector())
+        for (T& data : container.GetDataVector())
         {
             if (data.m_entityId == entityId)
             {
@@ -792,34 +989,36 @@ namespace Terrain
         }
         return nullptr;
     }
-
-    TerrainFeatureProcessor::MacroMaterialData& TerrainFeatureProcessor::FindOrCreateMacroMaterial(AZ::EntityId entityId)
+    
+    template <typename T>
+    T& TerrainFeatureProcessor::FindOrCreateMaterial(AZ::EntityId entityId, const AZ::Render::IndexedDataVector<T>& container)
     {
-        MacroMaterialData* dataPtr = FindMacroMaterial(entityId);
+        T* dataPtr = FindMaterial(entityId, container);
         if (dataPtr != nullptr)
         {
             return *dataPtr;
         }
 
-        const uint16_t slotId = m_macroMaterials.GetFreeSlotIndex();
-        AZ_Assert(slotId != m_macroMaterials.NoFreeSlot, "Ran out of indices for macro materials");
+        const uint16_t slotId = container.GetFreeSlotIndex();
+        AZ_Assert(slotId != T::NoFreeSlot, "Ran out of indices");
 
-        MacroMaterialData& data = m_macroMaterials.GetData(slotId);
+        T& data = container.GetData(slotId);
         data.m_entityId = entityId;
         return data;
     }
-
-    void TerrainFeatureProcessor::RemoveMacroMaterial(AZ::EntityId entityId)
+    
+    template <typename T>
+    void TerrainFeatureProcessor::RemoveMaterial(AZ::EntityId entityId, const AZ::Render::IndexedDataVector<T>& container)
     {
-        for (MacroMaterialData& data : m_macroMaterials.GetDataVector())
+        for (T& data : container.GetDataVector())
         {
             if (data.m_entityId == entityId)
             {
-                m_macroMaterials.RemoveData(&data);
+                container.RemoveData(&data);
                 return;
             }
         }
-        AZ_Assert(false, "Entity Id not found in m_macroMaterials.")
+        AZ_Assert(false, "Entity Id not found in container.")
     }
     
     template<typename Callback>

@@ -12,6 +12,7 @@
 
 #include <AzFramework/Terrain/TerrainDataRequestBus.h>
 #include <TerrainRenderer/TerrainMacroMaterialBus.h>
+#include <TerrainRenderer/TerrainAreaMaterialRequestBus.h>
 
 #include <Atom/RPI.Public/FeatureProcessor.h>
 #include <Atom/RPI.Public/Image/AttachmentImage.h>
@@ -32,11 +33,28 @@ namespace AZ::RPI
 
 namespace Terrain
 {
+    // TEMP
+    struct TerrainSurfaceMaterialMapping final
+    {
+        AZ_CLASS_ALLOCATOR(TerrainSurfaceMaterialMapping, AZ::SystemAllocator, 0);
+        AZ_RTTI(TerrainSurfaceMaterialMapping, "{37D2A586-CDDD-4FB7-A7D6-0B4CC575AB8C}");
+        static void Reflect(AZ::ReflectContext* context);
+
+        SurfaceData::SurfaceTag m_surfaceTag;
+        AZ::Data::AssetId m_activeMaterialAssetId;
+        AZ::Data::Asset<AZ::RPI::MaterialAsset> m_materialAsset;
+        AZ::Data::Instance<AZ::RPI::Material> m_materialInstance;
+
+        bool m_active = false;
+    };
+    // END TEMP
+
     class TerrainFeatureProcessor final
         : public AZ::RPI::FeatureProcessor
         , private AZ::RPI::MaterialReloadNotificationBus::Handler
         , private AzFramework::Terrain::TerrainDataNotificationBus::Handler
         , private TerrainMacroMaterialNotificationBus::Handler
+        , private TerrainAreaMaterialNotificationBus::Handler
     {
     public:
         AZ_RTTI(TerrainFeatureProcessor, "{D7DAC1F9-4A9F-4D3C-80AE-99579BF8AB1C}", AZ::RPI::FeatureProcessor);
@@ -126,27 +144,33 @@ namespace Terrain
 
         enum DetailTextureFlags : uint32_t
         {
-            UseTextureColor =      0b0000'0000'0000'0000'0000'0000'0000'0001,
+            UseTextureBaseColor =  0b0000'0000'0000'0000'0000'0000'0000'0001,
             UseTextureNormal =     0b0000'0000'0000'0000'0000'0000'0000'0010,
             UseTextureMetallic =   0b0000'0000'0000'0000'0000'0000'0000'0100,
             UseTextureRoughness =  0b0000'0000'0000'0000'0000'0000'0000'1000,
             UseTextureOcclusion =  0b0000'0000'0000'0000'0000'0000'0001'0000,
             UseTextureHeight =     0b0000'0000'0000'0000'0000'0000'0010'0000,
+            UseTextureSpecularF0 = 0b0000'0000'0000'0000'0000'0000'0100'0000,
 
-            FlipNormalX =          0b0000'0000'0000'0000'0000'0000'0100'0000,
-            FlipNormalY =          0b0000'0000'0000'0000'0000'0000'1000'0000,
+            FlipNormalX =          0b0000'0000'0000'0000'0000'0000'1000'0000,
+            FlipNormalY =          0b0000'0000'0000'0000'0000'0001'0000'0000,
 
-            BlendModeMask =        0b0000'0000'0000'0000'0000'0011'0000'0000,
+            BlendModeMask =        0b0000'0000'0000'0000'0000'0110'0000'0000,
             BlendModeLerp =        0b0000'0000'0000'0000'0000'0000'0000'0000,
-            BlendModeLinearLight = 0b0000'0000'0000'0000'0000'0001'0000'0000,
-            BlendModeMultiply =    0b0000'0000'0000'0000'0000'0010'0000'0000,
-            BlendModeOverlay =     0b0000'0000'0000'0000'0000'0011'0000'0000,
+            BlendModeLinearLight = 0b0000'0000'0000'0000'0000'0010'0000'0000,
+            BlendModeMultiply =    0b0000'0000'0000'0000'0000'0100'0000'0000,
+            BlendModeOverlay =     0b0000'0000'0000'0000'0000'0110'0000'0000,
         };
 
         struct DetailMaterialShaderProperties
         {
             // Uv
-            AZStd::array<float, 12> m_uvTransform;
+            AZStd::array<float, 12> m_uvTransform
+            {
+                1.0, 0.0, 0.0, 0.0,
+                0.0, 1.0, 0.0, 0.0,
+                0.0, 0.0, 1.0, 0.0,
+            };
 
             // Factor / Scale / Bias for input textures
             float m_baseColorFactor{ 1.0f };
@@ -155,24 +179,29 @@ namespace Terrain
             float m_roughnessScale{ 1.0f };
 
             float m_roughnessBias{ 0.0f };
+            float m_specularF0Factor{ 1.0f };
             float m_occlusionFactor{ 1.0f };
             float m_heightFactor{ 1.0f };
-            float m_heightOffset{ 0.0f };
 
+            float m_heightOffset{ 0.0f };
             float m_heightBlendFactor{ 0.5f };
 
             // Flags
             DetailTextureFlags m_flags{ 0 };
 
-            AZStd::array<float, 2> m_padding; // 16 byte aligned
+            AZStd::array<float, 1> m_padding; // 16 byte aligned
         };
 
         struct DetailMaterialData
         {
+            AZ::Data::AssetId m_assetId;
+            AZ::RPI::Material::ChangeId m_materialChangeId{AZ::RPI::Material::DEFAULT_CHANGE_ID};
+
             AZ::Data::Instance<AZ::RPI::Image> m_colorImage;
             AZ::Data::Instance<AZ::RPI::Image> m_normalImage;
             AZ::Data::Instance<AZ::RPI::Image> m_roughnessImage;
             AZ::Data::Instance<AZ::RPI::Image> m_metalnessImage;
+            AZ::Data::Instance<AZ::RPI::Image> m_specularF0Image;
             AZ::Data::Instance<AZ::RPI::Image> m_occlusionImage;
             AZ::Data::Instance<AZ::RPI::Image> m_heightImage;
 
@@ -187,7 +216,8 @@ namespace Terrain
 
         struct DetailMaterialListRegion
         {
-            AZ::Aabb m_region;
+            AZ::EntityId m_entityId;
+            AZ::Aabb m_region{AZ::Aabb::CreateNull()};
             AZStd::vector<DetailMaterialSurface> m_materialsForSurfaces;
         };
 
@@ -204,6 +234,12 @@ namespace Terrain
         void OnTerrainMacroMaterialChanged(AZ::EntityId entityId, MaterialInstance material) override;
         void OnTerrainMacroMaterialRegionChanged(AZ::EntityId entityId, const AZ::Aabb& oldRegion, const AZ::Aabb& newRegion) override;
         void OnTerrainMacroMaterialDestroyed(AZ::EntityId entityId) override;
+        
+        // TerrainAreaMaterialNotificationBus overrides...
+        void OnTerrainSurfaceMaterialMappingCreated(AZ::EntityId entityId, SurfaceData::SurfaceTag surfaceTag, MaterialInstance material) override;
+        void OnTerrainSurfaceMaterialMappingDestroyed(AZ::EntityId entityId, SurfaceData::SurfaceTag surfaceTag) override;
+        void OnTerrainSurfaceMaterialMappingChanged(AZ::EntityId entityId, SurfaceData::SurfaceTag surfaceTag, MaterialInstance material) override;
+        void OnTerrainSurfaceMaterialMappingRegionChanged(AZ::EntityId entityId, const AZ::Aabb& oldRegion, const AZ::Aabb& newRegion) override;
 
         void Initialize();
         void InitializeTerrainPatch(uint16_t gridSize, float gridSpacing, PatchData& patchdata);
@@ -213,11 +249,16 @@ namespace Terrain
         void PrepareMaterialData();
         void UpdateMacroMaterialData(MacroMaterialData& macroMaterialData, MaterialInstance material);
 
+        void UpdateDetailMaterialData(DetailMaterialData& materialData, MaterialInstance material);
+
         void ProcessSurfaces(const FeatureProcessor::RenderPacket& process);
-        
-        MacroMaterialData* FindMacroMaterial(AZ::EntityId entityId);
-        MacroMaterialData& FindOrCreateMacroMaterial(AZ::EntityId entityId);
-        void RemoveMacroMaterial(AZ::EntityId entityId);
+
+        template <typename T>
+        T* FindMaterial(AZ::EntityId entityId, const AZ::Render::IndexedDataVector<T>& container);
+        template <typename T>
+        T& FindOrCreateMaterial(AZ::EntityId entityId, const AZ::Render::IndexedDataVector<T>& container);
+        template <typename T>
+        void RemoveMaterial(AZ::EntityId entityId, const AZ::Render::IndexedDataVector<T>& container);
 
         template<typename Callback>
         void ForOverlappingSectors(const AZ::Aabb& bounds, Callback callback);
@@ -266,5 +307,6 @@ namespace Terrain
 
         AZ::Render::IndexedDataVector<MacroMaterialData> m_macroMaterials;
         AZ::Render::IndexedDataVector<DetailMaterialData> m_detailMaterials;
+        AZ::Render::IndexedDataVector<DetailMaterialListRegion> m_detailMaterialRegions;
     };
 }
