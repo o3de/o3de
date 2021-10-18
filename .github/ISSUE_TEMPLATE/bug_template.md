@@ -37,8 +37,6 @@ Provide information we can use to identify the version of O3DE this occured in. 
 * Branch name:
 * Commit hash:
 
-Name of or link to the branch where the issue occurs.
-
 **Desktop/Device (please complete the following information):**
  - Device: [e.g. PC, Mac, iPhone, Samsung] 
  - OS: [e.g. Windows, macOS, iOS, Android]
