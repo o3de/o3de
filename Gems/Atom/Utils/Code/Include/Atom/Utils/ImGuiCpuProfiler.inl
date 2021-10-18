@@ -7,7 +7,6 @@
  */
 
 #include <Atom/Feature/Utils/ProfilingCaptureBus.h>
-#include <Atom/RHI.Reflect/CpuTimingStatistics.h>
 #include <Atom/RHI/CpuProfiler.h>
 #include <Atom/RHI/CpuProfilerImpl.h>
 #include <Atom/RPI.Edit/Common/JsonUtils.h>
@@ -16,6 +15,7 @@
 #include <AzCore/Casting/lossy_cast.h>
 #include <AzCore/IO/FileIO.h>
 #include <AzCore/JSON/filereadstream.h>
+#include <AzCore/Statistics/StatisticalProfilerProxy.h>
 #include <AzCore/Serialization/Json/JsonSerialization.h>
 #include <AzCore/Serialization/Json/JsonSerializationResult.h>
 #include <AzCore/std/containers/map.h>
@@ -31,12 +31,17 @@ namespace AZ
     {
         namespace CpuProfilerImGuiHelper
         {
-            inline float TicksToMs(AZStd::sys_time_t ticks)
+            inline float TicksToMs(double ticks)
             {
                 // Note: converting to microseconds integer before converting to milliseconds float
                 const AZStd::sys_time_t ticksPerSecond = AZStd::GetTimeTicksPerSecond();
                 AZ_Assert(ticksPerSecond >= 1000, "Error in converting ticks to ms, expected ticksPerSecond >= 1000");
                 return static_cast<float>((ticks * 1000) / (ticksPerSecond / 1000)) / 1000.0f;
+            }
+
+            inline float TicksToMs(AZStd::sys_time_t ticks)
+            {
+                return TicksToMs(static_cast<double>(ticks));
             }
 
             using DeserializedCpuData = AZStd::vector<RHI::CpuProfilingStatisticsSerializer::CpuProfilingStatisticsSerializerEntry>;
@@ -108,7 +113,9 @@ namespace AZ
             }
         } // namespace CpuProfilerImGuiHelper
 
-        inline void ImGuiCpuProfiler::Draw(bool& keepDrawing, const AZ::RHI::CpuTimingStatistics& currentCpuTimingStatistics)
+
+
+        inline void ImGuiCpuProfiler::Draw(bool& keepDrawing)
         {
             // Cache the value to detect if it was changed by ImGui(user pressed 'x')
             const bool cachedShowCpuProfiler = keepDrawing;
@@ -121,10 +128,10 @@ namespace AZ
                 if (!m_paused)
                 {
                     // Update region map and cache the input cpu timing statistics when the profiling is not paused
-                    m_cpuTimingStatisticsWhenPause = currentCpuTimingStatistics;
+                    CacheCpuTimingStatistics();
 
                     CollectFrameData();
-                    CullFrameData(currentCpuTimingStatistics);
+                    CullFrameData();
 
                     // Only listen to system ticks when the profiler is active
                     if (!SystemTickBus::Handler::BusIsConnected())
@@ -354,19 +361,12 @@ namespace AZ
         {
             DrawCommonHeader();
 
-            const AZ::RHI::CpuTimingStatistics& cpuTimingStatistics = m_cpuTimingStatisticsWhenPause;
-
-            const auto ShowTimeInMs = [](AZStd::sys_time_t duration)
-            {
-                ImGui::Text("%.2f ms", CpuProfilerImGuiHelper::TicksToMs(duration));
-            };
-
-            const auto ShowRow = [&ShowTimeInMs](const char* regionLabel, AZStd::sys_time_t duration)
+            const auto ShowRow = [](const char* regionLabel, double duration)
             {
                 ImGui::Text("%s", regionLabel);
                 ImGui::NextColumn();
 
-                ShowTimeInMs(duration);
+                ImGui::Text("%.2f ms", CpuProfilerImGuiHelper::TicksToMs(duration));
                 ImGui::NextColumn();
             };
 
@@ -377,11 +377,9 @@ namespace AZ
                 ImGui::SetColumnWidth(0, 660.0f);
                 ImGui::SetColumnWidth(1, 100.0f);
 
-                ShowRow("Frame to Frame Time", cpuTimingStatistics.m_frameToFrameTime);
-                ShowRow("Present Time", cpuTimingStatistics.m_presentDuration);
-                for (const auto& queueStatistics : cpuTimingStatistics.m_queueStatistics)
+                for (const auto& queueStatistics : m_cpuTimingStatisticsWhenPause)
                 {
-                    ShowRow(queueStatistics.m_queueName.GetCStr(), queueStatistics.m_executeDuration);
+                    ShowRow(queueStatistics.m_name.c_str(), queueStatistics.m_executeDuration);
                 }
 
                 ImGui::Separator();
@@ -653,6 +651,32 @@ namespace AZ
             ImGui::EndChild();
         }
 
+        inline void ImGuiCpuProfiler::CacheCpuTimingStatistics()
+        {
+            using namespace AZ::Statistics;
+
+            m_cpuTimingStatisticsWhenPause.clear();
+            if (auto statsProfiler = AZ::Interface<StatisticalProfilerProxy>::Get(); statsProfiler)
+            {
+                auto& rhiMetrics = statsProfiler->GetProfiler(AZ_CRC_CE("RHI"));
+
+                const NamedRunningStatistic* frameTimeMetric = rhiMetrics.GetStatistic(AZ_CRC_CE("Frame to Frame Time"));
+                if (frameTimeMetric)
+                {
+                    m_frameToFrameTime = static_cast<AZStd::sys_time_t>(frameTimeMetric->GetMostRecentSample());
+                }
+
+                AZStd::vector<NamedRunningStatistic*> statistics;
+                rhiMetrics.GetStatsManager().GetAllStatistics(statistics);
+
+                for (NamedRunningStatistic* stat : statistics)
+                {
+                    m_cpuTimingStatisticsWhenPause.push_back({ stat->GetName(), stat->GetMostRecentSample() });
+                    stat->Reset();
+                }
+            }
+        }
+
         inline void ImGuiCpuProfiler::CollectFrameData()
         {
             // We maintain separate datastores for the visualizer and the statistical view because they require different
@@ -721,10 +745,9 @@ namespace AZ
             }
         }
 
-        inline void ImGuiCpuProfiler::CullFrameData(const AZ::RHI::CpuTimingStatistics& currentCpuTimingStatistics)
+        inline void ImGuiCpuProfiler::CullFrameData()
         {
-            const AZStd::sys_time_t frameToFrameTime = currentCpuTimingStatistics.m_frameToFrameTime;
-            const AZStd::sys_time_t deleteBeforeTick = AZStd::GetTimeNowTicks() - frameToFrameTime * m_framesToCollect;
+            const AZStd::sys_time_t deleteBeforeTick = AZStd::GetTimeNowTicks() - m_frameToFrameTime * m_framesToCollect;
 
             // Remove old frame boundary data
             auto firstBoundaryToKeepItr = AZStd::upper_bound(m_frameEndTicks.begin(), m_frameEndTicks.end(), deleteBeforeTick);

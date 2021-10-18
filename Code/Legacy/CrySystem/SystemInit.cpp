@@ -1273,33 +1273,12 @@ AZ_POP_DISABLE_WARNING
         //Load config files
         //////////////////////////////////////////////////////////////////////////
 
-        int curSpecVal = 0;
-        ICVar* pSysSpecCVar = gEnv->pConsole->GetCVar("r_GraphicsQuality");
-        if (gEnv->pSystem->IsDevMode())
-        {
-            if (pSysSpecCVar && pSysSpecCVar->GetFlags() & VF_WASINCONFIG)
-            {
-                curSpecVal = pSysSpecCVar->GetIVal();
-                pSysSpecCVar->SetFlags(pSysSpecCVar->GetFlags() | VF_SYSSPEC_OVERWRITE);
-            }
-        }
-
         // tools may not interact with @user@
         if (!gEnv->IsInToolMode())
         {
             if (m_pCmdLine->FindArg(eCLAT_Pre, "ResetProfile") == 0)
             {
                 LoadConfiguration("@user@/game.cfg", 0, false);
-            }
-        }
-
-        // If sys spec variable was specified, is not 0, and we are in devmode restore the value from before loading game.cfg
-        // This enables setting of a specific sys_spec outside menu and game.cfg
-        if (gEnv->pSystem->IsDevMode())
-        {
-            if (pSysSpecCVar && curSpecVal && curSpecVal != pSysSpecCVar->GetIVal())
-            {
-                pSysSpecCVar->Set(curSpecVal);
             }
         }
 

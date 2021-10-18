@@ -36,6 +36,9 @@ namespace SandboxEditor
     SANDBOX_API AZ::Vector3 DefaultEditorCameraPosition();
     SANDBOX_API void SetDefaultCameraEditorPosition(AZ::Vector3 defaultCameraPosition);
 
+    SANDBOX_API AZ::u64 MaxItemsShownInAssetBrowserSearch();
+    SANDBOX_API void SetMaxItemsShownInAssetBrowserSearch(AZ::u64 numberOfItemsShown);
+
     SANDBOX_API bool GridSnappingEnabled();
     SANDBOX_API void SetGridSnapping(bool enabled);
 

@@ -15,6 +15,7 @@
 
 namespace SandboxEditor
 {
+    constexpr AZStd::string_view AssetBrowserMaxItemsShownInSearchSetting = "/Amazon/Preferences/Editor/AssetBrowser/MaxItemsShowInSearch";
     constexpr AZStd::string_view GridSnappingSetting = "/Amazon/Preferences/Editor/GridSnapping";
     constexpr AZStd::string_view GridSizeSetting = "/Amazon/Preferences/Editor/GridSize";
     constexpr AZStd::string_view AngleSnappingSetting = "/Amazon/Preferences/Editor/AngleSnapping";
@@ -126,6 +127,16 @@ namespace SandboxEditor
         SetRegistry(CameraDefaultStartingPositionX, defaultCameraPosition.GetX());
         SetRegistry(CameraDefaultStartingPositionY, defaultCameraPosition.GetY());
         SetRegistry(CameraDefaultStartingPositionZ, defaultCameraPosition.GetZ());
+    }
+
+    AZ::u64 MaxItemsShownInAssetBrowserSearch()
+    {
+        return GetRegistry(AssetBrowserMaxItemsShownInSearchSetting, aznumeric_cast<AZ::u64>(50));
+    }
+
+    void SetMaxItemsShownInAssetBrowserSearch(const AZ::u64 numberOfItemsShown)
+    {
+        SetRegistry(AssetBrowserMaxItemsShownInSearchSetting, numberOfItemsShown);
     }
 
     bool GridSnappingEnabled()

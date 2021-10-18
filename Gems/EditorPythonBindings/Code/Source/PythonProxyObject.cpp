@@ -17,10 +17,16 @@
 #include <Source/PythonSymbolsBus.h>
 
 #include <pybind11/embed.h>
+#include <pybind11/pybind11.h>
+#include <pybind11/eval.h>
 
 #include <AzCore/PlatformDef.h>
+#include <AzCore/JSON/rapidjson.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/RTTI/AttributeReader.h>
+#include <AzCore/Serialization/Json/JsonSerialization.h>
+#include <AzCore/Serialization/Json/JsonSerializationSettings.h>
+#include <AzCore/Serialization/Json/JsonUtils.h>
 
 namespace EditorPythonBindings
 {
@@ -571,6 +577,37 @@ namespace EditorPythonBindings
         return false;
     }
 
+    pybind11::object PythonProxyObject::ToJson()
+    {
+        rapidjson::Document document;
+        AZ::JsonSerializerSettings settings;
+        settings.m_keepDefaults = true;
+        
+        auto resultCode =
+            AZ::JsonSerialization::Store(document, document.GetAllocator(), m_wrappedObject.m_address, nullptr, m_wrappedObject.m_typeId, settings);
+
+        if (resultCode.GetProcessing() == AZ::JsonSerializationResult::Processing::Halted)
+        {
+            AZ_Error("PythonProxyObject", false, "Failed to serialize to json");
+            return pybind11::cast<pybind11::none>(Py_None);
+        }
+
+        AZStd::string jsonString;
+        AZ::Outcome<void, AZStd::string> outcome = AZ::JsonSerializationUtils::WriteJsonString(document, jsonString);
+
+        if (!outcome.IsSuccess())
+        {
+            AZ_Error("PythonProxyObject", false, "Failed to write json string: %s", outcome.GetError().c_str());
+            return pybind11::cast<pybind11::none>(Py_None);
+        }
+        
+        jsonString.erase(AZStd::remove(jsonString.begin(), jsonString.end(), '\n'), jsonString.end());
+        auto pythonCode = AZStd::string::format(
+            R"PYTHON(exec("import json") or json.loads("""%s"""))PYTHON", jsonString.c_str());
+
+        return pybind11::eval(pythonCode.c_str());
+    }
+
     bool PythonProxyObject::DoComparisonEvaluation(pybind11::object pythonOther, Comparison comparison)
     {
         bool invertLogic = false;
@@ -912,6 +949,7 @@ namespace EditorPythonBindings
                 .def("set_property", &PythonProxyObject::SetPropertyValue)
                 .def("get_property", &PythonProxyObject::GetPropertyValue)
                 .def("invoke", &PythonProxyObject::Invoke)
+                .def("to_json", &PythonProxyObject::ToJson)
                 .def(Operator::s_isEqual, [](PythonProxyObject& self, pybind11::object rhs)
                 {
                     return self.DoEqualityEvaluation(rhs);

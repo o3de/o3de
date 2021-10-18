@@ -124,24 +124,10 @@ namespace AZ::SceneAPI::Behaviors
             return {};
         }
 
-        // create instance to update the asset hints
-        auto instance = prefabSystemComponentInterface->InstantiatePrefab(templateId);
-        if (!instance)
-        {
-            AZ_Error("prefab", false, "PrefabGroup(%s) Could not instantiate prefab", prefabGroup->GetName().c_str());
-            return {};
-        }
-
-        auto* instanceToTemplateInterface = AZ::Interface<InstanceToTemplateInterface>::Get();
-        if (!instanceToTemplateInterface)
-        {
-            AZ_Error("prefab", false, "Could not get InstanceToTemplateInterface");
-            return {};
-        }
-
-        // fill out a JSON DOM
+        const rapidjson::Document& generatedInstanceDom = prefabSystemComponentInterface->FindTemplateDom(templateId);
         auto proceduralPrefab = AZStd::make_unique<rapidjson::Document>(rapidjson::kObjectType);
-        instanceToTemplateInterface->GenerateDomForInstance(*proceduralPrefab.get(), *instance.get());
+        proceduralPrefab->CopyFrom(generatedInstanceDom, proceduralPrefab->GetAllocator(), true);
+
         return proceduralPrefab;
     }
 

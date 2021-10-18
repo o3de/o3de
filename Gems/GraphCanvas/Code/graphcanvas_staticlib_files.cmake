@@ -91,6 +91,7 @@ set(FILES
     StaticLib/GraphCanvas/Styling/Style.cpp
     StaticLib/GraphCanvas/Styling/Style.h
     StaticLib/GraphCanvas/Styling/StyleHelper.h
+    StaticLib/GraphCanvas/Styling/StyleHelper.cpp
     StaticLib/GraphCanvas/Styling/StyleManager.cpp
     StaticLib/GraphCanvas/Styling/StyleManager.h
     StaticLib/GraphCanvas/Types/ComponentSaveDataInterface.h
