@@ -3573,33 +3573,59 @@ namespace AssetProcessor
                     QString knownPathBeforeWildcard = encodedFileData.left(slashBeforeWildcardIndex + 1); // include the slash
                     QString relativeSearch = encodedFileData.mid(slashBeforeWildcardIndex + 1); // skip the slash
 
-                    for (int i = 0; i < m_platformConfig->GetScanFolderCount(); ++i)
+                    // Absolute path, just check the 1 scan folder
+                    if (!AZ::StringFunc::Path::IsRelative(encodedFileData.toUtf8().constData()))
                     {
-                        const ScanFolderInfo* scanFolderInfo = &m_platformConfig->GetScanFolderAt(i);
-
-                        if (!scanFolderInfo->RecurseSubFolders() && encodedFileData.contains("/"))
+                        QString scanFolderName;
+                        if (!m_platformConfig->ConvertToRelativePath(encodedFileData, resultDatabaseSourceName, scanFolderName))
                         {
-                            continue;
+                            AZ_Warning(
+                                AssetProcessor::ConsoleChannel, false,
+                                "'%s' does not appear to be in any input folder.  Use relative paths instead.",
+                                sourceDependency.m_sourceFileDependencyPath.c_str());
                         }
 
-                        QDir rooted(scanFolderInfo->ScanPath());
+                        auto scanFolderInfo = m_platformConfig->GetScanFolderByPath(scanFolderName);
+
+                        QDir rooted(scanFolderName);
                         QString absolutePath = rooted.absoluteFilePath(knownPathBeforeWildcard);
 
-                        resolvedDependencyList.append(m_platformConfig->FindWildcardMatches(absolutePath, relativeSearch, false, scanFolderInfo->RecurseSubFolders()));
+                        resolvedDependencyList.append(m_platformConfig->FindWildcardMatches(
+                            absolutePath, relativeSearch, false, scanFolderInfo->RecurseSubFolders()));
+                    }
+                    else // Relative path, check every scan folder
+                    {
+                        for (int i = 0; i < m_platformConfig->GetScanFolderCount(); ++i)
+                        {
+                            const ScanFolderInfo* scanFolderInfo = &m_platformConfig->GetScanFolderAt(i);
+
+                            if (!scanFolderInfo->RecurseSubFolders() && encodedFileData.contains("/"))
+                            {
+                                continue;
+                            }
+
+                            QDir rooted(scanFolderInfo->ScanPath());
+                            QString absolutePath = rooted.absoluteFilePath(knownPathBeforeWildcard);
+
+                            resolvedDependencyList.append(m_platformConfig->FindWildcardMatches(
+                                absolutePath, relativeSearch, false, scanFolderInfo->RecurseSubFolders()));
+                        }
                     }
 
                     // Convert to relative paths
-                    for (QString& dependency : resolvedDependencyList)
+                    for (auto dependencyItr = resolvedDependencyList.begin(); dependencyItr != resolvedDependencyList.end();) 
                     {
                         QString relativePath, scanFolder;
-                        if (m_platformConfig->ConvertToRelativePath(dependency, relativePath, scanFolder))
+                        if (m_platformConfig->ConvertToRelativePath(*dependencyItr, relativePath, scanFolder))
                         {
-                            dependency = relativePath;
+                            *dependencyItr = relativePath;
+                            ++dependencyItr;
                         }
                         else
                         {
                             AZ_Warning("AssetProcessor", false, "Failed to get relative path for wildcard dependency file %s.  Is the file within a scan folder?",
-                                dependency.toUtf8().constData());
+                                dependencyItr->toUtf8().constData());
+                            dependencyItr = resolvedDependencyList.erase(dependencyItr);
                         }
                     }
 
