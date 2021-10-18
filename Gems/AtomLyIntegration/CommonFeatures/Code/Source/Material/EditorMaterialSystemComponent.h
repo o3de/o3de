@@ -5,13 +5,12 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+
 #pragma once
 
 #include <AtomLyIntegration/CommonFeatures/Material/EditorMaterialSystemComponentRequestBus.h>
-#include <AtomToolsFramework/PreviewRenderer/PreviewRenderer.h>
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Component/Component.h>
-#include <AzFramework/Application/Application.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
 #include <AzToolsFramework/Viewport/ActionBus.h>
@@ -30,8 +29,6 @@ namespace AZ
             , public AzToolsFramework::AssetBrowser::AssetBrowserInteractionNotificationBus::Handler
             , public AzToolsFramework::EditorMenuNotificationBus::Handler
             , public AzToolsFramework::EditorEvents::Bus::Handler
-            , public AzFramework::AssetCatalogEventBus::Handler
-            , public AzFramework::ApplicationLifecycleEvents::Bus::Handler
         {
         public:
             AZ_COMPONENT(EditorMaterialSystemComponent, "{96652157-DA0B-420F-B49C-0207C585144C}");
@@ -40,6 +37,7 @@ namespace AZ
 
             static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided);
             static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible);
+            static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required);
             static void GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent);
 
         protected:
@@ -70,16 +68,8 @@ namespace AZ
             // AztoolsFramework::EditorEvents::Bus::Handler overrides...
             void NotifyRegisterViews() override;
 
-
-            // AzFramework::AssetCatalogEventBus::Handler overrides ...
-            void OnCatalogLoaded(const char* catalogFile) override;
-
-            // AzFramework::ApplicationLifecycleEvents overrides...
-            void OnApplicationAboutToStop() override;
-
             QAction* m_openMaterialEditorAction = nullptr;
             AZStd::unique_ptr<MaterialBrowserInteractions> m_materialBrowserInteractions;
-            AZStd::unique_ptr<AtomToolsFramework::PreviewRenderer> m_previewRenderer;
             AZStd::unordered_map<AZ::EntityId, AZStd::unordered_map<AZ::Render::MaterialAssignmentId, QPixmap>> m_materialPreviews;
         };
     } // namespace Render

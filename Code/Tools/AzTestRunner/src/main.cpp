@@ -189,6 +189,8 @@ namespace AzTestRunner
 
     int wrapped_main(int argc/*=0*/, char** argv/*=nullptr*/)
     {
+        AZ::Debug::Trace::HandleExceptions(true);
+
         if (argc>0 && argv!=nullptr)
         {
             return wrapped_command_arg_main(argc, argv);

@@ -72,6 +72,7 @@ set(FILES
     Debug/AssetTracking.cpp
     Debug/LocalFileEventLoggerTests.cpp
     Debug/Trace.cpp
+    Debug/UnhandledExceptions.cpp
     Name/NameJsonSerializerTests.cpp
     Name/NameTests.cpp
     RTTI/TypeSafeIntegralTests.cpp

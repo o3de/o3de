@@ -639,9 +639,10 @@ namespace AZ
     {
         // Make sure the there is a JSON object at the ConsoleRuntimeCommandKey or ConsoleAutoexecKey
         // So that JSON Patch is able to add values underneath that object (JSON Patch doesn't create intermediate objects)
-        settingsRegistry.MergeSettings(R"({ "Amazon": { "AzCore": { "Runtime": { "ConsoleCommands": {} } } })"
-            R"(,"O3DE": { "Autoexec": { "ConsoleCommands": {} } } })",
-            SettingsRegistryInterface::Format::JsonMergePatch);
+        settingsRegistry.MergeSettings(R"({})", SettingsRegistryInterface::Format::JsonMergePatch,
+            IConsole::ConsoleRuntimeCommandKey);
+        settingsRegistry.MergeSettings(R"({})", SettingsRegistryInterface::Format::JsonMergePatch,
+            IConsole::ConsoleAutoexecCommandKey);
         m_consoleCommandKeyHandler = settingsRegistry.RegisterNotifier(ConsoleCommandKeyNotificationHandler{ settingsRegistry, *this });
 
         JsonApplyPatchSettings applyPatchSettings;

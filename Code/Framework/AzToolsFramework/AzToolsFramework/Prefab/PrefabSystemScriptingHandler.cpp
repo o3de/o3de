@@ -12,7 +12,7 @@
 #include <Prefab/PrefabSystemComponentInterface.h>
 #include <Prefab/PrefabSystemScriptingHandler.h>
 #include <AzCore/Component/Entity.h>
-#include <AzCore/Component/TransformBus.h>
+#include <Prefab/EditorPrefabComponent.h>
 #include <ToolsComponents/TransformComponent.h>
 
 namespace AzToolsFramework::Prefab
@@ -72,6 +72,7 @@ namespace AzToolsFramework::Prefab
             entities, commonRoot, &topLevelEntities);
 
         auto containerEntity = AZStd::make_unique<AZ::Entity>();
+        containerEntity->CreateComponent<Prefab::EditorPrefabComponent>();
 
         for (AZ::Entity* entity : topLevelEntities)
         {

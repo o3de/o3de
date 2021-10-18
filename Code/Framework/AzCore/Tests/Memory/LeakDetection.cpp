@@ -144,14 +144,13 @@ namespace UnitTest
         }
     };
 
-#if GTEST_OS_SUPPORTS_DEATH_TEST
-    // SPEC-2669: Disabled since it is causing hangs on Linux
+#if GTEST_HAS_DEATH_TEST
     TEST_F(AllocatorsTestFixtureLeakDetectionDeathTest_SKIPCODECOVERAGE, AllocatorLeak)
     {
         // testing that the TraceBusHook will fail on cause the test to die
         EXPECT_DEATH(TestAllocatorLeak(), "");
     }
-#endif // GTEST_OS_SUPPORTS_DEATH_TEST
+#endif // GTEST_HAS_DEATH_TEST
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // Testing ScopedAllocatorSetupFixture. Testing that detects leaks
