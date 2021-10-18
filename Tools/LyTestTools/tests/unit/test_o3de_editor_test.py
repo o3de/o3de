@@ -31,7 +31,7 @@ class TestEditorTestBase(unittest.TestCase):
         assert mock_editorsharedtest.is_batchable == True
         assert mock_editorsharedtest.is_parallelizable == False
 
-class TestBase(unittest.TestCase):
+class TestResultBase(unittest.TestCase):
 
     def setUp(self):
         self.mock_result = editor_test.Result.Base()
@@ -52,7 +52,7 @@ class TestBase(unittest.TestCase):
         self.mock_result.editor_log = None
         assert self.mock_result.get_editor_log_str() == '-- No editor log found --'
 
-class TestPass(unittest.TestCase):
+class TestResultPass(unittest.TestCase):
 
     def test_Create_ValidArgs_CorrectAttributes(self):
         mock_test_spec = mock.MagicMock()
@@ -72,7 +72,7 @@ class TestPass(unittest.TestCase):
         mock_pass = editor_test.Result.Pass.create(mock_test_spec, mock_output, mock_editor_log)
         assert mock_output in str(mock_pass)
 
-class TestFail(unittest.TestCase):
+class TestResultFail(unittest.TestCase):
 
     def test_Create_ValidArgs_CorrectAttributes(self):
         mock_test_spec = mock.MagicMock()
@@ -93,7 +93,7 @@ class TestFail(unittest.TestCase):
         assert mock_output in str(mock_pass)
         assert mock_editor_log in str(mock_pass)
 
-class TestCrash(unittest.TestCase):
+class TestResultCrash(unittest.TestCase):
 
     def test_Create_ValidArgs_CorrectAttributes(self):
         mock_test_spec = mock.MagicMock()
@@ -134,7 +134,7 @@ class TestCrash(unittest.TestCase):
         assert mock_output in str(mock_pass)
         assert mock_editor_log in str(mock_pass)
 
-class Timeout(unittest.TestCase):
+class TestResultTimeout(unittest.TestCase):
 
     def test_Create_ValidArgs_CorrectAttributes(self):
         mock_test_spec = mock.MagicMock()
@@ -158,7 +158,7 @@ class Timeout(unittest.TestCase):
         assert mock_output in str(mock_pass)
         assert mock_editor_log in str(mock_pass)
 
-class Unknown(unittest.TestCase):
+class TestResultUnknown(unittest.TestCase):
 
     def test_Create_ValidArgs_CorrectAttributes(self):
         mock_test_spec = mock.MagicMock()
@@ -185,7 +185,7 @@ class Unknown(unittest.TestCase):
 class TestEditorTestSuite(unittest.TestCase):
 
     @mock.patch('ly_test_tools.o3de.editor_test_utils.kill_all_ly_processes')
-    def test_EditorTestData_ValidAP_TeardownProperly(self, mock_kill_processes):
+    def test_EditorTestData_ValidAP_TeardownAPOnce(self, mock_kill_processes):
         mock_editor_test_suite = editor_test.EditorTestSuite()
         mock_test_data_generator = mock_editor_test_suite._editor_test_data(mock.MagicMock())
         mock_asset_processor = mock.MagicMock()
@@ -197,29 +197,12 @@ class TestEditorTestSuite(unittest.TestCase):
         mock_kill_processes.assert_called_once_with(include_asset_processor=True)
 
     @mock.patch('ly_test_tools.o3de.editor_test_utils.kill_all_ly_processes')
-    def test_EditorTestData_NoAP_TeardownProperly(self, mock_kill_processes):
+    def test_EditorTestData_NoAP_NoTeardownAP(self, mock_kill_processes):
         mock_editor_test_suite = editor_test.EditorTestSuite()
         mock_test_data_generator = mock_editor_test_suite._editor_test_data(mock.MagicMock())
         for test_data in mock_test_data_generator:
             test_data.asset_processor = None
         mock_kill_processes.assert_called_once_with(include_asset_processor=False)
-
-    def test_RunnerInit_ValidArgs_InitProperly(self):
-        mock_name = mock.MagicMock()
-        mock_func = mock.MagicMock()
-        mock_tests = mock.MagicMock()
-
-        mock_runner = editor_test.EditorTestSuite.Runner(mock_name, mock_func, mock_tests)
-        mock_runner.name = mock_name
-        mock_runner.func = mock_func
-        mock_runner.tests = mock_tests
-        mock_runner.run_pytestfunc = None
-        mock_runner.result_pytestfuncs = []
-
-    def test_PytestCustomMakeitem_Called_ReturnsClass(self):
-        mock_test_class = editor_test.EditorTestSuite.pytest_custom_makeitem(mock.MagicMock(), mock.MagicMock(),
-                                                                             mock.MagicMock())
-        assert isinstance(mock_test_class, editor_test.EditorTestSuite.EditorTestClass)
 
     @mock.patch('ly_test_tools.o3de.editor_test.EditorTestSuite.filter_session_shared_tests')
     def test_PytestCustomModifyItems_FunctionsMatch_AddsRunners(self, mock_filter_tests):
@@ -323,6 +306,7 @@ class TestEditorTestSuite(unittest.TestCase):
 
         selected_tests = editor_test.EditorTestSuite.filter_session_shared_tests(mock_session_items, mock_shared_tests)
         assert selected_tests == mock_session_items
+        assert len(selected_tests) == 1
 
     @mock.patch('ly_test_tools.o3de.editor_test.skipping_pytest_runtest_setup', mock.MagicMock())
     def test_FilterSessionSharedTests_ManyTests_ReturnsCorrectTests(self):
@@ -344,8 +328,29 @@ class TestEditorTestSuite(unittest.TestCase):
         selected_tests = editor_test.EditorTestSuite.filter_session_shared_tests(mock_session_items, mock_shared_tests)
         assert selected_tests == mock_session_items
 
+    @mock.patch('ly_test_tools.o3de.editor_test.skipping_pytest_runtest_setup')
+    def test_FilterSessionSharedTests_SkipOneTest_ReturnsCorrectTests(self, mock_skip):
+        def mock_test():
+            pass
+        def mock_test_2():
+            pass
+        def mock_test_3():
+            pass
+        mock_skip.side_effect = [True, Exception]
+        mock_test.originalname = 'mock_test'
+        mock_test.__name__ = mock_test.originalname
+        mock_test_2.originalname = 'mock_test_2'
+        mock_test_2.__name__ = mock_test_2.originalname
+        mock_test_3.originalname = 'mock_test_3'
+        mock_test_3.__name__ = mock_test_3.originalname
+        mock_session_items = [mock_test, mock_test_2]
+        mock_shared_tests = [mock_test, mock_test_2, mock_test_3]
+
+        selected_tests = editor_test.EditorTestSuite.filter_session_shared_tests(mock_session_items, mock_shared_tests)
+        assert selected_tests == [mock_test]
+
     @mock.patch('ly_test_tools.o3de.editor_test.skipping_pytest_runtest_setup', mock.MagicMock(side_effect=Exception))
-    def test_FilterSessionSharedTests_SkippingPytestRaises_SkipsAddingTest(self):
+    def test_FilterSessionSharedTests_ExceptionDuringSkipSetup_SkipsAddingTest(self):
         def mock_test():
             pass
         mock_test.originalname = 'mock_test'
@@ -365,7 +370,8 @@ class TestEditorTestSuite(unittest.TestCase):
         mock_test_2.is_parallelizable = False
         mock_shared_tests = [mock_test, mock_test_2]
 
-        filtered_tests = editor_test.EditorTestSuite.filter_shared_tests(mock_shared_tests, True, True)
+        filtered_tests = editor_test.EditorTestSuite.filter_shared_tests(
+            mock_shared_tests, is_batchable=True, is_parallelizable=True)
         assert filtered_tests == [mock_test]
 
     def test_FilterSharedTests_FalseParams_ReturnsFalseTests(self):
@@ -377,7 +383,8 @@ class TestEditorTestSuite(unittest.TestCase):
         mock_test_2.is_parallelizable = False
         mock_shared_tests = [mock_test, mock_test_2]
 
-        filtered_tests = editor_test.EditorTestSuite.filter_shared_tests(mock_shared_tests, False, False)
+        filtered_tests = editor_test.EditorTestSuite.filter_shared_tests(
+            mock_shared_tests, is_batchable=False, is_parallelizable=False)
         assert filtered_tests == [mock_test_2]
 
 class TestUtils(unittest.TestCase):
