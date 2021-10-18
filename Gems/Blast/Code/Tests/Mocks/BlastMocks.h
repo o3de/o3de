@@ -344,9 +344,9 @@ namespace Blast
 
         void UpdateMassProperties(
             [[maybe_unused]] AzPhysics::MassComputeFlags flags,
-            [[maybe_unused]] const AZ::Vector3* centerOfMassOffsetOverride,
-            [[maybe_unused]] const AZ::Matrix3x3* inertiaTensorOverride,
-            [[maybe_unused]] const float* massOverride) override
+            [[maybe_unused]] const AZ::Vector3& centerOfMassOffsetOverride,
+            [[maybe_unused]] const AZ::Matrix3x3& inertiaTensorOverride,
+            [[maybe_unused]] const float massOverride) override
         {
         }
 
