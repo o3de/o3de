@@ -8,6 +8,8 @@
 
 include(cmake/FileUtil.cmake)
 
+set(LY_INSTALL_EXTERNAL_BUILD_DIRS "" CACHE PATH "External build directories to be included in the install process. This allows to package non-monolithic and monolithic.")
+
 set(CMAKE_INSTALL_MESSAGE NEVER) # Simplify messages to reduce output noise
 
 define_property(TARGET PROPERTY LY_INSTALL_GENERATE_RUN_TARGET
@@ -19,12 +21,25 @@ define_property(TARGET PROPERTY LY_INSTALL_GENERATE_RUN_TARGET
     ]]
 )
 
-ly_set(CMAKE_INSTALL_DEFAULT_COMPONENT_NAME Core)
+# We can have elements being installed under the following components:
+# - Core (required for all) (default)
+# - Default
+#   - Default_$<CONFIG>
+# - Monolithic
+#   - Monolithic_$<CONFIG>
+# Debug/Monolithic are build permutations, so for a CMake run, it can only generate
+# one of the permutations. Each build permutation can generate only one cmake_install.cmake.
+# Each build permutation will generate the same elements in Core.
+# CPack is able to put the two together by taking Core from one permutation and then taking
+# each permutation.
 
+ly_set(CMAKE_INSTALL_DEFAULT_COMPONENT_NAME Core)
 if(LY_MONOLITHIC_GAME)
     set(LY_BUILD_PERMUTATION Monolithic)
+    set(LY_INSTALL_PERMUTATION_COMPONENT Monolithic)
 else()
     set(LY_BUILD_PERMUTATION Default)
+    set(LY_INSTALL_PERMUTATION_COMPONENT Default)
 endif()
 
 cmake_path(RELATIVE_PATH CMAKE_RUNTIME_OUTPUT_DIRECTORY BASE_DIRECTORY ${CMAKE_BINARY_DIR} OUTPUT_VARIABLE runtime_output_directory)
@@ -106,19 +121,18 @@ function(ly_setup_target OUTPUT_CONFIGURED_TARGET ALIAS_TARGET_NAME absolute_tar
     else()
         foreach(conf IN LISTS CMAKE_CONFIGURATION_TYPES)
             string(TOUPPER ${conf} UCONF)
-            install(
-                TARGETS ${TARGET_NAME}
+            install(TARGETS ${TARGET_NAME}
                 ARCHIVE
                     DESTINATION ${archive_output_directory}
-                    COMPONENT ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME}_${UCONF}
+                    COMPONENT ${LY_INSTALL_PERMUTATION_COMPONENT}_${UCONF}
                     CONFIGURATIONS ${conf}
                 LIBRARY
                     DESTINATION ${library_output_directory}/${target_library_output_subdirectory}
-                    COMPONENT ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME}_${UCONF}
+                    COMPONENT ${LY_INSTALL_PERMUTATION_COMPONENT}_${UCONF}
                     CONFIGURATIONS ${conf}
                 RUNTIME
                     DESTINATION ${runtime_output_directory}/${target_runtime_output_subdirectory}
-                    COMPONENT ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME}_${UCONF}
+                    COMPONENT ${LY_INSTALL_PERMUTATION_COMPONENT}_${UCONF}
                     CONFIGURATIONS ${conf}
             )
         endforeach()
@@ -275,10 +289,15 @@ set_property(TARGET ${NAME_PLACEHOLDER}
 
     set(target_install_source_dir ${CMAKE_CURRENT_BINARY_DIR}/install/${relative_target_source_dir})
     file(GENERATE OUTPUT "${target_install_source_dir}/Platform/${PAL_PLATFORM_NAME}/${LY_BUILD_PERMUTATION}/${NAME_PLACEHOLDER}_$<CONFIG>.cmake" CONTENT "${target_file_contents}")
-    install(FILES "${target_install_source_dir}/Platform/${PAL_PLATFORM_NAME}/${LY_BUILD_PERMUTATION}/${NAME_PLACEHOLDER}_$<CONFIG>.cmake"
-        DESTINATION ${relative_target_source_dir}/Platform/${PAL_PLATFORM_NAME}/${LY_BUILD_PERMUTATION}
-        COMPONENT ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME}
-    )
+
+    foreach(conf IN LISTS CMAKE_CONFIGURATION_TYPES)
+        string(TOUPPER ${conf} UCONF)
+        install(FILES "${target_install_source_dir}/Platform/${PAL_PLATFORM_NAME}/${LY_BUILD_PERMUTATION}/${NAME_PLACEHOLDER}_${conf}.cmake"
+            DESTINATION ${relative_target_source_dir}/Platform/${PAL_PLATFORM_NAME}/${LY_BUILD_PERMUTATION}
+            COMPONENT ${LY_INSTALL_PERMUTATION_COMPONENT}_${UCONF}
+            CONFIGURATIONS  ${conf}
+        )
+    endforeach()  
 
     # Since a CMakeLists.txt could contain multiple targets, we generate it in a folder per target
     ly_file_read(${LY_ROOT_FOLDER}/cmake/install/InstalledTarget.in target_cmakelists_template)
@@ -353,9 +372,10 @@ endif()
         "${GEM_VARIANT_TO_LOAD_PLACEHOLDER}"
         "${ENABLE_GEMS_PLACEHOLDER}"
     )
+
     install(FILES "${target_install_source_dir}/Platform/${PAL_PLATFORM_NAME}/${LY_BUILD_PERMUTATION}/permutation.cmake"
-        DESTINATION ${relative_target_source_dir}//Platform/${PAL_PLATFORM_NAME}/${LY_BUILD_PERMUTATION}
-        COMPONENT ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME}
+        DESTINATION ${relative_target_source_dir}/Platform/${PAL_PLATFORM_NAME}/${LY_BUILD_PERMUTATION}
+        COMPONENT ${LY_INSTALL_PERMUTATION_COMPONENT}
     )
 
 endfunction()
@@ -376,6 +396,11 @@ function(ly_setup_o3de_install)
         DESTINATION .
         COMPONENT ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME}
     )
+
+    # Inject other build directories
+    foreach(external_dir ${LY_INSTALL_EXTERNAL_BUILD_DIRS})
+        install(CODE "include(${external_dir}/cmake_install.cmake)")
+    endforeach()
 
     if(COMMAND ly_post_install_steps)
         ly_post_install_steps()
@@ -399,18 +424,19 @@ function(ly_setup_cmake_install)
         DESTINATION cmake
         COMPONENT ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME}
     )
-    # Inject code that will generate each ConfigurationType_<CONFIG>.cmake file
-    set(install_configuration_type_template [=[
-        configure_file(@LY_ROOT_FOLDER@/cmake/install/ConfigurationType_config.cmake.in
-            ${CMAKE_INSTALL_PREFIX}/cmake/Platform/@PAL_PLATFORM_NAME@/@LY_BUILD_PERMUTATION@/ConfigurationTypes_${CMAKE_INSTALL_CONFIG_NAME}.cmake
+    # generate each ConfigurationType_<CONFIG>.cmake file and install it under that configuration
+    foreach(conf IN LISTS CMAKE_CONFIGURATION_TYPES)
+        string(TOUPPER ${conf} UCONF)
+        configure_file("${LY_ROOT_FOLDER}/cmake/install/ConfigurationType_config.cmake.in"
+            "${CMAKE_BINARY_DIR}/cmake/Platform/${PAL_PLATFORM_NAME}/${LY_BUILD_PERMUTATION}/ConfigurationTypes_${conf}.cmake"
             @ONLY
         )
-        message(STATUS "Generated ${CMAKE_INSTALL_PREFIX}/cmake/Platform/@PAL_PLATFORM_NAME@/@LY_BUILD_PERMUTATION@/ConfigurationTypes_${CMAKE_INSTALL_CONFIG_NAME}.cmake")
-    ]=])
-    string(CONFIGURE "${install_configuration_type_template}" install_configuration_type @ONLY)
-    install(CODE "${install_configuration_type}"
-        COMPONENT ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME}
-    )
+        install(FILES "${CMAKE_BINARY_DIR}/cmake/Platform/${PAL_PLATFORM_NAME}/${LY_BUILD_PERMUTATION}/ConfigurationTypes_${conf}.cmake"
+            DESTINATION cmake/Platform/${PAL_PLATFORM_NAME}/${LY_BUILD_PERMUTATION}
+            COMPONENT ${LY_INSTALL_PERMUTATION_COMPONENT}_${UCONF}
+            CONFIGURATIONS ${conf}
+        )
+    endforeach()
 
     # Transform the LY_EXTERNAL_SUBDIRS list into a json array
     set(indent "        ")
@@ -429,8 +455,7 @@ function(ly_setup_cmake_install)
 
     configure_file(${LY_ROOT_FOLDER}/cmake/install/engine.json.in ${CMAKE_CURRENT_BINARY_DIR}/cmake/engine.json @ONLY)
 
-    install(
-        FILES
+    install(FILES
             "${LY_ROOT_FOLDER}/CMakeLists.txt"
             "${CMAKE_CURRENT_BINARY_DIR}/cmake/engine.json"
         DESTINATION .

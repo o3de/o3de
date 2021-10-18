@@ -136,6 +136,7 @@ endif()
 
 install(FILES ${_cmake_package_dest}
     DESTINATION ./Tools/Redistributables/CMake
+    COMPONENT ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME}
 )
 
 # the version string and git tags are intended to be synchronized so it should be safe to use that instead
@@ -159,6 +160,7 @@ if(${CPACK_PACKAGE_VERSION} VERSION_GREATER "0.0.0.0")
     if (${_status_code} EQUAL 0 AND EXISTS ${_3rd_party_license_dest})
         install(FILES ${_3rd_party_license_dest}
             DESTINATION .
+            COMPONENT ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME}
         )
     else()
         file(REMOVE ${_3rd_party_license_dest})
@@ -242,29 +244,35 @@ ly_configure_cpack_component(
     DISPLAY_NAME "${PROJECT_NAME}"
     DESCRIPTION "${PROJECT_NAME} Headers, scripts and common files"
 )
-#file(APPEND "${CPACK_OUTPUT_CONFIG_FILE}" "set(LY_CPACK_COMPONENTS_ALL ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME})\n")
+
+file(APPEND "${CPACK_OUTPUT_CONFIG_FILE}" "set(LY_CPACK_COMPONENTS_ALL ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME})\n")
 
 foreach(conf IN LISTS CMAKE_CONFIGURATION_TYPES)
     string(TOUPPER ${conf} UCONF)
     unset(flags)
-    if(${conf} STREQUAL profile)
+    if(${conf} STREQUAL profile AND ${LY_BUILD_PERMUTATION} STREQUAL Default)
         set(flags REQUIRED)
     else()
         set(flags DISABLED)
     endif()
 
+    unset(permutation_description)
+    if(${LY_BUILD_PERMUTATION} STREQUAL Monolithic)
+        set(permutation_description " monolithic ")
+    endif()
+
     # Inject a check to not declare components that have not been built. We are using AzCore since that is a
     # common target that will always be build, in every permutation and configuration
-    #file(APPEND "${CPACK_OUTPUT_CONFIG_FILE}" 
-    #    "if(EXISTS \"${CMAKE_ARCHIVE_OUTPUT_DIRECTORY}/${conf}/${CMAKE_STATIC_LIBRARY_PREFIX}AzCore${CMAKE_STATIC_LIBRARY_SUFFIX}\")\n")
+    file(APPEND "${CPACK_OUTPUT_CONFIG_FILE}" 
+        "if(EXISTS \"${CMAKE_ARCHIVE_OUTPUT_DIRECTORY}/${conf}/${CMAKE_STATIC_LIBRARY_PREFIX}AzCore${CMAKE_STATIC_LIBRARY_SUFFIX}\")\n")
     ly_configure_cpack_component(
-        ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME}_${UCONF} ${flags}
+        ${LY_INSTALL_PERMUTATION_COMPONENT}_${UCONF} ${flags}
         DISPLAY_NAME "${PROJECT_NAME} (${conf})"
-        DESCRIPTION "${PROJECT_NAME} Libraries and Tools in ${conf}"
+        DESCRIPTION "${PROJECT_NAME} Libraries and Tools in${permutation_description}${conf}"
     )
-    #file(APPEND "${CPACK_OUTPUT_CONFIG_FILE}" 
-#"list(APPEND LY_CPACK_COMPONENTS_ALL ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME}_${UCONF})
-#endif()\n")
+    file(APPEND "${CPACK_OUTPUT_CONFIG_FILE}" 
+"list(APPEND LY_CPACK_COMPONENTS_ALL ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME}_${UCONF})
+endif()\n")
 
 endforeach()
 
@@ -279,4 +287,11 @@ if(LY_INSTALLER_DOWNLOAD_URL)
     )
 endif()
 
-#file(APPEND "${CPACK_OUTPUT_CONFIG_FILE}" "set(CPACK_COMPONENTS_ALL \${LY_CPACK_COMPONENTS_ALL})\n")
+# Inject other build directories
+foreach(external_dir ${LY_INSTALL_EXTERNAL_BUILD_DIRS})
+    file(APPEND "${CPACK_OUTPUT_CONFIG_FILE}"
+        "include(${external_dir}/CPackConfig.cmake)\n"
+    )
+endforeach()
+
+file(APPEND "${CPACK_OUTPUT_CONFIG_FILE}" "set(CPACK_COMPONENTS_ALL \${LY_CPACK_COMPONENTS_ALL})\n")

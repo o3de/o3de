@@ -58,24 +58,31 @@ function(ly_install_target_override)
         set_property(TARGET ${ly_platform_install_target_TARGET} PROPERTY RESOURCE "")
     endif()
     
-    install(
-        TARGETS ${ly_platform_install_target_TARGET}
-        ARCHIVE
-            DESTINATION ${ly_platform_install_target_ARCHIVE_DIR}
-            COMPONENT ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME}
-        LIBRARY
-            DESTINATION ${ly_platform_install_target_LIBRARY_DIR}/${ly_platform_install_target_LIBRARY_SUBDIR}
-            COMPONENT ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME}
-        RUNTIME
-            DESTINATION ${ly_platform_install_target_RUNTIME_DIR}/${ly_platform_install_target_RUNTIME_SUBDIR}
-            COMPONENT ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME}
-        BUNDLE
-            DESTINATION ${ly_platform_install_target_RUNTIME_DIR}/${ly_platform_install_target_RUNTIME_SUBDIR}
-            COMPONENT ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME}
-        RESOURCE
-            DESTINATION ${ly_platform_install_target_RUNTIME_DIR}/${ly_platform_install_target_RUNTIME_SUBDIR}
-            COMPONENT ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME}
-    )
+    foreach(conf IN LISTS CMAKE_CONFIGURATION_TYPES)
+        string(TOUPPER ${conf} UCONF)
+        install(TARGETS ${TARGET_NAME}
+            ARCHIVE
+                DESTINATION ${ly_platform_install_target_ARCHIVE_DIR}
+                COMPONENT ${LY_INSTALL_PERMUTATION_COMPONENT}_${UCONF}
+                CONFIGURATIONS ${conf}
+            LIBRARY
+                DESTINATION ${ly_platform_install_target_LIBRARY_DIR}/${ly_platform_install_target_LIBRARY_SUBDIR}
+                COMPONENT ${LY_INSTALL_PERMUTATION_COMPONENT}_${UCONF}
+                CONFIGURATIONS ${conf}
+            RUNTIME
+                DESTINATION ${ly_platform_install_target_RUNTIME_DIR}/${ly_platform_install_target_RUNTIME_SUBDIR}
+                COMPONENT ${LY_INSTALL_PERMUTATION_COMPONENT}_${UCONF}
+                CONFIGURATIONS ${conf}
+            BUNDLE
+                DESTINATION ${ly_platform_install_target_RUNTIME_DIR}/${ly_platform_install_target_RUNTIME_SUBDIR}
+                COMPONENT ${LY_INSTALL_PERMUTATION_COMPONENT}_${UCONF}
+                CONFIGURATIONS ${conf}
+            RESOURCE
+                DESTINATION ${ly_platform_install_target_RUNTIME_DIR}/${ly_platform_install_target_RUNTIME_SUBDIR}
+                COMPONENT ${LY_INSTALL_PERMUTATION_COMPONENT}_${UCONF}
+                CONFIGURATIONS ${conf}
+        )
+    endforeach()
 
     set(install_relative_binaries_path "${ly_platform_install_target_RUNTIME_DIR}/${ly_platform_install_target_RUNTIME_SUBDIR}")
 
