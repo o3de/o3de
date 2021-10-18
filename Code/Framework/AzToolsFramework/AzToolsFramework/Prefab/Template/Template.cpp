@@ -175,6 +175,29 @@ namespace AzToolsFramework
             return findInstancesResult->get();
         }
 
+        bool Template::IsProcedural() const
+        {
+            if (m_isProcedural.has_value())
+            {
+                return m_isProcedural.value();
+            }
+            // determine if is IsProcedural() based on some DOM logic
+            if (!m_prefabDom.IsObject())
+            {
+                m_isProcedural = AZStd::make_optional(false);
+                return m_isProcedural.value();
+            }
+            auto source = m_prefabDom.FindMember("Source");
+            if (source == m_prefabDom.MemberEnd())
+            {
+                m_isProcedural = AZStd::make_optional(false);
+                return m_isProcedural.value();
+            }
+            AZ::IO::PathView path(source->value.GetString());
+            m_isProcedural = AZStd::make_optional(path.Match("*.procprefab"));
+            return m_isProcedural.value();
+        }
+
         const AZ::IO::Path& Template::GetFilePath() const
         {
             return m_filePath;
