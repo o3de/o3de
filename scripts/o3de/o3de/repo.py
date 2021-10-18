@@ -71,7 +71,7 @@ def process_add_o3de_repo(file_name: str or pathlib.Path,
         # Having a repo is also optional
         repo_list = []
         try:
-            repo_list.add(repo_data['repos'])
+            repo_list.append(repo_data['repos'])
         except KeyError:
             pass
 
