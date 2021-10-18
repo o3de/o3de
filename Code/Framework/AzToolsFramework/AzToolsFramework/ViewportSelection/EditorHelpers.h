@@ -11,6 +11,9 @@
 #include <AzCore/Component/EntityId.h>
 #include <AzCore/Memory/Memory.h>
 #include <AzCore/std/functional.h>
+#include <AzCore/std/containers/vector.h>
+#include <AzFramework/Viewport/ScreenGeometry.h>
+#include <AzToolsFramework/ViewportSelection/InvalidClicks.h>
 
 namespace AzFramework
 {
@@ -80,20 +83,27 @@ namespace AzToolsFramework
             AzFramework::DebugDisplayRequests& debugDisplay,
             const AZStd::function<bool(AZ::EntityId)>& showIconCheck);
 
+        //! Handle 2d drawing for EditorHelper functionality.
+        void Display2d(
+            const AzFramework::ViewportInfo& viewportInfo,
+            AzFramework::DebugDisplayRequests& debugDisplay);
+
         //! Returns whether the entityId can be selected in the viewport according
         //! to the current Editor Focus Mode and Container Entity setup.
-        bool IsSelectableInViewport(AZ::EntityId entityId);
+        bool IsSelectableInViewport(AZ::EntityId entityId) const;
 
     private:
         //! Returns whether the entityId can be selected in the viewport according
         //! to the current Editor Focus Mode setup.
-        bool IsSelectableAccordingToFocusMode(AZ::EntityId entityId);
+        bool IsSelectableAccordingToFocusMode(AZ::EntityId entityId) const;
 
         //! Returns whether the entityId can be selected in the viewport according
-        //! to the current Container Entityu setup.
-        bool IsSelectableAccordingToContainerEntities(AZ::EntityId entityId);
+        //! to the current Container Entity setup.
+        bool IsSelectableAccordingToContainerEntities(AZ::EntityId entityId) const;
+
+        AZStd::unique_ptr<InvalidClicks> m_invalidClicks; //!< Display for invalid click behavior.
 
         const EditorVisibleEntityDataCache* m_entityDataCache = nullptr; //!< Entity Data queried by the EditorHelpers.
-        const FocusModeInterface* m_focusModeInterface = nullptr;
+        const FocusModeInterface* m_focusModeInterface = nullptr; //!< API to interact with focus mode functionality.
     };
 } // namespace AzToolsFramework

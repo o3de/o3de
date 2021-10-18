@@ -262,7 +262,7 @@ namespace AzToolsFramework
 
                         if (assetId.IsValid())
                         {
-                            asset.Create(assetId, true);
+                            asset.Create(assetId, false);
                         }
                     }
                 };

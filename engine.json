@@ -92,6 +92,7 @@
     "templates": [
         "Templates/AssetGem",
         "Templates/DefaultGem",
+        "Templates/CustomTool",
         "Templates/DefaultProject",
         "Templates/MinimalProject"
     ]

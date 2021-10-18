@@ -282,6 +282,7 @@ set(FILES
     Math/Internal/VertexContainer.inl
     Math/InterpolationSample.h
     Math/IntersectPoint.h
+    Math/IntersectSegment.inl
     Math/IntersectSegment.cpp
     Math/IntersectSegment.h
     Math/MathIntrinsics.h
