@@ -47,7 +47,7 @@ namespace AzManipulatorTestFramework
         //! Set if sticky select is enabled or not.
         virtual void SetStickySelect(bool enabled) = 0;
         //! Get default Editor Camera Position.
-        virtual AZ::Vector3 DefaultEditorCameraPosition() = 0;
+        virtual AZ::Vector3 DefaultEditorCameraPosition() const = 0;
     };
 
     //! This interface is used to simulate the manipulator manager while the manipulators are under test.
