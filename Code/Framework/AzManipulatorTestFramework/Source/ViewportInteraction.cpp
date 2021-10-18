@@ -120,7 +120,7 @@ namespace AzManipulatorTestFramework
         m_stickySelect = enabled;
     }
 
-    AZ::Vector3 ViewportInteraction::DefaultEditorCameraPosition()
+    AZ::Vector3 ViewportInteraction::DefaultEditorCameraPosition() const
     {
         return {};
     }
