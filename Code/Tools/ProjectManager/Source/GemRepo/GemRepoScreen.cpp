@@ -94,7 +94,9 @@ namespace O3DE::ProjectManager
             }
             else
             {
-                QMessageBox::critical(this, tr("Operation failed"), tr("Failed to add gem repo: %1.").arg(repoUri));
+                QString failureMessage = tr("Failed to add gem repo: %1.").arg(repoUri);
+                QMessageBox::critical(this, tr("Operation failed"), failureMessage);
+                AZ_Error("Project Manger", false, failureMessage.toUtf8());
             }
         }
     }
@@ -117,7 +119,9 @@ namespace O3DE::ProjectManager
             }
             else
             {
-                QMessageBox::critical(this, tr("Operation failed"), tr("Failed to remove gem repo: %1.").arg(repoUri));
+                QString failureMessage = tr("Failed to remove gem repo: %1.").arg(repoUri);
+                QMessageBox::critical(this, tr("Operation failed"), failureMessage);
+                AZ_Error("Project Manger", false, failureMessage.toUtf8());
             }
         }
     }
