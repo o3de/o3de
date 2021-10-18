@@ -129,49 +129,53 @@ def refresh_repos() -> int:
     return result
 
 
-def search_repo(repo_json_data: dict,
+def search_repo(manifest_json_data: dict,
                 engine_name: str = None,
                 project_name: str = None,
                 gem_name: str = None,
                 template_name: str = None,
                 restricted_name: str = None) -> dict or None:
-
     if isinstance(engine_name, str) or isinstance(engine_name, pathlib.PurePath):
-        o3de_object_uris = repo_json_data['engines']
+        o3de_object_uris = manifest_json_data['engines']
         manifest_json = 'engine.json'
         json_key = 'engine_name'
-        search_func = lambda: None if manifest_json_data.get(json_key, '') == engine_name else manifest_json_data
+        search_func = lambda manifest_json_data: manifest_json_data if manifest_json_data.get(json_key, '') == engine_name else None
     elif isinstance(project_name, str) or isinstance(project_name, pathlib.PurePath):
-        o3de_object_uris = repo_json_data['projects']
+        o3de_object_uris = manifest_json_data['projects']
         manifest_json = 'project.json'
         json_key = 'project_name'
-        search_func = lambda: None if manifest_json_data.get(json_key, '') == project_name else manifest_json_data
+        search_func = lambda manifest_json_data: manifest_json_data if manifest_json_data.get(json_key, '') == project_name else None
     elif isinstance(gem_name, str) or isinstance(gem_name, pathlib.PurePath):
-        o3de_object_uris = repo_json_data['gems']
+        o3de_object_uris = manifest_json_data['gems']
         manifest_json = 'gem.json'
         json_key = 'gem_name'
-        search_func = lambda: None if manifest_json_data.get(json_key, '') == gem_name else manifest_json_data
+        search_func = lambda manifest_json_data: manifest_json_data if manifest_json_data.get(json_key, '') == gem_name else None
     elif isinstance(template_name, str) or isinstance(template_name, pathlib.PurePath):
-        o3de_object_uris = repo_json_data['template']
+        o3de_object_uris = manifest_json_data['template']
         manifest_json = 'template.json'
         json_key = 'template_name'
-        search_func = lambda: None if manifest_json_data.get(json_key, '') == template_name_name else manifest_json_data
+        search_func = lambda manifest_json_data: manifest_json_data if manifest_json_data.get(json_key, '') == template_name_name else None
     elif isinstance(restricted_name, str) or isinstance(restricted_name, pathlib.PurePath):
-        o3de_object_uris = repo_json_data['restricted']
+        o3de_object_uris = manifest_json_data['restricted']
         manifest_json = 'restricted.json'
         json_key = 'restricted_name'
-        search_func = lambda: None if manifest_json_data.get(json_key, '') == restricted_name else manifest_json_data
+        search_func = lambda manifest_json_data: manifest_json_data if manifest_json_data.get(json_key, '') == restricted_name else None
     else:
         return None
-
-    o3de_object =  search_o3de_object(manifest_json, o3de_object_uris, search_func)
+    o3de_object = search_o3de_object(manifest_json, o3de_object_uris, search_func)
     if o3de_object:
+        o3de_object['repo_name'] = manifest_json_data['repo_name']
         return o3de_object
 
     # recurse into the repos object to search for the o3de object
-    o3de_object_uris = repo_json_data['repos']
+    o3de_object_uris = []
+    try:
+        o3de_object_uris = manifest_json_data['repos']
+    except KeyError:
+        pass
+
     manifest_json = 'repo.json'
-    search_func = lambda: search_repo(manifest_json, engine_name, project_name, gem_name, template_name)
+    search_func = lambda manifest_json_data: search_repo(manifest_json_data, engine_name, project_name, gem_name, template_name)
     return search_o3de_object(manifest_json, o3de_object_uris, search_func)
 
 
@@ -179,8 +183,8 @@ def search_o3de_object(manifest_json, o3de_object_uris, search_func):
     # Search for the o3de object based on the supplied object name in the current repo
     cache_folder = manifest.get_o3de_cache_folder()
     for o3de_object_uri in o3de_object_uris:
-        manifest_json_uri = f'{o3de_object_uri}/{manifest_json}'
-        manifest_json_sha256 = hashlib.sha256(manifest_json_uri.encode())
+        parsed_uri = urllib.parse.urlparse(f'{o3de_object_uri}/{manifest_json}')
+        manifest_json_sha256 = hashlib.sha256(parsed_uri.geturl().encode())
         cache_file = cache_folder / str(manifest_json_sha256.hexdigest() + '.json')
         if cache_file.is_file():
             with cache_file.open('r') as f:
@@ -189,7 +193,7 @@ def search_o3de_object(manifest_json, o3de_object_uris, search_func):
                 except json.JSONDecodeError as e:
                     logger.warn(f'{cache_file} failed to load: {str(e)}')
                 else:
-                    result_json_data = search_func()
+                    result_json_data = search_func(manifest_json_data)
                     if result_json_data:
                         return result_json_data
     return None
