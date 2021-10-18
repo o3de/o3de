@@ -68,14 +68,9 @@ class TestPass(unittest.TestCase):
         mock_test_spec = mock.MagicMock()
         mock_output = 'mock_output'
         mock_editor_log = mock.MagicMock()
-        expected = f"Test Passed\n"\
-                   f"------------\n"\
-                   f"|  Output  |\n"\
-                   f"------------\n"\
-                   f"{mock_output}\n"
 
         mock_pass = editor_test.Result.Pass.create(mock_test_spec, mock_output, mock_editor_log)
-        assert str(mock_pass) == expected
+        assert mock_output in str(mock_pass)
 
 class TestFail(unittest.TestCase):
 
@@ -93,18 +88,10 @@ class TestFail(unittest.TestCase):
         mock_test_spec = mock.MagicMock()
         mock_output = 'mock_output'
         mock_editor_log = 'mock_editor_log'
-        expected = f"Test FAILED\n"\
-                   f"------------\n"\
-                   f"|  Output  |\n"\
-                   f"------------\n"\
-                   f"{mock_output}\n"\
-                   f"--------------\n"\
-                   f"| Editor log |\n"\
-                   f"--------------\n"\
-                   f"{mock_editor_log}\n"
 
         mock_pass = editor_test.Result.Fail.create(mock_test_spec, mock_output, mock_editor_log)
-        assert str(mock_pass) == expected
+        assert mock_output in str(mock_pass)
+        assert mock_editor_log in str(mock_pass)
 
 class TestCrash(unittest.TestCase):
 
@@ -129,23 +116,12 @@ class TestCrash(unittest.TestCase):
         mock_editor_log = 'mock_editor_log'
         mock_return_code = 0
         mock_stacktrace = 'mock stacktrace'
-        expected = f"Test CRASHED, return code {hex(mock_return_code)}\n"\
-                   f"---------------\n"\
-                   f"|  Stacktrace |\n"\
-                   f"---------------\n"\
-                   f"{mock_stacktrace}"\
-                   f"------------\n" \
-                   f"|  Output  |\n" \
-                   f"------------\n" \
-                   f"{mock_output}\n" \
-                   f"--------------\n" \
-                   f"| Editor log |\n" \
-                   f"--------------\n" \
-                   f"{mock_editor_log}\n"
 
         mock_pass = editor_test.Result.Crash.create(mock_test_spec, mock_output, mock_return_code, mock_stacktrace,
                                                     mock_editor_log)
-        assert str(mock_pass) == expected
+        assert mock_stacktrace in str(mock_pass)
+        assert mock_output in str(mock_pass)
+        assert mock_editor_log in str(mock_pass)
 
     def test_Str_MissingStackTrace_ReturnsCorrectly(self):
         mock_test_spec = mock.MagicMock()
@@ -153,23 +129,10 @@ class TestCrash(unittest.TestCase):
         mock_editor_log = 'mock_editor_log'
         mock_return_code = 0
         mock_stacktrace = None
-        expected = f"Test CRASHED, return code {hex(mock_return_code)}\n"\
-                   f"---------------\n"\
-                   f"|  Stacktrace |\n"\
-                   f"---------------\n"\
-                   f"-- No stacktrace data found --\n"\
-                   f"------------\n" \
-                   f"|  Output  |\n" \
-                   f"------------\n" \
-                   f"{mock_output}\n" \
-                   f"--------------\n" \
-                   f"| Editor log |\n" \
-                   f"--------------\n" \
-                   f"{mock_editor_log}\n"
-
         mock_pass = editor_test.Result.Crash.create(mock_test_spec, mock_output, mock_return_code, mock_stacktrace,
                                                     mock_editor_log)
-        assert str(mock_pass) == expected
+        assert mock_output in str(mock_pass)
+        assert mock_editor_log in str(mock_pass)
 
 class Timeout(unittest.TestCase):
 
@@ -190,18 +153,10 @@ class Timeout(unittest.TestCase):
         mock_output = 'mock_output'
         mock_editor_log = 'mock_editor_log'
         mock_timeout = 0
-        expected = f"Test TIMED OUT after {mock_timeout} seconds\n"\
-                   f"------------\n" \
-                   f"|  Output  |\n" \
-                   f"------------\n" \
-                   f"{mock_output}\n" \
-                   f"--------------\n" \
-                   f"| Editor log |\n" \
-                   f"--------------\n" \
-                   f"{mock_editor_log}\n"
 
         mock_pass = editor_test.Result.Timeout.create(mock_test_spec, mock_output, mock_timeout, mock_editor_log)
-        assert str(mock_pass) == expected
+        assert mock_output in str(mock_pass)
+        assert mock_editor_log in str(mock_pass)
 
 class Unknown(unittest.TestCase):
 
@@ -222,18 +177,10 @@ class Unknown(unittest.TestCase):
         mock_output = 'mock_output'
         mock_editor_log = 'mock_editor_log'
         mock_extra_info = 'mock extra info'
-        expected = f"Unknown test result, possible cause: {mock_extra_info}\n"\
-                   f"------------\n" \
-                   f"|  Output  |\n" \
-                   f"------------\n" \
-                   f"{mock_output}\n" \
-                   f"--------------\n" \
-                   f"| Editor log |\n" \
-                   f"--------------\n" \
-                   f"{mock_editor_log}\n"
 
         mock_pass = editor_test.Result.Unknown.create(mock_test_spec, mock_output, mock_extra_info, mock_editor_log)
-        assert str(mock_pass) == expected
+        assert mock_output in str(mock_pass)
+        assert mock_editor_log in str(mock_pass)
 
 class TestEditorTestSuite(unittest.TestCase):
 
@@ -274,12 +221,31 @@ class TestEditorTestSuite(unittest.TestCase):
                                                                              mock.MagicMock())
         assert isinstance(mock_test_class, editor_test.EditorTestSuite.EditorTestClass)
 
-    def test_PytestCustomModifyItems(self):
-        pass
+    @mock.patch('ly_test_tools.o3de.editor_test.EditorTestSuite.filter_session_shared_tests')
+    def test_PytestCustomModifyItems_FunctionsMatch_AddsRunners(self, mock_filter_tests):
+        class MockTestSuite(editor_test.EditorTestSuite):
+            pass
+        mock_func_1 = mock.MagicMock()
+        mock_test = mock.MagicMock()
+        runner_1 = editor_test.EditorTestSuite.Runner('mock_runner_1', mock_func_1, [mock_test])
+        mock_run_pytest_func = mock.MagicMock()
+        runner_1.run_pytestfunc = mock_run_pytest_func
+        mock_result_pytestfuncs = [mock.MagicMock()]
+        runner_1.result_pytestfuncs = mock_result_pytestfuncs
+        mock_items = []
+        mock_items.extend(mock_result_pytestfuncs)
+
+        MockTestSuite._runners = [runner_1]
+        mock_test_1 = mock.MagicMock()
+        mock_test_2 = mock.MagicMock()
+        mock_filter_tests.return_value = [mock_test_1, mock_test_2]
+
+        MockTestSuite.pytest_custom_modify_items(mock.MagicMock(), mock_items, mock.MagicMock())
+        assert mock_items == [mock_run_pytest_func, mock_result_pytestfuncs[0]]
 
     def test_GetSingleTests_NoSingleTests_EmptyList(self):
         class MockTestSuite(editor_test.EditorTestSuite):
-                pass
+            pass
         mock_test_suite = MockTestSuite()
         tests = mock_test_suite.get_single_tests()
         assert len(tests) == 0
@@ -291,7 +257,8 @@ class TestEditorTestSuite(unittest.TestCase):
         mock_test_suite = MockTestSuite()
         tests = mock_test_suite.get_single_tests()
         assert len(tests) == 1
-
+        assert tests[0].__name__ == "MockSingleTest"
+        assert issubclass(tests[0], editor_test.EditorSingleTest)
 
     def test_GetSingleTests_AllTests_ReturnsOnlySingles(self):
         class MockTestSuite(editor_test.EditorTestSuite):
@@ -304,6 +271,8 @@ class TestEditorTestSuite(unittest.TestCase):
         mock_test_suite = MockTestSuite()
         tests = mock_test_suite.get_single_tests()
         assert len(tests) == 2
+        for test in tests:
+            assert issubclass(test, editor_test.EditorSingleTest)
 
     def test_GetSharedTests_NoSharedTests_EmptyList(self):
         class MockTestSuite(editor_test.EditorTestSuite):
@@ -319,6 +288,8 @@ class TestEditorTestSuite(unittest.TestCase):
         mock_test_suite = MockTestSuite()
         tests = mock_test_suite.get_shared_tests()
         assert len(tests) == 1
+        assert tests[0].__name__ == 'MockSharedTest'
+        assert issubclass(tests[0], editor_test.EditorSharedTest)
 
     def test_GetSharedTests_AllTests_ReturnsOnlyShared(self):
         class MockTestSuite(editor_test.EditorTestSuite):
@@ -331,6 +302,8 @@ class TestEditorTestSuite(unittest.TestCase):
         mock_test_suite = MockTestSuite()
         tests = mock_test_suite.get_shared_tests()
         assert len(tests) == 2
+        for test in tests:
+            assert issubclass(test, editor_test.EditorSharedTest)
 
     @mock.patch('ly_test_tools.o3de.editor_test.EditorTestSuite.filter_session_shared_tests')
     @mock.patch('ly_test_tools.o3de.editor_test.EditorTestSuite.get_shared_tests')
@@ -343,8 +316,6 @@ class TestEditorTestSuite(unittest.TestCase):
     def test_FilterSessionSharedTests_OneSharedTest_ReturnsOne(self):
         def mock_test():
             pass
-        mock_session_items = mock.MagicMock()
-        mock_shared_tests = mock.MagicMock()
         mock_test.originalname = 'mock_test'
         mock_test.__name__ = mock_test.originalname
         mock_session_items = [mock_test]
@@ -361,8 +332,6 @@ class TestEditorTestSuite(unittest.TestCase):
             pass
         def mock_test_3():
             pass
-        mock_session_items = mock.MagicMock()
-        mock_shared_tests = mock.MagicMock()
         mock_test.originalname = 'mock_test'
         mock_test.__name__ = mock_test.originalname
         mock_test_2.originalname = 'mock_test_2'
@@ -379,8 +348,6 @@ class TestEditorTestSuite(unittest.TestCase):
     def test_FilterSessionSharedTests_SkippingPytestRaises_SkipsAddingTest(self):
         def mock_test():
             pass
-        mock_session_items = mock.MagicMock()
-        mock_shared_tests = mock.MagicMock()
         mock_test.originalname = 'mock_test'
         mock_test.__name__ = mock_test.originalname
         mock_session_items = [mock_test]
@@ -495,12 +462,13 @@ class TestUtils(unittest.TestCase):
         mock_output = 'JSON_START(' \
                       '{"name": "mock_module_name", "output": "mock_std_out", "success": "mock_success_data"}' \
                       ')JSON_END'
-        mock_editor_log = 'JSON_START(' \
-                      ')JSON_END'
+        mock_pass = mock.MagicMock()
+        mock_create.return_value = mock_pass
 
-        results = mock_test_suite._get_results_using_output(mock_test_list, mock_output, mock_editor_log)
+        results = mock_test_suite._get_results_using_output(mock_test_list, mock_output, '')
         assert mock_create.called
         assert len(results) == 1
+        assert results[mock_test.__name__] == mock_pass
 
     @mock.patch('ly_test_tools.o3de.editor_test.Result.Fail.create')
     @mock.patch('ly_test_tools.o3de.editor_test_utils.get_module_filename')
@@ -513,12 +481,13 @@ class TestUtils(unittest.TestCase):
         mock_output = 'JSON_START(' \
                       '{"name": "mock_module_name", "output": "mock_std_out", "failed": "mock_fail_data"}' \
                       ')JSON_END'
-        mock_editor_log = 'JSON_START(' \
-                      ')JSON_END'
+        mock_fail = mock.MagicMock()
+        mock_create.return_value = mock_fail
 
-        results = mock_test_suite._get_results_using_output(mock_test_list, mock_output, mock_editor_log)
+        results = mock_test_suite._get_results_using_output(mock_test_list, mock_output, '')
         assert mock_create.called
         assert len(results) == 1
+        assert results[mock_test.__name__] == mock_fail
 
     @mock.patch('ly_test_tools.o3de.editor_test.Result.Unknown.create')
     @mock.patch('ly_test_tools.o3de.editor_test_utils.get_module_filename')
@@ -531,12 +500,13 @@ class TestUtils(unittest.TestCase):
         mock_output = 'JSON_START(' \
                       '{"name": "mock_module_name", "output": "mock_std_out", "failed": "mock_fail_data"}' \
                       ')JSON_END'
-        mock_editor_log = 'JSON_START(' \
-                          ')JSON_END'
+        mock_unknown = mock.MagicMock()
+        mock_create.return_value = mock_unknown
 
-        results = mock_test_suite._get_results_using_output(mock_test_list, mock_output, mock_editor_log)
+        results = mock_test_suite._get_results_using_output(mock_test_list, mock_output, '')
         assert mock_create.called
         assert len(results) == 1
+        assert results[mock_test.__name__] == mock_unknown
 
     @mock.patch('ly_test_tools.o3de.editor_test.Result.Pass.create')
     @mock.patch('ly_test_tools.o3de.editor_test.Result.Fail.create')
@@ -567,7 +537,13 @@ class TestUtils(unittest.TestCase):
                           ')JSON_END' \
                           'JSON_START(' \
                           '{"name": "mock_module_name_fail"}' \
-                          ')JSON_END' \
+                          ')JSON_END'
+        mock_unknown = mock.MagicMock()
+        mock_pass = mock.MagicMock()
+        mock_fail = mock.MagicMock()
+        mock_create_unknown.return_value = mock_unknown
+        mock_create_pass.return_value = mock_pass
+        mock_create_fail.return_value = mock_fail
 
         results = mock_test_suite._get_results_using_output(mock_test_list, mock_output, mock_editor_log)
         mock_create_pass.assert_called_with(
@@ -577,6 +553,9 @@ class TestUtils(unittest.TestCase):
         mock_create_unknown.assert_called_with(
             mock_test_unknown, mock_output, "Couldn't find any test run information on stdout", mock_editor_log)
         assert len(results) == 3
+        assert results[mock_test_pass.__name__] == mock_pass
+        assert results[mock_test_fail.__name__] == mock_fail
+        assert results[mock_test_unknown.__name__] == mock_unknown
 
     @mock.patch('builtins.print')
     def test_ReportResult_TestPassed_ReportsCorrectly(self, mock_print):

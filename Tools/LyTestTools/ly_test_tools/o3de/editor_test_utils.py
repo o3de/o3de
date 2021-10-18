@@ -4,7 +4,7 @@ For complete copyright and license terms please see the LICENSE at the root of t
 
 SPDX-License-Identifier: Apache-2.0 OR MIT
 
-Utility functions for the editor_test module
+Utility functions mostly for the editor_test module. They can also be used for assisting Editor tests.
 """
 
 import os
@@ -19,7 +19,8 @@ logger = logging.getLogger(__name__)
 def kill_all_ly_processes(include_asset_processor=True):
     # type (bool) -> None
     """
-    Kills all common O3DE processes such as the Editor, Game Launchers, and Asset Processor.
+    Kills all common O3DE processes such as the Editor, Game Launchers, and optionally Asset Processor. Defaults to
+    killing the Asset Processor.
     :param include_asset_processor: Boolean flag whether or not to kill the AP
     :return: None
     """
@@ -65,7 +66,7 @@ def retrieve_log_path(run_id, workspace):
     """
     return os.path.join(workspace.paths.project(), "user", f"log_test_{run_id}")
 
-def retrieve_crash_output(run_id, workspace, timeout):
+def retrieve_crash_output(run_id, workspace, timeout=10):
     # type (int, ly_test_tools._internal.managers.workspace.AbstractWorkspaceManager, float) -> str
     """
     returns the crash output string for the given test run.
@@ -138,7 +139,7 @@ def retrieve_editor_log_content(run_id, log_name, workspace, timeout=10):
     return editor_info
 
 def retrieve_last_run_test_index_from_output(test_spec_list, output):
-    # type (list, str) -> int
+    # type (List[EditorTestBase], str) -> int
     """
     Finds out what was the last test that was run by inspecting the input.
     This is used for determining what was the batched test has crashed the editor

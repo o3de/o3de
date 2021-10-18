@@ -4,7 +4,8 @@ For complete copyright and license terms please see the LICENSE at the root of t
 
 SPDX-License-Identifier: Apache-2.0 OR MIT
 
-Utility for specifying an Editor test, supports seamless parallelization and/or batching of tests.
+Utility for specifying an Editor test, supports seamless parallelization and/or batching of tests. This is not a set of
+tools to directly invoke, but a plugin with functions intended to be called by only the Pytest framework.
 """
 
 import pytest
@@ -15,7 +16,7 @@ __test__ = False
 def pytest_addoption(parser):
     # type (argparse.ArgumentParser) -> None
     """
-    Options when running tests in batches or parallel.
+    Options when running editor tests in batches or parallel.
     :param parser: The ArgumentParser object
     :return: None
     """
@@ -27,8 +28,8 @@ def pytest_pycollect_makeitem(collector, name, obj):
     # type (PyCollector, str, object) -> Collector
     """
     Create a custom custom item collection if the class defines pytest_custom_makeitem function. This is used for
-    automtically generating test functions with a custom collector.
-    :param collector: The Python test collector
+    automatically generating test functions with a custom collector.
+    :param collector: The Pytest collector
     :param name: Name of the collector
     :param obj: The custom collector, normally an EditorTestSuite.EditorTestClass object
     :return: Returns the custom collector
@@ -40,7 +41,7 @@ def pytest_pycollect_makeitem(collector, name, obj):
 
 @pytest.hookimpl(hookwrapper=True)
 def pytest_collection_modifyitems(session, items, config):
-    # type (Session, list, Config) -> None
+    # type (Session, List[EditorTestBase], Config) -> None
     """
     Add custom modification of items. This is used for adding the runners into the item list.
     :param session: The Pytest Session

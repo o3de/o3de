@@ -16,18 +16,20 @@ pytestmark = pytest.mark.SUITE_smoke
 class TestEditorTestUtils(unittest.TestCase):
 
     @mock.patch('ly_test_tools.environment.process_utils.kill_processes_named')
-    def test_KillAllLyProcesses_IncludeAP_CallsCorrectly(self, under_test):
+    def test_KillAllLyProcesses_IncludeAP_CallsCorrectly(self, mock_kill_processes_named):
         process_list = ['Editor', 'Profiler', 'RemoteConsole', 'AssetProcessor', 'AssetProcessorBatch', 'AssetBuilder']
 
         editor_test_utils.kill_all_ly_processes(include_asset_processor=True)
-        under_test.assert_called_once_with(process_list, ignore_extensions=True)
+        mock_kill_processes_named.assert_called_once_with(process_list, ignore_extensions=True)
 
     @mock.patch('ly_test_tools.environment.process_utils.kill_processes_named')
-    def test_KillAllLyProcesses_NotIncludeAP_CallsCorrectly(self, under_test):
+    def test_KillAllLyProcesses_NotIncludeAP_CallsCorrectly(self, mock_kill_processes_named):
         process_list = ['Editor', 'Profiler', 'RemoteConsole']
+        ap_process_list = ['AssetProcessor', 'AssetProcessorBatch', 'AssetBuilder']
 
         editor_test_utils.kill_all_ly_processes(include_asset_processor=False)
-        under_test.assert_called_once_with(process_list, ignore_extensions=True)
+        mock_kill_processes_named.assert_called_once()
+        assert ap_process_list not in mock_kill_processes_named.call_args[0]
 
     def test_GetTestcaseModuleFilepath_NoExtension_ReturnsPYExtension(self):
         mock_module = mock.MagicMock()
@@ -81,30 +83,30 @@ class TestEditorTestUtils(unittest.TestCase):
     @mock.patch('ly_test_tools.o3de.editor_test_utils.retrieve_log_path')
     @mock.patch('os.path.exists')
     def test_CycleCrashReport_LogExists_NamedCorrectly(self, mock_exists, mock_retrieve_log_path, mock_getmtime,
-                                                       under_test):
+                                                       mock_rename):
         mock_exists.side_effect = [True, False]
         mock_retrieve_log_path.return_value = 'mock_log_path'
         mock_workspace = mock.MagicMock()
         mock_getmtime.return_value = 1
 
         editor_test_utils.cycle_crash_report(0, mock_workspace)
-        under_test.assert_called_once_with(os.path.join('mock_log_path', 'error.log'),
-                                           os.path.join('mock_log_path', 'error_1969_12_31_16_00_01.log'))
+        mock_rename.assert_called_once_with(os.path.join('mock_log_path', 'error.log'),
+                                            os.path.join('mock_log_path', 'error_1969_12_31_16_00_01.log'))
 
     @mock.patch('os.rename')
     @mock.patch('os.path.getmtime')
     @mock.patch('ly_test_tools.o3de.editor_test_utils.retrieve_log_path')
     @mock.patch('os.path.exists')
     def test_CycleCrashReport_DmpExists_NamedCorrectly(self, mock_exists, mock_retrieve_log_path, mock_getmtime,
-                                                       under_test):
+                                                       mock_rename):
         mock_exists.side_effect = [False, True]
         mock_retrieve_log_path.return_value = 'mock_log_path'
         mock_workspace = mock.MagicMock()
         mock_getmtime.return_value = 1
 
         editor_test_utils.cycle_crash_report(0, mock_workspace)
-        under_test.assert_called_once_with(os.path.join('mock_log_path', 'error.dmp'),
-                                           os.path.join('mock_log_path', 'error_1969_12_31_16_00_01.dmp'))
+        mock_rename.assert_called_once_with(os.path.join('mock_log_path', 'error.dmp'),
+                                            os.path.join('mock_log_path', 'error_1969_12_31_16_00_01.dmp'))
 
     @mock.patch('ly_test_tools.o3de.editor_test_utils.retrieve_log_path')
     @mock.patch('ly_test_tools.environment.waiter.wait_for', mock.MagicMock())
@@ -123,9 +125,9 @@ class TestEditorTestUtils(unittest.TestCase):
         mock_retrieve_log_path.return_value = 'mock_log_path'
         mock_logname = 'mock_log.log'
         mock_workspace = mock.MagicMock()
-        expected = f"-- Error reading editor.log: [Errno 2] No such file or directory: 'mock_log_path\\\\mock_log.log' --"
+        expected = f"-- Error reading editor.log"
 
-        assert expected == editor_test_utils.retrieve_editor_log_content(0, mock_logname, mock_workspace)
+        assert expected in editor_test_utils.retrieve_editor_log_content(0, mock_logname, mock_workspace)
 
     def test_RetrieveLastRunTestIndexFromOutput_SecondTestFailed_Returns0(self):
         mock_test = mock.MagicMock()

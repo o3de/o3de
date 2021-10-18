@@ -321,8 +321,9 @@ class EditorTestSuite():
     def editor_test_data(self, request):
         # type (request) -> TestData
         """
-        Yields a generator to capture the test results and an AssetProcessor object.
-        :request: The pytest request
+        Yields a per-testsuite structure to store the data of each test result and an AssetProcessor object that will be
+        re-used on the whole suite
+        :request: The Pytest request
         :yield: The TestData object
         """
         self._editor_test_data(request)
@@ -513,12 +514,15 @@ class EditorTestSuite():
 
     @classmethod
     def pytest_custom_modify_items(cls, session, items, config):
-        # type () -> None
+        # type (Session, List[EditorTestBase], Config) -> None
         """
-
+        Adds the runners' functions and filters the tests that will run. The runners will be added if they have any
+        selected tests
+        :param session: The Pytest Session
+        :param items: The test case functions
+        :param config: The Pytest Config object
+        :return: None
         """
-        # Add here the runners functions and filter the tests that will be run.
-        # The runners will be added if they have any selected tests
         new_items = []
         for runner in cls._runners:
             runner.tests[:] = cls.filter_session_shared_tests(items, runner.tests)
@@ -535,7 +539,7 @@ class EditorTestSuite():
 
     @classmethod
     def get_single_tests(cls):
-        # type () -> list
+        # type () -> List
         """
         Grabs all of the EditorSingleTests subclassed tests from the EditorTestSuite class
         Usage example:
@@ -549,7 +553,7 @@ class EditorTestSuite():
         
     @classmethod
     def get_shared_tests(cls):
-        # type () -> list
+        # type () -> List
         """
         Grabs all of the EditorSharedTests from the EditorTestSuite
         Usage example:
@@ -563,7 +567,7 @@ class EditorTestSuite():
 
     @classmethod
     def get_session_shared_tests(cls, session):
-        # type (Session) -> list[EditorTestBase]
+        # type (Session) -> List[EditorTestBase]
         """
         Filters and returns all of the shared tests in a given session.
         :session: The test session
@@ -574,7 +578,7 @@ class EditorTestSuite():
 
     @staticmethod
     def filter_session_shared_tests(session_items, shared_tests):
-        # type (list, list) -> list[EditorTestBase]
+        # type (List[EditorTestBase, List[EditorSharedTest]) -> List[EditorTestBase]
         """
         Retrieve the test sub-set that was collected this can be less than the original set if were overriden via -k
         argument or similars
@@ -596,7 +600,7 @@ class EditorTestSuite():
         
     @staticmethod
     def filter_shared_tests(shared_tests, is_batchable=False, is_parallelizable=False):
-        # type (list, bool, bool) -> list
+        # type (List[EditorSharedTest], bool, bool) -> List[EditorSharedTest]
         """
         Filters and returns all tests based off of if they are batchable and/or parallelizable
         :shared_tests: All shared tests
@@ -654,7 +658,7 @@ class EditorTestSuite():
 
     @staticmethod
     def _get_results_using_output(test_spec_list, output, editor_log_content):
-        # type(list, str, str) -> dict{str: Result}
+        # type(List[EditorTestBase], str, str) -> dict{str: Result}
         """
         Utility function for parsing the output information from the editor. It deserializes the JSON content printed in
         the output for every test and returns that information.
@@ -732,7 +736,7 @@ class EditorTestSuite():
 
     ### Running tests ###
     def _exec_editor_test(self, request, workspace, editor, run_id, log_name, test_spec, cmdline_args = []):
-        # type (Request, AbstractWorkspace, Editor, int, str, EditorTestBase, list[str] -> dict{str: Result}
+        # type (Request, AbstractWorkspace, Editor, int, str, EditorTestBase, List[str] -> dict{str: Result}
         """
         Starts the editor with the given test and retuns an result dict with a single element specifying the result
         :request: The pytest request
@@ -794,7 +798,7 @@ class EditorTestSuite():
         return results
 
     def _exec_editor_multitest(self, request, workspace, editor, run_id, log_name, test_spec_list, cmdline_args=[]):
-        # type (Request, AbstractWorkspace, Editor, int, str, list[EditorTestBase], list[str]) -> dict{str: Result}
+        # type (Request, AbstractWorkspace, Editor, int, str, List[EditorTestBase], List[str]) -> dict{str: Result}
         """
         Starts an editor executable with a list of tests and returns a dict of the result of every test ran within that
         editor instance. In case of failure this function also parses the editor output to find out what specific tests
@@ -804,7 +808,7 @@ class EditorTestSuite():
         :editor: The LyTestTools Editor object
         :run_id: The unique run id
         :log_name: The name of the editor log to retrieve
-        :test_spec_list: A list of EditorTestBase tests to run
+        :test_spec_list: A list of EditorTestBase tests to run in the same editor instance
         :cmdline_args: Any additional command line args
         :return: A dict of Result objects
         """
@@ -820,8 +824,7 @@ class EditorTestSuite():
         editor_utils.cycle_crash_report(run_id, workspace)
 
         results = {}
-        test_filenames_str = ";".join(editor_utils.get_testcase_module_filepath(test_spec.test_module) for
-                                      test_spec in test_spec_list)
+        test_filenames_str = ";".join(editor_utils.get_testcase_module_filepath(test_spec.test_module) for test_spec in test_spec_list)
         cmdline = [
             "--runpythontest", test_filenames_str,
             "-logfile", f"@log@/{log_name}",
@@ -846,8 +849,7 @@ class EditorTestSuite():
                 # Scrap the output to attempt to find out which tests failed.
                 # This function should always populate the result list, if it didn't find it, it will have "Unknown" type of result
                 results = self._get_results_using_output(test_spec_list, output, editor_log_content)
-                assert len(results) == len(test_spec_list), "bug in _get_results_using_output(), the number of results" \
-                                                            "don't match the tests ran"
+                assert len(results) == len(test_spec_list), "bug in _get_results_using_output(), the number of results don't match the tests ran"
 
                 # If the editor crashed, find out in which test it happened and update the results
                 has_crashed = return_code != EditorTestSuite._TEST_FAIL_RETCODE
@@ -866,9 +868,9 @@ class EditorTestSuite():
                             else:
                                 # If there are remaning "Unknown" results, these couldn't execute because of the crash,
                                 # update with info about the offender
-                                results[test_spec_name].extra_info = f"This test has unknown result, test " \
-                                                                     f"'{crashed_result.test_spec.__name__}' crashed " \
-                                                                     f"before this test could be executed"
+                                results[test_spec_name].extra_info = f"This test has unknown result," \
+                                                                     f"test '{crashed_result.test_spec.__name__}'" \
+                                                                     f"crashed before this test could be executed"
                     # if all the tests ran, the one that has caused the crash is the last test
                     if not crashed_result:
                         crash_error = editor_utils.retrieve_crash_output(run_id, workspace, self._TIMEOUT_CRASH_LOG)
@@ -882,8 +884,7 @@ class EditorTestSuite():
 
             # The editor timed out when running the tests, get the data from the output to find out which ones ran
             results = self._get_results_using_output(test_spec_list, output, editor_log_content)
-            assert len(results) == len(test_spec_list), "bug in _get_results_using_output(), the number of results " \
-                                                        "don't match the tests ran"
+            assert len(results) == len(test_spec_list), "bug in _get_results_using_output(), the number of results don't match the tests ran"
             # Similar logic here as crashes, the first test that has no result is the one that timed out
             timed_out_result = None
             for test_spec_name, result in results.items():
@@ -929,7 +930,7 @@ class EditorTestSuite():
         self._report_result(test_name, test_result)
 
     def _run_batched_tests(self, request, workspace, editor, editor_test_data, test_spec_list, extra_cmdline_args=[]):
-        # type (Request, AbstractWorkspace, Editor, TestData, list[EditorSharedTest], list[str]) -> None
+        # type (Request, AbstractWorkspace, Editor, TestData, List[EditorSharedTest], List[str]) -> None
         """
         Runs a batch of tests in one single editor with the given spec list (one editor, multiple tests)
         :request: The Pytest Request
@@ -950,7 +951,7 @@ class EditorTestSuite():
         editor_test_data.results.update(results)
 
     def _run_parallel_tests(self, request, workspace, editor, editor_test_data, test_spec_list, extra_cmdline_args=[]):
-        # type(Request, AbstractWorkspace, Editor, TestData, list[EditorSharedTest], list[str]) -> None
+        # type(Request, AbstractWorkspace, Editor, TestData, List[EditorSharedTest], List[str]) -> None
         """
         Runs multiple editors with one test on each editor (multiple editor, one test each)
         :request: The Pytest Request
@@ -999,7 +1000,7 @@ class EditorTestSuite():
 
     def _run_parallel_batched_tests(self, request, workspace, editor, editor_test_data, test_spec_list,
                                     extra_cmdline_args=[]):
-        # type(Request, AbstractWorkspace, Editor, TestData, list[EditorSharedTest], list[str] -> None
+        # type(Request, AbstractWorkspace, Editor, TestData, List[EditorSharedTest], List[str] -> None
         """
         Runs multiple editors with a batch of tests for each editor (multiple editor, multiple tests each)
         :request: The Pytest Request
