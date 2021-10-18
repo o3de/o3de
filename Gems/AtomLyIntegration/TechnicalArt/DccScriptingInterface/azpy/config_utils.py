@@ -74,7 +74,10 @@ def get_os():
 
 # -------------------------------------------------------------------------
 from azpy.core import get_datadir
-# there was a method here refactored out.
+# there was a method here refactored out to add py2.7 support for Maya 2020
+#"DccScriptingInterface\azpy\core\py2\utils.py get_datadir()"
+#"DccScriptingInterface\azpy\core\py3\utils.py get_datadir()"
+# Warning: planning to deprecate py2 support
 # -------------------------------------------------------------------------
 
 
