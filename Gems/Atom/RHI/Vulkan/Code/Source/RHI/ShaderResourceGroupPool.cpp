@@ -115,77 +115,65 @@ namespace AZ
 
             const RHI::ShaderResourceGroupLayout* layout = groupData.GetLayout();
 
-            if (groupData.IsResourceTypeEnabledForCompilation(static_cast<uint32_t>(RHI::ShaderResourceGroupData::ResourceTypeMask::BufferViewMask)))
+            for (uint32_t groupIndex = 0; groupIndex < static_cast<uint32_t>(layout->GetShaderInputListForBuffers().size()); ++groupIndex)
             {
-                for (uint32_t groupIndex = 0; groupIndex < static_cast<uint32_t>(layout->GetShaderInputListForBuffers().size()); ++groupIndex)
-                {
-                    const RHI::ShaderInputBufferIndex index(groupIndex);
-                    auto bufViews = groupData.GetBufferViewArray(index);
-                    uint32_t layoutIndex = m_descriptorSetLayout->GetLayoutIndexFromGroupIndex(groupIndex, DescriptorSetLayout::ResourceType::BufferView);
-                    descriptorSet.UpdateBufferViews(layoutIndex, bufViews);
-                }
+                const RHI::ShaderInputBufferIndex index(groupIndex);
+                auto bufViews = groupData.GetBufferViewArray(index);
+                uint32_t layoutIndex = m_descriptorSetLayout->GetLayoutIndexFromGroupIndex(groupIndex, DescriptorSetLayout::ResourceType::BufferView);
+                descriptorSet.UpdateBufferViews(layoutIndex, bufViews);
             }
-
-            if (groupData.IsResourceTypeEnabledForCompilation(static_cast<uint32_t>(RHI::ShaderResourceGroupData::ResourceTypeMask::ImageViewMask)))
+            
+            auto const& shaderImageList = layout->GetShaderInputListForImages();
+            for (uint32_t groupIndex = 0; groupIndex < static_cast<uint32_t>(shaderImageList.size()); ++groupIndex)
             {
-                auto const& shaderImageList = layout->GetShaderInputListForImages();
-                for (uint32_t groupIndex = 0; groupIndex < static_cast<uint32_t>(layout->GetShaderInputListForImages().size()); ++groupIndex)
-                {
-                    const RHI::ShaderInputImageIndex index(groupIndex);
-                    auto imgViews = groupData.GetImageViewArray(index);
-                    uint32_t layoutIndex = m_descriptorSetLayout->GetLayoutIndexFromGroupIndex(groupIndex, DescriptorSetLayout::ResourceType::ImageView);
-                    descriptorSet.UpdateImageViews(layoutIndex, imgViews, shaderImageList[groupIndex].m_type);
-                }
+                const RHI::ShaderInputImageIndex index(groupIndex);
+                auto imgViews = groupData.GetImageViewArray(index);
+                uint32_t layoutIndex =
+                    m_descriptorSetLayout->GetLayoutIndexFromGroupIndex(groupIndex, DescriptorSetLayout::ResourceType::ImageView);
+                descriptorSet.UpdateImageViews(layoutIndex, imgViews, shaderImageList[groupIndex].m_type);
             }
+            
 
-            if (groupData.IsResourceTypeEnabledForCompilation(static_cast<uint32_t>(RHI::ShaderResourceGroupData::ResourceTypeMask::BufferViewUnboundedArrayMask)))
+            for (uint32_t groupIndex = 0; groupIndex < static_cast<uint32_t>(layout->GetShaderInputListForBufferUnboundedArrays().size()); ++groupIndex)
             {
-                for (uint32_t groupIndex = 0; groupIndex < static_cast<uint32_t>(layout->GetShaderInputListForBufferUnboundedArrays().size()); ++groupIndex)
+                const RHI::ShaderInputBufferUnboundedArrayIndex index(groupIndex);
+                auto bufViews = groupData.GetBufferViewUnboundedArray(index);
+                if (bufViews.empty())
                 {
-                    const RHI::ShaderInputBufferUnboundedArrayIndex index(groupIndex);
-                    auto bufViews = groupData.GetBufferViewUnboundedArray(index);
-                    if (bufViews.empty())
-                    {
-                        // skip empty unbounded arrays
-                        continue;
-                    }
-
-                    uint32_t layoutIndex = m_descriptorSetLayout->GetLayoutIndexFromGroupIndex(groupIndex, DescriptorSetLayout::ResourceType::BufferViewUnboundedArray);
-                    descriptorSet.UpdateBufferViews(layoutIndex, bufViews);
+                    // skip empty unbounded arrays
+                    continue;
                 }
+
+                uint32_t layoutIndex = m_descriptorSetLayout->GetLayoutIndexFromGroupIndex(groupIndex, DescriptorSetLayout::ResourceType::BufferViewUnboundedArray);
+                descriptorSet.UpdateBufferViews(layoutIndex, bufViews);
             }
-
-            if (groupData.IsResourceTypeEnabledForCompilation(static_cast<uint32_t>(RHI::ShaderResourceGroupData::ResourceTypeMask::ImageViewUnboundedArrayMask)))
+            
+            auto const& shaderImageUnboundeArrayList = layout->GetShaderInputListForImageUnboundedArrays();
+            for (uint32_t groupIndex = 0; groupIndex < static_cast<uint32_t>(shaderImageUnboundeArrayList.size()); ++groupIndex)
             {
-                auto const& shaderImageUnboundeArrayList = layout->GetShaderInputListForImageUnboundedArrays();
-                for (uint32_t groupIndex = 0; groupIndex < static_cast<uint32_t>(layout->GetShaderInputListForImageUnboundedArrays().size()); ++groupIndex)
+                const RHI::ShaderInputImageUnboundedArrayIndex index(groupIndex);
+                auto imgViews = groupData.GetImageViewUnboundedArray(index);
+                if (imgViews.empty())
                 {
-                    const RHI::ShaderInputImageUnboundedArrayIndex index(groupIndex);
-                    auto imgViews = groupData.GetImageViewUnboundedArray(index);
-                    if (imgViews.empty())
-                    {
-                        // skip empty unbounded arrays
-                        continue;
-                    }
-
-                    uint32_t layoutIndex = m_descriptorSetLayout->GetLayoutIndexFromGroupIndex(groupIndex, DescriptorSetLayout::ResourceType::ImageViewUnboundedArray);
-                    descriptorSet.UpdateImageViews(layoutIndex, imgViews, shaderImageUnboundeArrayList[groupIndex].m_type);
+                    // skip empty unbounded arrays
+                    continue;
                 }
+
+                uint32_t layoutIndex = m_descriptorSetLayout->GetLayoutIndexFromGroupIndex(groupIndex, DescriptorSetLayout::ResourceType::ImageViewUnboundedArray);
+                descriptorSet.UpdateImageViews(layoutIndex, imgViews, shaderImageUnboundeArrayList[groupIndex].m_type);
             }
-
-            if (groupData.IsResourceTypeEnabledForCompilation(static_cast<uint32_t>(RHI::ShaderResourceGroupData::ResourceTypeMask::SamplerMask)))
+            
+            for (uint32_t groupIndex = 0; groupIndex < static_cast<uint32_t>(layout->GetShaderInputListForSamplers().size()); ++groupIndex)
             {
-                for (uint32_t groupIndex = 0; groupIndex < static_cast<uint32_t>(layout->GetShaderInputListForSamplers().size()); ++groupIndex)
-                {
-                    const RHI::ShaderInputSamplerIndex index(groupIndex);
-                    auto samplerArray = groupData.GetSamplerArray(index);
-                    uint32_t layoutIndex = m_descriptorSetLayout->GetLayoutIndexFromGroupIndex(groupIndex, DescriptorSetLayout::ResourceType::Sampler);
-                    descriptorSet.UpdateSamplers(layoutIndex, samplerArray);
-                }
+                const RHI::ShaderInputSamplerIndex index(groupIndex);
+                auto samplerArray = groupData.GetSamplerArray(index);
+                uint32_t layoutIndex =
+                    m_descriptorSetLayout->GetLayoutIndexFromGroupIndex(groupIndex, DescriptorSetLayout::ResourceType::Sampler);
+                descriptorSet.UpdateSamplers(layoutIndex, samplerArray);
             }
 
             auto constantData = groupData.GetConstantData();
-            if (!constantData.empty() && groupData.IsResourceTypeEnabledForCompilation(static_cast<uint32_t>(RHI::ShaderResourceGroupData::ResourceTypeMask::ConstantDataMask)))
+            if (!constantData.empty())
             {
                 descriptorSet.UpdateConstantData(constantData);
             }
