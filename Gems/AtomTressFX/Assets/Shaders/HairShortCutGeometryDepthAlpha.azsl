@@ -109,25 +109,27 @@ float HairShortCutDepthsAlphaPS(PS_INPUT_HAIR input) : SV_Target
     uint uDepth = asuint(input.Position.z);
     uint uDepth0Prev, uDepth1Prev;
 
-    // Min of depth 0 and input depth
+    // Min of depth 0 and input depth - in Atom the Z order is reverse
     // Original value is uDepth0Prev
-    InterlockedMin(PassSrg::m_RWFragmentDepthsTexture[uint3(vScreenAddress, 0)], uDepth, uDepth0Prev);
+    InterlockedMax(PassSrg::m_RWFragmentDepthsTexture[uint3(vScreenAddress, 0)], uDepth, uDepth0Prev);
 
-    // Min of depth 1 and greater of the last compare
+    // Min of depth 1 and greater of the last compare - in Atom the Z order is reverse
     // If fragment opaque, always use input depth (don't need greater depths)
     uDepth = (alpha > 0.98) ? uDepth : max(uDepth, uDepth0Prev);
 
-    InterlockedMin(PassSrg::m_RWFragmentDepthsTexture[uint3(vScreenAddress, 1)], uDepth, uDepth1Prev);
+    InterlockedMax(PassSrg::m_RWFragmentDepthsTexture[uint3(vScreenAddress, 1)], uDepth, uDepth1Prev);
 
     uint uDepth2Prev;
 
-    // Min of depth 2 and greater of the last compare
+    // Min of depth 2 and greater of the last compare - in Atom the Z order is reverse
     // If fragment opaque, always use input depth (don't need greater depths)
     uDepth = (alpha > 0.98) ? uDepth : max(uDepth, uDepth1Prev);
 
-    InterlockedMin(PassSrg::m_RWFragmentDepthsTexture[uint3(vScreenAddress, 2)], uDepth, uDepth2Prev);
+    InterlockedMax(PassSrg::m_RWFragmentDepthsTexture[uint3(vScreenAddress, 2)], uDepth, uDepth2Prev);
 
     // Remark: seems to pick a random alpha depending on order of fragments - this will almost render
     // the blend to be useless as there is no accumulation of the closest fragments or correct weight
+    // [To Do] - change this to accumulate the alpha from all hair components, hence representing 
+    // the occlusion and the hair thickness.
     return 1.0 - alpha; 
 }

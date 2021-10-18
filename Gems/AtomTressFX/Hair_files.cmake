@@ -142,6 +142,7 @@ set(FILES
 #set(atom_hair_passes
     # Compute simulation and skinning passes
     Assets/Passes/HairParentPass.pass
+    Assets/Passes/HairParentShortCutPass.pass
     Assets/Passes/HairGlobalShapeConstraintsCompute.pass
     Assets/Passes/HairCalculateStrandLevelDataCompute.pass
     Assets/Passes/HairVelocityShockPropagationCompute.pass

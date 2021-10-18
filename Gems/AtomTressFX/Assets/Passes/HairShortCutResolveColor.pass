@@ -8,6 +8,7 @@
             "PassClass": "HairShortCutResolveColorPass",
             "Slots": [
                 {
+                    // This RT is MSAA - is it cheaper to avoid doing this work and only do a copy at a separate pass?
                     "Name": "RenderTargetInputOutput",
                     "SlotType": "InputOutput",
                     "ScopeAttachmentUsage": "RenderTarget",
@@ -36,27 +37,6 @@
                 }
             ],
             "Connections": [
-                {
-                    "LocalSlot": "DepthLinear",
-                    "AttachmentRef": {
-                        "Pass": "Parent",
-                        "Attachment": "DepthLinear"
-                    }
-                },
-                {
-                    "LocalSlot": "HairColorTexture",
-                    "AttachmentRef": {
-                        "Pass": "HairShortCutGeometryShadingPass",
-                        "Attachment": "ColorRenderTarget"
-                    }
-                },
-                {
-                    "LocalSlot": "AccumulatedInverseAlpha",
-                    "AttachmentRef": {
-                        "Pass": "This",
-                        "Attachment": "ColorRenderTarget"
-                    }
-                }
             ],
             "PassData": {
                 "$type": "FullscreenTrianglePassData",

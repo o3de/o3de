@@ -17,59 +17,17 @@
                         "StoreAction": "Store"
                     }
                 },
-                { // Used to get the transform from screen space to world space.
+                {   // Used to get the transform from screen space to world space.
                     "Name": "DepthLinear",
                     "SlotType": "Input",
                     "ShaderInputName": "m_linearDepth",
                     "ScopeAttachmentUsage": "Shader"
                 },
-                {
+                {   // This holds the K nearset depths. The furthest depth will be taken to be written in the depth buffer.
                     "Name": "HairDepthsTextureArray",
                     "SlotType": "Input",
                     "ScopeAttachmentUsage": "Shader",
                     "ShaderInputName": "m_fragmentDepthsTexture"
-                }
-            ],
-            "ImageAttachments": [
-                {
-                    "Name": "HairDepthsTextureArray",
-                    "SizeSource": {
-                        "Source": {
-                            "Pass": "Parent",
-                            "Attachment": "RenderTargetInputOutput"
-                        }
-                    },
-                    "ImageDescriptor": {
-                        "Format": "D32_FLOAT",
-                        "ArraySize": "3",
-                        "MultisampleState": {
-                            "samples": 1
-                        },
-                        "SharedQueueMask": "Graphics"
-                    }
-                }
-            ],
-            "Connections": [
-                {
-                    "LocalSlot": "Depth",
-                    "AttachmentRef": {
-                        "Pass": "Parent",
-                        "Attachment": "Depth"
-                    }
-                },
-                {
-                    "LocalSlot": "DepthLinear",
-                    "AttachmentRef": {
-                        "Pass": "Parent",
-                        "Attachment": "DepthLinear"
-                    }
-                },
-                {
-                    "LocalSlot": "HairDepthsTextureArray",
-                    "AttachmentRef": {
-                        "Pass": "HairShortCutGeometryDepthAlphaPass",
-                        "Attachment": "HairDepthsTextureArray"
-                    }
                 }
             ],
             "PassData": {
