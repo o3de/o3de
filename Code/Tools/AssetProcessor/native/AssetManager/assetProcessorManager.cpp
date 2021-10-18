@@ -3587,11 +3587,12 @@ namespace AssetProcessor
 
                         auto scanFolderInfo = m_platformConfig->GetScanFolderByPath(scanFolderName);
 
+                        // Make an absolute path that is ScanFolderPath + Part of search path before the wildcard
                         QDir rooted(scanFolderName);
-                        QString absolutePath = rooted.absoluteFilePath(knownPathBeforeWildcard);
+                        QString scanFolderAndKnownSubPath = rooted.absoluteFilePath(knownPathBeforeWildcard);
 
                         resolvedDependencyList.append(m_platformConfig->FindWildcardMatches(
-                            absolutePath, relativeSearch, false, scanFolderInfo->RecurseSubFolders()));
+                            scanFolderAndKnownSubPath, relativeSearch, false, scanFolderInfo->RecurseSubFolders()));
                     }
                     else // Relative path, check every scan folder
                     {
