@@ -48,7 +48,7 @@ namespace AzToolsFramework
 
         void PrefabUndoInstance::Redo()
         {
-            m_instanceToTemplateInterface->PatchTemplate(m_redoPatch, m_templateId, true, m_instance);
+            m_instanceToTemplateInterface->PatchTemplate(m_redoPatch, m_templateId, true);
         }
 
         void PrefabUndoInstance::RedoBatched()
