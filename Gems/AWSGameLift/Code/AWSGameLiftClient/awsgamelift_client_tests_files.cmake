@@ -7,6 +7,7 @@
 #
 
 set(FILES
+    Tests/Activity/AWSGameLiftAcceptMatchActivityTest.cpp    
     Tests/Activity/AWSGameLiftCreateSessionActivityTest.cpp
     Tests/Activity/AWSGameLiftCreateSessionOnQueueActivityTest.cpp
     Tests/Activity/AWSGameLiftJoinSessionActivityTest.cpp

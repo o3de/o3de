@@ -9,6 +9,7 @@
 set(FILES
     ../../natvis/qt.natvis
     ../../../Platform/Windows/AzQtComponents/Utilities/HandleDpiAwareness_Windows.cpp
+    ../../../Platform/Windows/AzQtComponents/Utilities/DesktopUtilities_Windows.cpp
     ../../Utilities/MouseHider_win.cpp
     ../../Utilities/QtWindowUtilities_win.cpp
     ../../Utilities/ScreenGrabber_win.cpp

@@ -324,7 +324,8 @@ namespace AzToolsFramework
     //  Currently, the first behavior is implemented.
     void EntityOutlinerWidget::OnSelectionChanged(const QItemSelection& selected, const QItemSelection& deselected)
     {
-        if (m_selectionChangeInProgress || !m_enableSelectionUpdates)
+        if (m_selectionChangeInProgress || !m_enableSelectionUpdates
+            || (selected.empty() && deselected.empty()))
         {
             return;
         }
@@ -548,6 +549,13 @@ namespace AzToolsFramework
         bool isDocumentOpen = false;
         EBUS_EVENT_RESULT(isDocumentOpen, EditorRequests::Bus, IsLevelDocumentOpen);
         if (!isDocumentOpen)
+        {
+            return;
+        }
+
+        // Do not display the context menu if the item under the mouse cursor is not selectable.
+        if (const QModelIndex& index = m_gui->m_objectTree->indexAt(pos); index.isValid()
+            && (index.flags() & Qt::ItemIsSelectable) == 0)
         {
             return;
         }

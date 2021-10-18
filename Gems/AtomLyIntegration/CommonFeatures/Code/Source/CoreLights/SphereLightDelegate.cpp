@@ -92,14 +92,6 @@ namespace AZ::Render
         }
     }
 
-    void SphereLightDelegate::SetSofteningBoundaryWidthAngle(float widthInDegrees)
-    {
-        if (GetShadowsEnabled() && GetLightHandle().IsValid())
-        {
-            GetFeatureProcessor()->SetSofteningBoundaryWidthAngle(GetLightHandle(), DegToRad(widthInDegrees));
-        }
-    }
-
     void SphereLightDelegate::SetFilteringSampleCount(uint32_t count)
     {
         if (GetShadowsEnabled() && GetLightHandle().IsValid())

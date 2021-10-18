@@ -109,13 +109,11 @@ namespace AZ
                 {
                     if (attachment->GetFirstScopeAttachment() == nullptr)
                     {
+                        //We allow the rendering to continue even if an attachment is not used.
                         AZ_Error(
                             "FrameGraph", false,
                             "Invalid State: attachment '%s' was added but never used!",
                             attachment->GetId().GetCStr());
-
-                        Clear();
-                        return ResultCode::InvalidOperation;
                     }
                 }
             }

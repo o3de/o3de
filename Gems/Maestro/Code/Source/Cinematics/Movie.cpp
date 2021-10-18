@@ -87,11 +87,11 @@ namespace
 }
 
 // Serialization for anim nodes & param types
-#define REGISTER_NODE_TYPE(name) assert(g_animNodeEnumToStringMap.contains(AnimNodeType::name)); \
+#define REGISTER_NODE_TYPE(name) assert(!g_animNodeEnumToStringMap.contains(AnimNodeType::name)); \
     g_animNodeEnumToStringMap[AnimNodeType::name] = AZ_STRINGIZE(name);                          \
     g_animNodeStringToEnumMap[AnimParamSystemString(AZ_STRINGIZE(name))] = AnimNodeType::name;
 
-#define REGISTER_PARAM_TYPE(name) assert(g_animParamEnumToStringMap.contains(AnimParamType::name)); \
+#define REGISTER_PARAM_TYPE(name) assert(!g_animParamEnumToStringMap.contains(AnimParamType::name)); \
     g_animParamEnumToStringMap[AnimParamType::name] = AZ_STRINGIZE(name);                           \
     g_animParamStringToEnumMap[AnimParamSystemString(AZ_STRINGIZE(name))] = AnimParamType::name;
 
