@@ -112,7 +112,6 @@ void StartFixedCursorMode(QObject *viewport);
 
 #define RENDER_MESH_TEST_DISTANCE (0.2f)
 #define CURSOR_FONT_HEIGHT  8.0f
-
 namespace AZ::ViewportHelpers
 {
     static const char TextCantCreateCameraNoLevel[] = "Cannot create camera when no level is loaded.";
@@ -1333,10 +1332,6 @@ void EditorViewportWidget::keyPressEvent(QKeyEvent* event)
 
 void EditorViewportWidget::SetViewTM(const Matrix34& tm)
 {
-    if (m_viewSourceType == ViewSourceType::None)
-    {
-        m_defaultViewTM = tm;
-    }
     SetViewTM(tm, false);
 }
 
@@ -2641,5 +2636,4 @@ void EditorViewportWidget::StopFullscreenPreview()
     // Show the main window
     MainWindow::instance()->show();
 }
-
 #include <moc_EditorViewportWidget.cpp>
