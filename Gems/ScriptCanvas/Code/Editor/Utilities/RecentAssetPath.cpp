@@ -15,7 +15,7 @@
 
 namespace ScriptCanvasEditor
 {
-    AZ::Data::AssetId ReadRecentAssetId()
+    SourceHandle ReadRecentAssetId()
     {
         QSettings settings(QSettings::IniFormat, QSettings::UserScope, 
             SCRIPTCANVASEDITOR_AZ_QCOREAPPLICATION_SETTINGS_ORGANIZATION_NAME);
@@ -34,7 +34,7 @@ namespace ScriptCanvasEditor
         return assetId;
     }
 
-    void SetRecentAssetId(const AZ::Data::AssetId& assetId)
+    void SetRecentAssetId(SourceHandle assetId)
     {
         QSettings settings(QSettings::IniFormat, QSettings::UserScope, 
             SCRIPTCANVASEDITOR_AZ_QCOREAPPLICATION_SETTINGS_ORGANIZATION_NAME);

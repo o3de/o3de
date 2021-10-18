@@ -70,16 +70,16 @@ namespace ScriptCanvasEditor
         //! Opens an existing graph and returns the tab index in which it was open in.
         //! \param File AssetId
         //! \return index of open tab if the asset was able to be open successfully or error message of why the open failed
-        virtual AZ::Outcome<int, AZStd::string> OpenScriptCanvasAsset(AZ::Data::AssetId scriptCanvasAssetId, int tabIndex = -1) = 0;
-        virtual AZ::Outcome<int, AZStd::string> OpenScriptCanvasAssetId(const AZ::Data::AssetId& scriptCanvasAsset) = 0;        
+        virtual AZ::Outcome<int, AZStd::string> OpenScriptCanvasAsset(SourceHandle scriptCanvasAssetId, int tabIndex = -1) = 0;
+        virtual AZ::Outcome<int, AZStd::string> OpenScriptCanvasAssetId(const SourceHandle& scriptCanvasAsset) = 0;
         
-        virtual int CloseScriptCanvasAsset(const AZ::Data::AssetId&) = 0;
+        virtual int CloseScriptCanvasAsset(const SourceHandle&) = 0;
 
         virtual bool CreateScriptCanvasAssetFor(const TypeDefs::EntityComponentId& requestingComponent) = 0;
 
-        virtual bool IsScriptCanvasAssetOpen(const AZ::Data::AssetId& assetId) const = 0;
+        virtual bool IsScriptCanvasAssetOpen(const SourceHandle& assetId) const = 0;
 
-        virtual void OnChangeActiveGraphTab(AZ::Data::AssetId) {}
+        virtual void OnChangeActiveGraphTab(SourceHandle) {}
 
         virtual void CreateNewRuntimeAsset() = 0;
 
@@ -103,12 +103,12 @@ namespace ScriptCanvasEditor
             return ScriptCanvas::ScriptCanvasId();
         }
 
-        virtual GraphCanvas::GraphId FindGraphCanvasGraphIdByAssetId([[maybe_unused]] const AZ::Data::AssetId& assetId) const
+        virtual GraphCanvas::GraphId FindGraphCanvasGraphIdByAssetId([[maybe_unused]] const SourceHandle& assetId) const
         {
             return GraphCanvas::GraphId();
         }
 
-        virtual ScriptCanvas::ScriptCanvasId FindScriptCanvasIdByAssetId([[maybe_unused]] const AZ::Data::AssetId& assetId) const
+        virtual ScriptCanvas::ScriptCanvasId FindScriptCanvasIdByAssetId([[maybe_unused]] const SourceHandle& assetId) const
         {
             return ScriptCanvas::ScriptCanvasId();
         }

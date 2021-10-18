@@ -22,6 +22,9 @@ namespace ScriptCanvasEditor
 {
     class ScriptCanvasMemoryAsset;
 
+
+    // MOVE THIS MOSTLY TO TAB BAR, MAIN WINDOW  AND THE CANVAS WIDGET
+
     // This class tracks all things related to the assets that the Script Canvas editor
     // has in play. It also provides helper functionality to quickly getting asset information
     // from GraphCanvas

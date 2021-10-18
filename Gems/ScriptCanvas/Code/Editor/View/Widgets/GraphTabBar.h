@@ -45,14 +45,14 @@ namespace ScriptCanvasEditor
             GraphTabBar(QWidget* parent = nullptr);
             ~GraphTabBar() override = default;
 
-            void AddGraphTab(const AZ::Data::AssetId& assetId);
-            int InsertGraphTab(int tabIndex, const AZ::Data::AssetId& assetId);
-            bool SelectTab(const AZ::Data::AssetId& assetId);
+            void AddGraphTab(ScriptCanvasEditor::SourceHandle assetId);
+            int InsertGraphTab(int tabIndex, ScriptCanvasEditor::SourceHandle assetId);
+            bool SelectTab(ScriptCanvasEditor::SourceHandle assetId);
 
-            void ConfigureTab(int tabIndex, AZ::Data::AssetId fileAssetId, const AZStd::string& tabName);
+            void ConfigureTab(int tabIndex, ScriptCanvasEditor::SourceHandle fileAssetId, const AZStd::string& tabName);
 
-            int FindTab(const AZ::Data::AssetId& assetId) const;
-            AZ::Data::AssetId FindAssetId(int tabIndex);
+            int FindTab(ScriptCanvasEditor::SourceHandle assetId) const;
+            ScriptCanvasEditor::SourceHandle FindAssetId(int tabIndex);
 
             void CloseTab(int index);
             void CloseAllTabs();
@@ -92,7 +92,7 @@ namespace ScriptCanvasEditor
             // Called when the selected tab changes
             void currentChangedTab(int index);
             
-            void SetFileState(AZ::Data::AssetId assetId, Tracker::ScriptCanvasFileState fileState);
+            void SetFileState(ScriptCanvasEditor::SourceHandle, Tracker::ScriptCanvasFileState fileState);
 
             int m_signalSaveOnChangeTo = -1;
         };
