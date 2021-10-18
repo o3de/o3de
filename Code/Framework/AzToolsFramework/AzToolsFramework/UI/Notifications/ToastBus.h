@@ -36,16 +36,19 @@ namespace AzToolsFramework
 
     using ToastNotificationBus = AZ::EBus<ToastNotifications>;
 
+    typedef AZ::u32 ToastRequestBusId;
+
     class ToastRequests
         : public AZ::EBusTraits
     {        
     public:   
-        static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single;
-        static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::Single;
+        static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Multiple;
+        static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::ById;
+        using BusIdType = ToastRequestBusId; // bus is addressed by CRC of the view name 
         
-        virtual ToastId ShowToastNotification(QWidget* parent, const AzQtComponents::ToastConfiguration& toastConfiguration) = 0;
-        virtual ToastId ShowToastAtCursor(QWidget* parent, const AzQtComponents::ToastConfiguration& toastConfiguration) = 0;
-        virtual ToastId ShowToastAtPoint(QWidget* parent, const QPoint& screenPosition, const QPointF& anchorPoint, const AzQtComponents::ToastConfiguration&) = 0;
+        virtual ToastId ShowToastNotification(const AzQtComponents::ToastConfiguration& toastConfiguration) = 0;
+        virtual ToastId ShowToastAtCursor(const AzQtComponents::ToastConfiguration& toastConfiguration) = 0;
+        virtual ToastId ShowToastAtPoint(const QPoint& screenPosition, const QPointF& anchorPoint, const AzQtComponents::ToastConfiguration&) = 0;
 
         virtual void HideToastNotification(const ToastId& toastId) = 0;
     };

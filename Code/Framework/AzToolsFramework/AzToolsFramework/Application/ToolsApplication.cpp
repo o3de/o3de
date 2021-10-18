@@ -69,7 +69,6 @@
 #include <AzToolsFramework/UI/EditorEntityUi/EditorEntityUiSystemComponent.h>
 #include <AzToolsFramework/Undo/UndoCacheInterface.h>
 #include <AzToolsFramework/Prefab/PrefabPublicInterface.h>
-#include <AzToolsFramework/UI/Notifications/ToastNotificationsSystemComponent.h>
 #include <Entity/EntityUtilityComponent.h>
 
 #include <QtWidgets/QMessageBox>
@@ -275,7 +274,6 @@ namespace AzToolsFramework
                 azrtti_typeid<Components::EditorIntersectorComponent>(),
                 azrtti_typeid<AzToolsFramework::SliceRequestComponent>(),
                 azrtti_typeid<AzToolsFramework::EntityUtilityComponent>(),
-                azrtti_typeid<AzToolsFramework::ToastNotificationsSystemComponent>(),
             });
 
         return components;

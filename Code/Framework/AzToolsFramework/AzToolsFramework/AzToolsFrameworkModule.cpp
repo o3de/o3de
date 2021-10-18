@@ -54,7 +54,6 @@
 #include <AzToolsFramework/AssetBrowser/AssetBrowserComponent.h>
 #include <AzToolsFramework/ViewportSelection/EditorInteractionSystemComponent.h>
 #include <AzToolsFramework/Entity/EntityUtilityComponent.h>
-#include <AzToolsFramework/UI/Notifications/ToastNotificationsSystemComponent.h>
 
 AZ_DEFINE_BUDGET(AzToolsFramework);
 
@@ -107,7 +106,6 @@ namespace AzToolsFramework
             AzToolsFramework::Components::EditorIntersectorComponent::CreateDescriptor(),
             AzToolsFramework::AzToolsFrameworkConfigurationSystemComponent::CreateDescriptor(),
             AzToolsFramework::Components::EditorEntityUiSystemComponent::CreateDescriptor(),
-            AzToolsFramework::ToastNotificationsSystemComponent::CreateDescriptor(),
         });
     }
 }

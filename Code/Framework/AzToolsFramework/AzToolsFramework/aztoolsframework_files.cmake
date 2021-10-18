@@ -752,8 +752,8 @@ set(FILES
     UI/Prefab/PrefabUiHandler.cpp
     UI/Prefab/PrefabViewportFocusPathHandler.h
     UI/Prefab/PrefabViewportFocusPathHandler.cpp
-    UI/Notifications/ToastNotificationsSystemComponent.cpp
-    UI/Notifications/ToastNotificationsSystemComponent.h
+    UI/Notifications/ToastNotificationsView.cpp
+    UI/Notifications/ToastNotificationsView.h
     UI/Notifications/ToastBus.h
     PythonTerminal/ScriptHelpDialog.cpp
     PythonTerminal/ScriptHelpDialog.h

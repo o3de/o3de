@@ -27,16 +27,11 @@ AZ_POP_DISABLE_WARNING
 #include <AzCore/Memory/SystemAllocator.h>
 
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
-#include <AzToolsFramework/UI/Notifications/ToastBus.h>
+#include <AzToolsFramework/UI/Notifications/ToastNotificationsView.h>
 
 #include <GraphCanvas/Components/SceneBus.h>
 #include <GraphCanvas/Components/ViewBus.h>
 #include <GraphCanvas/Editor/AssetEditorBus.h>
-
-namespace AzQtComponents
-{
-    class ToastNotification;
-}
 
 namespace GraphCanvas
 {
@@ -191,8 +186,6 @@ namespace GraphCanvas
 
     private:
 
-        //void UpdateToastPosition();
-
         void CenterOnSceneMembers(const AZStd::vector<AZ::EntityId>& memberIds);
 
         void ConnectBoundsSignals();
@@ -244,13 +237,7 @@ namespace GraphCanvas
 
         AZStd::unique_ptr<FocusQueue> m_queuedFocus;
 
-        // These will display sequentially in a reserved part of the UI
-        AzToolsFramework::ToastId                m_activeNotification;
-        AZStd::vector<AzToolsFramework::ToastId> m_queuedNotifications;
-
-        // There could be more then the queued list in terms of general notifications
-        // As some systems might want to re-use the systems for their own needs.
-        AZStd::unordered_map<AzToolsFramework::ToastId, AzQtComponents::ToastNotification*> m_notifications;
+        AZStd::unique_ptr<AzToolsFramework::ToastNotificationsView> m_notificationsView;
 
         bool m_isEditing;
 

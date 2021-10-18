@@ -12,6 +12,7 @@
 
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Component/Entity.h>
+#include <AzToolsFramework/UI/Notifications/ToastBus.h>
 
 #include <GraphCanvas/Widgets/GraphCanvasGraphicsView/GraphCanvasGraphicsView.h>
 
@@ -46,6 +47,7 @@ namespace GraphCanvas
         , m_queuedFocus(nullptr)
     {
         m_viewId = AZ::Entity::MakeId();
+        m_notificationsView = AZStd::make_unique<AzToolsFramework::ToastNotificationsView>(this, AZ_CRC(m_viewId.ToString()));
 
         setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
         setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
@@ -604,8 +606,7 @@ namespace GraphCanvas
         if (windowSize.width() > maxSize || windowSize.height() > maxSize)
         {
             AzQtComponents::ToastConfiguration toastConfiguration(AzQtComponents::ToastType::Information, "Screenshot", "Screenshot attempted to capture an area too large. Some down-ressing may occur.");
-            AzToolsFramework::ToastRequestBus::Broadcast(&AzToolsFramework::ToastRequestBus::Events::ShowToastNotification, this, toastConfiguration);
-            //ShowToastNotification(toastConfiguration);
+            m_notificationsView->ShowToastNotification(toastConfiguration);
 
             if (windowSize.width() > maxSize)
             {
@@ -828,28 +829,22 @@ namespace GraphCanvas
 
     void GraphCanvasGraphicsView::HideToastNotification(const AzToolsFramework::ToastId& toastId)
     {
-        AzToolsFramework::ToastRequestBus::Broadcast(&AzToolsFramework::ToastRequests::HideToastNotification, toastId);
+        m_notificationsView->HideToastNotification(toastId);
     }
 
     AzToolsFramework::ToastId GraphCanvasGraphicsView::ShowToastNotification(const AzQtComponents::ToastConfiguration& toastConfiguration)
     {
-        AzToolsFramework::ToastId toastId;
-        AzToolsFramework::ToastRequestBus::BroadcastResult(toastId, &AzToolsFramework::ToastRequests::ShowToastNotification, this, toastConfiguration);
-        return toastId;
+        return m_notificationsView->ShowToastNotification(toastConfiguration);
     }
 
     AzToolsFramework::ToastId GraphCanvasGraphicsView::ShowToastAtCursor(const AzQtComponents::ToastConfiguration& toastConfiguration)
     {
-        AzToolsFramework::ToastId toastId;
-        AzToolsFramework::ToastRequestBus::BroadcastResult(toastId, &AzToolsFramework::ToastRequests::ShowToastAtCursor, this, toastConfiguration);
-        return toastId;
+        return m_notificationsView->ShowToastAtCursor(toastConfiguration);
     }
 
     AzToolsFramework::ToastId GraphCanvasGraphicsView::ShowToastAtPoint(const QPoint& screenPosition, const QPointF& anchorPoint, const AzQtComponents::ToastConfiguration& toastConfiguration)
     {
-        AzToolsFramework::ToastId toastId;
-        AzToolsFramework::ToastRequestBus::BroadcastResult(toastId, &AzToolsFramework::ToastRequests::ShowToastAtPoint, this, screenPosition, anchorPoint, toastConfiguration);
-        return toastId;
+        return m_notificationsView->ShowToastAtPoint(screenPosition, anchorPoint, toastConfiguration);
     }
 
     bool GraphCanvasGraphicsView::IsShowing() const
@@ -1212,14 +1207,14 @@ namespace GraphCanvas
 
         CalculateInternalRectangle();
 
-        //UpdateToastPosition();
+        m_notificationsView->UpdateToastPosition();
     }
 
     void GraphCanvasGraphicsView::moveEvent(QMoveEvent* event)
     {
         QGraphicsView::moveEvent(event);
 
-        //UpdateToastPosition();
+        m_notificationsView->UpdateToastPosition();
     }
 
     void GraphCanvasGraphicsView::scrollContentsBy(int dx, int dy)
@@ -1233,25 +1228,14 @@ namespace GraphCanvas
     {
         QGraphicsView::showEvent(showEvent);
 
-        //if (m_activeNotification.IsValid())
-        //{
-        //    DisplayQueuedNotification();
-        //}
+        m_notificationsView->OnShow();
     }
 
     void GraphCanvasGraphicsView::hideEvent(QHideEvent* hideEvent)
     {
         QGraphicsView::hideEvent(hideEvent);
 
-        //if (m_activeNotification.IsValid())
-        //{
-        //    auto notificationIter = m_notifications.find(m_activeNotification);
-
-        //    if (notificationIter != m_notifications.end())
-        //    {
-        //        notificationIter->second->hide();
-        //    }
-        //}
+        m_notificationsView->OnHide();
     }
 
     void GraphCanvasGraphicsView::OnSettingsChanged()
