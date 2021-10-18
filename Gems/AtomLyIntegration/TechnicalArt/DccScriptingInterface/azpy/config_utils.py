@@ -19,9 +19,9 @@ import logging as _logging
 
 
 # --------------------------------------------------------------------------
-_PACKAGENAME = 'azpy.config_utils'
-_LOGGER = _logging.getLogger(_PACKAGENAME)
-_LOGGER.debug('Initializing: {0}.'.format({_PACKAGENAME}))
+_MODULENAME = 'azpy.config_utils'
+_LOGGER = _logging.getLogger(_MODULENAME)
+_LOGGER.debug('Initializing: {0}.'.format({_MODULENAME}))
 
 __all__ = ['get_os', 'return_stub', 'get_stub_check_path',
            'get_dccsi_config', 'get_current_project']
@@ -73,22 +73,8 @@ def get_os():
 
 
 # -------------------------------------------------------------------------
-def get_datadir() -> pathlib.Path:
-    """
-    persistent application data.
-    # linux: ~/.local/share
-    # macOS: ~/Library/Application Support
-    # windows: C:/Users/<USER>/AppData/Roaming
-    """
-
-    home = pathlib.Path.home()
-
-    if sys.platform.startswith('win'):
-        return home / "AppData/Roaming"
-    elif sys.platform == "linux":
-        return home / ".local/share"
-    elif sys.platform == "darwin":
-        return home / "Library/Application Support"
+from azpy.core import get_datadir
+# there was a method here refactored out.
 # -------------------------------------------------------------------------
 
 
@@ -158,7 +144,8 @@ def get_o3de_engine_root(check_stub='engine.json'):
         # BUT allow for ENVAR override by user
         _O3DE_DEV = Path(os.getenv('O3DE_DEV', azlmbr.paths.engroot))
     finally:
-        _LOGGER.info(f'O3DE engine root: {_O3DE_DEV.resolve()}')
+        # note: can't use fstrings as this module gets called with py2.7 in maya
+        _LOGGER.info('O3DE engine root: {}'.format(_O3DE_DEV.resolve()))
     return _O3DE_DEV
 # -------------------------------------------------------------------------
 

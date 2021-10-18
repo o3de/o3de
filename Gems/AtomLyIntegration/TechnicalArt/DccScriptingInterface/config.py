@@ -207,10 +207,12 @@ def test_pyside2():
 # `envvar_prefix` = export envvars with `export DYNACONF_FOO=bar`.
 # `settings_files` = Load this files in the order.
 # here we are modifying or adding to the dynamic config settings on import
-settings = Dynaconf(
-    envvar_prefix="DYNACONF",
-    settings_files=['settings.json', '.secrets.json'],
-)
+settings = Dynaconf(envvar_prefix="DYNACONF",
+                    settings_files=['settings.json',
+                                    'dev.settings.json',
+                                    'user.settings.json',
+                                    '.secrets.json']
+                    )
 
 from azpy.constants import PATH_O3DE_BUILD_PATH
 from azpy.constants import PATH_O3DE_BIN_PATH
@@ -220,11 +222,22 @@ os.environ["DYNACONF_DCCSI_GDEBUG"] = str(_DCCSI_GDEBUG)
 os.environ["DYNACONF_DCCSI_DEV_MODE"] = str(_DCCSI_DEV_MODE)
 
 # get the O3DE engine root folder
-_O3DE_DEV = azpy.config_utils.get_o3de_engine_root()
-
+# first just check if we are running in O3DE
+try:
+    import azlmbr
+    _LOGGER.info('azlmbr.paths.devroot: {}'.format(azlmbr.paths.devroot))
+    _O3DE_DEV = Path(azlmbr.paths.devroot)
+except ImportError as e:
+    # not running
+    _O3DE_DEV = azpy.config_utils.get_o3de_engine_root()
 os.environ["DYNACONF_O3DE_DEV"] = str(_O3DE_DEV.resolve())
+
+# there are multiple ways to determine the project
+# the easiest is if we are running
 _O3DE_PROJECT = azpy.config_utils.get_check_global_project()
 os.environ["DYNACONF_O3DE_PROJECT"] = str(_O3DE_PROJECT.resolve())
+
+
 _O3DE_PROJECT_PATH = Path(_O3DE_DEV, _O3DE_PROJECT)
 os.environ["DYNACONF_O3DE_PROJECT_PATH"] = str(_O3DE_PROJECT_PATH)
 os.environ["DYNACONF_DCCSIG_PATH"] = str(_DCCSIG_PATH)
@@ -311,15 +324,15 @@ if __name__ == '__main__':
     # They will most likely cause Qt/PySide DCC apps to fail
     # or hopefully they can be overridden for DCC envionments
     # that provide their own Qt dlls and Pyside2
-    #_LOGGER.info('QTFORPYTHON_PATH: {}'.format(settings.QTFORPYTHON_PATH))
-    #_LOGGER.info('QT_PLUGIN_PATH: {}'.format(settings.QT_PLUGIN_PATH))
+    # _LOGGER.info('QTFORPYTHON_PATH: {}'.format(settings.QTFORPYTHON_PATH))
+    # _LOGGER.info('QT_PLUGIN_PATH: {}'.format(settings.QT_PLUGIN_PATH))
 
     init_o3de_pyside(settings.O3DE_DEV)  # init lumberyard Qt/PySide2
     # from dynaconf import settings # <-- no need to reimport
 
     settings.setenv()  # doing this will add/set the additional DYNACONF_ envars
 
-    #_LOGGER.info('QTFORPYTHON_PATH: {}'.format(settings.QTFORPYTHON_PATH))
+    # _LOGGER.info('QTFORPYTHON_PATH: {}'.format(settings.QTFORPYTHON_PATH))
     _LOGGER.info('O3DE_BIN_PATH: {}'.format(settings.O3DE_BIN_PATH))
     _LOGGER.info('QT_PLUGIN_PATH: {}'.format(settings.QT_PLUGIN_PATH))
     _LOGGER.info('QT_QPA_PLATFORM_PLUGIN_PATH: {}'.format(settings.QT_QPA_PLATFORM_PLUGIN_PATH))

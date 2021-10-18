@@ -26,10 +26,10 @@ import logging as _logging
 
 
 # -------------------------------------------------------------------------
-_ORG_TAG = 'Amazon_Lumberyard'
+_ORG_TAG = 'Amazon'
 _APP_TAG = 'DCCsi'
 _TOOL_TAG = 'azpy'
-_TYPE_TAG = 'module'
+_TYPE_TAG = 'package'
 
 _PACKAGENAME = _TOOL_TAG
 
@@ -101,6 +101,7 @@ while 0:
                         datefmt='%m-%d %H:%M')
 
     _logging.debug('azpy.rootlogger> root logger set up for debugging')  # root logger
+    break
 # -------------------------------------------------------------------------
 
 
