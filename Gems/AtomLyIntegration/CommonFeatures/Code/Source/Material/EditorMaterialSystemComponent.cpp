@@ -185,7 +185,7 @@ namespace AZ
                     materialAssignmentId);
 
                 previewRenderer->AddCaptureRequest(
-                    { 128,
+                    { m_materialPreviewResolution,
                       AZStd::make_shared<AZ::LyIntegration::SharedPreviewContent>(
                           previewRenderer->GetScene(), previewRenderer->GetView(), previewRenderer->GetEntityContextId(),
                           AZ::RPI::AssetUtils::GetAssetIdForProductPath(DefaultModelPath), materialAssetId,
@@ -220,11 +220,17 @@ namespace AZ
             return QPixmap();
         }
 
+        void EditorMaterialSystemComponent::OnEntityDestroyed(const AZ::EntityId& entityId)
+        {
+            m_materialPreviews.erase(entityId);
+        }
+
         void EditorMaterialSystemComponent::OnRenderMaterialPreviewComplete(
             [[maybe_unused]] const AZ::EntityId& entityId,
             [[maybe_unused]] const AZ::Render::MaterialAssignmentId& materialAssignmentId,
             [[maybe_unused]] const QPixmap& pixmap)
         {
+            PurgePreviews();
             m_materialPreviews[entityId][materialAssignmentId] = pixmap;
         }
 
@@ -280,6 +286,23 @@ namespace AZ
                 return AzToolsFramework::AssetBrowser::SourceFileDetails(MaterialTypeIconPath);
             }
             return AzToolsFramework::AssetBrowser::SourceFileDetails();
+        }
+
+        void EditorMaterialSystemComponent::PurgePreviews()
+        {
+            size_t materialPreviewCount = 0;
+            for (const auto& [entityId, previews] : m_materialPreviews)
+            {
+                for (const auto& [assignmentId, images] : previews)
+                {
+                    materialPreviewCount += previews.size();
+                }
+            }
+
+            if (materialPreviewCount > m_materialPreviewLimit)
+            {
+                m_materialPreviews.clear();
+            }
         }
     } // namespace Render
 } // namespace AZ
