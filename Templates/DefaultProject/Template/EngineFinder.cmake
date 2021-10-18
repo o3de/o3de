@@ -78,10 +78,12 @@ if(EXISTS ${manifest_path})
 
             if(engine_path)
                 list(APPEND CMAKE_MODULE_PATH "${engine_path}/cmake")
-                break()
+                return()
             endif()
         endif()
     endforeach()
+    
+    message(FATAL_ERROR "The project.json uses engine name '${LY_ENGINE_NAME_TO_USE}' but no engine with that name has been registered.\n${registration_error}")
 else()
     # If the user is passing CMAKE_MODULE_PATH we assume thats where we will find the engine
     if(NOT CMAKE_MODULE_PATH)
