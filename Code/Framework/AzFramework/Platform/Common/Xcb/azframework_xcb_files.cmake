@@ -12,6 +12,8 @@ set(FILES
     AzFramework/XcbConnectionManager.h
     AzFramework/XcbInputDeviceKeyboard.cpp
     AzFramework/XcbInputDeviceKeyboard.h
+    AzFramework/XcbInputDeviceMouse.cpp
+    AzFramework/XcbInputDeviceMouse.h
     AzFramework/XcbInterface.h
     AzFramework/XcbNativeWindow.cpp
     AzFramework/XcbNativeWindow.h

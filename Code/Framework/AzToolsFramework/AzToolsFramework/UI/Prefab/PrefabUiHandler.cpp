@@ -10,7 +10,7 @@
 
 #include <AzFramework/API/ApplicationAPI.h>
 
-#include <AzToolsFramework/Prefab/PrefabFocusInterface.h>
+#include <AzToolsFramework/Prefab/PrefabFocusPublicInterface.h>
 #include <AzToolsFramework/Prefab/PrefabPublicInterface.h>
 #include <AzToolsFramework/UI/Outliner/EntityOutlinerListModel.hxx>
 
@@ -35,10 +35,10 @@ namespace AzToolsFramework
             return;
         }
 
-        m_prefabFocusInterface = AZ::Interface<Prefab::PrefabFocusInterface>::Get();
-        if (m_prefabFocusInterface == nullptr)
+        m_prefabFocusPublicInterface = AZ::Interface<Prefab::PrefabFocusPublicInterface>::Get();
+        if (m_prefabFocusPublicInterface == nullptr)
         {
-            AZ_Assert(false, "PrefabUiHandler - could not get PrefabFocusInterface on PrefabUiHandler construction.");
+            AZ_Assert(false, "PrefabUiHandler - could not get PrefabFocusPublicInterface on PrefabUiHandler construction.");
             return;
         }
     }
@@ -83,7 +83,7 @@ namespace AzToolsFramework
 
     QIcon PrefabUiHandler::GenerateItemIcon(AZ::EntityId entityId) const
     {
-        if (m_prefabFocusInterface->IsOwningPrefabBeingFocused(entityId))
+        if (m_prefabFocusPublicInterface->IsOwningPrefabBeingFocused(entityId))
         {
             return QIcon(m_prefabEditIconPath);
         }
@@ -105,7 +105,7 @@ namespace AzToolsFramework
         const bool hasVisibleChildren = index.data(EntityOutlinerListModel::ExpandedRole).value<bool>() && index.model()->hasChildren(index);
 
         QColor backgroundColor = m_prefabCapsuleColor;
-        if (m_prefabFocusInterface->IsOwningPrefabBeingFocused(entityId))
+        if (m_prefabFocusPublicInterface->IsOwningPrefabBeingFocused(entityId))
         {
             backgroundColor = m_prefabCapsuleEditColor;
         }
@@ -178,12 +178,6 @@ namespace AzToolsFramework
 
         AZ::EntityId entityId(index.data(EntityOutlinerListModel::EntityIdRole).value<AZ::u64>());
 
-        // We hide the root instance container entity from the Outliner, so avoid drawing its full container on children
-        if (m_prefabPublicInterface->IsLevelInstanceContainerEntity(entityId))
-        {
-            return;
-        }
-
         const QTreeView* outlinerTreeView(qobject_cast<const QTreeView*>(option.widget));
         const int ancestorLeft = outlinerTreeView->visualRect(index).left() + (m_prefabBorderThickness / 2) - 1;
         const int curveRectSize = m_prefabCapsuleRadius * 2;
@@ -191,7 +185,7 @@ namespace AzToolsFramework
         const bool isLastColumn = descendantIndex.column() == EntityOutlinerListModel::ColumnLockToggle;
 
         QColor borderColor = m_prefabCapsuleColor;
-        if (m_prefabFocusInterface->IsOwningPrefabBeingFocused(entityId))
+        if (m_prefabFocusPublicInterface->IsOwningPrefabBeingFocused(entityId))
         {
             borderColor = m_prefabCapsuleEditColor;
         }
@@ -329,7 +323,7 @@ namespace AzToolsFramework
         if (prefabWipFeaturesEnabled)
         {
             // Focus on this prefab
-            m_prefabFocusInterface->FocusOnOwningPrefab(entityId);
+            m_prefabFocusPublicInterface->FocusOnOwningPrefab(entityId);
         }
     }
 }

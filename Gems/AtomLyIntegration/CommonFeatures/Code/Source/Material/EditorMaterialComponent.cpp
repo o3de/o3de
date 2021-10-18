@@ -148,11 +148,13 @@ namespace AZ
             BaseClass::Activate();
             MaterialReceiverNotificationBus::Handler::BusConnect(GetEntityId());
             MaterialComponentNotificationBus::Handler::BusConnect(GetEntityId());
+            EditorMaterialSystemComponentNotificationBus::Handler::BusConnect();
             UpdateMaterialSlots();
         }
 
         void EditorMaterialComponent::Deactivate()
         {
+            EditorMaterialSystemComponentNotificationBus::Handler::BusDisconnect();
             MaterialReceiverNotificationBus::Handler::BusDisconnect();
             MaterialComponentNotificationBus::Handler::BusDisconnect();
             BaseClass::Deactivate();
@@ -257,6 +259,18 @@ namespace AZ
             if (materialAssignment.m_materialInstance)
             {
                 materialAssignment.m_materialInstance->SetPsoHandlingOverride(AZ::RPI::MaterialPropertyPsoHandling::Allowed);
+            }
+        }
+
+        void EditorMaterialComponent::OnRenderMaterialPreviewComplete(
+            [[maybe_unused]] const AZ::EntityId& entityId,
+            [[maybe_unused]] const AZ::Render::MaterialAssignmentId& materialAssignmentId,
+            [[maybe_unused]] const QPixmap& pixmap)
+        {
+            if (entityId == GetEntityId())
+            {
+                AzToolsFramework::ToolsApplicationEvents::Bus::Broadcast(
+                    &AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplay, AzToolsFramework::Refresh_AttributesAndValues);
             }
         }
 

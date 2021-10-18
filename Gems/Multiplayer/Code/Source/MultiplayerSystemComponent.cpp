@@ -288,6 +288,10 @@ namespace Multiplayer
         return m_networkInterface->Listen(sessionConfig.m_port);
     }
 
+    void MultiplayerSystemComponent::OnCreateSessionEnd()
+    {
+    }
+
     bool MultiplayerSystemComponent::OnDestroySessionBegin()
     {
         // This can be triggered external from Multiplayer so only run if we are in an Initialized state
@@ -306,6 +310,20 @@ namespace Multiplayer
         InitializeMultiplayer(MultiplayerAgentType::Uninitialized);
 
         return true;
+    }
+
+    void MultiplayerSystemComponent::OnDestroySessionEnd()
+    {
+    }
+
+    void MultiplayerSystemComponent::OnUpdateSessionBegin(const AzFramework::SessionConfig& sessionConfig, const AZStd::string& updateReason)
+    {
+        AZ_UNUSED(sessionConfig);
+        AZ_UNUSED(updateReason);
+    }
+
+    void MultiplayerSystemComponent::OnUpdateSessionEnd()
+    {
     }
 
     void MultiplayerSystemComponent::OnTick(float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time)
