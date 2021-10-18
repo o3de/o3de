@@ -40,12 +40,12 @@ namespace AWSCore
     static constexpr const char AWSMetricsSettingsActionText[] = "Metrics settings";
 
     static constexpr const char AWSGameLiftActionText[] = "GameLift Gem";
-    static constexpr const char AWSGameLiftGemOverviewActionText[] = "GameLift Gem overview";
-    static constexpr const char AWSGameLiftGemSetupActionText[] = "Setup GameLift Gem";
+    static constexpr const char AWSGameLiftGemOverviewActionText[] = "Gem overview";
+    static constexpr const char AWSGameLiftGemSetupActionText[] = "Setup";
     static constexpr const char AWSMGameLiftScriptingActionText[] = "Scripting reference";
     static constexpr const char AWSGameLiftAPIReferenceActionText[] = "API reference";
     static constexpr const char AWSGameLiftAdvancedTopicsActionText[] = "Advanced topics";
     static constexpr const char AWSGameLiftLocalTestingActionText[] = "Local testing";
-    static constexpr const char AWSGameLiftBuildPackagingActionText[] = "Build packaging";
+    static constexpr const char AWSGameLiftBuildPackagingActionText[] = "Build packaging (Windows)";
     static constexpr const char AWSGameLiftResourceManagementActionText[] = "Resource Management";
 } // namespace AWSCore
