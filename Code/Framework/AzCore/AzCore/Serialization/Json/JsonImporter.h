@@ -42,10 +42,10 @@ namespace AZ
             const rapidjson::Value& source, const rapidjson::Value& target,
             rapidjson::Document::AllocatorType& allocator);
 
-        void AddImportDirective(const rapidjson::Pointer& jsonPtr, const AZStd::string& importFile);
+        void AddImportDirective(const rapidjson::Pointer& jsonPtr, AZStd::string importFile);
         const ImportDirectivesList& GetImportDirectives();
 
-        void AddImportedFile(const AZStd::string& importedFile);
+        void AddImportedFile(AZStd::string importedFile);
         const ImportedFilesList& GetImportedFiles();
 
         virtual ~BaseJsonImporter() = default;
@@ -56,14 +56,18 @@ namespace AZ
         ImportedFilesList m_importedFiles;
     };
 
+    enum class ImportTracking : AZ::u8
+    {
+        None = 0,
+        Dependencies = (1<<0),
+        Imports = (1<<1),
+        All = (Dependencies | Imports)
+    };
+    AZ_DEFINE_ENUM_BITWISE_OPERATORS(ImportTracking);
+
     class JsonImportResolver final
     {
     public:
-
-        static const AZ::u8 TRACK_NONE = 0;
-        static const AZ::u8 TRACK_DEPENDENCIES = (1<<0);
-        static const AZ::u8 TRACK_IMPORTS = (1<<1);
-        static const AZ::u8 TRACK_ALL = (TRACK_DEPENDENCIES | TRACK_IMPORTS);
 
         typedef AZStd::vector<AZ::IO::FixedMaxPath> ImportPathStack;
 
@@ -95,7 +99,7 @@ namespace AZ
         
         BaseJsonImporter* m_importer = nullptr;
 
-        AZ::u8 m_resolveFlags = JsonImportResolver::TRACK_ALL;
+        ImportTracking m_resolveFlags = ImportTracking::All;
 
         AZ::IO::FixedMaxPath m_loadedJsonPath;
     };

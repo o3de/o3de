@@ -20,11 +20,6 @@
 
 namespace AZ
 {
-    const char* JsonSerialization::TypeIdFieldIdentifier = "$type";
-    const char* JsonSerialization::DefaultStringIdentifier = "{}";
-    const char* JsonSerialization::KeyFieldIdentifier = "Key";
-    const char* JsonSerialization::ValueFieldIdentifier = "Value";
-
     namespace JsonSerializationInternal
     {
         template<typename T>
@@ -444,7 +439,7 @@ namespace AZ
             settings.m_reporting = issueReportingCallback;
         }
 
-        settings.m_resolveFlags = JsonImportResolver::TRACK_NONE;
+        settings.m_resolveFlags = ImportTracking::None;
 
         return JsonImportResolver::RestoreImports(jsonDoc, allocator, settings);
     }

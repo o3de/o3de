@@ -53,10 +53,11 @@ namespace AZ
     class JsonSerialization final
     {
     public:
-        static const char* TypeIdFieldIdentifier;
-        static const char* DefaultStringIdentifier;
-        static const char* KeyFieldIdentifier;
-        static const char* ValueFieldIdentifier;
+        static constexpr const char* TypeIdFieldIdentifier = "$type";
+        static constexpr const char* DefaultStringIdentifier = "{}";
+        static constexpr const char* KeyFieldIdentifier = "Key";
+        static constexpr const char* ValueFieldIdentifier = "Value";
+        static constexpr const char* ImportDirectiveIdentifier = "$import";
 
         //! Merges two json values together by applying "patch" to "target" using the selected merge algorithm.
         //! This version of ApplyPatch is destructive to "target". If the patch can't be correctly applied it will
@@ -286,9 +287,19 @@ namespace AZ
         //! @return An enum containing less, equal or greater. In case of an error, the value for the enum will "error".
         static JsonSerializerCompareResult Compare(const rapidjson::Value& lhs, const rapidjson::Value& rhs);
 
+        //! Resolves all import directives, including nested imports, in the given document. An importer object needs to be passed
+        //! in through the settings.
+        //! @param jsonDoc The json document in which to resolve imports.
+        //! @param allocator The allocator associated with the json document.
+        //! @param settings Additional settings that control the way the imports are resolved.
         static JsonSerializationResult::ResultCode ResolveImports(
             rapidjson::Value& jsonDoc, rapidjson::Document::AllocatorType& allocator, JsonImportSettings& settings);
         
+        //! Restores all import directives that were present in the json document. The same importer object that was
+        //! passed into ResolveImports through the settings needs to be passed here through settings as well.
+        //! @param jsonDoc The json document in which to restore imports.
+        //! @param allocator The allocator associated with the json document.
+        //! @param settings Additional settings that control the way the imports are restored.
         static JsonSerializationResult::ResultCode RestoreImports(
             rapidjson::Value& jsonDoc, rapidjson::Document::AllocatorType& allocator, JsonImportSettings& settings);
 
