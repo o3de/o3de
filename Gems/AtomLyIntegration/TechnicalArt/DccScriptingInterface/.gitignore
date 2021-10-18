@@ -9,3 +9,4 @@ workspace.xml
 .secrets.*
 settings.local.json
 azpy/_sample_package_/*
+.env
