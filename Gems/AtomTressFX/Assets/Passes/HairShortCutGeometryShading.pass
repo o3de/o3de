@@ -1,0 +1,61 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PassAsset",
+    "ClassData": {
+        "PassTemplate": {
+            "Name": "HairShortCutGeometryShadingPassTemplate",
+            "PassClass": "HairShortCutGeometryShadingPass",
+            "Slots": [
+                {   // Temporary color buffer to store the gathered shaderd hair color
+                    "Name": "HairColorRenderTarget",
+                    "SlotType": "Output",
+                    "ScopeAttachmentUsage": "RenderTarget"
+                },
+                { // Used to get the transform from screen space to world space.
+                    "Name": "DepthLinear",
+                    "SlotType": "Input",
+                    "ShaderInputName": "m_linearDepth",
+                    "ScopeAttachmentUsage": "Shader"
+                },
+                {
+                    "Name": "SkinnedHairSharedBuffer",
+                    "ShaderInputName": "m_skinnedHairSharedBuffer",
+                    "SlotType": "Input",
+                    "ScopeAttachmentUsage": "Shader"
+                }
+            ],
+            "ImageAttachments": [
+                {
+                    // The shader hair color render target - important to have at a non-MSAA mode
+                    // so that no overwork is done on sampling.
+                    "Name": "HairColorRenderTarget",
+                    "SizeSource": {
+                        "Source": {
+                            "Pass": "Parent",
+                            "Attachment": "DepthLinear"
+                        }
+                    },
+                    "ImageDescriptor": {
+                        "Format": "R16G16B16A16_FLOAT",
+                        "SharedQueueMask": "Graphics",
+                        "BindFlags": [
+                            "Color",
+                            "ShaderRead"
+                        ]
+                    }
+                }
+            ],
+            "Connections": [
+            ],
+            "PassData": {
+                "$type": "FullscreenTrianglePassData",
+                "ShaderAsset": {
+                    // Looking for it in the Shaders directory relative to the Assets directory
+                    "FilePath": "Shaders/HairShortCutGeometryShading.shader"
+                }
+            }
+        }
+    }
+}
+

@@ -8,7 +8,6 @@
 
 #include <Atom/Features/SrgSemantics.azsli>
 #include <HairUtilities.azsli> 
-#include <HairFullScreenUtils.azsli>    // provides the Vertex Shader
 
 //!------------------------------ SRG Structure --------------------------------
 //! Per pass SRG that holds the dynamic shared read-write buffer shared 
@@ -18,19 +17,27 @@
 //! Once the compute pases are done, it is read by the rendering shaders.  
 ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
 {
+    // Linear depth is used for getting the screen to world transform
+    Texture2D<float>    m_linearDepth;
+
     // oiriginally: [[vk::binding(0, 0)]] Texture2D<float4> HaiColorTexture : register(t0, space0);
     // oiriginally: [[vk::binding(1, 0)]] Texture2D<float>  AccumInvAlpha : register(t1, space0);
-    Texture2D<float4> m_hairColorTexture;
-    Texture2D<float>  m_accumInvAlpha;
+    Texture2D<float4>   m_hairColorTexture;
+    Texture2D<float>    m_accumInvAlpha;
 }
+//------------------------------------------------------------------------------
 
-//////////////////////////////////////////////////////////////
-//! HairColorPS - the fourth pass of ShortCut.
-//! Full-screen pass that finalizes the weighted average, and blends using the accumulated 1-alpha product.
+#include <HairFullScreenUtils.azsli>    // provides the Vertex Shader
+
+//!=============================================================================
+//!                 HairColorPS - Fourth Pass of ShortCut Render
+//! Full-screen pass that finalizes the weighted average, and blends using the 
+//! accumulated 1-alpha product.
+//!=============================================================================
 [earlydepthstencil]
-float4 ResolveHairPS(VSOutput input) : SV_Target
+float4 HairShortCutResolveColorPS(VSOutput input) : SV_Target
 {
-    int2 vScreenAddress = int2(input.vPosition.xy);
+    int2 vScreenAddress = int2(input.m_position.xy);
 
     float fInvAlpha = PassSrg::m_accumInvAlpha[vScreenAddress];
     float fAlpha = 1.0 - fInvAlpha;
@@ -44,5 +51,5 @@ float4 ResolveHairPS(VSOutput input) : SV_Target
     finalColor.xyz = PassSrg::m_hairColorTexture[vScreenAddress] * fAlpha / weightSum;
     finalColor.w = fInvAlpha;
 
-    return fcolor;
+    return finalColor;
 }
