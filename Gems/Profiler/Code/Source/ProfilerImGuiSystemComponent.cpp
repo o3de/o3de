@@ -55,10 +55,22 @@ namespace Profiler
 
     ProfilerImGuiSystemComponent::ProfilerImGuiSystemComponent()
     {
+#if defined(IMGUI_ENABLED)
+        if (ProfilerImGuiInterface::Get() == nullptr)
+        {
+            ProfilerImGuiInterface::Register(this);
+        }
+#endif // defined(IMGUI_ENABLED)
     }
 
     ProfilerImGuiSystemComponent::~ProfilerImGuiSystemComponent()
     {
+#if defined(IMGUI_ENABLED)
+        if (ProfilerImGuiInterface::Get() == this)
+        {
+            ProfilerImGuiInterface::Unregister(this);
+        }
+#endif // defined(IMGUI_ENABLED)
     }
 
     void ProfilerImGuiSystemComponent::Activate()

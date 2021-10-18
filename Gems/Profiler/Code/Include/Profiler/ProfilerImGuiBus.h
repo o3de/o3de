@@ -8,6 +8,7 @@
 #pragma once
 
 #include <AzCore/EBus/EBus.h>
+#include <AzCore/Interface/Interface.h>
 
 namespace Profiler
 {
@@ -31,5 +32,6 @@ namespace Profiler
         static constexpr AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::Single;
     };
 
+    using ProfilerImGuiInterface = AZ::Interface<ProfilerImGuiRequests>;
     using ProfilerImGuiRequestBus = AZ::EBus<ProfilerImGuiRequests, ProfilerImGuiBusTraits>;
 } // namespace Profiler
