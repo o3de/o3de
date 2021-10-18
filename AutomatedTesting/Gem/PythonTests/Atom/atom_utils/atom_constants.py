@@ -6,7 +6,6 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 Hold constants used across both hydra and non-hydra scripts.
 """
 
-
 # Light type options for the Light component.
 LIGHT_TYPES = {
     'unknown': 0,
@@ -124,7 +123,7 @@ class AtomComponentProperties:
         """
         Directional Light component properties.
           'Camera' an EditorEntity.id reference to the Camera component that controls cascaded shadow view frustum.
-                   Must be a different entity than the one which hosts Depth of Field component.
+                   Must be a different entity than the one which hosts Directional Light component.
         :param property: From the last element of the property tree path. Default 'name' for component name string.
         :return: Full property path OR component name if no property specified.
         """
