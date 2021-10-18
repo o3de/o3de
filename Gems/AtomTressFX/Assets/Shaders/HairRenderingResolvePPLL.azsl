@@ -58,7 +58,7 @@ ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
     // in the OIT process.
     // It can also be used to avoid the HW blend done at the end of the pixel 
     // shader stage but HW blend might be cheaper than additional PS blend.
-    Texture2D<float4>               m_frameBuffer;  // The merged MSAA output
+    Texture2D<float4>               m_frameBuffer;  // The merged non-MSAA input
 
     // Linear depth is used for getting the screen to world transform
     Texture2D<float>                m_linearDepth;

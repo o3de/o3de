@@ -63,5 +63,6 @@ float HairShortCutResolveDepthPS(VSOutput input) : SV_Depth
     const int farthestDepthIndex = 2;
     uint uDepth = PassSrg::m_fragmentDepthsTexture[uint3(vScreenAddress, farthestDepthIndex)];
 
+    // The following line is writing the depth into the actual depth buffer
     return asfloat(uDepth);
 }

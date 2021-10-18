@@ -7,9 +7,8 @@
             "Name": "HairShortCutGeometryShadingPassTemplate",
             "PassClass": "HairShortCutGeometryShadingPass",
             "Slots": [
-                //------ General Input/Output resources and Render Target ------
-                {
-                    "Name": "ColorRenderTarget",
+                {   // Temporary color buffer to store the gathered shaderd hair color
+                    "Name": "HairColorRenderTarget",
                     "SlotType": "Output",
                     "ScopeAttachmentUsage": "RenderTarget"
                 },
@@ -28,7 +27,9 @@
             ],
             "ImageAttachments": [
                 {
-                    "Name": "ColorRenderTarget",
+                    // The shader hair color render target - important to have at a non-MSAA mode
+                    // so that no overwork is done on sampling.
+                    "Name": "HairColorRenderTarget",
                     "SizeSource": {
                         "Source": {
                             "Pass": "Parent",
@@ -46,13 +47,6 @@
                 }
             ],
             "Connections": [
-                {
-                    "LocalSlot": "ColorRenderTarget",
-                    "AttachmentRef": {
-                        "Pass": "This",
-                        "Attachment": "ColorRenderTarget"
-                    }
-                }
             ],
             "PassData": {
                 "$type": "FullscreenTrianglePassData",

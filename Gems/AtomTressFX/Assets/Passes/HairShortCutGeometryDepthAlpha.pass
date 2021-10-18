@@ -10,11 +10,14 @@
                 {
                     // the regular render target is blended using inverse alpha to reduce the 
                     // incoming color contribution based on the hair thickness and alpha.
-                    "Name": "RenderTargetInputOutput",
-                    "SlotType": "InputOutput",
+                    "Name": "InverseAlphaRTOutput",
+                    "SlotType": "Output",
                     "ScopeAttachmentUsage": "RenderTarget",
                     "LoadStoreAction": {
-                        "LoadAction": "Load",
+                        "LoadAction": "Clear",
+                        "ClearValue": {
+                            "Value": [ 1.0, 1.0, 1.0, 1.0 ]
+                        },
                         "StoreAction": "Store"
                     }
                 },
@@ -26,12 +29,38 @@
                 },
                 {
                     "Name": "HairDepthsTextureArray",
-                    "SlotType": "Input",
+                    "SlotType": "Output",
                     "ScopeAttachmentUsage": "Shader",
-                    "ShaderInputName": "m_RWFragmentDepthsTexture"
+                    "ShaderInputName": "m_RWFragmentDepthsTexture",
+                    "LoadStoreAction": {
+                        "LoadAction": "Clear",
+                        "ClearValue": { // reverse depth order: closer --> 1.0
+                            "Value": [ 0.0, 0.0, 0.0, 0.0 ]
+                        },
+                        "StoreAction": "Store"
+                    }
                 }
             ],
             "ImageAttachments": [
+                {
+                    // This buffer is used as the render target and should be at non-MSAA screen resolution
+                    // to make sure no overwork is done.
+                    "Name": "InverseAlphaRTOutput",
+                    "SizeSource": {
+                        "Source": {
+                            "Pass": "Parent",
+                            "Attachment": "DepthLinear"
+                        }
+                    },
+                    "ImageDescriptor": {
+                        "Format": "D32_FLOAT",
+                        "SharedQueueMask": "Graphics",
+                        "BindFlags": [
+                            "Color",
+                            "ShaderRead"
+                        ]
+                    }
+                },
                 {
                     "Name": "HairDepthsTextureArray",
                     "SizeSource": {
@@ -53,20 +82,6 @@
                 }
             ],
             "Connections": [
-                {
-                    "LocalSlot": "RenderTargetInputOutput",
-                    "AttachmentRef": {
-                        "Pass": "Parent",
-                        "Attachment": "RenderTargetInputOutput"
-                    }
-                },
-                {
-                    "LocalSlot": "HairDepthsTextureArray",
-                    "AttachmentRef": {
-                        "Pass": "This",
-                        "Attachment": "HairDepthsTextureArray"
-                    }
-                }
             ],
             "PassData": {
                 "$type": "FullscreenTrianglePassData",
