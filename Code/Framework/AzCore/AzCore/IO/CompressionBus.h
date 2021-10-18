@@ -74,7 +74,7 @@ namespace AZ
 
             virtual void FindCompressionInfo(bool& found, CompressionInfo& info, const AZStd::string_view filename) = 0;
 
-            virtual void OnSerializerAvailable() = 0;
+            virtual void OnSerializerAvailable() {}
         };
 
         using CompressionBus = AZ::EBus<Compression>;
