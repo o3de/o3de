@@ -37,9 +37,11 @@ class AtomComponentProperties:
         return properties[property]
 
     @staticmethod
-    def bloom(property: str = 'name') -> str:
+    def bloom(property: str = 'name') -> Union[str, List[str]]:
         """
         Bloom component properties. Requires PostFX Layer component.
+          - 'requires' a list of component names as strings required by this component.
+            Use editor_entity_utils EditorEntity.add_components(list) to add this list of requirements.\n
         :param property: From the last element of the property tree path. Default 'name' for component name string.
         :return: Full property path OR component name if no property specified.
         """
@@ -65,7 +67,7 @@ class AtomComponentProperties:
     def decal(property: str = 'name') -> str:
         """
         Decal component properties.
-          'Material' the material Asset.id of the decal.
+          - 'Material' the material Asset.id of the decal.
         :param property: From the last element of the property tree path. Default 'name' for component name string.
         :return: Full property path OR component name if no property specified.
         """
@@ -76,9 +78,11 @@ class AtomComponentProperties:
         return properties[property]
 
     @staticmethod
-    def deferred_fog(property: str = 'name') -> str:
+    def deferred_fog(property: str = 'name') -> Union[str, List[str]]:
         """
         Deferred Fog component properties. Requires PostFX Layer component.
+          - 'requires' a list of component names as strings required by this component.
+            Use editor_entity_utils EditorEntity.add_components(list) to add this list of requirements.\n
         :param property: From the last element of the property tree path. Default 'name' for component name string.
         :return: Full property path OR component name if no property specified.
         """
@@ -89,11 +93,13 @@ class AtomComponentProperties:
         return properties[property]
 
     @staticmethod
-    def depth_of_field(property: str = 'name') -> str:
+    def depth_of_field(property: str = 'name') -> Union[str, List[str]]:
         """
         Depth of Field component properties. Requires PostFX Layer component.
-          'Camera Entity' an EditorEntity.id reference to the Camera component required for this effect.
-                          Must be a different entity than the one which hosts Depth of Field component.
+          - 'requires' a list of component names as strings required by this component.
+            Use editor_entity_utils EditorEntity.add_components(list) to add this list of requirements.\n
+          - 'Camera Entity' an EditorEntity.id reference to the Camera component required for this effect.
+            Must be a different entity than the one which hosts Depth of Field component.\n
         :param property: From the last element of the property tree path. Default 'name' for component name string.
         :return: Full property path OR component name if no property specified.
         """
@@ -105,10 +111,10 @@ class AtomComponentProperties:
         return properties[property]
 
     @staticmethod
-    def diffuse_probe(property: str = 'name') -> str:
+    def diffuse_probe(property: str = 'name') -> Union[str, List[str]]:
         """
-        Diffuse Probe Grid component properties. Requires one of 'shapes' listed.
-          'shapes' a list of supported shapes as component names.
+        Diffuse Probe Grid component properties. Requires one of 'shapes'.
+          - 'shapes' a list of supported shapes as component names.
         :param property: From the last element of the property tree path. Default 'name' for component name string.
         :return: Full property path OR component name if no property specified.
         """
@@ -122,8 +128,8 @@ class AtomComponentProperties:
     def directional_light(property: str = 'name') -> str:
         """
         Directional Light component properties.
-          'Camera' an EditorEntity.id reference to the Camera component that controls cascaded shadow view frustum.
-                   Must be a different entity than the one which hosts Directional Light component.
+          - 'Camera' an EditorEntity.id reference to the Camera component that controls cascaded shadow view frustum.
+            Must be a different entity than the one which hosts Directional Light component.\n
         :param property: From the last element of the property tree path. Default 'name' for component name string.
         :return: Full property path OR component name if no property specified.
         """
@@ -158,9 +164,11 @@ class AtomComponentProperties:
         return properties[property]
 
     @staticmethod
-    def exposure_control(property: str = 'name') -> str:
+    def exposure_control(property: str = 'name') -> Union[str, List[str]]:
         """
         Exposure Control component properties. Requires PostFX Layer component.
+          - 'requires' a list of component names as strings required by this component.
+            Use editor_entity_utils EditorEntity.add_components(list) to add this list of requirements.\n
         :param property: From the last element of the property tree path. Default 'name' for component name string.
         :return: Full property path OR component name if no property specified.
         """
@@ -174,8 +182,8 @@ class AtomComponentProperties:
     def global_skylight(property: str = 'name') -> str:
         """
         Global Skylight (IBL) component properties.
-          'Diffuse Image' Asset.id for the cubemap image for determining diffuse lighting.
-          'Specular Image' Asset.id for the cubemap image for determining specular lighting.
+          - 'Diffuse Image' Asset.id for the cubemap image for determining diffuse lighting.
+          - 'Specular Image' Asset.id for the cubemap image for determining specular lighting.
         :param property: From the last element of the property tree path. Default 'name' for component name string.
         :return: Full property path OR component name if no property specified.
         """
@@ -199,9 +207,11 @@ class AtomComponentProperties:
         return properties[property]
 
     @staticmethod
-    def hdr_color_grading(property: str = 'name') -> str:
+    def hdr_color_grading(property: str = 'name') -> Union[str, List[str]]:
         """
         HDR Color Grading component properties. Requires PostFX Layer component.
+          - 'requires' a list of component names as strings required by this component.
+            Use editor_entity_utils EditorEntity.add_components(list) to add this list of requirements.\n
         :param property: From the last element of the property tree path. Default 'name' for component name string.
         :return: Full property path OR component name if no property specified.
         """
@@ -227,7 +237,7 @@ class AtomComponentProperties:
     def light(property: str = 'name') -> str:
         """
         Light component properties.
-          'Light type' from atom_constants.py LIGHT_TYPES
+          - 'Light type' from atom_constants.py LIGHT_TYPES
         :param property: From the last element of the property tree path. Default 'name' for component name string.
         :return: Full property path OR component name if no property specified.
         """
@@ -238,9 +248,11 @@ class AtomComponentProperties:
         return properties[property]
 
     @staticmethod
-    def look_modification(property: str = 'name') -> str:
+    def look_modification(property: str = 'name') -> Union[str, List[str]]:
         """
         Look Modification component properties. Requires PostFX Layer component.
+          - 'requires' a list of component names as strings required by this component.
+            Use editor_entity_utils EditorEntity.add_components(list) to add this list of requirements.\n
         :param property: From the last element of the property tree path. Default 'name' for component name string.
         :return: Full property path OR component name if no property specified.
         """
@@ -251,9 +263,11 @@ class AtomComponentProperties:
         return properties[property]
 
     @staticmethod
-    def material(property: str = 'name') -> str:
+    def material(property: str = 'name') -> Union[str, List[str]]:
         """
         Material component properties. Requires one of Actor OR Mesh component.
+          - 'requires' a list of component names as strings required by this component.
+            Only one of these is required at a time for this component.\n
         :param property: From the last element of the property tree path. Default 'name' for component name string.
         :return: Full property path OR component name if no property specified.
         """
@@ -267,7 +281,7 @@ class AtomComponentProperties:
     def mesh(property: str = 'name') -> str:
         """
         Mesh component properties.
-          'Mesh Asset' Asset.id of the mesh model.
+          - 'Mesh Asset' Asset.id of the mesh model.
         :param property: From the last element of the property tree path. Default 'name' for component name string.
         :return: Full property path OR component name if no property specified.
         :rtype: str
@@ -315,9 +329,11 @@ class AtomComponentProperties:
         return properties[property]
 
     @staticmethod
-    def postfx_gradient(property: str = 'name') -> str:
+    def postfx_gradient(property: str = 'name') -> Union[str, List[str]]:
         """
         PostFX Gradient Weight Modifier component properties. Requires PostFX Layer component.
+          - 'requires' a list of component names as strings required by this component.
+            Use editor_entity_utils EditorEntity.add_components(list) to add this list of requirements.\n
         :param property: From the last element of the property tree path. Default 'name' for component name string.
         :return: Full property path OR component name if no property specified.
         """
@@ -328,9 +344,11 @@ class AtomComponentProperties:
         return properties[property]
 
     @staticmethod
-    def postfx_radius(property: str = 'name') -> str:
+    def postfx_radius(property: str = 'name') -> Union[str, List[str]]:
         """
         PostFX Radius Weight Modifier component properties. Requires PostFX Layer component.
+          - 'requires' a list of component names as strings required by this component.
+            Use editor_entity_utils EditorEntity.add_components(list) to add this list of requirements.\n
         :param property: From the last element of the property tree path. Default 'name' for component name string.
         :return: Full property path OR component name if no property specified.
         """
@@ -341,10 +359,12 @@ class AtomComponentProperties:
         return properties[property]
 
     @staticmethod
-    def postfx_shape(property: str = 'name') -> str:
+    def postfx_shape(property: str = 'name') -> Union[str, List[str]]:
         """
         PostFX Shape Weight Modifier component properties. Requires PostFX Layer and one of 'shapes' listed.
-          'shapes' a list of supported shapes as component names. 'Tube Shape' is also supported by requires 'Spline'.
+          - 'requires' a list of component names as strings required by this component.
+            Use editor_entity_utils EditorEntity.add_components(list) to add this list of requirements.\n
+          - 'shapes' a list of supported shapes as component names. 'Tube Shape' is also supported but requires 'Spline'.
         :param property: From the last element of the property tree path. Default 'name' for component name string.
         :return: Full property path OR component name if no property specified.
         """
@@ -357,11 +377,11 @@ class AtomComponentProperties:
         return properties[property]
 
     @staticmethod
-    def reflection_probe(property: str = 'name') -> str:
+    def reflection_probe(property: str = 'name') -> Union[str, List[str]]:
         """
         Reflection Probe component properties. Requires one of 'shapes' listed.
-          'shapes' a list of supported shapes as component names.
-          'Baked Cubemap Path' Asset.id of the baked cubemap image generated by a call to 'BakeReflectionProbe' ebus.
+          - 'shapes' a list of supported shapes as component names.
+          - 'Baked Cubemap Path' Asset.id of the baked cubemap image generated by a call to 'BakeReflectionProbe' ebus.
         :param property: From the last element of the property tree path. Default 'name' for component name string.
         :return: Full property path OR component name if no property specified.
         """
@@ -373,9 +393,11 @@ class AtomComponentProperties:
         return properties[property]
 
     @staticmethod
-    def ssao(property: str = 'name') -> str:
+    def ssao(property: str = 'name') -> Union[str, List[str]]:
         """
         SSAO component properties. Requires PostFX Layer component.
+          - 'requires' a list of component names as strings required by this component.
+            Use editor_entity_utils EditorEntity.add_components(list) to add this list of requirements.\n
         :param property: From the last element of the property tree path. Default 'name' for component name string.
         :return: Full property path OR component name if no property specified.
         """
