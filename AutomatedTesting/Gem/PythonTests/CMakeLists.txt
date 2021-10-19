@@ -58,3 +58,6 @@ add_subdirectory(smoke)
 
 ## AWS ##
 add_subdirectory(AWS)
+
+## Multiplayer ##
+add_subdirectory(Multiplayer)

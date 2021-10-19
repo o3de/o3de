@@ -12,6 +12,7 @@
 #include <Multiplayer/MultiplayerConstants.h>
 
 #include <MultiplayerSystemComponent.h>
+#include <PythonEditorEventsBus.h>
 #include <Editor/MultiplayerEditorSystemComponent.h>
 #include <Source/AutoGen/Multiplayer.AutoPackets.h>
 
@@ -37,12 +38,55 @@ namespace Multiplayer
     AZ_CVAR(AZ::CVarFixedString, editorsv_serveraddr, AZ::CVarFixedString(LocalHost), nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "The address of the server to connect to");
     AZ_CVAR(uint16_t, editorsv_port, DefaultServerEditorPort, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "The port that the multiplayer editor gem will bind to for traffic");
 
+    //////////////////////////////////////////////////////////////////////////
+    void PyEnterGameMode()
+    {
+        editorsv_enabled = true;
+        editorsv_launch = true;
+        AzToolsFramework::EditorLayerPythonRequestBus::Broadcast(&AzToolsFramework::EditorLayerPythonRequestBus::Events::EnterGameMode);
+    }
+
+    bool PyIsInGameMode()
+    {
+        // If the network entity manager is tracking at least 1 entity then the editor has connected and the autonomous player exists and is being replicated.
+        return AZ::Interface<INetworkEntityManager>::Get()->GetEntityCount() > 0;
+    }
+
+    void PythonEditorFuncs::Reflect(AZ::ReflectContext* context)
+    {
+        if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
+        {
+            // This will create static python methods in the 'azlmbr.multiplayer' module
+            // Note: The methods will be prefixed with the class name, PythonEditorFuncs
+            // Example Hydra Python: azlmbr.multiplayer.PythonEditorFuncs_enter_game_mode()
+            behaviorContext->Class<PythonEditorFuncs>()
+                ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
+                ->Attribute(AZ::Script::Attributes::Module, "multiplayer")
+                ->Method("enter_game_mode", PyEnterGameMode, nullptr, "Enters the editor game mode and launches/connects to the server launcher.")
+                ->Method("is_in_game_mode", PyIsInGameMode, nullptr, "Queries if it's in the game mode and the server has finished connecting and the default network player has spawned.")
+            ;
+
+        }
+    }
+    
     void MultiplayerEditorSystemComponent::Reflect(AZ::ReflectContext* context)
     {
         if (AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serializeContext->Class<MultiplayerEditorSystemComponent, AZ::Component>()
                 ->Version(1);
+        }
+
+        // Reflect Python Editor Functions
+        if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
+        {
+            // This will add the MultiplayerPythonEditorBus into the 'azlmbr.multiplayer' module
+            behaviorContext->EBus<MultiplayerEditorLayerPythonRequestBus>("MultiplayerPythonEditorBus")
+                ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
+                ->Attribute(AZ::Script::Attributes::Module, "multiplayer")
+                ->Event("EnterGameMode", &MultiplayerEditorLayerPythonRequestBus::Events::EnterGameMode)
+                ->Event("IsInGameMode", &MultiplayerEditorLayerPythonRequestBus::Events::IsInGameMode)
+            ;
         }
     }
 
@@ -252,5 +296,15 @@ namespace Multiplayer
         // In normal game clients SendReadyForEntityUpdates will be enabled once the appropriate level's root spawnable is loaded,
         // but since we're in Editor, we're already in the level.
         AZ::Interface<IMultiplayer>::Get()->SendReadyForEntityUpdates(true);
+    }
+
+    void MultiplayerEditorSystemComponent::EnterGameMode()
+    {
+        PyEnterGameMode();
+    }
+    
+    bool MultiplayerEditorSystemComponent::IsInGameMode()
+    {
+        return PyIsInGameMode();
     }
 }

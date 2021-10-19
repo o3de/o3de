@@ -14,6 +14,7 @@ from typing import Callable, Tuple
 
 import azlmbr
 import azlmbr.legacy.general as general
+import azlmbr.multiplayer as multiplayer
 import azlmbr.debug
 
 
@@ -65,6 +66,25 @@ class TestHelper:
         
         TestHelper.wait_for_condition(lambda : general.is_in_game_mode(), 1.0)
         Report.critical_result(msgtuple_success_fail, general.is_in_game_mode())
+
+    @staticmethod
+    def multiplayer_enter_game_mode(msgtuple_success_fail : Tuple[str, str], sv_default_player_spawn_asset : str):
+        # type: (tuple) -> None
+        """
+        :param msgtuple_success_fail: The tuple with the expected/unexpected messages for entering game mode.
+        :param sv_default_player_spawn_asset: The path to the network player prefab that will be automatically spawned upon entering gamemode.  The engine default is "prefabs/player.network.spawnable" 
+
+        :return: None
+        """
+        Report.info("Entering game mode")
+
+        if sv_default_player_spawn_asset :
+            general.set_cvar("sv_defaultPlayerSpawnAsset", sv_default_player_spawn_asset)
+        
+        multiplayer.PythonEditorFuncs_enter_game_mode()
+        
+        TestHelper.wait_for_condition(lambda : multiplayer.PythonEditorFuncs_is_in_game_mode(), 30.0)
+        Report.critical_result(msgtuple_success_fail, multiplayer.PythonEditorFuncs_is_in_game_mode())
 
     @staticmethod
     def exit_game_mode(msgtuple_success_fail : Tuple[str, str]):
