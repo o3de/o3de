@@ -326,7 +326,7 @@ class EditorTestSuite():
         :request: The Pytest request
         :yield: The TestData object
         """
-        self._editor_test_data(request)
+        yield from self._editor_test_data(request)
 
     def _editor_test_data(self, request):
         """
@@ -676,7 +676,6 @@ class EditorTestSuite():
                 elem = json.loads(m.groups()[0])
                 found_jsons[elem["name"]] = elem
             except Exception as e:
-                raise e
                 continue # Avoid to fail if the output data is corrupt
         
         # Try to find the element in the log, this is used for cutting the log contents later
@@ -710,7 +709,7 @@ class EditorTestSuite():
                 cur_log = editor_log_content[log_start : end]
                 log_start = end
 
-                if "success" in json_result.keys():
+                if json_result["success"]:
                     result = Result.Pass.create(test_spec, json_output, cur_log)
                 else:
                     result = Result.Fail.create(test_spec, json_output, cur_log)
