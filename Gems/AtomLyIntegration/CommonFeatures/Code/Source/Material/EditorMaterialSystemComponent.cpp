@@ -293,12 +293,9 @@ namespace AZ
         void EditorMaterialSystemComponent::PurgePreviews()
         {
             size_t materialPreviewCount = 0;
-            for (const auto& [entityId, previews] : m_materialPreviews)
+            for (const auto& materialPreviewPair : m_materialPreviews)
             {
-                for (const auto& [assignmentId, images] : previews)
-                {
-                    materialPreviewCount += previews.size();
-                }
+                materialPreviewCount += materialPreviewPair.second.size();
             }
 
             if (materialPreviewCount > MaterialPreviewLimit)
