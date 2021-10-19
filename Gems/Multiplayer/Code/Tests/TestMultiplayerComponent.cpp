@@ -4,8 +4,6 @@
 * SPDX-License-Identifier: Apache-2.0 OR MIT
 *
 */
-#pragma once
-
 #include <Tests/TestMultiplayerComponent.h>
 
 #include <AzCore/Serialization/SerializeContext.h>
