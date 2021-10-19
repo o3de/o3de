@@ -17,16 +17,15 @@ namespace AzToolsFramework
     {
         PrefabUndoBase::PrefabUndoBase(const AZStd::string& undoOperationName)
             : UndoSystem::URSequencePoint(undoOperationName)
-            , m_changed(true)
-            , m_templateId(InvalidTemplateId)
         {
             m_instanceToTemplateInterface = AZ::Interface<InstanceToTemplateInterface>::Get();
             AZ_Assert(m_instanceToTemplateInterface, "Failed to grab instance to template interface");
         }
 
-        PrefabUndoInstance::PrefabUndoInstance(const AZStd::string& undoOperationName)
+        PrefabUndoInstance::PrefabUndoInstance(const AZStd::string& undoOperationName, const bool useImmediatePropagation)
             : PrefabUndoBase(undoOperationName)
         {
+            m_useImmediatePropagation = useImmediatePropagation;
         }
 
         void PrefabUndoInstance::Capture(
@@ -42,17 +41,12 @@ namespace AzToolsFramework
 
         void PrefabUndoInstance::Undo()
         {
-            m_instanceToTemplateInterface->PatchTemplate(m_undoPatch, m_templateId, true);
+            m_instanceToTemplateInterface->PatchTemplate(m_undoPatch, m_templateId, m_useImmediatePropagation);
         }
 
         void PrefabUndoInstance::Redo()
         {
-            m_instanceToTemplateInterface->PatchTemplate(m_redoPatch, m_templateId, true);
-        }
-
-        void PrefabUndoInstance::RedoBatched(InstanceOptionalConstReference instance)
-        {
-            m_instanceToTemplateInterface->PatchTemplate(m_redoPatch, m_templateId, false, instance);
+            m_instanceToTemplateInterface->PatchTemplate(m_redoPatch, m_templateId, m_useImmediatePropagation);
         }
 
         //PrefabEntityUpdateUndo

@@ -48,14 +48,14 @@ namespace AZ
         Type GetType(AZStd::string_view path) const override;
         bool Visit(Visitor& visitor, AZStd::string_view path) const override;
         bool Visit(const VisitorCallback& callback, AZStd::string_view path) const override;
-        [[nodiscard]] NotifyEventHandler RegisterNotifier(const NotifyCallback& callback) override;
-        [[nodiscard]] NotifyEventHandler RegisterNotifier(NotifyCallback&& callback) override;
+        [[nodiscard]] NotifyEventHandler RegisterNotifier(NotifyCallback callback) override;
+        void RegisterNotifier(NotifyEventHandler& hanlder) override;
         void ClearNotifiers();
 
-        [[nodiscard]] PreMergeEventHandler RegisterPreMergeEvent(const PreMergeEventCallback& callback) override;
-        [[nodiscard]] PreMergeEventHandler RegisterPreMergeEvent(PreMergeEventCallback&& callback) override;
-        [[nodiscard]] PostMergeEventHandler RegisterPostMergeEvent(const PostMergeEventCallback& callback) override;
-        [[nodiscard]] PostMergeEventHandler RegisterPostMergeEvent(PostMergeEventCallback&& callback) override;
+        [[nodiscard]] PreMergeEventHandler RegisterPreMergeEvent(PreMergeEventCallback callback) override;
+        void RegisterPreMergeEvent(PreMergeEventHandler& handler) override;
+        [[nodiscard]] PostMergeEventHandler RegisterPostMergeEvent(PostMergeEventCallback callback) override;
+        void RegisterPostMergeEvent(PostMergeEventHandler& handler) override;
         void ClearMergeEvents();
 
         bool Get(bool& result, AZStd::string_view path) const override;
@@ -76,13 +76,13 @@ namespace AZ
 
         bool Remove(AZStd::string_view path) override;
 
-        bool MergeCommandLineArgument(AZStd::string_view argument, AZStd::string_view rootKey,
+        bool MergeCommandLineArgument(AZStd::string_view argument, AZStd::string_view anchorKey,
             const CommandLineArgumentSettings& commandLineSettings) override;
-        bool MergeSettings(AZStd::string_view data, Format format) override;
-        bool MergeSettingsFile(AZStd::string_view path, Format format, AZStd::string_view rootKey,
+        bool MergeSettings(AZStd::string_view data, Format format, AZStd::string_view anchorKey = "") override;
+        bool MergeSettingsFile(AZStd::string_view path, Format format, AZStd::string_view anchorKey = "",
             AZStd::vector<char>* scratchBuffer = nullptr) override;
         bool MergeSettingsFolder(AZStd::string_view path, const Specializations& specializations,
-            AZStd::string_view platform, AZStd::string_view rootKey = "", AZStd::vector<char>* scratchBuffer = nullptr) override;
+            AZStd::string_view platform, AZStd::string_view anchorKey = "", AZStd::vector<char>* scratchBuffer = nullptr) override;
 
         void SetApplyPatchSettings(const AZ::JsonApplyPatchSettings& applyPatchSettings) override;
         void GetApplyPatchSettings(AZ::JsonApplyPatchSettings& applyPatchSettings) override;
@@ -120,6 +120,19 @@ namespace AZ
         NotifyEvent m_notifiers;
         PreMergeEvent m_preMergeEvent;
         PostMergeEvent m_postMergeEvent;
+
+        //! NOTE: During SignalNotifier, the registered notify event handlers are moved to a local NotifyEvent
+        //! Therefore setting a value within the registry during signaling will queue future SignalNotifer calls
+        //! These calls will then be invoked after the current signaling has completex
+        //! This is done to avoid deadlock if another thread attempts to access register a notifier or signal one
+        mutable AZStd::mutex m_signalMutex;
+        struct SignalNotifierArgs
+        {
+            FixedValueString m_jsonPath;
+            Type m_type;
+        };
+        AZStd::deque<SignalNotifierArgs> m_signalNotifierQueue;
+        AZStd::atomic_int m_signalCount{};
 
         rapidjson::Document m_settings;
         JsonSerializerSettings m_serializationSettings;

@@ -7,7 +7,7 @@
  */
 
 #include <GemRepo/GemRepoAddDialog.h>
-#include <FormLineEditWidget.h>
+#include <FormFolderBrowseEditWidget.h>
 
 #include <QVBoxLayout>
 #include <QLabel>
@@ -40,7 +40,7 @@ namespace O3DE::ProjectManager
         instructionContextLabel->setAlignment(Qt::AlignLeft);
         vLayout->addWidget(instructionContextLabel);
 
-        m_repoPath = new FormLineEditWidget(tr("Repository Path"), "", this);
+        m_repoPath = new FormFolderBrowseEditWidget(tr("Repository Path"), "", this);
         m_repoPath->setFixedWidth(600);
         vLayout->addWidget(m_repoPath);
 
