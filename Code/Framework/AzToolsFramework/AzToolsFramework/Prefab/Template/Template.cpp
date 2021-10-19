@@ -66,7 +66,16 @@ namespace AzToolsFramework
 
         bool Template::IsValid() const
         {
-            return !m_prefabDom.IsNull() && !m_filePath.empty();
+            if (m_prefabDom.IsNull() || m_filePath.empty())
+            {
+                return false;
+            }
+            else if (!m_prefabDom.IsObject())
+            {
+                return false;
+            }
+            auto source = m_prefabDom.FindMember(PrefabDomUtils::SourceName);
+            return (source != m_prefabDom.MemberEnd());
         }
 
         bool Template::IsLoadedWithErrors() const
@@ -181,18 +190,11 @@ namespace AzToolsFramework
             {
                 return m_isProcedural.value();
             }
-            // determine if is IsProcedural() based on some DOM logic
-            if (!m_prefabDom.IsObject())
+            else if (!IsValid())
             {
-                m_isProcedural = AZStd::make_optional(false);
-                return m_isProcedural.value();
+                return false;
             }
-            auto source = m_prefabDom.FindMember("Source");
-            if (source == m_prefabDom.MemberEnd())
-            {
-                m_isProcedural = AZStd::make_optional(false);
-                return m_isProcedural.value();
-            }
+            auto source = m_prefabDom.FindMember(PrefabDomUtils::SourceName);
             AZ::IO::PathView path(source->value.GetString());
             m_isProcedural = AZStd::make_optional(path.Extension().Match(".procprefab"));
             return m_isProcedural.value();
