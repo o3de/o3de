@@ -7,3 +7,4 @@
 #
 
 set(RENDERDOC_RUNTIME_DEPENDENCIES "${BASE_PATH}/lib/librenderdoc.so")
+set(RENDERDOC_INCLUDE_DIRECTORIES "include")

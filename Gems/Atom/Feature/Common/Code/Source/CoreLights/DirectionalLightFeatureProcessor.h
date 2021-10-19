@@ -217,7 +217,6 @@ namespace AZ
             void SetDebugFlags(LightHandle handle, DebugDrawFlags flags) override;
             void SetShadowFilterMethod(LightHandle handle, ShadowFilterMethod method) override;
             void SetFilteringSampleCount(LightHandle handle, uint16_t count) override;
-            void SetShadowBoundaryWidth(LightHandle handle, float boundaryWidth) override;
             void SetShadowReceiverPlaneBiasEnabled(LightHandle handle, bool enable) override;
 
             const Data::Instance<RPI::Buffer> GetLightBuffer() const;
@@ -278,10 +277,8 @@ namespace AZ
 
             //! This updates the parameter of Gaussian filter used in ESM.
             void UpdateFilterParameters(LightHandle handle);
-            //! This updates standard deviations for each cascade.
-            void UpdateStandardDeviations(LightHandle handle, const RPI::View* cameraView);
-            //! This updates filter offset and size for each cascade.
-            void UpdateFilterOffsetsCounts(LightHandle handle, const RPI::View* cameraView);
+            //! This updates if the filter is enabled.
+            void UpdateFilterEnabled(LightHandle handle, const RPI::View* cameraView);
             //! This updates shadowmap position(origin and size) in the atlas for each cascade.
             void UpdateShadowmapPositionInAtlas(LightHandle handle, const RPI::View* cameraView);
             //! This set filter parameters to passes which execute filtering.

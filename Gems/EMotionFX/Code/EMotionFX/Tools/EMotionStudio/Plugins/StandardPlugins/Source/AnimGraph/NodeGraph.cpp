@@ -57,7 +57,6 @@ namespace EMStudio
         m_conEndOffset = QPoint(0, 0);
         m_conPortNr = InvalidIndex16;
         m_conIsInputPort = true;
-        m_conNode = nullptr;  // nullptr when no connection is being created
         m_conPort = nullptr;
         m_conIsValid = false;
         m_targetPort = nullptr;
@@ -149,6 +148,16 @@ namespace EMStudio
             }
         }
         return connections;
+    }
+
+    bool NodeGraph::GetIsCreatingConnection() const
+    {
+        return (GetCreateConnectionNode() && !m_relinkConnection);
+    }
+
+    bool NodeGraph::GetIsRelinkingConnection() const
+    {
+        return (GetCreateConnectionNode() && m_relinkConnection);
     }
 
     void NodeGraph::DrawOverlay(QPainter& painter)
@@ -1495,7 +1504,7 @@ namespace EMStudio
     {
         m_conPortNr          = portNr;
         m_conIsInputPort     = isInputPort;
-        m_conNode            = portNode;
+        m_conNodeIndex       = portNode->GetModelIndex();
         m_conPort            = port;
         m_conStartOffset     = startOffset;
     }
@@ -1505,7 +1514,7 @@ namespace EMStudio
     void NodeGraph::StartRelinkConnection(NodeConnection* connection, AZ::u16 portNr, GraphNode* node)
     {
         m_conPortNr              = portNr;
-        m_conNode                = node;
+        m_conNodeIndex           = node->GetModelIndex();
         m_relinkConnection       = connection;
 
         //MCore::LogInfo( "StartRelinkConnection: Connection=(%s->%s) portNr=%i, graphNode=%s", connection->GetSourceNode()->GetName(), connection->GetTargetNode()->GetName(), portNr, node->GetName()  );
@@ -1563,31 +1572,26 @@ namespace EMStudio
         m_replaceTransitionTail = nullptr;
     }
 
-
-
     // reset members
     void NodeGraph::StopRelinkConnection()
     {
         m_conPortNr              = InvalidIndex16;
-        m_conNode                = nullptr;
+        m_conNodeIndex           = {};
         m_relinkConnection       = nullptr;
         m_conIsValid             = false;
         m_targetPort             = nullptr;
     }
-
-
 
     // reset members
     void NodeGraph::StopCreateConnection()
     {
         m_conPortNr          = InvalidIndex16;
         m_conIsInputPort     = true;
-        m_conNode            = nullptr;  // nullptr when no connection is being created
+        m_conNodeIndex       = {};
         m_conPort            = nullptr;
         m_targetPort         = nullptr;
         m_conIsValid         = false;
     }
-
 
     // render the connection we're creating, if any
     void NodeGraph::RenderReplaceTransition(QPainter& painter)
@@ -1628,6 +1632,16 @@ namespace EMStudio
         }
     }
 
+    GraphNode* NodeGraph::GetCreateConnectionNode() const
+    {
+        NodeGraph* activeGraph = m_graphWidget->GetActiveGraph();
+        if (!activeGraph)
+        {
+            return nullptr;
+        }
+
+        return activeGraph->FindGraphNode(m_conNodeIndex);
+    }
 
     // render the connection we're creating, if any
     void NodeGraph::RenderCreateConnection(QPainter& painter)
