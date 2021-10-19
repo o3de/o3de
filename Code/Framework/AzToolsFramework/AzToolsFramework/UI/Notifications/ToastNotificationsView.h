@@ -50,10 +50,6 @@ namespace AzToolsFramework
         void OnShow();
         void UpdateToastPosition();
 
-    protected:
-        void showEvent(QShowEvent* showEvent) override;
-        void hideEvent(QHideEvent* hideEvent) override;
-
     private:
         ToastId CreateToastNotification(const AzQtComponents::ToastConfiguration& toastConfiguration);
         void DisplayQueuedNotification();

@@ -25,30 +25,6 @@ namespace AzToolsFramework
         ToastRequestBus::Handler::BusDisconnect();
     }
 
-    void ToastNotificationsView::showEvent(QShowEvent* showEvent)
-    {
-        QWidget::showEvent(showEvent);
-
-        if (m_activeNotification.IsValid() || !m_queuedNotifications.empty())
-        {
-            DisplayQueuedNotification();
-        }
-    }
-
-    void ToastNotificationsView::hideEvent(QHideEvent* hideEvent)
-    {
-        QWidget::hideEvent(hideEvent);
-
-        if (m_activeNotification.IsValid())
-        {
-            auto notificationIter = m_notifications.find(m_activeNotification);
-            if (notificationIter != m_notifications.end())
-            {
-                notificationIter->second->hide();
-            }
-        }
-    }
-
     void ToastNotificationsView::OnHide()
     {
         QWidget::hide();
@@ -183,7 +159,6 @@ namespace AzToolsFramework
         m_queuedNotifications.erase(m_queuedNotifications.begin());
 
         auto notificationIter = m_notifications.find(toastId);
-
         if (notificationIter != m_notifications.end())
         {
             m_activeNotification = toastId;

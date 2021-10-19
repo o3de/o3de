@@ -1228,14 +1228,14 @@ namespace GraphCanvas
     {
         QGraphicsView::showEvent(showEvent);
 
-        m_notificationsView->show();
+        m_notificationsView->OnShow();
     }
 
     void GraphCanvasGraphicsView::hideEvent(QHideEvent* hideEvent)
     {
         QGraphicsView::hideEvent(hideEvent);
 
-        m_notificationsView->hide();
+        m_notificationsView->OnHide();
     }
 
     void GraphCanvasGraphicsView::OnSettingsChanged()
