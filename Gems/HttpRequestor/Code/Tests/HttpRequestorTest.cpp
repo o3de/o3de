@@ -19,7 +19,7 @@ class HttpTest
 {
 };
 
-TEST_F(HttpTest, DISABLED_HttpRequesterTest)
+TEST_F(HttpTest, HttpRequesterTest)
 {
     HttpRequestor::Manager httpRequestManager;
 
@@ -35,17 +35,14 @@ TEST_F(HttpTest, DISABLED_HttpRequesterTest)
         requestConditionVar.wait_for(lock, AZStd::chrono::milliseconds(10));
     }
 
-    httpRequestManager.AddTextRequest(
-        HttpRequestor::TextParameters("https://httpbin.org/ip",
-            Aws::Http::HttpMethod::HTTP_GET,
-            [&resultData, &resultCode, &requestConditionVar](const AZStd::string& data, Aws::Http::HttpResponseCode code)
-            {
-                resultData = data;
-                resultCode = code;
-                requestConditionVar.notify_all();
-            }
-        )
-    );
+    httpRequestManager.AddTextRequest(HttpRequestor::TextParameters(
+        "https://httpbin.org/ip", Aws::Http::HttpMethod::HTTP_GET,
+        [&resultData, &resultCode, &requestConditionVar](const AZStd::string& data, Aws::Http::HttpResponseCode code)
+        {
+            resultData = data;
+            resultCode = code;
+            requestConditionVar.notify_all();
+        }));
 
     {
         AZStd::unique_lock<AZStd::mutex> lock(requestMutex);
