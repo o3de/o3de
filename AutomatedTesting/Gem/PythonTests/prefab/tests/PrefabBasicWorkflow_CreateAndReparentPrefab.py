@@ -5,7 +5,7 @@ For complete copyright and license terms please see the LICENSE at the root of t
 SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 
-def Prefab_BasicWorkflow_CreateAndReparentPrefab():
+def PrefabBasicWorkflow_CreateAndReparentPrefab():
 
     CAR_PREFAB_FILE_NAME = 'car_prefab'
     WHEEL_PREFAB_FILE_NAME = 'wheel_prefab'
@@ -16,9 +16,9 @@ def Prefab_BasicWorkflow_CreateAndReparentPrefab():
     async def run_test():
 
         from editor_python_test_tools.editor_entity_utils import EditorEntity
-        from prefab.Prefab import Prefab
+        from editor_python_test_tools.prefab_utils import Prefab
 
-        import prefab.Prefab_Test_Utils as prefab_test_utils
+        import PrefabTestUtils as prefab_test_utils
 
         prefab_test_utils.open_base_tests_level()
 
@@ -46,4 +46,4 @@ def Prefab_BasicWorkflow_CreateAndReparentPrefab():
 
 if __name__ == "__main__":
     from editor_python_test_tools.utils import Report
-    Report.start_test(Prefab_BasicWorkflow_CreateAndReparentPrefab)
+    Report.start_test(PrefabBasicWorkflow_CreateAndReparentPrefab)

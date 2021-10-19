@@ -407,6 +407,11 @@ inline namespace Commands
     {
         return AZ::Debug::Trace::WaitForDebugger(timeoutSeconds);
     }
+
+    AZStd::string PyGetFileAlias(AZStd::string alias)
+    {
+        return AZ::IO::FileIOBase::GetInstance()->GetAlias(alias.c_str());
+    }
 }
 
 namespace AzToolsFramework
@@ -456,6 +461,8 @@ namespace AzToolsFramework
 
             addLegacyGeneral(behaviorContext->Method("attach_debugger", PyAttachDebugger, nullptr, "Prompts for attaching the debugger"));
             addLegacyGeneral(behaviorContext->Method("wait_for_debugger", PyWaitForDebugger, behaviorContext->MakeDefaultValues(-1.f), "Pauses this thread execution until the debugger has been attached"));
+
+            addLegacyGeneral(behaviorContext->Method("get_file_alias", PyGetFileAlias, nullptr, "Retrieves path for IO alias"));
 
             // this will put these methods into the 'azlmbr.legacy.checkout_dialog' module
             auto addCheckoutDialog = [](AZ::BehaviorContext::GlobalMethodBuilder methodBuilder)
