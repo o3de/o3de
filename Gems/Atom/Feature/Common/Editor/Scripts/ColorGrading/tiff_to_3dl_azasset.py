@@ -8,8 +8,8 @@
 #
 #
 """
-    input:  a shaped .exr representing a LUT (for instance coming out of photoshop)
-    output: a inverse shaped LUT as .exr
+    input:  a shaped .tiff representing a LUT (for instance coming out of photoshop)
+    output: a inverse shaped LUT as .tiff
             ^ as a .3DL (normalized lut file type)
             ^ as a .azasset (for o3de engine)
 """
@@ -25,7 +25,7 @@ import logging as _logging
 import numpy as np
 
 # ------------------------------------------------------------------------
-_MODULENAME = 'ColorGrading.exr_to_3dl_azasset'
+_MODULENAME = 'ColorGrading.tiff_to_3dl_azasset'
 
 _LOGGER = _logging.getLogger(_MODULENAME)
 _LOGGER.debug('Initializing: {0}.'.format({_MODULENAME}))
@@ -44,8 +44,6 @@ if ColorGrading.initialize.start():
 # ------------------------------------------------------------------------
 from ColorGrading.from_3dl_to_azasset import write_azasset
 
-from ColorGrading import get_uv_coord
-
 from ColorGrading.azasset_converter_utils import generate_lut_values, write_3DL
 
 ###########################################################################
@@ -60,9 +58,12 @@ if __name__ == '__main__':
     args=parser.parse_args()
 
     # Read input image
-    # image_buffer = oiio.ImageBuf("linear_lut.exr")
     image_buffer=oiio.ImageBuf(args.i)
     image_spec=image_buffer.spec()
+    
+    #img = oiio.ImageInput.open(args.i)
+    #_LOGGER.info(f"Resolution is, x: {img.spec().width} and y: {img.spec().height}")
+    
     _LOGGER.info(f"Resolution is, x: {image_buffer.spec().width} and y: {image_buffer.spec().height}")
 
     if image_spec.width != image_spec.height * image_spec.height:
@@ -77,4 +78,4 @@ if __name__ == '__main__':
     write_azasset(args.o, lut_intervals, lut_values)
 
     # example from command line
-    # python % DCCSI_COLORGRADING_SCRIPTS %\lut_helper.py - -i C: \Depot\o3de\Gems\Atom\Feature\Common\Tools\ColorGrading\Resources\LUTs\linear_32_LUT.exr - -op pre - grading - -shaper Log2 - 48nits - -o C: \Depot\o3de\Gems\Atom\Feature\Common\Tools\ColorGrading\Resources\LUTs\base_Log2-48nits_32_LUT.exr
+    # python % DCCSI_COLORGRADING_SCRIPTS %\lut_helper.py - -i C: \Depot\o3de\Gems\Atom\Feature\Common\Tools\ColorGrading\Resources\LUTs\linear_32_LUT.tiff - -op pre - grading - -shaper Log2 - 48nits - -o C: \Depot\o3de\Gems\Atom\Feature\Common\Tools\ColorGrading\Resources\LUTs\base_Log2-48nits_32_LUT.exr
