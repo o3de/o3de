@@ -194,7 +194,7 @@ namespace AzToolsFramework
                 return m_isProcedural.value();
             }
             AZ::IO::PathView path(source->value.GetString());
-            m_isProcedural = AZStd::make_optional(path.Match("*.procprefab"));
+            m_isProcedural = AZStd::make_optional(path.Extension().Match(".procprefab"));
             return m_isProcedural.value();
         }
 

@@ -65,6 +65,7 @@ namespace AzToolsFramework
             const AZ::IO::Path& GetFilePath() const;
             void SetFilePath(const AZ::IO::PathView& path);
 
+            // To tell if this Template was generated outside the Editor
             bool IsProcedural() const;
 
         private:
