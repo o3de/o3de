@@ -10,6 +10,7 @@
 #include <AzCore/std/bind/bind.h>
 #include <AzCore/std/smart_ptr/shared_ptr.h>
 #include <AzFramework/Session/ISessionHandlingRequests.h>
+#include <AzFramework/Matchmaking/MatchmakingNotifications.h>
 
 #include <AWSGameLiftClientLocalTicketTracker.h>
 #include <AWSGameLiftSessionConstants.h>
@@ -29,12 +30,14 @@ namespace AWSGameLift
 
     void AWSGameLiftClientLocalTicketTracker::ActivateTracker()
     {
-        AZ::Interface<IAWSGameLiftMatchmakingInternalRequests>::Register(this);
+        AZ::Interface<IAWSGameLiftMatchmakingEventRequests>::Register(this);
+        AWSGameLiftMatchmakingEventRequestBus::Handler::BusConnect();
     }
 
     void AWSGameLiftClientLocalTicketTracker::DeactivateTracker()
     {
-        AZ::Interface<IAWSGameLiftMatchmakingInternalRequests>::Unregister(this);
+        AWSGameLiftMatchmakingEventRequestBus::Handler::BusDisconnect();
+        AZ::Interface<IAWSGameLiftMatchmakingEventRequests>::Unregister(this);
         StopPolling();
     }
 
@@ -109,6 +112,7 @@ namespace AWSGameLift
                         else if (ticket.GetStatus() == Aws::GameLift::Model::MatchmakingConfigurationStatus::REQUIRES_ACCEPTANCE)
                         {
                             // broadcast acceptance requires to player
+                            AzFramework::MatchAcceptanceNotificationBus::Broadcast(&AzFramework::MatchAcceptanceNotifications::OnMatchAcceptance);
                         }
                         else
                         {

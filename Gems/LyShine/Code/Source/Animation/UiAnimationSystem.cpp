@@ -37,11 +37,11 @@ namespace
     using UiAnimSystemUnorderedMap = AZStd::unordered_map<KeyType, MappedType, Hasher, EqualKey, AZStd::stateless_allocator>;
 }
 // Serialization for anim nodes & param types
-#define REGISTER_NODE_TYPE(name) assert(g_animNodeEnumToStringMap.contains(eUiAnimNodeType_ ## name)); \
+#define REGISTER_NODE_TYPE(name) assert(!g_animNodeEnumToStringMap.contains(eUiAnimNodeType_ ## name)); \
     g_animNodeEnumToStringMap[eUiAnimNodeType_ ## name] = AZ_STRINGIZE(name);                                                            \
     g_animNodeStringToEnumMap[UiAnimParamSystemString(AZ_STRINGIZE(name))] = eUiAnimNodeType_ ## name;
 
-#define REGISTER_PARAM_TYPE(name) assert(g_animParamEnumToStringMap.contains(eUiAnimParamType_ ## name)); \
+#define REGISTER_PARAM_TYPE(name) assert(!g_animParamEnumToStringMap.contains(eUiAnimParamType_ ## name)); \
     g_animParamEnumToStringMap[eUiAnimParamType_ ## name] = AZ_STRINGIZE(name);                                                              \
     g_animParamStringToEnumMap[UiAnimParamSystemString(AZ_STRINGIZE(name))] = eUiAnimParamType_ ## name;
 

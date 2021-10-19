@@ -16,6 +16,143 @@
 
 namespace UnitTest
 {
+    static constexpr const char TEST_SERVER_MATCHMAKING_DATA[] =
+R"({
+    "matchId":"testmatchid",
+    "matchmakingConfigurationArn":"testmatchconfig",
+    "teams":[
+        {"name":"testteam",
+         "players":[
+             {"playerId":"testplayer",
+              "attributes":{
+                  "skills":{
+                      "attributeType":"STRING_DOUBLE_MAP",
+                      "valueAttribute":{"test1":10.0,"test2":20.0,"test3":30.0,"test4":40.0}
+                  },
+                  "mode":{
+                      "attributeType":"STRING",
+                      "valueAttribute":"testmode"
+                  },
+                  "level":{
+                      "attributeType":"DOUBLE",
+                      "valueAttribute":10.0
+                  },
+                  "items":{
+                      "attributeType":"STRING_LIST",
+                      "valueAttribute":["test1","test2","test3"]
+                  }
+              }},
+             {"playerId":"secondplayer",
+              "attributes":{
+                  "mode":{
+                      "attributeType":"STRING",
+                      "valueAttribute":"testmode"
+                  }
+              }}
+         ]}
+    ]
+})";
+
+    Aws::GameLift::Server::Model::StartMatchBackfillRequest GetTestStartMatchBackfillRequest()
+    {
+        Aws::GameLift::Server::Model::StartMatchBackfillRequest request;
+        request.SetMatchmakingConfigurationArn("testmatchconfig");
+        Aws::GameLift::Server::Model::Player player;
+        player.SetPlayerId("testplayer");
+        player.SetTeam("testteam");
+        player.AddPlayerAttribute("mode", Aws::GameLift::Server::Model::AttributeValue("testmode"));
+        player.AddPlayerAttribute("level", Aws::GameLift::Server::Model::AttributeValue(10.0));
+        auto sdmValue = Aws::GameLift::Server::Model::AttributeValue::ConstructStringDoubleMap();
+        sdmValue.AddStringAndDouble("test1", 10.0);
+        player.AddPlayerAttribute("skills", sdmValue);
+        auto slValue = Aws::GameLift::Server::Model::AttributeValue::ConstructStringList();
+        slValue.AddString("test1");
+        player.AddPlayerAttribute("items", slValue);
+        player.AddLatencyInMs("testregion", 10);
+        request.AddPlayer(player);
+        request.SetTicketId("testticket");
+        return request;
+    }
+
+    AWSGameLiftPlayer GetTestGameLiftPlayer()
+    {
+        AWSGameLiftPlayer player;
+        player.m_team = "testteam";
+        player.m_playerId = "testplayer";
+        player.m_playerAttributes.emplace("mode", "{\"S\": \"testmode\"}");
+        player.m_playerAttributes.emplace("level", "{\"N\": 10.0}");
+        player.m_playerAttributes.emplace("skills", "{\"SDM\": {\"test1\":10.0}}");
+        player.m_playerAttributes.emplace("items", "{\"SL\": [\"test1\"]}");
+        player.m_latencyInMs.emplace("testregion", 10);
+        return player;
+    }
+
+    MATCHER_P(StartMatchBackfillRequestMatcher, expectedRequest, "")
+    {
+        // Custome matcher for checking the SearchSessionsResponse type argument.
+        AZ_UNUSED(result_listener);
+        if (strcmp(arg.GetGameSessionArn().c_str(), expectedRequest.GetGameSessionArn().c_str()) != 0)
+        {
+            return false;
+        }
+        if (strcmp(arg.GetMatchmakingConfigurationArn().c_str(), expectedRequest.GetMatchmakingConfigurationArn().c_str()) != 0)
+        {
+            return false;
+        }
+        if (strcmp(arg.GetTicketId().c_str(), expectedRequest.GetTicketId().c_str()) != 0)
+        {
+            return false;
+        }
+        if (arg.GetPlayers().size() != expectedRequest.GetPlayers().size())
+        {
+            return false;
+        }
+        for (int playerIndex = 0; playerIndex < expectedRequest.GetPlayers().size(); playerIndex++)
+        {
+            auto actualPlayerAttributes = arg.GetPlayers()[playerIndex].GetPlayerAttributes();
+            auto expectedPlayerAttributes = expectedRequest.GetPlayers()[playerIndex].GetPlayerAttributes();
+            if (actualPlayerAttributes.size() != expectedPlayerAttributes.size())
+            {
+                return false;
+            }
+            for (auto attributePair : expectedPlayerAttributes)
+            {
+                if (actualPlayerAttributes.find(attributePair.first) == actualPlayerAttributes.end())
+                {
+                    return false;
+                }
+                if (!(attributePair.second.GetType() == actualPlayerAttributes[attributePair.first].GetType() &&
+                      (attributePair.second.GetS() == actualPlayerAttributes[attributePair.first].GetS() ||
+                       attributePair.second.GetN() == actualPlayerAttributes[attributePair.first].GetN() ||
+                       attributePair.second.GetSL() == actualPlayerAttributes[attributePair.first].GetSL() ||
+                       attributePair.second.GetSDM() == actualPlayerAttributes[attributePair.first].GetSDM())))
+                {
+                    return false;
+                }
+            }
+
+            auto actualLatencies = arg.GetPlayers()[playerIndex].GetLatencyInMs();
+            auto expectedLatencies = expectedRequest.GetPlayers()[playerIndex].GetLatencyInMs();
+            if (actualLatencies.size() != expectedLatencies.size())
+            {
+                return false;
+            }
+            for (auto latencyPair : expectedLatencies)
+            {
+                if (actualLatencies.find(latencyPair.first) == actualLatencies.end())
+                {
+                    return false;
+                }
+                if (latencyPair.second != actualLatencies[latencyPair.first])
+                {
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
+
     class SessionNotificationsHandlerMock
         : public AzFramework::SessionNotificationBus::Handler
     {
@@ -32,7 +169,11 @@ namespace UnitTest
 
         MOCK_METHOD0(OnSessionHealthCheck, bool());
         MOCK_METHOD1(OnCreateSessionBegin, bool(const AzFramework::SessionConfig&));
+        MOCK_METHOD0(OnCreateSessionEnd, void());
         MOCK_METHOD0(OnDestroySessionBegin, bool());
+        MOCK_METHOD0(OnDestroySessionEnd, void());
+        MOCK_METHOD2(OnUpdateSessionBegin, void(const AzFramework::SessionConfig&, const AZStd::string&));
+        MOCK_METHOD0(OnUpdateSessionEnd, void());
     };
 
     class GameLiftServerManagerTest
@@ -123,6 +264,7 @@ namespace UnitTest
         EXPECT_CALL(handlerMock, OnDestroySessionBegin()).Times(1).WillOnce(testing::Return(false));
         EXPECT_CALL(*(m_serverManager->m_gameLiftServerSDKWrapperMockPtr), GetTerminationTime()).Times(1);
         EXPECT_CALL(*(m_serverManager->m_gameLiftServerSDKWrapperMockPtr), ProcessEnding()).Times(0);
+        EXPECT_CALL(handlerMock, OnDestroySessionEnd()).Times(0);
 
         AZ_TEST_START_TRACE_SUPPRESSION;
         m_serverManager->m_gameLiftServerSDKWrapperMockPtr->m_onProcessTerminateFunc();
@@ -143,9 +285,36 @@ namespace UnitTest
         SessionNotificationsHandlerMock handlerMock;
         EXPECT_CALL(handlerMock, OnDestroySessionBegin()).Times(1).WillOnce(testing::Return(true));
         EXPECT_CALL(*(m_serverManager->m_gameLiftServerSDKWrapperMockPtr), GetTerminationTime()).Times(1);
-        EXPECT_CALL(*(m_serverManager->m_gameLiftServerSDKWrapperMockPtr), ProcessEnding()).Times(1);
+        EXPECT_CALL(*(m_serverManager->m_gameLiftServerSDKWrapperMockPtr), ProcessEnding())
+            .Times(1)
+            .WillOnce(testing::Return(Aws::GameLift::GenericOutcome(nullptr)));
+        EXPECT_CALL(handlerMock, OnDestroySessionEnd()).Times(1);
 
         m_serverManager->m_gameLiftServerSDKWrapperMockPtr->m_onProcessTerminateFunc();
+
+        EXPECT_FALSE(AZ::Interface<AzFramework::ISessionHandlingProviderRequests>::Get());
+    }
+
+    TEST_F(GameLiftServerManagerTest, OnProcessTerminate_OnDestroySessionBeginReturnsTrue_TerminationNotificationSentButFail)
+    {
+        m_serverManager->InitializeGameLiftServerSDK();
+        m_serverManager->NotifyGameLiftProcessReady();
+        if (!AZ::Interface<AzFramework::ISessionHandlingProviderRequests>::Get())
+        {
+            AZ::Interface<AzFramework::ISessionHandlingProviderRequests>::Register(m_serverManager.get());
+        }
+
+        SessionNotificationsHandlerMock handlerMock;
+        EXPECT_CALL(handlerMock, OnDestroySessionBegin()).Times(1).WillOnce(testing::Return(true));
+        EXPECT_CALL(*(m_serverManager->m_gameLiftServerSDKWrapperMockPtr), GetTerminationTime()).Times(1);
+        EXPECT_CALL(*(m_serverManager->m_gameLiftServerSDKWrapperMockPtr), ProcessEnding())
+            .Times(1)
+            .WillOnce(testing::Return(Aws::GameLift::GenericOutcome()));
+        EXPECT_CALL(handlerMock, OnDestroySessionEnd()).Times(0);
+
+        AZ_TEST_START_TRACE_SUPPRESSION;
+        m_serverManager->m_gameLiftServerSDKWrapperMockPtr->m_onProcessTerminateFunc();
+        AZ_TEST_STOP_TRACE_SUPPRESSION(1);
 
         EXPECT_FALSE(AZ::Interface<AzFramework::ISessionHandlingProviderRequests>::Get());
     }
@@ -185,6 +354,7 @@ namespace UnitTest
         m_serverManager->NotifyGameLiftProcessReady();
         SessionNotificationsHandlerMock handlerMock;
         EXPECT_CALL(handlerMock, OnCreateSessionBegin(testing::_)).Times(1).WillOnce(testing::Return(false));
+        EXPECT_CALL(handlerMock, OnCreateSessionEnd()).Times(0);
         EXPECT_CALL(handlerMock, OnDestroySessionBegin()).Times(1).WillOnce(testing::Return(true));
         EXPECT_CALL(*(m_serverManager->m_gameLiftServerSDKWrapperMockPtr), ProcessEnding()).Times(1);
         AZ_TEST_START_TRACE_SUPPRESSION;
@@ -198,6 +368,7 @@ namespace UnitTest
         m_serverManager->NotifyGameLiftProcessReady();
         SessionNotificationsHandlerMock handlerMock;
         EXPECT_CALL(handlerMock, OnCreateSessionBegin(testing::_)).Times(1).WillOnce(testing::Return(true));
+        EXPECT_CALL(handlerMock, OnCreateSessionEnd()).Times(1);
         EXPECT_CALL(handlerMock, OnDestroySessionBegin()).Times(1).WillOnce(testing::Return(true));
         EXPECT_CALL(*(m_serverManager->m_gameLiftServerSDKWrapperMockPtr), ActivateGameSession())
             .Times(1)
@@ -218,6 +389,7 @@ namespace UnitTest
         m_serverManager->NotifyGameLiftProcessReady();
         SessionNotificationsHandlerMock handlerMock;
         EXPECT_CALL(handlerMock, OnCreateSessionBegin(testing::_)).Times(1).WillOnce(testing::Return(true));
+        EXPECT_CALL(handlerMock, OnCreateSessionEnd()).Times(0);
         EXPECT_CALL(handlerMock, OnDestroySessionBegin()).Times(1).WillOnce(testing::Return(true));
         EXPECT_CALL(*(m_serverManager->m_gameLiftServerSDKWrapperMockPtr), ActivateGameSession())
             .Times(1)
@@ -225,6 +397,68 @@ namespace UnitTest
         EXPECT_CALL(*(m_serverManager->m_gameLiftServerSDKWrapperMockPtr), ProcessEnding()).Times(1);
         AZ_TEST_START_TRACE_SUPPRESSION;
         m_serverManager->m_gameLiftServerSDKWrapperMockPtr->m_onStartGameSessionFunc(Aws::GameLift::Server::Model::GameSession());
+        AZ_TEST_STOP_TRACE_SUPPRESSION(1);
+    }
+
+    TEST_F(GameLiftServerManagerTest, OnUpdateGameSession_TriggerWithUnknownReason_OnUpdateSessionGetCalledOnce)
+    {
+        m_serverManager->InitializeGameLiftServerSDK();
+        m_serverManager->NotifyGameLiftProcessReady();
+        SessionNotificationsHandlerMock handlerMock;
+        EXPECT_CALL(handlerMock, OnUpdateSessionBegin(testing::_, testing::_)).Times(1);
+        EXPECT_CALL(handlerMock, OnUpdateSessionEnd()).Times(1);
+
+        m_serverManager->m_gameLiftServerSDKWrapperMockPtr->m_onUpdateGameSessionFunc(
+            Aws::GameLift::Server::Model::UpdateGameSession(
+                Aws::GameLift::Server::Model::GameSession(),
+                Aws::GameLift::Server::Model::UpdateReason::UNKNOWN,
+                "testticket"));
+    }
+
+    TEST_F(GameLiftServerManagerTest, OnUpdateGameSession_TriggerWithEmptyMatchmakingData_OnUpdateSessionGetCalledOnce)
+    {
+        m_serverManager->InitializeGameLiftServerSDK();
+        m_serverManager->NotifyGameLiftProcessReady();
+        SessionNotificationsHandlerMock handlerMock;
+        EXPECT_CALL(handlerMock, OnUpdateSessionBegin(testing::_, testing::_)).Times(1);
+        EXPECT_CALL(handlerMock, OnUpdateSessionEnd()).Times(1);
+
+        m_serverManager->m_gameLiftServerSDKWrapperMockPtr->m_onUpdateGameSessionFunc(
+            Aws::GameLift::Server::Model::UpdateGameSession(
+                Aws::GameLift::Server::Model::GameSession(),
+                Aws::GameLift::Server::Model::UpdateReason::MATCHMAKING_DATA_UPDATED,
+                "testticket"));
+    }
+
+    TEST_F(GameLiftServerManagerTest, OnUpdateGameSession_TriggerWithValidMatchmakingData_OnUpdateSessionGetCalledOnce)
+    {
+        m_serverManager->InitializeGameLiftServerSDK();
+        m_serverManager->NotifyGameLiftProcessReady();
+        SessionNotificationsHandlerMock handlerMock;
+        EXPECT_CALL(handlerMock, OnUpdateSessionBegin(testing::_, testing::_)).Times(1);
+        EXPECT_CALL(handlerMock, OnUpdateSessionEnd()).Times(1);
+
+        Aws::GameLift::Server::Model::GameSession gameSession;
+        gameSession.SetMatchmakerData(TEST_SERVER_MATCHMAKING_DATA);
+        m_serverManager->m_gameLiftServerSDKWrapperMockPtr->m_onUpdateGameSessionFunc(
+            Aws::GameLift::Server::Model::UpdateGameSession(
+                gameSession, Aws::GameLift::Server::Model::UpdateReason::MATCHMAKING_DATA_UPDATED, "testticket"));
+    }
+
+    TEST_F(GameLiftServerManagerTest, OnUpdateGameSession_TriggerWithInvalidMatchmakingData_OnUpdateSessionGetCalledOnce)
+    {
+        m_serverManager->InitializeGameLiftServerSDK();
+        m_serverManager->NotifyGameLiftProcessReady();
+        SessionNotificationsHandlerMock handlerMock;
+        EXPECT_CALL(handlerMock, OnUpdateSessionBegin(testing::_, testing::_)).Times(1);
+        EXPECT_CALL(handlerMock, OnUpdateSessionEnd()).Times(1);
+
+        Aws::GameLift::Server::Model::GameSession gameSession;
+        gameSession.SetMatchmakerData("{invalid}");
+        AZ_TEST_START_TRACE_SUPPRESSION;
+        m_serverManager->m_gameLiftServerSDKWrapperMockPtr->m_onUpdateGameSessionFunc(
+            Aws::GameLift::Server::Model::UpdateGameSession(
+                gameSession, Aws::GameLift::Server::Model::UpdateReason::MATCHMAKING_DATA_UPDATED, "testticket"));
         AZ_TEST_STOP_TRACE_SUPPRESSION(1);
     }
 
@@ -424,5 +658,332 @@ namespace UnitTest
             testThread.join();
         }
         AZ_TEST_STOP_TRACE_SUPPRESSION(testThreadNumber - 1); // The player is only disconnected once.
+    }
+
+    TEST_F(GameLiftServerManagerTest, UpdateGameSessionData_CallWithInvalidMatchmakingData_GetExpectedError)
+    {
+        AZ_TEST_START_TRACE_SUPPRESSION;
+        m_serverManager->SetupTestMatchmakingData("{invalid}");
+        AZ_TEST_STOP_TRACE_SUPPRESSION(1);
+    }
+
+    TEST_F(GameLiftServerManagerTest, GetActiveServerMatchBackfillPlayers_CallWithInvalidMatchmakingData_GetEmptyResult)
+    {
+        AZ_TEST_START_TRACE_SUPPRESSION;
+        m_serverManager->SetupTestMatchmakingData("{invalid}");
+        AZ_TEST_STOP_TRACE_SUPPRESSION(1);
+
+        auto actualResult = m_serverManager->GetTestServerMatchBackfillPlayers();
+        EXPECT_TRUE(actualResult.empty());
+    }
+
+    TEST_F(GameLiftServerManagerTest, GetActiveServerMatchBackfillPlayers_CallWithEmptyMatchmakingData_GetEmptyResult)
+    {
+        m_serverManager->SetupTestMatchmakingData("");
+
+        auto actualResult = m_serverManager->GetTestServerMatchBackfillPlayers();
+        EXPECT_TRUE(actualResult.empty());
+    }
+
+    TEST_F(GameLiftServerManagerTest, GetActiveServerMatchBackfillPlayers_CallButDescribePlayerError_GetEmptyResult)
+    {
+        m_serverManager->SetupTestMatchmakingData(TEST_SERVER_MATCHMAKING_DATA);
+
+        Aws::GameLift::GameLiftError error;
+        Aws::GameLift::DescribePlayerSessionsOutcome errorOutcome(error);
+        EXPECT_CALL(*(m_serverManager->m_gameLiftServerSDKWrapperMockPtr), DescribePlayerSessions(testing::_))
+            .Times(1)
+            .WillOnce(Return(errorOutcome));
+
+        AZ_TEST_START_TRACE_SUPPRESSION;
+        auto actualResult = m_serverManager->GetTestServerMatchBackfillPlayers();
+        AZ_TEST_STOP_TRACE_SUPPRESSION(1);
+        EXPECT_TRUE(actualResult.empty());
+    }
+
+    TEST_F(GameLiftServerManagerTest, GetActiveServerMatchBackfillPlayers_CallButNoActivePlayer_GetEmptyResult)
+    {
+        m_serverManager->SetupTestMatchmakingData(TEST_SERVER_MATCHMAKING_DATA);
+
+        Aws::GameLift::Server::Model::DescribePlayerSessionsResult result;
+        Aws::GameLift::DescribePlayerSessionsOutcome successOutcome(result);
+        EXPECT_CALL(*(m_serverManager->m_gameLiftServerSDKWrapperMockPtr), DescribePlayerSessions(testing::_))
+            .Times(1)
+            .WillOnce(Return(successOutcome));
+
+        auto actualResult = m_serverManager->GetTestServerMatchBackfillPlayers();
+        EXPECT_TRUE(actualResult.empty());
+    }
+
+    TEST_F(GameLiftServerManagerTest, GetActiveServerMatchBackfillPlayers_CallWithValidMatchmakingData_GetExpectedResult)
+    {
+        m_serverManager->SetupTestMatchmakingData(TEST_SERVER_MATCHMAKING_DATA);
+
+        Aws::GameLift::Server::Model::PlayerSession playerSession;
+        playerSession.SetPlayerId("testplayer");
+        Aws::GameLift::Server::Model::DescribePlayerSessionsResult result;
+        result.AddPlayerSessions(playerSession);
+        Aws::GameLift::DescribePlayerSessionsOutcome successOutcome(result);
+        EXPECT_CALL(*(m_serverManager->m_gameLiftServerSDKWrapperMockPtr), DescribePlayerSessions(testing::_))
+            .Times(1)
+            .WillOnce(Return(successOutcome));
+
+        auto actualResult = m_serverManager->GetTestServerMatchBackfillPlayers();
+        EXPECT_TRUE(actualResult.size() == 1);
+        EXPECT_TRUE(actualResult[0].m_team == "testteam");
+        EXPECT_TRUE(actualResult[0].m_playerId == "testplayer");
+        EXPECT_TRUE(actualResult[0].m_playerAttributes.size() == 4);
+    }
+
+    TEST_F(GameLiftServerManagerTest, GetActiveServerMatchBackfillPlayers_CallWithMultiDescribePlayerButError_GetEmptyResult)
+    {
+        m_serverManager->SetupTestMatchmakingData(TEST_SERVER_MATCHMAKING_DATA, 50);
+
+        Aws::GameLift::GameLiftError error;
+        Aws::GameLift::DescribePlayerSessionsOutcome errorOutcome(error);
+        EXPECT_CALL(*(m_serverManager->m_gameLiftServerSDKWrapperMockPtr), DescribePlayerSessions(testing::_))
+            .Times(1)
+            .WillOnce(Return(errorOutcome));
+
+        AZ_TEST_START_TRACE_SUPPRESSION;
+        auto actualResult = m_serverManager->GetTestServerMatchBackfillPlayers();
+        AZ_TEST_STOP_TRACE_SUPPRESSION(1);
+        EXPECT_TRUE(actualResult.empty());
+    }
+
+    TEST_F(GameLiftServerManagerTest, GetActiveServerMatchBackfillPlayers_CallWithMultiDescribePlayer_GetExpectedResult)
+    {
+        m_serverManager->SetupTestMatchmakingData(TEST_SERVER_MATCHMAKING_DATA, 50);
+
+        Aws::GameLift::Server::Model::PlayerSession playerSession1;
+        playerSession1.SetPlayerId("testplayer");
+        Aws::GameLift::Server::Model::DescribePlayerSessionsResult result1;
+        result1.AddPlayerSessions(playerSession1);
+        result1.SetNextToken("testtoken");
+        Aws::GameLift::DescribePlayerSessionsOutcome successOutcome1(result1);
+
+        Aws::GameLift::Server::Model::PlayerSession playerSession2;
+        playerSession2.SetPlayerId("playernotinmatch");
+        Aws::GameLift::Server::Model::DescribePlayerSessionsResult result2;
+        result2.AddPlayerSessions(playerSession2);
+        Aws::GameLift::DescribePlayerSessionsOutcome successOutcome2(result2);
+        EXPECT_CALL(*(m_serverManager->m_gameLiftServerSDKWrapperMockPtr), DescribePlayerSessions(testing::_))
+            .WillOnce(Return(successOutcome1))
+            .WillOnce(Return(successOutcome2));
+
+        auto actualResult = m_serverManager->GetTestServerMatchBackfillPlayers();
+        EXPECT_TRUE(actualResult.size() == 1);
+        EXPECT_TRUE(actualResult[0].m_team == "testteam");
+        EXPECT_TRUE(actualResult[0].m_playerId == "testplayer");
+        EXPECT_TRUE(actualResult[0].m_playerAttributes.size() == 4);
+    }
+
+    TEST_F(GameLiftServerManagerTest, StartMatchBackfill_SDKNotInitialized_GetExpectedError)
+    {
+        AZ_TEST_START_TRACE_SUPPRESSION;
+        auto actualResult = m_serverManager->StartMatchBackfill("testticket", {});
+        AZ_TEST_STOP_TRACE_SUPPRESSION(1);
+        EXPECT_FALSE(actualResult);
+    }
+
+    TEST_F(GameLiftServerManagerTest, StartMatchBackfill_CallWithEmptyMatchmakingData_GetExpectedError)
+    {
+        m_serverManager->InitializeGameLiftServerSDK();
+        m_serverManager->SetupTestMatchmakingData("");
+
+        AZ_TEST_START_TRACE_SUPPRESSION;
+        auto actualResult = m_serverManager->StartMatchBackfill("testticket", {});
+        AZ_TEST_STOP_TRACE_SUPPRESSION(1);
+        EXPECT_FALSE(actualResult);
+    }
+
+    TEST_F(GameLiftServerManagerTest, StartMatchBackfill_CallWithInvalidPlayerAttribute_GetExpectedError)
+    {
+        m_serverManager->InitializeGameLiftServerSDK();
+        m_serverManager->SetupTestMatchmakingData(TEST_SERVER_MATCHMAKING_DATA);
+
+        AWSGameLiftPlayer testPlayer = GetTestGameLiftPlayer();
+        testPlayer.m_playerAttributes.clear();
+        testPlayer.m_playerAttributes.emplace("invalidattribute", "{invalid}");
+
+        AZ_TEST_START_TRACE_SUPPRESSION;
+        auto actualResult = m_serverManager->StartMatchBackfill("testticket", { testPlayer });
+        AZ_TEST_STOP_TRACE_SUPPRESSION(1);
+        EXPECT_FALSE(actualResult);
+    }
+
+    TEST_F(GameLiftServerManagerTest, StartMatchBackfill_CallWithWrongPlayerAttributeType_GetExpectedError)
+    {
+        m_serverManager->InitializeGameLiftServerSDK();
+        m_serverManager->SetupTestMatchmakingData(TEST_SERVER_MATCHMAKING_DATA);
+
+        AWSGameLiftPlayer testPlayer = GetTestGameLiftPlayer();
+        testPlayer.m_playerAttributes.clear();
+        testPlayer.m_playerAttributes.emplace("invalidattribute", "{\"SDM\": [\"test1\"]}");
+
+        AZ_TEST_START_TRACE_SUPPRESSION;
+        auto actualResult = m_serverManager->StartMatchBackfill("testticket", { testPlayer });
+        AZ_TEST_STOP_TRACE_SUPPRESSION(1);
+        EXPECT_FALSE(actualResult);
+    }
+
+    TEST_F(GameLiftServerManagerTest, StartMatchBackfill_CallWithUnexpectedPlayerAttributeType_GetExpectedError)
+    {
+        m_serverManager->InitializeGameLiftServerSDK();
+        m_serverManager->SetupTestMatchmakingData(TEST_SERVER_MATCHMAKING_DATA);
+
+        AWSGameLiftPlayer testPlayer = GetTestGameLiftPlayer();
+        testPlayer.m_playerAttributes.clear();
+        testPlayer.m_playerAttributes.emplace("invalidattribute", "{\"UNEXPECTED\": [\"test1\"]}");
+
+        AZ_TEST_START_TRACE_SUPPRESSION;
+        auto actualResult = m_serverManager->StartMatchBackfill("testticket", { testPlayer });
+        AZ_TEST_STOP_TRACE_SUPPRESSION(1);
+        EXPECT_FALSE(actualResult);
+    }
+
+    TEST_F(GameLiftServerManagerTest, StartMatchBackfill_CallWithWrongSLPlayerAttributeValue_GetExpectedError)
+    {
+        m_serverManager->InitializeGameLiftServerSDK();
+        m_serverManager->SetupTestMatchmakingData(TEST_SERVER_MATCHMAKING_DATA);
+
+        AWSGameLiftPlayer testPlayer = GetTestGameLiftPlayer();
+        testPlayer.m_playerAttributes.clear();
+        testPlayer.m_playerAttributes.emplace("invalidattribute", "{\"SL\": [10.0]}");
+
+        AZ_TEST_START_TRACE_SUPPRESSION;
+        auto actualResult = m_serverManager->StartMatchBackfill("testticket", { testPlayer });
+        AZ_TEST_STOP_TRACE_SUPPRESSION(1);
+        EXPECT_FALSE(actualResult);
+    }
+
+    TEST_F(GameLiftServerManagerTest, StartMatchBackfill_CallWithWrongSDMPlayerAttributeValue_GetExpectedError)
+    {
+        m_serverManager->InitializeGameLiftServerSDK();
+        m_serverManager->SetupTestMatchmakingData(TEST_SERVER_MATCHMAKING_DATA);
+
+        AWSGameLiftPlayer testPlayer = GetTestGameLiftPlayer();
+        testPlayer.m_playerAttributes.clear();
+        testPlayer.m_playerAttributes.emplace("invalidattribute", "{\"SDM\": {10.0: \"test1\"}}");
+
+        AZ_TEST_START_TRACE_SUPPRESSION;
+        auto actualResult = m_serverManager->StartMatchBackfill("testticket", { testPlayer });
+        AZ_TEST_STOP_TRACE_SUPPRESSION(1);
+        EXPECT_FALSE(actualResult);
+    }
+
+    TEST_F(GameLiftServerManagerTest, StartMatchBackfill_CallWithValidPlayersData_GetExpectedResult)
+    {
+        m_serverManager->InitializeGameLiftServerSDK();
+        m_serverManager->SetupTestMatchmakingData(TEST_SERVER_MATCHMAKING_DATA);
+
+        Aws::GameLift::Server::Model::StartMatchBackfillResult backfillResult;
+        Aws::GameLift::StartMatchBackfillOutcome backfillSuccessOutcome(backfillResult);
+        Aws::GameLift::Server::Model::StartMatchBackfillRequest request = GetTestStartMatchBackfillRequest();
+
+        EXPECT_CALL(*(m_serverManager->m_gameLiftServerSDKWrapperMockPtr), StartMatchBackfill(StartMatchBackfillRequestMatcher(request)))
+            .Times(1)
+            .WillOnce(Return(backfillSuccessOutcome));
+
+        AWSGameLiftPlayer testPlayer = GetTestGameLiftPlayer();
+        auto actualResult = m_serverManager->StartMatchBackfill("testticket", {testPlayer});
+        EXPECT_TRUE(actualResult);
+    }
+
+    TEST_F(GameLiftServerManagerTest, StartMatchBackfill_CallWithoutGivingPlayersData_GetExpectedResult)
+    {
+        m_serverManager->InitializeGameLiftServerSDK();
+        m_serverManager->SetupTestMatchmakingData(TEST_SERVER_MATCHMAKING_DATA);
+
+        Aws::GameLift::Server::Model::PlayerSession playerSession;
+        playerSession.SetPlayerId("testplayer");
+        Aws::GameLift::Server::Model::DescribePlayerSessionsResult result;
+        result.AddPlayerSessions(playerSession);
+        Aws::GameLift::DescribePlayerSessionsOutcome successOutcome(result);
+        EXPECT_CALL(*(m_serverManager->m_gameLiftServerSDKWrapperMockPtr), DescribePlayerSessions(testing::_))
+            .Times(1)
+            .WillOnce(Return(successOutcome));
+
+        Aws::GameLift::Server::Model::StartMatchBackfillResult backfillResult;
+        Aws::GameLift::StartMatchBackfillOutcome backfillSuccessOutcome(backfillResult);
+        EXPECT_CALL(*(m_serverManager->m_gameLiftServerSDKWrapperMockPtr), StartMatchBackfill(testing::_))
+            .Times(1)
+            .WillOnce(Return(backfillSuccessOutcome));
+
+        auto actualResult = m_serverManager->StartMatchBackfill("testticket", {});
+        EXPECT_TRUE(actualResult);
+    }
+
+    TEST_F(GameLiftServerManagerTest, StartMatchBackfill_CallButStartBackfillFail_GetExpectedError)
+    {
+        m_serverManager->InitializeGameLiftServerSDK();
+        m_serverManager->SetupTestMatchmakingData(TEST_SERVER_MATCHMAKING_DATA);
+
+        Aws::GameLift::Server::Model::PlayerSession playerSession;
+        playerSession.SetPlayerId("testplayer");
+        Aws::GameLift::Server::Model::DescribePlayerSessionsResult result;
+        result.AddPlayerSessions(playerSession);
+        Aws::GameLift::DescribePlayerSessionsOutcome successOutcome(result);
+        EXPECT_CALL(*(m_serverManager->m_gameLiftServerSDKWrapperMockPtr), DescribePlayerSessions(testing::_))
+            .Times(1)
+            .WillOnce(Return(successOutcome));
+
+        Aws::GameLift::GameLiftError error;
+        Aws::GameLift::StartMatchBackfillOutcome errorOutcome(error);
+        EXPECT_CALL(*(m_serverManager->m_gameLiftServerSDKWrapperMockPtr), StartMatchBackfill(testing::_))
+            .Times(1)
+            .WillOnce(Return(errorOutcome));
+
+        AZ_TEST_START_TRACE_SUPPRESSION;
+        auto actualResult = m_serverManager->StartMatchBackfill("testticket", {});
+        AZ_TEST_STOP_TRACE_SUPPRESSION(1);
+        EXPECT_FALSE(actualResult);
+    }
+
+    TEST_F(GameLiftServerManagerTest, StopMatchBackfill_SDKNotInitialized_GetExpectedError)
+    {
+        AZ_TEST_START_TRACE_SUPPRESSION;
+        auto actualResult = m_serverManager->StopMatchBackfill("testticket");
+        AZ_TEST_STOP_TRACE_SUPPRESSION(1);
+        EXPECT_FALSE(actualResult);
+    }
+
+    TEST_F(GameLiftServerManagerTest, StopMatchBackfill_CallWithEmptyMatchmakingData_GetExpectedError)
+    {
+        m_serverManager->InitializeGameLiftServerSDK();
+        m_serverManager->SetupTestMatchmakingData("");
+
+        AZ_TEST_START_TRACE_SUPPRESSION;
+        auto actualResult = m_serverManager->StopMatchBackfill("testticket");
+        AZ_TEST_STOP_TRACE_SUPPRESSION(1);
+        EXPECT_FALSE(actualResult);
+    }
+
+    TEST_F(GameLiftServerManagerTest, StopMatchBackfill_CallAndSuccessOutcome_GetExpectedResult)
+    {
+        m_serverManager->InitializeGameLiftServerSDK();
+        m_serverManager->SetupTestMatchmakingData(TEST_SERVER_MATCHMAKING_DATA);
+
+        EXPECT_CALL(*(m_serverManager->m_gameLiftServerSDKWrapperMockPtr), StopMatchBackfill(testing::_))
+            .Times(1)
+            .WillOnce(Return(Aws::GameLift::GenericOutcome(nullptr)));
+
+        auto actualResult = m_serverManager->StopMatchBackfill("testticket");
+        EXPECT_TRUE(actualResult);
+    }
+
+    TEST_F(GameLiftServerManagerTest, StopMatchBackfill_CallButErrorOutcome_GetExpectedError)
+    {
+        m_serverManager->InitializeGameLiftServerSDK();
+        m_serverManager->SetupTestMatchmakingData(TEST_SERVER_MATCHMAKING_DATA);
+
+        EXPECT_CALL(*(m_serverManager->m_gameLiftServerSDKWrapperMockPtr), StopMatchBackfill(testing::_))
+            .Times(1)
+            .WillOnce(Return(Aws::GameLift::GenericOutcome()));
+
+        AZ_TEST_START_TRACE_SUPPRESSION;
+        auto actualResult = m_serverManager->StopMatchBackfill("testticket");
+        AZ_TEST_STOP_TRACE_SUPPRESSION(1);
+        EXPECT_FALSE(actualResult);
     }
 } // namespace UnitTest

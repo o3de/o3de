@@ -102,7 +102,7 @@ ly_add_target(
             3rdParty::Qt::Gui
             3rdParty::Qt::Widgets
             3rdParty::Qt::Concurrent
-            3rdParty::tiff
+            3rdParty::TIFF
             3rdParty::squish-ccr
             3rdParty::AWSNativeSDK::STS
             Legacy::CryCommon

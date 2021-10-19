@@ -25,7 +25,7 @@ ly_associate_package(PACKAGE_NAME xxhash-0.7.4-rev1-multiplatform               
 # platform-specific:
 ly_associate_package(PACKAGE_NAME DirectXShaderCompilerDxc-1.6.2104-o3de-rev3-mac   TARGETS DirectXShaderCompilerDxc    PACKAGE_HASH 3f77367dbb0342136ec4ebbd44bc1fedf7198089a0f83c5631248530769b2be6)
 ly_associate_package(PACKAGE_NAME SPIRVCross-2021.04.29-rev1-mac                    TARGETS SPIRVCross                  PACKAGE_HASH 78c6376ed2fd195b9b1f5fb2b56e5267a32c3aa21fb399e905308de470eb4515)
-ly_associate_package(PACKAGE_NAME tiff-4.2.0.15-rev2-mac                            TARGETS tiff                        PACKAGE_HASH b6f3040319f5bfe465d7e3f9b12ceed0dc951e66e05562beaac1c8da3b1b5d3f)
+ly_associate_package(PACKAGE_NAME tiff-4.2.0.15-rev3-mac                            TARGETS TIFF                        PACKAGE_HASH c2615ccdadcc0e1d6c5ed61e5965c4d3a82193d206591b79b805c3b3ff35a4bf)
 ly_associate_package(PACKAGE_NAME freetype-2.10.4.16-mac                            TARGETS freetype                    PACKAGE_HASH f159b346ac3251fb29cb8dd5f805c99b0015ed7fdb3887f656945ca701a61d0d)
 ly_associate_package(PACKAGE_NAME AWSNativeSDK-1.7.167-rev5-mac                     TARGETS AWSNativeSDK                PACKAGE_HASH ffb890bd9cf23afb429b9214ad9bac1bf04696f07a0ebb93c42058c482ab2f01)
 ly_associate_package(PACKAGE_NAME Lua-5.3.5-rev6-mac                                TARGETS Lua                         PACKAGE_HASH b9079fd35634774c9269028447562c6b712dbc83b9c64975c095fd423ff04c08)

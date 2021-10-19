@@ -101,7 +101,7 @@ namespace PhysX
 
             if (AZ::EditContext* editContext = serialize->GetEditContext())
             {
-                editContext->Class<SystemComponent>("PhysX", "Global PhysX physics configuration")
+                editContext->Class<SystemComponent>("PhysX", "Global PhysX physics configuration.")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::Category, "PhysX")
                         ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System", 0xc94d118b))

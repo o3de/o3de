@@ -338,33 +338,6 @@ namespace PhysXEditorTests
         ValidateInvalidEditorShapeColliderComponentParams(0.f, -1.f);
     }
 
-    TEST_F(PhysXEditorFixture, EditorShapeColliderComponent_ShapeColliderWithUnsupportedShape_HandledGracefully)
-    {
-        UnitTest::ErrorHandler unsupportedShapeWarningHandler("Unsupported shape");
-        UnitTest::ErrorHandler rigidBodyWarningHandler("No Collider or Shape information found when creating Rigid body");
-
-        // create an editor entity with a shape collider component and a cylinder shape component
-        // the cylinder shape is not currently supported by the shape collider component
-        EntityPtr editorEntity = CreateInactiveEditorEntity("ShapeColliderComponentEditorEntity");
-        editorEntity->CreateComponent<PhysX::EditorShapeColliderComponent>();
-        editorEntity->CreateComponent(LmbrCentral::EditorCompoundShapeComponentTypeId);
-        editorEntity->Activate();
-
-        EXPECT_EQ(unsupportedShapeWarningHandler.GetExpectedWarningCount(), 1);
-        EXPECT_EQ(rigidBodyWarningHandler.GetExpectedWarningCount(), 1);
-
-        EntityPtr gameEntity = CreateActiveGameEntityFromEditorEntity(editorEntity.get());
-
-        // since there was no editor rigid body component, the runtime entity should have a static rigid body
-        const auto* staticBody = azdynamic_cast<PhysX::StaticRigidBody*>(gameEntity->FindComponent<PhysX::StaticRigidBodyComponent>()->GetSimulatedBody());
-        const auto* pxRigidStatic = static_cast<const physx::PxRigidStatic*>(staticBody->GetNativePointer());
-
-        PHYSX_SCENE_READ_LOCK(pxRigidStatic->getScene());
-
-        // there should be no shapes on the rigid body because the cylinder is not supported
-        EXPECT_EQ(pxRigidStatic->getNbShapes(), 0);
-    }
-
     TEST_F(PhysXEditorFixture, EditorShapeColliderComponent_ShapeColliderWithBoxAndRigidBody_CorrectRuntimeComponents)
     {
         // create an editor entity with a shape collider component and a box shape component
