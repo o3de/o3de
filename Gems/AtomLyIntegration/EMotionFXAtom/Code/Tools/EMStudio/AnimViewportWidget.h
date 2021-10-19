@@ -35,7 +35,6 @@ namespace EMStudio
         void SetCameraViewMode(CameraViewMode mode);
 
         static constexpr float CameraDistance = 2.0f;
-        static constexpr float TargetCenterOffsetZ = 1.0f;
 
         AZStd::unique_ptr<AnimViewportRenderer> m_renderer;
         AZStd::shared_ptr<AzFramework::RotateCameraInput> m_rotateCamera;

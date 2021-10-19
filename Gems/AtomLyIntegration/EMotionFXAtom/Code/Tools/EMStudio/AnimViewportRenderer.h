@@ -50,7 +50,7 @@ namespace EMStudio
         void Reinit();
 
         //! Return the center position of the existing objects.
-        AZ::Vector3 GetCenter() const;
+        AZ::Vector3 GetCharacterCenter() const;
 
     private:
 

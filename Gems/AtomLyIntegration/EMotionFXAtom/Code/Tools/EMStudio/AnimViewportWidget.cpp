@@ -126,8 +126,7 @@ namespace EMStudio
     void AnimViewportWidget::SetCameraViewMode([[maybe_unused]]CameraViewMode mode)
     {
         // Set the camera view mode.
-        AZ::Vector3 targetPosition = m_renderer->GetCenter();
-        targetPosition.SetZ(targetPosition.GetY() + TargetCenterOffsetZ);
+        const AZ::Vector3 targetPosition = m_renderer->GetCharacterCenter();
         AZ::Vector3 cameraPosition;
         switch (mode)
         {
