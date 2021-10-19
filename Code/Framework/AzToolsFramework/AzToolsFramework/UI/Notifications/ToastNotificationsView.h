@@ -12,7 +12,6 @@
 #include <QPoint>
 #include <QPointF>
 
-#include <AzCore/Component/Component.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/containers/unordered_map.h>
 #include <AzToolsFramework/UI/Notifications/ToastBus.h>
@@ -25,6 +24,13 @@ namespace AzQtComponents
 
 namespace AzToolsFramework
 {
+    /**
+    * \brief A QWidget that displays and manages a queue of toast notifications. 
+    *
+    * This view must be updated by its' parent when the parent widget is show, hidden, moved
+    * or resized because toast notifications are displayed on top of the parent and are not part
+    * of the layout, so they must be manually moved.
+    */
     class ToastNotificationsView final
         : public QWidget 
         , protected ToastRequestBus::Handler
@@ -34,15 +40,19 @@ namespace AzToolsFramework
         ToastNotificationsView(QWidget* parent, ToastRequestBusId busId);
         ~ToastNotificationsView() override;
 
+        void HideToastNotification(const ToastId& toastId) override;
+
         ToastId ShowToastNotification(const AzQtComponents::ToastConfiguration& toastConfiguration) override;
         ToastId ShowToastAtCursor(const AzQtComponents::ToastConfiguration& toastConfiguration) override;
         ToastId ShowToastAtPoint(const QPoint& screenPosition, const QPointF& anchorPoint, const AzQtComponents::ToastConfiguration&) override;
 
-        void HideToastNotification(const ToastId& toastId) override;
-
         void OnHide();
         void OnShow();
         void UpdateToastPosition();
+
+    protected:
+        void showEvent(QShowEvent* showEvent) override;
+        void hideEvent(QHideEvent* hideEvent) override;
 
     private:
         ToastId CreateToastNotification(const AzQtComponents::ToastConfiguration& toastConfiguration);
