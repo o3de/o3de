@@ -13,18 +13,6 @@
 #include <AzCore/std/string/string.h>
 #include <AzCore/base.h>
 
-class EditorPropertyPinningInterface
-{
-public:
-    virtual void AddPinnedProperty(AZ::EntityId entity, std::string_view pathToProperty) = 0;
-    virtual void RemovePinnedProperty(AZ::EntityId entity, std::string_view pathToProperty) = 0;
-
-    // Used by systems to know what has been pinned for this entity.
-    // This will be used by the RPE to show the pins that are available for this entity
-    virtual std::vector<std::string> GetPinnedProperties(AZ::EntityId entityId) = 0;
-};
-
-
 namespace LmbrCentral
 {
     using Tag = AZ::Crc32;
