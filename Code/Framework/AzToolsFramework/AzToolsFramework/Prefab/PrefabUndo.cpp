@@ -15,18 +15,17 @@ namespace AzToolsFramework
 {
     namespace Prefab
     {
-        PrefabUndoBase::PrefabUndoBase(const AZStd::string& undoOperationName, InstanceOptionalConstReference instance)
+        PrefabUndoBase::PrefabUndoBase(const AZStd::string& undoOperationName)
             : UndoSystem::URSequencePoint(undoOperationName)
             , m_changed(true)
             , m_templateId(InvalidTemplateId)
-            , m_instance(instance)
         {
             m_instanceToTemplateInterface = AZ::Interface<InstanceToTemplateInterface>::Get();
             AZ_Assert(m_instanceToTemplateInterface, "Failed to grab instance to template interface");
         }
 
-        PrefabUndoInstance::PrefabUndoInstance(const AZStd::string& undoOperationName, InstanceOptionalConstReference instance)
-            : PrefabUndoBase(undoOperationName, instance)
+        PrefabUndoInstance::PrefabUndoInstance(const AZStd::string& undoOperationName)
+            : PrefabUndoBase(undoOperationName)
         {
         }
 
@@ -51,14 +50,14 @@ namespace AzToolsFramework
             m_instanceToTemplateInterface->PatchTemplate(m_redoPatch, m_templateId, true);
         }
 
-        void PrefabUndoInstance::RedoBatched()
+        void PrefabUndoInstance::RedoBatched(InstanceOptionalConstReference instance)
         {
-            m_instanceToTemplateInterface->PatchTemplate(m_redoPatch, m_templateId, false, m_instance);
+            m_instanceToTemplateInterface->PatchTemplate(m_redoPatch, m_templateId, false, instance);
         }
 
         //PrefabEntityUpdateUndo
-        PrefabUndoEntityUpdate::PrefabUndoEntityUpdate(const AZStd::string& undoOperationName, InstanceOptionalConstReference instance)
-            : PrefabUndoBase(undoOperationName, instance)
+        PrefabUndoEntityUpdate::PrefabUndoEntityUpdate(const AZStd::string& undoOperationName)
+            : PrefabUndoBase(undoOperationName)
         {
             m_instanceEntityMapperInterface = AZ::Interface<InstanceEntityMapperInterface>::Get();
             AZ_Assert(m_instanceEntityMapperInterface, "Failed to grab instance entity mapper interface");
@@ -106,7 +105,18 @@ namespace AzToolsFramework
         void PrefabUndoEntityUpdate::Redo()
         {
             [[maybe_unused]] bool isPatchApplicationSuccessful =
-                m_instanceToTemplateInterface->PatchTemplate(m_redoPatch, m_templateId, false, m_instance);
+                m_instanceToTemplateInterface->PatchTemplate(m_redoPatch, m_templateId, true);
+
+            AZ_Error(
+                "Prefab", isPatchApplicationSuccessful,
+                "Applying the redo patch on the entity with alias '%s' in template with id '%llu' was unsuccessful", m_entityAlias.c_str(),
+                m_templateId);
+        }
+
+        void PrefabUndoEntityUpdate::RedoBatched(InstanceOptionalConstReference instance)
+        {
+            [[maybe_unused]] bool isPatchApplicationSuccessful =
+                m_instanceToTemplateInterface->PatchTemplate(m_redoPatch, m_templateId, false, instance);
 
             AZ_Error(
                 "Prefab", isPatchApplicationSuccessful,
@@ -115,8 +125,8 @@ namespace AzToolsFramework
         }
 
         //PrefabInstanceLinkUndo
-        PrefabUndoInstanceLink::PrefabUndoInstanceLink(const AZStd::string& undoOperationName, InstanceOptionalConstReference instance)
-            : PrefabUndoBase(undoOperationName, instance)
+        PrefabUndoInstanceLink::PrefabUndoInstanceLink(const AZStd::string& undoOperationName)
+            : PrefabUndoBase(undoOperationName)
             , m_targetId(InvalidTemplateId)
             , m_sourceId(InvalidTemplateId)
             , m_instanceAlias("")
@@ -207,8 +217,8 @@ namespace AzToolsFramework
         }
 
         //PrefabUndoLinkUpdate
-        PrefabUndoLinkUpdate::PrefabUndoLinkUpdate(const AZStd::string& undoOperationName, InstanceOptionalConstReference instance)
-            : PrefabUndoBase(undoOperationName, instance)
+        PrefabUndoLinkUpdate::PrefabUndoLinkUpdate(const AZStd::string& undoOperationName)
+            : PrefabUndoBase(undoOperationName)
             , m_linkId(InvalidLinkId)
             , m_linkDomNext(PrefabDom())
             , m_linkDomPrevious(PrefabDom())
@@ -317,7 +327,7 @@ namespace AzToolsFramework
 
             //propagate the link changes
             link->get().UpdateTarget();
-            m_prefabSystemComponentInterface->PropagateTemplateChanges(link->get().GetTargetTemplateId(), false, m_instance);
+            m_prefabSystemComponentInterface->PropagateTemplateChanges(link->get().GetTargetTemplateId(), false);
 
             //mark as dirty
             m_prefabSystemComponentInterface->SetTemplateDirtyFlag(link->get().GetTargetTemplateId(), true);

@@ -24,7 +24,7 @@ namespace AzToolsFramework
             : public UndoSystem::URSequencePoint
         {
         public:
-            explicit PrefabUndoBase(const AZStd::string& undoOperationName, InstanceOptionalConstReference instance);
+            explicit PrefabUndoBase(const AZStd::string& undoOperationName);
 
             bool Changed() const override { return m_changed; }
 
@@ -37,9 +37,6 @@ namespace AzToolsFramework
             InstanceToTemplateInterface* m_instanceToTemplateInterface = nullptr;
 
             bool m_changed;
-
-        protected:
-            InstanceOptionalConstReference m_instance;
         };
 
         //! handles the addition and removal of entities from instances
@@ -47,7 +44,7 @@ namespace AzToolsFramework
             : public PrefabUndoBase
         {
         public:
-            PrefabUndoInstance(const AZStd::string& undoOperationName, InstanceOptionalConstReference instance);
+            PrefabUndoInstance(const AZStd::string& undoOperationName);
 
             void Capture(
                 const PrefabDom& initialState,
@@ -56,7 +53,7 @@ namespace AzToolsFramework
 
             void Undo() override;
             void Redo() override;
-            void RedoBatched();
+            void RedoBatched(InstanceOptionalConstReference instance);
         };
 
         //! handles entity updates, such as when the values on an entity change
@@ -67,7 +64,7 @@ namespace AzToolsFramework
             AZ_RTTI(PrefabUndoEntityUpdate, "{6D60C5A6-9535-45B3-8897-E5F6382FDC93}", PrefabUndoBase);
             AZ_CLASS_ALLOCATOR(PrefabUndoEntityUpdate, AZ::SystemAllocator, 0);
 
-            explicit PrefabUndoEntityUpdate(const AZStd::string& undoOperationName, InstanceOptionalConstReference instance);
+            explicit PrefabUndoEntityUpdate(const AZStd::string& undoOperationName);
 
             void Capture(
                 PrefabDom& initialState,
@@ -75,6 +72,7 @@ namespace AzToolsFramework
 
             void Undo() override;
             void Redo() override;
+            void RedoBatched(InstanceOptionalConstReference instance);
 
         private:
             InstanceEntityMapperInterface* m_instanceEntityMapperInterface = nullptr;
@@ -93,7 +91,7 @@ namespace AzToolsFramework
                 LINKSTATUS
             };
 
-            explicit PrefabUndoInstanceLink(const AZStd::string& undoOperationName, InstanceOptionalConstReference instance);
+            explicit PrefabUndoInstanceLink(const AZStd::string& undoOperationName);
 
             //capture for add/remove
             void Capture(
@@ -129,7 +127,7 @@ namespace AzToolsFramework
             : public PrefabUndoBase
         {
         public:
-            explicit PrefabUndoLinkUpdate(const AZStd::string& undoOperationName, InstanceOptionalConstReference instance);
+            explicit PrefabUndoLinkUpdate(const AZStd::string& undoOperationName);
 
             //capture for add/remove
             void Capture(
