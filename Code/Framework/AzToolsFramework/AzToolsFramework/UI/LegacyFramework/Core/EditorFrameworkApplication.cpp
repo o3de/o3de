@@ -108,6 +108,16 @@ namespace LegacyFramework
         m_applicationModule[0] = 0;
     }
 
+    Application::Application(int argc, char** argv)
+        :ComponentApplication(argc ? argc : 0, argv ? argv : nullptr)
+    {
+        m_isPrimary = true;
+        m_desiredExitCode = 0;
+        m_abortRequested = false;
+        m_applicationEntity = NULL;
+        m_ptrSystemEntity = NULL;
+        m_applicationModule[0] = 0;
+    }
     void* Application::GetMainModule()
     {
         return m_desc.m_applicationModule;

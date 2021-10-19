@@ -3931,7 +3931,8 @@ void CCryEditApp::StartProcessDetached(const char* process, const char* args)
 
 void CCryEditApp::OpenLUAEditor(const char* files)
 {
-    AZStd::string args = "-launch lua";
+    AZStd::string args = "\"-launch=lua\"";
+    AZStd::string fileName = "";
     if (files && strlen(files) > 0)
     {
         AZStd::vector<AZStd::string> resolvedPaths;
@@ -3949,7 +3950,7 @@ void CCryEditApp::OpenLUAEditor(const char* files)
 
             if (AZ::IO::FileIOBase::GetInstance()->Exists(resolved))
             {
-                AZStd::string current = '\"' + AZStd::string(resolved) + '\"';
+                AZStd::string current = AZStd::string(resolved);
                 AZStd::replace(current.begin(), current.end(), '\\', '/');
                 resolvedPaths.push_back(current);
             }
@@ -3959,32 +3960,64 @@ void CCryEditApp::OpenLUAEditor(const char* files)
         {
             for (const auto& resolvedPath : resolvedPaths)
             {
-                args.append(AZStd::string::format(" -files %s", resolvedPath.c_str()));
+                args.append(AZStd::string::format("\"-files=%s\"", resolvedPath.c_str()));
+                fileName = resolvedPath.c_str();
             }
         }
     }
 
-    AZ::IO::FixedMaxPathString engineRoot = AZ::Utils::GetEnginePath();
-    AZ_Assert(!engineRoot.empty(), "Unable to query Engine Path");
+    const char* engineRoot = nullptr;
+    AzFramework::ApplicationRequests::Bus::BroadcastResult(engineRoot, &AzFramework::ApplicationRequests::GetEngineRoot);
+    AZ_Assert(engineRoot != nullptr, "Unable to communicate to AzFramework::ApplicationRequests::Bus");
+    AZStd::string externalProcess = gSettings.textEditorForScript.toUtf8().data();
+    AZStd::string process;
+    AZStd::string processArgs;
 
+    AZStd::string projectPath;
+    if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
+    {
+        settingsRegistry->Get(projectPath, AZ::SettingsRegistryMergeUtils::FilePathKey_ProjectPath);        
+    }
+    
+    // only launch IDEA for Lua Script
+    if (externalProcess.ends_with("idea64.exe") || externalProcess.ends_with("idea.exe") || externalProcess.ends_with("idea.sh"))
+    {
+        process = "\"" + externalProcess + "\"";
+        const auto projectName = AZ::Utils::GetProjectName();
+        AZStd::string projectRoot = AZStd::string::format("%s/%s", engineRoot, projectName.c_str());
+        if (fileName.empty())
+        {
+            processArgs = projectRoot;
+        }
+        else
+        {
+            processArgs = "\"" + fileName + "\"";
+        }
+        
+        //startup idea
+        StartProcessDetached(process.c_str(), processArgs.c_str());
+
+        // This parameter determines Lua IDE Running in the background.
+        args += "\"-runbackground=lua\"";
+    }
+   
     AZStd::string_view exePath;
     AZ::ComponentApplicationBus::BroadcastResult(exePath, &AZ::ComponentApplicationRequests::GetExecutableFolder);
 
-#if defined(AZ_PLATFORM_LINUX)
-    // On Linux platforms, launching a process is not done through a shell and its arguments are passed in
-    // separately. There is no need to wrap the process path in case of spaces in the path
-    constexpr const char* argumentQuoteString = "";
-#else
-    constexpr const char* argumentQuoteString = "\"";
-#endif    
-
-    AZStd::string process = AZStd::string::format("%s%.*s" AZ_CORRECT_FILESYSTEM_SEPARATOR_STRING "LuaIDE"
+    process = AZStd::string::format(
+        "\"%.*s" AZ_CORRECT_FILESYSTEM_SEPARATOR_STRING "LuaIDE"
 #if defined(AZ_PLATFORM_WINDOWS)
         ".exe"
 #endif
-        "%s", argumentQuoteString, aznumeric_cast<int>(exePath.size()), exePath.data(), argumentQuoteString);
+        "\"",
+        aznumeric_cast<int>(exePath.size()), exePath.data());
 
-    AZStd::string processArgs = AZStd::string::format("%s -engine-path \"%s\"", args.c_str(), engineRoot.c_str());
+    //setting startup parameter
+    processArgs = AZStd::string::format("%s", args.c_str());
+    processArgs += "\"" + AZStd::string::format("--project-path=%s\"", projectPath.c_str());
+    processArgs += "\"" + AZStd::string::format("-engine-path=%s\"", engineRoot);
+   
+    //startup LuaIDE
     StartProcessDetached(process.c_str(), processArgs.c_str());
 }
 

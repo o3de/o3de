@@ -91,7 +91,7 @@ namespace LUAEditor
         mostRecentlyOpenedDocumentView.clear();
         m_queuedOpenRecent = false;
         m_bShuttingDown = false;
-
+        m_bRunbackground = false;
         AddDefaultLUAKeywords();
         AddDefaultLUALibraryFunctions();
     }
@@ -636,6 +636,7 @@ namespace LUAEditor
         const AZStd::string k_launchString = "launch";
         const AZStd::string k_luaEditorString = "lua";
         const AZStd::string k_luaScriptFileString = "files";
+        const AZStd::string k_runbackground = "runbackground";
 
         // the world editor considers itself a default window, so it always makes one
 
@@ -692,6 +693,11 @@ namespace LUAEditor
                     forceHide = false;
                 }
             }
+        }
+
+        if (commandLine->HasSwitch(k_runbackground))
+        {
+            m_bRunbackground = true;          
         }
 
         size_t numSwitchValues = commandLine->GetNumSwitchValues(k_luaScriptFileString);
@@ -832,6 +838,11 @@ namespace LUAEditor
             }
 
             EBUS_EVENT(LUABreakpointTrackerMessages::Bus, BreakpointsUpdate, m_pBreakpointSavedState->m_Breakpoints);
+        }
+
+        if (m_pLUAEditorMainWindow && m_bRunbackground)
+        {
+            m_pLUAEditorMainWindow->hide();
         }
     }
 
@@ -2467,5 +2478,68 @@ namespace LUAEditor
     bool Context::IsLuaAsset(const AZStd::string& assetPath)
     {
         return AzFramework::StringFunc::Path::IsExtension(assetPath.c_str(), ".lua");
+    }
+
+    void Context::DeleteBreakpointAll(const AZStd::string& fromAssetId)
+    {
+        BreakpointMap::iterator iter;
+        bool isSend = false;
+        for (iter = (m_pBreakpointSavedState->m_Breakpoints).begin(); iter != (m_pBreakpointSavedState->m_Breakpoints).end(); iter++)
+        {
+            if ((static_cast<Breakpoint>(iter->second)).m_assetId == fromAssetId)
+            {
+                DeleteBreakpoint(iter->first);
+                isSend = true;
+            }
+        }
+
+        if (!isSend)
+        {
+            EBUS_EVENT(LUAEditorDebuggerMessages::Bus, RemoveBreakpoint, "", 0);
+        }
+    }
+
+    void Context::DeleteBreakpointSingle(const AZStd::string& fromAssetId, int lineNumber)
+    {
+        BreakpointMap::iterator iter;
+
+        for (iter = (m_pBreakpointSavedState->m_Breakpoints).begin(); iter != (m_pBreakpointSavedState->m_Breakpoints).end(); iter++)
+        {
+            if ((static_cast<Breakpoint>(iter->second)).m_assetId == fromAssetId)
+            {
+                if ((static_cast<Breakpoint>(iter->second)).m_documentLine == lineNumber)
+                {
+                    DeleteBreakpoint(iter->first);
+                    break; 
+                }
+            }
+        }
+    }
+
+    // Delete all breakpoints when o3de attach
+    void Context::CleanUpBreakpointBegin()
+    {
+        // Build a list of orphaned breakpoints
+        std::vector<AZ::Uuid> invalidBreakpoints;
+        for (auto const& breakpoint : m_pBreakpointSavedState->m_Breakpoints)
+        {
+            invalidBreakpoints.emplace_back(breakpoint.second.m_breakpointId);
+        }
+
+        for (auto const& id : invalidBreakpoints)
+        {
+            DeleteBreakpoint(id);
+        }
+
+        // submit the updated list
+        EBUS_EVENT(LUABreakpointTrackerMessages::Bus, BreakpointsUpdate, m_pBreakpointSavedState->m_Breakpoints);
+    }
+
+    void Context::CloseLuaIDE()
+    {
+        if (m_pLUAEditorMainWindow)
+        {
+            m_pLUAEditorMainWindow->close();
+        }
     }
 }

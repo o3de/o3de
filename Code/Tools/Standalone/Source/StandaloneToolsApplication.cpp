@@ -23,8 +23,8 @@
 
 namespace StandaloneTools
 {
-    BaseApplication::BaseApplication(int&, char**)
-        : LegacyFramework::Application()
+    BaseApplication::BaseApplication(int& argc, char** argv)
+        : LegacyFramework::Application(argc, argv)
     {
         AZ::UserSettingsFileLocatorBus::Handler::BusConnect();
     }

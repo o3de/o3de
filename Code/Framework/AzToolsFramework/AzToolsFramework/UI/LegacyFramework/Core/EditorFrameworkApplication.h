@@ -56,6 +56,7 @@ namespace LegacyFramework
         using CoreMessageBus::Handler::Run;
         virtual int Run(const ApplicationDesc& desc);
         Application();
+        Application(int argc, char** argv);
 
         void CreateReflectionManager() override;
 

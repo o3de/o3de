@@ -215,6 +215,10 @@ namespace LUAEditor
         // HighlightedWords
         const HighlightedWords::LUAKeywordsType* GetLUAKeywords()  override { return &m_LUAKeywords; }
         const HighlightedWords::LUAKeywordsType* GetLUALibraryFunctions()  override { return &m_LUALibraryFunctions; }
+        virtual void DeleteBreakpointSingle(const AZStd::string& fromAssetId, int lineNumber);
+        virtual void DeleteBreakpointAll(const AZStd::string& fromAssetId);
+        virtual void CleanUpBreakpointBegin();
+        virtual void CloseLuaIDE();
 
         // internal data structure for the LUA debugger class/member/property reference panel
         // this is what we serialize and work with
@@ -306,6 +310,9 @@ namespace LUAEditor
         AZStd::atomic_int m_numOutstandingOperations;
         bool m_bShuttingDown;
         bool m_bProcessingActivate;
+
+        //This parameter determines Lua IDE Running in the background.
+        bool m_bRunbackground;
 
         // these documents have been modified whilst the user was alt tabbed, we should check them:
         void ProcessReloadCheck();
