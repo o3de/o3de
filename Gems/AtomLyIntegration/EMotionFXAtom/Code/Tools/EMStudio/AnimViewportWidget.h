@@ -21,7 +21,7 @@ namespace EMStudio
     {
     public:
         AnimViewportWidget(QWidget* parent = nullptr);
-        ~AnimViewportWidget();
+        ~AnimViewportWidget() override;
         AnimViewportRenderer* GetAnimViewportRenderer() { return m_renderer.get(); }
 
         void Reinit(bool resetCamera = true);
