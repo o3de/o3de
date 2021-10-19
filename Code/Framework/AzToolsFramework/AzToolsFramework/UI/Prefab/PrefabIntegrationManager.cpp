@@ -766,15 +766,8 @@ namespace AzToolsFramework
             {
                 return false;
             }
-
             outPrefabAssetPath = product->GetRelativePath();
-
-            auto asset = AZ::Data::AssetManager::Instance().GetAsset(
-                product->GetAssetId(),
-                azrtti_typeid<AZ::Prefab::ProceduralPrefabAsset>(),
-                AZ::Data::AssetLoadBehavior::Default);
-
-            return asset.BlockUntilLoadComplete() != AZ::Data::AssetData::AssetStatus::Error;
+            return true;
         }
 
         void PrefabIntegrationManager::WarnUserOfError(AZStd::string_view title, AZStd::string_view message)
