@@ -335,6 +335,8 @@ namespace Multiplayer
         for (const AZ::Entity* controlledEntity : hierarchyComponent.m_hierarchicalEntities)
         {
             NetEntityId controlledNetEntitydId = networkEntityManager->GetNetEntityIdById(controlledEntity->GetId());
+            AZ_Assert(controlledNetEntitydId != InvalidNetEntityId, "Unable to find the hierarchy entity in Network Entity Manager");
+
             ConstNetworkEntityHandle controlledEntityHandle = networkEntityManager->GetEntity(controlledNetEntitydId);
             AZ_Assert(controlledEntityHandle != nullptr, "We have lost a controlled entity unexpectedly");
             

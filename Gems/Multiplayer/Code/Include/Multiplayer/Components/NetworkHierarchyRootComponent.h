@@ -108,7 +108,7 @@ namespace Multiplayer
     //! NetworkHierarchyRootComponentController
     //! This is the network controller for NetworkHierarchyRootComponent.
     //! Class provides the ability to process input for hierarchies.
-    class NetworkHierarchyRootComponentController
+    class NetworkHierarchyRootComponentController final
         : public NetworkHierarchyRootComponentControllerBase
     {
     public:

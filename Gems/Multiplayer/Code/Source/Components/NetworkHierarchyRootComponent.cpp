@@ -373,6 +373,8 @@ namespace Multiplayer
             }
 
             NetEntityId childNetEntitydId = networkEntityManager->GetNetEntityIdById(child->GetId());
+            AZ_Assert(childNetEntitydId != InvalidNetEntityId, "Unable to find the hierarchy entity in Network Entity Manager");
+
             ConstNetworkEntityHandle childEntityHandle = networkEntityManager->GetEntity(childNetEntitydId);
             NetBindComponent* netComp = childEntityHandle.GetNetBindComponent();
 
@@ -395,24 +397,13 @@ namespace Multiplayer
 
     void NetworkHierarchyRootComponentController::ProcessInput(Multiplayer::NetworkInput& input, float deltaTime)
     {
-        // Prevent replaying process input commands for child entities that weren't part of the hierarchy at that time
-        //if (!m_firstProcessInputOccurred)
-        //{
-        //    m_firstProcessInputOccurred = true;
-        //    m_firstProcessInputTime = input.GetInputId().GetGameTimePoint();
-        //}
-        //else if (m_firstProcessInputTime > input.GetInputId().GetGameTimePoint())
-        //{
-        //    return;
-        //}
-
         if (auto* networkInput = input.FindComponentInput<NetworkHierarchyRootComponentNetworkInput>())
         {
             INetworkEntityManager* networkEntityManager = AZ::Interface<INetworkEntityManager>::Get();
             AZ_Assert(networkEntityManager, "NetworkEntityManager must be created.");
 
             // Build a set of Net IDs for the children
-            AZStd::unordered_set<NetEntityId> currentChildren; // TODO: Cache inside the component if this becomes a performance issue.
+            AZStd::unordered_set<NetEntityId> currentChildren;
             NetworkHierarchyRootComponent& component = GetParent();
             for (AZ::Entity* child : component.m_hierarchicalEntities)
             {
@@ -420,7 +411,9 @@ namespace Multiplayer
                 {
                     continue;
                 }
-                NetEntityId childNetEntitydId = networkEntityManager->GetNetEntityIdById(child->GetId()); // TODO: Cache net IDs in the component if this becomes a performance issue
+
+                NetEntityId childNetEntitydId = networkEntityManager->GetNetEntityIdById(child->GetId());
+                AZ_Assert(childNetEntitydId != InvalidNetEntityId, "Unable to find the hierarchy entity in Network Entity Manager");
                 currentChildren.insert(childNetEntitydId);
             }
 
@@ -468,6 +461,8 @@ namespace Multiplayer
             }
 
             NetEntityId childNetEntitydId = networkEntityManager->GetNetEntityIdById(child->GetId());
+            AZ_Assert(childNetEntitydId != InvalidNetEntityId, "Unable to find the hierarchy entity in Network Entity Manager");
+
             ConstNetworkEntityHandle childEntityHandle = networkEntityManager->GetEntity(childNetEntitydId);
             NetBindComponent* netBindComponent = childEntityHandle.GetNetBindComponent();
             AZ_Assert(netBindComponent, "No NetBindComponent, this should be impossible");
