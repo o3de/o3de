@@ -346,7 +346,11 @@ namespace LUAEditor
             {
                 auto selectedAsset = selectedAssets.front();
                 const AZStd::string filePath = selectedAsset->GetFullPath();
-                EBUS_EVENT(Context_DocumentManagement::Bus, OnLoadDocument, filePath, true);
+                auto entry_type = selectedAsset->GetEntryType();
+                if (entry_type == AzToolsFramework::AssetBrowser::AssetBrowserEntry::AssetEntryType::Source)
+                {
+                    EBUS_EVENT(Context_DocumentManagement::Bus, OnLoadDocument, filePath, true);
+                }                    
             }
         });
     }
