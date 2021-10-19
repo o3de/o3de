@@ -9,6 +9,8 @@
 
 #if !defined(Q_MOC_RUN)
 #include <QWidget>
+#include <QPoint>
+#include <QPointF>
 
 #include <AzCore/Component/Component.h>
 #include <AzCore/std/containers/vector.h>
@@ -45,9 +47,13 @@ namespace AzToolsFramework
     private:
         ToastId CreateToastNotification(const AzQtComponents::ToastConfiguration& toastConfiguration);
         void DisplayQueuedNotification();
+        QPoint GetGlobalPoint();
 
         ToastId m_activeNotification;
         AZStd::unordered_map<ToastId, AzQtComponents::ToastNotification*> m_notifications;
         AZStd::vector<ToastId> m_queuedNotifications;
+
+        QPoint m_offset = QPoint(10, 10);
+        QPointF m_anchorPoint = QPointF(1, 0);
     };
 } // AzToolsFramework

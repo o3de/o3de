@@ -27,12 +27,14 @@ namespace AzToolsFramework
 
     void ToastNotificationsView::OnHide()
     {
+        QWidget::hide();
+
         if (m_activeNotification.IsValid())
         {
             auto notificationIter = m_notifications.find(m_activeNotification);
             if (notificationIter != m_notifications.end())
             {
-                //notificationIter->second->hide();
+                notificationIter->second->hide();
             }
         }
     }
@@ -44,20 +46,16 @@ namespace AzToolsFramework
             auto notificationIter = m_notifications.find(m_activeNotification);
             if (notificationIter != m_notifications.end())
             {
-                // Want this to be roughly in the top right corner of the graphics view.
-                QPoint globalPoint = parentWidget()->mapToGlobal(QPoint(parentWidget()->width() - 10, 10));
-
-                // Anchor point will be top right
-                QPointF anchorPoint = QPointF(1, 0);
-
-                notificationIter->second->UpdatePosition(globalPoint, anchorPoint);
+                notificationIter->second->UpdatePosition(GetGlobalPoint(), m_anchorPoint);
             }
         }
     }
 
     void ToastNotificationsView::OnShow()
     {
-        if (m_activeNotification.IsValid())
+        QWidget::show();
+
+        if (m_activeNotification.IsValid() || !m_queuedNotifications.empty())
         {
             DisplayQueuedNotification();
         }
@@ -128,6 +126,22 @@ namespace AzToolsFramework
         return toastId;
     }
 
+    QPoint ToastNotificationsView::GetGlobalPoint()
+    {
+        QPoint relative = m_offset;
+
+        if (m_anchorPoint.x() == 1.0)
+        {
+            relative.setX(parentWidget()->width() - m_offset.x());
+        }
+        if (m_anchorPoint.y() == 1.0)
+        {
+            relative.setY(parentWidget()->height() - m_offset.y());
+        }
+
+        return parentWidget()->mapToGlobal(relative);
+    }
+
     void ToastNotificationsView::DisplayQueuedNotification()
     {        
         AZ_Assert(parentWidget(), "ToastNotificationsView has invalid parent QWidget");
@@ -136,7 +150,7 @@ namespace AzToolsFramework
             return;
         }
 
-        if (m_queuedNotifications.empty() || !parentWidget()->isVisible())
+        if (m_queuedNotifications.empty() || !parentWidget()->isVisible() || !isVisible())
         {
             return;
         }
@@ -150,13 +164,7 @@ namespace AzToolsFramework
         {
             m_activeNotification = toastId;
 
-            // Want this to be roughly in the top right corner of the view.
-            QPoint globalPoint = parentWidget()->mapToGlobal(QPoint(parentWidget()->width() - 10, 10));
-
-            // Anchor point will be top right
-            QPointF anchorPoint = QPointF(1, 0);
-
-            notificationIter->second->ShowToastAtPoint(globalPoint, anchorPoint);
+            notificationIter->second->ShowToastAtPoint(GetGlobalPoint(), m_anchorPoint);
 
             QObject::connect(
                 notificationIter->second, &AzQtComponents::ToastNotification::ToastNotificationHidden,

@@ -135,7 +135,6 @@ namespace AzQtComponents
             delete m_fadeAnimation;
         }
 
-        //ToastNotificationBus::Event(GetToastId(), &ToastNotifications::OnToastDismissed);
         emit ToastNotificationHidden();
     }
 
@@ -144,7 +143,6 @@ namespace AzQtComponents
         if (m_closeOnClick)
         {
             emit ToastNotificationInteraction();
-            //ToastNotificationBus::Event(GetToastId(), &ToastNotifications::OnToastInteraction);
             accept();
         }
     }
