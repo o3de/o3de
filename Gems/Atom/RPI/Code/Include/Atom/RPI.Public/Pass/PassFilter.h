@@ -24,6 +24,20 @@ namespace AZ
         public:
             static PassFilter CreateWithPassName(Name passName, const Scene* scene);
             static PassFilter CreateWithPassName(Name passName, const RenderPipeline* renderPipeline);
+
+            //! Create a PassFilter with pass hierarchy information
+            //! Filter for passes which have a matching name and also with ordered parents.
+            //! For example, if the filter is initialized with
+            //! pass name: "ShadowPass1"
+            //! pass parents names: "MainPipeline", "Shadow"
+            //! Passes with these names match the filter:
+            //!     "Root.MainPipeline.SwapChainPass.Shadow.ShadowPass1" 
+            //! or  "Root.MainPipeline.Shadow.ShadowPass1"
+            //! or  "MainPipeline.Shadow.Group1.ShadowPass1"
+            //!
+            //! Passes with these names wont match:
+            //!     "MainPipeline.ShadowPass1"
+            //! or  "Shadow.MainPipeline.ShadowPass1"
             static PassFilter CreateWithPassHierarchy(const AZStd::vector<Name>& passHierarchy);
             static PassFilter CreateWithPassHierarchy(const AZStd::vector<AZStd::string>& passHierarchy);
             static PassFilter CreateWithTemplateName(Name templateName, const Scene* scene);

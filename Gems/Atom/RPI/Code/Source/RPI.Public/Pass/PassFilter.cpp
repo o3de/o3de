@@ -166,16 +166,38 @@ namespace AZ
             }
             
             // If the owner render pipeline was checked, the owner scene check can be skipped
-            if ((options & FilterOptions::OwnerScene) && !(options & FilterOptions::OwnerRenderPipeline))
+            if (options & FilterOptions::OwnerScene)
             {
-                if ( pass->GetRenderPipeline() && m_ownerScene != pass->GetRenderPipeline()->GetScene())
+                if (pass->GetRenderPipeline())
                 {
+                    // return false if the owner scene doesn't match
+                    if (m_ownerScene != pass->GetRenderPipeline()->GetScene())
+                    {
+                        return false;
+                    }
+                }
+                else
+                {
+                    // return false if the pass doesn't have an owner scene
                     return false;
                 }
             }
 
             if ((options & FilterOptions::PassHierarchy))
             {
+                // Filter for passes which have a matching name and also with ordered parents.
+                // For example, if the filter is initialized with
+                // pass name: "ShadowPass1"
+                // pass parents names: "MainPipeline", "Shadow"
+                // Passes with these names match the filter:
+                //    "Root.MainPipeline.SwapChainPass.Shadow.ShadowPass1" 
+                // or  "Root.MainPipeline.Shadow.ShadowPass1"
+                // or  "MainPipeline.Shadow.Group1.ShadowPass1"
+                //
+                // Passes with these names wont match:
+                //    "MainPipeline.ShadowPass1"
+                // or  "Shadow.MainPipeline.ShadowPass1"
+
                 ParentPass* parent = pass->GetParent();
 
                 // search from the back of the array with the most close parent 
@@ -226,7 +248,19 @@ namespace AZ
             }
             if (m_ownerScene)
             {
-                m_filterOptions |= FilterOptions::OwnerScene;
+                // If the OwnerRenderPipeline exists, we shouldn't need to filter owner scene
+                // Validate the owner render pipeline belongs to the owner scene
+                if (m_filterOptions & FilterOptions::OwnerRenderPipeline)
+                {
+                    if (m_ownerRenderPipeline->GetScene() != m_ownerScene)
+                    {
+                        AZ_Warning("RPI", false, "The owner scene filter doesn't match owner render pipeline. It will be skipped.");
+                    }
+                }
+                else
+                {
+                    m_filterOptions |= FilterOptions::OwnerScene;
+                }
             }
             if (!m_passClassTypeId.IsNull())
             {

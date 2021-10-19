@@ -50,7 +50,7 @@ namespace AZ
                 return scope;
             }
 
-            //! Sets the active context based on the provided PassHierarchy. If the filter doesn't match exactly one pass, then do nothing.
+            //! Sets the active context based on the provided pass hierarchy filter. If the filter doesn't match exactly one pass, then do nothing.
             static ImGuiActiveContextScope FromPass(const AZStd::vector<AZStd::string>& passHierarchy)
             {
                 ImGuiActiveContextScope scope;
