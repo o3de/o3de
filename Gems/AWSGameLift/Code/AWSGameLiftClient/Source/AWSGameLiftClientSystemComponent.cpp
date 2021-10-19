@@ -139,15 +139,16 @@ namespace AWSGameLift
 
             behaviorContext->EBus<AWSGameLiftMatchmakingRequestBus>("AWSGameLiftMatchmakingRequestBus")
                 ->Attribute(AZ::Script::Attributes::Category, "AWSGameLift")
-                ->Event("AcceptMatch", &AWSGameLiftMatchmakingRequestBus::Events::AcceptMatch, { { { "AcceptMatchRequest", "" } } })
+                ->Event("AcceptMatch", &AWSGameLiftMatchmakingRequestBus::Events::AcceptMatch,
+                    { { { "AcceptMatchRequest", "" } } })
                 ->Event("StartMatchmaking", &AWSGameLiftMatchmakingRequestBus::Events::StartMatchmaking,
                     { { { "StartMatchmakingRequest", "" } } })
                 ->Event("StopMatchmaking", &AWSGameLiftMatchmakingRequestBus::Events::StopMatchmaking,
                     { { { "StopMatchmakingRequest", "" } } });
 
-            behaviorContext->EBus<AzFramework::MatchAcceptanceNotificationBus>("AWSGameLiftMatchAcceptanceNotificationBus")
+            behaviorContext->EBus<AzFramework::MatchmakingNotificationBus>("AWSGameLiftMatchmakingNotificationBus")
                 ->Attribute(AZ::Script::Attributes::Category, "AWSGameLift")
-                ->Handler<AWSGameLiftMatchAcceptanceNotificationBusHandler>();
+                ->Handler<AWSGameLiftMatchmakingNotificationBusHandler>();
         }
     }
 
