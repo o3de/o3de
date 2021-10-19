@@ -93,8 +93,6 @@ namespace UnitTest
         // This logic is modeled after NetworkInputArray serialization in the Multiplayer Gem
         bool SerializeNoDelta(AzNetworking::ISerializer& serializer)
         {
-            
-
             for (uint32_t i = 0; i < m_container.size(); ++i)
             {
                 if(!m_container[i].Serialize(serializer))
