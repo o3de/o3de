@@ -94,7 +94,7 @@ namespace AWSGameLift
         static constexpr const char AWSGameLiftMatchmakingPlayerAttributeSTypeName[] = "S";
         static constexpr const char AWSGameLiftMatchmakingPlayerAttributeSServerTypeName[] = "STRING";
         static constexpr const char AWSGameLiftMatchmakingPlayerAttributeNTypeName[] = "N";
-        static constexpr const char AWSGameLiftMatchmakingPlayerAttributeNServerTypeName[] = "NUMBER";
+        static constexpr const char AWSGameLiftMatchmakingPlayerAttributeNServerTypeName[] = "DOUBLE";
         static constexpr const char AWSGameLiftMatchmakingPlayerAttributeSLTypeName[] = "SL";
         static constexpr const char AWSGameLiftMatchmakingPlayerAttributeSLServerTypeName[] = "STRING_LIST";
         static constexpr const char AWSGameLiftMatchmakingPlayerAttributeSDMTypeName[] = "SDM";

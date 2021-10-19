@@ -115,6 +115,33 @@ namespace AzToolsFramework
         }
     }
 
+    CursorEntityIdQuery::CursorEntityIdQuery(AZ::EntityId entityId, AZ::EntityId rootEntityId)
+        : m_entityId(entityId)
+        , m_containerAncestorEntityId(rootEntityId)
+    {
+    }
+
+    AZ::EntityId CursorEntityIdQuery::EntityIdUnderCursor() const
+    {
+        return m_entityId;
+    }
+
+    AZ::EntityId CursorEntityIdQuery::ContainerAncestorEntityId() const
+    {
+        return m_containerAncestorEntityId;
+    }
+
+    bool CursorEntityIdQuery::HasContainerAncestorEntityId() const
+    {
+        if (m_entityId.IsValid())
+        {
+            return m_entityId != m_containerAncestorEntityId;
+        }
+
+        return false;
+    }
+
+
     EditorHelpers::EditorHelpers(const EditorVisibleEntityDataCache* entityDataCache)
         : m_entityDataCache(entityDataCache)
     {
@@ -131,7 +158,7 @@ namespace AzToolsFramework
         m_invalidClicks = AZStd::make_unique<InvalidClicks>(AZStd::move(invalidClicks));
     }
 
-    AZ::EntityId EditorHelpers::HandleMouseInteraction(
+    CursorEntityIdQuery EditorHelpers::FindEntityIdUnderCursor(
         const AzFramework::CameraState& cameraState, const ViewportInteraction::MouseInteractionEvent& mouseInteraction)
     {
         AZ_PROFILE_FUNCTION(AzToolsFramework);
@@ -202,17 +229,18 @@ namespace AzToolsFramework
                 m_invalidClicks->AddInvalidClick(mouseInteraction.m_mouseInteraction.m_mousePick.m_screenCoordinates);
             }
 
-            return AZ::EntityId();
+            return CursorEntityIdQuery(AZ::EntityId(), AZ::EntityId());
         }
 
         // container entity support - if the entity that is being selected is part of a closed container,
         // change the selection to the container instead.
         if (ContainerEntityInterface* containerEntityInterface = AZ::Interface<ContainerEntityInterface>::Get())
         {
-            return containerEntityInterface->FindHighestSelectableEntity(entityIdUnderCursor);
+            const auto highestSelectableEntity = containerEntityInterface->FindHighestSelectableEntity(entityIdUnderCursor);
+            return CursorEntityIdQuery(entityIdUnderCursor, highestSelectableEntity);
         }
 
-        return entityIdUnderCursor;
+        return CursorEntityIdQuery(entityIdUnderCursor, AZ::EntityId());
     }
 
     void EditorHelpers::Display2d(

@@ -1435,32 +1435,35 @@ namespace AssetProcessor
         return QString();
     }
 
-    QStringList PlatformConfiguration::FindWildcardMatches(const QString& sourceFolder, QString relativeName, bool includeFolders, bool recursiveSearch) const
+    QStringList PlatformConfiguration::FindWildcardMatches(
+        const QString& sourceFolder, QString relativeName, bool includeFolders, bool recursiveSearch) const
     {
         if (relativeName.isEmpty())
         {
             return QStringList();
         }
 
-        const int pathLen = sourceFolder.length() + 1;
+        QDir sourceFolderDir(sourceFolder);
 
-        relativeName.replace('\\', '/');
+        QString posixRelativeName = QDir::fromNativeSeparators(relativeName);
 
         QStringList returnList;
-        QRegExp nameMatch{ relativeName, Qt::CaseInsensitive, QRegExp::Wildcard };
-        QDirIterator diretoryIterator(sourceFolder, QDir::AllEntries | QDir::NoSymLinks | QDir::NoDotAndDotDot, recursiveSearch ? QDirIterator::Subdirectories : QDirIterator::NoIteratorFlags);
+        QRegExp nameMatch{ posixRelativeName, Qt::CaseInsensitive, QRegExp::Wildcard };
+        QDirIterator dirIterator(
+            sourceFolderDir.path(), QDir::AllEntries | QDir::NoSymLinks | QDir::NoDotAndDotDot,
+            recursiveSearch ? QDirIterator::Subdirectories : QDirIterator::NoIteratorFlags);
         QStringList files;
-        while (diretoryIterator.hasNext())
+        while (dirIterator.hasNext())
         {
-            diretoryIterator.next();
-            if (!includeFolders && !diretoryIterator.fileInfo().isFile())
+            dirIterator.next();
+            if (!includeFolders && !dirIterator.fileInfo().isFile())
             {
                 continue;
             }
-            QString pathMatch{ diretoryIterator.filePath().mid(pathLen) };
+            QString pathMatch{ sourceFolderDir.relativeFilePath(dirIterator.filePath()) };
             if (nameMatch.exactMatch(pathMatch))
             {
-                returnList.append(AssetUtilities::NormalizeFilePath(diretoryIterator.filePath()));
+                returnList.append(QDir::fromNativeSeparators(dirIterator.filePath()));
             }
         }
         return returnList;

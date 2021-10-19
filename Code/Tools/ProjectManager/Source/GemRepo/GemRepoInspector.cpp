@@ -60,8 +60,8 @@ namespace O3DE::ProjectManager
 
         // Repo name and url link
         m_nameLabel->setText(m_model->GetName(modelIndex));
-        m_repoLinkLabel->setText(m_model->GetRepoLink(modelIndex));
-        m_repoLinkLabel->SetUrl(m_model->GetRepoLink(modelIndex));
+        m_repoLinkLabel->setText(m_model->GetRepoUri(modelIndex));
+        m_repoLinkLabel->SetUrl(m_model->GetRepoUri(modelIndex));
 
         // Repo summary
         m_summaryLabel->setText(m_model->GetSummary(modelIndex));
