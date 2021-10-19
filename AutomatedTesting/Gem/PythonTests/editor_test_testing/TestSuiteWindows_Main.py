@@ -15,6 +15,7 @@ import sys
 import importlib
 import re
 
+import ly_test_tools
 from ly_test_tools import LAUNCHERS
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
@@ -25,7 +26,11 @@ import ly_test_tools.environment.process_utils as process_utils
 
 import argparse, sys
 
-@pytest.mark.SUITE_main
+if ly_test_tools.WINDOWS:
+    pytestmark = pytest.mark.SUITE_main
+else:
+    pytestmark = pytest.mark.skipif(not ly_test_tools.WINDOWS, reason="Only runs on Windows")
+
 @pytest.mark.parametrize("launcher_platform", ['windows_editor'])
 @pytest.mark.parametrize("project", ["AutomatedTesting"])
 class TestEditorTest:
