@@ -696,8 +696,7 @@ namespace AZ
                 usageFlags |=
                     VK_BUFFER_USAGE_INDEX_BUFFER_BIT |
                     VK_BUFFER_USAGE_VERTEX_BUFFER_BIT |
-                    VK_BUFFER_USAGE_ACCELERATION_STRUCTURE_BUILD_INPUT_READ_ONLY_BIT_KHR |
-                    VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT;
+                    VK_BUFFER_USAGE_ACCELERATION_STRUCTURE_BUILD_INPUT_READ_ONLY_BIT_KHR;
             }
 
             if (RHI::CheckBitsAny(bindFlags, BindFlags::Constant))
@@ -742,10 +741,22 @@ namespace AZ
 
             if (RHI::CheckBitsAny(bindFlags, BindFlags::RayTracingShaderTable))
             {
-                usageFlags |= VK_BUFFER_USAGE_SHADER_BINDING_TABLE_BIT_KHR | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT;
+                usageFlags |= VK_BUFFER_USAGE_SHADER_BINDING_TABLE_BIT_KHR;
+            }
+
+            if (ShouldApplyDeviceAddressBit(bindFlags))
+            {
+                usageFlags |=  VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT;
             }
 
             return usageFlags;
+        }
+
+        bool ShouldApplyDeviceAddressBit(RHI::BufferBindFlags bindFlags)
+        {
+            return RHI::CheckBitsAny(
+                bindFlags,
+                RHI::BufferBindFlags::InputAssembly | RHI::BufferBindFlags::DynamicInputAssembly | RHI::BufferBindFlags::RayTracingShaderTable);
         }
 
         VkPipelineStageFlags GetSupportedPipelineStages(RHI::PipelineStateType type)

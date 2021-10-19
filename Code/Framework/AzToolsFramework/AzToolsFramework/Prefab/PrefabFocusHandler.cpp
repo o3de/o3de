@@ -8,12 +8,14 @@
 
 #include <AzToolsFramework/Prefab/PrefabFocusHandler.h>
 
+#include <AzToolsFramework/Commands/SelectionCommand.h>
 #include <AzToolsFramework/ContainerEntity/ContainerEntityInterface.h>
 #include <AzToolsFramework/Entity/EditorEntityHelpers.h>
 #include <AzToolsFramework/Entity/PrefabEditorEntityOwnershipInterface.h>
 #include <AzToolsFramework/Prefab/Instance/Instance.h>
 #include <AzToolsFramework/Prefab/Instance/InstanceEntityMapperInterface.h>
 #include <AzToolsFramework/Prefab/PrefabFocusNotificationBus.h>
+#include <AzToolsFramework/Prefab/PrefabFocusUndo.h>
 
 namespace AzToolsFramework::Prefab
 {
@@ -28,10 +30,12 @@ namespace AzToolsFramework::Prefab
 
         EditorEntityContextNotificationBus::Handler::BusConnect();
         AZ::Interface<PrefabFocusInterface>::Register(this);
+        AZ::Interface<PrefabFocusPublicInterface>::Register(this);
     }
 
     PrefabFocusHandler::~PrefabFocusHandler()
     {
+        AZ::Interface<PrefabFocusPublicInterface>::Unregister(this);
         AZ::Interface<PrefabFocusInterface>::Unregister(this);
         EditorEntityContextNotificationBus::Handler::BusDisconnect();
     }
@@ -62,6 +66,44 @@ namespace AzToolsFramework::Prefab
 
     PrefabFocusOperationResult PrefabFocusHandler::FocusOnOwningPrefab(AZ::EntityId entityId)
     {
+        // Initialize Undo Batch object
+        ScopedUndoBatch undoBatch("Edit Prefab");
+
+        // Clear selection
+        {
+            const EntityIdList selectedEntities = EntityIdList{};
+            auto selectionUndo = aznew SelectionCommand(selectedEntities, "Clear Selection");
+            selectionUndo->SetParent(undoBatch.GetUndoBatch());
+            ToolsApplicationRequestBus::Broadcast(&ToolsApplicationRequestBus::Events::SetSelectedEntities, selectedEntities);
+        }
+
+        // Edit Prefab
+        {
+            auto editUndo = aznew PrefabFocusUndo("Edit Prefab");
+            editUndo->Capture(entityId);
+            editUndo->SetParent(undoBatch.GetUndoBatch());
+            ToolsApplicationRequestBus::Broadcast(&ToolsApplicationRequestBus::Events::RunRedoSeparately, editUndo);
+        }
+
+        return AZ::Success();
+    }
+
+    PrefabFocusOperationResult PrefabFocusHandler::FocusOnPathIndex([[maybe_unused]] AzFramework::EntityContextId entityContextId, int index)
+    {
+        if (index < 0 || index >= m_instanceFocusVector.size())
+        {
+            return AZ::Failure(AZStd::string("Prefab Focus Handler: Invalid index on FocusOnPathIndex."));
+        }
+
+        InstanceOptionalReference focusedInstance = m_instanceFocusVector[index];
+
+        FocusOnOwningPrefab(focusedInstance->get().GetContainerEntityId());
+
+        return AZ::Success();
+    }
+
+    PrefabFocusOperationResult PrefabFocusHandler::FocusOnPrefabInstanceOwningEntityId(AZ::EntityId entityId)
+    {
         InstanceOptionalReference focusedInstance;
 
         if (!entityId.IsValid())
@@ -81,18 +123,6 @@ namespace AzToolsFramework::Prefab
         {
             focusedInstance = m_instanceEntityMapperInterface->FindOwningInstance(entityId);
         }
-
-        return FocusOnPrefabInstance(focusedInstance);
-    }
-
-    PrefabFocusOperationResult PrefabFocusHandler::FocusOnPathIndex([[maybe_unused]] AzFramework::EntityContextId entityContextId, int index)
-    {
-        if (index < 0 || index >= m_instanceFocusVector.size())
-        {
-            return AZ::Failure(AZStd::string("Prefab Focus Handler: Invalid index on FocusOnPathIndex."));
-        }
-
-        InstanceOptionalReference focusedInstance = m_instanceFocusVector[index];
 
         return FocusOnPrefabInstance(focusedInstance);
     }
@@ -122,17 +152,10 @@ namespace AzToolsFramework::Prefab
             if (focusedInstance->get().GetParentInstance() != AZStd::nullopt)
             {
                 containerEntityId = focusedInstance->get().GetContainerEntityId();
-
-                // Select the container entity
-                AzToolsFramework::SelectEntity(containerEntityId);
             }
             else
             {
                 containerEntityId = AZ::EntityId();
-
-                // Clear the selection
-                AzToolsFramework::SelectEntities({});
-                
             }
             
             // Focus on the descendants of the container entity
@@ -159,6 +182,17 @@ namespace AzToolsFramework::Prefab
         [[maybe_unused]] AzFramework::EntityContextId entityContextId) const
     {
         return m_focusedInstance;
+    }
+
+    AZ::EntityId PrefabFocusHandler::GetFocusedPrefabContainerEntityId([[maybe_unused]] AzFramework::EntityContextId entityContextId) const
+    {
+        if (!m_focusedInstance.has_value())
+        {
+            // PrefabFocusHandler has not been initialized yet.
+            return AZ::EntityId();
+        }
+
+        return m_focusedInstance->get().GetContainerEntityId();
     }
 
     bool PrefabFocusHandler::IsOwningPrefabBeingFocused(AZ::EntityId entityId) const
@@ -196,8 +230,11 @@ namespace AzToolsFramework::Prefab
             Initialize();
         }
 
+        // Clear the old focus vector
+        m_instanceFocusVector.clear();
+
         // Focus on the root prefab (AZ::EntityId() will default to it)
-        FocusOnOwningPrefab(AZ::EntityId());
+        FocusOnPrefabInstanceOwningEntityId(AZ::EntityId());
     }
 
     void PrefabFocusHandler::RefreshInstanceFocusList()
@@ -230,7 +267,7 @@ namespace AzToolsFramework::Prefab
         {
             if (instance.has_value())
             {
-                m_containerEntityInterface->SetContainerOpenState(instance->get().GetContainerEntityId(), true);
+                m_containerEntityInterface->SetContainerOpen(instance->get().GetContainerEntityId(), true);
             }
         }
     }
@@ -241,7 +278,7 @@ namespace AzToolsFramework::Prefab
         {
             if (instance.has_value())
             {
-                m_containerEntityInterface->SetContainerOpenState(instance->get().GetContainerEntityId(), false);
+                m_containerEntityInterface->SetContainerOpen(instance->get().GetContainerEntityId(), false);
             }
         }
     }

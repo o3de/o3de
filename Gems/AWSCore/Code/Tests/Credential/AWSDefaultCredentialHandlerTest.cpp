@@ -49,7 +49,7 @@ class AWSDefaultCredentialHandlerTest
 {
 public:
     AWSDefaultCredentialHandlerTest() = default;
-    virtual ~AWSDefaultCredentialHandlerTest() = default;
+    ~AWSDefaultCredentialHandlerTest() override = default;
 
     void SetUp() override
     {

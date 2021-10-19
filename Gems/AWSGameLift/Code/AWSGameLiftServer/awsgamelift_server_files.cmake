@@ -7,6 +7,8 @@
 #
 
 set(FILES
+    ../AWSGameLiftCommon/Include/AWSGameLiftPlayer.h
+    ../AWSGameLiftCommon/Source/AWSGameLiftPlayer.cpp
     ../AWSGameLiftCommon/Source/AWSGameLiftSessionConstants.h
     Include/Request/IAWSGameLiftServerRequests.h
     Source/AWSGameLiftServerManager.cpp
