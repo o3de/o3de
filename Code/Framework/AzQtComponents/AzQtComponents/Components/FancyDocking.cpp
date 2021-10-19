@@ -2790,10 +2790,12 @@ namespace AzQtComponents
                 // a docking drag operation (e.g. popup dialog for new level), we
                 // should cancel our drag operation because the mouse release event
                 // will be lost since we lost focus
-                if (m_dropZoneState.dragging())
-                {
-                    clearDraggingState();
-                }
+                #if !defined(AZ_PLATFORM_LINUX)
+                    if (m_dropZoneState.dragging())
+                    {
+                        clearDraggingState();
+                    }
+                #endif
                 break;
             }
         }
