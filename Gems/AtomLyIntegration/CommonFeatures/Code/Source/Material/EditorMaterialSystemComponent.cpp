@@ -95,6 +95,7 @@ namespace AZ
 
         void EditorMaterialSystemComponent::Activate()
         {
+            AZ::EntitySystemBus::Handler::BusConnect();
             EditorMaterialSystemComponentNotificationBus::Handler::BusConnect();
             EditorMaterialSystemComponentRequestBus::Handler::BusConnect();
             AzToolsFramework::AssetBrowser::AssetBrowserInteractionNotificationBus::Handler::BusConnect();
@@ -106,6 +107,7 @@ namespace AZ
 
         void EditorMaterialSystemComponent::Deactivate()
         {
+            AZ::EntitySystemBus::Handler::BusDisconnect();
             EditorMaterialSystemComponentNotificationBus::Handler::BusDisconnect();
             EditorMaterialSystemComponentRequestBus::Handler::BusDisconnect();
             AzToolsFramework::AssetBrowser::AssetBrowserInteractionNotificationBus::Handler::BusDisconnect();
@@ -185,7 +187,7 @@ namespace AZ
                     materialAssignmentId);
 
                 previewRenderer->AddCaptureRequest(
-                    { 128,
+                    { MaterialPreviewResolution,
                       AZStd::make_shared<AZ::LyIntegration::SharedPreviewContent>(
                           previewRenderer->GetScene(), previewRenderer->GetView(), previewRenderer->GetEntityContextId(),
                           AZ::RPI::AssetUtils::GetAssetIdForProductPath(DefaultModelPath), materialAssetId,
@@ -220,11 +222,17 @@ namespace AZ
             return QPixmap();
         }
 
+        void EditorMaterialSystemComponent::OnEntityDestroyed(const AZ::EntityId& entityId)
+        {
+            m_materialPreviews.erase(entityId);
+        }
+
         void EditorMaterialSystemComponent::OnRenderMaterialPreviewComplete(
             [[maybe_unused]] const AZ::EntityId& entityId,
             [[maybe_unused]] const AZ::Render::MaterialAssignmentId& materialAssignmentId,
             [[maybe_unused]] const QPixmap& pixmap)
         {
+            PurgePreviews();
             m_materialPreviews[entityId][materialAssignmentId] = pixmap;
         }
 
@@ -280,6 +288,20 @@ namespace AZ
                 return AzToolsFramework::AssetBrowser::SourceFileDetails(MaterialTypeIconPath);
             }
             return AzToolsFramework::AssetBrowser::SourceFileDetails();
+        }
+
+        void EditorMaterialSystemComponent::PurgePreviews()
+        {
+            size_t materialPreviewCount = 0;
+            for (const auto& materialPreviewPair : m_materialPreviews)
+            {
+                materialPreviewCount += materialPreviewPair.second.size();
+            }
+
+            if (materialPreviewCount > MaterialPreviewLimit)
+            {
+                m_materialPreviews.clear();
+            }
         }
     } // namespace Render
 } // namespace AZ
