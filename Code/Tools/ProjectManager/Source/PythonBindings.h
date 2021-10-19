@@ -58,7 +58,8 @@ namespace O3DE::ProjectManager
         AZ::Outcome<QVector<ProjectTemplateInfo>> GetProjectTemplates(const QString& projectPath = {}) override;
 
         // Gem Repos
-        AZ::Outcome<void, AZStd::string> AddGemRepo(const QString& repoUri) override;
+        bool AddGemRepo(const QString& repoUri) override;
+        bool RemoveGemRepo(const QString& repoUri) override;
         AZ::Outcome<QVector<GemRepoInfo>, AZStd::string> GetAllGemRepoInfos() override;
 
     private:
@@ -67,7 +68,7 @@ namespace O3DE::ProjectManager
         AZ::Outcome<void, AZStd::string> ExecuteWithLockErrorHandling(AZStd::function<void()> executionCallback);
         bool ExecuteWithLock(AZStd::function<void()> executionCallback);
         GemInfo GemInfoFromPath(pybind11::handle path, pybind11::handle pyProjectPath);
-        GemRepoInfo GemRepoInfoFromPath(pybind11::handle path, pybind11::handle pyEnginePath);
+        GemRepoInfo GetGemRepoInfo(pybind11::handle repoUri);
         ProjectInfo ProjectInfoFromPath(pybind11::handle path);
         ProjectTemplateInfo ProjectTemplateInfoFromPath(pybind11::handle path, pybind11::handle pyProjectPath);
         bool RegisterThisEngine();

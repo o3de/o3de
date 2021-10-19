@@ -62,7 +62,7 @@ namespace ImageProcessingAtomEditor
         
         void SetIsOverrided();
         
-        void SetToPreset(const AZStd::string& presetName);
+        void SetToPreset(const ImageProcessingAtom::PresetName& presetName);
         
         //Get the texture setting on certain platform
         ImageProcessingAtom::TextureSettings& GetMultiplatformTextureSetting(const AZStd::string& platform = "");

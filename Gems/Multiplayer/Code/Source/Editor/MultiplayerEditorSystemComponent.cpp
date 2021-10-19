@@ -62,6 +62,7 @@ namespace Multiplayer
     }
 
     MultiplayerEditorSystemComponent::MultiplayerEditorSystemComponent()
+        : m_serverAcceptanceReceivedHandler([this](){OnServerAcceptanceReceived();})
     {
         ;
     }
@@ -70,6 +71,7 @@ namespace Multiplayer
     {
         AzFramework::GameEntityContextEventBus::Handler::BusConnect();
         AzToolsFramework::EditorEvents::Bus::Handler::BusConnect();
+        AZ::Interface<IMultiplayer>::Get()->AddServerAcceptanceReceivedHandler(m_serverAcceptanceReceivedHandler);
     }
 
     void MultiplayerEditorSystemComponent::Deactivate()
@@ -143,7 +145,11 @@ namespace Multiplayer
 
         // Start the configured server if it's available
         AzFramework::ProcessLauncher::ProcessLaunchInfo processLaunchInfo;
-        processLaunchInfo.m_commandlineParameters = AZStd::string::format("\"%s\" --editorsv_isDedicated true", serverPath.c_str());
+        processLaunchInfo.m_commandlineParameters = AZStd::string::format(
+            R"("%s" --project-path "%s" --editorsv_isDedicated true --sv_defaultPlayerSpawnAsset "%s")",
+            serverPath.c_str(),
+            AZ::Utils::GetProjectPath().c_str(),
+            static_cast<AZ::CVarFixedString>(sv_defaultPlayerSpawnAsset).c_str());
         processLaunchInfo.m_showWindow = true;
         processLaunchInfo.m_processPriority = AzFramework::ProcessPriority::PROCESSPRIORITY_NORMAL;
 
@@ -238,5 +244,13 @@ namespace Multiplayer
 
     void MultiplayerEditorSystemComponent::OnGameEntitiesReset()
     {
+    }
+
+    void MultiplayerEditorSystemComponent::OnServerAcceptanceReceived()
+    {
+        // We're now accepting the connection to the EditorServer.
+        // In normal game clients SendReadyForEntityUpdates will be enabled once the appropriate level's root spawnable is loaded,
+        // but since we're in Editor, we're already in the level.
+        AZ::Interface<IMultiplayer>::Get()->SendReadyForEntityUpdates(true);
     }
 }

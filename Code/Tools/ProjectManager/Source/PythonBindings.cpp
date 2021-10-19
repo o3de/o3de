@@ -668,7 +668,21 @@ namespace O3DE::ProjectManager
 
                 if (gemInfo.m_creator.contains("Open 3D Engine"))
                 {
-                    gemInfo.m_gemOrigin = GemInfo::GemOrigin::Open3DEEngine;
+                    gemInfo.m_gemOrigin = GemInfo::GemOrigin::Open3DEngine;
+                }
+                else if (gemInfo.m_creator.contains("Amazon Web Services"))
+                {
+                    gemInfo.m_gemOrigin = GemInfo::GemOrigin::Local;
+                }
+                else if (data.contains("origin"))
+                {
+                    gemInfo.m_gemOrigin = GemInfo::GemOrigin::Remote;
+                }
+
+                // As long Base Open3DEngine gems are installed before first startup non-remote gems will be downloaded
+                if (gemInfo.m_gemOrigin != GemInfo::GemOrigin::Remote)
+                {
+                    gemInfo.m_downloadStatus = GemInfo::DownloadStatus::Downloaded;
                 }
 
                 if (data.contains("user_tags"))
@@ -925,20 +939,105 @@ namespace O3DE::ProjectManager
         }
     }
 
-    AZ::Outcome<void, AZStd::string> PythonBindings::AddGemRepo(const QString& repoUri)
+    bool PythonBindings::AddGemRepo(const QString& repoUri)
     {
-        // o3de scripts need method added
-        (void)repoUri;
-        return AZ::Failure<AZStd::string>("Adding Gem Repo not implemented yet in o3de scripts.");
+        bool registrationResult = false;
+        bool result = ExecuteWithLock(
+            [&]
+            {
+                auto pyUri = QString_To_Py_String(repoUri);
+                auto pythonRegistrationResult = m_register.attr("register")(
+                    pybind11::none(), pybind11::none(), pybind11::none(), pybind11::none(), pybind11::none(), pybind11::none(), pyUri);
+
+                // Returns an exit code so boolify it then invert result
+                registrationResult = !pythonRegistrationResult.cast<bool>();
+            });
+
+        return result && registrationResult;
     }
 
-    GemRepoInfo PythonBindings::GemRepoInfoFromPath(pybind11::handle path, pybind11::handle pyEnginePath)
+    bool PythonBindings::RemoveGemRepo(const QString& repoUri)
     {
-        /* Placeholder Logic */
-        (void)path;
-        (void)pyEnginePath;
+        bool registrationResult = false;
+        bool result = ExecuteWithLock(
+            [&]
+            {
+                auto pythonRegistrationResult = m_register.attr("register")(
+                    pybind11::none(), // engine_path
+                    pybind11::none(), // project_path
+                    pybind11::none(), // gem_path
+                    pybind11::none(), // external_subdir_path
+                    pybind11::none(), // template_path
+                    pybind11::none(), // restricted_path
+                    QString_To_Py_String(repoUri), // repo_uri
+                    pybind11::none(), // default_engines_folder
+                    pybind11::none(), // default_projects_folder
+                    pybind11::none(), // default_gems_folder
+                    pybind11::none(), // default_templates_folder
+                    pybind11::none(), // default_restricted_folder
+                    pybind11::none(), // default_third_party_folder
+                    pybind11::none(), // external_subdir_engine_path
+                    pybind11::none(), // external_subdir_project_path
+                    true, // remove
+                    false // force
+                );
 
-        return GemRepoInfo();
+                // Returns an exit code so boolify it then invert result
+                registrationResult = !pythonRegistrationResult.cast<bool>();
+            });
+
+        return result && registrationResult;
+    }
+
+    GemRepoInfo PythonBindings::GetGemRepoInfo(pybind11::handle repoUri)
+    {
+        GemRepoInfo gemRepoInfo;
+        gemRepoInfo.m_repoUri = Py_To_String(repoUri);
+
+        auto data = m_manifest.attr("get_repo_json_data")(repoUri);
+        if (pybind11::isinstance<pybind11::dict>(data))
+        {
+            try
+            {
+                // required
+                gemRepoInfo.m_repoUri = Py_To_String(data["repo_uri"]);
+                gemRepoInfo.m_name = Py_To_String(data["repo_name"]);
+                gemRepoInfo.m_creator = Py_To_String(data["origin"]);
+
+                // optional
+                gemRepoInfo.m_summary = Py_To_String_Optional(data, "summary", "No summary provided.");
+                gemRepoInfo.m_additionalInfo = Py_To_String_Optional(data, "additional_info", "");
+
+                auto repoPath = m_manifest.attr("get_repo_path")(repoUri);
+                gemRepoInfo.m_path = gemRepoInfo.m_directoryLink = Py_To_String(repoPath);
+
+                QString lastUpdated = Py_To_String_Optional(data, "last_updated", "");
+                gemRepoInfo.m_lastUpdated = QDateTime::fromString(lastUpdated, RepoTimeFormat);
+
+                if (data.contains("enabled"))
+                {
+                    gemRepoInfo.m_isEnabled = data["enabled"].cast<bool>();
+                }
+                else
+                {
+                    gemRepoInfo.m_isEnabled = false;
+                }
+
+                if (data.contains("gem_paths"))
+                {
+                    for (auto gemPath : data["gem_paths"])
+                    {
+                        gemRepoInfo.m_includedGemPaths.push_back(Py_To_String(gemPath));
+                    }
+                }
+            }
+            catch ([[maybe_unused]] const std::exception& e)
+            {
+                AZ_Warning("PythonBindings", false, "Failed to get GemRepoInfo for repo %s", Py_To_String(repoUri));
+            }
+        }
+
+        return gemRepoInfo;
     }
 
 //#define MOCK_GEM_REPO_INFO true
@@ -951,14 +1050,10 @@ namespace O3DE::ProjectManager
         auto result = ExecuteWithLockErrorHandling(
             [&]
             {
-                /* Placeholder Logic, o3de scripts need method added
-                * 
-                for (auto path : m_manifest.attr("get_gem_repos")())
+                for (auto repoUri : m_manifest.attr("get_repos")())
                 {
-                    gemRepos.push_back(GemRepoInfoFromPath(path, pybind11::none()));
+                    gemRepos.push_back(GetGemRepoInfo(repoUri));
                 }
-                *
-                */
             });
         if (!result.IsSuccess())
         {
@@ -967,13 +1062,13 @@ namespace O3DE::ProjectManager
 #else
         GemRepoInfo mockJohnRepo("JohnCreates", "John Smith", QDateTime(QDate(2021, 8, 31), QTime(11, 57)), true);
         mockJohnRepo.m_summary = "John's Summary. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce sollicitudin dapibus urna";
-        mockJohnRepo.m_repoLink = "https://github.com/o3de/o3de";
+        mockJohnRepo.m_repoUri = "https://github.com/o3de/o3de";
         mockJohnRepo.m_additionalInfo = "John's additional info. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce sollicitu.";
         gemRepos.push_back(mockJohnRepo);
 
         GemRepoInfo mockJaneRepo("JanesGems", "Jane Doe", QDateTime(QDate(2021, 9, 10), QTime(18, 23)), false);
         mockJaneRepo.m_summary = "Jane's Summary.";
-        mockJaneRepo.m_repoLink = "https://github.com/o3de/o3de.org";
+        mockJaneRepo.m_repoUri = "https://github.com/o3de/o3de.org";
         gemRepos.push_back(mockJaneRepo);
 #endif // MOCK_GEM_REPO_INFO
 

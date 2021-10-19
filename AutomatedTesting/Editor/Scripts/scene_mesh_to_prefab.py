@@ -54,6 +54,30 @@ def get_mesh_node_names(sceneGraph):
 
     return meshDataList, paths
 
+def add_material_component(entity_id):
+    # Create an override AZ::Render::EditorMaterialComponent
+    editor_material_component = azlmbr.entity.EntityUtilityBus(
+        azlmbr.bus.Broadcast,
+        "GetOrAddComponentByTypeName",
+        entity_id,
+        "EditorMaterialComponent")
+
+    # this fills out the material asset to a known product AZMaterial asset relative path
+    json_update = json.dumps({
+            "Controller": { "Configuration": { "materials": [
+                {
+                    "Key": {},
+                    "Value": { "MaterialAsset":{
+                        "assetHint": "materials/basic_grey.azmaterial"
+                    }}
+                }]
+            }}
+        });
+    result = azlmbr.entity.EntityUtilityBus(azlmbr.bus.Broadcast, "UpdateComponentForEntity", entity_id, editor_material_component, json_update)
+
+    if not result:
+        raise RuntimeError("UpdateComponentForEntity for editor_material_component failed")
+
 def update_manifest(scene):
     import json
     import uuid, os
@@ -74,6 +98,8 @@ def update_manifest(scene):
     source_filename_only = os.path.basename(clean_filename)
 
     created_entities = []
+    previous_entity_id = azlmbr.entity.InvalidEntityId
+    first_mesh = True
 
     # Loop every mesh node in the scene
     for activeMeshIndex in range(len(mesh_name_list)):
@@ -102,14 +128,38 @@ def update_manifest(scene):
         # The MeshGroup we created will be output as a product in the asset's path named mesh_group_name.azmodel
         # The assetHint will be converted to an AssetId later during prefab loading
         json_update = json.dumps({
-                            "Controller": { "Configuration": { "ModelAsset": {
-                                "assetHint": os.path.join(source_relative_path, mesh_group_name) + ".azmodel" }}}
-                            });
+            "Controller": { "Configuration": { "ModelAsset": {
+                "assetHint": os.path.join(source_relative_path, mesh_group_name) + ".azmodel" }}}
+            });
         # Apply the JSON above to the component we created
         result = azlmbr.entity.EntityUtilityBus(azlmbr.bus.Broadcast, "UpdateComponentForEntity", entity_id, editor_mesh_component, json_update)
 
         if not result:
-            raise RuntimeError("UpdateComponentForEntity failed")
+            raise RuntimeError("UpdateComponentForEntity failed for Mesh component")
+
+        # an example of adding a material component to override the default material
+        if previous_entity_id is not None and first_mesh:
+            first_mesh = False
+            add_material_component(entity_id)
+
+        # Get the transform component
+        transform_component = azlmbr.entity.EntityUtilityBus(azlmbr.bus.Broadcast, "GetOrAddComponentByTypeName", entity_id, "27F1E1A1-8D9D-4C3B-BD3A-AFB9762449C0")
+
+        # Set this entity to be a child of the last entity we created
+        # This is just an example of how to do parenting and isn't necessarily useful to parent everything like this
+        if previous_entity_id is not None:
+            transform_json = json.dumps({
+                "Parent Entity" : previous_entity_id.to_json()
+                });
+
+            # Apply the JSON update
+            result = azlmbr.entity.EntityUtilityBus(azlmbr.bus.Broadcast, "UpdateComponentForEntity", entity_id, transform_component, transform_json)
+
+            if not result:
+                raise RuntimeError("UpdateComponentForEntity failed for Transform component")
+
+        # Update the last entity id for next time
+        previous_entity_id = entity_id
 
         # Keep track of the entity we set up, we'll add them all to the prefab we're creating later
         created_entities.append(entity_id)
@@ -146,6 +196,8 @@ def on_update_manifest(args):
         return update_manifest(scene)
     except RuntimeError as err:
         print (f'ERROR - {err}')
+        log_exception_traceback()
+    except:
         log_exception_traceback()
 
     global sceneJobHandler

@@ -6,12 +6,7 @@
 #
 #
 
-################################################################################
-# Atom Renderer: Automated Tests
-# Runs EditorPythonBindings (hydra) scripts inside the Editor to verify test results for the Atom renderer.
-################################################################################
-
-if(PAL_TRAIT_BUILD_HOST_TOOLS AND PAL_TRAIT_BUILD_TESTS_SUPPORTED AND AutomatedTesting IN_LIST LY_PROJECTS)
+if(PAL_TRAIT_BUILD_HOST_TOOLS AND PAL_TRAIT_BUILD_TESTS_SUPPORTED)
     ly_add_pytest(
         NAME AutomatedTesting::Atom_TestSuite_Main
         TEST_SUITE main

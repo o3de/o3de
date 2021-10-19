@@ -390,7 +390,9 @@ namespace AZ
         AZ::IO::FixedMaxPath                        m_engineRoot;
         AZ::IO::FixedMaxPath                        m_appRoot;
 
-        AZ::SettingsRegistryInterface::NotifyEventHandler m_projectChangedHandler;
+        AZ::SettingsRegistryInterface::NotifyEventHandler m_projectPathChangedHandler;
+        AZ::SettingsRegistryInterface::NotifyEventHandler m_projectNameChangedHandler;
+        AZ::SettingsRegistryInterface::NotifyEventHandler m_commandLineUpdatedHandler;
 
         // ConsoleFunctorHandle is responsible for unregistering the Settings Registry Console
         // from the m_console member when it goes out of scope

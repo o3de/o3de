@@ -16,7 +16,7 @@
 
 using namespace AWSGameLift;
 
-static constexpr const uint64_t TEST_RACKER_POLLING_PERIOD_MS = 100;
+static constexpr const uint64_t TEST_RACKER_POLLING_PERIOD_MS = 1000;
 static constexpr const uint64_t TEST_WAIT_BUFFER_TIME_MS = 10;
 static constexpr const uint64_t TEST_WAIT_MAXIMUM_TIME_MS = 10000;
 
@@ -346,6 +346,44 @@ TEST_F(AWSGameLiftClientLocalTicketTrackerTest, StartPolling_CallAndTicketComple
     EXPECT_CALL(handlerMock, RequestPlayerJoinSession(::testing::_))
         .Times(1)
         .WillOnce(::testing::Return(true));
+
+    m_gameliftClientTicketTracker->StartPolling("ticket1", "player1");
+    WaitForProcessFinish();
+    ASSERT_TRUE(m_gameliftClientTicketTracker->IsTrackerIdle());
+}
+
+TEST_F(AWSGameLiftClientLocalTicketTrackerTest, StartPolling_RequiresAcceptanceAndTicketCompleteAtLast_ProcessContinuesAndStop)
+{
+    Aws::GameLift::Model::MatchmakingTicket ticket1;
+    ticket1.SetStatus(Aws::GameLift::Model::MatchmakingConfigurationStatus::REQUIRES_ACCEPTANCE);
+
+    Aws::GameLift::Model::DescribeMatchmakingResult result1;
+    result1.AddTicketList(ticket1);
+    Aws::GameLift::Model::DescribeMatchmakingOutcome outcome1(result1);
+
+    Aws::GameLift::Model::GameSessionConnectionInfo connectionInfo;
+    connectionInfo.SetIpAddress("DummyIpAddress");
+    connectionInfo.SetPort(123);
+    connectionInfo.AddMatchedPlayerSessions(
+        Aws::GameLift::Model::MatchedPlayerSession().WithPlayerId("player1").WithPlayerSessionId("playersession1"));
+
+    Aws::GameLift::Model::MatchmakingTicket ticket2;
+    ticket2.SetStatus(Aws::GameLift::Model::MatchmakingConfigurationStatus::COMPLETED);
+    ticket2.SetGameSessionConnectionInfo(connectionInfo);
+
+    Aws::GameLift::Model::DescribeMatchmakingResult result2;
+    result2.AddTicketList(ticket2);
+    Aws::GameLift::Model::DescribeMatchmakingOutcome outcome2(result2);
+
+    EXPECT_CALL(*m_gameliftClientMockPtr, DescribeMatchmaking(::testing::_))
+        .WillOnce(::testing::Return(outcome1))
+        .WillOnce(::testing::Return(outcome2));
+
+    MatchAcceptanceNotificationsHandlerMock handlerMock1;
+    EXPECT_CALL(handlerMock1, OnMatchAcceptance()).Times(1);
+
+    SessionHandlingClientRequestsMock handlerMock2;
+    EXPECT_CALL(handlerMock2, RequestPlayerJoinSession(::testing::_)).Times(1).WillOnce(::testing::Return(true));
 
     m_gameliftClientTicketTracker->StartPolling("ticket1", "player1");
     WaitForProcessFinish();

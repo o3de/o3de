@@ -34,13 +34,13 @@ namespace ImGui
         ImGuiCameraMonitorRequestBus::Handler::BusConnect();
 
         // Init Histogram Containers
-        m_dofMinZHisto.Init(             "DOF Min Z",            120, LYImGuiUtils::HistogramContainer::ViewType::Histogram, true, 0.0f,  0.0f,  true);
-        m_dofMinZBlendMultHisto.Init(    "DOF Min Z Blend Mult", 120, LYImGuiUtils::HistogramContainer::ViewType::Histogram, true, 50.0f, 50.0f, true);
-        m_dofMinZScaleHisto.Init(        "DOF Min Z Scale",      120, LYImGuiUtils::HistogramContainer::ViewType::Histogram, true, 50.0f, 50.0f, true);
+        m_dofMinZHisto.Init(             "DOF Min Z",            120, LYImGuiUtils::HistogramContainer::ViewType::Histogram, true, 0.0f,  0.0f);
+        m_dofMinZBlendMultHisto.Init(    "DOF Min Z Blend Mult", 120, LYImGuiUtils::HistogramContainer::ViewType::Histogram, true, 50.0f, 50.0f);
+        m_dofMinZScaleHisto.Init(        "DOF Min Z Scale",      120, LYImGuiUtils::HistogramContainer::ViewType::Histogram, true, 50.0f, 50.0f);
 
-        m_globalActiveCamInfo.m_fovHisto.Init(                  "FOV",                      120, LYImGuiUtils::HistogramContainer::ViewType::Lines,     true, 50.0f, 50.0f, true);
-        m_globalActiveCamInfo.m_facingVectorDeltaHisto.Init(    "Facing Vec Frame Delta",   120, LYImGuiUtils::HistogramContainer::ViewType::Histogram, true, 0.0f,  0.0f,  true);
-        m_globalActiveCamInfo.m_positionDeltaHisto.Init(        "Position Frame Delta",     120, LYImGuiUtils::HistogramContainer::ViewType::Histogram, true, 0.0f,  0.0f,  true);
+        m_globalActiveCamInfo.m_fovHisto.Init(                  "FOV",                      120, LYImGuiUtils::HistogramContainer::ViewType::Lines,     true, 50.0f, 50.0f);
+        m_globalActiveCamInfo.m_facingVectorDeltaHisto.Init(    "Facing Vec Frame Delta",   120, LYImGuiUtils::HistogramContainer::ViewType::Histogram, true, 0.0f,  0.0f);
+        m_globalActiveCamInfo.m_positionDeltaHisto.Init(        "Position Frame Delta",     120, LYImGuiUtils::HistogramContainer::ViewType::Histogram, true, 0.0f,  0.0f);
     }
 
     void ImGuiLYCameraMonitor::Shutdown()
@@ -214,7 +214,7 @@ namespace ImGui
         }
         // save this cam off as the current one
         m_currentCamera = newCamId;
-            
+
         // create a new empty CameraInfo in the queue
         m_cameraHistory.push_front(CameraInfo());
 
@@ -224,9 +224,9 @@ namespace ImGui
         AZ::ComponentApplicationBus::BroadcastResult(newCam.m_camName, &AZ::ComponentApplicationBus::Events::GetEntityName, m_currentCamera);
         newCam.m_activeTime = 0.0f;
         newCam.m_activeFrames = 0;
-        newCam.m_fovHisto.Init(                 "FOV",                      120, LYImGuiUtils::HistogramContainer::ViewType::Lines,     true, 50.0f, 50.0f, true);
-        newCam.m_facingVectorDeltaHisto.Init(   "Facing Vec Frame Delta",   120, LYImGuiUtils::HistogramContainer::ViewType::Histogram, true, 0.0f,  0.0f,  true);
-        newCam.m_positionDeltaHisto.Init(       "Position Frame Delta",     120, LYImGuiUtils::HistogramContainer::ViewType::Histogram, true, 0.0f,  0.0f,  true);
+        newCam.m_fovHisto.Init(                 "FOV",                      120, LYImGuiUtils::HistogramContainer::ViewType::Lines,     true, 50.0f, 50.0f);
+        newCam.m_facingVectorDeltaHisto.Init(   "Facing Vec Frame Delta",   120, LYImGuiUtils::HistogramContainer::ViewType::Histogram, true, 0.0f,  0.0f);
+        newCam.m_positionDeltaHisto.Init(       "Position Frame Delta",     120, LYImGuiUtils::HistogramContainer::ViewType::Histogram, true, 0.0f,  0.0f);
 
         // reset a few variables on the global camera info
         m_globalActiveCamInfo.m_camId = newCam.m_camId;

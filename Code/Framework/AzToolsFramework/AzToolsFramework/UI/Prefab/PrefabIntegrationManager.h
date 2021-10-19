@@ -30,7 +30,7 @@ namespace AzToolsFramework
 
     namespace Prefab
     {
-        class PrefabFocusInterface;
+        class PrefabFocusPublicInterface;
         class PrefabLoaderInterface;
 
         //! Structure for saving/retrieving user settings related to prefab workflows.
@@ -51,6 +51,7 @@ namespace AzToolsFramework
 
         class PrefabIntegrationManager final
             : public EditorContextMenuBus::Handler
+            , public EditorEventsBus::Handler
             , public AssetBrowser::AssetBrowserSourceDropBus::Handler
             , public PrefabInstanceContainerNotificationBus::Handler
             , public PrefabIntegrationInterface
@@ -64,19 +65,22 @@ namespace AzToolsFramework
 
             static void Reflect(AZ::ReflectContext* context);
 
-            // EditorContextMenuBus...
+            // EditorContextMenuBus overrides ...
             int GetMenuPosition() const override;
             AZStd::string GetMenuIdentifier() const override;
             void PopulateEditorGlobalContextMenu(QMenu* menu, const AZ::Vector2& point, int flags) override;
 
-            // EntityOutlinerSourceDropHandlingBus...
+            // EditorEventsBus overrides ...
+            void OnEscape();
+
+            // EntityOutlinerSourceDropHandlingBus overrides ...
             void HandleSourceFileType(AZStd::string_view sourceFilePath, AZ::EntityId parentId, AZ::Vector3 position) const override;
 
-            // PrefabInstanceContainerNotificationBus...
+            // PrefabInstanceContainerNotificationBus overrides ...
             void OnPrefabComponentActivate(AZ::EntityId entityId) override;
             void OnPrefabComponentDeactivate(AZ::EntityId entityId) override;
 
-            // PrefabIntegrationInterface...
+            // PrefabIntegrationInterface overrides ...
             AZ::EntityId CreateNewEntityAtPosition(const AZ::Vector3& position, AZ::EntityId parentId) override;
             int ExecuteClosePrefabDialog(TemplateId templateId) override;
             void ExecuteSavePrefabDialog(TemplateId templateId, bool useSaveAllPrefabsPreference) override;
@@ -140,7 +144,7 @@ namespace AzToolsFramework
 
             static ContainerEntityInterface* s_containerEntityInterface;
             static EditorEntityUiInterface* s_editorEntityUiInterface;
-            static PrefabFocusInterface* s_prefabFocusInterface;
+            static PrefabFocusPublicInterface* s_prefabFocusPublicInterface;
             static PrefabLoaderInterface* s_prefabLoaderInterface;
             static PrefabPublicInterface* s_prefabPublicInterface;
             static PrefabSystemComponentInterface* s_prefabSystemComponentInterface;

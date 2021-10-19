@@ -148,16 +148,16 @@ namespace PhysX
                     using VisibilityFunc = bool(*)();
 
                     editContext->Class<Collider>(
-                        "PhysX Collider Debug Draw", "Manages global and per-collider debug draw settings and logic")
+                        "PhysX Collider Debug Draw", "Global and per-collider debug draw preferences.")
                         ->DataElement(AZ::Edit::UIHandlers::CheckBox, &Collider::m_locallyEnabled, "Draw collider",
-                            "Shows the geometry for the collider in the viewport")
+                            "Display collider geometry in the viewport.")
                             ->Attribute(AZ::Edit::Attributes::CheckboxTooltip,
                                 "If set, the geometry of this collider is visible in the viewport. 'Draw Helpers' needs to be enabled to use.")
                             ->Attribute(AZ::Edit::Attributes::Visibility,
                                 VisibilityFunc{ []() { return IsGlobalColliderDebugCheck(GlobalCollisionDebugState::Manual); } })
                             ->Attribute(AZ::Edit::Attributes::ReadOnly, &IsDrawColliderReadOnly)
                         ->DataElement(AZ::Edit::UIHandlers::Button, &Collider::m_globalButtonState, "Draw collider",
-                            "Shows the geometry for the collider in the viewport")
+                            "Display collider geometry in the viewport.")
                             ->Attribute(AZ::Edit::Attributes::ButtonText, "Global override")
                             ->Attribute(AZ::Edit::Attributes::ButtonTooltip,
                                 "A global setting is overriding this property (to disable the override, "
