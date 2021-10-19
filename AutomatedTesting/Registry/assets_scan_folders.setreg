@@ -10,25 +10,11 @@
                     "Gems/DevTextures"
                 ]
             },
-            "PBSreferenceMaterials":
-            {
-                "SourcePaths":
-                [
-                    "Gems/PBSreferenceMaterials"
-                ]
-            },
             "PhysicsEntities":
             {
                 "SourcePaths":
                 [
                     "Gems/PhysicsEntities"
-                ]
-            },
-            "PhysXSamples":
-            {
-                "SourcePaths":
-                [
-                    "Gems/PhysXSamples"
                 ]
             },
             "PrimitiveAssets":

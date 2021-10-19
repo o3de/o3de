@@ -15,6 +15,7 @@
 
 namespace SandboxEditor
 {
+    constexpr AZStd::string_view AssetBrowserMaxItemsShownInSearchSetting = "/Amazon/Preferences/Editor/AssetBrowser/MaxItemsShowInSearch";
     constexpr AZStd::string_view GridSnappingSetting = "/Amazon/Preferences/Editor/GridSnapping";
     constexpr AZStd::string_view GridSizeSetting = "/Amazon/Preferences/Editor/GridSize";
     constexpr AZStd::string_view AngleSnappingSetting = "/Amazon/Preferences/Editor/AngleSnapping";
@@ -28,7 +29,7 @@ namespace SandboxEditor
     constexpr AZStd::string_view CameraRotateSpeedSetting = "/Amazon/Preferences/Editor/Camera/RotateSpeed";
     constexpr AZStd::string_view CameraScrollSpeedSetting = "/Amazon/Preferences/Editor/Camera/DollyScrollSpeed";
     constexpr AZStd::string_view CameraDollyMotionSpeedSetting = "/Amazon/Preferences/Editor/Camera/DollyMotionSpeed";
-    constexpr AZStd::string_view CameraPivotYawRotationInvertedSetting = "/Amazon/Preferences/Editor/Camera/YawRotationInverted";
+    constexpr AZStd::string_view CameraOrbitYawRotationInvertedSetting = "/Amazon/Preferences/Editor/Camera/YawRotationInverted";
     constexpr AZStd::string_view CameraPanInvertedXSetting = "/Amazon/Preferences/Editor/Camera/PanInvertedX";
     constexpr AZStd::string_view CameraPanInvertedYSetting = "/Amazon/Preferences/Editor/Camera/PanInvertedY";
     constexpr AZStd::string_view CameraPanSpeedSetting = "/Amazon/Preferences/Editor/Camera/PanSpeed";
@@ -44,13 +45,16 @@ namespace SandboxEditor
     constexpr AZStd::string_view CameraTranslateUpIdSetting = "/Amazon/Preferences/Editor/Camera/CameraTranslateUpId";
     constexpr AZStd::string_view CameraTranslateDownIdSetting = "/Amazon/Preferences/Editor/Camera/CameraTranslateUpDownId";
     constexpr AZStd::string_view CameraTranslateBoostIdSetting = "/Amazon/Preferences/Editor/Camera/TranslateBoostId";
-    constexpr AZStd::string_view CameraPivotIdSetting = "/Amazon/Preferences/Editor/Camera/PivotId";
+    constexpr AZStd::string_view CameraOrbitIdSetting = "/Amazon/Preferences/Editor/Camera/OrbitId";
     constexpr AZStd::string_view CameraFreeLookIdSetting = "/Amazon/Preferences/Editor/Camera/FreeLookId";
     constexpr AZStd::string_view CameraFreePanIdSetting = "/Amazon/Preferences/Editor/Camera/FreePanId";
-    constexpr AZStd::string_view CameraPivotLookIdSetting = "/Amazon/Preferences/Editor/Camera/PivotLookId";
-    constexpr AZStd::string_view CameraPivotDollyIdSetting = "/Amazon/Preferences/Editor/Camera/PivotDollyId";
-    constexpr AZStd::string_view CameraPivotPanIdSetting = "/Amazon/Preferences/Editor/Camera/PivotPanId";
+    constexpr AZStd::string_view CameraOrbitLookIdSetting = "/Amazon/Preferences/Editor/Camera/OrbitLookId";
+    constexpr AZStd::string_view CameraOrbitDollyIdSetting = "/Amazon/Preferences/Editor/Camera/OrbitDollyId";
+    constexpr AZStd::string_view CameraOrbitPanIdSetting = "/Amazon/Preferences/Editor/Camera/OrbitPanId";
     constexpr AZStd::string_view CameraFocusIdSetting = "/Amazon/Preferences/Editor/Camera/FocusId";
+    constexpr AZStd::string_view CameraDefaultStartingPositionX = "/Amazon/Preferences/Editor/Camera/DefaultStartingPosition/x";
+    constexpr AZStd::string_view CameraDefaultStartingPositionY = "/Amazon/Preferences/Editor/Camera/DefaultStartingPosition/y";
+    constexpr AZStd::string_view CameraDefaultStartingPositionZ = "/Amazon/Preferences/Editor/Camera/DefaultStartingPosition/z";
 
     template<typename T>
     void SetRegistry(const AZStd::string_view setting, T&& value)
@@ -108,6 +112,31 @@ namespace SandboxEditor
     AZStd::unique_ptr<EditorViewportSettingsCallbacks> CreateEditorViewportSettingsCallbacks()
     {
         return AZStd::make_unique<EditorViewportSettingsCallbacksImpl>();
+    }
+
+    AZ::Vector3 DefaultEditorCameraPosition()
+    {
+        float xPosition = aznumeric_cast<float>(GetRegistry(CameraDefaultStartingPositionX, 0.0));
+        float yPosition = aznumeric_cast<float>(GetRegistry(CameraDefaultStartingPositionY, -10.0));
+        float zPosition = aznumeric_cast<float>(GetRegistry(CameraDefaultStartingPositionZ, 4.0));
+        return AZ::Vector3(xPosition, yPosition, zPosition);
+    }
+
+    void SetDefaultCameraEditorPosition(const AZ::Vector3 defaultCameraPosition)
+    {
+        SetRegistry(CameraDefaultStartingPositionX, defaultCameraPosition.GetX());
+        SetRegistry(CameraDefaultStartingPositionY, defaultCameraPosition.GetY());
+        SetRegistry(CameraDefaultStartingPositionZ, defaultCameraPosition.GetZ());
+    }
+
+    AZ::u64 MaxItemsShownInAssetBrowserSearch()
+    {
+        return GetRegistry(AssetBrowserMaxItemsShownInSearchSetting, aznumeric_cast<AZ::u64>(50));
+    }
+
+    void SetMaxItemsShownInAssetBrowserSearch(const AZ::u64 numberOfItemsShown)
+    {
+        SetRegistry(AssetBrowserMaxItemsShownInSearchSetting, numberOfItemsShown);
     }
 
     bool GridSnappingEnabled()
@@ -240,14 +269,14 @@ namespace SandboxEditor
         SetRegistry(CameraDollyMotionSpeedSetting, speed);
     }
 
-    bool CameraPivotYawRotationInverted()
+    bool CameraOrbitYawRotationInverted()
     {
-        return GetRegistry(CameraPivotYawRotationInvertedSetting, false);
+        return GetRegistry(CameraOrbitYawRotationInvertedSetting, false);
     }
 
-    void SetCameraPivotYawRotationInverted(const bool inverted)
+    void SetCameraOrbitYawRotationInverted(const bool inverted)
     {
-        SetRegistry(CameraPivotYawRotationInvertedSetting, inverted);
+        SetRegistry(CameraOrbitYawRotationInvertedSetting, inverted);
     }
 
     bool CameraPanInvertedX()
@@ -404,14 +433,14 @@ namespace SandboxEditor
         SetRegistry(CameraTranslateBoostIdSetting, cameraTranslateBoostId);
     }
 
-    AzFramework::InputChannelId CameraPivotChannelId()
+    AzFramework::InputChannelId CameraOrbitChannelId()
     {
-        return AzFramework::InputChannelId(GetRegistry(CameraPivotIdSetting, AZStd::string("keyboard_key_modifier_alt_l")).c_str());
+        return AzFramework::InputChannelId(GetRegistry(CameraOrbitIdSetting, AZStd::string("keyboard_key_modifier_alt_l")).c_str());
     }
 
-    void SetCameraPivotChannelId(AZStd::string_view cameraPivotId)
+    void SetCameraOrbitChannelId(AZStd::string_view cameraOrbitId)
     {
-        SetRegistry(CameraPivotIdSetting, cameraPivotId);
+        SetRegistry(CameraOrbitIdSetting, cameraOrbitId);
     }
 
     AzFramework::InputChannelId CameraFreeLookChannelId()
@@ -434,34 +463,34 @@ namespace SandboxEditor
         SetRegistry(CameraFreePanIdSetting, cameraFreePanId);
     }
 
-    AzFramework::InputChannelId CameraPivotLookChannelId()
+    AzFramework::InputChannelId CameraOrbitLookChannelId()
     {
-        return AzFramework::InputChannelId(GetRegistry(CameraPivotLookIdSetting, AZStd::string("mouse_button_left")).c_str());
+        return AzFramework::InputChannelId(GetRegistry(CameraOrbitLookIdSetting, AZStd::string("mouse_button_left")).c_str());
     }
 
-    void SetCameraPivotLookChannelId(AZStd::string_view cameraPivotLookId)
+    void SetCameraOrbitLookChannelId(AZStd::string_view cameraOrbitLookId)
     {
-        SetRegistry(CameraPivotLookIdSetting, cameraPivotLookId);
+        SetRegistry(CameraOrbitLookIdSetting, cameraOrbitLookId);
     }
 
-    AzFramework::InputChannelId CameraPivotDollyChannelId()
+    AzFramework::InputChannelId CameraOrbitDollyChannelId()
     {
-        return AzFramework::InputChannelId(GetRegistry(CameraPivotDollyIdSetting, AZStd::string("mouse_button_right")).c_str());
+        return AzFramework::InputChannelId(GetRegistry(CameraOrbitDollyIdSetting, AZStd::string("mouse_button_right")).c_str());
     }
 
-    void SetCameraPivotDollyChannelId(AZStd::string_view cameraPivotDollyId)
+    void SetCameraOrbitDollyChannelId(AZStd::string_view cameraOrbitDollyId)
     {
-        SetRegistry(CameraPivotDollyIdSetting, cameraPivotDollyId);
+        SetRegistry(CameraOrbitDollyIdSetting, cameraOrbitDollyId);
     }
 
-    AzFramework::InputChannelId CameraPivotPanChannelId()
+    AzFramework::InputChannelId CameraOrbitPanChannelId()
     {
-        return AzFramework::InputChannelId(GetRegistry(CameraPivotPanIdSetting, AZStd::string("mouse_button_middle")).c_str());
+        return AzFramework::InputChannelId(GetRegistry(CameraOrbitPanIdSetting, AZStd::string("mouse_button_middle")).c_str());
     }
 
-    void SetCameraPivotPanChannelId(AZStd::string_view cameraPivotPanId)
+    void SetCameraOrbitPanChannelId(AZStd::string_view cameraOrbitPanId)
     {
-        SetRegistry(CameraPivotPanIdSetting, cameraPivotPanId);
+        SetRegistry(CameraOrbitPanIdSetting, cameraOrbitPanId);
     }
 
     AzFramework::InputChannelId CameraFocusChannelId()

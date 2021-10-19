@@ -276,7 +276,6 @@ set(FILES
     Utilities/ColorUtilities.h
     Utilities/Conversions.h
     Utilities/Conversions.cpp
-    Utilities/DesktopUtilities.cpp
     Utilities/DesktopUtilities.h
     Utilities/HandleDpiAwareness.cpp
     Utilities/HandleDpiAwareness.h

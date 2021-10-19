@@ -12,6 +12,7 @@
 #include <AzCore/Serialization/EditContextConstants.inl>
 #include <AzFramework/Session/SessionConfig.h>
 
+#include <AWSGameLiftClientLocalTicketTracker.h>
 #include <AWSGameLiftClientManager.h>
 #include <AWSGameLiftClientSystemComponent.h>
 #include <Request/AWSGameLiftAcceptMatchRequest.h>
@@ -59,10 +60,17 @@ namespace AWSGameLift
             behaviorContext->EBus<AWSGameLiftRequestBus>("AWSGameLiftRequestBus")
                 ->Attribute(AZ::Script::Attributes::Category, "AWSGameLift")
                 ->Event("ConfigureGameLiftClient", &AWSGameLiftRequestBus::Events::ConfigureGameLiftClient,
-                    {{{"Region", ""}}})
+                    { { { "Region", "" } } })
                 ->Event("CreatePlayerId", &AWSGameLiftRequestBus::Events::CreatePlayerId,
-                    {{{"IncludeBrackets", ""},
-                      {"IncludeDashes", ""}}});
+                    { { { "IncludeBrackets", "" },
+                        { "IncludeDashes", "" } } });
+
+            behaviorContext->EBus<AWSGameLiftMatchmakingEventRequestBus>("AWSGameLiftMatchmakingEventRequestBus")
+                ->Attribute(AZ::Script::Attributes::Category, "AWSGameLift")
+                ->Event("StartPolling", &AWSGameLiftMatchmakingEventRequestBus::Events::StartPolling,
+                    { { { "TicketId", "" },
+                        { "PlayerId", "" } } })
+                ->Event("StopPolling", &AWSGameLiftMatchmakingEventRequestBus::Events::StopPolling);
         }
     }
 
@@ -210,6 +218,7 @@ namespace AWSGameLift
                 ->Property("SessionId", BehaviorValueProperty(&AzFramework::SessionConfig::m_sessionId))
                 ->Property("SessionName", BehaviorValueProperty(&AzFramework::SessionConfig::m_sessionName))
                 ->Property("SessionProperties", BehaviorValueProperty(&AzFramework::SessionConfig::m_sessionProperties))
+                ->Property("MatchmakingData", BehaviorValueProperty(&AzFramework::SessionConfig::m_matchmakingData))
                 ->Property("Status", BehaviorValueProperty(&AzFramework::SessionConfig::m_status))
                 ->Property("StatusReason", BehaviorValueProperty(&AzFramework::SessionConfig::m_statusReason))
                 ->Property("TerminationTime", BehaviorValueProperty(&AzFramework::SessionConfig::m_terminationTime))

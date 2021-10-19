@@ -288,6 +288,10 @@ namespace Multiplayer
         return m_networkInterface->Listen(sessionConfig.m_port);
     }
 
+    void MultiplayerSystemComponent::OnCreateSessionEnd()
+    {
+    }
+
     bool MultiplayerSystemComponent::OnDestroySessionBegin()
     {
         // This can be triggered external from Multiplayer so only run if we are in an Initialized state
@@ -306,6 +310,20 @@ namespace Multiplayer
         InitializeMultiplayer(MultiplayerAgentType::Uninitialized);
 
         return true;
+    }
+
+    void MultiplayerSystemComponent::OnDestroySessionEnd()
+    {
+    }
+
+    void MultiplayerSystemComponent::OnUpdateSessionBegin(const AzFramework::SessionConfig& sessionConfig, const AZStd::string& updateReason)
+    {
+        AZ_UNUSED(sessionConfig);
+        AZ_UNUSED(updateReason);
+    }
+
+    void MultiplayerSystemComponent::OnUpdateSessionEnd()
+    {
     }
 
     void MultiplayerSystemComponent::OnTick(float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time)
@@ -497,6 +515,8 @@ namespace Multiplayer
         AZ::Interface<AZ::IConsole>::Get()->PerformCommand(commandString.c_str());
         AZ::CVarFixedString loadLevelString = "LoadLevel " + packet.GetMap();
         AZ::Interface<AZ::IConsole>::Get()->PerformCommand(loadLevelString.c_str());
+
+        m_serverAcceptanceReceivedEvent.Signal();
         return true;
     }
 
@@ -821,6 +841,11 @@ namespace Multiplayer
         handler.Connect(m_connectionAcquiredEvent);
     }
 
+    void MultiplayerSystemComponent::AddServerAcceptanceReceivedHandler(ServerAcceptanceReceivedEvent::Handler& handler)
+    {
+        handler.Connect(m_serverAcceptanceReceivedEvent);
+    }
+
     void MultiplayerSystemComponent::AddSessionInitHandler(SessionInitEvent::Handler& handler)
     {
         handler.Connect(m_initEvent);
@@ -1034,7 +1059,7 @@ namespace Multiplayer
         INetworkEntityManager::EntityList entityList = m_networkEntityManager.CreateEntitiesImmediate(playerPrefabEntityId, NetEntityRole::Authority, AZ::Transform::CreateIdentity(), Multiplayer::AutoActivate::DoNotActivate);
 
         NetworkEntityHandle controlledEntity;
-        if (entityList.size() > 0)
+        if (!entityList.empty())
         {
             controlledEntity = entityList[0];
         }

@@ -26,6 +26,7 @@
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 #include <AzToolsFramework/Entity/EditorEntityHelpers.h>
 #include <AzToolsFramework/Entity/EditorEntityInfoBus.h>
+#include <AzToolsFramework/Viewport/ViewportMessages.h>
 #include <AzToolsFramework/UI/ComponentPalette/ComponentPaletteUtil.hxx>
 #include <AzToolsFramework/UI/EditorEntityUi/EditorEntityUiHandlerBase.h>
 #include <AzToolsFramework/UI/Outliner/EntityOutlinerDisplayOptionsMenu.h>
@@ -292,8 +293,7 @@ namespace AzToolsFramework
         EntityOutlinerModelNotificationBus::Handler::BusConnect();
         ToolsApplicationEvents::Bus::Handler::BusConnect();
         EditorEntityContextNotificationBus::Handler::BusConnect();
-        ComponentModeFramework::EditorComponentModeNotificationBus::Handler::BusConnect(
-            GetEntityContextId());
+        ViewportEditorModeNotificationsBus::Handler::BusConnect(GetEntityContextId());
         EditorEntityInfoNotificationBus::Handler::BusConnect();
         Prefab::PrefabPublicNotificationBus::Handler::BusConnect();
         EditorWindowUIRequestBus::Handler::BusConnect();
@@ -303,7 +303,7 @@ namespace AzToolsFramework
     {
         EditorWindowUIRequestBus::Handler::BusDisconnect();
         Prefab::PrefabPublicNotificationBus::Handler::BusDisconnect();
-        ComponentModeFramework::EditorComponentModeNotificationBus::Handler::BusDisconnect();
+        ViewportEditorModeNotificationsBus::Handler::BusDisconnect();
         EditorEntityInfoNotificationBus::Handler::BusDisconnect();
         EditorPickModeNotificationBus::Handler::BusDisconnect();
         EntityHighlightMessages::Bus::Handler::BusDisconnect();
@@ -324,7 +324,8 @@ namespace AzToolsFramework
     //  Currently, the first behavior is implemented.
     void EntityOutlinerWidget::OnSelectionChanged(const QItemSelection& selected, const QItemSelection& deselected)
     {
-        if (m_selectionChangeInProgress || !m_enableSelectionUpdates)
+        if (m_selectionChangeInProgress || !m_enableSelectionUpdates
+            || (selected.empty() && deselected.empty()))
         {
             return;
         }
@@ -548,6 +549,13 @@ namespace AzToolsFramework
         bool isDocumentOpen = false;
         EBUS_EVENT_RESULT(isDocumentOpen, EditorRequests::Bus, IsLevelDocumentOpen);
         if (!isDocumentOpen)
+        {
+            return;
+        }
+
+        // Do not display the context menu if the item under the mouse cursor is not selectable.
+        if (const QModelIndex& index = m_gui->m_objectTree->indexAt(pos); index.isValid()
+            && (index.flags() & Qt::ItemIsSelectable) == 0)
         {
             return;
         }
@@ -1128,14 +1136,22 @@ namespace AzToolsFramework
         EnableUi(enable);
     }
 
-    void EntityOutlinerWidget::EnteredComponentMode([[maybe_unused]] const AZStd::vector<AZ::Uuid>& componentModeTypes)
+    void EntityOutlinerWidget::OnEditorModeActivated(
+        [[maybe_unused]] const AzToolsFramework::ViewportEditorModesInterface& editorModeState, AzToolsFramework::ViewportEditorMode mode)
     {
-        EnableUi(false);
+        if (mode == ViewportEditorMode::Component)
+        {
+            EnableUi(false);
+        }
     }
 
-    void EntityOutlinerWidget::LeftComponentMode([[maybe_unused]] const AZStd::vector<AZ::Uuid>& componentModeTypes)
+    void EntityOutlinerWidget::OnEditorModeDeactivated(
+        [[maybe_unused]] const AzToolsFramework::ViewportEditorModesInterface& editorModeState, AzToolsFramework::ViewportEditorMode mode)
     {
-        EnableUi(true);
+        if (mode == ViewportEditorMode::Component)
+        {
+            EnableUi(true);
+        }
     }
 
     void EntityOutlinerWidget::OnPrefabInstancePropagationBegin()
