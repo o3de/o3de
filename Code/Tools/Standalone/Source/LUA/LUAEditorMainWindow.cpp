@@ -1280,7 +1280,7 @@ namespace LUAEditor
             // go to that line of the selected file.
             lineNumber = dlg.getLineNumber();
 
-            currentView->SetCursorPosition(lineNumber - 1, 0);
+            currentView->SetCursorPosition(lineNumber, 0);
         }
     }
 
