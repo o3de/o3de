@@ -39,6 +39,7 @@ ly_add_target(
 )
 
 ly_create_alias(NAME Profiler.Servers NAMESPACE Gem TARGETS Gem::Profiler)
+ly_create_alias(NAME Profiler.Builders NAMESPACE Gem TARGETS Gem::Profiler)
 
 # visualization portion
 ly_add_target(
