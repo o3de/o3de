@@ -134,7 +134,7 @@ struct MultiplatformPathDependencyTest
 struct WildcardSourceDependencyTest
     :  AssetProcessorManagerTest
 {
-    bool Test(const AZStd::string& dependencyPath, QStringList& resolvedPaths);
+    bool Test(const AZStd::string& dependencyPath, AZStd::vector<AZStd::string>& resolvedPaths);
 
     void SetUp() override;
 };

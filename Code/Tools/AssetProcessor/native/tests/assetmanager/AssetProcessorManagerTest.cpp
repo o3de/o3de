@@ -5311,11 +5311,20 @@ TEST_F(MetadataFileTest, MetadataFile_SourceFileExtensionDifferentCase)
 }
 
 bool WildcardSourceDependencyTest::Test(
-    const AZStd::string& dependencyPath, QStringList& resolvedPaths)
+    const AZStd::string& dependencyPath, AZStd::vector<AZStd::string>& resolvedPaths)
 {
     [[maybe_unused]] QString resolvedName;
+    QStringList stringlistPaths;
     AssetBuilderSDK::SourceFileDependency dependency(dependencyPath, AZ::Uuid::CreateNull(), AssetBuilderSDK::SourceFileDependency::SourceFileDependencyType::Wildcards);
-    return m_assetProcessorManager->ResolveSourceFileDependencyPath(dependency, resolvedName, resolvedPaths);
+    bool result = m_assetProcessorManager->ResolveSourceFileDependencyPath(dependency, resolvedName, stringlistPaths);
+
+    // Convert to a vector of AZStd::strings because GTest handles this type better when displaying errors
+    for (const QString& resolvedPath : stringlistPaths)
+    {
+        resolvedPaths.emplace_back(resolvedPath.toUtf8().constData());
+    }
+
+    return result;
 }
 
 void WildcardSourceDependencyTest::SetUp()
@@ -5339,7 +5348,7 @@ void WildcardSourceDependencyTest::SetUp()
 
 TEST_F(WildcardSourceDependencyTest, Relative_Broad)
 {
-    QStringList resolvedPaths;
+    AZStd::vector<AZStd::string> resolvedPaths;
     
     ASSERT_TRUE(Test("*.foo", resolvedPaths));
     ASSERT_THAT(resolvedPaths, ::testing::ElementsAre("a.foo", "b.foo", "folder/one/c.foo", "folder/one/d.foo", "1a.foo", "1b.foo"));
@@ -5347,7 +5356,7 @@ TEST_F(WildcardSourceDependencyTest, Relative_Broad)
 
 TEST_F(WildcardSourceDependencyTest, Relative_WithFolder)
 {
-    QStringList resolvedPaths;
+    AZStd::vector<AZStd::string> resolvedPaths;
 
     ASSERT_TRUE(Test("folder/*.foo", resolvedPaths));
     ASSERT_THAT(resolvedPaths, ::testing::ElementsAre("folder/one/c.foo", "folder/one/d.foo"));
@@ -5355,7 +5364,7 @@ TEST_F(WildcardSourceDependencyTest, Relative_WithFolder)
 
 TEST_F(WildcardSourceDependencyTest, Relatieve_WildcardPath)
 {
-    QStringList resolvedPaths;
+    AZStd::vector<AZStd::string> resolvedPaths;
 
     ASSERT_TRUE(Test("*a.foo", resolvedPaths));
     ASSERT_THAT(resolvedPaths, ::testing::ElementsAre("a.foo", "1a.foo"));
@@ -5363,7 +5372,7 @@ TEST_F(WildcardSourceDependencyTest, Relatieve_WildcardPath)
 
 TEST_F(WildcardSourceDependencyTest, Absolute_WithFolder)
 {
-    QStringList resolvedPaths;
+    AZStd::vector<AZStd::string> resolvedPaths;
     QDir tempPath(m_tempDir.path());
 
     ASSERT_TRUE(Test(tempPath.absoluteFilePath("subfolder2/redirected/*.foo").toUtf8().constData(), resolvedPaths));
@@ -5372,7 +5381,7 @@ TEST_F(WildcardSourceDependencyTest, Absolute_WithFolder)
 
 TEST_F(WildcardSourceDependencyTest, Absolute_NotInScanfolder)
 {
-    QStringList resolvedPaths;
+    AZStd::vector<AZStd::string> resolvedPaths;
     QDir tempPath(m_tempDir.path());
 
     ASSERT_TRUE(Test(tempPath.absoluteFilePath("not/a/scanfolder/*.foo").toUtf8().constData(), resolvedPaths));
@@ -5381,7 +5390,7 @@ TEST_F(WildcardSourceDependencyTest, Absolute_NotInScanfolder)
 
 TEST_F(WildcardSourceDependencyTest, Relative_NotInScanfolder)
 {
-    QStringList resolvedPaths;
+    AZStd::vector<AZStd::string> resolvedPaths;
     QDir tempPath(m_tempDir.path());
 
     ASSERT_TRUE(Test("*/e.foo", resolvedPaths));
@@ -5390,7 +5399,7 @@ TEST_F(WildcardSourceDependencyTest, Relative_NotInScanfolder)
 
 TEST_F(WildcardSourceDependencyTest, Relative_InNonRecursiveScanfolder)
 {
-    QStringList resolvedPaths;
+    AZStd::vector<AZStd::string> resolvedPaths;
     QDir tempPath(m_tempDir.path());
 
     ASSERT_TRUE(Test("*/f.foo", resolvedPaths));
@@ -5399,7 +5408,7 @@ TEST_F(WildcardSourceDependencyTest, Relative_InNonRecursiveScanfolder)
 
 TEST_F(WildcardSourceDependencyTest, Absolute_InNonRecursiveScanfolder)
 {
-    QStringList resolvedPaths;
+    AZStd::vector<AZStd::string> resolvedPaths;
     QDir tempPath(m_tempDir.path());
 
     ASSERT_TRUE(Test(tempPath.absoluteFilePath("one/two/three/*.foo").toUtf8().constData(), resolvedPaths));
@@ -5408,7 +5417,7 @@ TEST_F(WildcardSourceDependencyTest, Absolute_InNonRecursiveScanfolder)
 
 TEST_F(WildcardSourceDependencyTest, Relative_NoWildcard)
 {
-    QStringList resolvedPaths;
+    AZStd::vector<AZStd::string> resolvedPaths;
     QDir tempPath(m_tempDir.path());
 
     ASSERT_FALSE(Test("subfolder1/1a.foo", resolvedPaths));
@@ -5417,7 +5426,7 @@ TEST_F(WildcardSourceDependencyTest, Relative_NoWildcard)
 
 TEST_F(WildcardSourceDependencyTest, Absolute_NoWildcard)
 {
-    QStringList resolvedPaths;
+    AZStd::vector<AZStd::string> resolvedPaths;
     QDir tempPath(m_tempDir.path());
 
     ASSERT_FALSE(Test(tempPath.absoluteFilePath("subfolder1/1a.foo").toUtf8().constData(), resolvedPaths));
