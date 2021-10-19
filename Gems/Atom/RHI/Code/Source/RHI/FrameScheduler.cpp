@@ -86,6 +86,8 @@ namespace AZ
 
             if (auto statsProfiler = AZ::Interface<AZ::Statistics::StatisticalProfilerProxy>::Get(); statsProfiler)
             {
+                statsProfiler->ActivateProfiler(rhiMetricsId, true);
+
                 auto& rhiMetrics = statsProfiler->GetProfiler(rhiMetricsId);
                 rhiMetrics.GetStatsManager().AddStatistic(frameTimeMetricId, frameTimeMetricName, /*units=*/"clocks", /*failIfExist=*/false);
             }

@@ -45,12 +45,12 @@ namespace Profiler
 
         using DeserializedCpuData = AZStd::vector<CpuProfilingStatisticsSerializer::CpuProfilingStatisticsSerializerEntry>;
 
-        AZ::Outcome<DeserializedCpuData, AZStd::string> LoadSavedCpuProfilingStatistics(const AZStd::string& capturePath)
+        AZ::Outcome<DeserializedCpuData, AZStd::string> LoadSavedCpuProfilingStatistics(const char* capturePath)
         {
             auto* base = AZ::IO::FileIOBase::GetInstance();
 
             char resolvedPath[AZ::IO::MaxPathLength];
-            if (!base->ResolvePath(capturePath.c_str(), resolvedPath, AZ::IO::MaxPathLength))
+            if (!base->ResolvePath(capturePath, resolvedPath, AZ::IO::MaxPathLength))
             {
                 return AZ::Failure(AZStd::string::format("Could not resolve the path to file %s, is the path correct?", resolvedPath));
             }
@@ -103,7 +103,7 @@ namespace Profiler
             if (deserializationResult.GetProcessing() == AZ::JsonSerializationResult::Processing::Halted
                 || serializer.m_cpuProfilingStatisticsSerializerEntries.empty())
             {
-                return AZ::Failure(AZStd::string::format("Error in deserializing document: %s\n", deserializationResult.ToString(capturePath.c_str()).c_str()));
+                return AZ::Failure(AZStd::string::format("Error in deserializing document: %s\n", deserializationResult.ToString(capturePath).c_str()));
             }
 
             AZ_TracePrintf("JsonUtils", "Successfully loaded CPU profiling data with %zu profiling entries.\n",
@@ -421,7 +421,7 @@ namespace Profiler
     void ImGuiCpuProfiler::LoadFile()
     {
         const AZ::IO::Path& pathToLoad = m_cachedCapturePaths[m_currentFileIndex];
-        auto loadResult = CpuProfilerImGuiHelper::LoadSavedCpuProfilingStatistics(pathToLoad.String());
+        auto loadResult = CpuProfilerImGuiHelper::LoadSavedCpuProfilingStatistics(pathToLoad.c_str());
         if (!loadResult.IsSuccess())
         {
             AZ_TracePrintf("ImGuiCpuProfiler", "%s", loadResult.GetError().c_str());

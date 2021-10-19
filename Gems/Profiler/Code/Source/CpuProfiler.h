@@ -38,7 +38,7 @@ namespace Profiler
         };
 
         CachedTimeRegion() = default;
-        CachedTimeRegion(const GroupRegionName& groupRegionName);
+        explicit CachedTimeRegion(const GroupRegionName& groupRegionName);
         CachedTimeRegion(const GroupRegionName& groupRegionName, uint16_t stackDepth, uint64_t startTick, uint64_t endTick);
 
         GroupRegionName m_groupRegionName{nullptr, nullptr};

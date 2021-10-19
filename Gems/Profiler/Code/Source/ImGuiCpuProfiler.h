@@ -71,9 +71,9 @@ namespace Profiler
         AZStd::sys_time_t m_runningAverageTicks = 0;
     };
 
-    //! ImGui widget for examining Atom CPU Profiling instrumentation.
+    //! ImGui widget for examining CPU Profiling instrumentation.
     //! Offers both a statistical view (with sorting and searching capability) and a visualizer
-    //! similar to RAD and other profiling tools.
+    //! similar to other profiling tools.
     class ImGuiCpuProfiler
         : public AZ::SystemTickBus::Handler
     {
@@ -99,10 +99,10 @@ namespace Profiler
         void Draw(bool& keepDrawing);
 
     private:
-        static constexpr float RowHeight = 35.0;
+        static constexpr float RowHeight = 35.0f;
         static constexpr int DefaultFramesToCollect = 50;
-        static constexpr float MediumFrameTimeLimit = 16.6; // 60 fps
-        static constexpr float HighFrameTimeLimit = 33.3; // 30 fps
+        static constexpr float MediumFrameTimeLimit = 16.6f; // 60 fps
+        static constexpr float HighFrameTimeLimit = 33.3f; // 30 fps
 
         //! Draws the statistical view of the CPU profiling data.
         void DrawStatisticsView();
