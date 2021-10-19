@@ -1329,25 +1329,6 @@ namespace GraphCanvas
         BookmarkManagerRequestBus::Event(sceneId, &BookmarkManagerRequests::ActivateShortcut, bookmarkShortcut);
     }
 
-    //void GraphCanvasGraphicsView::UpdateToastPosition()
-    //{
-    //    if (m_activeNotification.IsValid())
-    //    {
-    //        auto notificationIter = m_notifications.find(m_activeNotification);
-
-    //        if (notificationIter != m_notifications.end())
-    //        {
-    //            // Want this to be roughly in the top right corner of the graphics view.
-    //            QPoint globalPoint = mapToGlobal(QPoint(width() - 10, 10));
-
-    //            // Anchor point will be top right
-    //            QPointF anchorPoint = QPointF(1, 0);
-
-    //            notificationIter->second->UpdatePosition(globalPoint, anchorPoint);
-    //        }
-    //    }
-    //}
-
     void GraphCanvasGraphicsView::CenterOnSceneMembers(const AZStd::vector<AZ::EntityId>& memberIds)
     {
         QRectF boundingRect;
