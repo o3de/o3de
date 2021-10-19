@@ -822,7 +822,7 @@ namespace AZ
             {
                 RHI::ConstPtr<ShaderResourceGroup> shaderResourceGroup;
                 const auto& srgBitset = pipelineLayout.GetAZSLBindingSlotsOfIndex(index);
-                AZStd::vector<const ShaderResourceGroup*> shaderResourceGroupList;
+                AZStd::fixed_vector<const ShaderResourceGroup*, RHI::Limits::Pipeline::ShaderResourceGroupCountMax> shaderResourceGroupList;
                 // Collect all the SRGs that are part of this descriptor set. They could be more than
                 // 1, so we would need to merge their values before committing the descriptor set.
                 for (uint32_t bindingSlot = 0; bindingSlot < srgBitset.size(); ++bindingSlot)

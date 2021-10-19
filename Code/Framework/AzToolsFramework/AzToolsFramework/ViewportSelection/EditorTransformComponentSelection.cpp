@@ -27,6 +27,7 @@
 #include <AzToolsFramework/Manipulators/ScaleManipulators.h>
 #include <AzToolsFramework/Manipulators/TranslationManipulators.h>
 #include <AzToolsFramework/Maths/TransformUtils.h>
+#include <AzToolsFramework/Prefab/PrefabFocusInterface.h>
 #include <AzToolsFramework/ToolsComponents/EditorLockComponentBus.h>
 #include <AzToolsFramework/ToolsComponents/EditorVisibilityBus.h>
 #include <AzToolsFramework/ToolsComponents/TransformComponent.h>
@@ -1799,7 +1800,8 @@ namespace AzToolsFramework
         const AzFramework::ViewportId viewportId = mouseInteraction.m_mouseInteraction.m_interactionId.m_viewportId;
         const AzFramework::CameraState cameraState = GetCameraState(viewportId);
 
-        m_cachedEntityIdUnderCursor = m_editorHelpers->HandleMouseInteraction(cameraState, mouseInteraction);
+        const auto cursorEntityIdQuery = m_editorHelpers->FindEntityIdUnderCursor(cameraState, mouseInteraction);
+        m_cachedEntityIdUnderCursor = cursorEntityIdQuery.ContainerAncestorEntityId();
 
         const auto selectClickEvent = ClickDetectorEventFromViewportInteraction(mouseInteraction);
         m_cursorState.SetCurrentPosition(mouseInteraction.m_mouseInteraction.m_mousePick.m_screenCoordinates);
@@ -1825,8 +1827,6 @@ namespace AzToolsFramework
             }
         }
 
-        const AZ::EntityId entityIdUnderCursor = m_cachedEntityIdUnderCursor;
-
         EditorContextMenuUpdate(m_contextMenu, mouseInteraction);
 
         m_boxSelect.HandleMouseInteraction(mouseInteraction);
@@ -1840,6 +1840,21 @@ namespace AzToolsFramework
             SetTransformMode(static_cast<Mode>(nextMode));
 
             return true;
+        }
+
+        const AZ::EntityId entityIdUnderCursor = m_cachedEntityIdUnderCursor;
+
+        if (mouseInteraction.m_mouseEvent == ViewportInteraction::MouseEvent::DoubleClick &&
+            mouseInteraction.m_mouseInteraction.m_mouseButtons.Left())
+        {
+            if (cursorEntityIdQuery.HasContainerAncestorEntityId())
+            {
+                if (auto prefabFocusInterface = AZ::Interface<Prefab::PrefabFocusInterface>::Get())
+                {
+                    prefabFocusInterface->FocusOnPrefabInstanceOwningEntityId(cursorEntityIdQuery.ContainerAncestorEntityId());
+                    return false;
+                }
+            }
         }
 
         bool stickySelect = false;
@@ -3560,6 +3575,8 @@ namespace AzToolsFramework
         DrawAxisGizmo(viewportInfo, debugDisplay);
 
         m_boxSelect.Display2d(viewportInfo, debugDisplay);
+
+        m_editorHelpers->Display2d(viewportInfo, debugDisplay);
     }
 
     void EditorTransformComponentSelection::RefreshSelectedEntityIds()
@@ -3663,26 +3680,63 @@ namespace AzToolsFramework
     void EditorTransformComponentSelection::OnEditorModeActivated(
         [[maybe_unused]] const ViewportEditorModesInterface& editorModeState, ViewportEditorMode mode)
     {
-        if (mode == ViewportEditorMode::Component)
+        switch (mode)
         {
-            SetAllViewportUiVisible(false);
+        case ViewportEditorMode::Component:
+            {
+                SetAllViewportUiVisible(false);
 
-            EditorEntityLockComponentNotificationBus::Router::BusRouterDisconnect();
-            EditorEntityVisibilityNotificationBus::Router::BusRouterDisconnect();
-            ToolsApplicationNotificationBus::Handler::BusDisconnect();
+                EditorEntityLockComponentNotificationBus::Router::BusRouterDisconnect();
+                EditorEntityVisibilityNotificationBus::Router::BusRouterDisconnect();
+                ToolsApplicationNotificationBus::Handler::BusDisconnect();
+            }
+            break;
+        case ViewportEditorMode::Focus:
+            {
+                ViewportUi::ViewportUiRequestBus::Event(
+                    ViewportUi::DefaultViewportId, &ViewportUi::ViewportUiRequestBus::Events::CreateViewportBorder, "Focus Mode");
+            }
+            break;
+        case ViewportEditorMode::Default:
+        case ViewportEditorMode::Pick:
+            // noop
+            break;
         }
     }
 
     void EditorTransformComponentSelection::OnEditorModeDeactivated(
-        [[maybe_unused]] const ViewportEditorModesInterface& editorModeState, ViewportEditorMode mode)
+        const ViewportEditorModesInterface& editorModeState, const ViewportEditorMode mode)
     {
-        if (mode == ViewportEditorMode::Component)
+        switch (mode)
         {
-            SetAllViewportUiVisible(true);
+        case ViewportEditorMode::Component:
+            {
+                SetAllViewportUiVisible(true);
 
-            ToolsApplicationNotificationBus::Handler::BusConnect();
-            EditorEntityVisibilityNotificationBus::Router::BusRouterConnect();
-            EditorEntityLockComponentNotificationBus::Router::BusRouterConnect();
+                ToolsApplicationNotificationBus::Handler::BusConnect();
+                EditorEntityVisibilityNotificationBus::Router::BusRouterConnect();
+                EditorEntityLockComponentNotificationBus::Router::BusRouterConnect();
+
+                // note: when leaving component mode, we check if we're still in focus mode (i.e. component mode was
+                // started from within focus mode), if we are, ensure we create/update the viewport border (as leaving
+                // component mode will attempt to remove it)
+                if (editorModeState.IsModeActive(ViewportEditorMode::Focus))
+                {
+                    ViewportUi::ViewportUiRequestBus::Event(
+                        ViewportUi::DefaultViewportId, &ViewportUi::ViewportUiRequestBus::Events::CreateViewportBorder, "Focus Mode");
+                }
+            }
+            break;
+        case ViewportEditorMode::Focus:
+            {
+                ViewportUi::ViewportUiRequestBus::Event(
+                    ViewportUi::DefaultViewportId, &ViewportUi::ViewportUiRequestBus::Events::RemoveViewportBorder);
+            }
+            break;
+        case ViewportEditorMode::Default:
+        case ViewportEditorMode::Pick:
+            // noop
+            break;
         }
     }
 

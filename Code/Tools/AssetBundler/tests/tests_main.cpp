@@ -291,6 +291,9 @@ namespace AssetBundler
 
 int main(int argc, char* argv[])
 {
+    AZ::Debug::Trace::HandleExceptions(true);
+    AZ::Test::ApplyGlobalParameters(&argc, argv);
+
     INVOKE_AZ_UNIT_TEST_MAIN();
 
     AZ::AllocatorInstance<AZ::SystemAllocator>::Create();

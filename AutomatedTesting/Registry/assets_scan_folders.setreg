@@ -17,13 +17,6 @@
                     "Gems/PhysicsEntities"
                 ]
             },
-            "PhysXSamples":
-            {
-                "SourcePaths":
-                [
-                    "Gems/PhysXSamples"
-                ]
-            },
             "PrimitiveAssets":
             {
                 "SourcePaths":
