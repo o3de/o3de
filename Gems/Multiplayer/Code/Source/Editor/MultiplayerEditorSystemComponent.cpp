@@ -24,6 +24,7 @@
 #include <AzCore/Utils/Utils.h>
 #include <AzNetworking/Framework/INetworking.h>
 #include <AzToolsFramework/Entity/PrefabEditorEntityOwnershipInterface.h>
+#include <Atom/RPI.Public/RPISystemInterface.h>
 
 namespace Multiplayer
 {
@@ -37,6 +38,8 @@ namespace Multiplayer
         "The server executable that should be run. Empty to use the current project's ServerLauncher");
     AZ_CVAR(AZ::CVarFixedString, editorsv_serveraddr, AZ::CVarFixedString(LocalHost), nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "The address of the server to connect to");
     AZ_CVAR(uint16_t, editorsv_port, DefaultServerEditorPort, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "The port that the multiplayer editor gem will bind to for traffic");
+    AZ_CVAR(AZ::CVarFixedString, editorsv_rhi_override, "", nullptr, AZ::ConsoleFunctorFlags::DontReplicate,
+        "Override the default rendering hardware interface (rhi) when launching the Editor server. For example, you may be running an Editor using 'dx12', but want to launch a headless server using 'null'. If empty the server will launch using the same rhi as the Editor.");
 
     //////////////////////////////////////////////////////////////////////////
     void PyEnterGameMode()
@@ -189,11 +192,21 @@ namespace Multiplayer
 
         // Start the configured server if it's available
         AzFramework::ProcessLauncher::ProcessLaunchInfo processLaunchInfo;
+
+        // Open the server launcher using the same rhi as the editor (or launch with the override rhi)
+        AZ::Name server_rhi = AZ::RPI::RPISystemInterface::Get()->GetRenderApiName();
+        if (!static_cast<AZ::CVarFixedString>(editorsv_rhi_override).empty())
+        {
+            server_rhi = static_cast<AZ::CVarFixedString>(editorsv_rhi_override);
+        }
+        
         processLaunchInfo.m_commandlineParameters = AZStd::string::format(
-            R"("%s" --project-path "%s" --editorsv_isDedicated true --sv_defaultPlayerSpawnAsset "%s")",
+            R"("%s" --project-path "%s" --editorsv_isDedicated true --sv_defaultPlayerSpawnAsset "%s" --rhi "%s")",
             serverPath.c_str(),
             AZ::Utils::GetProjectPath().c_str(),
-            static_cast<AZ::CVarFixedString>(sv_defaultPlayerSpawnAsset).c_str());
+            static_cast<AZ::CVarFixedString>(sv_defaultPlayerSpawnAsset).c_str(),
+            server_rhi.GetCStr()
+        );
         processLaunchInfo.m_showWindow = true;
         processLaunchInfo.m_processPriority = AzFramework::ProcessPriority::PROCESSPRIORITY_NORMAL;
 
