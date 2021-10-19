@@ -512,7 +512,7 @@ public:
     QString m_appRoot;
     QString m_logFile;
     QString m_pythonArgs;
-    QString m_pythontTestCase;
+    QString m_pythonTestCase;
     QString m_execFile;
     QString m_execLineCmd;
 
@@ -561,7 +561,7 @@ public:
         const std::vector<std::pair<CommandLineStringOption, QString&> > stringOptions = {
             {{"logfile", "File name of the log file to write out to.", "logfile"}, m_logFile},
             {{"runpythonargs", "Command-line argument string to pass to the python script if --runpython or --runpythontest was used.", "runpythonargs"}, m_pythonArgs},
-            {{"pythontestcase", "Test case name of python test script if --runpythontest was used.", "pythontestcase"}, m_pythontTestCase},
+            {{"pythontestcase", "Test case name of python test script if --runpythontest was used.", "pythontestcase"}, m_pythonTestCase},
             {{"exec", "cfg file to run on startup, used for systems like automation", "exec"}, m_execFile},
             {{"rhi", "Command-line argument to force which rhi to use", "dummyString"}, dummyString },
             {{"rhi-device-validation", "Command-line argument to configure rhi validation", "dummyString"}, dummyString },
@@ -1534,11 +1534,12 @@ void CCryEditApp::RunInitPythonScript(CEditCommandLineInfo& cmdInfo)
             {
                 // Multiple testcases can be specified them with ';', these should match the files to run
                 AZStd::vector<AZStd::string_view> testcaseList;
+                QByteArray pythonTestCase = cmdInfo.m_pythonTestCase.toUtf8();
                 testcaseList.resize(fileList.size());
                 {
                     int i = 0;
                     AzFramework::StringFunc::TokenizeVisitor(
-                        fileStr.constData(),
+                        pythonTestCase.constData(),
                         [&i, &testcaseList](AZStd::string_view elem)
                         {
                             testcaseList[i++] = (elem);
