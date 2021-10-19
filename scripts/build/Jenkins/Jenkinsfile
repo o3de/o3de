@@ -418,9 +418,9 @@ def ExportTestResults(Map options, String platform, String type, String workspac
 
 def ExportTestScreenshots(Map options, String branchName, String platformName, String jobName, String workspace, Map params) {
     catchError(message: "Error exporting test screenshots (this won't fail the build)", buildResult: 'SUCCESS', stageResult: 'FAILURE') {
-        def screenshotsFolder = "${workspace}/${ENGINE_REPOSITORY_NAME}/AutomatedTesting/user/PythonTests/Automated/Screenshots"
-        def s3Uploader = "${workspace}/${ENGINE_REPOSITORY_NAME}/scripts/build/tools/upload_to_s3.py"
         dir("${workspace}/${ENGINE_REPOSITORY_NAME}") {
+            def screenshotsFolder = "AutomatedTesting/user/PythonTests/Automated/Screenshots"
+            def s3Uploader = "scripts/build/tools/upload_to_s3.py"
             def command = "${options.PYTHON_DIR}/python.cmd -u ${s3Uploader} --base_dir ${screenshotsFolder} " +
                           '--file_regex \\"(.*zip\$)\\" ' +
                           "--bucket ${env.TEST_SCREENSHOT_BUCKET} " +
