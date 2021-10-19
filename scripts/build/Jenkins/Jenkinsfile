@@ -420,11 +420,14 @@ def ExportTestScreenshots(Map options, String branchName, String platformName, S
     catchError(message: "Error exporting test screenshots (this won't fail the build)", buildResult: 'SUCCESS', stageResult: 'FAILURE') {
         def screenshotsFolder = "${workspace}/${ENGINE_REPOSITORY_NAME}/AutomatedTesting/user/PythonTests/Automated/Screenshots"
         def s3Uploader = "${workspace}/${ENGINE_REPOSITORY_NAME}/scripts/build/tools/upload_to_s3.py"
-        def command = "${options.PYTHON_DIR}/python.cmd -u ${s3Uploader} --base_dir ${screenshotsFolder} " +
-                      "--file_regex \"(.*zip\$)\" --bucket ${env.TEST_SCREENSHOT_BUCKET} " +
-                      "--search_subdirectories True --key_prefix ${branchName}_${env.BUILD_NUMBER} " +
-                      "--extra-args {\"ACL\": \"bucket-owner-full-control\"}"
-        palSh(command, "Uploading test screenshots for ${jobName}")
+        dir("${workspace}/${ENGINE_REPOSITORY_NAME}") {
+            def command = "${options.PYTHON_DIR}/python.cmd -u ${s3Uploader} --base_dir ${screenshotsFolder} " +
+                          '--file_regex \\"(.*zip\$)\\" ' +
+                          "--bucket ${env.TEST_SCREENSHOT_BUCKET} " +
+                          "--search_subdirectories True --key_prefix ${branchName}_${env.BUILD_NUMBER} " +
+                          '--extra_args {\\"ACL\\":\\"bucket-owner-full-control\\"}'
+            palSh(command, "Uploading test screenshots for ${jobName}")
+        }
     }
 }
 
