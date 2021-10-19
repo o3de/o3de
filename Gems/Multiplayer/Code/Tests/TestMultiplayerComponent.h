@@ -23,8 +23,8 @@ namespace MultiplayerTest
             provided.emplace_back(AZ_CRC_CE("MultiplayerInputDriver"));
         }
 
-        void Activate(){};
-        void Deactivate(){};
+        void Activate() override {}
+        void Deactivate() override {}
     };
 
     // Test multiplayer component with ability to create and process network input
