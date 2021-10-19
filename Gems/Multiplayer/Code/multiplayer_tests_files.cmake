@@ -15,6 +15,7 @@ set(FILES
     Tests/Main.cpp
     Tests/MockInterfaces.h
     Tests/MultiplayerSystemTests.cpp
+    Tests/NetworkInputTests.cpp
     Tests/NetworkTransformTests.cpp
     Tests/RewindableContainerTests.cpp
     Tests/RewindableObjectTests.cpp
