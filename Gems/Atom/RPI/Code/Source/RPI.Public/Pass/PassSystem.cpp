@@ -488,6 +488,17 @@ namespace AZ
             return m_passLibrary.ForEachPass(filter, passFunction);
         }
 
+        Pass* PassSystem::FindFirstPass(const PassFilter& filter)
+        {
+            Pass* foundPass = nullptr;
+            m_passLibrary.ForEachPass(filter, [&foundPass](RPI::Pass* pass) ->bool
+                {
+                    foundPass = pass;
+                    return true;
+                });
+            return foundPass;
+        }
+
         SwapChainPass* PassSystem::FindSwapChainPass(AzFramework::NativeWindowHandle windowHandle) const
         {
             for (const Ptr<Pass>& pass : m_rootPass->m_children)

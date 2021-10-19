@@ -89,7 +89,7 @@ namespace AZ
         {
             uint32_t filterOptions = passFilter.GetEnabledFilterOptions();
 
-            // A lamda function which visits each pass in a pass list, if the pass matches the pass filter, then call the pass function
+            // A lambda function which visits each pass in a pass list, if the pass matches the pass filter, then call the pass function
             auto visitList = [passFilter, passFunction](const AZStd::vector<Pass*>& passList, uint32_t options) -> bool
             {
                 if (passList.size() == 0)

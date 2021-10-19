@@ -196,10 +196,13 @@ namespace AZ
             virtual void RemovePassFromLibrary(Pass* pass) = 0;
                         
             //! Visit the matching passes from registered passes with specified filter
-            //! The visit may stop if the passFunction returns true.
             //! Note: this function will find all the passes which match the pass filter even they are for render pipelines which are not added to a scene
             //! This function is fast if a pass name or a pass template name is specified. 
             virtual void ForEachPass(const PassFilter& filter, AZStd::function<bool(Pass*)> passFunction) = 0;
+
+            //! Find the first matching pass from registered passes with specified filter
+            //! Note: this function SHOULD ONLY be used when you are certain you only need to handle the first pass found
+            virtual Pass* FindFirstPass(const PassFilter& filter) = 0;
 
         private:
             // These functions are only meant to be used by the Pass class

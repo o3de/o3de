@@ -98,6 +98,7 @@ namespace AZ
             void RegisterPass(Pass* pass) override;
             void UnregisterPass(Pass* pass) override;
             void ForEachPass(const PassFilter& filter, AZStd::function<bool(Pass*)> passFunction) override;
+            Pass* FindFirstPass(const PassFilter& filter) override;
 
         private:
             // Returns the root of the pass tree hierarchy
