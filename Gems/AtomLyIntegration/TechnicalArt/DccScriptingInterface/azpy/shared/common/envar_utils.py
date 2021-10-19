@@ -33,28 +33,31 @@ import logging as _logging
 # 3rd Party
 from box import Box
 from unipath import Path
-
-# Lumberyard extensions
-from azpy.constants import *
 # -------------------------------------------------------------------------
 
 
 # -------------------------------------------------------------------------
-from azpy.env_bool import env_bool
+#  global space
+import azpy.env_bool as env_bool
+from azpy.constants import ENVAR_O3DE_DEV
+from azpy.constants import ENVAR_O3DE_PROJECT
 from azpy.constants import ENVAR_DCCSI_GDEBUG
 from azpy.constants import ENVAR_DCCSI_DEV_MODE
+from azpy.constants import FRMT_LOG_LONG
 
-#  global space
-_G_DEBUG = env_bool(ENVAR_DCCSI_GDEBUG, False)
-_DCCSI_DEV_MODE = env_bool(ENVAR_DCCSI_DEV_MODE, False)
+_DCCSI_GDEBUG = env_bool.env_bool(ENVAR_DCCSI_GDEBUG, False)
+_DCCSI_DEV_MODE = env_bool.env_bool(ENVAR_DCCSI_DEV_MODE, False)
 
-_PACKAGENAME = __name__
-if _PACKAGENAME is '__main__':
-    _PACKAGENAME = 'azpy.shared.common.envar_utils'
+_MODULENAME = __name__
+if _MODULENAME is '__main__':
+    _MODULENAME = 'azpy.shared.common.envar_utils'
 
-import azpy
-_LOGGER = azpy.initialize_logger(_PACKAGENAME)
-_LOGGER.debug('Invoking __init__.py for {0}.'.format({_PACKAGENAME}))
+# set up module logging
+for handler in _logging.root.handlers[:]:
+    _logging.root.removeHandler(handler)
+_LOGGER = _logging.getLogger(_MODULENAME)
+_logging.basicConfig(format=FRMT_LOG_LONG)
+_LOGGER.debug('Initializing: {0}.'.format({_MODULENAME}))
 # -------------------------------------------------------------------------
 
 
@@ -107,7 +110,7 @@ def set_envar_defaults(envar_set, env_root=get_envar_default(ENVAR_O3DE_DEV)):
         envar = str(envar)
         value = os.getenv(envar)
 
-        if _G_DEBUG:
+        if _DCCSI_GDEBUG:
             if not value:
                 _LOGGER.debug('~ EnVar value NOT found: {0}\r'.format(envar))
 

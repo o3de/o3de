@@ -44,7 +44,6 @@ Configures several useful environment config settings and paths,
     O3DE_DEV              : path to Lumberyard \dev root
     O3DE_PROJECT_PATH     : path to project dir
     DCCSIG_PATH         : path to the DCCsi Gem root
-    DCCSI_AZPY_PATH *   : path to azpy Python API (code)
     DCCSI_TOOLS_PATH      : path to associated (non-api code) DCC SDK
 
     # nice to haves in base env to define core support
@@ -74,7 +73,7 @@ Configures several useful environment config settings and paths,
     :: shared location for 64bit DCCSI_PY_MAYA python 2.7 DEV location
     set DCCSI_PY_MAYA=%MAYA_LOCATION%\bin\mayapy.exe
     :: wingIDE can use more then one defined/managed interpreters
-    :: allowing you to _G_DEBUG code in multiple runtimes in one session
+    :: allowing you to _DCCSI_GDEBUG code in multiple runtimes in one session
     ${DCCSI_PY_MAYA}
 
     # related to the WING as the default DCCSI_GDEBUGGER
@@ -92,8 +91,9 @@ import os
 import sys
 import site
 import re
-#import inspect
+import inspect
 import json
+import importlib.util
 
 import logging as _logging
 from collections import OrderedDict
@@ -110,35 +110,33 @@ _MODULE_PATH = os.path.realpath(__file__)  # To Do: what if frozen?
 _DCCSIG_PATH = os.path.normpath(os.path.join(_MODULE_PATH, '../..'))
 _DCCSIG_PATH = os.getenv('DCCSIG_PATH', _DCCSIG_PATH)
 site.addsitedir(_DCCSIG_PATH)
-print(_DCCSIG_PATH)
 # -------------------------------------------------------------------------
 
 
 # -------------------------------------------------------------------------
-# Lumberyard extensions
+# O3DE extensions
 from pathlib import Path
 
 # set up global space, logging etc.
-import azpy
-from azpy.env_bool import env_bool
+import azpy.env_bool as env_bool
 from azpy.constants import ENVAR_DCCSI_GDEBUG
 from azpy.constants import ENVAR_DCCSI_DEV_MODE
+from azpy.constants import FRMT_LOG_LONG
 
-_G_DEBUG = env_bool(ENVAR_DCCSI_GDEBUG, False)
-_DCCSI_DEV_MODE = env_bool(ENVAR_DCCSI_DEV_MODE, False)
+_DCCSI_GDEBUG = env_bool.env_bool(ENVAR_DCCSI_GDEBUG, False)
+_DCCSI_DEV_MODE = env_bool.env_bool(ENVAR_DCCSI_DEV_MODE, False)
 
 _PACKAGENAME = 'DCCsi.azpy.synthetic_env'
 
-_log_level = int(20)
-if _G_DEBUG:
-    _log_level = int(10)
-_LOGGER = azpy.initialize_logger(_PACKAGENAME,
-                                 log_to_file=True,
-                                 default_log_level=_log_level)
+# set up module logging
+for handler in _logging.root.handlers[:]:
+    _logging.root.removeHandler(handler)
+_LOGGER = _logging.getLogger(_PACKAGENAME)
+_logging.basicConfig(format=FRMT_LOG_LONG)
+_LOGGER.debug('Initializing: {0}.'.format({_PACKAGENAME}))
 
-_LOGGER.debug('Starting up:  {0}.'.format({_PACKAGENAME}))
 _LOGGER.debug('_DCCSIG_PATH: {}'.format(_DCCSIG_PATH))
-_LOGGER.debug('_G_DEBUG: {}'.format(_G_DEBUG))
+_LOGGER.debug('_DCCSI_GDEBUG: {}'.format(_DCCSI_GDEBUG))
 _LOGGER.debug('_DCCSI_DEV_MODE: {}'.format(_DCCSI_DEV_MODE))
 
 if _DCCSI_DEV_MODE:
@@ -170,7 +168,7 @@ if os.path.exists(_DCCSI_PYTHON_LIB_PATH):
 
 # -------------------------------------------------------------------------
 #  post-bootstrap global space
-_G_DEBUG = env_bool(ENVAR_DCCSI_GDEBUG, False)
+_DCCSI_GDEBUG = env_bool(ENVAR_DCCSI_GDEBUG, False)
 _DCCSI_DEV_MODE = env_bool(ENVAR_DCCSI_DEV_MODE, False)
 # -------------------------------------------------------------------------
 
@@ -225,7 +223,7 @@ def return_stub(stub='dccsi_stub'):
                 break
             if (len(tail) == 0):
                 path = ""
-                if _G_DEBUG:
+                if _DCCSI_GDEBUG:
                     _LOGGER.debug('~Not able to find the path to that file '
                                   '(stub) in a walk-up from currnet path.')
                 break
@@ -591,12 +589,12 @@ def set_env(dict_object):
 def test_Qt():
     try:
         import PySide2
-        print('PySide2: {0}'.format(Path(PySide2.__file__).as_posix()))
+        _LOGGER.info('PySide2: {0}'.format(Path(PySide2.__file__).as_posix()))
         # builtins.ImportError: DLL load failed: The specified procedure could not be found.
         from PySide2 import QtCore
         from PySide2 import QtWidgets
     except IOError as e:
-        print('ERROR: {0}'.format(e))
+        _LOGGER.error('ERROR: {0}'.format(e))
         raise e
     
     try:
@@ -610,7 +608,7 @@ def test_Qt():
         qapp.instance().quit
         qapp.exit()
     except Exception as e:
-        print('ERROR: {0}'.format(e))
+        _LOGGER.error('ERROR: {0}'.format(e))
         raise e
 # -------------------------------------------------------------------------
 
@@ -620,14 +618,14 @@ def main(argv, env_dict_object, debug=False, devmode=False):
     import getopt
     try:
         opts, args = getopt.getopt(argv, "hvt:", ["verbose=", "test="])
-    except getopt.GetoptError:
+    except getopt.GetoptError as e:
         # not logging, print to cmd line console
-        print('synthetic_env.py -v <print_dict> -t <run_test>')
+        _LOGGER.error('synthetic_env.py -v <print_dict> -t <run_test>')
         sys.exit(2)
 
     for opt, arg in opts:
         if opt == '-h':
-            print('synthetic_env.py -v <print_dict> -t <run test>')
+            _LOGGER.info('synthetic_env.py -v <print_dict> -t <run test>')
             sys.exit()
             
         elif opt in ("-t", "--test"):
@@ -639,14 +637,14 @@ def main(argv, env_dict_object, debug=False, devmode=False):
             try:
                 from box import Box
             except ImportError as e:
-                print('ERROR: {0}'.format(e))
+                _LOGGER.error('ERROR: {0}'.format(e))
                 raise e
             try:
                 env_dict_object = Box(env_dict_object)
-                print(str(env_dict_object.to_json(sort_keys=False,
+                _LOGGER.info(str(env_dict_object.to_json(sort_keys=False,
                                               indent=4)))
             except Exception as e:
-                print('ERROR: {0}'.format(e))
+                _LOGGER.error('ERROR: {0}'.format(e))
                 raise e
 # -------------------------------------------------------------------------
 
@@ -656,16 +654,16 @@ def main(argv, env_dict_object, debug=False, devmode=False):
 # -------------------------------------------------------------------------
 if __name__ == '__main__':
     # run simple tests?
-    _G_DEBUG = True
+    _DCCSI_GDEBUG = True
     _DCCSI_DEV_MODE = True
     
     if _DCCSI_DEV_MODE:
         try:
             import azpy.test.entry_test
-            print('SUCCESS: import azpy.test.entry_test')
+            _LOGGER.info('SUCCESS: import azpy.test.entry_test')
             azpy.test.entry_test.main(verbose=True, connect_debugger=True)            
         except ImportError as e:
-            print('ERROR: {0}'.format(e))
+            _LOGGER.error('ERROR: {0}'.format(e))
             raise e  
 
     # init, stash and then activate
@@ -673,9 +671,9 @@ if __name__ == '__main__':
     _SYNTH_ENV_DICT = stash_env(_SYNTH_ENV_DICT)
     _SYNTH_ENV_DICT = set_env(_SYNTH_ENV_DICT)      
 
-    main(sys.argv[1:], _SYNTH_ENV_DICT, _G_DEBUG, _DCCSI_DEV_MODE)
+    main(sys.argv[1:], _SYNTH_ENV_DICT, _DCCSI_GDEBUG, _DCCSI_DEV_MODE)
 
-    if _G_DEBUG:
+    if _DCCSI_GDEBUG:
 
         tempBoxJsonFilePath = Path(_SYNTH_ENV_DICT['DCCSIG_PATH'], '.temp')
         tempBoxJsonFilePath = Path(tempBoxJsonFilePath, 'boxDumpTest.json')

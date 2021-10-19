@@ -26,26 +26,18 @@ import logging as _logging
 
 
 # -------------------------------------------------------------------------
-_ORG_TAG = 'Amazon'
-_APP_TAG = 'DCCsi'
-_TOOL_TAG = 'azpy'
-_TYPE_TAG = 'package'
+# global scope
+_PACKAGENAME = 'azpy'
 
-_PACKAGENAME = _TOOL_TAG
+__all__ = ['config_utils',
+           'constants',
+           'env_bool',
+           'return_stub',
+           'core',
+           'dcc',
+           'dev',
+           'test']
 
-__all__ = ['config_utils', 'render',
-           'constants', 'return_stub', 'synthetic_env',
-           'env_base', 'env_bool', 'test', 'dev',
-           'lumberyard', 'marmoset']  # 'blender', 'maya', 'substance', 'houdini']
-# -------------------------------------------------------------------------
-
-
-# -------------------------------------------------------------------------
-# _ROOT_LOGGER = _logging.getLogger()  # only use this if debugging
-# https://stackoverflow.com/questions/56733085/how-to-know-the-current-file-path-after-being-frozen-into-an-executable-using-cx/56748839
-#os.chdir(os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe()))))
-# -------------------------------------------------------------------------
-#  global space
 # we need to set up basic access to the DCCsi
 _MODULE_PATH = os.path.realpath(__file__)  # To Do: what if frozen?
 _DCCSIG_PATH = os.path.normpath(os.path.join(_MODULE_PATH, '../..'))
@@ -58,8 +50,11 @@ import azpy.env_bool as env_bool
 import azpy.constants as constants
 import azpy.config_utils as config_utils
 
-_G_DEBUG = env_bool.env_bool(constants.ENVAR_DCCSI_GDEBUG, False)
+_DCCSI_GDEBUG = env_bool.env_bool(constants.ENVAR_DCCSI_GDEBUG, False)
 _DCCSI_DEV_MODE = env_bool.env_bool(constants.ENVAR_DCCSI_DEV_MODE, False)
+_DCCSI_LOGLEVEL = int(env_bool.env_bool(constants.ENVAR_DCCSI_LOGLEVEL, int(20)))
+if _DCCSI_GDEBUG:
+    _DCCSI_LOGLEVEL = int(10)
 
 # for py2.7 (Maya) we provide this, so we must assume some bootstrapping
 # has occured, see DccScriptingInterface\\config.py (_DCCSI_PYTHON_LIB_PATH)
@@ -69,11 +64,22 @@ try:
 except:
     import pathlib2 as pathlib
 from pathlib import Path
-if _G_DEBUG:
-    print('DCCsi debug breadcrumb, pathlib is: {}'.format(pathlib))
+if _DCCSI_GDEBUG:
+    print('[DCCsi][AZPY] DEBUG BREADCRUMB, pathlib is: {}'.format(pathlib))
+# -------------------------------------------------------------------------
 
-# to be continued...
 
+# -------------------------------------------------------------------------
+# set up module logging
+for handler in _logging.root.handlers[:]:
+    _logging.root.removeHandler(handler)
+_LOGGER = _logging.getLogger(_PACKAGENAME)
+_logging.basicConfig(format=constants.FRMT_LOG_LONG, level=_DCCSI_LOGLEVEL)
+_LOGGER.debug('Initializing: {0}.'.format({_PACKAGENAME}))
+# -------------------------------------------------------------------------
+
+
+# -------------------------------------------------------------------------
 # get/set the project name
 _O3DE_DEV = os.getenv(constants.ENVAR_O3DE_DEV,
                     config_utils.get_stub_check_path(in_path=os.getcwd(),
@@ -89,19 +95,6 @@ _DCCSI_LOG_PATH = Path(os.getenv(constants.ENVAR_DCCSI_LOG_PATH,
                                       _O3DE_PROJECT_NAME,
                                       'Cache',
                                      'pc', 'user', 'log', 'logs')))
-
-
-for handler in _logging.root.handlers[:]:
-    _logging.root.removeHandler(handler)
-
-# very basic root logger for early debugging, flip to while 1:
-while 0:
-    _logging.basicConfig(level=_logging.DEBUG,
-                         format=constants.FRMT_LOG_LONG,
-                        datefmt='%m-%d %H:%M')
-
-    _logging.debug('azpy.rootlogger> root logger set up for debugging')  # root logger
-    break
 # -------------------------------------------------------------------------
 
 
@@ -153,7 +146,7 @@ def initialize_logger(name,
     if not _logger.handlers:
 
         _log_level = int(os.getenv('DCCSI_LOGLEVEL', default_log_level))
-        if _G_DEBUG:
+        if _DCCSI_GDEBUG:
             _log_level = int(10)  # force when debugging
             print('_log_level: {}'.format(_log_level))
 
@@ -202,18 +195,11 @@ def initialize_logger(name,
     return _logger
 # -------------------------------------------------------------------------
 
+
 # -------------------------------------------------------------------------
-# set up logger with both console and file _logging
-if _G_DEBUG:
-    _LOGGER = initialize_logger(_PACKAGENAME, log_to_file=True)
-else:
-    _LOGGER = initialize_logger(_PACKAGENAME, log_to_file=False)
-
-_LOGGER.debug('Invoking __init__.py for {0}.'.format({_PACKAGENAME}))
-
 # some simple logger tests
 # evoke the filehandlers and test writting to the log file
-if _G_DEBUG:
+if _DCCSI_GDEBUG:
     _LOGGER.info('Forced Info! for {0}.'.format({_PACKAGENAME}))
     _LOGGER.error('Forced ERROR! for {0}.'.format({_PACKAGENAME}))
 
@@ -223,6 +209,7 @@ _LOGGER.debug('O3DE_DEV_PATH: {}'.format(_O3DE_DEV))
 _LOGGER.debug('DCCSI_PATH: {}'.format(_DCCSIG_PATH))
 _LOGGER.debug('O3DE_PROJECT_TAG: {}'.format(_O3DE_PROJECT_NAME))
 _LOGGER.debug('DCCSI_LOG_PATH: {}'.format(_DCCSI_LOG_PATH))
+# -------------------------------------------------------------------------
 
 
 # -------------------------------------------------------------------------
@@ -259,9 +246,9 @@ del _LOGGER
 # Main Code Block, runs this script as main (testing)
 # -------------------------------------------------------------------------
 if __name__ == '__main__':
-    _G_DEBUG = True
+    _DCCSI_GDEBUG = True
     _DCCSI_DEV_MODE = True
 
-    if _G_DEBUG:
+    if _DCCSI_GDEBUG:
         print(_DCCSIG_PATH)
         test_imports()

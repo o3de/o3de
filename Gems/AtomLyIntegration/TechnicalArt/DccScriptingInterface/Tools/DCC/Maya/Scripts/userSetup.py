@@ -56,7 +56,7 @@ import maya.mel as mel
 
 # -------------------------------------------------------------------------
 #  global space
-_G_DEBUG = env_bool(ENVAR_DCCSI_GDEBUG, False)
+_DCCSI_GDEBUG = env_bool(ENVAR_DCCSI_GDEBUG, False)
 _DCCSI_DEV_MODE = env_bool(ENVAR_DCCSI_DEV_MODE, False)
 #_DCCSI_DEV_MODE = True  # force true for debugger testing
 
@@ -69,7 +69,7 @@ _MODULENAME = str('{0}.{1}'.format(_APP_TAG, _TOOL_TAG))
 
 _LOGGER = azpy.initialize_logger(_MODULENAME, default_log_level=int(20))
 _LOGGER.info('Initializing: {0}.'.format({_MODULENAME}))
-_LOGGER.info('DCCSI_GDEBUG: {0}.'.format({_G_DEBUG}))
+_LOGGER.info('DCCSI_GDEBUG: {0}.'.format({_DCCSI_GDEBUG}))
 _LOGGER.info('DCCSI_DEV_MODE: {0}.'.format({_DCCSI_DEV_MODE}))
 
 # flag to turn off setting up callbacks, until they are fully implemented

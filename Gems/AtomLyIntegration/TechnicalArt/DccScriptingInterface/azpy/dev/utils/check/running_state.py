@@ -235,7 +235,7 @@ class CheckRunningState(object):
 # Class Test
 #==========================================================================
 if __name__ == '__main__':
-    _G_DEBUG = True
+    _DCCSI_GDEBUG = True
     _DCCSI_DEV_MODE = True
     _LOGGER.setLevel(_logging.DEBUG)  # force debugging
 

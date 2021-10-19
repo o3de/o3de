@@ -13,14 +13,34 @@ import sys
 import os
 import re
 import site
-import pathlib
 import logging as _logging
 # -------------------------------------------------------------------------
 
 
 # --------------------------------------------------------------------------
-_MODULENAME = 'azpy.config_utils'
+# note: this module is called in other root modules
+# must avoid cyclical imports
+
+# global scope
+# normally would pull the constant envar string
+# but avoiding cyclical imports here
+FRMT_LOG_LONG = "[%(name)s][%(levelname)s] >> %(message)s (%(asctime)s; %(filename)s:%(lineno)d)"
+from azpy.env_bool import env_bool
+_DCCSI_GDEBUG = env_bool('DCCSI_GDEBUG', False)
+_DCCSI_LOGLEVEL = env_bool('DCCSI_LOGLEVEL', False)
+_DCCSI_LOGLEVEL = int(env_bool('DCCSI_LOGLEVEL', int(20)))
+if _DCCSI_GDEBUG:
+    _DCCSI_LOGLEVEL = int(10)
+
+_MODULENAME = __name__
+if _MODULENAME is '__main__':
+    _MODULENAME = 'azpy.config_utils'
+    
+# set up module logging
+for handler in _logging.root.handlers[:]:
+    _logging.root.removeHandler(handler)
 _LOGGER = _logging.getLogger(_MODULENAME)
+_logging.basicConfig(format=FRMT_LOG_LONG, level=_DCCSI_LOGLEVEL)
 _LOGGER.debug('Initializing: {0}.'.format({_MODULENAME}))
 
 __all__ = ['get_os', 'return_stub', 'get_stub_check_path',
@@ -30,13 +50,15 @@ __all__ = ['get_os', 'return_stub', 'get_stub_check_path',
 
 # -------------------------------------------------------------------------
 # just a quick check to ensure what paths have code access
-_G_DEBUG = False  # enable for debug prints
-if _G_DEBUG:
+if _DCCSI_GDEBUG:
     known_paths = list()
     for p in sys.path:
         known_paths.append(p)
     _LOGGER.debug(known_paths)
+# -------------------------------------------------------------------------
 
+
+# -------------------------------------------------------------------------
 # this import can fail in Maya 2020 (and earlier) stuck on py2.7
 # wrapped in a try, to trap and providing messaging to help user correct
 try:
@@ -144,7 +166,8 @@ def get_o3de_engine_root(check_stub='engine.json'):
         _O3DE_DEV = get_stub_check_path(check_stub='engine.json')
         # To Do: What if engine.json doesn't exist?
     else:
-        # BUT allow for ENVAR override by user
+        # execute if no exception
+        # allow for external ENVAR override
         _O3DE_DEV = Path(os.getenv('O3DE_DEV', azlmbr.paths.engroot))
     finally:
         # note: can't use fstrings as this module gets called with py2.7 in maya
@@ -209,6 +232,7 @@ def get_check_global_project():
     from azpy.constants import PATH_USER_O3DE_BOOTSTRAP
     from collections import OrderedDict
     from box import Box
+    from azpy.core import get_datadir
     
     bootstrap_box = None
 
@@ -225,9 +249,31 @@ def get_check_global_project():
     if bootstrap_box:
         # this seems fairly hard coded - what if the data changes?
         project_path=Path(bootstrap_box.Amazon.AzCore.Bootstrap.project_path)
-        return project_path.resolve()
+        return project_path
     else:
         return None
+# -------------------------------------------------------------------------
+
+
+# -------------------------------------------------------------------------
+def get_project_path():
+    """figures out the o3de project path
+    if not found defaults to the engine folder"""
+    _O3DE_PROJECT_PATH = None
+    try:
+        import azlmbr  # this file will fail outside of O3DE
+    except ImportError as e:
+        # (fallback 1) this checks if a global project is set
+        _O3DE_PROJECT_PATH = azpy.config_utils.get_check_global_project()
+    else:
+        # execute if no exception
+        # check
+        _O3DE_PROJECT_PATH = Path(os.getenv('O3DE_DEV', azlmbr.paths.projectroot))
+    finally:
+        # note: can't use fstrings as this module gets called with py2.7 in maya
+        _LOGGER.info('O3DE engine root: {}'.format(_O3DE_DEV.resolve()))
+    return _O3DE_DEV
+    
 # -------------------------------------------------------------------------
 
 

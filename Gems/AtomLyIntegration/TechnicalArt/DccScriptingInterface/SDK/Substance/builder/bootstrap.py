@@ -34,20 +34,20 @@ from azpy.constants import ENVAR_DCCSI_GDEBUG
 from azpy.constants import ENVAR_DCCSI_DEV_MODE
 
 # these are for module debugging, set to false on submit
-_G_DEBUG = env_bool(ENVAR_DCCSI_GDEBUG, False)
+_DCCSI_GDEBUG = env_bool(ENVAR_DCCSI_GDEBUG, False)
 _DCCSI_DEV_MODE = env_bool(ENVAR_DCCSI_DEV_MODE, False)
 
 _PACKAGENAME = 'DCCsi.SDK.substance.builder.bootstrap'
 
 _log_level = int(20)
-if _G_DEBUG:
+if _DCCSI_GDEBUG:
     _log_level = int(10)
 _LOGGER = azpy.initialize_logger(_PACKAGENAME,
                                  log_to_file=True,
                                  default_log_level=_log_level)
 _LOGGER.debug('Starting up:  {0}.'.format({_PACKAGENAME}))
 _LOGGER.debug('_DCCSIG_PATH: {}'.format(_DCCSIG_PATH))
-_LOGGER.debug('_G_DEBUG: {}'.format(_G_DEBUG))
+_LOGGER.debug('_G_DEBUG: {}'.format(_DCCSI_GDEBUG))
 _LOGGER.debug('_DCCSI_DEV_MODE: {}'.format(_DCCSI_DEV_MODE))
 
 if _DCCSI_DEV_MODE:
@@ -124,7 +124,7 @@ if __name__ == "__main__":
     _LOGGER.info('_PROJECT_ASSETS_PATH: {}'.format(_PROJECT_ASSETS_PATH))
     _LOGGER.info('_PROJECT_MATERIALS_PATH: {}'.format(_PROJECT_MATERIALS_PATH))
 
-    if _G_DEBUG:
+    if _DCCSI_GDEBUG:
         _dccsi_config.test_pyside2()  # runs a small PySdie2 test
     
     # remove the logger

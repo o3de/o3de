@@ -57,7 +57,7 @@ _LOGGER = _logging.getLogger(_PACKAGENAME)
 _LOGGER.debug('Initializing: {0}.'.format({_PACKAGENAME}))
 
 #  global space
-_G_DEBUG = env_bool(ENVAR_DCCSI_GDEBUG, False)
+_DCCSI_GDEBUG = env_bool(ENVAR_DCCSI_GDEBUG, False)
 _DCCSI_DEV_MODE = env_bool(ENVAR_DCCSI_DEV_MODE, False)
 
 # set up base totally non-functional defauls (denoted with $<ENVAR>)
@@ -110,9 +110,9 @@ if __name__ == '__main__':
     # print(setEnvarDefaults(), '\r') #<-- not necissary, already called
     # print(BASE_ENVVAR_VALUES, '\r')
     _LOGGER.info('Pretty print: _BASE_ENVVAR_DICT')
-    print(json.dumps(_BASE_ENVVAR_DICT,
-                     indent=4, sort_keys=False,
-                     ensure_ascii=False), '\r')
+    _LOGGER.debug(json.dumps(_BASE_ENVVAR_DICT,
+                             indent=4, sort_keys=False,
+                             ensure_ascii=False), '\r')
 
     #  retreive a Path type key from the Box
     foo = _BASE_ENVVAR_DICT[ENVAR_O3DE_DEV]

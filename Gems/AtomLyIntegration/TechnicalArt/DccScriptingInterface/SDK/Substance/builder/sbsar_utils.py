@@ -28,7 +28,7 @@ from azpy.constants import ENVAR_DCCSI_DEV_MODE
 from dynaconf import settings
 from pathlib import Path
 
-_G_DEBUG = env_bool(ENVAR_DCCSI_GDEBUG, settings.DCCSI_GDEBUG)
+_DCCSI_GDEBUG = env_bool(ENVAR_DCCSI_GDEBUG, settings.DCCSI_GDEBUG)
 _DCCSI_DEV_MODE = env_bool(ENVAR_DCCSI_DEV_MODE, settings.DCCSI_DEV_MODE)
 
 _MODULENAME = 'DCCsi.SDK.substance.builder.sbsar_utils'

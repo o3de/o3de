@@ -78,14 +78,14 @@ settings = config.get_config_settings()
 if __name__ == '__main__':
     """Run this file as main"""
 
-    _G_DEBUG = False
+    _DCCSI_GDEBUG = False
     _G_TEST_PYSIDE = False
     
     _config = get_dccsi_config()
     _settings = config.get_config_settings()
 
     _log_level = int(_settings.DCCSI_LOGLEVEL)
-    if _G_DEBUG:
+    if _DCCSI_GDEBUG:
         _log_level = int(10)  # force debug level
     _LOGGER = azpy.initialize_logger(_MODULE,
                                      log_to_file=True,

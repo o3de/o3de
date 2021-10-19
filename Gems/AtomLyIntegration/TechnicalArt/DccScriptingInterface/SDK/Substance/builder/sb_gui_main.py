@@ -35,7 +35,7 @@ from azpy.constants import ENVAR_DCCSI_GDEBUG
 from azpy.constants import ENVAR_DCCSI_DEV_MODE
 
 # set up global space, logging etc.
-_G_DEBUG = env_bool(ENVAR_DCCSI_GDEBUG, settings.DCCSI_GDEBUG)
+_DCCSI_GDEBUG = env_bool(ENVAR_DCCSI_GDEBUG, settings.DCCSI_GDEBUG)
 _DCCSI_DEV_MODE = env_bool(ENVAR_DCCSI_DEV_MODE, settings.DCCSI_GDEBUG)
 
 for handler in _logging.root.handlers[:]:
@@ -44,7 +44,7 @@ for handler in _logging.root.handlers[:]:
 _MODULENAME = 'DCCsi.SDK.substance.builder.sb_gui_main'
 
 _log_level = _logging.INFO
-if _G_DEBUG:
+if _DCCSI_GDEBUG:
     _log_level = _logging.DEBUG
 
 _LOGGER = azpy.initialize_logger(name=_MODULENAME,

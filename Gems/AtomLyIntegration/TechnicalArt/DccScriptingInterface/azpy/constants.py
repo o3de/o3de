@@ -25,7 +25,16 @@ import sys
 import site
 from os.path import expanduser
 import logging as _logging
+# -------------------------------------------------------------------------
 
+
+# -------------------------------------------------------------------------
+# global scope
+_MODULENAME = __name__
+if _MODULENAME is '__main__':
+    _MODULENAME = 'azpy.constants'
+
+os.environ['PYTHONINSPECT'] = 'True'
 # for this module to perform standalone
 # we need to set up basic access to the DCCsi
 _MODULE_PATH = os.path.realpath(__file__)  # To Do: what if frozen?
@@ -33,10 +42,10 @@ _DCCSIG_PATH = os.path.normpath(os.path.join(_MODULE_PATH, '../..'))
 _DCCSIG_PATH = os.getenv('DCCSIG_PATH', _DCCSIG_PATH)
 site.addsitedir(_DCCSIG_PATH)
 
-#  azpy module
-#import azpy.constants as cnst
+# now we have azpy api access
+import azpy
+from azpy.env_bool import env_bool
 from azpy.config_utils import return_stub_dir
-import azpy.env_bool as env_bool
 # -------------------------------------------------------------------------
 
 
@@ -49,24 +58,26 @@ ENVAR_DCCSI_LOGLEVEL = str('DCCSI_LOGLEVEL')
 # Log formating
 FRMT_LOG_LONG = "[%(name)s][%(levelname)s] >> %(message)s (%(asctime)s; %(filename)s:%(lineno)d)"
 FRMT_LOG_SHRT = "[%(asctime)s][%(name)s][%(levelname)s] >> %(message)s"
+# -------------------------------------------------------------------------
 
-#  global space
-_G_DEBUG = env_bool.env_bool(ENVAR_DCCSI_GDEBUG, False)
-_DCCSI_DEV_MODE = env_bool.env_bool(ENVAR_DCCSI_DEV_MODE, False)
 
+# -------------------------------------------------------------------------
+# global debug stuff
+_DCCSI_GDEBUG = env_bool(ENVAR_DCCSI_GDEBUG, False)
+_DCCSI_DEV_MODE = env_bool(ENVAR_DCCSI_DEV_MODE, False)
+_DCCSI_LOGLEVEL = int(env_bool(ENVAR_DCCSI_LOGLEVEL, int(20)))
+if _DCCSI_GDEBUG:
+    _DCCSI_LOGLEVEL = int(10)
+# -------------------------------------------------------------------------
+
+
+# -------------------------------------------------------------------------
+# set up module logging
 for handler in _logging.root.handlers[:]:
     _logging.root.removeHandler(handler)
-
-_PACKAGENAME = 'azpy.constants'
-
-_LOG_LEVEL = int(20)
-if _G_DEBUG:
-    _LOG_LEVEL = int(10)
-_logging.basicConfig(level=_LOG_LEVEL,
-                     format=FRMT_LOG_LONG,
-                     datefmt='%m-%d %H:%M')
-_LOGGER = _logging.getLogger(_PACKAGENAME)
-_LOGGER.debug('Initializing: {0}.'.format({_PACKAGENAME}))
+_LOGGER = _logging.getLogger(_MODULENAME)
+_logging.basicConfig(format=FRMT_LOG_LONG, level=_DCCSI_LOGLEVEL)
+_LOGGER.debug('Initializing: {0}.'.format({_MODULENAME}))
 # -------------------------------------------------------------------------
 
 
@@ -232,12 +243,18 @@ parts = os.path.split(PATH_USER_HOME)
 if str(parts[1].lower()) == 'documents':
     PATH_USER_HOME = parts[0]
     _LOGGER.debug('user home CORRECTED: {}'.format(PATH_USER_HOME))
+    
+STR_USER_O3DE_PATH = str('{home}\\{o3de}')
 
-PATH_USER_O3DE = str('{home}\\{o3de}').format(home=PATH_USER_HOME,
+PATH_USER_O3DE = str(STR_USER_O3DE_PATH).format(home=PATH_USER_HOME,
                                               o3de=TAG_O3DE_FOLDER)
-PATH_USER_O3DE_REGISTRY = str('{0}\\Registry').format(PATH_USER_O3DE)
-PATH_USER_O3DE_BOOTSTRAP = str('{reg}\\{file}').format(reg=PATH_USER_O3DE_REGISTRY,
-                                                       file=TAG_O3DE_BOOTSTRAP)
+
+STR_USER_O3DE_REGISTRY_PATH = str('{0}\\Registry')
+PATH_USER_O3DE_REGISTRY = str(STR_USER_O3DE_REGISTRY_PATH).format(PATH_USER_O3DE)
+
+STR_USER_O3DE_BOOTSTRAP_PATH = str('{reg}\\{file}')
+PATH_USER_O3DE_BOOTSTRAP = str(STR_USER_O3DE_BOOTSTRAP_PATH).format(reg=PATH_USER_O3DE_REGISTRY,
+                                                                    file=TAG_O3DE_BOOTSTRAP)
 
 #python and site-dir
 TAG_DCCSI_PY_VERSION_MAJOR = str(3)
@@ -289,19 +306,12 @@ PATH_SAT_INSTALL_PATH = str('{0}\\{1}\\{2}\\{3}\\{4}'
 # Main Code Block, runs this script as main (testing)
 # -------------------------------------------------------------------------
 if __name__ == '__main__':
-    # there are not really tests to run here due to this being a list of
-    # constants for shared use.
-    _G_DEBUG = True
-    _DCCSI_DEV_MODE = True
-    _LOGGER.setLevel(_logging.DEBUG)  # force debugging
-
-    # this is a top level module and to reduce cyclical azpy imports
-    # it only has a basic logger configured, add log to console
-    _handler = _logging.StreamHandler(sys.stdout)
-    _handler.setLevel(_logging.DEBUG)
-    _formatter = _logging.Formatter(FRMT_LOG_LONG)
-    _handler.setFormatter(_formatter)
-    _LOGGER.addHandler(_handler)
+    """Run this file as a standalone script"""
+    
+    # overide logger for standalone to be more verbose and lof to file
+    _LOGGER = azpy.initialize_logger(_MODULENAME,
+                                     log_to_file=_DCCSI_GDEBUG,
+                                     default_log_level=_DCCSI_LOGLEVEL)
 
     # happy print
     _LOGGER.info(STR_CROSSBAR)
@@ -338,7 +348,7 @@ if __name__ == '__main__':
     # py 2 and 3 compatible iter    
     def get_items(dict_object):
         for key in dict_object:
-            yield key, dict_object[key]    
+            yield key, dict_object[key]
 
     for key, value in get_items(_stash_dict):
         # check if path exists

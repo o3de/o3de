@@ -54,4 +54,4 @@ if __name__ == '__main__':
     """module testing"""
 
     user_data_dir = get_datadir()
-    print(user_data_dir.resolve())
+    _LOGGER.info(user_data_dir.resolve())

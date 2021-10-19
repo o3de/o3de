@@ -28,7 +28,7 @@ from azpy.constants import ENVAR_DCCSI_DEV_MODE
 _DCCSI_G_DCC_APP = None
 
 # set up global space, logging etc.
-_G_DEBUG = env_bool(ENVAR_DCCSI_GDEBUG, False)
+_DCCSI_GDEBUG = env_bool(ENVAR_DCCSI_GDEBUG, False)
 _DCCSI_DEV_MODE = env_bool(ENVAR_DCCSI_DEV_MODE, False)
 
 _MODULENAME = 'azpy.dev.utils.check.maya_app'
@@ -76,7 +76,7 @@ def validate_state(DCCSI_G_DCC_APP=_DCCSI_G_DCC_APP):
     then will call either, set_dcc_app('maya') or clear_dcc_app(dcc_app=False)
     '''
 
-    if _G_DEBUG:
+    if _DCCSI_GDEBUG:
         _LOGGER.debug(autolog())
 
     try:
@@ -130,7 +130,7 @@ _DCCSI_G_DCC_APP = validate_state()
 if __name__ == '__main__':
     # there are not really tests to run here due to this being a list of
     # constants for shared use.
-    _G_DEBUG = True
+    _DCCSI_GDEBUG = True
     _DCCSI_DEV_MODE = True
     _LOGGER.setLevel(_logging.DEBUG)  # force debugging
 

@@ -47,7 +47,7 @@ import pysbs.context as pysbs_context
 
 # -------------------------------------------------------------------------
 # set up global space, logging etc.
-_G_DEBUG = env_bool(ENVAR_DCCSI_GDEBUG, False)
+_DCCSI_GDEBUG = env_bool(ENVAR_DCCSI_GDEBUG, False)
 _DCCSI_DEV_MODE = env_bool(ENVAR_DCCSI_DEV_MODE, False)
 
 _PACKAGENAME = __name__
@@ -62,7 +62,7 @@ _LOGGER.debug('Starting up:  {0}.'.format({_PACKAGENAME}))
 
 # -------------------------------------------------------------------------
 #  global space debug flag
-_G_DEBUG = os.getenv(ENVAR_DCCSI_GDEBUG, False)
+_DCCSI_GDEBUG = os.getenv(ENVAR_DCCSI_GDEBUG, False)
 
 #  global space debug flag
 _DCCSI_DEV_MODE = os.getenv(ENVAR_DCCSI_DEV_MODE, False)

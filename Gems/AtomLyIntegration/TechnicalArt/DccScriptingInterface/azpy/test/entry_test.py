@@ -11,9 +11,9 @@
 from __future__ import unicode_literals
 
 # -------------------------------------------------------------------------
-import sys
 import os
 import site
+import logging as _logging
 
 # note: some modules not available in py2.7 unless we boostrap with config.py
 # See example:
@@ -23,30 +23,29 @@ from pathlib import Path
 # -------------------------------------------------------------------------
 _BOOT_CHECK = False  # set true to test breakpoint in this module directly
 
-import azpy
-from azpy.env_bool import env_bool
+import azpy.env_bool as env_bool
 from azpy.constants import ENVAR_DCCSI_GDEBUG
 from azpy.constants import ENVAR_DCCSI_DEV_MODE
+from azpy.constants import FRMT_LOG_LONG
 
-#  global space
-# To Do: update to dynaconf dynamic env and settings?
-_G_DEBUG = env_bool(ENVAR_DCCSI_GDEBUG, False)
-_DCCSI_DEV_MODE = env_bool(ENVAR_DCCSI_DEV_MODE, False)
+_DCCSI_GDEBUG = env_bool.env_bool(ENVAR_DCCSI_GDEBUG, False)
+_DCCSI_DEV_MODE = env_bool.env_bool(ENVAR_DCCSI_DEV_MODE, False)
 
-_MODULENAME = 'azpy.test.entry_test'
+_MODULENAME = __name__
+if _MODULENAME is '__main__':
+    _MODULENAME = 'azpy.test.entry_test'
 
-_log_level = int(20)
-if _G_DEBUG:
-    _log_level = int(10)
-_LOGGER = azpy.initialize_logger(_MODULENAME,
-                                 log_to_file=False,
-                                 default_log_level=_log_level)
-_LOGGER.debug('Starting:: {}.'.format({_MODULENAME}))
+# set up module logging
+for handler in _logging.root.handlers[:]:
+    _logging.root.removeHandler(handler)
+_LOGGER = _logging.getLogger(_MODULENAME)
+_logging.basicConfig(format=FRMT_LOG_LONG)
+_LOGGER.debug('Initializing: {0}.'.format({_MODULENAME}))
 # -------------------------------------------------------------------------
 
 
 # -------------------------------------------------------------------------
-def main(verbose=_G_DEBUG, connect_debugger=True):
+def main(verbose=_DCCSI_GDEBUG, connect_debugger=True):
     _LOGGER.info('{}'.format('-' * 74))
     _LOGGER.info('entry_test.main()')
     _LOGGER.info('Root test import successful:')
@@ -134,5 +133,5 @@ def connect_wing():
 # Main Code Block, runs this script as main (testing)
 # -------------------------------------------------------------------------
 if __name__ == '__main__':
-    _G_DEBUG = True
-    main(verbose=_G_DEBUG, connect_debugger=_G_DEBUG)
+    _DCCSI_GDEBUG = True
+    main(verbose=_DCCSI_GDEBUG, connect_debugger=_DCCSI_GDEBUG)

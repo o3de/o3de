@@ -8,6 +8,10 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 
 This folder contains the DccScriptingInterface (DCCsi) for O3DE
 
+Notice: The old \\SDK folder is being replaced with \\Tools
+The scripts in \\SDK may be out of data (and not run)
+When scripts are finished being updated and refactored into \\Tools the \\SDK will be removed
+
 What is the DCCsi?
 
 - A shared development environment for technical art oriented to working with Python across a number of DCC tools.

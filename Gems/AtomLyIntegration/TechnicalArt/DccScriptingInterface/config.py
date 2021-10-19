@@ -22,58 +22,84 @@ import logging as _logging
 # import pathlib
 # our framework for dcc tools need to run in apps like Maya that may still be
 # on py27 so we need to import and use after some boostrapping
+# -------------------------------------------------------------------------
 
-# --------------------------------------------------------------------------
-#os.environ['PYTHONINSPECT'] = 'True'
+
+# -------------------------------------------------------------------------
+def attach_debugger():
+    _DCCSI_GDEBUG = True
+    os.environ["DYNACONF_DCCSI_GDEBUG"] = str(_DCCSI_GDEBUG)
+    
+    _DCCSI_DEV_MODE = True
+    os.environ["DYNACONF_DCCSI_DEV_MODE"] = str(_DCCSI_DEV_MODE)
+    
+    from azpy.test.entry_test import connect_wing
+    return connect_wing()
+# -------------------------------------------------------------------------
+
+
+# -------------------------------------------------------------------------
+# global scope
+_MODULENAME = __name__
+if _MODULENAME is '__main__':
+    _MODULENAME = 'DCCsi.config'
+
+os.environ['PYTHONINSPECT'] = 'True'
 _MODULE_PATH = os.path.abspath(__file__)
 
 # we don't have access yet to the DCCsi Lib\site-packages
 # (1) this will give us import access to azpy (always?)
-_DCCSIG_PATH = os.getenv('DCCSIG_PATH',
+_DCCSI_PATH = os.getenv('DCCSIG_PATH',
                          os.path.abspath(os.path.dirname(_MODULE_PATH)))
 # ^ we assume this config is in the root of the DCCsi
 # if it's not, be sure to set envar 'DCCSIG_PATH' to ensure it
-site.addsitedir(_DCCSIG_PATH)  # PYTHONPATH, add code access
+site.addsitedir(_DCCSI_PATH)  # PYTHONPATH, add code access
 
 # now we have azpy api access
 import azpy
 from azpy.env_bool import env_bool
 from azpy.constants import ENVAR_DCCSI_GDEBUG
 from azpy.constants import ENVAR_DCCSI_DEV_MODE
+from azpy.constants import ENVAR_DCCSI_LOGLEVEL
+from azpy.constants import FRMT_LOG_LONG
 
 # set up global space, logging etc.
 # set these true if you want them set globally for debugging
 _DCCSI_GDEBUG = env_bool(ENVAR_DCCSI_GDEBUG, False)
 _DCCSI_DEV_MODE = env_bool(ENVAR_DCCSI_DEV_MODE, False)
-
-_PACKAGENAME = 'DCCsi.config'
-
-_LOG_LEVEL = int(20)
+_DCCSI_LOGLEVEL = int(env_bool(ENVAR_DCCSI_LOGLEVEL, int(20)))
 if _DCCSI_GDEBUG:
-    _LOG_LEVEL = int(10)
-    _LOGGER = azpy.initialize_logger(_PACKAGENAME,
-                                     log_to_file=_DCCSI_GDEBUG,
-                                     default_log_level=_LOG_LEVEL)
-else:
-    _LOGGER = _logging.getLogger(_PACKAGENAME)
+    _DCCSI_LOGLEVEL = int(10)
+# -------------------------------------------------------------------------
 
-_LOGGER.info('Starting up: {}.'.format({_PACKAGENAME}))
-_LOGGER.info('site.addsitedir({})'.format(_DCCSIG_PATH))
-_LOGGER.debug('_DCCSI_GDEBUG: {}'.format(_DCCSI_GDEBUG))
-_LOGGER.debug('_DCCSI_DEV_MODE: {}'.format(_DCCSI_DEV_MODE))
 
+# -------------------------------------------------------------------------
 # early attach WingIDE debugger (can refactor to include other IDEs later)
 if _DCCSI_DEV_MODE:
-    from azpy.test.entry_test import connect_wing
-    foo = connect_wing()
+    _debugger = attach_debugger()
 # to do: ^ this should be replaced with full featured azpy.dev.util
 # that supports additional debuggers (pycharm, vscode, etc.)
 # -------------------------------------------------------------------------
 
 
 # -------------------------------------------------------------------------
-# (2) this will give us import access to modules we provide
-_DCCSI_PYTHON_LIB_PATH = azpy.config_utils.bootstrap_dccsi_py_libs(_DCCSIG_PATH)
+# set up module logging
+for handler in _logging.root.handlers[:]:
+    _logging.root.removeHandler(handler)
+_LOGGER = _logging.getLogger(_MODULENAME)
+_logging.basicConfig(format=FRMT_LOG_LONG, level=_DCCSI_LOGLEVEL)
+_LOGGER.debug('Initializing: {0}.'.format({_MODULENAME}))
+# -------------------------------------------------------------------------
+
+
+# -------------------------------------------------------------------------
+_LOGGER.info('site.addsitedir({})'.format(_DCCSI_PATH))
+_LOGGER.debug('_DCCSI_GDEBUG: {}'.format(_DCCSI_GDEBUG))
+_LOGGER.debug('_DCCSI_DEV_MODE: {}'.format(_DCCSI_DEV_MODE))
+_LOGGER.debug('_DCCSI_LOGLEVEL: {}'.format(_DCCSI_LOGLEVEL))
+
+# this will give us import access to modules we provide
+_DCCSI_PYTHON_LIB_PATH = azpy.config_utils.bootstrap_dccsi_py_libs(_DCCSI_PATH)
 
 # Now we should be able to just carry on with pth lib and dynaconf
 from dynaconf import Dynaconf
@@ -83,13 +109,50 @@ except:
     import pathlib2 as pathlib
 from pathlib import Path
 
-_DCCSIG_PATH = Path(_DCCSIG_PATH).resolve()
-_DCCSI_PYTHON_LIB_PATH = Path(_DCCSI_PYTHON_LIB_PATH).resolve()
+_DCCSI_PATH = Path(_DCCSI_PATH)
+_DCCSI_PYTHON_LIB_PATH = Path(_DCCSI_PYTHON_LIB_PATH)
 # -------------------------------------------------------------------------
 
 
 # -------------------------------------------------------------------------
-def init_o3de_pyside(O3DE_DEV=None):
+# this will retreive the O3DE engine root
+_O3DE_DEV = azpy.config_utils.get_o3de_engine_root()
+
+# check in running O3DE editor (makes some things procedurally easy)
+try:
+    import azlmbr
+    _LOGGER.info('azlmbr.paths.projectroot: {}'.format(azlmbr.paths.projectroot))
+    _O3DE_PROJECT_PATH = Path(azlmbr.paths.projectroot)
+except ImportError as e:  # not running O3DE
+
+    _O3DE_PROJECT_PATH = azpy.config_utils.get_check_global_project()
+
+# set up dynamic config envars
+os.environ["DYNACONF_O3DE_DEV"] = str(_O3DE_DEV.resolve())
+
+
+os.environ["DYNACONF_O3DE_PROJECT_PATH"] = str(_O3DE_PROJECT_PATH)
+
+# there are multiple ways to determine the project
+# the easiest is if we are running in O3DE
+if azlmbr:
+    _LOGGER.info('azlmbr.paths.projectroot: {}'.format(azlmbr.paths.projectroot))
+    _O3DE_PROJECT = Path(azlmbr.paths.projectroot)
+else:
+    
+
+_O3DE_PROJECT
+os.environ["DYNACONF_O3DE_PROJECT"] = str(_O3DE_PROJECT.resolve())
+
+
+_O3DE_PROJECT_PATH = Path(_O3DE_DEV, _O3DE_PROJECT)
+
+
+# -------------------------------------------------------------------------
+
+
+# -------------------------------------------------------------------------
+def init_o3de_pyside(O3DE_DEV=_O3DE_DEV):
     """sets access to lumberyards Qt dlls and PySide"""
 
     O3DE_DEV = Path(O3DE_DEV).resolve()
@@ -204,72 +267,80 @@ def test_pyside2():
 
 
 # -------------------------------------------------------------------------
-# `envvar_prefix` = export envvars with `export DYNACONF_FOO=bar`.
-# `settings_files` = Load this files in the order.
-# here we are modifying or adding to the dynamic config settings on import
-settings = Dynaconf(envvar_prefix="DYNACONF",
-                    settings_files=['settings.json',
-                                    'dev.settings.json',
-                                    'user.settings.json',
-                                    '.secrets.json']
-                    )
+def init_o3de(args):
+    # `envvar_prefix` = export envvars with `export DYNACONF_FOO=bar`.
+    # `settings_files` = Load this files in the order.
+    # here we are modifying or adding to the dynamic config settings on import
+    settings = Dynaconf(envvar_prefix="DYNACONF",
+                        settings_files=['settings.json',
+                                        'dev.settings.json',
+                                        'user.settings.json',
+                                        '.secrets.json']
+                        )
+    
+    from azpy.constants import PATH_O3DE_BUILD_PATH
+    from azpy.constants import PATH_O3DE_BIN_PATH
 
-from azpy.constants import PATH_O3DE_BUILD_PATH
-from azpy.constants import PATH_O3DE_BIN_PATH
+    # global settings
+    os.environ["DYNACONF_DCCSI_GDEBUG"] = str(_DCCSI_GDEBUG)
+    os.environ["DYNACONF_DCCSI_DEV_MODE"] = str(_DCCSI_DEV_MODE)
+    os.environ['DYNACONF_DCCSI_LOGLEVEL'] = str(_LOG_LEVEL)
 
-# global settings
-os.environ["DYNACONF_DCCSI_GDEBUG"] = str(_DCCSI_GDEBUG)
-os.environ["DYNACONF_DCCSI_DEV_MODE"] = str(_DCCSI_DEV_MODE)
+    # get the O3DE engine root folder
+    # first just check if we are running in O3DE
+    try:
+        import azlmbr
+        _LOGGER.info('azlmbr.paths.devroot: {}'.format(azlmbr.paths.devroot))
+        _O3DE_DEV = Path(azlmbr.paths.devroot)
+    except ImportError as e: # not running O3DE
+        _O3DE_DEV = azpy.config_utils.get_o3de_engine_root()
+    os.environ["DYNACONF_O3DE_DEV"] = str(_O3DE_DEV.resolve())
+    
+    # there are multiple ways to determine the project
+    # the easiest is if we are running in O3DE
+    if azlmbr:
+        _LOGGER.info('azlmbr.paths.projectroot: {}'.format(azlmbr.paths.projectroot))
+        _O3DE_PROJECT = Path(azlmbr.paths.projectroot)
+    else:
+        
 
-# get the O3DE engine root folder
-# first just check if we are running in O3DE
-try:
-    import azlmbr
-    _LOGGER.info('azlmbr.paths.devroot: {}'.format(azlmbr.paths.devroot))
-    _O3DE_DEV = Path(azlmbr.paths.devroot)
-except ImportError as e:
-    # not running
-    _O3DE_DEV = azpy.config_utils.get_o3de_engine_root()
-os.environ["DYNACONF_O3DE_DEV"] = str(_O3DE_DEV.resolve())
-
-# there are multiple ways to determine the project
-# the easiest is if we are running
-_O3DE_PROJECT = azpy.config_utils.get_check_global_project()
-os.environ["DYNACONF_O3DE_PROJECT"] = str(_O3DE_PROJECT.resolve())
-
-
-_O3DE_PROJECT_PATH = Path(_O3DE_DEV, _O3DE_PROJECT)
-os.environ["DYNACONF_O3DE_PROJECT_PATH"] = str(_O3DE_PROJECT_PATH)
-os.environ["DYNACONF_DCCSIG_PATH"] = str(_DCCSIG_PATH)
-_DCCSI_CONFIG_PATH = Path(_MODULE_PATH).resolve()
-os.environ["DYNACONF_DCCSI_CONFIG_PATH"] = str(_DCCSI_CONFIG_PATH)
-_DCCSIG_SDK_PATH = Path.joinpath(_DCCSIG_PATH, 'SDK').resolve()
-os.environ["DYNACONF_DCCSIG_SDK_PATH"] = str(_DCCSIG_SDK_PATH)
-os.environ["DYNACONF_DCCSI_PYTHON_LIB_PATH"] = str(_DCCSI_PYTHON_LIB_PATH)
-os.environ["DYNACONF_OS_FOLDER"] = azpy.config_utils.get_os()
-
-# we need to set up the Ly dev build \bin\path (for Qt dll access)
-_O3DE_BUILD_PATH = Path(PATH_O3DE_BUILD_PATH).resolve()
-os.environ["DYNACONF_O3DE_BUILD_PATH"] = str(_O3DE_BUILD_PATH)
-_O3DE_BIN_PATH = Path(PATH_O3DE_BIN_PATH).resolve()
-os.environ["DYNACONF_O3DE_BIN_PATH"] = str(_O3DE_BIN_PATH)
-
-# project cache log dir path
-from azpy.constants import ENVAR_DCCSI_LOG_PATH
-from azpy.constants import PATH_DCCSI_LOG_PATH
-_DCCSI_LOG_PATH = Path(os.getenv(ENVAR_DCCSI_LOG_PATH,
-                                 Path(PATH_DCCSI_LOG_PATH.format(O3DE_DEV=_O3DE_DEV,
-                                                                 O3DE_PROJECT=_O3DE_PROJECT))))
-os.environ["DYNACONF_DCCSI_LOG_PATH"] = str(_DCCSI_LOG_PATH)
-
-# hard checks
-if not _O3DE_BIN_PATH.exists():
-    raise Exception('O3DE_BIN_PATH does NOT exist: {0}'.format(_O3DE_BIN_PATH))
-else:
-    # adding to sys.path apparently doesn't work for .dll locations like Qt
-    os.environ['PATH'] = _O3DE_BIN_PATH.as_posix() + os.pathsep + os.environ['PATH']
-
-_LOGGER.info('Dynaconf config.py ... DONE')
+    _O3DE_PROJECT = azpy.config_utils.get_check_global_project()
+    os.environ["DYNACONF_O3DE_PROJECT"] = str(_O3DE_PROJECT.resolve())
+    
+    
+    _O3DE_PROJECT_PATH = Path(_O3DE_DEV, _O3DE_PROJECT)
+    os.environ["DYNACONF_O3DE_PROJECT_PATH"] = str(_O3DE_PROJECT_PATH)
+    
+    os.environ["DYNACONF_DCCSIG_PATH"] = str(_DCCSI_PATH.resolve())
+    _DCCSI_CONFIG_PATH = Path(_MODULE_PATH).resolve()
+    os.environ["DYNACONF_DCCSI_CONFIG_PATH"] = str(_DCCSI_CONFIG_PATH)
+    _DCCSIG_TOOLS_PATH = Path.joinpath(_DCCSI_PATH, 'Tools').resolve()
+    os.environ["DYNACONF_DCCSIG_SDK_PATH"] = str(_DCCSIG_TOOLS_PATH)
+    os.environ["DYNACONF_DCCSI_PYTHON_LIB_PATH"] = str(_DCCSI_PYTHON_LIB_PATH.resolve())
+    os.environ["DYNACONF_OS_FOLDER"] = azpy.config_utils.get_os()
+    
+    # we need to set up the Ly dev build \bin\path (for Qt dll access)
+    _O3DE_BUILD_PATH = Path(PATH_O3DE_BUILD_PATH).resolve()
+    os.environ["DYNACONF_O3DE_BUILD_PATH"] = str(_O3DE_BUILD_PATH)
+    _O3DE_BIN_PATH = Path(PATH_O3DE_BIN_PATH).resolve()
+    os.environ["DYNACONF_O3DE_BIN_PATH"] = str(_O3DE_BIN_PATH)
+    
+    # project cache log dir path
+    from azpy.constants import ENVAR_DCCSI_LOG_PATH
+    from azpy.constants import PATH_DCCSI_LOG_PATH
+    _DCCSI_LOG_PATH = Path(os.getenv(ENVAR_DCCSI_LOG_PATH,
+                                     Path(PATH_DCCSI_LOG_PATH.format(O3DE_DEV=_O3DE_DEV,
+                                                                     O3DE_PROJECT=_O3DE_PROJECT))))
+    os.environ["DYNACONF_DCCSI_LOG_PATH"] = str(_DCCSI_LOG_PATH)
+    
+    # hard checks
+    if not _O3DE_BIN_PATH.exists():
+        raise Exception('O3DE_BIN_PATH does NOT exist: {0}'.format(_O3DE_BIN_PATH))
+    else:
+        # adding to sys.path apparently doesn't work for .dll locations like Qt
+        os.environ['PATH'] = _O3DE_BIN_PATH.as_posix() + os.pathsep + os.environ['PATH']
+    
+    _LOGGER.info('Dynaconf config.py ... DONE')
 # -------------------------------------------------------------------------
 
 
@@ -291,14 +362,44 @@ def get_config_settings(setup_ly_pyside=False):
 # Main Code Block, runs this script as main (testing)
 # -------------------------------------------------------------------------
 if __name__ == '__main__':
-    """Run this file as main"""
+    """Run this file as a standalone script"""
+    
+    # overide logger for standalone to be more verbose and lof to file
+    _LOGGER = azpy.initialize_logger(_MODULENAME,
+                                     log_to_file=_DCCSI_GDEBUG,
+                                     default_log_level=_DCCSI_LOGLEVEL)
 
-    _LOG_LEVEL = int(10)  # same as _logging.DEBUG
+    # go ahead and run the rest of the configuration
+    # parse the command line args
+    import argparse
+    parser = argparse.ArgumentParser(
+        description='O3DE DCCsi Dynamic Config',
+        epilog="Attempts to determine O3DE project if -pp not set")
+    parser.add_argument('-pp', '--project-path',
+                        type=pathlib.Path,
+                        required=False,
+                        help='The path to the project.')
+    parser.add_argument('-pn', '--project-name',
+                        type=str,
+                        required=False,
+                        help='The name of the project.')
+    parser.add_argument('-gd', '--global-debug',
+                        type=str,
+                        required=False,
+                        help='Enables global debug flag.')
+    parser.add_argument('-dm', '--developer-mode',
+                        type=str,
+                        required=False,
+                        help='Enables dev mode for auto attaching debugger.')
+    parser.add_argument('-es', '--export-settings',
+                        type=str,
+                        required=False,
+                        help='Enables dev mode for auto attaching debugger.')
+    args = parser.parse_args()
+    
+    init_o3de(args)  # initialize the core config and settings
 
-    _LOGGER = azpy.initialize_logger(_PACKAGENAME,
-                                     log_to_file=True,
-                                     default_log_level=_LOG_LEVEL)
-
+    # now standalone we can validate the config. env, settings.
     from dynaconf import settings
 
     # not using fstrings in this module because it might run in py2.7 (maya)
@@ -331,7 +432,30 @@ if __name__ == '__main__':
     # from dynaconf import settings # <-- no need to reimport
 
     settings.setenv()  # doing this will add/set the additional DYNACONF_ envars
+    
+    # writting settings
+    from dynaconf import loaders
+    from dynaconf.utils.boxing import DynaBox
 
+    _settings_dict = settings.as_dict()
+    _settings_file = Path('tmp_settings.json')
+    # writes to a file, the format is inferred by extension
+    # can be .yaml, .toml, .ini, .json, .py
+    #loaders.write(_settings_file, DynaBox(data).to_dict(), merge=False, env='development')
+    #loaders.write(_settings_file, DynaBox(data).to_dict())
+
+    from box import Box
+    _settings_box = Box(_settings_dict)
+    
+    if _DCCSI_GDEBUG:
+        _LOGGER.info('Pretty print, _settings_box: {}'.format(_settings_file))
+        _LOGGER.info(str(_settings_box.to_json(sort_keys=True,
+                                               indent=4)))
+        
+    _settings_box.to_json(filename=_settings_file.as_posix(),
+                           sort_keys=True,
+                           indent=4)
+    
     # _LOGGER.info('QTFORPYTHON_PATH: {}'.format(settings.QTFORPYTHON_PATH))
     _LOGGER.info('O3DE_BIN_PATH: {}'.format(settings.O3DE_BIN_PATH))
     _LOGGER.info('QT_PLUGIN_PATH: {}'.format(settings.QT_PLUGIN_PATH))
