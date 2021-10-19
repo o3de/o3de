@@ -18,6 +18,6 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS)
             AutomatedTesting.Assets
             AutomatedTesting.ServerLauncher
         COMPONENT
-            Mutliplayer
+            Multiplayer
     )
 endif()
