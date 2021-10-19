@@ -88,6 +88,7 @@ public:
     friend struct DuplicateProductsTest;
     friend struct DuplicateProcessTest;
     friend struct AbsolutePathProductDependencyTest;
+    friend struct WildcardSourceDependencyTest;
 
     explicit AssetProcessorManager_Test(PlatformConfiguration* config, QObject* parent = nullptr);
     ~AssetProcessorManager_Test() override;
@@ -5307,4 +5308,118 @@ TEST_F(MetadataFileTest, MetadataFile_SourceFileExtensionDifferentCase)
 
     ASSERT_TRUE(BlockUntilIdle(5000));
     ASSERT_EQ(jobDetails.m_jobEntry.m_pathRelativeToWatchFolder, relFileName);
+}
+
+bool WildcardSourceDependencyTest::Test(
+    const AZStd::string& dependencyPath, QStringList& resolvedPaths)
+{
+    [[maybe_unused]] QString resolvedName;
+    AssetBuilderSDK::SourceFileDependency dependency(dependencyPath, AZ::Uuid::CreateNull(), AssetBuilderSDK::SourceFileDependency::SourceFileDependencyType::Wildcards);
+    return m_assetProcessorManager->ResolveSourceFileDependencyPath(dependency, resolvedName, resolvedPaths);
+}
+
+void WildcardSourceDependencyTest::SetUp()
+{
+    AssetProcessorManagerTest::SetUp();
+
+    QDir tempPath(m_tempDir.path());
+
+    m_config->AddScanFolder(ScanFolderInfo(tempPath.filePath("no_recurse"), "no_recurse",
+        "no_recurse", false, false, m_config->GetEnabledPlatforms(), 1));
+
+    UnitTestUtils::CreateDummyFile(tempPath.absoluteFilePath("subfolder1/1a.foo"));
+    UnitTestUtils::CreateDummyFile(tempPath.absoluteFilePath("subfolder1/1b.foo"));
+    UnitTestUtils::CreateDummyFile(tempPath.absoluteFilePath("subfolder2/redirected/a.foo"));
+    UnitTestUtils::CreateDummyFile(tempPath.absoluteFilePath("subfolder2/redirected/b.foo"));
+    UnitTestUtils::CreateDummyFile(tempPath.absoluteFilePath("subfolder2/redirected/folder/one/c.foo"));
+    UnitTestUtils::CreateDummyFile(tempPath.absoluteFilePath("subfolder2/redirected/folder/one/d.foo"));
+    UnitTestUtils::CreateDummyFile(tempPath.absoluteFilePath("not/a/scanfolder/e.foo"));
+    UnitTestUtils::CreateDummyFile(tempPath.absoluteFilePath("no_recurse/one/two/three/f.foo"));
+}
+
+TEST_F(WildcardSourceDependencyTest, Relative_Broad)
+{
+    QStringList resolvedPaths;
+    
+    ASSERT_TRUE(Test("*.foo", resolvedPaths));
+    ASSERT_THAT(resolvedPaths, ::testing::ElementsAre("a.foo", "b.foo", "folder/one/c.foo", "folder/one/d.foo", "1a.foo", "1b.foo"));
+}
+
+TEST_F(WildcardSourceDependencyTest, Relative_WithFolder)
+{
+    QStringList resolvedPaths;
+
+    ASSERT_TRUE(Test("folder/*.foo", resolvedPaths));
+    ASSERT_THAT(resolvedPaths, ::testing::ElementsAre("folder/one/c.foo", "folder/one/d.foo"));
+}
+
+TEST_F(WildcardSourceDependencyTest, Relatieve_WildcardPath)
+{
+    QStringList resolvedPaths;
+
+    ASSERT_TRUE(Test("*a.foo", resolvedPaths));
+    ASSERT_THAT(resolvedPaths, ::testing::ElementsAre("a.foo", "1a.foo"));
+}
+
+TEST_F(WildcardSourceDependencyTest, Absolute_WithFolder)
+{
+    QStringList resolvedPaths;
+    QDir tempPath(m_tempDir.path());
+
+    ASSERT_TRUE(Test(tempPath.absoluteFilePath("subfolder2/redirected/*.foo").toUtf8().constData(), resolvedPaths));
+    ASSERT_THAT(resolvedPaths, ::testing::ElementsAre("a.foo", "b.foo", "folder/one/c.foo", "folder/one/d.foo"));
+}
+
+TEST_F(WildcardSourceDependencyTest, Absolute_NotInScanfolder)
+{
+    QStringList resolvedPaths;
+    QDir tempPath(m_tempDir.path());
+
+    ASSERT_TRUE(Test(tempPath.absoluteFilePath("not/a/scanfolder/*.foo").toUtf8().constData(), resolvedPaths));
+    ASSERT_THAT(resolvedPaths, ::testing::ElementsAre());
+}
+
+TEST_F(WildcardSourceDependencyTest, Relative_NotInScanfolder)
+{
+    QStringList resolvedPaths;
+    QDir tempPath(m_tempDir.path());
+
+    ASSERT_TRUE(Test("*/e.foo", resolvedPaths));
+    ASSERT_THAT(resolvedPaths, ::testing::ElementsAre());
+}
+
+TEST_F(WildcardSourceDependencyTest, Relative_InNonRecursiveScanfolder)
+{
+    QStringList resolvedPaths;
+    QDir tempPath(m_tempDir.path());
+
+    ASSERT_TRUE(Test("*/f.foo", resolvedPaths));
+    ASSERT_THAT(resolvedPaths, ::testing::ElementsAre());
+}
+
+TEST_F(WildcardSourceDependencyTest, Absolute_InNonRecursiveScanfolder)
+{
+    QStringList resolvedPaths;
+    QDir tempPath(m_tempDir.path());
+
+    ASSERT_TRUE(Test(tempPath.absoluteFilePath("one/two/three/*.foo").toUtf8().constData(), resolvedPaths));
+    ASSERT_THAT(resolvedPaths, ::testing::ElementsAre());
+}
+
+TEST_F(WildcardSourceDependencyTest, Relative_NoWildcard)
+{
+    QStringList resolvedPaths;
+    QDir tempPath(m_tempDir.path());
+
+    ASSERT_FALSE(Test("subfolder1/1a.foo", resolvedPaths));
+    ASSERT_THAT(resolvedPaths, ::testing::ElementsAre());
+}
+
+TEST_F(WildcardSourceDependencyTest, Absolute_NoWildcard)
+{
+    QStringList resolvedPaths;
+    QDir tempPath(m_tempDir.path());
+
+    ASSERT_FALSE(Test(tempPath.absoluteFilePath("subfolder1/1a.foo").toUtf8().constData(), resolvedPaths));
+    ASSERT_THAT(resolvedPaths, ::testing::ElementsAre());
 }
