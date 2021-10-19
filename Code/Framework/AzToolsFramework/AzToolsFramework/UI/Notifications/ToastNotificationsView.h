@@ -27,7 +27,7 @@ namespace AzToolsFramework
     /**
     * \brief A QWidget that displays and manages a queue of toast notifications. 
     *
-    * This view must be updated by its' parent when the parent widget is show, hidden, moved
+    * This view must be updated by its parent when the parent widget is show, hidden, moved
     * or resized because toast notifications are displayed on top of the parent and are not part
     * of the layout, so they must be manually moved.
     */

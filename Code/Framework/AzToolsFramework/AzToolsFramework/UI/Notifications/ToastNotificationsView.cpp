@@ -128,28 +128,24 @@ namespace AzToolsFramework
 
     QPoint ToastNotificationsView::GetGlobalPoint()
     {
-        QPoint relative = m_offset;
+        QPoint relativePoint = m_offset;
 
+        AZ_Assert(parentWidget(), "ToastNotificationsView has invalid parent QWidget");
         if (m_anchorPoint.x() == 1.0)
         {
-            relative.setX(parentWidget()->width() - m_offset.x());
+            relativePoint.setX(parentWidget()->width() - m_offset.x());
         }
         if (m_anchorPoint.y() == 1.0)
         {
-            relative.setY(parentWidget()->height() - m_offset.y());
+            relativePoint.setY(parentWidget()->height() - m_offset.y());
         }
 
-        return parentWidget()->mapToGlobal(relative);
+        return parentWidget()->mapToGlobal(relativePoint);
     }
 
     void ToastNotificationsView::DisplayQueuedNotification()
     {        
         AZ_Assert(parentWidget(), "ToastNotificationsView has invalid parent QWidget");
-        if (!parentWidget())
-        {
-            return;
-        }
-
         if (m_queuedNotifications.empty() || !parentWidget()->isVisible() || !isVisible())
         {
             return;

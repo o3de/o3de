@@ -3363,11 +3363,8 @@ namespace ScriptCanvasEditor
 
         GraphCanvas::ViewId viewId;
         GraphCanvas::SceneRequestBus::EventResult(viewId, GetGraphCanvasGraphId(), &GraphCanvas::SceneRequests::GetViewId);
-        //QWidget* parent = nullptr;
-        //GraphCanvas::SceneRequestBus::EventResult(parent, viewId, &GraphCanvas::ViewRequests::GetWidget);
 
         AzToolsFramework::ToastId toastId;
-        //AzToolsFramework::ToastRequestBus::BroadcastResult(toastId, parent, &AzToolsFramework::ToastRequests::ShowToastNotification, toastConfiguration);
         GraphCanvas::ViewRequestBus::EventResult(toastId, viewId, &GraphCanvas::ViewRequests::ShowToastNotification, toastConfiguration);        
 
         AzToolsFramework::ToastNotificationBus::MultiHandler::BusConnect(toastId);
