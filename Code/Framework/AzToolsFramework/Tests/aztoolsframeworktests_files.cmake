@@ -120,6 +120,8 @@ set(FILES
     ToolsComponents/EditorLayerComponentTests.cpp
     ToolsComponents/EditorTransformComponentTests.cpp
     TransformComponent.cpp
+    UI/EntityIdQLineEditTests.cpp
+    UI/EntityOutlinerTests.cpp
     UI/EntityPropertyEditorTests.cpp
     UndoStack.cpp
     Viewport/ClusterTests.cpp
