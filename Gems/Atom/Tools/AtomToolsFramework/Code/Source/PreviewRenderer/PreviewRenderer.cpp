@@ -15,11 +15,12 @@
 #include <Atom/RPI.Public/View.h>
 #include <Atom/RPI.Reflect/System/RenderPipelineDescriptor.h>
 #include <Atom/RPI.Reflect/System/SceneDescriptor.h>
-#include <AtomToolsFramework/PreviewRenderer/PreviewRenderer.h>
+#include <AzCore/Interface/Interface.h>
 #include <AzCore/Math/MatrixUtils.h>
 #include <AzCore/Math/Transform.h>
 #include <AzFramework/Scene/Scene.h>
 #include <AzFramework/Scene/SceneSystemInterface.h>
+#include <PreviewRenderer/PreviewRenderer.h>
 #include <PreviewRenderer/PreviewRendererCaptureState.h>
 #include <PreviewRenderer/PreviewRendererIdleState.h>
 #include <PreviewRenderer/PreviewRendererLoadState.h>
@@ -80,6 +81,8 @@ namespace AtomToolsFramework
         m_renderPipeline->SetDefaultView(m_view);
 
         m_state.reset(new PreviewRendererIdleState(this));
+
+        AZ::Interface<PreviewRendererInterface>::Register(this);
     }
 
     PreviewRenderer::~PreviewRenderer()
@@ -96,9 +99,11 @@ namespace AtomToolsFramework
         AZ::RPI::RPISystemInterface::Get()->UnregisterScene(m_scene);
         m_frameworkScene->UnsetSubsystem(m_scene);
         m_frameworkScene->UnsetSubsystem(m_entityContext.get());
+
+        AZ::Interface<PreviewRendererInterface>::Unregister(this);
     }
 
-    void PreviewRenderer::AddCaptureRequest(const CaptureRequest& captureRequest)
+    void PreviewRenderer::AddCaptureRequest(const PreviewRendererCaptureRequest& captureRequest)
     {
         m_captureRequestQueue.push(captureRequest);
     }

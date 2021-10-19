@@ -57,6 +57,9 @@ private:
         bool m_orbitYawRotationInverted;
         bool m_panInvertedX;
         bool m_panInvertedY;
+        float m_defaultCameraPositionX;
+        float m_defaultCameraPositionY;
+        float m_defaultCameraPositionZ;
 
         AZ::Crc32 RotateSmoothingVisibility() const
         {

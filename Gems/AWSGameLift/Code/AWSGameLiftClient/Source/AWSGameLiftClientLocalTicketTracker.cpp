@@ -30,12 +30,14 @@ namespace AWSGameLift
 
     void AWSGameLiftClientLocalTicketTracker::ActivateTracker()
     {
-        AZ::Interface<IAWSGameLiftMatchmakingInternalRequests>::Register(this);
+        AZ::Interface<IAWSGameLiftMatchmakingEventRequests>::Register(this);
+        AWSGameLiftMatchmakingEventRequestBus::Handler::BusConnect();
     }
 
     void AWSGameLiftClientLocalTicketTracker::DeactivateTracker()
     {
-        AZ::Interface<IAWSGameLiftMatchmakingInternalRequests>::Unregister(this);
+        AWSGameLiftMatchmakingEventRequestBus::Handler::BusDisconnect();
+        AZ::Interface<IAWSGameLiftMatchmakingEventRequests>::Unregister(this);
         StopPolling();
     }
 

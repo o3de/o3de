@@ -121,8 +121,14 @@ namespace PhysX
 
     void EditorShapeColliderComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
-        incompatible.push_back(AZ_CRC("LegacyCryPhysicsService", 0xbb370351));
-        incompatible.push_back(AZ_CRC("PhysXShapeColliderService", 0x98a7e779));
+        incompatible.push_back(AZ_CRC_CE("LegacyCryPhysicsService"));
+        incompatible.push_back(AZ_CRC_CE("PhysXShapeColliderService"));
+        incompatible.push_back(AZ_CRC_CE("AxisAlignedBoxShapeService"));
+        incompatible.push_back(AZ_CRC_CE("CompoundShapeService"));
+        incompatible.push_back(AZ_CRC_CE("DiskShapeService"));
+        incompatible.push_back(AZ_CRC_CE("QuadShapeService"));
+        incompatible.push_back(AZ_CRC_CE("TubeShapeService"));
+        incompatible.push_back(AZ_CRC_CE("ReferenceShapeService"));
     }
 
     const AZStd::vector<AZ::Vector3>& EditorShapeColliderComponent::GetSamplePoints() const

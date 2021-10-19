@@ -12,7 +12,7 @@
 #include <AzCore/std/parallel/mutex.h>
 #include <AzCore/std/parallel/thread.h>
 
-#include <Request/IAWSGameLiftMatchmakingInternalRequests.h>
+#include <Request/IAWSGameLiftRequests.h>
 
 #include <aws/gamelift/model/MatchmakingTicket.h>
 
@@ -30,7 +30,7 @@ namespace AWSGameLift
     //! For use in production, please see GameLifts guidance about matchmaking at volume.
     //! The continuous polling approach here is only suitable for low volume matchmaking and is meant to aid with development only
     class AWSGameLiftClientLocalTicketTracker
-        : public IAWSGameLiftMatchmakingInternalRequests
+        : public AWSGameLiftMatchmakingEventRequestBus::Handler
     {
     public:
         static constexpr const char AWSGameLiftClientLocalTicketTrackerName[] = "AWSGameLiftClientLocalTicketTracker";
@@ -44,7 +44,7 @@ namespace AWSGameLift
         virtual void ActivateTracker();
         virtual void DeactivateTracker();
 
-        // IAWSGameLiftMatchmakingInternalRequests interface implementation
+        // AWSGameLiftMatchmakingEventRequestBus interface implementation
         void StartPolling(const AZStd::string& ticketId, const AZStd::string& playerId) override;
         void StopPolling() override;
 
