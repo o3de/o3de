@@ -198,6 +198,8 @@ namespace AzToolsFramework
             virtual float ManipulatorCircleBoundWidth() const = 0;
             //! Returns if sticky select is enabled or not.
             virtual bool StickySelectEnabled() const = 0;
+            //! Returns the default viewport camera position.
+            virtual AZ::Vector3 DefaultEditorCameraPosition() const = 0;
 
         protected:
             ~ViewportSettingsRequests() = default;
