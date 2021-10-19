@@ -187,7 +187,7 @@ namespace AZ
                     materialAssignmentId);
 
                 previewRenderer->AddCaptureRequest(
-                    { m_materialPreviewResolution,
+                    { MaterialPreviewResolution,
                       AZStd::make_shared<AZ::LyIntegration::SharedPreviewContent>(
                           previewRenderer->GetScene(), previewRenderer->GetView(), previewRenderer->GetEntityContextId(),
                           AZ::RPI::AssetUtils::GetAssetIdForProductPath(DefaultModelPath), materialAssetId,
@@ -301,7 +301,7 @@ namespace AZ
                 }
             }
 
-            if (materialPreviewCount > m_materialPreviewLimit)
+            if (materialPreviewCount > MaterialPreviewLimit)
             {
                 m_materialPreviews.clear();
             }

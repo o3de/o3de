@@ -78,8 +78,8 @@ namespace AZ
             QAction* m_openMaterialEditorAction = nullptr;
             AZStd::unique_ptr<MaterialBrowserInteractions> m_materialBrowserInteractions;
             AZStd::unordered_map<AZ::EntityId, AZStd::unordered_map<AZ::Render::MaterialAssignmentId, QPixmap>> m_materialPreviews;
-            static constexpr const size_t m_materialPreviewLimit = 100;
-            static constexpr const int m_materialPreviewResolution = 128;
+            static constexpr const size_t MaterialPreviewLimit = 100;
+            static constexpr const int MaterialPreviewResolution = 128;
         };
     } // namespace Render
 } // namespace AZ
