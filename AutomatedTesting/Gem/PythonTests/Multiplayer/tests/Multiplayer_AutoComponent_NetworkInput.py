@@ -34,8 +34,8 @@ def Multiplayer_AutoComponent_NetworkInput():
     
                     
     Expected Outcome:
-    We should see editor logs saying "AutoComponent_NetworkInput ProcessInput called!" and "AutoComponent_NetworkInput CreateInput called!"
-    However, if the script receives unexpected values for the Process event we will see "AutoComponent_NetworkInput received bad fwdback" or "AutoComponent_NetworkInput received bad leftright"
+    We should see editor logs stating that network input has been created and processed.
+    However, if the script receives unexpected values for the Process event we will see print logs for bad data as well.
     
     :return:
     """
