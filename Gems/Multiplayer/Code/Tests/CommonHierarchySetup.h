@@ -303,9 +303,8 @@ namespace Multiplayer
             constexpr uint32_t bufferSize = 100;
             AZStd::array<uint8_t, bufferSize> buffer = {};
             NetworkInputSerializer inSerializer(buffer.begin(), bufferSize);
-            inSerializer.Serialize(reinterpret_cast<uint32_t&>(netParentId),
-                "parentEntityId", /* Derived from NetworkTransformComponent.AutoComponent.xml */
-                AZStd::numeric_limits<uint32_t>::min(), AZStd::numeric_limits<uint32_t>::max());
+            ISerializer& serializer = inSerializer;
+            serializer.Serialize(netParentId, "parentEntityId"); // Derived from NetworkTransformComponent.AutoComponent.xml
 
             NetworkOutputSerializer outSerializer(buffer.begin(), bufferSize);
 
@@ -351,9 +350,8 @@ namespace Multiplayer
             constexpr uint32_t bufferSize = 100;
             AZStd::array<uint8_t, bufferSize> buffer = {};
             NetworkInputSerializer inSerializer(buffer.begin(), bufferSize);
-            inSerializer.Serialize(reinterpret_cast<uint32_t&>(value),
-                "hierarchyRoot", /* Derived from NetworkHierarchyChildComponent.AutoComponent.xml */
-                AZStd::numeric_limits<uint32_t>::min(), AZStd::numeric_limits<uint32_t>::max());
+            ISerializer& serializer = inSerializer;
+            serializer.Serialize(value, "hierarchyRoot"); // Derived from NetworkHierarchyChildComponent.AutoComponent.xml
 
             NetworkOutputSerializer outSerializer(buffer.begin(), bufferSize);
 
