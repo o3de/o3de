@@ -121,6 +121,7 @@ set(FILES
     ToolsComponents/EditorTransformComponentTests.cpp
     TransformComponent.cpp
     UI/EntityPropertyEditorTests.cpp
+    UI/AssetBrowserTests.cpp
     UndoStack.cpp
     Viewport/ClusterTests.cpp
     Viewport/ViewportEditorModeTests.cpp
