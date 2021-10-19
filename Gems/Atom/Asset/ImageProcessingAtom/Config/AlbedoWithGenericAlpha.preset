@@ -37,6 +37,7 @@
                     "_diffuse"
                 ],
                 "PixelFormat": "ASTC_6x6",
+                "MaxTextureSize": 2048,
                 "IsPowerOf2": true,
                 "MipMapSetting": {
                     "MipGenType": "Box"
@@ -56,6 +57,7 @@
                     "_diffuse"
                 ],
                 "PixelFormat": "ASTC_6x6",
+                "MaxTextureSize": 2048,
                 "IsPowerOf2": true,
                 "MipMapSetting": {
                     "MipGenType": "Box"

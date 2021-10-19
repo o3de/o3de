@@ -507,8 +507,14 @@ namespace AZ
                     }
                 }
 
-                RHI::ShaderInputBufferUnboundedArrayIndex bufferUnboundedArrayIndex = srgLayout->FindShaderInputBufferUnboundedArrayIndex(AZ::Name("m_meshBuffers"));
-                m_rayTracingSceneSrg->SetBufferViewUnboundedArray(bufferUnboundedArrayIndex, meshBuffers);
+                // Check if buffer view data changed from previous frame.
+                // Look into making 'm_meshBuffers != meshBuffers' faster by possibly building a crc and doing a crc check.
+                if (m_meshBuffers.size() != meshBuffers.size() || m_meshBuffers != meshBuffers)
+                {
+                    m_meshBuffers = meshBuffers;
+                    RHI::ShaderInputBufferUnboundedArrayIndex bufferUnboundedArrayIndex = srgLayout->FindShaderInputBufferUnboundedArrayIndex(AZ::Name("m_meshBuffers"));
+                    m_rayTracingSceneSrg->SetBufferViewUnboundedArray(bufferUnboundedArrayIndex, m_meshBuffers);
+                }
             }
 
             m_rayTracingSceneSrg->Compile();
@@ -554,8 +560,13 @@ namespace AZ
                     }
                 }
 
-                RHI::ShaderInputImageUnboundedArrayIndex textureUnboundedArrayIndex = srgLayout->FindShaderInputImageUnboundedArrayIndex(AZ::Name("m_materialTextures"));
-                m_rayTracingMaterialSrg->SetImageViewUnboundedArray(textureUnboundedArrayIndex, materialTextures);
+                // Check if image view data changed from previous frame. 
+                if (m_materialTextures.size() != materialTextures.size() || m_materialTextures != materialTextures)
+                {
+                    m_materialTextures = materialTextures;
+                    RHI::ShaderInputImageUnboundedArrayIndex textureUnboundedArrayIndex = srgLayout->FindShaderInputImageUnboundedArrayIndex(AZ::Name("m_materialTextures"));
+                    m_rayTracingMaterialSrg->SetImageViewUnboundedArray(textureUnboundedArrayIndex, materialTextures);
+                }
             }
 
             m_rayTracingMaterialSrg->Compile();

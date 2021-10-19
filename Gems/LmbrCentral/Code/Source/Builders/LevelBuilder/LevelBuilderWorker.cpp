@@ -30,7 +30,7 @@
 namespace LevelBuilder
 {
     const char s_materialExtension[] = ".mtl";
-    const char s_audioControlFilesLevelPath[] = "@devassets@/libs/gameaudio/wwise/levels/%s";
+    const char s_audioControlFilesLevelPath[] = "@projectroot@/libs/gameaudio/wwise/levels/%s";
     const char s_audioControlFilter[] = "*.xml";
 
     AZ::u64 readXmlDataLength(AZ::IO::GenericStream* stream, int& charSize)
@@ -162,10 +162,8 @@ namespace LevelBuilder
 
         extractResult.wait();
 
-        auto levelsubfolder = AZ::IO::Path(tempDirectory) / "level";
-
-        PopulateLevelSliceDependencies(levelsubfolder.Native(), productDependencies, productPathDependencies);
-        PopulateMissionDependencies(levelPakFile, levelsubfolder.Native(), productPathDependencies);
+        PopulateLevelSliceDependencies(tempDirectory, productDependencies, productPathDependencies);
+        PopulateMissionDependencies(levelPakFile, tempDirectory, productPathDependencies);
         PopulateLevelAudioControlDependencies(levelPakFile, productPathDependencies);
     }
 

@@ -245,9 +245,9 @@ namespace AZ
         {
         }
         
-        void Device::UpdateCpuTimingStatisticsInternal(RHI::CpuTimingStatistics& cpuTimingStatistics) const
+        void Device::UpdateCpuTimingStatisticsInternal() const
         {
-            m_commandQueueContext.UpdateCpuTimingStatistics(cpuTimingStatistics);
+            m_commandQueueContext.UpdateCpuTimingStatistics();
         }
 
         void Device::FillFormatsCapabilitiesInternal(FormatCapabilitiesList& formatsCapabilities)

@@ -59,6 +59,10 @@ namespace AZStd
                 {
                     priority = desc->m_priority;
                 }
+                else
+                {
+                    priority = SCHED_OTHER;
+                }
                 if (desc->m_name)
                 {
                     name = desc->m_name;

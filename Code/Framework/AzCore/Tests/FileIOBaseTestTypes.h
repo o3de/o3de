@@ -426,6 +426,10 @@ public:
         return nullptr;
     }
 
+    void SetDeprecatedAlias(AZStd::string_view, AZStd::string_view) override
+    {
+    }
+
     void ClearAlias(const char* ) override { }
 
     AZStd::optional<AZ::u64> ConvertToAlias(char* inOutBuffer, AZ::u64) const override

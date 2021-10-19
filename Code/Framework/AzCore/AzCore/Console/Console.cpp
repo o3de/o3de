@@ -225,8 +225,16 @@ namespace AZ
 
         ConsoleCommandContainer commandSubset;
 
-        for (ConsoleFunctorBase* curr = m_head; curr != nullptr; curr = curr->m_next)
+        for (const auto& functor : m_commands)
         {
+            if (functor.second.empty())
+            {
+                continue;
+            }
+
+            // Filter functors registered with the same name
+            const ConsoleFunctorBase* curr = functor.second.front();
+
             if ((curr->GetFlags() & ConsoleFunctorFlags::IsInvisible) == ConsoleFunctorFlags::IsInvisible)
             {
                 // Filter functors marked as invisible
@@ -236,7 +244,12 @@ namespace AZ
             if (StringFunc::StartsWith(curr->m_name, command, false))
             {
                 AZLOG_INFO("- %s : %s\n", curr->m_name, curr->m_desc);
-                commandSubset.push_back(curr->m_name);
+
+                if (commandSubset.size() < MaxConsoleCommandPlusArgsLength)
+                {
+                    commandSubset.push_back(curr->m_name);
+                }
+
                 if (matches)
                 {
                     matches->push_back(curr->m_name);
@@ -271,7 +284,10 @@ namespace AZ
     {
         for (auto& curr : m_commands)
         {
-            visitor(curr.second.front());
+            if (!curr.second.empty())
+            {
+                visitor(curr.second.front());
+            }
         }
     }
 
@@ -335,6 +351,11 @@ namespace AZ
             if (iter2 != iter->second.end())
             {
                 iter->second.erase(iter2);
+            }
+
+            if (iter->second.empty())
+            {
+                m_commands.erase(iter);
             }
         }
         functor->Unlink(m_head);
@@ -476,15 +497,16 @@ namespace AZ
 
         // Responsible for using the Json Serialization Issue Callback system
         // to determine when a JSON Patch or JSON Merge Patch modifies a value
-        // at a path underneath the IConsole::ConsoleRootCommandKey JSON pointer
+        // at a path underneath the IConsole::ConsoleRuntimeCommandKey JSON pointer
         JsonSerializationResult::ResultCode operator()(AZStd::string_view message,
             JsonSerializationResult::ResultCode result, AZStd::string_view path)
         {
-            AZ::IO::PathView consoleRootCommandKey{ IConsole::ConsoleRootCommandKey, AZ::IO::PosixPathSeparator };
+            constexpr AZ::IO::PathView consoleRootCommandKey{ IConsole::ConsoleRuntimeCommandKey, AZ::IO::PosixPathSeparator };
+            constexpr AZ::IO::PathView consoleAutoexecCommandKey{ IConsole::ConsoleAutoexecCommandKey, AZ::IO::PosixPathSeparator };
             AZ::IO::PathView inputKey{ path, AZ::IO::PosixPathSeparator };
             if (result.GetTask() == JsonSerializationResult::Tasks::Merge
                 && result.GetProcessing() == JsonSerializationResult::Processing::Completed
-                && inputKey.IsRelativeTo(consoleRootCommandKey))
+                && (inputKey.IsRelativeTo(consoleRootCommandKey) || inputKey.IsRelativeTo(consoleAutoexecCommandKey)))
             {
                 if (auto type = m_settingsRegistry.GetType(path); type != SettingsRegistryInterface::Type::NoType)
                 {
@@ -510,12 +532,24 @@ namespace AZ
         {
             using FixedValueString = AZ::SettingsRegistryInterface::FixedValueString;
 
-            AZ::IO::PathView consoleRootCommandKey{ IConsole::ConsoleRootCommandKey, AZ::IO::PosixPathSeparator };
+            constexpr AZ::IO::PathView consoleRuntimeCommandKey{ IConsole::ConsoleRuntimeCommandKey, AZ::IO::PosixPathSeparator };
+            constexpr AZ::IO::PathView consoleAutoexecCommandKey{ IConsole::ConsoleAutoexecCommandKey, AZ::IO::PosixPathSeparator };
             AZ::IO::PathView inputKey{ path, AZ::IO::PosixPathSeparator };
-            // The ConsoleRootComamndKey is not a command itself so strictly children keys are being examined
-            if (inputKey.IsRelativeTo(consoleRootCommandKey) && inputKey != consoleRootCommandKey)
+
+            // Abuses the IsRelativeToFuncton function of the path class to extract the console
+            // command from the settings registry objects
+            FixedValueString command;
+            if (inputKey != consoleRuntimeCommandKey && inputKey.IsRelativeTo(consoleRuntimeCommandKey))
             {
-                FixedValueString command = inputKey.LexicallyRelative(consoleRootCommandKey).Native();
+                command = inputKey.LexicallyRelative(consoleRuntimeCommandKey).Native();
+            }
+            else if (inputKey != consoleAutoexecCommandKey && inputKey.IsRelativeTo(consoleAutoexecCommandKey))
+            {
+                command = inputKey.LexicallyRelative(consoleAutoexecCommandKey).Native();
+            }
+
+            if (!command.empty())
+            {
                 ConsoleCommandContainer commandArgs;
                 // Argument string which stores the value from the Settings Registry long enough
                 // to pass into the PerformCommand. The ConsoleCommandContainer stores string_views
@@ -603,10 +637,12 @@ namespace AZ
 
     void Console::RegisterCommandInvokerWithSettingsRegistry(AZ::SettingsRegistryInterface& settingsRegistry)
     {
-        // Make sure the there is a JSON object at the path of AZ::IConsole::ConsoleRootCommandKey
+        // Make sure the there is a JSON object at the ConsoleRuntimeCommandKey or ConsoleAutoexecKey
         // So that JSON Patch is able to add values underneath that object (JSON Patch doesn't create intermediate objects)
-        settingsRegistry.MergeSettings(R"({ "Amazon": { "AzCore": { "Runtime": { "ConsoleCommands": {} } }}})",
-            SettingsRegistryInterface::Format::JsonMergePatch);
+        settingsRegistry.MergeSettings(R"({})", SettingsRegistryInterface::Format::JsonMergePatch,
+            IConsole::ConsoleRuntimeCommandKey);
+        settingsRegistry.MergeSettings(R"({})", SettingsRegistryInterface::Format::JsonMergePatch,
+            IConsole::ConsoleAutoexecCommandKey);
         m_consoleCommandKeyHandler = settingsRegistry.RegisterNotifier(ConsoleCommandKeyNotificationHandler{ settingsRegistry, *this });
 
         JsonApplyPatchSettings applyPatchSettings;

@@ -53,10 +53,8 @@
         "Gems/Multiplayer",
         "Gems/MultiplayerCompression",
         "Gems/NvCloth",
-        "Gems/PBSreferenceMaterials",
         "Gems/PhysX",
         "Gems/PhysXDebug",
-        "Gems/PhysXSamples",
         "Gems/Prefab",
         "Gems/Presence",
         "Gems/PrimitiveAssets",
@@ -93,6 +91,7 @@
     "templates": [
         "Templates/AssetGem",
         "Templates/DefaultGem",
+        "Templates/CustomTool",
         "Templates/DefaultProject",
         "Templates/MinimalProject"
     ]

@@ -71,6 +71,7 @@ namespace Multiplayer
             ImGui::Checkbox("Networking Stats", &m_displayNetworkingStats);
             ImGui::Checkbox("Multiplayer Stats", &m_displayMultiplayerStats);
             ImGui::Checkbox("Multiplayer Entity Stats", &m_displayPerEntityStats);
+            ImGui::Checkbox("Multiplayer Hierarchy Debugger", &m_displayHierarchyDebugger);
             ImGui::EndMenu();
         }
     }
@@ -462,6 +463,29 @@ namespace Multiplayer
                 {
                     m_reporter->OnImGuiUpdate();
                 }
+            }
+        }
+
+        if (m_displayHierarchyDebugger)
+        {
+            if (ImGui::Begin("Multiplayer Hierarchy Debugger", &m_displayHierarchyDebugger))
+            {
+                if (m_hierarchyDebugger == nullptr)
+                {
+                    m_hierarchyDebugger = AZStd::make_unique<MultiplayerDebugHierarchyReporter>();
+                }
+
+                if (m_hierarchyDebugger)
+                {
+                    m_hierarchyDebugger->OnImGuiUpdate();
+                }
+            }
+        }
+        else
+        {
+            if (m_hierarchyDebugger)
+            {
+                m_hierarchyDebugger.reset();
             }
         }
     }
