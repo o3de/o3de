@@ -75,6 +75,13 @@ namespace AZ
             u32 m_maxDrawItemsRenderedInAPass = 0;
         };
 
+        
+        enum PassFilterExecutionFlow : uint8_t
+        {
+            StopVisitingPasses,
+            ContinueVisitingPasses,
+        };
+
         class PassSystemInterface
         {
             friend class Pass;
@@ -196,9 +203,10 @@ namespace AZ
             virtual void RemovePassFromLibrary(Pass* pass) = 0;
                         
             //! Visit the matching passes from registered passes with specified filter
+            //! The return value of the passFunction decides if the search continues or not
             //! Note: this function will find all the passes which match the pass filter even they are for render pipelines which are not added to a scene
             //! This function is fast if a pass name or a pass template name is specified. 
-            virtual void ForEachPass(const PassFilter& filter, AZStd::function<bool(Pass*)> passFunction) = 0;
+            virtual void ForEachPass(const PassFilter& filter, AZStd::function<PassFilterExecutionFlow(Pass*)> passFunction) = 0;
 
             //! Find the first matching pass from registered passes with specified filter
             //! Note: this function SHOULD ONLY be used when you are certain you only need to handle the first pass found

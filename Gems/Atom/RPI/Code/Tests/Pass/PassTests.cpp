@@ -741,31 +741,31 @@ namespace UnitTest
         PassFilter filter1 = PassFilter::CreateWithTemplateName(templateName, (RenderPipeline*)nullptr);
 
         int count = 0;
-        m_passSystem->ForEachPass(filter1,  [&count, templateName](RPI::Pass* pass) -> bool
+        m_passSystem->ForEachPass(filter1,  [&count, templateName](RPI::Pass* pass) -> PassFilterExecutionFlow
             {
                 EXPECT_TRUE(pass->GetPassTemplate()->m_name == templateName);
                 count++;
-                return false; // keep visit other matching passes
+                return PassFilterExecutionFlow::ContinueVisitingPasses; 
             });
 
         // three from CreatePassFromTemplate() calls and one from Render Pipeline.
         EXPECT_TRUE(count == 4);
 
         count = 0;
-        m_passSystem->ForEachPass(filter1,  [&count, templateName](RPI::Pass* pass) -> bool
+        m_passSystem->ForEachPass(filter1,  [&count, templateName](RPI::Pass* pass) -> PassFilterExecutionFlow
             {
                 EXPECT_TRUE(pass->GetPassTemplate()->m_name == templateName);
                 count++;
-                return true; // only visit one
+                return PassFilterExecutionFlow::StopVisitingPasses;
             });
         EXPECT_TRUE(count == 1);
 
         PassFilter filter2 = PassFilter::CreateWithTemplateName(templateName, pipeline.get());
         count = 0;
-        m_passSystem->ForEachPass(filter2,  [&count]([[maybe_unused]] RPI::Pass* pass) -> bool
+        m_passSystem->ForEachPass(filter2,  [&count]([[maybe_unused]] RPI::Pass* pass) -> PassFilterExecutionFlow
             {
                 count++;
-                return false; // keep visit other matching passes
+                return PassFilterExecutionFlow::ContinueVisitingPasses;
             });
 
         // only the ParentPass in the render pipeline was found

@@ -111,14 +111,12 @@ namespace AZ
             ImGuiContext* contextToRestore = ImGui::GetCurrentContext();
             
             RPI::PassFilter passFilter = RPI::PassFilter::CreateWithPassClass<ImGuiPass>();
-            RPI::PassSystemInterface::Get()->ForEachPass(passFilter, [func](RPI::Pass* pass) -> bool
+            RPI::PassSystemInterface::Get()->ForEachPass(passFilter, [func](RPI::Pass* pass) -> RPI::PassFilterExecutionFlow
                 {
                     ImGuiPass* imguiPass = azrtti_cast<ImGuiPass*>(pass);
                     ImGui::SetCurrentContext(imguiPass->GetContext());
                     func(imguiPass);
-
-                    // processs all the LookModificationCompositePass found
-                    return false;
+                    return RPI::PassFilterExecutionFlow::ContinueVisitingPasses;
                 });
 
             ImGui::SetCurrentContext(contextToRestore);
@@ -176,7 +174,7 @@ namespace AZ
             AZStd::vector<ImGuiPass*> foundImGuiPasses;
 
             RPI::PassFilter passFilter = RPI::PassFilter::CreateWithPassHierarchy(passHierarchyFilter);
-            RPI::PassSystemInterface::Get()->ForEachPass(passFilter, [&foundImGuiPasses](RPI::Pass* pass) -> bool
+            RPI::PassSystemInterface::Get()->ForEachPass(passFilter, [&foundImGuiPasses](RPI::Pass* pass) -> RPI::PassFilterExecutionFlow
                 {
                     ImGuiPass* imGuiPass = azrtti_cast<ImGuiPass*>(pass);
                     if (imGuiPass)
@@ -184,7 +182,7 @@ namespace AZ
                         foundImGuiPasses.push_back(imGuiPass);
                     }
 
-                     return false; // move to next matching pass
+                     return RPI::PassFilterExecutionFlow::ContinueVisitingPasses;
                 });
 
             if (foundImGuiPasses.size() == 0)

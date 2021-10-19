@@ -298,10 +298,10 @@ namespace AZ
             {
                 bool hasHairParentPass = false;
                 RPI::PassFilter passFilter = RPI::PassFilter::CreateWithPassName(HairParentPassName, GetParentScene());
-                RPI::PassSystemInterface::Get()->ForEachPass(passFilter, [&hasHairParentPass]([[maybe_unused]] RPI::Pass* pass) -> bool
+                RPI::PassSystemInterface::Get()->ForEachPass(passFilter, [&hasHairParentPass]([[maybe_unused]] RPI::Pass* pass) -> RPI::PassFilterExecutionFlow
                     {
                         hasHairParentPass = true;
-                        return true; // skip visit other matching passes
+                        return  RPI::PassFilterExecutionFlow::StopVisitingPasses;
                     });
                 return hasHairParentPass;
             }
@@ -446,12 +446,12 @@ namespace AZ
                 }
 
                 RPI::PassFilter passFilter = RPI::PassFilter::CreateWithPassName(passName, GetParentScene());
-                RPI::PassSystemInterface::Get()->ForEachPass(passFilter, [this, passName, allowIterations](RPI::Pass* pass) -> bool
+                RPI::PassSystemInterface::Get()->ForEachPass(passFilter, [this, passName, allowIterations](RPI::Pass* pass) -> RPI::PassFilterExecutionFlow
                     {
                         m_computePasses[passName] = static_cast<HairSkinningComputePass*>(pass);
                         m_computePasses[passName]->SetFeatureProcessor(this);
                         m_computePasses[passName]->SetAllowIterations(allowIterations);
-                        return true; // skip visit other matching passes ??
+                        return RPI::PassFilterExecutionFlow::StopVisitingPasses;
                     });
 
                 if (m_computePasses[passName] == nullptr)
@@ -474,12 +474,13 @@ namespace AZ
                     return false;
                 }
                 
+                // [GFX TODO] need to handle use case which there are multiple render pipelines with hair passes.
                 RPI::PassFilter passFilter = RPI::PassFilter::CreateWithPassName(HairPPLLRasterPassName, GetParentScene());
-                RPI::PassSystemInterface::Get()->ForEachPass(passFilter, [this](RPI::Pass* pass) -> bool
+                RPI::PassSystemInterface::Get()->ForEachPass(passFilter, [this](RPI::Pass* pass) -> RPI::PassFilterExecutionFlow
                     {
                         m_hairPPLLRasterPass = static_cast<HairPPLLRasterPass*>(pass);
                         m_hairPPLLRasterPass->SetFeatureProcessor(this);
-                        return true; // skip visit other matching passes ??
+                        return RPI::PassFilterExecutionFlow::StopVisitingPasses;
                     });
 
                 if (m_hairPPLLRasterPass == nullptr)
@@ -498,13 +499,14 @@ namespace AZ
                     AZ_Error("Hair Gem", false, "Hair Fill Pass does NOT have render pipeline set yet");
                     return false;
                 }
-                  
+
+                // [GFX TODO] need to handle use case which there are multiple render pipelines with hair passes.
                 RPI::PassFilter passFilter = RPI::PassFilter::CreateWithPassName(HairPPLLResolvePassName, GetParentScene());
-                RPI::PassSystemInterface::Get()->ForEachPass(passFilter, [this](RPI::Pass* pass) -> bool
+                RPI::PassSystemInterface::Get()->ForEachPass(passFilter, [this](RPI::Pass* pass) -> RPI::PassFilterExecutionFlow
                     {
                         m_hairPPLLResolvePass = static_cast<HairPPLLResolvePass*>(pass);
                         m_hairPPLLResolvePass->SetFeatureProcessor(this);
-                        return true; // skip visit other matching passes ??
+                        return RPI::PassFilterExecutionFlow::StopVisitingPasses;
                     });
 
                 if (m_hairPPLLResolvePass == nullptr)

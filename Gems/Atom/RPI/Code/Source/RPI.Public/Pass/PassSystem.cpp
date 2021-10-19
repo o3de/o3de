@@ -483,7 +483,7 @@ namespace AZ
             --m_passCounter;
         }
                 
-        void PassSystem::ForEachPass(const PassFilter& filter, AZStd::function<bool(Pass*)> passFunction)
+        void PassSystem::ForEachPass(const PassFilter& filter, AZStd::function<PassFilterExecutionFlow(Pass*)> passFunction)
         {
             return m_passLibrary.ForEachPass(filter, passFunction);
         }
@@ -491,10 +491,10 @@ namespace AZ
         Pass* PassSystem::FindFirstPass(const PassFilter& filter)
         {
             Pass* foundPass = nullptr;
-            m_passLibrary.ForEachPass(filter, [&foundPass](RPI::Pass* pass) ->bool
+            m_passLibrary.ForEachPass(filter, [&foundPass](RPI::Pass* pass) ->PassFilterExecutionFlow
                 {
                     foundPass = pass;
-                    return true;
+                    return PassFilterExecutionFlow::StopVisitingPasses;
                 });
             return foundPass;
         }

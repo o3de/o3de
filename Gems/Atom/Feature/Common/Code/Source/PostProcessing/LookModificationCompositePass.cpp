@@ -32,13 +32,12 @@ namespace AZ
             [](const uint8_t& value)
             {
                 RPI::PassFilter passFilter = RPI::PassFilter::CreateWithPassClass<LookModificationCompositePass>();
-                RPI::PassSystemInterface::Get()->ForEachPass(passFilter, [value](RPI::Pass* pass) -> bool
+                RPI::PassSystemInterface::Get()->ForEachPass(passFilter, [value](RPI::Pass* pass) -> RPI::PassFilterExecutionFlow
                     {
                         LookModificationCompositePass* lookModPass = azrtti_cast<LookModificationCompositePass*>(pass);
                         lookModPass->SetSampleQuality(LookModificationCompositePass::SampleQuality(value));
 
-                        // processs all the LookModificationCompositePass found
-                         return false;
+                         return RPI::PassFilterExecutionFlow::ContinueVisitingPasses;
                     });
             },
             ConsoleFunctorFlags::Null,

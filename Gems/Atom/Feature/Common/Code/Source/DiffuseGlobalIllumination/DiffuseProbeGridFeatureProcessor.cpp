@@ -604,11 +604,10 @@ namespace AZ
             if (device->GetFeatures().m_rayTracing == false)
             {
                 RPI::PassFilter passFilter = RPI::PassFilter::CreateWithPassName(AZ::Name("DiffuseProbeGridUpdatePass"), GetParentScene());
-                RPI::PassSystemInterface::Get()->ForEachPass(passFilter, [](RPI::Pass* pass) -> bool
+                RPI::PassSystemInterface::Get()->ForEachPass(passFilter, [](RPI::Pass* pass) -> RPI::PassFilterExecutionFlow
                     {
                         pass->SetEnabled(false);
-                        // handle all DiffuseProbeGridUpdatePass passes 
-                         return false;
+                         return RPI::PassFilterExecutionFlow::ContinueVisitingPasses;
                     });
             }
         }

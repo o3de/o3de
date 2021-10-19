@@ -85,7 +85,7 @@ namespace AZ
             RPI::PassFilter downsamplePassFilter = RPI::PassFilter::CreateWithPassHierarchy(downsamplePassHierarchy);
             downsamplePassFilter.SetOwenrScene(GetParentScene()); // only handles passes for this scene
             RHI::ShaderInputNameIndex outputImageScaleShaderInput = "m_outputImageScale";
-            RPI::PassSystemInterface::Get()->ForEachPass(downsamplePassFilter, [sizeMultiplier, &outputImageScaleShaderInput](RPI::Pass* pass) -> bool
+            RPI::PassSystemInterface::Get()->ForEachPass(downsamplePassFilter, [sizeMultiplier, &outputImageScaleShaderInput](RPI::Pass* pass) -> RPI::PassFilterExecutionFlow
                 {
                     for (uint32_t outputIndex = 0; outputIndex < pass->GetOutputCount(); ++outputIndex)
                     {
@@ -101,7 +101,7 @@ namespace AZ
                     downsamplePass->GetShaderResourceGroup()->SetConstant(outputImageScaleShaderInput, aznumeric_cast<uint32_t>(1.0f / sizeMultiplier));
 
                     // handle all downsample passes 
-                    return false;
+                    return RPI::PassFilterExecutionFlow::ContinueVisitingPasses;
                 });
 
             // update the image scale on the DiffuseComposite pass
@@ -109,13 +109,12 @@ namespace AZ
             RPI::PassFilter compositePassFilter = RPI::PassFilter::CreateWithPassHierarchy(compositePassHierarchy);
             compositePassFilter.SetOwenrScene(GetParentScene());  // only handles passes for this scene
             RHI::ShaderInputNameIndex imageScaleShaderInput = "m_imageScale";
-            RPI::PassSystemInterface::Get()->ForEachPass(compositePassFilter, [sizeMultiplier, &imageScaleShaderInput](RPI::Pass* pass) -> bool
+            RPI::PassSystemInterface::Get()->ForEachPass(compositePassFilter, [sizeMultiplier, &imageScaleShaderInput](RPI::Pass* pass) -> RPI::PassFilterExecutionFlow
                 {
                     RPI::FullscreenTrianglePass* compositePass = static_cast<RPI::FullscreenTrianglePass*>(pass);
                     compositePass->GetShaderResourceGroup()->SetConstant(imageScaleShaderInput, aznumeric_cast<uint32_t>(1.0f / sizeMultiplier));
 
-                    // handle all DiffuseCompositePasses 
-                    return false;
+                    return RPI::PassFilterExecutionFlow::ContinueVisitingPasses;
                 });
         }
     } // namespace Render

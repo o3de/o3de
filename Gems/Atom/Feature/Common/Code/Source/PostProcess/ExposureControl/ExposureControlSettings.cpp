@@ -192,17 +192,17 @@ namespace AZ
             // [GFX-TODO][ATOM-13194] Support multiple views for the luminance heatmap
             // [GFX-TODO][ATOM-13224] Remove UpdateLuminanceHeatmap and UpdateEyeAdaptationPass            
             RPI::PassFilter heatmapPassFilter = RPI::PassFilter::CreateWithPassName(m_luminanceHeatmapNameId, GetParentScene());
-            RPI::PassSystemInterface::Get()->ForEachPass(heatmapPassFilter, [this](RPI::Pass* pass) -> bool
+            RPI::PassSystemInterface::Get()->ForEachPass(heatmapPassFilter, [this](RPI::Pass* pass) -> RPI::PassFilterExecutionFlow
                 {
                     pass->SetEnabled(m_heatmapEnabled);
-                    return false;  // handle all matching passes 
+                    return RPI::PassFilterExecutionFlow::ContinueVisitingPasses;
                 });
 
             RPI::PassFilter histogramPassFilter = RPI::PassFilter::CreateWithPassName(m_luminanceHistogramGeneratorNameId, GetParentScene());
-            RPI::PassSystemInterface::Get()->ForEachPass(histogramPassFilter, [this](RPI::Pass* pass) -> bool
+            RPI::PassSystemInterface::Get()->ForEachPass(histogramPassFilter, [this](RPI::Pass* pass) -> RPI::PassFilterExecutionFlow
                 {
                     pass->SetEnabled(m_heatmapEnabled);
-                    return false; // handle all matching passes 
+                    return RPI::PassFilterExecutionFlow::ContinueVisitingPasses;
                 });
         }
 

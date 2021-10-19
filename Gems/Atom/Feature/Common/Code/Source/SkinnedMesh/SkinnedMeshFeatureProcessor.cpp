@@ -298,7 +298,7 @@ namespace AZ
         void SkinnedMeshFeatureProcessor::InitSkinningAndMorphPass()
         {
             RPI::PassFilter skinPassFilter = RPI::PassFilter::CreateWithPassName(AZ::Name{ "SkinningPass" }, GetParentScene());
-            RPI::PassSystemInterface::Get()->ForEachPass(skinPassFilter, [this](RPI::Pass* pass) -> bool
+            RPI::PassSystemInterface::Get()->ForEachPass(skinPassFilter, [this](RPI::Pass* pass) -> RPI::PassFilterExecutionFlow
                 {
                     SkinnedMeshComputePass* skinnedMeshComputePass = azdynamic_cast<SkinnedMeshComputePass*>(pass);
                     skinnedMeshComputePass->SetFeatureProcessor(this);
@@ -314,11 +314,11 @@ namespace AZ
                     {
                         m_cachedSkinningShaderOptions.SetShader(m_skinningShader);
                     }
-                    return false; // visit all matching passes
+                    return RPI::PassFilterExecutionFlow::ContinueVisitingPasses;
                 });
             
             RPI::PassFilter morphPassFilter = RPI::PassFilter::CreateWithPassName(AZ::Name{ "MorphTargetPass" }, GetParentScene());
-            RPI::PassSystemInterface::Get()->ForEachPass(morphPassFilter, [this](RPI::Pass* pass) -> bool
+            RPI::PassSystemInterface::Get()->ForEachPass(morphPassFilter, [this](RPI::Pass* pass) -> RPI::PassFilterExecutionFlow
                 {
                     MorphTargetComputePass* morphTargetComputePass = azdynamic_cast<MorphTargetComputePass*>(pass);
                     morphTargetComputePass->SetFeatureProcessor(this);
@@ -330,7 +330,7 @@ namespace AZ
                     {
                         AZ_Error(s_featureProcessorName, false, "Failed to get morph target pass shader. It may need to finish processing.");
                     }
-                    return false; // visit all matching passes
+                    return RPI::PassFilterExecutionFlow::ContinueVisitingPasses;
                 });
         }
 

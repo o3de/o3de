@@ -85,16 +85,16 @@ namespace AZ
             return (GetPassesForTemplate(templateName).size() > 0);
         }
 
-        void PassLibrary::ForEachPass(const PassFilter& passFilter, AZStd::function<bool(Pass*)> passFunction)
+        void PassLibrary::ForEachPass(const PassFilter& passFilter, AZStd::function<PassFilterExecutionFlow(Pass*)> passFunction)
         {
             uint32_t filterOptions = passFilter.GetEnabledFilterOptions();
 
             // A lambda function which visits each pass in a pass list, if the pass matches the pass filter, then call the pass function
-            auto visitList = [passFilter, passFunction](const AZStd::vector<Pass*>& passList, uint32_t options) -> bool
+            auto visitList = [passFilter, passFunction](const AZStd::vector<Pass*>& passList, uint32_t options) -> PassFilterExecutionFlow
             {
                 if (passList.size() == 0)
                 {
-                    return false;
+                    return PassFilterExecutionFlow::ContinueVisitingPasses;
                 }
                 // if there is not other filter options enabled, skip the filter and call pass functions directly
                 if (options == PassFilter::FilterOptions::Empty)
@@ -102,12 +102,12 @@ namespace AZ
                     for (Pass* pass : passList)
                     {
                         // If user want to skip processing, return directly.
-                        if (passFunction(pass))
+                        if (passFunction(pass) == PassFilterExecutionFlow::StopVisitingPasses)
                         {
-                            return true;
+                            return PassFilterExecutionFlow::StopVisitingPasses;
                         }
                     }
-                    return false;
+                    return PassFilterExecutionFlow::ContinueVisitingPasses;
                 }
 
                 // Check with the pass filter and call pass functions
@@ -115,13 +115,13 @@ namespace AZ
                 {
                     if (passFilter.Matches(pass, options))
                     {
-                        if (passFunction(pass))
+                        if (passFunction(pass) == PassFilterExecutionFlow::StopVisitingPasses)
                         {
-                            return true;
+                            return PassFilterExecutionFlow::StopVisitingPasses;
                         }
                     }
                 }
-                 return false;
+                 return PassFilterExecutionFlow::ContinueVisitingPasses;
             };
 
             // Check pass template name first
@@ -154,7 +154,7 @@ namespace AZ
             AZ_PROFILE_SCOPE(RPI, "PassLibrary::ForEachPass");
             for (auto& namePasses : m_passNameMapping)
             {
-                if (visitList(namePasses.second, filterOptions))
+                if (visitList(namePasses.second, filterOptions) == PassFilterExecutionFlow::StopVisitingPasses)
                 {
                     return;
                 }

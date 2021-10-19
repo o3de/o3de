@@ -314,11 +314,11 @@ namespace AZ::Render
     {
         m_projectedShadowmapsPasses.clear();
         RPI::PassFilter passFilter = RPI::PassFilter::CreateWithTemplateName(Name("ProjectedShadowmapsTemplate"), GetParentScene());
-        RPI::PassSystemInterface::Get()->ForEachPass(passFilter, [this](RPI::Pass* pass) -> bool
+        RPI::PassSystemInterface::Get()->ForEachPass(passFilter, [this](RPI::Pass* pass) -> RPI::PassFilterExecutionFlow
             {
                 ProjectedShadowmapsPass* shadowPass = static_cast<ProjectedShadowmapsPass*>(pass);
                 m_projectedShadowmapsPasses.emplace_back(shadowPass);
-                return false; // keep visit other matching passes
+                return RPI::PassFilterExecutionFlow::ContinueVisitingPasses;
             });
     }
 
@@ -328,7 +328,7 @@ namespace AZ::Render
                 
         m_esmShadowmapsPasses.clear();
         RPI::PassFilter passFilter = RPI::PassFilter::CreateWithTemplateName(Name("EsmShadowmapsTemplate"), GetParentScene());
-        RPI::PassSystemInterface::Get()->ForEachPass(passFilter, [this, LightTypeName](RPI::Pass* pass) -> bool
+        RPI::PassSystemInterface::Get()->ForEachPass(passFilter, [this, LightTypeName](RPI::Pass* pass) -> RPI::PassFilterExecutionFlow
             {
                 EsmShadowmapsPass* esmPass = static_cast<EsmShadowmapsPass*>(pass);
                 if (esmPass->GetRenderPipeline() &&
@@ -336,7 +336,7 @@ namespace AZ::Render
                 {
                     m_esmShadowmapsPasses.emplace_back(esmPass);
                 }
-                return false; // keep visit other matching passes
+                return RPI::PassFilterExecutionFlow::ContinueVisitingPasses;
             });
     }
     

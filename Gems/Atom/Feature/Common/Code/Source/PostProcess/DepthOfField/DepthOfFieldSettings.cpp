@@ -263,7 +263,7 @@ namespace AZ
         {            
             const Name TemplateNameReadBackFocusDepth = Name("DepthOfFieldReadBackFocusDepthTemplate");
             RPI::PassFilter passFilter = RPI::PassFilter::CreateWithTemplateName(TemplateNameReadBackFocusDepth, GetParentScene());
-            RPI::PassSystemInterface::Get()->ForEachPass(passFilter, [this, enabled](RPI::Pass* pass) -> bool
+            RPI::PassSystemInterface::Get()->ForEachPass(passFilter, [this, enabled](RPI::Pass* pass) -> RPI::PassFilterExecutionFlow
                 {
                    auto* dofPass = azrtti_cast<AZ::Render::DepthOfFieldReadBackFocusDepthPass*>(pass);
                     // Check this pass belongs to a render pipeline of the scene.
@@ -273,7 +273,7 @@ namespace AZ
                     {
                         m_normalizedFocusDistanceForAutoFocus = dofPass->GetNormalizedFocusDistanceForAutoFocus();
                     }
-                    return false; // keep visit other matching passes
+                    return RPI::PassFilterExecutionFlow::ContinueVisitingPasses;
                 });
         }
 

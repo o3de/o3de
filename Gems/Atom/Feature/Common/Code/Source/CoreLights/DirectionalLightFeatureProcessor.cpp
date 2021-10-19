@@ -634,7 +634,7 @@ namespace AZ
             m_cascadedShadowmapsPasses.clear();
 
             RPI::PassFilter passFilter = RPI::PassFilter::CreateWithTemplateName(Name("CascadedShadowmapsTemplate"), GetParentScene());
-            RPI::PassSystemInterface::Get()->ForEachPass(passFilter, [this](RPI::Pass* pass) -> bool
+            RPI::PassSystemInterface::Get()->ForEachPass(passFilter, [this](RPI::Pass* pass) -> RPI::PassFilterExecutionFlow
                 {
                     RPI::RenderPipeline* pipeline = pass->GetRenderPipeline();
                     const RPI::RenderPipelineId pipelineId = pipeline->GetId();
@@ -645,7 +645,7 @@ namespace AZ
                     {
                         m_cascadedShadowmapsPasses[pipelineId].push_back(shadowPass);
                     }
-                    return false; // keep visit other matching passes
+                    return RPI::PassFilterExecutionFlow::ContinueVisitingPasses;
                 });
         }
 
@@ -654,17 +654,20 @@ namespace AZ
             m_esmShadowmapsPasses.clear();
 
             RPI::PassFilter passFilter = RPI::PassFilter::CreateWithTemplateName(Name("EsmShadowmapsTemplate"), GetParentScene());
-            RPI::PassSystemInterface::Get()->ForEachPass(passFilter, [this](RPI::Pass* pass) -> bool
+            RPI::PassSystemInterface::Get()->ForEachPass(passFilter, [this](RPI::Pass* pass) -> RPI::PassFilterExecutionFlow
                 {
                     const RPI::RenderPipelineId pipelineId = pass->GetRenderPipeline()->GetId();
-                    EsmShadowmapsPass* esmPass = azrtti_cast<EsmShadowmapsPass*>(pass);
-                    AZ_Assert(esmPass, "It is not an EsmShadowmapPass.");
 
-                    if (esmPass->GetLightTypeName() == m_lightTypeName)
+                    if (m_cascadedShadowmapsPasses.find(pipelineId) != m_cascadedShadowmapsPasses.end())
                     {
-                        m_esmShadowmapsPasses[pipelineId].push_back(esmPass);
+                        EsmShadowmapsPass* esmPass = azrtti_cast<EsmShadowmapsPass*>(pass);
+                        AZ_Assert(esmPass, "It is not an EsmShadowmapPass.");
+                        if (esmPass->GetLightTypeName() == m_lightTypeName)
+                        {
+                            m_esmShadowmapsPasses[pipelineId].push_back(esmPass);
+                        }
                     }
-                    return false; // keep visit other matching passes
+                    return RPI::PassFilterExecutionFlow::ContinueVisitingPasses;
                 });
         }
 
@@ -1036,10 +1039,10 @@ namespace AZ
                         // to filter out shadows from objects that are excluded from the cubemap
                         RPI::PassFilter passFilter = RPI::PassFilter::CreateWithPassClass<RPI::EnvironmentCubeMapPass>();
                         passFilter.SetOwenrScene(GetParentScene()); // only handles passes for this scene
-                        RPI::PassSystemInterface::Get()->ForEachPass(passFilter, [&usageFlags]([[maybe_unused]] RPI::Pass* pass) -> bool
+                        RPI::PassSystemInterface::Get()->ForEachPass(passFilter, [&usageFlags]([[maybe_unused]] RPI::Pass* pass) -> RPI::PassFilterExecutionFlow
                             {
                                 usageFlags |= RPI::View::UsageReflectiveCubeMap;
-                                return true; // skip the other EnvironmentCubeMapPass
+                                return RPI::PassFilterExecutionFlow::StopVisitingPasses;
                             });
 
                         segment.m_view = RPI::View::CreateView(viewName, usageFlags);

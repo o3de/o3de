@@ -374,7 +374,7 @@ namespace AZ
 
             RPI::PassFilter passFilter = RPI::PassFilter::CreateWithPassName(AZ::Name("ImageAttachmentsPreviewPass"), (RPI::RenderPipeline*)nullptr);
 
-            RPI::PassSystemInterface::Get()->ForEachPass(passFilter, [this](RPI::Pass* pass) -> bool
+            RPI::PassSystemInterface::Get()->ForEachPass(passFilter, [this](RPI::Pass* pass) -> RPI::PassFilterExecutionFlow
                 {
                     AZ::RPI::ImageAttachmentPreviewPass* previewPass = azrtti_cast<AZ::RPI::ImageAttachmentPreviewPass*>(pass);
                     bool result = previewPass->ReadbackOutput(m_readback);
@@ -389,8 +389,7 @@ namespace AZ
                         AZ_Warning("FrameCaptureSystemComponent", false, "CaptureScreenshotWithPreview. Failed to readback output from the ImageAttachmentPreviewPass");;
                     }
 
-                    // Only handles the first ImageAttachmentPreviewPass found
-                     return true;
+                     return RPI::PassFilterExecutionFlow::StopVisitingPasses;
                 });
 
             // return true if the capture is started (state is pending)
@@ -427,7 +426,7 @@ namespace AZ
             m_latestCaptureInfo.clear();
 
             RPI::PassFilter passFilter = RPI::PassFilter::CreateWithPassHierarchy(passHierarchy);
-             RPI::PassSystemInterface::Get()->ForEachPass(passFilter, [this, slot, option](RPI::Pass* pass) -> bool
+             RPI::PassSystemInterface::Get()->ForEachPass(passFilter, [this, slot, option](RPI::Pass* pass) -> RPI::PassFilterExecutionFlow
                 {
                     if (pass->ReadbackAttachment(m_readback, Name(slot), option))
                     {
@@ -439,7 +438,7 @@ namespace AZ
                     {
                         AZ_Warning("FrameCaptureSystemComponent", false, "Failed to readback the attachment bound to pass [%s] slot [%s]", pass->GetName().GetCStr(), slot.c_str());
                     }
-                    return true; // skip other passes
+                    return RPI::PassFilterExecutionFlow::StopVisitingPasses;
                 });
 
              return m_state == State::Pending;

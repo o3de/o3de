@@ -85,7 +85,7 @@ namespace AZ
             bool LoadPassTemplateMappings(Data::Asset<AnyAsset> mappingAsset);
 
             //! Visit each pass which matches the filter
-            void ForEachPass(const PassFilter& passFilter, AZStd::function<bool(Pass*)> passFunction);
+            void ForEachPass(const PassFilter& passFilter, AZStd::function<PassFilterExecutionFlow(Pass*)> passFunction);
 
         private:
 

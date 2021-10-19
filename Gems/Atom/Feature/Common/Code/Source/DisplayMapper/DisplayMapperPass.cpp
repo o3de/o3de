@@ -69,7 +69,7 @@ namespace AZ
             // the swapchain format changed (for example, moving from LDR to HDR display)
             const Name fullscreenCopyTemplateName("FullscreenCopyTemplate");
             RPI::PassFilter passFilter = RPI::PassFilter::CreateWithTemplateName(fullscreenCopyTemplateName, GetRenderPipeline());
-            RPI::PassSystemInterface::Get()->ForEachPass(passFilter, [](RPI::Pass* pass) -> bool
+            RPI::PassSystemInterface::Get()->ForEachPass(passFilter, [](RPI::Pass* pass) -> RPI::PassFilterExecutionFlow
                 {
                     RPI::FullscreenTrianglePass* fullscreenTrianglePass = azrtti_cast<RPI::FullscreenTrianglePass*>(pass);
                     const Name& passName = fullscreenTrianglePass->GetName();
@@ -77,7 +77,7 @@ namespace AZ
                     {
                         fullscreenTrianglePass->QueueForInitialization();
                     }
-                    return false; // keep visit other matching passes
+                    return RPI::PassFilterExecutionFlow::ContinueVisitingPasses;
                 });
 
             ConfigureDisplayParameters();

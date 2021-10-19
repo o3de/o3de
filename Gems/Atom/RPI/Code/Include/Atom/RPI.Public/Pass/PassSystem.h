@@ -97,7 +97,7 @@ namespace AZ
             void RemovePassFromLibrary(Pass* pass) override;
             void RegisterPass(Pass* pass) override;
             void UnregisterPass(Pass* pass) override;
-            void ForEachPass(const PassFilter& filter, AZStd::function<bool(Pass*)> passFunction) override;
+            void ForEachPass(const PassFilter& filter, AZStd::function<PassFilterExecutionFlow(Pass*)> passFunction) override;
             Pass* FindFirstPass(const PassFilter& filter) override;
 
         private:

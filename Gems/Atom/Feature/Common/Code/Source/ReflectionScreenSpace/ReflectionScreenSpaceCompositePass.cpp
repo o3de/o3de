@@ -35,7 +35,7 @@ namespace AZ
 
             RPI::PassFilter passFilter = RPI::PassFilter::CreateWithPassName(AZ::Name("ReflectionScreenSpaceBlurPass"), GetRenderPipeline());
 
-            RPI::PassSystemInterface::Get()->ForEachPass(passFilter, [this](RPI::Pass* pass) -> bool
+            RPI::PassSystemInterface::Get()->ForEachPass(passFilter, [this](RPI::Pass* pass) -> RPI::PassFilterExecutionFlow
                 {
                     Render::ReflectionScreenSpaceBlurPass* blurPass = azrtti_cast<ReflectionScreenSpaceBlurPass*>(pass);
 
@@ -47,8 +47,7 @@ namespace AZ
                     auto constantIndex = m_shaderResourceGroup->FindShaderInputConstantIndex(Name("m_maxMipLevel"));
                     m_shaderResourceGroup->SetConstant(constantIndex, maxMipLevel);
 
-                    // Only handles the first ReflectionScreenSpaceBlurPass found in the same render pipeline
-                     return true;
+                     return RPI::PassFilterExecutionFlow::StopVisitingPasses;
                 });
 
             FullscreenTrianglePass::CompileResources(context);

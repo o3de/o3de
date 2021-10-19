@@ -73,17 +73,17 @@ namespace AZ
         void SMAAFeatureProcessor::UpdateConvertToPerceptualPass()
         {
             RPI::PassFilter passFilter = RPI::PassFilter::CreateWithTemplateName(m_convertToPerceptualColorPassTemplateNameId, GetParentScene());
-            RPI::PassSystemInterface::Get()->ForEachPass(passFilter, [this](RPI::Pass* pass) -> bool
+            RPI::PassSystemInterface::Get()->ForEachPass(passFilter, [this](RPI::Pass* pass) -> RPI::PassFilterExecutionFlow
                 {
                     pass->SetEnabled(m_data.m_enable);
-                    return false; // keep visit other matching passes
+                    return RPI::PassFilterExecutionFlow::ContinueVisitingPasses;
                 });
         }
 
         void SMAAFeatureProcessor::UpdateEdgeDetectionPass()
         {            
             RPI::PassFilter passFilter = RPI::PassFilter::CreateWithTemplateName(m_edgeDetectioPassTemplateNameId, GetParentScene());
-            RPI::PassSystemInterface::Get()->ForEachPass(passFilter, [this](RPI::Pass* pass) -> bool
+            RPI::PassSystemInterface::Get()->ForEachPass(passFilter, [this](RPI::Pass* pass) -> RPI::PassFilterExecutionFlow
                 {
                     auto* edgeDetectionPass = azrtti_cast<AZ::Render::SMAAEdgeDetectionPass*>(pass);
 
@@ -99,14 +99,14 @@ namespace AZ
                         edgeDetectionPass->SetPredicationScale(m_data.m_predicationScale);
                         edgeDetectionPass->SetPredicationStrength(m_data.m_predicationStrength);
                     }
-                    return false; // keep visit other matching passes
+                    return RPI::PassFilterExecutionFlow::ContinueVisitingPasses;
                 });
         }
 
         void SMAAFeatureProcessor::UpdateBlendingWeightCalculationPass()
         {
             RPI::PassFilter passFilter = RPI::PassFilter::CreateWithTemplateName(m_blendingWeightCalculationPassTemplateNameId, GetParentScene());
-            RPI::PassSystemInterface::Get()->ForEachPass(passFilter, [this](RPI::Pass* pass) -> bool
+            RPI::PassSystemInterface::Get()->ForEachPass(passFilter, [this](RPI::Pass* pass) -> RPI::PassFilterExecutionFlow
                 {
                     auto* blendingWeightCalculationPass = azrtti_cast<AZ::Render::SMAABlendingWeightCalculationPass*>(pass);
 
@@ -119,14 +119,14 @@ namespace AZ
                         blendingWeightCalculationPass->SetDiagonalDetectionEnable(m_data.m_enableDiagonalDetection);
                         blendingWeightCalculationPass->SetCornerDetectionEnable(m_data.m_enableCornerDetection);
                     }
-                    return false; // keep visit other matching passes
+                    return RPI::PassFilterExecutionFlow::ContinueVisitingPasses;
                 });
         }
 
         void SMAAFeatureProcessor::UpdateNeighborhoodBlendingPass()
         {
             RPI::PassFilter passFilter = RPI::PassFilter::CreateWithTemplateName(m_neighborhoodBlendingPassTemplateNameId, GetParentScene());
-            RPI::PassSystemInterface::Get()->ForEachPass(passFilter, [this](RPI::Pass* pass) -> bool
+            RPI::PassSystemInterface::Get()->ForEachPass(passFilter, [this](RPI::Pass* pass) -> RPI::PassFilterExecutionFlow
                 {
                     auto* neighborhoodBlendingPass = azrtti_cast<AZ::Render::SMAANeighborhoodBlendingPass*>(pass);
 
@@ -138,7 +138,7 @@ namespace AZ
                     {
                         neighborhoodBlendingPass->SetOutputMode(SMAAOutputMode::PassThrough);
                     }
-                    return false; // keep visit other matching passes
+                    return RPI::PassFilterExecutionFlow::ContinueVisitingPasses;
                 });
         }
 
