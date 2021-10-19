@@ -24,7 +24,7 @@ namespace Profiler
     class ProfilerImGuiSystemComponent
         : public AZ::Component
 #if defined(IMGUI_ENABLED)
-        , public ProfilerImGuiRequestBus::Handler
+        , public ProfilerImGuiRequests
         , public ImGui::ImGuiUpdateListenerBus::Handler
 #endif // defined(IMGUI_ENABLED)
     {
@@ -47,7 +47,7 @@ namespace Profiler
         void Deactivate() override;
 
 #if defined(IMGUI_ENABLED)
-        // ProfilerImGuiRequestBus interface implementation
+        // ProfilerImGuiRequests interface implementation
         void ShowCpuProfilerWindow(bool& keepDrawing) override;
 
         // ImGuiUpdateListenerBus overrides

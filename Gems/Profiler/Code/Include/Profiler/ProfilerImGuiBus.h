@@ -23,15 +23,5 @@ namespace Profiler
         virtual void ShowCpuProfilerWindow(bool& keepDrawing) = 0;
     };
 
-    class ProfilerImGuiBusTraits
-        : public AZ::EBusTraits
-    {
-    public:
-        // EBusTraits overrides
-        static constexpr AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single;
-        static constexpr AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::Single;
-    };
-
     using ProfilerImGuiInterface = AZ::Interface<ProfilerImGuiRequests>;
-    using ProfilerImGuiRequestBus = AZ::EBus<ProfilerImGuiRequests, ProfilerImGuiBusTraits>;
 } // namespace Profiler

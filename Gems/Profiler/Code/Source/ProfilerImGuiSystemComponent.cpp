@@ -76,7 +76,6 @@ namespace Profiler
     void ProfilerImGuiSystemComponent::Activate()
     {
 #if defined(IMGUI_ENABLED)
-        ProfilerImGuiRequestBus::Handler::BusConnect();
         ImGui::ImGuiUpdateListenerBus::Handler::BusConnect();
 #endif // defined(IMGUI_ENABLED)
     }
@@ -84,7 +83,6 @@ namespace Profiler
     void ProfilerImGuiSystemComponent::Deactivate()
     {
 #if defined(IMGUI_ENABLED)
-        ProfilerImGuiRequestBus::Handler::BusDisconnect();
         ImGui::ImGuiUpdateListenerBus::Handler::BusDisconnect();
 #endif // defined(IMGUI_ENABLED)
     }
