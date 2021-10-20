@@ -232,7 +232,7 @@ namespace AzToolsFramework
                         auto aboveSourceEntry = azrtti_cast<const SourceAssetBrowserEntry*>(aboveEntry);
 
                         // Last item and the above entry is a source entry
-                        // or indeBellow is a source entry and the index above is not
+                        // or indexBelow is a source entry and the index above is not
                         if ((index.row() == viewModel->rowCount() - 1))
                         {
                             if (aboveSourceEntry)
