@@ -29,6 +29,7 @@
 #include <QModelIndex>
 #include <QStandardItemModel>
 #include <QFileInfo>
+#include <QMessageBox>
 
 
 namespace AudioControls
@@ -70,6 +71,52 @@ namespace AudioControls
         if (m_atlModel && m_layoutModel && m_audioSystemImpl)
         {
             m_layoutModel->blockSignals(true);
+
+            {
+                auto checkEmptyFold = [](auto&& self, QModelIndex& root) -> bool
+                {
+                    int m = 0;
+                    QModelIndex child = root.model()->index(m, 0, root);
+                    if (!child.isValid())
+                    {
+                        return true;
+                    }
+                    else
+                    {
+                        while (child.isValid())
+                        {
+                            if (child.data(eDR_TYPE) == eIT_FOLDER)
+                            {
+                                bool bRet = self(self, child);
+                                if (bRet)
+                                {
+                                    return true;
+                                }
+                            }
+                            child = root.model()->index(++m, 0, root);
+                        }
+                    }
+                    return false;
+                };
+
+                int m = 0;
+                bool haveEmpty = false;
+                QModelIndex index = m_layoutModel->index(m, 0);
+                while (index.isValid() && !haveEmpty)
+                {
+                    haveEmpty = checkEmptyFold(checkEmptyFold, index);
+                    index = index.sibling(++m, 0);
+                }
+
+                if (haveEmpty)
+                {
+                    QMessageBox messageBox;
+                    messageBox.setStandardButtons(QMessageBox::Ok);
+                    messageBox.setWindowTitle("Audio Controls Editor");
+                    messageBox.setText("An empty folder exists and will not be saved.");
+                    messageBox.exec();
+                }
+            }
 
             int i = 0;
             QModelIndex index = m_layoutModel->index(i, 0);
