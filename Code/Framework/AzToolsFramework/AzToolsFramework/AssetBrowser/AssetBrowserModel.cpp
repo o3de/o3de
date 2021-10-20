@@ -18,6 +18,7 @@
 AZ_PUSH_DISABLE_WARNING(4251, "-Wunknown-warning-option") // 'QRegularExpression::d': class 'QExplicitlySharedDataPointer<QRegularExpressionPrivate>' needs to have dll-interface to be used by clients of class 'QRegularExpression'
 #include <QRegularExpression>
 AZ_POP_DISABLE_WARNING
+#pragma optimize("", off)
 
 namespace AzToolsFramework
 {
@@ -262,7 +263,6 @@ namespace AzToolsFramework
         {
             return m_rootEntry;
         }
-
         void AssetBrowserModel::SetRootEntry(AZStd::shared_ptr<RootAssetBrowserEntry> rootEntry)
         {
             m_rootEntry = rootEntry;
@@ -395,5 +395,6 @@ namespace AzToolsFramework
 
     } // namespace AssetBrowser
 } // namespace AzToolsFramework
+#pragma optimize("", on)
 
 #include "AssetBrowser/moc_AssetBrowserModel.cpp"

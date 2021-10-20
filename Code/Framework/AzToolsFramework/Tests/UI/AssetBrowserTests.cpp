@@ -151,9 +151,6 @@ namespace UnitTest
                    [[maybe_unused]] AzAssetBrowser::AssetBrowserEntry* product_0_1_0 = CreateAssetBrowserEntry(AssetEntryType::Source, source_0_1, QString("product_0_1_0"));
                    [[maybe_unused]] AzAssetBrowser::AssetBrowserEntry* product_0_1_1 = CreateAssetBrowserEntry(AssetEntryType::Source, source_0_1,  QString("product_0_1_1"));
 
-            [[maybe_unused]] AzAssetBrowser::AssetBrowserEntry* folder_1 = CreateAssetBrowserEntry(AssetEntryType::Folder, rootEntry, QString("Folder_1"));
-            [[maybe_unused]] AzAssetBrowser::AssetBrowserEntry* folder_2 = CreateAssetBrowserEntry(AssetEntryType::Folder, rootEntry, QString("Folder_2"));
-
             m_tableModel->UpdateTableModelMaps();
         }
 
@@ -205,10 +202,15 @@ namespace UnitTest
             count++;
         }
         SetupAssetBrowser();
+        qDebug() << "-------------Asset Browser Model------------";
         PrintModel(m_assetBrowserComponent->GetAssetBrowserModel());
+
+        qDebug() << "---------Asset Browser Filter Model---------";
         PrintModel(m_filterModel.get());
+
+        qDebug() << "-------------Asset Table Model--------------";
         PrintModel(m_tableModel.get());
 
-        EXPECT_EQ(count, 11);
+        EXPECT_EQ(count, 10);
     }
 } // namespace UnitTest
