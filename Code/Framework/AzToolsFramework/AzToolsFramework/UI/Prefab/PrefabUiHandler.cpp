@@ -316,14 +316,7 @@ namespace AzToolsFramework
 
     void PrefabUiHandler::OnDoubleClick(AZ::EntityId entityId) const
     {
-        bool prefabWipFeaturesEnabled = false;
-        AzFramework::ApplicationRequests::Bus::BroadcastResult(
-            prefabWipFeaturesEnabled, &AzFramework::ApplicationRequests::ArePrefabWipFeaturesEnabled);
-
-        if (prefabWipFeaturesEnabled)
-        {
-            // Focus on this prefab
-            m_prefabFocusPublicInterface->FocusOnOwningPrefab(entityId);
-        }
+        // Focus on this prefab
+        m_prefabFocusPublicInterface->FocusOnOwningPrefab(entityId);
     }
 }
