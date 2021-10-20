@@ -194,6 +194,11 @@ namespace AtomToolsFramework
         m_controllerList->UpdateViewport({GetId(), AzFramework::FloatSeconds(deltaTime), m_time});
     }
 
+    void RenderViewportWidget::resizeEvent([[maybe_unused]] QResizeEvent* event)
+    {
+        SendWindowResizeEvent();
+    }
+
     bool RenderViewportWidget::event(QEvent* event)
     {
         // On some types of QEvents, a resize event is needed to make sure that the current viewport window

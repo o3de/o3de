@@ -223,17 +223,13 @@ namespace AZ
                 info.pImageIndices = &imageIndex;
                 info.pResults = nullptr;
 
-                [[maybe_unused]] const VkResult result = vkQueuePresentKHR(vulkanQueue->GetNativeQueue(), &info);
+                const VkResult result = vkQueuePresentKHR(vulkanQueue->GetNativeQueue(), &info);
 
-                if (result == VK_ERROR_OUT_OF_DATE_KHR)
+                if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR)
                 {
                     InvalidateNativeSwapChain();
                     RecreateSwapchain();
                 }
-                // Resizing window cause recreation of SwapChain after calling this method,
-                // so VK_SUBOPTIMAL_KHR or VK_ERROR_OUT_OF_DATE_KHR  should not happen at this point.
-                //AZ_Assert(result == VK_SUCCESS || result == VK_SUBOPTIMAL_KHR, "Failed to present swapchain %s", GetName().GetCStr());
-                AZ_Warning("Vulkan", result != VK_SUBOPTIMAL_KHR, "Suboptimal presentation of swapchain %s", GetName().GetCStr());
             };
 
             m_presentationQueue->QueueCommand(AZStd::move(presentCommand));
@@ -431,7 +427,7 @@ namespace AZ
                 acquiredImageIndex);
 
             RHI::ResultCode result = ConvertResult(vkResult);
-            if (vkResult == VK_ERROR_OUT_OF_DATE_KHR)
+            if (vkResult == VK_ERROR_OUT_OF_DATE_KHR || vkResult == VK_SUBOPTIMAL_KHR)
             {
                 InvalidateNativeSwapChain();
                 RecreateSwapchain();
