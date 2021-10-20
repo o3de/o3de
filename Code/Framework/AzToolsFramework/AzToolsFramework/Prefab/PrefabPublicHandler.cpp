@@ -1232,9 +1232,7 @@ namespace AzToolsFramework
             command->Capture(instanceDomBefore, instanceDomAfter, commonOwningInstance->get().GetTemplateId());
             command->SetParent(undoBatch.GetUndoBatch());
             command->Redo(commonOwningInstance);
-
-       
-
+            
             return AZ::Success();
         }
 
