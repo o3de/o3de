@@ -2345,9 +2345,9 @@ namespace AzToolsFramework
 
                 auto entityUiHandler = editorEntityUiInterface->GetHandler(entityId);
 
-                if (entityUiHandler)
+                if (entityUiHandler && entityUiHandler->OnOutlinerItemClick(mouseEvent->pos(), option, index))
                 {                
-                    return entityUiHandler->OnOutlinerItemClick(mouseEvent->pos(), option, index);  
+                    return true;
                 }
             }
         }
