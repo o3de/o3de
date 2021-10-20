@@ -830,6 +830,11 @@ namespace Audio
                 }
                 else
                 {
+                    if (!audioFileEntry->m_asyncStreamRequest)
+                    {
+                        audioFileEntry->m_asyncStreamRequest = streamer->CreateRequest();
+                    }
+
                     streamer->Read(
                         audioFileEntry->m_asyncStreamRequest,
                         audioFileEntry->m_filePath.c_str(),
