@@ -14,10 +14,6 @@ import editor_python_test_tools.hydra_test_utils as hydra
 logger = logging.getLogger(__name__)
 TEST_DIRECTORY = os.path.join(os.path.dirname(__file__), "tests")
 
-
-@pytest.mark.parametrize("project", ["AutomatedTesting"])
-@pytest.mark.parametrize("launcher_platform", ['windows_editor'])
-@pytest.mark.parametrize("level", ["auto_test"])
 class TestAtomEditorComponentsSandbox(object):
 
     # It requires at least one test
