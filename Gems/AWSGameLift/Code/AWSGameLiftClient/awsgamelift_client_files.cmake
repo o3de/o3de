@@ -17,7 +17,9 @@ set(FILES
     Include/Request/AWSGameLiftSearchSessionsRequest.h
     Include/Request/AWSGameLiftStartMatchmakingRequest.h
     Include/Request/AWSGameLiftStopMatchmakingRequest.h
-    Include/Request/IAWSGameLiftRequests.h
+    Include/Request/AWSGameLiftRequestBus.h
+    Include/Request/AWSGameLiftSessionRequestBus.h
+    Include/Request/AWSGameLiftMatchmakingRequestBus.h
     Source/Activity/AWSGameLiftActivityUtils.cpp
     Source/Activity/AWSGameLiftActivityUtils.h
     Source/Activity/AWSGameLiftAcceptMatchActivity.cpp
