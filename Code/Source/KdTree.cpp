@@ -16,8 +16,6 @@
 
 #include <AzCore/Debug/Timer.h>
 
-//#pragma optimize("", off)
-
 namespace EMotionFX
 {
     namespace MotionMatching
@@ -38,7 +36,7 @@ namespace EMotionFX
 
             // Verify the dimensions.
             // Going above a 20 dimensional tree would start eating up too much memory.
-            m_numDimensions = featureDatabase.CalcNumDataDimensionsForKdTree();
+            m_numDimensions = featureDatabase.CalcNumDataDimensionsForKdTree(featureDatabase);
             if (m_numDimensions == 0 || m_numDimensions > 20)
             {
                 AZ_Error("EMotionFX", false, "KdTree dimension (%d) have to be between 1 and 20. Cannot continue. Please use FrameData::SetIncludeInKdTree(false) on some of your frame data objects for your behavior.", m_numDimensions);
@@ -280,15 +278,10 @@ namespace EMotionFX
         void KdTree::FillFrameFloats(const FeatureDatabase& featureDatabase, size_t frameIndex)
         {
             size_t startDimension = 0;
-            for (const Feature* frameData : featureDatabase.GetFeatures())
+            for (const Feature* feature : featureDatabase.GetFeaturesInKdTree())
             {
-                if ((frameData && frameData->GetId().IsNull()) || !frameData->GetIncludeInKdTree())
-                {
-                    continue;
-                }
-
-                frameData->FillFrameFloats(featureDatabase.GetFeatureMatrix(), frameIndex, startDimension, m_frameFloats);
-                startDimension += frameData->GetNumDimensions();
+                feature->FillFrameFloats(featureDatabase.GetFeatureMatrix(), frameIndex, startDimension, m_frameFloats);
+                startDimension += feature->GetNumDimensions();
             }
         }
 

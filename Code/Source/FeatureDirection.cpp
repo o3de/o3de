@@ -81,7 +81,7 @@ namespace EMotionFX
             return quaternion.TransformVector(axis);
         }
 
-        void FeatureDirection::ExtractFrameData(const ExtractFrameContext& context)
+        void FeatureDirection::ExtractFeatureValues(const ExtractFrameContext& context)
         {
             const Transform invRootTransform = context.m_pose->GetWorldSpaceTransform(m_relativeToNodeIndex).Inversed();
             const AZ::Vector3 nodeWorldDirection = ExtractDirection(context.m_pose->GetWorldSpaceTransform(m_nodeIndex).m_rotation);

@@ -71,7 +71,7 @@ namespace EMotionFX
 
                 FeatureMatrix& m_featureMatrix;
             };
-            virtual void ExtractFrameData(const ExtractFrameContext& context) = 0;
+            virtual void ExtractFeatureValues(const ExtractFrameContext& context) = 0;
 
             virtual void DebugDraw([[maybe_unused]] EMotionFX::DebugDraw::ActorInstanceData& draw, [[maybe_unused]] BehaviorInstance* behaviorInstance, [[maybe_unused]] size_t frameIndex) {}
             virtual void FillFrameFloats([[maybe_unused]]const FeatureMatrix& featureMatrix, [[maybe_unused]] size_t frameIndex, [[maybe_unused]] size_t startIndex, [[maybe_unused]] AZStd::vector<float>& frameFloats) const {}
@@ -87,9 +87,6 @@ namespace EMotionFX
             virtual AZStd::string GetDimensionName([[maybe_unused]] size_t index, [[maybe_unused]] Skeleton* skeleton) const { return "Unknown"; }
             FeatureMatrix::Index GetColumnOffset() const { return m_featureColumnOffset; }
             void SetColumnOffset(FeatureMatrix::Index offset) { m_featureColumnOffset = offset; }
-
-            void SetIncludeInKdTree(bool include);
-            bool GetIncludeInKdTree() const;
 
             const AZ::TypeId& GetId() const { return m_id; }
             size_t GetRelativeToNodeIndex() const { return m_relativeToNodeIndex; }
@@ -109,7 +106,6 @@ namespace EMotionFX
             size_t m_relativeToNodeIndex = 0; /**< Make the data relative to this node (default=0). */
             AZ::Color m_debugColor = AZ::Colors::Green; /**< The debug drawing color. */
             bool m_debugDrawEnabled = false; /**< Is debug drawing enabled for this data? */
-            bool m_includeInKdTree = true; /**< Include in kdTree acceleration structure? */
 
             FeatureMatrix::Index m_featureColumnOffset; // Float/Value offset, starting column for where the feature should be places at
         };
