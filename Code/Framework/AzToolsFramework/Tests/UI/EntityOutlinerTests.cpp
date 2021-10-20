@@ -90,8 +90,7 @@ namespace UnitTest
             // Update our undo cache entry to include the rename / reparent as one atomic operation.
             m_prefabPublicInterface->GenerateUndoNodesForEntityChangeAndUpdateCache(entityId, m_undoStack->GetTop());
 
-            // Force a prefab propagation as updates are deferred to the next tick.
-            m_prefabSystemComponent->OnSystemTick();
+            ProcessDeferredUpdates();
 
             return entityId;
         }
@@ -125,6 +124,30 @@ namespace UnitTest
             return m_model->index(0, 0);
         }
 
+        // Kicks off any updates scheduled for the next tick
+        void ProcessDeferredUpdates()
+        {
+            // Force a prefab propagation for updates that are deferred to the next tick.
+            m_prefabSystemComponent->OnSystemTick();
+
+            // Ensure the model process its entity update queue
+            m_model->ProcessEntityUpdates();
+        }
+
+        // Performs an undo operation and ensures the tick-scheduled updates happen
+        void Undo()
+        {
+            m_undoStack->Undo();
+            ProcessDeferredUpdates();
+        }
+
+        // Performs a redo operation and ensures the tick-scheduled updates happen
+        void Redo()
+        {
+            m_undoStack->Redo();
+            ProcessDeferredUpdates();
+        }
+
         AZStd::unique_ptr<AzToolsFramework::EntityOutlinerListModel> m_model;
         AZStd::unique_ptr<QAbstractItemModelTester> m_modelTester;
         AzToolsFramework::UndoSystem::UndoStack* m_undoStack = nullptr;
@@ -139,21 +162,18 @@ namespace UnitTest
             CreateNamedEntity(AZStd::string::format("Entity%zu", i));
             EXPECT_EQ(m_model->rowCount(GetRootIndex()), i + 1);
         }
-        m_model->ProcessEntityUpdates();
 
         for (int i = entityCount; i > 0; --i)
         {
-            m_undoStack->Undo();
+            Undo();
             EXPECT_EQ(m_model->rowCount(GetRootIndex()), i - 1);
         }
-        m_model->ProcessEntityUpdates();
 
         for (size_t i = 0; i < entityCount; ++i)
         {
-            m_undoStack->Redo();
+            Redo();
             EXPECT_EQ(m_model->rowCount(GetRootIndex()), i + 1);
         }
-        m_model->ProcessEntityUpdates();
     }
 
     TEST_F(EntityOutlinerTest, TestCreateNestedHierarchyUndoAndRedoWorks)
@@ -177,21 +197,18 @@ namespace UnitTest
         {
             parentId = CreateNamedEntity(AZStd::string::format("EntityDepth%i", i), parentId);
             EXPECT_EQ(modelDepth(), i + 1);
-            m_model->ProcessEntityUpdates();
         }
 
         for (int i = depth - 1; i >= 0; --i)
         {
-            m_undoStack->Undo();
+            Undo();
             EXPECT_EQ(modelDepth(), i);
-            m_model->ProcessEntityUpdates();
         }
 
         for (int i = 0; i < depth; ++i)
         {
-            m_undoStack->Redo();
+            Redo();
             EXPECT_EQ(modelDepth(), i + 1);
-            m_model->ProcessEntityUpdates();
         }
     }
 } // namespace UnitTest

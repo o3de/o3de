@@ -35,6 +35,7 @@
 #include <AzCore/Preprocessor/EnumReflectUtils.h>
 #include <AzCore/Console/Console.h>
 
+#include <tiffio.h>
 namespace AZ
 {
     namespace Render
@@ -108,6 +109,48 @@ namespace AZ
             }
 
             return FrameCaptureOutputResult{FrameCaptureResult::InternalError, "Unable to save frame capture output to '" + outputFilePath + "'"};
+        }
+
+        FrameCaptureOutputResult TiffFrameCaptureOutput(
+            const AZStd::string& outputFilePath, const AZ::RPI::AttachmentReadback::ReadbackResult& readbackResult)
+        {
+            AZStd::shared_ptr<AZStd::vector<uint8_t>> buffer = readbackResult.m_dataBuffer;
+            const uint32_t width = readbackResult.m_imageDescriptor.m_size.m_width;
+            const uint32_t height = readbackResult.m_imageDescriptor.m_size.m_height;
+            const uint32_t numChannels = AZ::RHI::GetFormatComponentCount(readbackResult.m_imageDescriptor.m_format);
+            const uint32_t bytesPerChannel = AZ::RHI::GetFormatSize(readbackResult.m_imageDescriptor.m_format) / numChannels;
+            const uint32_t bitsPerChannel = bytesPerChannel * 8;
+
+            TIFF* out = TIFFOpen(outputFilePath.c_str(), "w");
+            TIFFSetField(out, TIFFTAG_IMAGEWIDTH, width);
+            TIFFSetField(out, TIFFTAG_IMAGELENGTH, height);
+            TIFFSetField(out, TIFFTAG_SAMPLESPERPIXEL, numChannels);
+            TIFFSetField(out, TIFFTAG_BITSPERSAMPLE, bitsPerChannel);
+            TIFFSetField(out, TIFFTAG_COMPRESSION, COMPRESSION_NONE);
+            TIFFSetField(out, TIFFTAG_ORIENTATION, ORIENTATION_TOPLEFT);
+            TIFFSetField(out, TIFFTAG_PLANARCONFIG, PLANARCONFIG_CONTIG);
+            TIFFSetField(out, TIFFTAG_PHOTOMETRIC, PHOTOMETRIC_RGB);
+            TIFFSetField(out, TIFFTAG_SAMPLEFORMAT, SAMPLEFORMAT_IEEEFP);   // interpret each pixel as a float
+
+            size_t pitch = width * numChannels * bytesPerChannel;
+            AZ_Assert((pitch * height) == buffer->size(), "Image buffer does not match allocated bytes for tiff saving.")
+            unsigned char* raster = (unsigned char*)_TIFFmalloc((tsize_t)(pitch * height));
+            memcpy(raster, buffer->data(), pitch * height);
+            bool success = true;
+            for (uint32_t h = 0; h < height; ++h)
+            {
+                size_t offset = h * pitch;
+                int err = TIFFWriteScanline(out, raster + offset, h, 0);
+                if (err < 0)
+                {
+                    success = false;
+                    break;
+                }
+            }
+            _TIFFfree(raster);
+            TIFFClose(out);
+            return success ? FrameCaptureOutputResult{ FrameCaptureResult::Success, AZStd::nullopt }
+                           : FrameCaptureOutputResult{ FrameCaptureResult::InternalError, "Unable to save tif frame capture output to " + outputFilePath };
         }
 
         FrameCaptureOutputResult DdsFrameCaptureOutput(
@@ -491,6 +534,12 @@ namespace AZ
                         const auto ddsFrameCapture = DdsFrameCaptureOutput(m_outputFilePath, readbackResult);
                         m_result = ddsFrameCapture.m_result;
                         m_latestCaptureInfo = ddsFrameCapture.m_errorMessage.value_or("");
+                    }
+                    else if (extension == "tiff" || extension == "tif")
+                    {
+                        const auto tifFrameCapture = TiffFrameCaptureOutput(m_outputFilePath, readbackResult);
+                        m_result = tifFrameCapture.m_result;
+                        m_latestCaptureInfo = tifFrameCapture.m_errorMessage.value_or("");
                     }
                     else if (extension == "png")
                     {

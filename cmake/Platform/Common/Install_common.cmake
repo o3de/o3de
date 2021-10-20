@@ -385,7 +385,6 @@ function(ly_setup_cmake_install)
         COMPONENT ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME}
         PATTERN "__pycache__" EXCLUDE
         PATTERN "Findo3de.cmake" EXCLUDE
-        PATTERN "ConfigurationTypes.cmake" EXCLUDE
         REGEX "3rdParty/Platform\/.*\/BuiltInPackages_.*\.cmake" EXCLUDE
     )
     # Connect configuration types
