@@ -28,7 +28,7 @@ namespace AWSCore
     "$schema": "http://json-schema.org/draft-04/schema",
     "type": "object",
     "title": "The AWS Resource Mapping Root schema",
-    "required": ["AWSResourceMappings", "AccountId", "Region", "Version"],
+    "required": ["AWSResourceMappings", "Region", "Version"],
     "properties": {
         "AWSResourceMappings": {
             "type": "object",
@@ -68,7 +68,7 @@ namespace AWSCore
     },
     "AccountIdString": {
         "type": "string",
-        "pattern": "^[0-9]{12}$|EMPTY"
+        "pattern": "^[0-9]{12}$|EMPTY|^$"
     },
     "NonEmptyString": {
         "type": "string",
