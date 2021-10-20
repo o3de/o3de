@@ -234,13 +234,24 @@ namespace AzToolsFramework
 
                         // Last item and the above entry is a source entry
                         // or indeBellow is a source entry and the index above is not
-                        if ((index.row() == viewModel->rowCount() - 1 && !aboveSourceEntry) || (bellowSourceEntry && !aboveSourceEntry))
+                        if ((index.row() == viewModel->rowCount() - 1))
                         {
-                            DrawBranchPixMap(EntryBranchType::Last, painter, branchIconTopLeft, iconSize);
+                            if (aboveSourceEntry)
+                            {
+                                DrawBranchPixMap(EntryBranchType::OneChild, painter, branchIconTopLeft, iconSize);
+                            }
+                            else
+                            {
+                                DrawBranchPixMap(EntryBranchType::Last, painter, branchIconTopLeft, iconSize);
+                            }
                         }
                         else if (bellowSourceEntry && aboveSourceEntry)
                         {
                             DrawBranchPixMap(EntryBranchType::OneChild, painter, branchIconTopLeft, iconSize); // Draw One Child Icon
+                        }
+                        else if (bellowSourceEntry && !aboveSourceEntry)
+                        {
+                            DrawBranchPixMap(EntryBranchType::Last, painter, branchIconTopLeft, iconSize);
                         }
                         else if (aboveSourceEntry) // The index above is a source entry
                         {
