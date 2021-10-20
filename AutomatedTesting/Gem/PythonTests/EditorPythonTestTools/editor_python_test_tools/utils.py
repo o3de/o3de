@@ -77,12 +77,19 @@ class TestHelper:
         :return: None
         """
         Report.info("Entering game mode")
-
         if sv_default_player_spawn_asset :
             general.set_cvar("sv_defaultPlayerSpawnAsset", sv_default_player_spawn_asset)
-        
-        multiplayer.PythonEditorFuncs_enter_game_mode()
-        
+
+        with Tracer() as section_tracer:
+            multiplayer.PythonEditorFuncs_enter_game_mode()
+            general.idle_wait_frames(1)
+
+            # Make sure the server launcher binary exists
+            unexpected_line = "LaunchEditorServer failed! The ServerLauncher binary is missing!"
+            found_lines = [printInfo.message.strip() for printInfo in section_tracer.errors]
+            found_unexpected_lines = [x for x in found_lines if unexpected_line in x]
+            Report.critical_result(("ServerLauncher exists.", "ServerLauncher does not exist!"), not found_unexpected_lines)
+
         TestHelper.wait_for_condition(lambda : multiplayer.PythonEditorFuncs_is_in_game_mode(), 30.0)
         Report.critical_result(msgtuple_success_fail, multiplayer.PythonEditorFuncs_is_in_game_mode())
 
