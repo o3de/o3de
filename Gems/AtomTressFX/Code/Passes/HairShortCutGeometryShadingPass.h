@@ -41,6 +41,18 @@ namespace AZ
                 void CompileResources(const RHI::FrameGraphCompileContext& context) override;
 
             protected:
+                AZ::Name o_enableShadows;
+                AZ::Name o_enableDirectionalLights;
+                AZ::Name o_enablePunctualLights;
+                AZ::Name o_enableAreaLights;
+                AZ::Name o_enableIBL;
+                AZ::Name o_hairLightingModel;
+                AZ::Name o_enableMarschner_R;
+                AZ::Name o_enableMarschner_TRT;
+                AZ::Name o_enableMarschner_TT;
+                AZ::Name o_enableLongtitudeCoeff;
+                AZ::Name o_enableAzimuthCoeff;
+
                 explicit HairShortCutGeometryShadingPass(const RPI::PassDescriptor& descriptor);
 
                 void UpdateGlobalShaderOptions();

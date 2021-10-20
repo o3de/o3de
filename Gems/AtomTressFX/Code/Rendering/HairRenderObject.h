@@ -301,7 +301,7 @@ namespace AZ
                 Data::Instance<RPI::Shader> m_skinningShader = nullptr;
 
                 //! Compute dispatch items map per the existing passes
-                AZStd::map<RPI::Shader*, Data::Instance<HairDispatchItem>> m_dispatchItems;
+                AZStd::unordered_map<RPI::Shader*, Data::Instance<HairDispatchItem>> m_dispatchItems;
 
                 //! Geometry raster shader used for creation of the raster Srgs.
                 //! Since the Srgs for geometry raster are the same across the shaders we keep
@@ -310,7 +310,7 @@ namespace AZ
                 Data::Instance<RPI::Shader> m_geometryRasterShader = nullptr;
 
                 //! DrawPacket for the multi object geometry raster pass.
-                AZStd::map<RPI::Shader*, const RHI::DrawPacket*>  m_geometryDrawPackets;
+                AZStd::unordered_map<RPI::Shader*, const RHI::DrawPacket*>  m_geometryDrawPackets;
 
                 float m_frameDeltaTime = 0.02;
 
