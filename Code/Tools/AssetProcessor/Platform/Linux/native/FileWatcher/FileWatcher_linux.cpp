@@ -72,7 +72,7 @@ struct FolderRootWatch::PlatformImplementation
             // Add the folder to watch and track it
             int watchHandle = inotify_add_watch(m_iNotifyHandle, 
                                                 cleanPath.toUtf8().constData(),
-                                                IN_CREATE | IN_CLOSE_WRITE | IN_DELETE | IN_DELETE_SELF | IN_MODIFY);
+                                                IN_CREATE | IN_CLOSE_WRITE | IN_DELETE | IN_DELETE_SELF | IN_MODIFY | IN_MOVE);
             
             if (!m_handleToFolderMapLock.tryLock(s_handleToFolderMapLockTimeout))
             {
@@ -95,7 +95,7 @@ struct FolderRootWatch::PlatformImplementation
                 
                 int watchHandle = inotify_add_watch(m_iNotifyHandle, 
                                                     dirName.toUtf8().constData(),
-                                                    IN_CREATE | IN_CLOSE_WRITE | IN_DELETE | IN_DELETE_SELF | IN_MODIFY);
+                                                    IN_CREATE | IN_CLOSE_WRITE | IN_DELETE | IN_DELETE_SELF | IN_MODIFY | IN_MOVE);
 
                 if (!m_handleToFolderMapLock.tryLock(s_handleToFolderMapLockTimeout))
                 {
