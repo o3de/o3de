@@ -92,7 +92,7 @@ namespace AZ
                 LockType m_lock;
             };
 
-            template <typename DispatchMutex>
+            template <typename DispatchMutex, bool>
             using DispatchLockGuard = ThreadDispatchLockGuard<DispatchMutex>;
             //////////////////////////////////////////////////////////////////////////
 
