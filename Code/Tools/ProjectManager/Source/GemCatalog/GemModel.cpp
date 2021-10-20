@@ -10,6 +10,7 @@
 #include <GemCatalog/GemModel.h>
 #include <GemCatalog/GemSortFilterProxyModel.h>
 #include <AzCore/Casting/numeric_cast.h>
+#include <AzToolsFramework/UI/Notifications/ToastBus.h>
 
 namespace O3DE::ProjectManager
 {
@@ -299,22 +300,57 @@ namespace O3DE::ProjectManager
         AZ_Assert(gemModel, "Failed to obtain GemModel");
 
         QVector<QModelIndex> dependencies = gemModel->GatherGemDependencies(modelIndex);
+        uint32_t numChangedDependencies = 0;
+
         if (IsAdded(modelIndex))
         {
             for (const QModelIndex& dependency : dependencies)
             {
-                SetIsAddedDependency(*gemModel, dependency, true);
+                if (!IsAddedDependency(dependency))
+                {
+                    SetIsAddedDependency(*gemModel, dependency, true);
+                    numChangedDependencies++;
+                }
             }
         }
         else
         {
             // still a dependency if some added gem depends on this one 
-            SetIsAddedDependency(model, modelIndex, gemModel->HasDependentGems(modelIndex));
+            bool hasDependentGems = gemModel->HasDependentGems(modelIndex);
+            if (IsAddedDependency(modelIndex) != hasDependentGems)
+            {
+                SetIsAddedDependency(model, modelIndex, hasDependentGems);
+                numChangedDependencies++;
+            }
 
             for (const QModelIndex& dependency : dependencies)
             {
-                SetIsAddedDependency(*gemModel, dependency, gemModel->HasDependentGems(dependency));
+                hasDependentGems = gemModel->HasDependentGems(dependency);
+                if (IsAddedDependency(dependency) != hasDependentGems)
+                {
+                    SetIsAddedDependency(*gemModel, dependency, hasDependentGems);
+                    numChangedDependencies++;
+                }
             }
+        }
+
+        if (gemModel->NotificationsEnabled())
+        {
+            //QString notification = GemModel::GetDisplayName(modelIndex);
+            //if (numChangedDependencies == 1 )
+            //{
+            //    notification += " and 1 Gem dependency ";
+            //}
+            //else if (numChangedDependencies > 1)
+            //{
+            //    notification += QString(" and %d Gem dependencies ").arg(numChangedDependencies);
+            //}
+
+            //notification += numChangedDependencies > 0 ? "have been " : "has been ";
+            //notification += IsAdded(modelIndex) ? "activated." : "deactivated.";
+
+            gemModel->emit gemStatusChanged(GemModel::GetDisplayName(modelIndex), numChangedDependencies, IsAdded(modelIndex));
+            //AzToolsFramework::ToastRequestBus::Event(AZ_CRC("GemCatalog"));
         }
     }
 
@@ -487,6 +523,16 @@ namespace O3DE::ProjectManager
             }
         }
         return result;
+    }
+
+    bool GemModel::NotificationsEnabled() const
+    {
+        return m_notificationsEnabled;
+    }
+
+    void GemModel::SetNotificationsEnabled(bool enabled)
+    {
+        m_notificationsEnabled = enabled;
     }
 
 } // namespace O3DE::ProjectManager

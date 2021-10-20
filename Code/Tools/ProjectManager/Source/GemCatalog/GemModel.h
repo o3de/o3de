@@ -77,6 +77,12 @@ namespace O3DE::ProjectManager
 
         int TotalAddedGems(bool includeDependencies = false) const;
 
+        bool NotificationsEnabled() const;
+        void SetNotificationsEnabled(bool enabled);
+
+    signals:
+        void gemStatusChanged(const QString& gemName, uint32_t numDependencies, bool added);
+
     private:
         void FindGemDisplayNamesByNameStrings(QStringList& inOutGemNames);
         void GetAllDependingGems(const QModelIndex& modelIndex, QSet<QModelIndex>& inOutGems);
@@ -111,5 +117,6 @@ namespace O3DE::ProjectManager
         QItemSelectionModel* m_selectionModel = nullptr;
         QHash<QString, QSet<QModelIndex>> m_gemDependencyMap;
         QHash<QString, QSet<QModelIndex>> m_gemReverseDependencyMap;
+        bool m_notificationsEnabled = false;
     };
 } // namespace O3DE::ProjectManager

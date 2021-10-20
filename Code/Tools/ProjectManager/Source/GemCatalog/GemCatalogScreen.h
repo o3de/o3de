@@ -10,6 +10,8 @@
 
 #if !defined(Q_MOC_RUN)
 #include <ScreenWidget.h>
+#include <AzCore/std/smart_ptr/unique_ptr.h>
+#include <AzToolsFramework/UI/Notifications/ToastNotificationsView.h>
 #include <GemCatalog/GemCatalogHeaderWidget.h>
 #include <GemCatalog/GemFilterWidget.h>
 #include <GemCatalog/GemListView.h>
@@ -40,8 +42,16 @@ namespace O3DE::ProjectManager
 
         GemModel* GetGemModel() const { return m_gemModel; }
 
+    protected:
+        void hideEvent(QHideEvent* event) override;
+        void showEvent(QShowEvent* event) override;
+        void resizeEvent(QResizeEvent* event) override;
+        void moveEvent(QMoveEvent* event) override;
+
     private:
         void FillModel(const QString& projectPath);
+
+        AZStd::unique_ptr<AzToolsFramework::ToastNotificationsView> m_notificationsView;
 
         GemListView* m_gemListView = nullptr;
         GemInspector* m_gemInspector = nullptr;
