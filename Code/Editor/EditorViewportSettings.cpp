@@ -52,6 +52,9 @@ namespace SandboxEditor
     constexpr AZStd::string_view CameraOrbitDollyIdSetting = "/Amazon/Preferences/Editor/Camera/OrbitDollyId";
     constexpr AZStd::string_view CameraOrbitPanIdSetting = "/Amazon/Preferences/Editor/Camera/OrbitPanId";
     constexpr AZStd::string_view CameraFocusIdSetting = "/Amazon/Preferences/Editor/Camera/FocusId";
+    constexpr AZStd::string_view CameraDefaultStartingPositionX = "/Amazon/Preferences/Editor/Camera/DefaultStartingPosition/x";
+    constexpr AZStd::string_view CameraDefaultStartingPositionY = "/Amazon/Preferences/Editor/Camera/DefaultStartingPosition/y";
+    constexpr AZStd::string_view CameraDefaultStartingPositionZ = "/Amazon/Preferences/Editor/Camera/DefaultStartingPosition/z";
 
     template<typename T>
     void SetRegistry(const AZStd::string_view setting, T&& value)
@@ -109,6 +112,21 @@ namespace SandboxEditor
     AZStd::unique_ptr<EditorViewportSettingsCallbacks> CreateEditorViewportSettingsCallbacks()
     {
         return AZStd::make_unique<EditorViewportSettingsCallbacksImpl>();
+    }
+
+    AZ::Vector3 DefaultEditorCameraPosition()
+    {
+        float xPosition = aznumeric_cast<float>(GetRegistry(CameraDefaultStartingPositionX, 0.0));
+        float yPosition = aznumeric_cast<float>(GetRegistry(CameraDefaultStartingPositionY, -10.0));
+        float zPosition = aznumeric_cast<float>(GetRegistry(CameraDefaultStartingPositionZ, 4.0));
+        return AZ::Vector3(xPosition, yPosition, zPosition);
+    }
+
+    void SetDefaultCameraEditorPosition(const AZ::Vector3 defaultCameraPosition)
+    {
+        SetRegistry(CameraDefaultStartingPositionX, defaultCameraPosition.GetX());
+        SetRegistry(CameraDefaultStartingPositionY, defaultCameraPosition.GetY());
+        SetRegistry(CameraDefaultStartingPositionZ, defaultCameraPosition.GetZ());
     }
 
     AZ::u64 MaxItemsShownInAssetBrowserSearch()
