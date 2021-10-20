@@ -23,6 +23,7 @@ set(CPACK_WIX_ROOT ${LY_INSTALLER_WIX_ROOT})
 
 set(CPACK_GENERATOR WIX)
 
+set(CPACK_THREADS 0)
 set(_cmake_package_name "cmake-${CPACK_DESIRED_CMAKE_VERSION}-windows-x86_64")
 set(CPACK_CMAKE_PACKAGE_FILE "${_cmake_package_name}.zip")
 set(CPACK_CMAKE_PACKAGE_HASH "15a49e2ab81c1822d75b1b1a92f7863f58e31f6d6aac1c4103eef2b071be3112")
@@ -108,7 +109,6 @@ set(_raw_text_license [[
 ]])
 
 if(LY_INSTALLER_DOWNLOAD_URL)
-
     set(WIX_THEME_WARNING_IMAGE ${CPACK_SOURCE_DIR}/Platform/Windows/Packaging/warning.png)
 
     if(LY_INSTALLER_LICENSE_URL)
@@ -137,6 +137,10 @@ if(LY_INSTALLER_DOWNLOAD_URL)
 
     # the bootstrapper will at the very least need a different upgrade guid
     generate_wix_guid(CPACK_WIX_BOOTSTRAP_UPGRADE_GUID "${_guid_seed_base}_Bootstrap_UpgradeCode")
+
+    set(CPACK_PRE_BUILD_SCRIPTS
+        ${CPACK_SOURCE_DIR}/Platform/Windows/PackagingPreBuild.cmake
+    )
 
     set(CPACK_POST_BUILD_SCRIPTS
         ${CPACK_SOURCE_DIR}/Platform/Windows/PackagingPostBuild.cmake

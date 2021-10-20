@@ -112,7 +112,6 @@ void StartFixedCursorMode(QObject *viewport);
 
 #define RENDER_MESH_TEST_DISTANCE (0.2f)
 #define CURSOR_FONT_HEIGHT  8.0f
-
 namespace AZ::ViewportHelpers
 {
     static const char TextCantCreateCameraNoLevel[] = "Cannot create camera when no level is loaded.";
@@ -623,16 +622,10 @@ void EditorViewportWidget::OnEditorNotifyEvent(EEditorNotifyEvent event)
         PopDisableRendering();
 
         {
-            AZ::Aabb terrainAabb = AZ::Aabb::CreateFromPoint(AZ::Vector3::CreateZero());
-            AzFramework::Terrain::TerrainDataRequestBus::BroadcastResult(terrainAabb, &AzFramework::Terrain::TerrainDataRequests::GetTerrainAabb);
-            float sx = terrainAabb.GetXExtent();
-            float sy = terrainAabb.GetYExtent();
-
             Matrix34 viewTM;
             viewTM.SetIdentity();
-            // Initial camera will be at middle of the map at the height of 2
-            // meters above the terrain (default terrain height is 32)
-            viewTM.SetTranslation(Vec3(sx * 0.5f, sy * 0.5f, 34.0f));
+
+            viewTM.SetTranslation(Vec3(m_editorViewportSettings.DefaultEditorCameraPosition()));
             SetViewTM(viewTM);
 
             UpdateScene();
@@ -647,16 +640,10 @@ void EditorViewportWidget::OnEditorNotifyEvent(EEditorNotifyEvent event)
         PopDisableRendering();
 
         {
-            AZ::Aabb terrainAabb = AZ::Aabb::CreateFromPoint(AZ::Vector3::CreateZero());
-            AzFramework::Terrain::TerrainDataRequestBus::BroadcastResult(terrainAabb, &AzFramework::Terrain::TerrainDataRequests::GetTerrainAabb);
-            float sx = terrainAabb.GetXExtent();
-            float sy = terrainAabb.GetYExtent();
-
             Matrix34 viewTM;
             viewTM.SetIdentity();
-            // Initial camera will be at middle of the map at the height of 2
-            // meters above the terrain (default terrain height is 32)
-            viewTM.SetTranslation(Vec3(sx * 0.5f, sy * 0.5f, 34.0f));
+
+            viewTM.SetTranslation(Vec3(m_editorViewportSettings.DefaultEditorCameraPosition()));
             SetViewTM(viewTM);
         }
         break;
@@ -1345,10 +1332,6 @@ void EditorViewportWidget::keyPressEvent(QKeyEvent* event)
 
 void EditorViewportWidget::SetViewTM(const Matrix34& tm)
 {
-    if (m_viewSourceType == ViewSourceType::None)
-    {
-        m_defaultViewTM = tm;
-    }
     SetViewTM(tm, false);
 }
 
@@ -1444,6 +1427,10 @@ void EditorViewportWidget::SetViewTM(const Matrix34& camMatrix, bool bMoveOnly)
             "Viewport camera entity ID and view out of sync; request view transform will be ignored. "
             "Please report this as a bug."
         );
+    }
+    else if (shouldUpdateObject == ShouldUpdateObject::No)
+    {
+        GetCurrentAtomView()->SetCameraTransform(LYTransformToAZMatrix3x4(camMatrix));
     }
 
     if (m_pressedKeyState == KeyPressedState::PressedThisFrame)
@@ -2028,6 +2015,9 @@ void EditorViewportWidget::SetDefaultCamera()
     m_viewSourceType = ViewSourceType::None;
     GetViewManager()->SetCameraObjectId(GUID_NULL);
     SetName(m_defaultViewName);
+
+    // Set the default Editor Camera position.
+    m_defaultViewTM.SetTranslation(Vec3(m_editorViewportSettings.DefaultEditorCameraPosition()));
     SetViewTM(m_defaultViewTM);
 
     // Synchronize the configured editor viewport FOV to the default camera
@@ -2428,7 +2418,7 @@ void EditorViewportWidget::RestoreViewportAfterGameMode()
     }
     else
     {
-        AZ_Error("CryLegacy", false, "Not restoring the editor viewport camera is currently unsupported");
+        AZ_Warning("CryLegacy", false, "Not restoring the editor viewport camera is currently unsupported");
         SetViewTM(preGameModeViewTM);
     }
 }
@@ -2528,6 +2518,11 @@ float EditorViewportSettings::ManipulatorCircleBoundWidth() const
 bool EditorViewportSettings::StickySelectEnabled() const
 {
     return SandboxEditor::StickySelectEnabled();
+}
+
+AZ::Vector3 EditorViewportSettings::DefaultEditorCameraPosition() const
+{
+    return SandboxEditor::DefaultEditorCameraPosition();
 }
 
 AZ_CVAR_EXTERNED(bool, ed_previewGameInFullscreen_once);
@@ -2641,5 +2636,4 @@ void EditorViewportWidget::StopFullscreenPreview()
     // Show the main window
     MainWindow::instance()->show();
 }
-
 #include <moc_EditorViewportWidget.cpp>

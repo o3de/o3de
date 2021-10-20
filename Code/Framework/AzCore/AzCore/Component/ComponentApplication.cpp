@@ -74,8 +74,6 @@
 #include <AzCore/Module/Environment.h>
 #include <AzCore/std/string/conversions.h>
 
-AZ_CVAR(float, g_simulation_tick_rate, 0, nullptr, AZ::ConsoleFunctorFlags::Null, "The rate at which the game simulation tick loop runs, or 0 for as fast as possible");
-
 static void PrintEntityName(const AZ::ConsoleCommandContainer& arguments)
 {
     if (arguments.empty())
@@ -194,11 +192,86 @@ namespace AZ
     };
 
 
+    //! SettingsRegistry notifier handler which is responsible for loading
+    //! the project.json file at the new project path
+    //! if an update to '<BootstrapSettingsRootKey>/project_path' key occurs.
+    struct ProjectPathChangedEventHandler
+    {
+        ProjectPathChangedEventHandler(AZ::SettingsRegistryInterface& registry)
+            : m_registry{ registry }
+        {
+        }
+
+        void operator()(AZStd::string_view path, AZ::SettingsRegistryInterface::Type)
+        {
+            // Update the project settings when the project path is set
+            using FixedValueString = AZ::SettingsRegistryInterface::FixedValueString;
+            const auto projectPathKey = FixedValueString(AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey) + "/project_path";
+
+            AZ::IO::FixedMaxPath newProjectPath;
+            if (SettingsRegistryMergeUtils::IsPathAncestorDescendantOrEqual(projectPathKey, path)
+                && m_registry.Get(newProjectPath.Native(), projectPathKey) && newProjectPath != m_oldProjectPath)
+            {
+                // Update old Project path before attempting to merge in new Settings Registry values in order to prevent recursive calls
+                m_oldProjectPath = newProjectPath;
+
+                // Merge the project.json file into settings registry under ProjectSettingsRootKey path.
+                AZ::IO::FixedMaxPath projectMetadataFile{ AZ::SettingsRegistryMergeUtils::FindEngineRoot(m_registry) / newProjectPath };
+                projectMetadataFile /= "project.json";
+                m_registry.MergeSettingsFile(projectMetadataFile.Native(),
+                    AZ::SettingsRegistryInterface::Format::JsonMergePatch, AZ::SettingsRegistryMergeUtils::ProjectSettingsRootKey);
+
+                // Update all the runtime file paths based on the new "project_path" value.
+                AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddRuntimeFilePaths(m_registry);
+            }
+        }
+
+    private:
+        AZ::IO::FixedMaxPath m_oldProjectPath;
+        AZ::SettingsRegistryInterface& m_registry;
+    };
+
+    //! SettingsRegistry notifier handler which adds the project name as a specialization tag
+    //! to the registry
+    //! if an update to '<ProjectSettingsRootKey>/project_name' key occurs.
+    struct ProjectNameChangedEventHandler
+    {
+        ProjectNameChangedEventHandler(AZ::SettingsRegistryInterface& registry)
+            : m_registry{ registry }
+        {
+        }
+
+        void operator()(AZStd::string_view path, AZ::SettingsRegistryInterface::Type)
+        {
+            // Update the project specialization when the project name is set
+            using FixedValueString = AZ::SettingsRegistryInterface::FixedValueString;
+            const auto projectNameKey = FixedValueString(AZ::SettingsRegistryMergeUtils::ProjectSettingsRootKey) + "/project_name";
+
+            FixedValueString newProjectName;
+            if (SettingsRegistryMergeUtils::IsPathAncestorDescendantOrEqual(projectNameKey, path)
+                && m_registry.Get(newProjectName, projectNameKey) && newProjectName != m_oldProjectName)
+            {
+                // Add the project_name as a specialization for loading the build system dependency .setreg files
+                auto newProjectNameSpecialization = FixedValueString::format("%s/%.*s", AZ::SettingsRegistryMergeUtils::SpecializationsRootKey,
+                    aznumeric_cast<int>(newProjectName.size()), newProjectName.data());
+                auto oldProjectNameSpecialization = FixedValueString::format("%s/%s", AZ::SettingsRegistryMergeUtils::SpecializationsRootKey,
+                    m_oldProjectName.c_str());
+                m_registry.Remove(oldProjectNameSpecialization);
+                m_oldProjectName = newProjectName;
+                m_registry.Set(newProjectNameSpecialization, true);
+            }
+        }
+
+    private:
+        AZ::SettingsRegistryInterface::FixedValueString m_oldProjectName;
+        AZ::SettingsRegistryInterface& m_registry;
+    };
+
     //! SettingsRegistry notifier handler which updates relevant registry settings based
     //! on an update to '/Amazon/AzCore/Bootstrap/project_path' key.
-    struct UpdateProjectSettingsEventHandler
+    struct UpdateCommandLineEventHandler
     {
-        UpdateProjectSettingsEventHandler(AZ::SettingsRegistryInterface& registry, AZ::CommandLine& commandLine)
+        UpdateCommandLineEventHandler(AZ::SettingsRegistryInterface& registry, AZ::CommandLine& commandLine)
             : m_registry{ registry }
             , m_commandLine{ commandLine }
         {
@@ -206,70 +279,14 @@ namespace AZ
 
         void operator()(AZStd::string_view path, AZ::SettingsRegistryInterface::Type)
         {
-            using FixedValueString = AZ::SettingsRegistryInterface::FixedValueString;
-            // #1 Update the project settings when the project path is set
-            const auto projectPathKey = FixedValueString(AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey) + "/project_path";
-            AZ::IO::FixedMaxPath newProjectPath;
-            if (SettingsRegistryMergeUtils::IsPathAncestorDescendantOrEqual(projectPathKey, path)
-                && m_registry.Get(newProjectPath.Native(), projectPathKey) && newProjectPath != m_oldProjectPath)
-            {
-                UpdateProjectSettingsFromProjectPath(AZ::IO::PathView(newProjectPath));
-            }
-
-            // #2 Update the project specialization when the project name is set
-            const auto projectNameKey = FixedValueString(AZ::SettingsRegistryMergeUtils::ProjectSettingsRootKey) + "/project_name";
-            FixedValueString newProjectName;
-            if (SettingsRegistryMergeUtils::IsPathAncestorDescendantOrEqual(projectNameKey, path)
-                && m_registry.Get(newProjectName, projectNameKey) && newProjectName != m_oldProjectName)
-            {
-                UpdateProjectSpecializationFromProjectName(newProjectName);
-            }
-
-            // #3 Update the ComponentApplication CommandLine instance when the command line settings are merged into the Settings Registry
+            // Update the ComponentApplication CommandLine instance when the command line settings are merged into the Settings Registry
             if (path == AZ::SettingsRegistryMergeUtils::CommandLineValueChangedKey)
             {
-                UpdateCommandLine();
+                AZ::SettingsRegistryMergeUtils::GetCommandLineFromRegistry(m_registry, m_commandLine);
             }
-        }
-
-        //! Add the project name as a specialization underneath the /Amazon/AzCore/Settings/Specializations path
-        //! and remove the current project name specialization if one exists.
-        void UpdateProjectSpecializationFromProjectName(AZStd::string_view newProjectName)
-        {
-            using FixedValueString = AZ::SettingsRegistryInterface::FixedValueString;
-            // Add the project_name as a specialization for loading the build system dependency .setreg files
-            auto newProjectNameSpecialization = FixedValueString::format("%s/%.*s", AZ::SettingsRegistryMergeUtils::SpecializationsRootKey,
-                aznumeric_cast<int>(newProjectName.size()), newProjectName.data());
-            auto oldProjectNameSpecialization = FixedValueString::format("%s/%s", AZ::SettingsRegistryMergeUtils::SpecializationsRootKey,
-                m_oldProjectName.c_str());
-            m_registry.Remove(oldProjectNameSpecialization);
-            m_oldProjectName = newProjectName;
-            m_registry.Set(newProjectNameSpecialization, true);
-        }
-
-        void UpdateProjectSettingsFromProjectPath(AZ::IO::PathView newProjectPath)
-        {
-            // Update old Project path before attempting to merge in new Settings Registry values in order to prevent recursive calls
-            m_oldProjectPath = newProjectPath;
-
-            // Merge the project.json file into settings registry under ProjectSettingsRootKey path.
-            AZ::IO::FixedMaxPath projectMetadataFile{ AZ::SettingsRegistryMergeUtils::FindEngineRoot(m_registry) / newProjectPath };
-            projectMetadataFile /= "project.json";
-            m_registry.MergeSettingsFile(projectMetadataFile.Native(),
-                AZ::SettingsRegistryInterface::Format::JsonMergePatch, AZ::SettingsRegistryMergeUtils::ProjectSettingsRootKey);
-
-            // Update all the runtime file paths based on the new "project_path" value.
-            AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddRuntimeFilePaths(m_registry);
-        }
-
-        void UpdateCommandLine()
-        {
-            AZ::SettingsRegistryMergeUtils::GetCommandLineFromRegistry(m_registry, m_commandLine);
         }
 
     private:
-        AZ::IO::FixedMaxPath m_oldProjectPath;
-        AZ::SettingsRegistryInterface::FixedValueString m_oldProjectName;
         AZ::SettingsRegistryInterface& m_registry;
         AZ::CommandLine& m_commandLine;
     };
@@ -464,7 +481,12 @@ namespace AZ
         // 1. The 'project_path' key changes
         // 2. The project specialization when the 'project-name' key changes
         // 3. The ComponentApplication command line when the command line is stored to the registry
-        m_projectChangedHandler = m_settingsRegistry->RegisterNotifier(UpdateProjectSettingsEventHandler{ *m_settingsRegistry, m_commandLine });
+        m_projectPathChangedHandler = m_settingsRegistry->RegisterNotifier(ProjectPathChangedEventHandler{
+            *m_settingsRegistry });
+        m_projectNameChangedHandler = m_settingsRegistry->RegisterNotifier(ProjectNameChangedEventHandler{
+            *m_settingsRegistry });
+        m_commandLineUpdatedHandler = m_settingsRegistry->RegisterNotifier(UpdateCommandLineEventHandler{
+            *m_settingsRegistry, m_commandLine });
 
         // Merge Command Line arguments
         constexpr bool executeRegDumpCommands = false;
@@ -517,11 +539,12 @@ namespace AZ
             Destroy();
         }
 
-        // The m_projectChangedHandler stores an AZStd::function internally
-        // which allocates using the AZ SystemAllocator
-        // m_projectChangedHandler is being default value initialized
-        // to clear out the AZStd::function
-        m_projectChangedHandler = {};
+        // The SettingsRegistry Notify handlers stores an AZStd::function internally
+        // which may allocates using the AZ SystemAllocator(if the functor > 16 bytes)
+        // The handlers are being default value initialized to clear out the AZStd::function
+        m_commandLineUpdatedHandler = {};
+        m_projectNameChangedHandler = {};
+        m_projectPathChangedHandler = {};
 
         // Delete the AZ::IConsole if it was created by this application instance
         if (m_ownsConsole)
@@ -1369,9 +1392,6 @@ namespace AZ
 #endif
     }
 
-    //=========================================================================
-    // Tick
-    //=========================================================================
     void ComponentApplication::Tick(float deltaOverride /*= -1.f*/)
     {
         {
@@ -1396,29 +1416,9 @@ namespace AZ
                 AZ_PROFILE_SCOPE(AzCore, "ComponentApplication::Tick:OnTick");
                 EBUS_EVENT(TickBus, OnTick, m_deltaTime, ScriptTimePoint(now));
             }
-
-            // If tick rate limiting is on, ensure (1 / g_simulation_tick_rate) ms has elapsed since the last frame,
-            // sleeping if there's still time remaining.
-            if (g_simulation_tick_rate > 0.f)
-            {
-                now = AZStd::chrono::system_clock::now();
-
-                // Work in microsecond durations here as that's the native measurement time for time_point
-                constexpr float microsecondsPerSecond = 1000.f * 1000.f;
-                const AZStd::chrono::microseconds timeBudgetPerTick(static_cast<int>(microsecondsPerSecond / g_simulation_tick_rate));
-                AZStd::chrono::microseconds timeUntilNextTick = m_currentTime + timeBudgetPerTick - now;
-
-                if (timeUntilNextTick.count() > 0)
-                {
-                    AZStd::this_thread::sleep_for(timeUntilNextTick);
-                }
-            }
         }
     }
 
-    //=========================================================================
-    // Tick
-    //=========================================================================
     void ComponentApplication::TickSystem()
     {
         AZ_PROFILE_SCOPE(System, "Component application tick");
@@ -1566,5 +1566,4 @@ namespace AZ
             AZ::SettingsRegistryScriptUtils::ReflectSettingsRegistryToBehaviorContext(*behaviorContext);
         }
     }
-
 } // namespace AZ

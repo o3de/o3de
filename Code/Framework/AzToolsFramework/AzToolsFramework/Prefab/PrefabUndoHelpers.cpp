@@ -23,7 +23,7 @@ namespace AzToolsFramework
                 PrefabDom instanceDomAfterUpdate;
                 PrefabDomUtils::StoreInstanceInPrefabDom(instance, instanceDomAfterUpdate);
 
-                PrefabUndoInstance* state = aznew Prefab::PrefabUndoInstance(undoMessage);
+                PrefabUndoInstance* state = aznew Prefab::PrefabUndoInstance(undoMessage, false);
                 state->Capture(instanceDomBeforeUpdate, instanceDomAfterUpdate, instance.GetTemplateId());
                 state->SetParent(undoBatch);
                 state->Redo();

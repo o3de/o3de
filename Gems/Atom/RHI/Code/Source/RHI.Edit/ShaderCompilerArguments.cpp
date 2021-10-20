@@ -155,11 +155,6 @@ namespace AZ
             {
                 arguments += " -Zpr";
             }
-            if (m_dxcGenerateDebugInfo)
-            {
-                arguments += " -Zi";  // Generate debug information
-                arguments += " -Zss"; // Compute Shader Hash considering source information
-            }
             // strip spaces at both sides
             AZStd::string dxcAdditionalFreeArguments = m_dxcAdditionalFreeArguments;
             AzFramework::StringFunc::TrimWhiteSpace(dxcAdditionalFreeArguments, true, true);

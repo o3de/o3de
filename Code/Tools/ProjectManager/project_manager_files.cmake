@@ -92,6 +92,8 @@ set(FILES
     Source/GemCatalog/GemListHeaderWidget.cpp
     Source/GemCatalog/GemModel.h
     Source/GemCatalog/GemModel.cpp
+    Source/GemCatalog/GemDependenciesDialog.h
+    Source/GemCatalog/GemDependenciesDialog.cpp
     Source/GemCatalog/GemRequirementDialog.h
     Source/GemCatalog/GemRequirementDialog.cpp
     Source/GemCatalog/GemRequirementDelegate.h
@@ -104,6 +106,8 @@ set(FILES
     Source/GemCatalog/GemSortFilterProxyModel.cpp
     Source/GemRepo/GemRepoScreen.h
     Source/GemRepo/GemRepoScreen.cpp
+    Source/GemRepo/GemRepoAddDialog.h
+    Source/GemRepo/GemRepoAddDialog.cpp
     Source/GemRepo/GemRepoInfo.h
     Source/GemRepo/GemRepoInfo.cpp
     Source/GemRepo/GemRepoInspector.h

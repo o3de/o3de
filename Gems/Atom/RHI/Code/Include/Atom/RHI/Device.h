@@ -27,9 +27,6 @@ namespace AZ
 {
     namespace RHI
     {
-        struct CpuTimingStatistics;
-
-        
         //! The Device is a context for managing GPU state and memory on a physical device. The user creates
         //! a device instance from a PhysicalDevice. Each device has its own capabilities and limits, and can
         //! be configured to buffer a specific number of frames.
@@ -91,10 +88,10 @@ namespace AZ
             //! scope. Otherwise, an error code is returned.
             ResultCode CompileMemoryStatistics(MemoryStatistics& memoryStatistics, MemoryStatisticsReportFlags reportFlags);
 
-            //! Fills the provided data structure with cpu timing statistics specific to this device. This
-            //! method can only be called on an initialized device, and outside of the BeginFrame / EndFrame
-            //! scope. Otherwise, an error code is returned.
-            ResultCode UpdateCpuTimingStatistics(CpuTimingStatistics& cpuTimingStatistics) const;
+            //! Pushes internally recorded timing statistics upwards into the global stats profiler, under the RHI section.
+            //! This method can only be called on an initialized device, and outside of the BeginFrame / EndFrame scope.
+            //! Otherwise, an error code is returned.
+            ResultCode UpdateCpuTimingStatistics() const;
 
             //! Returns the physical device associated with this device.
             const PhysicalDevice& GetPhysicalDevice() const;
@@ -139,6 +136,12 @@ namespace AZ
             //! Notifies after all objects currently in the platform release queue are released
             virtual void ObjectCollectionNotify(RHI::ObjectCollectorNotifyFunction notifyFunction) = 0;
 
+            //! Allows the back-ends to compact SRG related memory if applicable
+            virtual RHI::ResultCode CompactSRGMemory()
+            {
+                return RHI::ResultCode::Success;
+            };
+
         protected:
             DeviceFeatures m_features;
             DeviceLimits m_limits;
@@ -180,7 +183,7 @@ namespace AZ
             virtual void CompileMemoryStatisticsInternal(MemoryStatisticsBuilder& builder) = 0;
 
             //! Called when the device is reporting cpu timing statistics.
-            virtual void UpdateCpuTimingStatisticsInternal(CpuTimingStatistics& cpuTimingStatistics) const = 0;
+            virtual void UpdateCpuTimingStatisticsInternal() const = 0;
 
             //! Fills the capabilities for each format.
             virtual void FillFormatsCapabilitiesInternal(FormatCapabilitiesList& formatsCapabilities) = 0;

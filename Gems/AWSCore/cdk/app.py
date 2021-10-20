@@ -57,8 +57,9 @@ example_stack = ExampleResources(
     tags={Constants.O3DE_PROJECT_TAG_NAME: PROJECT_NAME, Constants.O3DE_FEATURE_TAG_NAME: FEATURE_NAME},
     env=env
 )
-#
-# Add the common stack as a dependency of the feature stack
+
+# Add the core stack as a dependency of the feature stack since the feature stack
+# requires the core stack outputs for deployment.
 example_stack.add_dependency(core_construct.common_stack)
 
 app.synth()

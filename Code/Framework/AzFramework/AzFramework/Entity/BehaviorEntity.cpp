@@ -133,6 +133,8 @@ namespace AzFramework
             behaviorContext->Class<BehaviorEntity>("Entity")
                 ->Attribute(AZ::Script::Attributes::Storage, AZ::Script::Attributes::StorageType::Value)
                 ->Attribute(AZ::Script::Attributes::ConstructorOverride, &Internal::BehaviorEntityScriptConstructor)
+                ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
+                ->Attribute(AZ::Script::Attributes::Module, "entity")
                 ->Constructor()
                 ->Constructor<AZ::EntityId>()
                 ->Constructor<AZ::Entity*>()

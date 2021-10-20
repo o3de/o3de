@@ -7,6 +7,7 @@
  */
 
 #include <AzCore/Asset/AssetManager.h>
+#include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/Settings/SettingsRegistry.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzFramework/Spawnable/SpawnableMetaData.h>
@@ -44,8 +45,7 @@ namespace AzFramework
 
     void SpawnableSystemComponent::OnTick(float /*deltaTime*/, AZ::ScriptTimePoint /*time*/)
     {
-        m_entitiesManager.ProcessQueue(
-            SpawnableEntitiesManager::CommandQueuePriority::High | SpawnableEntitiesManager::CommandQueuePriority::Regular);
+        ProcessSpawnableQueue();
         RootSpawnableNotificationBus::ExecuteQueuedEvents();
     }
 
@@ -120,6 +120,12 @@ namespace AzFramework
         m_rootSpawnableId = AZ::Data::AssetId();
     }
 
+    void SpawnableSystemComponent::ProcessSpawnableQueue()
+    {
+        m_entitiesManager.ProcessQueue(
+            SpawnableEntitiesManager::CommandQueuePriority::High | SpawnableEntitiesManager::CommandQueuePriority::Regular);
+    }
+
     void SpawnableSystemComponent::OnRootSpawnableAssigned([[maybe_unused]] AZ::Data::Asset<Spawnable> rootSpawnable,
         [[maybe_unused]] uint32_t generation)
     {
@@ -160,6 +166,8 @@ namespace AzFramework
 
     void SpawnableSystemComponent::Deactivate()
     {
+        ProcessSpawnableQueue();
+
         m_registryChangeHandler.Disconnect();
 
         AZ::TickBus::Handler::BusDisconnect();

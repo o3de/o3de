@@ -22,14 +22,11 @@ partial ShaderResourceGroup ViewSrg
         uint m_isEnabled;
         uint2 m_shadowmapOriginInSlice;
         uint m_shadowmapSize;
-        uint m_parameterOffset;
-        uint m_parameterCount;
         float m_lightDistanceOfCameraViewFrustum;
         float m_n_f_n; // n / (f - n)
         float m_n_f;   // n - f
         float m_f;     // f
                        // where n: nearDepth, f: farDepth.
-        float2 m_padding; // explicit padding
     };
 
     // Simple Point Lights 

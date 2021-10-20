@@ -9,27 +9,34 @@
 #pragma once
 
 #include <AzCore/Component/Component.h>
-#include <AzCore/Component/TickBus.h>
-#include <AzCore/Component/TransformBus.h>
-#include <LmbrCentral/Shape/ShapeComponentBus.h>
+
+#include <AzFramework/Terrain/TerrainDataRequestBus.h>
+#include <TerrainRenderer/TerrainMacroMaterialBus.h>
 
 #include <Atom/RPI.Public/FeatureProcessor.h>
-#include <Atom/RPI.Public/Shader/Shader.h>
+#include <Atom/RPI.Public/Image/AttachmentImage.h>
+#include <Atom/RPI.Public/MeshDrawPacket.h>
+#include <Atom/RPI.Public/Material/MaterialReloadNotificationBus.h>
+#include <Atom/Feature/Utils/IndexedDataVector.h>
 
-#include <Atom/RPI.Public/Image/StreamingImage.h>
-#include <Atom/RHI/ShaderResourceGroup.h>
-#include <Atom/RHI/BufferPool.h>
-#include <Atom/RHI/DrawPacket.h>
-#include <Atom/RHI/IndexBufferView.h>
-#include <Atom/RHI/PipelineState.h>
-#include <Atom/RHI/StreamBufferView.h>
-#include <Atom/RHI/RHISystemInterface.h>
-#include <Atom/RPI.Public/Shader/ShaderResourceGroup.h>
+namespace AZ::RPI
+{
+    namespace AssetUtils
+    {
+        class AsyncAssetLoader;
+    }
+    class Material;
+    class Model;
+    class StreamingImage;
+}
 
 namespace Terrain
 {
     class TerrainFeatureProcessor final
         : public AZ::RPI::FeatureProcessor
+        , private AZ::RPI::MaterialReloadNotificationBus::Handler
+        , private AzFramework::Terrain::TerrainDataNotificationBus::Handler
+        , private TerrainMacroMaterialNotificationBus::Handler
     {
     public:
         AZ_RTTI(TerrainFeatureProcessor, "{D7DAC1F9-4A9F-4D3C-80AE-99579BF8AB1C}", AZ::RPI::FeatureProcessor);
@@ -41,42 +48,22 @@ namespace Terrain
         TerrainFeatureProcessor() = default;
         ~TerrainFeatureProcessor() = default;
 
-        //////////////////////////////////////////////////////////////////////////
-        // AZ::Component interface implementation
+        // AZ::RPI::FeatureProcessor overrides...
         void Activate() override;
         void Deactivate() override;
         void Render(const AZ::RPI::FeatureProcessor::RenderPacket& packet) override;
 
-        void UpdateTerrainData(const AZ::Transform& transform, const AZ::Aabb& worldBounds, float sampleSpacing,
-                               uint32_t width, uint32_t height, const AZStd::vector<float>& heightData);
-
-        void RemoveTerrainData()
-        {
-            m_areaData = {};
-        }
+        void SetWorldSize(AZ::Vector2 sizeInMeters);
 
     private:
+        
+        using MaterialInstance = AZ::Data::Instance<AZ::RPI::Material>;
+        static constexpr uint32_t MaxMaterialsPerSector = 4;
 
-        // System-level references to the shader, pipeline, and shader-related information
-        enum ShaderType 
+        enum MacroMaterialFlags
         {
-            Depth,
-            Forward,
-            Count,
-        };
-
-        struct ShaderState
-        {
-            AZ::Data::Instance<AZ::RPI::Shader> m_shader;
-            AZ::RHI::ConstPtr<AZ::RHI::PipelineState> m_pipelineState;
-            AZ::RHI::PipelineStateDescriptorForDraw m_pipelineStateDescriptor;
-
-            void Reset()
-            {
-                m_shader.reset();
-                m_pipelineState.reset();
-                m_pipelineStateDescriptor = {};
-            }
+            ColorImageUsed = 0b01,
+            NormalImageUsed = 0b10,
         };
 
         struct ShaderTerrainData // Must align with struct in Object Srg
@@ -88,90 +75,127 @@ namespace Terrain
             float m_heightScale;
         };
 
-        // RPI::SceneNotificationBus overrides ...
-        void OnRenderPipelineAdded(AZ::RPI::RenderPipelinePtr pipeline) override;
-        void OnRenderPipelineRemoved(AZ::RPI::RenderPipeline* pipeline) override;
-        void OnRenderPipelinePassesChanged(AZ::RPI::RenderPipeline* renderPipeline) override;
+        struct ShaderMacroMaterialData
+        {
+            AZStd::array<float, 2> m_uvMin;
+            AZStd::array<float, 2> m_uvMax;
+            float m_normalFactor;
+            uint32_t m_flipNormalX{ 0 }; // bool in shader
+            uint32_t m_flipNormalY{ 0 }; // bool in shader
+            uint32_t m_mapsInUse{ 0b00 }; // 0b01 = color, 0b10 = normal
+        };
 
-        void InitializeAtomStuff();
-        void ConfigurePipelineState(ShaderState& shaderState, bool assertOnFail);
-
-        void InitializeTerrainPatch();
-
-        bool InitializeRenderBuffers();
-        void DestroyRenderBuffers();
-
-        void ProcessSurfaces(const FeatureProcessor::RenderPacket& process);
-
-        // System-level parameters
-        const float m_gridSpacing{ 1.0f };
-        const float m_gridMeters{ 32.0f };
-
-        // System-level cached reference to the Atom RHI
-        AZ::RHI::RHISystemInterface* m_rhiSystem = nullptr;
-
-        AZStd::array<ShaderState, ShaderType::Count> m_shaderStates;
-
-        AZ::RHI::ShaderInputImageIndex m_heightmapImageIndex;
-        AZ::RHI::ShaderInputConstantIndex m_modelToWorldIndex;
-        AZ::RHI::ShaderInputConstantIndex m_terrainDataIndex;
-
-        // Pos_float_2 + UV_float_2
-        struct Vertex
+        struct VertexPosition
         {
             float m_posx;
             float m_posy;
-            float m_u;
-            float m_v;
-
-            Vertex(float posx, float posy, float u, float v)
-                : m_posx(posx)
-                , m_posy(posy)
-                , m_u(u)
-                , m_v(v)
-            {
-            }
         };
 
-        // System-level definition of a grid patch.  (ex: 32m x 32m)
-        AZStd::vector<Vertex> m_gridVertices;
-        AZStd::vector<uint16_t> m_gridIndices;
+        struct VertexUv
+        {
+            float m_u;
+            float m_v;
+        };
 
-        // System-level data related to the grid patch
-        AZ::RHI::Ptr<AZ::RHI::BufferPool> m_hostPool = nullptr;
-        AZ::RHI::Ptr<AZ::RHI::Buffer> m_indexBuffer;
-        AZ::RHI::Ptr<AZ::RHI::Buffer> m_vertexBuffer;
-        AZ::RHI::IndexBufferView m_indexBufferView;
-        AZ::RHI::StreamBufferView m_vertexBufferView;
+        struct PatchData
+        {
+            AZStd::vector<VertexPosition> m_positions;
+            AZStd::vector<VertexUv> m_uvs;
+            AZStd::vector<uint16_t> m_indices;
+        };
+        
+        struct SectorData
+        {
+            AZ::Data::Instance<AZ::RPI::ShaderResourceGroup> m_srg; // Hold on to ref so it's not dropped
+            AZ::Aabb m_aabb;
+            AZStd::fixed_vector<AZ::RPI::MeshDrawPacket, AZ::RPI::ModelLodAsset::LodCountMax> m_drawPackets;
+            AZStd::fixed_vector<uint16_t, MaxMaterialsPerSector> m_macroMaterials;
+        };
+
+        struct MacroMaterialData
+        {
+            AZ::EntityId m_entityId;
+            AZ::Aabb m_bounds = AZ::Aabb::CreateNull();
+
+            AZ::Data::Instance<AZ::RPI::Image> m_colorImage;
+            AZ::Data::Instance<AZ::RPI::Image> m_normalImage;
+            bool m_normalFlipX{ false };
+            bool m_normalFlipY{ false };
+            float m_normalFactor{ 0.0f };
+        };
+
+        // AZ::RPI::MaterialReloadNotificationBus::Handler overrides...
+        void OnMaterialReinitialized(const MaterialInstance& material) override;
+
+        // AzFramework::Terrain::TerrainDataNotificationBus overrides...
+        void OnTerrainDataDestroyBegin() override;
+        void OnTerrainDataChanged(const AZ::Aabb& dirtyRegion, TerrainDataChangedMask dataChangedMask) override;
+
+        // TerrainMacroMaterialNotificationBus overrides...
+        void OnTerrainMacroMaterialCreated(AZ::EntityId entityId, MaterialInstance material, const AZ::Aabb& region) override;
+        void OnTerrainMacroMaterialChanged(AZ::EntityId entityId, MaterialInstance material) override;
+        void OnTerrainMacroMaterialRegionChanged(AZ::EntityId entityId, const AZ::Aabb& oldRegion, const AZ::Aabb& newRegion) override;
+        void OnTerrainMacroMaterialDestroyed(AZ::EntityId entityId) override;
+
+        void Initialize();
+        void InitializeTerrainPatch(uint16_t gridSize, float gridSpacing, PatchData& patchdata);
+        bool InitializePatchModel();
+
+        void UpdateTerrainData();
+        void PrepareMaterialData();
+        void UpdateMacroMaterialData(MacroMaterialData& macroMaterialData, MaterialInstance material);
+
+        void ProcessSurfaces(const FeatureProcessor::RenderPacket& process);
+        
+        MacroMaterialData* FindMacroMaterial(AZ::EntityId entityId);
+        MacroMaterialData& FindOrCreateMacroMaterial(AZ::EntityId entityId);
+        void RemoveMacroMaterial(AZ::EntityId entityId);
+
+        template<typename Callback>
+        void ForOverlappingSectors(const AZ::Aabb& bounds, Callback callback);
+
+        AZ::Outcome<AZ::Data::Asset<AZ::RPI::BufferAsset>> CreateBufferAsset(
+            const void* data, const AZ::RHI::BufferViewDescriptor& bufferViewDescriptor, const AZStd::string& bufferName);
+
+        // System-level parameters
+        static constexpr float GridSpacing{ 1.0f };
+        static constexpr uint32_t GridSize{ 64 }; // number of terrain quads (vertices are m_gridSize + 1)
+        static constexpr float GridMeters{ GridSpacing * GridSize };
+
+        AZStd::unique_ptr<AZ::RPI::AssetUtils::AsyncAssetLoader> m_materialAssetLoader;
+        MaterialInstance m_materialInstance;
+
+        AZ::RHI::ShaderInputConstantIndex m_modelToWorldIndex;
+        AZ::RHI::ShaderInputConstantIndex m_terrainDataIndex;
+        AZ::RHI::ShaderInputConstantIndex m_macroMaterialDataIndex;
+        AZ::RHI::ShaderInputConstantIndex m_macroMaterialCountIndex;
+        AZ::RHI::ShaderInputImageIndex m_macroColorMapIndex;
+        AZ::RHI::ShaderInputImageIndex m_macroNormalMapIndex;
+        AZ::RPI::MaterialPropertyIndex m_heightmapPropertyIndex;
+
+        AZ::Data::Instance<AZ::RPI::Model> m_patchModel;
 
         // Per-area data
         struct TerrainAreaData
         {
             AZ::Transform m_transform{ AZ::Transform::CreateIdentity() };
             AZ::Aabb m_terrainBounds{ AZ::Aabb::CreateNull() };
-            float m_heightScale{ 0.0f };
-            AZ::Data::Instance<AZ::RPI::StreamingImage> m_heightmapImage;
+            AZ::Data::Instance<AZ::RPI::AttachmentImage> m_heightmapImage;
             uint32_t m_heightmapImageWidth{ 0 };
             uint32_t m_heightmapImageHeight{ 0 };
-            bool m_propertiesDirty{ true };
+            uint32_t m_updateWidth{ 0 };
+            uint32_t m_updateHeight{ 0 };
             float m_sampleSpacing{ 0.0f };
+            bool m_heightmapUpdated{ true };
+            bool m_macroMaterialsUpdated{ true };
+            bool m_rebuildSectors{ true };
         };
 
         TerrainAreaData m_areaData;
-
-        struct SectorData
-        {
-            AZ::Data::Instance<AZ::RPI::ShaderResourceGroup> m_srg;
-            AZ::Aabb m_aabb;
-            AZStd::unique_ptr<const AZ::RHI::DrawPacket> m_drawPacket;
-
-            SectorData(const AZ::RHI::DrawPacket* drawPacket, AZ::Aabb aabb, AZ::Data::Instance<AZ::RPI::ShaderResourceGroup> srg)
-                : m_srg(srg)
-                , m_aabb(aabb)
-                , m_drawPacket(drawPacket)
-            {}
-        };
+        AZ::Aabb m_dirtyRegion{ AZ::Aabb::CreateNull() };
 
         AZStd::vector<SectorData> m_sectorData;
+
+        AZ::Render::IndexedDataVector<MacroMaterialData> m_macroMaterials;
     };
 }

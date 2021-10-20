@@ -38,6 +38,14 @@ namespace O3DE::ProjectManager
          */
         virtual bool PythonStarted() = 0;
 
+        /**
+         * Attempt to start Python. Normally, Python is started when the bindings are created,
+         * but this method allows you to attempt to retry starting Python in case the configuration
+         * has changed.
+         * @return true if Python was started successfully, false on failure 
+         */
+        virtual bool StartPython() = 0;
+
         // Engine
 
         /**
@@ -159,6 +167,20 @@ namespace O3DE::ProjectManager
         virtual AZ::Outcome<QVector<ProjectTemplateInfo>> GetProjectTemplates(const QString& projectPath = {}) = 0;
 
         // Gem Repos
+
+        /**
+         * Registers this gem repo with the current engine.
+         * @param repoUri the absolute filesystem path or url to the gem repo.
+         * @return true on success, false on failure.
+         */
+        virtual bool AddGemRepo(const QString& repoUri) = 0;
+
+        /**
+         * Unregisters this gem repo with the current engine.
+         * @param repoUri the absolute filesystem path or url to the gem repo.
+         * @return true on success, false on failure.
+         */
+        virtual bool RemoveGemRepo(const QString& repoUri) = 0;
 
         /**
          * Get all available gem repo infos. Gathers all repos registered with the engine.

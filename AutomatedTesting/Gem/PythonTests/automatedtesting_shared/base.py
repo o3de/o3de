@@ -90,7 +90,7 @@ class TestAutomationBase:
         editor_starttime = time.time()
         self.logger.debug("Running automated test")
         testcase_module_filepath = self._get_testcase_module_filepath(testcase_module)
-        pycmd = ["--runpythontest", testcase_module_filepath, f"-pythontestcase={request.node.originalname}"]
+        pycmd = ["--runpythontest", testcase_module_filepath, f"-pythontestcase={request.node.name}"]
         if use_null_renderer:
             pycmd += ["-rhi=null"]
         if batch_mode:

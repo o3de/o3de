@@ -1,5 +1,6 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -56,16 +57,13 @@ namespace Multiplayer
         NetworkRigidBodyRequestBus::Handler::BusConnect(GetEntityId());
 
         GetNetBindComponent()->AddEntitySyncRewindEventHandler(m_syncRewindHandler);
-        GetEntity()->FindComponent<AzFramework::TransformComponent>()->BindTransformChangedEventHandler(m_transformChangedHandler);
+        GetEntity()->GetTransform()->BindTransformChangedEventHandler(m_transformChangedHandler);
 
         m_physicsRigidBodyComponent =
             Physics::RigidBodyRequestBus::FindFirstHandler(GetEntity()->GetId());
         AZ_Assert(m_physicsRigidBodyComponent, "PhysX Rigid Body Component is required on entity %s", GetEntity()->GetName().c_str());
-
-        if (!HasController())
-        {
-            m_physicsRigidBodyComponent->SetKinematic(true);
-        }
+        // By default we're kinematic, activating a controller will allow us to simulate
+        m_physicsRigidBodyComponent->SetKinematic(true);
     }
 
     void NetworkRigidBodyComponent::OnDeactivate([[maybe_unused]] Multiplayer::EntityIsMigrating entityIsMigrating)
@@ -120,18 +118,26 @@ namespace Multiplayer
 
     NetworkRigidBodyComponentController::NetworkRigidBodyComponentController(NetworkRigidBodyComponent& parent)
         : NetworkRigidBodyComponentControllerBase(parent)
+        , m_transformChangedHandler([this](const AZ::Transform&, const AZ::Transform&) { OnTransformUpdate(); })
     {
         ;
     }
 
     void NetworkRigidBodyComponentController::OnActivate([[maybe_unused]] Multiplayer::EntityIsMigrating entityIsMigrating)
     {
-        ;
+        GetParent().m_physicsRigidBodyComponent->SetKinematic(false);
+        if (IsAuthority())
+        {
+            AzPhysics::RigidBody* rigidBody = GetParent().m_physicsRigidBodyComponent->GetRigidBody();
+            rigidBody->SetLinearVelocity(GetLinearVelocity());
+            rigidBody->SetAngularVelocity(GetAngularVelocity());
+            GetEntity()->GetTransform()->BindTransformChangedEventHandler(m_transformChangedHandler);
+        }
     }
 
     void NetworkRigidBodyComponentController::OnDeactivate([[maybe_unused]] Multiplayer::EntityIsMigrating entityIsMigrating)
     {
-        ;
+        GetParent().m_physicsRigidBodyComponent->SetKinematic(true);
     }
 
     void NetworkRigidBodyComponentController::HandleSendApplyImpulse
@@ -143,5 +149,12 @@ namespace Multiplayer
     {
         AzPhysics::RigidBody* rigidBody = GetParent().m_physicsRigidBodyComponent->GetRigidBody();
         rigidBody->ApplyLinearImpulseAtWorldPoint(impulse, worldPoint);
+    }
+
+    void NetworkRigidBodyComponentController::OnTransformUpdate()
+    {
+        AzPhysics::RigidBody* rigidBody = GetParent().m_physicsRigidBodyComponent->GetRigidBody();
+        SetLinearVelocity(rigidBody->GetLinearVelocity());
+        SetAngularVelocity(rigidBody->GetAngularVelocity());
     }
 } // namespace Multiplayer

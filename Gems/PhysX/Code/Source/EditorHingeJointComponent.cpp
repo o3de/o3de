@@ -12,8 +12,9 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzToolsFramework/ViewportSelection/EditorSelectionUtil.h>
 
+#include <Editor/Source/ComponentModes/Joints/JointsComponentMode.h>
+#include <Editor/Source/ComponentModes/Joints/JointsComponentModeCommon.h>
 #include <Source/EditorHingeJointComponent.h>
-#include <Editor/EditorJointComponentMode.h>
 #include <Source/HingeJointComponent.h>
 #include <Source/Utils.h>
 
@@ -32,14 +33,14 @@ namespace PhysX
             if (auto* editContext = serializeContext->GetEditContext())
             {
                   editContext->Class<EditorHingeJointComponent>(
-                    "PhysX Hinge Joint", "The entity constrains two actors in PhysX, keeping the origins and x-axes together, and allows free rotation around this common axis")
+                    "PhysX Hinge Joint", "A dynamic joint that constrains a rigid body with rotation limits around a single axis.")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Category, "PhysX")
                     ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c))
                     ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/physx/hinge-joint/")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ->DataElement(0, &EditorHingeJointComponent::m_angularLimit, "Angular Limit", "Limitations for the rotation about hinge axis")
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorHingeJointComponent::m_componentModeDelegate, "Component Mode", "Hinge Joint Component Mode")
+                    ->DataElement(0, &EditorHingeJointComponent::m_angularLimit, "Angular Limit", "The rotation angle limit around the joint's axis.")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorHingeJointComponent::m_componentModeDelegate, "Component Mode", "Hinge Joint Component Mode.")
                       ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ;
             }
@@ -74,7 +75,7 @@ namespace PhysX
 
         AzToolsFramework::EditorComponentSelectionRequestsBus::Handler* selection = this;
         m_componentModeDelegate.ConnectWithSingleComponentMode <
-            EditorHingeJointComponent, EditorHingeJointComponentMode>(
+            EditorHingeJointComponent, JointsComponentMode>(
                 AZ::EntityComponentIdPair(entityId, GetId()), selection);
 
         PhysX::EditorJointRequestBus::Handler::BusConnect(AZ::EntityComponentIdPair(entityId, GetId()));
@@ -100,23 +101,19 @@ namespace PhysX
 
     float EditorHingeJointComponent::GetLinearValue(const AZStd::string& parameterName)
     {
-        if (parameterName == PhysX::EditorJointComponentMode::s_parameterMaxForce)
+        if (parameterName == PhysX::JointsComponentModeCommon::ParamaterNames::MaxForce)
         {
             return m_config.m_forceMax;
         }
-        else if (parameterName == PhysX::EditorJointComponentMode::s_parameterMaxTorque)
+        else if (parameterName == PhysX::JointsComponentModeCommon::ParamaterNames::MaxTorque)
         {
             return m_config.m_torqueMax;
         }
-        else if (parameterName == PhysX::EditorJointComponentMode::s_parameterTolerance)
-        {
-            return m_angularLimit.m_standardLimitConfig.m_tolerance;
-        }
-        else if (parameterName == PhysX::EditorJointComponentMode::s_parameterDamping)
+        else if (parameterName == PhysX::JointsComponentModeCommon::ParamaterNames::Damping)
         {
             return m_angularLimit.m_standardLimitConfig.m_damping;
         }
-        else if (parameterName == PhysX::EditorJointComponentMode::s_parameterStiffness)
+        else if (parameterName == PhysX::JointsComponentModeCommon::ParamaterNames::Stiffness)
         {
             return m_angularLimit.m_standardLimitConfig.m_stiffness;
         }
@@ -126,7 +123,7 @@ namespace PhysX
 
     AngleLimitsFloatPair EditorHingeJointComponent::GetLinearValuePair(const AZStd::string& parameterName)
     {
-        if (parameterName == PhysX::EditorJointComponentMode::s_parameterAngularPair)
+        if (parameterName == PhysX::JointsComponentModeCommon::ParamaterNames::TwistLimits)
         {
             return AngleLimitsFloatPair(m_angularLimit.m_limitPositive, m_angularLimit.m_limitNegative);
         }
@@ -134,33 +131,41 @@ namespace PhysX
         return AngleLimitsFloatPair();
     }
 
-    bool EditorHingeJointComponent::IsParameterUsed(const AZStd::string& parameterName)
+    AZStd::vector<JointsComponentModeCommon::SubModeParamaterState> EditorHingeJointComponent::GetSubComponentModesState()
     {
-        if (parameterName == PhysX::EditorJointComponentMode::s_parameterMaxForce
-            || parameterName == PhysX::EditorJointComponentMode::s_parameterMaxTorque
-            )
+        AZStd::vector<JointsComponentModeCommon::SubModeParamaterState> subModes;
+        subModes.emplace_back(JointsComponentModeCommon::SubModeParamaterState{
+            JointsComponentModeCommon::SubComponentModes::ModeType::SnapPosition,
+            JointsComponentModeCommon::ParamaterNames::SnapPosition });
+
+        if (AZStd::vector<JointsComponentModeCommon::SubModeParamaterState> baseSubModes =
+                EditorJointComponent::GetSubComponentModesState();
+            !baseSubModes.empty())
         {
-            return m_config.m_breakable;
-        }
-        else if (parameterName == PhysX::EditorJointComponentMode::s_parameterTolerance)
-        {
-            return !m_angularLimit.m_standardLimitConfig.m_isSoftLimit;
-        }
-        else if (parameterName == PhysX::EditorJointComponentMode::s_parameterDamping)
-        {
-            return m_angularLimit.m_standardLimitConfig.m_isSoftLimit;
-        }
-        else if (parameterName == PhysX::EditorJointComponentMode::s_parameterStiffness)
-        {
-            return m_angularLimit.m_standardLimitConfig.m_isSoftLimit;
+            subModes.insert(subModes.end(), baseSubModes.begin(), baseSubModes.end());
         }
 
-        return true; // Sub-component mode always enabled unless disabled explicitly.
+        if (m_angularLimit.m_standardLimitConfig.m_isLimited)
+        {
+            subModes.emplace_back(
+                JointsComponentModeCommon::SubModeParamaterState{ JointsComponentModeCommon::SubComponentModes::ModeType::TwistLimits,
+                                                                  JointsComponentModeCommon::ParamaterNames::TwistLimits });
+
+            if (m_angularLimit.m_standardLimitConfig.m_isSoftLimit)
+            {
+                subModes.emplace_back(JointsComponentModeCommon::SubModeParamaterState{
+                    JointsComponentModeCommon::SubComponentModes::ModeType::Damping, JointsComponentModeCommon::ParamaterNames::Damping });
+                subModes.emplace_back(
+                    JointsComponentModeCommon::SubModeParamaterState{ JointsComponentModeCommon::SubComponentModes::ModeType::Stiffness,
+                                                                      JointsComponentModeCommon::ParamaterNames::Stiffness });
+            }
+        }
+        return subModes;
     }
 
     void EditorHingeJointComponent::SetBoolValue(const AZStd::string& parameterName, bool value)
     {
-        if (parameterName == PhysX::EditorJointComponentMode::s_parameterComponentMode)
+        if (parameterName == PhysX::JointsComponentModeCommon::ParamaterNames::ComponentMode)
         {
             m_angularLimit.m_standardLimitConfig.m_inComponentMode = value;
             m_config.m_inComponentMode = value;
@@ -169,31 +174,23 @@ namespace PhysX
                 &AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplay
                 , AzToolsFramework::Refresh_EntireTree);
         }
-        else if (parameterName == PhysX::EditorJointComponentMode::s_parameterSelectOnSnap)
-        {
-            m_config.m_selectLeadOnSnap = value;
-        }
     }
 
     void EditorHingeJointComponent::SetLinearValue(const AZStd::string& parameterName, float value)
     {
-        if (parameterName == PhysX::EditorJointComponentMode::s_parameterMaxForce)
+        if (parameterName == PhysX::JointsComponentModeCommon::ParamaterNames::MaxForce)
         {
             m_config.m_forceMax = value;
         }
-        else if (parameterName == PhysX::EditorJointComponentMode::s_parameterMaxTorque)
+        else if (parameterName == PhysX::JointsComponentModeCommon::ParamaterNames::MaxTorque)
         {
             m_config.m_torqueMax = value;
         }
-        else if (parameterName == PhysX::EditorJointComponentMode::s_parameterTolerance)
-        {
-            m_angularLimit.m_standardLimitConfig.m_tolerance = value;
-        }
-        else if (parameterName == PhysX::EditorJointComponentMode::s_parameterDamping)
+        else if (parameterName == PhysX::JointsComponentModeCommon::ParamaterNames::Damping)
         {
             m_angularLimit.m_standardLimitConfig.m_damping = value;
         }
-        else if (parameterName == PhysX::EditorJointComponentMode::s_parameterStiffness)
+        else if (parameterName == PhysX::JointsComponentModeCommon::ParamaterNames::Stiffness)
         {
             m_angularLimit.m_standardLimitConfig.m_stiffness = value;
         }
@@ -201,7 +198,7 @@ namespace PhysX
 
     void EditorHingeJointComponent::SetLinearValuePair(const AZStd::string& parameterName, const AngleLimitsFloatPair& valuePair)
     {
-        if (parameterName == PhysX::EditorJointComponentMode::s_parameterAngularPair)
+        if (parameterName == PhysX::JointsComponentModeCommon::ParamaterNames::TwistLimits)
         {
             m_angularLimit.m_limitPositive = valuePair.first;
             m_angularLimit.m_limitNegative = valuePair.second;
@@ -267,7 +264,7 @@ namespace PhysX
         EditorJointRequestBus::EventResult(localTransform, 
             AZ::EntityComponentIdPair(entityId, GetId()),
             &EditorJointRequests::GetTransformValue, 
-            PhysX::EditorJointComponentMode::s_parameterTransform);
+            PhysX::JointsComponentModeCommon::ParamaterNames::Transform);
 
         debugDisplay.PushMatrix(worldTransform);
         debugDisplay.PushMatrix(localTransform);

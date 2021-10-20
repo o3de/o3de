@@ -13,6 +13,11 @@
                     "ScopeAttachmentUsage": "Shader"
                 },
                 {
+                    "Name": "Modulate",
+                    "SlotType": "Input",
+                    "ScopeAttachmentUsage": "Shader"
+                },
+                {
                     "Name": "Output",
                     "SlotType": "Output",
                     "ScopeAttachmentUsage": "Shader"
@@ -22,8 +27,8 @@
                 {
                     "LocalSlot": "Output",
                     "AttachmentRef": {
-                        "Pass": "Upsample",
-                        "Attachment": "Output"
+                        "Pass": "ModulateWithSsao",
+                        "Attachment": "InputOutput"
                     }
                 }
             ],
@@ -103,6 +108,34 @@
                             }
                         }
                     ]
+                },
+                {
+                    "Name": "ModulateWithSsao",
+                    "TemplateName": "ModulateTextureTemplate",
+                    "Enabled": true,
+                    "Connections": [
+                        {
+                            "LocalSlot": "Input",
+                            "AttachmentRef": {
+                                "Pass": "Upsample",
+                                "Attachment": "Output"
+                            }
+                        },
+                        {
+                            "LocalSlot": "InputOutput",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "Modulate"
+                            }
+                        }
+                    ],
+                    "PassData": {
+                        "$type": "ComputePassData",
+                        "ShaderAsset": {
+                            "FilePath": "Shaders/PostProcessing/ModulateTexture.shader"
+                        },
+                        "Make Fullscreen Pass": true
+                    }
                 }
             ]
         }

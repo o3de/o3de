@@ -101,10 +101,6 @@ namespace AZ
             //! Method of shadow's filtering.
             ShadowFilterMethod m_shadowFilterMethod = ShadowFilterMethod::None;
 
-            //! Width of the boundary between shadowed area and lit one.
-            //! If this is 0, edge softening is disabled.  Units are in meters.
-            float m_boundaryWidth = 0.03f; // 3cm
-
             //! Sample Count for filtering (from 4 to 64)
             //! It is used only when the pixel is predicted as on the boundary.
             uint16_t m_filteringSampleCount = 32;

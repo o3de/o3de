@@ -86,7 +86,6 @@ set(FILES
     Passes/CascadedShadowmaps.pass
     Passes/CheckerboardResolveColor.pass
     Passes/CheckerboardResolveDepth.pass
-    Passes/HDRColorGrading.pass
     Passes/ContrastAdaptiveSharpening.pass
     Passes/ConvertToAcescg.pass
     Passes/DebugOverlayParent.pass
@@ -144,6 +143,7 @@ set(FILES
     Passes/ForwardSubsurfaceMSAA.pass
     Passes/FullscreenCopy.pass
     Passes/FullscreenOutputOnly.pass
+    Passes/HDRColorGrading.pass
     Passes/ImGui.pass
     Passes/KawaseShadowBlur.pass
     Passes/LightAdaptationParent.pass
@@ -158,8 +158,11 @@ set(FILES
     Passes/LowEndPipeline.pass
     Passes/LuminanceHeatmap.pass
     Passes/LuminanceHistogramGenerator.pass
+    Passes/LutGeneration.pass
     Passes/MainPipeline.pass
     Passes/MainPipelineRenderToTexture.pass
+    Passes/ThumbnailPipeline.pass
+    Passes/ThumbnailPipelineRenderToTexture.pass
     Passes/MeshMotionVector.pass
     Passes/ModulateTexture.pass
     Passes/MorphTarget.pass
@@ -279,12 +282,12 @@ set(FILES
     ShaderLib/Atom/Features/PostProcessing/FullscreenVertexUtil.azsli
     ShaderLib/Atom/Features/PostProcessing/GlyphData.azsli
     ShaderLib/Atom/Features/PostProcessing/GlyphRender.azsli
+    ShaderLib/Atom/Features/PostProcessing/HDRColorGradingCommon.azsl
     ShaderLib/Atom/Features/PostProcessing/PostProcessUtil.azsli
     ShaderLib/Atom/Features/RayTracing/RayTracingSceneSrg.azsli
     ShaderLib/Atom/Features/ScreenSpace/ScreenSpaceUtil.azsli
     ShaderLib/Atom/Features/Shadow/BicubicPcfFilters.azsli
     ShaderLib/Atom/Features/Shadow/DirectionalLightShadow.azsli
-    ShaderLib/Atom/Features/Shadow/JitterTablePcf.azsli
     ShaderLib/Atom/Features/Shadow/ProjectedShadow.azsli
     ShaderLib/Atom/Features/Shadow/Shadow.azsli
     ShaderLib/Atom/Features/Shadow/ShadowmapAtlasLib.azsli
@@ -314,6 +317,8 @@ set(FILES
     Shaders/BRDFTexture/BRDFTextureCS.shader
     Shaders/Checkerboard/CheckerboardColorResolveCS.azsl
     Shaders/Checkerboard/CheckerboardColorResolveCS.shader
+    Shaders/ColorGrading/LutGeneration.azsl
+    Shaders/ColorGrading/LutGeneration.shader
     Shaders/Depth/DepthPass.azsl
     Shaders/Depth/DepthPass.shader
     Shaders/Depth/DepthPassTransparentMax.shader

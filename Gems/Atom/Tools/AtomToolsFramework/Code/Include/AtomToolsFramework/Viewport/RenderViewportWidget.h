@@ -10,7 +10,6 @@
 
 #include <QWidget>
 #include <QElapsedTimer>
-#include <QPointer>
 #include <Atom/RPI.Public/Base.h>
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
 #include <AzToolsFramework/Input/QtEventToAzInputManager.h>
@@ -22,13 +21,11 @@
 #include <AzFramework/Windowing/WindowBus.h>
 #include <AzCore/Component/TickBus.h>
 #include <Atom/RPI.Public/AuxGeom/AuxGeomFeatureProcessorInterface.h>
-#include <Atom/Bootstrap/BootstrapNotificationBus.h>
-#include <AtomToolsFramework/Viewport/RenderViewportWidgetNotificationBus.h>
 
 namespace AtomToolsFramework
 {
     //! The RenderViewportWidget class is a Qt wrapper around an Atom viewport.
-    //! RenderViewportWidget renders to an internal window using RPI::ViewportContext
+    //! RenderViewportWidget renders to an internal window using AZ::RPI::ViewportContext
     //! and delegates input via its internal ViewportControllerList.
     //! @see AZ::RPI::ViewportContext for Atom's API for setting up 
     class RenderViewportWidget
@@ -38,13 +35,11 @@ namespace AtomToolsFramework
         , public AzFramework::WindowRequestBus::Handler
         , protected AzFramework::InputChannelEventListener
         , protected AZ::TickBus::Handler
-        , protected AZ::Render::Bootstrap::NotificationBus::Handler
-        , protected AtomToolsFramework::RenderViewportWidgetNotificationBus::Handler
     {
     public:
         //! Creates a RenderViewportWidget.
         //! Requires the Atom RPI to be initialized in order
-        //! to internally construct an RPI::ViewportContext.
+        //! to internally construct an AZ::RPI::ViewportContext.
         //! If initializeViewportContext is set to false, nothing will be displayed on-screen until InitiliazeViewportContext is called.
         explicit RenderViewportWidget(QWidget* parent = nullptr, bool shouldInitializeViewportContext = true);
         ~RenderViewportWidget();
@@ -95,7 +90,7 @@ namespace AtomToolsFramework
         //! Input processing is enabled by default.
         void SetInputProcessingEnabled(bool enabled);
 
-        // AzToolsFramework::ViewportInteraction::ViewportInteractionRequestBus::Handler ...
+        // AzToolsFramework::ViewportInteraction::ViewportInteractionRequestBus::Handler overrides ...
         AzFramework::CameraState GetCameraState() override;
         AzFramework::ScreenPoint ViewportWorldToScreen(const AZ::Vector3& worldPosition) override;
         AZStd::optional<AZ::Vector3> ViewportScreenToWorld(const AzFramework::ScreenPoint& screenPosition, float depth) override;
@@ -103,12 +98,14 @@ namespace AtomToolsFramework
             const AzFramework::ScreenPoint& screenPosition) override;
         float DeviceScalingFactor() override;
 
-        // AzToolsFramework::ViewportInteraction::ViewportMouseCursorRequestBus::Handler ...
+        // AzToolsFramework::ViewportInteraction::ViewportMouseCursorRequestBus::Handler overrides ...
         void BeginCursorCapture() override;
         void EndCursorCapture() override;
         bool IsMouseOver() const override;
+        void SetOverrideCursor(AzToolsFramework::ViewportInteraction::CursorStyleOverride cursorStyleOverride) override;
+        void ClearOverrideCursor() override;
 
-        // AzFramework::WindowRequestBus::Handler ...
+        // AzFramework::WindowRequestBus::Handler overrides ...
         void SetWindowTitle(const AZStd::string& title) override;
         AzFramework::WindowSize GetClientAreaSize() const override;
         void ResizeClientArea(AzFramework::WindowSize clientAreaSize) override;
@@ -121,34 +118,19 @@ namespace AtomToolsFramework
         uint32_t GetDisplayRefreshRate() const override;
 
     protected:
-        // AzFramework::InputChannelEventListener ...
+        // AzFramework::InputChannelEventListener overrides ...
         bool OnInputChannelEventFiltered(const AzFramework::InputChannel& inputChannel) override;
 
-        // AZ::TickBus::Handler ...
+        // AZ::TickBus::Handler overrides ...
         void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
-        int GetTickOrder() override;
 
-        // QWidget ...
-        void resizeEvent(QResizeEvent *event) override;
+        // QWidget overrides ...
         bool event(QEvent* event) override;
         void enterEvent(QEvent* event) override;
         void leaveEvent(QEvent* event) override;
-        void mouseMoveEvent(QMouseEvent* event) override;
-        void focusInEvent(QFocusEvent* event) override;
-
-        // AZ::Render::Bootstrap::NotificationBus::Handler ...
-        void OnFrameRateLimitChanged(float fpsLimit) override;
-
-        // AtomToolsFramework::RenderViewportWidgetNotificationBus::Handler ...
-        void OnInactiveViewportFrameRateChanged(float fpsLimit) override;
 
     private:
-        AzFramework::NativeWindowHandle GetNativeWindowHandle() const;
-        void UpdateFrameRate();
-
-        void SetScreen(QScreen* screen);
         void SendWindowResizeEvent();
-        void NotifyUpdateRefreshRate();
 
         // The underlying ViewportContext, our entry-point to the Atom RPI.
         AZ::RPI::ViewportContextPtr m_viewportContext;
@@ -161,19 +143,11 @@ namespace AtomToolsFramework
         AZ::RPI::AuxGeomDrawPtr m_auxGeom;
         // Tracks whether the cursor is currently over our viewport, used for mouse input event book-keeping.
         bool m_mouseOver = false;
-        // The last recorded mouse position, in local viewport screen coordinates.
-        QPointF m_mousePosition;
         // Captures the time between our render events to give controllers a time delta.
         QElapsedTimer m_renderTimer;
         // The time of the last recorded tick event from the system tick bus.
         AZ::ScriptTimePoint m_time;
         // Maps our internal Qt events into AzFramework InputChannels for our ViewportControllerList.
         AzToolsFramework::QtEventToAzInputMapper* m_inputChannelMapper = nullptr;
-        // Stores our current screen, used for tracking the current refresh rate.
-        QScreen* m_screen = nullptr;
-        // Stores the last RenderViewportWidget that has received user focus.
-        // This is used for optional framerate throtting for "inactive" viewports via the
-        // ed_inactive_viewport_fps_limit CVAR.
-        AZ::EnvironmentVariable<RenderViewportWidget*> m_lastFocusedViewport;
     };
 } //namespace AtomToolsFramework

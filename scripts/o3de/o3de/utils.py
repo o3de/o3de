@@ -13,6 +13,11 @@ import uuid
 import pathlib
 import shutil
 import urllib.request
+import logging
+import zipfile
+
+logger = logging.getLogger()
+logging.basicConfig()
 
 def validate_identifier(identifier: str) -> bool:
     """
@@ -97,11 +102,11 @@ def download_file(parsed_uri, download_path: pathlib.Path) -> int:
     if download_path.is_file():
         logger.warn(f'File already downloaded to {download_path}.')
     elif parsed_uri.scheme in ['http', 'https', 'ftp', 'ftps']:
-        with urllib.request.urlopen(url) as s:
+        with urllib.request.urlopen(parsed_uri.geturl()) as s:
             with download_path.open('wb') as f:
                 shutil.copyfileobj(s, f)
     else:
-        origin_file = pathlib.Path(url).resolve()
+        origin_file = pathlib.Path(parsed_uri.geturl()).resolve()
         if not origin_file.is_file():
             return 1
         shutil.copy(origin_file, download_path)

@@ -14,6 +14,8 @@
 // Editor
 #include "CryEdit.h"
 
+#include <AzCore/Utils/Utils.h>
+
 //////////////////////////////////////////////////////////////////////////
 CEditorFileMonitor::CEditorFileMonitor()
 {
@@ -177,26 +179,14 @@ void CEditorFileMonitor::OnFileMonitorChange(const SFileChangeInfo& rChange)
     // Make file relative to PrimaryCD folder.
     QString filename = rChange.filename;
 
-    // Remove game directory if present in path.
-    const QString rootPath =
-        QDir::fromNativeSeparators(QString::fromLatin1(Path::GetEditingRootFolder().c_str()));
-    if (filename.startsWith(rootPath, Qt::CaseInsensitive))
-    {
-        filename = filename.right(filename.length() - rootPath.length());
-    }
+    // Make path relative to the the project directory
+    AZ::IO::Path projectPath{ AZ::Utils::GetProjectPath() };
+    AZ::IO::FixedMaxPath projectRelativeFilePath = AZ::IO::PathView(filename.toUtf8().constData()).LexicallyProximate(
+        projectPath);
 
-    // Make sure there is no leading slash
-    if (!filename.isEmpty() && (filename[0] == '\\' || filename[0] == '/'))
+    if (!projectRelativeFilePath.empty())
     {
-        filename = filename.mid(1);
-    }
-
-    if (!filename.isEmpty())
-    {
-        //remove game name. Make it relative to the game folder
-        const QString filenameRelGame = RemoveGameName(filename);
-        const int extIndex = filename.lastIndexOf('.');
-        const QString ext = filename.right(filename.length() - 1 - extIndex);
+        AZ::IO::PathView ext = projectRelativeFilePath.Extension();
 
         // Check for File Monitor callback
         std::vector<SFileChangeCallback>::iterator iter;
@@ -207,15 +197,11 @@ void CEditorFileMonitor::OnFileMonitorChange(const SFileChangeInfo& rChange)
             // We compare against length of callback string, so we get directory matches as well as full filenames
             if (sCallback.pListener)
             {
-                if (sCallback.extension == "*" || ext.compare(sCallback.extension, Qt::CaseInsensitive) == 0)
+                if (sCallback.extension == "*" || AZ::IO::PathView(sCallback.extension.toUtf8().constData()) == ext)
                 {
-                    if (filenameRelGame.compare(sCallback.item, Qt::CaseInsensitive) == 0)
+                    if (AZ::IO::PathView(sCallback.item.toUtf8().constData()) == projectRelativeFilePath)
                     {
-                        sCallback.pListener->OnFileChange(qPrintable(filenameRelGame), IFileChangeListener::EChangeType(rChange.changeType));
-                    }
-                    else if (filename.compare(sCallback.item, Qt::CaseInsensitive) == 0)
-                    {
-                        sCallback.pListener->OnFileChange(qPrintable(filename), IFileChangeListener::EChangeType(rChange.changeType));
+                        sCallback.pListener->OnFileChange(qPrintable(projectRelativeFilePath.c_str()), IFileChangeListener::EChangeType(rChange.changeType));
                     }
                 }
             }
