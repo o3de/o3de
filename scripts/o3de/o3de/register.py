@@ -480,9 +480,9 @@ def register_repo(json_data: dict,
         while repo_uri in json_data['repos']:
             json_data['repos'].remove(repo_uri)
     else:
-        repo_uri = pathlib.Path(repo_uri).resolve()
-        while repo_uri.as_posix() in json_data['repos']:
-            json_data['repos'].remove(repo_uri.as_posix())
+        repo_uri = pathlib.Path(repo_uri).resolve().as_posix()
+        while repo_uri in json_data['repos']:
+            json_data['repos'].remove(repo_uri)
 
     if remove:
         logger.warn(f'Removing repo uri {repo_uri}.')
