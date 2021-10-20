@@ -43,7 +43,7 @@ namespace AzFramework
     class IMatchmakingAsyncRequests
     {
     public:
-        AZ_RTTI(ISessionAsyncRequests, "{53513480-2D02-493C-B44E-96AA27F42429}");
+        AZ_RTTI(IMatchmakingAsyncRequests, "{53513480-2D02-493C-B44E-96AA27F42429}");
 
         IMatchmakingAsyncRequests() = default;
         virtual ~IMatchmakingAsyncRequests() = default;
@@ -60,4 +60,31 @@ namespace AzFramework
         // @param  stopMatchmakingRequest The request of StopMatchmaking operation
         virtual void StopMatchmakingAsync(const StopMatchmakingRequest& stopMatchmakingRequest) = 0;
     };
+
+    //! MatchmakingAsyncRequestNotifications
+    //! The notifications correspond to matchmaking async requests
+    class MatchmakingAsyncRequestNotifications
+        : public AZ::EBusTraits
+    {
+    public:
+        // Safeguard handler for multi-threaded use case
+        using MutexType = AZStd::recursive_mutex;
+
+        //////////////////////////////////////////////////////////////////////////
+        // EBusTraits overrides
+        static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Multiple;
+        static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::Single;
+        //////////////////////////////////////////////////////////////////////////
+
+        // OnAcceptMatchAsyncComplete is fired once AcceptMatchAsync completes
+        virtual void OnAcceptMatchAsyncComplete() = 0;
+
+        // OnStartMatchmakingAsyncComplete is fired once StartMatchmakingAsync completes
+        // @param matchmakingTicketId The unique identifier for the matchmaking ticket
+        virtual void OnStartMatchmakingAsyncComplete(const AZStd::string& matchmakingTicketId) = 0;
+
+        // OnStopMatchmakingAsyncComplete is fired once StopMatchmakingAsync completes
+        virtual void OnStopMatchmakingAsyncComplete() = 0;
+    };
+    using MatchmakingAsyncRequestNotificationBus = AZ::EBus<MatchmakingAsyncRequestNotifications>;
 } // namespace AzFramework

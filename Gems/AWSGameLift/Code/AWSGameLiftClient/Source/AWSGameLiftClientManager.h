@@ -8,10 +8,13 @@
 
 #pragma once
 
+#include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/std/smart_ptr/shared_ptr.h>
 #include <AzFramework/Matchmaking/MatchmakingNotifications.h>
 
-#include <Request/IAWSGameLiftRequests.h>
+#include <Request/AWSGameLiftRequestBus.h>
+#include <Request/AWSGameLiftSessionRequestBus.h>
+#include <Request/AWSGameLiftMatchmakingRequestBus.h>
 
 namespace AWSGameLift
 {
@@ -23,21 +26,36 @@ namespace AWSGameLift
     struct AWSGameLiftStartMatchmakingRequest;
     struct AWSGameLiftStopMatchmakingRequest;
 
-    // MatchAcceptanceNotificationBus EBus handler for scripting
-    class AWSGameLiftMatchAcceptanceNotificationBusHandler
-        : public AzFramework::MatchAcceptanceNotificationBus::Handler
+    // MatchmakingNotificationBus EBus handler for scripting
+    class AWSGameLiftMatchmakingNotificationBusHandler
+        : public AzFramework::MatchmakingNotificationBus::Handler
         , public AZ::BehaviorEBusHandler
     {
     public:
         AZ_EBUS_BEHAVIOR_BINDER(
-            AWSGameLiftMatchAcceptanceNotificationBusHandler,
+            AWSGameLiftMatchmakingNotificationBusHandler,
             "{CBE057D3-F5CE-46D3-B02D-8A6A1446B169}",
             AZ::SystemAllocator,
-            OnMatchAcceptance);
+            OnMatchAcceptance, OnMatchComplete, OnMatchError, OnMatchFailure);
 
         void OnMatchAcceptance() override
         {
             Call(FN_OnMatchAcceptance);
+        }
+
+        void OnMatchComplete() override
+        {
+            Call(FN_OnMatchComplete);
+        }
+
+        void OnMatchError() override
+        {
+            Call(FN_OnMatchError);
+        }
+
+        void OnMatchFailure() override
+        {
+            Call(FN_OnMatchFailure);
         }
     };
 
