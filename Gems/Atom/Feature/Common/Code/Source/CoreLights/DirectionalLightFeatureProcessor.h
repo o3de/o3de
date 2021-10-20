@@ -102,7 +102,7 @@ namespace AZ
             float m_padding[3];
         };
 
-        static_assert(sizeof(DirectionalLightShadowData) % 16 == 0); // structure buffers need alignment to be a multiple of 16 bytes
+        static_assert(sizeof(DirectionalLightShadowData) % 16 == 0); // Structured buffers need alignment to be a multiple of 16 bytes.
 
         class DirectionalLightFeatureProcessor final
             : public DirectionalLightFeatureProcessorInterface
