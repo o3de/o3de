@@ -59,17 +59,17 @@ namespace EMotionFX
             frameFloats[startIndex + 2] = value.GetZ();
         }
 
-        void FeaturePosition::FillFrameFloats(size_t startIndex, AZStd::vector<float>& frameFloats, const FrameCostContext& context)
+        void FeaturePosition::FillQueryFeatureValues(size_t startIndex, AZStd::vector<float>& queryFeatureValues, const FrameCostContext& context)
         {
             const Transform invRootTransform = context.m_pose.GetWorldSpaceTransform(m_relativeToNodeIndex).Inversed();
             const AZ::Vector3 worldInputPosition = context.m_pose.GetWorldSpaceTransform(m_nodeIndex).m_position;
             const AZ::Vector3 relativeInputPosition = invRootTransform.TransformPoint(worldInputPosition);
-            frameFloats[startIndex + 0] = relativeInputPosition.GetX();
-            frameFloats[startIndex + 1] = relativeInputPosition.GetY();
-            frameFloats[startIndex + 2] = relativeInputPosition.GetZ();
+            queryFeatureValues[startIndex + 0] = relativeInputPosition.GetX();
+            queryFeatureValues[startIndex + 1] = relativeInputPosition.GetY();
+            queryFeatureValues[startIndex + 2] = relativeInputPosition.GetZ();
         }
 
-        void FeaturePosition::ExtractFrameData(const ExtractFrameContext& context)
+        void FeaturePosition::ExtractFeatureValues(const ExtractFrameContext& context)
         {
             const Transform invRootTransform = context.m_pose->GetWorldSpaceTransform(m_relativeToNodeIndex).Inversed();
             const AZ::Vector3 nodeWorldPosition = context.m_pose->GetWorldSpaceTransform(m_nodeIndex).m_position;

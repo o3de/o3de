@@ -71,8 +71,7 @@ namespace EMotionFX
             m_rootTrajectoryData->SetNumPastSamplesPerFrame(6);
             m_rootTrajectoryData->SetFutureTimeRange(1.0f);
             m_rootTrajectoryData->SetPastTimeRange(1.0f);
-            m_rootTrajectoryData->SetDebugDrawEnabled(false);
-            m_rootTrajectoryData->SetIncludeInKdTree(false);
+            m_rootTrajectoryData->SetDebugDrawEnabled(true);
             m_features.RegisterFeature(m_rootTrajectoryData);
             //----------------------------------------------------------------------------------------------------------
 
@@ -89,8 +88,8 @@ namespace EMotionFX
             m_leftFootPositionData->SetRelativeToNodeIndex(m_rootNodeIndex);
             m_leftFootPositionData->SetDebugDrawColor(AZ::Colors::Red);
             m_leftFootPositionData->SetDebugDrawEnabled(false);
-            m_leftFootPositionData->SetIncludeInKdTree(true);
             m_features.RegisterFeature(m_leftFootPositionData);
+            m_features.AddKdTreeFeature(m_leftFootPositionData);
             //----------------------------------------------------------------------------------------------------------
 
             //----------------------------------------------------------------------------------------------------------
@@ -106,8 +105,8 @@ namespace EMotionFX
             m_rightFootPositionData->SetRelativeToNodeIndex(m_rootNodeIndex);
             m_rightFootPositionData->SetDebugDrawColor(AZ::Colors::Green);
             m_rightFootPositionData->SetDebugDrawEnabled(false);
-            m_rightFootPositionData->SetIncludeInKdTree(true);
             m_features.RegisterFeature(m_rightFootPositionData);
+            m_features.AddKdTreeFeature(m_rightFootPositionData);
             //----------------------------------------------------------------------------------------------------------
 
             //----------------------------------------------------------------------------------------------------------
@@ -117,8 +116,8 @@ namespace EMotionFX
             m_leftFootVelocityData->SetRelativeToNodeIndex(m_rootNodeIndex);
             m_leftFootVelocityData->SetDebugDrawColor(AZ::Colors::Cyan);
             m_leftFootVelocityData->SetDebugDrawEnabled(true);
-            m_leftFootVelocityData->SetIncludeInKdTree(true);
             m_features.RegisterFeature(m_leftFootVelocityData);
+            m_features.AddKdTreeFeature(m_leftFootVelocityData);
             //----------------------------------------------------------------------------------------------------------
 
             //----------------------------------------------------------------------------------------------------------
@@ -128,8 +127,8 @@ namespace EMotionFX
             m_rightFootVelocityData->SetRelativeToNodeIndex(m_rootNodeIndex);
             m_rightFootVelocityData->SetDebugDrawColor(AZ::Colors::Cyan);
             m_rightFootVelocityData->SetDebugDrawEnabled(true);
-            m_rightFootVelocityData->SetIncludeInKdTree(true);
             m_features.RegisterFeature(m_rightFootVelocityData);
+            m_features.AddKdTreeFeature(m_rightFootVelocityData);
             //----------------------------------------------------------------------------------------------------------
 
             // Root direction.
@@ -243,35 +242,36 @@ namespace EMotionFX
             //rootDirectionContext.m_pose = &inputPose;
             rootTrajectoryContext.m_controlSpline = &behaviorInstance->GetControlSpline();
 
-            //-----------------------
-            // Build the frame floats.
-            // Remember that the order is very important. It has to be the order in which the frame datas are registered, and only the ones included in the kdTree.
-            size_t startOffset = 0;
-            AZStd::vector<float>& frameFloats = behaviorInstance->GetFrameFloats();
+            // 1. Broad-phase search using KD-tree
+            {
+                // Build the input query features that will be compared to every entry in the feature database in the motion matching search.
+                // Remember that the order is very important. It has to be the order in which the frame datas are registered, and only the ones included in the kdTree.
+                size_t startOffset = 0;
+                AZStd::vector<float>& queryFeatureValues = behaviorInstance->GetQueryFeatureValues();
 
-            // Left foot position.
-            m_leftFootPositionData->FillFrameFloats(startOffset, frameFloats, leftFootPosContext);
-            startOffset += m_leftFootPositionData->GetNumDimensions();
+                // Left foot position.
+                m_leftFootPositionData->FillQueryFeatureValues(startOffset, queryFeatureValues, leftFootPosContext);
+                startOffset += m_leftFootPositionData->GetNumDimensions();
 
-            // Right foot position.
-            m_rightFootPositionData->FillFrameFloats(startOffset, frameFloats, rightFootPosContext);
-            startOffset += m_rightFootPositionData->GetNumDimensions();
+                // Right foot position.
+                m_rightFootPositionData->FillQueryFeatureValues(startOffset, queryFeatureValues, rightFootPosContext);
+                startOffset += m_rightFootPositionData->GetNumDimensions();
 
-            // Left foot velocity.
-            m_leftFootVelocityData->FillFrameFloats(startOffset, frameFloats, leftFootVelocityContext);
-            startOffset += m_leftFootVelocityData->GetNumDimensions();
+                // Left foot velocity.
+                m_leftFootVelocityData->FillQueryFeatureValues(startOffset, queryFeatureValues, leftFootVelocityContext);
+                startOffset += m_leftFootVelocityData->GetNumDimensions();
 
-            // Right foot velocity.
-            m_rightFootVelocityData->FillFrameFloats(startOffset, frameFloats, rightFootVelocityContext);
-            startOffset += m_leftFootVelocityData->GetNumDimensions();
+                // Right foot velocity.
+                m_rightFootVelocityData->FillQueryFeatureValues(startOffset, queryFeatureValues, rightFootVelocityContext);
+                startOffset += m_leftFootVelocityData->GetNumDimensions();
 
-            AZ_Assert(startOffset == frameFloats.size(), "Frame float vector is not the expected size.");
-            //-----------------------
+                AZ_Assert(startOffset == queryFeatureValues.size(), "Frame float vector is not the expected size.");
 
-            // Find our nearest frames.
-            behaviorInstance->UpdateNearestFrames();
+                // Find our nearest frames.
+                behaviorInstance->GetBehavior()->GetFeatures().GetKdTree().FindNearestNeighbors(queryFeatureValues, behaviorInstance->GetNearestFrames());
+            }
 
-            // Find the actual best frame.
+            // 2. Narrow-phase, brute force find the actual best matching frame.
             float minCost = FLT_MAX;
             size_t minCostFrameIndex = 0;
 

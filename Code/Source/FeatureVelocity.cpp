@@ -63,15 +63,15 @@ namespace EMotionFX
             frameFloats[startIndex + 3] = value.m_speed;
         }
 
-        void FeatureVelocity::FillFrameFloats(size_t startIndex, AZStd::vector<float>& frameFloats, const FrameCostContext& context)
+        void FeatureVelocity::FillQueryFeatureValues(size_t startIndex, AZStd::vector<float>& queryFeatureValues, const FrameCostContext& context)
         {
-            frameFloats[startIndex + 0] = context.m_direction.GetX();
-            frameFloats[startIndex + 1] = context.m_direction.GetY();
-            frameFloats[startIndex + 2] = context.m_direction.GetZ();
-            frameFloats[startIndex + 3] = context.m_speed;
+            queryFeatureValues[startIndex + 0] = context.m_direction.GetX();
+            queryFeatureValues[startIndex + 1] = context.m_direction.GetY();
+            queryFeatureValues[startIndex + 2] = context.m_direction.GetZ();
+            queryFeatureValues[startIndex + 3] = context.m_speed;
         }
 
-        void FeatureVelocity::ExtractFrameData(const ExtractFrameContext& context)
+        void FeatureVelocity::ExtractFeatureValues(const ExtractFrameContext& context)
         {
             Velocity velocity;
             CalculateVelocity(m_nodeIndex, m_relativeToNodeIndex, context.m_motionInstance, velocity.m_direction, velocity.m_speed);

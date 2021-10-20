@@ -157,16 +157,6 @@ namespace EMotionFX
             posePool.FreePose(currentPose);
         }
 
-        void Feature::SetIncludeInKdTree(bool include)
-        {
-            m_includeInKdTree = include;
-        }
-
-        bool Feature::GetIncludeInKdTree() const
-        {
-            return m_includeInKdTree;
-        }
-
         void Feature::Reflect(AZ::ReflectContext* context)
         {
             AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context);

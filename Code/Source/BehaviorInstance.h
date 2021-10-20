@@ -71,8 +71,7 @@ namespace EMotionFX
             AZ_INLINE ActorInstance* GetActorInstance() const { return m_actorInstance; }
             AZ_INLINE Behavior* GetBehavior() const { return m_behavior; }
 
-            AZ_INLINE size_t GetLowestCostFrameIndex() const { return m_lowestCostFrameIndex; }
-            AZ_INLINE void SetLowestCostFrameIndex(size_t frameIndex) { m_lowestCostFrameIndex = frameIndex; }
+            size_t GetLowestCostFrameIndex();
 
             AZ_INLINE void SetTimeSinceLastFrameSwitch(float newTime) { m_timeSinceLastFrameSwitch = newTime; }
             AZ_INLINE float GetTimeSinceLastFrameSwitch() const { return m_timeSinceLastFrameSwitch; }
@@ -90,13 +89,16 @@ namespace EMotionFX
             AZ_INLINE void SetNewMotionTime(float t) { m_newMotionTime = t; }
 
             AZ_INLINE const Pose& GetBlendSourcePose() const { return m_blendSourcePose; }
+
+            // Stores the nearest matching frames / the result from the KD-tree
             AZ_INLINE const AZStd::vector<size_t>& GetNearestFrames() const { return m_nearestFrames; }
-            AZ_INLINE const AZStd::vector<float>& GetFrameFloats() const { return m_frameFloats; }
-            AZ_INLINE AZStd::vector<float>& GetFrameFloats() { return m_frameFloats; }
+            AZ_INLINE AZStd::vector<size_t>& GetNearestFrames() { return m_nearestFrames; }
+
+            // The input query features to be compared to every entry in the feature database in the motion matching search.
+            AZ_INLINE const AZStd::vector<float>& GetQueryFeatureValues() const { return m_queryFeatureValues; }
+            AZ_INLINE AZStd::vector<float>& GetQueryFeatureValues() { return m_queryFeatureValues; }
 
             Transform GetMotionExtractionDelta() const { return m_motionExtractionDelta; }
-
-            void UpdateNearestFrames();
 
         private:
             MotionInstance* CreateMotionInstance() const;
@@ -109,12 +111,14 @@ namespace EMotionFX
             MotionInstance* m_motionInstance = nullptr;
             MotionInstance* m_prevMotionInstance = nullptr;
             Transform m_motionExtractionDelta = Transform::CreateIdentity();
-            AZStd::vector<float> m_frameFloats;
+
+            AZStd::vector<float> m_queryFeatureValues;
             AZStd::vector<size_t> m_nearestFrames;
-            size_t m_lowestCostFrameIndex = InvalidIndex;
             ControlSpline m_controlSpline;
+
             float m_timeSinceLastFrameSwitch = 0.0f;
             float m_newMotionTime = 0.0f;
+            size_t m_lowestCostFrameIndex = InvalidIndex;
             float m_lowestCostSearchFrequency = 0.1f; // Search lowest cost frame 10 times per second.
 
             bool m_blending = false;

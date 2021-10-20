@@ -86,22 +86,8 @@ namespace EMotionFX
 
             // Make sure we have enough space inside the frame floats array, which is used to search the kdTree.
             // It contains the value for each dimension.
-            size_t numFloatsRequired = 0;
-            for (const Feature* feature : m_behavior->GetFeatures().GetFeatures())
-            {
-                if (!feature->GetIncludeInKdTree())
-                {
-                    continue;
-                }
-
-                numFloatsRequired += feature->GetNumDimensions();
-            }
-            m_frameFloats.resize(numFloatsRequired);
-        }
-
-        void BehaviorInstance::UpdateNearestFrames()
-        {
-            m_behavior->GetFeatures().GetKdTree().FindNearestNeighbors(m_frameFloats, m_nearestFrames);
+            size_t numValuesInKdTree = m_behavior->GetFeatures().CalcNumDataDimensionsForKdTree(m_behavior->GetFeatures());
+            m_queryFeatureValues.resize(numValuesInKdTree);
         }
 
         void BehaviorInstance::DebugDraw()
@@ -203,6 +189,11 @@ namespace EMotionFX
             m_motionInstance->ExtractMotion(m_motionExtractionDelta);
         }
 
+        size_t BehaviorInstance::GetLowestCostFrameIndex()
+        {
+            return m_lowestCostFrameIndex;
+        }
+
         void BehaviorInstance::Update(float timePassedInSeconds)
         {
             AZ_PROFILE_SCOPE(Animation, "BehaviorInstance::Update");
@@ -218,7 +209,7 @@ namespace EMotionFX
                 currentFrameIndex = 0;
             }
 
-            // Calculate the new time value of the motion, but don't set it yet (the syncing might adjust this again)            
+            // Calculate the new time value of the motion, but don't set it yet (the syncing might adjust this again)
             m_motionInstance->SetFreezeAtLastFrame(true);
             m_motionInstance->SetMaxLoops(1);
             const float newMotionTime = m_motionInstance->CalcPlayStateAfterUpdate(timePassedInSeconds).m_currentTime;
@@ -266,7 +257,7 @@ namespace EMotionFX
 
                     //AZ_Printf("EMotionFX", "Frame %d = %f/%f  %f/%f", lowestCostFrameIndex, lowestCostFrame.GetSampleTime(), lowestCostFrame.GetSourceMotion()->GetMaxTime(), newMotionTime, m_motionInstance->GetDuration());
                     SetTimeSinceLastFrameSwitch(0.0f);
-                    SetLowestCostFrameIndex(lowestCostFrameIndex);
+                    m_lowestCostFrameIndex = lowestCostFrameIndex;
 
                     // Update the motion instance that will generate the target pose later on.
                     m_motionInstance->SetMotion(lowestCostFrame.GetSourceMotion());

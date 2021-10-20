@@ -43,10 +43,9 @@ namespace EMotionFX
 
         void FeatureDatabase::Clear()
         {
-            // Clear the frame data.
-            for (Feature* frameData : m_features)
+            for (Feature* feature : m_features)
             {
-                delete frameData;
+                delete feature;
             }
             m_featuresByType.clear();
             m_features.clear();
@@ -193,7 +192,7 @@ namespace EMotionFX
                     {
                         context.m_motionInstance->SetMirrorMotion(frame.GetMirrored());
                         context.m_motionInstance->SetCurrentTime(frame.GetSampleTime());
-                        feature->ExtractFrameData(context);
+                        feature->ExtractFeatureValues(context);
                     }
                 }
 
@@ -291,19 +290,19 @@ namespace EMotionFX
             m_featureMatrix.SaveAsCsv(filename, columnNames);
         }
         
-        size_t FeatureDatabase::CalcNumDataDimensionsForKdTree() const
+        size_t FeatureDatabase::CalcNumDataDimensionsForKdTree(const FeatureDatabase& featureDatabase) const
         {
-            size_t totalDimensions = 0;
-            for (Feature* frameData: m_features)
+            size_t result = 0;
+            for (Feature* feature : featureDatabase.GetFeaturesInKdTree())
             {
-                if ((frameData && frameData->GetId().IsNull()) || !frameData->GetIncludeInKdTree())
+                if (feature->GetId().IsNull())
                 {
                     continue;
                 }
 
-                totalDimensions += frameData->GetNumDimensions();
+                result += feature->GetNumDimensions();
             }
-            return totalDimensions;
+            return result;
         }
     } // namespace MotionMatching
 } // namespace EMotionFX

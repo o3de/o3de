@@ -81,7 +81,7 @@ namespace EMotionFX
             return velocityDirection.Dot(relativeFacingDirection);
         }
 */
-        void FeatureTrajectory::ExtractFrameData(const ExtractFrameContext& context)
+        void FeatureTrajectory::ExtractFeatureValues(const ExtractFrameContext& context)
         {
             // Get a temp sample pose.
             ActorInstance* actorInstance = context.m_motionInstance->GetActorInstance();
@@ -381,7 +381,7 @@ namespace EMotionFX
 
             const int sampleIndex = aznumeric_cast<int>(index) / aznumeric_cast<int>(Sample::s_componentsPerSample);
             const int componentIndex = index % Sample::s_componentsPerSample;
-            const int midSampleIndex = (int)CalcMidFrameDataIndex();
+            const int midSampleIndex = aznumeric_cast<int>(CalcMidFrameDataIndex());
 
             if (sampleIndex == midSampleIndex)
             {

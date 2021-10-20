@@ -53,7 +53,7 @@ namespace EMotionFX
 
             bool Init(const InitSettings& settings) override;
 
-            void ExtractFrameData(const ExtractFrameContext& context) override;
+            void ExtractFeatureValues(const ExtractFrameContext& context) override;
             size_t GetNumDimensions() const override;
             void FillFrameFloats(const FeatureMatrix& featureMatrix, size_t frameIndex, size_t startIndex, AZStd::vector<float>& frameFloats) const override;
 
