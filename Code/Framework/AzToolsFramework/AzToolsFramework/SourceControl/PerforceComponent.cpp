@@ -88,10 +88,6 @@ namespace AzToolsFramework
         {
             m_WorkerThread = AZStd::thread(AZStd::bind(&PerforceComponent::ThreadWorker, this));
         }
-        else
-        {
-            m_WorkerThread = AZStd::thread();
-        }
 
         SourceControlConnectionRequestBus::Handler::BusConnect();
         SourceControlCommandBus::Handler::BusConnect();
