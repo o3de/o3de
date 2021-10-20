@@ -62,7 +62,7 @@ namespace UnitTest
         m_instanceToTemplateInterface->GeneratePatch(patch, entityDomBeforeUpdate, entityDomAfterUpdate);
 
         //create undo node
-        PrefabUndoEntityUpdate instanceEntityUndo("Entity Update Undo Node", AZStd::nullopt);
+        PrefabUndoEntityUpdate instanceEntityUndo("Entity Update Undo Node");
         instanceEntityUndo.Capture(entityDomBeforeUpdate, entityDomAfterUpdate, entityId);
 
         EntityAliasOptionalReference entityAliasRef = testInstance->GetEntityAlias(entityId);
@@ -123,7 +123,7 @@ namespace UnitTest
         m_instanceToTemplateInterface->GeneratePatch(patch, instanceDomBeforeUpdate, instanceDomAfterUpdate);
 
         //create undo node
-        PrefabUndoInstance instanceEntityAddUndo("Entity Update Undo Node", AZStd::nullopt);
+        PrefabUndoInstance instanceEntityAddUndo("Entity Update Undo Node");
         instanceEntityAddUndo.Capture(instanceDomBeforeUpdate, instanceDomAfterUpdate, templateId);
 
         //update template
@@ -176,7 +176,7 @@ namespace UnitTest
         m_instanceToTemplateInterface->GeneratePatch(patch, instanceDomBeforeUpdate, instanceDomAfterUpdate);
 
         //create undo node
-        PrefabUndoInstance instanceEntityRemoveUndo("Entity Update Undo Node", AZStd::nullopt);
+        PrefabUndoInstance instanceEntityRemoveUndo("Entity Update Undo Node");
         instanceEntityRemoveUndo.Capture(instanceDomBeforeUpdate, instanceDomAfterUpdate, templateId);
 
         //update template
