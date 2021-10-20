@@ -2289,7 +2289,14 @@ namespace AzToolsFramework
         // Now we setup a Text Document so it can draw the rich text
         QTextDocument textDoc;
         textDoc.setDefaultFont(optionV4.font);
-        textDoc.setDefaultStyleSheet("body {color: white}");
+        if (option.state & QStyle::State_Enabled)
+        {
+            textDoc.setDefaultStyleSheet("body {color: white}");
+        }
+        else
+        {
+            textDoc.setDefaultStyleSheet("body {color: #ccc}");
+        }
         textDoc.setHtml("<body>" + entityNameRichText + "</body>");
         painter->translate(textRect.topLeft());
         textDoc.setTextWidth(textRect.width());

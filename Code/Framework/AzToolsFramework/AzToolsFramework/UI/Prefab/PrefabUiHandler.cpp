@@ -288,7 +288,7 @@ namespace AzToolsFramework
         QModelIndex firstColumnIndex = index.siblingAtColumn(EntityOutlinerListModel::ColumnName);
         const int iconSize = 16;
         const bool isHovered = (option.state & QStyle::State_MouseOver) && (option.state & QStyle::State_Enabled);
-        const bool isSelected = index.data(EntityOutlinerListModel::ChildSelectedRole).template value<bool>();
+        const bool isSelected = index.data(EntityOutlinerListModel::SelectedRole).template value<bool>();
         const bool isFirstColumn = index.column() == EntityOutlinerListModel::ColumnName;
         const bool isExpanded =
             firstColumnIndex.data(EntityOutlinerListModel::ExpandedRole).value<bool>() &&

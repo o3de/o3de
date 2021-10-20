@@ -20,7 +20,7 @@ namespace AzToolsFramework::ViewportUi::Internal
 {
     const static int HighlightBorderSize = 5;
     const static int TopHighlightBorderSize = 25;
-    const static char* HighlightBorderColor = "#44B2F8";
+    const static char* HighlightBorderColor = "#4A90E2";
 
     static void UnparentWidgets(ViewportUiElementIdInfoLookup& viewportUiElementIdInfoLookup)
     {
