@@ -23,7 +23,7 @@ namespace AzToolsFramework
         }
 
         //PrefabInstanceUndo
-        PrefabUndoInstance::PrefabUndoInstance(const AZStd::string& undoOperationName, const bool useImmediatePropagation)
+        PrefabUndoInstance::PrefabUndoInstance(const AZStd::string& undoOperationName, bool useImmediatePropagation)
             : PrefabUndoBase(undoOperationName)
         {
             m_useImmediatePropagation = useImmediatePropagation;
