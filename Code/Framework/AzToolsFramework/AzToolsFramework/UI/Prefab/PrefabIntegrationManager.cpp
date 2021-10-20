@@ -60,6 +60,7 @@
 #include <QTimer>
 #include <QVBoxLayout>
 #include <QWidget>
+#include <Prefab/ProceduralPrefabSystemComponentInterface.h>
 
 namespace AzToolsFramework
 {
@@ -590,8 +591,8 @@ namespace AzToolsFramework
 
         void PrefabIntegrationManager::ContextMenu_InstantiateProceduralPrefab()
         {
-            AZStd::string prefabAssetPath;
-            bool hasUserForProceduralPrefabAsset = QueryUserForProceduralPrefabAsset(prefabAssetPath);
+            AZ::Data::AssetId prefabAssetId;
+            bool hasUserForProceduralPrefabAsset = QueryUserForProceduralPrefabAsset(prefabAssetId);
 
             if (hasUserForProceduralPrefabAsset)
             {
@@ -609,6 +610,16 @@ namespace AzToolsFramework
                 {
                     EditorRequestBus::BroadcastResult(position, &EditorRequestBus::Events::GetWorldPositionAtViewportCenter);
                 }
+
+                auto proceduralPrefabSystemComponentInterface = AZ::Interface<ProceduralPrefabSystemComponentInterface>::Get();
+
+                if (!proceduralPrefabSystemComponentInterface)
+                {
+                    AZ_Error("PrefabIntegrationManager", false, "Failed to get ProceduralPrefabSystemComponentInterface");
+                    return;
+                }
+
+                AZStd::string prefabAssetPath = proceduralPrefabSystemComponentInterface->Load(prefabAssetId);
 
                 auto createPrefabOutcome = s_prefabPublicInterface->InstantiatePrefab(prefabAssetPath, parentId, position);
                 if (!createPrefabOutcome.IsSuccess())
@@ -878,7 +889,7 @@ namespace AzToolsFramework
             return true;
         }
 
-        bool PrefabIntegrationManager::QueryUserForProceduralPrefabAsset(AZStd::string& outPrefabAssetPath)
+        bool PrefabIntegrationManager::QueryUserForProceduralPrefabAsset(AZ::Data::AssetId& outAssetId)
         {
             using namespace AzToolsFramework;
             auto selection = AssetBrowser::AssetSelectionModel::AssetTypeSelection(azrtti_typeid<AZ::Prefab::ProceduralPrefabAsset>());
@@ -894,7 +905,7 @@ namespace AzToolsFramework
             {
                 return false;
             }
-            outPrefabAssetPath = product->GetRelativePath();
+            outAssetId = product->GetAssetId();
             return true;
         }
 
