@@ -78,7 +78,7 @@ namespace AZ
             {
                 Name HairParentPassName;
 
-                // COmpute passes
+                // Compute passes
                 Name GlobalShapeConstraintsPassName;
                 Name CalculateStrandDataPassName;
                 Name VelocityShockPropagationPassName;

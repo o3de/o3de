@@ -41,8 +41,8 @@ float4 HairShortCutResolveColorPS(VSOutput input) : SV_Target
 
     if (fAlpha < SHORTCUT_MIN_ALPHA)
     {
-        // next we discard of non-hair pixels to avoif manipulating them depending 
-        // on the apha blend state - this is the safer and faster approach as there 
+        // next we discard of non-hair pixels to avoid manipulating them depending 
+        // on the alpha blend state - this is the safer and faster approach as there 
         // is no hair in these pixels
         discard;    
     }
