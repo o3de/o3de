@@ -738,7 +738,8 @@ namespace AzToolsFramework
                     }
                     else
                     {
-                        Internal_HandleContainerOverride(parentUndoBatch, entityId, patch, owningInstance->get().GetLinkId());
+                        Internal_HandleContainerOverride(
+                            parentUndoBatch, entityId, patch, owningInstance->get().GetLinkId(), owningInstance->get().GetParentInstance());
                     }
                 }
                 else
@@ -759,13 +760,14 @@ namespace AzToolsFramework
 
         void PrefabPublicHandler::Internal_HandleContainerOverride(
             UndoSystem::URSequencePoint* undoBatch, AZ::EntityId entityId, const PrefabDom& patch,
-            const LinkId linkId)
+            const LinkId linkId, InstanceOptionalReference parentInstance)
         {
             // Save these changes as patches to the link
             PrefabUndoLinkUpdate* linkUpdate = aznew PrefabUndoLinkUpdate(AZStd::to_string(static_cast<AZ::u64>(entityId)));
             linkUpdate->SetParent(undoBatch);
             linkUpdate->Capture(patch, linkId);
-            linkUpdate->Redo();
+
+            linkUpdate->Redo(parentInstance);
         }
 
         void PrefabPublicHandler::Internal_HandleEntityChange(
@@ -1154,13 +1156,6 @@ namespace AzToolsFramework
 
             ScopedUndoBatch undoBatch("Delete Selected");
 
-            // In order to undo DeleteSelected, we have to create a selection command which selects the current selection
-            // and then add the deletion as children.
-            // Commands always execute themselves first and then their children (when going forwards)
-            // and do the opposite when going backwards.
-            EntityIdList selectedEntities;
-            ToolsApplicationRequestBus::BroadcastResult(selectedEntities, &ToolsApplicationRequests::GetSelectedEntities);
-
             AZ_PROFILE_SCOPE(AzToolsFramework, "Internal::DeleteEntities:UndoCaptureAndPurgeEntities");
 
             Prefab::PrefabDom instanceDomBefore;
@@ -1215,6 +1210,17 @@ namespace AzToolsFramework
             Prefab::PrefabDom instanceDomAfter;
             m_instanceToTemplateInterface->GenerateDomForInstance(instanceDomAfter, commonOwningInstance->get());
 
+            // In order to undo DeleteSelected, we have to create a selection command which selects the current selection
+            // and then add the deletion as children.
+            // Commands always execute themselves first and then their children (when going forwards)
+            // and do the opposite when going backwards.
+            EntityIdList selectedEntities;
+            ToolsApplicationRequestBus::BroadcastResult(selectedEntities, &ToolsApplicationRequests::GetSelectedEntities);
+            SelectionCommand* selCommand = aznew SelectionCommand(selectedEntities, "Delete Entities");
+            selCommand->SetParent(undoBatch.GetUndoBatch());
+            AZ_PROFILE_SCOPE(AzToolsFramework, "Internal::DeleteEntities:RunRedo");
+            selCommand->RunRedo();
+
             // We insert a "deselect all" command before we delete the entities. This ensures the delete operations aren't changing
             // selection state, which triggers expensive UI updates. By deselecting up front, we are able to do those expensive
             // UI updates once at the start instead of once for each entity.
@@ -1227,10 +1233,7 @@ namespace AzToolsFramework
             command->SetParent(undoBatch.GetUndoBatch());
             command->Redo(commonOwningInstance);
 
-            SelectionCommand* selCommand = aznew SelectionCommand(selectedEntities, "Delete Entities");
-            selCommand->SetParent(undoBatch.GetUndoBatch());
-            AZ_PROFILE_SCOPE(AzToolsFramework, "Internal::DeleteEntities:RunRedo");
-            selCommand->RunRedo();
+       
 
             return AZ::Success();
         }
