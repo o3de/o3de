@@ -146,7 +146,7 @@ namespace Multiplayer
         void TickVisibleNetworkEntities(float deltaTime, float serverRateSeconds);
         void OnConsoleCommandInvoked(AZStd::string_view command, const AZ::ConsoleCommandContainer& args, AZ::ConsoleFunctorFlags flags, AZ::ConsoleInvokedFrom invokedFrom);
         void ExecuteConsoleCommandList(AzNetworking::IConnection* connection, const AZStd::fixed_vector<Multiplayer::LongNetworkString, 32>& commands);
-        NetworkEntityHandle SpawnDefaultPlayerPrefab();
+        INetworkEntityManager::EntityList SpawnDefaultPlayerPrefab();
         
         AZ_CONSOLEFUNC(MultiplayerSystemComponent, DumpStats, AZ::ConsoleFunctorFlags::Null, "Dumps stats for the current multiplayer session");
 
