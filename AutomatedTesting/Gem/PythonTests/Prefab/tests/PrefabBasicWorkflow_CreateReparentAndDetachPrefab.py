@@ -5,7 +5,7 @@ For complete copyright and license terms please see the LICENSE at the root of t
 SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 
-def PrefabBasicWorkflow_CreateAndReparentPrefab():
+def PrefabBasicWorkflow_CreateReparentAndDetachPrefab():
 
     CAR_PREFAB_FILE_NAME = 'car_prefab'
     WHEEL_PREFAB_FILE_NAME = 'wheel_prefab'
@@ -43,8 +43,11 @@ def PrefabBasicWorkflow_CreateAndReparentPrefab():
         # Asserts if prefab reparenting doesn't succeeds
         await wheel.ui_reparent_prefab_instance(car.container_entity.id)
 
+        # Asserts if prefab detachment doesn't succeeds
+        Prefab.detach_prefab(wheel)
+
     run_test()
 
 if __name__ == "__main__":
     from editor_python_test_tools.utils import Report
-    Report.start_test(PrefabBasicWorkflow_CreateAndReparentPrefab)
+    Report.start_test(PrefabBasicWorkflow_CreateReparentAndDetachPrefab)
