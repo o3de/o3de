@@ -74,7 +74,9 @@ namespace AZ
             VkSurfaceFormatKHR GetSupportedSurfaceFormat(const RHI::Format format) const;
             VkPresentModeKHR GetSupportedPresentMode(uint32_t verticalSyncInterval) const;
             VkCompositeAlphaFlagBitsKHR GetSupportedCompositeAlpha() const;
-            RHI::ResultCode BuildNativeSwapChain(const RHI::SwapChainDimensions& dimensions, uint32_t verticalSyncInterval);
+            VkSurfaceCapabilitiesKHR GetSurfaceCapabilities();
+            RHI::ResultCode RecreateSwapchain();
+            RHI::ResultCode BuildNativeSwapChain(const RHI::SwapChainDimensions& dimensions);
             RHI::ResultCode AcquireNewImage(uint32_t* acquiredImageIndex);
 
             void InvalidateSurface();
@@ -84,8 +86,9 @@ namespace AZ
             RHI::Ptr<WSISurface> m_surface;
             CommandQueue* m_presentationQueue = nullptr;
             VkSurfaceFormatKHR m_surfaceFormat = {};
-            VkSurfaceCapabilitiesKHR m_surfaceCapabilities;
-
+            VkSurfaceCapabilitiesKHR m_surfaceCapabilities = {};
+            VkPresentModeKHR m_presentMode = {};
+            VkCompositeAlphaFlagBitsKHR m_compositeAlphaFlagBits = {}; 
             FrameContext m_currentFrameContext;
 
             struct SwapChainBarrier
@@ -97,6 +100,8 @@ namespace AZ
             } m_swapChainBarrier;
 
             AZStd::vector<VkImage> m_swapchainNativeImages;
+
+            RHI::SwapChainDimensions m_dimensions;
         };
     }
 }
