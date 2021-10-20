@@ -129,7 +129,38 @@ namespace AZ
             return nullptr;
         }
 
-        const MaterialTypeSourceData::PropertyDefinition* MaterialTypeSourceData::FindProperty(AZStd::string_view groupName, AZStd::string_view propertyName) const
+        bool MaterialTypeSourceData::ApplyPropertyRenames(MaterialPropertyId& propertyId, uint32_t materialTypeVersion) const
+        {
+            bool renamed = false;
+
+            for (const VersionUpdateDefinition& versionUpdate : m_versionUpdates)
+            {
+                if (materialTypeVersion >= versionUpdate.m_toVersion)
+                {
+                    continue;
+                }
+
+                for (const VersionUpdatesRenameOperationDefinition& action : versionUpdate.m_actions)
+                {
+                    if (action.m_operation == "rename")
+                    {
+                        if (action.m_renameFrom == propertyId.GetFullName().GetStringView())
+                        {
+                            propertyId = MaterialPropertyId::Parse(action.m_renameTo);
+                            renamed = true;
+                        }
+                    }
+                    else
+                    {
+                        AZ_Warning("Material source data", false, "Unsupported material version update operation '%s'", action.m_operation.c_str());
+                    }
+                }
+            }
+
+            return renamed;
+        }
+
+        const MaterialTypeSourceData::PropertyDefinition* MaterialTypeSourceData::FindProperty(AZStd::string_view groupName, AZStd::string_view propertyName, uint32_t materialTypeVersion) const
         {
             auto groupIter = m_propertyLayout.m_properties.find(groupName);
             if (groupIter == m_propertyLayout.m_properties.end())
@@ -140,6 +171,27 @@ namespace AZ
             for (const PropertyDefinition& property : groupIter->second)
             {
                 if (property.m_name == propertyName)
+                {
+                    return &property;
+                }
+            }
+
+            // Property has not been found, try looking for renames in the version history
+
+            MaterialPropertyId propertyId = MaterialPropertyId{groupName, propertyName};
+            ApplyPropertyRenames(propertyId, materialTypeVersion);
+
+            // Do the search again with the new names
+
+            groupIter = m_propertyLayout.m_properties.find(propertyId.GetGroupName().GetStringView());
+            if (groupIter == m_propertyLayout.m_properties.end())
+            {
+                return nullptr;
+            }
+
+            for (const PropertyDefinition& property : groupIter->second)
+            {
+                if (property.m_name == propertyId.GetPropertyName().GetStringView())
                 {
                     return &property;
                 }
@@ -302,17 +354,24 @@ namespace AZ
             // Set materialtype version and add each version update object into MaterialTypeAsset.
             materialTypeAssetCreator.SetVersion(m_version);
             {
-            const AZ::Name rename = AZ::Name{ "rename" };
-            const AZ::Name from = AZ::Name{ "from" };
-            const AZ::Name to = AZ::Name{ "to" };
+                const AZ::Name rename = AZ::Name{ "rename" };
+                const AZ::Name from = AZ::Name{ "from" };
+                const AZ::Name to = AZ::Name{ "to" };
                 for (const auto& versionUpdate : m_versionUpdates)
                 {
                     MaterialVersionUpdate materialVersionUpdate;
                     for (const auto& action : versionUpdate.m_actions)
                     {
-                        materialVersionUpdate.AddAction(MaterialVersionUpdate::Action(rename, {
-                            { from, AZ::Name{ action.m_renameFrom } },
-                            { to, AZ::Name{ action.m_renameTo } } }));
+                        if (action.m_operation == rename.GetStringView())
+                        {
+                            materialVersionUpdate.AddAction(MaterialVersionUpdate::Action(rename, {
+                                { from, AZ::Name{ action.m_renameFrom } },
+                                { to, AZ::Name{ action.m_renameTo } } }));
+                        }
+                        else
+                        {
+                            materialTypeAssetCreator.ReportWarning("Unsupported material version update operation '%s'", action.m_operation.c_str());
+                        }
                     }
                     materialTypeAssetCreator.AddVersionUpdate(versionUpdate.m_toVersion, materialVersionUpdate);
                 }

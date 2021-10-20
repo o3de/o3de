@@ -232,6 +232,9 @@ namespace MaterialEditor
         MaterialSourceData sourceData;
         sourceData.m_materialType = m_materialSourceData.m_materialType;
         sourceData.m_parentMaterial = m_materialSourceData.m_parentMaterial;
+        
+        AZ_Assert(m_materialAsset && m_materialAsset->GetMaterialTypeAsset(), "When IsOpen() is true, these assets should not be null.");
+        sourceData.m_materialTypeVersion = m_materialAsset->GetMaterialTypeAsset()->GetVersion();
 
         // Force save data to store forward slashes
         AzFramework::StringFunc::Replace(sourceData.m_materialType, "\\", "/");
@@ -303,6 +306,9 @@ namespace MaterialEditor
         MaterialSourceData sourceData;
         sourceData.m_materialType = m_materialSourceData.m_materialType;
         sourceData.m_parentMaterial = m_materialSourceData.m_parentMaterial;
+        
+        AZ_Assert(m_materialAsset && m_materialAsset->GetMaterialTypeAsset(), "When IsOpen() is true, these assets should not be null.");
+        sourceData.m_materialTypeVersion = m_materialAsset->GetMaterialTypeAsset()->GetVersion();
 
         // Force save data to store forward slashes
         AzFramework::StringFunc::Replace(sourceData.m_materialType, "\\", "/");
@@ -372,6 +378,9 @@ namespace MaterialEditor
         // create source data from properties
         MaterialSourceData sourceData;
         sourceData.m_materialType = m_materialSourceData.m_materialType;
+        
+        AZ_Assert(m_materialAsset && m_materialAsset->GetMaterialTypeAsset(), "When IsOpen() is true, these assets should not be null.");
+        sourceData.m_materialTypeVersion = m_materialAsset->GetMaterialTypeAsset()->GetVersion();
 
         // Only assign a parent path if the source was a .material
         if (AzFramework::StringFunc::Path::IsExtension(m_relativePath.c_str(), MaterialSourceData::Extension))

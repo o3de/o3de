@@ -122,7 +122,8 @@ namespace AZ
             //! from m_materialTypeAsset.
             void RealignPropertyValuesAndNames();
 
-            //! Renames properties in m_propertyNames based on the MaterialTypeAsset's version update. Note that only version upgrades are supported.
+            //! Checks the material type version and potentially applies a series of property changes (most common are simple property renames)
+            //! based on the MaterialTypeAsset's version update procedure.
             void ApplyVersionUpdates();
 
             //! Called by asset creators to assign the asset to a ready state.

@@ -72,6 +72,45 @@ namespace AZ
                 materialAssetCreator.SetPropertyValue(propertyId, entry.second);
             }
         }
+        
+        bool MaterialSourceData::ApplyVersionUpdates()
+        {
+            auto materialTypeSourceDataOutcome = MaterialUtils::LoadMaterialTypeSourceData(m_materialType);
+            if (!materialTypeSourceDataOutcome.IsSuccess())
+            {
+                return false;
+            }
+
+            MaterialTypeSourceData materialTypeSourceData = materialTypeSourceDataOutcome.TakeValue();
+
+            // Note that the only kind of property update currently supported is rename...
+
+            for (auto& groupPair : m_properties)
+            {
+                PropertyMap& propertyMap = groupPair.second;
+
+                PropertyMap newPropertyMap;
+
+                for (auto& propertyPair : propertyMap)
+                {
+                    MaterialPropertyId propertyId{groupPair.first, propertyPair.first};
+                    if (materialTypeSourceData.ApplyPropertyRenames(propertyId, m_materialTypeVersion))
+                    {
+                        newPropertyMap[propertyId.GetPropertyName().GetStringView()] = propertyPair.second;
+                    }
+                    else
+                    {
+                        newPropertyMap[propertyPair.first] = propertyPair.second;
+                    }
+                }
+
+                propertyMap = newPropertyMap;
+            }
+
+            m_materialTypeVersion = materialTypeSourceData.m_version;
+
+            return true;
+        }
 
         Outcome<Data::Asset<MaterialAsset> > MaterialSourceData::CreateMaterialAsset(Data::AssetId assetId, AZStd::string_view materialSourceFilePath, bool elevateWarnings, bool includeMaterialPropertyNames) const
         {

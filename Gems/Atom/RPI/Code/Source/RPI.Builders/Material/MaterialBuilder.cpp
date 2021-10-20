@@ -287,6 +287,11 @@ namespace AZ
                 return {};
             }
 
+            if (!material.GetValue().ApplyVersionUpdates())
+            {
+                return {};
+            }
+
             auto materialAssetOutcome = material.GetValue().CreateMaterialAsset(Uuid::CreateRandom(), materialSourceFilePath, true);
             if (!materialAssetOutcome.IsSuccess())
             {
