@@ -15,8 +15,6 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../automatedtesti
 
 from base import TestAutomationBase
 
-# These tests fail to execute as they have never been run in jenkins, they are required to be updateds
-@pytest.mark.skip
 @pytest.mark.parametrize("launcher_platform", ['windows_editor'])
 @pytest.mark.parametrize("project", ["AutomatedTesting"])
 class TestUtils(TestAutomationBase):
@@ -109,7 +107,7 @@ class TestUtils(TestAutomationBase):
             find_me_too_path, found_me["FindMeToo.txt"]
         )
 
-    def test_FileManagement_FileBackup(self, workspace):
+    def test_FileManagement_FileBackup(self, workspace, launcher_platform):
         """
         Tests the functionality of the file back up system via the FileManagement class
         :param workspace: ly_test_tools workspace fixture
@@ -166,7 +164,7 @@ class TestUtils(TestAutomationBase):
         del file_map[target_file_path]
         fm._save_file_map(file_map)
 
-    def test_FileManagement_FileRestoration(self, workspace):
+    def test_FileManagement_FileRestoration(self, workspace, launcher_platform):
         """
         Tests the restore file system via the FileManagement class
         :param workspace: ly_test_tools workspace fixture
@@ -260,7 +258,7 @@ class TestUtils(TestAutomationBase):
         ["FindMe.txt", "FindMeToo.txt"], parent_path=r"AutomatedTesting\levels\Utils\Managed_files", search_subdirs=True
     )
     @fm.file_override("default.physxconfiguration", "UtilTest_PhysxConfig_Override.physxconfiguration")
-    def test_UtilTest_Managed_Files(self, request, workspace, editor):
+    def test_UtilTest_Managed_Files(self, request, workspace, editor, launcher_platform):
         from .utils import UtilTest_Managed_Files as test_module
 
         expected_lines = []
