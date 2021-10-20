@@ -8,3 +8,4 @@
 #pragma once
 
 #define AZ_TRAIT_MATERIALEDITOR_EXT ""
+

@@ -8,7 +8,6 @@
 
 #pragma once
 
-#include <MaterialEditor_Traits_Platform.h>
 #include <AtomToolsFramework/Application/AtomToolsApplication.h>
 #include <AtomToolsFramework/Document/AtomToolsDocumentSystemRequestBus.h>
 

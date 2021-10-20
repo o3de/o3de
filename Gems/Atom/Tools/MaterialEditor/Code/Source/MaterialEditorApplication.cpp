@@ -10,9 +10,6 @@
 #include <Atom/Viewport/MaterialViewportModule.h>
 #include <Atom/Window/MaterialEditorWindowModule.h>
 #include <AtomToolsFramework/Document/AtomToolsDocumentSystemRequestBus.h>
-#include <AtomToolsFramework/Window/AtomToolsMainWindowFactoryRequestBus.h>
-#include <AtomToolsFramework/Window/AtomToolsMainWindowRequestBus.h>
-
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <MaterialEditorApplication.h>
 #include <MaterialEditor_Traits_Platform.h>
