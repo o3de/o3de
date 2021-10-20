@@ -197,14 +197,11 @@ namespace AzToolsFramework
         const bool isFirstColumn = descendantIndex.column() == EntityOutlinerListModel::ColumnName;
         const bool isLastColumn = descendantIndex.column() == EntityOutlinerListModel::ColumnLockToggle;
 
-        QColor borderColor = m_prefabCapsuleColor;
+        // There is no legal way of opening prefabs in their default state, so default to disabled.
+        QColor borderColor = m_prefabCapsuleDisabledColor;
         if (m_prefabFocusPublicInterface->IsOwningPrefabBeingFocused(entityId))
         {
             borderColor = m_prefabCapsuleEditColor;
-        }
-        else if (!(option.state & QStyle::State_Enabled))
-        {
-            borderColor = m_prefabCapsuleDisabledColor;
         }
 
         QPen borderLinePen(borderColor, m_prefabBorderThickness);
@@ -296,7 +293,7 @@ namespace AzToolsFramework
         const QPoint offset = QPoint(-18, 3);
         QModelIndex firstColumnIndex = index.siblingAtColumn(EntityOutlinerListModel::ColumnName);
         const int iconSize = 16;
-        const bool isHovered = (option.state & QStyle::State_MouseOver) && (option.state & QStyle::State_Enabled);
+        const bool isHovered = (option.state & QStyle::State_MouseOver);
         const bool isSelected = index.data(EntityOutlinerListModel::SelectedRole).template value<bool>();
         const bool isFirstColumn = index.column() == EntityOutlinerListModel::ColumnName;
         const bool isExpanded =
@@ -398,29 +395,22 @@ namespace AzToolsFramework
 
     bool PrefabUiHandler::OnOutlinerItemClick(const QPoint& position, const QStyleOptionViewItem& option, const QModelIndex& index) const
     {
-        bool prefabWipFeaturesEnabled = false;
-        AzFramework::ApplicationRequests::Bus::BroadcastResult(
-            prefabWipFeaturesEnabled, &AzFramework::ApplicationRequests::ArePrefabWipFeaturesEnabled);
+        AZ::EntityId entityId(index.data(EntityOutlinerListModel::EntityIdRole).value<AZ::u64>());
+        const QPoint offset = QPoint(-18, 3);
 
-        if (prefabWipFeaturesEnabled)
+        QRect iconRect = QRect(0, 0, 16, 16);
+        iconRect.translate(option.rect.topLeft() + offset);
+
+        if (iconRect.contains(position))
         {
-            AZ::EntityId entityId(index.data(EntityOutlinerListModel::EntityIdRole).value<AZ::u64>());
-            const QPoint offset = QPoint(-18, 3);
-
-            QRect iconRect = QRect(0, 0, 16, 16);
-            iconRect.translate(option.rect.topLeft() + offset);
-
-            if (iconRect.contains(position))
+            if (!m_prefabFocusPublicInterface->IsOwningPrefabBeingFocused(entityId))
             {
-                if (!m_prefabFocusPublicInterface->IsOwningPrefabBeingFocused(entityId))
-                {
-                    // Focus on this prefab.
-                    m_prefabFocusPublicInterface->FocusOnOwningPrefab(entityId);
-                }
-
-                // Don't propagate event.
-                return true;
+                // Focus on this prefab.
+                m_prefabFocusPublicInterface->FocusOnOwningPrefab(entityId);
             }
+
+            // Don't propagate event.
+            return true;
         }
 
         return false;
@@ -443,15 +433,8 @@ namespace AzToolsFramework
 
     bool PrefabUiHandler::OnEntityDoubleClick(AZ::EntityId entityId) const
     {
-        bool prefabWipFeaturesEnabled = false;
-        AzFramework::ApplicationRequests::Bus::BroadcastResult(
-            prefabWipFeaturesEnabled, &AzFramework::ApplicationRequests::ArePrefabWipFeaturesEnabled);
-
-        if (prefabWipFeaturesEnabled)
-        {
-            // Focus on this prefab
-            m_prefabFocusPublicInterface->FocusOnOwningPrefab(entityId);
-        }
+        // Focus on this prefab
+        m_prefabFocusPublicInterface->FocusOnOwningPrefab(entityId);
 
         // Don't propagate event.
         return true;
