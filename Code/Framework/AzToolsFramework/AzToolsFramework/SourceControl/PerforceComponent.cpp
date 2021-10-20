@@ -20,6 +20,8 @@
 #include <AzFramework/Process/ProcessWatcher.h>
 #include <AzToolsFramework/SourceControl/PerforceConnection.h>
 
+#include <QProcess>
+
 namespace AzToolsFramework
 {
     namespace
@@ -75,30 +77,20 @@ namespace AzToolsFramework
         m_resolveKey = true;
         m_testTrust = false;
 
-        // Check and make sure P4 is installed
-        AzFramework::ProcessLauncher::ProcessLaunchInfo checkP4VersionRequest;
-        checkP4VersionRequest.m_processExecutableString = "p4";
-        checkP4VersionRequest.m_commandlineParameters = "-V";
 
-        AzFramework::ProcessOutput  checkP4VersionResult;
-        
+        // set up signals before we start thread.
         m_shutdownThreadSignal = false;
 
-        bool result = AzFramework::ProcessWatcher::LaunchProcessAndRetrieveOutput(checkP4VersionRequest,
-                                                                                  AzFramework::COMMUNICATOR_TYPE_STDINOUT,
-                                                                                  checkP4VersionResult);
-        if (!result || checkP4VersionResult.HasError())
+        // Spin up a thread worker for P4 if we can detect that P4 is installed and available at the command line
+        int p4VersionExitCode = QProcess::execute("p4", QStringList{ "-V" });
+        m_p4ApplicationDetected = (p4VersionExitCode == 0);
+        if (m_p4ApplicationDetected)
         {
-            m_p4ClientAvailable = false;
-            m_WorkerThread = AZStd::thread();
-            AZ_TracePrintf(SCC_WINDOW, "Perforce - Unable to detect p4 client command on this host. Perforce integration will not be available\n");
+            m_WorkerThread = AZStd::thread(AZStd::bind(&PerforceComponent::ThreadWorker, this));
         }
         else
         {
-            // set up signals before we start thread.
-            m_p4ClientAvailable = true;
-            m_shutdownThreadSignal = false;
-            m_WorkerThread = AZStd::thread(AZStd::bind(&PerforceComponent::ThreadWorker, this));
+            m_WorkerThread = AZStd::thread();
         }
 
         SourceControlConnectionRequestBus::Handler::BusConnect();
@@ -110,7 +102,7 @@ namespace AzToolsFramework
         SourceControlCommandBus::Handler::BusDisconnect();
         SourceControlConnectionRequestBus::Handler::BusDisconnect();
 
-        if (m_p4ClientAvailable)
+        if (m_p4ApplicationDetected)
         {
             m_shutdownThreadSignal = true; // tell the thread to die.
             m_WorkerSemaphore.release(1); // wake up the thread so that it sees the signal

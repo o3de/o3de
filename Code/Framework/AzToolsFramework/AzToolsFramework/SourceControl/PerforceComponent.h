@@ -258,8 +258,9 @@ namespace AzToolsFramework
 
         AZStd::atomic_bool m_testConnection;
         AZStd::atomic_bool m_validConnection;
-        AZStd::atomic_bool m_p4ClientAvailable;
 
         SourceControlState m_connectionState;
+
+        bool m_p4ApplicationDetected{ false };
     };
 } // namespace AzToolsFramework
