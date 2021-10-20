@@ -73,7 +73,8 @@ namespace AzToolsFramework
 
             void Undo() override;
             void Redo() override;
-            void Redo(InstanceOptionalConstReference instance);
+            //! Overload to allow to apply the change, but prevent instanceToExclude from being refreshed.
+            void Redo(InstanceOptionalConstReference instanceToExclude);
 
         private:
             InstanceEntityMapperInterface* m_instanceEntityMapperInterface = nullptr;
@@ -137,9 +138,11 @@ namespace AzToolsFramework
 
             void Undo() override;
             void Redo() override;
+            //! Overload to allow to apply the change, but prevent instanceToExclude from being refreshed.
+            void Redo(InstanceOptionalConstReference instanceToExclude);
 
         private:
-            void UpdateLink(PrefabDom& linkDom);
+            void UpdateLink(PrefabDom& linkDom, InstanceOptionalConstReference instanceToExclude = AZStd::nullopt);
 
             LinkId m_linkId;
             PrefabDom m_linkDomNext;  //data for delete/update
