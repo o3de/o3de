@@ -49,6 +49,11 @@ namespace AzToolsFramework
             m_instanceToTemplateInterface->PatchTemplate(m_redoPatch, m_templateId, m_useImmediatePropagation);
         }
 
+        void PrefabUndoInstance::Redo(InstanceOptionalConstReference instance)
+        {
+            m_instanceToTemplateInterface->PatchTemplate(m_redoPatch, m_templateId, m_useImmediatePropagation, instance);
+        }
+
         //PrefabEntityUpdateUndo
         PrefabUndoEntityUpdate::PrefabUndoEntityUpdate(const AZStd::string& undoOperationName)
             : PrefabUndoBase(undoOperationName)
@@ -88,7 +93,7 @@ namespace AzToolsFramework
         void PrefabUndoEntityUpdate::Undo()
         {
             [[maybe_unused]] bool isPatchApplicationSuccessful =
-                m_instanceToTemplateInterface->PatchTemplate(m_undoPatch, m_templateId, true);
+                m_instanceToTemplateInterface->PatchTemplate(m_undoPatch, m_templateId, m_useImmediatePropagation);
 
             AZ_Error(
                 "Prefab", isPatchApplicationSuccessful,
@@ -99,7 +104,7 @@ namespace AzToolsFramework
         void PrefabUndoEntityUpdate::Redo()
         {
             [[maybe_unused]] bool isPatchApplicationSuccessful =
-                m_instanceToTemplateInterface->PatchTemplate(m_redoPatch, m_templateId, true);
+                m_instanceToTemplateInterface->PatchTemplate(m_redoPatch, m_templateId, m_useImmediatePropagation);
 
             AZ_Error(
                 "Prefab", isPatchApplicationSuccessful,
@@ -107,17 +112,17 @@ namespace AzToolsFramework
                 m_templateId);
         }
 
-        void PrefabUndoEntityUpdate::RedoBatched(InstanceOptionalConstReference instance)
+        void PrefabUndoEntityUpdate::Redo(InstanceOptionalConstReference instance)
         {
             [[maybe_unused]] bool isPatchApplicationSuccessful =
-                m_instanceToTemplateInterface->PatchTemplate(m_redoPatch, m_templateId, false, instance);
+                m_instanceToTemplateInterface->PatchTemplate(m_redoPatch, m_templateId, m_useImmediatePropagation, instance);
 
             AZ_Error(
                 "Prefab", isPatchApplicationSuccessful,
                 "Applying the redo patch on the entity with alias '%s' in template with id '%llu' was unsuccessful", m_entityAlias.c_str(),
                 m_templateId);
         }
-
+        
         //PrefabInstanceLinkUndo
         PrefabUndoInstanceLink::PrefabUndoInstanceLink(const AZStd::string& undoOperationName)
             : PrefabUndoBase(undoOperationName)

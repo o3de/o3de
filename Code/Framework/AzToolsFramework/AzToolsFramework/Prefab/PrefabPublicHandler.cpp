@@ -776,7 +776,7 @@ namespace AzToolsFramework
             PrefabUndoEntityUpdate* state = aznew PrefabUndoEntityUpdate(AZStd::to_string(static_cast<AZ::u64>(entityId)));
             state->SetParent(undoBatch);
             state->Capture(beforeState, afterState, entityId);
-            state->RedoBatched(instance);
+            state->Redo(instance);
         }
 
         void PrefabPublicHandler::Internal_HandleInstanceChange(
@@ -1225,7 +1225,7 @@ namespace AzToolsFramework
             PrefabUndoInstance* command = aznew PrefabUndoInstance("Instance deletion");
             command->Capture(instanceDomBefore, instanceDomAfter, commonOwningInstance->get().GetTemplateId());
             command->SetParent(undoBatch.GetUndoBatch());
-            command->RedoBatched(commonOwningInstance);
+            command->Redo(commonOwningInstance);
 
             SelectionCommand* selCommand = aznew SelectionCommand(selectedEntities, "Delete Entities");
             selCommand->SetParent(undoBatch.GetUndoBatch());
@@ -1321,7 +1321,7 @@ namespace AzToolsFramework
                     command->SetParent(undoBatch.GetUndoBatch());
                     {
                         AZ_PROFILE_SCOPE(AzToolsFramework, "Internal::DetachPrefab:RunRedo");
-                        command->RedoBatched(parentInstance);
+                        command->Redo(parentInstance);
                     }
 
                     instancePtr->DetachNestedInstances(

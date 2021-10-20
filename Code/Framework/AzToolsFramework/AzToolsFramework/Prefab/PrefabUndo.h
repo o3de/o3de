@@ -54,6 +54,7 @@ namespace AzToolsFramework
 
             void Undo() override;
             void Redo() override;
+            void Redo(InstanceOptionalConstReference instance);
         };
 
         //! handles entity updates, such as when the values on an entity change
@@ -72,7 +73,7 @@ namespace AzToolsFramework
 
             void Undo() override;
             void Redo() override;
-            void RedoBatched(InstanceOptionalConstReference instance);
+            void Redo(InstanceOptionalConstReference instance);
 
         private:
             InstanceEntityMapperInterface* m_instanceEntityMapperInterface = nullptr;
