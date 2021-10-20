@@ -225,10 +225,10 @@ namespace AzToolsFramework
                         const QModelIndex indexBelow = viewModel->index(index.row() + 1, index.column());
                         const QModelIndex indexAbove = viewModel->index(index.row() - 1, index.column());
 
-                        auto bellowEntry = qvariant_cast<const AssetBrowserEntry*>(indexBelow.data(AssetBrowserModel::Roles::EntryRole));
+                        auto belowEntry = qvariant_cast<const AssetBrowserEntry*>(indexBelow.data(AssetBrowserModel::Roles::EntryRole));
                         auto aboveEntry = qvariant_cast<const AssetBrowserEntry*>(indexAbove.data(AssetBrowserModel::Roles::EntryRole));
 
-                        auto bellowSourceEntry = azrtti_cast<const SourceAssetBrowserEntry*>(bellowEntry);
+                        auto belowSourceEntry = azrtti_cast<const SourceAssetBrowserEntry*>(belowEntry);
                         auto aboveSourceEntry = azrtti_cast<const SourceAssetBrowserEntry*>(aboveEntry);
 
                         // Last item and the above entry is a source entry
@@ -244,11 +244,11 @@ namespace AzToolsFramework
                                 DrawBranchPixMap(EntryBranchType::Last, painter, branchIconTopLeft, iconSize);
                             }
                         }
-                        else if (bellowSourceEntry && aboveSourceEntry)
+                        else if (belowSourceEntry && aboveSourceEntry)
                         {
                             DrawBranchPixMap(EntryBranchType::OneChild, painter, branchIconTopLeft, iconSize); // Draw One Child Icon
                         }
-                        else if (bellowSourceEntry && !aboveSourceEntry)
+                        else if (belowSourceEntry && !aboveSourceEntry)
                         {
                             DrawBranchPixMap(EntryBranchType::Last, painter, branchIconTopLeft, iconSize);
                         }
