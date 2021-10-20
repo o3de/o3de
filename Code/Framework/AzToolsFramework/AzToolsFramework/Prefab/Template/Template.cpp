@@ -195,6 +195,10 @@ namespace AzToolsFramework
                 return false;
             }
             auto source = m_prefabDom.FindMember(PrefabDomUtils::SourceName);
+            if (!source->value.IsString())
+            {
+                return false;
+            }
             AZ::IO::PathView path(source->value.GetString());
             m_isProcedural = AZStd::make_optional(path.Extension().Match(".procprefab"));
             return m_isProcedural.value();
