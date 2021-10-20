@@ -34,6 +34,23 @@ namespace EMStudio
 
         SetupCameras();
         SetupCameraController();
+        Reinit();
+
+        AnimViewportRequestBus::Handler::BusConnect();
+    }
+
+    AnimViewportWidget::~AnimViewportWidget()
+    {
+        AnimViewportRequestBus::Handler::BusDisconnect();
+    }
+
+    void AnimViewportWidget::Reinit(bool resetCamera)
+    {
+        if (resetCamera)
+        {
+            ResetCamera();
+        }
+        m_renderer->Reinit();
     }
 
     void AnimViewportWidget::SetupCameras()
@@ -99,5 +116,43 @@ namespace EMStudio
                 cameras.AddCamera(m_orbitDollyScrollCamera);
             });
         GetControllerList()->Add(controller);
+    }
+
+    void AnimViewportWidget::ResetCamera()
+    {
+        SetCameraViewMode(CameraViewMode::DEFAULT);
+    }
+
+    void AnimViewportWidget::SetCameraViewMode([[maybe_unused]]CameraViewMode mode)
+    {
+        // Set the camera view mode.
+        const AZ::Vector3 targetPosition = m_renderer->GetCharacterCenter();
+        AZ::Vector3 cameraPosition;
+        switch (mode)
+        {
+        case CameraViewMode::FRONT:
+            cameraPosition.Set(0.0f, CameraDistance, targetPosition.GetZ());
+            break;
+        case CameraViewMode::BACK:
+            cameraPosition.Set(0.0f, -CameraDistance, targetPosition.GetZ());
+            break;
+        case CameraViewMode::TOP:
+            cameraPosition.Set(0.0f, 0.0f, CameraDistance + targetPosition.GetZ());
+            break;
+        case CameraViewMode::BOTTOM:
+            cameraPosition.Set(0.0f, 0.0f, -CameraDistance + targetPosition.GetZ());
+            break;
+        case CameraViewMode::LEFT:
+            cameraPosition.Set(-CameraDistance, 0.0f, targetPosition.GetZ());
+            break;
+        case CameraViewMode::RIGHT:
+            cameraPosition.Set(CameraDistance, 0.0f, targetPosition.GetZ());
+            break;
+        case CameraViewMode::DEFAULT:
+            // The default view mode is looking from the top left of the character.
+            cameraPosition.Set(-CameraDistance, CameraDistance, CameraDistance + targetPosition.GetZ());
+            break;
+        }
+        GetViewportContext()->SetCameraTransform(AZ::Transform::CreateLookAt(cameraPosition, targetPosition));
     }
 } // namespace EMStudio

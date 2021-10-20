@@ -25,6 +25,7 @@
 #include <QTableWidget>
 #include <QFrame>
 #include <QStackedWidget>
+#include <QMessageBox>
 
 namespace O3DE::ProjectManager
 {
@@ -79,21 +80,48 @@ namespace O3DE::ProjectManager
 
         if (repoAddDialog->exec() == QDialog::DialogCode::Accepted)
         {
-            QString repoUrl = repoAddDialog->GetRepoPath();
-            if (repoUrl.isEmpty())
+            QString repoUri = repoAddDialog->GetRepoPath();
+            if (repoUri.isEmpty())
             {
+                QMessageBox::warning(this, tr("No Input"), tr("Please provide a repo Uri."));
                 return;
             }
 
-            AZ::Outcome<void, AZStd::string> addGemRepoResult = PythonBindingsInterface::Get()->AddGemRepo(repoUrl);
-            if (addGemRepoResult.IsSuccess())
+            bool addGemRepoResult = PythonBindingsInterface::Get()->AddGemRepo(repoUri);
+            if (addGemRepoResult)
             {
                 Reinit();
             }
             else
             {
-                QMessageBox::critical(this, tr("Operation failed"),
-                    QString("Failed to add gem repo: %1.<br>Error:<br>%2").arg(repoUrl, addGemRepoResult.GetError().c_str()));
+                QString failureMessage = tr("Failed to add gem repo: %1.").arg(repoUri);
+                QMessageBox::critical(this, tr("Operation failed"), failureMessage);
+                AZ_Error("Project Manger", false, failureMessage.toUtf8());
+            }
+        }
+    }
+
+    void GemRepoScreen::HandleRemoveRepoButton(const QModelIndex& modelIndex)
+    {
+        QString repoName = m_gemRepoModel->GetName(modelIndex);
+
+        QMessageBox::StandardButton warningResult = QMessageBox::warning(
+            this, tr("Remove Repo"), tr("Are you sure you would like to remove gem repo: %1?").arg(repoName),
+            QMessageBox::No | QMessageBox::Yes);
+
+        if (warningResult == QMessageBox::Yes)
+        {
+            QString repoUri = m_gemRepoModel->GetRepoUri(modelIndex);
+            bool removeGemRepoResult = PythonBindingsInterface::Get()->RemoveGemRepo(repoUri);
+            if (removeGemRepoResult)
+            {
+                Reinit();
+            }
+            else
+            {
+                QString failureMessage = tr("Failed to remove gem repo: %1.").arg(repoUri);
+                QMessageBox::critical(this, tr("Operation failed"), failureMessage);
+                AZ_Error("Project Manger", false, failureMessage.toUtf8());
             }
         }
     }
@@ -250,6 +278,8 @@ namespace O3DE::ProjectManager
 
         m_gemRepoListView = new GemRepoListView(m_gemRepoModel, m_gemRepoModel->GetSelectionModel(), this);
         middleVLayout->addWidget(m_gemRepoListView);
+
+        connect(m_gemRepoListView, &GemRepoListView::RemoveRepo, this, &GemRepoScreen::HandleRemoveRepoButton);
 
         hLayout->addLayout(middleVLayout);
 

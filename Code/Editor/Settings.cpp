@@ -10,6 +10,7 @@
 #include "EditorDefs.h"
 
 #include "Settings.h"
+#include "EditorViewportSettings.h"
 
 // Qt
 #include <QGuiApplication>
@@ -487,7 +488,6 @@ void SEditorSettings::Save()
     SaveValue("Settings", "AutoBackupTime", autoBackupTime);
     SaveValue("Settings", "AutoBackupMaxCount", autoBackupMaxCount);
     SaveValue("Settings", "AutoRemindTime", autoRemindTime);
-    SaveValue("Settings", "MaxDisplayedItemsNumInSearch", maxNumberOfItemsShownInSearch);
     SaveValue("Settings", "CameraMoveSpeed", cameraMoveSpeed);
     SaveValue("Settings", "CameraRotateSpeed", cameraRotateSpeed);
     SaveValue("Settings", "StylusMode", stylusMode);
@@ -682,7 +682,6 @@ void SEditorSettings::Load()
     LoadValue("Settings", "AutoBackupTime", autoBackupTime);
     LoadValue("Settings", "AutoBackupMaxCount", autoBackupMaxCount);
     LoadValue("Settings", "AutoRemindTime", autoRemindTime);
-    LoadValue("Settings", "MaxDisplayedItemsNumInSearch", maxNumberOfItemsShownInSearch);
     LoadValue("Settings", "CameraMoveSpeed", cameraMoveSpeed);
     LoadValue("Settings", "CameraRotateSpeed", cameraRotateSpeed);
     LoadValue("Settings", "StylusMode", stylusMode);
@@ -1174,7 +1173,7 @@ AzToolsFramework::ConsoleColorTheme SEditorSettings::GetConsoleColorTheme() cons
     return consoleBackgroundColorTheme;
 }
 
-int SEditorSettings::GetMaxNumberOfItemsShownInSearchView() const
+AZ::u64 SEditorSettings::GetMaxNumberOfItemsShownInSearchView() const
 {
-    return SEditorSettings::maxNumberOfItemsShownInSearch;
+    return SandboxEditor::MaxItemsShownInAssetBrowserSearch();
 }

@@ -59,7 +59,9 @@ namespace AZ
 
         void FrameGraphExecuteGroupMerged::BeginInternal()
         {
+            m_commandList = AcquireCommandList(VK_COMMAND_BUFFER_LEVEL_PRIMARY);
             m_commandList->BeginCommandBuffer();
+            m_workRequest.m_commandList = m_commandList;
         }
 
         void FrameGraphExecuteGroupMerged::EndInternal()

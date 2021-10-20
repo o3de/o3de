@@ -6,10 +6,7 @@
 #
 #
 
-ly_set(LY_INSTALL_ENABLED TRUE)
-if(INSTALLED_ENGINE)
-    ly_set(LY_INSTALL_ENABLED FALSE)
-endif()
+set(LY_INSTALL_ENABLED TRUE CACHE BOOL "Indicates if the install process is enabled")
 
 if(LY_INSTALL_ENABLED)
     ly_get_absolute_pal_filename(pal_dir ${CMAKE_CURRENT_SOURCE_DIR}/cmake/Platform/${PAL_PLATFORM_NAME})

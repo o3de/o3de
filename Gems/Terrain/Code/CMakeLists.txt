@@ -22,9 +22,12 @@ ly_add_target(
             Gem::Atom_RPI.Public
             Gem::Atom_Utils.Static
             Gem::Atom_Feature_Common
+            Gem::AtomLyIntegration_CommonFeatures.Static
             Gem::GradientSignal
             Gem::SurfaceData
             Gem::LmbrCentral
+            
+            
 )
 
 ly_add_target(

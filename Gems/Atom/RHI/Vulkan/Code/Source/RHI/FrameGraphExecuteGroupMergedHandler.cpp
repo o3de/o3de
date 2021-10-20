@@ -41,9 +41,7 @@ namespace AZ
                 RETURN_RESULT_IF_UNSUCCESSFUL(result);
             }
 
-            // Set the command list and renderpass contexts.
-            m_primaryCommandList = device.AcquireCommandList(m_hardwareQueueClass);
-            group->SetPrimaryCommandList(*m_primaryCommandList);
+            // Set the renderpass contexts.
             group->SetRenderPasscontexts(m_renderPassContexts);
 
             return RHI::ResultCode::Success;
@@ -54,7 +52,8 @@ namespace AZ
             AZ_Assert(m_executeGroups.size() == 1, "Too many execute groups when initializing context");
             FrameGraphExecuteGroupBase* group = static_cast<FrameGraphExecuteGroupBase*>(m_executeGroups.back());
             AddWorkRequest(group->GetWorkRequest());
-            m_workRequest.m_commandList = m_primaryCommandList;
+            //Merged handler will only have one commandlist.
+            m_workRequest.m_commandList = group->GetCommandLists()[0];
         }
     }
 }

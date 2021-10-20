@@ -39,8 +39,6 @@ namespace AZ
     
         void RHISystem::Init()
         {
-            m_cpuProfiler.Init();
-
             Ptr<RHI::PlatformLimitsDescriptor> platformLimitsDescriptor = m_device->GetDescriptor().m_platformLimitsDescriptor;
 
             RHI::FrameSchedulerDescriptor frameSchedulerDescriptor;
@@ -187,8 +185,6 @@ namespace AZ
                 AZ_Assert(m_device->use_count()==1, "The ref count for Device is %i but it should be 1 here to ensure all the resources are released", m_device->use_count());
                 m_device = nullptr;
             }
-
-            m_cpuProfiler.Shutdown();
         }
 
         void RHISystem::FrameUpdate(FrameGraphCallback frameGraphCallback)

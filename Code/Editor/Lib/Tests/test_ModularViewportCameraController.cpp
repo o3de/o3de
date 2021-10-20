@@ -38,6 +38,8 @@ namespace UnitTest
         void BeginCursorCapture() override;
         void EndCursorCapture() override;
         bool IsMouseOver() const override;
+        void SetOverrideCursor(AzToolsFramework::ViewportInteraction::CursorStyleOverride cursorStyleOverride) override;
+        void ClearOverrideCursor() override;
 
     private:
         AzToolsFramework::QtEventToAzInputMapper* m_inputChannelMapper = nullptr;
@@ -56,6 +58,17 @@ namespace UnitTest
     bool ViewportMouseCursorRequestImpl::IsMouseOver() const
     {
         return true;
+    }
+
+    void ViewportMouseCursorRequestImpl::SetOverrideCursor(
+        [[maybe_unused]] AzToolsFramework::ViewportInteraction::CursorStyleOverride cursorStyleOverride)
+    {
+        // noop
+    }
+
+    void ViewportMouseCursorRequestImpl::ClearOverrideCursor()
+    {
+        // noop
     }
 
     class ModularViewportCameraControllerFixture : public AllocatorsTestFixture

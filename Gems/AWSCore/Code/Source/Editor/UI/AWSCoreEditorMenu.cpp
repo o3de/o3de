@@ -156,6 +156,11 @@ namespace AWSCore
         metrics->setIcon(QIcon(QString(":/Notifications/download.svg")));
         metrics->setDisabled(true);
         this->addAction(metrics);
+
+        QAction* gamelift = new QAction(QObject::tr(AWSGameLiftActionText));
+        gamelift->setIcon(QIcon(QString(":/Notifications/download.svg")));
+        gamelift->setDisabled(true);
+        this->addAction(gamelift);
     }
 
     void AWSCoreEditorMenu::SetAWSClientAuthEnabled()
@@ -177,6 +182,23 @@ namespace AWSCore
             AWSClientAuthCustomAuthProviderActionText, AWSClientAuthCustomAuthProviderUrl, ":/Notifications/link.svg"));
         subMenu->addAction(AddExternalLinkAction(
             AWSClientAuthAPIReferenceActionText, AWSClientAuthAPIReferenceUrl, ":/Notifications/link.svg"));
+
+        AddSpaceForIcon(subMenu);
+    }
+
+    void AWSCoreEditorMenu::SetAWSGameLiftEnabled()
+    {
+        // TODO: instead of creating submenu in core editor, aws feature gem should return submenu component directly
+        QMenu* subMenu = SetAWSFeatureSubMenu(AWSGameLiftActionText);
+
+        subMenu->addAction(AddExternalLinkAction(AWSGameLiftGemOverviewActionText, AWSGameLiftGemOverviewUrl, ":/Notifications/link.svg"));
+        subMenu->addAction(AddExternalLinkAction(AWSGameLiftGemSetupActionText, AWSGameLiftGemSetupUrl, ":/Notifications/link.svg"));
+        subMenu->addAction(AddExternalLinkAction(AWSMGameLiftScriptingActionText, AWSGameLiftScriptingUrl, ":/Notifications/link.svg"));
+        subMenu->addAction(AddExternalLinkAction(AWSGameLiftAPIReferenceActionText, AWSGameLiftAPIReferenceUrl, ":/Notifications/link.svg"));
+        subMenu->addAction(AddExternalLinkAction(AWSGameLiftAdvancedTopicsActionText, AWSGameLiftAdvancedTopicsUrl, ":/Notifications/link.svg"));
+        subMenu->addAction(AddExternalLinkAction(AWSGameLiftLocalTestingActionText, AWSGameLiftLocalTestingUrl, ":/Notifications/link.svg"));
+        subMenu->addAction(AddExternalLinkAction(AWSGameLiftBuildPackagingActionText, AWSGameLiftBuildPackagingUrl, ":/Notifications/link.svg"));
+        subMenu->addAction(AddExternalLinkAction(AWSGameLiftResourceManagementActionText, AWSGameLiftResourceManagementUrl, ":/Notifications/link.svg"));
 
         AddSpaceForIcon(subMenu);
     }

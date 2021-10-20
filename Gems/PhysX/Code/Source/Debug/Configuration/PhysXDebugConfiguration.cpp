@@ -31,38 +31,39 @@ namespace PhysX
 
                 if (AZ::EditContext* editContext = serialize->GetEditContext())
                 {
-                    editContext->Class<PvdConfiguration>("PhysX PVD Settings", "PhysX PVD Settings")
+                    editContext->Class<PvdConfiguration>("PhysX PVD Settings",
+                        "Connection configuration settings for the PhysX Visual Debugger (PVD). Requires PhysX Debug Gem.")
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ->DataElement(AZ::Edit::UIHandlers::ComboBox, &PvdConfiguration::m_transportType,
-                            "PVD Transport Type", "PVD supports writing to a TCP/IP network socket or to a file.")
+                            "PVD Transport Type", "Output PhysX Visual Debugger data to a TCP/IP network socket or to a file.")
                         ->EnumAttribute(Debug::PvdTransportType::Network, "Network")
                         ->EnumAttribute(Debug::PvdTransportType::File, "File")
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
 
                         ->DataElement(AZ::Edit::UIHandlers::Default, &PvdConfiguration::m_host,
-                            "PVD Host", "Host IP address of the PhysX Visual Debugger application")
+                            "PVD Host", "Host IP address of the PhysX Visual Debugger server.")
                         ->Attribute(AZ::Edit::Attributes::Visibility, &PvdConfiguration::IsNetworkDebug)
                         ->DataElement(AZ::Edit::UIHandlers::Default, &PvdConfiguration::m_port,
-                            "PVD Port", "Port of the PhysX Visual Debugger application")
+                            "PVD Port", "Port of the PhysX Visual Debugger server.")
                         ->Attribute(AZ::Edit::Attributes::Visibility, &PvdConfiguration::IsNetworkDebug)
+                        ->Attribute(AZ::Edit::Attributes::Min, AZStd::numeric_limits<uint16_t>::min())
+                        ->Attribute(AZ::Edit::Attributes::Max, AZStd::numeric_limits<uint16_t>::max())
                         ->DataElement(AZ::Edit::UIHandlers::Default, &PvdConfiguration::m_timeoutInMilliseconds,
-                            "PVD Timeout", "Timeout (in milliseconds) used when connecting to the PhysX Visual Debugger application")
+                            "PVD Timeout", "Timeout (in milliseconds) when connecting to the PhysX Visual Debugger server.")
                         ->Attribute(AZ::Edit::Attributes::Visibility, &PvdConfiguration::IsNetworkDebug)
                         ->DataElement(AZ::Edit::UIHandlers::Default, &PvdConfiguration::m_fileName,
-                            "PVD FileName", "Filename to output PhysX Visual Debugger data.")
+                            "PVD FileName", "Output filename for PhysX Visual Debugger data.")
                         ->Attribute(AZ::Edit::Attributes::Visibility, &PvdConfiguration::IsFileDebug)
 
                         ->DataElement(AZ::Edit::UIHandlers::ComboBox, &PvdConfiguration::m_autoConnectMode,
-                            "PVD Auto Connect", "Automatically connect to the PhysX Visual Debugger "
-                            "(Requires PhysX Debug gem for Editor and Game modes).")
+                            "PVD Auto Connect", "Automatically connect to the PhysX Visual Debugger.")
                         ->EnumAttribute(Debug::PvdAutoConnectMode::Disabled, "Disabled")
                         ->EnumAttribute(Debug::PvdAutoConnectMode::Editor, "Editor")
                         ->EnumAttribute(Debug::PvdAutoConnectMode::Game, "Game")
 
-                        ->DataElement(AZ::Edit::UIHandlers::CheckBox, &PvdConfiguration::m_reconnect,
-                            "PVD Reconnect", "Reconnect (Disconnect and Connect) when switching between game and edit mode "
-                            "(Requires PhysX Debug gem).")
+                        ->DataElement(AZ::Edit::UIHandlers::CheckBox, &PvdConfiguration::m_reconnect, "PVD Reconnect",
+                            "Reconnect (disconnect and connect) to the PhysX Visual Debugger server when switching between game and edit mode.")
                         ;
                 }
             }
@@ -131,7 +132,7 @@ namespace PhysX
 
                 if (AZ::EditContext* editContext = serialize->GetEditContext())
                 {
-                    editContext->Class<DebugDisplayData>("Editor Configuration", "Editor settings for PhysX")
+                    editContext->Class<DebugDisplayData>("Editor Configuration", "Editor settings for PhysX.")
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ->DataElement(AZ::Edit::UIHandlers::Slider, &DebugDisplayData::m_centerOfMassDebugSize,

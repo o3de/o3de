@@ -14,7 +14,6 @@
 #include <Atom/RHI/Factory.h>
 #include <Atom/RHI/RHIUtils.h>
 #include <Atom/RHI/ImagePool.h>
-#include <Atom/RHI/CpuProfiler.h>
 #include <Atom/RHI/RHISystemInterface.h>
 
 #include <Atom/RPI.Public/View.h>

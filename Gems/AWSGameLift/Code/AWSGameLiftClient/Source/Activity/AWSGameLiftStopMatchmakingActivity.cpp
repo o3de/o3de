@@ -11,6 +11,9 @@
 #include <Activity/AWSGameLiftStopMatchmakingActivity.h>
 #include <AWSGameLiftSessionConstants.h>
 
+#include <aws/core/utils/Outcome.h>
+#include <aws/gamelift/model/StopMatchmakingRequest.h>
+
 namespace AWSGameLift
 {
     namespace StopMatchmakingActivity

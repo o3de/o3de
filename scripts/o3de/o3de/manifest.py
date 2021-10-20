@@ -536,7 +536,8 @@ def get_repo_path(repo_uri: str, cache_folder: str = None) -> pathlib.Path:
     if not cache_folder:
         cache_folder = get_o3de_cache_folder()
 
-    repo_sha256 = hashlib.sha256(repo_uri.encode())
+    repo_manifest = f'{repo_uri}/repo.json'
+    repo_sha256 = hashlib.sha256(repo_manifest.encode())
     return cache_folder / str(repo_sha256.hexdigest() + '.json')
 
 def get_registered(engine_name: str = None,

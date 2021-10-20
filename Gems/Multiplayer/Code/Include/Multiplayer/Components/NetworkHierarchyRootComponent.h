@@ -29,6 +29,8 @@ namespace Multiplayer
         , public NetworkHierarchyRequestBus::Handler
     {
         friend class NetworkHierarchyChildComponent;
+        friend class NetworkHierarchyRootComponentController;
+        friend class ServerToClientReplicationWindow;
     public:
         AZ_MULTIPLAYER_COMPONENT(Multiplayer::NetworkHierarchyRootComponent, s_networkHierarchyRootComponentConcreteUuid, Multiplayer::NetworkHierarchyRootComponentBase);
 
@@ -56,6 +58,8 @@ namespace Multiplayer
         void BindNetworkHierarchyChangedEventHandler(NetworkHierarchyChangedEvent::Handler& handler) override;
         void BindNetworkHierarchyLeaveEventHandler(NetworkHierarchyLeaveEvent::Handler& handler) override;
         //! @}
+
+        bool SerializeEntityCorrection(AzNetworking::ISerializer& serializer);
 
     protected:
         void SetTopLevelHierarchyRootEntity(AZ::Entity* hierarchyRoot);
@@ -98,5 +102,25 @@ namespace Multiplayer
         bool m_isHierarchyEnabled = true;
 
         friend class HierarchyBenchmarkBase;
+    };
+
+
+    //! NetworkHierarchyRootComponentController
+    //! This is the network controller for NetworkHierarchyRootComponent.
+    //! Class provides the ability to process input for hierarchies.
+    class NetworkHierarchyRootComponentController final
+        : public NetworkHierarchyRootComponentControllerBase
+    {
+    public:
+        NetworkHierarchyRootComponentController(NetworkHierarchyRootComponent& parent);
+
+        // NetworkHierarchyRootComponentControllerBase
+        void OnActivate(Multiplayer::EntityIsMigrating entityIsMigrating) override;
+        void OnDeactivate(Multiplayer::EntityIsMigrating entityIsMigrating) override;
+
+        //! MultiplayerController interface
+        Multiplayer::MultiplayerController::InputPriorityOrder GetInputOrder() const override;
+        void CreateInput(Multiplayer::NetworkInput& input, float deltaTime) override;
+        void ProcessInput(Multiplayer::NetworkInput& input, float deltaTime) override;
     };
 }

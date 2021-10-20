@@ -31,7 +31,12 @@ namespace AZ
         {
             return static_cast<Device&>(Base::GetDevice());
         }
-
+        
+        FrameGraphExecuter::FrameGraphExecuter()
+        {
+            SetJobPolicy(RHI::JobPolicy::Parallel);
+        }
+        
         RHI::ResultCode FrameGraphExecuter::InitInternal(const RHI::FrameGraphExecuterDescriptor& descriptor)
         {
             const RHI::ConstPtr<RHI::PlatformLimitsDescriptor> rhiPlatformLimitsDescriptor = descriptor.m_platformLimitsDescriptor;
