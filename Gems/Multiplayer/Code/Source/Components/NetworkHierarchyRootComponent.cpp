@@ -20,6 +20,8 @@
 AZ_CVAR(uint32_t, bg_hierarchyEntityMaxLimit, 16, nullptr, AZ::ConsoleFunctorFlags::Null,
     "Maximum allowed size of network entity hierarchies, including top level entity.");
 
+static constexpr int CommonHierarchyEntityMaxLimit = 16; // Should match @bg_hierarchyEntityMaxLimit
+
 namespace Multiplayer
 {
     void NetworkHierarchyRootComponent::Reflect(AZ::ReflectContext* context)
@@ -270,7 +272,7 @@ namespace Multiplayer
     {
         AZ::ComponentApplicationRequests* componentApplicationRequests = AZ::Interface<AZ::ComponentApplicationRequests>::Get();
 
-        AZStd::deque<AZ::Entity*, AZStd::allocator, 16> candidates;
+        AZStd::deque<AZ::Entity*, AZStd::allocator, CommonHierarchyEntityMaxLimit> candidates;
         candidates.push_back(underEntity);
 
         while (!candidates.empty())
@@ -289,6 +291,9 @@ namespace Multiplayer
 
                     if (m_hierarchicalEntities.size() >= bg_hierarchyEntityMaxLimit)
                     {
+                        AZLOG_WARN("Network hierarchy size exceeded, current limit is %d, root entity was %s",
+                            static_cast<int>(bg_hierarchyEntityMaxLimit),
+                            GetEntity()->GetName().c_str());
                         return;
                     }
 
