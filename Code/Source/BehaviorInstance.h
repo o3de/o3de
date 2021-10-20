@@ -67,11 +67,11 @@ namespace EMotionFX
             void Update(float timePassedInSeconds);
             void Output(Pose& outputPose);
 
-            AZ_INLINE MotionInstance* GetMotionInstance() const { return m_motionInstance; }
-            AZ_INLINE ActorInstance* GetActorInstance() const { return m_actorInstance; }
-            AZ_INLINE Behavior* GetBehavior() const { return m_behavior; }
+            MotionInstance* GetMotionInstance() const { return m_motionInstance; }
+            ActorInstance* GetActorInstance() const { return m_actorInstance; }
+            Behavior* GetBehavior() const { return m_behavior; }
 
-            size_t GetLowestCostFrameIndex();
+            size_t GetLowestCostFrameIndex() const;
 
             AZ_INLINE void SetTimeSinceLastFrameSwitch(float newTime) { m_timeSinceLastFrameSwitch = newTime; }
             AZ_INLINE float GetTimeSinceLastFrameSwitch() const { return m_timeSinceLastFrameSwitch; }
@@ -82,21 +82,21 @@ namespace EMotionFX
             static void Reflect(AZ::ReflectContext* context);
 
             // TODO: This is a hack just to work around some limitations of the system now
-            AZ_INLINE ControlSpline& GetControlSpline() { return m_controlSpline; }
-            AZ_INLINE const ControlSpline& GetControlSpline() const { return m_controlSpline; }
+            ControlSpline& GetControlSpline() { return m_controlSpline; }
+            const ControlSpline& GetControlSpline() const { return m_controlSpline; }
 
             AZ_INLINE float GetNewMotionTime() const { return m_newMotionTime; }
             AZ_INLINE void SetNewMotionTime(float t) { m_newMotionTime = t; }
 
-            AZ_INLINE const Pose& GetBlendSourcePose() const { return m_blendSourcePose; }
+            const Pose& GetBlendSourcePose() const { return m_blendSourcePose; }
 
             // Stores the nearest matching frames / the result from the KD-tree
-            AZ_INLINE const AZStd::vector<size_t>& GetNearestFrames() const { return m_nearestFrames; }
-            AZ_INLINE AZStd::vector<size_t>& GetNearestFrames() { return m_nearestFrames; }
+            const AZStd::vector<size_t>& GetNearestFrames() const { return m_nearestFrames; }
+            AZStd::vector<size_t>& GetNearestFrames() { return m_nearestFrames; }
 
             // The input query features to be compared to every entry in the feature database in the motion matching search.
-            AZ_INLINE const AZStd::vector<float>& GetQueryFeatureValues() const { return m_queryFeatureValues; }
-            AZ_INLINE AZStd::vector<float>& GetQueryFeatureValues() { return m_queryFeatureValues; }
+            const AZStd::vector<float>& GetQueryFeatureValues() const { return m_queryFeatureValues; }
+            AZStd::vector<float>& GetQueryFeatureValues() { return m_queryFeatureValues; }
 
             Transform GetMotionExtractionDelta() const { return m_motionExtractionDelta; }
 

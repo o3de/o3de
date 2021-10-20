@@ -62,8 +62,14 @@ namespace EMotionFX
 
             bool RegisterParameters(const InitSettings& settings) override;
             bool RegisterFrameDatas(const InitSettings& settings) override;
-            void DebugDraw(EMotionFX::DebugDraw::ActorInstanceData& draw, BehaviorInstance* behaviorInstance) override;
-            void DebugDrawControlSpline(EMotionFX::DebugDraw::ActorInstanceData& draw, BehaviorInstance* behaviorInstance);
+
+            void DebugDraw(AZ::RPI::AuxGeomDrawPtr& drawQueue,
+                EMotionFX::DebugDraw::ActorInstanceData& draw,
+                BehaviorInstance* behaviorInstance) override;
+
+            void DebugDrawControlSpline(AZ::RPI::AuxGeomDrawPtr& drawQueue,
+                EMotionFX::DebugDraw::ActorInstanceData& draw,
+                BehaviorInstance* behaviorInstance);
 
             size_t FindLowestCostFrameIndex(BehaviorInstance* behaviorInstance, const Pose& inputPose, const Pose& previousPose, size_t currentFrameIndex, float timeDelta) override;
             void BuildControlSpline(BehaviorInstance* behaviorInstance, EControlSplineMode mode, const AZ::Vector3& targetPos, const TrajectoryHistory& trajectoryHistory, float timeDelta, float pathRadius, float pathSpeed);

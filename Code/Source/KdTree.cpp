@@ -59,7 +59,7 @@ namespace EMotionFX
             m_minFramesPerLeaf = minFramesPerLeaf;
 
             // Build the tree.
-            m_frameFloats.resize(m_numDimensions);
+            m_featureValues.resize(m_numDimensions);
             BuildTreeNodes(frameDatabase, featureDatabase, new Node(), nullptr, 0);
             MergeSmallLeafNodesToParents();
             ClearFramesForNonEssentialNodes();
@@ -84,7 +84,7 @@ namespace EMotionFX
             }
 
             m_nodes.clear();
-            m_frameFloats.clear();
+            m_featureValues.clear();
             m_numDimensions = 0;
         }
 
@@ -98,7 +98,7 @@ namespace EMotionFX
                 totalBytes += node->m_frames.capacity() * sizeof(size_t);
             }
 
-            totalBytes += m_frameFloats.capacity() * sizeof(float);
+            totalBytes += m_featureValues.capacity() * sizeof(float);
             totalBytes += sizeof(KdTree);
             return totalBytes;
         }
@@ -235,9 +235,9 @@ namespace EMotionFX
                 // Add parent frames to this node, but only ones that should be on this side.
                 for (const size_t frameIndex : parent->m_frames)
                 {
-                    FillFrameFloats(featureDatabase, frameIndex);
+                    FillFeatureValues(featureDatabase, frameIndex);
 
-                    const float value = m_frameFloats[parent->m_dimension];
+                    const float value = m_featureValues[parent->m_dimension];
                     if (leftSide)
                     {
                         if (value <= parent->m_median)
@@ -263,8 +263,8 @@ namespace EMotionFX
                 {
                     const size_t frameIndex = frame.GetFrameIndex();
                     node->m_frames.emplace_back(frameIndex);
-                    FillFrameFloats(featureDatabase, frameIndex);
-                    median += m_frameFloats[node->m_dimension];
+                    FillFeatureValues(featureDatabase, frameIndex);
+                    median += m_featureValues[node->m_dimension];
                 }
             }
 
@@ -275,12 +275,22 @@ namespace EMotionFX
             node->m_median = median;
         }
 
-        void KdTree::FillFrameFloats(const FeatureDatabase& featureDatabase, size_t frameIndex)
+        void KdTree::FillFeatureValues(const FeatureMatrix& featureMatrix, const Feature* feature, size_t frameIndex, size_t startIndex)
+        {
+            const size_t numDimensions = feature->GetNumDimensions();
+            const size_t featureColumnOffset = feature->GetColumnOffset();
+            for (size_t i = 0; i < numDimensions; ++i)
+            {
+                m_featureValues[startIndex + i] = featureMatrix(frameIndex, featureColumnOffset + i);
+            }
+        }
+
+        void KdTree::FillFeatureValues(const FeatureDatabase& featureDatabase, size_t frameIndex)
         {
             size_t startDimension = 0;
             for (const Feature* feature : featureDatabase.GetFeaturesInKdTree())
             {
-                feature->FillFrameFloats(featureDatabase.GetFeatureMatrix(), frameIndex, startDimension, m_frameFloats);
+                FillFeatureValues(featureDatabase.GetFeatureMatrix(), feature, frameIndex, startDimension);
                 startDimension += feature->GetNumDimensions();
             }
         }

@@ -55,7 +55,8 @@ namespace EMotionFX
             };
 
             void BuildTreeNodes(const FrameDatabase& frameDatabase, const FeatureDatabase& featureDatabase, Node* node, Node* parent, size_t dimension=0, bool leftSide=true);
-            void FillFrameFloats(const FeatureDatabase& featureDatabase, size_t frameIndex);
+            void FillFeatureValues(const FeatureMatrix& featureMatrix, const Feature* feature, size_t frameIndex, size_t startIndex);
+            void FillFeatureValues(const FeatureDatabase& featureDatabase, size_t frameIndex);
             void FillFramesForNode(Node* node, const FrameDatabase& frameDatabase, const FeatureDatabase& featureDatabase, Node* parent, bool leftSide);
             void RecursiveCalcNumFrames(Node* node, size_t& outNumFrames) const;
             void ClearFramesForNonEssentialNodes();
@@ -66,7 +67,7 @@ namespace EMotionFX
 
         private:
             AZStd::vector<Node*> m_nodes;
-            AZStd::vector<float> m_frameFloats;
+            AZStd::vector<float> m_featureValues;
             size_t m_numDimensions = 0;
             size_t m_maxDepth = 20;
             size_t m_minFramesPerLeaf = 1000;

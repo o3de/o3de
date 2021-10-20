@@ -144,12 +144,14 @@ namespace EMotionFX
             return true;
         }
 
-        void LocomotionBehavior::DebugDraw(EMotionFX::DebugDraw::ActorInstanceData& draw, BehaviorInstance* behaviorInstance)
+        void LocomotionBehavior::DebugDraw(AZ::RPI::AuxGeomDrawPtr& drawQueue,
+            EMotionFX::DebugDraw::ActorInstanceData& draw,
+            BehaviorInstance* behaviorInstance)
         {
             AZ_PROFILE_SCOPE(Animation, "LocomotionBehavior::DebugDraw");
 
-            Behavior::DebugDraw(draw, behaviorInstance);
-            DebugDrawControlSpline(draw, behaviorInstance);
+            Behavior::DebugDraw(drawQueue, draw, behaviorInstance);
+            DebugDrawControlSpline(drawQueue, draw, behaviorInstance);
 
             // Get the lowest cost frame index from the last search. As we're searching the feature database with a much lower
             // frequency and sample the animation onwards from this, the resulting frame index does not represent the current
@@ -165,7 +167,7 @@ namespace EMotionFX
             const size_t currentFrame = m_data.FindFrameIndex(motionInstance->GetMotion(), motionInstance->GetCurrentTime());
             if (currentFrame != InvalidIndex)
             {
-                m_features.DebugDraw(draw, behaviorInstance, currentFrame);
+                m_features.DebugDraw(drawQueue, draw, behaviorInstance, currentFrame);
             }
 
             //// Draw the root direction
@@ -173,15 +175,17 @@ namespace EMotionFX
             //const AZ::Vector3 direction = m_rootDirectionData->GetDirection(frameIndex).GetNormalizedSafeExact();
             //draw.DrawLine(actorInstance->GetWorldSpaceTransform().mPosition,
             //              actorInstance->GetWorldSpaceTransform().mPosition + direction, AZ::Colors::LightCyan);
-
-            const ActorInstance* actorInstance = behaviorInstance->GetActorInstance();
-            const Transform transform = actorInstance->GetTransformData()->GetCurrentPose()->GetWorldSpaceTransform(m_rootNodeIndex);
-            m_rootTrajectoryData->DebugDrawFutureTrajectory(draw, behaviorInstance, curFrameIndex, transform, AZ::Colors::LawnGreen);
-            m_rootTrajectoryData->DebugDrawPastTrajectory(draw, behaviorInstance, curFrameIndex, transform, AZ::Colors::Red);
         }
 
-        void LocomotionBehavior::DebugDrawControlSpline(EMotionFX::DebugDraw::ActorInstanceData& draw, BehaviorInstance* behaviorInstance)
+        void LocomotionBehavior::DebugDrawControlSpline(AZ::RPI::AuxGeomDrawPtr& drawQueue,
+            EMotionFX::DebugDraw::ActorInstanceData& draw,
+            BehaviorInstance* behaviorInstance)
         {
+            AZ_UNUSED(draw);
+
+            const float markerSize = 0.02f;
+            const AZ::Color color = AZ::Colors::Magenta;
+
             const BehaviorInstance::ControlSpline& spline = behaviorInstance->GetControlSpline();
             if (spline.m_futureSplinePoints.size() > 1)
             {
@@ -189,12 +193,23 @@ namespace EMotionFX
                 {
                     const AZ::Vector3& posA = spline.m_futureSplinePoints[i].m_position;
                     const AZ::Vector3& posB = spline.m_futureSplinePoints[i + 1].m_position;
-                    draw.DrawLine(posA, posB, AZ::Colors::Magenta);
+
+                    drawQueue->DrawCylinder(/*center=*/(posB + posA) * 0.5f,
+                        /*direction=*/(posB - posA).GetNormalizedSafe(),
+                        /*radius=*/0.0025f,
+                        /*height=*/(posB - posA).GetLength(),
+                        color,
+                        AZ::RPI::AuxGeomDraw::DrawStyle::Solid,
+                        AZ::RPI::AuxGeomDraw::DepthTest::Off);
                 }
 
                 for (size_t i = 0; i < spline.m_futureSplinePoints.size(); ++i)
                 {
-                    draw.DrawMarker(spline.m_futureSplinePoints[i].m_position, AZ::Colors::Magenta, 0.02f);
+                    drawQueue->DrawSphere(spline.m_futureSplinePoints[i].m_position,
+                        markerSize,
+                        color,
+                        AZ::RPI::AuxGeomDraw::DrawStyle::Solid,
+                        AZ::RPI::AuxGeomDraw::DepthTest::Off);
                 }
             }
 
@@ -204,12 +219,16 @@ namespace EMotionFX
                 {
                     const AZ::Vector3& posA = spline.m_pastSplinePoints[i].m_position;
                     const AZ::Vector3& posB = spline.m_pastSplinePoints[i + 1].m_position;
-                    draw.DrawLine(posA, posB, AZ::Colors::Magenta);
+                    draw.DrawLine(posA, posB, color);
                 }
 
                 for (size_t i = 0; i < spline.m_pastSplinePoints.size(); ++i)
                 {
-                    draw.DrawMarker(spline.m_pastSplinePoints[i].m_position, AZ::Colors::Magenta, 0.02f);
+                    drawQueue->DrawSphere(spline.m_pastSplinePoints[i].m_position,
+                        markerSize,
+                        color,
+                        AZ::RPI::AuxGeomDraw::DrawStyle::Solid,
+                        AZ::RPI::AuxGeomDraw::DepthTest::Off);
                 }
             }
         }
