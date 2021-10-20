@@ -21,7 +21,6 @@ AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option") // 4251: class 'Q
 #include <QPainter>
 AZ_POP_DISABLE_WARNING
 
-#pragma optimize("", off)
 namespace AzToolsFramework
 {
     namespace AssetBrowser
@@ -318,5 +317,4 @@ namespace AzToolsFramework
 
     } // namespace AssetBrowser
 } // namespace AzToolsFramework
-#pragma optimize("",on)
 #include "AssetBrowser/Views/moc_EntryDelegate.cpp"
