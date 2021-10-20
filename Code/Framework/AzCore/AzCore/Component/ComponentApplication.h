@@ -358,7 +358,7 @@ namespace AZ
         /// Calculates the root directory of the engine.
         void CalculateEngineRoot();
 
-        /// Calculates the directory where the bootstrap.cfg file resides.
+        /// Deprecated: The term "AppRoot" has no meaning
         void CalculateAppRoot();
 
         template<typename Iterator>

@@ -41,6 +41,8 @@ set(FILES
     Component/ComponentApplication.cpp
     Component/ComponentApplication.h
     Component/ComponentApplicationBus.h
+    Component/ComponentApplicationLifecycle.cpp
+    Component/ComponentApplicationLifecycle.h
     Component/ComponentBus.cpp
     Component/ComponentBus.h
     Component/ComponentExport.h
