@@ -1612,9 +1612,18 @@ namespace AssetProcessor
 
     bool AssetProcessor::PlatformConfiguration::IsFileExcluded(QString fileName) const
     {
+        auto* scanFolder = GetScanFolderForFile(fileName);
+        if (!scanFolder)
+        {
+            AZ_Assert(false, "Could not find a scan folder for %s", fileName.toUtf8().constData());
+            return false;
+        }
+
+        QDir scanFolderRootDir(scanFolder->ScanPath());
+        QString relPath(scanFolderRootDir.relativeFilePath(fileName));
         for (const ExcludeAssetRecognizer& excludeRecognizer : m_excludeAssetRecognizers)
         {
-            if (excludeRecognizer.m_patternMatcher.MatchesPath(fileName.toUtf8().constData()))
+            if (excludeRecognizer.m_patternMatcher.MatchesPath(relPath.toUtf8().constData()))
             {
                 return true;
             }
