@@ -4,7 +4,7 @@
     "ClassName": "PassAsset",
     "ClassData": {
         "PassTemplate": {
-            "Name": "HairParentPassShortCutTemplate",
+            "Name": "HairParentShortCutPassTemplate",
             "PassClass": "ParentPass",
             "Slots": [
                 {
@@ -12,7 +12,7 @@
                     "SlotType": "InputOutput",
                     "ScopeAttachmentUsage": "RenderTarget"
                 },
-                {
+                {   // used for copy from MSAA to regular RT
                     "Name": "RenderTargetInputOnly",
                     "SlotType": "Input",
                     "ScopeAttachmentUsage": "Shader"
@@ -29,7 +29,7 @@
                 // If DepthLinear is not availbale - connect to another viewport (non MSAA) image.
                 {
                     "Name": "DepthLinearInput",
-                    "SlotType": "Input"
+                    "SlotType": "InputOutput"
                 },
                 {
                     "Name": "DepthLinear",
@@ -200,6 +200,13 @@
                             }
                         },
                         {
+                            "LocalSlot": "Depth",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "Depth"
+                            }
+                        },
+                        {
                             "LocalSlot": "InverseAlphaRTOutput",
                             "AttachmentRef": {
                                 "Pass": "This",
@@ -229,13 +236,6 @@
                             }
                         },
                         {
-                            "LocalSlot": "DepthLinear",
-                            "AttachmentRef": {
-                                "Pass": "Parent",
-                                "Attachment": "DepthLinear"
-                            }
-                        },
-                        {
                             "LocalSlot": "HairDepthsTextureArray",
                             "AttachmentRef": {
                                 "Pass": "HairShortCutGeometryDepthAlphaPass",
@@ -257,11 +257,26 @@
                                 "Attachment": "HairColorRenderTarget"
                             }
                         },
+                        {   // The final render target - this is MSAA mode RT - would it be cheaper to
+                            // use non-MSAA and then copy?
+                            "LocalSlot": "RenderTargetInputOutput",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "RenderTargetInputOutput"
+                            }
+                        },
                         {
                             "LocalSlot": "DepthLinear",
                             "AttachmentRef": {
                                 "Pass": "Parent",
-                                "Attachment": "DepthLinear"
+                                "Attachment": "DepthLinearInput"
+                            }
+                        },
+                        {
+                            "LocalSlot": "Depth",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "Depth"
                             }
                         },
                         {
@@ -269,6 +284,52 @@
                             "AttachmentRef": {
                                 "Pass": "HairUpdateFollowHairComputePass",
                                 "Attachment": "SkinnedHairSharedBuffer"
+                            }
+                        },
+
+                        // Shadows resources
+                        {
+                            "LocalSlot": "DirectionalShadowmap",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "DirectionalShadowmap"
+                            }
+                        },
+                        {
+                            "LocalSlot": "DirectionalESM",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "DirectionalESM"
+                            }
+                        },
+                        {
+                            "LocalSlot": "ProjectedShadowmap",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "ProjectedShadowmap"
+                            }
+                        },
+                        {
+                            "LocalSlot": "ProjectedESM",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "ProjectedESM"
+                            }
+                        },
+
+                        // Lights Resources
+                        {
+                            "LocalSlot": "TileLightData",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "TileLightData"
+                            }
+                        },
+                        {
+                            "LocalSlot": "LightListRemapped",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "LightListRemapped"
                             }
                         }
                     ]
@@ -285,13 +346,6 @@
                             "AttachmentRef": {
                                 "Pass": "Parent",
                                 "Attachment": "RenderTargetInputOutput"
-                            }
-                        },
-                        {
-                            "LocalSlot": "DepthLinear",
-                            "AttachmentRef": {
-                                "Pass": "Parent",
-                                "Attachment": "DepthLinear"
                             }
                         },
                         {
@@ -323,7 +377,7 @@
                         {
                             "LocalSlot": "Input",
                             "AttachmentRef": {
-                                "Pass": "HairPPLLResolvePass",
+                                "Pass": "HairShortCutResolveDepthPass",
                                 "Attachment": "Depth"
                             }
                         }

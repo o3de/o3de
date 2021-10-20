@@ -50,7 +50,7 @@ float3 ScreenPosToWorldPos(
     Texture2D<float> screenTexture, float2 screenCoords, float depth, 
     inout float3 screenPosNDC )
 { 
-    screenPosNDC = ScreenPosToNDC(PassSrg::m_linearDepth, screenCoords, depth);
+    screenPosNDC = ScreenPosToNDC(screenTexture, screenCoords, depth);
     float4 projectedPos = float4(screenPosNDC, 1.0f);    // warped projected space [0..1]
     float4 positionVS = mul(ViewSrg::m_projectionMatrixInverse, projectedPos);
     positionVS /= positionVS.w; // notice the normalization factor - crucial! 

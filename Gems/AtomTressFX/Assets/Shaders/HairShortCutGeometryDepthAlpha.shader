@@ -1,5 +1,6 @@
 { 
     "Source" : "HairShortCutGeometryDepthAlpha.azsl",
+    "DrawList" : "HairGeometryDepthAlphaDrawList",
 
     "DepthStencilState" : 
     {
