@@ -218,6 +218,10 @@ QTabBar::tab:focus {
     color: #666666;
 }
 
+#verticalSeparatingLine {
+    color: #888888;
+}
+
 /************** Project Settings **************/
 #projectSettings {
     margin-top:42px;
@@ -479,6 +483,14 @@ QProgressBar::chunk {
 
 #GemCatalogCartOverlaySectionLabel {
     font-weight: 600;
+}
+
+#gemCatalogMenuButton {
+    qproperty-flat: true;
+    max-width:36px;
+    min-width:36px;
+    max-height:24px;
+    min-height:24px;
 }
 
 #GemCatalogHeaderLabel {

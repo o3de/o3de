@@ -83,11 +83,28 @@ namespace O3DE::ProjectManager
 
     bool ScreensCtrl::ForceChangeToScreen(ProjectManagerScreen screen, bool addVisit)
     {
+        ScreenWidget* newScreen = nullptr;
+
         const auto iterator = m_screenMap.find(screen);
         if (iterator != m_screenMap.end())
         {
+            newScreen = iterator.value();
+        }
+        else
+        {
+            // Check if screen is contained by another screen
+            for (ScreenWidget* checkingScreen : m_screenMap)
+            {
+                if (checkingScreen->ContainsScreen(screen))
+                {
+                    newScreen = checkingScreen;
+                    break;
+                }
+            }
+        }
+        if (newScreen)
+        {
             ScreenWidget* currentScreen = GetCurrentScreen();
-            ScreenWidget* newScreen = iterator.value();
 
             if (currentScreen != newScreen)
             {
@@ -108,6 +125,11 @@ namespace O3DE::ProjectManager
                 }
 
                 newScreen->NotifyCurrentScreen();
+
+                if (iterator == m_screenMap.end())
+                {
+                    newScreen->GotoScreen(screen);
+                }
 
                 return true;
             }

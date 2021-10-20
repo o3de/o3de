@@ -47,6 +47,14 @@ namespace O3DE::ProjectManager
             return tr("Missing");
         }
 
+        virtual bool ContainsScreen([[maybe_unused]] ProjectManagerScreen screen)
+        {
+            return false;
+        }
+        virtual void GotoScreen([[maybe_unused]] ProjectManagerScreen screen)
+        {
+        }
+
         //! Notify this screen it is the current screen 
         virtual void NotifyCurrentScreen()
         {
