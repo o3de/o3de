@@ -83,7 +83,7 @@
       "CMAKE_OPTIONS": "-G 'Ninja Multi-Config' -DCMAKE_C_COMPILER=clang-6.0 -DCMAKE_CXX_COMPILER=clang++-6.0 -DLY_UNITY_BUILD=TRUE -DLY_PARALLEL_LINK_JOBS=4",
       "CMAKE_LY_PROJECTS": "AutomatedTesting",
       "CMAKE_TARGET": "all",
-      "CTEST_OPTIONS": "-E (Gem::EMotionFX.Editor.Tests|AssetPipelineTests.BatchDependency|AssetPipelineTests.Gui_2_Main|AutomatedTesting::Atom_TestSuite_Main|AutomatedTesting::PhysicsTests_Main|AutomatedTesting::WhiteBoxTests|AutomatedTesting::PrefabTests|AutomatedTesting::BlastTests_Main|AutomatedTesting::SmokeTest) -L (SUITE_smoke|SUITE_main) -LE (REQUIRES_gpu) --no-tests=error",
+      "CTEST_OPTIONS": "-E (Gem::EMotionFX.Editor.Tests|Gem::EMotionFX.Tests|AssetPipelineTests.BatchDependency|AssetPipelineTests.Gui_2_Main|AutomatedTesting::Atom_TestSuite_Main|AutomatedTesting::PhysicsTests_Main|AutomatedTesting::WhiteBoxTests|AutomatedTesting::PrefabTests|AutomatedTesting::BlastTests_Main|AutomatedTesting::SmokeTest|AZ::AzCore.Tests|AZ::AzToolsFramework.Tests|AZ::AzNetworking.Tests|o3de_register) -L (SUITE_smoke|SUITE_main) -LE (REQUIRES_gpu) --no-tests=error",
       "TEST_RESULTS": "True"
     }
   },
@@ -96,7 +96,7 @@
       "CMAKE_OPTIONS": "-G 'Ninja Multi-Config' -DCMAKE_C_COMPILER=clang-6.0 -DCMAKE_CXX_COMPILER=clang++-6.0 -DLY_UNITY_BUILD=FALSE -DLY_PARALLEL_LINK_JOBS=4",
       "CMAKE_LY_PROJECTS": "AutomatedTesting",
       "CMAKE_TARGET": "all",
-      "CTEST_OPTIONS": "-E (Gem::EMotionFX.Editor.Tests|AssetPipelineTests.BatchDependency|AssetPipelineTests.Gui_2_Main|AutomatedTesting::Atom_TestSuite_Main|AutomatedTesting::PhysicsTests_Main|AutomatedTesting::WhiteBoxTests|AutomatedTesting::PrefabTests|AutomatedTesting::BlastTests_Main|AutomatedTesting::SmokeTest) -L (SUITE_smoke|SUITE_main) -LE (REQUIRES_gpu) --no-tests=error",
+      "CTEST_OPTIONS": "-E (Gem::EMotionFX.Editor.Tests|Gem::EMotionFX.Tests|AssetPipelineTests.BatchDependency|AssetPipelineTests.Gui_2_Main|AutomatedTesting::Atom_TestSuite_Main|AutomatedTesting::PhysicsTests_Main|AutomatedTesting::WhiteBoxTests|AutomatedTesting::PrefabTests|AutomatedTesting::BlastTests_Main|AutomatedTesting::SmokeTest|AZ::AzCore.Tests|AZ::AzToolsFramework.Tests|AZ::AzNetworking.Tests|o3de_register) -L (SUITE_smoke|SUITE_main) -LE (REQUIRES_gpu) --no-tests=error",
       "TEST_RESULTS": "True"
     }
   },
