@@ -29,21 +29,21 @@ class TestAutomation(TestAutomationBase):
             autotest_mode=autotest_mode)
 
     def test_PrefabLevel_OpensLevelWithEntities(self, request, workspace, editor, launcher_platform):
-        from . import PrefabLevel_OpensLevelWithEntities as test_module
+        from .tests import PrefabLevel_OpensLevelWithEntities as test_module
         self._run_prefab_test(request, workspace, editor, test_module)
 
-    def test_Prefab_BasicWorkflow_CreatePrefab(self, request, workspace, editor, launcher_platform):
-        from . import Prefab_BasicWorkflow_CreatePrefab as test_module
+    def test_PrefabBasicWorkflow_CreatePrefab(self, request, workspace, editor, launcher_platform):
+        from .tests import PrefabBasicWorkflow_CreatePrefab as test_module
         self._run_prefab_test(request, workspace, editor, test_module)
         
-    def test_Prefab_BasicWorkflow_InstantiatePrefab(self, request, workspace, editor, launcher_platform):
-        from . import Prefab_BasicWorkflow_InstantiatePrefab as test_module
+    def test_PrefabBasicWorkflow_InstantiatePrefab(self, request, workspace, editor, launcher_platform):
+        from .tests import PrefabBasicWorkflow_InstantiatePrefab as test_module
         self._run_prefab_test(request, workspace, editor, test_module)
 
-    def test_Prefab_BasicWorkflow_CreateAndDeletePrefab(self, request, workspace, editor, launcher_platform):
-        from . import Prefab_BasicWorkflow_CreateAndDeletePrefab as test_module
+    def test_PrefabBasicWorkflow_CreateAndDeletePrefab(self, request, workspace, editor, launcher_platform):
+        from .tests import PrefabBasicWorkflow_CreateAndDeletePrefab as test_module
         self._run_prefab_test(request, workspace, editor, test_module)
 
-    def test_Prefab_BasicWorkflow_CreateAndReparentPrefab(self, request, workspace, editor, launcher_platform):
-        from . import Prefab_BasicWorkflow_CreateAndReparentPrefab as test_module
+    def test_PrefabBasicWorkflow_CreateAndReparentPrefab(self, request, workspace, editor, launcher_platform):
+        from .tests import PrefabBasicWorkflow_CreateAndReparentPrefab as test_module
         self._run_prefab_test(request, workspace, editor, test_module, autotest_mode=False)

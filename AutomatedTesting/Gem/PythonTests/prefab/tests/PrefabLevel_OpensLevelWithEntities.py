@@ -7,9 +7,9 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 
 # fmt:off
 class Tests():
-    find_empty_entity = ("Entity: 'EmptyEntity' found", "Entity: 'EmptyEntity' *not* found in level")
-    empty_entity_pos = ("'EmptyEntity' position is at the expected position", "'EmptyEntity' position is *not* at the expected position")
-    find_pxentity = ("Entity: 'EntityWithPxCollider' found", "Entity: 'EntityWithPxCollider' *not* found in level")
+    find_empty_entity  = ("Entity: 'EmptyEntity' found",                         "Entity: 'EmptyEntity' *not* found in level")
+    empty_entity_pos   = ("'EmptyEntity' position is at the expected position",  "'EmptyEntity' position is *not* at the expected position")
+    find_pxentity      = ("Entity: 'EntityWithPxCollider' found",                "Entity: 'EntityWithPxCollider' *not* found in level")
     pxentity_component = ("Entity: 'EntityWithPxCollider' has a Physx Collider", "Entity: 'EntityWithPxCollider' does *not* have a Physx Collider")
 
 # fmt:on
