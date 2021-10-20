@@ -14,6 +14,7 @@
 
 #include <AWSCoreBus.h>
 #include <Credential/AWSCredentialBus.h>
+#include <Framework/AWSApiJobConfig.h>
 #include <ResourceMapping/AWSResourceMappingBus.h>
 
 #include <AWSGameLiftClientManager.h>
@@ -75,7 +76,15 @@ namespace AWSGameLift
     bool AWSGameLiftClientManager::ConfigureGameLiftClient(const AZStd::string& region)
     {
         AZ::Interface<IAWSGameLiftInternalRequests>::Get()->SetGameLiftClient(nullptr);
+
         Aws::Client::ClientConfiguration clientConfig;
+        AWSCore::AwsApiJobConfig* defaultConfig = nullptr;
+        AWSCore::AWSCoreRequestBus::BroadcastResult(defaultConfig, &AWSCore::AWSCoreRequests::GetDefaultConfig);
+        if (defaultConfig)
+        {
+            clientConfig = defaultConfig->GetClientConfiguration();
+        }
+
         // Set up client endpoint or region
         AZStd::string localEndpoint = "";
 #if defined(AWSGAMELIFT_DEV)
