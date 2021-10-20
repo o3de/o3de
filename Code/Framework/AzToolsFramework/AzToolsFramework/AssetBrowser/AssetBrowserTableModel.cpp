@@ -80,11 +80,6 @@ namespace AzToolsFramework
             return QModelIndex();
         }
 
-        void AssetBrowserTableModel::OnAssetBrowserComponentReady()
-        {
-
-        }
-
         void AssetBrowserTableModel::SourceDataChanged(const QModelIndex& topLeft, const QModelIndex& bottomRight)
         {
             for (int row = topLeft.row(); row <= bottomRight.row(); ++row)

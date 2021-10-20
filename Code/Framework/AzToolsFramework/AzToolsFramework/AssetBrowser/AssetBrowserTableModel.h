@@ -41,11 +41,6 @@ namespace AzToolsFramework
             QModelIndex parent(const QModelIndex& child) const override;
             QModelIndex sibling(int row, int column, const QModelIndex& idx) const override;
 
-            //////////////////////////////////////////////////////////////////////////
-            // AssetBrowserComponentNotificationBus
-            void OnAssetBrowserComponentReady() override;
-            //////////////////////////////////////////////////////////////////////////
-
         protected:
             int rowCount(const QModelIndex& parent = QModelIndex()) const override;
             QVariant headerData(int section, Qt::Orientation orientation, int role /* = Qt::DisplayRole */) const override;
