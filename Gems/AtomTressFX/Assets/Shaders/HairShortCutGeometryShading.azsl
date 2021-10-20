@@ -145,6 +145,7 @@ float4 HairShortCutGeometryColorPS(PS_INPUT_HAIR input) : SV_Target
 //    float3 vNDC = ScreenPosToNDC(PassSrg::m_linearDepth, input.Position.xy, input.Position.z);
 //    uint2  dimensions;
 //    PassSrg::m_linearDepth.GetDimensions(dimensions.x, dimensions.y);
+//    float2 screenCoords = saturate(pixelCoord / dimensions.xy);
 //    float coverage = ComputeCoverage(input.p0p1.xy, input.p0p1.zw, vNDC.xy, float2(dimensions.x, dimensions.y));
 // original:    float coverage = ComputeCoverage(input.p0p1.xy, input.p0p1.zw, vNDC.xy, g_vViewport.zw - g_vViewport.xy);
     float coverage = 1.0;  
@@ -168,5 +169,8 @@ float4 HairShortCutGeometryColorPS(PS_INPUT_HAIR input) : SV_Target
     float thickness = alpha;  
     float3 shadedFragment = TressFXShading(pixelCoord, depth, input.Tangent.xyz, strandColor.rgb, thickness, RenderParamsIndex);
 
+    // Color channel: Pre-multiply with alpha to create non-normalized weighted sum.
+    // Alpha Channel: Sum up all the hair alphas - this will be used to normalize the color
+    // per fragment at the next pass.
     return float4(shadedFragment * alpha, alpha);
 }

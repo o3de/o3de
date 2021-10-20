@@ -67,6 +67,13 @@ set(FILES
     # Base class of all geometry raster passes
     Code/Passes/HairGeometryRasterPass.h
     Code/Passes/HairGeometryRasterPass.cpp
+
+    # ShortCut rendering technique - pass classes 
+    Code/Passes/HairShortCutGeometryDepthAlphaPass.h
+    Code/Passes/HairShortCutGeometryDepthAlphaPass.cpp
+    Code/Passes/HairShortCutGeometryShadingPass.h
+    Code/Passes/HairShortCutGeometryShadingPass.cpp
+
     # PPLL rendering technique - geometry raster pass
     Code/Passes/HairPPLLRasterPass.h
     Code/Passes/HairPPLLRasterPass.cpp

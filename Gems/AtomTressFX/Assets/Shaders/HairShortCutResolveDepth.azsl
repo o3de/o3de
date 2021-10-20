@@ -38,11 +38,8 @@
 //! Once the compute pases are done, it is read by the rendering shaders.  
 ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
 {
-    // Linear depth is used for getting the screen to world transform
-    Texture2D<float>        m_linearDepth;
-
     // Originally: [[vk::binding(0, 0)]] Texture2DArray<uint> FragmentDepthsTexture : register(t0, space0);
-    Texture2DArray<uint>    m_fragmentDepthsTexture; 
+     Texture2DArray<uint>    m_fragmentDepthsTexture; 
 }
 //------------------------------------------------------------------------------
 

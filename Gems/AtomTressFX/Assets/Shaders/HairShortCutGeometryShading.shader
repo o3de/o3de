@@ -1,5 +1,6 @@
 { 
     "Source" : "HairShortCutGeometryShading.azsl",
+    "DrawList" : "HairGeometryShadingDrawList",    
 
     "DepthStencilState" : 
     {
@@ -19,11 +20,11 @@
     "BlendState" : 
     {
         "Enable" : true,
-        "BlendSource" : "Zero",
-        "BlendDest" : "ColorSource",
+        "BlendSource" : "One",
+        "BlendDest" : "One",
         "BlendOp" : "Add",
-        "BlendAlphaSource" : "Zero",
-        "BlendAlphaDest" : "AlphaSource",
+        "BlendAlphaSource" : "One",
+        "BlendAlphaDest" : "One",
         "BlendAlphaOp" : "Add"
     },
 

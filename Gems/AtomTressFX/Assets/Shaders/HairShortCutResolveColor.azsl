@@ -17,9 +17,6 @@
 //! Once the compute pases are done, it is read by the rendering shaders.  
 ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
 {
-    // Linear depth is used for getting the screen to world transform
-    Texture2D<float>    m_linearDepth;
-
     // oiriginally: [[vk::binding(0, 0)]] Texture2D<float4> HaiColorTexture : register(t0, space0);
     // oiriginally: [[vk::binding(1, 0)]] Texture2D<float>  AccumInvAlpha : register(t1, space0);
     Texture2D<float4>   m_hairColorTexture;
@@ -43,12 +40,23 @@ float4 HairShortCutResolveColorPS(VSOutput input) : SV_Target
     float fAlpha = 1.0 - fInvAlpha;
 
     if (fAlpha < SHORTCUT_MIN_ALPHA)
-        return float4(0, 0, 0, 1);
-
+    {
+        // next we discard of non-hair pixels to avoif manipulating them depending 
+        // on the apha blend state - this is the safer and faster approach as there 
+        // is no hair in these pixels
+        discard;    
+    }
+    
     float4 finalColor;
     float weightSum = PassSrg::m_hairColorTexture[vScreenAddress].w;
 
+    // Normalize the sum of the shaded fragment from the previous pass and 
+    // then multiply it by the alpha blend of the hairs done in the depth-alpha pass.
     finalColor.xyz = PassSrg::m_hairColorTexture[vScreenAddress] * fAlpha / weightSum;
+
+    // The alpha is set to the inverse alpha of the hair so that the original
+    // background will be blended using this factor emulating single step alpha blend
+    // over the sum of all hair fragment blends. 
     finalColor.w = fInvAlpha;
 
     return finalColor;
