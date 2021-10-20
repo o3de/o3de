@@ -15,9 +15,10 @@
 #include <AzFramework/Input/Channels/InputChannelDeltaWithSharedPosition2D.h>
 #include <AzFramework/Input/Channels/InputChannelDigitalWithSharedModifierKeyStates.h>
 #include <AzFramework/Input/Channels/InputChannelDigitalWithSharedPosition2D.h>
-
 #include <AzFramework/Input/Devices/Keyboard/InputDeviceKeyboard.h>
 #include <AzFramework/Input/Devices/Mouse/InputDeviceMouse.h>
+
+#include <AzToolsFramework/Viewport/ViewportMessages.h>
 
 #include <QEvent>
 #include <QObject>
@@ -54,6 +55,9 @@ namespace AzToolsFramework
         //! events don't allow the cursor to escape. This can be used for typical camera controls
         //! like a dolly or rotation, where mouse movement is important but cursor location is not.
         void SetCursorCaptureEnabled(bool enabled);
+
+        void SetOverrideCursor(ViewportInteraction::CursorStyleOverride cursorStyleOverride);
+        void ClearOverrideCursor();
 
         // QObject overrides...
         bool eventFilter(QObject* object, QEvent* event) override;
@@ -129,7 +133,7 @@ namespace AzToolsFramework
         // Handle mouse click events.
         void HandleMouseButtonEvent(QMouseEvent* mouseEvent);
         // Handle mouse move events.
-        void HandleMouseMoveEvent(const QPoint& cursorPosition);
+        void HandleMouseMoveEvent(const QPoint& globalCursorPosition);
         // Handles key press / release events (or ShortcutOverride events for keys listed in m_highPriorityKeys).
         void HandleKeyEvent(QKeyEvent* keyEvent);
         // Handles mouse wheel events.
@@ -156,14 +160,16 @@ namespace AzToolsFramework
         AZStd::unordered_set<Qt::Key> m_highPriorityKeys;
         // A lookup table for AZ input channel ID -> physical input channel on our mouse or keyboard device.
         AZStd::unordered_map<AzFramework::InputChannelId, AzFramework::InputChannel*> m_channels;
-        // Where the position of the mouse cursor was at the last cursor event.
-        QPoint m_previousCursorPosition;
+        // Where the mouse cursor was at the last cursor event.
+        QPoint m_previousGlobalCursorPosition;
         // The source widget to map events from, used to calculate the relative mouse position within the widget bounds.
         QWidget* m_sourceWidget;
         // Flags whether or not Qt events should currently be processed.
         bool m_enabled = true;
         // Flags whether or not the cursor is being constrained to the source widget (for invisible mouse movement).
         bool m_capturingCursor = false;
+        // Flags whether the cursor has been overridden.
+        bool m_overrideCursor = false;
 
         // Our viewport-specific AZ devices. We control their internal input channel states.
         AZStd::unique_ptr<EditorQtMouseDevice> m_mouseDevice;

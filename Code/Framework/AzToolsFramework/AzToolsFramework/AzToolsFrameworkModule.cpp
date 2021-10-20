@@ -53,6 +53,7 @@
 #include <AzToolsFramework/Thumbnails/ThumbnailerNullComponent.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserComponent.h>
 #include <AzToolsFramework/ViewportSelection/EditorInteractionSystemComponent.h>
+#include <AzToolsFramework/Entity/EntityUtilityComponent.h>
 
 AZ_DEFINE_BUDGET(AzToolsFramework);
 
@@ -71,6 +72,7 @@ namespace AzToolsFramework
             Components::EditorSelectionAccentSystemComponent::CreateDescriptor(),
             EditorEntityContextComponent::CreateDescriptor(),
             EditorEntityFixupComponent::CreateDescriptor(),
+            EntityUtilityComponent::CreateDescriptor(),
             ContainerEntitySystemComponent::CreateDescriptor(),
             FocusModeSystemComponent::CreateDescriptor(),
             SliceMetadataEntityContextComponent::CreateDescriptor(),

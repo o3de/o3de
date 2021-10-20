@@ -78,6 +78,12 @@ StackRecorder::Record(StackFrame* frames, unsigned int maxNumOfFrames, unsigned 
     return count;
 }
 
+unsigned int StackConverter::FromNative([[maybe_unused]] StackFrame* frames, [[maybe_unused]] unsigned int maxNumOfFrames, [[maybe_unused]] void* nativeContext)
+{
+    AZ_Assert(false, "StackConverter::FromNative() is not supported for UnixLike platform yet");
+    return 0;
+}
+
 void
 SymbolStorage::DecodeFrames(const StackFrame* frames, unsigned int numFrames, StackLine* textLines)
 {

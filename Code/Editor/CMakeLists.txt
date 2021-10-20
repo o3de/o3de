@@ -33,7 +33,6 @@ ly_add_target(
     BUILD_DEPENDENCIES
         PRIVATE
             Legacy::CryCommon
-            3rdParty::zlib
         PUBLIC
             3rdParty::Qt::Core
             3rdParty::Qt::Gui
@@ -103,9 +102,8 @@ ly_add_target(
             3rdParty::Qt::Gui
             3rdParty::Qt::Widgets
             3rdParty::Qt::Concurrent
-            3rdParty::tiff
+            3rdParty::TIFF
             3rdParty::squish-ccr
-            3rdParty::zlib
             3rdParty::AWSNativeSDK::STS
             Legacy::CryCommon
             Legacy::EditorCommon

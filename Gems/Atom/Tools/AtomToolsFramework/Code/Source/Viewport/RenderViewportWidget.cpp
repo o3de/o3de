@@ -194,13 +194,21 @@ namespace AtomToolsFramework
         m_controllerList->UpdateViewport({GetId(), AzFramework::FloatSeconds(deltaTime), m_time});
     }
 
-    void RenderViewportWidget::resizeEvent([[maybe_unused]] QResizeEvent* event)
-    {
-        SendWindowResizeEvent();
-    }
-
     bool RenderViewportWidget::event(QEvent* event)
     {
+        // On some types of QEvents, a resize event is needed to make sure that the current viewport window
+        // needs to be updated based on a potential new surface dimensions.
+        switch (event->type()) 
+        {
+            case QEvent::ScreenChangeInternal:
+            case QEvent::UpdateLater:
+            case QEvent::Resize:
+                SendWindowResizeEvent();
+                break;
+
+            default:
+                break;
+        }
         return QWidget::event(event);
     }
 
@@ -214,20 +222,17 @@ namespace AtomToolsFramework
         m_mouseOver = false;
     }
 
-    void RenderViewportWidget::mouseMoveEvent(QMouseEvent* event)
-    {
-        m_mousePosition = event->localPos();
-    }
-
     void RenderViewportWidget::SendWindowResizeEvent()
     {
         // Scale the size by the DPI of the platform to
         // get the proper size in pixels.
+        const auto pixelRatio = devicePixelRatioF();
         const QSize uiWindowSize = size();
-        const QSize windowSize = uiWindowSize * devicePixelRatioF();
+        const QSize windowSize = uiWindowSize * pixelRatio;
 
         const AzFramework::NativeWindowHandle windowId = reinterpret_cast<AzFramework::NativeWindowHandle>(winId());
-        AzFramework::WindowNotificationBus::Event(windowId, &AzFramework::WindowNotifications::OnWindowResized, windowSize.width(), windowSize.height());
+        AzFramework::WindowNotificationBus::Event(
+            windowId, &AzFramework::WindowNotifications::OnWindowResized, windowSize.width(), windowSize.height());
     }
 
     AZ::Name RenderViewportWidget::GetCurrentContextName() const
@@ -368,6 +373,16 @@ namespace AtomToolsFramework
     void RenderViewportWidget::EndCursorCapture()
     {
         m_inputChannelMapper->SetCursorCaptureEnabled(false);
+    }
+
+    void RenderViewportWidget::SetOverrideCursor(AzToolsFramework::ViewportInteraction::CursorStyleOverride cursorStyleOverride)
+    {
+        m_inputChannelMapper->SetOverrideCursor(cursorStyleOverride);
+    }
+
+    void RenderViewportWidget::ClearOverrideCursor()
+    {
+        m_inputChannelMapper->ClearOverrideCursor();
     }
 
     void RenderViewportWidget::SetWindowTitle(const AZStd::string& title)

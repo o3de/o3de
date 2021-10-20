@@ -511,7 +511,11 @@
             {
                 "Name": "HDRColorGradingTemplate",
                 "Path": "Passes/HDRColorGrading.pass"
-            }            
+            },
+            {
+                "Name": "LutGenerationTemplate",
+                "Path": "Passes/LutGeneration.pass"
+            }
         ]
     }
 }

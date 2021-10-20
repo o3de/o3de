@@ -63,13 +63,10 @@ ly_add_target(
             3rdParty::Qt::Widgets
             3rdParty::Qt::Gui
             3rdParty::astc-encoder
-            3rdParty::etc2comp
-            3rdParty::PVRTexTool
             3rdParty::squish-ccr
-            3rdParty::tiff
+            3rdParty::TIFF
             3rdParty::ISPCTexComp
             3rdParty::ilmbase
-            Legacy::CryCommon
             AZ::AzFramework
             AZ::AzToolsFramework
             AZ::AzQtComponents

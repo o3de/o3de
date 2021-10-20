@@ -378,7 +378,7 @@ namespace EMStudio
         // reset action
         m_resetAction = menu->addAction(tr("&Reset"), this, &MainWindow::OnReset, QKeySequence::New);
         m_resetAction->setObjectName("EMFX.MainWindow.ResetAction");
-        
+
         // save all
         m_saveAllAction = menu->addAction(tr("Save All..."), this, &MainWindow::OnSaveAll, QKeySequence::Save);
         m_saveAllAction->setObjectName("EMFX.MainWindow.SaveAllAction");
@@ -467,7 +467,7 @@ namespace EMStudio
         menu->addAction("Documentation", this, []
         {
             QDesktopServices::openUrl(QUrl("https://o3de.org/docs/"));
-        });        
+        });
 
         menu->addAction("Forums", this, []
         {
@@ -491,7 +491,7 @@ namespace EMStudio
 
         // load preferences
         PluginOptionsNotificationsBus::Router::BusRouterConnect();
-        LoadPreferences();      
+        LoadPreferences();
         m_autosaveTimer->setInterval(m_options.GetAutoSaveInterval() * 60 * 1000);
 
         // Create the dirty file manager and register the workspace callback.
@@ -1072,7 +1072,7 @@ namespace EMStudio
         // get only the version number of EMotion FX
         AZStd::string emfxVersionString = EMotionFX::GetEMotionFX().GetVersionString();
         AzFramework::StringFunc::Replace(emfxVersionString, "EMotion FX ", "", true /* case sensitive */);
-        
+
         // set the window title
         // only set the EMotion FX version if the filename is empty
         AZStd::string windowTitle;
@@ -1359,7 +1359,7 @@ namespace EMStudio
     void MainWindow::LoadCharacter(const AZ::Data::AssetId& actorAssetId, const AZ::Data::AssetId& animgraphId, const AZ::Data::AssetId& motionSetId)
     {
         m_characterFiles.clear();
-        AZStd::string cachePath = gEnv->pFileIO->GetAlias("@assets@");
+        AZStd::string cachePath = gEnv->pFileIO->GetAlias("@products@");
         AZStd::string filename;
         AzFramework::StringFunc::AssetDatabasePath::Normalize(cachePath);
 
@@ -1543,12 +1543,12 @@ namespace EMStudio
         AZStd::string result;
         if (EMStudio::GetCommandManager()->ExecuteCommand(command, result))
         {
-            GetNotificationWindowManager()->CreateNotificationWindow(NotificationWindow::TYPE_SUCCESS, 
+            GetNotificationWindowManager()->CreateNotificationWindow(NotificationWindow::TYPE_SUCCESS,
                 "Workspace <font color=green>successfully</font> saved");
         }
         else
         {
-            GetNotificationWindowManager()->CreateNotificationWindow(NotificationWindow::TYPE_ERROR, 
+            GetNotificationWindowManager()->CreateNotificationWindow(NotificationWindow::TYPE_ERROR,
                 AZStd::string::format("Workspace <font color=red>failed</font> to save<br/><br/>%s", result.c_str()).c_str());
         }
     }
@@ -1575,12 +1575,12 @@ namespace EMStudio
         AZStd::string result;
         if (EMStudio::GetCommandManager()->ExecuteCommand(command, result))
         {
-            GetNotificationWindowManager()->CreateNotificationWindow(NotificationWindow::TYPE_SUCCESS, 
+            GetNotificationWindowManager()->CreateNotificationWindow(NotificationWindow::TYPE_SUCCESS,
                 "Workspace <font color=green>successfully</font> saved");
         }
         else
         {
-            GetNotificationWindowManager()->CreateNotificationWindow(NotificationWindow::TYPE_ERROR, 
+            GetNotificationWindowManager()->CreateNotificationWindow(NotificationWindow::TYPE_ERROR,
                 AZStd::string::format("Workspace <font color=red>failed</font> to save<br/><br/>%s", result.c_str()).c_str());
         }
     }
@@ -1644,7 +1644,7 @@ namespace EMStudio
 
         Workspace* workspace = GetManager()->GetWorkspace();
         workspace->SetDirtyFlag(true);
-    }   
+    }
 
     void MainWindow::OnReset()
     {
@@ -1791,11 +1791,6 @@ namespace EMStudio
         for (size_t i = 0; i < numSelectedActorInstances; ++i)
         {
             EMotionFX::Actor* actor = selectionList.GetActorInstance(i)->GetActor();
-
-            if (actor->GetIsOwnedByRuntime())
-            {
-                continue;
-            }
 
             if (AZStd::find(savingActors.begin(), savingActors.end(), actor) == savingActors.end())
             {
@@ -2312,7 +2307,7 @@ namespace EMStudio
 
     void MainWindow::Activate(const AZ::Data::AssetId& actorAssetId, const EMotionFX::AnimGraph* animGraph, const EMotionFX::MotionSet* motionSet)
     {
-        AZStd::string cachePath = gEnv->pFileIO->GetAlias("@assets@");
+        AZStd::string cachePath = gEnv->pFileIO->GetAlias("@products@");
         AZStd::string filename;
         AzFramework::StringFunc::AssetDatabasePath::Normalize(cachePath);
 
@@ -2776,17 +2771,17 @@ namespace EMStudio
         AZStd::string result;
         if (GetCommandManager()->ExecuteCommandGroup(commandGroup, result, false))
         {
-            GetNotificationWindowManager()->CreateNotificationWindow(NotificationWindow::TYPE_SUCCESS, 
+            GetNotificationWindowManager()->CreateNotificationWindow(NotificationWindow::TYPE_SUCCESS,
                 "Autosave <font color=green>completed</font>");
         }
         else
         {
-            GetNotificationWindowManager()->CreateNotificationWindow(NotificationWindow::TYPE_ERROR, 
+            GetNotificationWindowManager()->CreateNotificationWindow(NotificationWindow::TYPE_ERROR,
                 AZStd::string::format("Autosave <font color=red>failed</font><br/><br/>%s", result.c_str()).c_str());
         }
     }
 
-    
+
     void MainWindow::moveEvent(QMoveEvent* event)
     {
         MCORE_UNUSED(event);

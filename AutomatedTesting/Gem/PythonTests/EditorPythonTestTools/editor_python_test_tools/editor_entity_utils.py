@@ -122,16 +122,31 @@ class EditorEntity:
 
     # Creation functions
     @classmethod
-    def find_editor_entity(cls, entity_name: str) -> EditorEntity:
+    def find_editor_entity(cls, entity_name: str, must_be_unique : bool = False) -> EditorEntity:
         """
         Given Entity name, outputs entity object
         :param entity_name: Name of entity to find
         :return: EditorEntity class object
         """
-        entity_id = general.find_editor_entity(entity_name)
-        assert entity_id.IsValid(), f"Failure: Couldn't find entity with name: '{entity_name}'"
-        entity = cls(entity_id)
+        entities = cls.find_editor_entities([entity_name])
+        assert len(entities) != 0, f"Failure: Couldn't find entity with name: '{entity_name}'"
+        if must_be_unique:
+            assert len(entities) == 1, f"Failure: Multiple entities with name: '{entity_name}' when expected only one"
+
+        entity = cls(entities[0])
         return entity
+
+    @classmethod
+    def find_editor_entities(cls, entity_names: List[str]) -> EditorEntity:
+        """
+        Given Entities names, returns a list of EditorEntity 
+        :param entity_name: Name of entity to find
+        :return: List[EditorEntity] class object
+        """
+        searchFilter = azlmbr.entity.SearchFilter()
+        searchFilter.names = entity_names
+        ids = azlmbr.entity.SearchBus(bus.Broadcast, 'SearchEntities', searchFilter)
+        return [cls(id) for id in ids]
 
     @classmethod
     def create_editor_entity(cls, name: str = None, parent_id=None) -> EditorEntity:
@@ -157,8 +172,7 @@ class EditorEntity:
         cls,
         entity_position: Union[List, Tuple, math.Vector3],
         name: str = None,
-        parent_id: azlmbr.entity.EntityId = None,
-    ) -> EditorEntity:
+        parent_id: azlmbr.entity.EntityId = None) -> EditorEntity:
         """
         Used to create entity at position using 'CreateNewEntityAtPosition' Bus.
         :param entity_position: World Position(X, Y, Z) of entity in viewport.
@@ -226,6 +240,12 @@ class EditorEntity:
         :return: Entity ids of children. Type: [entity.EntityId()]
         """
         return editor.EditorEntityInfoRequestBus(bus.Event, "GetChildren", self.id)
+
+    def get_children(self) -> List[EditorEntity]:
+        """
+        :return: List of EditorEntity children. Type: [EditorEntity]
+        """
+        return [EditorEntity(child_id) for child_id in self.get_children_ids()] 
 
     def add_component(self, component_name: str) -> EditorComponent:
         """
@@ -361,3 +381,19 @@ class EditorEntity:
         :return: True if "isVisible" is enabled, False otherwise.
         """
         return editor.EditorEntityInfoRequestBus(bus.Event, "IsVisible", self.id)
+
+    def set_local_uniform_scale(self, scale_float) -> None:
+        """
+        Sets the "SetLocalUniformScale" value on the entity.
+        :param scale_float: value for "SetLocalUniformScale" to set to.
+        :return: None
+        """
+        azlmbr.components.TransformBus(azlmbr.bus.Event, "SetLocalUniformScale", self.id, scale_float)
+
+    def set_local_rotation(self, vector3_rotation) -> None:
+        """
+        Sets the "SetLocalRotation" value on the entity.
+        :param vector3_rotation: The math.Vector3 value to use for rotation on the entity (uses radians).
+        :return: None
+        """
+        azlmbr.components.TransformBus(azlmbr.bus.Event, "SetLocalRotation", self.id, vector3_rotation)

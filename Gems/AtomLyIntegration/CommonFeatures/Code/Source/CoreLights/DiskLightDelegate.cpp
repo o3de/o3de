@@ -147,14 +147,6 @@ namespace AZ::Render
         }
     }
 
-    void DiskLightDelegate::SetSofteningBoundaryWidthAngle(float widthInDegrees)
-    {
-        if (GetShadowsEnabled() && GetLightHandle().IsValid())
-        {
-            GetFeatureProcessor()->SetSofteningBoundaryWidthAngle(GetLightHandle(), DegToRad(widthInDegrees));
-        }
-    }
-
     void DiskLightDelegate::SetFilteringSampleCount(uint32_t count)
     {
         if (GetShadowsEnabled() && GetLightHandle().IsValid())

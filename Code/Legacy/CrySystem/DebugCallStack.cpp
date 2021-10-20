@@ -222,6 +222,9 @@ void UpdateFPExceptionsMaskForThreads()
 //////////////////////////////////////////////////////////////////////////
 int DebugCallStack::handleException(EXCEPTION_POINTERS* exception_pointer)
 {
+    AZ_TracePrintf("Exit", "Exception with exit code: 0x%x", exception_pointer->ExceptionRecord->ExceptionCode);
+    AZ::Debug::Trace::PrintCallstack("Exit");
+
     if (gEnv == NULL)
     {
         return EXCEPTION_EXECUTE_HANDLER;
@@ -372,7 +375,7 @@ void DebugCallStack::LogExceptionInfo(EXCEPTION_POINTERS* pex)
         const char* logAlias = gEnv->pFileIO->GetAlias("@log@");
         if (!logAlias)
         {
-            logAlias = gEnv->pFileIO->GetAlias("@root@");
+            logAlias = gEnv->pFileIO->GetAlias("@products@");
         }
         if (logAlias)
         {

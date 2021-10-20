@@ -27,6 +27,7 @@ set(FILES
     Entity/EditorEntityHelpersTests.cpp
     Entity/EditorEntitySearchComponentTests.cpp
     Entity/EditorEntitySelectionTests.cpp
+    Entity/EntityUtilityComponentTests.cpp
     EntityIdQLabelTests.cpp
     EntityInspectorTests.cpp
     EntityOwnershipService/EntityOwnershipServiceTestFixture.cpp
@@ -36,8 +37,11 @@ set(FILES
     EntityTestbed.h
     FileFunc.cpp
     FingerprintingTests.cpp
+    FocusMode/ContainerEntitySelectionTests.cpp
+    FocusMode/ContainerEntityTests.cpp
     FocusMode/EditorFocusModeFixture.cpp
     FocusMode/EditorFocusModeFixture.h
+    FocusMode/EditorFocusModeSelectionFixture.h
     FocusMode/EditorFocusModeSelectionTests.cpp
     FocusMode/EditorFocusModeTests.cpp
     GenericComponentWrapperTest.cpp
@@ -91,6 +95,8 @@ set(FILES
     Prefab/SpawnableSortEntitiesTestFixture.cpp
     Prefab/SpawnableSortEntitiesTestFixture.h
     Prefab/SpawnableSortEntitiesTests.cpp
+    Prefab/PrefabScriptingTests.cpp
+    Prefab/ProceduralPrefabAssetTests.cpp
     PropertyIntCtrlCommonTests.h
     PropertyIntSliderCtrlTests.cpp
     PropertyIntSpinCtrlTests.cpp
@@ -114,6 +120,8 @@ set(FILES
     ToolsComponents/EditorLayerComponentTests.cpp
     ToolsComponents/EditorTransformComponentTests.cpp
     TransformComponent.cpp
+    UI/EntityIdQLineEditTests.cpp
+    UI/EntityOutlinerTests.cpp
     UI/EntityPropertyEditorTests.cpp
     UndoStack.cpp
     Viewport/ClusterTests.cpp

@@ -11,9 +11,15 @@
 #include <AzCore/Task/TaskGraphSystemComponent.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
+#include <AzCore/Math/MathUtils.h>
+#include <AzCore/Threading/ThreadUtils.h>
 
 // Create a cvar as a central location for experimentation with switching from the Job system to TaskGraph system.
 AZ_CVAR(bool, cl_activateTaskGraph, false, nullptr, AZ::ConsoleFunctorFlags::Null, "Flag clients of TaskGraph to switch between jobs/taskgraph (Note does not disable task graph system)");
+AZ_CVAR(float, cl_taskGraphThreadsConcurrencyRatio, 1.0f, nullptr, AZ::ConsoleFunctorFlags::Null, "TaskGraph calculate the number of worker threads to spawn by scaling the number of hw threads, value is clamped between 0.0f and 1.0f");
+AZ_CVAR(uint32_t, cl_taskGraphThreadsNumReserved, 2, nullptr, AZ::ConsoleFunctorFlags::Null, "TaskGraph number of hardware threads that are reserved for O3DE system threads. Value is clamped between 0 and the number of logical cores in the system");
+AZ_CVAR(uint32_t, cl_taskGraphThreadsMinNumber, 2, nullptr, AZ::ConsoleFunctorFlags::Null, "TaskGraph minimum number of worker threads to create after scaling the number of hw threads");
+
 static constexpr uint32_t TaskExecutorServiceCrc = AZ_CRC_CE("TaskExecutorService");
 
 namespace AZ
@@ -24,8 +30,8 @@ namespace AZ
 
         if (Interface<TaskGraphActiveInterface>::Get() == nullptr)
         {
-            Interface<TaskGraphActiveInterface>::Register(this);
-            m_taskExecutor = aznew TaskExecutor();
+            Interface<TaskGraphActiveInterface>::Register(this); // small window that another thread can try to use taskgraph between this line and the set instance.
+            m_taskExecutor = aznew TaskExecutor(Threading::CalcNumWorkerThreads(cl_taskGraphThreadsConcurrencyRatio, cl_taskGraphThreadsMinNumber, cl_taskGraphThreadsNumReserved));
             TaskExecutor::SetInstance(m_taskExecutor);
         }
     }
