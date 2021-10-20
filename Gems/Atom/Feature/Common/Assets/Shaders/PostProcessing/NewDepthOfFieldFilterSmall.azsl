@@ -1,0 +1,74 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+#include <Atom/Features/PostProcessing/FullscreenPixelInfo.azsli>
+#include <Atom/Features/PostProcessing/FullscreenVertex.azsli>
+#include "DepthOfField.azsli"
+#include "NewDepthOfFieldCommon.azsli"
+
+#include <viewsrg.srgi>
+
+ShaderResourceGroup PassSrg : SRG_PerPass
+{
+    Texture2D<float4> m_colorAndCoc;
+    Texture2D<float2> m_minMaxCocTile;
+
+    float4 m_textureDimensions;
+
+    NewDepthOfFieldConstants m_dofConstants;
+
+    Sampler LinearSampler
+    {
+        MinFilter = Linear;
+        MagFilter = Linear;
+        MipFilter = Linear;
+        AddressU = Clamp;
+        AddressV = Clamp;
+        AddressW = Clamp;
+    };
+}
+
+float2 GetOffsetUV(uint index, float radiusMultiplier)
+{
+    return PassSrg::m_dofConstants.samplePositions[index] * radiusMultiplier * PassSrg::m_textureDimensions.zw;
+}
+
+PSOutput MainPS(VSOutput IN)
+{
+    // UV of pixel being shaded
+    float2 pixelUV = IN.m_texCoord.xy;
+
+    // Sample pixel being shaded
+    float4 centerSample = PassSrg::m_colorAndCoc.Sample(PassSrg::LinearSampler, pixelUV).rgba;
+    float centerCoc = centerSample.a;
+
+    // Color and weight accumulation
+    float3 color = centerSample.rgb;
+    float totalWeight = 1;
+
+    // Sampling radius
+    float cocRadius = abs(centerCoc) * ViewSrg::m_dof.m_cocToScreenRatio * 0.5f;
+    cocRadius *= 0.5f; // This is the small filter, half the sampling radius
+
+    for(uint i = 0; i < SAMPLES_LOOP_1; ++i)
+    {
+        float2 offsetUV = GetOffsetUV(i, cocRadius);
+        float4 sample = PassSrg::m_colorAndCoc.Sample(PassSrg::LinearSampler, pixelUV + offsetUV).rgba;
+        float cocDiff = abs(sample.a - centerCoC);
+        float weight = saturate( 2 - (20 * cocDiff));
+        color += sample.rgb * weight;
+        totalWeight += weight;
+    }
+
+    // Output
+    PSOutput OUT;
+    OUT.m_color.rgb = color / totalWeight;
+    OUT.m_color.a = centerCoc;
+    return OUT;
+}
+

@@ -1,0 +1,50 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+#include <Atom/Features/PostProcessing/FullscreenPixelInfo.azsli>
+#include <Atom/Features/PostProcessing/FullscreenVertex.azsli>
+#include "DepthOfField.azsli"
+#include "NewDepthOfFieldCommon.azsli"
+
+#include <viewsrg.srgi>
+
+ShaderResourceGroup PassSrg : SRG_PerPass
+{
+    Texture2D<float4> m_colorAndCoc;
+    Texture2D<float2> m_minMaxCocTile;
+
+    float4 m_textureDimensions;
+
+    NewDepthOfFieldConstants m_dofConstants;
+
+    Sampler LinearSampler
+    {
+        MinFilter = Linear;
+        MagFilter = Linear;
+        MipFilter = Linear;
+        AddressU = Clamp;
+        AddressV = Clamp;
+        AddressW = Clamp;
+    };
+}
+
+PSOutput MainPS(VSOutput IN)
+{
+    PSOutput OUT = (PSOutput)0;
+
+    float4 centerSample = PassSrg::m_colorAndCoc.Sample(PassSrg::LinearSampler, IN.m_texCoord);
+    float3 centerColor = centerSample.rgb;
+    float centerCoc = centerSample.a;
+
+    centerColor /= centerCoc;
+
+    OUT.m_color.rgb = centerColor;
+    OUT.m_color.a = centerCoc;
+    return OUT;
+}
+

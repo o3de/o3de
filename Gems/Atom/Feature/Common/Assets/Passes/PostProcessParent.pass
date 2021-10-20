@@ -112,20 +112,41 @@
                         }
                     ]
                 },
+                //{
+                //    "Name": "DepthOfFieldPass",
+                //    "TemplateName": "DepthOfFieldTemplate",
+                //    "Enabled": true,
+                //    "Connections": [
+                //        {
+                //            "LocalSlot": "DoFColorInput",
+                //            "AttachmentRef": {
+                //                "Pass": "TaaPass",
+                //                "Attachment": "OutputColor"
+                //            }
+                //        },
+                //        {
+                //            "LocalSlot": "DoFDepthInput",
+                //            "AttachmentRef": {
+                //                "Pass": "Parent",
+                //                "Attachment": "Depth"
+                //            }
+                //        }
+                //    ]
+                //},
                 {
                     "Name": "DepthOfFieldPass",
-                    "TemplateName": "DepthOfFieldTemplate",
+                    "TemplateName": "NewDepthOfFieldTemplate",
                     "Enabled": true,
                     "Connections": [
                         {
-                            "LocalSlot": "DoFColorInput",
+                            "LocalSlot": "LightingBuffer",
                             "AttachmentRef": {
                                 "Pass": "TaaPass",
                                 "Attachment": "OutputColor"
                             }
                         },
                         {
-                            "LocalSlot": "DoFDepthInput",
+                            "LocalSlot": "Depth",
                             "AttachmentRef": {
                                 "Pass": "Parent",
                                 "Attachment": "Depth"
@@ -142,7 +163,7 @@
                             "LocalSlot": "InputOutput",
                             "AttachmentRef": {
                                 "Pass": "DepthOfFieldPass",
-                                "Attachment": "DoFOutput"
+                                "Attachment": "LightingBuffer"
                             }
                         }
                     ]

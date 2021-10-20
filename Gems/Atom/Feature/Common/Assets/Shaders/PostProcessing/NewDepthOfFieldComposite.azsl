@@ -1,0 +1,80 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+#include <Atom/Features/PostProcessing/FullscreenPixelInfo.azsli>
+#include <Atom/Features/PostProcessing/FullscreenVertex.azsli>
+#include <Atom/RPI/Math.azsli>
+#include "NewDepthOfFieldCommon.azsli"
+#include "DepthOfField.azsli"
+
+#include <viewsrg.srgi>
+
+#define COC_EPSILON 0.0001
+
+ShaderResourceGroup PassSrg : SRG_PerPass
+{
+    Texture2D<float4> m_depth;
+    Texture2D<float4> m_halfResColorAndCoc;
+
+    // Texture dimensions. XY channels are width and height and ZW channels are 1 / width and 1 / height 
+    float4 m_fullResDimensions;
+    float4 m_halfResDimensions;
+
+    Sampler LinearSampler
+    {
+        MinFilter = Linear;
+        MagFilter = Linear;
+        MipFilter = Linear;
+        AddressU = Clamp;
+        AddressV = Clamp;
+        AddressW = Clamp;
+    };
+}
+
+PSOutput MainPS(VSOutput IN)
+{
+    // Sampling positions
+    float2 fullResPixelPos = IN.m_position.xy;
+    float2 halfResPixelPos = fullResPixelPos * 0.5f;
+    float2 fullResUV = fullResPixelPos * PassSrg::m_fullResDimensions.zw;
+    float2 halfResUV = halfResPixelPos * PassSrg::m_halfResDimensions.zw;
+
+    // Full res CoC (Circle of Confusion)
+    float depth = PassSrg::m_depth.Sample(PassSrg::LinearSampler, fullResUV);
+    float far = ViewSrg::m_dof.m_cameraParameters.x;
+    float near = ViewSrg::m_dof.m_cameraParameters.y;
+    float focusDistance = ViewSrg::m_dof.m_cameraParameters.z;
+    float coc = ConvertDofFactor(InvertDepth(depth), far, near, focusDistance);
+
+    // Calculate Alpha
+    float cocRadius = abs(coc) * ViewSrg::m_dof.m_cocToScreenRatio * 0.5f;
+    float maxPixelDist = max(PassSrg::m_halfResDimensions.z, PassSrg::m_halfResDimensions.w);    
+    float alpha = saturate(0.25f * cocRadius / maxPixelDist);
+    
+    // Sample half res color and CoC
+    float4 colorAndCoC = PassSrg::m_halfResColorAndCoc.Sample(PassSrg::LinearSampler, halfResUV);
+
+
+    // Make out of focus foreground increasingly blue
+    float multiplier = saturate(1.0f + coc);
+    colorAndCoC.r *= multiplier;
+    colorAndCoC.g *= multiplier;
+
+    // Make out of focus background increasingly red
+    multiplier = saturate(1.0f - coc);
+    colorAndCoC.b *= multiplier;
+    colorAndCoC.g *= multiplier;
+    
+    // Output
+    PSOutput OUT;
+    OUT.m_color.rgb = colorAndCoC.rgb;
+    OUT.m_color.a = alpha;
+
+    return OUT;
+}
+
