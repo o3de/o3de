@@ -5,7 +5,7 @@
     "ClassData": {
         "PassTemplate": {
             "Name": "HairShortCutResolveColorPassTemplate",
-            "PassClass": "HairShortCutResolveColorPass",
+            "PassClass": "FullScreenTriangle",
             "Slots": [
                 {
                     // This RT is MSAA - is it cheaper to avoid doing this work and only do a copy at a separate pass?
@@ -16,12 +16,6 @@
                         "LoadAction": "Load",
                         "StoreAction": "Store"
                     }
-                },
-                { // Used to get the transform from screen space to world space.
-                    "Name": "DepthLinear",
-                    "SlotType": "Input",
-                    "ShaderInputName": "m_linearDepth",
-                    "ScopeAttachmentUsage": "Shader"
                 },
                 {
                     "Name": "HairColorTexture",
