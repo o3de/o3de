@@ -81,7 +81,7 @@ namespace AzToolsFramework
         // set up signals before we start thread.
         m_shutdownThreadSignal = false;
 
-        // Spin up a thread worker for P4 if we can detect that P4 is installed and available at the command line
+        // Check to see if the 'p4' command is available at the command line
         int p4VersionExitCode = QProcess::execute("p4", QStringList{ "-V" });
         m_p4ApplicationDetected = (p4VersionExitCode == 0);
         if (m_p4ApplicationDetected)
