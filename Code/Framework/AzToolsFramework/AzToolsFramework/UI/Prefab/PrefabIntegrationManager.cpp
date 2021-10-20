@@ -255,7 +255,7 @@ namespace AzToolsFramework
                     if (s_prefabPublicInterface->IsInstanceContainerEntity(selectedEntity))
                     {
                         // Edit Prefab
-                        if (prefabWipFeaturesEnabled && !s_prefabFocusPublicInterface->IsOwningPrefabBeingFocused(selectedEntity))
+                        if (!s_prefabFocusPublicInterface->IsOwningPrefabBeingFocused(selectedEntity))
                         {
                             QAction* editAction = menu->addAction(QObject::tr("Edit Prefab"));
                             editAction->setToolTip(QObject::tr("Edit the prefab in focus mode."));
@@ -1159,25 +1159,14 @@ namespace AzToolsFramework
             {
                 s_editorEntityUiInterface->RegisterEntity(entityId, m_prefabUiHandler.GetHandlerId());
 
-                bool prefabWipFeaturesEnabled = false;
-                AzFramework::ApplicationRequests::Bus::BroadcastResult(
-                    prefabWipFeaturesEnabled, &AzFramework::ApplicationRequests::ArePrefabWipFeaturesEnabled);
-
-                if (prefabWipFeaturesEnabled)
-                {
-                    // Register entity as a container
-                    s_containerEntityInterface->RegisterEntityAsContainer(entityId);
-                }
+                // Register entity as a container
+                s_containerEntityInterface->RegisterEntityAsContainer(entityId);
             }
         }
 
         void PrefabIntegrationManager::OnPrefabComponentDeactivate(AZ::EntityId entityId)
         {
-            bool prefabWipFeaturesEnabled = false;
-            AzFramework::ApplicationRequests::Bus::BroadcastResult(
-                prefabWipFeaturesEnabled, &AzFramework::ApplicationRequests::ArePrefabWipFeaturesEnabled);
-
-            if (prefabWipFeaturesEnabled && !s_prefabPublicInterface->IsLevelInstanceContainerEntity(entityId))
+            if (!s_prefabPublicInterface->IsLevelInstanceContainerEntity(entityId))
             {
                 // Unregister entity as a container
                 s_containerEntityInterface->UnregisterEntityAsContainer(entityId);
