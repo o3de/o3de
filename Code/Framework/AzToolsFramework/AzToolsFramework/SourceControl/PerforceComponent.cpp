@@ -75,9 +75,31 @@ namespace AzToolsFramework
         m_resolveKey = true;
         m_testTrust = false;
 
-        // set up signals before we start thread.
+        // Check and make sure P4 is installed
+        AzFramework::ProcessLauncher::ProcessLaunchInfo checkP4VersionRequest;
+        checkP4VersionRequest.m_processExecutableString = "p4";
+        checkP4VersionRequest.m_commandlineParameters = "-V";
+
+        AzFramework::ProcessOutput  checkP4VersionResult;
+        
         m_shutdownThreadSignal = false;
-        m_WorkerThread = AZStd::thread(AZStd::bind(&PerforceComponent::ThreadWorker, this));
+
+        bool result = AzFramework::ProcessWatcher::LaunchProcessAndRetrieveOutput(checkP4VersionRequest,
+                                                                                  AzFramework::COMMUNICATOR_TYPE_STDINOUT,
+                                                                                  checkP4VersionResult);
+        if (!result || checkP4VersionResult.HasError())
+        {
+            m_p4ClientAvailable = false;
+            m_WorkerThread = AZStd::thread();
+            AZ_TracePrintf(SCC_WINDOW, "Perforce - Unable to detect p4 client command on this host. Perforce integration will not be available\n");
+        }
+        else
+        {
+            // set up signals before we start thread.
+            m_p4ClientAvailable = true;
+            m_shutdownThreadSignal = false;
+            m_WorkerThread = AZStd::thread(AZStd::bind(&PerforceComponent::ThreadWorker, this));
+        }
 
         SourceControlConnectionRequestBus::Handler::BusConnect();
         SourceControlCommandBus::Handler::BusConnect();
@@ -88,10 +110,13 @@ namespace AzToolsFramework
         SourceControlCommandBus::Handler::BusDisconnect();
         SourceControlConnectionRequestBus::Handler::BusDisconnect();
 
-        m_shutdownThreadSignal = true; // tell the thread to die.
-        m_WorkerSemaphore.release(1); // wake up the thread so that it sees the signal
-        m_WorkerThread.join(); // wait for the thread to finish.
-        m_WorkerThread = AZStd::thread();
+        if (m_p4ClientAvailable)
+        {
+            m_shutdownThreadSignal = true; // tell the thread to die.
+            m_WorkerSemaphore.release(1); // wake up the thread so that it sees the signal
+            m_WorkerThread.join(); // wait for the thread to finish.
+            m_WorkerThread = AZStd::thread();
+        }
 
         SetConnection(nullptr);
     }

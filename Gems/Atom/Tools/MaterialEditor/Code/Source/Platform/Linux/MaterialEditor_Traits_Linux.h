@@ -8,4 +8,4 @@
 #pragma once
 
 #define AZ_TRAIT_MATERIALEDITOR_EXT ""
-
+#define AZ_TRAIT_MATERIALEDITOR_SKIP_APP_DESTROY true

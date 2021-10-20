@@ -8,4 +8,5 @@
 #pragma once
 
 #define AZ_TRAIT_MATERIALEDITOR_EXT ".exe"
+#define AZ_TRAIT_MATERIALEDITOR_SKIP_APP_DESTROY false
 
