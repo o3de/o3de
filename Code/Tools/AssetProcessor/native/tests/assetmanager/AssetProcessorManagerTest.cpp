@@ -5333,6 +5333,7 @@ void WildcardSourceDependencyTest::SetUp()
 
     QDir tempPath(m_tempDir.path());
 
+    // Add a non-recursive scan folder.  Only files directly inside of this folder should be picked up, subfolders are ignored
     m_config->AddScanFolder(ScanFolderInfo(tempPath.filePath("no_recurse"), "no_recurse",
         "no_recurse", false, false, m_config->GetEnabledPlatforms(), 1));
 
@@ -5342,12 +5343,17 @@ void WildcardSourceDependencyTest::SetUp()
     UnitTestUtils::CreateDummyFile(tempPath.absoluteFilePath("subfolder2/redirected/b.foo"));
     UnitTestUtils::CreateDummyFile(tempPath.absoluteFilePath("subfolder2/redirected/folder/one/c.foo"));
     UnitTestUtils::CreateDummyFile(tempPath.absoluteFilePath("subfolder2/redirected/folder/one/d.foo"));
+
+    // Add a file that is not in a scanfolder.  Should always be ignored
     UnitTestUtils::CreateDummyFile(tempPath.absoluteFilePath("not/a/scanfolder/e.foo"));
+
+    // Add a file in the non-recursive scanfolder.  Since its not directly in the scan folder, it should always be ignored
     UnitTestUtils::CreateDummyFile(tempPath.absoluteFilePath("no_recurse/one/two/three/f.foo"));
 }
 
 TEST_F(WildcardSourceDependencyTest, Relative_Broad)
 {
+    // Expect all files except for the 2 invalid ones (e and f)
     AZStd::vector<AZStd::string> resolvedPaths;
     
     ASSERT_TRUE(Test("*.foo", resolvedPaths));
@@ -5356,14 +5362,16 @@ TEST_F(WildcardSourceDependencyTest, Relative_Broad)
 
 TEST_F(WildcardSourceDependencyTest, Relative_WithFolder)
 {
+    // Make sure we can filter to files under a folder
     AZStd::vector<AZStd::string> resolvedPaths;
 
     ASSERT_TRUE(Test("folder/*.foo", resolvedPaths));
     ASSERT_THAT(resolvedPaths, ::testing::UnorderedElementsAre("folder/one/c.foo", "folder/one/d.foo"));
 }
 
-TEST_F(WildcardSourceDependencyTest, Relatieve_WildcardPath)
+TEST_F(WildcardSourceDependencyTest, Relative_WildcardPath)
 {
+    // Make sure the * wildcard works even if the full filename is given
     AZStd::vector<AZStd::string> resolvedPaths;
 
     ASSERT_TRUE(Test("*a.foo", resolvedPaths));
@@ -5372,6 +5380,7 @@ TEST_F(WildcardSourceDependencyTest, Relatieve_WildcardPath)
 
 TEST_F(WildcardSourceDependencyTest, Absolute_WithFolder)
 {
+    // Make sure we can use absolute paths to filter to files under a folder
     AZStd::vector<AZStd::string> resolvedPaths;
     QDir tempPath(m_tempDir.path());
 
@@ -5381,6 +5390,7 @@ TEST_F(WildcardSourceDependencyTest, Absolute_WithFolder)
 
 TEST_F(WildcardSourceDependencyTest, Absolute_NotInScanfolder)
 {
+    // Files outside a scanfolder should not be returned even with an absolute path
     AZStd::vector<AZStd::string> resolvedPaths;
     QDir tempPath(m_tempDir.path());
 
@@ -5390,6 +5400,7 @@ TEST_F(WildcardSourceDependencyTest, Absolute_NotInScanfolder)
 
 TEST_F(WildcardSourceDependencyTest, Relative_NotInScanfolder)
 {
+    // Files outside a scanfolder should not be returned
     AZStd::vector<AZStd::string> resolvedPaths;
     QDir tempPath(m_tempDir.path());
 
@@ -5399,6 +5410,7 @@ TEST_F(WildcardSourceDependencyTest, Relative_NotInScanfolder)
 
 TEST_F(WildcardSourceDependencyTest, Relative_InNonRecursiveScanfolder)
 {
+    // Files deep inside non-recursive scanfolders should not be returned
     AZStd::vector<AZStd::string> resolvedPaths;
     QDir tempPath(m_tempDir.path());
 
@@ -5408,6 +5420,7 @@ TEST_F(WildcardSourceDependencyTest, Relative_InNonRecursiveScanfolder)
 
 TEST_F(WildcardSourceDependencyTest, Absolute_InNonRecursiveScanfolder)
 {
+    // Absolute paths to files deep inside non-recursive scanfolders should not be returned
     AZStd::vector<AZStd::string> resolvedPaths;
     QDir tempPath(m_tempDir.path());
 
@@ -5417,6 +5430,7 @@ TEST_F(WildcardSourceDependencyTest, Absolute_InNonRecursiveScanfolder)
 
 TEST_F(WildcardSourceDependencyTest, Relative_NoWildcard)
 {
+    // No wildcard results in a failure
     AZStd::vector<AZStd::string> resolvedPaths;
     QDir tempPath(m_tempDir.path());
 
@@ -5426,6 +5440,7 @@ TEST_F(WildcardSourceDependencyTest, Relative_NoWildcard)
 
 TEST_F(WildcardSourceDependencyTest, Absolute_NoWildcard)
 {
+    // No wildcard results in a failure
     AZStd::vector<AZStd::string> resolvedPaths;
     QDir tempPath(m_tempDir.path());
 
