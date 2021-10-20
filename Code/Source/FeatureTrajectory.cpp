@@ -195,91 +195,67 @@ namespace EMotionFX
             m_numFutureSamples = numFutureSamples;
         }
 
-        void FeatureTrajectory::DebugDrawFutureTrajectory(EMotionFX::DebugDraw::ActorInstanceData& draw, BehaviorInstance* behaviorInstance, size_t frameIndex, const Transform& transform, const AZ::Color& color)
+        void FeatureTrajectory::DebugDrawTrajectory(AZ::RPI::AuxGeomDrawPtr& drawQueue,
+            [[maybe_unused]] EMotionFX::DebugDraw::ActorInstanceData& draw,
+            BehaviorInstance* behaviorInstance,
+            size_t frameIndex,
+            const Transform& transform,
+            const AZ::Color& color,
+            size_t numSamples,
+            const SplineToFeatureMatrixIndex& splineToFeatureMatrixIndex) const
         {
             if (frameIndex == InvalidIndex)
             {
                 return;
             }
 
+            constexpr float markerSize = 0.02f;
             const FeatureMatrix& featureMatrix = behaviorInstance->GetBehavior()->GetFeatures().GetFeatureMatrix();
 
-            for (size_t i = 0; i < m_numFutureSamples - 1; ++i)
+            Sample currentSample;
+            Sample nextSample;
+            for (size_t i = 0; i < numSamples - 1; ++i)
             {
-                const Sample firstSample = GetFeatureData(featureMatrix, frameIndex, CalcFutureFrameDataIndex(i));
-                const Sample nextSample = GetFeatureData(featureMatrix, frameIndex, CalcFutureFrameDataIndex(i + 1));
+                currentSample = GetFeatureData(featureMatrix, frameIndex, splineToFeatureMatrixIndex(i));
+                nextSample = GetFeatureData(featureMatrix, frameIndex, splineToFeatureMatrixIndex(i + 1));
 
-                draw.DrawLine(
-                    transform.TransformPoint(firstSample.m_position),                    
-                    transform.TransformPoint(nextSample.m_position),
-                    color);
+                currentSample.m_position = transform.TransformPoint(currentSample.m_position);
+                nextSample.m_position = transform.TransformPoint(nextSample.m_position);
 
-                //draw.DrawLine(
-                //    transform.TransformPoint(firstSample.m_position),                    
-                //    transform.TransformPoint(firstSample.m_position) + transform.TransformVector(firstSample.m_direction) * 0.2f,
-                //    color);
+                drawQueue->DrawCylinder(/*center=*/(nextSample.m_position + currentSample.m_position) * 0.5f,
+                    /*direction=*/(nextSample.m_position - currentSample.m_position).GetNormalizedSafe(),
+                    /*radius=*/0.0025f,
+                    /*height=*/(nextSample.m_position - currentSample.m_position).GetLength(),
+                    color,
+                    AZ::RPI::AuxGeomDraw::DrawStyle::Solid,
+                    AZ::RPI::AuxGeomDraw::DepthTest::Off);
+
+                drawQueue->DrawSphere(currentSample.m_position,
+                    markerSize,
+                    color,
+                    AZ::RPI::AuxGeomDraw::DrawStyle::Solid,
+                    AZ::RPI::AuxGeomDraw::DepthTest::Off);
             }
+
+            drawQueue->DrawSphere(nextSample.m_position,
+                markerSize, color,
+                AZ::RPI::AuxGeomDraw::DrawStyle::Solid,
+                AZ::RPI::AuxGeomDraw::DepthTest::Off);
         }
 
-        void FeatureTrajectory::DebugDrawPastTrajectory(EMotionFX::DebugDraw::ActorInstanceData& draw, BehaviorInstance* behaviorInstance, size_t frameIndex, const Transform& transform, const AZ::Color& color)
+        void FeatureTrajectory::DebugDraw(AZ::RPI::AuxGeomDrawPtr& drawQueue,
+            EMotionFX::DebugDraw::ActorInstanceData& draw,
+            BehaviorInstance* behaviorInstance,
+            size_t frameIndex)
         {
-            if (frameIndex == InvalidIndex)
-            {
-                return;
-            }
+            const ActorInstance* actorInstance = behaviorInstance->GetActorInstance();
+            const Transform transform = actorInstance->GetTransformData()->GetCurrentPose()->GetWorldSpaceTransform(m_nodeIndex);
 
-            const FeatureMatrix& featureMatrix = behaviorInstance->GetBehavior()->GetFeatures().GetFeatureMatrix();
+            DebugDrawTrajectory(drawQueue, draw, behaviorInstance, frameIndex, transform,
+                AZ::Colors::LawnGreen, m_numPastSamples, AZStd::bind(&FeatureTrajectory::CalcPastFrameDataIndex, this, AZStd::placeholders::_1));
 
-            for (size_t i = 0; i < m_numPastSamples - 1; ++i)
-            {
-                const Sample firstSample = GetFeatureData(featureMatrix, frameIndex, CalcPastFrameDataIndex(i));
-                const Sample nextSample = GetFeatureData(featureMatrix, frameIndex, CalcPastFrameDataIndex(i + 1));
-
-                draw.DrawLine(
-                    transform.TransformPoint(firstSample.m_position),
-                    transform.TransformPoint(nextSample.m_position),
-                    color);
-            }
-        }
-
-        void FeatureTrajectory::DebugDraw([[maybe_unused]] EMotionFX::DebugDraw::ActorInstanceData& draw, [[maybe_unused]] BehaviorInstance* behaviorInstance, [[maybe_unused]] size_t frameIndex)
-        {
-            /*
-            if (m_samples.empty())
-            {
-                return;
-            }
-
-            const size_t numFrames = m_data->GetNumFrames();
-
-            static float offset = 0.0f;
-            offset += 0.15f * GetEMotionFX().GetGlobalSimulationSpeed();
-            size_t frameNr = (size_t)offset;
-            if (frameNr >= numFrames - 1)
-            {
-                offset = 0.0f;
-            }
-
-            const float s = 0.1f;
-            const Sample& frameSample = m_samples[CalcMidFrameDataIndex(frameNr)];
-            draw.DrawLine(frameSample.m_position - AZ::Vector3(s, 0.0f, 0.0f), frameSample.m_position + AZ::Vector3(s, 0.0f, 0.0f), AZ::Colors::Yellow);
-            draw.DrawLine(frameSample.m_position - AZ::Vector3(0.0f, s, 0.0f), frameSample.m_position + AZ::Vector3(0.0f, s, 0.0f), AZ::Colors::Yellow);
-
-            for (size_t i = 0; i < m_numFutureSamples - 1; ++i)
-            {
-                const Sample& firstSample = m_samples[CalcFutureFrameDataIndex(frameNr, i)];
-                //const Sample& nextSample = m_samples[CalcFutureFrameDataIndex(frameNr, i + 1)];
-                //draw.DrawLine(firstSample.m_position, nextSample.m_position, m_debugColor);
-                draw.DrawLine(firstSample.m_position, firstSample.m_position + (firstSample.m_direction * firstSample.m_speed) * 0.1f, AZ::Colors::Green);
-            }
-
-            for (size_t i = 0; i < m_numPastSamples - 1; ++i)
-            {
-                const Sample& firstSample = m_samples[CalcPastFrameDataIndex(frameNr, i)];
-                //const Sample& nextSample = m_samples[CalcPastFrameDataIndex(frameNr, i + 1)];
-                //draw.DrawLine(firstSample.m_position, nextSample.m_position, m_debugColor);
-                draw.DrawLine(firstSample.m_position, firstSample.m_position + (firstSample.m_direction * firstSample.m_speed) * 0.1f, AZ::Colors::Red);
-            }*/
+            DebugDrawTrajectory(drawQueue, draw, behaviorInstance, frameIndex, transform,
+                AZ::Colors::LawnGreen, m_numFutureSamples, AZStd::bind(&FeatureTrajectory::CalcFutureFrameDataIndex, this, AZStd::placeholders::_1));
         }
 
         size_t FeatureTrajectory::CalcMidFrameDataIndex() const

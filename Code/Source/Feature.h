@@ -16,10 +16,14 @@
 #include <AzCore/Memory/Memory.h>
 #include <AzCore/RTTI/RTTI.h>
 
-#include <EMotionFX/Source/EMotionFXConfig.h>
 #include <EMotionFX/Source/DebugDraw.h>
+#include <EMotionFX/Source/EMotionFXConfig.h>
 #include <EMotionFX/Source/Node.h>
 #include <EMotionFX/Source/Skeleton.h>
+
+#include <Atom/RPI.Public/AuxGeom/AuxGeomDraw.h>
+#include <Atom/RPI.Public/AuxGeom/AuxGeomFeatureProcessorInterface.h>
+#include <Atom/RPI.Public/Scene.h>
 
 #include <FeatureMatrix.h>
 
@@ -73,8 +77,10 @@ namespace EMotionFX
             };
             virtual void ExtractFeatureValues(const ExtractFrameContext& context) = 0;
 
-            virtual void DebugDraw([[maybe_unused]] EMotionFX::DebugDraw::ActorInstanceData& draw, [[maybe_unused]] BehaviorInstance* behaviorInstance, [[maybe_unused]] size_t frameIndex) {}
-            virtual void FillFrameFloats([[maybe_unused]]const FeatureMatrix& featureMatrix, [[maybe_unused]] size_t frameIndex, [[maybe_unused]] size_t startIndex, [[maybe_unused]] AZStd::vector<float>& frameFloats) const {}
+            virtual void DebugDraw([[maybe_unused]] AZ::RPI::AuxGeomDrawPtr& drawQueue,
+                [[maybe_unused]] EMotionFX::DebugDraw::ActorInstanceData& draw,
+                [[maybe_unused]] BehaviorInstance* behaviorInstance,
+                [[maybe_unused]] size_t frameIndex) {}
 
             void SetDebugDrawColor(const AZ::Color& color);
             const AZ::Color& GetDebugDrawColor() const;

@@ -20,8 +20,6 @@
 #include <FrameDatabase.h>
 #include <FeatureVelocity.h>
 
-#include <MCore/Source/AzCoreConversions.h>
-
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 
@@ -53,16 +51,6 @@ namespace EMotionFX
             m_nodeIndex = nodeIndex;
         }
 
-        void FeatureVelocity::FillFrameFloats(const FeatureMatrix& featureMatrix, size_t frameIndex, size_t startIndex, AZStd::vector<float>& frameFloats) const
-        {
-            Velocity value = GetFeatureData(featureMatrix, frameIndex);
-
-            frameFloats[startIndex] = value.m_direction.GetX();
-            frameFloats[startIndex + 1] = value.m_direction.GetY();
-            frameFloats[startIndex + 2] = value.m_direction.GetZ();
-            frameFloats[startIndex + 3] = value.m_speed;
-        }
-
         void FeatureVelocity::FillQueryFeatureValues(size_t startIndex, AZStd::vector<float>& queryFeatureValues, const FrameCostContext& context)
         {
             queryFeatureValues[startIndex + 0] = context.m_direction.GetX();
@@ -79,7 +67,10 @@ namespace EMotionFX
             SetFeatureData(context.m_featureMatrix, context.m_frameIndex, velocity);
         }
 
-        void FeatureVelocity::DebugDraw(EMotionFX::DebugDraw::ActorInstanceData& draw, [[maybe_unused]] BehaviorInstance* behaviorInstance, [[maybe_unused]] size_t frameIndex)
+        void FeatureVelocity::DebugDraw(AZ::RPI::AuxGeomDrawPtr& drawQueue,
+            EMotionFX::DebugDraw::ActorInstanceData& draw,
+            BehaviorInstance* behaviorInstance,
+            size_t frameIndex)
         {
             if (m_nodeIndex == InvalidIndex)
             {
@@ -98,6 +89,8 @@ namespace EMotionFX
             const AZ::Vector3 directionWorldSpace = relativeToWorldTM.TransformVector(velocity.m_direction * velocity.m_speed * scale);
             draw.DrawLine(jointPosition, jointPosition + directionWorldSpace,
                 m_debugColor);
+
+            drawQueue->DrawCone(jointPosition + directionWorldSpace, directionWorldSpace, 0.1f * scale, scale * 0.5f, m_debugColor, AZ::RPI::AuxGeomDraw::DrawStyle::Solid);
         }
 
         float FeatureVelocity::CalculateFrameCost(size_t frameIndex, const FrameCostContext& context) const

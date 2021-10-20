@@ -237,7 +237,10 @@ namespace EMotionFX
             return result->second;
         }
 
-        void FeatureDatabase::DebugDraw(EMotionFX::DebugDraw::ActorInstanceData& draw, BehaviorInstance* behaviorInstance, size_t frameIndex)
+        void FeatureDatabase::DebugDraw(AZ::RPI::AuxGeomDrawPtr& drawQueue,
+            EMotionFX::DebugDraw::ActorInstanceData& draw,
+            BehaviorInstance* behaviorInstance,
+            size_t frameIndex)
         {
             for (Feature* feature: m_features)
             {
@@ -248,7 +251,7 @@ namespace EMotionFX
 
                 if (feature->GetDebugDrawEnabled())
                 {
-                    feature->DebugDraw(draw, behaviorInstance, frameIndex);
+                    feature->DebugDraw(drawQueue, draw, behaviorInstance, frameIndex);
                 }
             }
         }

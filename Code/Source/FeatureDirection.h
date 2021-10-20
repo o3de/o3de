@@ -55,7 +55,6 @@ namespace EMotionFX
 
             void ExtractFeatureValues(const ExtractFrameContext& context) override;
             size_t GetNumDimensions() const override;
-            void FillFrameFloats(const FeatureMatrix& featureMatrix, size_t frameIndex, size_t startIndex, AZStd::vector<float>& frameFloats) const override;
 
             struct EMFX_API FrameCostContext
             {

@@ -51,14 +51,6 @@ namespace EMotionFX
             m_nodeIndex = nodeIndex;
         }
 
-        void FeaturePosition::FillFrameFloats(const FeatureMatrix& featureMatrix, size_t frameIndex, size_t startIndex, AZStd::vector<float>& frameFloats) const
-        {
-            const AZ::Vector3 value = featureMatrix.GetVector3(frameIndex, m_featureColumnOffset);
-            frameFloats[startIndex] = value.GetX();
-            frameFloats[startIndex + 1] = value.GetY();
-            frameFloats[startIndex + 2] = value.GetZ();
-        }
-
         void FeaturePosition::FillQueryFeatureValues(size_t startIndex, AZStd::vector<float>& queryFeatureValues, const FrameCostContext& context)
         {
             const Transform invRootTransform = context.m_pose.GetWorldSpaceTransform(m_relativeToNodeIndex).Inversed();
@@ -77,7 +69,10 @@ namespace EMotionFX
             SetFeatureData(context.m_featureMatrix, context.m_frameIndex, position);
         }
 
-        void FeaturePosition::DebugDraw([[maybe_unused]] EMotionFX::DebugDraw::ActorInstanceData& draw, [[maybe_unused]] BehaviorInstance* behaviorInstance, [[maybe_unused]] size_t frameIndex)
+        void FeaturePosition::DebugDraw([[maybe_unused]] AZ::RPI::AuxGeomDrawPtr& drawQueue,
+            [[maybe_unused]] EMotionFX::DebugDraw::ActorInstanceData& draw,
+            [[maybe_unused]] BehaviorInstance* behaviorInstance,
+            [[maybe_unused]] size_t frameIndex)
         {
         }
 

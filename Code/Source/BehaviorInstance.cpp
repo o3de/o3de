@@ -86,7 +86,7 @@ namespace EMotionFX
 
             // Make sure we have enough space inside the frame floats array, which is used to search the kdTree.
             // It contains the value for each dimension.
-            size_t numValuesInKdTree = m_behavior->GetFeatures().CalcNumDataDimensionsForKdTree(m_behavior->GetFeatures());
+            const size_t numValuesInKdTree = m_behavior->GetFeatures().CalcNumDataDimensionsForKdTree(m_behavior->GetFeatures());
             m_queryFeatureValues.resize(numValuesInKdTree);
         }
 
@@ -104,7 +104,9 @@ namespace EMotionFX
             draw->Lock();
 
             // Draw.
-            m_behavior->DebugDraw(*draw, this);
+            const AZ::RPI::ScenePtr defaultScene = AZ::RPI::RPISystemInterface::Get()->GetDefaultScene();
+            AZ::RPI::AuxGeomDrawPtr drawQueue = AZ::RPI::AuxGeomFeatureProcessorInterface::GetDrawQueueForScene(defaultScene);
+            m_behavior->DebugDraw(drawQueue, *draw, this);
 
             // End drawing.
             draw->Unlock();
@@ -189,7 +191,7 @@ namespace EMotionFX
             m_motionInstance->ExtractMotion(m_motionExtractionDelta);
         }
 
-        size_t BehaviorInstance::GetLowestCostFrameIndex()
+        size_t BehaviorInstance::GetLowestCostFrameIndex() const
         {
             return m_lowestCostFrameIndex;
         }

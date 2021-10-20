@@ -61,14 +61,6 @@ namespace EMotionFX
             return 3;
         }
         
-        void FeatureDirection::FillFrameFloats([[maybe_unused]] const FeatureMatrix& featureMatrix, size_t frameIndex, size_t startIndex, AZStd::vector<float>& frameFloats) const
-        {
-            const AZ::Vector3& value = m_directions[frameIndex];
-            frameFloats[startIndex] = value.GetX();
-            frameFloats[startIndex + 1] = value.GetY();
-            frameFloats[startIndex + 2] = value.GetZ();
-        }
-
         AZ::Vector3 FeatureDirection::ExtractDirection(const AZ::Quaternion& quaternion) const
         {
             AZ::Vector3 axis = AZ::Vector3::CreateZero();
