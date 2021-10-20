@@ -4487,7 +4487,7 @@ void FingerprintTest::RunFingerprintTest(QString builderFingerprint, QString job
     ASSERT_EQ(m_jobResults[0].m_autoFail, expectedResult);
 }
 
-TEST_F(FingerprintTest, FingerprintChecking_JobFingerprint_NoBuilderFingerprint)
+TEST_F(FingerprintTest, DISABLED_FingerprintChecking_JobFingerprint_NoBuilderFingerprint)
 {
     RunFingerprintTest("", "Hello World", true);
 }
