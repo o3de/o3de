@@ -37,7 +37,7 @@ class AtomComponentProperties:
         return properties[property]
 
     @staticmethod
-    def bloom(property: str = 'name') -> Union[str, List[str]]:
+    def bloom(property: str = 'name') -> str:
         """
         Bloom component properties. Requires PostFX Layer component.
           - 'requires' a list of component names as strings required by this component.
@@ -78,7 +78,7 @@ class AtomComponentProperties:
         return properties[property]
 
     @staticmethod
-    def deferred_fog(property: str = 'name') -> Union[str, List[str]]:
+    def deferred_fog(property: str = 'name') -> str:
         """
         Deferred Fog component properties. Requires PostFX Layer component.
           - 'requires' a list of component names as strings required by this component.
@@ -93,7 +93,7 @@ class AtomComponentProperties:
         return properties[property]
 
     @staticmethod
-    def depth_of_field(property: str = 'name') -> Union[str, List[str]]:
+    def depth_of_field(property: str = 'name') -> str:
         """
         Depth of Field component properties. Requires PostFX Layer component.
           - 'requires' a list of component names as strings required by this component.
@@ -111,7 +111,7 @@ class AtomComponentProperties:
         return properties[property]
 
     @staticmethod
-    def diffuse_probe(property: str = 'name') -> Union[str, List[str]]:
+    def diffuse_probe(property: str = 'name') -> str:
         """
         Diffuse Probe Grid component properties. Requires one of 'shapes'.
           - 'shapes' a list of supported shapes as component names.
@@ -164,7 +164,7 @@ class AtomComponentProperties:
         return properties[property]
 
     @staticmethod
-    def exposure_control(property: str = 'name') -> Union[str, List[str]]:
+    def exposure_control(property: str = 'name') -> str:
         """
         Exposure Control component properties. Requires PostFX Layer component.
           - 'requires' a list of component names as strings required by this component.
@@ -207,7 +207,7 @@ class AtomComponentProperties:
         return properties[property]
 
     @staticmethod
-    def hdr_color_grading(property: str = 'name') -> Union[str, List[str]]:
+    def hdr_color_grading(property: str = 'name') -> str:
         """
         HDR Color Grading component properties. Requires PostFX Layer component.
           - 'requires' a list of component names as strings required by this component.
@@ -248,7 +248,7 @@ class AtomComponentProperties:
         return properties[property]
 
     @staticmethod
-    def look_modification(property: str = 'name') -> Union[str, List[str]]:
+    def look_modification(property: str = 'name') -> str:
         """
         Look Modification component properties. Requires PostFX Layer component.
           - 'requires' a list of component names as strings required by this component.
@@ -263,7 +263,7 @@ class AtomComponentProperties:
         return properties[property]
 
     @staticmethod
-    def material(property: str = 'name') -> Union[str, List[str]]:
+    def material(property: str = 'name') -> str:
         """
         Material component properties. Requires one of Actor OR Mesh component.
           - 'requires' a list of component names as strings required by this component.
@@ -329,7 +329,7 @@ class AtomComponentProperties:
         return properties[property]
 
     @staticmethod
-    def postfx_gradient(property: str = 'name') -> Union[str, List[str]]:
+    def postfx_gradient(property: str = 'name') -> str:
         """
         PostFX Gradient Weight Modifier component properties. Requires PostFX Layer component.
           - 'requires' a list of component names as strings required by this component.
@@ -344,7 +344,7 @@ class AtomComponentProperties:
         return properties[property]
 
     @staticmethod
-    def postfx_radius(property: str = 'name') -> Union[str, List[str]]:
+    def postfx_radius(property: str = 'name') -> str:
         """
         PostFX Radius Weight Modifier component properties. Requires PostFX Layer component.
           - 'requires' a list of component names as strings required by this component.
@@ -359,7 +359,7 @@ class AtomComponentProperties:
         return properties[property]
 
     @staticmethod
-    def postfx_shape(property: str = 'name') -> Union[str, List[str]]:
+    def postfx_shape(property: str = 'name') -> str:
         """
         PostFX Shape Weight Modifier component properties. Requires PostFX Layer and one of 'shapes' listed.
           - 'requires' a list of component names as strings required by this component.
@@ -377,7 +377,7 @@ class AtomComponentProperties:
         return properties[property]
 
     @staticmethod
-    def reflection_probe(property: str = 'name') -> Union[str, List[str]]:
+    def reflection_probe(property: str = 'name') -> str:
         """
         Reflection Probe component properties. Requires one of 'shapes' listed.
           - 'shapes' a list of supported shapes as component names.
@@ -393,7 +393,7 @@ class AtomComponentProperties:
         return properties[property]
 
     @staticmethod
-    def ssao(property: str = 'name') -> Union[str, List[str]]:
+    def ssao(property: str = 'name') -> str:
         """
         SSAO component properties. Requires PostFX Layer component.
           - 'requires' a list of component names as strings required by this component.
