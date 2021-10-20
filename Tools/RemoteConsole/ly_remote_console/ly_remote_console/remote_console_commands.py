@@ -228,7 +228,7 @@ class RemoteConsole:
     def expect_log_line(self, match_string, timeout=30):
         # type: (str, int) -> bool
         """
-        Looks for a log line event to expect within a time frame. Returns False is timeout is reached.
+        Looks for a log line event to expect within a time frame. Returns False if timeout is reached.
         :param match_string: The string to match that acts as a key
         :param timeout: The timeout to wait for the log line in seconds
         :return: boolean True if match_string found, False otherwise.
