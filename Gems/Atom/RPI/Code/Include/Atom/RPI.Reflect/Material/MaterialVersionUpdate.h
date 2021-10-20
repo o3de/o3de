@@ -27,16 +27,14 @@ namespace AZ
 
             static void Reflect(ReflectContext* context);
 
-            struct Action
+            // At this time, the only supported operation is rename. If/when we add more actions in the future,
+            // we'll need to improve this, possibly with some virtual interface or union data.
+            struct RenamePropertyAction
             {
-                AZ_TYPE_INFO(AZ::RPI::MaterialVersionUpdate::Action, "{A1FBEB19-EA05-40F0-9700-57D048DF572B}");
+                AZ_TYPE_INFO(AZ::RPI::MaterialVersionUpdate::RenameAction, "{A1FBEB19-EA05-40F0-9700-57D048DF572B}");
 
-                AZ::Name m_operation;
-                AZStd::unordered_map<AZ::Name, AZ::Name> m_argsMap;
-
-                Action() = default;
-                Action(const AZ::Name& operation, const AZStd::initializer_list<AZStd::pair<AZ::Name, AZ::Name>>& args);
-                void AddArg(const AZ::Name& key, const AZ::Name& argument);
+                AZ::Name m_fromPropertyId;
+                AZ::Name m_toPropertyId;
             };
 
             explicit MaterialVersionUpdate() = default;
@@ -47,9 +45,9 @@ namespace AZ
 
             void ApplyVersionUpdates(MaterialAsset& materialAsset) const;
 
-            using Actions = AZStd::vector<Action>;
+            using Actions = AZStd::vector<RenamePropertyAction>;
             const Actions& GetActions() const;
-            void AddAction(const Action& action);
+            void AddAction(const RenamePropertyAction& action);
 
         private:
             uint32_t m_toVersion;

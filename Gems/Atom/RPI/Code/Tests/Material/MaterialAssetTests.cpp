@@ -238,9 +238,11 @@ namespace UnitTest
 
         // Prepare material type asset version 2 with the update actions
         MaterialVersionUpdate versionUpdate(2);
-        versionUpdate.AddAction(MaterialVersionUpdate::Action(AZ::Name{ "rename" }, {
-            { Name{ "from" }, Name{ "MyBool" } },
-            { Name{ "to" }, Name{ "MyBoolNext" } } }));
+        versionUpdate.AddAction(MaterialVersionUpdate::RenamePropertyAction(
+            {
+                Name{ "MyBool" },
+                Name{ "MyBoolNext" }
+            }));
 
         Data::Asset<MaterialTypeAsset> testMaterialTypeAssetV2;
         materialTypeCreator.Begin(Uuid::CreateRandom());

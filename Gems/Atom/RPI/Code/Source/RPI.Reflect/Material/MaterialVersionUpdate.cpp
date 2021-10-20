@@ -18,10 +18,10 @@ namespace AZ
         {
             if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
             {
-                serializeContext->Class<MaterialVersionUpdate::Action>()
+                serializeContext->Class<MaterialVersionUpdate::RenamePropertyAction>()
                     ->Version(1)
-                    ->Field("ArgsMap", &Action::m_argsMap)
-                    ->Field("Operation", &Action::m_operation)
+                    ->Field("From", &MaterialVersionUpdate::RenamePropertyAction::m_fromPropertyId)
+                    ->Field("To", &MaterialVersionUpdate::RenamePropertyAction::m_toPropertyId)
                     ;
 
                 serializeContext->RegisterGenericType<MaterialVersionUpdate::Actions>();
@@ -53,23 +53,14 @@ namespace AZ
 
         void MaterialVersionUpdate::ApplyVersionUpdates(MaterialAsset& materialAsset) const
         {
-            // collect all renames within this version update
-            AZStd::unordered_map<AZ::Name, AZ::Name> renameToFrom;
-            for (const auto& action : m_actions)
-            {
-                const AZ::Name from = action.m_argsMap.find(AZ::Name{ "from" })->second;
-                const AZ::Name to = action.m_argsMap.find(AZ::Name{ "to" })->second;
-
-                renameToFrom[from] = to;
-            }
-
-            // apply rename actions
             for (auto& propertyName : materialAsset.m_propertyNames)
             {
-                const auto toFromIterator = renameToFrom.find(propertyName);
-                if (toFromIterator != renameToFrom.end())
+                for (const auto& action : m_actions)
                 {
-                    propertyName = AZ::Name{ toFromIterator->second };
+                    if (propertyName == action.m_fromPropertyId)
+                    {
+                        propertyName = action.m_toPropertyId;
+                    }
                 }
             }
         }
@@ -79,23 +70,9 @@ namespace AZ
             return m_actions;
         }
 
-        void MaterialVersionUpdate::AddAction(const Action& action)
+        void MaterialVersionUpdate::AddAction(const RenamePropertyAction& action)
         {
             m_actions.push_back(action);
-        }
-
-        MaterialVersionUpdate::Action::Action(const AZ::Name& operation, const AZStd::initializer_list<AZStd::pair<AZ::Name, AZ::Name>>& args)
-            : m_operation(operation)
-        {
-            for (const auto& arg : args)
-            {
-                AddArg(arg.first, arg.second);
-            }
-        }
-
-        void MaterialVersionUpdate::Action::AddArg(const AZ::Name& key, const AZ::Name& argument)
-        {
-            m_argsMap[key] = argument;
         }
     } // namespace RPI
 } // namespace AZ

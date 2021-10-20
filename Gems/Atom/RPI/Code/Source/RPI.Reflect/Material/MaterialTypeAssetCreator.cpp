@@ -105,27 +105,20 @@ namespace AZ
             AZStd::vector<AZ::Name> renamedPropertyNames;
             const auto& materialVersionUpdate = m_asset->GetMaterialVersionUpdate(m_asset->m_version);
             for (const auto& action : materialVersionUpdate.GetActions())
-            {
-                const auto it = action.m_argsMap.find(AZ::Name{ "to" });
-                if (it != action.m_argsMap.end())
-                {
-                    renamedPropertyNames.push_back(it->second);
-                }
-            }
-
-            for (const auto& propertyName : renamedPropertyNames)
-            {
-                const auto propertyIndex = m_asset->m_materialPropertiesLayout->FindPropertyIndex(AZ::Name{ propertyName });
+            {                
+                const auto propertyIndex = m_asset->m_materialPropertiesLayout->FindPropertyIndex(AZ::Name{ action.m_toPropertyId });
                 if (!propertyIndex.IsValid())
                 {
                     ReportError(AZStd::string::format(
                             "Renamed property '%s' not found in material property layout. Check that the property name has been "
                             "upgraded to the correct version",
-                            propertyName.GetCStr())
+                            action.m_toPropertyId.GetCStr())
                         .c_str());
                     return false;
                 }
+
             }
+
             return true;
         }
 

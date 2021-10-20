@@ -355,8 +355,7 @@ namespace AZ
             materialTypeAssetCreator.SetVersion(m_version);
             {
                 const AZ::Name rename = AZ::Name{ "rename" };
-                const AZ::Name from = AZ::Name{ "from" };
-                const AZ::Name to = AZ::Name{ "to" };
+
                 for (const auto& versionUpdate : m_versionUpdates)
                 {
                     MaterialVersionUpdate materialVersionUpdate;
@@ -364,9 +363,10 @@ namespace AZ
                     {
                         if (action.m_operation == rename.GetStringView())
                         {
-                            materialVersionUpdate.AddAction(MaterialVersionUpdate::Action(rename, {
-                                { from, AZ::Name{ action.m_renameFrom } },
-                                { to, AZ::Name{ action.m_renameTo } } }));
+                            materialVersionUpdate.AddAction(MaterialVersionUpdate::RenamePropertyAction{
+                                    AZ::Name{ action.m_renameFrom },
+                                    AZ::Name{ action.m_renameTo }
+                                });
                         }
                         else
                         {

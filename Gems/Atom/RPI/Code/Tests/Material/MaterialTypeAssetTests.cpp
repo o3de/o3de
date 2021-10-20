@@ -156,9 +156,11 @@ namespace UnitTest
 
             // Version updates
             MaterialVersionUpdate versionUpdate(2);
-            versionUpdate.AddAction(MaterialVersionUpdate::Action(AZ::Name{ "rename" }, {
-                { Name{ "from" }, Name{ "EnableSpecialPassPrev" } },
-                { Name{ "to" }, Name{ "EnableSpecialPass" } } }));
+            versionUpdate.AddAction(MaterialVersionUpdate::RenamePropertyAction(
+                {
+                    Name{ "EnableSpecialPassPrev" },
+                    Name{ "EnableSpecialPass" }
+                }));
             materialTypeCreator.SetVersion(versionUpdate.GetVersion());
             materialTypeCreator.AddVersionUpdate(versionUpdate.GetVersion(), versionUpdate);
 
@@ -510,9 +512,11 @@ namespace UnitTest
 
         // Invalid version updates
         MaterialVersionUpdate versionUpdate(2);
-        versionUpdate.AddAction(MaterialVersionUpdate::Action(AZ::Name{ "rename" }, {
-            { Name{ "from" }, Name{ "EnableSpecialPassPrev" } },
-            { Name{ "to" }, Name{ "InvalidPropertyName" } } }));
+        versionUpdate.AddAction(MaterialVersionUpdate::RenamePropertyAction(
+            {
+                Name{ "EnableSpecialPassPrev" },
+                Name{ "InvalidPropertyName" }
+            }));
         materialTypeCreator.SetVersion(versionUpdate.GetVersion());
         materialTypeCreator.AddVersionUpdate(versionUpdate.GetVersion(), versionUpdate);
         materialTypeCreator.AddShader(m_testShaderAsset);
