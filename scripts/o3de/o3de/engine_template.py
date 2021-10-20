@@ -471,7 +471,7 @@ def create_template(source_path: pathlib.Path,
     # template_restricted_path
     if template_restricted_path:
         if not os.path.isabs(template_restricted_path):
-            default_templates_restricted_folder = manifest.get_registered(restricted_name='Templates')
+            default_templates_restricted_folder = manifest.get_registered(restricted_name='templates')
             new_template_restricted_path = default_templates_restricted_folder / template_restricted_path
             logger.info(f'Template restricted path {template_restricted_path} not a full path. We must assume the'
                         f' default templates restricted folder {new_template_restricted_path}')
@@ -1102,7 +1102,7 @@ def create_from_template(destination_path: pathlib.Path,
         logger.error(f'Could not find the template {template_name}=>{template_path}')
         return 1
 
-    # the template.json should be in the template_path, make sure exist and is valid
+    # the template.json should be in the template_path, make sure it is valid
     template_json = template_path / 'template.json'
     if not validation.valid_o3de_template_json(template_json):
         logger.error(f'Template json {template_path} is invalid.')
@@ -1925,16 +1925,18 @@ def create_gem(gem_path: pathlib.Path,
     # gem restricted path
     elif gem_restricted_path:
         if not os.path.isabs(gem_restricted_path):
-            default_gems_restricted_folder = manifest.get_registered(restricted_name='gems')
-            new_gem_restricted_path = default_gems_restricted_folder / gem_restricted_path
-            logger.info(f'Gem restricted path {gem_restricted_path} is not a full path, we must assume its'
-                        f' relative to default gems restricted path = {new_gem_restricted_path}')
-            gem_restricted_path = new_gem_restricted_path
+            gem_restricted_default_path = manifest.get_registered(restricted_name='gems')
+            if gem_restricted_default_path:
+                new_gem_restricted_path = gem_restricted_default_path / gem_restricted_path
+                logger.info(f'Gem restricted path {gem_restricted_path} is not a full path, we must assume its'
+                            f' relative to default gems restricted path = {new_gem_restricted_path}')
+                gem_restricted_path = new_gem_restricted_path
     else:
         gem_restricted_default_path = manifest.get_registered(restricted_name='gems')
-        logger.info(f'--gem-restricted-path is not specified, using default gem restricted path / gem name'
-                    f' = {gem_restricted_default_path}')
-        gem_restricted_path = gem_restricted_default_path / gem_name
+        if gem_restricted_default_path:
+            logger.info(f'--gem-restricted-path is not specified, using default <gem restricted path> / <gem name>'
+                        f' = {gem_restricted_default_path}')
+            gem_restricted_path = gem_restricted_default_path / gem_name
 
     # gem restricted relative
     if not gem_restricted_platform_relative_path:
@@ -2338,8 +2340,8 @@ def add_args(subparsers) -> None:
     group = create_project_subparser.add_mutually_exclusive_group(required=False)
     group.add_argument('-prp', '--project-restricted-path', type=pathlib.Path, required=False,
                        default=None,
-                       help='path to the projects restricted folder, can be absolute or relative'
-                            ' to the restricted="projects"')
+                       help='path to the projects restricted folder, can be absolute or relative to'
+                            ' the default restricted projects directory')
     group.add_argument('-prn', '--project-restricted-name', type=str, required=False,
                        default=None,
                        help='The name of the registered projects restricted path. If supplied this will resolve'
@@ -2349,7 +2351,7 @@ def add_args(subparsers) -> None:
     group.add_argument('-trp', '--template-restricted-path', type=pathlib.Path, required=False,
                        default=None,
                        help='The templates restricted path can be absolute or relative to'
-                            ' restricted="templates"')
+                             'the default restricted templates directory')
     group.add_argument('-trn', '--template-restricted-name', type=str, required=False,
                        default=None,
                        help='The name of the registered templates restricted path. If supplied this will resolve'
@@ -2412,7 +2414,7 @@ def add_args(subparsers) -> None:
     # creation of a gem from a template (like create from template but makes gem assumptions)
     create_gem_subparser = subparsers.add_parser('create-gem')
     create_gem_subparser.add_argument('-gp', '--gem-path', type=pathlib.Path, required=True,
-                                      help='The gem path, can be absolute or relative current working directory')
+                                      help='The gem path, can be absolute or relative to the current working directory')
     create_gem_subparser.add_argument('-gn', '--gem-name', type=str,
                                           help='The name to use when substituting the ${Name} placeholder for the gem,'
                                                ' must be alphanumeric, '
@@ -2434,7 +2436,7 @@ def add_args(subparsers) -> None:
     group.add_argument('-grp', '--gem-restricted-path', type=pathlib.Path, required=False,
                        default=None,
                        help='The gem restricted path, can be absolute or relative to'
-                            ' restricted="gems"')
+                            ' the default restricted gems directory')
     group.add_argument('-grn', '--gem-restricted-name', type=str, required=False,
                        default=None,
                        help='The name of the gem to look up the gem restricted path if any.'
@@ -2444,7 +2446,7 @@ def add_args(subparsers) -> None:
     group.add_argument('-trp', '--template-restricted-path', type=pathlib.Path, required=False,
                        default=None,
                        help='The templates restricted path, can be absolute or relative to'
-                            ' restricted="templates"')
+                            ' the default restricted templates directory')
     group.add_argument('-trn', '--template-restricted-name', type=str, required=False,
                        default=None,
                        help='The name of the registered templates restricted path. If supplied'
