@@ -139,8 +139,6 @@ namespace UnitTest
             AzAssetBrowser::RootAssetBrowserEntry* rootEntry = m_assetBrowserComponent->GetAssetBrowserModel()->GetRootEntry().get();
 
             AzAssetBrowser::AssetBrowserEntry* folder_0 = CreateAssetBrowserEntry(AssetEntryType::Folder, rootEntry, QString("folder_0"));
-            [[maybe_unused]] AzAssetBrowser::AssetBrowserEntry* folder_1 = CreateAssetBrowserEntry(AssetEntryType::Folder, rootEntry, QString("Folder_1"));
-            [[maybe_unused]] AzAssetBrowser::AssetBrowserEntry* folder_2 = CreateAssetBrowserEntry(AssetEntryType::Folder, rootEntry, QString("Folder_2"));
                 AzAssetBrowser::AssetBrowserEntry* source_0_0 = CreateAssetBrowserEntry(AssetEntryType::Source, folder_0, QString("source_0_0"));
                    [[maybe_unused]] AzAssetBrowser::AssetBrowserEntry* product_0_0_0 = CreateAssetBrowserEntry(AssetEntryType::Source, source_0_0, QString("product_0_0_0"));
                    [[maybe_unused]] AzAssetBrowser::AssetBrowserEntry* product_0_0_1 = CreateAssetBrowserEntry(AssetEntryType::Source, source_0_0, QString("product_0_0_1"));
@@ -151,6 +149,9 @@ namespace UnitTest
                    [[maybe_unused]] AzAssetBrowser::AssetBrowserEntry* product_0_1_0 = CreateAssetBrowserEntry(AssetEntryType::Source, source_0_1, QString("product_0_1_0"));
                    [[maybe_unused]] AzAssetBrowser::AssetBrowserEntry* product_0_1_1 = CreateAssetBrowserEntry(AssetEntryType::Source, source_0_1,  QString("product_0_1_1"));
 
+
+            [[maybe_unused]] AzAssetBrowser::AssetBrowserEntry* folder_1 = CreateAssetBrowserEntry(AssetEntryType::Folder, rootEntry, QString("Folder_1"));
+            [[maybe_unused]] AzAssetBrowser::AssetBrowserEntry* folder_2 = CreateAssetBrowserEntry(AssetEntryType::Folder, rootEntry, QString("Folder_2"));
             m_tableModel->UpdateTableModelMaps();
         }
 
@@ -174,6 +175,7 @@ namespace UnitTest
                     indices.emplace_back(model->index(i, 0, index), depth + 1);
                 }
             }
+
         }
 
         // Gets the index of the root prefab, i.e. the "New Level" container entity
