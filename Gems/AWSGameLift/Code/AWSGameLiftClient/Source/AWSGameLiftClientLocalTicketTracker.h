@@ -12,7 +12,7 @@
 #include <AzCore/std/parallel/mutex.h>
 #include <AzCore/std/parallel/thread.h>
 
-#include <Request/IAWSGameLiftRequests.h>
+#include <Request/AWSGameLiftMatchmakingRequestBus.h>
 
 #include <aws/gamelift/model/MatchmakingTicket.h>
 
