@@ -34,4 +34,6 @@ namespace Multiplayer
         ConstNetworkEntityHandle m_owner;
         NetworkInput m_networkInput;
     };
+
+    using NetworkInputChildList = AZStd::vector<NetworkInputChild>;
 }
