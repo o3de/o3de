@@ -316,7 +316,7 @@ namespace AZ
                 m_hairPPLLRasterPass = nullptr;
                 m_hairPPLLResolvePass = nullptr;
 
-                // ShortCut passes - Special handling of geometry passes oply, and using the regular
+                // ShortCut passes - Special handling of geometry passes only, and using the regular
                 // full screen pass for the resolve
                 m_hairShortCutGeometryDepthAlphaPass = nullptr;
                 m_hairShortCutGeometryShadingPass = nullptr;
