@@ -347,7 +347,7 @@ namespace AssetProcessor
 
         ExcludeAssetRecognizer excludeRecogniser;
         excludeRecogniser.m_name = "backup";
-        excludeRecogniser.m_patternMatcher = AssetBuilderSDK::FilePatternMatcher(".*\\/savebackup\\/.*", AssetBuilderSDK::AssetBuilderPattern::Regex);
+        excludeRecogniser.m_patternMatcher = AssetBuilderSDK::FilePatternMatcher("(^|.+/)savebackup/.*", AssetBuilderSDK::AssetBuilderPattern::Regex);
         config.AddExcludeRecognizer(excludeRecogniser);
 
         AssetProcessorManager_Test apm(&config);  // note, this will 'push' the scan folders in to the db.
