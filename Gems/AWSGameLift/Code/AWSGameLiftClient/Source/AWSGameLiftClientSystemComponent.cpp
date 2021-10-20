@@ -13,6 +13,7 @@
 #include <AzFramework/Session/SessionConfig.h>
 
 #include <AWSGameLiftClientLocalTicketTracker.h>
+#include <AWSCoreBus.h>
 #include <AWSGameLiftClientManager.h>
 #include <AWSGameLiftClientSystemComponent.h>
 #include <Request/AWSGameLiftAcceptMatchRequest.h>
@@ -105,6 +106,8 @@ namespace AWSGameLift
         m_gameliftClient.reset();
         m_gameliftManager->ActivateManager();
         m_gameliftTicketTracker->ActivateTracker();
+
+        AWSCore::AWSCoreEditorRequestBus::Broadcast(&AWSCore::AWSCoreEditorRequests::SetAWSGameLiftEnabled);
     }
 
     void AWSGameLiftClientSystemComponent::Deactivate()

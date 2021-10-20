@@ -244,6 +244,17 @@ namespace AzToolsFramework
 
         const auto eventType = event->type();
 
+        if (eventType == QEvent::Type::MouseMove)
+        {
+            // clear override cursor when moving outside of the viewport
+            const auto* mouseEvent = static_cast<const QMouseEvent*>(event);
+            if (m_overrideCursor && !m_sourceWidget->geometry().contains(m_sourceWidget->mapFromGlobal(mouseEvent->globalPos())))
+            {
+                qApp->restoreOverrideCursor();
+                m_overrideCursor = false;
+            }
+        }
+
         // Only accept mouse & key release events that originate from an object that is not our target widget,
         // as we don't want to erroneously intercept user input meant for another component.
         if (object != m_sourceWidget && eventType != QEvent::Type::KeyRelease && eventType != QEvent::Type::MouseButtonRelease)
@@ -262,7 +273,7 @@ namespace AzToolsFramework
             if (eventType == QEvent::FocusIn)
             {
                 const auto globalCursorPosition = QCursor::pos();
-                if (m_sourceWidget->geometry().contains(globalCursorPosition))
+                if (m_sourceWidget->geometry().contains(m_sourceWidget->mapFromGlobal(globalCursorPosition)))
                 {
                     HandleMouseMoveEvent(globalCursorPosition);
                 }
@@ -450,6 +461,34 @@ namespace AzToolsFramework
                 channelData.second->UpdateState(false);
                 NotifyUpdateChannelIfNotIdle(channelData.second, event);
             }
+        }
+    }
+
+    static Qt::CursorShape QtCursorFromAzCursor(const ViewportInteraction::CursorStyleOverride cursorStyleOverride)
+    {
+        switch (cursorStyleOverride)
+        {
+        case ViewportInteraction::CursorStyleOverride::Forbidden:
+            return Qt::ForbiddenCursor;
+        default:
+            return Qt::ArrowCursor;
+        }
+    }
+
+    void QtEventToAzInputMapper::SetOverrideCursor(ViewportInteraction::CursorStyleOverride cursorStyleOverride)
+    {
+        ClearOverrideCursor();
+
+        qApp->setOverrideCursor(QtCursorFromAzCursor(cursorStyleOverride));
+        m_overrideCursor = true;
+    }
+
+    void QtEventToAzInputMapper::ClearOverrideCursor()
+    {
+        if (m_overrideCursor)
+        {
+            qApp->restoreOverrideCursor();
+            m_overrideCursor = false;
         }
     }
 } // namespace AzToolsFramework
