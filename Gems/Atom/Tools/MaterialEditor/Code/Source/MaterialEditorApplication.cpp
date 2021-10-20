@@ -76,25 +76,4 @@ namespace MaterialEditor
 
         Base::ProcessCommandLine(commandLine);
     }
-
-
-#if AZ_TRAIT_MATERIALEDITOR_SKIP_APP_DESTROY
-    // On some platforms, there is an issue with environment variables that are removed before some objects are deallocated (during the process of 
-    // ComponentApplication::Destroy). Until all of the shutdown issues are solved, we will use the above trait to skip the parent ::Destroy()
-    // function that normally does the module init, entity shutdown, etc, and handle some of these tasks here instead.
-    // Tracked by GHI - 4806
-    void MaterialEditorApplication::Destroy()
-    {
-        // before modules are unloaded, destroy UI to free up any assets it cached
-        AtomToolsFramework::AtomToolsMainWindowFactoryRequestBus::Broadcast(&AtomToolsFramework::AtomToolsMainWindowFactoryRequestBus::Handler::DestroyMainWindow);
-        m_styleManager.reset();
-
-        AzToolsFramework::EditorPythonConsoleNotificationBus::Handler::BusDisconnect();
-        AzToolsFramework::AssetDatabase::AssetDatabaseRequestsBus::Handler::BusDisconnect();
-        AtomToolsFramework::AtomToolsMainWindowNotificationBus::Handler::BusDisconnect();
-        AzFramework::AssetSystemRequestBus::Broadcast(&AzFramework::AssetSystem::AssetSystemRequests::StartDisconnectingAssetProcessor);
-
-        ::_exit(0);
-    }
-#endif 
 } // namespace MaterialEditor

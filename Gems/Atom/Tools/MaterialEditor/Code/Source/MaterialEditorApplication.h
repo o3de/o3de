@@ -31,11 +31,6 @@ namespace MaterialEditor
         void CreateStaticModules(AZStd::vector<AZ::Module*>& outModules) override;
         const char* GetCurrentConfigurationName() const override;
 
-#if AZ_TRAIT_MATERIALEDITOR_SKIP_APP_DESTROY
-    protected:
-        void Destroy() override;
-#endif // AZ_TRAIT_MATERIALEDITOR_SKIP_APP_DESTROY
-
     private:
         void ProcessCommandLine(const AZ::CommandLine& commandLine) override;
         AZStd::string GetBuildTargetName() const override;

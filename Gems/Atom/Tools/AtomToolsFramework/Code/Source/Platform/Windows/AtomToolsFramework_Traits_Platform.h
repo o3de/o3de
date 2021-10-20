@@ -7,5 +7,4 @@
  */
 #pragma once
 
-#define AZ_TRAIT_MATERIALEDITOR_EXT ".exe"
-
+#include <AtomToolsFramework_Traits_Windows.h>
