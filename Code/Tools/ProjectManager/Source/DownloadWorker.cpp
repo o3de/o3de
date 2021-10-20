@@ -6,8 +6,8 @@
  *
  */
 
-#include <O3DEObjectDownloadController.h>
-#include <O3DEObjectDownloadWorker.h>
+#include <DownloadController.h>
+#include <DownloadWorker.h>
 #include <PythonBindings.h>
 
 #include <QMessageBox>
@@ -17,12 +17,12 @@
 
 namespace O3DE::ProjectManager
 {
-    O3DEObjectDownloadWorker::O3DEObjectDownloadWorker()
+    DownloadWorker::DownloadWorker()
         : QObject()
     {
     }
 
-    void O3DEObjectDownloadWorker::StartDownload()
+    void DownloadWorker::StartDownload()
     {
         auto gemDownloadProgress = [=](int downloadProgress)
         {
@@ -40,7 +40,7 @@ namespace O3DE::ProjectManager
         }
     }
 
-    void O3DEObjectDownloadWorker::SetGemToDownload(const QString& gemName, bool downloadNow)
+    void DownloadWorker::SetGemToDownload(const QString& gemName, bool downloadNow)
     {
         m_gemName = gemName;
         if (downloadNow)

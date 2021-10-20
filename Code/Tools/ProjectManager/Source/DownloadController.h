@@ -17,15 +17,15 @@ QT_FORWARD_DECLARE_CLASS(QProcess)
 
 namespace O3DE::ProjectManager
 {
-    QT_FORWARD_DECLARE_CLASS(O3DEObjectDownloadWorker)
+    QT_FORWARD_DECLARE_CLASS(DownloadWorker)
 
-    class O3DEObjectDownloadController : public QObject
+    class DownloadController : public QObject
     {
         Q_OBJECT
 
     public:
-        explicit O3DEObjectDownloadController(QWidget* parent = nullptr);
-        ~O3DEObjectDownloadController();
+        explicit DownloadController(QWidget* parent = nullptr);
+        ~DownloadController();
 
         void AddGemDownload(const QString& m_gemName);
 
@@ -55,7 +55,7 @@ namespace O3DE::ProjectManager
         void GemDownloadProgress(int percentage);
 
     private:
-        O3DEObjectDownloadWorker* m_worker;
+        DownloadWorker* m_worker;
         QThread m_workerThread;
         QWidget* m_parent;
         AZStd::vector<QString> m_gemNames;

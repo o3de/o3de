@@ -9,17 +9,13 @@
 
 #if !defined(Q_MOC_RUN)
 #include <AzCore/Outcome/Outcome.h>
-
-#include <QObject>
-#include <QProcessEnvironment>
-#include <QString>
 #endif
 
 QT_FORWARD_DECLARE_CLASS(QProcess)
 
 namespace O3DE::ProjectManager
 {
-    class O3DEObjectDownloadWorker : public QObject
+    class DownloadWorker : public QObject
     {
         // QProcess::waitForFinished uses -1 to indicate that the process should not timeout
         static constexpr int MaxBuildTimeMSecs = -1;
@@ -29,8 +25,8 @@ namespace O3DE::ProjectManager
         Q_OBJECT
 
     public:
-        explicit O3DEObjectDownloadWorker();
-        ~O3DEObjectDownloadWorker() = default;
+        explicit DownloadWorker();
+        ~DownloadWorker() = default;
 
     public slots:
         void StartDownload();

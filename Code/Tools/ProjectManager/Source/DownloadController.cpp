@@ -6,8 +6,8 @@
  *
  */
 
-#include <O3DEObjectDownloadController.h>
-#include <O3DEObjectDownloadWorker.h>
+#include <DownloadController.h>
+#include <DownloadWorker.h>
 #include <ProjectButtonWidget.h>
 
 #include <QMessageBox>
@@ -17,29 +17,29 @@
 
 namespace O3DE::ProjectManager
 {
-    O3DEObjectDownloadController::O3DEObjectDownloadController(QWidget* parent)
+    DownloadController::DownloadController(QWidget* parent)
         : QObject()
         , m_lastProgress(0)
         , m_parent(parent)
     {
-        m_worker = new O3DEObjectDownloadWorker();
+        m_worker = new DownloadWorker();
         m_worker->moveToThread(&m_workerThread);
 
-        connect(&m_workerThread, &QThread::started, m_worker, &O3DEObjectDownloadWorker::StartDownload);
-        connect(m_worker, &O3DEObjectDownloadWorker::Done, this, &O3DEObjectDownloadController::HandleResults);
-        connect(m_worker, &O3DEObjectDownloadWorker::UpdateProgress, this, &O3DEObjectDownloadController::UpdateUIProgress);
-        connect(this, &O3DEObjectDownloadController::StartGemDownload, m_worker, &O3DEObjectDownloadWorker::StartDownload);
+        connect(&m_workerThread, &QThread::started, m_worker, &DownloadWorker::StartDownload);
+        connect(m_worker, &DownloadWorker::Done, this, &DownloadController::HandleResults);
+        connect(m_worker, &DownloadWorker::UpdateProgress, this, &DownloadController::UpdateUIProgress);
+        connect(this, &DownloadController::StartGemDownload, m_worker, &DownloadWorker::StartDownload);
     }
 
-    O3DEObjectDownloadController::~O3DEObjectDownloadController()
+    DownloadController::~DownloadController()
     {
-        connect(&m_workerThread, &QThread::finished, m_worker, &O3DEObjectDownloadWorker::deleteLater);
+        connect(&m_workerThread, &QThread::finished, m_worker, &DownloadController::deleteLater);
         m_workerThread.requestInterruption();
         m_workerThread.quit();
         m_workerThread.wait();
     }
 
-    void O3DEObjectDownloadController::AddGemDownload(const QString& gemName)
+    void DownloadController::AddGemDownload(const QString& gemName)
     {
         m_gemNames.push_back(gemName);
         if (m_gemNames.size() == 1)
@@ -49,18 +49,18 @@ namespace O3DE::ProjectManager
         }
     }
 
-    void O3DEObjectDownloadController::Start()
+    void DownloadController::Start()
     {
         
     }
 
-    void O3DEObjectDownloadController::UpdateUIProgress(int progress)
+    void DownloadController::UpdateUIProgress(int progress)
     {
         m_lastProgress = progress;
         emit GemDownloadProgress(progress);
     }
 
-    void O3DEObjectDownloadController::HandleResults(const QString& result)
+    void DownloadController::HandleResults(const QString& result)
     {
         bool succeeded = true;
         
@@ -84,7 +84,7 @@ namespace O3DE::ProjectManager
         }
     }
 
-    void O3DEObjectDownloadController::HandleCancel()
+    void DownloadController::HandleCancel()
     {
         m_workerThread.quit();
         emit Done(false);

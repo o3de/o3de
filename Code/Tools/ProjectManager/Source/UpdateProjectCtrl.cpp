@@ -38,7 +38,7 @@ namespace O3DE::ProjectManager
         vLayout->addWidget(m_header);
 
         m_updateSettingsScreen = new UpdateProjectSettingsScreen();
-        m_gemCatalogScreen = new GemCatalogScreen(nullptr);
+        m_gemCatalogScreen = new GemCatalogScreen();
 
         m_stack = new QStackedWidget(this);
         m_stack->setObjectName("body");

@@ -17,7 +17,7 @@
 
 namespace O3DE::ProjectManager
 {
-    CartOverlayWidget::CartOverlayWidget(GemModel* gemModel, O3DEObjectDownloadController* downloadController, QWidget* parent)
+    CartOverlayWidget::CartOverlayWidget(GemModel* gemModel, DownloadController* downloadController, QWidget* parent)
         : QWidget(parent)
         , m_gemModel(gemModel)
         , m_downloadController(downloadController)
@@ -252,8 +252,8 @@ namespace O3DE::ProjectManager
             update(0); // update the list to remove the gem that has finished
         };
         // connect to download controller data changed
-        connect(m_downloadController, &O3DEObjectDownloadController::GemDownloadProgress, this, update);
-        connect(m_downloadController, &O3DEObjectDownloadController::Done, this, downloadEnded);
+        connect(m_downloadController, &DownloadController::GemDownloadProgress, this, update);
+        connect(m_downloadController, &DownloadController::Done, this, downloadEnded);
         update(0);
     }
 
@@ -268,7 +268,7 @@ namespace O3DE::ProjectManager
         return gemNames;
     }
 
-    CartButton::CartButton(GemModel* gemModel, O3DEObjectDownloadController* downloadController, QWidget* parent)
+    CartButton::CartButton(GemModel* gemModel, DownloadController* downloadController, QWidget* parent)
         : QWidget(parent)
         , m_gemModel(gemModel)
         , m_downloadController(downloadController)
@@ -374,7 +374,7 @@ namespace O3DE::ProjectManager
         }
     }
 
-    GemCatalogHeaderWidget::GemCatalogHeaderWidget(GemModel* gemModel, GemSortFilterProxyModel* filterProxyModel, O3DEObjectDownloadController* downloadController, QWidget* parent)
+    GemCatalogHeaderWidget::GemCatalogHeaderWidget(GemModel* gemModel, GemSortFilterProxyModel* filterProxyModel, DownloadController* downloadController, QWidget* parent)
         : QFrame(parent)
     {
         QHBoxLayout* hLayout = new QHBoxLayout();
