@@ -300,7 +300,7 @@ namespace AzToolsFramework
             firstColumnIndex.data(EntityOutlinerListModel::ExpandedRole).value<bool>() &&
             firstColumnIndex.model()->hasChildren(firstColumnIndex);
 
-        if (!isFirstColumn)
+        if (!isFirstColumn || !(option.state & QStyle::State_Enabled))
         {
             return;
         }
@@ -398,19 +398,22 @@ namespace AzToolsFramework
         AZ::EntityId entityId(index.data(EntityOutlinerListModel::EntityIdRole).value<AZ::u64>());
         const QPoint offset = QPoint(-18, 3);
 
-        QRect iconRect = QRect(0, 0, 16, 16);
-        iconRect.translate(option.rect.topLeft() + offset);
-
-        if (iconRect.contains(position))
+        if (m_prefabFocusPublicInterface->IsOwningPrefabInFocusHierarchy(entityId))
         {
-            if (!m_prefabFocusPublicInterface->IsOwningPrefabBeingFocused(entityId))
-            {
-                // Focus on this prefab.
-                m_prefabFocusPublicInterface->FocusOnOwningPrefab(entityId);
-            }
+            QRect iconRect = QRect(0, 0, 16, 16);
+            iconRect.translate(option.rect.topLeft() + offset);
 
-            // Don't propagate event.
-            return true;
+            if (iconRect.contains(position))
+            {
+                if (!m_prefabFocusPublicInterface->IsOwningPrefabBeingFocused(entityId))
+                {
+                    // Focus on this prefab.
+                    m_prefabFocusPublicInterface->FocusOnOwningPrefab(entityId);
+                }
+
+                // Don't propagate event.
+                return true;
+            }
         }
 
         return false;
