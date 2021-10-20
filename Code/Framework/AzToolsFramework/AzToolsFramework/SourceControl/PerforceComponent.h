@@ -261,6 +261,6 @@ namespace AzToolsFramework
 
         SourceControlState m_connectionState;
 
-        bool m_p4ApplicationDetected{ false };
+        bool m_p4ApplicationDetected;
     };
 } // namespace AzToolsFramework
