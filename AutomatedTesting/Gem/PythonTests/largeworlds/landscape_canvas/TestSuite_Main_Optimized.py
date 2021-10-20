@@ -9,6 +9,7 @@ import os
 import pytest
 
 import ly_test_tools.environment.file_system as file_system
+import ly_test_tools._internal.pytest_plugin as internal_plugin
 from ly_test_tools.o3de.editor_test import EditorSingleTest, EditorSharedTest, EditorParallelTest, EditorTestSuite
 
 
@@ -79,7 +80,8 @@ class TestAutomation(EditorTestSuite):
     class test_LandscapeCanvas_GradientNodes_EntityRemovedOnNodeDelete(EditorSharedTest):
         from .EditorScripts import GradientNodes_EntityRemovedOnNodeDelete as test_module
 
-    class test_LandscapeCanvas_GraphUpdates_UpdateComponents(EditorSharedTest):
+    @pytest.mark.skipif("debug" == os.path.basename(internal_plugin.build_directory), reason="LY-122684")
+    class test_LandscapeCanvas_GraphUpdates_UpdateComponents(EditorSingleTest):
         from .EditorScripts import GraphUpdates_UpdateComponents as test_module
 
     class test_LandscapeCanvas_ComponentUpdates_UpdateGraph(EditorSharedTest):
