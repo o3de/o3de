@@ -577,7 +577,9 @@ namespace AZ
                 }
 
                 azstrcat(lines[i], AZ_ARRAY_SIZE(lines[i]), "\n");
-                AZ_Printf(window, "%s", lines[i]); // feed back into the trace system so that listeners can get it.
+                // Use Output instead of AZ_Printf to be consistent with the exception output code and avoid
+                // this accidentally being suppressed as a normal message
+                Output(window, lines[i]);
             }
         }
     }
