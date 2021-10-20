@@ -81,9 +81,11 @@ namespace AZ
         friend class TaskGraph;
         friend class TaskExecutor;
 
+        void IncWaitCount();
         void Signal();
 
         AZStd::binary_semaphore m_semaphore;
+        AZStd::atomic_int   m_waitCount = 0;
         TaskExecutor* m_executor = nullptr;
     };
 
