@@ -39,7 +39,7 @@
 ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
 {
     // Originally: [[vk::binding(0, 0)]] Texture2DArray<uint> FragmentDepthsTexture : register(t0, space0);
-     Texture2DArray<uint>    m_fragmentDepthsTexture; 
+    Texture2DArray<uint>    m_fragmentDepthsTexture; 
 }
 //------------------------------------------------------------------------------
 

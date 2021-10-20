@@ -15,7 +15,7 @@
                 },
                 {   // DepthStencil for early disqualifying the pixel based on depth.  No write.
                     "Name": "Depth",
-                    "SlotType": "InputOutput",
+                    "SlotType": "Input",
                     "ScopeAttachmentUsage": "DepthStencil"
                 },
                 {
