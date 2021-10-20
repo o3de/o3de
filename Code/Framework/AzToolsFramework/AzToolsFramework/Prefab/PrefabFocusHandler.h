@@ -42,9 +42,8 @@ namespace AzToolsFramework::Prefab
         PrefabFocusHandler();
         ~PrefabFocusHandler();
 
-        void Initialize();
-
         // PrefabFocusInterface overrides ...
+        void InitializeEditorInterfaces() override;
         PrefabFocusOperationResult FocusOnPrefabInstanceOwningEntityId(AZ::EntityId entityId) override;
         TemplateId GetFocusedPrefabTemplateId(AzFramework::EntityContextId entityContextId) const override;
         InstanceOptionalReference GetFocusedPrefabInstance(AzFramework::EntityContextId entityContextId) const override;
@@ -86,8 +85,6 @@ namespace AzToolsFramework::Prefab
         ContainerEntityInterface* m_containerEntityInterface = nullptr;
         FocusModeInterface* m_focusModeInterface = nullptr;
         InstanceEntityMapperInterface* m_instanceEntityMapperInterface = nullptr;
-
-        bool m_initialized = false;
     };
 
 } // namespace AzToolsFramework::Prefab
