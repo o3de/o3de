@@ -9,7 +9,6 @@
 #pragma once
 
 #include <AzCore/Interface/Interface.h>
-#include <AzFramework/Matchmaking/MatchmakingNotifications.h>
 #include <AzFramework/Session/ISessionRequests.h>
 #include <AzFramework/Session/ISessionHandlingRequests.h>
 #include <AzFramework/Matchmaking/IMatchmakingRequests.h>
@@ -93,22 +92,22 @@ public:
 
     void OnMatchAcceptance() override
     {
-        m_numMatchAcceptance++;
+        ++m_numMatchAcceptance;
     }
 
     void OnMatchComplete() override
     {
-        m_numMatchComplete++;
+        ++m_numMatchComplete;
     }
 
     void OnMatchError() override
     {
-        m_numMatchError++;
+        ++m_numMatchError;
     }
 
     void OnMatchFailure() override
     {
-        m_numMatchFailure++;
+        ++m_numMatchFailure;
     }
 
     int m_numMatchAcceptance = 0;

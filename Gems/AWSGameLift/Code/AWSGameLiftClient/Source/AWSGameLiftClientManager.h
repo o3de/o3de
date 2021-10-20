@@ -8,10 +8,13 @@
 
 #pragma once
 
+#include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/std/smart_ptr/shared_ptr.h>
 #include <AzFramework/Matchmaking/MatchmakingNotifications.h>
 
-#include <Request/IAWSGameLiftRequests.h>
+#include <Request/AWSGameLiftRequestBus.h>
+#include <Request/AWSGameLiftSessionRequestBus.h>
+#include <Request/AWSGameLiftMatchmakingRequestBus.h>
 
 namespace AWSGameLift
 {
