@@ -111,16 +111,18 @@ void DirectionalLightShadow::GetShadowCoords(
     float3 worldPosition,
     out float3 shadowCoords[ViewSrg::MaxCascadeCount])
 {
-    const float4x4 depthBiasMatrices[ViewSrg::MaxCascadeCount] = 
-        ViewSrg::m_directionalLightShadows[lightIndex].m_depthBiasMatrices;
     const uint cascadeCount = ViewSrg::m_directionalLightShadows[lightIndex].m_cascadeCount;
-
+    const float shadowBias = ViewSrg::m_directionalLightShadows[lightIndex].m_shadowBias;
+    const float4x4 lightViewToShadowmapMatrices[ViewSrg::MaxCascadeCount] = ViewSrg::m_directionalLightShadows[lightIndex].m_lightViewToShadowmapMatrices;
+    const float4x4 worldToLightViewMatrices[ViewSrg::MaxCascadeCount] = ViewSrg::m_directionalLightShadows[lightIndex].m_worldToLightViewMatrices;
+    
     for (uint index = 0; index < cascadeCount; ++index)
     {
-        const float4x4 depthBiasMatrix = depthBiasMatrices[index];
-        const float4 shadowCoordHomogeneous = mul(depthBiasMatrix, 
-            float4(worldPosition, 1.));
-        shadowCoords[index] = shadowCoordHomogeneous.xyz / shadowCoordHomogeneous.w;
+        float4 lightSpacePos = mul(worldToLightViewMatrices[index], float4(worldPosition, 1.));
+        lightSpacePos.z += shadowBias;
+
+        const float4 clipSpacePos = mul(lightViewToShadowmapMatrices[index], lightSpacePos);                
+        shadowCoords[index] = clipSpacePos.xyz / clipSpacePos.w;
     }
 }
 
