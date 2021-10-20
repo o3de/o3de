@@ -55,6 +55,7 @@ namespace AzToolsFramework
         static const QColor m_backgroundHoverColor;
         static const QColor m_backgroundSelectedColor;
         static const QColor m_prefabCapsuleColor;
+        static const QColor m_prefabCapsuleDisabledColor;
         static const QColor m_prefabCapsuleEditColor;
         static const QString m_prefabIconPath;
         static const QString m_prefabEditIconPath;

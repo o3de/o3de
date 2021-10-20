@@ -25,6 +25,7 @@ namespace AzToolsFramework
     const QColor PrefabUiHandler::m_backgroundHoverColor = QColor("#5A5A5A");
     const QColor PrefabUiHandler::m_backgroundSelectedColor = QColor("#656565");
     const QColor PrefabUiHandler::m_prefabCapsuleColor = QColor("#1E252F");
+    const QColor PrefabUiHandler::m_prefabCapsuleDisabledColor = QColor("#35383C");
     const QColor PrefabUiHandler::m_prefabCapsuleEditColor = QColor("#4A90E2");
     const QString PrefabUiHandler::m_prefabIconPath = QString(":/Entity/prefab.svg");
     const QString PrefabUiHandler::m_prefabEditIconPath = QString(":/Entity/prefab_edit.svg");
@@ -117,6 +118,10 @@ namespace AzToolsFramework
         {
             backgroundColor = m_prefabCapsuleEditColor;
         }
+        else if (!(option.state & QStyle::State_Enabled))
+        {
+            backgroundColor = m_prefabCapsuleDisabledColor;
+        }
 
         QPainterPath backgroundPath;
         backgroundPath.setFillRule(Qt::WindingFill);
@@ -196,6 +201,10 @@ namespace AzToolsFramework
         if (m_prefabFocusPublicInterface->IsOwningPrefabBeingFocused(entityId))
         {
             borderColor = m_prefabCapsuleEditColor;
+        }
+        else if (!(option.state & QStyle::State_Enabled))
+        {
+            borderColor = m_prefabCapsuleDisabledColor;
         }
 
         QPen borderLinePen(borderColor, m_prefabBorderThickness);

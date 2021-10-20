@@ -2295,7 +2295,7 @@ namespace AzToolsFramework
         }
         else
         {
-            textDoc.setDefaultStyleSheet("body {color: #ccc}");
+            textDoc.setDefaultStyleSheet("body {color: #e5e5e5}");
         }
         textDoc.setHtml("<body>" + entityNameRichText + "</body>");
         painter->translate(textRect.topLeft());
