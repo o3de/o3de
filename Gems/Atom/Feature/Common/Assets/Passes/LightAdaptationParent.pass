@@ -92,8 +92,8 @@
                     ]
                 },
                 {
-                    "Name": "HDRColorGradingPass",
-                    "TemplateName": "HDRColorGradingTemplate",
+                    "Name": "DesaturationPass",
+                    "TemplateName": "DesaturationTemplate",
                     "Enabled": true,
                     "Connections": [
                         {
@@ -101,6 +101,20 @@
                             "AttachmentRef": {
                                 "Pass": "Parent",
                                 "Attachment": "LightingInput"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "Name": "HDRColorGradingPass",
+                    "TemplateName": "HDRColorGradingTemplate",
+                    "Enabled": true,
+                    "Connections": [
+                        {
+                            "LocalSlot": "Input",
+                            "AttachmentRef": {
+                                "Pass": "DesaturationPass",
+                                "Attachment": "Output"
                             }
                         }
                     ]
