@@ -110,7 +110,10 @@ namespace MaterialEditor
         void OnAssetReloaded(AZ::Data::Asset<AZ::Data::AssetData> asset) override;
         //////////////////////////////////////////////////////////////////////////
 
-        bool SavePropertiesToSourceData(AZ::RPI::MaterialSourceData& sourceData, PropertyFilterFunction propertyFilter) const;
+        bool SavePropertiesToSourceData(
+            const AZ::IO::BasicPath<AZStd::string>& exportFolder,
+            AZ::RPI::MaterialSourceData& sourceData,
+            PropertyFilterFunction propertyFilter) const;
 
         bool OpenInternal(AZStd::string_view loadPath);
 

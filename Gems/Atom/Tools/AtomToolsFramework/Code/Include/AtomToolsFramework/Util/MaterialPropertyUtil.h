@@ -7,11 +7,12 @@
  */
 #pragma once
 
-#include <AzCore/std/any.h>
-#include <AtomToolsFramework/DynamicProperty/DynamicProperty.h>
 #include <Atom/RPI.Edit/Material/MaterialTypeSourceData.h>
 #include <Atom/RPI.Reflect/Material/MaterialPropertyDescriptor.h>
 #include <Atom/RPI.Reflect/Material/MaterialPropertyValue.h>
+#include <AtomToolsFramework/DynamicProperty/DynamicProperty.h>
+#include <AzCore/IO/Path/Path.h>
+#include <AzCore/std/any.h>
 
 namespace AzToolsFramework
 {
@@ -40,6 +41,13 @@ namespace AtomToolsFramework
 
     //! Compare equality of data types and values of editor property stored in AZStd::any
     bool ArePropertyValuesEqual(const AZStd::any& valueA, const AZStd::any& valueB);
+
+    //! Convert the property value into the format that will be stored in the source data
+    //! This is primarily needed to support conversions of special types like enums and images
+    bool ConvertToExportFormat(
+        const AZ::IO::BasicPath<AZStd::string>& exportFolder,
+        const AZ::RPI::MaterialTypeSourceData::PropertyDefinition& propertyDefinition,
+        AZ::RPI::MaterialPropertyValue& propertyValue);
 
     //! Traverse up the instance data node hierarchy to find the containing dynamic property object 
     const AtomToolsFramework::DynamicProperty* FindDynamicPropertyForInstanceDataNode(const AzToolsFramework::InstanceDataNode* pNode);
