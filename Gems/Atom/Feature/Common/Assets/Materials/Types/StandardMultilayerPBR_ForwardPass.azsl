@@ -302,6 +302,7 @@ ProcessedMaterialInputs ProcessStandardMaterialInputs(StandardMaterialInputs inp
 
 PbrLightingOutput ForwardPassPS_Common(VSOutput IN, bool isFrontFace, out float depthNDC)
 {
+    const float3 vertexNormal = normalize(IN.m_normal);
     depthNDC = IN.m_position.z;
 
     s_blendMaskFromVertexStream = IN.m_blendMask;
@@ -321,7 +322,7 @@ PbrLightingOutput ForwardPassPS_Common(VSOutput IN, bool isFrontFace, out float 
         || o_layer3_o_clearCoat_normal_useTexture
         )
     {
-        PrepareGeneratedTangent(IN.m_normal, IN.m_worldPosition, isFrontFace, IN.m_uv, UvSetCount, tangents, bitangents);
+        PrepareGeneratedTangent(vertexNormal, IN.m_worldPosition, isFrontFace, IN.m_uv, UvSetCount, tangents, bitangents);
     }
     
     // ------- Debug Modes -------
@@ -368,7 +369,7 @@ PbrLightingOutput ForwardPassPS_Common(VSOutput IN, bool isFrontFace, out float 
             const uint shadowIndex = ViewSrg::m_shadowIndexDirectionalLight;
             if (o_enableShadows && shadowIndex < SceneSrg::m_directionalLightCount)
             {
-                DirectionalLightShadow::GetShadowCoords(shadowIndex, IN.m_worldPosition, IN.m_shadowCoords);
+                DirectionalLightShadow::GetShadowCoords(shadowIndex, IN.m_worldPosition, vertexNormal, IN.m_shadowCoords);
             }
         }
     }
@@ -445,7 +446,7 @@ PbrLightingOutput ForwardPassPS_Common(VSOutput IN, bool isFrontFace, out float 
         normalTS = ReorientTangentSpaceNormal(normalTS, lightingInputLayer3.m_normalTS);
     }
     // [GFX TODO][ATOM-14591]: This will only work if the normal maps all use the same UV stream. We would need to add support for having them in different UV streams.
-    surface.vertexNormal = normalize(IN.m_normal);
+    surface.vertexNormal = vertexNormal;
     surface.normal = normalize(TangentSpaceToWorld(normalTS, IN.m_normal, tangents[MaterialSrg::m_parallaxUvIndex], bitangents[MaterialSrg::m_parallaxUvIndex]));
         
     // ------- Combine Albedo, roughness, specular, roughness ---------
