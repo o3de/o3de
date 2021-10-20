@@ -29,6 +29,10 @@ set(FILES
     Source/FormImageBrowseEditWidget.cpp
     Source/GemsSubWidget.h
     Source/GemsSubWidget.cpp
+    Source/O3DEObjectDownloadController.h
+    Source/O3DEObjectDownloadController.cpp
+    Source/O3DEObjectDownloadWorker.h
+    Source/O3DEObjectDownloadWorker.cpp
     Source/PathValidator.h
     Source/PathValidator.cpp
     Source/ProjectManagerWindow.h

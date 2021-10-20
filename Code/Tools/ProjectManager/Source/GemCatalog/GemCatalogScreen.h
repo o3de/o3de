@@ -39,6 +39,7 @@ namespace O3DE::ProjectManager
         EnableDisableGemsResult EnableDisableGemsForProject(const QString& projectPath);
 
         GemModel* GetGemModel() const { return m_gemModel; }
+        O3DEObjectDownloadController* GetDownloadController() const { return m_downloadController; }
 
     private:
         void FillModel(const QString& projectPath);
@@ -50,5 +51,6 @@ namespace O3DE::ProjectManager
         GemSortFilterProxyModel* m_proxModel = nullptr;
         QVBoxLayout* m_filterWidgetLayout = nullptr;
         GemFilterWidget* m_filterWidget = nullptr;
+        O3DEObjectDownloadController* m_downloadController = nullptr;
     };
 } // namespace O3DE::ProjectManager

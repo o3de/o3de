@@ -12,6 +12,7 @@
 #include <GemCatalog/GemSortFilterProxyModel.h>
 #include <GemCatalog/GemRequirementDialog.h>
 #include <GemCatalog/GemDependenciesDialog.h>
+#include <O3DEObjectDownloadController.h>
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QPushButton>
@@ -32,7 +33,10 @@ namespace O3DE::ProjectManager
         vLayout->setSpacing(0);
         setLayout(vLayout);
 
-        m_headerWidget = new GemCatalogHeaderWidget(m_gemModel, m_proxModel);
+        m_downloadController = new O3DEObjectDownloadController();
+        m_downloadController->Start();
+
+        m_headerWidget = new GemCatalogHeaderWidget(m_gemModel, m_proxModel, m_downloadController);
         vLayout->addWidget(m_headerWidget);
 
         QHBoxLayout* hLayout = new QHBoxLayout();
