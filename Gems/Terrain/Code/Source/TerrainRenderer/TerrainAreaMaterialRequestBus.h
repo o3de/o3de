@@ -9,12 +9,8 @@
 #pragma once
 
 #include <AzCore/Component/ComponentBus.h>
-
 #include <SurfaceData/SurfaceDataTypes.h>
-
 #include <Atom/RPI.Public/Material/Material.h>
-
-#include <TerrainRenderer/Components/TerrainSurfaceMaterialsListComponent.h>
 
 namespace Terrain
 {

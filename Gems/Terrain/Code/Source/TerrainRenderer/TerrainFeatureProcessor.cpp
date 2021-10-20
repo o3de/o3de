@@ -45,6 +45,7 @@ namespace Terrain
     {
         [[maybe_unused]] const char* TerrainFPName = "TerrainFeatureProcessor";
         const char* TerrainHeightmapChars = "TerrainHeightmap";
+        const char* TerrainDetailChars = "TerrainDetail";
     }
 
     namespace MaterialInputs
@@ -282,7 +283,7 @@ namespace Terrain
 
     void TerrainFeatureProcessor::OnTerrainMacroMaterialDestroyed(AZ::EntityId entityId)
     {
-        MacroMaterialData* materialData = FindMaterial(entityId, m_macroMaterials);
+        const MacroMaterialData* materialData = FindMaterial(entityId, m_macroMaterials);
 
         if (materialData)
         {
@@ -310,47 +311,94 @@ namespace Terrain
         // Validate that the surface tag is new
         for (DetailMaterialSurface& surface : materialRegion.m_materialsForSurfaces)
         {
-            if (surface.m_surfaceId == surfaceTag)
+            if (surface.m_surfaceTag == surfaceTag)
             {
                 AZ_Error(TerrainFPName, false, "Already have a surface material mapping for this surface tag.");
                 return;
             }
         }
 
+        uint16_t detailMaterialId = CreateOrUpdateDetailMaterial(material);
+        materialRegion.m_materialsForSurfaces.push_back({ surfaceTag, detailMaterialId });
+        m_dirtyDetailRegion.AddAabb(materialRegion.m_region);
+    }
+
+    void TerrainFeatureProcessor::OnTerrainSurfaceMaterialMappingDestroyed(AZ::EntityId entityId, SurfaceData::SurfaceTag surfaceTag)
+    {
+        DetailMaterialListRegion& materialRegion = FindOrCreateMaterial(entityId, m_detailMaterialRegions);
+
+        for (DetailMaterialSurface& surface : materialRegion.m_materialsForSurfaces)
+        {
+            if (surface.m_surfaceTag == surfaceTag)
+            {
+                AZStd::swap(surface, materialRegion.m_materialsForSurfaces.back());
+                materialRegion.m_materialsForSurfaces.pop_back();
+                m_dirtyDetailRegion.AddAabb(materialRegion.m_region);
+                return;
+            }
+        }
+        AZ_Error(TerrainFPName, false, "Could not find surface tag to destroy for OnTerrainSurfaceMaterialMappingDestroyed().");
+    }
+
+    void TerrainFeatureProcessor::OnTerrainSurfaceMaterialMappingChanged(AZ::EntityId entityId, SurfaceData::SurfaceTag surfaceTag, MaterialInstance material)
+    {
+        DetailMaterialListRegion& materialRegion = FindOrCreateMaterial(entityId, m_detailMaterialRegions);
+
+        bool found = false;
+        uint16_t materialId = CreateOrUpdateDetailMaterial(material);
+        for (DetailMaterialSurface& surface : materialRegion.m_materialsForSurfaces)
+        {
+            if (surface.m_surfaceTag == surfaceTag)
+            {
+                found = true;
+                surface.m_detailMaterailId = materialId;
+                break;
+            }
+        }
+
+        if (!found)
+        {
+            materialRegion.m_materialsForSurfaces.push_back({ surfaceTag, materialId });
+        }
+        m_dirtyDetailRegion.AddAabb(materialRegion.m_region);
+    }
+
+    void TerrainFeatureProcessor::OnTerrainSurfaceMaterialMappingRegionChanged(AZ::EntityId entityId, const AZ::Aabb& oldRegion, const AZ::Aabb& newRegion)
+    {
+        DetailMaterialListRegion& materialRegion = FindOrCreateMaterial(entityId, m_detailMaterialRegions);
+        materialRegion.m_region = newRegion;
+        m_dirtyDetailRegion.AddAabb(oldRegion);
+        m_dirtyDetailRegion.AddAabb(newRegion);
+    }
+
+    uint16_t TerrainFeatureProcessor::CreateOrUpdateDetailMaterial(MaterialInstance material)
+    {
+        static constexpr uint16_t InvalidDetailMaterial = 0xFFFF;
+        uint16_t detailMaterialId = InvalidDetailMaterial;
+
         for (DetailMaterialData& detailMaterial : m_detailMaterials.GetDataVector())
         {
             if (detailMaterial.m_assetId == material->GetAssetId())
             {
                 UpdateDetailMaterialData(detailMaterial, material);
-
+                detailMaterialId = m_detailMaterials.GetIndexForData(&detailMaterial);
+                break;
             }
         }
 
-        uint32_t detailMaterialId = 0;
-        materialRegion.m_materialsForSurfaces.emplace_back(surfaceTag, detailMaterialId);
-        
-    }
-
-    void TerrainFeatureProcessor::OnTerrainSurfaceMaterialMappingDestroyed(AZ::EntityId entityId, SurfaceData::SurfaceTag surfaceTag)
-    {
-
-    }
-
-    void TerrainFeatureProcessor::OnTerrainSurfaceMaterialMappingChanged(AZ::EntityId entityId, SurfaceData::SurfaceTag surfaceTag, MaterialInstance material)
-    {
-
-    }
-
-    void TerrainFeatureProcessor::OnTerrainSurfaceMaterialMappingRegionChanged(AZ::EntityId entityId, const AZ::Aabb& oldRegion, const AZ::Aabb& newRegion)
-    {
-
+        if (detailMaterialId == InvalidDetailMaterial)
+        {
+            detailMaterialId = m_detailMaterials.GetFreeSlotIndex();
+            UpdateDetailMaterialData(m_detailMaterials.GetData(detailMaterialId), material);
+        }
+        return detailMaterialId;
     }
 
     void TerrainFeatureProcessor::UpdateDetailMaterialData(DetailMaterialData& materialData, MaterialInstance material)
     {
         if (materialData.m_materialChangeId != material->GetCurrentChangeId())
         {
-            materialData = {};
+            materialData = DetailMaterialData();
             DetailTextureFlags& flags = materialData.m_properties.m_flags;
             materialData.m_materialChangeId = material->GetCurrentChangeId();
             
@@ -368,7 +416,7 @@ namespace Terrain
                 const auto index = getIndex(indexName);
                 if (index.IsValid())
                 {
-                    ref = material->GetPropertyValue(index).GetValue<decltype(ref)>();
+                    ref = material->GetPropertyValue(index).GetValue<AZStd::remove_reference<decltype(ref)>::type>();
                 }
             };
             
@@ -413,7 +461,7 @@ namespace Terrain
             applyProperty(RoughnessMap, materialData.m_roughnessImage);
             applyFlag(RoughnessUseTexture, DetailTextureFlags::UseTextureRoughness);
 
-            if (flags & DetailTextureFlags::UseTextureRoughness > 0)
+            if ((flags & DetailTextureFlags::UseTextureRoughness) > 0)
             {
                 float lowerBound = 0.0;
                 float upperBound = 1.0;
@@ -449,6 +497,184 @@ namespace Terrain
             applyProperty(HeightBlendFactor, materialData.m_properties.m_heightBlendFactor);
 
         }
+    }
+
+    void TerrainFeatureProcessor::CheckUpdateDetailTexture(const Int2DAabb& newBounds)
+    {
+        if (!m_detailTextureImage)
+        {
+            const AZ::Data::Instance<AZ::RPI::AttachmentImagePool> imagePool = AZ::RPI::ImageSystemInterface::Get()->GetSystemAttachmentPool();
+            AZ::RHI::ImageDescriptor imageDescriptor = AZ::RHI::ImageDescriptor::Create2D(
+                AZ::RHI::ImageBindFlags::ShaderRead, DetailTextureSize, DetailTextureSize, AZ::RHI::Format::R8G8B8A8_UINT
+            );
+            static const AZ::Name TerrainDetailName = AZ::Name(TerrainDetailChars);
+            m_detailTextureImage = AZ::RPI::AttachmentImage::Create(*imagePool.get(), imageDescriptor, TerrainDetailName, nullptr, nullptr);
+            AZ_Error(TerrainFPName, m_detailTextureImage, "Failed to initialize the heightmap image!");
+                    
+            UpdateDetailTexture(newBounds, newBounds);
+        }
+        else
+        {
+            int32_t offsetX = m_detailTextureBounds.m_minX - newBounds.m_minX;
+
+            // Horizontal edge update
+            if (newBounds.m_minX != m_detailTextureBounds.m_minX)
+            {
+                Int2DAabb updateBounds;
+                if (newBounds.m_minX < m_detailTextureBounds.m_minX)
+                {
+                    updateBounds.m_minX = newBounds.m_minX;
+                    updateBounds.m_maxX = m_detailTextureBounds.m_minX;
+                }
+                else
+                {
+                    updateBounds.m_minX = m_detailTextureBounds.m_maxX;
+                    updateBounds.m_maxX = newBounds.m_maxX;
+                }
+                updateBounds.m_minY = newBounds.m_minY;
+                updateBounds.m_maxY = newBounds.m_maxY;
+                UpdateDetailTexture(updateBounds, newBounds);
+            }
+
+            // Vertical edge update
+            if (newBounds.m_minY != m_detailTextureBounds.m_minY)
+            {
+                Int2DAabb updateBounds;
+                // Don't update areas that have already been updated in the horizontal update.
+                updateBounds.m_minX = newBounds.m_minX + AZ::GetMax(0, offsetX);
+                updateBounds.m_maxX = newBounds.m_maxX + AZ::GetMin(0, offsetX);
+                if (newBounds.m_minY < m_detailTextureBounds.m_minY)
+                {
+                    updateBounds.m_minY = newBounds.m_minY;
+                    updateBounds.m_maxY = m_detailTextureBounds.m_minY;
+                }
+                else
+                {
+                    updateBounds.m_minY = m_detailTextureBounds.m_maxY;
+                    updateBounds.m_maxY = newBounds.m_maxY;
+                }
+                UpdateDetailTexture(updateBounds, newBounds);
+            }
+
+            // Remaining interior update
+            AZ::Vector3 currentMin = AZ::Vector3(newBounds.m_minX * DetailTextureScale, newBounds.m_minY * DetailTextureScale, -0.5f);
+            AZ::Vector3 currentMax = AZ::Vector3(newBounds.m_maxX * DetailTextureScale, newBounds.m_maxY * DetailTextureScale, 0.5f);
+            AZ::Aabb detailTextureCoverage = AZ::Aabb::CreateFromMinMax(currentMin, currentMax);
+            AZ::Vector3 previousMin = AZ::Vector3(m_detailTextureBounds.m_minX * DetailTextureScale, m_detailTextureBounds.m_minY * DetailTextureScale, -0.5f);
+            AZ::Vector3 previousMax = AZ::Vector3(m_detailTextureBounds.m_maxX * DetailTextureScale, m_detailTextureBounds.m_maxY * DetailTextureScale, 0.5f);
+            AZ::Aabb previousCoverage = AZ::Aabb::CreateFromMinMax(previousMin, previousMax);
+
+            // Area of texture not already updated by camera movement above.
+            AZ::Aabb clampedCoverage = previousCoverage.GetClamped(detailTextureCoverage);
+
+            // Clamp the dirty region to the area of the detail texture that is visible and not already updated.
+            clampedCoverage.Clamp(m_dirtyDetailRegion);
+
+            if (clampedCoverage.IsValid())
+            {
+                Int2DAabb updateBounds;
+                updateBounds.m_minX = aznumeric_cast<int32_t>(AZStd::roundf(clampedCoverage.GetMin().GetX() / DetailTextureScale));
+                updateBounds.m_minY = aznumeric_cast<int32_t>(AZStd::roundf(clampedCoverage.GetMin().GetY() / DetailTextureScale));
+                updateBounds.m_maxX = aznumeric_cast<int32_t>(AZStd::roundf(clampedCoverage.GetMax().GetX() / DetailTextureScale));
+                updateBounds.m_maxY = aznumeric_cast<int32_t>(AZStd::roundf(clampedCoverage.GetMax().GetY() / DetailTextureScale));
+                UpdateDetailTexture(updateBounds, newBounds);
+            }
+        }
+
+    }
+
+    void TerrainFeatureProcessor::UpdateDetailTexture(const Int2DAabb& updateArea, const Int2DAabb& textureBounds)
+    {
+        struct DetailMaterialPixel
+        {
+            uint8_t m_material1{ 0 };
+            uint8_t m_material2{ 0 };
+            uint8_t m_blend{ 0 }; // 0 = full weight on material1, 1 = full weight on material2
+            uint8_t m_padding{ 0 };
+        };
+
+        AZStd::vector<DetailMaterialPixel> pixels;
+        pixels.resize((updateArea.m_maxX - updateArea.m_minX) * (updateArea.m_maxY - updateArea.m_minY));
+        uint32_t index = 0;
+
+        for (int xPos = updateArea.m_minX; xPos < updateArea.m_maxX; ++xPos)
+        {
+            for (int yPos = updateArea.m_minY; yPos < updateArea.m_maxY; ++yPos)
+            {
+                AZ::Vector2 position = AZ::Vector2(xPos * DetailTextureScale, yPos * DetailTextureScale);
+                AzFramework::SurfaceData::OrderedSurfaceTagWeightSet surfaceWeights;
+                AzFramework::Terrain::TerrainDataRequestBus::Broadcast(&AzFramework::Terrain::TerrainDataRequests::GetSurfaceWeightsFromVector2, position, surfaceWeights, AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT, nullptr);
+
+                bool foundFirst = false;
+                float firstWeight = 0.0f;
+                for (const auto& surfaceTagWeight : surfaceWeights)
+                {
+                    if (surfaceTagWeight.m_weight > 0.0f)
+                    {
+                        AZ::Crc32 surfaceType = surfaceWeights.begin()->m_surfaceType;
+                        uint16_t materialId = GetDetailMaterialForSurfaceTypeAndPosition(surfaceType, position);
+                        if (materialId != m_detailMaterials.NoFreeSlot)
+                        {
+                            if (!foundFirst)
+                            {
+                                pixels.at(index).m_material1 = aznumeric_cast<uint8_t>(materialId);
+                                firstWeight = surfaceTagWeight.m_weight;
+                                foundFirst = true;
+                            }
+                            else
+                            {
+                                pixels.at(index).m_material2 = aznumeric_cast<uint8_t>(materialId);
+                                float totalWeight = firstWeight + surfaceTagWeight.m_weight;
+                                pixels.at(index).m_blend = aznumeric_cast<uint8_t>(AZStd::round(1.0 - (firstWeight / totalWeight) * 255.0f));
+                                break;
+                            }
+                        }
+                    }
+                }
+                ++index;
+            }
+        }
+
+        if (m_detailTextureImage)
+        {
+            const int32_t left = updateArea.m_minX - textureBounds.m_minX;
+            const int32_t top = updateArea.m_minY - textureBounds.m_minY;
+            const int32_t width = updateArea.m_maxX - updateArea.m_minX;
+            const int32_t height = updateArea.m_maxY - updateArea.m_minY;
+            AZ::RHI::ImageUpdateRequest imageUpdateRequest;
+            imageUpdateRequest.m_imageSubresourcePixelOffset.m_left = aznumeric_cast<uint32_t>(left);
+            imageUpdateRequest.m_imageSubresourcePixelOffset.m_top = aznumeric_cast<uint32_t>(top);
+            imageUpdateRequest.m_sourceSubresourceLayout.m_bytesPerRow = width * sizeof(DetailMaterialPixel);
+            imageUpdateRequest.m_sourceSubresourceLayout.m_bytesPerImage = width * height * sizeof(DetailMaterialPixel);
+            imageUpdateRequest.m_sourceSubresourceLayout.m_rowCount = height;
+            imageUpdateRequest.m_sourceSubresourceLayout.m_size.m_width = width;
+            imageUpdateRequest.m_sourceSubresourceLayout.m_size.m_height = height;
+            imageUpdateRequest.m_sourceSubresourceLayout.m_size.m_depth = 1;
+            imageUpdateRequest.m_sourceData = pixels.data();
+            imageUpdateRequest.m_image = m_areaData.m_heightmapImage->GetRHIImage();
+
+            m_areaData.m_heightmapImage->UpdateImageContents(imageUpdateRequest);
+        }
+
+        AZ::Vector2 position = AZ::Vector2::CreateZero();
+    }
+    
+    uint16_t TerrainFeatureProcessor::GetDetailMaterialForSurfaceTypeAndPosition(AZ::Crc32 surfaceType, const AZ::Vector2& position)
+    {
+        for (const auto& materialRegion : m_detailMaterialRegions.GetDataVector())
+        {
+            if (materialRegion.m_region.Contains(AZ::Vector3(position.GetX(), position.GetY(), 0.0f)))
+            {
+                for (const auto& materialSurface : materialRegion.m_materialsForSurfaces)
+                {
+                    if (materialSurface.m_surfaceTag == surfaceType)
+                    {
+                        return materialSurface.m_detailMaterailId;
+                    }
+                }
+            }
+        }
+        return m_detailMaterials.NoFreeSlot;
     }
 
     void TerrainFeatureProcessor::UpdateTerrainData()
@@ -717,6 +943,33 @@ namespace Terrain
                 m_materialInstance->Compile();
             }
 
+            if (m_dirtyDetailRegion.IsValid())
+            {
+                AZ::Vector3 cameraPosition = AZ::Vector3::CreateZero();
+                for (auto& view : process.m_views)
+                {
+                    if ((view->GetUsageFlags() & AZ::RPI::View::UsageFlags::UsageCamera) > 0)
+                    {
+                        cameraPosition = view->GetCameraTransform().GetTranslation();
+                        break;
+                    }
+                }
+
+                int32_t newDetailTexturePosX = aznumeric_cast<int32_t>(AZStd::roundf(cameraPosition.GetX() / DetailTextureScale));
+                int32_t newDetailTexturePosY = aznumeric_cast<int32_t>(AZStd::roundf(cameraPosition.GetY() / DetailTextureScale));
+                
+                Int2DAabb newBounds;
+                newBounds.m_minX = newDetailTexturePosX - DetailTextureSizeHalf;
+                newBounds.m_minY = newDetailTexturePosY - DetailTextureSizeHalf;
+                newBounds.m_maxX = newDetailTexturePosX + DetailTextureSizeHalf;
+                newBounds.m_maxY = newDetailTexturePosY + DetailTextureSizeHalf;
+                
+                CheckUpdateDetailTexture(newBounds);
+                
+                m_detailTextureBounds = newBounds;
+                m_dirtyDetailRegion = AZ::Aabb::CreateNull();
+            }
+
             if (m_areaData.m_heightmapUpdated || m_areaData.m_macroMaterialsUpdated)
             {
                 // Currently when anything in the heightmap changes we're updating all the srgs, but this could probably
@@ -980,7 +1233,7 @@ namespace Terrain
     }
     
     template <typename T>
-    T* TerrainFeatureProcessor::FindMaterial(AZ::EntityId entityId, const AZ::Render::IndexedDataVector<T>& container)
+    T* TerrainFeatureProcessor::FindMaterial(AZ::EntityId entityId, AZ::Render::IndexedDataVector<T>& container)
     {
         for (T& data : container.GetDataVector())
         {
@@ -993,7 +1246,7 @@ namespace Terrain
     }
     
     template <typename T>
-    T& TerrainFeatureProcessor::FindOrCreateMaterial(AZ::EntityId entityId, const AZ::Render::IndexedDataVector<T>& container)
+    T& TerrainFeatureProcessor::FindOrCreateMaterial(AZ::EntityId entityId, AZ::Render::IndexedDataVector<T>& container)
     {
         T* dataPtr = FindMaterial(entityId, container);
         if (dataPtr != nullptr)
@@ -1002,7 +1255,7 @@ namespace Terrain
         }
 
         const uint16_t slotId = container.GetFreeSlotIndex();
-        AZ_Assert(slotId != T::NoFreeSlot, "Ran out of indices");
+        AZ_Assert(slotId != AZ::Render::IndexedDataVector<T>::NoFreeSlot, "Ran out of indices");
 
         T& data = container.GetData(slotId);
         data.m_entityId = entityId;
@@ -1010,7 +1263,7 @@ namespace Terrain
     }
     
     template <typename T>
-    void TerrainFeatureProcessor::RemoveMaterial(AZ::EntityId entityId, const AZ::Render::IndexedDataVector<T>& container)
+    void TerrainFeatureProcessor::RemoveMaterial(AZ::EntityId entityId, AZ::Render::IndexedDataVector<T>& container)
     {
         for (T& data : container.GetDataVector())
         {

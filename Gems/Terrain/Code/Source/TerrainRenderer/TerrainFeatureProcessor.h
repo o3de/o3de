@@ -33,22 +33,6 @@ namespace AZ::RPI
 
 namespace Terrain
 {
-    // TEMP
-    struct TerrainSurfaceMaterialMapping final
-    {
-        AZ_CLASS_ALLOCATOR(TerrainSurfaceMaterialMapping, AZ::SystemAllocator, 0);
-        AZ_RTTI(TerrainSurfaceMaterialMapping, "{37D2A586-CDDD-4FB7-A7D6-0B4CC575AB8C}");
-        static void Reflect(AZ::ReflectContext* context);
-
-        SurfaceData::SurfaceTag m_surfaceTag;
-        AZ::Data::AssetId m_activeMaterialAssetId;
-        AZ::Data::Asset<AZ::RPI::MaterialAsset> m_materialAsset;
-        AZ::Data::Instance<AZ::RPI::Material> m_materialInstance;
-
-        bool m_active = false;
-    };
-    // END TEMP
-
     class TerrainFeatureProcessor final
         : public AZ::RPI::FeatureProcessor
         , private AZ::RPI::MaterialReloadNotificationBus::Handler
@@ -210,8 +194,8 @@ namespace Terrain
 
         struct DetailMaterialSurface
         {
-            AZ::Crc32 m_surfaceId;
-            uint32_t m_detailMaterailId;
+            AZ::Crc32 m_surfaceTag;
+            uint16_t m_detailMaterailId;
         };
 
         struct DetailMaterialListRegion
@@ -220,7 +204,14 @@ namespace Terrain
             AZ::Aabb m_region{AZ::Aabb::CreateNull()};
             AZStd::vector<DetailMaterialSurface> m_materialsForSurfaces;
         };
-
+        
+        struct Int2DAabb
+        {
+            int32_t m_minX{ 0 };
+            int32_t m_minY{ 0 };
+            int32_t m_maxX{ 0 };
+            int32_t m_maxY{ 0 };
+        };
 
         // AZ::RPI::MaterialReloadNotificationBus::Handler overrides...
         void OnMaterialReinitialized(const MaterialInstance& material) override;
@@ -249,16 +240,20 @@ namespace Terrain
         void PrepareMaterialData();
         void UpdateMacroMaterialData(MacroMaterialData& macroMaterialData, MaterialInstance material);
 
+        uint16_t CreateOrUpdateDetailMaterial(MaterialInstance material);
         void UpdateDetailMaterialData(DetailMaterialData& materialData, MaterialInstance material);
+        void CheckUpdateDetailTexture(const Int2DAabb& newBounds);
+        void UpdateDetailTexture(const Int2DAabb& updateArea, const Int2DAabb& textureBounds);
+        uint16_t GetDetailMaterialForSurfaceTypeAndPosition(AZ::Crc32 surfaceType, const AZ::Vector2& position);
 
         void ProcessSurfaces(const FeatureProcessor::RenderPacket& process);
 
         template <typename T>
-        T* FindMaterial(AZ::EntityId entityId, const AZ::Render::IndexedDataVector<T>& container);
+        T* FindMaterial(AZ::EntityId entityId, AZ::Render::IndexedDataVector<T>& container);
         template <typename T>
-        T& FindOrCreateMaterial(AZ::EntityId entityId, const AZ::Render::IndexedDataVector<T>& container);
+        T& FindOrCreateMaterial(AZ::EntityId entityId, AZ::Render::IndexedDataVector<T>& container);
         template <typename T>
-        void RemoveMaterial(AZ::EntityId entityId, const AZ::Render::IndexedDataVector<T>& container);
+        void RemoveMaterial(AZ::EntityId entityId, AZ::Render::IndexedDataVector<T>& container);
 
         template<typename Callback>
         void ForOverlappingSectors(const AZ::Aabb& bounds, Callback callback);
@@ -270,6 +265,9 @@ namespace Terrain
         static constexpr float GridSpacing{ 1.0f };
         static constexpr uint32_t GridSize{ 64 }; // number of terrain quads (vertices are m_gridSize + 1)
         static constexpr float GridMeters{ GridSpacing * GridSize };
+        static constexpr uint32_t DetailTextureSize{ 1024 };
+        static constexpr uint32_t DetailTextureSizeHalf{ DetailTextureSize >> 1 };
+        static constexpr float DetailTextureScale{ 0.5f };
 
         AZStd::unique_ptr<AZ::RPI::AssetUtils::AsyncAssetLoader> m_materialAssetLoader;
         MaterialInstance m_materialInstance;
@@ -299,9 +297,13 @@ namespace Terrain
             bool m_macroMaterialsUpdated{ true };
             bool m_rebuildSectors{ true };
         };
-
+        
         TerrainAreaData m_areaData;
         AZ::Aabb m_dirtyRegion{ AZ::Aabb::CreateNull() };
+        AZ::Aabb m_dirtyDetailRegion{ AZ::Aabb::CreateNull() };
+
+        Int2DAabb m_detailTextureBounds;
+        AZ::Data::Instance<AZ::RPI::AttachmentImage> m_detailTextureImage;
 
         AZStd::vector<SectorData> m_sectorData;
 
