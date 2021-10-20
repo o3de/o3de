@@ -30,6 +30,7 @@
 #include <Multiplayer/NetworkEntity/EntityReplication/EntityReplicator.h>
 #include <NetworkEntity/NetworkEntityAuthorityTracker.h>
 #include <NetworkEntity/NetworkEntityTracker.h>
+#include <Tests/TestMultiplayerComponent.h>
 
 namespace Multiplayer
 {
@@ -93,6 +94,12 @@ namespace Multiplayer
             m_netTransformDescriptor.reset(NetworkTransformComponent::CreateDescriptor());
             m_netTransformDescriptor->Reflect(m_serializeContext.get());
 
+            m_testMultiplayerComponentDescriptor.reset(MultiplayerTest::TestMultiplayerComponent::CreateDescriptor());
+            m_testMultiplayerComponentDescriptor->Reflect(m_serializeContext.get());
+
+            m_testInputDriverComponentDescriptor.reset(MultiplayerTest::TestInputDriverComponent::CreateDescriptor());
+            m_testInputDriverComponentDescriptor->Reflect(m_serializeContext.get());
+
             m_mockMultiplayer = AZStd::make_unique<NiceMock<MockMultiplayer>>();
             AZ::Interface<IMultiplayer>::Register(m_mockMultiplayer.get());
 
@@ -103,6 +110,7 @@ namespace Multiplayer
             GetMultiplayer()->GetStats().ReserveComponentStats(Multiplayer::InvalidNetComponentId, 50, 0);
 
             m_mockNetworkEntityManager = AZStd::make_unique<NiceMock<MockNetworkEntityManager>>();
+            AZ::Interface<INetworkEntityManager>::Register(m_mockNetworkEntityManager.get());
 
             ON_CALL(*m_mockNetworkEntityManager, AddEntityToEntityMap(_, _)).WillByDefault(Invoke(this, &HierarchyTests::AddEntityToEntityMap));
             ON_CALL(*m_mockNetworkEntityManager, GetEntity(_)).WillByDefault(Invoke(this, &HierarchyTests::GetEntity));
@@ -136,6 +144,7 @@ namespace Multiplayer
             m_multiplayerComponentRegistry = AZStd::make_unique<MultiplayerComponentRegistry>();
             ON_CALL(*m_mockNetworkEntityManager, GetMultiplayerComponentRegistry()).WillByDefault(Return(m_multiplayerComponentRegistry.get()));
             RegisterMultiplayerComponents();
+            MultiplayerTest::RegisterMultiplayerComponents();
         }
 
         void TearDown() override
@@ -157,6 +166,7 @@ namespace Multiplayer
 
             AZ::Interface<INetworkTime>::Unregister(m_mockNetworkTime.get());
             AZ::Interface<AZ::ITime>::Unregister(m_mockTime.get());
+            AZ::Interface<INetworkEntityManager>::Unregister(m_mockNetworkEntityManager.get());
             AZ::Interface<IMultiplayer>::Unregister(m_mockMultiplayer.get());
             AZ::Interface<AZ::ComponentApplicationRequests>::Unregister(m_mockComponentApplicationRequests.get());
 
@@ -165,6 +175,8 @@ namespace Multiplayer
             m_mockNetworkEntityManager.reset();
             m_mockMultiplayer.reset();
 
+            m_testInputDriverComponentDescriptor.reset();
+            m_testMultiplayerComponentDescriptor.reset();
             m_transformDescriptor.reset();
             m_netTransformDescriptor.reset();
             m_hierarchyRootDescriptor.reset();
@@ -186,6 +198,8 @@ namespace Multiplayer
         AZStd::unique_ptr<AZ::ComponentDescriptor> m_hierarchyRootDescriptor;
         AZStd::unique_ptr<AZ::ComponentDescriptor> m_hierarchyChildDescriptor;
         AZStd::unique_ptr<AZ::ComponentDescriptor> m_netTransformDescriptor;
+        AZStd::unique_ptr<AZ::ComponentDescriptor> m_testMultiplayerComponentDescriptor;
+        AZStd::unique_ptr<AZ::ComponentDescriptor> m_testInputDriverComponentDescriptor;
 
         AZStd::unique_ptr<NiceMock<MockMultiplayer>> m_mockMultiplayer;
         AZStd::unique_ptr<MockNetworkEntityManager> m_mockNetworkEntityManager;
@@ -394,6 +408,9 @@ namespace Multiplayer
             entityInfo.m_entity->CreateComponent<AzFramework::TransformComponent>();
             entityInfo.m_entity->CreateComponent<NetBindComponent>();
             entityInfo.m_entity->CreateComponent<NetworkTransformComponent>();
+            entityInfo.m_entity->CreateComponent<MultiplayerTest::TestMultiplayerComponent>();
+            entityInfo.m_entity->CreateComponent<MultiplayerTest::TestInputDriverComponent>();
+
             switch (entityInfo.m_role)
             {
             case EntityInfo::Role::Root:

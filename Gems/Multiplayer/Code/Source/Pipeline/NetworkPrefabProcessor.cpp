@@ -110,7 +110,7 @@ namespace Multiplayer
         auto serializer = [](AZStd::vector<uint8_t>& output, const ProcessedObjectStore& object) -> bool {
             AZ::IO::ByteContainerStream stream(&output);
             auto& asset = object.GetAsset();
-            return AZ::Utils::SaveObjectToStream(stream, AZ::DataStream::ST_JSON, &asset, asset.GetType());
+            return AZ::Utils::SaveObjectToStream(stream, AZ::DataStream::ST_BINARY, &asset, asset.GetType());
         };
 
         auto&& [object, networkSpawnable] =
