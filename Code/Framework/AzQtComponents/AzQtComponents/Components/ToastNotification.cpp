@@ -37,7 +37,7 @@ namespace AzQtComponents
             toastIcon = QIcon(":/stylesheet/img/logging/error.svg");
             break;
         case ToastType::Warning:
-            toastIcon = QIcon(":/stylesheet/img/logging/warning.svg");
+            toastIcon = QIcon(":/stylesheet/img/logging/warning-yellow.svg");
             break;
         case ToastType::Information:
             toastIcon = QIcon(":/stylesheet/img/logging/information.svg");

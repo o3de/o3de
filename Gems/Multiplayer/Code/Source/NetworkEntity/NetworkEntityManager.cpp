@@ -21,6 +21,8 @@
 #include <AzFramework/Spawnable/SpawnableEntitiesInterface.h>
 #include <Multiplayer/IMultiplayer.h>
 #include <Multiplayer/Components/NetBindComponent.h>
+#include <Multiplayer/Components/NetworkHierarchyChildComponent.h>
+#include <Multiplayer/Components/NetworkHierarchyRootComponent.h>
 #include <Pipeline/NetworkSpawnableHolderComponent.h>
 
 namespace Multiplayer
@@ -272,15 +274,32 @@ namespace Multiplayer
         bool safeToExit = true;
         NetworkEntityHandle entityHandle = m_networkEntityTracker.Get(entityId);
 
-        // We also need special handling for the EntityHierarchyComponent as well, since related entities need to be migrated together
-        //auto* hierarchyController = FindController<EntityHierarchyComponent::Authority>(nonConstExitingEntityPtr);
-        //if (hierarchyController)
-        //{
-        //    if (hierarchyController->GetParentRelatedEntity())
-        //    {
-        //        safeToExit = false;
-        //    }
-        //}
+        // We also need special handling for the NetworkHierarchy as well, since related entities need to be migrated together
+        NetworkHierarchyRootComponentController* hierarchyRootController = entityHandle.FindController<NetworkHierarchyRootComponentController>();
+        NetworkHierarchyChildComponentController* hierarchyChildController = entityHandle.FindController<NetworkHierarchyChildComponentController>();
+
+        // Find the root entity
+        AZ::Entity* hierarchyRootEntity = nullptr;
+        if (hierarchyRootController)
+        {
+            hierarchyRootEntity = hierarchyRootController->GetParent().GetHierarchicalRoot();
+        }
+        else if (hierarchyChildController)
+        {
+            hierarchyRootEntity = hierarchyChildController->GetParent().GetHierarchicalRoot();
+        }
+
+        if (hierarchyRootEntity)
+        {
+            NetEntityId rootNetId = GetNetEntityIdById(hierarchyRootEntity->GetId());
+            ConstNetworkEntityHandle rootEntityHandle = GetEntity(rootNetId);
+
+            // Check if the root entity is still tracked by this authority
+            if (rootEntityHandle.Exists() && rootEntityHandle.GetNetBindComponent()->HasController())
+            {
+                safeToExit = false;
+            }
+        }
 
         // Validate that we aren't already planning to remove this entity
         if (safeToExit)

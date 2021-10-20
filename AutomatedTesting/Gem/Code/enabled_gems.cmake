@@ -54,4 +54,5 @@ set(ENABLED_GEMS
     AWSMetrics
     PrefabBuilder
     AudioSystem
+    Profiler
 )

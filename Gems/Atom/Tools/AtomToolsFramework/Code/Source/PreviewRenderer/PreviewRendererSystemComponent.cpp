@@ -63,8 +63,11 @@ namespace AtomToolsFramework
     void PreviewRendererSystemComponent::OnCatalogLoaded([[maybe_unused]] const char* catalogFile)
     {
         AZ::TickBus::QueueFunction([this](){
-            m_previewRenderer.reset(aznew AtomToolsFramework::PreviewRenderer(
-                "PreviewRendererSystemComponent Preview Scene", "PreviewRendererSystemComponent Preview Pipeline"));
+            if (!m_previewRenderer)
+            {
+                m_previewRenderer.reset(aznew AtomToolsFramework::PreviewRenderer(
+                    "PreviewRendererSystemComponent Preview Scene", "PreviewRendererSystemComponent Preview Pipeline"));
+            }
         });
     }
 
