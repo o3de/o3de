@@ -173,7 +173,6 @@ namespace AzToolsFramework
                 UpdateLinkedInstances(linkIdsToUpdateQueue);
             }
             UpdatePrefabInstances(templateId, immediate, instanceToExclude);
-
         }
 
         void PrefabSystemComponent::UpdatePrefabTemplate(TemplateId templateId, const PrefabDom& updatedDom)
