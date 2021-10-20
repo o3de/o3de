@@ -430,13 +430,24 @@ namespace Terrain
                 }
             };
 
+            auto getEnumName = [&](const char* const indexName) -> const AZStd::string_view
+            {
+                const auto index = getIndex(indexName);
+                if (index.IsValid())
+                {
+                    uint32_t enumIndex = material->GetPropertyValue(index).GetValue<uint32_t>();
+                    const AZ::Name& enumName = material->GetMaterialPropertiesLayout()->GetPropertyDescriptor(index)->GetEnumName(enumIndex);
+                    return enumName.GetStringView();
+                }
+                return "";
+            };
+
             using namespace DetailMaterialInputs;
             applyProperty(BaseColorMap, materialData.m_colorImage);
             applyFlag(BaseColorUseTexture, DetailTextureFlags::UseTextureBaseColor);
             applyProperty(BaseColorFactor, materialData.m_properties.m_baseColorFactor);
 
-            AZStd::string blendModeString;
-            applyProperty(BaseColorBlendMode, blendModeString);
+            const AZStd::string_view& blendModeString = getEnumName(BaseColorBlendMode);
             if (blendModeString == "Multiply")
             {
                 flags = DetailTextureFlags(flags | DetailTextureFlags::BlendModeMultiply);
@@ -509,7 +520,7 @@ namespace Terrain
             );
             static const AZ::Name TerrainDetailName = AZ::Name(TerrainDetailChars);
             m_detailTextureImage = AZ::RPI::AttachmentImage::Create(*imagePool.get(), imageDescriptor, TerrainDetailName, nullptr, nullptr);
-            AZ_Error(TerrainFPName, m_detailTextureImage, "Failed to initialize the heightmap image!");
+            AZ_Error(TerrainFPName, m_detailTextureImage, "Failed to initialize the detail texture image.");
                     
             UpdateDetailTexture(newBounds, newBounds);
         }
@@ -556,28 +567,34 @@ namespace Terrain
                 UpdateDetailTexture(updateBounds, newBounds);
             }
 
-            // Remaining interior update
-            AZ::Vector3 currentMin = AZ::Vector3(newBounds.m_minX * DetailTextureScale, newBounds.m_minY * DetailTextureScale, -0.5f);
-            AZ::Vector3 currentMax = AZ::Vector3(newBounds.m_maxX * DetailTextureScale, newBounds.m_maxY * DetailTextureScale, 0.5f);
-            AZ::Aabb detailTextureCoverage = AZ::Aabb::CreateFromMinMax(currentMin, currentMax);
-            AZ::Vector3 previousMin = AZ::Vector3(m_detailTextureBounds.m_minX * DetailTextureScale, m_detailTextureBounds.m_minY * DetailTextureScale, -0.5f);
-            AZ::Vector3 previousMax = AZ::Vector3(m_detailTextureBounds.m_maxX * DetailTextureScale, m_detailTextureBounds.m_maxY * DetailTextureScale, 0.5f);
-            AZ::Aabb previousCoverage = AZ::Aabb::CreateFromMinMax(previousMin, previousMax);
-
-            // Area of texture not already updated by camera movement above.
-            AZ::Aabb clampedCoverage = previousCoverage.GetClamped(detailTextureCoverage);
-
-            // Clamp the dirty region to the area of the detail texture that is visible and not already updated.
-            clampedCoverage.Clamp(m_dirtyDetailRegion);
-
-            if (clampedCoverage.IsValid())
+            if (m_dirtyDetailRegion.IsValid())
             {
-                Int2DAabb updateBounds;
-                updateBounds.m_minX = aznumeric_cast<int32_t>(AZStd::roundf(clampedCoverage.GetMin().GetX() / DetailTextureScale));
-                updateBounds.m_minY = aznumeric_cast<int32_t>(AZStd::roundf(clampedCoverage.GetMin().GetY() / DetailTextureScale));
-                updateBounds.m_maxX = aznumeric_cast<int32_t>(AZStd::roundf(clampedCoverage.GetMax().GetX() / DetailTextureScale));
-                updateBounds.m_maxY = aznumeric_cast<int32_t>(AZStd::roundf(clampedCoverage.GetMax().GetY() / DetailTextureScale));
-                UpdateDetailTexture(updateBounds, newBounds);
+                // Remaining interior update
+                AZ::Vector3 currentMin = AZ::Vector3(newBounds.m_minX * DetailTextureScale, newBounds.m_minY * DetailTextureScale, -0.5f);
+                AZ::Vector3 currentMax = AZ::Vector3(newBounds.m_maxX * DetailTextureScale, newBounds.m_maxY * DetailTextureScale, 0.5f);
+                AZ::Aabb detailTextureCoverage = AZ::Aabb::CreateFromMinMax(currentMin, currentMax);
+                AZ::Vector3 previousMin = AZ::Vector3(m_detailTextureBounds.m_minX * DetailTextureScale, m_detailTextureBounds.m_minY * DetailTextureScale, -0.5f);
+                AZ::Vector3 previousMax = AZ::Vector3(m_detailTextureBounds.m_maxX * DetailTextureScale, m_detailTextureBounds.m_maxY * DetailTextureScale, 0.5f);
+                AZ::Aabb previousCoverage = AZ::Aabb::CreateFromMinMax(previousMin, previousMax);
+
+                // Area of texture not already updated by camera movement above.
+                AZ::Aabb clampedCoverage = previousCoverage.GetClamped(detailTextureCoverage);
+
+                // Clamp the dirty region to the area of the detail texture that is visible and not already updated.
+                clampedCoverage.Clamp(m_dirtyDetailRegion);
+
+                if (clampedCoverage.IsValid())
+                {
+                    Int2DAabb updateBounds;
+                    updateBounds.m_minX = aznumeric_cast<int32_t>(AZStd::roundf(clampedCoverage.GetMin().GetX() / DetailTextureScale));
+                    updateBounds.m_minY = aznumeric_cast<int32_t>(AZStd::roundf(clampedCoverage.GetMin().GetY() / DetailTextureScale));
+                    updateBounds.m_maxX = aznumeric_cast<int32_t>(AZStd::roundf(clampedCoverage.GetMax().GetX() / DetailTextureScale));
+                    updateBounds.m_maxY = aznumeric_cast<int32_t>(AZStd::roundf(clampedCoverage.GetMax().GetY() / DetailTextureScale));
+                    if (updateBounds.m_minX < updateBounds.m_maxX && updateBounds.m_minY < updateBounds.m_maxY)
+                    {
+                        UpdateDetailTexture(updateBounds, newBounds);
+                    }
+                }
             }
         }
 
@@ -651,9 +668,9 @@ namespace Terrain
             imageUpdateRequest.m_sourceSubresourceLayout.m_size.m_height = height;
             imageUpdateRequest.m_sourceSubresourceLayout.m_size.m_depth = 1;
             imageUpdateRequest.m_sourceData = pixels.data();
-            imageUpdateRequest.m_image = m_areaData.m_heightmapImage->GetRHIImage();
+            imageUpdateRequest.m_image = m_detailTextureImage->GetRHIImage();
 
-            m_areaData.m_heightmapImage->UpdateImageContents(imageUpdateRequest);
+            m_detailTextureImage->UpdateImageContents(imageUpdateRequest);
         }
 
         AZ::Vector2 position = AZ::Vector2::CreateZero();
@@ -700,7 +717,7 @@ namespace Terrain
                 AZ::RHI::ImageBindFlags::ShaderRead, width, height, AZ::RHI::Format::R16_UNORM
             );
             m_areaData.m_heightmapImage = AZ::RPI::AttachmentImage::Create(*imagePool.get(), imageDescriptor, TerrainHeightmapName, nullptr, nullptr);
-            AZ_Error(TerrainFPName, m_areaData.m_heightmapImage, "Failed to initialize the heightmap image!");
+            AZ_Error(TerrainFPName, m_areaData.m_heightmapImage, "Failed to initialize the heightmap image.");
         }
 
         AZStd::vector<uint16_t> pixels;
@@ -801,9 +818,13 @@ namespace Terrain
         TerrainAreaMaterialRequestBus::EnumerateHandlers(
             [&](TerrainAreaMaterialRequests* handler)
             {
-                AZ::Aabb bounds;
-                const AZStd::vector<TerrainSurfaceMaterialMapping> materialMappings = handler->GetSurfaceMaterialMappings(bounds);
+                const AZ::Aabb& bounds = handler->GetTerrainSurfaceMaterialRegion();
+                const AZStd::vector<TerrainSurfaceMaterialMapping> materialMappings = handler->GetSurfaceMaterialMappings();
                 AZ::EntityId entityId = *(Terrain::TerrainMacroMaterialRequestBus::GetCurrentBusId());
+                
+                DetailMaterialListRegion& materialRegion = FindOrCreateMaterial(entityId, m_detailMaterialRegions);
+                materialRegion.m_region = bounds;
+
                 for (const auto& materialMapping : materialMappings)
                 {
                     OnTerrainSurfaceMaterialMappingCreated(entityId, materialMapping.m_surfaceTag, materialMapping.m_materialInstance);
@@ -942,19 +963,19 @@ namespace Terrain
                 m_materialInstance->SetPropertyValue(m_heightmapPropertyIndex, heightmapImage);
                 m_materialInstance->Compile();
             }
-
-            if (m_dirtyDetailRegion.IsValid())
+            
+            AZ::Vector3 cameraPosition = AZ::Vector3::CreateZero();
+            for (auto& view : process.m_views)
             {
-                AZ::Vector3 cameraPosition = AZ::Vector3::CreateZero();
-                for (auto& view : process.m_views)
+                if ((view->GetUsageFlags() & AZ::RPI::View::UsageFlags::UsageCamera) > 0)
                 {
-                    if ((view->GetUsageFlags() & AZ::RPI::View::UsageFlags::UsageCamera) > 0)
-                    {
-                        cameraPosition = view->GetCameraTransform().GetTranslation();
-                        break;
-                    }
+                    cameraPosition = view->GetCameraTransform().GetTranslation();
+                    break;
                 }
+            }
 
+            if (m_dirtyDetailRegion.IsValid() || !cameraPosition.IsClose(m_previousCameraPosition))
+            {
                 int32_t newDetailTexturePosX = aznumeric_cast<int32_t>(AZStd::roundf(cameraPosition.GetX() / DetailTextureScale));
                 int32_t newDetailTexturePosY = aznumeric_cast<int32_t>(AZStd::roundf(cameraPosition.GetY() / DetailTextureScale));
                 
@@ -968,6 +989,8 @@ namespace Terrain
                 
                 m_detailTextureBounds = newBounds;
                 m_dirtyDetailRegion = AZ::Aabb::CreateNull();
+
+                m_previousCameraPosition = cameraPosition;
             }
 
             if (m_areaData.m_heightmapUpdated || m_areaData.m_macroMaterialsUpdated)

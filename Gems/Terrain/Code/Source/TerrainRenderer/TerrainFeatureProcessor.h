@@ -281,6 +281,7 @@ namespace Terrain
         AZ::RPI::MaterialPropertyIndex m_heightmapPropertyIndex;
 
         AZ::Data::Instance<AZ::RPI::Model> m_patchModel;
+        AZ::Vector3 m_previousCameraPosition = AZ::Vector3(NAN, NAN, NAN);
 
         // Per-area data
         struct TerrainAreaData
