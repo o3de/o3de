@@ -5351,7 +5351,7 @@ TEST_F(WildcardSourceDependencyTest, Relative_Broad)
     AZStd::vector<AZStd::string> resolvedPaths;
     
     ASSERT_TRUE(Test("*.foo", resolvedPaths));
-    ASSERT_THAT(resolvedPaths, ::testing::ElementsAre("a.foo", "b.foo", "folder/one/c.foo", "folder/one/d.foo", "1a.foo", "1b.foo"));
+    ASSERT_THAT(resolvedPaths, ::testing::UnorderedElementsAre("a.foo", "b.foo", "folder/one/c.foo", "folder/one/d.foo", "1a.foo", "1b.foo"));
 }
 
 TEST_F(WildcardSourceDependencyTest, Relative_WithFolder)
@@ -5359,7 +5359,7 @@ TEST_F(WildcardSourceDependencyTest, Relative_WithFolder)
     AZStd::vector<AZStd::string> resolvedPaths;
 
     ASSERT_TRUE(Test("folder/*.foo", resolvedPaths));
-    ASSERT_THAT(resolvedPaths, ::testing::ElementsAre("folder/one/c.foo", "folder/one/d.foo"));
+    ASSERT_THAT(resolvedPaths, ::testing::UnorderedElementsAre("folder/one/c.foo", "folder/one/d.foo"));
 }
 
 TEST_F(WildcardSourceDependencyTest, Relatieve_WildcardPath)
@@ -5367,7 +5367,7 @@ TEST_F(WildcardSourceDependencyTest, Relatieve_WildcardPath)
     AZStd::vector<AZStd::string> resolvedPaths;
 
     ASSERT_TRUE(Test("*a.foo", resolvedPaths));
-    ASSERT_THAT(resolvedPaths, ::testing::ElementsAre("a.foo", "1a.foo"));
+    ASSERT_THAT(resolvedPaths, ::testing::UnorderedElementsAre("a.foo", "1a.foo"));
 }
 
 TEST_F(WildcardSourceDependencyTest, Absolute_WithFolder)
@@ -5376,7 +5376,7 @@ TEST_F(WildcardSourceDependencyTest, Absolute_WithFolder)
     QDir tempPath(m_tempDir.path());
 
     ASSERT_TRUE(Test(tempPath.absoluteFilePath("subfolder2/redirected/*.foo").toUtf8().constData(), resolvedPaths));
-    ASSERT_THAT(resolvedPaths, ::testing::ElementsAre("a.foo", "b.foo", "folder/one/c.foo", "folder/one/d.foo"));
+    ASSERT_THAT(resolvedPaths, ::testing::UnorderedElementsAre("a.foo", "b.foo", "folder/one/c.foo", "folder/one/d.foo"));
 }
 
 TEST_F(WildcardSourceDependencyTest, Absolute_NotInScanfolder)
@@ -5385,7 +5385,7 @@ TEST_F(WildcardSourceDependencyTest, Absolute_NotInScanfolder)
     QDir tempPath(m_tempDir.path());
 
     ASSERT_TRUE(Test(tempPath.absoluteFilePath("not/a/scanfolder/*.foo").toUtf8().constData(), resolvedPaths));
-    ASSERT_THAT(resolvedPaths, ::testing::ElementsAre());
+    ASSERT_THAT(resolvedPaths, ::testing::UnorderedElementsAre());
 }
 
 TEST_F(WildcardSourceDependencyTest, Relative_NotInScanfolder)
@@ -5394,7 +5394,7 @@ TEST_F(WildcardSourceDependencyTest, Relative_NotInScanfolder)
     QDir tempPath(m_tempDir.path());
 
     ASSERT_TRUE(Test("*/e.foo", resolvedPaths));
-    ASSERT_THAT(resolvedPaths, ::testing::ElementsAre());
+    ASSERT_THAT(resolvedPaths, ::testing::UnorderedElementsAre());
 }
 
 TEST_F(WildcardSourceDependencyTest, Relative_InNonRecursiveScanfolder)
@@ -5403,7 +5403,7 @@ TEST_F(WildcardSourceDependencyTest, Relative_InNonRecursiveScanfolder)
     QDir tempPath(m_tempDir.path());
 
     ASSERT_TRUE(Test("*/f.foo", resolvedPaths));
-    ASSERT_THAT(resolvedPaths, ::testing::ElementsAre());
+    ASSERT_THAT(resolvedPaths, ::testing::UnorderedElementsAre());
 }
 
 TEST_F(WildcardSourceDependencyTest, Absolute_InNonRecursiveScanfolder)
@@ -5412,7 +5412,7 @@ TEST_F(WildcardSourceDependencyTest, Absolute_InNonRecursiveScanfolder)
     QDir tempPath(m_tempDir.path());
 
     ASSERT_TRUE(Test(tempPath.absoluteFilePath("one/two/three/*.foo").toUtf8().constData(), resolvedPaths));
-    ASSERT_THAT(resolvedPaths, ::testing::ElementsAre());
+    ASSERT_THAT(resolvedPaths, ::testing::UnorderedElementsAre());
 }
 
 TEST_F(WildcardSourceDependencyTest, Relative_NoWildcard)
@@ -5421,7 +5421,7 @@ TEST_F(WildcardSourceDependencyTest, Relative_NoWildcard)
     QDir tempPath(m_tempDir.path());
 
     ASSERT_FALSE(Test("subfolder1/1a.foo", resolvedPaths));
-    ASSERT_THAT(resolvedPaths, ::testing::ElementsAre());
+    ASSERT_THAT(resolvedPaths, ::testing::UnorderedElementsAre());
 }
 
 TEST_F(WildcardSourceDependencyTest, Absolute_NoWildcard)
@@ -5430,5 +5430,5 @@ TEST_F(WildcardSourceDependencyTest, Absolute_NoWildcard)
     QDir tempPath(m_tempDir.path());
 
     ASSERT_FALSE(Test(tempPath.absoluteFilePath("subfolder1/1a.foo").toUtf8().constData(), resolvedPaths));
-    ASSERT_THAT(resolvedPaths, ::testing::ElementsAre());
+    ASSERT_THAT(resolvedPaths, ::testing::UnorderedElementsAre());
 }
