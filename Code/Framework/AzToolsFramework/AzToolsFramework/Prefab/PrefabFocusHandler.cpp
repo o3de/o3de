@@ -205,6 +205,34 @@ namespace AzToolsFramework::Prefab
         return instance.has_value() && (&instance->get() == &m_focusedInstance->get());
     }
 
+    bool PrefabFocusHandler::IsOwningPrefabInFocusHierarchy(AZ::EntityId entityId) const
+    {
+        if (!m_focusedInstance.has_value())
+        {
+            // PrefabFocusHandler has not been initialized yet.
+            return false;
+        }
+
+        if (!entityId.IsValid())
+        {
+            return false;
+        }
+
+        InstanceOptionalReference instance = m_instanceEntityMapperInterface->FindOwningInstance(entityId);
+
+        while (instance.has_value())
+        {
+            if (&instance->get() == &m_focusedInstance->get())
+            {
+                return true;
+            }
+
+            instance = instance->get().GetParentInstance();
+        }
+
+        return false;
+    }
+
     const AZ::IO::Path& PrefabFocusHandler::GetPrefabFocusPath([[maybe_unused]] AzFramework::EntityContextId entityContextId) const
     {
         return m_instanceFocusPath;
