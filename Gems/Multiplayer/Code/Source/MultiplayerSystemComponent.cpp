@@ -1148,9 +1148,6 @@ namespace Multiplayer
 
     void MultiplayerSystemComponent::EnableAutonomousControl(NetworkEntityHandle entityHandle, AzNetworking::ConnectionId connectionId)
     {
-        INetworkEntityManager* networkEntityManager = AZ::Interface<INetworkEntityManager>::Get();
-        AZ_Assert(networkEntityManager, "NetworkEntityManager must be created.");
-
         entityHandle.GetNetBindComponent()->SetOwningConnectionId(connectionId);
         if (connectionId == InvalidConnectionId)
         {
