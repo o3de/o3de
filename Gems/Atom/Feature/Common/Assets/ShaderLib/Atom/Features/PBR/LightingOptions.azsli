@@ -20,3 +20,4 @@ option enum class TransmissionMode {None, ThickObject, ThinObject} o_transmissio
 option bool o_meshUseForwardPassIBLSpecular = false;
 option bool o_materialUseForwardPassIBLSpecular = false;
 
+option bool o_enableLightCulling = true;
