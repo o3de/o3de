@@ -16,7 +16,7 @@ namespace AzToolsFramework
 {
     namespace Script
     {
-        /// System component for LuaSymbolsReporter editor
+        /// System component for SymbolsReporterRequestBus
         class SymbolsReporterSystemComponent
             : public AZ::Component
             , public SymbolsReporterRequestBus::Handler
@@ -32,7 +32,7 @@ namespace AzToolsFramework
             ~SymbolsReporterSystemComponent();
 
             ///////////////////////////////////////////////////////////////////////////
-            /// LuaSymbolsReporterRequestBus::Handler
+            /// SymbolsReporterRequestBus::Handler
             const AZStd::vector<ClassSymbol>& GetListOfClasses() override;
             const AZStd::vector<PropertySymbol>& GetListOfGlobalProperties() override;
             const AZStd::vector<MethodSymbol>& GetListOfGlobalFunctions() override;
@@ -57,14 +57,15 @@ namespace AzToolsFramework
             AZ::ScriptContext* m_scriptContext = nullptr;
 
             AZStd::vector<ClassSymbol> m_cachedClassSymbols;
-            // The key is a class uuid, the value is the index in @m_classSymbols
+            // The key is a class uuid, the value is the index in @m_cachedClassSymbols
             AZStd::unordered_map<AZ::Uuid, size_t> m_classUuidToIndexMap;
 
             AZStd::vector<PropertySymbol> m_cachedGlobalPropertySymbols;
             AZStd::vector<MethodSymbol> m_cachedGlobalFunctionSymbols;
 
             AZStd::vector<EBusSymbol> m_cachedEbusSymbols;
-            // The key is the ebus name, the value is the index in @m_ebusSymbols
+
+            // The key is the ebus name, the value is the index in @m_cachedEbusSymbols
             AZStd::unordered_map<AZStd::string, size_t> m_ebusNameToIndexMap;
             
         };

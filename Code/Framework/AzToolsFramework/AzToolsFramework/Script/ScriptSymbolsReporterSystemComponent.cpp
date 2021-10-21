@@ -119,8 +119,9 @@ namespace AzToolsFramework
         AZStd::string EBusSymbol::ToString() const
         {
             auto boolToStr = +[](bool val) { return val ? "true" : "false"; };
-            return AZStd::string::format("%s: canBroadcast(%s), canQueue(%s), hasHandler(%s)", m_name.c_str(),
-                boolToStr(m_canBroadcast), boolToStr(m_canQueue), boolToStr(m_hasHandler));
+            return AZStd::string::format("%s: canBroadcast(%s), canQueue(%s), hasHandler(%s)",
+                                         m_name.c_str(),
+                                         boolToStr(m_canBroadcast), boolToStr(m_canQueue), boolToStr(m_hasHandler));
         }
 
         void EBusSymbol::Reflect(AZ::ReflectContext* context)
