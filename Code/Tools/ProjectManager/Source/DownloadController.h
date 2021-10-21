@@ -51,7 +51,6 @@ namespace O3DE::ProjectManager
             }
         }
     public slots:
-        void Start();
         void UpdateUIProgress(int progress);
         void HandleResults(const QString& result);
         void HandleCancel();

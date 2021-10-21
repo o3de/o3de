@@ -46,11 +46,6 @@ namespace O3DE::ProjectManager
         }
     }
 
-    void DownloadController::Start()
-    {
-        
-    }
-
     void DownloadController::UpdateUIProgress(int progress)
     {
         m_lastProgress = progress;

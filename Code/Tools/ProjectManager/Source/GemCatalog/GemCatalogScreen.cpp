@@ -34,7 +34,6 @@ namespace O3DE::ProjectManager
         setLayout(vLayout);
 
         m_downloadController = new DownloadController();
-        m_downloadController->Start();
 
         m_headerWidget = new GemCatalogHeaderWidget(m_gemModel, m_proxModel, m_downloadController);
         vLayout->addWidget(m_headerWidget);
