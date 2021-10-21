@@ -59,14 +59,34 @@ void ApplySimpleSpotLight(ViewSrg::SimpleSpotLight light, Surface surface, inout
 
 void ApplySimpleSpotLights(Surface surface, inout LightingData lightingData)
 {
-    lightingData.tileIterator.LoadAdvance();
-                
-    while( !lightingData.tileIterator.IsDone() ) 
-    { 
-        uint currLightIndex = lightingData.tileIterator.GetValue(); 
+    if(o_enableLightCulling)
+    {
         lightingData.tileIterator.LoadAdvance();
-    
-        ViewSrg::SimpleSpotLight light = ViewSrg::m_simpleSpotLights[currLightIndex];
-        ApplySimpleSpotLight(light, surface, lightingData);
+        for(uint lightIndex = 0; lightIndex < ViewSrg::m_simpleSpotLightCount; lightIndex++)
+        {
+            if(lightingData.tileIterator.IsDone())
+            {
+                break;
+            }
+
+            uint currLightIndex = lightingData.tileIterator.GetValue(); 
+            lightingData.tileIterator.LoadAdvance();
+
+            if(currLightIndex >= ViewSrg::m_simpleSpotLightCount)
+            {
+                continue;
+            }
+
+            ViewSrg::SimpleSpotLight light = ViewSrg::m_simpleSpotLights[currLightIndex];
+            ApplySimpleSpotLight(light, surface, lightingData);
+        }
+    }
+    else 
+    {
+        for(uint lightIndex = 0; lightIndex < ViewSrg::m_simpleSpotLightCount; lightIndex++)
+        {
+            ViewSrg::SimpleSpotLight light = ViewSrg::m_simpleSpotLights[lightIndex];
+            ApplySimpleSpotLight(light, surface, lightingData);
+        }
     }
 }

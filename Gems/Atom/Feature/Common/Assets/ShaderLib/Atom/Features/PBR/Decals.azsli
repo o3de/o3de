@@ -22,14 +22,34 @@ void ApplyDecal(uint currDecalIndex, inout Surface surface);
 
 void ApplyDecals(inout LightCullingTileIterator tileIterator, inout Surface surface)
 {
-    tileIterator.LoadAdvance();
-    
-    while( !tileIterator.IsDone() )
+    if(o_enableLightCulling)
     {
-        uint currDecalIndex = tileIterator.GetValue();
         tileIterator.LoadAdvance();
-        
-        ApplyDecal(currDecalIndex, surface);
+
+        for(uint decalIndex = 0; decalIndex < ViewSrg::m_decalCount; decalIndex++)
+        {
+            if(tileIterator.IsDone())
+            {
+                break;
+            }
+
+            uint currDecalIndex = tileIterator.GetValue();
+            tileIterator.LoadAdvance();
+
+            if(currDecalIndex >= ViewSrg::m_decalCount)
+            {
+                continue;
+            }
+
+            ApplyDecal(currDecalIndex, surface);
+        }
+    }
+    else
+    {
+        for(uint decalIndex = 0; decalIndex < ViewSrg::m_decalCount; decalIndex++)
+        {
+            ApplyDecal(decalIndex, surface);
+        }
     }    
 }
 

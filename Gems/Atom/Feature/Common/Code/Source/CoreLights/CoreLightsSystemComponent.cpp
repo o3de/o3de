@@ -18,6 +18,7 @@
 #include <Atom/Feature/CoreLights/ShadowConstants.h>
 #include <Atom/RPI.Public/FeatureProcessorFactory.h>
 #include <Atom/RPI.Public/Shader/ShaderSystem.h>
+#include <Atom/RPI.Public/Pass/PassFilter.h>
 #include <Atom/RPI.Public/Pass/PassSystemInterface.h>
 
 #include <CoreLights/CascadedShadowmapsPass.h>
@@ -47,6 +48,50 @@ namespace AZ
             },
             ConsoleFunctorFlags::Null,
             "Turns on a much more accurate an expensive mode for area lights for validating the accuracy of the inexpensive versions."
+        );
+
+        AZ_CVAR(
+            bool,
+            r_enable_lightculling,
+            true,
+            [](const bool& value)
+            {
+                AZ::RPI::ShaderSystemInterface::Get()->SetGlobalShaderOption(
+                    AZ::Name{ "o_enableLightCulling" }, AZ::RPI::ShaderOptionValue{ value });
+
+                AZ::RPI::PassHierarchyFilter passFilter(AZ::Name("LightCullingPass"));
+                auto const& passes = AZ::RPI::PassSystemInterface::Get()->FindPasses(passFilter);
+                for (auto& pass : passes)
+                {
+                    pass->SetEnabled(value);
+                    pass->QueueForBuildAndInitialization();
+                    
+                    // "un-link" the connected binding of the disabled pass
+                    if (!value)
+                    {
+                        auto children = pass->GetParent()->GetChildren();
+                        for (uint32_t passIndex = 0; passIndex < pass->GetOutputCount(); passIndex++)
+                        {
+                            AZ::RPI::PassAttachmentBinding& binding = pass->GetOutputBinding(passIndex);
+
+                            // find the passes with the binding
+                            for (auto& child : children)
+                            {
+                                for (uint32_t inputIndex = 0; inputIndex < child->GetInputCount(); inputIndex++)
+                                {
+                                    AZ::RPI::PassAttachmentBinding& childBinding = child->GetInputBinding(inputIndex);
+                                    if (childBinding.m_connectedBinding == &binding)
+                                    {
+                                        childBinding.m_connectedBinding = nullptr;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            AZ::ConsoleFunctorFlags::Null,
+            "Toggles light culling pass."
         );
 
         void CoreLightsSystemComponent::Reflect(ReflectContext* context)

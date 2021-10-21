@@ -217,21 +217,50 @@ void ValidateCapsuleLight(ViewSrg::CapsuleLight light, Surface surface, inout Li
 
 void ApplyCapsuleLights(Surface surface, inout LightingData lightingData)
 {    
-    lightingData.tileIterator.LoadAdvance();
-                
-    while(!lightingData.tileIterator.IsDone())
+    if(o_enableLightCulling)
     {
-        uint currLightIndex = lightingData.tileIterator.GetValue(); 
         lightingData.tileIterator.LoadAdvance();
-        
-        ViewSrg::CapsuleLight light = ViewSrg::m_capsuleLights[currLightIndex];
-        if (o_area_light_validation)
+
+        for(uint lightIndex = 0; lightIndex < ViewSrg::m_capsuleLightCount; lightIndex++)
         {
-            ValidateCapsuleLight(light, surface, lightingData);
+            if(lightingData.tileIterator.IsDone())
+            {
+                break;
+            }
+
+            uint currLightIndex = lightingData.tileIterator.GetValue(); 
+            lightingData.tileIterator.LoadAdvance();
+
+            if(currLightIndex >= ViewSrg::m_capsuleLightCount)
+            {
+                continue;
+            }
+
+            ViewSrg::CapsuleLight light = ViewSrg::m_capsuleLights[currLightIndex];
+            
+            if (o_area_light_validation)
+            {
+                ValidateCapsuleLight(light, surface, lightingData);
+            }
+            else
+            {
+                ApplyCapsuleLight(light, surface, lightingData);
+            }
         }
-        else
+    }
+    else
+    {
+        for(uint lightIndex = 0; lightIndex < ViewSrg::m_capsuleLightCount; lightIndex++)
         {
-            ApplyCapsuleLight(light, surface, lightingData);
+            ViewSrg::CapsuleLight light = ViewSrg::m_capsuleLights[lightIndex];
+            if (o_area_light_validation)
+            {
+                ValidateCapsuleLight(light, surface, lightingData);
+            }
+            else
+            {
+                ApplyCapsuleLight(light, surface, lightingData);
+            }
         }
     }
 }

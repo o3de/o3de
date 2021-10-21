@@ -246,22 +246,50 @@ void ValidateQuadLight(ViewSrg::QuadLight light, Surface surface, inout Lighting
 
 void ApplyQuadLights(Surface surface, inout LightingData lightingData)
 {
-    lightingData.tileIterator.LoadAdvance();
-                
-    while( !lightingData.tileIterator.IsDone() ) 
-    { 
-        uint currLightIndex = lightingData.tileIterator.GetValue(); 
+    if(o_enableLightCulling)
+    {
         lightingData.tileIterator.LoadAdvance();
-    
-        ViewSrg::QuadLight light = ViewSrg::m_quadLights[currLightIndex];
-        
-        if (o_area_light_validation)
+
+        for(uint lightIndex = 0; lightIndex < ViewSrg::m_quadLightCount; lightIndex++)
         {
-            ValidateQuadLight(light, surface, lightingData);
+            if(lightingData.tileIterator.IsDone())
+            {
+                break;
+            }
+
+            uint currLightIndex = lightingData.tileIterator.GetValue(); 
+            lightingData.tileIterator.LoadAdvance();
+
+            if(currLightIndex >= ViewSrg::m_quadLightCount)
+            {
+                continue;
+            }
+
+            ViewSrg::QuadLight light = ViewSrg::m_quadLights[currLightIndex];
+            
+            if (o_area_light_validation)
+            {
+                ValidateQuadLight(light, surface, lightingData);
+            }
+            else
+            {
+                ApplyQuadLight(light, surface, lightingData);
+            }
         }
-        else
+    }
+    else
+    {
+        for(uint lightIndex = 0; lightIndex < ViewSrg::m_quadLightCount; lightIndex++)
         {
-            ApplyQuadLight(light, surface, lightingData);
+            ViewSrg::QuadLight light = ViewSrg::m_quadLights[lightIndex];
+            if (o_area_light_validation)
+            {
+                ValidateQuadLight(light, surface, lightingData);
+            }
+            else
+            {
+                ApplyQuadLight(light, surface, lightingData);
+            }
         }
     }
 }

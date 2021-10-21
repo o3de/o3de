@@ -202,22 +202,50 @@ void ValidateDiskLight(ViewSrg::DiskLight light, Surface surface, inout Lighting
 
 void ApplyDiskLights(Surface surface, inout LightingData lightingData)
 {    
-    lightingData.tileIterator.LoadAdvance();
-            
-    while( !lightingData.tileIterator.IsDone() )
+    if(o_enableLightCulling)
     {
-        uint currLightIndex = lightingData.tileIterator.GetValue();
         lightingData.tileIterator.LoadAdvance();
-        
-        ViewSrg::DiskLight light = ViewSrg::m_diskLights[currLightIndex];
-        
-        if (o_area_light_validation)
+
+        for(uint lightIndex = 0; lightIndex < ViewSrg::m_diskLightCount; lightIndex++)
         {
-            ValidateDiskLight(light, surface, lightingData);
+            if(lightingData.tileIterator.IsDone())
+            {
+                break;
+            }
+
+            uint currLightIndex = lightingData.tileIterator.GetValue(); 
+            lightingData.tileIterator.LoadAdvance();
+
+            if(currLightIndex >= ViewSrg::m_diskLightCount)
+            {
+                continue;
+            }
+
+            ViewSrg::DiskLight light = ViewSrg::m_diskLights[currLightIndex];
+            
+            if (o_area_light_validation)
+            {
+                ValidateDiskLight(light, surface, lightingData);
+            }
+            else
+            {
+                ApplyDiskLight(light, surface, lightingData);
+            }
         }
-        else
+    }
+    else
+    {
+        for(uint lightIndex = 0; lightIndex < ViewSrg::m_diskLightCount; lightIndex++)
         {
-            ApplyDiskLight(light, surface, lightingData);
+            ViewSrg::DiskLight light = ViewSrg::m_diskLights[lightIndex];
+            if (o_area_light_validation)
+            {
+                ValidateDiskLight(light, surface, lightingData);
+            }
+            else
+            {
+                ApplyDiskLight(light, surface, lightingData);
+            }
         }
     }
 }
