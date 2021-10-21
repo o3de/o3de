@@ -276,7 +276,8 @@ namespace AzFramework
             int mask;
         } mask;
 
-        mask.head.deviceid = XCB_INPUT_DEVICE_ALL;
+        // use of this non-inclusive term is required due to xinput's API
+        mask.head.deviceid = XCB_INPUT_DEVICE_ALL_MASTER;
         mask.head.mask_len = 1;
 
         if (enable)
