@@ -68,6 +68,20 @@
                     ]
                 },
                 {
+                    "Name": "Tile5x5",
+                    "TemplateName": "NewDepthOfFieldTile3x3Template",
+
+                    "Connections": [
+                        {
+                            "LocalSlot": "Input",
+                            "AttachmentRef": {
+                                "Pass": "Tile3x3",
+                                "Attachment": "Output"
+                            }
+                        }
+                    ]
+                },
+                {
                     "Name": "LargeFilter",
                     "TemplateName": "NewDepthOfFieldFilterLargeTemplate",
 
@@ -82,7 +96,7 @@
                         {
                             "LocalSlot": "CocTile",
                             "AttachmentRef": {
-                                "Pass": "Tile3x3",
+                                "Pass": "Tile5x5",
                                 "Attachment": "Output"
                             }
                         }

@@ -33,9 +33,9 @@ ShaderResourceGroup PassSrg : SRG_PerPass
     };
 }
 
-float2 GetOffsetUV(uint index, float radiusMultiplier)
+float2 GetOffsetUV(uint index, float2 offsetMultiplier)
 {
-    return PassSrg::m_dofConstants.samplePositions[index] * radiusMultiplier * PassSrg::m_textureDimensions.zw;
+    return PassSrg::m_dofConstants.samplePositions[index].xy * offsetMultiplier;
 }
 
 PSOutput MainPS(VSOutput IN)
@@ -47,27 +47,41 @@ PSOutput MainPS(VSOutput IN)
     float4 centerSample = PassSrg::m_colorAndCoc.Sample(PassSrg::LinearSampler, pixelUV).rgba;
     float centerCoc = centerSample.a;
 
-    // Color and weight accumulation
-    float3 color = centerSample.rgb;
-    float totalWeight = 1;
+    // Aspect ratio = texture.x / texture.y = dimensions.x * dimensions.w
+    float aspectRatio = PassSrg::m_textureDimensions.x * PassSrg::m_textureDimensions.w;
 
     // Sampling radius
     float cocRadius = abs(centerCoc) * ViewSrg::m_dof.m_cocToScreenRatio * 0.5f;
     cocRadius *= 0.5f; // This is the small filter, half the sampling radius
+    float2 offsetMultiplier = float2(cocRadius / aspectRatio, cocRadius);
 
-    for(uint i = 0; i < SAMPLES_LOOP_1; ++i)
+    // Color and weight accumulation
+    float3 color = centerSample.rgb;
+    float totalWeight = 1;
+
+    for(uint i = 0; i < 8; ++i)
     {
-        float2 offsetUV = GetOffsetUV(i, cocRadius);
-        float4 sample = PassSrg::m_colorAndCoc.Sample(PassSrg::LinearSampler, pixelUV + offsetUV).rgba;
-        float cocDiff = abs(sample.a - centerCoC);
+        // Calculate sample offset
+        float2 offsetUV = GetOffsetUV(i, offsetMultiplier);
+
+        // Get sample
+        float4 sampleColorCoc = PassSrg::m_colorAndCoc.Sample(PassSrg::LinearSampler, pixelUV + offsetUV).rgba;
+
+        // Calculate weight
+        float cocDiff = sampleColorCoc.a - centerCoc;
         float weight = saturate( 2 - (20 * cocDiff));
-        color += sample.rgb * weight;
+
+        // Accumulate sample and weight
+        color += sampleColorCoc.rgb * weight;
         totalWeight += weight;
     }
 
+    // Normalize accumulated sample
+    color /= totalWeight;
+
     // Output
     PSOutput OUT;
-    OUT.m_color.rgb = color / totalWeight;
+    OUT.m_color.rgb = color;
     OUT.m_color.a = centerCoc;
     return OUT;
 }

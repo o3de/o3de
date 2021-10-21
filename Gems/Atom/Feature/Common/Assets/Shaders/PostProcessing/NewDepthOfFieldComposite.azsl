@@ -54,22 +54,25 @@ PSOutput MainPS(VSOutput IN)
     // Calculate Alpha
     float cocRadius = abs(coc) * ViewSrg::m_dof.m_cocToScreenRatio * 0.5f;
     float maxPixelDist = max(PassSrg::m_halfResDimensions.z, PassSrg::m_halfResDimensions.w);    
-    float alpha = saturate(0.25f * cocRadius / maxPixelDist);
+    float alpha = saturate(cocRadius / maxPixelDist);
     
     // Sample half res color and CoC
     float4 colorAndCoC = PassSrg::m_halfResColorAndCoc.Sample(PassSrg::LinearSampler, halfResUV);
 
 
-    // Make out of focus foreground increasingly blue
-    float multiplier = saturate(1.0f + coc);
-    colorAndCoC.r *= multiplier;
-    colorAndCoC.g *= multiplier;
+    if(false)
+    {
+        // Make out of focus foreground increasingly blue
+        float multiplier = saturate(1.0f + coc);
+        colorAndCoC.r *= multiplier;
+        colorAndCoC.g *= multiplier;
 
-    // Make out of focus background increasingly red
-    multiplier = saturate(1.0f - coc);
-    colorAndCoC.b *= multiplier;
-    colorAndCoC.g *= multiplier;
-    
+        // Make out of focus background increasingly red
+        multiplier = saturate(1.0f - coc);
+        colorAndCoC.b *= multiplier;
+        colorAndCoC.g *= multiplier;
+    }
+
     // Output
     PSOutput OUT;
     OUT.m_color.rgb = colorAndCoC.rgb;

@@ -93,8 +93,8 @@ PSOutput MainPS(VSOutput IN)
     // See http://advances.realtimerendering.com/s2013/Sousa_Graphics_Gems_CryENGINE3.pptx
     coc = abs(coc) > COC_EPSILON ? coc : -COC_EPSILON;
     OUT.m_color.rgb *= abs(coc);
-
     OUT.m_color.a = coc;
+
 
     return OUT;
 }

@@ -31,20 +31,103 @@ ShaderResourceGroup PassSrg : SRG_PerPass
         AddressV = Clamp;
         AddressW = Clamp;
     };
+
+    Sampler PointSampler
+    {
+        MinFilter = Point;
+        MagFilter = Point;
+        MipFilter = Point;
+        AddressU = Clamp;
+        AddressV = Clamp;
+        AddressW = Clamp;
+    };
+}
+
+float3 GetOffsetUV(uint index, float2 offsetMultiplier)
+{
+    float3 offset = PassSrg::m_dofConstants.samplePositions[index].xyz;
+    offset.xy *= offsetMultiplier;
+    return offset;
+}
+
+float CaclulateWeight(float offsetRadius, float samplingRadius, float sampleCoc, float centerCoc)
+{
+    // The maximum distance for which samples are valid is the min of the sample CoC and the center CoC
+    float maxRadius = abs(min(sampleCoc, centerCoc));
+    
+    // radius = samplingRadius * offsetRadius;
+    // falloff = maxRadius - radius;
+    // weight = 1 + (4 * falloff) 
+    float falloff = mad(-samplingRadius, offsetRadius, maxRadius);
+    float weight = saturate(mad(4, falloff, 1));
+    return weight;
 }
 
 PSOutput MainPS(VSOutput IN)
 {
+    // Get center sample
+    float2 pixelUV = IN.m_texCoord;
+    float4 color = PassSrg::m_colorAndCoc.Sample(PassSrg::LinearSampler, pixelUV).rgba;
+    float centerCoc = color.a;
+
+    // Get tile min and max
+    int2 tile = int2(IN.m_position.xy) / 16;
+    float minCoc = PassSrg::m_minMaxCocTile[tile].x;
+
+    // Aspect ratio = texture.x / texture.y = dimensions.x * dimensions.w
+    float aspectRatio = PassSrg::m_textureDimensions.x * PassSrg::m_textureDimensions.w;
+
+    // Sampling radius
+    float cocRadius = max( abs(centerCoc), -minCoc);
+    float screenRadius = cocRadius * ViewSrg::m_dof.m_cocToScreenRatio * 0.5f;
+    float2 offsetMultiplier = float2(screenRadius / aspectRatio, screenRadius);
+
+
+    float4 backgroundColor = float4(0, 0, 0, 0);
+    
+    {
+        float backgroundMin = min(0, centerCoc);
+        color.rgb /= abs(color.a);
+        color.a = 1;
+        
+        for(uint i = 0; i < SAMPLES_LOOP_TOTAL; ++i)
+        {
+            // Calculate sample offset
+            float3 offset = GetOffsetUV(i, offsetMultiplier);
+            
+            // Get sample
+            float4 sampleColorCoc = PassSrg::m_colorAndCoc.Sample(PassSrg::PointSampler, pixelUV + offset.xy).rgba;
+            sampleColorCoc.rgb /= abs(sampleColorCoc.a);
+            
+            // Calculate weight for sample
+            float weight = CaclulateWeight(offset.z, cocRadius, sampleColorCoc.a, centerCoc);
+            sampleColorCoc.rgb *= weight;
+            
+            bool isBackground = (sampleColorCoc.a < backgroundMin);
+            
+            // We accumulate weight in alpha channel of color and backgroundColor
+            sampleColorCoc.a = weight;
+            
+            // Accumulate
+            backgroundColor += isBackground * sampleColorCoc;
+            color += !isBackground * sampleColorCoc;
+        }
+    }
+    
+    float backgroundRatio = backgroundColor.a / float(SAMPLES_LOOP_TOTAL);
+    float alpha = backgroundRatio > abs(centerCoc) ? -backgroundRatio : centerCoc;
+
+    color.rgb /= max(color.a, COC_EPSILON);
+    backgroundColor.rgb /= max(backgroundColor.a, COC_EPSILON);
+    
+    color = color * saturate(1 - backgroundRatio) + backgroundColor * backgroundRatio;
+    //color.rgb += backgroundColor.rgb;
+
+
+
     PSOutput OUT = (PSOutput)0;
-
-    float4 centerSample = PassSrg::m_colorAndCoc.Sample(PassSrg::LinearSampler, IN.m_texCoord);
-    float3 centerColor = centerSample.rgb;
-    float centerCoc = centerSample.a;
-
-    centerColor /= centerCoc;
-
-    OUT.m_color.rgb = centerColor;
-    OUT.m_color.a = centerCoc;
+    OUT.m_color.rgb = color.rgb;
+    OUT.m_color.a = alpha;
     return OUT;
 }
 
