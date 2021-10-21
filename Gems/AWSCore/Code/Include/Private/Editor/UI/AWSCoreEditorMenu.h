@@ -48,6 +48,7 @@ namespace AWSCore
         // AWSCoreEditorRequestBus interface implementation
         void SetAWSClientAuthEnabled() override;
         void SetAWSMetricsEnabled() override;
+        void SetAWSGameLiftEnabled() override;
 
         QMenu* SetAWSFeatureSubMenu(const AZStd::string& menuText);
 

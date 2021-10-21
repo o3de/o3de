@@ -6,7 +6,6 @@
  *
  */
 
-// include the required headers
 #include "MorphTargetCommands.h"
 #include "CommandManager.h"
 #include <EMotionFX/Source/ActorManager.h>
@@ -108,6 +107,12 @@ namespace CommandSystem
         if (actorInstance)
         {
             actor = actorInstance->GetActor();
+        }
+
+        if (!actor)
+        {
+            AZ_Error("EMotionFX", false, "Cannot adjust morph target. Actor with ID %i cannot be found.", actorID);
+            return false;
         }
 
         // get the level of detail to work on
