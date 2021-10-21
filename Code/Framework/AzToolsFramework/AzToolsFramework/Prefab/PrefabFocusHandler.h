@@ -63,8 +63,9 @@ namespace AzToolsFramework::Prefab
         void OnEntityInfoUpdatedName(AZ::EntityId entityId, const AZStd::string& name) override;
 
         // PrefabPublicNotifications overrides ...
-        void OnPrefabInstancePropagationEnd();
-
+        void OnPrefabInstancePropagationEnd() override;
+        void OnPrefabTemplateDirtyStatusChange(TemplateId templateId, bool status) override;
+        
     private:
         PrefabFocusOperationResult FocusOnPrefabInstance(InstanceOptionalReference focusedInstance);
         void RefreshInstanceFocusList();

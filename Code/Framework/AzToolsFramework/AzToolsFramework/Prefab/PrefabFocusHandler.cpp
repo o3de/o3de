@@ -16,6 +16,7 @@
 #include <AzToolsFramework/Prefab/Instance/InstanceEntityMapperInterface.h>
 #include <AzToolsFramework/Prefab/PrefabFocusNotificationBus.h>
 #include <AzToolsFramework/Prefab/PrefabFocusUndo.h>
+#include <AzToolsFramework/Prefab/PrefabSystemComponentInterface.h>
 
 namespace AzToolsFramework::Prefab
 {
@@ -251,6 +252,25 @@ namespace AzToolsFramework::Prefab
         PrefabFocusNotificationBus::Broadcast(&PrefabFocusNotifications::OnPrefabFocusChanged);
     }
 
+    void PrefabFocusHandler::OnPrefabTemplateDirtyStatusChange(TemplateId templateId, [[maybe_unused]] bool status)
+    {
+        // Determine if the entityId is the container for any of the instances in the vector
+        auto result = AZStd::find_if(
+            m_instanceFocusHierarchy.begin(), m_instanceFocusHierarchy.end(),
+            [templateId](const InstanceOptionalReference& instance)
+            {
+                return (instance->get().GetTemplateId() == templateId);
+            }
+        );
+
+        if (result != m_instanceFocusHierarchy.end())
+        {
+            // Refresh the path and notify changes.
+            RefreshInstanceFocusPath();
+            PrefabFocusNotificationBus::Broadcast(&PrefabFocusNotifications::OnPrefabFocusChanged);
+        }
+    }
+
     void PrefabFocusHandler::RefreshInstanceFocusList()
     {
         m_instanceFocusHierarchy.clear();
@@ -271,11 +291,31 @@ namespace AzToolsFramework::Prefab
 
     void PrefabFocusHandler::RefreshInstanceFocusPath()
     {
+        auto prefabSystemComponentInterface = AZ::Interface<PrefabSystemComponentInterface>::Get();
+
         m_instanceFocusPath.clear();
 
         for (const InstanceOptionalReference& instance : m_instanceFocusHierarchy)
         {
-            m_instanceFocusPath.Append(instance->get().GetContainerEntity()->get().GetName());
+            if (prefabSystemComponentInterface->IsTemplateDirty(instance->get().GetTemplateId()))
+            {
+                AZStd::string filename = instance->get().GetTemplateSourcePath().Stem().Native().data();
+                filename += "*";
+                m_instanceFocusPath.Append(filename);
+            }
+            else
+            {
+                m_instanceFocusPath.Append(instance->get().GetTemplateSourcePath().Stem());
+            }
+        }
+
+        if (prefabSystemComponentInterface->IsTemplateDirty(m_focusedTemplateId))
+        {
+            m_instanceFocusPath.ReplaceExtension("prefab*");
+        }
+        else
+        {
+            m_instanceFocusPath.ReplaceExtension("prefab");
         }
     }
 
