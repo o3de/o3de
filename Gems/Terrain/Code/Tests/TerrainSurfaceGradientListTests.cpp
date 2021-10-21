@@ -86,8 +86,7 @@ namespace UnitTest
             config.m_gradientSurfaceMappings.emplace_back(mapping2);
 
             Terrain::TerrainSurfaceGradientListComponent* terrainSurfaceGradientListComponent =
-                m_entity->CreateComponent<Terrain::TerrainSurfaceGradientListComponent>(
-                    config);
+                m_entity->CreateComponent<Terrain::TerrainSurfaceGradientListComponent>(config);
             m_app.RegisterComponentDescriptor(terrainSurfaceGradientListComponent->CreateDescriptor());
         }
     };

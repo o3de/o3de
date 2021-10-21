@@ -8,6 +8,7 @@
 
 #include <AzCore/Casting/lossy_cast.h>
 #include <AzCore/Component/ComponentApplication.h>
+#include <AzCore/Component/TransformBus.h>
 #include <AzCore/Memory/MemoryComponent.h>
 
 #include <AzFramework/Terrain/TerrainDataRequestBus.h>
@@ -94,8 +95,10 @@ TEST_F(TerrainPhysicsColliderComponentTest, TerrainPhysicsColliderTransformChang
     NiceMock<UnitTest::MockHeightfieldProviderNotificationBusListener> heightfieldListener(m_entity->GetId());
     EXPECT_CALL(heightfieldListener, OnHeightfieldDataChanged(_)).Times(1);
 
-    AZ::TransformNotificationBus::Event(
-        m_entity->GetId(), &AZ::TransformNotificationBus::Events::OnTransformChanged, AZ::Transform(), AZ::Transform());
+    // The component gets transform change notifications via the shape bus.
+    LmbrCentral::ShapeComponentNotificationsBus::Event(
+        m_entity->GetId(), &LmbrCentral::ShapeComponentNotificationsBus::Events::OnShapeChanged,
+        LmbrCentral::ShapeComponentNotifications::ShapeChangeReasons::TransformChanged);
 
     m_entity.reset();
 }
@@ -279,7 +282,9 @@ TEST_F(TerrainPhysicsColliderComponentTest, TerrainPhysicsColliderUpdateHeightsR
     Physics::HeightfieldProviderRequestsBus::EventResult(
         heights, m_entity->GetId(), &Physics::HeightfieldProviderRequestsBus::Events::UpdateHeights, dirtyRegion);
 
-    EXPECT_EQ(heights.size(), regionMax * regionMax);
+    // For now, UpdateHeights will return the full set of heights, regardless of the passed-in region size.
+    // This API needs to get revisited once we implement incremental updating of an existing heightfield in our physics components.
+    EXPECT_EQ(heights.size(), boundsMax * boundsMax);
 
     m_entity.reset();
 }

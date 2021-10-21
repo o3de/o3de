@@ -227,12 +227,27 @@ namespace Physics
         void SetNumRows(int32_t numRows);
         const AZStd::vector<Physics::HeightMaterialPoint>& GetSamples() const;
         void SetSamples(const AZStd::vector<Physics::HeightMaterialPoint>& samples);
+        float GetMinHeightBounds() const;
+        void SetMinHeightBounds(float minBounds);
+        float GetMaxHeightBounds() const;
+        void SetMaxHeightBounds(float maxBounds);
 
+    private:
+        //! The entity that contains the HeightfieldProvider associated with this shape.
         AZ::EntityId m_heightProvider;
+        //! The number of meters between each heightfield sample.
         AZ::Vector2 m_gridResolution{ 1.0f };
+        //! The number of columns in the heightfield sample grid.
         int32_t m_numColumns{ 0 };
+        //! The number of rows in the heightfield sample grid.
         int32_t m_numRows{ 0 };
+        //! The minimum and maximum heights that can be used by this heightfield.
+        //! This can be used by the physics system to choose a more optimal heightfield data type internally (ex: int16, uint8)
+        float m_minHeightBounds{AZStd::numeric_limits<float>::lowest()};
+        float m_maxHeightBounds{AZStd::numeric_limits<float>::max()};
+        //! The grid of sample points for the heightfield.
         AZStd::vector<Physics::HeightMaterialPoint> m_samples;
+        //! An optional storage pointer for the physics system to cache its native heightfield representation.
         mutable void* m_cachedNativeHeightfield{ nullptr };
     };
 } // namespace Physics

@@ -326,12 +326,7 @@ namespace Physics
 
     HeightfieldShapeConfiguration::~HeightfieldShapeConfiguration()
     {
-        if (m_cachedNativeHeightfield)
-        {
-            Physics::SystemRequestBus::Broadcast(&Physics::SystemRequests::ReleaseNativeHeightfieldObject, m_cachedNativeHeightfield);
-
-            m_cachedNativeHeightfield = nullptr;
-        }
+        SetCachedNativeHeightfield(nullptr);
     }
 
     HeightfieldShapeConfiguration::HeightfieldShapeConfiguration(const HeightfieldShapeConfiguration& other)
@@ -372,7 +367,7 @@ namespace Physics
     {
         if (m_cachedNativeHeightfield)
         {
-            Physics::SystemRequestBus::Broadcast(&Physics::SystemRequests::ReleaseNativeMeshObject, m_cachedNativeHeightfield);
+            Physics::SystemRequestBus::Broadcast(&Physics::SystemRequests::ReleaseNativeHeightfieldObject, m_cachedNativeHeightfield);
         }
 
         m_cachedNativeHeightfield = cachedNativeHeightfield;
@@ -418,4 +413,23 @@ namespace Physics
         m_samples = samples;
     }
 
+    float HeightfieldShapeConfiguration::GetMinHeightBounds() const
+    {
+        return m_minHeightBounds;
+    }
+
+    void HeightfieldShapeConfiguration::SetMinHeightBounds(float minBounds)
+    {
+        m_minHeightBounds = minBounds;
+    }
+
+    float HeightfieldShapeConfiguration::GetMaxHeightBounds() const
+    {
+        return m_maxHeightBounds;
+    }
+
+    void HeightfieldShapeConfiguration::SetMaxHeightBounds(float maxBounds)
+    {
+        m_maxHeightBounds = maxBounds;
+    }
 }

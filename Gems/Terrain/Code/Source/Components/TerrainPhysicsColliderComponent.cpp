@@ -10,6 +10,7 @@
 
 #include <AzCore/Asset/AssetManagerBus.h>
 #include <AzCore/Component/Entity.h>
+#include <AzCore/Component/TransformBus.h>
 #include <AzCore/Casting/lossy_cast.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/EditContext.h>
@@ -80,18 +81,18 @@ namespace Terrain
     void TerrainPhysicsColliderComponent::Activate()
     {
         const auto entityId = GetEntityId();
-        AZ::TransformNotificationBus::Handler::BusConnect(entityId);
         LmbrCentral::ShapeComponentNotificationsBus::Handler::BusConnect(entityId);
         Physics::HeightfieldProviderRequestsBus::Handler::BusConnect(entityId);
+        AzFramework::Terrain::TerrainDataNotificationBus::Handler::BusConnect();
 
         NotifyListenersOfHeightfieldDataChange();
     }
 
     void TerrainPhysicsColliderComponent::Deactivate()
     {
+        AzFramework::Terrain::TerrainDataNotificationBus::Handler::BusDisconnect();
         Physics::HeightfieldProviderRequestsBus::Handler ::BusDisconnect();
         LmbrCentral::ShapeComponentNotificationsBus::Handler::BusDisconnect();
-        AZ::TransformNotificationBus::Handler::BusDisconnect();
     }
 
     bool TerrainPhysicsColliderComponent::ReadInConfig(const AZ::ComponentConfig* baseConfig)
@@ -125,25 +126,38 @@ namespace Terrain
             &Physics::HeightfieldProviderNotificationBus::Events::OnHeightfieldDataChanged, worldSize);
     }
 
-    void TerrainPhysicsColliderComponent::OnTransformChanged(
-        [[maybe_unused]] const AZ::Transform& local, [[maybe_unused]] const AZ::Transform& world)
-    {
-        NotifyListenersOfHeightfieldDataChange();
-    }
-
     void TerrainPhysicsColliderComponent::OnShapeChanged([[maybe_unused]] ShapeChangeReasons changeReason)
     {
-        if (changeReason == ShapeChangeReasons::TransformChanged)
-        {
-            // This will be handled by the OnTransformChanged handler.
-            return;
-        }
+        // This will notify us of both shape changes and transform changes.
+        // It's important to use this event for transform changes instead of listening to OnTransformChanged, because we need to guarantee
+        // the shape has received the transform change message and updated its internal state before passing it along to us.
 
         NotifyListenersOfHeightfieldDataChange();
     }
 
-    void TerrainPhysicsColliderComponent::GetHeightfieldBounds(const AZ::Aabb& bounds, AZ::Vector3& minBounds, AZ::Vector3& maxBounds) const
+    void TerrainPhysicsColliderComponent::OnTerrainDataCreateEnd()
     {
+        NotifyListenersOfHeightfieldDataChange();
+    }
+
+    void TerrainPhysicsColliderComponent::OnTerrainDataDestroyBegin()
+    {
+        NotifyListenersOfHeightfieldDataChange();
+    }
+
+    void TerrainPhysicsColliderComponent::OnTerrainDataChanged(
+        [[maybe_unused]] const AZ::Aabb& dirtyRegion, [[maybe_unused]] TerrainDataChangedMask dataChangedMask)
+    {
+        NotifyListenersOfHeightfieldDataChange();
+    }
+
+    AZ::Aabb TerrainPhysicsColliderComponent::GetHeightfieldAabb() const
+    {
+        AZ::Aabb worldSize = AZ::Aabb::CreateNull();
+
+        LmbrCentral::ShapeComponentRequestsBus::EventResult(
+            worldSize, GetEntityId(), &LmbrCentral::ShapeComponentRequestsBus::Events::GetEncompassingAabb);
+
         auto vector2Floor = [](const AZ::Vector2& in)
         {
             return AZ::Vector2(floor(in.GetX()), floor(in.GetY()));
@@ -154,53 +168,64 @@ namespace Terrain
         };
 
         const AZ::Vector2 gridResolution = GetHeightfieldGridSpacing();
-        const AZ::Vector3 boundsMin = bounds.GetMin();
-        const AZ::Vector3 boundsMax = bounds.GetMax();
+        const AZ::Vector3 boundsMin = worldSize.GetMin();
+        const AZ::Vector3 boundsMax = worldSize.GetMax();
 
         const AZ::Vector2 gridMinBoundLower = vector2Floor(AZ::Vector2(boundsMin) / gridResolution) * gridResolution;
         const AZ::Vector2 gridMaxBoundUpper = vector2Ceil(AZ::Vector2(boundsMax) / gridResolution) * gridResolution;
 
-        minBounds = AZ::Vector3(gridMinBoundLower.GetX(), gridMinBoundLower.GetY(), boundsMin.GetZ());
-        maxBounds = AZ::Vector3(gridMaxBoundUpper.GetX(), gridMaxBoundUpper.GetY(), boundsMax.GetZ());
+        return AZ::Aabb::CreateFromMinMaxValues(
+            gridMinBoundLower.GetX(), gridMinBoundLower.GetY(), boundsMin.GetZ(),
+            gridMaxBoundUpper.GetX(), gridMaxBoundUpper.GetY(), boundsMax.GetZ()
+        );
     }
 
-    void TerrainPhysicsColliderComponent::GetHeightfieldGridSizeInBounds(const AZ::Aabb& bounds, int32_t& numColumns, int32_t& numRows) const
+    void TerrainPhysicsColliderComponent::GetHeightfieldHeightBounds(float& minHeightBounds, float& maxHeightBounds) const
+    {
+        AZ::Aabb heightfieldAabb = GetHeightfieldAabb();
+
+        // Because our terrain heights are relative to the center of the bounding box, the min and max allowable heights are also
+        // relative to the center.  They are also clamped to the size of the bounding box.
+        minHeightBounds = -(heightfieldAabb.GetZExtent() / 2.0f);
+        maxHeightBounds = heightfieldAabb.GetZExtent() / 2.0f;
+    }
+
+    AZ::Transform TerrainPhysicsColliderComponent::GetHeightfieldTransform() const
+    {
+        AZ::Transform transform = AZ::Transform::CreateIdentity();
+        AZ::TransformBus::EventResult(transform, GetEntityId(), &AZ::TransformBus::Events::GetWorldTM);
+
+        // We currently don't support rotation of terrain heightfields.
+        transform.SetRotation(AZ::Quaternion::CreateIdentity());
+
+        // Scale is already handled via the underlying shape component that we use to set our heightfield bounds, so we'll reset it
+        // back to 1.0 here to prevent double-scaling the data.
+        transform.SetUniformScale(1.0f);
+
+        return transform;
+    }
+
+
+    void TerrainPhysicsColliderComponent::GenerateHeightsInBounds(AZStd::vector<float>& heights) const
     {
         const AZ::Vector2 gridResolution = GetHeightfieldGridSpacing();
 
-        AZ::Vector3 minBounds, maxBounds;
-        GetHeightfieldBounds(bounds, minBounds, maxBounds);
-
-        numColumns = aznumeric_cast<int32_t>((maxBounds.GetX() - minBounds.GetX()) / gridResolution.GetX());
-        numRows = aznumeric_cast<int32_t>((maxBounds.GetY() - minBounds.GetY()) / gridResolution.GetY());
-    }
-
-    void TerrainPhysicsColliderComponent::GenerateHeightsInBounds(const AZ::Aabb& bounds, AZStd::vector<float>& heights) const
-    {
-        const AZ::Vector2 gridResolution = GetHeightfieldGridSpacing();
-
-        AZ::Aabb worldSize = AZ::Aabb::CreateNull();
-
-        LmbrCentral::ShapeComponentRequestsBus::EventResult(
-            worldSize, GetEntityId(), &LmbrCentral::ShapeComponentRequestsBus::Events::GetEncompassingAabb);
+        AZ::Aabb worldSize = GetHeightfieldAabb();
 
         const float worldCenterZ = worldSize.GetCenter().GetZ();
 
-        AZ::Vector3 minBounds, maxBounds;
-        GetHeightfieldBounds(bounds, minBounds, maxBounds);
-
         int32_t gridWidth, gridHeight;
-        GetHeightfieldGridSizeInBounds(bounds, gridWidth, gridHeight);
+        GetHeightfieldGridSize(gridWidth, gridHeight);
 
         heights.clear();
         heights.reserve(gridWidth * gridHeight);
 
         for (int32_t row = 0; row < gridHeight; row++)
         {
-            const float y = row * gridResolution.GetY() + minBounds.GetY();
+            const float y = row * gridResolution.GetY() + worldSize.GetMin().GetY();
             for (int32_t col = 0; col < gridWidth; col++)
             {
-                const float x = col * gridResolution.GetX() + minBounds.GetX();
+                const float x = col * gridResolution.GetX() + worldSize.GetMin().GetX();
                 float height = 0.0f;
 
                 AzFramework::Terrain::TerrainDataRequestBus::BroadcastResult(
@@ -213,19 +238,15 @@ namespace Terrain
     }
 
     void TerrainPhysicsColliderComponent::GenerateHeightsAndMaterialsInBounds(
-        const AZ::Aabb& bounds, AZStd::vector<Physics::HeightMaterialPoint>& heightMaterials) const
+        AZStd::vector<Physics::HeightMaterialPoint>& heightMaterials) const
     {
         const AZ::Vector2 gridResolution = GetHeightfieldGridSpacing();
 
-        AZ::Aabb worldSize = AZ::Aabb::CreateNull();
-
-        LmbrCentral::ShapeComponentRequestsBus::EventResult(
-            worldSize, GetEntityId(), &LmbrCentral::ShapeComponentRequestsBus::Events::GetEncompassingAabb);
+        AZ::Aabb worldSize = GetHeightfieldAabb();
 
         const float worldCenterZ = worldSize.GetCenter().GetZ();
-
-        AZ::Vector3 minBounds, maxBounds;
-        GetHeightfieldBounds(bounds, minBounds, maxBounds);
+        const float worldHeightBoundsMin = worldSize.GetMin().GetZ();
+        const float worldHeightBoundsMax = worldSize.GetMax().GetZ();
 
         int32_t gridWidth, gridHeight;
         GetHeightfieldGridSize(gridWidth, gridHeight);
@@ -235,10 +256,10 @@ namespace Terrain
 
         for (int32_t row = 0; row < gridHeight; row++)
         {
-            const float y = row * gridResolution.GetY() + minBounds.GetY();
+            const float y = row * gridResolution.GetY() + worldSize.GetMin().GetY();
             for (int32_t col = 0; col < gridWidth; col++)
             {
-                const float x = col * gridResolution.GetX() + minBounds.GetX();
+                const float x = col * gridResolution.GetX() + worldSize.GetMin().GetX();
                 float height = 0.0f;
 
                 bool terrainExists = true;
@@ -246,8 +267,16 @@ namespace Terrain
                     height, &AzFramework::Terrain::TerrainDataRequests::GetHeightFromFloats, x, y,
                     AzFramework::Terrain::TerrainDataRequests::Sampler::DEFAULT, &terrainExists);
 
+                // Any heights that fall outside the range of our bounding box will get turned into holes.
+                if ((height < worldHeightBoundsMin) || (height > worldHeightBoundsMax))
+                {
+                    height = worldHeightBoundsMin;
+                    terrainExists = false;
+                }
+
                 Physics::HeightMaterialPoint point;
                 point.m_height = height - worldCenterZ;
+                point.m_quadMeshType = terrainExists ? Physics::QuadMeshType::SubdivideUpperLeftToBottomRight : Physics::QuadMeshType::Hole;
                 heightMaterials.emplace_back(point);
             }
         }
@@ -265,13 +294,10 @@ namespace Terrain
     void TerrainPhysicsColliderComponent::GetHeightfieldGridSize(int32_t& numColumns, int32_t& numRows) const
     {
         const AZ::Vector2 gridResolution = GetHeightfieldGridSpacing();
+        const AZ::Aabb bounds = GetHeightfieldAabb();
 
-        AZ::Aabb worldSize = AZ::Aabb::CreateNull();
-
-        LmbrCentral::ShapeComponentRequestsBus::EventResult(
-            worldSize, GetEntityId(), &LmbrCentral::ShapeComponentRequestsBus::Events::GetEncompassingAabb);
-
-        GetHeightfieldGridSizeInBounds(worldSize, numColumns, numRows);
+        numColumns = aznumeric_cast<int32_t>((bounds.GetMax().GetX() - bounds.GetMin().GetX()) / gridResolution.GetX());
+        numRows = aznumeric_cast<int32_t>((bounds.GetMax().GetY() - bounds.GetMin().GetY()) / gridResolution.GetY());
     }
 
     AZStd::vector<Physics::MaterialId> TerrainPhysicsColliderComponent::GetMaterialList() const
@@ -281,43 +307,34 @@ namespace Terrain
 
     AZStd::vector<float> TerrainPhysicsColliderComponent::GetHeights() const
     {
-        AZ::Aabb worldSize = AZ::Aabb::CreateNull();
-
-        LmbrCentral::ShapeComponentRequestsBus::EventResult(
-            worldSize, GetEntityId(), &LmbrCentral::ShapeComponentRequestsBus::Events::GetEncompassingAabb);
-
         AZStd::vector<float> heights; 
-        GenerateHeightsInBounds(worldSize, heights);
+        GenerateHeightsInBounds(heights);
 
         return heights;
     }
 
     AZStd::vector<Physics::HeightMaterialPoint> TerrainPhysicsColliderComponent::GetHeightsAndMaterials() const
     {
-        AZ::Aabb worldSize = AZ::Aabb::CreateNull();
-
-        LmbrCentral::ShapeComponentRequestsBus::EventResult(
-            worldSize, GetEntityId(), &LmbrCentral::ShapeComponentRequestsBus::Events::GetEncompassingAabb);
-
         AZStd::vector<Physics::HeightMaterialPoint> heightMaterials;
-        GenerateHeightsAndMaterialsInBounds(worldSize, heightMaterials);
+        GenerateHeightsAndMaterialsInBounds(heightMaterials);
 
         return heightMaterials;
     }
 
-    AZStd::vector<float> TerrainPhysicsColliderComponent::UpdateHeights(const AZ::Aabb& dirtyRegion) const
+    AZStd::vector<float> TerrainPhysicsColliderComponent::UpdateHeights([[maybe_unused]] const AZ::Aabb& dirtyRegion) const
     {
         AZStd::vector<float> heights;
-        GenerateHeightsInBounds(dirtyRegion, heights);
+        GenerateHeightsInBounds(heights);
 
         return heights;
     }
 
-    AZStd::vector<Physics::HeightMaterialPoint> TerrainPhysicsColliderComponent::UpdateHeightsAndMaterials(const AZ::Aabb& dirtyRegion) const
+    AZStd::vector<Physics::HeightMaterialPoint> TerrainPhysicsColliderComponent::UpdateHeightsAndMaterials([[maybe_unused]] const AZ::Aabb& dirtyRegion) const
     {
         AZStd::vector<Physics::HeightMaterialPoint> heightMaterials;
-        GenerateHeightsAndMaterialsInBounds(dirtyRegion, heightMaterials);
+        GenerateHeightsAndMaterialsInBounds(heightMaterials);
 
         return heightMaterials;
     }
+
 }

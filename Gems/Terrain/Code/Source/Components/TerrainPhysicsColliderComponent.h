@@ -9,7 +9,6 @@
 #pragma once
 
 #include <AzCore/Component/Component.h>
-#include <AzCore/Component/TransformBus.h>
 
 #include <AzFramework/Physics/HeightfieldProviderBus.h>
 #include <AzFramework/Physics/Material.h>
@@ -39,9 +38,9 @@ namespace Terrain
 
     class TerrainPhysicsColliderComponent
         : public AZ::Component
-        , protected AZ::TransformNotificationBus::Handler
+        , public Physics::HeightfieldProviderRequestsBus::Handler
         , protected LmbrCentral::ShapeComponentNotificationsBus::Handler
-        , protected Physics::HeightfieldProviderRequestsBus::Handler
+        , protected AzFramework::Terrain::TerrainDataNotificationBus::Handler
     {
     public:
         template<typename, typename>
@@ -57,6 +56,18 @@ namespace Terrain
         TerrainPhysicsColliderComponent();
         ~TerrainPhysicsColliderComponent() = default;
 
+        // HeightfieldProviderRequestsBus
+        AZ::Vector2 GetHeightfieldGridSpacing() const override;
+        void GetHeightfieldGridSize(int32_t& numColumns, int32_t& numRows) const override;
+        void GetHeightfieldHeightBounds(float& minHeightBounds, float& maxHeightBounds) const override;
+        AZ::Aabb GetHeightfieldAabb() const override;
+        AZ::Transform GetHeightfieldTransform() const override;
+        AZStd::vector<Physics::MaterialId> GetMaterialList() const override;
+        AZStd::vector<float> GetHeights() const override;
+        AZStd::vector<Physics::HeightMaterialPoint> GetHeightsAndMaterials() const override;
+        AZStd::vector<float> UpdateHeights(const AZ::Aabb& dirtyRegion) const override;
+        AZStd::vector<Physics::HeightMaterialPoint> UpdateHeightsAndMaterials(const AZ::Aabb& dirtyRegion) const override;
+
     protected:
         //////////////////////////////////////////////////////////////////////////
         // AZ::Component interface implementation
@@ -65,28 +76,18 @@ namespace Terrain
         bool ReadInConfig(const AZ::ComponentConfig* baseConfig) override;
         bool WriteOutConfig(AZ::ComponentConfig* outBaseConfig) const override;
 
-        void GetHeightfieldBounds(const AZ::Aabb& bounds, AZ::Vector3& minBounds, AZ::Vector3& maxBounds) const;
-        void GetHeightfieldGridSizeInBounds(const AZ::Aabb& bounds, int32_t& numColumns, int32_t& numRows) const;
-        void GenerateHeightsInBounds(const AZ::Aabb& bounds, AZStd::vector<float>& heights) const;
-        void GenerateHeightsAndMaterialsInBounds(const AZ::Aabb& bounds, AZStd::vector<Physics::HeightMaterialPoint>& heightMaterials) const;
+        void GenerateHeightsInBounds(AZStd::vector<float>& heights) const;
+        void GenerateHeightsAndMaterialsInBounds(AZStd::vector<Physics::HeightMaterialPoint>& heightMaterials) const;
 
         void NotifyListenersOfHeightfieldDataChange();
-
-        //////////////////////////////////////////////////////////////////////////
-        // AZ::TransformNotificationBus::Handler
-        void OnTransformChanged(const AZ::Transform& local, const AZ::Transform& world) override;
 
         // ShapeComponentNotificationsBus
         void OnShapeChanged(ShapeChangeReasons changeReason) override;
 
-        // HeightfieldProviderRequestsBus
-        AZ::Vector2 GetHeightfieldGridSpacing() const override;
-        void GetHeightfieldGridSize(int32_t& numColumns, int32_t& numRows) const override;
-        AZStd::vector<Physics::MaterialId> GetMaterialList() const override;
-        AZStd::vector<float> GetHeights() const override;
-        AZStd::vector<Physics::HeightMaterialPoint> GetHeightsAndMaterials() const override;
-        AZStd::vector<float> UpdateHeights(const AZ::Aabb& dirtyRegion) const override;
-        AZStd::vector<Physics::HeightMaterialPoint> UpdateHeightsAndMaterials(const AZ::Aabb& dirtyRegion) const override;
+        void OnTerrainDataCreateEnd() override;
+        void OnTerrainDataDestroyBegin() override;
+        void OnTerrainDataChanged(const AZ::Aabb& dirtyRegion, TerrainDataChangedMask dataChangedMask) override;
+
     private:
         TerrainPhysicsColliderConfig m_configuration;
     };
