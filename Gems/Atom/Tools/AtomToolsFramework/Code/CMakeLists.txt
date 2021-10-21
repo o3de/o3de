@@ -10,6 +10,8 @@ if(NOT PAL_TRAIT_BUILD_HOST_TOOLS)
     return()
 endif()
 
+ly_get_list_relative_pal_filename(pal_source_dir ${CMAKE_CURRENT_LIST_DIR}/Source/Platform/${PAL_PLATFORM_NAME})
+
 ly_add_target(
     NAME AtomToolsFramework.Static STATIC
     NAMESPACE Gem
@@ -18,9 +20,11 @@ ly_add_target(
     AUTORCC
     FILES_CMAKE
         atomtoolsframework_files.cmake
+        ${pal_source_dir}/platform_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake
     INCLUDE_DIRECTORIES
         PRIVATE
             Source
+            ${pal_source_dir}
         PUBLIC
             Include
     BUILD_DEPENDENCIES

@@ -5,7 +5,6 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+#pragma once
 
-#include <AzCore/Module/Module.h>
-
-AZ_DECLARE_MODULE_CLASS(Gem_AudioEngineWwise, AZ::Module)
+#include <AtomToolsFramework_Traits_Mac.h>

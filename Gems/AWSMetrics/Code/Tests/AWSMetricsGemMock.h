@@ -139,11 +139,6 @@ namespace AWSMetrics
             return true;
         }
 
-        bool RemoveDirectory(const AZStd::string& directory)
-        {
-            return AZ::IO::SystemFile::DeleteDir(directory.c_str());
-        }
-
         AZ::IO::FileIOBase* m_priorFileIO = nullptr;
         AZ::IO::FileIOBase* m_localFileIO = nullptr;
 

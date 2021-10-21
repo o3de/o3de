@@ -138,7 +138,7 @@ float3 ColorGrade(float3 frameColor)
                                          PassSrg::m_colorFilterMultiply, PassSrg::m_colorFilterIntensity), PassSrg::m_colorAdjustmentWeight);
     frameColor = max(frameColor, 0.0);
     frameColor = lerp(frameColor, ColorGradeSaturation(frameColor, PassSrg::m_colorGradingPreSaturation), PassSrg::m_colorAdjustmentWeight);
-
+    frameColor = max(frameColor, 0.0);
     frameColor = ColorGradeSplitTone(frameColor, PassSrg::m_splitToneBalance, PassSrg::m_splitToneWeight,
                                         PassSrg::m_splitToneShadowsColor, PassSrg::m_splitToneHighlightsColor);
     frameColor = ColorGradeChannelMixer(frameColor, PassSrg::m_channelMixingRed, PassSrg::m_channelMixingGreen, PassSrg::m_channelMixingBlue);
@@ -147,8 +147,7 @@ float3 ColorGrade(float3 frameColor)
                                                     PassSrg::m_smhHighlightsStart, PassSrg::m_smhHighlightsEnd, PassSrg::m_smhWeight,
                                                     PassSrg::m_smhShadowsColor, PassSrg::m_smhMidtonesColor, PassSrg::m_smhHighlightsColor);
 
-
-    frameColor = lerp(frameColor, ColorGradeSaturation(frameColor, PassSrg::m_colorGradingPostSaturation), PassSrg::m_finalAdjustmentWeight);
     frameColor = lerp(frameColor, ColorGradeHueShift(frameColor, PassSrg::m_colorGradingHueShift), PassSrg::m_finalAdjustmentWeight);
+    frameColor = lerp(frameColor, ColorGradeSaturation(frameColor, PassSrg::m_colorGradingPostSaturation), PassSrg::m_finalAdjustmentWeight);
     return max(frameColor.rgb, 0.0);
 }

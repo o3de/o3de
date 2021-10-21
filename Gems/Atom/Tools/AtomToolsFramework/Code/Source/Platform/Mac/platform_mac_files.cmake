@@ -7,5 +7,6 @@
 #
 
 set(FILES
-    Source/AudioEngineWwiseModule_Stub.cpp
+    AtomToolsFramework_Traits_Platform.h
+    AtomToolsFramework_Traits_Mac.h
 )
