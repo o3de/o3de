@@ -308,7 +308,7 @@ namespace AzFramework
         event.data.data32[2] = 0;
         event.data.data32[3] = 1;
         event.data.data32[4] = 0;
-        xcb_void_cookie_t xcbCheckResult = xcb_send_event(
+        [[maybe_unused]] xcb_void_cookie_t xcbCheckResult = xcb_send_event(
             m_xcbConnection, 1, m_xcbRootScreen->root, XCB_EVENT_MASK_STRUCTURE_NOTIFY | XCB_EVENT_MASK_SUBSTRUCTURE_REDIRECT,
             (const char*)&event);
         AZ_Assert(ValidateXcbResult(xcbCheckResult), "Failed to set _NET_WM_STATE_FULLSCREEN");
@@ -333,7 +333,7 @@ namespace AzFramework
                 event.data.data32[2] = 0;
                 event.data.data32[3] = 0;
                 event.data.data32[4] = 0;
-                xcb_void_cookie_t xcbCheckResult = xcb_send_event(
+                [[maybe_unused]] xcb_void_cookie_t xcbCheckResult = xcb_send_event(
                     m_xcbConnection, 1, m_xcbRootScreen->root, XCB_EVENT_MASK_STRUCTURE_NOTIFY | XCB_EVENT_MASK_SUBSTRUCTURE_REDIRECT,
                     (const char*)&event);
                 AZ_Assert(
