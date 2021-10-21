@@ -11,9 +11,7 @@
 #include <AzCore/std/parallel/binary_semaphore.h>
 #include <AzCore/std/parallel/mutex.h>
 #include <AzCore/std/parallel/thread.h>
-
 #include <Request/AWSGameLiftMatchmakingRequestBus.h>
-
 #include <aws/gamelift/model/MatchmakingTicket.h>
 
 namespace AWSGameLift

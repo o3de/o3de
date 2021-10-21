@@ -9,6 +9,7 @@
 #pragma once
 
 #include <AzCore/Interface/Interface.h>
+#include <AzFramework/Matchmaking/MatchmakingNotifications.h>
 #include <AzFramework/Session/ISessionRequests.h>
 #include <AzFramework/Session/ISessionHandlingRequests.h>
 #include <AzFramework/Matchmaking/IMatchmakingRequests.h>

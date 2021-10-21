@@ -590,7 +590,7 @@ namespace AZ
         }
 
         void DirectionalLightFeatureProcessor::SetShadowBias(LightHandle handle, float bias) 
-        {
+       {
             for (auto& it : m_shadowData) 
             {
                 it.second.GetData(handle.GetIndex()).m_shadowBias = bias;               
