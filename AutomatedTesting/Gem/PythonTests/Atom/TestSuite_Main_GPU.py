@@ -189,6 +189,7 @@ class TestPerformanceBenchmarkSuite(object):
             "Benchmark metadata captured.",
             "Pass timestamps captured.",
             "CPU frame time captured.",
+            "Captured data successfully.",
             "Exited game mode"
         ]
 
