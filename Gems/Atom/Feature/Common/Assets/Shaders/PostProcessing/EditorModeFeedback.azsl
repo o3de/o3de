@@ -25,6 +25,7 @@ ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
     };
  
     float4 m_color;
+    float m_desaturationAmount;
 }
  
 PSOutput MainPS(VSOutput IN)
@@ -37,7 +38,7 @@ PSOutput MainPS(VSOutput IN)
     // Averge the colors to get a desaturated effect
     float sat = (color.r + color.g + color.b) / 3.0;
  
-    OUT.m_color.rgb = float3(sat, sat, sat);
+    OUT.m_color.rgb = lerp(color, float3(sat, sat, sat), PassSrg::m_desaturationAmount);
     OUT.m_color.w = 1;
  
     return OUT;

@@ -168,6 +168,20 @@
                     ]
                 },
                 {
+                    "Name": "EditorModeFeedbackPass",
+                    "TemplateName": "EditorModeFeedbackTemplate",
+                    "Enabled": true,
+                    "Connections": [
+                        {
+                            "LocalSlot": "Input",
+                            "AttachmentRef": {
+                                "Pass": "LightAdaptation",
+                                "Attachment": "Output"
+                            }
+                        }
+                    ]
+                },
+                {
                     "Name": "ContrastAdaptiveSharpeningPass",
                     "TemplateName": "ContrastAdaptiveSharpeningTemplate",
                     "Enabled": false,
@@ -175,7 +189,7 @@
                         {
                             "LocalSlot": "InputColor",
                             "AttachmentRef": {
-                                "Pass": "LightAdaptation",
+                                "Pass": "EditorModeFeedbackPass",
                                 "Attachment": "Output"
                             }
                         }

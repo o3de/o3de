@@ -92,20 +92,6 @@
                     ]
                 },
                 {
-                    "Name": "EditorModeFeedbackPass",
-                    "TemplateName": "EditorModeFeedbackTemplate",
-                    "Enabled": true,
-                    "Connections": [
-                        {
-                            "LocalSlot": "Input",
-                            "AttachmentRef": {
-                                "Pass": "Parent",
-                                "Attachment": "LightingInput"
-                            }
-                        }
-                    ]
-                },
-                {
                     "Name": "HDRColorGradingPass",
                     "TemplateName": "HDRColorGradingTemplate",
                     "Enabled": true,
@@ -113,8 +99,8 @@
                         {
                             "LocalSlot": "Input",
                             "AttachmentRef": {
-                                "Pass": "EditorModeFeedbackPass",
-                                "Attachment": "Output"
+                                "Pass": "Parent",
+                                "Attachment": "LightingInput"
                             }
                         }
                     ]

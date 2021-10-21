@@ -5,7 +5,7 @@
     "ClassData": {
         "PassTemplate": {
             "Name": "EditorModeFeedbackTemplate",
-            "PassClass": "FullScreenTriangle",
+            "PassClass": "EditorModeFeedbackPass",
             "Slots": [
                 {
                     "Name": "Input",

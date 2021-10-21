@@ -190,6 +190,8 @@ set(FILES
     Source/PostProcess/PostProcessSettings.h
     Source/PostProcess/ColorGrading/HDRColorGradingSettings.h
     Source/PostProcess/ColorGrading/HDRColorGradingSettings.cpp
+    Source/PostProcess/EditorModeFeedback/EditorModeFeedbackSettings.h
+    Source/PostProcess/EditorModeFeedback/EditorModeFeedbackSettings.cpp
     Source/PostProcess/Bloom/BloomSettings.cpp
     Source/PostProcess/Bloom/BloomSettings.h
     Source/PostProcess/DepthOfField/DepthOfFieldSettings.cpp
@@ -214,6 +216,8 @@ set(FILES
     Source/PostProcessing/BloomParentPass.cpp
     Source/PostProcessing/HDRColorGradingPass.cpp
     Source/PostProcessing/HDRColorGradingPass.h
+    Source/PostProcessing/EditorModeFeedbackPass.cpp
+    Source/PostProcessing/EditorModeFeedbackPass.h
     Source/PostProcessing/DepthOfFieldCompositePass.h
     Source/PostProcessing/DepthOfFieldCompositePass.cpp
     Source/PostProcessing/DepthOfFieldBokehBlurPass.h

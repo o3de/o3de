@@ -25,6 +25,7 @@
 #include <PostProcess/PostFxLayerComponent.h>
 #include <PostProcess/Bloom/BloomComponent.h>
 #include <PostProcess/ColorGrading/HDRColorGradingComponent.h>
+#include <PostProcess/EditorModeFeedback/EditorModeFeedbackComponent.h>
 #include <PostProcess/DepthOfField/DepthOfFieldComponent.h>
 #include <PostProcess/DisplayMapper/DisplayMapperComponent.h>
 #include <PostProcess/ExposureControl/ExposureControlComponent.h>
@@ -59,6 +60,7 @@
 #include <PostProcess/EditorPostFxLayerComponent.h>
 #include <PostProcess/Bloom/EditorBloomComponent.h>
 #include <PostProcess/ColorGrading/EditorHDRColorGradingComponent.h>
+#include <PostProcess/EditorModeFeedback/EditorEditorModeFeedbackComponent.h>
 #include <PostProcess/DepthOfField/EditorDepthOfFieldComponent.h>
 #include <PostProcess/DisplayMapper/EditorDisplayMapperComponent.h>
 #include <PostProcess/ExposureControl/EditorExposureControlComponent.h>
@@ -96,6 +98,7 @@ namespace AZ
                         DirectionalLightComponent::CreateDescriptor(),
                         BloomComponent::CreateDescriptor(),
                         HDRColorGradingComponent::CreateDescriptor(),
+                        EditorModeFeedbackComponent::CreateDescriptor(),
                         DisplayMapperComponent::CreateDescriptor(),
                         DepthOfFieldComponent::CreateDescriptor(),
                         ExposureControlComponent::CreateDescriptor(),
@@ -128,6 +131,7 @@ namespace AZ
                         EditorDirectionalLightComponent::CreateDescriptor(),
                         EditorBloomComponent::CreateDescriptor(),
                         EditorHDRColorGradingComponent::CreateDescriptor(),
+                        EditorEditorModeFeedbackComponent::CreateDescriptor(),
                         EditorDepthOfFieldComponent::CreateDescriptor(),
                         EditorDisplayMapperComponent::CreateDescriptor(),
                         EditorExposureControlComponent::CreateDescriptor(),

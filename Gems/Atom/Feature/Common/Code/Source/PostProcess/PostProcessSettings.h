@@ -18,6 +18,7 @@
 #include <PostProcess/Ssao/SsaoSettings.h>
 #include <PostProcess/LookModification/LookModificationSettings.h>
 #include <PostProcess/ColorGrading/HDRColorGradingSettings.h>
+#include <PostProcess/EditorModeFeedback/EditorModeFeedbackSettings.h>
 #include <ScreenSpace/DeferredFogSettings.h>
 
 namespace AZ
